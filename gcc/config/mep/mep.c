@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
+#include "gimple.h"
 
 /* Structure of this file:
 
@@ -160,7 +161,6 @@ static bool mep_interrupt_saved_reg (int);
 static bool mep_call_saves_register (int);
 static rtx F (rtx);
 static void add_constant (int, int, int, int);
-static bool mep_function_uses_sp (void);
 static rtx maybe_dead_move (rtx, rtx, bool);
 static void mep_reload_pointer (int, const char *);
 static void mep_start_function (FILE *, HOST_WIDE_INT);
@@ -227,7 +227,7 @@ static bool mep_narrow_volatile_bitfield (void);
 static rtx mep_expand_builtin_saveregs (void);
 static tree mep_build_builtin_va_list (void);
 static void mep_expand_va_start (tree, rtx);
-static tree mep_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static tree mep_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static bool mep_can_eliminate (const int, const int);
 static void mep_trampoline_init (rtx, tree, rtx);
 
@@ -2757,27 +2757,6 @@ add_constant (int dest, int src, int value, int mark_frame)
     }
 }
 
-static bool
-mep_function_uses_sp (void)
-{
-  rtx insn;
-  struct sequence_stack *seq;
-  rtx sp = gen_rtx_REG (SImode, SP_REGNO);
-
-  insn = get_insns ();
-  for (seq = crtl->emit.sequence_stack;
-       seq;
-       insn = seq->first, seq = seq->next);
-
-  while (insn)
-    {
-      if (mep_mentioned_p (insn, sp, 0))
-	return true;
-      insn = NEXT_INSN (insn);
-    }
-  return false;
-}
-
 /* Move SRC to DEST.  Mark the move as being potentially dead if
    MAYBE_DEAD_P.  */
 
@@ -3699,7 +3678,8 @@ mep_expand_va_start (tree valist, rtx nextarg)
 
 static tree
 mep_gimplify_va_arg_expr (tree valist, tree type,
-			  tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
+			  gimple_seq *pre_p,
+			  gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   HOST_WIDE_INT size, rsize;
   bool by_reference, ivc2_vec;
@@ -6355,9 +6335,9 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   tree fnname;
   const struct cgen_insn *cgen_insn;
   const struct insn_data *idata;
-  int first_arg = 0;
-  int return_type = void_type_node;
-  int builtin_n_args;
+  unsigned int first_arg = 0;
+  tree return_type = void_type_node;
+  unsigned int builtin_n_args;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   fnname = DECL_NAME (fndecl);
@@ -6367,7 +6347,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   if (!mep_get_intrinsic_insn (DECL_FUNCTION_CODE (fndecl), &cgen_insn))
     {
       mep_intrinsic_unavailable (DECL_FUNCTION_CODE (fndecl));
-      return error_mark_node;
+      return NULL_RTX;
     }
   idata = &insn_data[cgen_insn->icode];
 
@@ -6388,19 +6368,19 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   if (n_args < builtin_n_args)
     {
       error ("too few arguments to %qE", fnname);
-      return error_mark_node;
+      return NULL_RTX;
     }
   if (n_args > builtin_n_args)
     {
       error ("too many arguments to %qE", fnname);
-      return error_mark_node;
+      return NULL_RTX;
     }
 
-  for (a = first_arg; a < builtin_n_args+first_arg; a++)
+  for (a = first_arg; a < builtin_n_args + first_arg; a++)
     {
       tree value;
 
-      args = CALL_EXPR_ARG (exp, a-first_arg);
+      args = CALL_EXPR_ARG (exp, a - first_arg);
 
       value = args;
 
@@ -6411,7 +6391,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	    {
 	      debug_tree(value);
 	      error ("argument %d of %qE must be an address", a+1, fnname);
-	      return error_mark_node;
+	      return NULL_RTX;
 	    }
 	  value = TREE_OPERAND (value, 0);
 	}
@@ -6450,11 +6430,11 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	{
 	  error ("argument %d of %qE must be in the range %d...%d",
 		 a + 1, fnname, 0, cgen_insn->regnums[a].count - 1);
-	  return error_mark_node;
+	  return NULL_RTX;
 	}
     }
 
-  for (a=0; a<first_arg; a++)
+  for (a = 0; a < first_arg; a++)
     {
       if (a == 0 && target && GET_MODE (target) == idata->operand[0].mode)
 	arg[a] = target;
@@ -6473,7 +6453,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	{
 	  mep_incompatible_arg (&idata->operand[opindex],
 				arg[a], a + 1 - first_arg, fnname);
-	  return error_mark_node;
+	  return NULL_RTX;
 	}
     }
 
