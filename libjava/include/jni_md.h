@@ -78,7 +78,7 @@ typedef int    jbyte  __attribute__((__mode__(__QI__)));
 typedef int    jshort __attribute__((__mode__(__HI__)));
 typedef int    jint   __attribute__((__mode__(__SI__)));
 typedef int    jlong  __attribute__((__mode__(__DI__)));
-typedef int    jboolean __attribute__((__mode__(__QI__)));
+typedef unsigned int   jboolean __attribute__((__mode__(__QI__)));
 typedef unsigned short jchar __attribute__((__mode__(__HI__)));
 typedef float  jfloat;
 typedef double jdouble;
@@ -99,7 +99,7 @@ typedef int64_t jlong;
 typedef float jfloat;
 typedef double jdouble;
 typedef jint jsize;
-typedef int8_t jboolean;
+typedef uint8_t jboolean;
 typedef uint16_t jchar;
 
 #  else /* JV_HAVE_INTTYPES_H */
