@@ -5044,6 +5044,7 @@ layout_class_type (tree t, tree *virtuals_p)
       /* G++ used to use DECL_FIELD_OFFSET as if it were the byte
 	 offset of the field.  */
       if (warn_abi
+	  && !abi_version_at_least (2)
 	  && !tree_int_cst_equal (DECL_FIELD_OFFSET (field),
 				  byte_position (field))
 	  && contains_empty_class_p (TREE_TYPE (field)))
