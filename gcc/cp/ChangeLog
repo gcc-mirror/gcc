@@ -1,3 +1,8 @@
+2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* pt.c (push_tinst_level): Replace -ftemplate-depth- with 
+	-ftemplate-depth=.
+
 2010-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12909

@@ -791,8 +791,11 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger
 -ftabstop=<number>	Distance between tab stops for column reporting
 
 ftemplate-depth-
+C++ ObjC++ Joined RejectNegative UInteger Undocumented
+
+ftemplate-depth=
 C++ ObjC++ Joined RejectNegative UInteger
--ftemplate-depth-<number>	Specify maximum template instantiation depth
+-ftemplate-depth=<number>	Specify maximum template instantiation depth
 
 fthis-is-variable
 C++ ObjC++
