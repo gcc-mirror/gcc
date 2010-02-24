@@ -437,7 +437,7 @@ require special allocation on platforms that have a non-executable
 heap.  Memory management for closures is handled by a pair of
 functions:
 
-@findex ffi_closure_alloca
+@findex ffi_closure_alloc
 @defun void *ffi_closure_alloc (size_t @var{size}, void **@var{code})
 Allocate a chunk of memory holding @var{size} bytes.  This returns a
 pointer to the writable address, and sets *@var{code} to the
