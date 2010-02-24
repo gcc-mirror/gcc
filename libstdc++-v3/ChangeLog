@@ -1,3 +1,9 @@
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/ext/new_allocator/deallocate_global.cc: Require
+	__cxa_atexit.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Likewise.
+
 2010-02-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/concurrency.xml: Move...
