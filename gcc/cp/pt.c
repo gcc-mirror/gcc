@@ -7026,7 +7026,7 @@ push_tinst_level (tree d)
 
       last_template_error_tick = tinst_level_tick;
       error ("template instantiation depth exceeds maximum of %d (use "
-	     "-ftemplate-depth-NN to increase the maximum) instantiating %qD",
+	     "-ftemplate-depth= to increase the maximum) instantiating %qD",
 	     max_tinst_depth, d);
 
       print_instantiation_context ();
@@ -16860,7 +16860,7 @@ instantiate_pending_templates (int retries)
 
       error ("template instantiation depth exceeds maximum of %d"
 	     " instantiating %q+D, possibly from virtual table generation"
-	     " (use -ftemplate-depth-NN to increase the maximum)",
+	     " (use -ftemplate-depth= to increase the maximum)",
 	     max_tinst_depth, decl);
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	/* Pretend that we defined it.  */

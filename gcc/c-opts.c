@@ -801,6 +801,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_ftemplate_depth_:
+      /* Kept for backwards compatibility.  */
+    case OPT_ftemplate_depth_eq:
       max_tinst_depth = value;
       break;
 

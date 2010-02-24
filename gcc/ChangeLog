@@ -1,3 +1,13 @@
+2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c.opt (-ftemplate-depth=): New.
+	(-ftemplate-depth-): Deprecate.
+	* optc-gen.awk: Handle -ftemplate-depth=.
+	* opth-gen.awk: Likewise.
+	* c-opts.c (c_common_handle_option): Likewise.
+	* doc/invoke.texi (-ftemplate-depth-): Replace with
+	-ftemplate-depth=.
+
 2010-02-24  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: Improve -Wabi and -fabi-version docs.

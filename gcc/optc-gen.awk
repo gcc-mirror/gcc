@@ -170,7 +170,8 @@ for (i = 0; i < n_opts; i++) {
 
 	len = length (opts[i]);
 	enum = "OPT_" opts[i]
-	if (opts[i] == "finline-limit=" || opts[i] == "Wlarger-than=")
+	if (opts[i] == "finline-limit=" || opts[i] == "Wlarger-than=" \
+	    || opts[i] == "ftemplate-depth=")
 		enum = enum "eq"
 	gsub ("[^A-Za-z0-9]", "_", enum)
 

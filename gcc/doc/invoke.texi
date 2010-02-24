@@ -190,7 +190,7 @@ in the following sections.
 -fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
--frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
+-frepo  -fno-rtti  -fstats  -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
@@ -1972,7 +1972,7 @@ unambiguous base classes.
 Emit statistics about front-end processing at the end of the compilation.
 This information is generally only useful to the G++ development team.
 
-@item -ftemplate-depth-@var{n}
+@item -ftemplate-depth=@var{n}
 @opindex ftemplate-depth
 Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
