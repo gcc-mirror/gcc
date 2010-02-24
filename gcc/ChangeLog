@@ -1,3 +1,9 @@
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (NO_DBX_BNSYM_ENSYM): Define.
+	* config/i386/sol2-gas.h: New file.
+	* config.gcc (i[34567]86-*-solaris2*): Use it.
+
 2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/43128
