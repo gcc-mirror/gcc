@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.containers" xreflabel="Containers">
+<chapter id="std.containers" xreflabel="Containers">
 <?dbhtml filename="containers.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,22 +15,22 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Containers
   <indexterm><primary>Containers</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Sequences -->
-<chapter id="manual.containers.sequences" xreflabel="Sequences">
+<!-- Sect1 01 : Sequences -->
+<sect1 id="std.containers.sequences" xreflabel="Sequences">
 <?dbhtml filename="sequences.html"?>
   <title>Sequences</title>
 
-<sect1 id="containers.sequences.list" xreflabel="list">
+<sect2 id="containers.sequences.list" xreflabel="list">
 <?dbhtml filename="list.html"?>
   <title>list</title>
-  <sect2 id="sequences.list.size" xreflabel="list::size() is O(n)">
+  <sect3 id="sequences.list.size" xreflabel="list::size() is O(n)">
     <title>list::size() is O(n)</title>
    <para>
      Yes it is, and that's okay.  This is a decision that we preserved
@@ -64,29 +64,29 @@
       <para>
 	One implication of linear time size(): you should never write
       </para>
-         <programlisting>
-         if (L.size() == 0)
-             ...
+	 <programlisting>
+	 if (L.size() == 0)
+	     ...
 	 </programlisting>
 
 	 <para>
-         Instead, you should write
+	 Instead, you should write
 	 </para>
 
-         <programlisting>
-         if (L.empty())
-             ...
+	 <programlisting>
+	 if (L.empty())
+	     ...
 	 </programlisting>
    </blockquote>
-  </sect2>
-</sect1>
+  </sect3>
+</sect2>
 
-<sect1 id="containers.sequences.vector" xreflabel="vector">
+<sect2 id="containers.sequences.vector" xreflabel="vector">
 <?dbhtml filename="vector.html"?>
   <title>vector</title>
   <para>
   </para>
-  <sect2 id="sequences.vector.management" xreflabel="Space Overhead Management">
+  <sect3 id="sequences.vector.management" xreflabel="Space Overhead Management">
     <title>Space Overhead Management</title>
    <para>
      In <ulink
@@ -103,15 +103,15 @@
      url="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</ulink>.
    </para>
 
-  </sect2></sect1>
-</chapter>
+  </sect3></sect2>
+</sect1>
 
-<!-- Chapter 02 : Associative -->
-<chapter id="manual.containers.associative" xreflabel="Associative">
+<!-- Sect1 02 : Associative -->
+<sect1 id="std.containers.associative" xreflabel="Associative">
 <?dbhtml filename="associative.html"?>
   <title>Associative</title>
 
-  <sect1 id="containers.associative.insert_hints" xreflabel="Insertion Hints">
+  <sect2 id="containers.associative.insert_hints" xreflabel="Insertion Hints">
     <title>Insertion Hints</title>
    <para>
      Section [23.1.2], Table 69, of the C++ standard lists this
@@ -170,7 +170,7 @@
 	  <code>end()</code>, then the item being inserted should have
 	  a key greater than all the other keys in the container.  The
 	  item will be inserted at the end of the container, becoming
-	  the new entry before <code>end()</code>.  
+	  the new entry before <code>end()</code>.
       </para>
       </listitem>
       <listitem>
@@ -216,13 +216,13 @@
      point to the correct place, then no further local searching is
      done; the search begins from scratch in logarithmic time.
    </para>
-  </sect1>
+  </sect2>
 
 
-  <sect1 id="containers.associative.bitset" xreflabel="bitset">
+  <sect2 id="containers.associative.bitset" xreflabel="bitset">
     <?dbhtml filename="bitset.html"?>
     <title>bitset</title>
-    <sect2 id="associative.bitset.size_variable" xreflabel="Variable">
+    <sect3 id="associative.bitset.size_variable" xreflabel="Variable">
       <title>Size Variable</title>
       <para>
 	No, you cannot write code of the form
@@ -233,9 +233,9 @@
 
       void foo (size_t n)
       {
-          std::bitset&lt;n&gt;   bits;
-          ....
-      } 
+	  std::bitset&lt;n&gt;   bits;
+	  ....
+      }
    </programlisting>
    <para>
      because <code>n</code> must be known at compile time.  Your
@@ -245,12 +245,12 @@
    <para>
      There are a couple of ways to handle this kind of thing.  Please
      consider all of them before passing judgement.  They include, in
-     no particular order:
+     no chaptericular order:
    </para>
       <itemizedlist>
-        <listitem><para>A very large N in <code>bitset&lt;N&gt;</code>.</para></listitem>
-        <listitem><para>A container&lt;bool&gt;.</para></listitem>
-        <listitem><para>Extremely weird solutions.</para></listitem>
+	<listitem><para>A very large N in <code>bitset&lt;N&gt;</code>.</para></listitem>
+	<listitem><para>A container&lt;bool&gt;.</para></listitem>
+	<listitem><para>Extremely weird solutions.</para></listitem>
       </itemizedlist>
    <para>
      <emphasis>A very large N in
@@ -329,8 +329,8 @@
      <link linkend="manual.ext.containers.sgi">some extensions</link>.
    </para>
 
-    </sect2>
-    <sect2 id="associative.bitset.type_string" xreflabel="Type String">
+    </sect3>
+    <sect3 id="associative.bitset.type_string" xreflabel="Type String">
       <title>Type String</title>
       <para>
       </para>
@@ -349,7 +349,7 @@
    <programlisting>
       std::bitset&lt;5&gt; b ( std::string(<quote>10110</quote>) );
    </programlisting>
-   
+
    <para>
      instead of
    </para>
@@ -357,17 +357,17 @@
     <programlisting>
       std::bitset&lt;5&gt; b ( <quote>10110</quote> );    // invalid
     </programlisting>
-    </sect2>  
-  </sect1>
+    </sect3>
+  </sect2>
 
-</chapter>
+</sect1>
 
-<!-- Chapter 03 : Interacting with C -->
-<chapter id="manual.containers.c" xreflabel="Interacting with C">
+<!-- Sect1 03 : Interacting with C -->
+<sect1 id="std.containers.c" xreflabel="Interacting with C">
 <?dbhtml filename="containers_and_c.html"?>
   <title>Interacting with C</title>
 
-  <sect1 id="containers.c.vs_array" xreflabel="Containers vs. Arrays">
+  <sect2 id="containers.c.vs_array" xreflabel="Containers vs. Arrays">
     <title>Containers vs. Arrays</title>
    <para>
      You're writing some code and can't decide whether to use builtin
@@ -422,27 +422,27 @@ template&lt;typename T&gt;
   { return v.begin(); }
 
 template&lt;typename T, unsigned int sz&gt;
-  inline T* 
+  inline T*
   beginof(T (&amp;array)[sz]) { return array; }
 
 // endof
 template&lt;typename T&gt;
-  inline typename vector&lt;T&gt;::iterator 
+  inline typename vector&lt;T&gt;::iterator
   endof(vector&lt;T&gt; &amp;v)
   { return v.end(); }
 
 template&lt;typename T, unsigned int sz&gt;
-  inline T* 
+  inline T*
   endof(T (&amp;array)[sz]) { return array + sz; }
 
 // lengthof
 template&lt;typename T&gt;
-  inline typename vector&lt;T&gt;::size_type 
+  inline typename vector&lt;T&gt;::size_type
   lengthof(vector&lt;T&gt; &amp;v)
   { return v.size(); }
 
 template&lt;typename T, unsigned int sz&gt;
-  inline unsigned int 
+  inline unsigned int
   lengthof(T (&amp;)[sz]) { return sz; }
 </programlisting>
 
@@ -459,13 +459,13 @@ template&lt;typename T, unsigned int sz&gt;
      Second, the line
    </para>
    <programlisting>
-    inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } 
+    inline unsigned int lengthof (T (&amp;)[sz]) { return sz; }
    </programlisting>
    <para>
      looks just weird!  Hint:  unused parameters can be left nameless.
    </para>
-  </sect1>
-  
-</chapter>
+  </sect2>
 
-</part>
+</sect1>
+
+</chapter>

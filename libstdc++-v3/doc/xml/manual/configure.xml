@@ -1,6 +1,6 @@
 <sect1 id="manual.intro.setup.configure" xreflabel="Configuring">
 <?dbhtml filename="configure.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -43,71 +43,71 @@
 <variablelist>
  <varlistentry><term><code>--enable-multilib</code>[default]</term>
  <listitem><para>This is part of the generic multilib support for building cross
-        compilers.  As such, targets like &quot;powerpc-elf&quot; will have
-        libstdc++ built many different ways:  &quot;-msoft-float&quot;
-        and not, etc.  A different libstdc++ will be built for each of
-        the different multilib versions.  This option is on by default.
+	compilers.  As such, targets like &quot;powerpc-elf&quot; will have
+	libstdc++ built many different ways:  &quot;-msoft-float&quot;
+	and not, etc.  A different libstdc++ will be built for each of
+	the different multilib versions.  This option is on by default.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-sjlj-exceptions</code></term>
  <listitem><para>Forces old, set-jump/long-jump exception handling model.  If
-        at all possible, the new, frame unwinding exception handling routines
-        should be used instead, as they significantly reduce both
-        runtime memory usage and executable size. This option can
-        change the library ABI.
+	at all possible, the new, frame unwinding exception handling routines
+	should be used instead, as they significantly reduce both
+	runtime memory usage and executable size. This option can
+	change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-version-specific-runtime-libs</code></term>
  <listitem><para>Specify that run-time libraries should be installed in the
-        compiler-specific subdirectory (i.e.,
-        <code>${libdir}/gcc-lib/${target_alias}/${gcc_version}</code>)
-        instead of <code>${libdir}</code>.  This option is useful if you
-        intend to use several versions of gcc in parallel.  In addition,
-        libstdc++'s include files will be installed in
-        <code>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</code>,
-        unless you also specify
+	compiler-specific subdirectory (i.e.,
+	<code>${libdir}/gcc-lib/${target_alias}/${gcc_version}</code>)
+	instead of <code>${libdir}</code>.  This option is useful if you
+	intend to use several versions of gcc in parallel.  In addition,
+	libstdc++'s include files will be installed in
+	<code>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</code>,
+	unless you also specify
        <literal>--with-gxx-include-dir=<filename class="directory">dirname</filename></literal> during configuration.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--with-gxx-include-dir=&lt;include-files dir&gt;</code></term>
  <listitem><para>Adds support for named libstdc++ include directory.  For instance,
-        the following puts all the libstdc++ headers into a directory
-        called &quot;4.4-20090404&quot; instead of the usual
-        &quot;c++/(version)&quot;.
+	the following puts all the libstdc++ headers into a directory
+	called &quot;4.4-20090404&quot; instead of the usual
+	&quot;c++/(version)&quot;.
      </para>
-        <programlisting>
+	<programlisting>
    --with-gxx-include-dir=/foo/H-x86-gcc-3-c-gxx-inc/include/4.4-20090404</programlisting> </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cstdio</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-cstdio=stdio'</code>
-        (described next). 
+	(described next).
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cstdio=OPTION</code></term>
  <listitem><para>Select a target-specific I/O package. At the moment, the only
-        choice is to use 'stdio', a generic &quot;C&quot; abstraction.
-        The default is 'stdio'. This option can change the library ABI.
+	choice is to use 'stdio', a generic &quot;C&quot; abstraction.
+	The default is 'stdio'. This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-clocale</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-clocale=generic'</code>
-        (described next). 
+	(described next).
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-clocale=OPTION</code></term>
  <listitem><para>Select a target-specific underlying locale package.  The
-        choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
-        (IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
-        'gnu' to specify a model based on functionality from the GNU C
-        library (langinfo/iconv/gettext) (from <ulink url="http://sources.redhat.com/glibc/">glibc</ulink>, the GNU C
-        library), or 'generic' to use a generic &quot;C&quot;
-        abstraction which consists of &quot;C&quot; locale info.
+	choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
+	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
+	'gnu' to specify a model based on functionality from the GNU C
+	library (langinfo/iconv/gettext) (from <ulink url="http://sources.redhat.com/glibc/">glibc</ulink>, the GNU C
+	library), or 'generic' to use a generic &quot;C&quot;
+	abstraction which consists of &quot;C&quot; locale info.
      </para>
 
      <para>If not explicitly specified, the configure proccess tries
@@ -121,146 +121,146 @@
 
  <varlistentry><term><code>--enable-libstdcxx-allocator</code></term>
  <listitem><para>This is an abbreviated form of
-        <code>'--enable-libstdcxx-allocator=auto'</code> (described
-        next). 
+	<code>'--enable-libstdcxx-allocator=auto'</code> (described
+	next).
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-allocator=OPTION  </code></term>
  <listitem><para>Select a target-specific underlying std::allocator.  The
-        choices are 'new' to specify a wrapper for new, 'malloc' to
-        specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
+	choices are 'new' to specify a wrapper for new, 'malloc' to
+	specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
 	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	See this page for more information on allocator 
-        <link linkend="allocator.ext">extensions</link>. This option
-        can change the library ABI.
+	See this page for more information on allocator
+	<link linkend="allocator.ext">extensions</link>. This option
+	can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cheaders=OPTION</code></term>
  <listitem><para>This allows the user to define the approach taken for C header
-        compatibility with C++. Options are c, c_std, and c_global.
-        These correspond to the source directory's include/c,
-        include/c_std, and include/c_global, and may also include
-        include/c_compatibility.  The default is 'c_global'.
+	compatibility with C++. Options are c, c_std, and c_global.
+	These correspond to the source directory's include/c,
+	include/c_std, and include/c_global, and may also include
+	include/c_compatibility.  The default is 'c_global'.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-threads</code></term>
  <listitem><para>This is an abbreviated form of <code>'--enable-threads=yes'</code>
-        (described next). 
+	(described next).
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-threads=OPTION</code></term>
  <listitem><para>Select a threading library.  A full description is
-        given in the
-        general <ulink url="http://gcc.gnu.org/install/configure.html">compiler
-        configuration instructions</ulink>. This option can change the
-        library ABI.
+	given in the
+	general <ulink url="http://gcc.gnu.org/install/configure.html">compiler
+	configuration instructions</ulink>. This option can change the
+	library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-debug</code></term>
  <listitem><para>Build separate debug libraries in addition to what is normally built.
-        By default, the debug libraries are compiled with 
-        <code> CXXFLAGS='-g3 -O0 -fno-inline'</code>
-        , are installed in <code>${libdir}/debug</code>, and have the
-        same names and versioning information as the non-debug
-        libraries. This option is off by default.
+	By default, the debug libraries are compiled with
+	<code> CXXFLAGS='-g3 -O0 -fno-inline'</code>
+	, are installed in <code>${libdir}/debug</code>, and have the
+	same names and versioning information as the non-debug
+	libraries. This option is off by default.
      </para>
      <para>Note this make command, executed in
-        the build directory, will do much the same thing, without the
-        configuration difference and without building everything twice: 
-        <code>make CXXFLAGS='-g3 -O0 -fno-inline' all</code>
+	the build directory, will do much the same thing, without the
+	configuration difference and without building everything twice:
+	<code>make CXXFLAGS='-g3 -O0 -fno-inline' all</code>
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-debug-flags=FLAGS</code></term>
 
  <listitem><para>This option is only valid when <code> --enable-debug </code>
-        is also specified, and applies to the debug builds only. With
-        this option, you can pass a specific string of flags to the
-        compiler to use when building the debug versions of libstdc++.
-        FLAGS is a quoted string of options, like
+	is also specified, and applies to the debug builds only. With
+	this option, you can pass a specific string of flags to the
+	compiler to use when building the debug versions of libstdc++.
+	FLAGS is a quoted string of options, like
      </para>
-        <programlisting>
+	<programlisting>
   --enable-libstdcxx-debug-flags='-g3 -O1 -fno-inline'</programlisting>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-cxx-flags=FLAGS</code></term>
  <listitem><para>With this option, you can pass a string of -f (functionality)
-        flags to the compiler to use when building libstdc++. This
-        option can change the library ABI. FLAGS is a quoted string of
-        options, like
+	flags to the compiler to use when building libstdc++. This
+	option can change the library ABI. FLAGS is a quoted string of
+	options, like
      </para>
-        <programlisting>
+	<programlisting>
   --enable-cxx-flags='-fvtable-gc -fomit-frame-pointer -ansi'</programlisting>
      <para>
-        Note that the flags don't necessarily have to all be -f flags,
-        as shown, but usually those are the ones that will make sense
-        for experimentation and configure-time overriding.
+	Note that the flags don't necessarily have to all be -f flags,
+	as shown, but usually those are the ones that will make sense
+	for experimentation and configure-time overriding.
      </para>
      <para>The advantage of --enable-cxx-flags over setting CXXFLAGS in
-        the 'make' environment is that, if files are automatically
-        rebuilt, the same flags will be used when compiling those files
-        as well, so that everything matches.
+	the 'make' environment is that, if files are automatically
+	rebuilt, the same flags will be used when compiling those files
+	as well, so that everything matches.
      </para>
      <para>Fun flags to try might include combinations of
      </para>
-        <programlisting>
+	<programlisting>
   -fstrict-aliasing
   -fno-exceptions
   -ffunction-sections
   -fvtable-gc</programlisting>
      <para>and opposite forms (-fno-) of the same.  Tell us (the libstdc++
-        mailing list) if you discover more!
+	mailing list) if you discover more!
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-c99</code></term>
  <listitem><para>The &quot;long long&quot; type was introduced in C99, along
-        with many other functions for wide characters, and math
-        classification macros, etc.  If enabled, all C99 functions not
-        specified by the C++ standard will be put into <code>namespace
-        __gnu_cxx</code>, and then all these names will
-        be injected into namespace std, so that C99 functions can be
-        used &quot;as if&quot; they were in the C++ standard (as they
-        will eventually be in some future revision of the standard,
-        without a doubt).  By default, C99 support is on, assuming the
-        configure probes find all the necessary functions and bits
-        necessary. This option can change the library ABI.
+	with many other functions for wide characters, and math
+	classification macros, etc.  If enabled, all C99 functions not
+	specified by the C++ standard will be put into <code>namespace
+	__gnu_cxx</code>, and then all these names will
+	be injected into namespace std, so that C99 functions can be
+	used &quot;as if&quot; they were in the C++ standard (as they
+	will eventually be in some future revision of the standard,
+	without a doubt).  By default, C99 support is on, assuming the
+	configure probes find all the necessary functions and bits
+	necessary. This option can change the library ABI.
     </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-wchar_t</code>[default]</term>
  <listitem><para>Template specializations for the &quot;wchar_t&quot; type are
-        required for wide character conversion support.  Disabling
-        wide character specializations may be expedient for initial
-        porting efforts, but builds only a subset of what is required by
-        ISO, and is not recommended.  By default, this option is on.
-        This option can change the library ABI.
+	required for wide character conversion support.  Disabling
+	wide character specializations may be expedient for initial
+	porting efforts, but builds only a subset of what is required by
+	ISO, and is not recommended.  By default, this option is on.
+	This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-long-long  </code></term>
  <listitem><para>The &quot;long long&quot; type was introduced in C99.  It is
-        provided as a GNU extension to C++98 in g++.  This flag builds
-        support for &quot;long long&quot; into the library (specialized
-        templates and the like for iostreams).  This option is on by default:
-        if enabled, users will have to either use the new-style &quot;C&quot;
-        headers by default (i.e., &lt;cmath&gt; not &lt;math.h&gt;)
-        or add appropriate compile-time flags to all compile lines to
-        allow &quot;C&quot; visibility of this feature (on GNU/Linux,
-        the flag is -D_ISOC99_SOURCE, which is added automatically via
-        CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
-        This option can change the library ABI. 
+	provided as a GNU extension to C++98 in g++.  This flag builds
+	support for &quot;long long&quot; into the library (specialized
+	templates and the like for iostreams).  This option is on by default:
+	if enabled, users will have to either use the new-style &quot;C&quot;
+	headers by default (i.e., &lt;cmath&gt; not &lt;math.h&gt;)
+	or add appropriate compile-time flags to all compile lines to
+	allow &quot;C&quot; visibility of this feature (on GNU/Linux,
+	the flag is -D_ISOC99_SOURCE, which is added automatically via
+	CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
+	This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-fully-dynamic-string</code></term>
  <listitem><para>This option enables a special version of basic_string avoiding
-        the optimization that allocates empty objects in static memory.
+	the optimization that allocates empty objects in static memory.
 	Mostly useful together with shared memory allocators, see PR
 	libstdc++/16612 for details.
      </para>
@@ -268,48 +268,48 @@
 
  <varlistentry><term><code>--enable-concept-checks</code></term>
  <listitem><para>This turns on additional compile-time checks for instantiated
-        library templates, in the form of specialized templates,
-        <link linkend="manual.diagnostics.concept_checking">described here</link>.  They
-        can help users discover when they break the rules of the STL, before
-        their programs run.
+	library templates, in the form of specialized templates,
+	<link linkend="std.diagnostics.concept_checking">described here</link>.  They
+	can help users discover when they break the rules of the STL, before
+	their programs run.
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-symvers[=style]</code></term>
 
  <listitem><para>In 3.1 and later, tries to turn on symbol versioning in the
-        shared library (if a shared library has been
-        requested). Values for 'style' that are currently supported
-        are 'gnu', 'gnu-versioned-namespace', 'darwin', and
-        'darwin-export'. Both gnu- options require that a recent
-        version of the GNU linker be in use. Both darwin options are
-        equivalent. With no style given, the configure script will try
-        to guess correct defaults for the host system, probe to see if
-        additional requirements are necessary and present for
-        activation, and if so, will turn symbol versioning on. This
-        option can change the library ABI.
+	shared library (if a shared library has been
+	requested). Values for 'style' that are currently supported
+	are 'gnu', 'gnu-versioned-namespace', 'darwin', and
+	'darwin-export'. Both gnu- options require that a recent
+	version of the GNU linker be in use. Both darwin options are
+	equivalent. With no style given, the configure script will try
+	to guess correct defaults for the host system, probe to see if
+	additional requirements are necessary and present for
+	activation, and if so, will turn symbol versioning on. This
+	option can change the library ABI.
      </para>
 
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-visibility</code></term>
  <listitem><para> In 4.2 and later, enables or disables visibility attributes.
-        If enabled (as by default), and the compiler seems capable of
-        passing the simple sanity checks thrown at it, adjusts items
-        in namespace std, namespace std::tr1, and namespace __gnu_cxx
-        so that -fvisibility options work.
+	If enabled (as by default), and the compiler seems capable of
+	passing the simple sanity checks thrown at it, adjusts items
+	in namespace std, namespace std::tr1, and namespace __gnu_cxx
+	so that -fvisibility options work.
     </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-pch</code></term>
  <listitem><para>In 3.4 and later, tries to turn on the generation of
-        stdc++.h.gch, a pre-compiled file including all the standard
-        C++ includes. If enabled (as by default), and the compiler
-        seems capable of passing the simple sanity checks thrown at
-        it, try to build stdc++.h.gch as part of the make process. 
-        In addition, this generated file is used later on (by appending <code>
-        --include bits/stdc++.h </code> to CXXFLAGS) when running the
-        testsuite.
+	stdc++.h.gch, a pre-compiled file including all the standard
+	C++ includes. If enabled (as by default), and the compiler
+	seems capable of passing the simple sanity checks thrown at
+	it, try to build stdc++.h.gch as part of the make process.
+	In addition, this generated file is used later on (by appending <code>
+	--include bits/stdc++.h </code> to CXXFLAGS) when running the
+	testsuite.
      </para>
  </listitem></varlistentry>
 
@@ -326,23 +326,23 @@
 
  <varlistentry><term><code>--enable-clock-gettime</code></term>
  <listitem><para>This is an abbreviated form of
-        <code>'--enable-clock-gettime=yes'</code>(described next).
+	<code>'--enable-clock-gettime=yes'</code>(described next).
      </para>
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-libstdcxx-time=OPTION</code></term>
  <listitem><para>Enables link-type checks for the availability of the
-        clock_gettime clocks, used in the implementation of [time.clock],
-        and of the nanosleep and sched_yield functions, used in the
-        implementation of [thread.thread.this] of the current C++0x draft.
-        The choice OPTION=yes checks for the availability of the facilities
-        in libc and libposix4.  In case of need the latter is also linked
-        to libstdc++ as part of the build process.  OPTION=rt also searches
-        (and, in case, links) librt.   Note that the latter is not always
-        desirable because, in glibc, for example, in turn it triggers the
-        linking of libpthread too, which activates locking, a large overhead
-        for single-thread programs.  OPTION=no skips the tests completely.
-        The default is OPTION=no.
+	clock_gettime clocks, used in the implementation of [time.clock],
+	and of the nanosleep and sched_yield functions, used in the
+	implementation of [thread.thread.this] of the current C++0x draft.
+	The choice OPTION=yes checks for the availability of the facilities
+	in libc and libposix4.  In case of need the latter is also linked
+	to libstdc++ as part of the build process.  OPTION=rt also searches
+	(and, in case, links) librt.   Note that the latter is not always
+	desirable because, in glibc, for example, in turn it triggers the
+	linking of libpthread too, which activates locking, a large overhead
+	for single-thread programs.  OPTION=no skips the tests completely.
+	The default is OPTION=no.
     </para>
  </listitem></varlistentry>
 

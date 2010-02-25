@@ -1,6 +1,6 @@
 <sect2 id="status.iso.tr1" xreflabel="Status C++ TR1">
 <?dbhtml filename="status_iso_cxxtr1.html"?>
- 
+
 <sect2info>
   <keywordset>
     <keyword>
@@ -32,13 +32,13 @@ release.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
-<!-- 
+<!--
    Yes
 
-   No 
-      <?dbhtml bgcolor="#C8B0B0" ?> 
-   Broken/Partial 
-      <?dbhtml bgcolor="#B0B0B0" ?>  
+   No
+      <?dbhtml bgcolor="#C8B0B0" ?>
+   Broken/Partial
+      <?dbhtml bgcolor="#B0B0B0" ?>
 -->
 <table frame='all'>
 <title>C++ TR1 Implementation Status</title>
@@ -135,7 +135,7 @@ release.
 	<para>
 	  Uses code from
 	  <ulink url="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">boost::shared_ptr</ulink>.
-	</para>  
+	</para>
       </entry>
     </row>
     <row>
@@ -1030,322 +1030,322 @@ release.
       <entry namest="c2" nameend="c4" align="left"><emphasis>Regular Expressions</emphasis></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.1</entry>
       <entry>Definitions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.2</entry>
       <entry>Requirements</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.3</entry>
       <entry>Regular expressions summary</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.4</entry>
       <entry>Header <code>&lt;regex&gt;</code> synopsis</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.5</entry>
       <entry>Namespace <code>tr1::regex_constants</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.5.1</entry>
       <entry>Bitmask Type <code>syntax_option_type</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.5.2</entry>
       <entry>Bitmask Type <code>regex_constants::match_flag_type</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.5.3</entry>
       <entry>Implementation defined <code>error_type</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.6</entry>
       <entry>Class <code>regex_error</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.7</entry>
       <entry>Class template <code>regex_traits</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8</entry>
       <entry>Class template <code>basic_regex</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.1</entry>
       <entry><code>basic_regex</code> constants</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.2</entry>
       <entry><code>basic_regex</code> constructors</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.3</entry>
       <entry><code>basic_regex</code> assign</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.4</entry>
       <entry><code>basic_regex</code> constant operations</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.5</entry>
       <entry><code>basic_regex</code> locale</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.6</entry>
       <entry><code>basic_regex</code> swap</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.7</entry>
       <entry><code>basic_regex</code> non-member functions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.8.7.1</entry>
       <entry><code>basic_regex</code> non-member swap</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.9</entry>
       <entry>Class template <code>sub_match</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.9.1</entry>
       <entry><code>sub_match</code> members</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.9.2</entry>
       <entry><code>sub_match</code> non-member operators</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10</entry>
       <entry>Class template <code>match_results</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.1</entry>
       <entry><code>match_results</code> constructors</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.2</entry>
       <entry><code>match_results</code> size</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.3</entry>
       <entry><code>match_results</code> element access</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.4</entry>
       <entry><code>match_results</code> formatting</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.5</entry>
       <entry><code>match_results</code> allocator</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.10.6</entry>
       <entry><code>match_results</code> swap</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.11</entry>
       <entry>Regular expression algorithms</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.11.1</entry>
       <entry>exceptions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.11.2</entry>
       <entry><code>regex_match</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.11.3</entry>
       <entry><code>regex_search</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.11.4</entry>
       <entry><code>regex_replace</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12</entry>
       <entry>Regular expression Iterators</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.1</entry>
       <entry>Class template <code>regex_iterator</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.1.1</entry>
       <entry><code>regex_iterator</code> constructors</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.1.2</entry>
       <entry><code>regex_iterator</code> comparisons</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.1.3</entry>
       <entry><code>regex_iterator</code> dereference</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.1.4</entry>
       <entry><code>regex_iterator</code> increment</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.2</entry>
       <entry>Class template <code>regex_token_iterator</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.2.1</entry>
       <entry><code>regex_token_iterator</code> constructors</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.2.2</entry>
       <entry><code>regex_token_iterator</code> comparisons</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.2.3</entry>
       <entry><code>regex_token_iterator</code> dereference</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.12.2.4</entry>
       <entry><code>regex_token_iterator</code> increment</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>7.13</entry>
       <entry>Modified ECMAScript regular expression grammar</entry>
       <entry>N</entry>
@@ -1416,14 +1416,14 @@ release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.2</entry>
       <entry>Header <code>&lt;ccomplex&gt;</code></entry>
       <entry>N</entry>
       <entry>DR 551</entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.3</entry>
       <entry>Header <code>&lt;complex.h&gt;</code></entry>
       <entry>N</entry>
@@ -1490,21 +1490,21 @@ release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.10</entry>
       <entry>Additions to header <code>&lt;ios&gt;</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.10.1</entry>
       <entry>Synopsis</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.10.2</entry>
       <entry>Function <code>hexfloat</code></entry>
       <entry>N</entry>
@@ -1547,7 +1547,7 @@ release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>8.15</entry>
       <entry>Additions to header <code>&lt;locale&gt;</code></entry>
       <entry>N</entry>

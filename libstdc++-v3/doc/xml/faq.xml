@@ -400,7 +400,7 @@
     <para>
       If the only functions from <filename>libstdc++.a</filename>
       which you need are language support functions (those listed in
-      <link linkend="manual.support">clause 18</link> of the
+      <link linkend="std.support">clause 18</link> of the
       standard, e.g., <function>new</function> and
       <function>delete</function>), then try linking against
       <filename>libsupc++.a</filename>, which is a subset of
@@ -896,7 +896,7 @@
     <para>
     More information, including how to optionally enable/disable the
     checks, is available
-    <link linkend="manual.diagnostics.concept_checking">here</link>.
+    <link linkend="std.diagnostics.concept_checking">here</link>.
     </para> 
   </answer>
 </qandaentry>
@@ -962,7 +962,7 @@
   <answer id="a-list_size_on">
     <para>
     See
-    the <link linkend="manual.containers">Containers</link>
+    the <link linkend="std.containers">Containers</link>
     chapter.
     </para> 
   </answer>

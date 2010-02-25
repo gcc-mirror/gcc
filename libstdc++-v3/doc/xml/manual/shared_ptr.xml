@@ -1,7 +1,7 @@
-<sect1 id="manual.util.memory.shared_ptr" xreflabel="shared_ptr">
+<section id="std.util.memory.shared_ptr" xreflabel="shared_ptr">
 <?dbhtml filename="shared_ptr.html"?>
- 
-<sect1info>
+
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,7 +10,7 @@
       shared_ptr
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>shared_ptr</title>
 
@@ -19,7 +19,7 @@ The shared_ptr class template stores a pointer, usually obtained via new,
 and implements shared ownership semantics.
 </para>
 
-<sect2 id="shared_ptr.req">
+<section id="shared_ptr.req">
 <title>Requirements</title>
 
   <para>
@@ -39,11 +39,11 @@ and implements shared ownership semantics.
     apply.
   </para>
 
-  <para> 
+  <para>
   </para>
-</sect2>
+</section>
 
-<sect2 id="shared_ptr.design_issues">
+<section id="shared_ptr.design_issues">
 <title>Design Issues</title>
 
 
@@ -65,12 +65,12 @@ where the correct dynamic type is known. This is an application of the
 technique known as type erasure.
   </para>
 
-</sect2>
+</section>
 
-<sect2 id="shared_ptr.impl">
+<section id="shared_ptr.impl">
 <title>Implementation</title>
 
-  <sect3>
+  <section>
     <title>Class Hierarchy</title>
 
     <para>
@@ -156,9 +156,9 @@ that simplifies the implementation slightly.
 
 </variablelist>
 
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Thread Safety</title>
 
     <para>
@@ -179,7 +179,7 @@ deprecated in C++0x mode.
     </para>
 
 <para>
-The 
+The
 <ulink url="http://boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
 Safety</ulink> section of the Boost shared_ptr documentation says "shared_ptr
 objects offer the same level of thread safety as built-in types."
@@ -232,12 +232,12 @@ makes things much simpler: we have an atomic CAS or we don't, see Lock
 Policy below for details.
 </para>
 
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Selecting Lock Policy</title>
 
-    <para> 
+    <para>
     </para>
 
     <para>
@@ -300,9 +300,9 @@ used when libstdc++ is built without <literal>--enable-threads</literal>.
        is multi-threaded.  If only one thread of execution exists in
        the program then less expensive non-atomic operations are used.
      </para>
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Dual C++0x and TR1 Implementation</title>
 
 <para>
@@ -316,12 +316,12 @@ including <classname>_Sp_counted_base</classname> are shared by both implementat
 <para>
 The TR1 implementation is considered relatively stable, so is unlikely to
 change unless bug fixes require it.  If the code that is common to both
-C++0x and TR1 modes needs to diverge further then it might be necessary to 
+C++0x and TR1 modes needs to diverge further then it might be necessary to
 duplicate additional classes and only make changes to the C++0x versions.
 </para>
-</sect3>
+</section>
 
-<sect3>
+<section>
 <title>Related functions and classes</title>
 
 <variablelist>
@@ -346,7 +346,7 @@ In C++0x mode these constructors and the related tag types are not needed.
     <para>
 The clever overload to detect a base class of type
 <code>enable_shared_from_this</code> comes straight from Boost.
-There is an extra overload for <code>__enable_shared_from_this</code> to 
+There is an extra overload for <code>__enable_shared_from_this</code> to
 work smoothly with <code>__shared_ptr&lt;Tp, Lp&gt;</code> using any lock
 policy.
     </para>
@@ -382,9 +382,9 @@ be private.
 
 </variablelist>
 
-</sect3>
+</section>
 
-</sect2>
+</section>
 
 <!--- XXX
      <listitem>
@@ -414,20 +414,20 @@ the following types, depending on how the shared_ptr is constructed.
      </listitem>
 -->
 
-<sect2 id="shared_ptr.using">
+<section id="shared_ptr.using">
 <title>Use</title>
 
-  <sect3>
+  <section>
     <title>Examples</title>
-    <para> 
+    <para>
       Examples of use can be found in the testsuite, under
       <filename class="directory">testsuite/tr1/2_general_utilities/shared_ptr</filename>.
     </para>
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Unresolved Issues</title>
-    <para> 
+    <para>
       The resolution to C++ Standard Library issue <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674">674</ulink>,
       "shared_ptr interface changes for consistency with N1856" will
       need to be implemented after it is accepted into the working
@@ -481,21 +481,21 @@ the following types, depending on how the shared_ptr is constructed.
       *_pointer_cast functions.  Constructor could be private in TR1
       mode, with the cast functions as friends.
     </para>
-  </sect3>
+  </section>
 
-</sect2>
+</section>
 
-<sect2 id="shared_ptr.ack">
+<section id="shared_ptr.ack">
 <title>Acknowledgments</title>
 
-  <para> 
+  <para>
     The original authors of the Boost shared_ptr, which is really nice
     code to work with, Peter Dimov in particular for his help and
     invaluable advice on thread safety.  Phillip Jordan and Paolo
     Carlini for the lock policy implementation.
   </para>
 
-</sect2>
+</section>
 
 <bibliography id="shared_ptr.biblio">
 <title>Bibliography</title>
@@ -511,7 +511,7 @@ the following types, depending on how the shared_ptr is constructed.
     <subtitle>
       N2351
     </subtitle>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <biblioid class="uri">
@@ -524,7 +524,7 @@ the following types, depending on how the shared_ptr is constructed.
     <subtitle>
       N2456
     </subtitle>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <biblioid class="uri">
@@ -537,7 +537,7 @@ the following types, depending on how the shared_ptr is constructed.
     <subtitle>
       N2461
     </subtitle>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <biblioid class="uri">
@@ -550,8 +550,8 @@ the following types, depending on how the shared_ptr is constructed.
     <subtitle>
       N2461
     </subtitle>
-  </biblioentry> 
+  </biblioentry>
 
 </bibliography>
 
-</sect1>
+</section>

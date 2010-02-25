@@ -1,7 +1,7 @@
-<sect1 id="manual.localization.facet.ctype" xreflabel="ctype">
+<section id="std.localization.facet.ctype" xreflabel="ctype">
 <?dbhtml filename="ctype.html"?>
 
-<sect1info>
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,14 +10,14 @@
       ctype
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>ctype</title>
 
-<sect2 id="facet.ctype.impl">
+<section id="facet.ctype.impl">
 <title>Implementation</title>
 
-  <sect3>
+  <section>
     <title>Specializations</title>
 
 <para>
@@ -57,10 +57,10 @@ Neither of these two required specializations deals with Unicode
 characters.
 </para>
 
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="facet.ctype.future">
+<section id="facet.ctype.future">
 <title>Future</title>
 
 
@@ -114,7 +114,7 @@ characters.
 </itemizedlist>
 
 
-</sect2>
+</section>
 
 
 <bibliography id="facet.ctype.biblio">
@@ -236,4 +236,4 @@ characters.
 
 </bibliography>
 
-</sect1>
+</section>

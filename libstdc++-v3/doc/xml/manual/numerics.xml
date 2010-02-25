@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.numerics" xreflabel="Numerics">
+<chapter id="std.numerics" xreflabel="Numerics">
 <?dbhtml filename="numerics.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,20 +15,20 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Numerics
   <indexterm><primary>Numerics</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Complex -->
-<chapter id="manual.numerics.complex" xreflabel="complex">
+<!-- Sect1 01 : Complex -->
+<sect1 id="std.numerics.complex" xreflabel="complex">
 <?dbhtml filename="complex.html"?>
   <title>Complex</title>
   <para>
   </para>
-  <sect1 id="numerics.complex.processing" xreflabel="complex Processing">
+  <sect2 id="numerics.complex.processing" xreflabel="complex Processing">
     <title>complex Processing</title>
     <para>
     </para>
@@ -49,11 +49,11 @@
       <code>(u)</code>, and <code>(u,v)</code>.
    </para>
 
-  </sect1>
-</chapter>
+  </sect2>
+</sect1>
 
-<!-- Chapter 02 : Generalized Operations -->
-<chapter id="manual.numerics.generalized_ops" xreflabel="Generalized Ops">
+<!-- Sect1 02 : Generalized Operations -->
+<sect1 id="std.numerics.generalized_ops" xreflabel="Generalized Ops">
 <?dbhtml filename="generalized_numeric_operations.html"?>
   <title>Generalized Operations</title>
   <para>
@@ -68,7 +68,7 @@
    <itemizedlist>
       <listitem><para><code>accumulate</code></para></listitem>
       <listitem><para><code>inner_product</code></para></listitem>
-      <listitem><para><code>partial_sum</code></para></listitem>
+      <listitem><para><code>chapterial_sum</code></para></listitem>
       <listitem><para><code>adjacent_difference</code></para></listitem>
    </itemizedlist>
    <para>Here is a simple example of the two forms of <code>accumulate</code>.
@@ -93,14 +93,14 @@
    <para>The other three functions have similar dual-signature forms.
    </para>
 
-</chapter>
+</sect1>
 
-<!-- Chapter 03 : Interacting with C -->
-<chapter id="manual.numerics.c" xreflabel="Interacting with C">
+<!-- Sect1 03 : Interacting with C -->
+<sect1 id="std.numerics.c" xreflabel="Interacting with C">
 <?dbhtml filename="numerics_and_c.html"?>
   <title>Interacting with C</title>
 
-  <sect1 id="numerics.c.array" xreflabel="Numerics vs. Arrays">
+  <sect2 id="numerics.c.array" xreflabel="Numerics vs. Arrays">
     <title>Numerics vs. Arrays</title>
 
    <para>One of the major reasons why FORTRAN can chew through numbers so well
@@ -121,9 +121,9 @@
       libraries before.
    </para>
 
-  </sect1>
+  </sect2>
 
-  <sect1 id="numerics.c.c99" xreflabel="C99">
+  <sect2 id="numerics.c.c99" xreflabel="C99">
     <title>C99</title>
 
    <para>In addition to the other topics on this page, we'll note here some
@@ -143,7 +143,7 @@
       <code>wcstoll</code>.
    </para>
 
-  </sect1>
-</chapter>
+  </sect2>
+</sect1>
 
-</part>
+</chapter>

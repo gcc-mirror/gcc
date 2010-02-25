@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <appendix id="appendix.free" xreflabel="Free">
@@ -64,7 +64,7 @@ Given that writing good English is a rare skill among programmers, we
 can ill afford to lose manuals this way.
 </para>
 
-<para> 
+<para>
   Free documentation, like free software, is a matter of freedom,
 not price.  The problem with these manuals was not that O'Reilly
 Associates charged a price for printed copies--that in itself is fine.
@@ -170,7 +170,7 @@ prefer copylefted manuals to non-copylefted ones.
 [Note: We now maintain a <ulink url="http://www.fsf.org/licensing/doc/other-free-books.html">web page
 that lists free books available from other publishers</ulink>].
 </para>
-    
+
 <para>Copyright © 2004, 2005, 2006, 2007 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA</para>
 
 <para>Verbatim copying and distribution of this entire article are

@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.strings" xreflabel="Strings">
+<chapter id="std.strings" xreflabel="Strings">
 <?dbhtml filename="strings.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,20 +15,20 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Strings
   <indexterm><primary>Strings</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Character Traits -->
+<!-- Sect1 01 : Character Traits -->
 
-<!-- Chapter 02 : String Classes -->
-<chapter id="manual.strings.string" xreflabel="string">
+<!-- Sect1 02 : String Classes -->
+<sect1 id="std.strings.string" xreflabel="string">
   <title>String Classes</title>
 
-  <sect1 id="strings.string.simple" xreflabel="Simple Transformations">
+  <sect2 id="strings.string.simple" xreflabel="Simple Transformations">
     <title>Simple Transformations</title>
     <para>
       Here are Standard, simple, and portable ways to perform common
@@ -71,7 +71,7 @@
      std::string  capital_s;
      capital_s.resize(s.size());
      std::transform (s.begin(), s.end(), capital_s.begin(), ToUpper());
-   } 
+   }
    </programlisting>
    <para>
      <emphasis>Note</emphasis> that these calls all
@@ -91,7 +91,7 @@
       <code>&lt;locale&gt;</code>) so the template-arguments for
       <code>transform&lt;&gt;</code> cannot be deduced, as explained in
       <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
-      message</ulink>.  
+      message</ulink>.
       <!-- section 14.8.2.4 clause 16 in ISO 14882:1998  -->
       At minimum, you can write short wrappers like
    </para>
@@ -115,15 +115,15 @@
    str.erase(0,notwhite);
 
    // trim trailing whitespace
-   notwhite = str.find_last_not_of(" \t\n"); 
+   notwhite = str.find_last_not_of(" \t\n");
    str.erase(notwhite+1); </programlisting>
    <para>Obviously, the calls to <code>find</code> could be inserted directly
       into the calls to <code>erase</code>, in case your compiler does not
       optimize named temporaries out of existence.
    </para>
- 
-  </sect1>
-  <sect1 id="strings.string.case" xreflabel="Case Sensitivity">
+
+  </sect2>
+  <sect2 id="strings.string.case" xreflabel="Case Sensitivity">
     <title>Case Sensitivity</title>
     <para>
     </para>
@@ -174,8 +174,8 @@
       very good information.
    </para>
 
-  </sect1>  
-  <sect1 id="strings.string.character_types" xreflabel="Arbitrary Characters">
+  </sect2>
+  <sect2 id="strings.string.character_types" xreflabel="Arbitrary Characters">
     <title>Arbitrary Character Types</title>
     <para>
     </para>
@@ -193,8 +193,8 @@
    </para>
    <programlisting>
       template &lt;typename CharT,
-                typename Traits = char_traits&lt;CharT&gt;,
-                typename Alloc = allocator&lt;CharT&gt; &gt;
+		typename Traits = char_traits&lt;CharT&gt;,
+		typename Alloc = allocator&lt;CharT&gt; &gt;
       class basic_string { .... };</programlisting>
    <para>Now, <code>allocator&lt;CharT&gt;</code> will probably Do The Right
       Thing by default, unless you need to implement your own allocator
@@ -206,11 +206,11 @@
    </para>
    <programlisting>
       template &lt;typename CharT&gt;
-        struct char_traits
-        {
-            static void foo (type1 x, type2 y);
-            ...
-        };</programlisting>
+	struct char_traits
+	{
+	    static void foo (type1 x, type2 y);
+	    ...
+	};</programlisting>
    <para>and functions such as char_traits&lt;CharT&gt;::foo() are not
       actually defined anywhere for the general case.  The C++ standard
       permits this, because writing such a definition to fit all possible
@@ -245,9 +245,9 @@
       (See how tricky this is?)
    </para>
 
-  </sect1>  
+  </sect2>
 
-  <sect1 id="strings.string.token" xreflabel="Tokenizing">
+  <sect2 id="strings.string.token" xreflabel="Tokenizing">
     <title>Tokenizing</title>
     <para>
     </para>
@@ -275,32 +275,32 @@
 template &lt;typename Container&gt;
 void
 stringtok(Container &amp;container, string const &amp;in,
-          const char * const delimiters = " \t\n")
+	  const char * const delimiters = " \t\n")
 {
     const string::size_type len = in.length();
-          string::size_type i = 0;
+	  string::size_type i = 0;
 
     while (i &lt; len)
     {
-        // Eat leading whitespace
-        i = in.find_first_not_of(delimiters, i);
-        if (i == string::npos)
+	// Eat leading whitespace
+	i = in.find_first_not_of(delimiters, i);
+	if (i == string::npos)
 	  return;   // Nothing left but white space
 
-        // Find the end of the token
-        string::size_type j = in.find_first_of(delimiters, i);
+	// Find the end of the token
+	string::size_type j = in.find_first_of(delimiters, i);
 
-        // Push token
-        if (j == string::npos) 
+	// Push token
+	if (j == string::npos)
 	{
 	  container.push_back(in.substr(i));
 	  return;
-        } 
+	}
 	else
 	  container.push_back(in.substr(i, j-i));
 
-        // Set up for next loop
-        i = j + 1;
+	// Set up for next loop
+	i = j + 1;
     }
 }
 </programlisting>
@@ -317,7 +317,7 @@ stringtok(Container &amp;container, string const &amp;in,
    std::list&lt;string&gt;  ls;
    stringtok (ls, " this  \t is\t\n  a test  ");
    for (std::list&lt;string&gt;const_iterator i = ls.begin();
-        i != ls.end(); ++i)
+	i != ls.end(); ++i)
    {
        std::cerr &lt;&lt; ':' &lt;&lt; (*i) &lt;&lt; ":\n";
    } </programlisting>
@@ -345,8 +345,8 @@ stringtok(Container &amp;container, string const &amp;in,
    </para>
 
 
-  </sect1>  
-  <sect1 id="strings.string.shrink" xreflabel="Shrink to Fit">
+  </sect2>
+  <sect2 id="strings.string.shrink" xreflabel="Shrink to Fit">
     <title>Shrink to Fit</title>
     <para>
     </para>
@@ -366,11 +366,11 @@ stringtok(Container &amp;container, string const &amp;in,
       entry</link>) but the regular copy constructor cannot be used
       because libstdc++'s <code>string</code> is Copy-On-Write.
    </para>
-      
 
-  </sect1>  
 
-  <sect1 id="strings.string.Cstring" xreflabel="CString (MFC)">
+  </sect2>
+
+  <sect2 id="strings.string.Cstring" xreflabel="CString (MFC)">
     <title>CString (MFC)</title>
     <para>
     </para>
@@ -387,16 +387,16 @@ stringtok(Container &amp;container, string const &amp;in,
       message</ulink>, Joe Buck points out a few very important things:
    </para>
       <itemizedlist>
-         <listitem><para>The Standard <code>string</code> supports all the operations
-             that CString does, with three exceptions.
-         </para></listitem>
-         <listitem><para>Two of those exceptions (whitespace trimming and case 
-             conversion) are trivial to implement.  In fact, we do so
-             on this page.
-         </para></listitem>
-         <listitem><para>The third is <code>CString::Format</code>, which allows formatting
-             in the style of <code>sprintf</code>.  This deserves some mention:
-         </para></listitem>
+	 <listitem><para>The Standard <code>string</code> supports all the operations
+	     that CString does, with three exceptions.
+	 </para></listitem>
+	 <listitem><para>Two of those exceptions (whitespace trimming and case
+	     conversion) are trivial to implement.  In fact, we do so
+	     on this page.
+	 </para></listitem>
+	 <listitem><para>The third is <code>CString::Format</code>, which allows formatting
+	     in the style of <code>sprintf</code>.  This deserves some mention:
+	 </para></listitem>
       </itemizedlist>
    <para>
       The old libg++ library had a function called form(), which did much
@@ -418,11 +418,11 @@ stringtok(Container &amp;container, string const &amp;in,
        int             the_number;
 
        incoming_stream &gt;&gt; the_word        // extract "foo"
-                       &gt;&gt; the_number;     // extract N
+		       &gt;&gt; the_number;     // extract N
 
        ostringstream   output_stream;
        output_stream &lt;&lt; "The word was " &lt;&lt; the_word
-                     &lt;&lt; " and 3*N was " &lt;&lt; (3*the_number);
+		     &lt;&lt; " and 3*N was " &lt;&lt; (3*the_number);
 
        return output_stream.str();
    } </programlisting>
@@ -432,22 +432,22 @@ stringtok(Container &amp;container, string const &amp;in,
    <programlisting>
    CString suffers from a common programming error that results in
    poor performance.  Consider the following code:
-   
+
    CString n_copies_of (const CString&amp; foo, unsigned n)
    {
-           CString tmp;
-           for (unsigned i = 0; i &lt; n; i++)
-                   tmp += foo;
-           return tmp;
+	   CString tmp;
+	   for (unsigned i = 0; i &lt; n; i++)
+		   tmp += foo;
+	   return tmp;
    }
-   
+
    This function is O(n^2), not O(n).  The reason is that each +=
    causes a reallocation and copy of the existing string.  Microsoft
    applications are full of this kind of thing (quadratic performance
    on tasks that can be done in linear time) -- on the other hand,
    we should be thankful, as it's created such a big market for high-end
    ix86 hardware. :-)
-   
+
    If you replace CString with string in the above function, the
    performance is O(n).
    </programlisting>
@@ -455,35 +455,35 @@ stringtok(Container &amp;container, string const &amp;in,
       comparing CString and the Standard string class:
    </para>
       <itemizedlist>
-         <listitem><para>CString permits access to its internal representation; coders
-             who exploited that may have problems moving to <code>string</code>.
-         </para></listitem>
-         <listitem><para>Microsoft ships the source to CString (in the files
-             MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
-             bug and rebuild your MFC libraries.
-             <emphasis><emphasis>Note:</emphasis> It looks like the CString shipped
-             with VC++6.0 has fixed this, although it may in fact have been
-             one of the VC++ SPs that did it.</emphasis>
-         </para></listitem>
-         <listitem><para><code>string</code> operations like this have O(n) complexity
-             <emphasis>if the implementors do it correctly</emphasis>.  The libstdc++
-             implementors did it correctly.  Other vendors might not.
-         </para></listitem>
-         <listitem><para>While parts of the SGI STL are used in libstdc++, their
-             string class is not.  The SGI <code>string</code> is essentially
-             <code>vector&lt;char&gt;</code> and does not do any reference
-             counting like libstdc++'s does.  (It is O(n), though.)
-             So if you're thinking about SGI's string or rope classes,
-             you're now looking at four possibilities:  CString, the
-             libstdc++ string, the SGI string, and the SGI rope, and this
-             is all before any allocator or traits customizations!  (More
-             choices than you can shake a stick at -- want fries with that?)
-         </para></listitem>
+	 <listitem><para>CString permits access to its internal representation; coders
+	     who exploited that may have problems moving to <code>string</code>.
+	 </para></listitem>
+	 <listitem><para>Microsoft ships the source to CString (in the files
+	     MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
+	     bug and rebuild your MFC libraries.
+	     <emphasis><emphasis>Note:</emphasis> It looks like the CString shipped
+	     with VC++6.0 has fixed this, although it may in fact have been
+	     one of the VC++ SPs that did it.</emphasis>
+	 </para></listitem>
+	 <listitem><para><code>string</code> operations like this have O(n) complexity
+	     <emphasis>if the implementors do it correctly</emphasis>.  The libstdc++
+	     implementors did it correctly.  Other vendors might not.
+	 </para></listitem>
+	 <listitem><para>While chapters of the SGI STL are used in libstdc++, their
+	     string class is not.  The SGI <code>string</code> is essentially
+	     <code>vector&lt;char&gt;</code> and does not do any reference
+	     counting like libstdc++'s does.  (It is O(n), though.)
+	     So if you're thinking about SGI's string or rope classes,
+	     you're now looking at four possibilities:  CString, the
+	     libstdc++ string, the SGI string, and the SGI rope, and this
+	     is all before any allocator or traits customizations!  (More
+	     choices than you can shake a stick at -- want fries with that?)
+	 </para></listitem>
       </itemizedlist>
 
-  </sect1>  
+  </sect2>
+</sect1>
+
+<!-- Sect1 03 : Interacting with C -->
+
 </chapter>
-
-<!-- Chapter 03 : Interacting with C -->
-
-</part>

@@ -1,6 +1,6 @@
 <sect2 id="status.iso.tr24733" xreflabel="Status C++ TR24733">
 <?dbhtml filename="status_iso_cxxtr24733.html"?>
- 
+
 <sect2info>
   <keywordset>
     <keyword>
@@ -24,12 +24,12 @@ particular release.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
-<!-- 
+<!--
    Yes
 
-   No 
+   No
       <?dbhtml bgcolor="#C8B0B0" ?>
-   Broken/Partial 
+   Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
 <table frame='all'>

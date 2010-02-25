@@ -1,7 +1,7 @@
-<sect1 id="manual.util.memory.auto_ptr" xreflabel="auto_ptr">
+<section id="std.util.memory.auto_ptr" xreflabel="auto_ptr">
 <?dbhtml filename="auto_ptr.html"?>
- 
-<sect1info>
+
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,11 +10,11 @@
       auto_ptr
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>auto_ptr</title>
 
-<sect2 id="auto_ptr.limitations">
+<section id="auto_ptr.limitations">
 <title>Limitations</title>
 
    <para>Explaining all of the fun and delicious things that can
@@ -48,11 +48,11 @@
 
     void func (int data)
     {
-        APMC  ap (new MyClass(data));
+	APMC  ap (new MyClass(data));
 
-        some_throwable_function();   // this will throw an exception
+	some_throwable_function();   // this will throw an exception
 
-        function_taking_MyClass_pointer (ap.get());
+	function_taking_MyClass_pointer (ap.get());
     }
    </programlisting>
    <para>When an exception gets thrown, the instance of MyClass that's
@@ -62,15 +62,15 @@
    <para>Changing that code as follows is not <acronym>AP</acronym>-friendly:
    </para>
    <programlisting>
-        APMC  ap (new MyClass[22]);
+	APMC  ap (new MyClass[22]);
    </programlisting>
    <para>You will get the same problems as you would without the use
       of <acronym>AP</acronym>:
    </para>
    <programlisting>
-        char*  array = new char[10];       // array new...
-        ...
-        delete array;                      // ...but single-object delete
+	char*  array = new char[10];       // array new...
+	...
+	delete array;                      // ...but single-object delete
    </programlisting>
    <para>
      AP cannot tell whether the pointer you've passed at creation points
@@ -79,21 +79,21 @@
       own <code>auto_array_ptr</code> for that situation (in fact, this has
       been done many times; check the mailing lists, Usenet, Boost, etc).
    </para>
-</sect2>
- 
-<sect2 id="auto_ptr.using">
+</section>
+
+<section id="auto_ptr.using">
 <title>Use in Containers</title>
 
   <para>
   </para>
-  <para>All of the <link linkend="manual.containers">containers</link>
+  <para>All of the <link linkend="std.containers">containers</link>
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
   </para>
    <programlisting>
     struct My_Type
     {
-        My_Type (My_Type const&amp;);
+	My_Type (My_Type const&amp;);
     };
    </programlisting>
    <para>
@@ -119,15 +119,15 @@
    <programlisting>
     #include &lt;vector&gt;
     #include &lt;memory&gt;
-    
+
     void f()
     {
-        std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
+	std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
    </programlisting>
    <para>
 Should you try this with the checks enabled, you will see an error.
    </para>
-</sect2>
+</section>
 
-</sect1>
+</section>

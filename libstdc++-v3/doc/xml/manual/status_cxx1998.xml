@@ -1,6 +1,6 @@
 <sect2 id="status.iso.1998" xreflabel="ISO C++ 1998">
 <?dbhtml filename="status_iso_cxx1998.html"?>
- 
+
 <sect2info>
   <keywordset>
     <keyword>
@@ -27,13 +27,13 @@ particular release.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
-<!-- 
+<!--
    Yes
 
-   No 
-      <?dbhtml bgcolor="#C8B0B0" ?> 
-   Broken/Partial 
-      <?dbhtml bgcolor="#B0B0B0" ?>  
+   No
+      <?dbhtml bgcolor="#C8B0B0" ?>
+   Broken/Partial
+      <?dbhtml bgcolor="#B0B0B0" ?>
 -->
 <table frame='all'>
 <title>C++ 1998/2003 Implementation Status</title>
@@ -1047,8 +1047,8 @@ particular release.
        <listitem>
 	 <para>
 	 Behavior, for a well-formed program construct and correct data, that
-         depends on the implementation <emphasis>and that each implementation
-         shall document</emphasis>.
+	 depends on the implementation <emphasis>and that each implementation
+	 shall document</emphasis>.
 	 </para>
        </listitem>
      </varlistentry>
@@ -1074,11 +1074,11 @@ particular release.
       discussed in the various sections on multithreading (see above).
    </para>
    <!-- [17.4.4.8]/3 says any function that doesn't have an exception-spec
-        can throw whatever we want; see also its footnote.  Let's list those
-        in the sections where the function itself occurs.
+	can throw whatever we want; see also its footnote.  Let's list those
+	in the sections where the function itself occurs.
    -->
    <para><emphasis>[18.1]/4</emphasis> The type of <code>NULL</code> is described
-      <link linkend="manual.support.types.null">here</link>.
+      <link linkend="std.support.types.null">here</link>.
    </para>
    <para><emphasis>[18.3]/8</emphasis> Even though it's listed in the library
       sections, libstdc++ has zero control over what the cleanup code hands
@@ -1125,12 +1125,12 @@ particular release.
    </para>
    <para><emphasis>[21.1.3.1]/5</emphasis> I don't really know about
       the mbstate_t stuff... see
-      the <link linkend="manual.localization.facet.codecvt">chapter 22
+      the <link linkend="std.localization.facet.codecvt">chapter 22
       notes</link> for what does exist.
    </para>
    <para><emphasis>[22.*]</emphasis> Anything and everything we have on locale
       implementation will be described
-      <link linkend="manual.localization.locales.locale">over here</link>.
+      <link linkend="std.localization.locales.locale">over here</link>.
    </para>
    <para><emphasis>[26.2.8]/9</emphasis> I have no idea what
       <code>complex&lt;T&gt;</code>'s pow(0,0) returns.
@@ -1152,7 +1152,7 @@ particular release.
    <para><emphasis>[27.7.1.3]/16</emphasis>,
       <emphasis>[27.8.1.4]/10</emphasis>
       The effects of <code>pubsetbuf/setbuf</code> are described
-      <link linkend="manual.io">in this chapter</link>.
+      <link linkend="std.io">in this chapter</link>.
    </para>
    <para><emphasis>[27.8.1.4]/16</emphasis> Calling <code>fstream::sync</code> when
       a get area exists will... whatever <code>fflush()</code> does, I think.

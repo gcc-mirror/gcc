@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.localization" xreflabel="Localization">
+<chapter id="std.localization" xreflabel="Localization">
 <?dbhtml filename="localization.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,45 +15,45 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Localization
   <indexterm><primary>Localization</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Locale -->
-<chapter id="manual.localization.locales" xreflabel="Locales">
+<!-- Section 01 : Locale -->
+<section id="std.localization.locales" xreflabel="Locales">
 <?dbhtml filename="locales.html"?>
   <title>Locales</title>
 
   <!--  Section 01 : locale -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="locale.xml">
   </xi:include>
-</chapter>
+</section>
 
-<!-- Chapter 02 : Facet -->
-<chapter id="manual.localization.facet" xreflabel="Facets">
+<!-- Section 02 : Facet -->
+<section id="std.localization.facet" xreflabel="Facets">
 <?dbhtml filename="facets.html"?>
-  <title>Facets aka Categories</title>
+  <title>Facets</title>
 
   <!--  Section 01 : ctype -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="ctype.xml">
   </xi:include>
 
   <!--  Section 02 : codecvt -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="codecvt.xml">
   </xi:include>
 
   <!--  Section 03 : messages  -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="messages.xml">
   </xi:include>
+</section>
+
+<!-- Section 03 : Interacting with C -->
+
 </chapter>
-
-<!-- Chapter 03 : Interacting with C -->
-
-</part>

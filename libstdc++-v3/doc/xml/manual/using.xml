@@ -1042,7 +1042,7 @@ namespace gtk
 	  <filename class="headerfile">cstdlib</filename>
 	  </para>
 	</listitem>
-	
+
 	<listitem>
 	  <para>
 	  <filename class="headerfile">exception</filename>
@@ -1075,7 +1075,7 @@ namespace gtk
       </itemizedlist>
 
       <para>
-	In addition, throw in 
+	In addition, throw in
       </para>
 
       <itemizedlist>
@@ -1103,12 +1103,12 @@ namespace gtk
 	  </para>
 	</listitem>
       </itemizedlist>
-            
+
       <para> There exists a library that offers runtime support for
 	just these headers, and it is called
 	<filename class="libraryfile">libsupc++.a</filename>. To use it, compile with <command>gcc</command> instead of <command>g++</command>, like so:
       </para>
-      
+
       <para>
 	<command>gcc foo.cc -lsupc++</command>
       </para>
@@ -1501,7 +1501,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       this at application run-time
       see <link linkend="manual.intro.using.macros">here</link>. Also
       useful are details
-      on <link linkend="manual.util.memory.allocator">allocator</link>
+      on <link linkend="std.util.memory.allocator">allocator</link>
       options and capabilities.
    </para>
 

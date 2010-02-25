@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.io" xreflabel="Input and Output">
+<chapter id="std.io" xreflabel="Input and Output">
 <?dbhtml filename="io.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +15,15 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Input and Output
   <indexterm><primary>Input and Output</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Iostream Objects -->
-<chapter id="manual.io.objects" xreflabel="IO Objects">
+<!-- Sect1 01 : Iostream Objects -->
+<sect1 id="std.io.objects" xreflabel="IO Objects">
 <?dbhtml filename="iostream_objects.html"?>
   <title>Iostream Objects</title>
 
@@ -46,8 +46,8 @@
 
     class MyClass
     {
-        ....
-        std::ifstream&amp;   input_file;
+	....
+	std::ifstream&amp;   input_file;
     };
 
     extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
@@ -115,19 +115,19 @@
 
     namespace std
     {
-        extern istream cin;
-        extern ostream cout;
-        ....
+	extern istream cin;
+	extern ostream cout;
+	....
 
-        // this is explained below
-        <emphasis>static ios_base::Init __foo;</emphasis>    // not its real name
+	// this is explained below
+	<emphasis>static ios_base::Init __foo;</emphasis>    // not its real name
     }
    </programlisting>
    <para>Now, the runtime penalty mentioned previously:  the global objects
       must be initialized before any of your own code uses them; this is
       guaranteed by the standard.  Like any other global object, they must
       be initialized once and only once.  This is typically done with a
-      construct like the one above, and the nested class ios_base::Init is 
+      construct like the one above, and the nested class ios_base::Init is
       specified in the standard for just this reason.
    </para>
    <para>How does it work?  Because the header is included before any of your
@@ -157,14 +157,14 @@
       compile times will go down when there's less parsing work to do.
    </para>
 
-</chapter>
+</sect1>
 
-<!-- Chapter 02 : Stream Buffers -->
-<chapter id="manual.io.streambufs" xreflabel="Stream Buffers">
+<!-- Sect1 02 : Stream Buffers -->
+<sect1 id="std.io.streambufs" xreflabel="Stream Buffers">
 <?dbhtml filename="streambufs.html"?>
   <title>Stream Buffers</title>
 
-  <sect1 id="io.streambuf.derived" xreflabel="Derived streambuf Classes">
+  <sect2 id="io.streambuf.derived" xreflabel="Derived streambuf Classes">
     <title>Derived streambuf Classes</title>
     <para>
     </para>
@@ -227,11 +227,11 @@
       Streambufs</ulink>.
    </para>
 
-  </sect1>
+  </sect2>
 
-  <sect1 id="io.streambuf.buffering" xreflabel="Buffering">
+  <sect2 id="io.streambuf.buffering" xreflabel="Buffering">
     <title>Buffering</title>
-   <para>First, are you sure that you understand buffering?  Particularly
+   <para>First, are you sure that you understand buffering?  Chaptericularly
       the fact that C++ may not, in fact, have anything to do with it?
    </para>
    <para>The rules for buffering can be a little odd, but they aren't any
@@ -261,8 +261,8 @@
    </para>
    <programlisting>
    output &lt;&lt; &quot;a line of text\n&quot;
-          &lt;&lt; some_data_variable &lt;&lt; '\n'
-          &lt;&lt; &quot;another line of text\n&quot;; </programlisting>
+	  &lt;&lt; some_data_variable &lt;&lt; '\n'
+	  &lt;&lt; &quot;another line of text\n&quot;; </programlisting>
    <para>I have also joined the output statements into a single statement.
       You could make the code prettier by moving the single newline to
       the start of the quoted text on the last line, for example.
@@ -275,7 +275,7 @@
    output &lt;&lt; ...... &lt;&lt; flush;    // can use std::flush manipulator
    output.flush();               // or call a member fn </programlisting>
    <para>On the other hand, there are times when writing to a file should
-      be like writing to standard error; no buffering should be done 
+      be like writing to standard error; no buffering should be done
       because the data needs to appear quickly (a prime example is a
       log file for security-related information).  The way to do this is
       just to turn off the buffering <emphasis>before any I/O operations at
@@ -296,14 +296,14 @@
    is &gt;&gt; i;   // and this will probably cause a disk read </programlisting>
    <para>Since all aspects of buffering are handled by a streambuf-derived
       member, it is necessary to get at that member with <code>rdbuf()</code>.
-      Then the public version of <code>setbuf</code> can be called.  The 
+      Then the public version of <code>setbuf</code> can be called.  The
       arguments are the same as those for the Standard C I/O Library
       function (a buffer area followed by its size).
    </para>
    <para>A great deal of this is implementation-dependent.  For example,
-      <code>streambuf</code> does not specify any actions for its own 
+      <code>streambuf</code> does not specify any actions for its own
       <code>setbuf()</code>-ish functions; the classes derived from
-      <code>streambuf</code> each define behavior that &quot;makes 
+      <code>streambuf</code> each define behavior that &quot;makes
       sense&quot; for that class:  an argument of (0,0) turns off buffering
       for <code>filebuf</code> but does nothing at all for its siblings
       <code>stringbuf</code> and <code>strstreambuf</code>, and specifying
@@ -320,21 +320,21 @@
       changing those are system-dependent.
    </para>
 
-  </sect1>
-</chapter>
+  </sect2>
+</sect1>
 
-<!-- Chapter 03 : Memory-based Streams -->
-<chapter id="manual.io.memstreams" xreflabel="Memory Streams">
+<!-- Sect1 03 : Memory-based Streams -->
+<sect1 id="std.io.memstreams" xreflabel="Memory Streams">
 <?dbhtml filename="stringstreams.html"?>
   <title>Memory Based Streams</title>
-  <sect1 id="manual.io.memstreams.compat" xreflabel="Compatibility strstream">
+  <sect2 id="std.io.memstreams.compat" xreflabel="Compatibility strstream">
     <title>Compatibility With strstream</title>
     <para>
     </para>
    <para>Stringstreams (defined in the header <code>&lt;sstream&gt;</code>)
       are in this author's opinion one of the coolest things since
       sliced time.  An example of their use is in the Received Wisdom
-      section for Chapter 21 (Strings),
+      section for Sect1 21 (Strings),
       <link linkend="strings.string.Cstring"> describing how to
       format strings</link>.
    </para>
@@ -367,15 +367,15 @@
    </para>
 
 
-  </sect1>
-</chapter>
+  </sect2>
+</sect1>
 
-<!-- Chapter 04 : File-based Streams -->
-<chapter id="manual.io.filestreams" xreflabel="File Streams">
+<!-- Sect1 04 : File-based Streams -->
+<sect1 id="std.io.filestreams" xreflabel="File Streams">
 <?dbhtml filename="fstreams.html"?>
   <title>File Based Streams</title>
 
-  <sect1 id="manual.io.filestreams.copying_a_file" xreflabel="Copying a File">
+  <sect2 id="std.io.filestreams.copying_a_file" xreflabel="Copying a File">
   <title>Copying a File</title>
   <para>
   </para>
@@ -406,7 +406,7 @@
    <para>Seriously, go do it.  Get surprised, then come back.  It's worth it.
    </para>
    <para>The thing to remember is that the <code>basic_[io]stream</code> classes
-      handle formatting, nothing else.  In particular, they break up on
+      handle formatting, nothing else.  In chaptericular, they break up on
       whitespace.  The actual reading, writing, and storing of data is
       handled by the <code>basic_streambuf</code> family.  Fortunately, the
       <code>operator&lt;&lt;</code> is overloaded to take an ostream and
@@ -416,7 +416,7 @@
    <para>Why a <emphasis>pointer</emphasis> to streambuf and not just a streambuf?  Well,
       the [io]streams hold pointers (or references, depending on the
       implementation) to their buffers, not the actual
-      buffers.  This allows polymorphic behavior on the part of the buffers
+      buffers.  This allows polymorphic behavior on the chapter of the buffers
       as well as the streams themselves.  The pointer is easily retrieved
       using the <code>rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
@@ -424,7 +424,7 @@
    <programlisting>
    OUT &lt;&lt; IN.rdbuf();</programlisting>
    <para>So what <emphasis>was</emphasis> happening with OUT&lt;&lt;IN?  Undefined
-      behavior, since that particular &lt;&lt; isn't defined by the Standard.
+      behavior, since that chaptericular &lt;&lt; isn't defined by the Standard.
       I have seen instances where it is implemented, but the character
       extraction process removes all the whitespace, leaving you with no
       blank lines and only &quot;Thequickbrownfox...&quot;.  With
@@ -433,15 +433,15 @@
       file then contains a perfect text representation of a hexadecimal
       address (quite a big surprise).  Others don't compile at all.
    </para>
-   <para>Also note that none of this is specific to o<emphasis>*f*</emphasis>streams. 
-      The operators shown above are all defined in the parent 
+   <para>Also note that none of this is specific to o<emphasis>*f*</emphasis>streams.
+      The operators shown above are all defined in the parent
       basic_ostream class and are therefore available with all possible
       descendants.
    </para>
 
-  </sect1>
+  </sect2>
 
-  <sect1 id="manual.io.filestreams.binary" xreflabel="Binary Input and Output">
+  <sect2 id="std.io.filestreams.binary" xreflabel="Binary Input and Output">
     <title>Binary Input and Output</title>
     <para>
     </para>
@@ -468,12 +468,12 @@
       under Windows won't accidentally get mapped to a '\n' character, etc.
       Binary mode is not supposed to suddenly give you a bitstream, and
       if it is doing so in your program then you've discovered a bug in
-      your vendor's compiler (or some other part of the C++ implementation,
+      your vendor's compiler (or some other chapter of the C++ implementation,
       possibly the runtime system).
    </para>
    <para>Second, using <code>&lt;&lt;</code> to write and <code>&gt;&gt;</code> to
       read isn't going to work with the standard file stream classes, even
-      if you use <code>skipws</code> during reading.  Why not?  Because 
+      if you use <code>skipws</code> during reading.  Why not?  Because
       ifstream and ofstream exist for the purpose of <emphasis>formatting</emphasis>,
       not reading and writing.  Their job is to interpret the data into
       text characters, and that's exactly what you don't want to happen
@@ -492,14 +492,14 @@
    <itemizedlist>
       <listitem>
 	<para><quote>Derive your own fstream-type classes and write your own
-          &lt;&lt;/&gt;&gt; operators to do binary I/O on whatever data
-          types you're using.</quote>
+	  &lt;&lt;/&gt;&gt; operators to do binary I/O on whatever data
+	  types you're using.</quote>
 	</para>
 	<para>
 	  This is a Bad Thing, because while
-          the compiler would probably be just fine with it, other humans
-          are going to be confused.  The overloaded bitshift operators
-          have a well-defined meaning (formatting), and this breaks it.
+	  the compiler would probably be just fine with it, other humans
+	  are going to be confused.  The overloaded bitshift operators
+	  have a well-defined meaning (formatting), and this breaks it.
 	</para>
       </listitem>
       <listitem>
@@ -521,10 +521,10 @@
 	  <quote>Use streambufs, that's what they're there for.</quote>
 	</para>
 	<para>
-          While not trivial for the beginner, this is the best of all
-          solutions.  The streambuf/filebuf layer is the layer that is
-          responsible for actual I/O.  If you want to use the C++
-          library for binary I/O, this is where you start.
+	  While not trivial for the beginner, this is the best of all
+	  solutions.  The streambuf/filebuf layer is the layer that is
+	  responsible for actual I/O.  If you want to use the C++
+	  library for binary I/O, this is where you start.
 	</para>
       </listitem>
    </itemizedlist>
@@ -552,7 +552,7 @@
    </para>
    <para>Another area of problems is opening text files in binary mode.
       Generally, binary mode is intended for binary files, and opening
-      text files in binary mode means that you now have to deal with all of 
+      text files in binary mode means that you now have to deal with all of
       those end-of-line and end-of-file problems that we mentioned before.
    </para>
    <para>
@@ -569,17 +569,17 @@
       invocation of a program to another invocation of the same program
       on a different platform, etc.
    </para>
- </sect1>
+ </sect2>
 
-</chapter>
+</sect1>
 
-<!-- Chapter 03 : Interacting with C -->
-<chapter id="manual.io.c" xreflabel="Interacting with C">
+<!-- Sect1 03 : Interacting with C -->
+<sect1 id="std.io.c" xreflabel="Interacting with C">
 <?dbhtml filename="io_and_c.html"?>
   <title>Interacting with C</title>
 
 
-  <sect1 id="manual.io.c.FILE" xreflabel="Using FILE* and file descriptors">
+  <sect2 id="std.io.c.FILE" xreflabel="Using FILE* and file descriptors">
     <title>Using FILE* and file descriptors</title>
     <para>
       See the <link linkend="manual.ext.io">extensions</link> for using
@@ -587,9 +587,9 @@
       <classname>ofstream</classname> and
       <classname>ifstream</classname>.
     </para>
-  </sect1>
+  </sect2>
 
-  <sect1 id="manual.io.c.sync" xreflabel="Performance Issues">
+  <sect2 id="std.io.c.sync" xreflabel="Performance Issues">
     <title>Performance</title>
     <para>
       Pathetic Performance? Ditch C.
@@ -641,13 +641,13 @@
    <para>Note, by the way, that the synchronization requirement only applies to
       the standard streams (<code>cin</code>, <code>cout</code>,
       <code>cerr</code>,
-      <code>clog</code>, and their wide-character counterparts).  File stream
+      <code>clog</code>, and their wide-character counterchapters).  File stream
       objects that you declare yourself have no such requirement and are fully
       buffered.
    </para>
 
 
-  </sect1>  
-</chapter>
+  </sect2>
+</sect1>
 
-</part>
+</chapter>

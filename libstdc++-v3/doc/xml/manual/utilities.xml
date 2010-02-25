@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.util" xreflabel="Utilities">
+<chapter id="std.util" xreflabel="Utilities">
 <?dbhtml filename="utilities.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,28 +15,28 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Utilities
   <indexterm><primary>Utilities</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Functors -->
-<chapter id="manual.util.functors" xreflabel="Functors">
+<!-- Section 01 : Functors -->
+<section id="std.util.functors" xreflabel="Functors">
 <?dbhtml filename="functors.html"?>
   <title>Functors</title>
    <para>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
       the wheel, we will refer you to the introduction to the functor
-      concept written by SGI as part of their STL, in
+      concept written by SGI as chapter of their STL, in
       <ulink url="http://www.sgi.com/tech/stl/functors.html">their
       http://www.sgi.com/tech/stl/functors.html</ulink>.
    </para>
-</chapter>
+</section>
 
-<!-- Chapter 02 : Pairs -->
-<chapter id="manual.util.pairs" xreflabel="Pairs">
+<!-- Section 02 : Pairs -->
+<section id="std.util.pairs" xreflabel="Pairs">
 <?dbhtml filename="pairs.html"?>
   <title>Pairs</title>
    <para>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
@@ -76,7 +76,7 @@
    </para>
    <programlisting>
     x.first  &lt;  y.first  ||
-        ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
+	( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
    </programlisting>
    <para>The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
@@ -89,10 +89,10 @@
     pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
    </programlisting>
 
-</chapter>
+</section>
 
-<!-- Chapter 03 : Memory -->
-<chapter id="manual.util.memory" xreflabel="Memory">
+<!-- Section 03 : Memory -->
+<section id="std.util.memory" xreflabel="Memory">
 <?dbhtml filename="memory.html"?>
   <title>Memory</title>
   <para>
@@ -104,28 +104,28 @@
   </para>
 
   <!--  Section 01 : allocator -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="allocator.xml">
   </xi:include>
 
   <!--  Section 02 : auto_ptr -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="auto_ptr.xml">
   </xi:include>
 
   <!--  Section 03 : shared_ptr -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="shared_ptr.xml">
   </xi:include>
 
-</chapter>
+</section>
 
-<!-- Chapter 04 : Traits -->
-<chapter id="manual.util.traits" xreflabel="Traits">
+<!-- Section 04 : Traits -->
+<section id="std.util.traits" xreflabel="Traits">
 <?dbhtml filename="traits.html"?>
   <title>Traits</title>
   <para>
   </para>
-</chapter>
+</section>
 
-</part>
+</chapter>

@@ -1,6 +1,6 @@
 <sect1 id="manual.intro.using.debug" xreflabel="Debugging Support">
 <?dbhtml filename="debug.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -22,11 +22,11 @@
 
 <sect2 id="debug.compiler">
 <title>Using <command>g++</command></title>
-  <para> 
+  <para>
     Compiler flags determine how debug information is transmitted
     between compilation and debug or analysis tools.
   </para>
-  
+
   <para>
     The default optimizations and debug flags for a libstdc++ build
     are <code>-g -O2</code>. However, both debug and optimization
@@ -84,7 +84,7 @@
 </para>
 
 <para>
-  A second approach is to use the configuration flags 
+  A second approach is to use the configuration flags
 </para>
 <programlisting>
      make CXXFLAGS='-g3 -fno-inline -O0' all
@@ -95,7 +95,7 @@
   debugging tasks, when you cannot or don't want to recompile your
   application to use the <link linkend="manual.ext.debug_mode">debug mode</link>.</para>
 </sect2>
- 
+
 <sect2 id="debug.memory">
 <title>Memory Leak Hunting</title>
 
@@ -174,8 +174,8 @@
    int main()
    {
       extern void* __dso_handle __attribute__ ((__weak__));
-      __cxa_atexit((void (*) (void *)) __libc_freeres, NULL, 
-                   &amp;__dso_handle ? __dso_handle : NULL);
+      __cxa_atexit((void (*) (void *)) __libc_freeres, NULL,
+		   &amp;__dso_handle ? __dso_handle : NULL);
       do_test();
       return 0;
    }
@@ -185,7 +185,7 @@
   Suggested valgrind flags, given the suggestions above about setting
   up the runtime environment, library, and test file, might be:
 </para>
-<programlisting> 
+<programlisting>
    valgrind -v --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes a.out
 </programlisting>
 
@@ -193,7 +193,7 @@
 
 <sect2 id="debug.gdb">
 <title>Using <command>gdb</command></title>
-  <para> 
+  <para>
   </para>
 
 <para>
@@ -228,7 +228,7 @@
 </para>
 
 <programlisting>
-  svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python 
+  svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python
 </programlisting>
 
 <para>
@@ -295,8 +295,8 @@
 
 <sect2 id="debug.profile_mode" xreflabel="debug.profile_mode">
 <title>Profile-based Performance Analysis</title>
-  <para> The <link linkend="manual.ext.profile_mode">Profile-based 
-  Performance Analysis</link> Extension has performance checks for many 
+  <para> The <link linkend="manual.ext.profile_mode">Profile-based
+  Performance Analysis</link> Extension has performance checks for many
   algorithms.
   </para>
 </sect2>

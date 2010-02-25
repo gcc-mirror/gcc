@@ -1,11 +1,11 @@
 <?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <chapter id="manual.ext.parallel_mode" xreflabel="Parallel Mode">
 <?dbhtml filename="parallel_mode.html"?>
- 
+
 <chapterinfo>
   <keywordset>
     <keyword>
@@ -115,7 +115,7 @@ It might work with other compilers, though.</para>
   flag <literal>-fopenmp</literal>. This will link
   in <code>libgomp</code>, the GNU
   OpenMP <ulink url="http://gcc.gnu.org/onlinedocs/libgomp">implementation</ulink>,
-  whose presence is mandatory. 
+  whose presence is mandatory.
 </para>
 
 <para>
@@ -635,7 +635,7 @@ For the following algorithms in general, we have
 <code>__gnu_parallel::parallel_tag</code> and
 <code>__gnu_parallel::default_parallel_tag</code>, in addition to
 <code>__gnu_parallel::sequential_tag</code>.
-<code>__gnu_parallel::default_parallel_tag</code> chooses the default 
+<code>__gnu_parallel::default_parallel_tag</code> chooses the default
 algorithm at compiletime, as does omitting the tag.
 <code>__gnu_parallel::parallel_tag</code> postpones the decision to runtime
 (see next section).
@@ -654,7 +654,7 @@ Exact and sampling are the two available splitting strategies.
 For the <code>sort</code> and <code>stable_sort</code> algorithms, there are
 several additional choices, namely
 <code>__gnu_parallel::multiway_mergesort_tag</code>,
-<code>__gnu_parallel::multiway_mergesort_exact_tag</code>, 
+<code>__gnu_parallel::multiway_mergesort_exact_tag</code>,
 <code>__gnu_parallel::multiway_mergesort_sampling_tag</code>,
 <code>__gnu_parallel::quicksort_tag</code>, and
 <code>__gnu_parallel::balanced_quicksort_tag</code>.
@@ -767,7 +767,7 @@ explicitly sequential:
 </para>
 
 <para> Two namespaces contain the parallel mode:
-<code>std::__parallel</code> and <code>__gnu_parallel</code>. 
+<code>std::__parallel</code> and <code>__gnu_parallel</code>.
 </para>
 
 <para> Parallel implementations of standard components, including
@@ -794,12 +794,12 @@ the generated source documentation.
 <sect1 id="manual.ext.parallel_mode.test" xreflabel="Testing">
   <title>Testing</title>
 
-  <para> 
+  <para>
     Both the normal conformance and regression tests and the
     supplemental performance tests work.
   </para>
 
-  <para> 
+  <para>
     To run the conformance and regression tests with the parallel mode
     active,
   </para>
@@ -807,13 +807,13 @@ the generated source documentation.
   <screen>
   <userinput>make check-parallel</userinput>
   </screen>
-  
+
   <para>
     The log and summary files for conformance testing are in the
     <filename class="directory">testsuite/parallel</filename> directory.
   </para>
 
-  <para> 
+  <para>
     To run the performance tests with the parallel mode active,
   </para>
 
@@ -859,7 +859,7 @@ the generated source documentation.
 	Workshop on Highly Parallel Processing on a Chip (HPPC) 2007. (LNCS)
       </publishername>
     </publisher>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
@@ -889,7 +889,7 @@ the generated source documentation.
 	 Euro-Par 2007: Parallel Processing. (LNCS 4641)
       </publishername>
     </publisher>
-  </biblioentry> 
+  </biblioentry>
 
 </bibliography>
 

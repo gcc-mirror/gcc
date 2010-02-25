@@ -1,11 +1,11 @@
 <?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <chapter id="manual.ext.debug_mode" xreflabel="Debug Mode">
 <?dbhtml filename="debug_mode.html"?>
- 
+
 <chapterinfo>
   <keywordset>
     <keyword>
@@ -36,7 +36,7 @@
     library facilities, and will report errors in the use of libstdc++
     as soon as they can be detected by emitting a description of the
     problem to standard error and aborting the program.  This debug
-    mode is available with GCC 3.4.0 and later versions. 
+    mode is available with GCC 3.4.0 and later versions.
   </para>
 
   <para>
@@ -51,7 +51,7 @@
     incrementing a past-the-end iterator or dereferencing an iterator
     that points to a container that has been destructed are diagnosed
     immediately.</para></listitem>
-    
+
     <listitem><para><emphasis>Algorithm preconditions</emphasis>: Algorithms attempt to
     validate their input parameters to detect errors as early as
     possible. For instance, the <code>set_intersection</code>
@@ -81,7 +81,7 @@
   instance, erasing an element in a <code>std::list</code> is a
   constant-time operation in normal library, but in debug mode it is
   linear in the number of iterators that reference that particular
-  list. So while your (correct) program won't change its results, it 
+  list. So while your (correct) program won't change its results, it
   is likely to execute more slowly.</para>
 
 <para>libstdc++ includes many extensions to the C++ standard library. In
@@ -375,7 +375,7 @@ containers have additional debug capability.
     own usability and implementation characteristics. In general, the
     higher-numbered conformance levels are more usable (i.e., require
     less recompilation) but are more complicated to implement than
-    the lower-numbered conformance levels. 
+    the lower-numbered conformance levels.
       <orderedlist>
 	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile his or
 	her entire application and all C++ libraries it depends on,
@@ -486,7 +486,7 @@ containers have additional debug capability.
   <listitem><para><code>Iterator</code>: The underlying iterator type, which must
     be either the <code>iterator</code> or <code>const_iterator</code>
     typedef from the sequence type this iterator can reference.</para></listitem>
-  
+
   <listitem><para><code>Sequence</code>: The type of sequence that this iterator
   references. This sequence must be a safe sequence (discussed below)
   whose <code>iterator</code> or <code>const_iterator</code> typedef
@@ -511,7 +511,7 @@ containers have additional debug capability.
   instantiated with the type of the safe container itself (an instance
   of the curiously recurring template pattern).</para>
 
-<para>The iterators of a container wrapper will be 
+<para>The iterators of a container wrapper will be
   <link linkend="debug_mode.design.methods.safe_iter">safe
   iterators</link> that reference sequences of this type and wrap the
   iterators provided by the release-mode base class. The debugging
@@ -627,7 +627,7 @@ namespace std
      };
 } // namespace std
 </programlisting>
-  
+
 <para>In debug mode we include the release-mode container (which is now
 defined in the namespace <code>__norm</code>) and also the
 debug-mode container. The debug-mode container is defined within the
@@ -646,7 +646,7 @@ namespace std
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
       {
-        // ...
+	// ...
       };
   } // namespace __gnu_norm
 
@@ -655,9 +655,9 @@ namespace std
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
       : public __norm::list&lt;_Tp, _Alloc&gt;,
-        public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
+	public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
       {
-        // ...
+	// ...
       };
   } // namespace __norm
 
@@ -694,12 +694,12 @@ runtime errors. A simplified example of this problem is as follows.
 #include &lt;string&gt;
 
 std::string test02();
- 
+
 std::string test01()
 {
   return test02();
 }
- 
+
 int main()
 {
   test01();
@@ -711,7 +711,7 @@ int main()
 
 <programlisting>
 #include &lt;string&gt;
- 
+
 std::string
 test02()
 {
@@ -831,7 +831,7 @@ test02()
     include ordering. Two, ODR issues remained with container member
     functions taking no arguments in mixed-mode settings resulting in
     equivalent link names, <code> vector::push_back() </code> being
-    one example. 
+    one example.
     See <ulink url="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
     name</ulink> </para></listitem>
 </itemizedlist>
@@ -850,7 +850,7 @@ test02()
   mode implementations.</para>
  </sect4>
   </sect3>
-  </sect2>  
+  </sect2>
 
   <sect2 id="debug_mode.design.other" xreflabel="Other">
     <title>Other Implementations</title>
@@ -885,7 +885,7 @@ test02()
   guarantee.</para></listitem>
 </itemizedlist>
 
-  </sect2>  
+  </sect2>
 </sect1>
 
 </chapter>

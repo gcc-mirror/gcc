@@ -1,6 +1,6 @@
 <sect1 id="manual.intro.setup.prereq" xreflabel="Prerequisites">
 <?dbhtml filename="prerequisites.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -18,7 +18,7 @@
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
    <ulink url="http://gcc.gnu.org/install/">the GCC install page</ulink>.
-   In particular, list of prerequisite software needed to build the library 
+   In particular, list of prerequisite software needed to build the library
    <ulink url="http://gcc.gnu.org/install/prerequisites.html">
    starts with those requirements.</ulink> The same pages also list
    the tools you will need if you wish to modify the source.
@@ -41,13 +41,13 @@
    </para>
 
    <para>
-   Finally, a few system-specific requirements: 
+   Finally, a few system-specific requirements:
    </para>
 
    <variablelist>
       <varlistentry>
 	<term>linux</term>
-	
+
 	<listitem>
 	<para>
 	  If gcc 3.1.0 or later on is being used on linux, an attempt
@@ -109,50 +109,50 @@ zh_TW               BIG5
       </para>
 
       <itemizedlist>
-        <listitem> 
+	<listitem>
 	  <para>install all locales</para>
 	  <itemizedlist>
 	    <listitem>
 	      <para>with RedHat Linux:
 	      </para>
-	      <para> <code> export LC_ALL=C </code> 
+	      <para> <code> export LC_ALL=C </code>
 	      </para>
-	      <para> <code> rpm -e glibc-common --nodeps </code> 
+	      <para> <code> rpm -e glibc-common --nodeps </code>
 	      </para>
-	      <para> 
+	      <para>
 		<code> rpm -i --define "_install_langs all"
-		 glibc-common-2.2.5-34.i386.rpm 
-		</code> 
+		 glibc-common-2.2.5-34.i386.rpm
+		</code>
 	      </para>
 	    </listitem>
-             <listitem> 
+	     <listitem>
 	     <para>
 	       Instructions for other operating systems solicited.
 	     </para>
 	     </listitem>
-          </itemizedlist>
-        </listitem>
-        <listitem> 
+	  </itemizedlist>
+	</listitem>
+	<listitem>
 	  <para>install just the necessary locales</para>
-          <itemizedlist>
-            <listitem>
+	  <itemizedlist>
+	    <listitem>
 	      <para>with Debian Linux:</para>
 	      <para> Add the above list, as shown, to the file
 	      <code>/etc/locale.gen</code> </para>
 	      <para> run <code>/usr/sbin/locale-gen</code> </para>
 	    </listitem>
-            <listitem> 
+	    <listitem>
 	      <para>on most Unix-like operating systems:</para>
 	      <para><code> localedef -i de_DE -f ISO-8859-1 de_DE </code></para>
 	      <para>(repeat for each entry in the above list) </para>
-            </listitem>
-            <listitem> 
+	    </listitem>
+	    <listitem>
 	    <para>
 	       Instructions for other operating systems solicited.
 	    </para>
 	    </listitem>
-          </itemizedlist>
-        </listitem>
+	  </itemizedlist>
+	</listitem>
       </itemizedlist>
       </listitem>
       </varlistentry>

@@ -1,6 +1,6 @@
 <sect1 id="appendix.porting.build_hacking" xreflabel="Build Hacking">
 <?dbhtml filename="build_hacking.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -25,7 +25,7 @@
 
 <sect2 id="build_hacking.prereq">
   <title>Prerequisites</title>
-  <para> 
+  <para>
     As noted <ulink
     url="http://gcc.gnu.org/install/prerequisites.html">previously</ulink>,
     certain other tools are necessary for hacking on files that
@@ -42,7 +42,7 @@
 
 <sect2 id="build_hacking.map">
   <title>Overview: What Comes from Where</title>
-  
+
   <screen>
   <inlinemediaobject>
     <imageobject>

@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.support" xreflabel="Support">
+<chapter id="std.support" xreflabel="Support">
 <?dbhtml filename="support.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +15,13 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Support
   <indexterm><primary>Support</primary></indexterm>
 </title>
 
-<preface>
-  <title></title>
   <para>
     This part deals with the functions called and objects created
     automatically during the course of a program's existence.
@@ -35,12 +33,11 @@
     homepage for help), we can mention a couple of changes in what
     kind of support a C++ program gets from the Standard Library.
   </para>
-</preface>
 
-<chapter id="manual.support.types" xreflabel="Types">
+<sect1 id="std.support.types" xreflabel="Types">
   <?dbhtml filename="fundamental_types.html"?>
   <title>Types</title>
-  <sect1 id="manual.support.types.fundamental" xreflabel="Fundamental Types">
+  <sect2 id="std.support.types.fundamental" xreflabel="Fundamental Types">
     <title>Fundamental Types</title>
     <para>
       C++ has the following builtin types:
@@ -100,9 +97,9 @@
       Specializing parts of the library on these types is prohibited:
       instead, use a POD.
     </para>
-    
-  </sect1>
-  <sect1 id="manual.support.types.numeric_limits" xreflabel="Numeric Properties">
+
+  </sect2>
+  <sect2 id="std.support.types.numeric_limits" xreflabel="Numeric Properties">
     <title>Numeric Properties</title>
 
 
@@ -117,8 +114,8 @@
     </para>
 
    <programlisting>
-   template&lt;typename T&gt; 
-     struct class 
+   template&lt;typename T&gt;
+     struct class
      {
        static const bool is_specialized;
        static T max() throw();
@@ -156,9 +153,9 @@
        static const float_round_style round_style;
      };
    </programlisting>
-  </sect1>  
+  </sect2>
 
-  <sect1 id="manual.support.types.null" xreflabel="NULL">
+  <sect2 id="std.support.types.null" xreflabel="NULL">
     <title>NULL</title>
     <para>
      The only change that might affect people is the type of
@@ -191,15 +188,15 @@
     <constant>NULL</constant> that will match pointers before it
     matches integers.
     </para>
-    <para>See 
+    <para>See
       <ulink url="http://www.awprofessional.com/titles/0-201-31015-5/">the
       Effective C++ CD example</ulink>
     </para>
-  </sect1>  
+  </sect2>
 
-</chapter>
+</sect1>
 
-<chapter id="manual.support.memory" xreflabel="Dynamic Memory">
+<sect1 id="std.support.memory" xreflabel="Dynamic Memory">
   <?dbhtml filename="dynamic_memory.html"?>
   <title>Dynamic Memory</title>
   <para>
@@ -262,8 +259,8 @@
    {
        delete[] safety;
        popup_window ("Dude, you are running low on heap memory.  You
-                      should, like, close some windows, or something.
-                      The next time you run out, we're gonna burn!");
+		      should, like, close some windows, or something.
+		      The next time you run out, we're gonna burn!");
        set_new_handler (old_handler);
        return;
    }
@@ -277,14 +274,14 @@
    </programlisting>
    <para>
      <classname>bad_alloc</classname> is derived from the base <classname>exception</classname>
-     class defined in Chapter 19.
+     class defined in Sect1 19.
    </para>
-</chapter>
+</sect1>
 
-<chapter id="manual.support.termination" xreflabel="Termination">
+<sect1 id="std.support.termination" xreflabel="Termination">
   <?dbhtml filename="termination.html"?>
   <title>Termination</title>
-  <sect1 id="support.termination.handlers" xreflabel="Termination Handlers">
+  <sect2 id="support.termination.handlers" xreflabel="Termination Handlers">
     <title>Termination Handlers</title>
     <para>
       Not many changes here to <filename
@@ -310,32 +307,32 @@
       <listitem>
 	<para>
 	Functions registered with <function>atexit()</function> are called in
-        reverse order of registration, once per registration call.
-        (This isn't actually new.)
+	reverse order of registration, once per registration call.
+	(This isn't actually new.)
 	</para>
       </listitem>
       <listitem>
 	<para>
 	The previous two actions are <quote>interleaved,</quote> that is,
-        given this pseudocode:
+	given this pseudocode:
 	</para>
 <programlisting>
   extern "C or C++" void  f1 (void);
   extern "C or C++" void  f2 (void);
-  
+
   static Thing obj1;
   atexit(f1);
   static Thing obj2;
   atexit(f2);
 </programlisting>
 	<para>
-        then at a call of <function>exit()</function>,
-        <varname>f2</varname> will be called, then
-        <varname>obj2</varname> will be destroyed, then
-        <varname>f1</varname> will be called, and finally
-        <varname>obj1</varname> will be destroyed. If
-        <varname>f1</varname> or <varname>f2</varname> allow an
-        exception to propagate out of them, Bad Things happen.
+	then at a call of <function>exit()</function>,
+	<varname>f2</varname> will be called, then
+	<varname>obj2</varname> will be destroyed, then
+	<varname>f1</varname> will be called, and finally
+	<varname>obj1</varname> will be destroyed. If
+	<varname>f1</varname> or <varname>f2</varname> allow an
+	exception to propagate out of them, Bad Things happen.
 	</para>
       </listitem>
     </orderedlist>
@@ -345,9 +342,9 @@
       those slots.  If you think you may run out, we recommend using
       the <function>xatexit</function>/<function>xexit</function> combination from <literal>libiberty</literal>, which has no such limit.
     </para>
-  </sect1>
+  </sect2>
 
-  <sect1 id="support.termination.verbose" xreflabel="Verbose Terminate Handler">
+  <sect2 id="support.termination.verbose" xreflabel="Verbose Terminate Handler">
   <?dbhtml filename="verbose_termination.html"?>
     <title>Verbose Terminate Handler</title>
     <para>
@@ -358,7 +355,7 @@
 
 <programlisting>
 #include &lt;exception&gt;
-  
+
 int main()
 {
   std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
@@ -390,7 +387,7 @@ int main()
 #include &lt;stdexcept&gt;
 
 struct argument_error : public std::runtime_error
-{  
+{
   argument_error(const std::string&amp; s): std::runtime_error(s) { }
 };
 
@@ -436,7 +433,7 @@ int main(int argc)
      std::set_terminate(std::abort);
    </programlisting>
 
-   <para> 
+   <para>
      After this, all calls to <function>terminate</function> will use
      <function>abort</function> as the terminate handler.
    </para>
@@ -449,7 +446,7 @@ int main(int argc)
      an unspecified manner.
    </para>
 
-  </sect1>
-</chapter>
+  </sect2>
+</sect1>
 
-</part>
+</chapter>

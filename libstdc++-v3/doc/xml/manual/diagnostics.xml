@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.diagnostics" xreflabel="Diagnostics">
+<chapter id="std.diagnostics" xreflabel="Diagnostics">
 <?dbhtml filename="diagnostics.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,18 +15,18 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Diagnostics
   <indexterm><primary>Diagnostics</primary></indexterm>
 </title>
 
-<chapter id="manual.diagnostics.exceptions" xreflabel="Exceptions">
+<sect1 id="std.diagnostics.exceptions" xreflabel="Exceptions">
   <?dbhtml filename="exceptions.html"?>
   <title>Exceptions</title>
 
-  <sect1 id="manual.diagnostics.exceptions.hierarchy" xreflabel="Exception Classes">
+  <sect2 id="std.diagnostics.exceptions.hierarchy" xreflabel="Exception Classes">
     <title>Exception Classes</title>
     <para>
       All exception objects are defined in one of the standard header
@@ -47,8 +47,8 @@
       found in the <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00460.html">source documentation</ulink>.
     </para>
 
-  </sect1>
-  <sect1 id="manual.diagnostics.exceptions.data" xreflabel="Adding Data to Exceptions">
+  </sect2>
+  <sect2 id="std.diagnostics.exceptions.data" xreflabel="Adding Data to Exceptions">
     <title>Adding Data to Exceptions</title>
     <para>
       The standard exception classes carry with them a single string as
@@ -61,7 +61,7 @@
    {
      public:
        My_Exception (const string&amp; whatarg)
-           : std::runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
+	   : std::runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
        int  errno_at_time_of_throw() const { return e; }
        DBID id_of_thing_that_threw() const { return id; }
      protected:
@@ -70,10 +70,10 @@
    };
    </programlisting>
 
-  </sect1>  
-</chapter>
+  </sect2>
+</sect1>
 
-<chapter id="manual.diagnostics.concept_checking" xreflabel="Concept Checking">
+<sect1 id="std.diagnostics.concept_checking" xreflabel="Concept Checking">
   <title>Concept Checking</title>
   <para>
     In 1999, SGI added <quote>concept checkers</quote> to their
@@ -112,7 +112,7 @@
    You can enable them on a per-translation-unit basis with
      <literal>-D_GLIBCXX_CONCEPT_CHECKS</literal>.
  </para>
- 
+
  <para>
    Please note that the upcoming C++ standard has first-class
    support for template parameter constraints based on concepts in the core
@@ -120,6 +120,6 @@
    checking described above.
  </para>
 
-</chapter>
+</sect1>
 
-</part>
+</chapter>
