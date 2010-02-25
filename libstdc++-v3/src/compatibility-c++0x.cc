@@ -57,6 +57,6 @@ namespace std
     hash<error_code>::operator()(error_code __e) const
     {
       const size_t __tmp = std::_Fnv_hash::hash(__e._M_value);
-      return std::__hash_combine(__tmp, __e._M_cat);
+      return std::_Fnv_hash::__hash_combine(__e._M_cat, __tmp);
     }
 }
