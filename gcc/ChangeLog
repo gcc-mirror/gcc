@@ -1,3 +1,22 @@
+2010-02-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/43154
+	* config/rs6000/vector.md (VEC_64): New iterator for V2DF, V2DI.
+	(vec_interleave_high<mode>): Rename from vec_interleave_highv2df
+	and support both V2DF and V2DI modes.
+	(vec_interleave_low<mode>): Rename from vec_interleave_lowv2df and
+	support both V2DF and V2DI modes.
+	(general): Delete trailing whitespace from a few patterns.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	V2DF/V2DI interleave high/low builtins.
+
+	* config/rs6000/rs6000-builtin.def (VSX_BUILTIN_VEC_MERGE*): Add
+	new VSX builtins.
+
+	* config/rs6000/rs6000.c (bdesc_2arg): Add support for V2DF/V2DI
+	interleave high/low functions.
+
 2010-02-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): Fix spelling of
