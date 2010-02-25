@@ -1,5 +1,6 @@
 2010-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/43155
 	* io/transfer.c (require_type): Subtract one from item_count for output
 	of error message.  Add comment before formatted_transfer function
 	explaining why the item_count is off by one.
