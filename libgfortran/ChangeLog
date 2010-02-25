@@ -1,3 +1,9 @@
+2010-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (require_type): Subtract one from item_count for output
+	of error message.  Add comment before formatted_transfer function
+	explaining why the item_count is off by one.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* io/write_float.def (WRITE_FLOAT): Use __builtin_signbit.
