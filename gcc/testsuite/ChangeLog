@@ -1,3 +1,8 @@
+2010-02-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/43154
+	* gcc.target/powerpc/pr43154.c: New file.
+
 2010-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43166

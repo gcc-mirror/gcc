@@ -8950,6 +8950,10 @@ static struct builtin_description bdesc_2arg[] =
   { MASK_VSX, CODE_FOR_vsx_xxmrghw_v4si, "__builtin_vsx_xxmrghw_4si", VSX_BUILTIN_XXMRGHW_4SI },
   { MASK_VSX, CODE_FOR_vsx_xxmrglw_v4sf, "__builtin_vsx_xxmrglw", VSX_BUILTIN_XXMRGLW_4SF },
   { MASK_VSX, CODE_FOR_vsx_xxmrglw_v4si, "__builtin_vsx_xxmrglw_4si", VSX_BUILTIN_XXMRGLW_4SI },
+  { MASK_VSX, CODE_FOR_vec_interleave_lowv2df, "__builtin_vsx_mergel_2df", VSX_BUILTIN_VEC_MERGEL_V2DF },
+  { MASK_VSX, CODE_FOR_vec_interleave_lowv2di, "__builtin_vsx_mergel_2di", VSX_BUILTIN_VEC_MERGEL_V2DI },
+  { MASK_VSX, CODE_FOR_vec_interleave_highv2df, "__builtin_vsx_mergeh_2df", VSX_BUILTIN_VEC_MERGEH_V2DF },
+  { MASK_VSX, CODE_FOR_vec_interleave_highv2di, "__builtin_vsx_mergeh_2di", VSX_BUILTIN_VEC_MERGEH_V2DI },
 
   { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_add", ALTIVEC_BUILTIN_VEC_ADD },
   { MASK_ALTIVEC|MASK_VSX, CODE_FOR_nothing, "__builtin_vec_vaddfp", ALTIVEC_BUILTIN_VEC_VADDFP },

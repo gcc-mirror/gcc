@@ -51,6 +51,9 @@
 ;; Vector init/extract modes
 (define_mode_iterator VEC_E [V16QI V8HI V4SI V2DI V4SF V2DF])
 
+;; Vector modes for 64-bit base types
+(define_mode_iterator VEC_64 [V2DI V2DF])
+
 ;; Vector reload iterator
 (define_mode_iterator VEC_R [V16QI V8HI V4SI V2DI V4SF V2DF DF TI])
 
@@ -480,7 +483,7 @@
 	(eq:SI (reg:CC 74)
 	       (const_int 0)))]
   "TARGET_ALTIVEC || TARGET_VSX"
-  "")	
+  "")
 
 (define_expand "cr6_test_for_zero_reverse"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -533,7 +536,7 @@
         (not:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")))]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
-  
+
 (define_expand "nor<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
         (not:VEC_L (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
@@ -668,24 +671,24 @@
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)"
   "")
 
-(define_expand "vec_interleave_highv2df"
-  [(set (match_operand:V2DF 0 "vfloat_operand" "")
-	(vec_concat:V2DF
-	 (vec_select:DF (match_operand:V2DF 1 "vfloat_operand" "")
-			(parallel [(const_int 0)]))
-	 (vec_select:DF (match_operand:V2DF 2 "vfloat_operand" "")
-			(parallel [(const_int 0)]))))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
+(define_expand "vec_interleave_high<mode>"
+  [(set (match_operand:VEC_64 0 "vfloat_operand" "")
+	(vec_concat:VEC_64
+	 (vec_select:<VEC_base> (match_operand:VEC_64 1 "vfloat_operand" "")
+				(parallel [(const_int 0)]))
+	 (vec_select:<VEC_base> (match_operand:VEC_64 2 "vfloat_operand" "")
+				(parallel [(const_int 0)]))))]
+  "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "")
 
-(define_expand "vec_interleave_lowv2df"
-  [(set (match_operand:V2DF 0 "vfloat_operand" "")
-	(vec_concat:V2DF
-	 (vec_select:DF (match_operand:V2DF 1 "vfloat_operand" "")
-			(parallel [(const_int 1)]))
-	 (vec_select:DF (match_operand:V2DF 2 "vfloat_operand" "")
-			(parallel [(const_int 1)]))))]
-  "VECTOR_UNIT_VSX_P (V2DFmode)"
+(define_expand "vec_interleave_low<mode>"
+  [(set (match_operand:VEC_64 0 "vfloat_operand" "")
+	(vec_concat:VEC_64
+	 (vec_select:<VEC_base> (match_operand:VEC_64 1 "vfloat_operand" "")
+				(parallel [(const_int 1)]))
+	 (vec_select:<VEC_base> (match_operand:VEC_64 2 "vfloat_operand" "")
+				(parallel [(const_int 1)]))))]
+  "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "")
 
 
@@ -889,7 +892,7 @@
   rtx insn;
   HOST_WIDE_INT bitshift_val;
   HOST_WIDE_INT byteshift_val;
- 
+
   if (! CONSTANT_P (bitshift))
     FAIL;
   bitshift_val = INTVAL (bitshift);
