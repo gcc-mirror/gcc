@@ -1,3 +1,14 @@
+2010-02-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/std/limits (__numeric_limits_base::max_digits10,
+	numeric_limits<>::max_digits10, numeric_limits<>::lowest): Add.
+	* src/limits.cc: Define max_digits10.
+	* config/abi/pre/gnu.ver: Adjust.
+	* testsuite/18_support/numeric_limits/dr559.cc: Test max_digits10
+	and lowest too.
+	* testsuite/18_support/numeric_limits/lowest.cc: New.
+	* testsuite/18_support/numeric_limits/max_digits10.cc: New.
+
 2010-02-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/functional_hash.h (__hash_combine): Remove.
