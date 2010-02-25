@@ -12399,7 +12399,7 @@ adding a call to the @code{.init} section.
 
 For compatibility with the Solaris and Tru64 UNIX system headers, GCC
 supports two @code{#pragma} directives which change the name used in
-assembly for a given declaration.  @code{#pragma_extern_prefix} is only 
+assembly for a given declaration.  @code{#pragma extern_prefix} is only 
 available on platforms whose system headers need it. To get this effect 
 on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
 Labels}).
