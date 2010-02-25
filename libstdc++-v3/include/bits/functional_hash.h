@@ -123,12 +123,11 @@ namespace std
     struct _Fnv_hash_base
     {
       static size_t
-      hash(const char* __first, size_t __length)
+      hash(const char* __first, size_t __length, size_t __hash = 0)
       {
-	size_t __result = 0;
-	for (; __length > 0; --__length)
-	  __result = (__result * 131) + *__first++;
-	return __result;
+	for (; __length; --__length)
+	  __hash = (__hash * 131) + *__first++;
+	return __hash;
       }
     };
 
@@ -136,15 +135,15 @@ namespace std
     struct _Fnv_hash_base<4>
     {
       static size_t
-      hash(const char* __first, size_t __length)
+      hash(const char* __first, size_t __length,
+	   size_t __hash = static_cast<size_t>(2166136261UL))
       {
-	size_t __result = static_cast<size_t>(2166136261UL);
-	for (; __length > 0; --__length)
+	for (; __length; --__length)
 	  {
-	    __result ^= static_cast<size_t>(*__first++);
-	    __result *= static_cast<size_t>(16777619UL);
+	    __hash ^= static_cast<size_t>(*__first++);
+	    __hash *= static_cast<size_t>(16777619UL);
 	  }
-	return __result;
+	return __hash;
       }
     };
   
@@ -152,16 +151,15 @@ namespace std
     struct _Fnv_hash_base<8>
     {
       static size_t
-      hash(const char* __first, size_t __length)
+      hash(const char* __first, size_t __length,
+	   size_t __hash = static_cast<size_t>(14695981039346656037ULL))
       {
-	size_t __result =
-	  static_cast<size_t>(14695981039346656037ULL);
-	for (; __length > 0; --__length)
+	for (; __length; --__length)
 	  {
-	    __result ^= static_cast<size_t>(*__first++);
-	    __result *= static_cast<size_t>(1099511628211ULL);
+	    __hash ^= static_cast<size_t>(*__first++);
+	    __hash *= static_cast<size_t>(1099511628211ULL);
 	  }
-	return __result;
+	return __hash;
       }
     };
 
@@ -175,16 +173,13 @@ namespace std
         hash(const _Tp& __val)
         { return hash(reinterpret_cast<const char*>(&__val),
 		      sizeof(__val)); }
-    };
 
-  // Inspired by the Boost facility hash_combine.
-  template<typename _Tp>
-    inline size_t
-    __hash_combine(size_t __hash, const _Tp& __val)
-    {
-      const size_t __tmp = std::_Fnv_hash::hash(__val);
-      return __hash ^ (__tmp + 0x9e3779b9 + (__hash << 6) + (__hash >> 2));
-    }
+      template<typename _Tp>
+        static size_t
+        __hash_combine(const _Tp& __val, size_t __hash)
+        { return hash(reinterpret_cast<const char*>(&__val),
+		      sizeof(__val), __hash); }
+    };
 
   /// Specialization for float.
   template<>
