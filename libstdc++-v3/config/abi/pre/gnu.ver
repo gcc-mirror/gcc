@@ -164,7 +164,7 @@ GLIBCXX_3.4 {
       std::_List_node_base::reverse*;
       std::_List_node_base::transfer*;
       std::__timepunct*;
-      std::__numeric_limits_base*;
+#     std::__numeric_limits_base*;
       std::__num_base::_S_format_float*;
       std::__num_base::_S_format_int*;
       std::__num_base::_S_atoms_in;
@@ -476,7 +476,15 @@ GLIBCXX_3.4 {
     _ZNSt15time_put_byname*;
 
     # std::numeric_limits
-    _ZNSt14numeric_limitsI[^g]E*;
+    _ZNSt21__numeric_limits_base[5-9]*;
+    _ZNSt21__numeric_limits_base1[0-7][hirt]*;
+    _ZNSt21__numeric_limits_base1[0-7]mi*;
+    _ZNSt21__numeric_limits_base1[0-7]max_e*;
+
+    _ZNSt14numeric_limitsI[^g]E[5-9]*;
+    _ZNSt14numeric_limitsI[^g]E1[0-7][hirt]*;
+    _ZNSt14numeric_limitsI[^g]E1[0-7]mi*;
+    _ZNSt14numeric_limitsI[^g]E1[0-7]max_e*;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -1010,8 +1018,14 @@ GLIBCXX_3.4.11 {
     _ZSt20__throw_system_errori;
 
     # char16_t and char32_t
-    _ZNSt14numeric_limitsIDiE*;
-    _ZNSt14numeric_limitsIDsE*;
+    _ZNSt14numeric_limitsIDiE[5-9]*;
+    _ZNSt14numeric_limitsIDsE[5-9]*;
+    _ZNSt14numeric_limitsIDiE1[0-7][hirt]*;
+    _ZNSt14numeric_limitsIDsE1[0-7][hirt]*;
+    _ZNSt14numeric_limitsIDiE1[0-7]mi*;
+    _ZNSt14numeric_limitsIDsE1[0-7]mi*;
+    _ZNSt14numeric_limitsIDiE1[0-7]max_e*;
+    _ZNSt14numeric_limitsIDsE1[0-7]max_e*;
 
     # chrono
     _ZNSt6chrono12system_clock12is_monotonicE;
@@ -1128,7 +1142,14 @@ GLIBCXX_3.4.14 {
     _ZNSt9__cxx199815_List_node_base9_M_unhookEv;
     _ZNSt9__cxx199815_List_node_base10_M_reverseEv;
     _ZNSt9__cxx199815_List_node_base11_M_transfer*;
+
+    # std::numeric_limits::max_digits10
+    _ZNSt21__numeric_limits_base12max_digits10E;
+    _ZNSt14numeric_limitsI[^g]E12max_digits10E;
+    _ZNSt14numeric_limitsID[is]E12max_digits10E;
+
 } GLIBCXX_3.4.13;
+
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

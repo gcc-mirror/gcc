@@ -33,8 +33,10 @@ template<typename T>
     VERIFY( cv_limits::is_specialized == limits::is_specialized );
     VERIFY( cv_limits::min() == limits::min() );
     VERIFY( cv_limits::max() == limits::max() );
+    VERIFY( cv_limits::lowest() == limits::lowest() );
     VERIFY( cv_limits::digits == limits::digits );
     VERIFY( cv_limits::digits10 == limits::digits10 );
+    VERIFY( cv_limits::max_digits10 == limits::max_digits10 );
     VERIFY( cv_limits::is_signed == limits::is_signed );
     VERIFY( cv_limits::is_integer == limits::is_integer );
     VERIFY( cv_limits::is_exact == limits::is_exact );

@@ -142,6 +142,8 @@
 #define __glibcxx_digits10(T) \
   (__glibcxx_digits (T) * 643 / 2136)
 
+#define __glibcxx_max_digits10(T) \
+  (2 + (T) * 643 / 2136)
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -197,11 +199,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const int digits = 0;
     /** The number of base 10 digits that can be represented without change. */
     static const int digits10 = 0;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    /** The number of base 10 digits required to ensure that values which
+	differ are always differentiated.  */
+    static const int max_digits10 = 0;
+#endif
     /** True if the type is signed.  */
     static const bool is_signed = false;
     /** True if the type is integer.
-     *  Is this supposed to be <em>if the type is integral?</em>
-    */
+     *  Is this supposed to be <em>if the type is integral?</em>  */
     static const bool is_integer = false;
     /** True if the type uses an exact representation. <em>All integer types are
         exact, but not all exact types are integer.  For example, rational and
@@ -282,6 +288,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static _Tp min() throw() { return static_cast<_Tp>(0); }
       /** The maximum finite value.  */
       static _Tp max() throw() { return static_cast<_Tp>(0); }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /** A finite value x such that there is no other finite value y
+       *  where y < x.  */
+      static _Tp lowest() throw() { return static_cast<_Tp>(0); }
+#endif
       /** The @e machine @e epsilon:  the difference between 1 and the least
           value greater than 1 that is representable.  */
       static _Tp epsilon() throw() { return static_cast<_Tp>(0); }
@@ -329,9 +340,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return false; }
       static bool max() throw()
       { return true; }
-
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static bool lowest() throw()
+      { return min(); }
+#endif
       static const int digits = 1;
       static const int digits10 = 0;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -383,9 +400,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __glibcxx_min(char); }
       static char max() throw()
       { return __glibcxx_max(char); }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static char lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (char);
       static const int digits10 = __glibcxx_digits10 (char);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = __glibcxx_signed (char);
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -434,9 +458,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return -__SCHAR_MAX__ - 1; }
       static signed char max() throw()
       { return __SCHAR_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static signed char lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (signed char);
       static const int digits10 = __glibcxx_digits10 (signed char);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -485,9 +516,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return 0; }
       static unsigned char max() throw()
       { return __SCHAR_MAX__ * 2U + 1; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static unsigned char lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (unsigned char);
       static const int digits10 = __glibcxx_digits10 (unsigned char);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -536,9 +574,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __glibcxx_min (wchar_t); }
       static wchar_t max() throw()
       { return __glibcxx_max (wchar_t); }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static wchar_t lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (wchar_t);
       static const int digits10 = __glibcxx_digits10 (wchar_t);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = __glibcxx_signed (wchar_t);
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -588,9 +633,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __glibcxx_min (char16_t); }
       static char16_t max() throw()
       { return __glibcxx_max (char16_t); }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static char16_t lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (char16_t);
       static const int digits10 = __glibcxx_digits10 (char16_t);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = __glibcxx_signed (char16_t);
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -639,9 +691,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __glibcxx_min (char32_t); }
       static char32_t max() throw()
       { return __glibcxx_max (char32_t); }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static char32_t lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (char32_t);
       static const int digits10 = __glibcxx_digits10 (char32_t);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = __glibcxx_signed (char32_t);
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -691,9 +750,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return -__SHRT_MAX__ - 1; }
       static short max() throw()
       { return __SHRT_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static short lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (short);
       static const int digits10 = __glibcxx_digits10 (short);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -742,9 +808,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return 0; }
       static unsigned short max() throw()
       { return __SHRT_MAX__ * 2U + 1; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static unsigned short lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (unsigned short);
       static const int digits10 = __glibcxx_digits10 (unsigned short);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -793,9 +866,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return -__INT_MAX__ - 1; }
       static int max() throw()
       { return __INT_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static int lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (int);
       static const int digits10 = __glibcxx_digits10 (int);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -844,9 +924,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return 0; }
       static unsigned int max() throw()
       { return __INT_MAX__ * 2U + 1; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static unsigned int lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (unsigned int);
       static const int digits10 = __glibcxx_digits10 (unsigned int);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -895,9 +982,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return -__LONG_MAX__ - 1; }
       static long max() throw()
       { return __LONG_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static long lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (long);
       static const int digits10 = __glibcxx_digits10 (long);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -946,9 +1040,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return 0; }
       static unsigned long max() throw()
       { return __LONG_MAX__ * 2UL + 1; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static unsigned long lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (unsigned long);
       static const int digits10 = __glibcxx_digits10 (unsigned long);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -997,9 +1098,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return -__LONG_LONG_MAX__ - 1; }
       static long long max() throw()
       { return __LONG_LONG_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static long long lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (long long);
       static const int digits10 = __glibcxx_digits10 (long long);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = true;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1048,9 +1156,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return 0; }
       static unsigned long long max() throw()
       { return __LONG_LONG_MAX__ * 2ULL + 1; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static unsigned long long lowest() throw()
+      { return min(); }
+#endif
 
       static const int digits = __glibcxx_digits (unsigned long long);
       static const int digits10 = __glibcxx_digits10 (unsigned long long);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10 = 0;
+#endif
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;
@@ -1099,9 +1214,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __FLT_MIN__; }
       static float max() throw()
       { return __FLT_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static float lowest() throw()
+      { return -__FLT_MAX__; }
+#endif
 
       static const int digits = __FLT_MANT_DIG__;
       static const int digits10 = __FLT_DIG__;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10
+	 = __glibcxx_max_digits10 (__FLT_MANT_DIG__);
+#endif
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
@@ -1156,9 +1279,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __DBL_MIN__; }
       static double max() throw()
       { return __DBL_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static double lowest() throw()
+      { return -__DBL_MAX__; }
+#endif
 
       static const int digits = __DBL_MANT_DIG__;
       static const int digits10 = __DBL_DIG__;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10
+	 = __glibcxx_max_digits10 (__DBL_MANT_DIG__);
+#endif
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
@@ -1213,9 +1344,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __LDBL_MIN__; }
       static long double max() throw()
       { return __LDBL_MAX__; }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static long double lowest() throw()
+      { return -__LDBL_MAX__; }
+#endif
 
       static const int digits = __LDBL_MANT_DIG__;
       static const int digits10 = __LDBL_DIG__;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static const int max_digits10
+	 = __glibcxx_max_digits10 (__LDBL_MANT_DIG__);
+#endif
       static const bool is_signed = true;
       static const bool is_integer = false;
       static const bool is_exact = false;
@@ -1268,5 +1407,6 @@ _GLIBCXX_END_NAMESPACE
 #undef __glibcxx_max
 #undef __glibcxx_digits
 #undef __glibcxx_digits10
+#undef __glibcxx_max_digits10
 
 #endif // _GLIBCXX_NUMERIC_LIMITS
