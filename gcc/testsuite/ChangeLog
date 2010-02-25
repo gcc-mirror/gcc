@@ -1,3 +1,8 @@
+2010-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43165
+	* gcc.dg/torture/pr43165.c: New test.
+
 2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/43128
