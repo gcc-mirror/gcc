@@ -1,5 +1,9 @@
 2010-02-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
+	* include/bits/random.tcc (operator<<): Use max_digits10.
+
+2010-02-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
 	* include/std/limits (__numeric_limits_base::max_digits10,
 	numeric_limits<>::max_digits10, numeric_limits<>::lowest): Add.
 	* src/limits.cc: Define max_digits10.

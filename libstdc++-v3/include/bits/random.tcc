@@ -899,7 +899,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.a() << __space << __x.b();
 
@@ -943,7 +943,7 @@ namespace std
       const std::streamsize __precision = __os.precision();
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       __os << __x.p();
 
@@ -993,7 +993,7 @@ namespace std
       const std::streamsize __precision = __os.precision();
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       __os << __x.p();
 
@@ -1068,7 +1068,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       __os << __x.k() << __space << __x.p()
 	   << __space << __x._M_gd;
@@ -1258,7 +1258,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       __os << __x.mean() << __space << __x._M_nd;
 
@@ -1506,7 +1506,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       __os << __x.t() << __space << __x.p()
 	   << __space << __x._M_nd;
@@ -1553,7 +1553,7 @@ namespace std
       const std::streamsize __precision = __os.precision();
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.lambda();
 
@@ -1641,7 +1641,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.mean() << __space << __x.stddev()
 	   << __space << __x._M_saved_available;
@@ -1692,7 +1692,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.m() << __space << __x.s()
 	   << __space << __x._M_nd;
@@ -1738,7 +1738,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.n() << __space << __x._M_gd;
 
@@ -1801,7 +1801,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.a() << __space << __x.b();
 
@@ -1846,7 +1846,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.m() << __space << __x.n()
 	   << __space << __x._M_gd_x << __space << __x._M_gd_y;
@@ -1892,7 +1892,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.n() << __space << __x._M_nd << __space << __x._M_gd;
 
@@ -1995,7 +1995,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.alpha() << __space << __x.beta()
 	   << __space << __x._M_nd;
@@ -2054,7 +2054,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.a() << __space << __x.b();
 
@@ -2111,7 +2111,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       __os << __x.a() << __space << __x.b();
 
@@ -2214,7 +2214,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<double>::digits10 + 1);
+      __os.precision(std::numeric_limits<double>::max_digits10);
 
       std::vector<double> __prob = __x.probabilities();
       __os << __prob.size();
@@ -2389,7 +2389,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       std::vector<_RealType> __int = __x.intervals();
       __os << __int.size() - 1;
@@ -2592,7 +2592,7 @@ namespace std
       const _CharT __space = __os.widen(' ');
       __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
-      __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
 
       std::vector<_RealType> __int = __x.intervals();
       __os << __int.size() - 1;
