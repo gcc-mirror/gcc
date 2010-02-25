@@ -1,3 +1,10 @@
+2010-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43166
+	* trans-common.c (build_common_decl): Also update DECL_MODE,
+	and DECL_SIZE when encountering a larger common block and call
+	layout_decl.
+
 2010-02-24  Tobias Burnus  <burnus@net-b.de>              
 
 	PR fortran/43042

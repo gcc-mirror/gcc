@@ -1,5 +1,8 @@
 2010-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43166
+	* gfortran.dg/debug/pr43166.f: New test.
+
 	PR debug/43165
 	* gcc.dg/torture/pr43165.c: New test.
 

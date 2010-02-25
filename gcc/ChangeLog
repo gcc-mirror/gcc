@@ -1,5 +1,9 @@
 2010-02-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43166
+	* cfgexpand.c (expand_debug_expr) <case VAR_DECL>: If mode is
+	BLKmode, assert op0 is a MEM and just adjust its mode.
+
 	PR debug/43165
 	* cfgexpand.c (expand_debug_expr): Don't call simplify_gen_subreg
 	if bitpos isn't multiple of mode's bitsize.
