@@ -1,6 +1,6 @@
 <sect1 id="manual.ext.allocator.bitmap" xreflabel="bitmap_allocator">
 <?dbhtml filename="bitmap_allocator.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -81,7 +81,7 @@
     the search would go up given an increasing size, for 64 entries
     however, lg(64) == 6 comparisons are enough to locate the correct
     free list if it exists.
-  </para>  
+  </para>
   <para>
     Suppose the free list size has reached it's threshold, then the
     largest block from among those in the list and the new block will
@@ -223,7 +223,7 @@ else return false.</para></listitem>
 
 <sect3 id="bitmap.impl.max_wasted" xreflabel="Max Wasted Percentage">
   <title>Maximum Wasted Percentage</title>
- 
+
   <para>
     This has nothing to do with the algorithm per-se,
     only with some vales that must be chosen correctly to ensure that the
@@ -328,12 +328,12 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
 	<listitem>
 	  <para>
 	    Gets more memory from the Global Free List of the Required
-	    size.  
+	    size.
 	  </para>
 	</listitem>
       <listitem>
       <para>
-      Adjusts the size for the next call to itself. 
+      Adjusts the size for the next call to itself.
       </para>
       </listitem>
       <listitem>
@@ -344,7 +344,7 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
       <listitem>
 	<para>
 	Sets the use count for that super-block just allocated to 0
-	(zero).  
+	(zero).
       </para>
       </listitem>
       <listitem>
@@ -353,7 +353,7 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
 	  for the allocator. If the invariant is maintained, we are
 	  sure that all is well. Now, the same process is applied on
 	  the newly acquired free blocks, which are dispatched
-	  accordingly.  
+	  accordingly.
       </para>
       </listitem>
     </itemizedlist>
@@ -378,7 +378,7 @@ single object allocations.
   <para>
     However for n == 1, a series of steps are performed:
   </para>
-  
+
   <orderedlist>
     <listitem><para>
       We first need to locate that super-block which holds the memory
@@ -504,7 +504,7 @@ Block a bitmap as well?
     testing, I've decided to keep these bitmaps close to the actual
     blocks. This will help in 2 ways.
   </para>
-  
+
   <orderedlist>
   <listitem><para>Constant time access for the bitmap themselves, since no kind of
 look up will be needed to find the correct bitmap list or it's
@@ -555,5 +555,5 @@ equivalent.</para></listitem>
 </sect3>
 
 </sect2>
- 
+
 </sect1>

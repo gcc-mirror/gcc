@@ -1,3 +1,51 @@
+2010-02-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/faq.xml: Adjust structure for pdf index.
+	* doc/xml/manual/mt_allocator.xml: Same.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/ctype.xml: Same.
+	* doc/xml/manual/numerics.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/intro.xml: Same.
+	* doc/xml/manual/shared_ptr.xml: Same.
+	* doc/xml/manual/status_cxxtr1.xml: Same.
+	* doc/xml/manual/auto_ptr.xml: Same.
+	* doc/xml/manual/internals.xml: Same.
+	* doc/xml/manual/status_cxx1998.xml: Same.
+	* doc/xml/manual/parallel_mode.xml: Same.
+	* doc/xml/manual/profile_mode.xml: Same.
+	* doc/xml/manual/containers.xml: Same.
+	* doc/xml/manual/io.xml: Same.
+	* doc/xml/manual/concurrency_extensions.xml: Same.
+	* doc/xml/manual/appendix_porting.xml: Same.
+	* doc/xml/manual/utilities.xml: Same.
+	* doc/xml/manual/support.xml: Same.
+	* doc/xml/manual/bitmap_allocator.xml: Same.
+	* doc/xml/manual/configure.xml: Same.
+	* doc/xml/manual/build_hacking.xml: Same.
+	* doc/xml/manual/evolution.xml: Same.
+	* doc/xml/manual/using.xml: Same.
+	* doc/xml/manual/debug.xml: Same.
+	* doc/xml/manual/localization.xml: Same.
+	* doc/xml/manual/strings.xml: Same.
+	* doc/xml/manual/debug_mode.xml: Same.
+	* doc/xml/manual/locale.xml: Same.
+	* doc/xml/manual/extensions.xml: Same.
+	* doc/xml/manual/appendix_contributing.xml: Same.
+	* doc/xml/manual/prerequisites.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+	* doc/xml/manual/diagnostics.xml: Same.
+	* doc/xml/manual/algorithms.xml: Same.
+	* doc/xml/manual/appendix_free.xml: Same.
+	* doc/xml/manual/iterators.xml: Same.
+	* doc/xml/manual/spine.xml: Same.
+	* doc/xml/manual/status_cxxtr24733.xml: Same.
+	* doc/xml/manual/status_cxx200x.xml: Same.
+	* doc/Makefile.am: Refactor.
+	* doc/Makefile.in: Regenerate.
+
+	* include/bits/c++0x_warning.h: Tweak doxygen file markup.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/ext/new_allocator/deallocate_global.cc: Require

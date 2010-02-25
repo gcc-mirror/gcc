@@ -1,11 +1,11 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <part id="manual.ext" xreflabel="Extensions">
 <?dbhtml filename="extensions.html"?>
- 
+
 <partinfo>
   <keywordset>
     <keyword>
@@ -35,7 +35,7 @@ extensions, be aware of two things:
 <orderedlist>
    <listitem>
      <para>
-     Non-Standard means exactly that.  
+     Non-Standard means exactly that.
      </para>
      <para>
        The behavior, and the very
@@ -43,12 +43,12 @@ extensions, be aware of two things:
        warning.  (Ideally, the really good ones will appear in the next
        revision of C++.)  Also, other platforms, other compilers, other
        versions of g++ or libstdc++ may not recognize these names, or
-       treat them differently, or... 
+       treat them differently, or...
      </para>
    </listitem>
    <listitem>
      <para>
-       You should know how to access these headers properly. 
+       You should know how to access these headers properly.
      </para>
    </listitem>
 </orderedlist>
@@ -104,17 +104,17 @@ extensions, be aware of two things:
 </chapter>
 
 <!-- Chapter 02 : Debug Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="debug_mode.xml">
 </xi:include>
 
 <!-- Chapter 03 : Parallel Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="parallel_mode.xml">
 </xi:include>
 
 <!-- Chapter 04 : Profile Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="profile_mode.xml">
 </xi:include>
 
@@ -125,12 +125,12 @@ extensions, be aware of two things:
   <title>Allocators</title>
 
   <!-- Section 01 : __mt_alloc -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="mt_allocator.xml">
   </xi:include>
 
   <!-- Section 02 : bitmap_allocator -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="bitmap_allocator.xml">
   </xi:include>
 
@@ -186,7 +186,7 @@ extensions, be aware of two things:
    no present plans to do so (and there doesn't seem to be any immediate
    reason to).
 </para>
-<para>The semantics of member function <code>operator[]</code> are not specified 
+<para>The semantics of member function <code>operator[]</code> are not specified
    in the C++ standard.  A long-standing defect report calls for sensible
    obvious semantics, which are already implemented here:  <code>op[]</code>
    on a const bitset returns a bool, and for a non-const bitset returns a
@@ -269,7 +269,7 @@ extensions, be aware of two things:
      </para>
    </blockquote>
 
-  </sect1>  
+  </sect1>
 </chapter>
 
 <!-- Chapter 07 : Utilities -->
@@ -283,22 +283,22 @@ extensions, be aware of two things:
   </para>
   <itemizedlist>
   <listitem>
-  <para><code>identity_element</code> for addition and multiplication. * 
+  <para><code>identity_element</code> for addition and multiplication. *
   </para>
   </listitem>
   <listitem>
     <para>The functor <code>identity</code>, whose <code>operator()</code>
-      returns the argument unchanged. * 
+      returns the argument unchanged. *
   </para>
   </listitem>
   <listitem>
     <para>Composition functors <code>unary_function</code> and
       <code>binary_function</code>, and their helpers <code>compose1</code>
-      and <code>compose2</code>. * 
+      and <code>compose2</code>. *
     </para>
   </listitem>
   <listitem>
-  <para><code>select1st</code> and <code>select2nd</code>, to strip pairs. * 
+  <para><code>select1st</code> and <code>select2nd</code>, to strip pairs. *
   </para>
   </listitem>
   <listitem><para><code>project1st</code> and <code>project2nd</code>. * </para></listitem>
@@ -368,13 +368,13 @@ get_temporary_buffer(5, (int*)0);
    <itemizedlist>
     <listitem><para><code>is_heap</code> tests whether or not a range is a heap.</para></listitem>
     <listitem><para><code>is_sorted</code> tests whether or not a range is sorted in
-        nondescending order.</para></listitem>
+	nondescending order.</para></listitem>
    </itemizedlist>
 <para>25.3.8 (lexicographical_compare) is extended with
 </para>
    <programlisting>
    lexicographical_compare_3way(_InputIter1 first1, _InputIter1 last1,
-                                 _InputIter2 first2, _InputIter2 last2)</programlisting>
+				 _InputIter2 first2, _InputIter2 last2)</programlisting>
 <para>which does... what?
 </para>
 
@@ -451,41 +451,41 @@ get_temporary_buffer(5, (int*)0);
    </para>
    <itemizedlist>
      <listitem><para>3.0.x <code>filebuf</code>s have another ctor with this signature:
-        <code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);
+	<code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);
 	</code>
-         This comes in very handy in a number of places, such as
-         attaching Unix sockets, pipes, and anything else which uses file
-         descriptors, into the IOStream buffering classes.  The three
-         arguments are as follows:
-         <itemizedlist>
-          <listitem><para><code>__c_file_type*      F   </code>
-              // the __c_file_type typedef usually boils down to stdio's FILE
-          </para></listitem>
-          <listitem><para><code>ios_base::openmode  M   </code>
-              // same as all the other uses of openmode
-          </para></listitem>
-          <listitem><para><code>int_type            B   </code>
-              // buffer size, defaults to BUFSIZ if not specified
-          </para></listitem>
-         </itemizedlist>
-         For those wanting to use file descriptors instead of FILE*'s, I
-         invite you to contemplate the mysteries of C's <code>fdopen()</code>.
+	 This comes in very handy in a number of places, such as
+	 attaching Unix sockets, pipes, and anything else which uses file
+	 descriptors, into the IOStream buffering classes.  The three
+	 arguments are as follows:
+	 <itemizedlist>
+	  <listitem><para><code>__c_file_type*      F   </code>
+	      // the __c_file_type typedef usually boils down to stdio's FILE
+	  </para></listitem>
+	  <listitem><para><code>ios_base::openmode  M   </code>
+	      // same as all the other uses of openmode
+	  </para></listitem>
+	  <listitem><para><code>int_type            B   </code>
+	      // buffer size, defaults to BUFSIZ if not specified
+	  </para></listitem>
+	 </itemizedlist>
+	 For those wanting to use file descriptors instead of FILE*'s, I
+	 invite you to contemplate the mysteries of C's <code>fdopen()</code>.
      </para></listitem>
      <listitem><para>In library snapshot 3.0.95 and later, <code>filebuf</code>s bring
-         back an old extension:  the <code>fd()</code> member function.  The
-         integer returned from this function can be used for whatever file
-         descriptors can be used for on your platform.  Naturally, the
-         library cannot track what you do on your own with a file descriptor,
-         so if you perform any I/O directly, don't expect the library to be
-         aware of it.
+	 back an old extension:  the <code>fd()</code> member function.  The
+	 integer returned from this function can be used for whatever file
+	 descriptors can be used for on your platform.  Naturally, the
+	 library cannot track what you do on your own with a file descriptor,
+	 so if you perform any I/O directly, don't expect the library to be
+	 aware of it.
      </para></listitem>
      <listitem><para>Beginning with 3.1, the extra <code>filebuf</code> constructor and
-         the <code>fd()</code> function were removed from the standard
-         filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
-         a derived class called
-         <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
-         This class can be constructed from a C <code>FILE*</code> or a file
-         descriptor, and provides the <code>fd()</code> function.
+	 the <code>fd()</code> function were removed from the standard
+	 filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
+	 a derived class called
+	 <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+	 This class can be constructed from a C <code>FILE*</code> or a file
+	 descriptor, and provides the <code>fd()</code> function.
      </para></listitem>
    </itemizedlist>
    <para>If you want to access a <code>filebuf</code>'s file descriptor to
@@ -572,7 +572,7 @@ int main()
    <screen>
    <computeroutput>
       St13bad_exception       =&gt; std::bad_exception   : 0
-      3barI5emptyLi17EE       =&gt; bar&lt;empty, 17&gt;       : 0 
+      3barI5emptyLi17EE       =&gt; bar&lt;empty, 17&gt;       : 0
    </computeroutput>
    </screen>
 
@@ -586,7 +586,7 @@ int main()
 </chapter>
 
 <!-- Chapter 13 : Concurrency -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="concurrency_extensions.xml">
 </xi:include>
 

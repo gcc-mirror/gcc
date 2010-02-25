@@ -1,7 +1,7 @@
-<sect1 id="manual.util.memory.allocator" xreflabel="Allocator">
+<section id="std.util.memory.allocator" xreflabel="Allocator">
 <?dbhtml filename="allocator.html"?>
 
-<sect1info>
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,7 +10,7 @@
       allocator
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>Allocators</title>
 
@@ -24,7 +24,7 @@
  management classes.
 </para>
 
-<sect2 id="allocator.req">
+<section id="allocator.req">
 <title>Requirements</title>
 
   <para>
@@ -85,9 +85,9 @@
      <constant>[20.4 Memory]</constant>.
    </para>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.design_issues">
+<section id="allocator.design_issues">
 <title>Design Issues</title>
 
   <para>
@@ -136,12 +136,12 @@
     <function>abi::__cxa_atexit</function> is not recommended.
   </para>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.impl">
+<section id="allocator.impl">
 <title>Implementation</title>
 
-  <sect3>
+  <section>
     <title>Interface Design</title>
 
    <para>
@@ -163,9 +163,9 @@
      may not be user-configurable.
 </para>
 
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Selecting Default Allocation Policy</title>
 
    <para>
@@ -229,9 +229,9 @@
      <classname>__gnu_cxx::new_allocator</classname>.
    </para>
 
-  </sect3>
+  </section>
 
-  <sect3>
+  <section>
     <title>Disabling Memory Caching</title>
 
     <para>
@@ -281,11 +281,11 @@
      cached allocations...).
   </para>
 
-  </sect3>
+  </section>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.using">
+<section id="allocator.using">
 <title>Using a Specific Allocator</title>
 
    <para>
@@ -303,9 +303,9 @@
       <programlisting>
     std::deque &lt;int, __gnu_cxx::debug_allocator&lt;std::allocator&lt;int&gt; &gt; &gt;  debug_deque;
       </programlisting>
-</sect2>
+</section>
 
-<sect2 id="allocator.custom">
+<section id="allocator.custom">
 <title>Custom Allocators</title>
 
   <para>
@@ -321,9 +321,9 @@
    <classname>new_allocator</classname>.
    </para>
 
-</sect2>
+</section>
 
-<sect2 id="allocator.ext">
+<section id="allocator.ext">
 <title>Extension Allocators</title>
 
   <para>
@@ -489,7 +489,7 @@
        </para>
      </listitem>
    </orderedlist>
-</sect2>
+</section>
 
 
 <bibliography id="allocator.biblio">
@@ -615,4 +615,4 @@
   </biblioentry>
 </bibliography>
 
-</sect1>
+</section>

@@ -1,6 +1,6 @@
 <sect1 id="appendix.porting.api" xreflabel="api">
 <?dbhtml filename="api.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>ISO C++</keyword>
@@ -80,10 +80,10 @@ Removal of <filename class="headerfile">ext/tree</filename>, moved to <filename 
    <para> For GCC releases from 2.95 through the 3.1 series, defining
    <literal>__USE_MALLOC</literal> on the gcc command line would change the
    default allocation strategy to instead use <code> malloc</code> and
-   <function>free</function>. (This same functionality is now spelled <literal>_GLIBCXX_FORCE_NEW</literal>, see 
-   <link linkend="manual.intro.using.macros">this page</link> 
+   <function>free</function>. (This same functionality is now spelled <literal>_GLIBCXX_FORCE_NEW</literal>, see
+   <link linkend="manual.intro.using.macros">this page</link>
    for details.
-   </para> 
+   </para>
 
 
 <para>Error handling in iostreams cleaned up, made consistent. </para>
@@ -431,7 +431,7 @@ Parallel mode first appears.
 </para>
 
 <para>Variadic template implementations of items in <filename class="headerfile">tuple</filename> and
-    <filename class="headerfile">functional</filename>. 
+    <filename class="headerfile">functional</filename>.
 </para>
 
 <para>Default <code>what</code> implementations give more elaborate
@@ -441,7 +441,7 @@ Parallel mode first appears.
 </para>
 
 <para>
-PCH binary files no longer installed. Instead, the source files are installed. 
+PCH binary files no longer installed. Instead, the source files are installed.
 </para>
 
 <para>
@@ -604,7 +604,7 @@ Profile mode first appears.
 </para>
 
 <para>
-Support for decimal floating-point arithmetic, including <classname>decimal32</classname>, <classname>decimal64</classname>, and <classname>decimal128</classname>. 
+Support for decimal floating-point arithmetic, including <classname>decimal32</classname>, <classname>decimal64</classname>, and <classname>decimal128</classname>.
 </para>
 
 <para>

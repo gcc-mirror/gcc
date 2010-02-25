@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
-<part id="manual.iterators" xreflabel="Iterators">
+<chapter id="std.iterators" xreflabel="Iterators">
 <?dbhtml filename="iterators.html"?>
- 
-<partinfo>
+
+<chapterinfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,18 +15,18 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</chapterinfo>
 
 <title>
   Iterators
   <indexterm><primary>Iterators</primary></indexterm>
 </title>
 
-<!-- Chapter 01 : Predefined -->
-<chapter id="manual.iterators.predefined" xreflabel="Predefined">
+<!-- Sect1 01 : Predefined -->
+<sect1 id="std.iterators.predefined" xreflabel="Predefined">
   <title>Predefined</title>
 
-  <sect1 id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers">
+  <sect2 id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers">
     <title>Iterators vs. Pointers</title>
    <para>
      The following
@@ -35,39 +35,45 @@ iterators are not implemented as pointers.  They are a generalization
 of pointers, but they are implemented in libstdc++ as separate
 classes.
    </para>
-   <para>Keeping that simple fact in mind as you design your code will
+   <para>
+     Keeping that simple fact in mind as you design your code will
       prevent a whole lot of difficult-to-understand bugs.
    </para>
-   <para>You can think of it the other way 'round, even.  Since iterators
-      are a generalization, that means that <emphasis>pointers</emphasis> are
-      <emphasis>iterators</emphasis>, and that pointers can be used whenever an
-      iterator would be.  All those functions in the Algorithms chapter
-      of the Standard will work just as well on plain arrays and their
-      pointers.
+   <para>
+     You can think of it the other way 'round, even.  Since iterators
+     are a generalization, that means
+     that <emphasis>pointers</emphasis> are
+      <emphasis>iterators</emphasis>, and that pointers can be used
+     whenever an iterator would be.  All those functions in the
+     Algorithms sect1 of the Standard will work just as well on plain
+     arrays and their pointers.
    </para>
-   <para>That doesn't mean that when you pass in a pointer, it gets wrapped
-      into some special delegating iterator-to-pointer class with a layer
-      of overhead.  (If you think that's the case anywhere, you don't
-      understand templates to begin with...)  Oh, no; if you pass
-      in a pointer, then the compiler will instantiate that template
-      using T* as a type, and good old high-speed pointer arithmetic as
-      its operations, so the resulting code will be doing exactly the same
-      things as it would be doing if you had hand-coded it yourself (for
-      the 273rd time).
+   <para>
+     That doesn't mean that when you pass in a pointer, it gets
+      wrapped into some special delegating iterator-to-pointer class
+      with a layer of overhead.  (If you think that's the case
+      anywhere, you don't understand templates to begin with...)  Oh,
+      no; if you pass in a pointer, then the compiler will instantiate
+      that template using T* as a type, and good old high-speed
+      pointer arithmetic as its operations, so the resulting code will
+      be doing exactly the same things as it would be doing if you had
+      hand-coded it yourself (for the 273rd time).
    </para>
-   <para>How much overhead <emphasis>is</emphasis> there when using an iterator class?
-      Very little.  Most of the layering classes contain nothing but
-      typedefs, and typedefs are &quot;meta-information&quot; that simply
-      tell the compiler some nicknames; they don't create code.  That
-      information gets passed down through inheritance, so while the
-      compiler has to do work looking up all the names, your runtime code
-      does not.  (This has been a prime concern from the beginning.)
+   <para>
+     How much overhead <emphasis>is</emphasis> there when using an
+      iterator class?  Very little.  Most of the layering classes
+      contain nothing but typedefs, and typedefs are
+      &quot;meta-information&quot; that simply tell the compiler some
+      nicknames; they don't create code.  That information gets passed
+      down through inheritance, so while the compiler has to do work
+      looking up all the names, your runtime code does not.  (This has
+      been a prime concern from the beginning.)
    </para>
- 
 
-  </sect1>
 
-  <sect1 id="iterators.predefined.end" xreflabel="end() Is One Past the End">
+  </sect2>
+
+  <sect2 id="iterators.predefined.end" xreflabel="end() Is One Past the End">
     <title>One Past the End</title>
 
    <para>This starts off sounding complicated, but is actually very easy,
@@ -85,23 +91,23 @@ classes.
    <orderedlist>
       <listitem>
 	<para>You can point anywhere in the array, <emphasis>or to the first element
-          past the end of the array</emphasis>.  A pointer that points to one
-          past the end of the array is guaranteed to be as unique as a
-          pointer to somewhere inside the array, so that you can compare
-          such pointers safely.
+	  past the end of the array</emphasis>.  A pointer that points to one
+	  past the end of the array is guaranteed to be as unique as a
+	  pointer to somewhere inside the array, so that you can compare
+	  such pointers safely.
 	</para>
       </listitem>
       <listitem>
 	<para>You can only dereference a pointer that points into an array.
-          If your array pointer points outside the array -- even to just
-          one past the end -- and you dereference it, Bad Things happen.
+	  If your array pointer points outside the array -- even to just
+	  one past the end -- and you dereference it, Bad Things happen.
 	</para>
       </listitem>
       <listitem>
 	<para>Strictly speaking, simply pointing anywhere else invokes
-          undefined behavior.  Most programs won't puke until such a
-          pointer is actually dereferenced, but the standards leave that
-          up to the platform.
+	  undefined behavior.  Most programs won't puke until such a
+	  pointer is actually dereferenced, but the standards leave that
+	  up to the platform.
 	</para>
       </listitem>
    </orderedlist>
@@ -121,7 +127,7 @@ classes.
      |                   |               remember to add or subtract one.
      |                   |               Off-by-one bugs very common here.
      V                   V
-        array of N elements
+	array of N elements
      |---|---|--...--|---|---|
      | 0 | 1 |  ...  |N-2|N-1|
      |---|---|--...--|---|---|
@@ -134,7 +140,7 @@ classes.
    beginning                end
 
    </programlisting>
-   <para>See?  Everything between the boundary markers is part of the array.
+   <para>See?  Everything between the boundary markers is chapter of the array.
       Simple.
    </para>
    <para>Now think back to your junior-high school algebra course, when you
@@ -175,9 +181,9 @@ classes.
    <para>Just don't dereference <code>end()</code>.
    </para>
 
-  </sect1>
+  </sect2>
+</sect1>
+
+<!-- Sect1 02 : Stream -->
+
 </chapter>
-
-<!-- Chapter 02 : Stream -->
-
-</part>

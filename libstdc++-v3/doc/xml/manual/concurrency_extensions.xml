@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <chapter id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
@@ -85,7 +85,7 @@ critical sections, while retaining exception-safety.
 
 
 <para>
-Two functions and one type form the base of atomic support. 
+Two functions and one type form the base of atomic support.
 </para>
 
 
@@ -130,7 +130,7 @@ __atomic_add_dispatch
 
 <para>
 These functions forward to one of several specialized helper
-functions, depending on the circumstances. For instance, 
+functions, depending on the circumstances. For instance,
 </para>
 
 <para>
@@ -152,7 +152,7 @@ sequence.
 </para>
 </listitem>
 
-<listitem><para><code>__exchange_and_add_single</code> 
+<listitem><para><code>__exchange_and_add_single</code>
 </para>
 <para>Single threaded version. Inlined.</para>
 </listitem>
@@ -173,12 +173,12 @@ In addition, there are two macros
 
 <para>
 <code>
-_GLIBCXX_READ_MEM_BARRIER 
+_GLIBCXX_READ_MEM_BARRIER
 </code>
 </para>
 <para>
 <code>
-_GLIBCXX_WRITE_MEM_BARRIER 
+_GLIBCXX_WRITE_MEM_BARRIER
 </code>
 </para>
 
@@ -195,7 +195,7 @@ host hardware and operating system.
   <title>Implementation</title>
   <sect2 id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F">
     <title>Using Builtin Atomic Functions</title>
-    
+
 <para>The functions for atomic operations described above are either
 implemented via compiler intrinsics (if the underlying host is
 capable) or by library fallbacks.</para>
@@ -214,7 +214,7 @@ usage vary depending on the target hardware and the flags used during
 compile.
 </para>
 
-<para> 
+<para>
 If builtins are possible for bool-sized integral types,
 <code>_GLIBCXX_ATOMIC_BUILTINS_1</code> will be defined.
 If builtins are possible for int-sized integral types,
@@ -285,7 +285,7 @@ including <code>pthread_t</code>, <code>pthread_once_t</code>, <code>pthread_cre
 etc.
 </para>
 
-  </sect2>  
+  </sect2>
 </sect1>
 
 <sect1 id="manual.ext.concurrency.use" xreflabel="Use">

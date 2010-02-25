@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <appendix id="appendix.contrib" xreflabel="Contributing">
@@ -25,7 +25,7 @@
   </indexterm>
 </title>
 
-<para> 
+<para>
   The GNU C++ Library follows an open development model. Active
   contributors are assigned maintainer-ship responsibility, and given
   write access to the source repository. First time contributors
@@ -40,7 +40,7 @@
 
     <itemizedlist>
       <listitem>
-	<para> 
+	<para>
 	  Get and read the relevant sections of the C++ language
 	  specification. Copies of the full ISO 14882 standard are
 	  available on line via the ISO mirror site for committee
@@ -50,14 +50,14 @@
 	  the standard from their respective national standards
 	  organization. In the USA, this national standards
 	  organization is ANSI and their web-site is right
-	  <ulink url="http://www.ansi.org">here.</ulink> 
-	  (And if you've already registered with them, clicking this link will take you to directly to the place where you can 
+	  <ulink url="http://www.ansi.org">here.</ulink>
+	  (And if you've already registered with them, clicking this link will take you to directly to the place where you can
 	  <ulink url="http://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2FIEC+14882:2003">buy the standard on-line.)</ulink>
 	</para>
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  The library working group bugs, and known defects, can
 	  be obtained here:
 	  <ulink url="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21 </ulink>
@@ -65,7 +65,7 @@
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  The newsgroup dedicated to standardization issues is
 	  comp.std.c++: this FAQ for this group is quite useful and
 	  can be
@@ -75,7 +75,7 @@
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  Peruse
 	  the <ulink url="http://www.gnu.org/prep/standards">GNU
 	  Coding Standards</ulink>, and chuckle when you hit the part
@@ -84,7 +84,7 @@
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  Be familiar with the extensions that preceded these
 	  general GNU rules. These style issues for libstdc++ can be
 	  found <link linkend="contrib.coding_style">here</link>.
@@ -92,7 +92,7 @@
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  And last but certainly not least, read the
 	  library-specific information
 	  found <link linkend="appendix.porting"> here</link>.
@@ -107,10 +107,10 @@
       Small changes can be accepted without a copyright assignment form on
       file. New code and additions to the library need completed copyright
       assignment form on file at the FSF. Note: your employer may be required
-      to fill out appropriate disclaimer forms as well. 
+      to fill out appropriate disclaimer forms as well.
     </para>
 
-    <para> 
+    <para>
       Historically, the libstdc++ assignment form added the following
       question:
     </para>
@@ -128,7 +128,7 @@
     </para>
 
     <para>
-      For more information about getting a copyright assignment, please see 
+      For more information about getting a copyright assignment, please see
       <ulink url="http://www.gnu.org/prep/maintain/html_node/Legal-Matters.html">Legal
 	Matters</ulink>.
     </para>
@@ -162,34 +162,34 @@
 
     <itemizedlist>
       <listitem>
-	<para> 
+	<para>
 	  A description of the bug and how your patch fixes this
 	  bug. For new features a description of the feature and your
-	  implementation. 
+	  implementation.
 	</para>
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  A ChangeLog entry as plain text; see the various
 	  ChangeLog files for format and content. If you are
 	  using emacs as your editor, simply position the insertion
 	  point at the beginning of your change and hit CX-4a to bring
 	  up the appropriate ChangeLog entry. See--magic! Similar
-	  functionality also exists for vi. 
+	  functionality also exists for vi.
 	</para>
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  A testsuite submission or sample program that will
 	  easily and simply show the existing error or test new
-	  functionality. 
+	  functionality.
 	</para>
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  The patch itself. If you are accessing the SVN
 	  repository use <command>svn update; svn diff NEW</command>;
 	  else, use <command>diff -cp OLD NEW</command> ... If your
@@ -202,13 +202,13 @@
       </listitem>
 
       <listitem>
-	<para> 
+	<para>
 	  When you have all these pieces, bundle them up in a
 	  mail message and send it to libstdc++@gcc.gnu.org. All
 	  patches and related discussion should be sent to the
-	  libstdc++ mailing list. 
+	  libstdc++ mailing list.
 	</para>
-      </listitem>      
+      </listitem>
     </itemizedlist>
 
   </sect2>
@@ -218,7 +218,7 @@
 <sect1 id="contrib.organization" xreflabel="Source Organization">
   <?dbhtml filename="source_organization.html"?>
   <title>Directory Layout and Source Conventions</title>
-  
+
   <para>
     The unpacked source directory of libstdc++ contains the files
     needed to create the GNU C++ Library.
@@ -238,26 +238,26 @@ It has subdirectories:
 
     include/std
       Files meant to be found by #include &lt;name&gt; directives in
-      standard-conforming user programs.  
+      standard-conforming user programs.
 
     include/c
-      Headers intended to directly include standard C headers. 
+      Headers intended to directly include standard C headers.
       [NB: this can be enabled via --enable-cheaders=c]
 
-    include/c_global 
+    include/c_global
       Headers intended to include standard C headers in
       the global namespace, and put select names into the std::
       namespace.  [NB: this is the default, and is the same as
       --enable-cheaders=c_global]
 
-    include/c_std 
+    include/c_std
       Headers intended to include standard C headers
       already in namespace std, and put select names into the std::
       namespace.  [NB: this is the same as --enable-cheaders=c_std]
 
     include/bits
       Files included by standard headers and by other files in
-      the bits directory. 
+      the bits directory.
 
     include/backward
       Headers provided for backward compatibility, such as &lt;iostream.h&gt;.
@@ -276,7 +276,7 @@ It has subdirectories:
     installed.
 
   testsuites/[backward, demangle, ext, performance, thread, 17_* to 27_*]
-    Test programs are here, and may be used to begin to exercise the 
+    Test programs are here, and may be used to begin to exercise the
     library.  Support for "make check" and "make check-install" is
     complete, and runs through all the subdirectories here when this
     command is issued from the build directory.  Please note that
@@ -378,7 +378,7 @@ indicate a place that may require attention for multi-thread safety.
       these names as operators have been fixed.]
 
       The full set of __* identifiers (combined from gcc/cp/lex.c and
-      gcc/cplus-dem.c) that are either old or new, but are definitely 
+      gcc/cplus-dem.c) that are either old or new, but are definitely
       recognized by the demangler, is:
 
       __aa
@@ -548,8 +548,8 @@ indicate a place that may require attention for multi-thread safety.
       -NOT-
       char *p = "flop";  // wrong
       char &amp;c = *p;      // wrong
-      
-      Reason: In C++, definitions are mixed with executable code. Here,       
+
+      Reason: In C++, definitions are mixed with executable code. Here,
       p is being initialized, not *p. This is near-universal
       practice among C++ programmers; it is normal for C hackers
       to switch spontaneously as they gain experience.
@@ -558,9 +558,9 @@ indicate a place that may require attention for multi-thread safety.
       operator==(type)
       -NOT-
       operator == (type)  // wrong
-      
+
       Reason: The == is part of the function name. Separating
-      it makes the declaration look like an expression. 
+      it makes the declaration look like an expression.
 
       03. Function names and parentheses
       void mangle()
@@ -569,22 +569,22 @@ indicate a place that may require attention for multi-thread safety.
 
       Reason: no space before parentheses (except after a control-flow
       keyword) is near-universal practice for C++. It identifies the
-      parentheses as the function-call operator or declarator, as 
+      parentheses as the function-call operator or declarator, as
       opposed to an expression or other overloaded use of parentheses.
 
       04. Template function indentation
       template&lt;typename T&gt;
-      void 
+      void
       template_function(args)
       { }
       -NOT-
       template&lt;class T&gt;
       void template_function(args) {};
-      
+
       Reason: In class definitions, without indentation whitespace is
       needed both above and below the declaration to distinguish
       it visually from other members. (Also, re: "typename"
-      rather than "class".)  T often could be int, which is 
+      rather than "class".)  T often could be int, which is
       not a class. ("class", here, is an anachronism.)
 
       05. Template class indentation
@@ -622,7 +622,7 @@ indicate a place that may require attention for multi-thread safety.
       07. Member initialization lists
       All one line, separate from class name.
 
-      gribble::gribble() 
+      gribble::gribble()
       : _M_private_data(0), _M_more_stuff(0), _M_helper(0);
       { }
       -NOT-
@@ -630,18 +630,18 @@ indicate a place that may require attention for multi-thread safety.
       { }
 
       08. Try/Catch blocks
-      try 
+      try
       {
       //
-      }   
+      }
       catch (...)
       {
       //
-      }   
+      }
       -NOT-
       try {
-      // 
-      } catch(...) { 
+      //
+      } catch(...) {
       //
       }
 
@@ -649,7 +649,7 @@ indicate a place that may require attention for multi-thread safety.
       Keywords such as extern, static, export, explicit, inline, etc
       go on the line above the function name. Thus
 
-      virtual int   
+      virtual int
       foo()
       -NOT-
       virtual int foo()
@@ -692,7 +692,7 @@ indicate a place that may require attention for multi-thread safety.
 
       -NOT-
       public:
-      
+
       int foo;
 
       13. Spacing WRT return statements.
@@ -751,17 +751,17 @@ indicate a place that may require attention for multi-thread safety.
 
       Name patterns:
 
-      For nonstandard names appearing in Standard headers, we are constrained 
+      For nonstandard names appearing in Standard headers, we are constrained
       to use names that begin with underscores. This is called "uglification".
       The convention is:
 
       Local and argument names:  __[a-z].*
 
-      Examples:  __count  __ix  __s1  
+      Examples:  __count  __ix  __s1
 
       Type names and template formal-argument names: _[A-Z][^_].*
 
-      Examples:  _Helper  _CharT  _N 
+      Examples:  _Helper  _CharT  _N
 
       Member data and function names: _M_.*
 
@@ -771,7 +771,7 @@ indicate a place that may require attention for multi-thread safety.
 
       Examples: _S_max_elements  _S_default_value
 
-      Don't use names in the same scope that differ only in the prefix, 
+      Don't use names in the same scope that differ only in the prefix,
       e.g. _S_top and _M_top. See BADNAMES for a list of forbidden names.
       (The most tempting of these seem to be and "_T" and "__sz".)
 
@@ -781,7 +781,7 @@ indicate a place that may require attention for multi-thread safety.
       --------------------------
 
       [BY EXAMPLE]
-      
+
       #ifndef  _HEADER_
       #define  _HEADER_ 1
 
@@ -794,37 +794,37 @@ indicate a place that may require attention for multi-thread safety.
 
       gribble(const gribble&amp;);
 
-      explicit 
+      explicit
       gribble(int __howmany);
 
-      gribble&amp; 
+      gribble&amp;
       operator=(const gribble&amp;);
 
-      virtual 
+      virtual
       ~gribble() throw ();
 
       // Start with a capital letter, end with a period.
-      inline void  
+      inline void
       public_member(const char* __arg) const;
 
       // In-class function definitions should be restricted to one-liners.
-      int 
+      int
       one_line() { return 0 }
 
-      int 
-      two_lines(const char* arg) 
+      int
+      two_lines(const char* arg)
       { return strchr(arg, 'a'); }
 
-      inline int 
+      inline int
       three_lines();  // inline, but defined below.
 
       // Note indentation.
       template&lt;typename _Formal_argument&gt;
-      void 
+      void
       public_template() const throw();
 
       template&lt;typename _Iterator&gt;
-      void 
+      void
       other_template();
 
       private:
@@ -835,13 +835,13 @@ indicate a place that may require attention for multi-thread safety.
       _Helper* _M_helper;
       int _M_private_function();
 
-      enum _Enum 
-      { 
-      _S_one, 
-      _S_two 
+      enum _Enum
+      {
+      _S_one,
+      _S_two
       };
 
-      static void 
+      static void
       _S_initialize_library();
       };
 
@@ -871,20 +871,20 @@ indicate a place that may require attention for multi-thread safety.
       #endif /* _HEADER_ */
 
 
-      namespace std 
+      namespace std
       {
       template&lt;typename T&gt;  // notice: "typename", not "class", no space
-      long_return_value_type&lt;with_many, args&gt;  
+      long_return_value_type&lt;with_many, args&gt;
       function_name(char* pointer,               // "char *pointer" is wrong.
-      char* argument, 
+      char* argument,
       const Reference&amp; ref)
       {
       // int a_local;  /* wrong; see below. */
-      if (test) 
-      { 
-      nested code 
+      if (test)
+      {
+      nested code
       }
-      
+
       int a_local = 0;  // declare variable at first use.
 
       //  char a, b, *p;   /* wrong */
@@ -897,12 +897,12 @@ indicate a place that may require attention for multi-thread safety.
       // ...
       }
       }
-      
+
       gribble::gribble()
       : _M_private_data(0), _M_more_stuff(0), _M_helper(0);
       { }
 
-      inline int 
+      inline int
       gribble::three_lines()
       {
       // doesn't fit in one line.
@@ -910,7 +910,7 @@ indicate a place that may require attention for multi-thread safety.
       } // namespace std
     </literallayout>
   </sect2>
-</sect1>  
+</sect1>
 
 <sect1 id="contrib.doc_style" xreflabel="Documentation Style">
   <?dbhtml filename="documentation_style.html"?>
@@ -932,7 +932,7 @@ indicate a place that may require attention for multi-thread safety.
 	To generate the pretty pictures and hierarchy
 	graphs, the
 	<ulink url="http://www.graphviz.org">Graphviz</ulink>
-	package will need to be installed. 
+	package will need to be installed.
       </para>
     </sect3>
 
@@ -1022,7 +1022,7 @@ indicate a place that may require attention for multi-thread safety.
  	<listitem>
 	  <para>
 	    Use the triple-slash style only for one-line comments (the
-	    <quote>brief</quote> mode). 
+	    <quote>brief</quote> mode).
 	  </para>
 	</listitem>
 
@@ -1032,7 +1032,7 @@ indicate a place that may require attention for multi-thread safety.
 	  </para>
 	</listitem>
       </orderedlist>
-      
+
       <para>
 	Some specific guidelines:
       </para>
@@ -1071,7 +1071,7 @@ indicate a place that may require attention for multi-thread safety.
    * @brief A model of a linear congruential random number generator.
    *
    * @f[
-   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m 
+   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m
    * @f]
    */
 </literallayout>
@@ -1207,11 +1207,11 @@ indicate a place that may require attention for multi-thread safety.
 	consult the <email>libstdc++@gcc.gnu.org</email> list when
 	preparing printed manuals for current best practice and suggestions.
       </para>
-  
+
       <para>
 	Make sure that the XML documentation and markup is valid for
 	any change. This can be done easily, with the validation rules
-	in the <filename>Makefile</filename>, which is equivalent to doing: 
+	in the <filename>Makefile</filename>, which is equivalent to doing:
       </para>
 
 	<screen>
@@ -1226,25 +1226,25 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
       <para>
 	The following Makefile rules generate (in order): an HTML
-	version of all the documentation, a PDF version of the same, a
+	version of all the DocBook documentation, a PDF version of the same, a
 	single XML document, and the result of validating the entire XML
 	document.
       </para>
 
       <para>
-      <screen><userinput>make doc-html</userinput></screen>
+      <screen><userinput>make doc-html-docbook</userinput></screen>
       </para>
 
       <para>
-      <screen><userinput>make doc-pdf</userinput></screen>
+      <screen><userinput>make doc-pdf-docbook</userinput></screen>
       </para>
 
       <para>
-      <screen><userinput>make doc-xml-single</userinput></screen>
+      <screen><userinput>make doc-xml-single-docbook</userinput></screen>
       </para>
 
       <para>
-      <screen><userinput>make doc-xml-validate</userinput></screen>
+      <screen><userinput>make doc-xml-validate-docbook</userinput></screen>
       </para>
 
     </sect3>
@@ -1259,11 +1259,11 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       libstdc++-v3/doc/xml
 
       Inside this directory, the files of importance:
-      spine.xml  	- index to documentation set
+      spine.xml	 	- index to documentation set
       manual/spine.xml  - index to manual
       manual/*.xml  	- individual chapters and sections of the manual
       faq.xml  		- index to FAQ
-      api.xml  		- index to source level / API 
+      api.xml  		- index to source level / API
 
       All *.txml files are template xml files, i.e., otherwise empty files with
       the correct structure, suitable for filling in with new information.
@@ -1291,7 +1291,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       &lt;/chapter&gt;
       &lt;/book&gt;
 
-      &lt;book&gt;	
+      &lt;book&gt;
       &lt;part&gt;
       &lt;chapter&gt;
       &lt;section&gt;
@@ -1308,7 +1308,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
       &lt;chapter&gt;
       &lt;/chapter&gt;
-      &lt;/part&gt;  
+      &lt;/part&gt;
       &lt;/book&gt;
 
       &lt;/set&gt;
@@ -1321,7 +1321,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       <para>
 	Complete details on Docbook markup can be found in the DocBook
 	Element Reference,
-	<ulink url="http://www.docbook.org/tdg/en/html/part2.html">online</ulink>. 
+	<ulink url="http://www.docbook.org/tdg/en/html/part2.html">online</ulink>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
       </para>
@@ -1346,7 +1346,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     </row>
     <row>
       <entry>&lt;pre&gt;</entry>
-      <entry>&lt;computeroutput&gt;, &lt;programlisting&gt;, 
+      <entry>&lt;computeroutput&gt;, &lt;programlisting&gt;,
 	&lt;literallayout&gt;</entry>
     </row>
     <row>
@@ -1477,7 +1477,45 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     </sect3>
   </sect2>
 
-</sect1>  
+  <sect2 id="doc_style.combines">
+    <title>Combines</title>
+
+    <sect3 id="combines.rules">
+      <title>Generating Combines and Assemblages</title>
+
+      <para>
+	The following Makefile rules are defaults, and are usually
+	aliased to variable rules.
+      </para>
+
+      <para>
+      <screen><userinput>make doc-html</userinput></screen>
+      </para>
+
+      <para>
+      <screen><userinput>make doc-man</userinput></screen>
+      </para>
+
+      <para>
+      <screen><userinput>make doc-pdf</userinput></screen>
+      </para>
+
+      <para>
+	The following Makefile rules generate (in order): an HTML
+	version of all the DocBook documentation with links into an
+	local Doxygen cache, and a PDF version of the same.
+      </para>
+
+      <para>
+      <screen><userinput>make doc-html-combine</userinput></screen>
+      </para>
+
+      <para>
+      <screen><userinput>make doc-pdf-combine</userinput></screen>
+      </para>
+  </sect3>
+  </sect2>
+</sect1>
 
 <sect1 id="contrib.design_notes" xreflabel="Design Notes">
   <?dbhtml filename="source_design_notes.html"?>
@@ -2339,6 +2377,6 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     include them via "&lt;backward/hash_map.h&gt;" or "&lt;ext/hash_map&gt;" than
     to search the subdirectory itself via a "-I" directive.
   </literallayout>
-</sect1>  
+</sect1>
 
 </appendix>

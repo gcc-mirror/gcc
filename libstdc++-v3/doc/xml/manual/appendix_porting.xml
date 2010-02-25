@@ -1,11 +1,11 @@
 <?xml version='1.0'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <appendix id="appendix.porting" xreflabel="Porting">
 <?dbhtml filename="appendix_porting.html"?>
- 
+
 <appendixinfo>
   <keywordset>
     <keyword>
@@ -26,32 +26,32 @@
 </title>
 
   <!-- Hacking the Build System -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="build_hacking.xml">
   </xi:include>
 
   <!-- Internals: Porting to New Hardware or Operating Systems -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="internals.xml">
   </xi:include>
 
   <!-- Test -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="test.xml">
   </xi:include>
 
   <!-- ABI Policy and Guidelines -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="abi.xml">
   </xi:include>
 
   <!-- API Evolution and Deprecation History -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="evolution.xml">
   </xi:include>
 
   <!-- Backwards Compatibility -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	      parse="xml" href="backwards_compatibility.xml">
   </xi:include>
 

@@ -1,6 +1,6 @@
-<sect1 id="manual.localization.locales.locale" xreflabel="Locale">
+<section id="std.localization.locales.locale" xreflabel="Locale">
 
-<sect1info>
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -9,7 +9,7 @@
       locale
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>locale</title>
 
@@ -19,7 +19,7 @@ classes id, facet, and the reference-counted implementation object,
 class _Impl.
 </para>
 
-<sect2 id="locales.locale.req">
+<section id="locales.locale.req">
 <title>Requirements</title>
 
 <para>
@@ -87,9 +87,9 @@ class id
 <para>
 Provides an index for looking up specific facets.
 </para>
-</sect2>
+</section>
 
-<sect2 id="locales.locale.design">
+<section id="locales.locale.design">
 <title>Design</title>
 
 <para>
@@ -103,12 +103,12 @@ Because C and earlier versions of POSIX fall down so completely,
 portability is an issue.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="locales.locale.impl">
+<section id="locales.locale.impl">
 <title>Implementation</title>
 
-  <sect3 id="locale.impl.c">
+  <section id="locale.impl.c">
     <title>Interacting with &quot;C&quot; locales</title>
 
 <itemizedlist>
@@ -467,10 +467,10 @@ global locale" (emphasis Paolo), that is:
   practice, the set of LC_ALL, LANG, etc. variable of the shell.
 </para>
 
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="locales.locale.future">
+<section id="locales.locale.future">
 <title>Future</title>
 
 <itemizedlist>
@@ -508,7 +508,7 @@ global locale" (emphasis Paolo), that is:
    </para>
    </listitem>
 </itemizedlist>
-</sect2>
+</section>
 
 <bibliography id="locales.locale.biblio">
 <title>Bibliography</title>
@@ -634,4 +634,4 @@ global locale" (emphasis Paolo), that is:
 
 </bibliography>
 
-</sect1>
+</section>

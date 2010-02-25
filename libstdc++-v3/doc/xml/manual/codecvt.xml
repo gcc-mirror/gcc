@@ -1,7 +1,7 @@
-<sect1 id="manual.localization.facet.codecvt" xreflabel="codecvt">
+<section id="std.localization.facet.codecvt" xreflabel="codecvt">
 <?dbhtml filename="codecvt.html"?>
 
-<sect1info>
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,7 +10,7 @@
       codecvt
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>codecvt</title>
 
@@ -30,7 +30,7 @@ specializations for wide and narrow characters and the
 implementation-provided extended functionality are given.
 </para>
 
-<sect2 id="facet.codecvt.req">
+<section id="facet.codecvt.req">
 <title>Requirements</title>
 
 <para>
@@ -108,12 +108,12 @@ Two: The required conversions, by specifying mbstate_t as the third
 template parameter, imply an implementation strategy that is mostly
 (or wholly) based on the underlying C library, and the functions
 mcsrtombs and wcsrtombs in particular.</para>
-</sect2>
+</section>
 
-<sect2 id="facet.codecvt.design">
+<section id="facet.codecvt.design">
 <title>Design</title>
 
-<sect3 id="codecvt.design.wchar_t_size">
+<section id="codecvt.design.wchar_t_size">
     <title><type>wchar_t</type> Size</title>
 
     <para>
@@ -131,9 +131,9 @@ mcsrtombs and wcsrtombs in particular.</para>
     <para>
       Thus, portable C++ code cannot assume a byte size (or endianness) either.
     </para>
-  </sect3>
+  </section>
 
-<sect3 id="codecvt.design.unicode">
+<section id="codecvt.design.unicode">
   <title>Support for Unicode</title>
   <para>
     Probably the most frequently asked question about code conversion
@@ -236,9 +236,9 @@ mechanism may be required.
   external types will need to be known.
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="codecvt.design.issues">
+<section id="codecvt.design.issues">
   <title>Other Issues</title>
 <para>
 In addition, multi-threaded and multi-locale environments also impact
@@ -284,11 +284,11 @@ on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
 </para>
 
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<sect2 id="facet.codecvt.impl">
+<section id="facet.codecvt.impl">
 <title>Implementation</title>
 
 <para>
@@ -432,9 +432,9 @@ external character type, encoding_state&gt; is consistent with other
 codecvt usage.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="facet.codecvt.use">
+<section id="facet.codecvt.use">
 <title>Use</title>
 <para>A conversions involving string literal.</para>
 
@@ -477,9 +477,9 @@ codecvt usage.
   VERIFY( ito_next == i_arr + size );
 </programlisting>
 
-</sect2>
+</section>
 
-<sect2 id="facet.codecvt.future">
+<section id="facet.codecvt.future">
 <title>Future</title>
 <itemizedlist>
 <listitem>
@@ -532,7 +532,7 @@ codecvt usage.
    </itemizedlist>
 </listitem>
 </itemizedlist>
-</sect2>
+</section>
 
 
 <bibliography id="facet.codecvt.biblio">
@@ -702,4 +702,4 @@ codecvt usage.
 
 </bibliography>
 
-</sect1>
+</section>

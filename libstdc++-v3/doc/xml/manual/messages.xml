@@ -1,7 +1,7 @@
-<sect1 id="manual.localization.facet.messages" xreflabel="Messages">
+<section id="manual.localization.facet.messages" xreflabel="Messages">
 <?dbhtml filename="messages.html"?>
 
-<sect1info>
+<sectioninfo>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,7 +10,7 @@
       messages
     </keyword>
   </keywordset>
-</sect1info>
+</sectioninfo>
 
 <title>messages</title>
 
@@ -20,7 +20,7 @@ equivalent to Java's java.text.MessageFormat .using either GNU gettext
 or IEEE 1003.1-200 functions.
 </para>
 
-<sect2 id="facet.messages.req">
+<section id="facet.messages.req">
 <title>Requirements</title>
 
 <para>
@@ -106,9 +106,9 @@ be found, returns dfault.
 </blockquote>
 
 
-</sect2>
+</section>
 
-<sect2 id="facet.messages.design">
+<section id="facet.messages.design">
 <title>Design</title>
 
 <para>
@@ -155,12 +155,12 @@ to be written in English, so translations are always from "en_US" to
 other, explicitly named locales.
 </para>
 
-</sect2>
+</section>
 
-<sect2 id="facet.messages.impl">
+<section id="facet.messages.impl">
 <title>Implementation</title>
 
-  <sect3 id="messages.impl.models">
+  <section id="messages.impl.models">
   <title>Models</title>
   <para>
     This is a relatively simple class, on the face of it. The standard
@@ -226,9 +226,9 @@ message catalog. This simplifies calling conventions for the gnu
 model.
 </para>
 
-  </sect3>
+  </section>
 
-  <sect3 id="messages.impl.gnu">
+  <section id="messages.impl.gnu">
   <title>The GNU Model</title>
 
   <para>
@@ -318,10 +318,10 @@ model.
    </listitem>
 </itemizedlist>
 
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="facet.messages.use">
+<section id="facet.messages.use">
 <title>Use</title>
  <para>
    A simple example using the GNU model of message conversion.
@@ -349,9 +349,9 @@ void test01()
 }
 </programlisting>
 
-</sect2>
+</section>
 
-<sect2 id="facet.messages.future">
+<section id="facet.messages.future">
 <title>Future</title>
 
 <itemizedlist>
@@ -436,7 +436,7 @@ void test01()
 </listitem>
 </itemizedlist>
 
-</sect2>
+</section>
 
 <bibliography id="facet.messages.biblio">
 <title>Bibliography</title>
@@ -585,4 +585,4 @@ Library and Tools.
 
 </bibliography>
 
-</sect1>
+</section>
