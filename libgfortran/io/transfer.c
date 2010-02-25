@@ -925,8 +925,9 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
   if (actual == expected)
     return 0;
 
+  /* Adjust item_count before emitting error message.  */
   sprintf (buffer, "Expected %s for item %d in formatted transfer, got %s",
-	   type_name (expected), dtp->u.p.item_count, type_name (actual));
+	   type_name (expected), dtp->u.p.item_count - 1, type_name (actual));
 
   format_error (dtp, f, buffer);
   return 1;
@@ -1703,6 +1704,12 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
   unget_format (dtp, f);
 }
 
+  /* This function is first called from data_init_transfer to initiate the loop
+     over each item in the format, transferring data as required.  Subsequent
+     calls to this function occur for each data item foound in the READ/WRITE
+     statement.  The item_count is incremented for each call.  Since the first
+     call is from data_transfer_init, the item_count is always one greater than
+     the actual count number of the item being transferred.  */
 
 static void
 formatted_transfer (st_parameter_dt *dtp, bt type, void *p, int kind,
