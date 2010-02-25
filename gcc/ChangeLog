@@ -1,3 +1,9 @@
+2010-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43165
+	* cfgexpand.c (expand_debug_expr): Don't call simplify_gen_subreg
+	if bitpos isn't multiple of mode's bitsize.
+
 2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c.opt (-ftemplate-depth=): New.
