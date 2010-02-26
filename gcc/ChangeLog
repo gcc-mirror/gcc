@@ -1,3 +1,9 @@
+2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Set the default arch at least to Prescott for
+	i[34567]86-*-darwin* and Pentium 4 for i[34567]86-*-* targets
+	if SSE math is enabled.
+
 2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* diagnostic.c (diagnostic_initialize): Update.
