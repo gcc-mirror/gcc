@@ -1,3 +1,7 @@
+2010-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/abi/packed1.C: Expect warning on the SPARC.
+
 2010-02-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/43154
