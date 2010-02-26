@@ -467,7 +467,7 @@ requires that this be treated as erroneous.
 A @dfn{preprocessing token} is a @dfn{preprocessing number} if it
 begins with a digit and is followed by letters, underscores, digits,
 periods and @samp{e+}, @samp{e-}, @samp{E+}, @samp{E-}, @samp{p+},
-@samp{p-}, @samp{P+}, or @samp{P-} character sequences.  (In strict C89
+@samp{p-}, @samp{P+}, or @samp{P-} character sequences.  (In strict C90
 mode, the sequences @samp{p+}, @samp{p-}, @samp{P+} and @samp{P-} cannot
 appear in preprocessing numbers.)
 

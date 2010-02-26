@@ -21,8 +21,8 @@ These extensions are available in C and Objective-C@.  Most of them are
 also available in C++.  @xref{C++ Extensions,,Extensions to the
 C++ Language}, for extensions that apply @emph{only} to C++.
 
-Some features that are in ISO C99 but not C89 or C++ are also, as
-extensions, accepted by GCC in C89 mode and in C++.
+Some features that are in ISO C99 but not C90 or C++ are also, as
+extensions, accepted by GCC in C90 mode and in C++.
 
 @menu
 * Statement Exprs::     Putting statements and declarations inside expressions.
@@ -813,7 +813,7 @@ effects of recomputing it.
 @cindex @code{ULL} integer suffix
 
 ISO C99 supports data types for integers that are at least 64 bits wide,
-and as an extension GCC supports them in C89 mode and in C++.
+and as an extension GCC supports them in C90 mode and in C++.
 Simply write @code{long long int} for a signed integer, or
 @code{unsigned long long int} for an unsigned integer.  To make an
 integer constant of type @code{long long int}, add the suffix @samp{LL}
@@ -843,7 +843,7 @@ Likewise, if the function expects @code{long long int} and you pass
 @cindex @code{__complex__} keyword
 
 ISO C99 supports complex floating data types, and as an extension GCC
-supports them in C89 mode and in C++, and supports complex integer data
+supports them in C90 mode and in C++, and supports complex integer data
 types which are not part of ISO C99.  You can declare complex types
 using the keyword @code{_Complex}.  As an extension, the older GNU
 keyword @code{__complex__} is also supported.
@@ -1032,7 +1032,7 @@ are supported by the DWARF2 debug information format.
 ISO C99 supports floating-point numbers written not only in the usual
 decimal notation, such as @code{1.55e1}, but also numbers such as
 @code{0x1.fp3} written in hexadecimal format.  As a GNU extension, GCC
-supports this in C89 mode (except in some cases when strictly
+supports this in C90 mode (except in some cases when strictly
 conforming) and in C++.  In that format the
 @samp{0x} hex introducer and the @samp{p} or @samp{P} exponent field are
 mandatory.  The exponent is a decimal number that indicates the power of
@@ -1345,7 +1345,7 @@ member of type @code{char}.
 @cindex VLAs
 
 Variable-length automatic arrays are allowed in ISO C99, and as an
-extension GCC accepts them in C89 mode and in C++.  (However, GCC's
+extension GCC accepts them in C90 mode and in C++.  (However, GCC's
 implementation of variable-length arrays does not yet conform in detail
 to the ISO C99 standard.)  These arrays are
 declared like any other automatic arrays, but with a length that is not
@@ -1511,9 +1511,9 @@ In ISO C99, arrays that are not lvalues still decay to pointers, and
 may be subscripted, although they may not be modified or used after
 the next sequence point and the unary @samp{&} operator may not be
 applied to them.  As an extension, GCC allows such arrays to be
-subscripted in C89 mode, though otherwise they do not decay to
+subscripted in C90 mode, though otherwise they do not decay to
 pointers outside C99 mode.  For example,
-this is valid in GNU C though not valid in C89:
+this is valid in GNU C though not valid in C90:
 
 @smallexample
 @group
@@ -1576,7 +1576,7 @@ ISO C99 supports compound literals.  A compound literal looks like
 a cast containing an initializer.  Its value is an object of the
 type specified in the cast, containing the elements specified in
 the initializer; it is an lvalue.  As an extension, GCC supports
-compound literals in C89 mode and in C++.
+compound literals in C90 mode and in C++.
 
 Usually, the specified type is a structure.  Assume that
 @code{struct foo} and @code{structure} are declared as shown:
@@ -1646,13 +1646,13 @@ static int z[] = @{1, 0, 0@};
 @cindex case labels in initializers
 @cindex designated initializers
 
-Standard C89 requires the elements of an initializer to appear in a fixed
+Standard C90 requires the elements of an initializer to appear in a fixed
 order, the same as the order of the elements in the array or structure
 being initialized.
 
 In ISO C99 you can give the elements in any order, specifying the array
 indices or structure field names they apply to, and GNU C allows this as
-an extension in C89 mode as well.  This extension is not
+an extension in C90 mode as well.  This extension is not
 implemented in GNU C++.
 
 To specify an array index, write
@@ -1869,7 +1869,7 @@ hack ((union foo) x);
 
 ISO C99 and ISO C++ allow declarations and code to be freely mixed
 within compound statements.  As an extension, GCC also allows this in
-C89 mode.  For example, you could do:
+C90 mode.  For example, you could do:
 
 @smallexample
 int i;
@@ -2006,7 +2006,7 @@ if no optimization level was specified.
 @cindex @code{gnu_inline} function attribute
 This attribute should be used with a function which is also declared
 with the @code{inline} keyword.  It directs GCC to treat the function
-as if it were defined in gnu89 mode even when compiling in C99 or
+as if it were defined in gnu90 mode even when compiling in C99 or
 gnu99 mode.
 
 If the function is declared @code{extern}, then this definition of the
@@ -3837,7 +3837,7 @@ continue until the end of the line.  Many other C implementations allow
 such comments, and they are included in the 1999 C standard.  However,
 C++ style comments are not recognized if you specify an @option{-std}
 option specifying a version of ISO C before C99, or @option{-ansi}
-(equivalent to @option{-std=c89}).
+(equivalent to @option{-std=c90}).
 
 @node Dollar Signs
 @section Dollar Signs in Identifier Names
@@ -4938,7 +4938,7 @@ inc (int *a)
 @}
 @end smallexample
 
-If you are writing a header file to be included in ISO C89 programs, write
+If you are writing a header file to be included in ISO C90 programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.
 
 The three types of inlining behave similarly in two important cases:
@@ -5001,7 +5001,7 @@ the @samp{always_inline} attribute for the function, like this:
 inline void foo (const char) __attribute__((always_inline));
 @end smallexample
 
-The remainder of this section is specific to GNU C89 inlining.
+The remainder of this section is specific to GNU C90 inlining.
 
 @cindex non-static inline function
 When an inline function is not @code{static}, then the compiler must assume
@@ -6844,7 +6844,7 @@ be emitted.
 
 @opindex ansi
 @opindex std
-Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
+Outside strict ISO C mode (@option{-ansi}, @option{-std=c90} or
 @option{-std=c99}), the functions
 @code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
@@ -6867,7 +6867,7 @@ Outside strict ISO C mode (@option{-ansi}, @option{-std=c89} or
 @code{yn}
 may be handled as built-in functions.
 All these functions have corresponding versions
-prefixed with @code{__builtin_}, which may be used even in strict C89
+prefixed with @code{__builtin_}, which may be used even in strict C90
 mode.
 
 The ISO C99 functions
@@ -6911,7 +6911,7 @@ The ISO C99 functions
 @code{tgamma}, @code{truncf}, @code{truncl}, @code{trunc},
 @code{vfscanf}, @code{vscanf}, @code{vsnprintf} and @code{vsscanf}
 are handled as built-in functions
-except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
 
 There are also built-in versions of the ISO C99 functions
 @code{acosf}, @code{acosl}, @code{asinf}, @code{asinl}, @code{atan2f},
@@ -6933,7 +6933,7 @@ The ISO C94 functions
 @code{iswspace}, @code{iswupper}, @code{iswxdigit}, @code{towlower} and
 @code{towupper}
 are handled as built-in functions
-except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
 
 The ISO C90 functions
 @code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
