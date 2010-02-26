@@ -1,3 +1,8 @@
+2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43175
+	* gcc.target/i386/vperm-v4si-2-sse4.c: New.
+
 2010-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/abi/packed1.C: Expect warning on the SPARC.

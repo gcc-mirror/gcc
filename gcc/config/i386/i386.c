@@ -29144,8 +29144,8 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     do_subreg:
       vmode = V8HImode;
       target = gen_lowpart (vmode, target);
-      op0 = gen_lowpart (vmode, target);
-      op1 = gen_lowpart (vmode, target);
+      op0 = gen_lowpart (vmode, op0);
+      op1 = gen_lowpart (vmode, op1);
       break;
 
     default:
@@ -29153,7 +29153,7 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     }
 
   /* This matches five different patterns with the different modes.  */
-  x = gen_rtx_VEC_MERGE (vmode, op0, op1, GEN_INT (mask));
+  x = gen_rtx_VEC_MERGE (vmode, op1, op0, GEN_INT (mask));
   x = gen_rtx_SET (VOIDmode, target, x);
   emit_insn (x);
 

@@ -1,3 +1,10 @@
+2010-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43175
+	* config/i386/i386.c (expand_vec_perm_blend): Use correct
+	operands in V8HImode subregs.  Fix operand order in VEC_MERGE
+	rtx.
+
 2010-02-26  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* doc/invoke.texi (-fvar-tracking-assignments): Fix typo.
