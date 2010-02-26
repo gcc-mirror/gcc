@@ -2942,7 +2942,10 @@ case "${target}" in
 
 		case "$with_fpu" in
 		"" \
-		| fpa | fpe2 | fpe3 | maverick | vfp | vfp3 | vfpv3 | vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd | vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 | fpv4-sp-d16 | neon-vfpv4)
+		| fpa | fpe2 | fpe3 | maverick | vfp | vfp3 | vfpv3 \
+		| vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd \
+		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
+		| fpv4-sp-d16 | neon-vfpv4)
 			# OK
 			;;
 		*)
@@ -3079,7 +3082,10 @@ case "${target}" in
 				esac
 				# OK
 				;;
-			"" | amdfam10 | barcelona | k8-sse3 | opteron-sse3 | athlon64-sse3 | k8 | opteron | athlon64 | athlon-fx | nocona | core2 | atom | x86-64 | generic | native)
+			"" | x86-64 | generic | native \
+			| k8 | k8-sse3 | athlon64 | athlon64-sse3 | opteron \
+			| opteron-sse3 | athlon-fx | amdfam10 | barcelona \
+			| nocona | core2 | atom)
 				# OK
 				;;
 			*)
