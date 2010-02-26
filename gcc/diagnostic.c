@@ -109,6 +109,7 @@ diagnostic_initialize (diagnostic_context *context)
   context->last_module = 0;
   context->last_function = NULL;
   context->lock = 0;
+  context->inhibit_notes_p = false;
 }
 
 /* Initialize DIAGNOSTIC, where the message MSG has already been
@@ -317,11 +318,11 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       && !diagnostic_report_warnings_p (location))
     return false;
 
-  if (diagnostic->kind == DK_NOTE && flag_compare_debug)
-    return false;
-
   if (diagnostic->kind == DK_PEDWARN)
     diagnostic->kind = pedantic_warning_kind ();
+ 
+  if (diagnostic->kind == DK_NOTE && context->inhibit_notes_p)
+    return false;
 
   if (context->lock > 0)
     {

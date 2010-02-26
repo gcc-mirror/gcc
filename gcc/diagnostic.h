@@ -113,7 +113,16 @@ struct diagnostic_context
   const struct line_map *last_module;
 
   int lock;
+
+  bool inhibit_notes_p;
 };
+
+static inline void
+diagnostic_inhibit_notes (diagnostic_context * context)
+{
+  context->inhibit_notes_p = true;
+}
+
 
 /* Client supplied function to announce a diagnostic.  */
 #define diagnostic_starter(DC) (DC)->begin_diagnostic
