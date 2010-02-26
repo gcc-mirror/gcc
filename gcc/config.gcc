@@ -2625,16 +2625,20 @@ esac
 # to generic if there is no processor scheduler model for the target.
 arch=
 cpu=
+arch_without_sse2=no
 case ${target} in
   i386-*-*)
     arch=i386
     cpu=i386
+    arch_without_sse2=yes
     ;;
   i486-*-*)
     arch=i486
     cpu=i486
+    arch_without_sse2=yes
     ;;
   i586-*-*)
+    arch_without_sse2=yes
     case ${target_noncanonical} in
       k6_2-*)
 	arch=k6-2
@@ -2675,22 +2679,27 @@ case ${target} in
       athlon_xp-*|athlon_mp-*|athlon_4-*)
 	arch=athlon-4
 	cpu=athlon-4
+	arch_without_sse2=yes
 	;;
       athlon_tbird-*|athlon-*)
 	arch=athlon
 	cpu=athlon
+	arch_without_sse2=yes
 	;;
       geode-*)
 	arch=geode
 	cpu=geode
+	arch_without_sse2=yes
 	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
+	arch_without_sse2=yes
 	;;
       pentium3-*|pentium3m-*)
 	arch=pentium3
 	cpu=pentium3
+	arch_without_sse2=yes
 	;;
       pentium4-*|pentium4m-*)
 	arch=pentium4
@@ -2719,10 +2728,12 @@ case ${target} in
       pentiumpro-*)
 	arch=pentiumpro
 	cpu=pentiumpro
+	arch_without_sse2=yes
 	;;
       *)
 	arch=pentiumpro
 	cpu=generic
+	arch_without_sse2=yes
 	;;
     esac
     ;;
@@ -2836,14 +2847,22 @@ esac
 if test x$with_arch = x ; then
   case ${target} in
     i[34567]86-*-darwin*)
-      # Don't set default arch for Darwin since it will set the default
-      # ISA to SSE2.
+      # SSE math is enabled for Darwin, which sets the default ISA to
+      # SSE2.  The minimum ISA supported Darwin is SSE3, which is the
+      # same as Prescott.
+      if test $arch_without_sse2 = no; then
+	with_arch=$arch
+      else
+	with_arch=prescott
+      fi
       ;;
     i[34567]86-*-*)
-      # Don't set default arch if --with-fpmath is used since it will set
-      # the default ISA to SSE2.
-      if test x$with_fpmath = x; then
-        with_arch=$arch
+      # --with-fpmath sets the default ISA to SSE2, which is the same
+      # ISA supported by Pentium 4.
+      if test x$with_fpmath = x || test $arch_without_sse2 = no; then
+	with_arch=$arch
+      else
+	with_arch=pentium4
       fi
       ;;
     x86_64-*-*)
