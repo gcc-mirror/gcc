@@ -1,3 +1,9 @@
+2010-02-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43188
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Do not build
+	vector types of over-aligned element type.
+
 2010-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43175
