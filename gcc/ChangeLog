@@ -1,3 +1,7 @@
+2010-02-26  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* doc/invoke.texi (-fvar-tracking-assignments): Fix typo.
+
 2010-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (var-tracking.o): Depend on $(DIAGNOSTIC_H).
