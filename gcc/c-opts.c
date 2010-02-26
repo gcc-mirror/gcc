@@ -952,6 +952,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_std_c89:
+    case OPT_std_c90:
     case OPT_std_iso9899_1990:
     case OPT_std_iso9899_199409:
       if (!preprocessing_asm_p)
@@ -959,6 +960,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_std_gnu89:
+    case OPT_std_gnu90:
       if (!preprocessing_asm_p)
 	set_std_c89 (false /* c94 */, false /* ISO */);
       break;

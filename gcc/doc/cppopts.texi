@@ -374,12 +374,13 @@ knows about C and C++ standards; others may be added in the future.
 @var{standard}
 may be one of:
 @table @code
-@item iso9899:1990
+@item c90
 @itemx c89
-The ISO C standard from 1990.  @samp{c89} is the customary shorthand for
+@itemx iso9899:1990
+The ISO C standard from 1990.  @samp{c90} is the customary shorthand for
 this version of the standard.
 
-The @option{-ansi} option is equivalent to @option{-std=c89}.
+The @option{-ansi} option is equivalent to @option{-std=c90}.
 
 @item iso9899:199409
 The 1990 C standard, as amended in 1994.
@@ -391,7 +392,8 @@ The 1990 C standard, as amended in 1994.
 The revised ISO C standard, published in December 1999.  Before
 publication, this was known as C9X@.
 
-@item gnu89
+@item gnu90
+@itemx gnu89
 The 1990 C standard plus GNU extensions.  This is the default.
 
 @item gnu99

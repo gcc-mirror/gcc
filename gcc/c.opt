@@ -965,6 +965,10 @@ std=c89
 C ObjC
 Conform to the ISO 1990 C standard
 
+std=c90
+C ObjC
+Conform to the ISO 1990 C standard
+
 std=c99
 C ObjC
 Conform to the ISO 1999 C standard
@@ -985,6 +989,10 @@ standard, dubbed C++0x. Note that the extensions enabled by this mode
 are experimental and may be removed in future releases of GCC.
 
 std=gnu89
+C ObjC
+Conform to the ISO 1990 C standard with GNU extensions
+
+std=gnu90
 C ObjC
 Conform to the ISO 1990 C standard with GNU extensions
 

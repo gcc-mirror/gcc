@@ -1,3 +1,11 @@
+2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/20631
+	* gcc.dg/cpp/c90-pedantic.c: New.
+	* gcc.dg/cpp/c90.c: New.
+	* gcc.dg/gnu90-const-expr-1.c: New.
+	* gcc.dg/Woverlength-strings-pedantic-c90.c: New.
+
 2010-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43186

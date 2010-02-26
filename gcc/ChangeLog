@@ -1,5 +1,17 @@
 2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR c/20631
+	* doc/cpp.texi: Use c90 instead of c89 and gnu90 instead of gnu89.
+	* doc/standards.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+	* doc/cppopts.texi: Likewise. 
+	* doc/install.texi: Likewise.
+	* c.opt (std=c90,std=gnu90): New options.
+	* c-opts.c (c_common_handle_option): Handle them.
+
+2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR c/24577
 	* c-decl.c (undeclared_variable): Use an informative note.
 

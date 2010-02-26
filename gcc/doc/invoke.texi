@@ -1425,7 +1425,7 @@ accepts:
 @cindex ISO support
 @item -ansi
 @opindex ansi
-In C mode, this is equivalent to @samp{-std=c89}. In C++ mode, it is
+In C mode, this is equivalent to @samp{-std=c90}. In C++ mode, it is
 equivalent to @samp{-std=c++98}.
 
 This turns off certain features of GCC that are incompatible with ISO
@@ -1467,12 +1467,12 @@ Determine the language standard. @xref{Standards,,Language Standards
 Supported by GCC}, for details of these standard versions.  This option
 is currently only supported when compiling C or C++.
 
-The compiler can accept several base standards, such as @samp{c89} or
+The compiler can accept several base standards, such as @samp{c90} or
 @samp{c++98}, and GNU dialects of those standards, such as
-@samp{gnu89} or @samp{gnu++98}.  By specifying a base standard, the
+@samp{gnu90} or @samp{gnu++98}.  By specifying a base standard, the
 compiler will accept all programs following that standard and those
 using GNU extensions that do not contradict it.  For example,
-@samp{-std=c89} turns off certain features of GCC that are
+@samp{-std=c90} turns off certain features of GCC that are
 incompatible with ISO C90, such as the @code{asm} and @code{typeof}
 keywords, but not other GNU extensions that do not have a meaning in
 ISO C90, such as omitting the middle term of a @code{?:}
@@ -1482,13 +1482,14 @@ those features change the meaning of the base standard and some
 strict-conforming programs may be rejected.  The particular standard
 is used by @option{-pedantic} to identify which features are GNU
 extensions given that version of the standard. For example
-@samp{-std=gnu89 -pedantic} would warn about C++ style @samp{//}
+@samp{-std=gnu90 -pedantic} would warn about C++ style @samp{//}
 comments, while @samp{-std=gnu99 -pedantic} would not.
 
 A value for this option must be provided; possible values are
 
 @table @samp
-@item c89
+@item c90
+@itemx c89
 @itemx iso9899:1990
 Support all ISO C90 programs (certain GNU extensions that conflict
 with ISO C90 are disabled). Same as @option{-ansi} for C code.
@@ -1504,7 +1505,8 @@ ISO C99.  Note that this standard is not yet fully supported; see
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
-@item gnu89
+@item gnu90
+@itemx gnu89
 GNU dialect of ISO C90 (including some C99 features). This
 is the default for C code.
 
@@ -1547,7 +1549,8 @@ C99 mode.  Using this option is roughly equivalent to adding the
 The option @option{-fno-gnu89-inline} explicitly tells GCC to use the
 C99 semantics for @code{inline} when in C99 or gnu99 mode (i.e., it
 specifies the default behavior).  This option was first supported in
-GCC 4.3.  This option is not supported in C89 or gnu89 mode.
+GCC 4.3.  This option is not supported in @option{-std=c90} or
+@option{-std=gnu90} mode.
 
 The preprocessor macros @code{__GNUC_GNU_INLINE__} and
 @code{__GNUC_STDC_INLINE__} may be used to check which semantics are
@@ -2842,7 +2845,7 @@ be quite different from @option{-pedantic}.  We don't have plans to
 support such a feature in the near future.
 
 Where the standard specified with @option{-std} represents a GNU
-extended dialect of C, such as @samp{gnu89} or @samp{gnu99}, there is a
+extended dialect of C, such as @samp{gnu90} or @samp{gnu99}, there is a
 corresponding @dfn{base standard}, the version of ISO C on which the GNU
 extended dialect is based.  Warnings from @option{-pedantic} are given
 where they are required by the base standard.  (It would not make sense
@@ -4342,7 +4345,7 @@ standard's minimum limit, but very portable programs should avoid
 using longer strings.
 
 The limit applies @emph{after} string constant concatenation, and does
-not count the trailing NUL@.  In C89, the limit was 509 characters; in
+not count the trailing NUL@.  In C90, the limit was 509 characters; in
 C99, it was raised to 4095.  C++98 does not specify a normative
 minimum maximum, so we do not diagnose overlength strings in C++@.
 
@@ -5955,7 +5958,7 @@ release to an another.
 In C, emit @code{static} functions that are declared @code{inline}
 into the object file, even if the function has been inlined into all
 of its callers.  This switch does not affect functions using the
-@code{extern inline} extension in GNU C89@.  In C++, emit any and all
+@code{extern inline} extension in GNU C90@.  In C++, emit any and all
 inline functions into the object file.
 
 @item -fkeep-static-consts

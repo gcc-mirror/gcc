@@ -4126,11 +4126,11 @@ release.
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer: @command{g++} will complain that types are missing.  These headers
 assume that omitting the type means @code{int}; this assumption worked for
-C89 but is wrong for C++, and is now wrong for C99 also.
+C90 but is wrong for C++, and is now wrong for C99 also.
 
 @command{g++} accepts such (invalid) constructs with the option
 @option{-fpermissive}; it will assume that any missing type is @code{int}
-(as defined by C89).
+(as defined by C90).
 
 There are patches for Solaris 7 (108376-21 or newer for SPARC,
 108377-20 for Intel), and Solaris 8 (108652-24 or newer for SPARC,

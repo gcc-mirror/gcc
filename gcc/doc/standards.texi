@@ -63,7 +63,7 @@ This standard, in both its forms, is commonly known as @dfn{C89}, or
 occasionally as @dfn{C90}, from the dates of ratification.  The ANSI
 standard, but not the ISO standard, also came with a Rationale
 document.  To select this standard in GCC, use one of the options
-@option{-ansi}, @option{-std=c89} or @option{-std=iso9899:1990}; to obtain
+@option{-ansi}, @option{-std=c90} or @option{-std=iso9899:1990}; to obtain
 all the diagnostics required by the standard, you should also specify
 @option{-pedantic} (or @option{-pedantic-errors} if you want them to be
 errors rather than warnings).  @xref{C Dialect Options,,Options
@@ -99,12 +99,12 @@ Extensions,,Extensions to the C Language Family}.  Use of the
 @option{-std} options listed above will disable these extensions where
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
-@option{-std=gnu89} (for C89 with GNU extensions) or @option{-std=gnu99}
+@option{-std=gnu90} (for C90 with GNU extensions) or @option{-std=gnu99}
 (for C99 with GNU extensions).  The default, if no C language dialect
-options are given, is @option{-std=gnu89}; this will change to
+options are given, is @option{-std=gnu90}; this will change to
 @option{-std=gnu99} in some future release when the C99 support is
 complete.  Some features that are part of the C99 standard are
-accepted as extensions in C89 mode.
+accepted as extensions in C90 mode.
 
 The ISO C standard defines (in clause 4) two classes of conforming
 implementation.  A @dfn{conforming hosted implementation} supports the
