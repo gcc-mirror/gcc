@@ -1810,6 +1810,10 @@ process_options (void)
   OVERRIDE_OPTIONS;
 #endif
 
+  /* Avoid any informative notes in the second run of -fcompare-debug.  */
+  if (flag_compare_debug) 
+    diagnostic_inhibit_notes (global_dc);
+
   if (flag_section_anchors && !target_supports_section_anchors_p ())
     {
       warning (OPT_fsection_anchors,

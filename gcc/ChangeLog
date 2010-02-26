@@ -1,5 +1,14 @@
 2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* diagnostic.c (diagnostic_initialize): Update.
+	(diagnostic_report_diagnostic): Test inhibit_notes_p for
+	informative notes.
+	* diagnostic.h (diagnostic_context): New bool inhibit_notes_p.
+	(diagnostic_inhibit_notes): New.
+	* toplev.c (process_options): inhibit notes with -fcompare-debug.
+
+2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR c/20631
 	* doc/cpp.texi: Use c90 instead of c89 and gnu90 instead of gnu89.
 	* doc/standards.texi: Likewise.
