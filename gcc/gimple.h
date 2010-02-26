@@ -841,7 +841,6 @@ bool gimple_assign_ssa_name_copy_p (gimple);
 bool gimple_assign_single_p (gimple);
 bool gimple_assign_unary_nop_p (gimple);
 void gimple_set_bb (gimple, struct basic_block_def *);
-tree gimple_fold (const_gimple);
 void gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *, tree);
 void gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *, enum tree_code,
 				     tree, tree);

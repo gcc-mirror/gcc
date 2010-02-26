@@ -90,9 +90,47 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
       edge e;
       edge_iterator ei;
       bool warned;
+      location_t loc;
 
       fold_defer_overflow_warnings ();
-      val = gimple_fold (stmt);
+      loc = gimple_location (stmt);
+      switch (gimple_code (stmt))
+	{
+	case GIMPLE_COND:
+	  {
+	    tree lhs = gimple_cond_lhs (stmt);
+	    tree rhs = gimple_cond_rhs (stmt);
+	    /* For conditions try harder and lookup single-argument
+	       PHI nodes.  Only do so from the same basic-block though
+	       as other basic-blocks may be dead already.  */
+	    if (TREE_CODE (lhs) == SSA_NAME)
+	      {
+		gimple def_stmt = SSA_NAME_DEF_STMT (lhs);
+		if (gimple_code (def_stmt) == GIMPLE_PHI
+		    && gimple_phi_num_args (def_stmt) == 1
+		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		  lhs = PHI_ARG_DEF (def_stmt, 0);
+	      }
+	    if (TREE_CODE (rhs) == SSA_NAME)
+	      {
+		gimple def_stmt = SSA_NAME_DEF_STMT (rhs);
+		if (gimple_code (def_stmt) == GIMPLE_PHI
+		    && gimple_phi_num_args (def_stmt) == 1
+		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		  rhs = PHI_ARG_DEF (def_stmt, 0);
+	      }
+	    val = fold_binary_loc (loc, gimple_cond_code (stmt),
+				   boolean_type_node, lhs, rhs);
+	    break;
+	  }
+
+	case GIMPLE_SWITCH:
+	  val = gimple_switch_index (stmt);
+	  break;
+
+	default:
+	  val = NULL_TREE;
+	}
       taken_edge = find_taken_edge (bb, val);
       if (!taken_edge)
 	{

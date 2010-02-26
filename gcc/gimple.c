@@ -1835,54 +1835,6 @@ gimple_set_bb (gimple stmt, basic_block bb)
 }
 
 
-/* Fold the expression computed by STMT.  If the expression can be
-   folded, return the folded result, otherwise return NULL.  STMT is
-   not modified.  */
-
-tree
-gimple_fold (const_gimple stmt)
-{
-  location_t loc = gimple_location (stmt);
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_COND:
-      return fold_binary_loc (loc, gimple_cond_code (stmt),
-			  boolean_type_node,
-			  gimple_cond_lhs (stmt),
-			  gimple_cond_rhs (stmt));
-
-    case GIMPLE_ASSIGN:
-      switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
-	{
-	case GIMPLE_UNARY_RHS:
-	  return fold_unary_loc (loc, gimple_assign_rhs_code (stmt),
-			     TREE_TYPE (gimple_assign_lhs (stmt)),
-			     gimple_assign_rhs1 (stmt));
-	case GIMPLE_BINARY_RHS:
-	  return fold_binary_loc (loc, gimple_assign_rhs_code (stmt),
-			      TREE_TYPE (gimple_assign_lhs (stmt)),
-			      gimple_assign_rhs1 (stmt),
-			      gimple_assign_rhs2 (stmt));
-	case GIMPLE_SINGLE_RHS:
-	  return fold (gimple_assign_rhs1 (stmt));
-	default:;
-	}
-      break;
-
-    case GIMPLE_SWITCH:
-      return gimple_switch_index (stmt);
-
-    case GIMPLE_CALL:
-      return NULL_TREE;
-
-    default:
-      break;
-    }
-
-  gcc_unreachable ();
-}
-
-
 /* Modify the RHS of the assignment pointed-to by GSI using the
    operands in the expression tree EXPR.
 
