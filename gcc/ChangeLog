@@ -1,3 +1,7 @@
+2010-02-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (sminsi3): Remove bogus alternative.
+
 2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Support --with-fpmath=sse for x86.
