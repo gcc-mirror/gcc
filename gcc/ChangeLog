@@ -1,5 +1,11 @@
 2010-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43160
+	* var-tracking.c (dv_onepart_p): Return true for DEBUG_EXPR_DECLs.
+	(add_value_chain, add_value_chains, remove_value_chain,
+	remove_value_chains): Handle DEBUG_EXPRs.
+	(check_changed_vars_1, check_changed_vars_2): Handle DEBUG_EXPR_DECLs.
+
 	PR debug/43161
 	* regcprop.c (struct queued_debug_insn_change): New type.
 	(struct value_data_entry): Add debug_insn_changes field.

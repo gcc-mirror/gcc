@@ -784,6 +784,9 @@ dv_onepart_p (decl_or_value dv)
   if (!decl)
     return true;
 
+  if (TREE_CODE (decl) == DEBUG_EXPR_DECL)
+    return true;
+
   return (target_for_debug_bind (decl) != NULL_TREE);
 }
 
@@ -2563,39 +2566,48 @@ loc_cmp (rtx x, rtx y)
 static int
 add_value_chain (rtx *loc, void *dvp)
 {
-  if (GET_CODE (*loc) == VALUE && (void *) *loc != dvp)
+  decl_or_value dv, ldv;
+  value_chain vc, nvc;
+  void **slot;
+
+  if (GET_CODE (*loc) == VALUE)
+    ldv = dv_from_value (*loc);
+  else if (GET_CODE (*loc) == DEBUG_EXPR)
+    ldv = dv_from_decl (DEBUG_EXPR_TREE_DECL (*loc));
+  else
+    return 0;
+
+  if (dv_as_opaque (ldv) == dvp)
+    return 0;
+
+  dv = (decl_or_value) dvp;
+  slot = htab_find_slot_with_hash (value_chains, ldv, dv_htab_hash (ldv),
+				   INSERT);
+  if (!*slot)
     {
-      decl_or_value dv = (decl_or_value) dvp;
-      decl_or_value ldv = dv_from_value (*loc);
-      value_chain vc, nvc;
-      void **slot = htab_find_slot_with_hash (value_chains, ldv,
-					      dv_htab_hash (ldv), INSERT);
-      if (!*slot)
-	{
-	  vc = (value_chain) pool_alloc (value_chain_pool);
-	  vc->dv = ldv;
-	  vc->next = NULL;
-	  vc->refcount = 0;
-	  *slot = (void *) vc;
-	}
-      else
-	{
-	  for (vc = ((value_chain) *slot)->next; vc; vc = vc->next)
-	    if (dv_as_opaque (vc->dv) == dv_as_opaque (dv))
-	      break;
-	  if (vc)
-	    {
-	      vc->refcount++;
-	      return 0;
-	    }
-	}
-      vc = (value_chain) *slot;
-      nvc = (value_chain) pool_alloc (value_chain_pool);
-      nvc->dv = dv;
-      nvc->next = vc->next;
-      nvc->refcount = 1;
-      vc->next = nvc;
+      vc = (value_chain) pool_alloc (value_chain_pool);
+      vc->dv = ldv;
+      vc->next = NULL;
+      vc->refcount = 0;
+      *slot = (void *) vc;
     }
+  else
+    {
+      for (vc = ((value_chain) *slot)->next; vc; vc = vc->next)
+	if (dv_as_opaque (vc->dv) == dv_as_opaque (dv))
+	  break;
+      if (vc)
+	{
+	  vc->refcount++;
+	  return 0;
+	}
+    }
+  vc = (value_chain) *slot;
+  nvc = (value_chain) pool_alloc (value_chain_pool);
+  nvc->dv = dv;
+  nvc->next = vc->next;
+  nvc->refcount = 1;
+  vc->next = nvc;
   return 0;
 }
 
@@ -2605,7 +2617,7 @@ add_value_chain (rtx *loc, void *dvp)
 static void
 add_value_chains (decl_or_value dv, rtx loc)
 {
-  if (GET_CODE (loc) == VALUE)
+  if (GET_CODE (loc) == VALUE || GET_CODE (loc) == DEBUG_EXPR)
     {
       add_value_chain (&loc, dv_as_opaque (dv));
       return;
@@ -2635,33 +2647,41 @@ add_cselib_value_chains (decl_or_value dv)
 static int
 remove_value_chain (rtx *loc, void *dvp)
 {
-  if (GET_CODE (*loc) == VALUE && (void *) *loc != dvp)
-    {
-      decl_or_value dv = (decl_or_value) dvp;
-      decl_or_value ldv = dv_from_value (*loc);
-      value_chain vc, dvc = NULL;
-      void **slot = htab_find_slot_with_hash (value_chains, ldv,
-					      dv_htab_hash (ldv), NO_INSERT);
-      for (vc = (value_chain) *slot; vc->next; vc = vc->next)
-	if (dv_as_opaque (vc->next->dv) == dv_as_opaque (dv))
+  decl_or_value dv, ldv;
+  value_chain vc;
+  void **slot;
+
+  if (GET_CODE (*loc) == VALUE)
+    ldv = dv_from_value (*loc);
+  else if (GET_CODE (*loc) == DEBUG_EXPR)
+    ldv = dv_from_decl (DEBUG_EXPR_TREE_DECL (*loc));
+  else
+    return 0;
+
+  if (dv_as_opaque (ldv) == dvp)
+    return 0;
+
+  dv = (decl_or_value) dvp;
+  slot = htab_find_slot_with_hash (value_chains, ldv, dv_htab_hash (ldv),
+				   NO_INSERT);
+  for (vc = (value_chain) *slot; vc->next; vc = vc->next)
+    if (dv_as_opaque (vc->next->dv) == dv_as_opaque (dv))
+      {
+	value_chain dvc = vc->next;
+	gcc_assert (dvc->refcount > 0);
+	if (--dvc->refcount == 0)
 	  {
-	    dvc = vc->next;
-	    gcc_assert (dvc->refcount > 0);
-	    if (--dvc->refcount == 0)
+	    vc->next = dvc->next;
+	    pool_free (value_chain_pool, dvc);
+	    if (vc->next == NULL && vc == (value_chain) *slot)
 	      {
-		vc->next = dvc->next;
-		pool_free (value_chain_pool, dvc);
-		if (vc->next == NULL && vc == (value_chain) *slot)
-		  {
-		    pool_free (value_chain_pool, vc);
-		    htab_clear_slot (value_chains, slot);
-		  }
+		pool_free (value_chain_pool, vc);
+		htab_clear_slot (value_chains, slot);
 	      }
-	    return 0;
 	  }
-      gcc_unreachable ();
-    }
-  return 0;
+	return 0;
+      }
+  gcc_unreachable ();
 }
 
 /* If decl or value DVP refers to VALUEs from within LOC, remove backlinks
@@ -2670,7 +2690,7 @@ remove_value_chain (rtx *loc, void *dvp)
 static void
 remove_value_chains (decl_or_value dv, rtx loc)
 {
-  if (GET_CODE (loc) == VALUE)
+  if (GET_CODE (loc) == VALUE || GET_CODE (loc) == DEBUG_EXPR)
     {
       remove_value_chain (&loc, dv_as_opaque (dv));
       return;
@@ -6677,7 +6697,8 @@ check_changed_vars_1 (void **slot, void *data)
   variable var = (variable) *slot;
   htab_t htab = (htab_t) data;
 
-  if (dv_is_value_p (var->dv))
+  if (dv_is_value_p (var->dv)
+      || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
     {
       value_chain vc
 	= (value_chain) htab_find_with_hash (value_chains, var->dv,
@@ -6707,7 +6728,8 @@ static void
 check_changed_vars_2 (variable var, htab_t htab)
 {
   variable_was_changed (var, NULL);
-  if (dv_is_value_p (var->dv))
+  if (dv_is_value_p (var->dv)
+      || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
     {
       value_chain vc
 	= (value_chain) htab_find_with_hash (value_chains, var->dv,
