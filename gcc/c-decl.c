@@ -2949,11 +2949,10 @@ undeclared_variable (location_t loc, tree id)
   else
     {
       error_at (loc, "%qE undeclared (first use in this function)", id);
-
       if (!already)
 	{
-	  error_at (loc, "(Each undeclared identifier is reported only once");
-	  error_at (loc, "for each function it appears in.)");
+          inform (loc, "each undeclared identifier is reported only"
+                  " once for each function it appears in");
 	  already = true;
 	}
 
