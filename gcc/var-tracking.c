@@ -111,6 +111,7 @@
 #include "target.h"
 #include "toplev.h"
 #include "params.h"
+#include "diagnostic.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -820,6 +821,17 @@ dv_from_value (rtx value)
   gcc_assert (dv_is_value_p (dv));
 #endif
   return dv;
+}
+
+extern void debug_dv (decl_or_value dv);
+
+void
+debug_dv (decl_or_value dv)
+{
+  if (dv_is_value_p (dv))
+    debug_rtx (dv_as_value (dv));
+  else
+    debug_generic_stmt (dv_as_decl (dv));
 }
 
 typedef unsigned int dvuid;
@@ -5779,14 +5791,17 @@ dump_var (variable var)
       const_tree decl = dv_as_decl (var->dv);
 
       if (DECL_NAME (decl))
-	fprintf (dump_file, "  name: %s",
-		 IDENTIFIER_POINTER (DECL_NAME (decl)));
+	{
+	  fprintf (dump_file, "  name: %s",
+		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	  if (dump_flags & TDF_UID)
+	    fprintf (dump_file, "D.%u", DECL_UID (decl));
+	}
+      else if (TREE_CODE (decl) == DEBUG_EXPR_DECL)
+	fprintf (dump_file, "  name: D#%u", DEBUG_TEMP_UID (decl));
       else
 	fprintf (dump_file, "  name: D.%u", DECL_UID (decl));
-      if (dump_flags & TDF_UID)
-	fprintf (dump_file, " D.%u\n", DECL_UID (decl));
-      else
-	fprintf (dump_file, "\n");
+      fprintf (dump_file, "\n");
     }
   else
     {
