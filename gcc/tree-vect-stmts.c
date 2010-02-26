@@ -4405,11 +4405,16 @@ tree
 get_vectype_for_scalar_type (tree scalar_type)
 {
   enum machine_mode inner_mode = TYPE_MODE (scalar_type);
-  int nbytes = GET_MODE_SIZE (inner_mode);
+  unsigned int nbytes = GET_MODE_SIZE (inner_mode);
   int nunits;
   tree vectype;
 
   if (nbytes == 0 || nbytes >= UNITS_PER_SIMD_WORD (inner_mode))
+    return NULL_TREE;
+
+  /* We can't build a vector type of elements with alignment bigger than
+     their size.  */
+  if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
     return NULL_TREE;
 
   /* FORNOW: Only a single vector size per mode (UNITS_PER_SIMD_WORD)
