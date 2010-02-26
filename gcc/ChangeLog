@@ -1,3 +1,8 @@
+2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/24577
+	* c-decl.c (undeclared_variable): Use an informative note.
+
 2010-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43186
