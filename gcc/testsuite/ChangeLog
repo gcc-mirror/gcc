@@ -1,3 +1,8 @@
+2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/37074:
+	* gcc.dg/torture/stackalign/stackalign.exp: Add -mno-mmx to x86.
+
 2010-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43188

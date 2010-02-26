@@ -28,6 +28,7 @@ set additional_flags ""
 if { [istarget i?86*-*-*] || [istarget x86_64-*-*] } then {
     lappend additional_flags "-mstackrealign"
     lappend additional_flags "-mpreferred-stack-boundary=5"
+    lappend additional_flags "-mno-mmx"
 }
 
 dg-init
