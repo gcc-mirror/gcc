@@ -544,13 +544,15 @@ same_type_for_tbaa (tree type1, tree type2)
       && TREE_CODE (type2) == ARRAY_TYPE)
     return -1;
 
-  /* In Ada, an lvalue of unconstrained type can be used to access an object
-     of one of its constrained subtypes, for example when a function with an
-     unconstrained parameter passed by reference is called on a constrained
-     object and inlined.  In this case, the types have the same alias set.  */
-  if (TYPE_SIZE (type1) && TYPE_SIZE (type2)
-      && TREE_CONSTANT (TYPE_SIZE (type1)) != TREE_CONSTANT (TYPE_SIZE (type2))
-      && get_alias_set (type1) == get_alias_set (type2))
+  /* ??? In Ada, an lvalue of an unconstrained type can be used to access an
+     object of one of its constrained subtypes, e.g. when a function with an
+     unconstrained parameter passed by reference is called on an object and
+     inlined.  But, even in the case of a fixed size, type and subtypes are
+     not equivalent enough as to share the same TYPE_CANONICAL, since this
+     would mean that conversions between them are useless, whereas they are
+     not (e.g. type and subtypes can have different modes).  So, in the end,
+     they are only guaranteed to have the same alias set.  */
+  if (get_alias_set (type1) == get_alias_set (type2))
     return -1;
 
   /* The types are known to be not equal.  */
