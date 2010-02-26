@@ -845,10 +845,10 @@
 )
 
 (define_insn "sminsi3"
-  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r,r")
-	(smin:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r")
+  [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r")
+	(smin:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
 		 (match_operand:SI 2 "rx_source_operand"
-				   "r,Sint08,Sint16,Sint24,i,Q,r")))]
+				   "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "@
   min\t%Q2, %0
@@ -856,10 +856,9 @@
   min\t%Q2, %0
   min\t%Q2, %0
   min\t%Q2, %0
-  min\t%Q2, %0
-  mov.l\t%1,%0\n\tmin\t%Q2, %0"
-  [(set_attr "length"  "3,4,5,6,7,6,5")
-   (set_attr "timings" "11,11,11,11,11,33,22")]
+  min\t%Q2, %0"
+  [(set_attr "length"  "3,4,5,6,7,6")
+   (set_attr "timings" "11,11,11,11,11,33")]
 )
 
 (define_insn "mulsi3"
