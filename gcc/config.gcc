@@ -2835,7 +2835,18 @@ esac
 # This block sets nothing except for with_arch.
 if test x$with_arch = x ; then
   case ${target} in
-    i[34567]86-*-*|x86_64-*-*)
+    i[34567]86-*-darwin*)
+      # Don't set default arch for Darwin since it will set the default
+      # ISA to SSE2.
+      ;;
+    i[34567]86-*-*)
+      # Don't set default arch if --with-fpmath is used since it will set
+      # the default ISA to SSE2.
+      if test x$with_fpmath = x; then
+        with_arch=$arch
+      fi
+      ;;
+    x86_64-*-*)
       with_arch=$arch
       ;;
   esac
@@ -2852,6 +2863,27 @@ if test x$with_arch = x ; then
 	fi
 	with_arch=
       fi
+      ;;
+  esac
+fi
+
+# Support --with-fpmath.
+if test x$with_fpmath != x; then
+  case ${target} in
+    i[34567]86-*-* | x86_64-*-*)
+      case ${with_fpmath} in
+      sse)
+	tm_file="${tm_file} i386/ssemath.h"
+	;;
+      *)
+	echo "Invalid --with-fpmath=$with_fpmath" 1>&2
+	exit 1
+	;;
+      esac
+      ;;
+    *)
+      echo "--with-fpmath isn't supported for $target." 1>&2
+      exit 1
       ;;
   esac
 fi

@@ -1,3 +1,11 @@
+2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Support --with-fpmath=sse for x86.
+
+	* config/i386/ssemath.h: New.
+
+	* doc/install.texi (--with-fpmath=sse): Documented.
+
 2010-02-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43188
