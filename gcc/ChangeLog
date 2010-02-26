@@ -1,3 +1,8 @@
+2010-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (i[34567]86-*-* | x86_64-*-*): Split long line.
+	(arm*-*-*): Ditto.
+
 2010-02-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Set arch/cpu for i[34567]86-*-*|x86_64-*-*
