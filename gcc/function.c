@@ -1,7 +1,7 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5469,8 +5469,13 @@ void
 used_types_insert (tree t)
 {
   while (POINTER_TYPE_P (t) || TREE_CODE (t) == ARRAY_TYPE)
-    t = TREE_TYPE (t);
-  t = TYPE_MAIN_VARIANT (t);
+    if (TYPE_NAME (t))
+      break;
+    else
+      t = TREE_TYPE (t);
+  if (TYPE_NAME (t) == NULL_TREE
+      || TYPE_NAME (t) == TYPE_NAME (TYPE_MAIN_VARIANT (t)))
+    t = TYPE_MAIN_VARIANT (t);
   if (debug_info_level > DINFO_LEVEL_NONE)
     {
       if (cfun)
