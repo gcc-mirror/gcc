@@ -2621,105 +2621,151 @@ case ${with_cpu} in
     ;;
 esac
 
+# Set arch and cpu from ${target} and ${target_noncanonical}.  Set cpu
+# to generic if there is no processor scheduler model for the target.
+arch=
+cpu=
+case ${target} in
+  i386-*-*)
+    arch=i386
+    cpu=i386
+    ;;
+  i486-*-*)
+    arch=i486
+    cpu=i486
+    ;;
+  i586-*-*)
+    case ${target_noncanonical} in
+      k6_2-*)
+	arch=k6-2
+	cpu=k6-2
+	;;
+      k6_3-*)
+	arch=k6-3
+	cpu=k6-3
+	;;
+      k6-*)
+	arch=k6
+	cpu=k6
+	;;
+      pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
+	arch=pentium-mmx
+	cpu=pentium-mmx
+	;;
+      *)
+	arch=pentium
+	cpu=pentium
+	;;
+    esac
+    ;;
+  i686-*-* | i786-*-*)
+    case ${target_noncanonical} in
+      amdfam10-*|barcelona-*)
+	arch=amdfam10
+	cpu=amdfam10
+	;;
+      k8_sse3-*|opteron_sse3-*|athlon64_sse3-*)
+	arch=k8-sse3
+	cpu=k8-sse3
+	;;
+      k8-*|opteron-*|athlon64-*|athlon_fx-*)
+	arch=k8
+	cpu=k8
+	;;
+      athlon_xp-*|athlon_mp-*|athlon_4-*)
+	arch=athlon-4
+	cpu=athlon-4
+	;;
+      athlon_tbird-*|athlon-*)
+	arch=athlon
+	cpu=athlon
+	;;
+      geode-*)
+	arch=geode
+	cpu=geode
+	;;
+      pentium2-*)
+	arch=pentium2
+	cpu=pentium2
+	;;
+      pentium3-*|pentium3m-*)
+	arch=pentium3
+	cpu=pentium3
+	;;
+      pentium4-*|pentium4m-*)
+	arch=pentium4
+	cpu=pentium4
+	;;
+      prescott-*)
+	arch=prescott
+	cpu=prescott
+	;;
+      nocona-*)
+	arch=nocona
+	cpu=nocona
+	;;
+      atom-*)
+	arch=atom
+	cpu=atom
+	;;
+      core2-*)
+	arch=core2
+	cpu=core2
+	;;
+      pentium_m-*)
+	arch=pentium-m
+	cpu=pentium-m
+	;;
+      pentiumpro-*)
+	arch=pentiumpro
+	cpu=pentiumpro
+	;;
+      *)
+	arch=pentiumpro
+	cpu=generic
+	;;
+    esac
+    ;;
+  x86_64-*-*)
+    case ${target_noncanonical} in
+      amdfam10-*|barcelona-*)
+	arch=amdfam10
+	cpu=amdfam10
+	;;
+      k8_sse3-*|opteron_sse3-*|athlon64_sse3-*)
+	arch=k8-sse3
+	cpu=k8-sse3
+	;;
+      k8-*|opteron-*|athlon_64-*)
+	arch=k8
+	cpu=k8
+	;;
+      nocona-*)
+	arch=nocona
+	cpu=nocona
+	;;
+      atom-*)
+	arch=atom
+	cpu=atom
+	;;
+      core2-*)
+	arch=core2
+	cpu=core2
+	;;
+      *)
+	arch=x86-64
+	cpu=generic
+	;;
+    esac
+    ;;
+esac
+
 # If there is no $with_cpu option, try to infer one from ${target}.
 # This block sets nothing except for with_cpu.
 if test x$with_cpu = x ; then
   case ${target} in
-    i386-*-*)
-      with_cpu=i386
-      ;;
-    i486-*-*)
-      with_cpu=i486
-      ;;
-    i586-*-*)
-      case ${target_noncanonical} in
-        k6_2-*)
-          with_cpu=k6-2
-          ;;
-        k6_3-*)
-          with_cpu=k6-3
-          ;;
-        k6-*)
-          with_cpu=k6
-          ;;
-        pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
-          with_cpu=pentium-mmx
-          ;;
-        *)
-          with_cpu=pentium
-          ;;
-      esac
-      ;;
-    i686-*-* | i786-*-*)
-      case ${target_noncanonical} in
-        amdfam10-*|barcelona-*)
-          with_cpu=amdfam10
-          ;; 
-        k8_sse3-*|opteron_sse3-*|athlon64_sse3-*)
-          with_cpu=k8-sse3
-          ;;
-        k8-*|opteron-*|athlon64-*|athlon_fx-*)
-          with_cpu=k8
-          ;;
-        athlon_xp-*|athlon_mp-*|athlon_4-*)
-          with_cpu=athlon-4
-          ;;
-        athlon_tbird-*|athlon-*)
-          with_cpu=athlon
-          ;;
-	geode-*)
-	  with_cpu=geode
-	  ;;
-        pentium2-*)
-          with_cpu=pentium2
-          ;;
-        pentium3-*|pentium3m-*)
-          with_cpu=pentium3
-          ;;
-        pentium4-*|pentium4m-*)
-          with_cpu=pentium4
-          ;;
-        prescott-*)
-          with_cpu=prescott
-          ;;
-        nocona-*)
-          with_cpu=nocona
-          ;;
-	core2-*)
-	  with_cpu=core2
-	  ;;
-        pentium_m-*)
-          with_cpu=pentium-m
-          ;;
-        pentiumpro-*)
-          with_cpu=pentiumpro
-          ;;
-        *)
-          with_cpu=generic
-          ;;
-      esac
-      ;;
-    x86_64-*-*)
-      case ${target_noncanonical} in
-        amdfam10-*|barcelona-*)
-          with_cpu=amdfam10
-          ;;
-        k8_sse3-*|opteron_sse3-*|athlon64_sse3-*)
-          with_cpu=k8-sse3
-          ;;
-        k8-*|opteron-*|athlon64-*|athlon_fx-*)
-          with_cpu=k8
-          ;;
-        nocona-*)
-          with_cpu=nocona
-          ;;
-	core2-*)
-	  with_cpu=core2
-	  ;;
-        *)
-          with_cpu=generic
-          ;;
-      esac
+    i[34567]86-*-*|x86_64-*-*)
+      with_cpu=$cpu
       ;;
     alphaev6[78]*-*-*)
       with_cpu=ev67
@@ -2763,16 +2809,48 @@ if test x$with_cpu = x ; then
   # Avoid overriding --with-cpu-32 and --with-cpu-64 values.
   case ${target} in
     i[34567]86-*-*|x86_64-*-*)
-      if test x$with_cpu != x; then
-        if test x$with_cpu_32 != x || test x$with_cpu_64 != x; then
-          if test x$with_cpu_32 = x; then
-            with_cpu_32=$with_cpu
-          fi
-          if test x$with_cpu_64 = x; then
-            with_cpu_64=$with_cpu
-          fi
-          with_cpu=
-        fi
+      if test x$with_cpu_32 != x || test x$with_cpu_64 != x; then
+	if test x$with_cpu_32 = x; then
+	  with_cpu_32=$with_cpu
+	fi
+	if test x$with_cpu_64 = x; then
+	  with_cpu_64=$with_cpu
+	fi
+        with_cpu=
+      fi
+      ;;
+  esac
+fi
+
+# Support for --with-arch and related options (and a few unrelated options,
+# too).
+case ${with_arch} in
+  yes | no)
+    echo "--with-arch must be passed a value" 1>&2
+    exit 1
+    ;;
+esac
+
+# If there is no $with_arch option, try to infer one from ${target}.
+# This block sets nothing except for with_arch.
+if test x$with_arch = x ; then
+  case ${target} in
+    i[34567]86-*-*|x86_64-*-*)
+      with_arch=$arch
+      ;;
+  esac
+
+  # Avoid overriding --with-arch-32 and --with-arch-64 values.
+  case ${target} in
+    i[34567]86-*-*|x86_64-*-*)
+      if test x$with_arch_32 != x || test x$with_arch_64 != x; then
+	if test x$with_arch_32 = x; then
+	  with_arch_32=$arch
+	fi
+	if test x$with_arch_64 = x; then
+	  with_arch_64=$arch
+	fi
+	with_arch=
       fi
       ;;
   esac
@@ -3001,7 +3079,7 @@ case "${target}" in
 				esac
 				# OK
 				;;
-			"" | amdfam10 | barcelona | k8-sse3 | opteron-sse3 | athlon64-sse3 | k8 | opteron | athlon64 | athlon-fx | nocona | core2 | atom | generic)
+			"" | amdfam10 | barcelona | k8-sse3 | opteron-sse3 | athlon64-sse3 | k8 | opteron | athlon64 | athlon-fx | nocona | core2 | atom | x86-64 | generic | native)
 				# OK
 				;;
 			*)

@@ -1,3 +1,9 @@
+2010-02-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Set arch/cpu for i[34567]86-*-*|x86_64-*-*
+	targets.  Set the default with_cpu/with_arch from arch/cpu.
+	Allow x86-64 and native for with_cpu/with_arch.
+
 2010-02-25  Nicolas Benoit  <nbenoit@tuxfamily.org>
 
 	* ebitmap.c: Change calls to verify_popcount with calls to
