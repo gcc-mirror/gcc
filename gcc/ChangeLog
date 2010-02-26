@@ -1,3 +1,11 @@
+2010-02-25  Nicolas Benoit  <nbenoit@tuxfamily.org>
+
+	* ebitmap.c: Change calls to verify_popcount with calls to
+	sbitmap_verify_popcount.
+	(ebitmap_clear_bit): Fixed map->cacheindex test and
+	map>cache update when bit clearing results in an empty
+	element.
+
 2010-02-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/43154
