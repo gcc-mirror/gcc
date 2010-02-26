@@ -1170,6 +1170,11 @@ of the arguments depend on the target.
 Specify if the compiler should default to @option{-marm} or @option{-mthumb}.
 This option is only supported on ARM targets.
 
+@item --with-fpmath=sse
+Specify if the compiler should default to @option{-msse2} and
+@option{-mfpmath=sse}.  This option is only supported on i386 and
+x86-64 targets.
+
 @item --with-divide=@var{type}
 Specify how the compiler should generate code for checking for
 division by zero.  This option is only supported on the MIPS target.
