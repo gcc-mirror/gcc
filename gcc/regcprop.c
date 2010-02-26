@@ -46,6 +46,18 @@
    up some silly register allocation decisions made by reload.  This
    code may be obsoleted by a new register allocator.  */
 
+/* DEBUG_INSNs aren't changed right away, as doing so might extend the
+   lifetime of a register and get the DEBUG_INSN subsequently reset.
+   So they are queued instead, and updated only when the register is
+   used in some subsequent real insn before it is set.  */
+struct queued_debug_insn_change
+{
+  struct queued_debug_insn_change *next;
+  rtx insn;
+  rtx *loc;
+  rtx new_rtx;
+};
+
 /* For each register, we have a list of registers that contain the same
    value.  The OLDEST_REGNO field points to the head of the list, and
    the NEXT_REGNO field runs through the list.  The MODE field indicates
@@ -57,13 +69,17 @@ struct value_data_entry
   enum machine_mode mode;
   unsigned int oldest_regno;
   unsigned int next_regno;
+  struct queued_debug_insn_change *debug_insn_changes;
 };
 
 struct value_data
 {
   struct value_data_entry e[FIRST_PSEUDO_REGISTER];
   unsigned int max_value_regs;
+  unsigned int n_debug_insn_changes;
 };
+
+static alloc_pool debug_insn_changes_pool;
 
 static void kill_value_one_regno (unsigned, struct value_data *);
 static void kill_value_regno (unsigned, unsigned, struct value_data *);
@@ -90,6 +106,22 @@ extern void debug_value_data (struct value_data *);
 #ifdef ENABLE_CHECKING
 static void validate_value_data (struct value_data *);
 #endif
+
+/* Free all queued updates for DEBUG_INSNs that change some reg to
+   register REGNO.  */
+
+static void
+free_debug_insn_changes (struct value_data *vd, unsigned int regno)
+{
+  struct queued_debug_insn_change *cur, *next;
+  for (cur = vd->e[regno].debug_insn_changes; cur; cur = next)
+    {
+      next = cur->next;
+      --vd->n_debug_insn_changes;
+      pool_free (debug_insn_changes_pool, cur);
+    }
+  vd->e[regno].debug_insn_changes = NULL;
+}
 
 /* Kill register REGNO.  This involves removing it from any value
    lists, and resetting the value mode to VOIDmode.  This is only a
@@ -118,6 +150,8 @@ kill_value_one_regno (unsigned int regno, struct value_data *vd)
   vd->e[regno].mode = VOIDmode;
   vd->e[regno].oldest_regno = regno;
   vd->e[regno].next_regno = INVALID_REGNUM;
+  if (vd->e[regno].debug_insn_changes)
+    free_debug_insn_changes (vd, regno);
 
 #ifdef ENABLE_CHECKING
   validate_value_data (vd);
@@ -204,8 +238,10 @@ init_value_data (struct value_data *vd)
       vd->e[i].mode = VOIDmode;
       vd->e[i].oldest_regno = i;
       vd->e[i].next_regno = INVALID_REGNUM;
+      vd->e[i].debug_insn_changes = NULL;
     }
   vd->max_value_regs = 0;
+  vd->n_debug_insn_changes = 0;
 }
 
 /* Called through note_stores.  If X is clobbered, kill its value.  */
@@ -446,6 +482,24 @@ replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx insn,
   rtx new_rtx = find_oldest_value_reg (cl, *loc, vd);
   if (new_rtx)
     {
+      if (DEBUG_INSN_P (insn))
+	{
+	  struct queued_debug_insn_change *change;
+
+	  if (dump_file)
+	    fprintf (dump_file, "debug_insn %u: queued replacing reg %u with %u\n",
+		     INSN_UID (insn), REGNO (*loc), REGNO (new_rtx));
+
+	  change = (struct queued_debug_insn_change *)
+		   pool_alloc (debug_insn_changes_pool);
+	  change->next = vd->e[REGNO (new_rtx)].debug_insn_changes;
+	  change->insn = insn;
+	  change->loc = loc;
+	  change->new_rtx = new_rtx;
+	  vd->e[REGNO (new_rtx)].debug_insn_changes = change;
+	  ++vd->n_debug_insn_changes;
+	  return true;
+	}
       if (dump_file)
 	fprintf (dump_file, "insn %u: replaced reg %u with %u\n",
 		 INSN_UID (insn), REGNO (*loc), REGNO (new_rtx));
@@ -622,6 +676,58 @@ replace_oldest_value_mem (rtx x, rtx insn, struct value_data *vd)
 				    GET_MODE (x), insn, vd);
 }
 
+/* Apply all queued updates for DEBUG_INSNs that change some reg to
+   register REGNO.  */
+
+static void
+apply_debug_insn_changes (struct value_data *vd, unsigned int regno)
+{
+  struct queued_debug_insn_change *change;
+  rtx last_insn = vd->e[regno].debug_insn_changes->insn;
+
+  for (change = vd->e[regno].debug_insn_changes;
+       change;
+       change = change->next)
+    {
+      if (last_insn != change->insn)
+	{
+	  apply_change_group ();
+	  last_insn = change->insn;
+	}
+      validate_change (change->insn, change->loc, change->new_rtx, 1);
+    }
+  apply_change_group ();
+}
+
+/* Called via for_each_rtx, for all used registers in a real
+   insn apply DEBUG_INSN changes that change registers to the
+   used register.  */
+
+static int
+cprop_find_used_regs_1 (rtx *loc, void *data)
+{
+  if (REG_P (*loc))
+    {
+      struct value_data *vd = (struct value_data *) data;
+      if (vd->e[REGNO (*loc)].debug_insn_changes)
+	{
+	  apply_debug_insn_changes (vd, REGNO (*loc));
+	  free_debug_insn_changes (vd, REGNO (*loc));
+	}
+    }
+  return 0;
+}
+
+/* Called via note_uses, for all used registers in a real insn
+   apply DEBUG_INSN changes that change registers to the used
+   registers.  */
+
+static void
+cprop_find_used_regs (rtx *loc, void *vd)
+{
+  for_each_rtx (loc, cprop_find_used_regs_1, vd);
+}
+
 /* Perform the forward copy propagation on basic block BB.  */
 
 static bool
@@ -643,15 +749,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (DEBUG_INSN_P (insn))
 	    {
 	      rtx loc = INSN_VAR_LOCATION_LOC (insn);
-	      if (!VAR_LOC_UNKNOWN_P (loc)
-		  && replace_oldest_value_addr (&INSN_VAR_LOCATION_LOC (insn),
-						ALL_REGS, GET_MODE (loc),
-						insn, vd))
-		{
-		  changed = apply_change_group ();
-		  gcc_assert (changed);
-		  anything_changed = true;
-		}
+	      if (!VAR_LOC_UNKNOWN_P (loc))
+		replace_oldest_value_addr (&INSN_VAR_LOCATION_LOC (insn),
+					   ALL_REGS, GET_MODE (loc),
+					   insn, vd);
 	    }
 
 	  if (insn == BB_END (bb))
@@ -683,6 +784,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      || (predicated && recog_data.operand_type[i] == OP_OUT))
 	    recog_data.operand_type[i] = OP_INOUT;
 	}
+
+      /* Apply changes to earlier DEBUG_INSNs if possible.  */
+      if (vd->n_debug_insn_changes)
+	note_uses (&PATTERN (insn), cprop_find_used_regs, vd);
 
       /* For each earlyclobber operand, zap the value data.  */
       for (i = 0; i < n_ops; i++)
@@ -871,11 +976,17 @@ copyprop_hardreg_forward (void)
   struct value_data *all_vd;
   basic_block bb;
   sbitmap visited;
+  bool analyze_called = false;
 
   all_vd = XNEWVEC (struct value_data, last_basic_block);
 
   visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (visited);
+
+  if (MAY_HAVE_DEBUG_STMTS)
+    debug_insn_changes_pool
+      = create_alloc_pool ("debug insn changes pool",
+			   sizeof (struct queued_debug_insn_change), 256);
 
   FOR_EACH_BB (bb)
     {
@@ -888,11 +999,55 @@ copyprop_hardreg_forward (void)
       if (single_pred_p (bb)
 	  && TEST_BIT (visited, single_pred (bb)->index)
 	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
-	all_vd[bb->index] = all_vd[single_pred (bb)->index];
+	{
+	  all_vd[bb->index] = all_vd[single_pred (bb)->index];
+	  if (all_vd[bb->index].n_debug_insn_changes)
+	    {
+	      unsigned int regno;
+
+	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+		{
+		  if (all_vd[bb->index].e[regno].debug_insn_changes)
+		    {
+		      all_vd[bb->index].e[regno].debug_insn_changes = NULL;
+		      if (--all_vd[bb->index].n_debug_insn_changes == 0)
+			break;
+		    }
+		}
+	    }
+	}
       else
 	init_value_data (all_vd + bb->index);
 
       copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
+    }
+
+  if (MAY_HAVE_DEBUG_STMTS)
+    {
+      FOR_EACH_BB (bb)
+	if (TEST_BIT (visited, bb->index)
+	    && all_vd[bb->index].n_debug_insn_changes)
+	  {
+	    unsigned int regno;
+	    bitmap live;
+
+	    if (!analyze_called)
+	      {
+		df_analyze ();
+		analyze_called = true;
+	      }
+	    live = df_get_live_out (bb);
+	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	      if (all_vd[bb->index].e[regno].debug_insn_changes)
+		{
+		  if (REGNO_REG_SET_P (live, regno))
+		    apply_debug_insn_changes (all_vd + bb->index, regno);
+		  if (all_vd[bb->index].n_debug_insn_changes == 0)
+		    break;
+		}
+	  }
+
+      free_alloc_pool (debug_insn_changes_pool);
     }
 
   sbitmap_free (visited);
@@ -1026,6 +1181,7 @@ struct rtl_opt_pass pass_cprop_hardreg =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing /* todo_flags_finish */
+  TODO_dump_func | TODO_df_finish
+  | TODO_verify_rtl_sharing		/* todo_flags_finish */
  }
 };

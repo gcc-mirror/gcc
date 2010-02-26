@@ -1,3 +1,27 @@
+2010-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43161
+	* regcprop.c (struct queued_debug_insn_change): New type.
+	(struct value_data_entry): Add debug_insn_changes field.
+	(struct value_data): Add n_debug_insn_changes field.
+	(debug_insn_changes_pool): New variable.
+	(free_debug_insn_changes, apply_debug_insn_changes,
+	cprop_find_used_regs_1, cprop_find_used_regs): New functions.
+	(kill_value_one_regno): Call free_debug_insn_changes if needed.
+	(init_value_data): Clear debug_insn_changes and n_debug_insn_changes
+	fields.
+	(replace_oldest_value_reg): Don't change DEBUG_INSNs, instead queue
+	changes for them.
+	(copyprop_hardreg_forward_1): Don't call apply_change_group for
+	DEBUG_INSNs.  For a real insn, if there are queued DEBUG_INSN
+	changes, call cprop_find_used_regs via note_stores.
+	(copyprop_hardreg_forward): When copying vd from predecessor
+	which has any queued DEBUG_INSN changes, make sure the pointers are
+	cleared.  At the end call df_analyze and then if there are any
+	DEBUG_INSN changes queued at the end of some basic block for still
+	live registers, apply them.
+	(pass_cprop_hardreg): Set TODO_df_finish in todo_flags_finish.
+
 2010-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (i[34567]86-*-* | x86_64-*-*): Split long line.
