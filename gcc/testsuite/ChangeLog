@@ -1,3 +1,8 @@
+2010-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43190
+	* c-c++-common/dwarf2/pr43190.c: New test.
+
 2010-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/37074:

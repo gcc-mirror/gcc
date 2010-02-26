@@ -1,3 +1,10 @@
+2010-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43190
+	* function.c (used_types_insert): Don't skip through named pointer
+	types.  Don't use TYPE_MAIN_VARIANT if the original type has a name
+	and it is different from the main variant's type.
+
 2010-02-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (sminsi3): Remove bogus alternative.
