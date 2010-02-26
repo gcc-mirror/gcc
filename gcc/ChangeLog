@@ -1,3 +1,11 @@
+2010-02-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43186
+	* gimple.h (gimple_fold): Remove.
+	* gimple.c (gimple_fold): Remove.  Inline into single user ...
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): ... here.
+	Try harder for conditions.
+
 2010-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43190
