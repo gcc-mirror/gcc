@@ -35,4 +35,5 @@ void f1(void)
     ;
   /* Check that we didn't get stuck on the pragma eol marker.  */
   undef;		/* { dg-error "" } */
+  /* { dg-message "undeclared identifier is reported only once" "reminder" { target *-*-* } 37 } */
 }

@@ -35,7 +35,7 @@
 {
   /* Private variables simply don't exist in the subclass.  */
   private = 12;/* { dg-error "undeclared" } */
-  /* { dg-error "function it appears in" "" { target *-*-* } { 37 } } */
+  /* { dg-message "function it appears in" "" { target *-*-* } { 37 } } */
 
   protected = 12; /* Ok  */
   public = 12;    /* Ok  */
