@@ -8937,13 +8937,12 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && !sym->ns->save_all && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
-      && has_default_initializer (sym->ts.u.derived))
-    {
-      gfc_error("Object '%s' at %L must have the SAVE attribute for "
-		"default initialization of a component",
-		sym->name, &sym->declared_at);
-      return FAILURE;
-    }
+      && has_default_initializer (sym->ts.u.derived)
+      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Implied SAVE for "
+			 "module variable '%s' at %L, needed due to "
+			 "the default initialization", sym->name,
+			 &sym->declared_at) == FAILURE)
+    return FAILURE;
 
   if (sym->ts.type == BT_CLASS)
     {

@@ -1,3 +1,9 @@
+2010-02-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43185
+	* resolve.c (resolve_fl_variable_derived): Imply SAVE
+	for module variables for Fortran 2008.
+
 2010-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43166
