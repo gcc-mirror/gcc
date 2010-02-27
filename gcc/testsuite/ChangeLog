@@ -1,3 +1,19 @@
+2010-02-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/24577
+	PR c/43192
+	* gcc.dg/pr8927-1.c: Match new note.
+	* gcc.dg/990506-0.c: Likewise.
+	* gcc.dg/gomp/flush-2.c: Likewise.
+	* gcc.dg/gomp/atomic-5.c: Likewise.
+	* gcc.dg/gomp/pr34607.c: Likewise.
+	* gcc.dg/pr35746.c: Likewise.
+	* gcc.dg/cpp/pragma-1.c: Likewise.
+	* gcc.dg/cpp/pragma-2.c: Likewise.
+	* gcc.dg/pr41842.c: Likewise.
+	* gcc.dg/noncompile/20040629-1.c: Likewise.
+	* objc.dg/private-1.m: Likewise.
+
 2010-02-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43185

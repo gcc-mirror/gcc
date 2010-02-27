@@ -4,5 +4,6 @@
 void
 f ()
 {
-  char x[g (h)];	/* { dg-error "undeclared|for each function" } */
+  char x[g (h)];	/* { dg-error "undeclared" } */
+/* { dg-message "undeclared identifier is reported only once" "reminder" { target *-*-* } 7 } */
 }

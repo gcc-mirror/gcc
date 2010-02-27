@@ -8,6 +8,6 @@ main ()
   {
     error;
   /* { dg-error "undeclared" "undeclared-variable message" { target *-*-* } { 9 } } */
-  /* { dg-error "function it appears in" "reminder message" { target *-*-* } { 9 } } */ 
+  /* { dg-message "function it appears in" "reminder message" { target *-*-* } { 9 } } */ 
   }
 }

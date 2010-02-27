@@ -12,5 +12,5 @@ int main () {
   {}
   error;
   /* { dg-error "undeclared" "undeclared-variable message" { target *-*-* } { 13 } } */
-  /* { dg-error "function it appears in" "reminder message" { target *-*-* } { 13 } } */ 
+  /* { dg-message "function it appears in" "reminder message" { target *-*-* } { 13 } } */ 
 }

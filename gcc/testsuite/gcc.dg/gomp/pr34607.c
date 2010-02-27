@@ -1,7 +1,7 @@
 /* PR c++/34607 */
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -std=gnu99" } */
-
+/* { dg-message "undeclared identifier is reported only once" "reminder" { target *-*-* } 0 } */
 void
 foo ()
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+/* { dg-message "undeclared identifier is reported only once" "reminder" { target *-*-* } 0 } */
 void f1(void)
 {
   #pragma omp flush a	/* { dg-error "expected" } */

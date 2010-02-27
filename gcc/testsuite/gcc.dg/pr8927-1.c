@@ -6,8 +6,8 @@
 void
 foo(void)
 {
-  bar /* { dg-error "undeclared|for each function" } */
-
+  bar /* { dg-error "undeclared" } */
+    /* { dg-message "undeclared identifier is reported only once" "reminder" { target *-*-* } 9 } */
 
   ;
 }
