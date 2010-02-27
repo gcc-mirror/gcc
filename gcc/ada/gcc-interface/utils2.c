@@ -834,26 +834,28 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  return result;
 	}
 
-      /* Otherwise, the base types must be the same unless the objects are
-	 fat pointers or records.  If we have records, use the best type and
-	 convert both operands to that type.  */
+      /* Otherwise, the base types must be the same, unless they are both fat
+	 pointer types or record types.  In the latter case, use the best type
+	 and convert both operands to that type.  */
       if (left_base_type != right_base_type)
 	{
 	  if (TYPE_IS_FAT_POINTER_P (left_base_type)
-	      && TYPE_IS_FAT_POINTER_P (right_base_type)
-	      && TYPE_MAIN_VARIANT (left_base_type)
-		 == TYPE_MAIN_VARIANT (right_base_type))
-	    best_type = left_base_type;
+	      && TYPE_IS_FAT_POINTER_P (right_base_type))
+	    {
+	      gcc_assert (TYPE_MAIN_VARIANT (left_base_type)
+			  == TYPE_MAIN_VARIANT (right_base_type));
+	      best_type = left_base_type;
+	    }
+
 	  else if (TREE_CODE (left_base_type) == RECORD_TYPE
 		   && TREE_CODE (right_base_type) == RECORD_TYPE)
 	    {
-	      /* The only way these are permitted to be the same is if both
-		 types have the same name.  In that case, one of them must
-		 not be self-referential.  Use that one as the best type.
-		 Even better is if one is of fixed size.  */
+	      /* The only way this is permitted is if both types have the same
+		 name.  In that case, one of them must not be self-referential.
+		 Use it as the best type.  Even better with a fixed size.  */
 	      gcc_assert (TYPE_NAME (left_base_type)
-			  && (TYPE_NAME (left_base_type)
-			      == TYPE_NAME (right_base_type)));
+			  && TYPE_NAME (left_base_type)
+			     == TYPE_NAME (right_base_type));
 
 	      if (TREE_CONSTANT (TYPE_SIZE (left_base_type)))
 		best_type = left_base_type;
@@ -866,32 +868,32 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      else
 		gcc_unreachable ();
 	    }
+
 	  else
 	    gcc_unreachable ();
 
 	  left_operand = convert (best_type, left_operand);
 	  right_operand = convert (best_type, right_operand);
 	}
-
-      /* If we are comparing a fat pointer against zero, we need to
-	 just compare the data pointer.  */
-      else if (TYPE_IS_FAT_POINTER_P (left_base_type)
-	       && TREE_CODE (right_operand) == CONSTRUCTOR
-	       && integer_zerop (VEC_index (constructor_elt,
-					    CONSTRUCTOR_ELTS (right_operand),
-					    0)
-				 ->value))
-	{
-	  right_operand = build_component_ref (left_operand, NULL_TREE,
-					       TYPE_FIELDS (left_base_type),
-					       false);
-	  left_operand = convert (TREE_TYPE (right_operand),
-				  integer_zero_node);
-	}
       else
 	{
 	  left_operand = convert (left_base_type, left_operand);
 	  right_operand = convert (right_base_type, right_operand);
+	}
+
+      /* If we are comparing a fat pointer against zero, we just need to
+	 compare the data pointer.  */
+      if (TYPE_IS_FAT_POINTER_P (left_base_type)
+	  && TREE_CODE (right_operand) == CONSTRUCTOR
+	  && integer_zerop (VEC_index (constructor_elt,
+				       CONSTRUCTOR_ELTS (right_operand),
+				       0)->value))
+	{
+	  left_operand
+	    = build_component_ref (left_operand, NULL_TREE,
+				   TYPE_FIELDS (left_base_type), false);
+	  right_operand
+	    = convert (TREE_TYPE (left_operand), integer_zero_node);
 	}
 
       modulus = NULL_TREE;

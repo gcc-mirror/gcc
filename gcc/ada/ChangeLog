@@ -1,3 +1,10 @@
+2010-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/42253
+	* gcc-interface/utils2.c (build_binary_op) <EQ_EXPR>: Assert that fat
+	pointer base types are variant of each other.  Apply special treatment
+	for null to fat pointer types in all cases.
+
 2010-01-28  Pascal Obry  <obry@adacore.com>
 
 	* s-win32.ads: Add some missing constants.
