@@ -1,3 +1,8 @@
+2010-02-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/42054:
+	* g++.dg/parse/error37.C: New test.
+
 2010-02-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/24577

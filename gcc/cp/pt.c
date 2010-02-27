@@ -4682,22 +4682,24 @@ redeclare_class_template (tree type, tree parms)
         continue;
 
       tmpl_parm = TREE_VALUE (TREE_VEC_ELT (tmpl_parms, i));
+      if (tmpl_parm == error_mark_node)
+	return false;
+
       parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
       parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 
       /* TMPL_PARM and PARM can be either TYPE_DECL, PARM_DECL, or
 	 TEMPLATE_DECL.  */
-      if (tmpl_parm != error_mark_node
-	  && (TREE_CODE (tmpl_parm) != TREE_CODE (parm)
-	      || (TREE_CODE (tmpl_parm) != TYPE_DECL
-		  && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm)))
-	      || (TREE_CODE (tmpl_parm) != PARM_DECL
-		  && (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (tmpl_parm))
-		      != TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm))))
-	      || (TREE_CODE (tmpl_parm) == PARM_DECL
-		  && (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (tmpl_parm))
-		      != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm))))))
+      if (TREE_CODE (tmpl_parm) != TREE_CODE (parm)
+	  || (TREE_CODE (tmpl_parm) != TYPE_DECL
+	      && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm)))
+	  || (TREE_CODE (tmpl_parm) != PARM_DECL
+	      && (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (tmpl_parm))
+		  != TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm))))
+	  || (TREE_CODE (tmpl_parm) == PARM_DECL
+	      && (TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (tmpl_parm))
+		  != TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))))
 	{
 	  error ("template parameter %q+#D", tmpl_parm);
 	  error ("redeclared here as %q#D", parm);

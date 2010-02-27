@@ -1,3 +1,9 @@
+2010-02-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/42054
+	* pt.c (redeclare_class_template): Return false if there are erroneous
+	template parameters.
+
 2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* pt.c (push_tinst_level): Replace -ftemplate-depth- with 
