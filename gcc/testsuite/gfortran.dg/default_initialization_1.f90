@@ -1,6 +1,7 @@
 !
 ! { dg-do compile }
-! PR 20845
+! { dg-options "-std=f2003" }
+! PR 20845; for F2008: PR fortran/43185
 !
 ! In ISO/IEC 1539-1:1997(E), 4th constraint in section 11.3:
 !
