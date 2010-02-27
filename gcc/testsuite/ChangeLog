@@ -1,3 +1,8 @@
+2010-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43186
+	* gcc.c-torture/compile/pr43186.c: Adjust testcase.
+
 2010-02-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* g++.dg/abi/packed1.C: Expect warning on the SH.
