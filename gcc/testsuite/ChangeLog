@@ -1,3 +1,7 @@
+2010-02-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* g++.dg/abi/packed1.C: Expect warning on the SH.
+
 2010-02-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/42054:
