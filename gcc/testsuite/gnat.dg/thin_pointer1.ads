@@ -1,6 +1,6 @@
 with System;
 
-package Thin_Pointer is
+package Thin_Pointer1 is
 
    type Stream is array (Integer range <>) of Character;
 
@@ -19,4 +19,4 @@ package Thin_Pointer is
 
    procedure Set_Buffer (AD : Buf_Ptr; Buffer : Stream_ptr);
 
-end Thin_Pointer;
+end Thin_Pointer1;

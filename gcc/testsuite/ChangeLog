@@ -1,3 +1,10 @@
+2010-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/thin_pointer.ad[sb]: Rename into...
+	* gnat.dg/thin_pointer1.ad[sb]: ...this.
+	* gnat.dg/thin_pointer2.adb: New test.
+	* gnat.dg/thin_pointer2_pkg.ad[sb]: New helper.
+
 2010-02-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/20631
