@@ -199,6 +199,7 @@ gnu_ld="$gnu_ld_flag"
 default_use_cxa_atexit=no
 target_gtfiles=
 need_64bit_hwint=
+need_64bit_isa=
 
 # Don't carry these over build->host->target.  Please.
 xm_file=
@@ -1083,6 +1084,7 @@ hppa[12]*-*-hpux11*)
 	;;
 i[34567]86-*-darwin*)
 	need_64bit_hwint=yes
+	need_64bit_isa=yes
 
 	# This is so that '.../configure && make' doesn't fail due to
 	# config.guess deciding that the configuration is i386-*-darwin* and
@@ -1148,6 +1150,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 			tmake_file="${tmake_file} i386/t-linux64"
 			need_64bit_hwint=yes
+			need_64bit_isa=yes
 			case X"${with_cpu}" in
 			Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
 				;;
@@ -1266,6 +1269,7 @@ i[34567]86-*-solaris2*)
 		# depends on a runtime test and is thus performed in
 		# libgcc/configure.ac instead.
 		need_64bit_hwint=yes
+		need_64bit_isa=yes
 		use_gcc_stdint=wrap
 		case X"${with_cpu}" in
 		Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
@@ -1335,6 +1339,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	case ${target} in
 		x86_64-*-* | *-w64-*)
 			need_64bit_hwint=yes
+			need_64bit_isa=yes
 			;;
 		*)
 			;;
@@ -2626,19 +2631,23 @@ esac
 arch=
 cpu=
 arch_without_sse2=no
+arch_without_64bit=no
 case ${target} in
   i386-*-*)
     arch=i386
     cpu=i386
     arch_without_sse2=yes
+    arch_without_64bit=yes
     ;;
   i486-*-*)
     arch=i486
     cpu=i486
     arch_without_sse2=yes
+    arch_without_64bit=yes
     ;;
   i586-*-*)
     arch_without_sse2=yes
+    arch_without_64bit=yes
     case ${target_noncanonical} in
       k6_2-*)
 	arch=k6-2
@@ -2680,6 +2689,7 @@ case ${target} in
 	arch=athlon-4
 	cpu=athlon-4
 	arch_without_sse2=yes
+	arch_without_64bit=yes
 	;;
       athlon_tbird-*|athlon-*)
 	arch=athlon
@@ -2734,6 +2744,7 @@ case ${target} in
 	arch=pentiumpro
 	cpu=generic
 	arch_without_sse2=yes
+	arch_without_64bit=yes
 	;;
     esac
     ;;
@@ -2878,8 +2889,20 @@ if test x$with_arch = x ; then
 	  with_arch_32=$arch
 	fi
 	if test x$with_arch_64 = x; then
-	  with_arch_64=$arch
+	  if test $arch_without_64bit = yes; then
+	    # Set the default 64bit arch to x86-64 if the default arch
+	    # doesn't support 64bit.
+	    with_arch_64=x86-64
+	  else
+	    with_arch_64=$arch
+	  fi
 	fi
+	with_arch=
+      elif test $arch_without_64bit$need_64bit_isa = yesyes; then
+	# Set the default 64bit arch to x86-64 if the default arch
+	# doesn't support 64bit and we need 64bit ISA.
+	with_arch_32=$arch
+	with_arch_64=x86-64
 	with_arch=
       fi
       ;;

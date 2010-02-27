@@ -1,3 +1,8 @@
+2010-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Set the default 32bit/64bit archs if 64bit ISA is
+	required and i[34567]86-*-* targets don't support 64bit ISA.
+
 2010-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/43096
