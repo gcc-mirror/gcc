@@ -1,3 +1,11 @@
+2010-02-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43186
+	* params.def (PARAM_MAX_UNROLL_ITERATIONS): New param.
+	* doc/invoke.texi (max-completely-peel-loop-nest-depth): Document.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely): Limit
+	unroller iterations.
+
 2010-02-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Set the default 32bit/64bit archs if 64bit ISA is

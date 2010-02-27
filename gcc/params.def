@@ -266,6 +266,11 @@ DEFPARAM(PARAM_MAX_ONCE_PEELED_INSNS,
 	"max-once-peeled-insns",
 	"The maximum number of insns of a peeled loop that rolls only once",
 	400, 0, 0)
+/* The maximum depth of a loop nest we completely peel.  */
+DEFPARAM(PARAM_MAX_UNROLL_ITERATIONS,
+	 "max-completely-peel-loop-nest-depth",
+	 "The maximum depth of a loop nest we completely peel",
+	 8, 0, 0)
 
 /* The maximum number of insns of an unswitched loop.  */
 DEFPARAM(PARAM_MAX_UNSWITCH_INSNS,

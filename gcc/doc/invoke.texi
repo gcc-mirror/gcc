@@ -8094,6 +8094,9 @@ The maximum number of insns of a completely peeled loop.
 @item max-completely-peel-times
 The maximum number of iterations of a loop to be suitable for complete peeling.
 
+@item max-completely-peel-loop-nest-depth
+The maximum depth of a loop nest suitable for complete peeling.
+
 @item max-unswitch-insns
 The maximum number of insns of an unswitched loop.
 
