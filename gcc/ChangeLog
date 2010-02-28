@@ -1,6 +1,13 @@
 2010-02-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/43202
+	* config.gcc: Don't enable SSE math for i[34567]86-*-darwin*
+	by default.  Don't set the default arch for
+	i[34567]86-*-darwin*|x86_64-*-darwin*.
+
+2010-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/43202
 	* config.gcc: Enable SSE math for i[34567]86-*-darwin* by
 	default.  Set the default 32bit/64bit archs with $with_arch
 	instead of $arch for i[34567]86-*-*|x86_64-*-* targets.
