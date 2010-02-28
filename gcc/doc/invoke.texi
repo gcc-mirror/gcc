@@ -3514,7 +3514,7 @@ incomplete types.  Runs in the frontend only.
 Level 3 (default for @option{-Wstrict-aliasing}):
 Should have very few false positives and few false
 negatives.  Slightly slower than levels 1 or 2 when optimization is enabled.
-Takes care of the common punn+dereference pattern in the frontend:
+Takes care of the common pun+dereference pattern in the frontend:
 @code{*(int*)&some_float}.
 If optimization is enabled, it also runs in the backend, where it deals
 with multiple statement cases using flow-sensitive points-to information.
@@ -3877,7 +3877,7 @@ reference to them. Warnings about conversions between signed and
 unsigned integers are disabled by default in C++ unless
 @option{-Wsign-conversion} is explicitly enabled.
 
-@item -Wno-conversion-null @r{(C++)}
+@item -Wno-conversion-null @r{(C++ and Objective-C++ only)}
 @opindex Wconversion-null
 @opindex Wno-conversion-null
 Do not warn for conversions between @code{NULL} and non-pointer
@@ -15584,7 +15584,7 @@ default option.
 
 @item -mmax-constant-size=@var{N}
 @opindex mmax-constant-size
-Specifies the maxium size, in bytes, of a constant that can be used as
+Specifies the maximum size, in bytes, of a constant that can be used as
 an operand in a RX instruction.  Although the RX instruction set does
 allow constants of up to 4 bytes in length to be used in instructions,
 a longer value equates to a longer instruction.  Thus in some
@@ -15605,7 +15605,7 @@ versions of various instructions.  Disabled by default.
 @opindex mint-register
 Specify the number of registers to reserve for fast interrupt handler
 functions.  The value @var{N} can be between 0 and 4.  A value of 1
-means that register @code{r13} will be reserved for ther exclusive use
+means that register @code{r13} will be reserved for the exclusive use
 of fast interrupt handlers.  A value of 2 reserves @code{r13} and
 @code{r12}.  A value of 3 reserves @code{r13}, @code{r12} and
 @code{r11}, and a value of 4 reserves @code{r13} through @code{r10}.

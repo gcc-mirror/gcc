@@ -148,14 +148,14 @@ enum plugin_event
   PLUGIN_PRE_GENERICIZE,        /* Allows to see low level AST in C and C++ frontends.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
   PLUGIN_INFO,                  /* Information about the plugin. */
-  PLUGIN_GGC_START,		/* Called at start of GCC Garbage Collection. */
-  PLUGIN_GGC_MARKING,		/* Extend the GGC marking. */
-  PLUGIN_GGC_END,		/* Called at end of GGC. */
-  PLUGIN_REGISTER_GGC_ROOTS,	/* Register an extra GGC root table. */
-  PLUGIN_REGISTER_GGC_CACHES,	/* Register an extra GGC cache table. */
+  PLUGIN_GGC_START,             /* Called at start of GCC Garbage Collection. */
+  PLUGIN_GGC_MARKING,           /* Extend the GGC marking. */
+  PLUGIN_GGC_END,               /* Called at end of GGC. */
+  PLUGIN_REGISTER_GGC_ROOTS,    /* Register an extra GGC root table. */
+  PLUGIN_REGISTER_GGC_CACHES,   /* Register an extra GGC cache table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
-  PLUGIN_PRAGMAS,	        /* Called during pragma registration. */
+  PLUGIN_PRAGMAS,               /* Called during pragma registration. */
   /* Called before first pass from all_passes.  */
   PLUGIN_ALL_PASSES_START,
   /* Called after last pass from all_passes.  */
