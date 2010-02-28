@@ -162,13 +162,11 @@ extern void darwin_x86_file_end (void);
 #undef TARGET_SUBTARGET32_ISA_DEFAULT
 #define TARGET_SUBTARGET32_ISA_DEFAULT (OPTION_MASK_ISA_MMX		\
 					| OPTION_MASK_ISA_SSE		\
-					| OPTION_MASK_ISA_SSE2)
-
-#undef TARGET_SUBTARGET64_ISA_DEFAULT
-#define TARGET_SUBTARGET64_ISA_DEFAULT (OPTION_MASK_ISA_MMX		\
-					| OPTION_MASK_ISA_SSE		\
 					| OPTION_MASK_ISA_SSE2		\
 					| OPTION_MASK_ISA_SSE3)
+
+#undef TARGET_SUBTARGET64_ISA_DEFAULT
+#define TARGET_SUBTARGET64_ISA_DEFAULT TARGET_SUBTARGET32_ISA_DEFAULT
 
 /* For now, disable dynamic-no-pic.  We'll need to go through i386.c
    with a fine-tooth comb looking for refs to flag_pic!  */
