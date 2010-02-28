@@ -1,3 +1,9 @@
+2010-02-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (unspec_bbr_uid): New.
+	(gen_block_redirect): Use it instead of INSN_UID.
+	(gen_far_branch): Likewise.
+
 2010-02-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/darwin.h (TARGET_SUBTARGET32_ISA_DEFAULT): Make
