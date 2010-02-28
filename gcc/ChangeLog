@@ -1,3 +1,8 @@
+2010-02-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/darwin.h (TARGET_SUBTARGET32_ISA_DEFAULT): Make
+	it the same as TARGET_SUBTARGET64_ISA_DEFAULT.
+
 2010-02-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Warning Options, RX Options): Fix typos.
