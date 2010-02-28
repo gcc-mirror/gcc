@@ -107,6 +107,9 @@ static int skip_cycles = 0;
    and returned from sh_reorder2.  */
 static short cached_can_issue_more;
 
+/* Unique number for UNSPEC_BBR pattern.  */
+static unsigned int unspec_bbr_uid = 1;
+
 /* Provides the class number of the smallest class containing
    reg number.  */
 
@@ -5012,8 +5015,8 @@ gen_block_redirect (rtx jump, int addr, int need_block)
 	 branch; simplejump_p fails for indirect jumps even if they have
 	 a JUMP_LABEL.  */
       rtx insn = emit_insn_before (gen_indirect_jump_scratch
-				   (reg, GEN_INT (INSN_UID (JUMP_LABEL (jump))))
-				   , jump);
+				   (reg, GEN_INT (unspec_bbr_uid++)),
+				   jump);
       /* ??? We would like this to have the scope of the jump, but that
 	 scope will change when a delay slot insn of an inner scope is added.
 	 Hence, after delay slot scheduling, we'll have to expect
@@ -5028,8 +5031,8 @@ gen_block_redirect (rtx jump, int addr, int need_block)
     /* We can't use JUMP_LABEL here because it might be undefined
        when not optimizing.  */
     return emit_insn_before (gen_block_branch_redirect
-		      (GEN_INT (INSN_UID (XEXP (SET_SRC (PATTERN (jump)), 0))))
-		      , jump);
+			     (GEN_INT (unspec_bbr_uid++)),
+			     jump);
   return prev;
 }
 
@@ -5088,7 +5091,7 @@ gen_far_branch (struct far_branch *bp)
   if (bp->far_label)
     (emit_insn_after
      (gen_stuff_delay_slot
-      (GEN_INT (INSN_UID (XEXP (SET_SRC (PATTERN (jump)), 0))),
+      (GEN_INT (unspec_bbr_uid++),
        GEN_INT (recog_memoized (insn) == CODE_FOR_branch_false)),
       insn));
   /* Prevent reorg from undoing our splits.  */
