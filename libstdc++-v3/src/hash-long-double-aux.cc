@@ -28,7 +28,9 @@
     size_t
     hash<long double>::operator()(long double __val) const
     {
-      size_t __result = 0;
+      // 0 and -0 both hash to zero.
+      if (__val == 0.0L)
+	return 0;
 
       int __exponent;
       __val = __builtin_frexpl(__val, &__exponent);
@@ -44,7 +46,5 @@
 
       const size_t __coeff = __SIZE_MAX__ / __LDBL_MAX_EXP__;
 
-      __result = __hibits + (size_t)__val + __coeff * __exponent;
-
-      return __result;
+      return __hibits + (size_t)__val + __coeff * __exponent;
     }
