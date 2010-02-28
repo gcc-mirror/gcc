@@ -1,3 +1,9 @@
+2010-02-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43205
+	* trans-expr.c (is_zero_initializer_p): Move up in the file.
+	(gfc_conv_initializer): Handle zero initializer as special case.
+
 2010-02-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43185

@@ -3910,6 +3910,43 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Determine whether the given EXPR_CONSTANT is a zero initializer.  */
+
+static bool
+is_zero_initializer_p (gfc_expr * expr)
+{
+  if (expr->expr_type != EXPR_CONSTANT)
+    return false;
+
+  /* We ignore constants with prescribed memory representations for now.  */
+  if (expr->representation.string)
+    return false;
+
+  switch (expr->ts.type)
+    {
+    case BT_INTEGER:
+      return mpz_cmp_si (expr->value.integer, 0) == 0;
+
+    case BT_REAL:
+      return mpfr_zero_p (expr->value.real)
+	     && MPFR_SIGN (expr->value.real) >= 0;
+
+    case BT_LOGICAL:
+      return expr->value.logical == 0;
+
+    case BT_COMPLEX:
+      return mpfr_zero_p (mpc_realref (expr->value.complex))
+	     && MPFR_SIGN (mpc_realref (expr->value.complex)) >= 0
+             && mpfr_zero_p (mpc_imagref (expr->value.complex))
+	     && MPFR_SIGN (mpc_imagref (expr->value.complex)) >= 0;
+
+    default:
+      break;
+    }
+  return false;
+}
+
+
 static void
 gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 {
@@ -3960,6 +3997,9 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
       /* Arrays need special handling.  */
       if (pointer)
 	return gfc_build_null_descriptor (type);
+      /* Special case assigning an array to zero.  */
+      else if (is_zero_initializer_p (expr))
+        return build_constructor (type, NULL);
       else
 	return gfc_conv_array_initializer (type, expr);
     }
@@ -5061,41 +5101,6 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   return gfc_finish_block (&se.pre);
 }
 
-/* Determine whether the given EXPR_CONSTANT is a zero initializer.  */
-
-static bool
-is_zero_initializer_p (gfc_expr * expr)
-{
-  if (expr->expr_type != EXPR_CONSTANT)
-    return false;
-
-  /* We ignore constants with prescribed memory representations for now.  */
-  if (expr->representation.string)
-    return false;
-
-  switch (expr->ts.type)
-    {
-    case BT_INTEGER:
-      return mpz_cmp_si (expr->value.integer, 0) == 0;
-
-    case BT_REAL:
-      return mpfr_zero_p (expr->value.real)
-	     && MPFR_SIGN (expr->value.real) >= 0;
-
-    case BT_LOGICAL:
-      return expr->value.logical == 0;
-
-    case BT_COMPLEX:
-      return mpfr_zero_p (mpc_realref (expr->value.complex))
-	     && MPFR_SIGN (mpc_realref (expr->value.complex)) >= 0
-             && mpfr_zero_p (mpc_imagref (expr->value.complex))
-	     && MPFR_SIGN (mpc_imagref (expr->value.complex)) >= 0;
-
-    default:
-      break;
-    }
-  return false;
-}
 
 /* Try to efficiently translate array(:) = 0.  Return NULL if this
    can't be done.  */
