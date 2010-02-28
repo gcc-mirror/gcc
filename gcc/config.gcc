@@ -1086,9 +1086,6 @@ i[34567]86-*-darwin*)
 	need_64bit_hwint=yes
 	need_64bit_isa=yes
 
-	# SSE math is enabled for Darwin by default.
-	with_fpmath=${with_fpmath:-sse}
-
 	# This is so that '.../configure && make' doesn't fail due to
 	# config.guess deciding that the configuration is i386-*-darwin* and
 	# then this file using that to set --with-cpu=i386 which has no -m64
@@ -2860,6 +2857,10 @@ esac
 # This block sets nothing except for with_arch.
 if test x$with_arch = x ; then
   case ${target} in
+    i[34567]86-*-darwin*|x86_64-*-darwin*)
+      # Default arch is set via TARGET_SUBTARGET32_ISA_DEFAULT
+      # and TARGET_SUBTARGET64_ISA_DEFAULT in config/i386/darwin.h.
+      ;;
     i[34567]86-*-*)
       # --with-fpmath sets the default ISA to SSE2, which is the same
       # ISA supported by Pentium 4.
@@ -2876,6 +2877,10 @@ if test x$with_arch = x ; then
 
   # Avoid overriding --with-arch-32 and --with-arch-64 values.
   case ${target} in
+    i[34567]86-*-darwin*|x86_64-*-darwin*)
+      # Default arch is set via TARGET_SUBTARGET32_ISA_DEFAULT
+      # and TARGET_SUBTARGET64_ISA_DEFAULT in config/i386/darwin.h.
+      ;;
     i[34567]86-*-*|x86_64-*-*)
       if test x$with_arch_32 != x || test x$with_arch_64 != x; then
 	if test x$with_arch_32 = x; then
