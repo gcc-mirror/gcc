@@ -119,8 +119,6 @@ static int try_one_overload (tree, tree, tree, tree, tree,
 			     unification_kind_t, int, bool);
 static int unify (tree, tree, tree, tree, int);
 static void add_pending_template (tree);
-static int push_tinst_level (tree);
-static void pop_tinst_level (void);
 static tree reopen_tinst_level (struct tinst_level *);
 static tree tsubst_initializer_list (tree, tree);
 static tree get_class_bindings (tree, tree, tree);
@@ -7013,7 +7011,7 @@ static int last_template_error_tick;
 /* We're starting to instantiate D; record the template instantiation context
    for diagnostics and to restore it later.  */
 
-static int
+int
 push_tinst_level (tree d)
 {
   struct tinst_level *new_level;
@@ -7056,7 +7054,7 @@ push_tinst_level (tree d)
 /* We're done instantiating this template; return to the instantiation
    context.  */
 
-static void
+void
 pop_tinst_level (void)
 {
   /* Restore the filename and line number stashed away when we started

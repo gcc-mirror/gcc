@@ -1,3 +1,13 @@
+2010-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/42748
+	* cp-tree.h (push_tinst_level): Declare.
+	(pop_tinst_level): Likewise.
+	* pt.c (push_tinst_level): Give it external linkage.
+	(pop_tinst_level): Likewise.
+	* mangle.c (mangle_decl_string): Set the source location to that
+	of the decl while mangling.
+
 2010-02-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/42054

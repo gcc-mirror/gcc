@@ -1,3 +1,13 @@
+2010-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/42748
+	* g++.dg/abi/mangle11.C: Adjust mangling warning locations.
+	* g++.dg/abi/mangle12.C: Likewise.
+	* g++.dg/abi/mangle20-2.C: Likewise.
+	* g++.dg/abi/mangle17.C: Likewise.
+	* g++.dg/template/cond2.C: Likewise.
+	* g++.dg/template/pr35240.C: Likewise.
+
 2010-02-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43186
