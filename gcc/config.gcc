@@ -1086,6 +1086,9 @@ i[34567]86-*-darwin*)
 	need_64bit_hwint=yes
 	need_64bit_isa=yes
 
+	# SSE math is enabled for Darwin by default.
+	with_fpmath=${with_fpmath:-sse}
+
 	# This is so that '.../configure && make' doesn't fail due to
 	# config.guess deciding that the configuration is i386-*-darwin* and
 	# then this file using that to set --with-cpu=i386 which has no -m64
@@ -2857,16 +2860,6 @@ esac
 # This block sets nothing except for with_arch.
 if test x$with_arch = x ; then
   case ${target} in
-    i[34567]86-*-darwin*)
-      # SSE math is enabled for Darwin, which sets the default ISA to
-      # SSE2.  The minimum ISA supported Darwin is SSE3, which is the
-      # same as Prescott.
-      if test $arch_without_sse2 = no; then
-	with_arch=$arch
-      else
-	with_arch=prescott
-      fi
-      ;;
     i[34567]86-*-*)
       # --with-fpmath sets the default ISA to SSE2, which is the same
       # ISA supported by Pentium 4.
@@ -2886,7 +2879,7 @@ if test x$with_arch = x ; then
     i[34567]86-*-*|x86_64-*-*)
       if test x$with_arch_32 != x || test x$with_arch_64 != x; then
 	if test x$with_arch_32 = x; then
-	  with_arch_32=$arch
+	  with_arch_32=$with_arch
 	fi
 	if test x$with_arch_64 = x; then
 	  if test $arch_without_64bit = yes; then
@@ -2894,14 +2887,14 @@ if test x$with_arch = x ; then
 	    # doesn't support 64bit.
 	    with_arch_64=x86-64
 	  else
-	    with_arch_64=$arch
+	    with_arch_64=$with_arch
 	  fi
 	fi
 	with_arch=
       elif test $arch_without_64bit$need_64bit_isa = yesyes; then
 	# Set the default 64bit arch to x86-64 if the default arch
 	# doesn't support 64bit and we need 64bit ISA.
-	with_arch_32=$arch
+	with_arch_32=$with_arch
 	with_arch_64=x86-64
 	with_arch=
       fi
