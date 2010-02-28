@@ -1,3 +1,12 @@
+2010-02-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/invoke.texi (Warning Options, RX Options): Fix typos.
+	(Warning Options): -Wno-conversion-null is valid for
+	Objective-C++ as well.
+	* doc/tm.texi (Named Address Spaces): Likewise.
+	* doc/plugins.texi (Plugins): Replace TABs with spaces.
+	* doc/tree-ssa.texi (Tree SSA): Likewise.
+
 2010-02-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/43202

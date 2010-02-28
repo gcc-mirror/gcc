@@ -38,7 +38,7 @@ passes for GIMPLE@.
 
 @menu
 * Annotations::         Attributes for variables.
-* SSA Operands::  	SSA names referenced by GIMPLE statements.
+* SSA Operands::        SSA names referenced by GIMPLE statements.
 * SSA::                 Static Single Assignment representation.
 * Alias analysis::      Representing aliased loads and stores.
 * Memory model::        Memory model used by the middle-end.

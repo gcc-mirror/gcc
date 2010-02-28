@@ -9856,7 +9856,7 @@ address spaces other than the default address space.  These address
 spaces are new keywords that are similar to the @code{volatile} and
 @code{const} type attributes.
 
-Pointers to named address spaces can a a different size than
+Pointers to named address spaces can have a different size than
 pointers to the generic address space.
 
 For example, the SPU port uses the @code{__ea} address space to refer
