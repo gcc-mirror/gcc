@@ -3008,6 +3008,22 @@ static tree
 mangle_decl_string (const tree decl)
 {
   tree result;
+  location_t saved_loc = input_location;
+  tree saved_fn = NULL_TREE;
+  bool template_p = false;
+
+  if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
+    {
+      struct tinst_level *tl = current_instantiation ();
+      if (!tl || tl->decl != decl)
+	{
+	  template_p = true;
+	  saved_fn = current_function_decl;
+	  push_tinst_level (decl);
+	  current_function_decl = NULL_TREE;
+	}
+    }
+  input_location = DECL_SOURCE_LOCATION (decl);
 
   start_mangling (decl);
 
@@ -3020,6 +3036,14 @@ mangle_decl_string (const tree decl)
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_decl_string = '%s'\n\n",
 	     IDENTIFIER_POINTER (result));
+
+  if (template_p)
+    {
+      pop_tinst_level ();
+      current_function_decl = saved_fn;
+    }
+  input_location = saved_loc;
+
   return result;
 }
 
