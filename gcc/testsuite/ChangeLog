@@ -5,6 +5,11 @@
 
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR pch/14940
+	* gcc.dg/pch/pch.exp: Don't XFAIL largefile.c on i?86-*-solaris2.10.
+
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* lib/target-supports.exp (check_effective_target_ucn_nocache):
 	New function.
 	(check_effective_target_ucn): Likewise.
