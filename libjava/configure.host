@@ -282,8 +282,6 @@ EOF
 	;;
   mips-sgi-irix6* )
 	sysdeps_dir=mips
-	# disable interpreter, no closure support for N32 and N64 ABIs
-	libgcj_interpreter=no
 	;;
   arm*-linux* )
 	slow_pthread_self=no
