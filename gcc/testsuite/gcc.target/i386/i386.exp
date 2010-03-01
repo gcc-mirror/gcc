@@ -1,4 +1,5 @@
-# Copyright (C) 1997, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 1997, 2004, 2007, 2008, 2009, 2010
+# Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -160,6 +161,17 @@ proc check_effective_target_xop { } {
     } "-O2 -mxop" ]
 }
 
+# If the linker used understands -M <mapfile>, pass it to clear hardware
+# capabilities set by the Sun assembler.
+set FLAGS ""
+set clearcap_ldflags "-Wl,-M,$srcdir/$subdir/clearcap.map"
+
+if [check_no_compiler_messages mapfile executable {
+	int main (void) { return 0; }
+  } $clearcap_ldflags ] {
+  set FLAGS $clearcap_ldflags
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -184,7 +196,7 @@ set tests [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]
 set tests [prune $tests $srcdir/$subdir/vect-args.c]
 
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CFLAGS
+dg-runtest $tests $FLAGS $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

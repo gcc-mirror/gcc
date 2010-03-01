@@ -1,5 +1,11 @@
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.target/i386/clearcap.map: New file.
+	* gcc.target/i386/i386.exp: Check for linker -M mapfile support.
+	Pass clearcap.map by default if supported.
+
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR fortran/42900
 	* gfortran.dg/stat_1.f90: Accept 'testfile' gid == parent dir gid.
 	Explain this.
