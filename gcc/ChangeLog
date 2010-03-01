@@ -1,4 +1,10 @@
 2010-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43220
+	* tree-ssa-ccp.c (optimize_stack_restore): Do not optimize
+	BUILT_IN_STACK_{SAVE,RESTORE} around alloca.
+
+2010-03-01  Richard Guenther  <rguenther@suse.de>
 	Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41250
