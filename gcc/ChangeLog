@@ -1,3 +1,9 @@
+2010-03-01  Janis Johnson  <janis187@us.ibm.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* doc/sourcebuild.texi (Test directives): Clarify options to
+	dg-skip-if.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_cfi_directive) [i?86-*-solaris*]:
