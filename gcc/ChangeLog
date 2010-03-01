@@ -1,3 +1,9 @@
+2010-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43213
+	* expr.c (expand_assignment): Use the alias-oracle to tell
+	if the rhs aliases the result decl.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR pch/14940
