@@ -1,3 +1,10 @@
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_cfi_directive) [i?86-*-solaris*]:
+	Disable cfi directives unless GCC and gas agree on using read-only
+	.eh_frame sections for 64-bit.
+	* configure: Regenerate.
+
 2010-03-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43220

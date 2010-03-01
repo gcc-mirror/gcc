@@ -2272,7 +2272,23 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
 		sed -e /.eh_frame/!d -e N | grep READONLY > /dev/null; then
 	  gcc_cv_as_cfi_directive=no
 	else
-	  gcc_cv_as_cfi_directive=yes
+	  case "$target" in
+	    i?86-*-solaris2.1[[0-9]]*)
+	      # On Solaris/x86, make sure that GCC and gas agree on using
+	      # read-only .eh_frame sections for 64-bit.
+	      if $gcc_cv_as --64 -o conftest.o conftest.s > /dev/null 2>&1 && \
+		$gcc_cv_objdump -h conftest.o 2>/dev/null | \
+			sed -e /.eh_frame/!d -e N | \
+			grep READONLY > /dev/null; then
+		gcc_cv_as_cfi_directive=yes
+	      else
+		gcc_cv_as_cfi_directive=no
+	      fi
+	      ;;
+	    *)
+	      gcc_cv_as_cfi_directive=yes
+	      ;;
+	  esac 
 	fi
       else
         # no objdump, err on the side of caution
