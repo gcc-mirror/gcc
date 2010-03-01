@@ -1,3 +1,7 @@
+2010-03-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux64.h (ASM_SPEC): Use SPEC_32 and SPEC_64.
+
 2010-03-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43213
