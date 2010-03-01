@@ -4007,6 +4007,9 @@ find_array_spec (gfc_expr *e)
 	if (derived == NULL)
 	  derived = e->symtree->n.sym->ts.u.derived;
 
+	if (derived->attr.is_class)
+	  derived = derived->components->ts.u.derived;
+
 	c = derived->components;
 
 	for (; c; c = c->next)
