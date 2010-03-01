@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-skip-if "" { ! ucn } { "*" } { "" } } */
 /* { dg-options "-std=c99 -fextended-identifiers -save-temps" } */
 void abort (void);
 
