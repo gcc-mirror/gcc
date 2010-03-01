@@ -1,3 +1,8 @@
+2010-03-01  Marco Poletti  <poletti.marco@gmail.com> 
+
+	* toplev.h (inform_n, error_n): Declare.
+	* diagnostic.c (inform_n, error_n): New function.
+
 2010-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_used_vars): If an artificial non-ignored var

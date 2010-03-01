@@ -4661,10 +4661,14 @@ redeclare_class_template (tree type, tree parms)
 
   if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
     {
-      error ("redeclared with %d template parameter(s)", 
-             TREE_VEC_LENGTH (parms));
-      inform (input_location, "previous declaration %q+D used %d template parameter(s)", 
-             tmpl, TREE_VEC_LENGTH (tmpl_parms));
+      error_n (input_location, TREE_VEC_LENGTH (parms),
+               "redeclared with %d template parameter",
+               "redeclared with %d template parameters",
+               TREE_VEC_LENGTH (parms));
+      inform_n (input_location, TREE_VEC_LENGTH (tmpl_parms),
+                "previous declaration %q+D used %d template parameter",
+                "previous declaration %q+D used %d template parameters",
+                tmpl, TREE_VEC_LENGTH (tmpl_parms));
       return false;
     }
 
