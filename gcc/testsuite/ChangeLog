@@ -1,3 +1,10 @@
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR fortran/42900
+	* gfortran.dg/stat_1.f90: Accept 'testfile' gid == parent dir gid.
+	Explain this.
+	* gfortran.dg/stat_2.f90: Likewise.
+
 2010-03-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43199
