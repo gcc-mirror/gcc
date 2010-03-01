@@ -1,3 +1,9 @@
+2010-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (expand_used_vars): If an artificial non-ignored var
+	has no rtl yet when processing local_decls, queue it and recheck
+	if deferred stack allocation hasn't assigned it rtl.
+
 2010-02-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (unspec_bbr_uid): New.
