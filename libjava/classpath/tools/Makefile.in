@@ -708,10 +708,10 @@ noinst_DATA = $(TOOLS_ZIP)
 
 # Where we want these data files installed.
 TOOLSdir = $(pkgdatadir)
-@WITH_JAR_FALSE@CREATE_TOOLS_ZIP = $(ZIP) -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
-@WITH_JAR_TRUE@CREATE_TOOLS_ZIP = $(JAR) cf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
-@WITH_JAR_FALSE@UPDATE_TOOLS_ZIP = $(ZIP) -u -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
-@WITH_JAR_TRUE@UPDATE_TOOLS_ZIP = $(JAR) uf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+@WITH_JAR_FALSE@CREATE_TOOLS_ZIP = $(ZIP) -r ../$(TOOLS_ZIP) .
+@WITH_JAR_TRUE@CREATE_TOOLS_ZIP = $(JAR) cf ../$(TOOLS_ZIP) .
+@WITH_JAR_FALSE@UPDATE_TOOLS_ZIP = $(ZIP) -u -r ../$(TOOLS_ZIP) .
+@WITH_JAR_TRUE@UPDATE_TOOLS_ZIP = $(JAR) uf ../$(TOOLS_ZIP) .
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1424,6 +1424,9 @@ $(TOOLS_ZIP): $(ALL_TOOLS_FILES)
 	done
 	cp -pR $(srcdir)/asm .
 	cp -pR $(srcdir)/classes .
+	if [ -d asm/.svn ]; then \
+	  find asm classes -depth -type d -name .svn -exec rm -rf \{\} \;; \
+	fi
 @CREATE_GJDOC_TRUE@	for res in $(gjdoc_resources); do \
 @CREATE_GJDOC_TRUE@	  dir=classes/`dirname $$res`; \
 @CREATE_GJDOC_TRUE@	  if ! test -d "$$dir"; then @mkdir_p@ "$$dir"; fi; \

@@ -1,3 +1,16 @@
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/38251
+	* tools/Makefile.am (dist-hook): Prune .svn directories in asm and
+	classes copies.
+	* tools/Makefile.in: Regenerate.
+
+	Revert:
+	2008-11-05  Andrew Haley  <aph@redhat.com>
+
+	* tools/Makefile.am (UPDATE_TOOLS_ZIP, CREATE_TOOLS_ZIP): Exclude
+	.svn direcories.
+
 2010-01-18  Andreas Tobler  <andreast@fgznet.ch>
 
 	* tools/Makefile.am (GJDOC_EX): Use find -name pattern -prune -o.

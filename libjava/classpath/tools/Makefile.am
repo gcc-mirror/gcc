@@ -371,6 +371,9 @@ endif
 ## BEGIN GCJ LOCAL
 	cp -pR $(srcdir)/asm .
 	cp -pR $(srcdir)/classes .
+	if [ -d asm/.svn ]; then \
+	  find asm classes -depth -type d -name .svn -exec rm -rf \{\} \;; \
+	fi
 ## END GCJ LOCAL
 if CREATE_GJDOC
 ## Copy over gjdoc resource files.
@@ -383,11 +386,11 @@ if CREATE_GJDOC
 endif
 
 if WITH_JAR
-CREATE_TOOLS_ZIP=$(JAR) cf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
-UPDATE_TOOLS_ZIP=$(JAR) uf ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+CREATE_TOOLS_ZIP=$(JAR) cf ../$(TOOLS_ZIP) .
+UPDATE_TOOLS_ZIP=$(JAR) uf ../$(TOOLS_ZIP) .
 else
-CREATE_TOOLS_ZIP=$(ZIP) -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
-UPDATE_TOOLS_ZIP=$(ZIP) -u -r ../$(TOOLS_ZIP) `find . -name .svn -prune -o -type f -print`
+CREATE_TOOLS_ZIP=$(ZIP) -r ../$(TOOLS_ZIP) .
+UPDATE_TOOLS_ZIP=$(ZIP) -u -r ../$(TOOLS_ZIP) .
 endif
 
 ## First add classpath tools stuff.
