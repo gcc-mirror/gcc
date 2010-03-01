@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008, 2009
+// Copyright (C) 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -62,6 +62,11 @@ _GLIBCXX_END_EXTERN_C
     using __atomic0::__atomic_base;
   } 
 
+  /**
+   * @addtogroup atomics
+   * @{
+   */
+
   /// atomic_char
   typedef __atomic_base<char>  	       		atomic_char;
 
@@ -106,4 +111,7 @@ _GLIBCXX_END_EXTERN_C
 
   template<typename _Tp>
     struct atomic;
+
+  // @} group atomics
+
 _GLIBCXX_BEGIN_EXTERN_C
