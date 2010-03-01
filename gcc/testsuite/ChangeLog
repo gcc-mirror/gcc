@@ -1,3 +1,8 @@
+2010-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43213
+	* gcc.dg/pr43213.c: New testcase.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_ucn_nocache):

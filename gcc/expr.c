@@ -4432,9 +4432,11 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* In case we are returning the contents of an object which overlaps
      the place the value is being stored, use a safe function when copying
      a value through a pointer into a structure value return block.  */
-  if (TREE_CODE (to) == RESULT_DECL && TREE_CODE (from) == INDIRECT_REF
+  if (TREE_CODE (to) == RESULT_DECL
+      && TREE_CODE (from) == INDIRECT_REF
       && ADDR_SPACE_GENERIC_P
-	  (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (from, 0)))))
+	   (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (from, 0)))))
+      && refs_may_alias_p (to, from)
       && cfun->returns_struct
       && !cfun->returns_pcc_struct)
     {
