@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 #    Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -1336,13 +1336,39 @@ proc check_effective_target_dfp { } {
 }
 
 # Return 1 if the target supports linking and executing Decimal Floating
-# Point, # 0 otherwise.
+# Point, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_dfprt { } {
     return [check_cached_effective_target dfprt {
 	check_effective_target_dfprt_nocache
+    }]
+}
+
+# Return 1 if the target supports compiling and assembling UCN, 0 otherwise.
+
+proc check_effective_target_ucn_nocache { } {
+    # -std=c99 is only valid for C
+    if [check_effective_target_c] {
+	set ucnopts "-std=c99"
+    }
+    append ucnopts " -fextended-identifiers"
+    verbose "check_effective_target_ucn_nocache: compiling source" 2
+    set ret [check_no_compiler_messages_nocache ucn object {
+	int \u00C0;
+    } $ucnopts]
+    verbose "check_effective_target_ucn_nocache: returning $ret" 2
+    return $ret
+}
+
+# Return 1 if the target supports compiling and assembling UCN, 0 otherwise.
+#
+# This won't change for different subtargets, so cache the result.
+
+proc check_effective_target_ucn { } {
+    return [check_cached_effective_target ucn {
+	check_effective_target_ucn_nocache
     }]
 }
 

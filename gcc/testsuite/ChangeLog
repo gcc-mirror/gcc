@@ -1,5 +1,21 @@
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* lib/target-supports.exp (check_effective_target_ucn_nocache):
+	New function.
+	(check_effective_target_ucn): Likewise.
+
+	* g++.dg/other/ucnid-1.C: Don't XFAIL on *-*-solaris2.*, but skip
+	if !ucn.
+	* gcc.dg/ucnid-2.c: Likewise.
+	* gcc.dg/ucnid-3.c: Likewise.
+	* gcc.dg/ucnid-4.c: Likewise.
+	* gcc.dg/ucnid-11.c: Likewise.
+	* gcc.dg/ucnid-12.c: Likewise.
+	* gcc.dg/ucnid-6.c: Skip if !ucn.
+	* gcc.dg/ucnid-9.c: Likewise.
+
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/i386/pr32000-2.c: Add missing include and exclude
 	lists to dg-skip-if.
 	* gcc.target/i386/stackalign/return-3.c: Likewise.
