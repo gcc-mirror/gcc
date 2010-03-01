@@ -1,3 +1,10 @@
+2010-03-01  Richard Guenther  <rguenther@suse.de>
+	Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/41250
+	* gimplify.c (gimplify_body): Unset DECL_HAS_VALUE_EXPR_P on
+	gimplified parameters.
+
 2010-03-01  Christian Bruel  <christian.bruel@st.com>
 
 	* except.c (dw2_build_landing_pads): set LABEL_PRESERVE_P.
