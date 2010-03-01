@@ -1283,6 +1283,7 @@ static void
 expand_used_vars (void)
 {
   tree t, next, outer_block = DECL_INITIAL (current_function_decl);
+  tree maybe_local_decls = NULL_TREE;
   unsigned i;
 
   /* Compute the phase of the stack frame for this function.  */
@@ -1367,6 +1368,15 @@ expand_used_vars (void)
 	      cfun->local_decls = t;
 	      continue;
 	    }
+	  else if (rtl == NULL_RTX)
+	    {
+	      /* If rtl isn't set yet, which can happen e.g. with
+		 -fstack-protector, retry before returning from this
+		 function.  */
+	      TREE_CHAIN (t) = maybe_local_decls;
+	      maybe_local_decls = t;
+	      continue;
+	    }
 	}
 
       ggc_free (t);
@@ -1423,6 +1433,28 @@ expand_used_vars (void)
       expand_stack_vars (NULL);
 
       fini_vars_expansion ();
+    }
+
+  /* If there were any artificial non-ignored vars without rtl
+     found earlier, see if deferred stack allocation hasn't assigned
+     rtl to them.  */
+  for (t = maybe_local_decls; t; t = next)
+    {
+      tree var = TREE_VALUE (t);
+      rtx rtl = DECL_RTL_IF_SET (var);
+
+      next = TREE_CHAIN (t);
+
+      /* Keep artificial non-ignored vars in cfun->local_decls
+	 chain until instantiate_decls.  */
+      if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
+	{
+	  TREE_CHAIN (t) = cfun->local_decls;
+	  cfun->local_decls = t;
+	  continue;
+	}
+
+      ggc_free (t);
     }
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
