@@ -1,3 +1,7 @@
+2010-03-01  Marco Poletti  <poletti.marco@gmail.com>
+
+	* pt.c (redeclare_class_template): Use error_n and inform_n.
+
 2010-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/42748

@@ -113,9 +113,15 @@ function keyword_option(line) {
     	format="c-format"
 
     if (n == 1) { keyword = "--keyword=" name }
-    else { keyword = "--keyword=" name ":" n }
+    else {
+       keyword = "--keyword=" name ":" n
+       if (name ~ /_n$/)
+         keyword = keyword "," (n + 1)
+    }
     if (format) {
         keyword=keyword "\n--flag=" name ":" n ":" format
+        if (name ~ /_n$/)
+          keyword = keyword "\n--flag=" name ":" (n + 1) ":" format
     }
 
     if (! keyword_seen[name]) {

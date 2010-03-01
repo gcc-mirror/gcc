@@ -520,6 +520,23 @@ inform (location_t location, const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* An informative note at LOCATION.  Use this for additional details on an
+   error message.  */
+void
+inform_n (location_t location, int n, const char *singular_gmsgid,
+          const char *plural_gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, plural_gmsgid);
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  &ap, location, DK_NOTE);
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
 /* A warning at INPUT_LOCATION.  Use this for code which is correct according
    to the relevant language specification but is likely to be buggy anyway.
    Returns true if the warning was printed, false if it was inhibited.  */
@@ -611,6 +628,23 @@ error (const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_ERROR);
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+}
+
+/* A hard error: the code is definitely ill-formed, and an object file
+   will not be produced.  */
+void
+error_n (location_t location, int n, const char *singular_gmsgid,
+         const char *plural_gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, plural_gmsgid);
+  diagnostic_set_info_translated (&diagnostic,
+                                  ngettext (singular_gmsgid, plural_gmsgid, n),
+                                  &ap, location, DK_ERROR);
   report_diagnostic (&diagnostic);
   va_end (ap);
 }
