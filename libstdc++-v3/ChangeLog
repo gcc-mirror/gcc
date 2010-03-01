@@ -1,3 +1,10 @@
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/32499
+	* testsuite/Makefile.am (check-DEJAGNU
+	$(check_DEJAGNU_normal_targets)): Export AR, RANLIB.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-02-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/html/ext/pb_ds/references.html: Adjust link to SGI's STL

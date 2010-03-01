@@ -9415,7 +9415,7 @@ fi
 done
 
 if test -z "$ac_cv_prog_RANLIB" ; then
-  RANLIB=":"
+  RANLIB="true"
 fi
 
 
@@ -9551,7 +9551,7 @@ fi
 done
 
 if test -z "$ac_cv_prog_STRIP" ; then
-  STRIP=":"
+  STRIP="true"
 fi
 
 

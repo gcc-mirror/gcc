@@ -103,6 +103,8 @@ $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 
 # Run the testsuite in normal mode.
 check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
+	AR="$(AR)"; export AR; \
+	RANLIB="$(RANLIB)"; export RANLIB; \
 	if [ -z "$*$(filter-out --target_board=%, $(RUNTESTFLAGS))" ] \
 	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
 	  $(MAKE) $(AM_MAKEFLAGS) check-DEJAGNUnormal0 check-DEJAGNUnormal1 \

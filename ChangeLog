@@ -1,3 +1,11 @@
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/32499
+	* configure.ac (RANLIB): Default to true.
+	(STRIP): Likewise.
+	(RANLIB_FOR_TARGET): Remove superfluous : argument.
+	* configure: Regenerate.
+
 2010-02-17 Rafael Ávila de Espíndola <espindola@google.com>
 
 	* MAINTAINERS (Plugin, LTO, LTO plugin): Remove myself.
