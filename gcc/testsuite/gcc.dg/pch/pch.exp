@@ -43,7 +43,6 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 set test "largefile.c"
 set testh "largefile.hs"
 set f [open $test w]
-puts $f "/* { dg-xfail-if \"PR 14940\" { \"i?86-*-solaris2.10\" } { \"*\" } { \"\" } } */"
 puts $f "/* { dg-timeout-factor 4.0 } */"
 set v 0
 for { set v 0 } { $v < 10000 } { incr v } {
