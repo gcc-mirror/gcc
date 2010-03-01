@@ -1,3 +1,7 @@
+2010-03-01  Christian Bruel  <christian.bruel@st.com>
+
+	* except.c (dw2_build_landing_pads): set LABEL_PRESERVE_P.
+	
 2010-03-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux64.h (ASM_SPEC): Use SPEC_32 and SPEC_64.

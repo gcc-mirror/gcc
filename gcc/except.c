@@ -974,6 +974,7 @@ dw2_build_landing_pads (void)
 
       lp->landing_pad = gen_label_rtx ();
       emit_label (lp->landing_pad);
+      LABEL_PRESERVE_P (lp->landing_pad) = 1;
 
 #ifdef HAVE_exception_receiver
       if (HAVE_exception_receiver)
