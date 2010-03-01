@@ -798,6 +798,10 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=200805");
 
+  /* Add UPC defines */
+  if (c_dialect_upc ())
+    upc_cpp_builtins (pfile);
+
   builtin_define_type_sizeof ("__SIZEOF_INT__", integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_LONG_LONG__",

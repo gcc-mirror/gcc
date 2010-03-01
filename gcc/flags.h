@@ -102,6 +102,10 @@ struct visibility_flags
 /* Global visibility options.  */
 extern struct visibility_flags visibility_options;
 
+/* Nonzero means use UPC extensions in the generated symbolic
+   debugging information (DWARF2 only).  */
+extern int use_upc_dwarf2_extensions;
+
 /* Nonzero means do optimizations.  -opt.  */
 
 extern int optimize;

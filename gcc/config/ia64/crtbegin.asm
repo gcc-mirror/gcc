@@ -60,7 +60,6 @@ __dso_handle:
 #endif
 	.hidden __dso_handle
 
-
 #ifdef HAVE_INITFINI_ARRAY
 
 .section .fini_array, "a"

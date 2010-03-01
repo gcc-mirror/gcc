@@ -47,7 +47,7 @@ static int header_time, body_time;
 static splay_tree file_info_tree;
 
 int pending_lang_change; /* If we need to switch languages - C++ only */
-int c_header_level;	 /* depth in C headers - C++ only */
+int c_header_level;	 /* depth in C headers - C++ and UPC only */
 
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
@@ -212,27 +212,27 @@ fe_file_change (const struct line_map *new_map)
 
 	  input_location = new_map->start_location;
 	  (*debug_hooks->start_source_file) (line, new_map->to_file);
-#ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
 	  else if (new_map->sysp == 2)
 	    {
 	      c_header_level = 1;
+#ifndef NO_IMPLICIT_EXTERN_C
 	      ++pending_lang_change;
-	    }
 #endif
+	    }
 	}
     }
   else if (new_map->reason == LC_LEAVE)
     {
-#ifndef NO_IMPLICIT_EXTERN_C
       if (c_header_level && --c_header_level == 0)
 	{
 	  if (new_map->sysp == 2)
 	    warning (0, "badly nested C headers from preprocessor");
+#ifndef NO_IMPLICIT_EXTERN_C
 	  --pending_lang_change;
-	}
 #endif
+	}
       input_location = new_map->start_location;
 
       (*debug_hooks->end_source_file) (new_map->to_line);

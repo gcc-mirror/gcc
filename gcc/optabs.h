@@ -298,6 +298,26 @@ enum optab_index
   /* Push instruction.  */
   OTI_push,
 
+  /* UPC-related optabs */
+  OTI_upcget,
+  OTI_upcput,
+  OTI_upcgets,
+  OTI_upcputs,
+  OTI_upcxget,
+  OTI_upcxput,
+  OTI_upcxgets,
+  OTI_upcxputs,
+
+  /* UPC-related (profiled) optabs */
+  OTI_upcgetg,
+  OTI_upcputg,
+  OTI_upcgetsg,
+  OTI_upcputsg,
+  OTI_upcxgetg,
+  OTI_upcxputg,
+  OTI_upcxgetsg,
+  OTI_upcxputsg,
+
   /* Conditional add instruction.  */
   OTI_addcc,
 
@@ -545,6 +565,26 @@ extern struct optab_d optab_table[OTI_MAX];
 #define vec_pack_ufix_trunc_optab (&optab_table[OTI_vec_pack_ufix_trunc])
 
 #define powi_optab (&optab_table[OTI_powi])
+
+/* UPC-related operation tables */
+#define get_optab (&optab_table[OTI_upcget])
+#define put_optab (&optab_table[OTI_upcput])
+#define gets_optab (&optab_table[OTI_upcgets])
+#define puts_optab (&optab_table[OTI_upcputs])
+#define xget_optab (&optab_table[OTI_upcxget])
+#define xput_optab (&optab_table[OTI_upcxput])
+#define xgets_optab (&optab_table[OTI_upcxgets])
+#define xputs_optab (&optab_table[OTI_upcxputs])
+
+/* UPC-related operation tables */
+#define getg_optab (&optab_table[OTI_upcgetg])
+#define putg_optab (&optab_table[OTI_upcputg])
+#define getsg_optab (&optab_table[OTI_upcgetsg])
+#define putsg_optab (&optab_table[OTI_upcputsg])
+#define xgetg_optab (&optab_table[OTI_upcxgetg])
+#define xputg_optab (&optab_table[OTI_upcxputg])
+#define xgetsg_optab (&optab_table[OTI_upcxgetsg])
+#define xputsg_optab (&optab_table[OTI_upcxputsg])
 
 /* Conversion optabs have their own table and indexes.  */
 enum convert_optab_index

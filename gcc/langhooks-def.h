@@ -70,7 +70,8 @@ extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
 /* Declarations for tree gimplification hooks.  */
-extern int lhd_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
+extern int lhd_gimplify_expr (tree *, gimple_seq *, gimple_seq *,
+                              bool (*) (tree), int);
 extern enum omp_clause_default_kind lhd_omp_predetermined_sharing (tree);
 extern tree lhd_omp_assignment (tree, tree, tree);
 struct gimplify_omp_ctx;
@@ -131,9 +132,15 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR \
 }
 
+/* Hook for lowering function body to GENERIC before finalization.  */
+#define LANG_HOOKS_GENERICIZE lhd_do_nothing_t
+
 /* Hooks for tree gimplification.  */
 #define LANG_HOOKS_GIMPLIFY_EXPR lhd_gimplify_expr
 #define LANG_HOOKS_FOLD_OBJ_TYPE_REF NULL
+
+/* Hook for function instrumentation */
+#define LANG_HOOKS_INSTRUMENT_FUNC lhd_do_nothing_t
 
 /* Tree dump hooks.  */
 extern bool lhd_tree_dump_dump_tree (void *, tree);
@@ -290,7 +297,9 @@ extern void lhd_end_section (void);
   LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS, \
   LANG_HOOKS_FUNCTION_PARAMETER_PACK_P, \
+  LANG_HOOKS_GENERICIZE, \
   LANG_HOOKS_GIMPLIFY_EXPR, \
+  LANG_HOOKS_INSTRUMENT_FUNC, \
   LANG_HOOKS_FOLD_OBJ_TYPE_REF, \
   LANG_HOOKS_BUILTIN_FUNCTION, \
   LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE, \

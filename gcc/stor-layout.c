@@ -482,6 +482,29 @@ get_mode_alignment (enum machine_mode mode)
 }
 
 
+/* Hook for a front-end function that tests to see if a declared
+   object's size needs to be calculated in a language defined way */
+
+int (*lang_layout_decl_p)(tree, tree) = 0;
+
+void
+set_lang_layout_decl_p (int (*f)(tree, tree))
+{
+  lang_layout_decl_p = f;
+}
+
+/* Hook for a front-end function that can size a declared
+   object, when the size is unknown at the time that
+   `layout_type' is called. */
+
+void (*lang_layout_decl) (tree, tree) = 0;
+
+void
+set_lang_layout_decl (void (*f) (tree, tree))
+{
+  lang_layout_decl = f;
+}
+
 /* Subroutine of layout_decl: Force alignment required for the data type.
    But if the decl itself wants greater alignment, don't override that.  */
 
@@ -542,7 +565,11 @@ layout_decl (tree decl, unsigned int known_align)
   if (DECL_MODE (decl) == VOIDmode)
     DECL_MODE (decl) = TYPE_MODE (type);
 
-  if (DECL_SIZE (decl) == 0)
+  if (lang_layout_decl_p && (*lang_layout_decl_p) (decl, type))
+    {
+      (*lang_layout_decl) (decl, type);
+    }
+  else if (DECL_SIZE (decl) == 0)
     {
       DECL_SIZE (decl) = TYPE_SIZE (type);
       DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);

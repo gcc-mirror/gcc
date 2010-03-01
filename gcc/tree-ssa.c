@@ -1204,6 +1204,19 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   if (POINTER_TYPE_P (inner_type)
       && POINTER_TYPE_P (outer_type))
     {
+      int i_shared = upc_shared_type_p (TREE_TYPE (inner_type));
+      int o_shared = upc_shared_type_p (TREE_TYPE (outer_type));
+
+      /* Retain conversions from a UPC shared pointer to
+         a regular C pointer.  */
+      if (!o_shared && i_shared)
+        return false;
+
+      /* Retain conversions between incompatible UPC shared pointers.  */
+      if (o_shared && i_shared
+	  && !lang_hooks.types_compatible_p (inner_type, outer_type))
+        return false;
+
       /* Do not lose casts between pointers to different address spaces.  */
       if (TYPE_ADDR_SPACE (TREE_TYPE (outer_type))
 	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
@@ -1219,7 +1232,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 		  == TREE_CODE (TREE_TYPE (inner_type)))
 	      && !TYPE_ARG_TYPES (TREE_TYPE (outer_type))
 	      && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (outer_type)),
-					    TREE_TYPE (TREE_TYPE (inner_type)))))
+				    TREE_TYPE (TREE_TYPE (inner_type)))))
 	return true;
 
       /* Do not lose casts to restrict qualified pointers.  */

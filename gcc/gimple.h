@@ -1032,6 +1032,7 @@ extern void lower_nested_functions (tree);
 extern void insert_field_into_struct (tree, tree);
 
 /* In gimplify.c.  */
+extern void prepare_gimple_addressable (tree *, gimple_seq *);
 extern void gimplify_function_tree (tree);
 
 /* In cfgexpand.c.  */

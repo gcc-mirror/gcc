@@ -460,11 +460,20 @@ tree
 create_tmp_var_raw (tree type, const char *prefix)
 {
   tree tmp_var;
-  tree new_type;
-
   /* Make the type of the variable writable.  */
-  new_type = build_type_variant (type, 0, 0);
+  int type_quals = TYPE_QUALS (type)
+                    & ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+  /* Temps. cannot be UPC shared values. */
+  if (upc_shared_type_p (type))
+    type_quals &=  ~(TYPE_QUAL_SHARED | TYPE_QUAL_RELAXED | TYPE_QUAL_STRICT);
+
+  type = build_qualified_type (type, type_quals);
+
+#if 0
+  /* UPC TODO: will build_qualified_type() above do the right thing
+     with attributes?  */
   TYPE_ATTRIBUTES (new_type) = TYPE_ATTRIBUTES (type);
+#endif
 
   tmp_var = build_decl (input_location,
 			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
@@ -3081,7 +3090,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
    that it could not mark addressable yet, like a Fortran pass-by-reference
    parameter (int) floatvar.  */
 
-static void
+void
 prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
 {
   while (handled_component_p (*expr_p))
@@ -6532,7 +6541,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
       /* Do any language-specific gimplification.  */
       ret = ((enum gimplify_status)
-	     lang_hooks.gimplify_expr (expr_p, pre_p, post_p));
+	     lang_hooks.gimplify_expr (expr_p, pre_p, post_p,
+                                       gimple_test_f, fallback));
       if (ret == GS_OK)
 	{
 	  if (*expr_p == NULL_TREE)
@@ -7640,6 +7650,13 @@ gimplify_function_tree (tree fndecl)
       seq = gimple_seq_alloc ();
       gimple_seq_add_stmt (&seq, new_bind);
       gimple_set_body (fndecl, seq);
+    }
+
+  if (flag_upc_instrument_functions
+      && !DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl)
+      && !flag_instrument_functions_exclude_p (fndecl))
+    {
+      lang_hooks.instrument_func (fndecl);
     }
 
   DECL_SAVED_TREE (fndecl) = NULL_TREE;

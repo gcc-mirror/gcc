@@ -1,0 +1,179 @@
+/* Copyright (C) 2001 Free Software Foundation, Inc.
+   This file is part of the UPC runtime Library.
+   Written by Gary Funck <gary@intrepid.com>
+   and Nenad Vukicevic <nenad@intrepid.com>
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2, or (at
+   your option) any later version.
+
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this library; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.
+
+   As a special exception, if you link this library with files
+   compiled with a GNU compiler to produce an executable, this does
+   not cause the resulting executable to be covered by the GNU General
+   Public License.  This exception does not however invalidate any
+   other reasons why the executable file might be covered by the GNU
+   General Public License.  */
+
+#ifndef _GCC_UPC_LIB_H_
+#define _GCC_UPC_LIB_H_ 1
+
+#if __UPC_PUPC_INST__
+#pragma pupc off
+#endif /* __UPC_PUPC_INST__ */
+
+/* required, for size_t definition */
+#include <sys/types.h>
+
+#pragma upc c_code
+
+/* helper macros for expanding the value of a macro as a string. */
+#define __UPC_STR__(S) #S
+#define __UPC_XSTR__(S) __UPC_STR__(S)
+
+#ifdef __UPC_PTHREADS_MODEL_TLS__
+#define GUPCR_THREAD_LOCAL __thread
+#else
+#define GUPCR_THREAD_LOCAL
+#endif
+
+#ifdef __UPC_STATIC_THREADS__
+/* defined at compile time by the -fupc-threads-N switch */
+#define __UPC_N_THREADS__ THREADS
+#define __UPC_STR__(S) #S
+#define __UPC_XSTR__(S) __UPC_STR__(S)
+#define __UPC_THREADS_CONFIG__ " staticthreads=" __UPC_XSTR__(THREADS)
+#else
+/* defined at run time */
+extern const int THREADS;
+#define __UPC_N_THREADS__ -1
+#define __UPC_THREADS_CONFIG__ "dynamicthreads"
+#endif
+
+#ifdef __UPC_PTHREADS_MODEL_TLS__
+#define __UPC_USES_PTHREADS__ 1
+#define __UPC_THREADS_MODEL__ "pthreads-tls"
+#else
+#define __UPC_THREADS_MODEL__ "process"
+#define __UPC_PTHREADS_CONFIG__
+#define __UPC_N_PTHREADS__ 0
+#endif
+
+#ifdef __UPC_USES_PTHREADS__
+#ifdef __UPC_STATIC_PTHREADS__
+/* defined at compile time by the -fupc-pthreads-per-procees-N switch. */
+#define __UPC_N_PTHREADS__ PTHREADS
+#define __UPC_PTHREADS_CONFIG__ "staticpthreads=" __UPC_XSTR__(PTHREADS)
+#else
+/* no value of pthreads per process given at compile time. */
+#define __UPC_N_PTHREADS__ -1
+#define __UPC_PTHREADS_CONFIG__ "dynamicpthreads"
+#endif /* __UPC_STATIC_PTHREADS__ */
+#endif /* __UPC_USES_PTHREADS__ */
+
+/* Place configuration information required by the Berkeley
+   UPC compilation system into the object file. */
+static const char GCCUPCConfig[]
+#if __MACH__
+   __attribute__ ((section("__DATA,upc_pgm_info"))) __attribute__ ((used)) =
+#else
+   __attribute__ ((section("upc_pgm_info"))) __attribute__ ((used)) =
+#endif
+  "$GCCUPCConfig: (" __BASE_FILE__ ") "
+                   __UPC_THREADS_CONFIG__ " " __UPC_THREADS_MODEL__
+#ifdef __UPC_USES_PTHREADS__
+  " " __UPC_PTHREADS_CONFIG__
+#endif
+  "$";
+
+#undef __UPC_XSTR__
+#undef __UPC_STR__
+
+extern GUPCR_THREAD_LOCAL const int MYTHREAD;
+
+#if !defined(_CRAYT3E)
+/* The UPC runtime's main program must run first,
+ * we rename the user's main to upc_main(). */
+#if __MACH__
+extern int main () __asm__("_upc_main");
+#else
+extern int main () __asm__("upc_main");
+#endif
+#endif
+
+/* Remap calls to exit so that they invoke the UPC runtime's
+   implementation of exit instead. */
+#define exit __upc_exit
+
+/* upc_shared_ptr_t is predefined as the representation of
+   a shared pointer type. */
+
+/* Runtime variables used by optimized code generation
+   on some targets. */
+/* The base address of the UPC global area */
+extern void * const __upc_global;
+/* The size of each thread's contribution to the global shared. */
+extern const size_t __upc_local_size;
+/* The base address of the UPC shared section */
+extern char __upc_shared_start[1];
+/* A pre-calculated value equal to:
+     (__upc_global - __upc_shared_start) which
+   is used to map a pointer-to-shared's address field
+   into a global memory address. */
+extern unsigned long const __upc_global_base;
+
+/* Runtime procedures */
+//include lib_runtime_api
+
+//include detect_target64
+
+/* Runtime shared access procedures */
+//include mode_types
+
+#if defined(__UPC_INLINE_LIB__) || defined(IN_TARGET_LIBS)
+
+/* Library routines have access to runtime intenrals.  */
+
+//include gupcr_config_h
+//include lib_min_max
+//include lib_config_vm
+//include lib_vm_api
+//include lib_config_heap
+//include lib_heap_api
+//include lib_config_msgs
+//include lib_config_shared_section
+//include lib_pts_defs
+
+#endif /* __UPC_INLINE_LIB__ || IN_TARGET_LIBS */
+
+#ifdef __UPC_INLINE_LIB__
+
+//include lib_max_threads_def
+//include lib_fence_defs
+//include lib_sptr_to_addr
+/* We need to include <string.h> to define memcpy() */
+#include <string.h>
+//include lib_inline_mem_sup
+//include lib_inline_access
+
+#else
+
+//include lib_access_prototypes
+
+#endif /* __UPC_INLINE_LIB__ */
+
+#if __UPC_PUPC_INST__
+#pragma pupc on
+#endif /* __UPC_PUPC_INST__ */
+
+#endif /* !_GCC_UPC_LIB_H_ */

@@ -25,6 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+/* UPC TODO: c-tree.h is needed, to bring in upc_pts_cvt_op_p
+   definition.  Should make it yet another language hook?  */
+#include "c-tree.h" 
 #include "flags.h"
 #include "function.h"
 #include "insn-config.h"
@@ -402,6 +405,10 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
            < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp, 0)))))
         goto normal;
     case NON_LVALUE_EXPR:
+      /* if a shared pointer conversion that will change representation,
+	 then we have to compare in the result type.  */
+      if (upc_pts_cvt_op_p (exp))
+	goto normal;
     case ABS_EXPR:
     case NEGATE_EXPR:
     case LROTATE_EXPR:

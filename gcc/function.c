@@ -1919,6 +1919,17 @@ aggregate_value_p (const_tree exp, const_tree fntype)
     return 1;
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
+  /* Pointers-to-shared must be considered as aggregates for
+     the purpose of passing them as return values, but only
+     when the underlying mode of the representation would
+     require that its value be passed on the stack.
+     This occurs when using the 'struct' representation
+     of a shared pointer.  */
+  if (flag_pcc_struct_return && POINTER_TYPE_P (type)
+      && upc_shared_type_p (TREE_TYPE (type))
+      && AGGREGATE_TYPE_P (upc_pts_rep_type_node))
+    return 1;
+
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
   reg = hard_function_value (type, 0, fntype, 0);

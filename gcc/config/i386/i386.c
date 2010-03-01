@@ -5134,6 +5134,15 @@ classify_argument (enum machine_mode mode, const_tree type,
       && targetm.calls.must_pass_in_stack (mode, type))
     return 0;
 
+  /* Special case check for pointer to shared, on 64-bit target. */
+  if (TARGET_64BIT && mode == TImode
+      && type && TREE_CODE (type) == POINTER_TYPE
+      && upc_shared_type_p (TREE_TYPE (type)))
+    {
+      classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+      return 2;
+    }
+
   if (type && AGGREGATE_TYPE_P (type))
     {
       int i;

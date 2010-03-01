@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "c-tree.h"
 #include "version.h"
 #include "flags.h"
 #include "real.h"
@@ -5911,7 +5912,6 @@ static HOST_WIDE_INT frame_pointer_fb_offset;
 /* Forward declarations for functions defined in this file.  */
 
 static int is_pseudo_reg (const_rtx);
-static tree type_main_variant (tree);
 static int is_tagged_type (const_tree);
 static const char *dwarf_tag_name (unsigned);
 static const char *dwarf_attr_name (unsigned);
@@ -6071,7 +6071,7 @@ static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
 static int is_base_type (tree);
 static dw_die_ref subrange_type_die (tree, tree, tree, dw_die_ref);
-static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
+static dw_die_ref modified_type_die (tree, int, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
 static int type_is_enum (const_tree);
@@ -6328,26 +6328,6 @@ is_pseudo_reg (const_rtx rtl)
 	      && REGNO (SUBREG_REG (rtl)) >= FIRST_PSEUDO_REGISTER));
 }
 
-/* Return a reference to a type, with its const and volatile qualifiers
-   removed.  */
-
-static inline tree
-type_main_variant (tree type)
-{
-  type = TYPE_MAIN_VARIANT (type);
-
-  /* ??? There really should be only one main variant among any group of
-     variants of a given type (and all of the MAIN_VARIANT values for all
-     members of the group should point to that one type) but sometimes the C
-     front-end messes this up for array types, so we work around that bug
-     here.  */
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    while (type != TYPE_MAIN_VARIANT (type))
-      type = TYPE_MAIN_VARIANT (type);
-
-  return type;
-}
-
 /* Return nonzero if the given type node represents a tagged type.  */
 
 static inline int
@@ -6504,6 +6484,12 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_GNU_BINCL";
     case DW_TAG_GNU_EINCL:
       return "DW_TAG_GNU_EINCL";
+    case DW_TAG_upc_shared_type:
+      return "DW_TAG_upc_shared_type";
+    case DW_TAG_upc_relaxed_type:
+      return "DW_TAG_upc_relaxed_type";
+    case DW_TAG_upc_strict_type:
+      return "DW_TAG_upc_strict_type";
     case DW_TAG_GNU_template_template_param:
       return "DW_TAG_GNU_template_template_param";
     default:
@@ -6741,6 +6727,9 @@ dwarf_attr_name (unsigned int attr)
 
     case DW_AT_VMS_rtnbeg_pd_address:
       return "DW_AT_VMS_rtnbeg_pd_address";
+
+    case DW_AT_upc_threads_scaled:
+      return "DW_AT_upc_threads_scaled";
 
     default:
       return "DW_AT_<unknown>";
@@ -7452,7 +7441,8 @@ is_c_family (void)
 
   return (lang == DW_LANG_C || lang == DW_LANG_C89 || lang == DW_LANG_ObjC
 	  || lang == DW_LANG_C99
-	  || lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus);
+	  || lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus
+	  || lang == DW_LANG_Upc);
 }
 
 /* Return TRUE if the language is C++.  */
@@ -12097,9 +12087,11 @@ subrange_type_die (tree type, tree low, tree high, dw_die_ref context_die)
    entry that chains various modifiers in front of the given type.  */
 
 static dw_die_ref
-modified_type_die (tree type, int is_const_type, int is_volatile_type,
+modified_type_die (tree type, int type_quals,
 		   dw_die_ref context_die)
 {
+  const int is_const_type = ((type_quals & TYPE_QUAL_CONST) != 0);
+  const int is_volatile_type = ((type_quals & TYPE_QUAL_VOLATILE) != 0);
   enum tree_code code = TREE_CODE (type);
   dw_die_ref mod_type_die;
   dw_die_ref sub_die = NULL;
@@ -12113,10 +12105,8 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   /* See if we already have the appropriately qualified variant of
      this type.  */
   qualified_type
-    = get_qualified_type (type,
-			  ((is_const_type ? TYPE_QUAL_CONST : 0)
-			   | (is_volatile_type ? TYPE_QUAL_VOLATILE : 0)));
-
+    = get_qualified_type (type, type_quals);
+  
   /* If we do, then we can just use its DIE, if it exists.  */
   if (qualified_type)
     {
@@ -12138,28 +12128,69 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	  gen_type_die (qualified_type, context_die);
 	  return lookup_type_die (qualified_type);
 	}
-      else if (is_const_type < TYPE_READONLY (dtype)
-	       || is_volatile_type < TYPE_VOLATILE (dtype)
-	       || (is_const_type <= TYPE_READONLY (dtype)
-		   && is_volatile_type <= TYPE_VOLATILE (dtype)
-		   && DECL_ORIGINAL_TYPE (name) != type))
+      else if (type_quals == TYPE_QUALS (dtype))
 	/* cv-unqualified version of named type.  Just use the unnamed
 	   type to which it refers.  */
-	return modified_type_die (DECL_ORIGINAL_TYPE (name),
-				  is_const_type, is_volatile_type,
-				  context_die);
+	return modified_type_die (DECL_ORIGINAL_TYPE (name), type_quals, context_die);
       /* Else cv-qualified version of named type; fall through.  */
     }
-
-  if (is_const_type)
+  
+  if (type_quals & TYPE_QUAL_CONST)
     {
       mod_type_die = new_die (DW_TAG_const_type, comp_unit_die, type);
-      sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
+      sub_die = modified_type_die (type, type_quals & ~TYPE_QUAL_CONST, context_die);
     }
-  else if (is_volatile_type)
+  else if (type_quals & TYPE_QUAL_VOLATILE)
     {
       mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die, type);
-      sub_die = modified_type_die (type, 0, 0, context_die);
+      sub_die = modified_type_die (type, type_quals & ~TYPE_QUAL_VOLATILE, context_die);
+    }
+  else if (use_upc_dwarf2_extensions
+           && (type_quals & TYPE_QUAL_SHARED))
+    {
+      HOST_WIDE_INT block_factor = 1;
+          
+      mod_type_die = new_die (DW_TAG_upc_shared_type,
+                                  comp_unit_die, type);
+      /* Inside the compiler,
+         "shared int x;" TYPE_BLOCK_FACTOR is null.
+         "shared [] int *p;" TYPE_BLOCK_FACTOR is zero.
+         "shared [10] int x[50];" TYPE_BLOCK_FACTOR is 10 * bitsize(int)
+         The DWARF2 encoding is as follows:
+         "shared int x;"  DW_AT_count: 1
+         "shared [] int *p;" <no DW_AT_count attribute>
+         "shared [10] int x[50];" DW_AT_count: 10
+         The logic below handles thse various contingencies. */
+
+      if (TYPE_BLOCK_FACTOR (type)
+          && TREE_CODE (TYPE_BLOCK_FACTOR (type)) == INTEGER_CST
+          && host_integerp (TYPE_BLOCK_FACTOR (type), 1))
+        {
+          block_factor = TREE_INT_CST_LOW (TYPE_BLOCK_FACTOR (type));
+        }
+
+      if (block_factor != 0)
+          add_AT_unsigned (mod_type_die, DW_AT_count, block_factor);
+
+      sub_die = modified_type_die (type,
+                           type_quals & ~TYPE_QUAL_SHARED,
+                           context_die);
+    }
+  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_STRICT)
+    {
+      mod_type_die = new_die (DW_TAG_upc_strict_type,
+                                  comp_unit_die, type);
+      sub_die = modified_type_die (type,
+                           type_quals & ~TYPE_QUAL_STRICT,
+                           context_die);
+    }
+  else if (use_upc_dwarf2_extensions && type_quals & TYPE_QUAL_RELAXED)
+    {
+      mod_type_die = new_die (DW_TAG_upc_relaxed_type,
+                                  comp_unit_die, type);
+      sub_die = modified_type_die (type,
+                           type_quals & ~TYPE_QUAL_RELAXED,
+                           context_die);
     }
   else if (code == POINTER_TYPE)
     {
@@ -12193,17 +12224,18 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   else
     {
       gen_type_die (type, context_die);
-
-      /* We have to get the type_main_variant here (and pass that to the
+      
+      /* We have to get the TYPE_MAIN_VARIANT here (and pass that to the
 	 `lookup_type_die' routine) because the ..._TYPE node we have
 	 might simply be a *copy* of some original type node (where the
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) != VECTOR_TYPE)
-	return lookup_type_die (type_main_variant (type));
+      if (TREE_CODE (type) != ARRAY_TYPE
+          && TREE_CODE (type) != VECTOR_TYPE)
+	return lookup_type_die (TYPE_MAIN_VARIANT (type));
       else
-	/* Vectors have the debugging information in the type,
+	/* Arrays and vectors have the debugging information in the type,
 	   not the main variant.  */
 	return lookup_type_die (type);
     }
@@ -12237,10 +12269,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
        this is a recursive type.  This ensures that the modified_type_die
        recursion will terminate even if the type is recursive.  Recursive
        types are possible in Ada.  */
-    sub_die = modified_type_die (item_type,
-				 TYPE_READONLY (item_type),
-				 TYPE_VOLATILE (item_type),
-				 context_die);
+    sub_die = modified_type_die (item_type, TYPE_QUALS (item_type), context_die);
 
   if (sub_die != NULL)
     add_AT_die_ref (mod_type_die, DW_AT_type, sub_die);
@@ -16397,6 +16426,12 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 	 and (in GNU C only) variable bounds.  Handle all three forms
 	 here.  */
       subrange_die = new_die (DW_TAG_subrange_type, type_die, NULL);
+
+      if (use_upc_dwarf2_extensions && UPC_TYPE_HAS_THREADS_FACTOR (type))
+        {
+	  add_AT_flag (subrange_die, DW_AT_upc_threads_scaled, 1);
+	}
+
       if (domain)
 	{
 	  /* We have an array type with specified bounds.  */
@@ -16630,10 +16665,13 @@ add_pure_or_virtual_attribute (dw_die_ref die, tree func_decl)
 static void
 add_src_coords_attributes (dw_die_ref die, tree decl)
 {
-  expanded_location s = expand_location (DECL_SOURCE_LOCATION (decl));
-
-  add_AT_file (die, DW_AT_decl_file, lookup_filename (s.file));
-  add_AT_unsigned (die, DW_AT_decl_line, s.line);
+  const location_t loc = DECL_SOURCE_LOCATION (decl);
+  if (loc != UNKNOWN_LOCATION)
+    {
+      const expanded_location s = expand_location (loc);
+      add_AT_file (die, DW_AT_decl_file, lookup_filename (s.file));
+      add_AT_unsigned (die, DW_AT_decl_line, s.line);
+    }
 }
 
 /* Add a DW_AT_name attribute and source coordinate attribute for the
@@ -16810,6 +16848,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int decl_const,
 {
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
+  int type_quals;
 
   /* ??? If this type is an unnamed subrange type of an integral, floating-point
      or fixed-point type, use the inner type.  This is because we have no
@@ -16826,10 +16865,10 @@ add_type_attribute (dw_die_ref object_die, tree type, int decl_const,
       || code == VOID_TYPE)
     return;
 
-  type_die = modified_type_die (type,
-				decl_const || TYPE_READONLY (type),
-				decl_volatile || TYPE_VOLATILE (type),
-				context_die);
+  type_quals = TYPE_QUALS (type)
+  	       | (decl_const * TYPE_QUAL_CONST)
+	       | (decl_volatile * TYPE_QUAL_VOLATILE);
+  type_die = modified_type_die (type, type_quals, context_die);
 
   if (type_die != NULL)
     add_AT_die_ref (object_die, DW_AT_type, type_die);
@@ -18487,9 +18526,7 @@ gen_field_die (tree decl, dw_die_ref context_die)
 
   decl_die = new_die (DW_TAG_member, context_die, decl);
   add_name_and_src_coords_attributes (decl_die, decl);
-  add_type_attribute (decl_die, member_declared_type (decl),
-		      TREE_READONLY (decl), TREE_THIS_VOLATILE (decl),
-		      context_die);
+  add_type_attribute (decl_die, member_declared_type (decl), 0, 0, context_die);
 
   if (DECL_BIT_FIELD_TYPE (decl))
     {
@@ -18604,6 +18641,10 @@ gen_compile_unit_die (const char *filename)
     language = DW_LANG_Fortran77;
   else if (strcmp (language_string, "GNU Pascal") == 0)
     language = DW_LANG_Pascal83;
+  else if (use_upc_dwarf2_extensions
+           && ((strcmp (language_string, "GNU UPC") == 0)
+	        || (strcmp (language_string, "GCC UPC") == 0)))
+    language = DW_LANG_Upc;
   else if (dwarf_version >= 3 || !dwarf_strict)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
@@ -18848,8 +18889,7 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
       else
 	type = TREE_TYPE (decl);
 
-      add_type_attribute (type_die, type, TREE_READONLY (decl),
-			  TREE_THIS_VOLATILE (decl), context_die);
+      add_type_attribute (type_die, type, 0, 0, context_die);
     }
 
   if (DECL_ABSTRACT (decl))
@@ -18907,10 +18947,11 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   /* We are going to output a DIE to represent the unqualified version
      of this type (i.e. without any const or volatile qualifiers) so
      get the main variant (i.e. the unqualified version) of this type
-     now.  (Vectors are special because the debugging info is in the
-     cloned type itself).  */
-  if (TREE_CODE (type) != VECTOR_TYPE)
-    type = type_main_variant (type);
+     now.  (Arrays and vectors are special because the debugging info
+     is in the cloned type itself).  */
+  if (TREE_CODE (type) != ARRAY_TYPE
+      && TREE_CODE (type) != VECTOR_TYPE)
+    type = TYPE_MAIN_VARIANT (type);
 
   if (TREE_ASM_WRITTEN (type))
     return;
@@ -19314,8 +19355,7 @@ force_type_die (tree type)
     {
       dw_die_ref context_die = get_context_die (TYPE_CONTEXT (type));
 
-      type_die = modified_type_die (type, TYPE_READONLY (type),
-				    TYPE_VOLATILE (type), context_die);
+      type_die = modified_type_die (type, TYPE_QUALS (type), context_die);
       gcc_assert (type_die);
     }
   return type_die;
@@ -19874,7 +19914,7 @@ dwarf2out_decl (tree decl)
 	  if (is_cxx ()
 	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE
 	      && ! DECL_IGNORED_P (decl))
-	    modified_type_die (TREE_TYPE (decl), 0, 0, NULL);
+	    (void) modified_type_die (TREE_TYPE (decl), TYPE_UNQUALIFIED, NULL);
 
 	  return;
 	}

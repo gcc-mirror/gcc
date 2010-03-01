@@ -813,11 +813,13 @@ with_libelf_include
 with_libelf_lib
 enable_stage1_languages
 enable_objc_gc
+with_upc_pts
 with_build_sysroot
 with_debug_prefix_map
 enable_bootstrap
 with_build_config
 enable_serial_configure
+enable_upc_link_script
 with_build_time_tools
 enable_maintainer_mode
 enable_stage1_checking
@@ -1499,6 +1501,9 @@ Optional Features:
                           force sequential configuration of
                           sub-packages for the host, target or build
                           machine, or all sub-packages
+  --enable-upc-link-script Enable UPC's use of a custom linker script.
+  This will define the UPC shared section as a no load section on
+  targets where this feature is supported.  Requires GNU LD.
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
   --enable-stage1-checking[=all]   choose additional checking for stage1
@@ -1549,6 +1554,8 @@ Optional Packages:
                           plus --with-libelf-lib=PATH/lib
   --with-libelf-include=PATH Specify directory for installed libelf include files
   --with-libelf-lib=PATH   Specify the directory for the installed libelf library
+  --with-upc-pts={struct,word-pair,packed}   choose the representation
+                          of a UPC pointer-to-shared
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -2925,6 +2932,7 @@ target_libraries="target-libgcc \
 		target-boehm-gc \
 		${libgcj} \
 		target-libobjc \
+		target-libupc \
 		target-libada"
 
 # these tools are built using the target libraries, and are intended to
@@ -3192,6 +3200,14 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
+    *-catamount-*)
+        # Disable for Cray catamount machine
+        noconfigdirs="$noconfigdirs target-libmudflap"
+        ;;
+    *-cnl-*)
+        # Disable for Cray XT CNL machine
+        noconfigdirs="$noconfigdirs target-libmudflap"
+        ;;
     *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
@@ -6867,6 +6883,29 @@ case ,${enable_languages},:${enable_objc_gc} in
     ;;
 esac
 
+
+# Check whether --with-upc-pts was given.
+if test "${with_upc_pts+set}" = set; then :
+  withval=$with_upc_pts;
+ case ,${enable_languages}, in
+   *,upc,)
+     case "$withval" in
+       struct|word-pair|packed)
+	 true
+         ;;
+       *)
+         as_fn_error "$withval is an invalid option to --with-upc-pts" "$LINENO" 5
+         ;;
+     esac
+     ;;
+   *)
+     as_fn_error "--with-upc-pts supplied, but UPC language not enabled" "$LINENO" 5
+     ;;
+ esac
+
+fi
+
+
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
 # $build_configdirs and $target_configdirs.
 # If we have the source for $noconfigdirs entries, add them to $notsupp.
@@ -7845,7 +7884,17 @@ fi
 
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then
-  target_configargs="--enable-multilib ${target_configargs}"
+  case "${host}" in
+    *-catamount-*)
+      # no multilib for Cray catamount machine
+      ;;
+    *-cnl-*)
+      # or Cray XT CNL machine
+      ;;
+    *)
+      target_configargs="--enable-multilib ${target_configargs}"
+      ;;
+  esac
 fi
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
@@ -7974,6 +8023,57 @@ case "${target}" in
     FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
 esac
+
+# UPC linker script check
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC link script support" >&5
+$as_echo_n "checking for UPC link script support... " >&6; }
+# Check whether --enable-upc-link-script was given.
+if test "${enable_upc_link_script+set}" = set; then :
+  enableval=$enable_upc_link_script;
+  case $enableval in
+  yes | no) ;;
+  *)
+    as_fn_error "--enable-upc-link-script accepts only yes or no." "$LINENO" 5
+    ;;
+  esac
+
+else
+
+  if test x${use_gnu_ld} = x ; then
+    case "$target" in
+      # disable linker script for CRAY XT3/4 cnl/catamount
+      *-catamount-*)
+        enable_upc_link_script=no
+        ;;
+      *-cnl-*)
+        enable_upc_link_script=no
+        ;;
+      # disable linker script for Apple Mac OS X
+      *-*-darwin*)
+        enable_upc_link_script=no
+        ;;
+      *)
+        enable_upc_link_script=yes
+        ;;
+    esac
+  else
+    enable_upc_link_script=no
+  fi
+  if test "$enable_upc_link_script" = yes; then
+    target_configargs="${target_configargs} --enable-upc-link-script"
+    host_configargs="${host_configargs} --enable-upc-link-script"
+  fi
+
+fi
+
+if test "$enable_upc_link_script" = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; };
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; };
+fi
+
 
 # Makefile fragments.
 for frag in host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag;

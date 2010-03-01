@@ -8479,6 +8479,23 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  unsigned int final_prec = TYPE_PRECISION (type);
 	  int final_unsignedp = TYPE_UNSIGNED (type);
 
+	  /* check for cases specific to UPC, involving pointer types */
+	  if (final_ptr || inter_ptr || inside_ptr)
+	    {
+	      int final_pts = final_ptr
+	                      && upc_shared_type_p (TREE_TYPE (type));
+	      int inter_pts = inter_ptr
+	                      && upc_shared_type_p (TREE_TYPE (inter_type));
+	      int inside_pts = inside_ptr
+	                      && upc_shared_type_p (TREE_TYPE (inside_type));
+	      if (!((final_pts && inter_pts)
+	             && TREE_TYPE (type) == TREE_TYPE (inter_type))
+                    || ((inter_pts && inside_pts)
+		         && (TREE_TYPE (inter_type)
+			     == TREE_TYPE (inside_type))))
+	        return NULL;
+	    }
+
 	  /* In addition to the cases of two conversions in a row
 	     handled below, if we are converting something to its own
 	     type via an object of identical or wider precision, neither
@@ -8637,7 +8654,10 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
          when one of the new casts will fold away. Conservatively we assume
 	 that this happens when X or Y is NOP_EXPR or Y is INTEGER_CST. */
       if (POINTER_TYPE_P (type)
+          && !upc_shared_type_p (TREE_TYPE (type))
 	  && TREE_CODE (arg0) == POINTER_PLUS_EXPR
+	  && !upc_shared_type_p (TREE_TYPE (
+	                           TREE_TYPE (TREE_OPERAND (arg0, 0))))
 	  && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == NOP_EXPR
 	      || TREE_CODE (TREE_OPERAND (arg0, 1)) == NOP_EXPR))
@@ -8714,18 +8734,24 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       /* For integral conversions with the same precision or pointer
 	 conversions use a NOP_EXPR instead.  */
       if ((INTEGRAL_TYPE_P (type)
-	   || POINTER_TYPE_P (type))
+	   || (POINTER_TYPE_P (type)
+	       && !upc_shared_type_p (TREE_TYPE (type))))
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	      || POINTER_TYPE_P (TREE_TYPE (op0)))
+	      || (POINTER_TYPE_P (TREE_TYPE (op0))
+	          && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (op0)))))
 	  && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (op0)))
 	return fold_convert_loc (loc, type, op0);
 
       /* Strip inner integral conversions that do not change the precision.  */
       if (CONVERT_EXPR_P (op0)
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	      || POINTER_TYPE_P (TREE_TYPE (op0)))
+	      || (POINTER_TYPE_P (TREE_TYPE (op0)))
+	          && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (op0))))
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
-	      || POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0))))
+	      || (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0))))
+	          && !upc_shared_type_p (TREE_TYPE (
+		                          TREE_TYPE (
+					    TREE_OPERAND (op0, 0)))))
 	  && (TYPE_PRECISION (TREE_TYPE (op0))
 	      == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))))
 	return fold_build1_loc (loc, VIEW_CONVERT_EXPR,
@@ -10226,7 +10252,8 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, sizetype, arg0));
 
       /* (PTR +p B) +p A -> PTR +p (B + A) */
-      if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
+      if (TREE_CODE (arg0) == POINTER_PLUS_EXPR
+          && !upc_shared_type_p (TREE_TYPE (type)))
 	{
 	  tree inner;
 	  tree arg01 = fold_convert_loc (loc, sizetype, TREE_OPERAND (arg0, 1));
@@ -10271,6 +10298,14 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type, arg1),
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg0, 0)));
+
+      /* Disable further optimizations involving UPC shared pointers,
+         because integers are not interoperable with shared pointers.  */
+      if ((TREE_TYPE (arg0) && POINTER_TYPE_P (TREE_TYPE (arg0))
+          && upc_shared_type_p (TREE_TYPE (TREE_TYPE (arg0))))
+         || (TREE_TYPE (arg1) && POINTER_TYPE_P (TREE_TYPE (arg1))
+             && upc_shared_type_p (TREE_TYPE (TREE_TYPE (arg1)))))
+        return NULL_TREE;
 
       if (INTEGRAL_TYPE_P (type))
 	{
@@ -10739,6 +10774,16 @@ fold_binary_loc (location_t loc,
 	return fold_build2_loc (loc, PLUS_EXPR, type, op0,
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg1, 0)));
+
+      /* Disable further optimizations involving UPC shared pointers,
+         because integers are not interoperable with shared pointers.
+	 (The test below also detects pointer difference between
+	 shared pointers, which cannot be folded.  */
+
+      if (TREE_TYPE (arg0) && POINTER_TYPE_P (TREE_TYPE (arg0))
+          && upc_shared_type_p (TREE_TYPE (TREE_TYPE (arg0))))
+        return NULL_TREE;
+
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && (FLOAT_TYPE_P (type)

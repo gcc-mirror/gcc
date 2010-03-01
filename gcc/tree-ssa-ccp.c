@@ -2050,6 +2050,10 @@ maybe_fold_offset_to_reference (location_t loc, tree base, tree offset,
   tree ret;
   tree type;
 
+  /* Disable this rewrite for UPC shared types. */
+  if ((TREE_TYPE (base) && upc_shared_type_p (TREE_TYPE (base)))
+      || (orig_type && upc_shared_type_p (orig_type)))
+    return NULL;
   STRIP_NOPS (base);
   if (TREE_CODE (base) != ADDR_EXPR)
     return NULL_TREE;

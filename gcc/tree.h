@@ -369,6 +369,12 @@ struct GTY(()) tree_base {
   unsigned asm_written_flag: 1;
   unsigned nowarning_flag : 1;
 
+  /* UPC flags */
+  unsigned shared_flag : 1;		/* UPC: shared  qualified */
+  unsigned strict_flag : 1;		/* UPC: strict  qualified */
+  unsigned relaxed_flag : 1;		/* UPC: relaxed qualified */
+  unsigned upc_unused : 5;		/* UPC: unused bits  */
+
   unsigned used_flag : 1;
   unsigned nothrow_flag : 1;
   unsigned static_flag : 1;
@@ -1271,6 +1277,14 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define DECL_UNSIGNED(NODE) \
   (DECL_COMMON_CHECK (NODE)->base.unsigned_flag)
 
+/* Convert tree flags to type qualifiers. */
+#define TREE_QUALS(NODE)			\
+  ((TREE_READONLY(NODE) * TYPE_QUAL_CONST) |	\
+   (TREE_THIS_VOLATILE(NODE) * TYPE_QUAL_VOLATILE) |	\
+   (TREE_SHARED(NODE) * TYPE_QUAL_SHARED) |	\
+   (TREE_STRICT(NODE) * TYPE_QUAL_STRICT) |	\
+   (TREE_RELAXED(NODE) * TYPE_QUAL_RELAXED))
+
 /* In integral and pointer types, means an unsigned type.  */
 #define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.unsigned_flag)
 
@@ -1346,6 +1360,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
 #define IDENTIFIER_TRANSPARENT_ALIAS(NODE) \
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
+
+/* UPC common tree flags */
+#define TREE_SHARED(NODE) ((NODE)->base.shared_flag)
+#define TREE_STRICT(NODE) ((NODE)->base.strict_flag)
+#define TREE_RELAXED(NODE) ((NODE)->base.relaxed_flag)
 
 /* In fixed-point types, means a saturating type.  */
 #define TYPE_SATURATING(NODE) ((NODE)->base.saturating_flag)
@@ -2037,6 +2056,7 @@ struct GTY(()) tree_block {
 #define TYPE_UID(NODE) (TYPE_CHECK (NODE)->type.uid)
 #define TYPE_SIZE(NODE) (TYPE_CHECK (NODE)->type.size)
 #define TYPE_SIZE_UNIT(NODE) (TYPE_CHECK (NODE)->type.size_unit)
+#define TYPE_BLOCK_FACTOR(NODE) (TYPE_CHECK (NODE)->type.block_factor)
 #define TYPE_VALUES(NODE) (ENUMERAL_TYPE_CHECK (NODE)->type.values)
 #define TYPE_DOMAIN(NODE) (ARRAY_TYPE_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
@@ -2171,6 +2191,15 @@ extern enum machine_mode vector_type_mode (const_tree);
    the term.  */
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type.restrict_flag)
 
+/* If nonzero, this type is `shared'-qualified, in the UPC dialect */
+#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.shared_flag)
+
+/* If nonzero, this type is `strict'-qualified, in the UPC dialect  */
+#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.strict_flag)
+
+/* If nonzero, this type is `relaxed'-qualified, in the UPC dialect  */
+#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.relaxed_flag)
+
 /* The address space the type is in.  */
 #define TYPE_ADDR_SPACE(NODE) (TYPE_CHECK (NODE)->base.address_space)
 
@@ -2178,10 +2207,15 @@ extern enum machine_mode vector_type_mode (const_tree);
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
 
-#define TYPE_UNQUALIFIED   0x0
-#define TYPE_QUAL_CONST    0x1
-#define TYPE_QUAL_VOLATILE 0x2
-#define TYPE_QUAL_RESTRICT 0x4
+#define TYPE_UNQUALIFIED   0x00
+#define TYPE_QUAL_CONST    0x01
+#define TYPE_QUAL_VOLATILE 0x02
+#define TYPE_QUAL_RESTRICT 0x04
+
+/* UPC qualifiers */
+#define TYPE_QUAL_SHARED   0x10
+#define TYPE_QUAL_RELAXED  0x20
+#define TYPE_QUAL_STRICT   0x40
 
 /* Encode/decode the named memory support as part of the qualifier.  If more
    than 8 qualifiers are added, these macros need to be adjusted.  */
@@ -2200,13 +2234,24 @@ extern enum machine_mode vector_type_mode (const_tree);
   ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)			\
    | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
    | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
+   | (TYPE_SHARED  (NODE) * TYPE_QUAL_SHARED)			\
+   | (TYPE_STRICT  (NODE) * TYPE_QUAL_STRICT)			\
+   | (TYPE_RELAXED (NODE) * TYPE_QUAL_RELAXED)			\
    | (ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (NODE))))
+
+/* The set of qualifiers pertinent to a FUNCTION_DECL node.  */
+#define TREE_FUNC_QUALS(NODE)				\
+  ((TREE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+   | (TREE_THIS_VOLATILE (NODE) * TYPE_QUAL_VOLATILE))
 
 /* The same as TYPE_QUALS without the address space qualifications.  */
 #define TYPE_QUALS_NO_ADDR_SPACE(NODE)				\
   ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)			\
    | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
-   | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT))
+   | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
+   | (TYPE_SHARED  (NODE) * TYPE_QUAL_SHARED)			\
+   | (TYPE_STRICT  (NODE) * TYPE_QUAL_STRICT)			\
+   | (TYPE_RELAXED (NODE) * TYPE_QUAL_RELAXED))
 
 /* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) (TYPE_CHECK (NODE)->type.lang_flag_0)
@@ -2306,6 +2351,9 @@ struct GTY(()) tree_type {
   alias_set_type alias_set;
   tree pointer_to;
   tree reference_to;
+  /* UPC: for block-distributed arrays */
+  union tree_node *block_factor;
+
   union tree_type_symtab {
     int GTY ((tag ("0"))) address;
     const char * GTY ((tag ("1"))) pointer;
@@ -2448,7 +2496,7 @@ struct GTY (()) tree_binfo {
 
 /* Nonzero if DECL represents a variable for the SSA passes.  */
 #define SSA_VAR_P(DECL)							\
-	(TREE_CODE (DECL) == VAR_DECL					\
+	((TREE_CODE (DECL) == VAR_DECL && !TREE_SHARED (DECL))          \
 	 || TREE_CODE (DECL) == PARM_DECL				\
 	 || TREE_CODE (DECL) == RESULT_DECL				\
 	 || (TREE_CODE (DECL) == SSA_NAME				\
@@ -3470,6 +3518,19 @@ enum tree_index
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
 
+  TI_UPC_PTS_TYPE,
+  TI_UPC_PTS_REP_TYPE,
+  TI_UPC_PHASE_FIELD,
+  TI_UPC_THREAD_FIELD,
+  TI_UPC_VADDR_FIELD,
+  TI_UPC_PHASE_MASK,
+  TI_UPC_THREAD_MASK,
+  TI_UPC_VADDR_MASK,
+  TI_UPC_PHASE_SHIFT,
+  TI_UPC_THREAD_SHIFT,
+  TI_UPC_VADDR_SHIFT,
+  TI_UPC_NULL_PTS,
+
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
@@ -3627,6 +3688,21 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define boolean_type_node		global_trees[TI_BOOLEAN_TYPE]
 #define boolean_false_node		global_trees[TI_BOOLEAN_FALSE]
 #define boolean_true_node		global_trees[TI_BOOLEAN_TRUE]
+
+/* UPC pointer to shared object representation */
+/* The UPC type `void *'.  */
+#define upc_pts_type_node	global_trees[TI_UPC_PTS_TYPE]
+#define upc_pts_rep_type_node	global_trees[TI_UPC_PTS_REP_TYPE]
+#define upc_phase_field_node	global_trees[TI_UPC_PHASE_FIELD]
+#define upc_thread_field_node	global_trees[TI_UPC_THREAD_FIELD]
+#define upc_vaddr_field_node	global_trees[TI_UPC_VADDR_FIELD]
+#define upc_phase_mask_node	global_trees[TI_UPC_PHASE_MASK]
+#define upc_thread_mask_node	global_trees[TI_UPC_THREAD_MASK]
+#define upc_vaddr_mask_node	global_trees[TI_UPC_VADDR_MASK]
+#define upc_phase_shift_node	global_trees[TI_UPC_PHASE_SHIFT]
+#define upc_thread_shift_node	global_trees[TI_UPC_THREAD_SHIFT]
+#define upc_vaddr_shift_node	global_trees[TI_UPC_VADDR_SHIFT]
+#define upc_null_pts_node	global_trees[TI_UPC_NULL_PTS]
 
 /* The decimal floating point types. */
 #define dfloat32_type_node              global_trees[TI_DFLOAT32_TYPE]
@@ -4223,6 +4299,7 @@ typedef struct record_layout_info_s
   int packed_maybe_necessary;
 } *record_layout_info;
 
+extern void set_lang_adjust_rli (void (*) (record_layout_info));
 extern record_layout_info start_record_layout (tree);
 extern tree bit_from_pos (tree, tree);
 extern tree byte_from_pos (tree, tree);
@@ -4281,6 +4358,11 @@ extern tree bit_position (const_tree);
 extern HOST_WIDE_INT int_bit_position (const_tree);
 extern tree byte_position (const_tree);
 extern HOST_WIDE_INT int_byte_position (const_tree);
+
+/* UPC related functions */
+extern void set_lang_layout_decl_p (int (*) (tree, tree));
+extern void set_lang_layout_decl (void (*) (tree, tree));
+extern void expand_affinity_test (tree);
 
 /* Define data structures, macros, and functions for handling sizes
    and the various types used to represent sizes.  */
@@ -5456,5 +5538,9 @@ is_lang_specific (tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
 }
+
+/* In upc-act.c and stub-upc.c */
+extern int upc_shared_type_p (tree);
+extern tree upc_get_unshared_type (tree);
 
 #endif  /* GCC_TREE_H  */

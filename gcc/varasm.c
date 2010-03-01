@@ -1957,7 +1957,13 @@ emit_tls_common (tree decl ATTRIBUTE_UNUSED,
   ASM_OUTPUT_TLS_COMMON (asm_out_file, decl, name, size);
   return true;
 #else
-  sorry ("thread-local COMMON data not implemented");
+  {
+    char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+    char msg[512];
+    sprintf (msg, "thread-local COMMON data not implemented for %s",
+             name);
+    sorry (msg);
+  }
   return true;
 #endif
 }
@@ -6002,6 +6008,19 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 	  || strcmp (name, ".fini_array") == 0
 	  || strcmp (name, ".preinit_array") == 0))
     flags |= SECTION_NOTYPE;
+
+#ifdef UPC_SHARED_SECTION_NAME
+  /* The UPC shared section is not loaded into memory.
+     It is used only to layout shared veriables.  */
+  if (!(flags & (SECTION_CODE | SECTION_BSS | SECTION_TLS))
+      && (strcmp (name, UPC_SHARED_SECTION_NAME) == 0))
+    {
+      flags |= SECTION_BSS;
+# ifdef HAVE_UPC_LINK_SCRIPT
+      flags = SECTION_DEBUG | (flags & ~SECTION_WRITE);
+# endif
+    }
+#endif
 
   return flags;
 }

@@ -1,0 +1,227 @@
+# Top level -*- makefile -*- fragment for GNU UPC
+#   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004
+#   Free Software Foundation, Inc.
+
+#This file is part of GCC.
+
+#GCC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 2, or (at your option)
+#any later version.
+
+#GCC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GCC; see the file COPYING.  If not, write to
+#the Free Software Foundation, 59 Temple Place - Suite 330,
+#Boston, MA 02111-1307, USA.
+
+# This file provides the language dependent support in the main Makefile.
+# Each language makefile fragment must provide the following targets:
+#
+# foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-normal, foo.install-common, foo.install-man,
+# foo.uninstall,
+# foo.mostlyclean, foo.clean, foo.distclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
+#
+# where `foo' is the name of the language.
+#
+# It should also provide rules for:
+#
+# - making any compiler driver (eg: g++)
+# - the compiler proper (eg: cc1plus)
+# - define the names for selecting the language in LANGUAGES.
+
+UPC_EXE = cc1upc$(exeext) xupc$(exeext) upc-cmd$(exeext)
+
+#
+# Define the names for selecting UPC in LANGUAGES.
+UPC Upc upc: $(UPC_EXE)
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: UPC Upc upc
+
+# Use maximal warnings for this front end.
+upc-warn = $(STRICT_WARN)
+
+# UPC PTS representation-dependent support.
+# (Set by the --with-upc-pts={struct,word-pair,packed}
+# configure switch.)
+UPC_PTS_C = upc-pts-$(UPC_PTS_REP).c
+UPC_PTS_OBJ = upc-pts-$(UPC_PTS_REP).o
+
+# Language-specific object files for UPC.
+UPC_OBJS = stub-objc.o upc/upc-act.o upc/upc-gimplify.o \
+           upc/upc-lang.o upc/$(UPC_PTS_OBJ) upc/upc-gasp.o
+
+cc1upc-dummy$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) \
+                $(LIBDEPS)
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+		$(UPC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
+		$(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+cc1upc-checksum.c : cc1upc-dummy$(exeext) build/genchecksum$(build_exeext)
+	build/genchecksum$(build_exeext) cc1upc-dummy$(exeext) > $@
+
+cc1upc-checksum.o : cc1upc-checksum.c
+
+cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o $(BACKEND) $(LIBDEPS)
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+		$(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
+		$(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+xupc$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
+	thisdir=`pwd` ; \
+	incdir=`cd $(srcdir)/../libupc/include; pwd`; \
+	libdir=`dirname $${thisdir}`/$(target); \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	    $(DRIVER_DEFINES) \
+	    "-DCOMPILER=\"xgcc\"" \
+	    "-DCOMPILER_DIR=\"$${thisdir}/\"" \
+	    "-DBIN_PATH=\"$${thisdir}\"" \
+	    "-DLIB_PATH=\"$${libdir}\"" \
+	    "-DINC_PATH=\"$${incdir}\"" \
+	    -c $(srcdir)/upc/upc-cmd.c -o xupc-tmp.o
+	$(CC) xupc-tmp.o -o xupc$(exeext) $(LIBS)
+	rm -f xupc-tmp.o
+
+upc-cmd$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
+	thisdir=`pwd` ; \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	    $(DRIVER_DEFINES) \
+	    "-DCOMPILER=\"gcc\"" \
+	    "-DBIN_PATH=\"$(bindir)\"" \
+	    -c $(srcdir)/upc/upc-cmd.c -o upc-cmd-tmp.o
+	$(CC) upc-cmd-tmp.o -o upc-cmd$(exeext) $(LIBS)
+	rm -f upc-cmd-tmp.o
+
+# UPC language specific files.
+
+upc/upc-lang.o : upc/upc-lang.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   $(C_TREE_H) upc/upc-tree.h toplev.h \
+   $(C_PRETTY_PRINT_H) $(DIAGNOSTIC_H) \
+   $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) \
+   gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h
+
+upc/upc-act.o : upc/upc-act.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+   $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h \
+   flags.h input.h function.h output.h debug.h langhooks.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h
+
+upc/upc-gimplify.o : upc/upc-gimplify.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+   $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
+   toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   upc/upc-gimplify.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
+
+upc/$(UPC_PTS_OBJ): upc/$(UPC_PTS_C) \
+   $(CONFIG_H) $(SYSTEM_H) $(TARGET_H) $(TM_H) $(TM_P_H) \
+   $(TREE_H) coretypes.h $(LANGHOOKS_DEF_H) langhooks.h \
+   c-pragma.h $(C_TREE_H) debug.h \
+   diagnostic.h $(EXPR_H) flags.h function.h input.h \
+   output.h $(RTL_H) toplev.h \
+   upc/upc-act.h upc/upc-pts.h
+
+upc/upc-gasp.o : upc/upc-gasp.c \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+   $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
+   toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   upc/upc-gasp.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
+
+#
+# Build hooks:
+
+upc.all.build:
+upc.all.cross:
+upc.start.encap:
+upc.rest.encap:
+upc.info:
+upc.man:
+upc.srcinfo:
+upc.srcman:
+upc.srcextra:
+upc.install-info:
+upc.install-pdf:
+upc.install-plugin:
+
+upc.tags: force
+	cd $(srcdir)/upc; etags -o TAGS.sub *.y *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
+lang_checks += check-upc
+
+#
+# Install hooks:
+# cc1upc is installed elsewhere as part of $(COMPILERS).
+
+upc.install-normal:
+
+upc.install-common: cc1upc$(exeext) upc-cmd$(exeext) installdirs
+	-rm -f $(DESTDIR)$(bindir)/upc
+	$(INSTALL_PROGRAM) -m 755 upc-cmd$(exeext) $(DESTDIR)$(bindir)/upc
+
+
+.PHONY: upc.pdf upc.html
+
+upc.pdf:
+
+upc.html: $(build_htmldir)/upc/index.html
+
+$(build_htmldir)/upc/index.html: $(srcdir)/upc/upc-manpage.html
+	$(mkinstalldirs) $(@D)
+	$(INSTALL_DATA) $< $@
+
+# Make sure `installdirs' target (from gcc Makefile) has been
+# run, since we use libsubdir to store our `flag' file, lang-upc.
+upc.install-man: $(srcdir)/upc/upc.1 installdirs
+	case "$(LANGUAGES)" in \
+	  *[Uu][Pp][Cc]*) touch $(DESTDIR)$(libsubdir)/lang-upc;; \
+	  *) rm -f $(DESTDIR)$(libsubdir)/lang-upc;; \
+	esac
+	-if [ -f $(DESTDIR)$(libsubdir)/lang-upc -a -f cc1upc$(exeext) ] ; then \
+	    rm -f $(DESTDIR)$(man1dir)/upc$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/upc/upc.1 $(DESTDIR)$(man1dir)/upc$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/upc$(man1ext); \
+	else true; fi
+	rm -f $(DESTDIR)$(libsubdir)/lang-upc
+
+upc.uninstall:
+#
+# Clean hooks:
+# A lot of the ancillary files are deleted by the main makefile.
+# We just have to delete files specific to us.
+upc.mostlyclean:
+	-rm -f tmp-upc-prs.y
+	-rm -f upc/*$(objext) upc/xforward upc/fflags
+	-rm -f upc/*$(coverageexts)
+upc.clean: upc.mostlyclean
+	-rm -rf upc-headers
+upc.distclean:
+	-rm -f upc/Makefile upc/Make-host upc/Make-target
+	-rm -f upc/config.status upc/config.cache
+upc.maintainer-clean:
+
+#
+# Stage hooks:
+
+upc.stage1: stage1-start
+	-mv upc/*$(objext) stage1/upc
+upc.stage2: stage2-start
+	-mv upc/*$(objext) stage2/upc
+upc.stage3: stage3-start
+	-mv upc/*$(objext) stage3/upc
+upc.stage4: stage4-start
+	-mv upc/*$(objext) stage4/upc
+upc.stageprofile: stageprofile-start
+	-mv upc/*$(objext) stageprofile/upc
+upc.stagefeedback: stagefeedback-start
+	-mv upc/*$(objext) stagefeedback/upc

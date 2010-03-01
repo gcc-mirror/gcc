@@ -3377,6 +3377,9 @@ stabilize_reference (tree ref)
   TREE_READONLY (result) = TREE_READONLY (ref);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
+  TREE_SHARED (result)  = TREE_SHARED (ref);
+  TREE_STRICT (result)  = TREE_STRICT (ref);
+  TREE_RELAXED (result) = TREE_RELAXED (ref);
 
   return result;
 }
@@ -3458,6 +3461,9 @@ stabilize_reference_1 (tree e)
   TREE_READONLY (result) = TREE_READONLY (e);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+  TREE_SHARED (result)  = TREE_SHARED (e);
+  TREE_STRICT (result)  = TREE_STRICT (e);
+  TREE_RELAXED (result) = TREE_RELAXED (e);
 
   return result;
 }
@@ -3622,6 +3628,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       /* Whether a dereference is readonly has nothing to do with whether
 	 its operand is readonly.  */
       TREE_READONLY (t) = 0;
+      TREE_SHARED (t) = upc_shared_type_p (type);
       break;
 
     case ADDR_EXPR:
@@ -3637,6 +3644,12 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       if (TREE_CODE_CLASS (code) == tcc_reference
 	  && node && TREE_THIS_VOLATILE (node))
 	TREE_THIS_VOLATILE (t) = 1;
+      /* Drop the UPC "shared" type qualifier for
+         expressions involving UPC shared objects.  */ 
+      if (TREE_CODE_CLASS (code) == tcc_unary
+	  && node && !TYPE_P (node)
+	  && upc_shared_type_p (type))
+	TREE_TYPE (t) = upc_get_unshared_type (type);
       break;
     }
 
@@ -5411,6 +5424,9 @@ set_type_quals (tree type, int type_quals)
   TYPE_VOLATILE (type) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
   TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
   TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
+  TYPE_SHARED (type) = (type_quals & TYPE_QUAL_SHARED) != 0;
+  TYPE_STRICT (type) = (type_quals & TYPE_QUAL_STRICT) != 0;
+  TYPE_RELAXED (type) = (type_quals & TYPE_QUAL_RELAXED) != 0;
 }
 
 /* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
@@ -5422,6 +5438,9 @@ check_qualified_type (const_tree cand, const_tree base, int type_quals)
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
+	  /* For UPC, the blocking factors have to be equal. */
+	  && tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
+	                         TYPE_BLOCK_FACTOR (base))
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base)));
 }
@@ -6735,6 +6754,8 @@ build_pointer_type (tree to_type)
   addr_space_t as = to_type == error_mark_node? ADDR_SPACE_GENERIC
 					      : TYPE_ADDR_SPACE (to_type);
   enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+  if (upc_shared_type_p (to_type))
+    pointer_mode = TYPE_MODE (upc_pts_rep_type_node);
   return build_pointer_type_for_mode (to_type, pointer_mode, false);
 }
 
@@ -10623,6 +10644,7 @@ static inline bool
 tree_nop_conversion (const_tree exp)
 {
   tree outer_type, inner_type;
+  int outer_is_pts_p, inner_is_pts_p;
 
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
@@ -10633,6 +10655,22 @@ tree_nop_conversion (const_tree exp)
   outer_type = TREE_TYPE (exp);
   inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 
+  outer_is_pts_p = (POINTER_TYPE_P (outer_type)
+                    && upc_shared_type_p (TREE_TYPE (outer_type)));
+  inner_is_pts_p = (POINTER_TYPE_P (inner_type)
+                    && upc_shared_type_p (TREE_TYPE (inner_type)));
+
+  /* UPC pointer-to-shared types have special
+     equivalence rules that must be checked. */
+  if (outer_is_pts_p && inner_is_pts_p
+      && lang_hooks.types_compatible_p)
+    return lang_hooks.types_compatible_p (outer_type, inner_type);
+
+  /* UPC pointer-to-shared types are not interchangeable
+     with integral types.  */
+  if (outer_is_pts_p || inner_is_pts_p)
+    return false;
+  
   /* Use precision rather then machine mode when we can, which gives
      the correct answer even for submode (bit-field) types.  */
   if ((INTEGRAL_TYPE_P (outer_type)

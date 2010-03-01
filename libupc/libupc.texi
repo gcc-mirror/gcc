@@ -1,0 +1,172 @@
+\input texinfo @c -*-texinfo-*-
+
+@c %**start of header
+@setfilename libupc.info
+@settitle GNU libupc
+@c %**end of header
+
+
+@copying
+Copyright @copyright{} 2006, 2007, 2008 Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``Funding Free Software'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
+@ifinfo
+@dircategory GNU Libraries
+@direntry
+* libupc: (libupc).                    GNU UPC runtime library
+@end direntry
+
+This manual documents the GNU implementation of the UPC runtime.
+multi-platform shared-memory parallel programming in C/C++ and Fortran.
+
+Published by the Free Software Foundation
+51 Franklin Street, Fifth Floor
+Boston, MA 02110-1301 USA
+
+@insertcopying
+@end ifinfo
+
+
+@setchapternewpage odd
+
+@titlepage
+@title The GNU UPC Implementation
+@page
+@vskip 0pt plus 1filll
+@comment For the @value{version-GCC} Version*
+@sp 1
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+@page
+
+
+@node Top
+@top Introduction
+@cindex Introduction
+
+This manual documents the usage of libupc, the GNU implementation of the 
+@uref{http://www.openmp.org, UPC} Application Programming Interface (API)
+for multi-platform shared-memory parallel programming in C/C++ and Fortran.
+
+
+
+@comment
+@comment  When you add a new menu item, please keep the right hand
+@comment  aligned to the same column.  Do not use tabs.  This provides
+@comment  better formatting.
+@comment
+@menu
+* Enabling UPC::            How to enable UPC for your applications.
+* Runtime Library Routines::   The UPC runtime application programming 
+                               interface.
+* Environment Variables::      Influencing runtime behavior with environment 
+                               variables.
+* The libupc ABI::             Notes on the external ABI presented by libupc.
+* Reporting Bugs::             How to report bugs in GNU UPC.
+* Copying::                    GNU general public license says
+                               how you can copy and share libupc.
+* GNU Free Documentation License::
+                               How you can copy and share this manual.
+* Funding::                    How to help assure continued work for free 
+                               software.
+* Index::                      Index of this documentation.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c Enabling UPC
+@c ---------------------------------------------------------------------
+
+@node Enabling UPC
+@chapter Enabling UPC
+
+
+@c ---------------------------------------------------------------------
+@c Runtime Library Routines
+@c ---------------------------------------------------------------------
+
+@node Runtime Library Routines
+@chapter Runtime Library Routines
+
+@c ---------------------------------------------------------------------
+@c The libupc ABI
+@c ---------------------------------------------------------------------
+
+@node The libupc ABI
+@chapter The libupc ABI
+
+@c ---------------------------------------------------------------------
+@c Environment Variables
+@c ---------------------------------------------------------------------
+
+@node Environment Variables
+@chapter Environment Variables
+
+@c ---------------------------------------------------------------------
+@c 
+@c ---------------------------------------------------------------------
+
+@node Reporting Bugs
+@chapter Reporting Bugs
+
+Bugs in the GNU UPC implementation should be reported via 
+@uref{http://gcc.gnu.org/bugzilla/, bugzilla}. In all cases, please add 
+"UPC" to the keywords field in the bug report.
+
+@c ---------------------------------------------------------------------
+@c GNU General Public License
+@c ---------------------------------------------------------------------
+
+@include gpl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c Funding Free Software
+@c ---------------------------------------------------------------------
+
+@include funding.texi
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

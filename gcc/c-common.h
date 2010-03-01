@@ -40,9 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 /* Reserved identifiers.  This is the union of all the keywords for C,
-   C++, and Objective-C.  All the type modifiers have to be in one
+   C++, Objective-C, and UPC.  All the type modifiers have to be in one
    block at the beginning, because they are used as mask bits.  There
-   are 27 type modifiers; if we add many more we will have to redesign
+   are 30 type modifiers; if we add many more we will have to redesign
    the mask mechanism.  */
 
 enum rid
@@ -53,6 +53,9 @@ enum rid
   RID_UNSIGNED, RID_LONG,    RID_CONST, RID_EXTERN,
   RID_REGISTER, RID_TYPEDEF, RID_SHORT, RID_INLINE,
   RID_VOLATILE, RID_SIGNED,  RID_AUTO,  RID_RESTRICT,
+
+  /* UPC type qualifiers */
+  RID_SHARED, RID_RELAXED, RID_STRICT,
 
   /* C extensions */
   RID_COMPLEX, RID_THREAD, RID_SAT,
@@ -125,6 +128,11 @@ enum rid
   RID_AT_FINALLY,  RID_AT_SYNCHRONIZED,
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
+
+  /* UPC */
+  RID_UPC_BARRIER, RID_UPC_BLOCKSIZEOF, RID_UPC_ELEMSIZEOF,
+  RID_UPC_FORALL, RID_UPC_LOCALSIZEOF,
+  RID_UPC_NOTIFY, RID_UPC_WAIT,
 
   /* Named address support, mapping the keyword to a particular named address
      number.  Named address space 0 is reserved for the generic address.  If
@@ -286,6 +294,7 @@ struct c_common_resword
 #define D_OBJC		0x080	/* In Objective C and neither C nor C++.  */
 #define D_CXX_OBJC	0x100	/* In Objective C, and C++, but not C.  */
 #define D_CXXWARN	0x200	/* In C warn with -Wcxx-compat.  */
+#define D_UPC		0x400	/* In UPC, and neither C nor C++.  */
 
 /* Macro for backends to define named address keywords.  */
 #define ADDR_SPACE_KEYWORD(STRING, VALUE) \
@@ -380,7 +389,9 @@ typedef enum c_language_kind
   clk_c		= 0,		/* C90, C94 or C99 */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
-  clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
+  clk_objcxx	= 3,		/* clk_cxx with ObjC features.  */
+  clk_upc 	= 4,		/* clk_c with UPC features */
+  clk_upcxx 	= 6		/* clk_cxx with UPC features */
 }
 c_language_kind;
 
@@ -390,6 +401,7 @@ extern c_language_kind c_language;
 
 #define c_dialect_cxx()		((c_language & clk_cxx) != 0)
 #define c_dialect_objc()	((c_language & clk_objc) != 0)
+#define c_dialect_upc()		((c_language & clk_upc) != 0)
 
 /* The various name of operator that appears in error messages. */
 typedef enum ref_operator {
@@ -530,6 +542,40 @@ extern const char *pch_file;
    user's namespace.  */
 
 extern int flag_iso;
+
+/* Non-zero if the current compilation context is UPC */
+extern int compiling_upc;
+
+/* Nonzero whenever UPC functionality is being used.  */
+extern int flag_upc;
+
+/* Nonzero whenever UPC -fupc-threads-N is asserted.
+   The value N gives the number of UPC threads to be
+   defined at compile-time. */
+extern int flag_upc_threads;
+
+/* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
+extern int flag_upc_pthreads;
+
+/* The -fupc-pthreads-per-process-N switch tells the UPC compiler
+   and runtime to map N UPC threads per process onto
+   N POSIX threads running inside the process. */
+extern int flag_upc_pthreads_per_process;
+
+typedef enum
+  {
+    upc_pthreads_no_model = 0,
+    upc_pthreads_tls_model = 1
+  } upc_pthreads_model_kind;
+
+/* The implementation model for UPC threads that
+   are mapped to POSIX threads, specified at compilation
+   time by the -fupc-pthreads-model-* switch. */
+extern upc_pthreads_model_kind upc_pthreads_model;
+
+/* The -fupc-inline-lib switch tells the UPC compiler to
+   inline shared access routines. */
+extern int flag_upc_inline_lib;
 
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
@@ -999,6 +1045,8 @@ extern void init_c_lex (void);
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
 
+extern void upc_cpp_builtins (cpp_reader *);
+
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */
 extern GTY(()) int pending_lang_change;
@@ -1065,7 +1113,8 @@ extern VEC(tree,gc) *make_tree_vector_copy (const VEC(tree,gc) *);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
-extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
+extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *,
+	                    bool (*) (tree), int);
 extern tree c_build_bind_expr (location_t, tree, tree);
 
 /* In c-pch.c  */

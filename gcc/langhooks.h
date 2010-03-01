@@ -413,9 +413,19 @@ struct lang_hooks
   /* Determine if a tree is a function parameter pack.  */
   bool (*function_parameter_pack_p) (const_tree);
 
+  /* Genericize before finalization (called from finish_function()).
+     Perform lowering of function bodies from language dependent form
+     to language independent (GENERIC) form.  */
+  void (*genericize) (tree);
+
   /* Perform language-specific gimplification on the argument.  Returns an
      enum gimplify_status, though we can't see that type here.  */
-  int (*gimplify_expr) (tree *, gimple_seq *, gimple_seq *);
+  int (*gimplify_expr) (tree *, gimple_seq *, gimple_seq *,
+                        bool (*) (tree), int);
+
+  /* Perform language-specific instrumentation of a function.
+     (called from gimplify_function_tree()).  */
+  void (*instrument_func) (tree);
 
   /* Fold an OBJ_TYPE_REF expression to the address of a function.
      KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */

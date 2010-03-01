@@ -87,6 +87,7 @@ static int type_lists_compatible_p (const_tree, const_tree, bool *);
 static tree lookup_field (tree, tree);
 static int convert_arguments (tree, VEC(tree,gc) *, VEC(tree,gc) *, tree,
 			      tree);
+static tree c_pointer_int_sum (location_t, enum tree_code, tree, tree);
 static tree pointer_diff (location_t, tree, tree);
 static tree convert_for_assignment (location_t, tree, tree, tree,
 				    enum impl_conv, bool, tree, tree, int);
@@ -316,6 +317,7 @@ addr_space_superset (addr_space_t as1, addr_space_t as2, addr_space_t *common)
 static tree
 qualify_type (tree type, tree like)
 {
+  tree result_type;
   addr_space_t as_type = TYPE_ADDR_SPACE (type);
   addr_space_t as_like = TYPE_ADDR_SPACE (like);
   addr_space_t as_common;
@@ -329,10 +331,26 @@ qualify_type (tree type, tree like)
 	     type, like);
     }
 
-  return c_build_qualified_type (type,
-				 TYPE_QUALS_NO_ADDR_SPACE (type)
-				 | TYPE_QUALS_NO_ADDR_SPACE (like)
-				 | ENCODE_QUAL_ADDR_SPACE (as_common));
+  result_type = c_build_qualified_type (type,
+			   TYPE_QUALS_NO_ADDR_SPACE (type)
+			   | TYPE_QUALS_NO_ADDR_SPACE (like)
+			   | ENCODE_QUAL_ADDR_SPACE (as_common));
+
+  /* UPC TODO: pass blocking factor to c_build_qualifed_type() */
+
+  if (upc_shared_type_p (result_type))
+    {
+      tree b1 = TYPE_BLOCK_FACTOR (type);
+      tree b2 = TYPE_BLOCK_FACTOR (like);
+      if (!b1 || (b2 && tree_int_cst_equal (b1, b2)))
+        TYPE_BLOCK_FACTOR (result_type) = b2;
+      else if (b1 && !b2)
+        TYPE_BLOCK_FACTOR (result_type) = b1;
+      else
+        gcc_unreachable ();
+    }
+
+  return result_type;
 }
 
 /* Return true iff the given tree T is a variable length array.  */
@@ -677,8 +695,34 @@ common_pointer_type (tree t1, tree t2)
     gcc_unreachable ();
 
   target_quals |= ENCODE_QUAL_ADDR_SPACE (as_common);
+  t2 = c_build_qualified_type (target, target_quals);
 
-  t1 = build_pointer_type (c_build_qualified_type (target, target_quals));
+  if (upc_shared_type_p (t2))
+    {
+      const tree elem_type = strip_array_types (pointed_to_1);
+      if (TYPE_BLOCK_FACTOR (elem_type))
+        {
+	  t2 = build_variant_type_copy (t2);
+	  if (TREE_CODE (t2) == ARRAY_TYPE)
+	    {
+	      tree last = t2;
+	      tree inner;
+	      while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
+		last = TREE_TYPE (last);
+	      inner = build_variant_type_copy (TREE_TYPE (last));
+	      /* Push the blocking factor down to the array
+		 element type.  */
+	      TYPE_BLOCK_FACTOR (inner) = TYPE_BLOCK_FACTOR (elem_type);
+	      TREE_TYPE (last) = inner;
+	    }
+	  else
+	    {
+	      TYPE_BLOCK_FACTOR (t2) = TYPE_BLOCK_FACTOR (elem_type);
+	    }
+	}
+    }
+
+  t1 = build_pointer_type (t2);
   return build_type_attribute_variant (t1, attributes);
 }
 
@@ -1881,6 +1925,11 @@ default_conversion (tree exp)
 
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
+
+  /* UPC TODO: is the call to array_to_pointer_conversion() necessary?  */
+  if (code == ARRAY_TYPE && upc_shared_type_p (type))
+    return array_to_pointer_conversion (input_location, exp);
+
   if (code == ARRAY_TYPE)
     return exp;
 
@@ -2081,6 +2130,40 @@ build_component_ref (location_t loc, tree datum, tree component)
 	      || (use_datum_quals && TREE_THIS_VOLATILE (datum)))
 	    TREE_THIS_VOLATILE (ref) = 1;
 
+          if (TREE_SHARED (datum))
+           {
+	     tree ref_type;
+             /* For shared record types, mark the reference
+	        Push the shared attribute down to the field type,
+		and set the field's blocking factor to 0,
+		so that references to arrays declared within a structure
+		come up with the required zero blocksize.  */
+             /* UPC TODO: "strict" special handling?  */
+             TREE_SHARED (ref) = 1;
+	     gcc_assert (!TREE_SHARED (field));
+	     /* UPC TODO: call build_qualified_type
+		and add layout (blocking factor) as arg.
+		to build_qualified_type.  */
+	     ref_type = build_variant_type_copy (TREE_TYPE (ref));
+	     if (TREE_CODE (ref_type) == ARRAY_TYPE)
+	       {
+		 tree last = ref_type;
+		 tree inner;
+		 while (TREE_CODE (TREE_TYPE (last)) == ARRAY_TYPE)
+		   last = TREE_TYPE (last);
+		 inner = build_variant_type_copy (TREE_TYPE (last));
+		 TYPE_BLOCK_FACTOR (inner) = size_zero_node;
+		 TYPE_SHARED (inner) = 1;
+		 TREE_TYPE (last) = inner;
+	       }
+	     else
+	       {
+	         TYPE_BLOCK_FACTOR (ref_type) = size_zero_node;
+		 TYPE_SHARED (ref_type) = 1;
+	       }
+	     TREE_TYPE (ref) = ref_type;
+           }
+
 	  if (TREE_DEPRECATED (subdatum))
 	    warn_deprecated_use (subdatum, NULL_TREE);
 
@@ -2160,6 +2243,7 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 	  TREE_SIDE_EFFECTS (ref)
 	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer);
 	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
+	  TREE_SHARED (ref) = upc_shared_type_p (t);
 	  protected_set_expr_location (ref, loc);
 	  return ref;
 	}
@@ -2246,7 +2330,8 @@ build_array_ref (location_t loc, tree array, tree index)
 
   gcc_assert (TREE_CODE (TREE_TYPE (index)) == INTEGER_TYPE);
 
-  if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
+  if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE
+      && !upc_shared_type_p (TREE_TYPE (array)))
     {
       tree rval, type;
 
@@ -2256,7 +2341,8 @@ build_array_ref (location_t loc, tree array, tree index)
 	 Likewise an array of elements of variable size.  */
       if (TREE_CODE (index) != INTEGER_CST
 	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
-	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
+	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (
+	                                 TREE_TYPE (array)))) != INTEGER_CST))
 	{
 	  if (!c_mark_addressable (array))
 	    return error_mark_node;
@@ -3149,6 +3235,23 @@ parser_build_binary_op (location_t location, enum tree_code code,
   return result;
 }
 
+/* Return a tree for the sum or difference (RESULTCODE says which)
+   of pointer PTROP and integer INTOP.  */
+
+static
+tree
+c_pointer_int_sum (location_t location, enum tree_code resultcode,
+                   tree ptrop, tree intop)
+{
+  /* The result is a pointer of the same type that is being added.  */
+  tree result_type = TREE_TYPE (ptrop);
+
+  if (upc_shared_type_p (TREE_TYPE (result_type)))
+    return upc_pts_int_sum (location, resultcode, ptrop, intop);
+
+  return pointer_int_sum (location, resultcode, ptrop, intop);
+}
+
 /* Return a tree for the difference of pointers OP0 and OP1.
    The resulting tree has type int.  */
 
@@ -3161,6 +3264,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
   addr_space_t as0 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op0)));
   addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (op1)));
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
+  tree subtrahend_type = TREE_TYPE (TREE_TYPE (op1));
   tree con0, con1, lit0, lit1;
   tree orig_op1 = op1;
 
@@ -3200,6 +3304,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
     pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
+  if (upc_shared_type_p (target_type) || upc_shared_type_p (subtrahend_type))
+    return upc_pts_diff (op0, op1);
+
   /* If the conversion to ptrdiff_type does anything like widening or
      converting a partial to an integral mode, we get a convert_expression
      that is in the way to do any simplifications.
@@ -3237,7 +3344,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
   else
     lit1 = integer_zero_node;
 
-  if (operand_equal_p (con0, con1, 0))
+  if (operand_equal_p (con0, con1, 0)
+      && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (con0)))
+      && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (con1))))
     {
       op0 = lit0;
       op1 = lit1;
@@ -3538,6 +3647,11 @@ build_unary_op (location_t location,
 			   "wrong type argument to decrement");
 	      }
 
+	    /* UPC pointer-to-shared types cannot be
+	       incremented/decrmented directly.  */
+            if (upc_shared_type_p (TREE_TYPE (argtype)))
+	      return upc_pts_increment (location, code, arg);
+
 	    inc = c_size_in_bytes (TREE_TYPE (argtype));
 	    inc = fold_convert_loc (location, sizetype, inc);
 	  }
@@ -3620,6 +3734,16 @@ build_unary_op (location_t location,
 	  tree op0 = TREE_OPERAND (arg, 0);
 	  if (!c_mark_addressable (op0))
 	    return error_mark_node;
+
+	  /* Taking the address of a UPC shared array element
+	     cannot be performed as a simple addition. 
+	     Return an ADDR_EXPR node, and let upc_gimplify_expr()
+	     implement the proper semantics.  */
+          /* UPC TODO: is TREE_SHARED() safe to use here?
+	     or should it be: upc_shared_type_p (TREE_TYPE (arg))?  */
+	  if (TREE_SHARED (arg))
+	    return build1 (ADDR_EXPR, TREE_TYPE (arg), arg);
+
 	  return build_binary_op (location, PLUS_EXPR,
 				  (TREE_CODE (TREE_TYPE (op0)) == ARRAY_TYPE
 				   ? array_to_pointer_conversion (location,
@@ -3654,12 +3778,13 @@ build_unary_op (location_t location,
       /* If the lvalue is const or volatile, merge that into the type
 	 to which the address will point.  Note that you can't get a
 	 restricted pointer by taking the address of something, so we
-	 only have to deal with `const' and `volatile' here.  */
+	 only have to deal with `const' and `volatile' here.
+
+	 By checking for all tree qualifiers, we also handle the UPC
+	 defined qualifiers (`shared', `strict', `relaxed') here. */
       if ((DECL_P (arg) || REFERENCE_CLASS_P (arg))
-	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg)))
-	  argtype = c_build_type_variant (argtype,
-					  TREE_READONLY (arg),
-					  TREE_THIS_VOLATILE (arg));
+	  && TREE_QUALS (arg))
+	argtype = c_build_qualified_type (argtype, TREE_QUALS (arg));
 
       if (!c_mark_addressable (arg))
 	return error_mark_node;
@@ -3683,7 +3808,11 @@ build_unary_op (location_t location,
 	  goto return_build_unary_op;
 	}
 
-      val = build1 (ADDR_EXPR, argtype, arg);
+      if (TREE_CODE (arg) == VAR_DECL && TREE_SHARED (arg))
+        /* UPC TODO: can &shared_var be handled in upc-gimplify? */
+	val = upc_build_shared_var_addr (location, argtype, arg);
+      else
+        val = build1 (ADDR_EXPR, argtype, arg);
 
       ret = val;
       goto return_build_unary_op;
@@ -3702,6 +3831,10 @@ build_unary_op (location_t location,
     ret = build1 (code, argtype, arg);
  return_build_unary_op:
   gcc_assert (ret != error_mark_node);
+  /* The result of an operation on objects that
+     are UPC shared qualified, must not be shared qualified.  */
+  if (upc_shared_type_p (TREE_TYPE (ret)))
+    TREE_TYPE (ret) = upc_get_unshared_type (TREE_TYPE (ret));
   if (TREE_CODE (ret) == INTEGER_CST && !TREE_OVERFLOW (ret)
       && !(TREE_CODE (xarg) == INTEGER_CST && !TREE_OVERFLOW (xarg)))
     ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
@@ -4164,7 +4297,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		 "pointer/integer type mismatch in conditional expression");
       else
 	{
-	  op2 = null_pointer_node;
+	  op2 = !upc_shared_type_p (TREE_TYPE (type1))
+	        ? null_pointer_node : upc_null_pts_node;
 	}
       result_type = type1;
     }
@@ -4175,7 +4309,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		 "pointer/integer type mismatch in conditional expression");
       else
 	{
-	  op1 = null_pointer_node;
+	  op1 = !upc_shared_type_p (TREE_TYPE (type2))
+	        ? null_pointer_node : upc_null_pts_node;
 	}
       result_type = type2;
     }
@@ -4441,6 +4576,29 @@ build_c_cast (location_t loc, tree type, tree expr)
 	return error_mark_node;
     }
 
+  if (integer_zerop (value)
+      && POINTER_TYPE_P (type)
+      && upc_shared_type_p (TREE_TYPE (type))
+      && POINTER_TYPE_P (TREE_TYPE (expr))
+      && ! upc_shared_type_p (TREE_TYPE (TREE_TYPE (expr))))
+    {
+      value = upc_null_pts_node;
+    }
+
+  if (upc_shared_type_p (type) && !upc_shared_type_p (TREE_TYPE (expr)))
+    {
+      error ("UPC does not allow casts from non-shared values"
+             " to shared types");
+      return error_mark_node;
+    }
+
+  if (!upc_shared_type_p (type) && upc_shared_type_p (TREE_TYPE (expr)))
+    {
+      /* UPC disallows things like:
+           (int)p = <expr>; (where p is a shared int) */
+      value = non_lvalue (value);
+    }
+
   if (type == TYPE_MAIN_VARIANT (TREE_TYPE (value)))
     {
       if (TREE_CODE (type) == RECORD_TYPE
@@ -4488,6 +4646,17 @@ build_c_cast (location_t loc, tree type, tree expr)
 	}
 
       otype = TREE_TYPE (value);
+
+      if (TREE_CODE (type) == POINTER_TYPE
+	  && TREE_CODE (otype) == POINTER_TYPE)
+        {
+	  int t_shared = upc_shared_type_p (TREE_TYPE (type));
+	  int o_shared = upc_shared_type_p (TREE_TYPE (otype));
+	  if ((!t_shared && o_shared)
+	      || (t_shared && o_shared
+	          && !lang_hooks.types_compatible_p (type, otype)))
+	    return build1 (CONVERT_EXPR, type, value);
+	}
 
       /* Optionally warn about potentially worrisome casts.  */
       if (warn_cast_qual
@@ -4539,6 +4708,23 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
 	warning_at (loc, OPT_Wcast_align,
 		    "cast increases required alignment of target type");
+
+      if (POINTER_TYPE_P (type)
+	  && upc_shared_type_p (TREE_TYPE (type))
+	  && POINTER_TYPE_P (otype)
+	  && !upc_shared_type_p (TREE_TYPE (otype)))
+	{
+          error ("UPC does not allow casts from local to shared pointers.");
+          return error_mark_node;
+	}
+
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (otype) == POINTER_TYPE
+	  && upc_shared_type_p (TREE_TYPE (otype)))
+        {
+	  error ("UPC does not allow casts from shared pointers to integers");
+	  return error_mark_node;
+	}
 
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
@@ -4804,6 +4990,14 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   newrhs = c_fully_fold (newrhs, false, NULL);
   if (rhs_semantic_type)
     newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
+
+  /* If the lhs is UPC 'shared' qualified, we drop the qualifier
+     for the purposes of conversions from rhstype to lhstype.
+     This will prevent the inadvertent creation of temporaries
+     with "shared asserted.  */
+  if (upc_shared_type_p (lhstype))
+    lhstype = upc_get_unshared_type (lhstype);
+
   newrhs = convert_for_assignment (location, lhstype, newrhs, rhs_origtype,
 				   ic_assign, npc, NULL_TREE, NULL_TREE, 0);
   if (TREE_CODE (newrhs) == ERROR_MARK)
@@ -5096,7 +5290,9 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	  /* Can convert integer zero to any pointer type.  */
 	  if (null_pointer_constant)
 	    {
-	      rhs = null_pointer_node;
+	      tree ttl = TREE_TYPE (memb_type);
+	      rhs = !upc_shared_type_p (ttl)
+		    ? null_pointer_node : upc_null_pts_node;
 	      break;
 	    }
 	}
@@ -5176,6 +5372,43 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	mvl = TYPE_MAIN_VARIANT (mvl);
       if (TREE_CODE (mvr) != ARRAY_TYPE)
 	mvr = TYPE_MAIN_VARIANT (mvr);
+      if ((upc_shared_type_p (ttl) && !upc_shared_type_p (ttr))
+           && !integer_zerop (rhs))
+        {
+	  error_at (location, "UPC does not allow assignments from local"
+	                      " to shared pointers.");
+	  return error_mark_node;
+	}
+      if (!upc_shared_type_p (ttl) && upc_shared_type_p (ttr))
+        {
+	  if (upc_is_null_pts_p (rhs))
+	    {
+	      return null_pointer_node; 
+	    }
+	  else
+	    {
+	      error_at (location, "UPC does not allow assignments"
+	                          " from shared to local pointers.");
+	      return error_mark_node;
+	    }
+       }
+      if (upc_shared_type_p (ttl) && upc_shared_type_p (ttr) && (ttl != ttr)
+          && !(VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)))
+        {
+	  const tree bs_l = upc_get_block_factor (ttl);
+	  const tree bs_r = upc_get_block_factor (ttr);
+	  /* Both source and destination are non-void shared pointers,
+	     whose target type pointers are not equal.
+	     UPC dictates that their blocking factors must be equal. */
+	  if (!tree_int_cst_equal (bs_l, bs_r))
+	    {
+	      error_at (location, "UPC does not allow assignment"
+	                          " between pointers to shared with"
+				  " differing block sizes without a cast");
+	      return error_mark_node;
+	    }
+	}
+
       /* Opaque pointers are treated like void pointers.  */
       is_opaque_pointer = vector_targets_convertible_p (ttl, ttr);
 
@@ -5285,7 +5518,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
-		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
+	          & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
 		{
 		  /* Types differing only by the presence of the 'volatile'
 		     qualifier are acceptable if the 'volatile' has been added
@@ -5463,21 +5696,31 @@ valid_compound_expr_initializer (tree value, tree endtype)
 void
 store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
 {
-  tree value, type;
-  bool npc = false;
+  const bool npc = init && null_pointer_constant_p (init);
+  const bool is_upc_decl_init = upc_check_decl_init (decl, init);
+  const bool require_constant = TREE_STATIC (decl) && !is_upc_decl_init;
+  const tree type = TREE_TYPE (decl);
+  tree value;
 
   /* If variable's type was invalidly declared, just ignore it.  */
 
-  type = TREE_TYPE (decl);
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
   /* Digest the specified initializer into an expression.  */
 
-  if (init)
-    npc = null_pointer_constant_p (init);
   value = digest_init (init_loc, type, init, origtype, npc,
-      		       true, TREE_STATIC (decl));
+      		       true, require_constant);
+
+  /* UPC cannot initialize certain values at compile time.
+     For example, the address of a UPC 'shared' variable must
+     be evaluated at runtime.  */
+
+  if (is_upc_decl_init)
+    {
+      upc_decl_init (decl, value);
+      return;
+    }
 
   /* Store the expression if valid; else report error.  */
 
@@ -5512,10 +5755,11 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
 	      /* For int foo[] = (int [3]){1}; we need to set array size
 		 now since later on array initializer will be just the
 		 brace enclosed list of the compound literal.  */
-	      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
-	      TREE_TYPE (decl) = type;
-	      TYPE_DOMAIN (type) = TYPE_DOMAIN (TREE_TYPE (cldecl));
-	      layout_type (type);
+	      const tree ntype = build_distinct_type_copy (
+	                           TYPE_MAIN_VARIANT (type));
+	      TREE_TYPE (decl) = ntype;
+	      TYPE_DOMAIN (ntype) = TYPE_DOMAIN (TREE_TYPE (cldecl));
+	      layout_type (ntype);
 	      layout_decl (cldecl, 0);
 	    }
 	}
@@ -6331,6 +6575,9 @@ really_start_incremental_init (tree type)
   designator_depth = 0;
   designator_erroneous = 0;
 
+  /* The result of the constructor must not be UPC shared qualified */
+  if (upc_shared_type_p (constructor_type))
+    constructor_type = upc_get_unshared_type (constructor_type);
   if (TREE_CODE (constructor_type) == RECORD_TYPE
       || TREE_CODE (constructor_type) == UNION_TYPE)
     {
@@ -9193,12 +9440,12 @@ build_binary_op (location_t location, enum tree_code code,
       /* Handle the pointer + int case.  */
       if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, PLUS_EXPR, op0, op1);
+	  ret = c_pointer_int_sum (location, PLUS_EXPR, op0, op1);
 	  goto return_build_binary_op;
 	}
       else if (code1 == POINTER_TYPE && code0 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, PLUS_EXPR, op1, op0);
+	  ret = c_pointer_int_sum (location, PLUS_EXPR, op1, op0);
 	  goto return_build_binary_op;
 	}
       else
@@ -9217,7 +9464,7 @@ build_binary_op (location_t location, enum tree_code code,
       /* Handle pointer minus int.  Just like pointer plus int.  */
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, MINUS_EXPR, op0, op1);
+	  ret = c_pointer_int_sum (location, MINUS_EXPR, op0, op1);
 	  goto return_build_binary_op;
 	}
       else
@@ -9438,6 +9685,16 @@ build_binary_op (location_t location, enum tree_code code,
 	  addr_space_t as1 = TYPE_ADDR_SPACE (tt1);
 	  addr_space_t as_common = ADDR_SPACE_GENERIC;
 
+	  if ((upc_shared_type_p (tt0)
+	           && !(upc_shared_type_p (tt1) || integer_zerop(op1)))
+              || (upc_shared_type_p (tt1)
+	           && !(upc_shared_type_p (tt0) || integer_zerop(op0))))
+	    {
+	      error_at (location, "UPC does not allow comparisons"
+	                          " between pointers to shared and"
+				  " local pointers");
+	      return error_mark_node;
+	    }
 	  /* Anything compares with void *.  void * compares with anything.
 	     Otherwise, the targets must be compatible
 	     and both must be object or both incomplete.  */
@@ -9473,9 +9730,17 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  if (result_type == NULL_TREE)
 	    {
-	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	      result_type = build_pointer_type
-			      (build_qualified_type (void_type_node, qual));
+	      if (upc_shared_type_p(tt0) || upc_shared_type_p(tt1))
+	        {
+	          result_type = upc_pts_type_node;
+		}
+              else
+	        {
+		  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
+		  result_type = build_pointer_type
+				  (build_qualified_type (void_type_node,
+				                         qual));
+		}
 	    }
 	}
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
@@ -9520,10 +9785,18 @@ build_binary_op (location_t location, enum tree_code code,
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
-	  addr_space_t as0 = TYPE_ADDR_SPACE (TREE_TYPE (type0));
-	  addr_space_t as1 = TYPE_ADDR_SPACE (TREE_TYPE (type1));
+	  const tree tt0 = TREE_TYPE (type0);
+	  const tree tt1 = TREE_TYPE (type1);
+	  addr_space_t as0 = TYPE_ADDR_SPACE (tt0);
+	  addr_space_t as1 = TYPE_ADDR_SPACE (tt1);
 	  addr_space_t as_common;
 
+	  if (upc_shared_type_p (tt0) != upc_shared_type_p (tt1))
+	    {
+	      error_at (location, "UPC does not allow comparisons between"
+	                          " pointers to shared and local pointers");
+	      return error_mark_node;
+	    }
 	  if (comp_target_types (location, type0, type1))
 	    {
 	      result_type = common_pointer_type (type0, type1);
@@ -9540,6 +9813,11 @@ build_binary_op (location_t location, enum tree_code code,
 	      error_at (location, "comparison of pointers to "
 			"disjoint address spaces");
 	      return error_mark_node;
+	    }
+	  else if (upc_shared_type_p (TREE_TYPE (type0))
+	           || upc_shared_type_p (TREE_TYPE (type1)))
+	    {
+	      result_type = upc_pts_type_node;
 	    }
 	  else
 	    {
@@ -9871,7 +10149,6 @@ build_binary_op (location_t location, enum tree_code code,
   protected_set_expr_location (ret, location);
   return ret;
 }
-
 
 /* Convert EXPR to be a truth-value, validating its type for this
    purpose.  LOCATION is the source location for the expression.  */
@@ -10246,15 +10523,25 @@ c_build_qualified_type (tree type, int type_quals)
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree t;
-      tree element_type = c_build_qualified_type (TREE_TYPE (type),
+      /* UPC TODO: add block_factor as arg to c_build_qualified_type(). */
+      const tree element_type = c_build_qualified_type (TREE_TYPE (type),
 						  type_quals);
+      const tree elem_block_factor = TYPE_BLOCK_FACTOR (element_type);
+      tree t;
 
       /* See if we already have an identically qualified type.  */
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	{
-	  if (TYPE_QUALS (strip_array_types (t)) == type_quals
-	      && TYPE_NAME (t) == TYPE_NAME (type)
+	  const tree t_elem_type = strip_array_types (t);
+	  const tree t_elem_block_factor = TYPE_BLOCK_FACTOR (t_elem_type);
+	  /* UPC requires that the blocking factors are either both
+	     empty or equal in value.  The check for pointer equality
+	     generally works because blocking factors are stored
+	     as integer constants, and integer constants are commonized
+	     so that identical integer constant values are represented
+	     by a single tree node.  */
+	  if (TYPE_QUALS (t_elem_type) == type_quals
+	      && t_elem_block_factor == elem_block_factor
 	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
 	      && attribute_list_equal (TYPE_ATTRIBUTES (t),
 				       TYPE_ATTRIBUTES (type)))

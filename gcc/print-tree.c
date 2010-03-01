@@ -320,6 +320,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
   if (TYPE_P (node) ? TYPE_READONLY (node) : TREE_READONLY (node))
     fputs (" readonly", file);
+  if (TREE_SHARED (node))
+    fputs (" shared", file);
   if (!TYPE_P (node) && TREE_CONSTANT (node))
     fputs (" constant", file);
   else if (TYPE_P (node) && TYPE_SIZES_GIMPLIFIED (node))
@@ -346,6 +348,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     fputs (" protected", file);
   if (TREE_STATIC (node))
     fputs (" static", file);
+  if (TREE_CODE (node) == FUNCTION_DECL && DECL_STATIC_CONSTRUCTOR (node))
+    fputs (" constructor", file);
+  if (TREE_CODE (node) == FUNCTION_DECL && DECL_STATIC_DESTRUCTOR (node))
+    fputs (" destructor", file);
   if (TREE_DEPRECATED (node))
     fputs (" deprecated", file);
   if (TREE_VISITED (node))
@@ -638,6 +644,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
       print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
+      if (TYPE_BLOCK_FACTOR (node))
+	print_node (file, "block_factor", TYPE_BLOCK_FACTOR (node), indent + 4);
       indent_to (file, indent + 3);
 
       if (TYPE_USER_ALIGN (node))

@@ -206,6 +206,26 @@ static const char * const optabs[] =
   "optab_handler (cstore_optab, $A)->insn_code = CODE_FOR_$(cstore$a4$)",
   "optab_handler (ctrap_optab, $A)->insn_code = CODE_FOR_$(ctrap$a4$)",
   "optab_handler (push_optab, $A)->insn_code = CODE_FOR_$(push$a1$)",
+
+  /* UPC opcodes */
+  "get_optab->handlers[$A].insn_code = CODE_FOR_$(get$a2$)",
+  "gets_optab->handlers[$A].insn_code = CODE_FOR_$(gets$a2$)",
+  "put_optab->handlers[$A].insn_code = CODE_FOR_$(put$a2$)",
+  "puts_optab->handlers[$A].insn_code = CODE_FOR_$(puts$a2$)",
+  "xget_optab->handlers[$A].insn_code = CODE_FOR_$(xget$a2$)",
+  "xgets_optab->handlers[$A].insn_code = CODE_FOR_$(xgets$a2$)",
+  "xput_optab->handlers[$A].insn_code = CODE_FOR_$(xput$a2$)",
+  "xputs_optab->handlers[$A].insn_code = CODE_FOR_$(xputs$a2$)",
+  /* UPC profiled opcodes */
+  "getg_optab->handlers[$A].insn_code = CODE_FOR_$(getg$a2$)",
+  "getsg_optab->handlers[$A].insn_code = CODE_FOR_$(getsg$a2$)",
+  "putg_optab->handlers[$A].insn_code = CODE_FOR_$(putg$a2$)",
+  "putsg_optab->handlers[$A].insn_code = CODE_FOR_$(putsg$a2$)",
+  "xgetg_optab->handlers[$A].insn_code = CODE_FOR_$(xgetg$a2$)",
+  "xgetsg_optab->handlers[$A].insn_code = CODE_FOR_$(xgetsg$a2$)",
+  "xputg_optab->handlers[$A].insn_code = CODE_FOR_$(xputg$a2$)",
+  "xputsg_optab->handlers[$A].insn_code = CODE_FOR_$(xputsg$a2$)",
+
   "reload_in_optab[$A] = CODE_FOR_$(reload_in$a$)",
   "reload_out_optab[$A] = CODE_FOR_$(reload_out$a$)",
   "movmem_optab[$A] = CODE_FOR_$(movmem$a$)",

@@ -93,6 +93,12 @@ convert (tree type, tree expr)
 
   STRIP_TYPE_NOPS (e);
 
+  /* Drop 'shared' qualifier when considering conversions
+     of expression values.  */
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
+      && upc_shared_type_p (type))
+    return fold_convert_loc (loc, upc_get_unshared_type(type), expr);
+
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
     return fold_convert_loc (loc, type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)

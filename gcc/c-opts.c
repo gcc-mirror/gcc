@@ -200,7 +200,7 @@ defer_opt (enum opt_code code, const char *arg)
 unsigned int
 c_common_init_options (unsigned int argc, const char **argv)
 {
-  static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
+  static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX, CL_UPC};
   unsigned int i, result;
   struct cpp_callbacks *cb;
 
@@ -894,6 +894,18 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_lang_objc:
       cpp_opts->objc = 1;
+      break;
+ 
+    case OPT_lang_upc:
+      cpp_set_lang (parse_in, CLK_UPC);
+      break;
+
+    case OPT_fupc_instrument:
+    case OPT_fupc_instrument_functions:
+    case OPT_fupc_pthreads_model_tls:
+    case OPT_fupc_pthreads_per_process_:
+    case OPT_fupc_threads_:
+      /* processed in language-specific routine */
       break;
 
     case OPT_nostdinc:

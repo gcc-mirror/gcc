@@ -1,0 +1,41 @@
+/* This file contains the definitions and documentation for the
+   additional tree codes used in the UPC front end (see tree.def
+   for the standard codes).
+   Copyright (C) 2001 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
+/* UPC statements */
+
+/* Used to represent a `upc_forall' statement. The operands are
+   UPC_FORALL_INIT_STMT, UPC_FORALL_COND, UPC_FORALL_EXPR,
+   UPC_FORALL_BODY, and UPC_FORALL_AFFINITY respectively. */
+
+DEFTREECODE (UPC_FORALL_STMT, "upc_forall_stmt", tcc_statement, 5)
+
+/* Used to represent a UPC synchronization statement. The first
+   operand is the synchonization operation, UPC_SYNC_OP:
+   UPC_SYNC_NOTIFY_OP	1	Notify operation
+   UPC_SYNC_WAIT_OP	2	Wait operation
+   UPC_SYNC_BARRIER_OP	3	Barrier operation
+
+   The second operand, UPC_SYNC_ID is the (optional) expression
+   whose value specifies the barrier identifier which is checked
+   by the various synchronization operations. */
+
+DEFTREECODE (UPC_SYNC_STMT, "upc_sync_stmt", tcc_statement, 2)

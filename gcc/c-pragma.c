@@ -18,12 +18,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#undef HANDLE_PRAGMA_UPC
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#ifdef HANDLE_PRAGMA_UPC
+#include "c-tree.h"
+#endif
 #include "function.h"
 #include "cpplib.h"
 #include "c-pragma.h"
@@ -491,6 +495,233 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
     warning (OPT_Wunknown_pragmas,
 	     "#pragma extern_prefix not supported on this target");
 }
+
+#ifdef HANDLE_PRAGMA_UPC
+
+/* variables used to implement #pragma upc semantics */
+#ifndef UPC_CMODE_STACK_INCREMENT
+#define UPC_CMODE_STACK_INCREMENT 32
+#endif
+static int pragma_upc_permitted;
+static int upc_cmode;
+static int *upc_cmode_stack;
+static int upc_cmode_stack_in_use;
+static int upc_cmode_stack_allocated;
+
+static void init_pragma_upc (void);
+static void handle_pragma_upc (cpp_reader * ARG_UNUSED (dummy));
+
+/* Initialize the variables used to manage the current UPC consistency
+   mode (strict/relaxed) */
+
+static void
+init_pragma_upc (void)
+{
+  pragma_upc_permitted = 0;
+  upc_cmode = 0;
+  upc_cmode_stack = (int *) xcalloc (UPC_CMODE_STACK_INCREMENT,
+                                     sizeof (int));
+  upc_cmode_stack_allocated = UPC_CMODE_STACK_INCREMENT;
+  upc_cmode_stack_in_use = 0;
+}
+
+/*
+ *  #pragma upc strict
+ *  #pragma upc relaxed
+ *  #pragma upc upc_code
+ *  #pragma upc c_code
+ */
+static void
+handle_pragma_upc (cpp_reader * ARG_UNUSED (dummy))
+{
+  tree x;
+  enum cpp_ttype t;
+  enum upc_pragma_op {p_strict, p_relaxed, p_upc_code,
+        p_c_code, p_detect_upc, p_unknown};
+  enum upc_pragma_op upc_pragma = p_unknown;
+
+  if (!flag_upc)
+    {
+      warning (OPT_Wpragmas, "#pragma upc found in non-UPC source file");
+      return;
+    }
+
+  t = pragma_lex (&x);
+  if (t == CPP_NAME)
+    {
+      const char *op = IDENTIFIER_POINTER (x);
+      if (!strcmp (op, "strict"))
+        upc_pragma = p_strict;
+      else if (!strcmp (op, "relaxed"))
+        upc_pragma = p_relaxed;
+      else if (!strcmp (op, "upc_code"))
+        upc_pragma = p_upc_code;
+      else if (!strcmp (op, "c_code"))
+        upc_pragma = p_c_code;
+      else if (!strcmp (op, "detect_upc"))
+        {
+	  const char *detect_op;
+          upc_pragma = p_detect_upc;
+          t = pragma_lex (&x);
+          if (t != CPP_NAME)
+            GCC_BAD ("missing [suspend_insertion|resume_insertion]"
+	             " after %<#pragma UPC detect_upc%>");
+          detect_op = IDENTIFIER_POINTER (x);
+          if (strcmp (detect_op, "suspend_insertion") == 0)
+	    /* no action */;
+          else if (strcmp (detect_op, "resume_insertion") == 0)
+	    /* no action */;
+          else
+            GCC_BAD ("expected [suspend_insertion|resume_insertion]"
+	             " after %<#pragma UPC detect_upc%>");
+	}
+      else
+	GCC_BAD2 ("unknown action '%s' for '#pragma upc' - ignored", op);
+    }
+  else
+    warning (OPT_Wpragmas, "misssing parameter afer #pragma upc");
+
+  t = pragma_lex (&x);
+  if (t != CPP_EOF)
+    warning (OPT_Wpragmas, "junk at end of #pragma upc");
+
+  if ((upc_pragma == p_strict) || (upc_pragma == p_relaxed))
+    {
+      if (pragma_upc_permitted_p ())
+        {
+          int consistency_mode = (upc_pragma == p_strict);
+          set_upc_consistency_mode (consistency_mode);
+        }
+       else
+         warning (OPT_Wpragmas, "#pragma upc not allowed in this context");
+    }
+  else if ((upc_pragma == p_upc_code) || (upc_pragma == p_c_code))
+    {
+      compiling_upc = (upc_pragma == p_upc_code);
+    }
+  else if (upc_pragma == p_detect_upc)
+    {
+      /* Skip: this is a Berkeley-specific pragma that requires no action.  */
+    }
+}
+
+/* Set the current setting of the UPC consistency mode
+   that is in effect. */
+
+void
+set_upc_consistency_mode (int mode)
+{
+  upc_cmode = mode;
+}
+
+/* Return the current setting of the UPC consistency mode. */
+
+int
+get_upc_consistency_mode (void)
+{
+  return upc_cmode;
+}
+
+/* Called from the parser just after the bracket that opens a compound
+   statement has been parsed. Set the flag that allows the pragma
+   in this context. */
+
+void
+permit_pragma_upc (void)
+{
+  pragma_upc_permitted = 1;
+}
+
+/* Called just before the body of a compound statement is parsed.
+   Clear the flag that allows the pragma. */
+
+void
+deny_pragma_upc (void)
+{
+  pragma_upc_permitted = 0;
+}
+
+/* A #pragma upc is permitted either at the outermost scope,
+   or directly after the bracket that opens a compound statement. */
+
+int
+pragma_upc_permitted_p (void)
+{
+   return !current_function_decl || pragma_upc_permitted;
+}
+
+/* Called at the beginning of every compound statement.
+   Pushes the old value of the current UPC consistency mode
+   onto the stack. */
+
+void
+push_upc_consistency_mode (void)
+{
+  if (upc_cmode_stack_in_use == upc_cmode_stack_allocated)
+    {
+      upc_cmode_stack_allocated += UPC_CMODE_STACK_INCREMENT;
+      upc_cmode_stack = (int *) xrealloc (upc_cmode_stack,
+			 upc_cmode_stack_allocated * sizeof (int));
+    }
+  upc_cmode_stack[upc_cmode_stack_in_use++] = upc_cmode;
+}
+
+/* Called at the end of every compound statement.
+   Sets the current consistenty mode to the previously saved value. */
+
+void
+pop_upc_consistency_mode (void)
+{
+  if (upc_cmode_stack_in_use <= 0)
+    abort ();
+  upc_cmode = upc_cmode_stack[--upc_cmode_stack_in_use];
+}
+
+#endif /* HANDLE_PRAGMA_UPC */
+
+#ifdef HANDLE_PRAGMA_PUPC
+
+static int pragma_pupc_on;
+static void init_pragma_pupc (void);
+static void handle_pragma_pupc (cpp_reader *);
+
+/* Pragma pupc defaults to being on */
+static void init_pragma_pupc(void)
+{
+  pragma_pupc_on = 1;
+}
+
+int get_upc_pupc_mode(void)
+{
+  return pragma_pupc_on;
+}
+
+/*
+ *  #pragma pupc on
+ *  #pragma pupc off
+ */
+static void handle_pragma_pupc (cpp_reader *dummy ATTRIBUTE_UNUSED)
+{
+  tree x;
+  enum cpp_ttype t;
+
+  t = pragma_lex(&x);
+  if (t == CPP_NAME) {
+    const char *op = IDENTIFIER_POINTER (x);
+    if (!strcmp (op, "on"))
+      pragma_pupc_on = 1;
+    else if (!strcmp (op, "off"))
+      pragma_pupc_on = 0;
+    else
+	    GCC_BAD2 ("unknown action '%s' for '#pragma pupc' - ignored", op);
+  }
+  
+  t = pragma_lex (&x);
+  if (t != CPP_EOF)
+    warning (OPT_Wpragmas, "junk at end of #pragma pupc");
+}
+
+#endif /* HANDLE_PRAGMA_PUPC */
 
 /* Hook from the front ends to apply the results of one of the preceding
    pragmas that rename variables.  */
@@ -1305,6 +1536,16 @@ init_pragma (void)
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
 
   c_register_pragma_with_expansion (0, "message", handle_pragma_message);
+
+#ifdef HANDLE_PRAGMA_UPC
+  c_register_pragma (0, "upc", handle_pragma_upc);
+  init_pragma_upc ();
+#endif
+
+#ifdef HANDLE_PRAGMA_PUPC
+  c_register_pragma (0, "pupc", handle_pragma_pupc);
+  init_pragma_pupc ();
+#endif
 
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();

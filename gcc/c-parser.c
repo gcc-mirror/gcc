@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "except.h"
 
+#include "upc/upc-tree.h"
+
 
 /* Initialization routine for this file.  */
 
@@ -87,6 +89,9 @@ c_parse_init (void)
     }
   if (!c_dialect_objc ())
     mask |= D_OBJC | D_CXX_OBJC;
+
+  if (!c_dialect_upc ())
+     mask |= D_UPC;
 
   ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < num_c_common_reswords; i++)
@@ -404,6 +409,11 @@ c_token_starts_typename (c_token *token)
 	case RID_ACCUM:
 	case RID_SAT:
 	  return true;
+        /* UPC qualifiers */
+	case RID_SHARED:
+	case RID_STRICT:
+	case RID_RELAXED:
+	  return true;
 	default:
 	  return false;
 	}
@@ -482,6 +492,11 @@ c_token_starts_declspecs (c_token *token)
 	case RID_FRACT:
 	case RID_ACCUM:
 	case RID_SAT:
+	  return true;
+        /* UPC qualifiers */
+	case RID_SHARED:
+	case RID_STRICT:
+	case RID_RELAXED:
 	  return true;
 	default:
 	  return false;
@@ -971,6 +986,12 @@ static tree c_parser_objc_selector_arg (c_parser *);
 static tree c_parser_objc_receiver (c_parser *);
 static tree c_parser_objc_message_args (c_parser *);
 static tree c_parser_objc_keywordexpr (c_parser *);
+
+/* These UPC parser functions are only ever called when
+   compiling UPC.  */
+static void c_parser_upc_forall_statement (c_parser *);
+static void c_parser_upc_sync_statement (c_parser *, int);
+static void c_parser_upc_shared_qual (c_parser *, struct c_declspecs *);
 
 /* Parse a translation unit (C90 6.7, C99 6.9).
 
@@ -1625,6 +1646,17 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_CONST:
 	case RID_VOLATILE:
 	case RID_RESTRICT:
+	  attrs_ok = true;
+	  declspecs_add_qual (specs, c_parser_peek_token (parser)->value);
+	  c_parser_consume_token (parser);
+	  break;
+        /* UPC qualifiers */
+	case RID_SHARED:
+	  attrs_ok = true;
+          c_parser_upc_shared_qual (parser, specs);
+	  break;
+	case RID_STRICT:
+	case RID_RELAXED:
 	  attrs_ok = true;
 	  declspecs_add_qual (specs, c_parser_peek_token (parser)->value);
 	  c_parser_consume_token (parser);
@@ -2896,6 +2928,12 @@ c_parser_attributes (c_parser *parser)
 		case RID_SAT:
 		  ok = true;
 		  break;
+		/* UPC qualifiers */
+		case RID_SHARED:
+		case RID_STRICT:
+		case RID_RELAXED:
+		  ok = true;
+		  break;
 		default:
 		  ok = false;
 		  break;
@@ -3472,6 +3510,19 @@ c_parser_compound_statement_nostart (c_parser *parser)
       c_parser_consume_token (parser);
       return;
     }
+  /* Process all #pragma's just after the opening brace.  This
+     handles #pragma upc, which can only appear just after
+     the opening brace, when it appears within a function body.  */
+  push_upc_consistency_mode ();
+  permit_pragma_upc ();
+  while (c_parser_next_token_is (parser, CPP_PRAGMA))
+    {
+      location_t loc ATTRIBUTE_UNUSED = c_parser_peek_token (parser)->location;
+      if (c_parser_pragma (parser, pragma_compound))
+        last_label = false, last_stmt = true;
+      parser->error = false;
+    }
+  deny_pragma_upc ();
   while (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
     {
       location_t loc = c_parser_peek_token (parser)->location;
@@ -3580,6 +3631,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
   if (last_label)
     error_at (label_loc, "label at end of compound statement");
   c_parser_consume_token (parser);
+  pop_upc_consistency_mode ();
   /* Restore the value we started with.  */
   mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 }
@@ -3871,6 +3923,22 @@ c_parser_statement_after_labels (c_parser *parser)
 	  gcc_assert (c_dialect_objc ());
 	  c_parser_objc_synchronized_statement (parser);
 	  break;
+	case RID_UPC_FORALL:
+          gcc_assert (c_dialect_upc ());
+	  c_parser_upc_forall_statement (parser);
+	  break;
+        case RID_UPC_NOTIFY:
+          gcc_assert (c_dialect_upc ());
+	  c_parser_upc_sync_statement (parser, UPC_SYNC_NOTIFY_OP);
+	  goto expect_semicolon;
+        case RID_UPC_WAIT:
+          gcc_assert (c_dialect_upc ());
+	  c_parser_upc_sync_statement (parser, UPC_SYNC_WAIT_OP);
+	  goto expect_semicolon;
+        case RID_UPC_BARRIER:
+          gcc_assert (c_dialect_upc ());
+	  c_parser_upc_sync_statement (parser, UPC_SYNC_BARRIER_OP);
+	  goto expect_semicolon;
 	default:
 	  goto expr_stmt;
 	}
@@ -3919,7 +3987,7 @@ c_parser_statement_after_labels (c_parser *parser)
 static tree
 c_parser_condition (c_parser *parser)
 {
-  location_t loc = c_parser_peek_token (parser)->location;
+  location_t loc ATTRIBUTE_UNUSED = c_parser_peek_token (parser)->location;
   tree cond;
   cond = c_parser_expression_conv (parser).value;
   cond = c_objc_common_truthvalue_conversion (loc, cond);
@@ -5152,6 +5220,11 @@ c_parser_unary_expression (c_parser *parser)
 	{
 	case RID_SIZEOF:
 	  return c_parser_sizeof_expression (parser);
+	case RID_UPC_BLOCKSIZEOF:
+	case RID_UPC_ELEMSIZEOF:
+	case RID_UPC_LOCALSIZEOF:
+          gcc_assert (c_dialect_upc ());
+	  return c_parser_sizeof_expression (parser);
 	case RID_ALIGNOF:
 	  return c_parser_alignof_expression (parser);
 	case RID_EXTENSION:
@@ -5187,7 +5260,7 @@ c_parser_sizeof_expression (c_parser *parser)
 {
   struct c_expr expr;
   location_t expr_loc;
-  gcc_assert (c_parser_next_token_is_keyword (parser, RID_SIZEOF));
+  enum rid keyword = c_parser_peek_token (parser)->keyword;
   c_parser_consume_token (parser);
   c_inhibit_evaluation_warnings++;
   in_sizeof++;
@@ -5221,6 +5294,17 @@ c_parser_sizeof_expression (c_parser *parser)
       /* sizeof ( type-name ).  */
       c_inhibit_evaluation_warnings--;
       in_sizeof--;
+      /* Handle upc_*_sizeof (type) operations.  */
+      switch (keyword)
+        {
+        case RID_UPC_BLOCKSIZEOF:
+          return upc_blocksizeof_type (expr_loc, type_name);
+        case RID_UPC_ELEMSIZEOF:
+          return upc_elemsizeof_type (expr_loc, type_name);
+        case RID_UPC_LOCALSIZEOF:
+          return upc_localsizeof_type (expr_loc, type_name);
+        default: break;
+        }
       return c_expr_sizeof_type (expr_loc, type_name);
     }
   else
@@ -5233,6 +5317,19 @@ c_parser_sizeof_expression (c_parser *parser)
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
 	error_at (expr_loc, "%<sizeof%> applied to a bit-field");
+      /* Handle upc_*_sizeof (expr) operations.  */
+      switch (keyword)
+        {
+        case RID_UPC_BLOCKSIZEOF:
+          return upc_blocksizeof_expr (expr_loc, expr);
+        case RID_UPC_ELEMSIZEOF:
+          return upc_elemsizeof_expr (expr_loc, expr);
+        case RID_UPC_LOCALSIZEOF:
+          return upc_localsizeof_expr (expr_loc, expr);
+        case RID_SIZEOF:
+          return c_expr_sizeof_expr (expr_loc, expr);
+        default: break;
+        }
       return c_expr_sizeof_expr (expr_loc, expr);
     }
 }
@@ -6960,6 +7057,202 @@ c_parser_objc_keywordexpr (c_parser *parser)
     }
   release_tree_vector (expr_list);
   return ret;
+}
+
+
+/* Parse UPC shared qualifier
+
+   shared-type-qualifier: shared layout-qualifier-opt
+   layout-qualifier: [ constant-expression-opt ] | [ * ]
+
+*/
+static void
+c_parser_upc_shared_qual (c_parser *parser, struct c_declspecs *specs)
+{
+  tree array_qual, arg1;
+
+  /* consume "shared" part */
+  c_parser_consume_token (parser);
+
+  /* check for shared array layout specifier */
+  if (!c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
+    {
+      declspecs_add_qual (specs, ridpointers[RID_SHARED]);
+      return;
+    }
+  c_parser_consume_token (parser);
+  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
+    {
+      /*  [] layout specifier */ 
+      arg1 = size_zero_node;
+    }
+  else if (c_parser_next_token_is (parser, CPP_MULT))
+    {
+      /*  [*] layout specifier */ 
+      arg1 = build1 (INDIRECT_REF, NULL_TREE, NULL_TREE);
+      c_parser_consume_token (parser);
+    }
+  else
+    {
+      /*  [ expression ] layout specifier */ 
+      arg1 = c_parser_expression (parser).value;
+    }
+  array_qual = build4 (ARRAY_REF, NULL_TREE, NULL_TREE, 
+                 arg1, NULL_TREE, NULL_TREE);
+  declspecs_add_qual (specs, array_qual);
+
+  if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
+    {
+      c_parser_error (parser, "expected ]");
+    }
+  c_parser_consume_token (parser);
+}
+
+/* Parse a UPC upc_forall statement
+
+   upc_forall-statement:
+     upc_forall ( expression[opt] ; expression[opt] ;
+                  expression[opt] ; affinity-opt ) statement
+   affinity: experssion | continue  */
+
+static void
+c_parser_upc_forall_statement (c_parser *parser)
+{
+  tree block, cond, incr, save_break, save_cont, body;
+  tree affinity;
+  location_t loc = c_parser_peek_token (parser)->location;
+  location_t for_loc = c_parser_peek_token (parser)->location;
+  location_t affinity_loc;
+  const int profile_upc_forall = flag_upc_instrument && get_upc_pupc_mode();
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_FORALL));
+  c_parser_consume_token (parser);
+  block = c_begin_compound_stmt (flag_isoc99);
+  if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    {
+      /* Parse the initialization declaration or expression.  */
+      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+	{
+	  c_parser_consume_token (parser);
+	  c_finish_expr_stmt (loc, NULL_TREE);
+	}
+      else if (c_parser_next_token_starts_declspecs (parser))
+	{
+	  c_parser_declaration_or_fndef (parser, true, true, true, true);
+	  check_for_loop_decls (for_loc);
+	}
+      else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
+	{
+	  /* __extension__ can start a declaration, but is also an
+	     unary operator that can start an expression.  Consume all
+	     but the last of a possible series of __extension__ to
+	     determine which.  */
+	  while (c_parser_peek_2nd_token (parser)->type == CPP_KEYWORD
+		 && (c_parser_peek_2nd_token (parser)->keyword
+		     == RID_EXTENSION))
+	    c_parser_consume_token (parser);
+	  if (c_token_starts_declspecs (c_parser_peek_2nd_token (parser)))
+	    {
+	      int ext;
+	      ext = disable_extension_diagnostics ();
+	      c_parser_consume_token (parser);
+	      c_parser_declaration_or_fndef (parser, true, true, true, true);
+	      restore_extension_diagnostics (ext);
+	      check_for_loop_decls (for_loc);
+	    }
+	  else
+	    goto init_expr;
+	}
+      else
+	{
+	init_expr:
+	  c_finish_expr_stmt (loc, c_parser_expression (parser).value);
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	}
+      /* Parse the loop condition.  */
+      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+	{
+	  c_parser_consume_token (parser);
+	  cond = NULL_TREE;
+	}
+      else
+	{
+	  cond = c_parser_condition (parser);
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	}
+      /* Parse the increment expression.  */
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	incr = c_process_expr_stmt (loc, NULL_TREE);
+      else
+	incr = c_process_expr_stmt (loc, c_parser_expression (parser).value);
+      c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+      /* Parse the UPC affinity expression. */
+      affinity_loc = c_parser_peek_token (parser)->location;
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+        {
+	  affinity = NULL_TREE;
+        }
+      else if (c_parser_peek_token (parser)->type == CPP_KEYWORD
+               && c_parser_peek_token (parser)->keyword == RID_CONTINUE)
+	{
+	  c_parser_consume_token (parser);
+	  affinity = NULL_TREE;
+	}
+      else
+	{
+	  affinity = c_parser_expression_conv (parser).value;
+	  affinity = c_fully_fold (affinity, false, NULL);
+	}
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+    }
+  else
+    {
+      cond = error_mark_node;
+      incr = error_mark_node;
+      affinity = error_mark_node;
+    }
+  save_break = c_break_label;
+  c_break_label = NULL_TREE;
+  save_cont = c_cont_label;
+  c_cont_label = NULL_TREE;
+  body = c_parser_c99_block_statement (parser);
+  body = upc_affinity_test (affinity_loc, body, affinity);
+  if (profile_upc_forall)
+    {
+      const tree gasp_start = upc_instrument_forall (loc, 1 /* start */);
+      add_stmt (gasp_start);
+    }
+  c_finish_loop (loc, cond, incr, body, c_break_label, c_cont_label, true);
+  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
+  if (profile_upc_forall)
+    {
+      const tree gasp_end = upc_instrument_forall (loc, 0 /* start */);
+      add_stmt (gasp_end);
+    }
+  c_break_label = save_break;
+  c_cont_label = save_cont;
+}
+
+/* Parse an upc-sync-statement.
+
+   upc_barrier, upc_wait, upc_notify
+*/
+
+static void
+c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
+{
+  location_t loc;
+  tree expr, stmt, ret;
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_BARRIER) ||
+              c_parser_next_token_is_keyword (parser, RID_UPC_NOTIFY) ||
+              c_parser_next_token_is_keyword (parser, RID_UPC_WAIT));
+  loc = c_parser_peek_token (parser)->location;
+  c_parser_consume_token (parser);
+  if (c_parser_peek_token (parser)->type != CPP_SEMICOLON)
+    expr = c_parser_expression (parser).value;
+  else
+    expr = NULL_TREE;
+  stmt = size_int (sync_kind);
+  ret = upc_build_sync_stmt (loc, stmt, expr);
 }
 
 

@@ -160,6 +160,11 @@ int flag_no_nonansi_builtin;
 int flag_isoc94;
 int flag_isoc99;
 
+/* UPC-related flags */
+int use_upc_dwarf2_extensions;
+int flag_upc_instrument;
+int flag_upc_instrument_functions;
+
 /* Attribute handlers.  */
 
 /* Handle a "noreturn" attribute; arguments as in

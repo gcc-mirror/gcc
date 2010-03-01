@@ -198,6 +198,7 @@ target_libraries="target-libgcc \
 		target-boehm-gc \
 		${libgcj} \
 		target-libobjc \
+		target-libupc \
 		target-libada"
 
 # these tools are built using the target libraries, and are intended to
@@ -429,6 +430,14 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
+    *-catamount-*)
+        # Disable for Cray catamount machine 
+        noconfigdirs="$noconfigdirs target-libmudflap"
+        ;;
+    *-cnl-*)
+        # Disable for Cray XT CNL machine 
+        noconfigdirs="$noconfigdirs target-libmudflap"
+        ;;
     *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
@@ -2031,6 +2040,27 @@ case ,${enable_languages},:${enable_objc_gc} in
     ;;
 esac
 
+AC_ARG_WITH([upc-pts],
+[  --with-upc-pts={struct,word-pair,packed}   choose the representation
+                          of a UPC pointer-to-shared],
+[
+ case ,${enable_languages}, in
+   *,upc,) 
+     case "$withval" in
+       struct|word-pair|packed)
+	 true
+         ;;
+       *)
+         AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
+         ;;
+     esac
+     ;;
+   *)
+     AC_MSG_ERROR([--with-upc-pts supplied, but UPC language not enabled])
+     ;;
+ esac
+],[])
+
 # Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
 # $build_configdirs and $target_configdirs.
 # If we have the source for $noconfigdirs entries, add them to $notsupp.
@@ -2949,7 +2979,17 @@ fi
 
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then
-  target_configargs="--enable-multilib ${target_configargs}"
+  case "${host}" in
+    *-catamount-*)
+      # no multilib for Cray catamount machine
+      ;;
+    *-cnl-*)
+      # or Cray XT CNL machine
+      ;;
+    *)
+      target_configargs="--enable-multilib ${target_configargs}"
+      ;;
+  esac
 fi
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
@@ -3078,6 +3118,53 @@ case "${target}" in
     FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
 esac
+
+# UPC linker script check
+AC_MSG_CHECKING([for UPC link script support])
+AC_ARG_ENABLE(upc-link-script,
+[  --enable-upc-link-script Enable UPC's use of a custom linker script.
+  This will define the UPC shared section as a no load section on
+  targets where this feature is supported.  Requires GNU LD.],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
+    ;;
+  esac
+],
+[
+  if test x${use_gnu_ld} = x ; then
+    case "$target" in
+      # disable linker script for CRAY XT3/4 cnl/catamount
+      *-catamount-*)
+        enable_upc_link_script=no
+        ;;
+      *-cnl-*)
+        enable_upc_link_script=no
+        ;;
+      # disable linker script for Apple Mac OS X
+      *-*-darwin*)
+        enable_upc_link_script=no
+        ;;
+      *)
+        enable_upc_link_script=yes
+        ;;
+    esac
+  else
+    enable_upc_link_script=no
+  fi
+  if test "$enable_upc_link_script" = yes; then
+    target_configargs="${target_configargs} --enable-upc-link-script"
+    host_configargs="${host_configargs} --enable-upc-link-script"
+  fi
+])
+if test "$enable_upc_link_script" = yes; then
+  AC_MSG_RESULT([yes]);
+else
+  AC_MSG_RESULT([no]);
+fi
+
 
 # Makefile fragments.
 for frag in host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag;

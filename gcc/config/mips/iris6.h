@@ -101,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
        %{!mips4:%{pg:/usr/lib64/mips3/gcrt1.o} \
          %{!pg:%{p:/usr/lib64/mips3/mcrt1.o /usr/lib64/mips3/libprof1.a} \
            %{!p:/usr/lib64/mips3/crt1.o}}}}} \
-  irix-crti.o%s crtbegin.o%s"
+  irix-crti.o%s crtbegin.o%s upc-crtbegin.o%s"
 
 #undef LIB_SPEC
 #define LIB_SPEC \
@@ -122,7 +122,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "crtend.o%s irix-crtn.o%s \
+  "upc-crtend.o%s crtend.o%s irix-crtn.o%s \
    %{!shared: \
      %{mabi=32:crtn.o%s}\
      %{mabi=n32:%{mips4:/usr/lib32/mips4/crtn.o%s}\

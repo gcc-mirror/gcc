@@ -427,12 +427,15 @@ extern GTY(()) int darwin_ms_struct;
                                 %{!object:%{preload:-lcrt0.o}		    \
                                   %{!preload: %(darwin_crt1)		    \
 					      %(darwin_crt2)}}}}}}	    \
-  %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
+  %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}  \
+  %{static:upc-crtbeginT.o%s;shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
 
 /* The native Darwin linker doesn't necessarily place files in the order
    that they're specified on the link line.  Thus, it is pointless
    to put anything in ENDFILE_SPEC.  */
-/* #define ENDFILE_SPEC "" */
+#undef ENDFILE_SPEC
+#define UPC_ENDFILE_SPEC \
+   "%{shared|pie:upc-crtendS.o%s;:upc-crtend.o%s}"
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
@@ -1049,5 +1052,53 @@ extern void darwin_default_min_version (int * argc, char *** argv);
 /* The Apple assembler and linker do not support constructor priorities.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
+
+/* UPC for darwin */
+
+/* Define main program rename */
+#define UPC_MAIN_NAME "_upc_main"
+
+/* UPC section names */
+#define UPC_SHARED_SECTION_NAME "__DATA,upc_shared"
+#define UPC_PGM_INFO_SECTION_NAME "__DATA,upc_pgm_info"
+#define UPC_INIT_SECTION_NAME "__TEXT,upc_init"
+#define UPC_INIT_ARRAY_SECTION_NAME "__DATA,upc_init_array"
+
+/* Define UPC sections via __asm__ as zero space cannot be
+   allocated on Darwin for Mac OS. */
+#define UPC_SHARED_SECTION_BEGIN_INIT \
+	__asm__ (".globl ___upc_shared_start\n\t" \
+	".section __DATA,upc_shared\n" \
+	"___upc_shared_start:\n\t" \
+	".space 256\n");
+#define UPC_PGM_INFO_SECTION_BEGIN_INIT \
+	__asm__ (".globl ___upc_pgm_info_start\n\t" \
+	".section __DATA,upc_pgm_info\n" \
+	"___upc_pgm_info_start:\n");
+#define UPC_INIT_SECTION_BEGIN_INIT \
+	__asm__ (".globl ___upc_init_start\n\t" \
+	".section __TEXT,upc_init\n" \
+	"___upc_init_start:\n");
+#define UPC_INIT_ARRAY_SECTION_BEGIN_INIT \
+	__asm__ (".globl ___upc_init_array_start\n\t" \
+	".section __DATA,upc_init_array\n" \
+	"___upc_init_array_start:\n");
+
+#define UPC_SHARED_SECTION_END_INIT \
+	__asm__ (".globl ___upc_shared_end\n\t" \
+	".section __DATA,upc_shared\n" \
+	"___upc_shared_end:\n");
+#define UPC_PGM_INFO_SECTION_END_INIT \
+	__asm__ (".globl ___upc_pgm_info_end\n\t" \
+	".section __DATA,upc_pgm_info\n" \
+	"___upc_pgm_info_end:\n");
+#define UPC_INIT_SECTION_END_INIT \
+	__asm__ (".globl ___upc_init_end\n\t" \
+	".section __TEXT,upc_init\n" \
+	"___upc_init_end:\n");
+#define UPC_INIT_ARRAY_SECTION_END_INIT \
+	__asm__ (".globl ___upc_init_array_end\n\t" \
+	".section __DATA,upc_init_array\n" \
+	"___upc_init_array_end:\n");
 
 #endif /* CONFIG_DARWIN_H */

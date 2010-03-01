@@ -46,6 +46,14 @@ convert_to_pointer (tree type, tree expr)
   if (TREE_TYPE (expr) == type)
     return expr;
 
+  if (integer_zerop (expr) && POINTER_TYPE_P (type)
+      && upc_shared_type_p (TREE_TYPE (type)))
+    {
+      expr = copy_node (upc_null_pts_node);
+      TREE_TYPE (expr) = upc_get_unshared_type (type);
+      return expr;
+    }
+
   /* Propagate overflow to the NULL pointer.  */
   if (integer_zerop (expr))
     return force_fit_type_double (type, 0, 0, 0, TREE_OVERFLOW (expr));
@@ -420,6 +428,16 @@ convert_to_integer (tree type, tree expr)
       return error_mark_node;
     }
 
+  /* Can't optimize the conversion of UPC shared pointer difference.  */
+  if (ex_form == MINUS_EXPR
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1)))
+      && upc_shared_type_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (expr, 0))))
+      && upc_shared_type_p (TREE_TYPE (TREE_TYPE (TREE_OPERAND (expr, 0)))))
+  {
+      return build1 (CONVERT_EXPR, type, expr);
+  }
+
   /* Convert e.g. (long)round(d) -> lround(d).  */
   /* If we're converting to char, we may encounter differing behavior
      between converting from double->char vs double->long->char.
@@ -537,6 +555,11 @@ convert_to_integer (tree type, tree expr)
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+      if (upc_shared_type_p (TREE_TYPE (intype)))
+        {
+          error ("invalid conversion from shared pointer to integer");
+	  expr = integer_zero_node;
+        }
       if (integer_zerop (expr))
 	return build_int_cst (type, 0);
 

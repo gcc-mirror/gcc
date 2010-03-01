@@ -46,11 +46,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined HAVE_LD_PIE
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+   %{static:upc-crtbeginT.o%s;shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
 #else
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+   %{static:upc-crtbeginT.o%s;shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
 #endif
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
@@ -61,7 +63,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+  "%{static:upc-crtendT.o%s;shared|pie:upc-crtendS.o%s;:upc-crtend.o%s} \
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* This is for -profile to use -lc_p instead of -lc.  */
 #ifndef CC1_SPEC

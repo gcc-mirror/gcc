@@ -1422,6 +1422,24 @@
 #endif
 
 
+/* Define to 1 if UPC affinity is supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_AFFINITY_SUPPORT
+#endif
+
+
+/* Define to 1 if UPC link script is supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_LINK_SCRIPT
+#endif
+
+
+/* Define to 1 if UPC NUMA is supported. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_NUMA_SUPPORT
+#endif
+
+
 /* Define if valgrind's valgrind/memcheck.h header is installed. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_VALGRIND_MEMCHECK_H
@@ -1631,6 +1649,84 @@
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #ifndef USED_FOR_TARGET
 #undef TIME_WITH_SYS_TIME
+#endif
+
+
+/* maximum shared array blocking size. */
+#ifndef USED_FOR_TARGET
+#undef UPC_MAX_BLOCK_SIZE
+#endif
+
+
+/* maximum number of threads. */
+#ifndef USED_FOR_TARGET
+#undef UPC_MAX_THREADS
+#endif
+
+
+/* UPC packed PTS representation supported. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_PACKED_REP
+#endif
+
+
+/* UPC shared pointer phase field shift. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_PHASE_SHIFT
+#endif
+
+
+/* size of the address field in shared pointer rep. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_PHASE_SIZE
+#endif
+
+
+/* size of the shared pointer rep. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_SIZE
+#endif
+
+
+/* UPC struct PTS representation supported. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_STRUCT_REP
+#endif
+
+
+/* UPC shared pointer thread field shift. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_THREAD_SHIFT
+#endif
+
+
+/* size of the address field in shared pointer rep. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_THREAD_SIZE
+#endif
+
+
+/* UPC shared pointer address field position. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_VADDR_FIRST
+#endif
+
+
+/* UPC shared pointer address field shift. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_VADDR_SHIFT
+#endif
+
+
+/* size of the address field in shared pointer rep. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_VADDR_SIZE
+#endif
+
+
+/* UPC word pair PTS representation supported. */
+#ifndef USED_FOR_TARGET
+#undef UPC_PTS_WORD_PAIR_REP
 #endif
 
 

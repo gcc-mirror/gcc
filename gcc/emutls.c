@@ -68,7 +68,7 @@ emutls_destroy (void *ptr)
   pointer size = arr->size;
   pointer i;
 
-  for (i = 0; i < size; ++i)
+  for (i = 0; i < (size - 1); ++i)
     {
       if (arr->data[i])
 	free (arr->data[i][-1]);

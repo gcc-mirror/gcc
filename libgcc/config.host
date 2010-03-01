@@ -157,7 +157,7 @@ case ${host} in
   # configuration.
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu*)
-  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o upc-crtbegin.o upc-crtbeginS.o upc-crtbeginT.o upc-crtend.o upc-crtendS.o upc-crtendT.o"
   ;;
 *-*-netbsd*)
   ;;
@@ -347,7 +347,7 @@ ia64*-*-elf*)
 ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o upc-crtbegin.o upc-crtbeginS.o upc-crtbeginT.o upc-crtend.o upc-crtendS.o upc-crtendT.o"
 	tmake_file="ia64/t-ia64 t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat"
 	;;
 ia64*-*-hpux*)

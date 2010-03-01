@@ -6340,6 +6340,26 @@ init_optabs (void)
   init_optab (strlen_optab, UNKNOWN);
   init_optab (push_optab, UNKNOWN);
 
+  /* UPC operations */
+  init_optab (get_optab, UNKNOWN);
+  init_optab (put_optab, UNKNOWN);
+  init_optab (gets_optab, UNKNOWN);
+  init_optab (puts_optab, UNKNOWN);
+  init_optab (xget_optab, UNKNOWN);
+  init_optab (xput_optab, UNKNOWN);
+  init_optab (xgets_optab, UNKNOWN);
+  init_optab (xputs_optab, UNKNOWN);
+
+  /* UPC profiled operations */
+  init_optab (getg_optab, UNKNOWN);
+  init_optab (putg_optab, UNKNOWN);
+  init_optab (getsg_optab, UNKNOWN);
+  init_optab (putsg_optab, UNKNOWN);
+  init_optab (xgetg_optab, UNKNOWN);
+  init_optab (xputg_optab, UNKNOWN);
+  init_optab (xgetsg_optab, UNKNOWN);
+  init_optab (xputsg_optab, UNKNOWN);
+
   init_optab (reduc_smax_optab, UNKNOWN);
   init_optab (reduc_umax_optab, UNKNOWN);
   init_optab (reduc_smin_optab, UNKNOWN);
@@ -6664,6 +6684,80 @@ init_optabs (void)
   memcmp_libfunc = init_one_libfunc ("memcmp");
   memset_libfunc = init_one_libfunc ("memset");
   setbits_libfunc = init_one_libfunc ("__setbits");
+
+  /* UPC operations */
+  get_optab->libcall_basename = "get";
+  get_optab->libcall_suffix = '2';
+  get_optab->libcall_gen = gen_libfunc;
+  put_optab->libcall_basename = "put";
+  put_optab->libcall_suffix = '2';
+  put_optab->libcall_gen = gen_libfunc;
+  gets_optab->libcall_basename = "gets";
+  gets_optab->libcall_suffix = '2';
+  gets_optab->libcall_gen = gen_libfunc;
+  puts_optab->libcall_basename = "puts";
+  puts_optab->libcall_suffix = '2';
+  puts_optab->libcall_gen = gen_libfunc;
+  /* 64 bit targeted functions: we don't change the library
+     call names, because multilibs will handle the overloading
+     if necessary. */
+  xget_optab->libcall_basename = "get";
+  xget_optab->libcall_suffix = '2';
+  xget_optab->libcall_gen = gen_libfunc;
+  xput_optab->libcall_basename = "put";
+  xput_optab->libcall_suffix = '2';
+  xput_optab->libcall_gen = gen_libfunc;
+  xgets_optab->libcall_basename = "gets";
+  xgets_optab->libcall_suffix = '2';
+  xgets_optab->libcall_gen = gen_libfunc;
+  xputs_optab->libcall_basename = "puts";
+  xputs_optab->libcall_suffix = '2';
+  xputs_optab->libcall_gen = gen_libfunc;
+  set_optab_libfunc (get_optab, BLKmode, "__getblk3");
+  set_optab_libfunc (gets_optab, BLKmode, "__getsblk3");
+  set_optab_libfunc (put_optab, BLKmode, "__putblk3");
+  set_optab_libfunc (puts_optab, BLKmode, "__putsblk3");
+  set_optab_libfunc (xget_optab, BLKmode, "__getblk3");
+  set_optab_libfunc (xgets_optab, BLKmode, "__getsblk3");
+  set_optab_libfunc (xput_optab, BLKmode, "__putblk3");
+  set_optab_libfunc (xputs_optab, BLKmode, "__putsblk3");
+
+  /* UPC profiled operations */
+  getg_optab->libcall_basename = "getg";
+  getg_optab->libcall_suffix = '3';
+  getg_optab->libcall_gen = gen_libfunc;
+  putg_optab->libcall_basename = "putg";
+  putg_optab->libcall_suffix = '4';
+  putg_optab->libcall_gen = gen_libfunc;
+  getsg_optab->libcall_basename = "getsg";
+  getsg_optab->libcall_suffix = '3';
+  getsg_optab->libcall_gen = gen_libfunc;
+  putsg_optab->libcall_basename = "putsg";
+  putsg_optab->libcall_suffix = '4';
+  putsg_optab->libcall_gen = gen_libfunc;
+  /* 64 bit targeted functions: we don't change the library
+     call names, because multilibs will handle the overloading
+     if necessary. */
+  xgetg_optab->libcall_basename = "getg";
+  xgetg_optab->libcall_suffix = '3';
+  xgetg_optab->libcall_gen = gen_libfunc;
+  xputg_optab->libcall_basename = "putg";
+  xputg_optab->libcall_suffix = '4';
+  xputg_optab->libcall_gen = gen_libfunc;
+  xgetsg_optab->libcall_basename = "getsg";
+  xgetsg_optab->libcall_suffix = '3';
+  xgetsg_optab->libcall_gen = gen_libfunc;
+  xputsg_optab->libcall_basename = "putsg";
+  xputsg_optab->libcall_suffix = '4';
+  xputsg_optab->libcall_gen = gen_libfunc;
+  set_optab_libfunc (getg_optab, BLKmode, "__getgblk5");
+  set_optab_libfunc (getsg_optab, BLKmode, "__getsgblk5");
+  set_optab_libfunc (putg_optab, BLKmode, "__putgblk5");
+  set_optab_libfunc (putsg_optab, BLKmode, "__putsgblk5");
+  set_optab_libfunc (xgetg_optab, BLKmode, "__getgblk5");
+  set_optab_libfunc (xgetsg_optab, BLKmode, "__getsgblk5");
+  set_optab_libfunc (xputg_optab, BLKmode, "__putgblk5");
+  set_optab_libfunc (xputsg_optab, BLKmode, "__putsgblk5");
 
 #ifndef DONT_USE_BUILTIN_SETJMP
   setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");

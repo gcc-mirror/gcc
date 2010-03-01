@@ -202,6 +202,47 @@ const char *pch_file;
    user's namespace.  */
 int flag_iso;
 
+
+/* Non-zero if the current compilation context is UPC */
+int compiling_upc;
+
+/* Non-zero if dwarf2 debugging info. should
+   encode UPC specific information. */
+int use_upc_dwarf2_extensions;
+
+/* Nonzero whenever UPC functionality is being used.  */
+int flag_upc;
+
+/* Nonzero whenever UPC -fupc-threads-N is asserted.
+   The value N gives the number of UPC threads to be
+   defined at compile-time. */
+int flag_upc_threads;
+
+/* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
+int flag_upc_pthreads;
+
+/* The -fupc-pthreads-per-process-N switch tells the UPC compiler
+   and runtime to map N UPC threads per process onto
+   N POSIX threads running inside the process. */
+int flag_upc_pthreads_per_process;
+
+/* The -fupc-inline-lib switch tells the UPC compiler to
+   inline shared access routines. */
+int flag_upc_inline_lib;
+
+/* The -fupc-instrument switch tells the UPC compiler to
+   instrument UPC shared accesses and library calls, using GASP tool support.  */
+int flag_upc_instrument;
+
+/* The -fupc-instrument-functions switch tells the UPC compiler to
+   instrument function entry/exit, using GASP tool support.  */
+int flag_upc_instrument_functions;
+ 
+/* The implementation model for UPC threads that
+   are mapped to POSIX threads, specified at compilation
+   time by the -fupc-pthreads-model-* switch. */
+upc_pthreads_model_kind upc_pthreads_model;
+
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
 int flag_undef;
@@ -544,8 +585,9 @@ static int resort_field_decl_cmp (const void *, const void *);
    C --std=c89: D_C99 | D_CXXONLY | D_OBJC | D_CXX_OBJC
    C --std=c99: D_CXXONLY | D_OBJC
    ObjC is like C except that D_OBJC and D_CXX_OBJC are not set
-   C++ --std=c98: D_CONLY | D_CXXOX | D_OBJC
-   C++ --std=c0x: D_CONLY | D_OBJC
+   UPC is like C except that D_UPC is not set
+   C++ --std=c98: D_CONLY | D_CXXOX | D_OBJC | D_UPC
+   C++ --std=c0x: D_CONLY | D_OBJC | D_UPC
    ObjC++ is like C++ except that D_OBJC is not set
 
    If -fno-asm is used, D_ASM is added to the mask.  If
@@ -710,6 +752,17 @@ const struct c_common_resword c_common_reswords[] =
   { "inout",		RID_INOUT,		D_OBJC },
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
+  /* UPC keywords */
+  { "shared",		RID_SHARED,		D_UPC },
+  { "relaxed",		RID_RELAXED,		D_UPC },
+  { "strict",		RID_STRICT,		D_UPC },
+  { "upc_barrier",	RID_UPC_BARRIER,	D_UPC },
+  { "upc_blocksizeof",	RID_UPC_BLOCKSIZEOF,	D_UPC },
+  { "upc_elemsizeof",	RID_UPC_ELEMSIZEOF,	D_UPC },
+  { "upc_forall",	RID_UPC_FORALL,		D_UPC },
+  { "upc_localsizeof",	RID_UPC_LOCALSIZEOF,	D_UPC },
+  { "upc_notify",	RID_UPC_NOTIFY,		D_UPC },
+  { "upc_wait",		RID_UPC_WAIT,		D_UPC },
 
 #ifdef TARGET_ADDR_SPACE_KEYWORDS
   /* Any address space keywords recognized by the target.  */
@@ -3740,6 +3793,11 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
   /* The result is a pointer of the same type that is being added.  */
   tree result_type = TREE_TYPE (ptrop);
 
+  /* If the pointer lives in UPC shared memory, then
+     drop the 'shared' qualifier.  */
+  if (upc_shared_type_p (result_type))
+    result_type = upc_get_unshared_type (result_type);
+
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
       pedwarn (loc, pedantic ? OPT_pedantic : OPT_Wpointer_arith,
@@ -4146,6 +4204,20 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type)))
 	error ("invalid use of %<restrict%>");
     }
+  if (type_quals & TYPE_QUAL_SHARED)
+    {
+      TREE_SHARED (decl) = 1;
+      /* UPC TODO: assert TREE_THIS_VOLATILE() and TREE_SIDE_EFFECTS()
+	 for "strict" qualified types?  At the moment, this
+	 leads to ICE in gimple_has_volatile_ops(). */
+      if (type_quals & TYPE_QUAL_STRICT)
+	TREE_STRICT(decl) = 1;
+      else if (type_quals & TYPE_QUAL_RELAXED)
+	TREE_RELAXED(decl) = 1;
+      /* The declaration's type should have been previously defined
+	 as a UPC shared type.  */
+      gcc_assert (upc_shared_type_p (type));
+    }
 }
 
 /* Hash function for the problem of multiple type definitions in
@@ -4401,6 +4473,14 @@ c_sizeof_or_alignof_type (location_t loc,
 					  / BITS_PER_UNIT));
       else
 	value = size_int (TYPE_ALIGN_UNIT (type));
+    }
+
+  if (is_sizeof && (TREE_CODE (type) == ARRAY_TYPE)
+      && upc_shared_type_p (type)
+      && UPC_TYPE_HAS_THREADS_FACTOR (type))
+    {
+      const tree n_threads = convert (sizetype, upc_num_threads ());
+      value = size_binop (MULT_EXPR, value, n_threads);
     }
 
   /* VALUE will have an integer type with TYPE_IS_SIZETYPE set.

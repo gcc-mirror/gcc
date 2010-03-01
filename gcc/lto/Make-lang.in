@@ -73,7 +73,8 @@ lto-warn = $(STRICT_WARN)
 
 $(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS) -lelf
+		$(LTO_OBJS) $(STUB_OBJS) $(BACKEND) \
+		$(BACKENDLIBS) $(LIBS) -lelf
 
 # Dependencies
 lto/lto-lang.o: lto/lto-lang.c $(CONFIG_H) coretypes.h debug.h \

@@ -91,6 +91,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS c_write_global_declarations
 
+/* Hook for lowering function body to GENERIC before finalization.  */
+#undef LANG_HOOKS_GENERICIZE
+#define LANG_HOOKS_GENERICIZE c_genericize
+
 /* Hooks for tree gimplification.  */
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR c_gimplify_expr

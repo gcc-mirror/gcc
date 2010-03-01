@@ -249,6 +249,12 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
     pp_c_cv_qualifier (pp, "volatile");
   if (qualifiers & TYPE_QUAL_RESTRICT)
     pp_c_cv_qualifier (pp, flag_isoc99 ? "restrict" : "__restrict__");
+  if (qualifiers & TYPE_QUAL_SHARED)
+    pp_c_cv_qualifier (pp, "shared");
+  if (qualifiers & TYPE_QUAL_STRICT)
+    pp_c_cv_qualifier (pp, "strict");
+  if (qualifiers & TYPE_QUAL_RELAXED)
+    pp_c_cv_qualifier (pp, "relaxed");
 
   if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (t)))
     {
