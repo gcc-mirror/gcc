@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "" { ! { ilp32 && dfp } } } */
+/* { dg-skip-if "" { ! { ilp32 && dfp } } { "*" } { "" } } */
 /* { dg-options "-O -msse2 -std=gnu99 -mpreferred-stack-boundary=2" } */
 
 #include "sse2-check.h"

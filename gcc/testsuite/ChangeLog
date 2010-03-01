@@ -1,5 +1,11 @@
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.target/i386/pr32000-2.c: Add missing include and exclude
+	lists to dg-skip-if.
+	* gcc.target/i386/stackalign/return-3.c: Likewise.
+
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/i386/clearcap.map: New file.
 	* gcc.target/i386/i386.exp: Check for linker -M mapfile support.
 	Pass clearcap.map by default if supported.
