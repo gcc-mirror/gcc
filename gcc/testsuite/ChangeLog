@@ -1,3 +1,8 @@
+2010-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43199
+	* gfortran.dg/module_read_2.f90: New test.
+
 2010-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/42748

@@ -1,3 +1,9 @@
+2010-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43199
+	* resolve.c (find_array_spec): Handle REF_COMPONENT with
+	CLASS components.
+
 2010-02-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43205
