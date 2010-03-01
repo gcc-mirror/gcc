@@ -1021,14 +1021,52 @@ the test
 @end itemize
 
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
-Skip the test if the test system is included in @var{selector} and if
-each of the options in @var{include-opts} is in the set of options with
-which the test would be compiled and if none of the options in
-@var{exclude-opts} is in the set of options with which the test would be
-compiled.
+Arguments @var{include-opts} and @var{exclude-opts} are lists in which
+each element is a string of zero or more GCC options.
+Skip the test if all of the following conditions are met:
+@itemize @bullet
+@item the test system is included in @var{selector}
 
-Use @samp{"*"} for an empty @var{include-opts} list and @samp{""} for
-an empty @var{exclude-opts} list.
+@item for at least one of the option strings in @var{include-opts},
+every option from that string is in the set of options with which
+the test would be compiled; use @samp{"*"} for an @var{include-opts} list
+that matches any options
+
+@item for each of the option strings in @var{exclude-opts}, at least one
+option from that string is not in the set of options with which the test
+would be compiled; use @samp{""} for an empty @var{exclude-opts} list
+@end itemize
+
+For example, to skip a test if option @code{-Os} is present:
+
+@smallexample
+/* @{ dg-skip-if "" @{ *-*-* @}  @{ "-Os" @} @{ "" @} @} */
+@end smallexample
+
+To skip a test if both options @code{-O2} and @code{-g} are present:
+
+@smallexample
+/* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" @} @{ "" @} @} */
+@end smallexample
+
+To skip a test if either @code{-O2} or @code{-O3} is present:
+
+@smallexample
+/* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2" "-O3" @} @{ "" @} @} */
+@end smallexample
+
+To skip a test unless option @code{-OS} is present:
+
+@smallexample
+/* @{ dg-skip-if "" @{ *-*-* @}  @{ "*" @} @{ "-Os" @} @} */
+@end smallexample
+
+To skip a test if either @code{-O2} or @code{-O3} is used with @code{-g}
+but not if @code{-fpic} is also present:
+
+@smallexample
+/* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
+@end smallexample
 
 @item  @{ dg-xfail-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
 Expect the test to fail if the conditions (which are the same as for
