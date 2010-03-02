@@ -1,7 +1,6 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,22 +17,39 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// 20.9.10.2.5 unique_ptr modifiers [unique.ptr.single.modifiers]
+
 #include <memory>
+#include <testsuite_hooks.h>
 
-struct A
+struct D
 {
-};
+  static int count;
 
-struct B : A
-{
-  virtual ~B() { }
+  void operator()(int* p) const
+  {
+    ++count;
+    delete p;
+  }
 };
+int D::count = 0;
 
 void test01()
 {
-  std::unique_ptr<B[]> up;
-  up.reset(new A[3]);
+  bool test __attribute__((unused)) = true;
+
+  std::unique_ptr<int, D> up;
+  up.reset();
+  VERIFY( D::count == 0 );
+  up.reset(new int);
+  VERIFY( D::count == 0 );
+  up.reset(up.get());
+  VERIFY( D::count == 1 );
+  up.release();
 }
 
-// { dg-error "used here" "" { target *-*-* } 35 } 
-// { dg-error "deleted function" "" { target *-*-* } 336 }
+int main()
+{
+  test01();
+  return 0;
+}
