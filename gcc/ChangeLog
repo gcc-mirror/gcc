@@ -1,3 +1,12 @@
+2010-03-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/gccint.texi (menu): Add Testsuites as a chapter.
+	* doc/sourcebuild.texi (Testsuites): Move up a level to be a
+	new chapter.
+	(Test Idioms, Test Directives, Ada Tests, C Tests, libgcj Tests,
+	LTO Testing, gcov Testing, profopt Testing, compat Testing,
+	Torture Tests): Change from subsection to section.
+
 2010-03-02  Jakub Jelinek  <jakub@redhat.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
