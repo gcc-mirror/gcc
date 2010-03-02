@@ -389,10 +389,7 @@ namespace __debug
     {
       size_t
       operator()(const std::__debug::bitset<_Nb>& __b) const
-      {
-	const size_t __size = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
-	return std::_Fnv_hash::hash(__b._M_base()._M_getdata(), __size);
-      }
+      { return std::hash<_GLIBCXX_STD_D::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif
 

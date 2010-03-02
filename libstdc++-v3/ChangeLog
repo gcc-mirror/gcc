@@ -1,3 +1,19 @@
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_bvector.h (hash<vector<bool, _Alloc>>): Add.
+	* include/debug/vector (hash<__debug::vector<bool, _Alloc>>):
+	Likewise.
+	* include/profile/vector (hash<__profile::vector<bool, _Alloc>>):
+	Likewise.
+	* testsuite/23_containers/vector/bool/hash/1.cc: New.
+
+	* include/std/bitset (hash<bitset<_Nb>>): Small tweaks.
+	(hash<bitset<0>>): Add.
+	* include/debug/bitset (hash<__debug::bitset<_Nb>>): Forward to
+	hash<bitset<_Nb>>.
+	* include/profile/bitset (hash<__profile::bitset<_Nb>>): Likewise.
+	* testsuite/23_containers/bitset/hash/1.cc: Improve.
+
 2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/43230
@@ -7,9 +23,9 @@
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (_Base_bitset<>::_M_getdata()): Add.
-	(hash<_GLIBCXX_STD_D::bitset<_Nb>>): Add, use the latter.
-	* include/debug/bitset (hash<std::__debug::bitset<_Nb>>): Add.
-	* include/profile/bitset (hash<std::__profile::bitset<_Nb>>): Likewise.
+	(hash<bitset<_Nb>>): Add, use the latter.
+	* include/debug/bitset (hash<__debug::bitset<_Nb>>): Add.
+	* include/profile/bitset (hash<__profile::bitset<_Nb>>): Likewise.
 	* testsuite/23_containers/bitset/hash/1.cc: New.
 
 2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
