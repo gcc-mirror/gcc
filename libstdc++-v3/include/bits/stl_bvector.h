@@ -1044,42 +1044,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const;
     };
 
-  template<typename _Alloc>
-    size_t
-    hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>::
-    operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const
-    {
-      size_t __hash = 0;
-      using _GLIBCXX_STD_D::_S_word_bit;
-      using _GLIBCXX_STD_D::_Bit_type;
-
-      const size_t __words = __b.size() / _S_word_bit;
-      if (__words)
-	{
-	  const char* __data
-	    = reinterpret_cast<const char*>(__b._M_impl._M_start._M_p);
-	  const size_t __size = __words * sizeof(_Bit_type);
-	  __hash = std::_Fnv_hash::hash(__data, __size);
-	}
-
-      const size_t __extrabits = __b.size() % _S_word_bit;
-      if (__extrabits)
-	{
-	  _Bit_type __hiword = *__b._M_impl._M_finish._M_p;
-	  __hiword &= ~((~static_cast<_Bit_type>(0)) << __extrabits);
-
-	  const char* __data = reinterpret_cast<const char*>(&__hiword);
-	  const size_t __size
-	    = (__extrabits + __CHAR_BIT__ - 1) / __CHAR_BIT__;
-	  if (__words)
-	    __hash = std::_Fnv_hash::hash(__data, __size, __hash);
-	  else
-	    __hash = std::_Fnv_hash::hash(__data, __size);
-	}
-
-      return __hash;
-    }
-
 _GLIBCXX_END_NAMESPACE
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
