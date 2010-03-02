@@ -118,8 +118,8 @@ update_phis_for_loop_copy (struct loop *orig_loop, struct loop *new_loop)
 
 	  if (!new_ssa_name)
 	    /* This only happens if there are no definitions inside the
-	       loop.  Use the phi_result in this case.  */
-	    new_ssa_name = PHI_RESULT (phi_new);
+	       loop.  Use the the invariant in the new loop as is.  */
+	    new_ssa_name = def;
 	}
       else
 	/* Could be an integer.  */

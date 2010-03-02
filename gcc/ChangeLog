@@ -1,3 +1,10 @@
+2010-03-02  Reza Yazdani  <reza.yazdani@amd.com>
+
+	PR middle-end/42640
+	* tree-loop-distribution.c (update_phis_for_loop_copy): Replaced
+	the assignment from the new induction variable to the assignment
+	of the value from the original loop PHI function.
+
 2010-03-01  Janis Johnson  <janis187@us.ibm.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
@@ -27,7 +34,7 @@
 2010-03-01  Christian Bruel  <christian.bruel@st.com>
 
 	* except.c (dw2_build_landing_pads): set LABEL_PRESERVE_P.
-	
+
 2010-03-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux64.h (ASM_SPEC): Use SPEC_32 and SPEC_64.
@@ -47,7 +54,7 @@
 	64-bit, SPARC and x86.
 	(sol_gt_pch_get_address): New function.
 
-2010-03-01  Marco Poletti  <poletti.marco@gmail.com> 
+2010-03-01  Marco Poletti  <poletti.marco@gmail.com>
 
 	* toplev.h (inform_n, error_n): Declare.
 	* diagnostic.c (inform_n, error_n): New function.
@@ -133,7 +140,7 @@
 	* doc/standards.texi: Likewise.
 	* doc/extend.texi: Likewise.
 	* doc/trouble.texi: Likewise.
-	* doc/cppopts.texi: Likewise. 
+	* doc/cppopts.texi: Likewise.
 	* doc/install.texi: Likewise.
 	* c.opt (std=c90,std=gnu90): New options.
 	* c-opts.c (c_common_handle_option): Handle them.
