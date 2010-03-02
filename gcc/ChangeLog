@@ -1,3 +1,7 @@
+2010-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (override_options): Fix -mtune error message.
+
 2010-02-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Call
