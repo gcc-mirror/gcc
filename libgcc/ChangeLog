@@ -1,3 +1,9 @@
+2010-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/42980
+	* Makefile.in (install): Use $(MAKE) string in rule, for
+	parallel make.
+
 2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Migrate from broken pre-libgcc legacy support to libgcc-centric rules.
