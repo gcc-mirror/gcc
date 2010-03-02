@@ -378,6 +378,21 @@ static int first_label_num;
 static char *offsets_known_at;
 static HOST_WIDE_INT (*offsets_at)[NUM_ELIMINABLE_REGS];
 
+/* Stack of addresses where an rtx has been changed.  We can undo the 
+   changes by popping items off the stack and restoring the original
+   value at each location. 
+
+   We use this simplistic undo capability rather than copy_rtx as copy_rtx
+   will not make a deep copy of a normally sharable rtx, such as
+   (const (plus (symbol_ref) (const_int))).  If such an expression appears
+   as R1 in gen_reload_chain_without_interm_reg_p, then a shared
+   rtx expression would be changed.  See PR 42431.  */
+
+typedef rtx *rtx_p;
+DEF_VEC_P(rtx_p);
+DEF_VEC_ALLOC_P(rtx_p,heap);
+static VEC(rtx_p,heap) *substitute_stack;
+
 /* Number of labels in the current function.  */
 
 static int num_labels;
@@ -1447,6 +1462,8 @@ reload (rtx first, int global)
   if (!frame_pointer_needed)
     REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT;
 #endif
+
+  VEC_free (rtx_p, heap, substitute_stack);
 
   return failure;
 }
@@ -5147,9 +5164,8 @@ reloads_unique_chain_p (int r1, int r2)
   return true;
 }
 
-
 /* The recursive function change all occurrences of WHAT in *WHERE
-   onto REPL.  */
+   to REPL.  */
 static void
 substitute (rtx *where, const_rtx what, rtx repl)
 {
@@ -5162,6 +5178,8 @@ substitute (rtx *where, const_rtx what, rtx repl)
 
   if (*where == what || rtx_equal_p (*where, what))
     {
+      /* Record the location of the changed rtx.  */
+      VEC_safe_push (rtx_p, heap, substitute_stack, where);
       *where = repl;
       return;
     }
@@ -5209,7 +5227,9 @@ substitute (rtx *where, const_rtx what, rtx repl)
 static bool
 gen_reload_chain_without_interm_reg_p (int r1, int r2)
 {
-  bool result;
+  /* Assume other cases in gen_reload are not possible for
+     chain reloads or do need an intermediate hard registers.  */
+  bool result = true;
   int regno, n, code;
   rtx out, in, tem, insn;
   rtx last = get_last_insn ();
@@ -5225,7 +5245,7 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
   regno = rld[r1].regno >= 0 ? rld[r1].regno : rld[r2].regno;
   gcc_assert (regno >= 0);
   out = gen_rtx_REG (rld[r1].mode, regno);
-  in = copy_rtx (rld[r1].in);
+  in = rld[r1].in;
   substitute (&in, rld[r2].in, gen_rtx_REG (rld[r2].mode, regno));
 
   /* If IN is a paradoxical SUBREG, remove it and try to put the
@@ -5259,12 +5279,16 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
 	}
 
       delete_insns_since (last);
-      return result;
     }
 
-  /* It looks like other cases in gen_reload are not possible for
-     chain reloads or do need an intermediate hard registers.  */
-  return true;
+  /* Restore the original value at each changed address within R1.  */
+  while (!VEC_empty (rtx_p, substitute_stack))
+    {
+      rtx *where = VEC_pop (rtx_p, substitute_stack);
+      *where = rld[r2].in;
+    }
+
+  return result;
 }
 
 /* Return 1 if the reloads denoted by R1 and R2 cannot share a register.
