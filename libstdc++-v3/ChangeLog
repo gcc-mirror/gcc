@@ -1,3 +1,9 @@
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43230
+	* testsuite/30_threads/promise/members/set_value3.cc
+	(tester::~tester): Remove.
+
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (_Base_bitset<>::_M_getdata()): Add.
