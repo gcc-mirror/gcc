@@ -1,3 +1,7 @@
+2010-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (override_options): Fix -mtune error message.
+
 2010-03-02  Jeff Law  <law@redhat.com>
 
 	* reload1.c (rtx_p, substitute_stack): Declare.
@@ -18,8 +22,8 @@
 2010-03-02  Jakub Jelinek  <jakub@redhat.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
-	* var-tracking.c (vt_initialize): Scan insns in ebb chunks instead
-	of bb.
+	* var-tracking.c (vt_initialize): Scan insns in ebb chunks
+	instead of bb.
 
 2010-03-02  Reza Yazdani  <reza.yazdani@amd.com>
 
@@ -48,7 +52,7 @@
 	BUILT_IN_STACK_{SAVE,RESTORE} around alloca.
 
 2010-03-01  Richard Guenther  <rguenther@suse.de>
-	Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/41250
 	* gimplify.c (gimplify_body): Unset DECL_HAS_VALUE_EXPR_P on
@@ -210,8 +214,7 @@
 
 	PR target/43175
 	* config/i386/i386.c (expand_vec_perm_blend): Use correct
-	operands in V8HImode subregs.  Fix operand order in VEC_MERGE
-	rtx.
+	operands in V8HImode subregs.  Fix operand order in VEC_MERGE rtx.
 
 2010-02-26  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
@@ -312,8 +315,7 @@
 	* optc-gen.awk: Handle -ftemplate-depth=.
 	* opth-gen.awk: Likewise.
 	* c-opts.c (c_common_handle_option): Likewise.
-	* doc/invoke.texi (-ftemplate-depth-): Replace with
-	-ftemplate-depth=.
+	* doc/invoke.texi (-ftemplate-depth-): Replace with -ftemplate-depth=.
 
 2010-02-24  Jason Merrill  <jason@redhat.com>
 
@@ -486,7 +488,7 @@
 	(movdi_pic_gotdata_op): Likewise.
 	* config/sparc/sparc.c (legitimize_pic_address): If flag_pic is 2,
 	emit gen_mov{si,di}_pic_gotdata_op for the GOT slot load.
-	
+
 2010-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43067
@@ -1152,8 +1154,7 @@
 2010-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42896
-	* cselib.h (struct cselib_val_struct): Add uid.  Rename value to
-	hash.
+	* cselib.h (struct cselib_val_struct): Add uid.  Rename value to hash.
 	(cselib_reset_table): Renamed from...
 	(cselib_reset_table_with_next_value): ... this.
 	(cselib_get_next_uid): Renamed from...
