@@ -15,7 +15,6 @@ which it is presumed that you are familiar.
 * Configure Terms:: Configuration terminology and history.
 * Top Level::       The top level source directory.
 * gcc Directory::   The @file{gcc} subdirectory.
-* Testsuites::      The GCC testsuites.
 @end menu
 
 @include configterms.texi
@@ -813,7 +812,7 @@ a maintainer when support is added.
 @end itemize
 
 @node Testsuites
-@section Testsuites
+@chapter Testsuites
 
 GCC contains several testsuites to help maintain compiler quality.
 Most of the runtime libraries and language front ends in GCC have
@@ -834,7 +833,7 @@ here; FIXME: document the others.
 @end menu
 
 @node Test Idioms
-@subsection Idioms Used in Testsuite Code
+@section Idioms Used in Testsuite Code
 
 In general, C testcases have a trailing @file{-@var{n}.c}, starting
 with @file{-1.c}, in case other testcases with similar names are added
@@ -913,7 +912,7 @@ unfortunately, the mechanisms for this differ by directory.
 FIXME: discuss non-C testsuites here.
 
 @node Test Directives
-@subsection Directives used within DejaGnu tests
+@section Directives used within DejaGnu tests
 
 Test directives appear within comments in a test source file and begin
 with @code{dg-}.  Some of these are defined within DejaGnu and others
@@ -1236,7 +1235,7 @@ Check branch and/or call counts, in addition to line counts, in
 @end table
 
 @node Ada Tests
-@subsection Ada Language Testsuites
+@section Ada Language Testsuites
 
 The Ada testsuite includes executable tests from the ACATS 2.5
 testsuite, publicly available at
@@ -1271,7 +1270,7 @@ These tests are run using the build tree: they can be run without doing
 a @code{make install}.
 
 @node C Tests
-@subsection C Language Testsuites
+@section C Language Testsuites
 
 GCC contains the following C language testsuites, in the
 @file{gcc/testsuite} directory:
@@ -1369,7 +1368,7 @@ FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
 
 @node libgcj Tests
-@subsection The Java library testsuites.
+@section The Java library testsuites.
 
 Runtime tests are executed via @samp{make check} in the
 @file{@var{target}/libjava/testsuite} directory in the build
@@ -1392,7 +1391,7 @@ bugs in libgcj that had caused Mauve test failures.
 We encourage developers to contribute test cases to Mauve.
 
 @node LTO Testing
-@subsection Support for testing link-time optimizations
+@section Support for testing link-time optimizations
 
 Tests for link-time optimizations usually require multiple source files
 that are compiled separately, perhaps with different sets of options.
@@ -1428,7 +1427,7 @@ each of these sets of options.
 @end table
 
 @node gcov Testing
-@subsection Support for testing @command{gcov}
+@section Support for testing @command{gcov}
 
 Language-independent support for testing @command{gcov}, and for checking
 that branch profiling produces expected values, is provided by the
@@ -1494,7 +1493,7 @@ commands to check branch percentages and call return percentages can
 bracket the lines that report them.
 
 @node profopt Testing
-@subsection Support for testing profile-directed optimizations
+@section Support for testing profile-directed optimizations
 
 The file @file{profopt.exp} provides language-independent support for
 checking correct execution of a test built with profile-directed
@@ -1533,7 +1532,7 @@ torture tests
 @end table
 
 @node compat Testing
-@subsection Support for testing binary compatibility
+@section Support for testing binary compatibility
 
 The file @file{compat.exp} provides language-independent support for
 binary compatibility testing.  It supports testing interoperability of
@@ -1640,7 +1639,7 @@ targets.
 @end table
 
 @node Torture Tests
-@subsection Support for torture testing using multiple options
+@section Support for torture testing using multiple options
 
 Throughout the compiler testsuite there are several directories whose
 tests are run multiple times, each with a different set of options.

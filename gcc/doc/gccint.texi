@@ -106,6 +106,7 @@ Additional tutorial information is linked to from
 * Libgcc::          Low-level runtime library used by GCC.
 * Languages::       Languages for which GCC front ends are written.
 * Source Tree::     GCC source tree structure and build system.
+* Testsuites::      GCC testsuites.
 * Options::         Option specification files.
 * Passes::          Order of passes, what they do, and what each file is for.
 * Trees::           The source representation used by the C and C++ front ends.
