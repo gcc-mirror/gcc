@@ -34,3 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SUN_TLS 0
 #define TARGET_GNU_TLS 1
 #endif
+
+/* Use default ELF section syntax.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section

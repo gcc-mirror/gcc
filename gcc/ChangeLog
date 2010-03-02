@@ -1,3 +1,20 @@
+2010-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc-*-linux*): Do not include sparc/gas.h.
+	(sparc64-*-linux*): Likewise.
+	(sparc64-*-solaris2*): Include assembler files before linker ones.
+	(sparc-*-solaris2*): Simplify and reorder to match previous case.
+	* config/sparc/gas.h: Delete.
+	* config/sparc/sol2-64.h: Add copyright notice.
+	* config/sparc/sol2-gas-bi.h: Likewise.
+	* config/sparc/sol2-gld.h: Likewise.
+	* config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Delete.
+	* config/sparc/sol2.h (TARGET_ASM_NAMED_SECTION): Redefine.
+	* config/sparc/sol2-gas.h (TARGET_ASM_NAMED_SECTION): Likewise.
+	* config/sparc/sparc.c (TARGET_ASM_ALIGNED_SI_OP): Never redefine.
+	(sparc_elf_asm_named_section): Rename into...
+	(sparc_solaris_elf_asm_named_section): ...this.  Always define.
+
 2010-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (override_options): Fix -mtune error message.

@@ -368,11 +368,8 @@ static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-#if defined (OBJECT_FORMAT_ELF)
-static void sparc_elf_asm_named_section (const char *, unsigned int, tree)
-    ATTRIBUTE_UNUSED;
-#endif
-
+static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
+						 tree) ATTRIBUTE_UNUSED;
 static int sparc_adjust_cost (rtx, rtx, rtx, int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
@@ -464,14 +461,9 @@ static bool fpu_option_set = false;
 
 /* Initialize the GCC target structure.  */
 
-/* The sparc default is to use .half rather than .short for aligned
-   HI objects.  Use .word instead of .long on non-ELF systems.  */
+/* The default is to use .half rather than .short for aligned HI objects.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
-#ifndef OBJECT_FORMAT_ELF
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-#endif
 
 #undef TARGET_ASM_UNALIGNED_HI_OP
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.uahalf\t"
@@ -8002,10 +7994,11 @@ sparc_profile_hook (int labelno)
     }
 }
 
-#if defined (OBJECT_FORMAT_ELF)
+/* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
+
 static void
-sparc_elf_asm_named_section (const char *name, unsigned int flags,
-			     tree decl ATTRIBUTE_UNUSED)
+sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
+				     tree decl ATTRIBUTE_UNUSED)
 {
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
@@ -8022,7 +8015,6 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags,
 
   fputc ('\n', asm_out_file);
 }
-#endif /* OBJECT_FORMAT_ELF */
 
 /* We do not allow indirect calls to be optimized into sibling calls.
 
