@@ -960,7 +960,7 @@ install-leaf: $(install-shared) $(install-libunwind)
 	done
 
 install: install-leaf
-	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
+	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 .PHONY: install install-shared install-libunwind
 

@@ -1,3 +1,7 @@
+2010-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (all): Do not use exec.
+
 2010-02-04  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/demangle-expected: Add missing --format=gnu-v3.
