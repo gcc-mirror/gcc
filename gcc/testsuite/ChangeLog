@@ -1,3 +1,8 @@
+2010-03-02  Mike Stump  <mikestump@comcast.net>
+
+	PR c++/41090
+	* g++.dg/ext/label13.C (C::C): xfail for darwin for now.
+
 2010-03-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43180
