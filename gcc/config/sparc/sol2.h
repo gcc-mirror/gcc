@@ -195,4 +195,8 @@ along with GCC; see the file COPYING3.  If not see
     }									\
   while (0)
 
+/* Use Solaris ELF section syntax.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
+
 #define MD_UNWIND_SUPPORT "config/sparc/sol2-unwind.h"
