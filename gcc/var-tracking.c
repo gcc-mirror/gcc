@@ -7399,9 +7399,9 @@ vt_initialize (void)
     {
       rtx insn;
       HOST_WIDE_INT pre, post = 0;
-      int count;
       unsigned int next_uid_before = cselib_get_next_uid ();
       unsigned int next_uid_after = next_uid_before;
+      basic_block first_bb, last_bb;
 
       if (MAY_HAVE_DEBUG_INSNS)
 	{
@@ -7411,54 +7411,69 @@ vt_initialize (void)
 		     cselib_get_next_uid ());
 	}
 
-      /* Count the number of micro operations.  */
-      VTI (bb)->n_mos = 0;
-      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      first_bb = bb;
+      for (;;)
 	{
-	  if (INSN_P (insn))
+	  edge e;
+	  if (bb->next_bb == EXIT_BLOCK_PTR
+	      || ! single_pred_p (bb->next_bb))
+	    break;
+	  e = find_edge (bb, bb->next_bb);
+	  if (! e || (e->flags & EDGE_FALLTHRU) == 0)
+	    break;
+	  bb = bb->next_bb;
+	}
+      last_bb = bb;
+
+      /* Count the number of micro operations.  */
+      FOR_BB_BETWEEN (bb, first_bb, last_bb->next_bb, next_bb)
+	{
+	  VTI (bb)->n_mos = 0;
+	  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
+	       insn = NEXT_INSN (insn))
 	    {
-	      if (!frame_pointer_needed)
+	      if (INSN_P (insn))
 		{
-		  insn_stack_adjust_offset_pre_post (insn, &pre, &post);
-		  if (pre)
+		  if (!frame_pointer_needed)
+		    {
+		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
+		      if (pre)
+			{
+			  VTI (bb)->n_mos++;
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    log_op_type (GEN_INT (pre), bb, insn,
+					 MO_ADJUST, dump_file);
+			}
+		      if (post)
+			{
+			  VTI (bb)->n_mos++;
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    log_op_type (GEN_INT (post), bb, insn,
+					 MO_ADJUST, dump_file);
+			}
+		    }
+		  cselib_hook_called = false;
+		  if (MAY_HAVE_DEBUG_INSNS)
+		    {
+		      cselib_process_insn (insn);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{
+			  print_rtl_single (dump_file, insn);
+			  dump_cselib_table (dump_file);
+			}
+		    }
+		  if (!cselib_hook_called)
+		    count_with_sets (insn, 0, 0);
+		  if (CALL_P (insn))
 		    {
 		      VTI (bb)->n_mos++;
 		      if (dump_file && (dump_flags & TDF_DETAILS))
-			log_op_type (GEN_INT (pre), bb, insn,
-				     MO_ADJUST, dump_file);
+			log_op_type (PATTERN (insn), bb, insn,
+				     MO_CALL, dump_file);
 		    }
-		  if (post)
-		    {
-		      VTI (bb)->n_mos++;
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			log_op_type (GEN_INT (post), bb, insn,
-				     MO_ADJUST, dump_file);
-		    }
-		}
-	      cselib_hook_called = false;
-	      if (MAY_HAVE_DEBUG_INSNS)
-		{
-		  cselib_process_insn (insn);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      print_rtl_single (dump_file, insn);
-		      dump_cselib_table (dump_file);
-		    }
-		}
-	      if (!cselib_hook_called)
-		count_with_sets (insn, 0, 0);
-	      if (CALL_P (insn))
-		{
-		  VTI (bb)->n_mos++;
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    log_op_type (PATTERN (insn), bb, insn,
-				 MO_CALL, dump_file);
 		}
 	    }
 	}
-
-      count = VTI (bb)->n_mos;
 
       if (MAY_HAVE_DEBUG_INSNS)
 	{
@@ -7472,22 +7487,53 @@ vt_initialize (void)
 	}
 
       /* Add the micro-operations to the array.  */
-      VTI (bb)->mos = XNEWVEC (micro_operation, VTI (bb)->n_mos);
-      VTI (bb)->n_mos = 0;
-      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	   insn = NEXT_INSN (insn))
+      FOR_BB_BETWEEN (bb, first_bb, last_bb->next_bb, next_bb)
 	{
-	  if (INSN_P (insn))
+	  int count = VTI (bb)->n_mos;
+	  VTI (bb)->mos = XNEWVEC (micro_operation, count);
+	  VTI (bb)->n_mos = 0;
+	  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
+	       insn = NEXT_INSN (insn))
 	    {
-	      if (!frame_pointer_needed)
+	      if (INSN_P (insn))
 		{
-		  insn_stack_adjust_offset_pre_post (insn, &pre, &post);
-		  if (pre)
+		  if (!frame_pointer_needed)
+		    {
+		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
+		      if (pre)
+			{
+			  micro_operation *mo
+			    = VTI (bb)->mos + VTI (bb)->n_mos++;
+
+			  mo->type = MO_ADJUST;
+			  mo->u.adjust = pre;
+			  mo->insn = insn;
+
+			  if (dump_file && (dump_flags & TDF_DETAILS))
+			    log_op_type (PATTERN (insn), bb, insn,
+					 MO_ADJUST, dump_file);
+			}
+		    }
+
+		  cselib_hook_called = false;
+		  if (MAY_HAVE_DEBUG_INSNS)
+		    {
+		      cselib_process_insn (insn);
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{
+			  print_rtl_single (dump_file, insn);
+			  dump_cselib_table (dump_file);
+			}
+		    }
+		  if (!cselib_hook_called)
+		    add_with_sets (insn, 0, 0);
+
+		  if (!frame_pointer_needed && post)
 		    {
 		      micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
 		      mo->type = MO_ADJUST;
-		      mo->u.adjust = pre;
+		      mo->u.adjust = post;
 		      mo->insn = insn;
 
 		      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -7495,35 +7541,12 @@ vt_initialize (void)
 				     MO_ADJUST, dump_file);
 		    }
 		}
-
-	      cselib_hook_called = false;
-	      if (MAY_HAVE_DEBUG_INSNS)
-		{
-		  cselib_process_insn (insn);
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      print_rtl_single (dump_file, insn);
-		      dump_cselib_table (dump_file);
-		    }
-		}
-	      if (!cselib_hook_called)
-		add_with_sets (insn, 0, 0);
-
-	      if (!frame_pointer_needed && post)
-		{
-		  micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
-
-		  mo->type = MO_ADJUST;
-		  mo->u.adjust = post;
-		  mo->insn = insn;
-
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    log_op_type (PATTERN (insn), bb, insn,
-				 MO_ADJUST, dump_file);
-		}
 	    }
+	  gcc_assert (count == VTI (bb)->n_mos);
 	}
-      gcc_assert (count == VTI (bb)->n_mos);
+
+      bb = last_bb;
+
       if (MAY_HAVE_DEBUG_INSNS)
 	{
 	  cselib_preserve_only_values (true);

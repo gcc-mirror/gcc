@@ -1,3 +1,9 @@
+2010-03-02  Jakub Jelinek  <jakub@redhat.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* var-tracking.c (vt_initialize): Scan insns in ebb chunks instead
+	of bb.
+
 2010-03-02  Reza Yazdani  <reza.yazdani@amd.com>
 
 	PR middle-end/42640
