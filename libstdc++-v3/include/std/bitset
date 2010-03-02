@@ -552,12 +552,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	return *new _WordT; 
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      const char*
-      _M_getdata() const
-      { return reinterpret_cast<const char*>(&_M_getword(0)); }
-#endif
-
       _WordT
       _M_hiword() const
       { return 0; }
@@ -1493,8 +1487,11 @@ _GLIBCXX_END_NESTED_NAMESPACE
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-namespace std
-{
+
+#include <bits/functional_hash.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // DR 1182.
   /// std::hash specialization for bitset.
   template<size_t _Nb>
@@ -1508,7 +1505,18 @@ namespace std
 	return std::_Fnv_hash::hash(__b._M_getdata(), __size);
       }
     };
-}
+
+  template<>
+    struct hash<_GLIBCXX_STD_D::bitset<0>>
+    : public std::unary_function<_GLIBCXX_STD_D::bitset<0>, size_t>
+    {
+      size_t
+      operator()(const _GLIBCXX_STD_D::bitset<0>&) const
+      { return 0; }
+    };
+
+_GLIBCXX_END_NAMESPACE
+
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #ifdef _GLIBCXX_DEBUG

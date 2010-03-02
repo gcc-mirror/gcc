@@ -17,24 +17,24 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <bitset>
+#include <vector>
 
 void test01()
 {
-  std::bitset<0>    b0;
-  std::hash<std::bitset<0>>    h0;
+  std::vector<bool> b0;
+  std::hash<std::vector<bool>>  h0;
   h0(b0);
 
-  std::bitset<10>   b1;
-  std::hash<std::bitset<10>>   h1;
+  std::vector<bool> b1(10);
+  std::hash<std::vector<bool>>  h1;
   h1(b1);
 
-  std::bitset<100>  b2;
-  std::hash<std::bitset<100>>  h2;
+  std::vector<bool> b2(100);
+  std::hash<std::vector<bool>>  h2;
   h2(b2);
 
-  std::bitset<1000> b3;
-  std::hash<std::bitset<1000>> h3;
+  std::vector<bool> b3(1000);
+  std::hash<std::vector<bool>>  h3;
   h3(b3);
 }
 

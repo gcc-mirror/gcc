@@ -536,6 +536,21 @@ namespace __debug
     { __lhs.swap(__rhs); }
 
 } // namespace __debug
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // DR 1182.
+  /// std::hash specialization for vector<bool>.
+  template<typename _Alloc>
+    struct hash<__debug::vector<bool, _Alloc>>
+    : public std::unary_function<std::__debug::vector<bool, _Alloc>, size_t>
+    {
+      size_t
+      operator()(const std::__debug::vector<bool, _Alloc>& __b) const
+      { return std::hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>()
+	  (__b._M_base()); }
+    };
+#endif
+
 } // namespace std
 
 #endif
