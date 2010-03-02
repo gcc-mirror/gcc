@@ -1,3 +1,11 @@
+2010-03-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43180
+	* gfortran.dg/internal_pack_10.f90: New test.
+
+	PR fortran/43173
+	* gfortran.dg/internal_pack_11.f90: New test.
+
 2010-03-02  Reza Yazdani  <reza.yazdani@amd.com>
 
 	PR middle-end/42640

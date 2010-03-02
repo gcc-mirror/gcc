@@ -1,3 +1,14 @@
+2010-03-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43180
+	* trans-array.c (gfc_conv_array_parameter): A full array of
+	derived type need not be restricted to a symbol without an
+	array spec to use the call to gfc_conv_expr_descriptor.
+
+	PR fortran/43173
+	* trans-array.c (gfc_conv_array_parameter): Contiguous refs to
+	allocatable arrays do not need temporaries.
+
 2010-03-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43199
