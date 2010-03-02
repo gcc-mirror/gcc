@@ -4,6 +4,7 @@
 
 2010-03-02  Jeff Law  <law@redhat.com>
 
+	PR middle-end/42431
 	* reload1.c (rtx_p, substitute_stack): Declare.
 	(substitute): Record addresses of changed rtxs.
 	(gen_reload_chain_without_interm_reg_p): Don't use copy_rtx anymore.
