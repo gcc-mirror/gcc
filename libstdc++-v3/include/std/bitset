@@ -114,6 +114,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_getword(size_t __pos) const
       { return _M_w[_S_whichword(__pos)]; }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const char*
+      _M_getdata() const
+      { return reinterpret_cast<const char*>(_M_w); }
+#endif
+
       _WordT&
       _M_hiword()
       { return _M_w[_Nw - 1]; }
@@ -399,6 +405,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_getword(size_t) const
       { return _M_w; }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const char*
+      _M_getdata() const
+      { return reinterpret_cast<const char*>(&_M_w); }
+#endif
+
       _WordT&
       _M_hiword()
       { return _M_w; }
@@ -539,6 +551,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	__throw_out_of_range(__N("_Base_bitset::_M_getword")); 
 	return *new _WordT; 
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const char*
+      _M_getdata() const
+      { return reinterpret_cast<const char*>(&_M_getword(0)); }
+#endif
 
       _WordT
       _M_hiword() const
@@ -707,6 +725,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD>::
 	    _S_do_sanitize(this->_M_hiword());
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename> friend class hash;
+#endif
 
     public:
       /**
@@ -1469,6 +1491,25 @@ _GLIBCXX_END_NESTED_NAMESPACE
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+namespace std
+{
+  // DR 1182.
+  /// std::hash specialization for bitset.
+  template<size_t _Nb>
+    struct hash<_GLIBCXX_STD_D::bitset<_Nb>>
+    : public std::unary_function<_GLIBCXX_STD_D::bitset<_Nb>, size_t>
+    {
+      size_t
+      operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
+      {
+	const size_t __size = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
+	return std::_Fnv_hash::hash(__b._M_getdata(), __size);
+      }
+    };
+}
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/bitset>
