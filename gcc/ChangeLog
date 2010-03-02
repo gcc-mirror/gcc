@@ -1,3 +1,7 @@
+2010-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (override_options): Fix -mtune error message.
+
 2010-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline:
@@ -31,11 +35,11 @@
 	PR target/40887
 	Backport from trunk.
 	2009-12-24  Julian Brown  <julian@codesourcery.com>
-        	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+		    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/arm.c (output_call_mem): Remove armv5 support.
-        * config/arm/arm.md (*call_mem): Disable for armv5. Add note.
-        (*call_value_mem): Likewise.
+	* config/arm/arm.c (output_call_mem): Remove armv5 support.
+	* config/arm/arm.md (*call_mem): Disable for armv5. Add note.
+	(*call_value_mem): Likewise.
 
 2010-02-17  Mikael Pettersson  <mikpe@it.uu.se>
 
@@ -53,8 +57,8 @@
 	Backport from trunk.
 	2009-12-07  Julian Brown  <julian@codesourcery.com>
 
-        * config/arm/constraints.md (Ps, Pt): New constraint letters.
-        * config/arm/thumb2.md (*thumb2_addsi_short): Tighten constraints.
+	* config/arm/constraints.md (Ps, Pt): New constraint letters.
+	* config/arm/thumb2.md (*thumb2_addsi_short): Tighten constraints.
 
 2010-02-16  Ira Rosen <irar@il.ibm.com>
 
@@ -164,7 +168,7 @@
 	* config/sh/sh.c (find_barrier): Increase length for non delayed
 	conditional branches.
 	(sh_insn_length_adjustment): Use JUMP_TABLE_DATA_P.
-	
+
 2010-01-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from trunk.
@@ -308,9 +312,9 @@
 	* Backport from mainline
 	2010-01-12  Julian Brown  <julian@codesourcery.com>
 
-        * config/arm/neon-schedgen.ml (Utils): Don't try to
+	* config/arm/neon-schedgen.ml (Utils): Don't try to
 	open missing module.
-        (find_with_result): New.
+	(find_with_result): New.
 
 2010-01-12  Jakub Jelinek  <jakub@redhat.com>
 

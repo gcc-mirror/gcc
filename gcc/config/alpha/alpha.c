@@ -391,7 +391,7 @@ override_options (void)
 	    break;
 	  }
       if (! cpu_table [i].name)
-	error ("bad value %qs for -mcpu switch", alpha_tune_string);
+	error ("bad value %qs for -mtune switch", alpha_tune_string);
     }
 
   /* Do some sanity checks on the above options.  */
