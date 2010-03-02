@@ -1,3 +1,11 @@
+2010-03-02  Jeff Law  <law@redhat.com>
+
+	* reload1.c (rtx_p, substitute_stack): Declare.
+	(substitute): Record addresses of changed rtxs.
+	(gen_reload_chain_without_interm_reg_p): Don't use copy_rtx anymore.
+	Restore the original rtx when complete.
+	(reload): Free subsitute_stack when complete.
+
 2010-03-02  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/gccint.texi (menu): Add Testsuites as a chapter.
