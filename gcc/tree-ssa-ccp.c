@@ -1,6 +1,6 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010  Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -2979,7 +2979,10 @@ optimize_stack_restore (gimple_stmt_iterator i)
 	continue;
 
       callee = gimple_call_fndecl (stmt);
-      if (!callee || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+      if (!callee
+	  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+	  /* All regular builtins are ok, just obviously not alloca.  */
+	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA)
 	return NULL_TREE;
 
       if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)
