@@ -1,3 +1,7 @@
+2010-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Fix result order to match sequential case.
+
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* check_warning_flags.sh: Use \012 instead of \n with tr.

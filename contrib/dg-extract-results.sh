@@ -365,8 +365,8 @@ BEGIN {
 END {
   printf ("\t\t=== %s Summary for %s ===\n\n", tool, variant)
   if (passcnt != 0) printf ("# of expected passes\t\t%d\n", passcnt)
-  if (xpasscnt != 0) printf ("# of unexpected successes\t%d\n", xpasscnt)
   if (failcnt != 0) printf ("# of unexpected failures\t%d\n", failcnt)
+  if (xpasscnt != 0) printf ("# of unexpected successes\t%d\n", xpasscnt)
   if (xfailcnt != 0) printf ("# of expected failures\t\t%d\n", xfailcnt)
   if (untstcnt != 0) printf ("# of untested testcases\t\t%d\n", untstcnt)
   if (unrescnt != 0) printf ("# of unresolved testcases\t%d\n", unrescnt)
