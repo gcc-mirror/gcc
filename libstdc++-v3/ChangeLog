@@ -1,3 +1,9 @@
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (lock_guard::lock_guard): Do not lock mutex when
+	adopt_lock_t constructor is used.
+	* testsuite/30_threads/lock_guard/cons/1.cc: New.
+
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_bvector.h (hash<vector<bool, _Alloc>>::

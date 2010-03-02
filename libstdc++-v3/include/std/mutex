@@ -398,8 +398,8 @@ namespace std
       explicit lock_guard(mutex_type& __m) : _M_device(__m)
       { _M_device.lock(); }
 
-      lock_guard(mutex_type& __m, adopt_lock_t __a) : _M_device(__m)
-      { _M_device.lock(); }
+      lock_guard(mutex_type& __m, adopt_lock_t) : _M_device(__m)
+      { } // calling thread owns mutex
 
       ~lock_guard()
       { _M_device.unlock(); }
