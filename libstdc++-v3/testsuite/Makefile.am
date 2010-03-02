@@ -138,7 +138,7 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 			$(RUNTESTFLAGS) abi.exp; \
 	    else echo "WARNING: could not find \`runtest'" 1>&2; :;\
 	    fi; \
-	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/* [abep]*/*`";; \
+	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/* [ab]* de* [ep]*/*`";; \
 	  normal1) \
 	    dirs="`cd $$srcdir; echo 2[0-2]_*/*`";; \
 	  normal2) \
