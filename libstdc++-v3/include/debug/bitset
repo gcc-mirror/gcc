@@ -379,6 +379,23 @@ namespace __debug
     { return __os << __x._M_base(); }
 
 } // namespace __debug
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // DR 1182.
+  /// std::hash specialization for bitset.
+  template<size_t _Nb>
+    struct hash<std::__debug::bitset<_Nb>>
+    : public std::unary_function<std::__debug::bitset<_Nb>, size_t>
+    {
+      size_t
+      operator()(const std::__debug::bitset<_Nb>& __b) const
+      {
+	const size_t __size = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
+	return std::_Fnv_hash::hash(__b._M_base()._M_getdata(), __size);
+      }
+    };
+#endif
+
 } // namespace std
 
 #endif
