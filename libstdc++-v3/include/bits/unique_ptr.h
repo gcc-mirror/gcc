@@ -152,14 +152,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename std::add_lvalue_reference<element_type>::type
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return *get();
       }
 
       pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return get();
       }
 
@@ -178,25 +178,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return std::get<1>(_M_t); }
 
       explicit operator bool() const
-      { return get() == 0 ? false : true; }
+      { return get() == pointer() ? false : true; }
 
       // Modifiers.
       pointer
       release() 
       {
 	pointer __p = get();
-	std::get<0>(_M_t) = 0;
+	std::get<0>(_M_t) = pointer();
 	return __p;
       }
 
       void
       reset(pointer __p = pointer())
       {
-	if (__p != get())
-	  {
-	    get_deleter()(get());
-	    std::get<0>(_M_t) = __p;
-	  }
+	using std::swap;
+	swap(std::get<0>(_M_t), __p);
+	if (__p != pointer())
+	  get_deleter()(__p);
       }
 
       void
@@ -293,7 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename std::add_lvalue_reference<element_type>::type 
       operator[](size_t __i) const 
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return get()[__i];
       }
 
@@ -312,25 +311,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return std::get<1>(_M_t); }    
 
       explicit operator bool() const 
-      { return get() == 0 ? false : true; }
+      { return get() == pointer() ? false : true; }
     
       // Modifiers.
       pointer
       release() 
       {
 	pointer __p = get();
-	std::get<0>(_M_t) = 0;
+	std::get<0>(_M_t) = pointer();
 	return __p;
       }
 
       void
       reset(pointer __p = pointer()) 
       {
-	if (__p != get())
-	{
-	  get_deleter()(get());
-	  std::get<0>(_M_t) = __p;
-	}
+	using std::swap;
+	swap(std::get<0>(_M_t), __p);
+	if (__p != pointer())
+	  get_deleter()(__p);
       }
 
       // DR 821.

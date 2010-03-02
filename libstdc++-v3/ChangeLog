@@ -1,3 +1,13 @@
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43183
+	* include/bits/unique_ptr.h (reset): Fix as per working paper.
+	(operator*, operator->, operator[], operator bool, release): Use
+	pointer's null value instead of 0.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/43183.cc: New.
+
 2010-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/iomanip (get_money, put_money): Add in C++0x mode; tidy.
