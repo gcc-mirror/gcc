@@ -1,3 +1,9 @@
+2010-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/Makefile.am (check-DEJAGNU): Include de* in normal0
+	dirs.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_bvector.h (hash<vector<bool, _Alloc>>): Add.
