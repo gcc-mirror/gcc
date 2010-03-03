@@ -1,3 +1,11 @@
+2010-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43177
+	* var-tracking.c (loc_cmp): Don't assert VALUEs have the same mode.
+	(VAL_EXPR_HAS_REVERSE): Define.
+	(reverse_op): New function.
+	(add_stores): For reversible operations add an extra MO_VAL_USE.
+
 2010-03-02  Jason Merrill  <jason@redhat.com>
 
 	* c-pretty-print.c (pp_c_specifier_qualifier_list): Print vector size.

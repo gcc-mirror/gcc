@@ -1,3 +1,8 @@
+2010-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43177
+	* gcc.dg/guality/pr43177.c: New test.
+
 2010-03-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/vector9.C: Adjust error message.
