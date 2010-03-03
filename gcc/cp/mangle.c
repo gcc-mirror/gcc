@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varray.h"
 #include "flags.h"
 #include "target.h"
+#include "cgraph.h"
 
 /* Debugging support.  */
 
@@ -3055,6 +3056,38 @@ mangle_decl (const tree decl)
   tree id = mangle_decl_string (decl);
   id = targetm.mangle_decl_assembler_name (decl, id);
   SET_DECL_ASSEMBLER_NAME (decl, id);
+
+#ifdef ASM_OUTPUT_DEF
+  if (G.need_abi_warning)
+    {
+      /* If the mangling will change in the future, emit an alias with the
+	 future mangled name for forward-compatibility.  */
+      int save_ver;
+      tree id2, alias;
+
+      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+      if (IDENTIFIER_GLOBAL_VALUE (id) != decl)
+	inform (DECL_SOURCE_LOCATION (decl), "-fabi-version=4 (or =0) "
+		"avoids this error with a change in vector mangling");
+
+      if (TREE_CODE (decl) != FUNCTION_DECL)
+	return;
+
+      save_ver = flag_abi_version;
+      flag_abi_version = 0;
+      id2 = mangle_decl_string (decl);
+      id2 = targetm.mangle_decl_assembler_name (decl, id2);
+      flag_abi_version = save_ver;
+
+      alias = make_alias_for (decl, id2);
+      DECL_IGNORED_P (alias) = 1;
+      TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
+      DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
+      if (vague_linkage_fn_p (decl))
+	DECL_WEAK (alias) = 1;
+      cgraph_same_body_alias (alias, decl);
+    }
+#endif
 }
 
 /* Generate the mangled representation of TYPE.  */

@@ -1,3 +1,9 @@
+2010-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12909
+	* g++.dg/abi/mangle40.C: New.
+	* g++.dg/abi/mangle41.C: New.
+
 2010-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43243

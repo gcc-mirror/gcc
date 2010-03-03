@@ -308,7 +308,7 @@ cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h $(INTEGRATE_H) \
   insn-config.h input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \
   $(TARGET_H) tree-iterator.h $(CGRAPH_H)
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h $(REAL_H) \
-  gt-cp-mangle.h $(TARGET_H) $(TM_P_H)
+  gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) gt-cp-parser.h \
   output.h $(TARGET_H) $(PLUGIN_H) intl.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) toplev.h $(C_COMMON_H) \

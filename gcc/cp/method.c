@@ -234,6 +234,7 @@ make_alias_for (tree function, tree newid)
   DECL_TEMPLATE_INSTANTIATED (alias) = 0;
   DECL_TEMPLATE_INFO (alias) = NULL;
   DECL_INITIAL (alias) = error_mark_node;
+  DECL_ARGUMENTS (alias) = copy_list (DECL_ARGUMENTS (target));
   TREE_ADDRESSABLE (alias) = 1;
   TREE_USED (alias) = 1;
   SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
