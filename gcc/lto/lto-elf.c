@@ -374,6 +374,38 @@ lto_elf_end_section (void)
 }
 
 
+/* Return true if ELF_MACHINE is compatible with the cached value of the
+   architecture and possibly update the latter.  Return false otherwise.  */
+
+static bool
+is_compatible_architecture (Elf64_Half elf_machine)
+{
+  if (cached_file_attrs.elf_machine == elf_machine)
+    return true;
+
+  switch (cached_file_attrs.elf_machine)
+    {
+    case EM_SPARC:
+      if (elf_machine == EM_SPARC32PLUS)
+	{
+	  cached_file_attrs.elf_machine = elf_machine;
+	  return true;
+	}
+      break;
+
+    case EM_SPARC32PLUS:
+      if (elf_machine == EM_SPARC)
+	return true;
+      break;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
+
 /* Validate's ELF_FILE's executable header and, if cached_file_attrs is
    uninitialized, caches the architecture.  */
 
@@ -398,8 +430,7 @@ validate_ehdr##BITS (lto_elf_file *elf_file)			\
 								\
   if (!cached_file_attrs.initialized)				\
     cached_file_attrs.elf_machine = elf_header->e_machine;	\
-								\
-  if (cached_file_attrs.elf_machine != elf_header->e_machine)	\
+  else if (!is_compatible_architecture (elf_header->e_machine))	\
     {								\
       error ("inconsistent file architecture detected");	\
       return false;						\

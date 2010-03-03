@@ -1,3 +1,8 @@
+2010-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-elf.c (is_compatible_architecture): New static function.
+	(DEFINE_VALIDATE_EHDR): Use it to validate the architecture.
+
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
 	PR driver/43021
