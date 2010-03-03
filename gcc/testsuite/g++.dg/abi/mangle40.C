@@ -3,6 +3,7 @@
 // { dg-options "-mavx -Wabi -fabi-version=2" }
 // { dg-final { scan-assembler "weak\[^\n\]*_Z1fIDv4_fEvT_" } }
 // { dg-final { scan-assembler "weak\[^\n\]*_Z1fIU8__vectorfEvT_" } }
+// { dg-final { scan-assembler "weak\[^\n\]*_ZN1AIDv4_fE1tE" } }
 // { dg-final { scan-assembler "weak\[^\n\]*_ZN1AIU8__vectorfE1tE" } }
 
 #include <x86intrin.h>

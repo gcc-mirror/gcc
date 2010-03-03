@@ -361,6 +361,9 @@ struct GTY((chain_next ("%h.next"))) varpool_node {
   struct varpool_node *next;
   /* Pointer to the next function in varpool_nodes_queue.  */
   struct varpool_node *next_needed;
+  /* For normal nodes a pointer to the first extra name alias.  For alias
+     nodes a pointer to the normal node.  */
+  struct varpool_node *extra_name;
   /* Ordering of all cgraph nodes.  */
   int order;
 
@@ -379,7 +382,8 @@ struct GTY((chain_next ("%h.next"))) varpool_node {
   unsigned output : 1;
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* Set for aliases once they got through assemble_alias.  */
+  /* Set for aliases once they got through assemble_alias.  Also set for
+     extra name aliases in varpool_extra_name_alias.  */
   unsigned alias : 1;
 };
 
@@ -574,6 +578,7 @@ bool varpool_assemble_decl (struct varpool_node *node);
 bool varpool_analyze_pending_decls (void);
 void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
+bool varpool_extra_name_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 
 /* Walk all reachable static variables.  */

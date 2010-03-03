@@ -207,6 +207,8 @@ varpool_enqueue_needed_node (struct varpool_node *node)
 void
 varpool_mark_needed_node (struct varpool_node *node)
 {
+  if (node->alias && node->extra_name)
+    node = node->extra_name;
   if (!node->needed && node->finalized
       && !TREE_ASM_WRITTEN (node->decl))
     varpool_enqueue_needed_node (node);
@@ -383,9 +385,22 @@ varpool_assemble_decl (struct varpool_node *node)
       assemble_variable (decl, 0, 1, 0);
       if (TREE_ASM_WRITTEN (decl))
 	{
+	  struct varpool_node *alias;
+
 	  node->next_needed = varpool_assembled_nodes_queue;
 	  varpool_assembled_nodes_queue = node;
 	  node->finalized = 1;
+
+	  /* Also emit any extra name aliases.  */
+	  for (alias = node->extra_name; alias; alias = alias->next)
+	    {
+	      /* Update linkage fields in case they've changed.  */
+	      DECL_WEAK (alias->decl) = DECL_WEAK (decl);
+	      TREE_PUBLIC (alias->decl) = TREE_PUBLIC (decl);
+	      DECL_VISIBILITY (alias->decl) = DECL_VISIBILITY (decl);
+	      assemble_alias (alias->decl, DECL_ASSEMBLER_NAME (decl));
+	    }
+
 	  return true;
 	}
     }
@@ -505,6 +520,42 @@ add_new_static_var (tree type)
   varpool_finalize_decl (new_decl);
 
   return new_node->decl;
+}
+
+/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+   Extra name aliases are output whenever DECL is output.  */
+
+bool
+varpool_extra_name_alias (tree alias, tree decl)
+{
+  struct varpool_node key, *alias_node, *decl_node, **slot;
+
+#ifndef ASM_OUTPUT_DEF
+  /* If aliases aren't supported by the assembler, fail.  */
+  return false;
+#endif
+
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (TREE_CODE (alias) == VAR_DECL);
+  /* Make sure the hash table has been created.  */
+  decl_node = varpool_node (decl);
+
+  key.decl = alias;
+
+  slot = (struct varpool_node **) htab_find_slot (varpool_hash, &key, INSERT);
+
+  /* If the varpool_node has been already created, fail.  */
+  if (*slot)
+    return false;
+
+  alias_node = GGC_CNEW (struct varpool_node);
+  alias_node->decl = alias;
+  alias_node->alias = 1;
+  alias_node->extra_name = decl_node;
+  alias_node->next = decl_node->extra_name;
+  decl_node->extra_name = alias_node;
+  *slot = alias_node;
+  return true;
 }
 
 #include "gt-varpool.h"
