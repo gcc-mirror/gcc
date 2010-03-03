@@ -1642,20 +1642,21 @@ maybe_make_one_only (tree decl)
     }
 }
 
-/* Returns true iff DECL, a FUNCTION_DECL, has vague linkage.  This
-   predicate will give the right answer during parsing of the function,
-   which other tests may not.  */
+/* Returns true iff DECL, a FUNCTION_DECL or VAR_DECL, has vague linkage.
+   This predicate will give the right answer during parsing of the
+   function, which other tests may not.  */
 
 bool
-vague_linkage_fn_p (tree fn)
+vague_linkage_p (tree decl)
 {
   /* Unfortunately, import_export_decl has not always been called
      before the function is processed, so we cannot simply check
      DECL_COMDAT.  */
-  return (DECL_COMDAT (fn)
-	  || ((DECL_DECLARED_INLINE_P (fn)
-	       || DECL_TEMPLATE_INSTANTIATION (fn))
-	      && TREE_PUBLIC (fn)));
+  return (DECL_COMDAT (decl)
+	  || (((TREE_CODE (decl) == FUNCTION_DECL
+		&& DECL_DECLARED_INLINE_P (decl))
+	       || DECL_TEMPLATE_INSTANTIATION (decl))
+	      && TREE_PUBLIC (decl)));
 }
 
 /* Determine whether or not we want to specifically import or export CTYPE,

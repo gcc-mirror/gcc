@@ -4642,7 +4642,7 @@ maybe_commonize_var (tree decl)
       /* Don't mess with __FUNCTION__.  */
       && ! DECL_ARTIFICIAL (decl)
       && DECL_FUNCTION_SCOPE_P (decl)
-      && vague_linkage_fn_p (DECL_CONTEXT (decl)))
+      && vague_linkage_p (DECL_CONTEXT (decl)))
     {
       if (flag_weak)
 	{

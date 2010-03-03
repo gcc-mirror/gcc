@@ -3083,7 +3083,7 @@ mangle_decl (const tree decl)
       DECL_IGNORED_P (alias) = 1;
       TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
       DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
-      if (vague_linkage_fn_p (decl))
+      if (vague_linkage_p (decl))
 	DECL_WEAK (alias) = 1;
       cgraph_same_body_alias (alias, decl);
     }

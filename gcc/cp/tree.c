@@ -1607,7 +1607,7 @@ no_linkage_check (tree t, bool relaxed_p)
 	    return no_linkage_check (TYPE_CONTEXT (t), relaxed_p);
 	  else if (TREE_CODE (r) == FUNCTION_DECL)
 	    {
-	      if (!relaxed_p || !vague_linkage_fn_p (r))
+	      if (!relaxed_p || !vague_linkage_p (r))
 		return t;
 	      else
 		r = CP_DECL_CONTEXT (r);
