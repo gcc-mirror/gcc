@@ -1,3 +1,9 @@
+2010-03-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/vector9.C: Adjust error message.
+	* g++.dg/conversion/simd3.C: Likewise.
+	* g++.dg/other/error23.C: Likewise.
+
 2010-03-02  Mike Stump  <mikestump@comcast.net>
 
 	PR c++/41090

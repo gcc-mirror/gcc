@@ -1,3 +1,7 @@
+2010-03-02  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (pp_c_specifier_qualifier_list): Print vector size.
+
 2010-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (sparc-*-linux*): Do not include sparc/gas.h.
