@@ -698,7 +698,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	   and we will need the original value of op0 if insv fails.  */
 	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
-	xop0 = gen_rtx_SUBREG (op_mode, xop0, 0);
+	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
 
       /* If the destination is a paradoxical subreg such that we need a
 	 truncate to the inner mode, perform the insertion on a temporary and
@@ -1542,7 +1542,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       /* If op0 is a register, we need it in EXT_MODE to make it
 	 acceptable to the format of ext(z)v.  */
       if (REG_P (xop0) && GET_MODE (xop0) != ext_mode)
-	xop0 = gen_rtx_SUBREG (ext_mode, xop0, 0);
+	xop0 = gen_lowpart_SUBREG (ext_mode, xop0);
       if (MEM_P (xop0))
 	/* Get ref to first byte containing part of the field.  */
 	xop0 = adjust_address (xop0, byte_mode, xoffset);
