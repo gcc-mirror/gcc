@@ -358,11 +358,11 @@ namespace __profile
   // DR 1182.
   /// std::hash specialization for bitset.
   template<size_t _Nb>
-    struct hash<std::__profile::bitset<_Nb>>
-    : public std::unary_function<std::__profile::bitset<_Nb>, size_t>
+    struct hash<__profile::bitset<_Nb>>
+    : public std::unary_function<__profile::bitset<_Nb>, size_t>
     {
       size_t
-      operator()(const std::__profile::bitset<_Nb>& __b) const
+      operator()(const __profile::bitset<_Nb>& __b) const
       { return std::hash<_GLIBCXX_STD_D::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif

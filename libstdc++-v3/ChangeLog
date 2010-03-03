@@ -1,5 +1,12 @@
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/bitset (hash): Minor tweaks.
+	* include/debug/vector (hash): Likewise.
+	* include/profile/bitset (hash): Likewise.
+	* include/profile/vector (hash): Likewise.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/functional_hash.h (_Fnv_hash_base<>::hash): Change
 	to template.
 	* include/tr1/functional_hash.h (_Fnv_hash_base<>::hash): Likewise.
