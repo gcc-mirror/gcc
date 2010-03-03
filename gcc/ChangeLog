@@ -1,5 +1,11 @@
 2010-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43229
+	* cfgexpand.c (expand_debug_expr): Handle DOT_PROD_EXPR,
+	WIDEN_MULT_EXPR and WIDEN_SUM_EXPR.  Return NULL without
+	ICE for vector expressions, ADDR_SPACE_CONVERT_EXPR,
+	FIXED_CONVERT_EXPR, OBJ_TYPE_REF and WITH_SIZE_EXPR.
+
 	PR debug/43237
 	* dwarf2out.c (add_bound_info): If a decl bound doesn't have decl_die,
 	fallthrough to default handling, just with want_address 0 instead of 2.
