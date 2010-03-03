@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "" }
+// { dg-options "-Wno-abi" }
 // PR c++/9844
 
 extern "C" void abort();

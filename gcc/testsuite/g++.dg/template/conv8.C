@@ -1,4 +1,4 @@
-// { dg-options "-fabi-version=1" }
+// { dg-options "-fabi-version=1 -Wno-abi" }
 
 template <typename T> struct S {
     struct I{};

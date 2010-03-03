@@ -1,7 +1,7 @@
 // Copyright (C) 2001 Free Software Foundation
 // Contributed by Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>
 // { dg-do compile }
-// { dg-options "-fno-inline -fabi-version=1" }
+// { dg-options "-fno-inline -fabi-version=1 -Wno-abi" }
 
 struct A
 {

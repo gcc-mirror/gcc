@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-prune-output "mangled name" }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Jul 2001 <nathan@codesourcery.com>
