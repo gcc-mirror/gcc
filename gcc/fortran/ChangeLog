@@ -1,3 +1,11 @@
+2010-03-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43169
+	* resolve.c (resolve_code): Correctly set gfc_current_ns for
+	EXEC_SELECT_TYPE.
+	(gfc_impure_variable): Make it work with sub-namespaces (BLOCK etc).
+	(gfc_pure): Ditto.
+
 2010-03-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43180
