@@ -1,3 +1,10 @@
+2010-03-03  Jeff Law  <law@redhat.com>
+
+	* PR middle-end/32693
+	* expmed.c (store_bit_field_1): Use gen_lowpart_SUBREG rather
+	than gen_rtx_SUBREG.
+	(extract_bit_field_1): Likewise.
+
 2010-03-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test directives): Document that arguments
