@@ -115,9 +115,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_w[_S_whichword(__pos)]; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      const char*
+      const _WordT*
       _M_getdata() const
-      { return reinterpret_cast<const char*>(_M_w); }
+      { return _M_w; }
 #endif
 
       _WordT&
@@ -406,9 +406,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_w; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      const char*
+      const _WordT*
       _M_getdata() const
-      { return reinterpret_cast<const char*>(&_M_w); }
+      { return &_M_w; }
 #endif
 
       _WordT&
@@ -1501,8 +1501,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       size_t
       operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
       {
-	const size_t __size = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
-	return std::_Fnv_hash::hash(__b._M_getdata(), __size);
+	const size_t __clength = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
+	return std::_Fnv_hash::hash(__b._M_getdata(), __clength);
       }
     };
 

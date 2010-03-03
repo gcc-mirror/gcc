@@ -2898,10 +2898,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       size_t
       operator()(const wstring& __s) const
-      {
-	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(wchar_t));
-      }
+      { return std::_Fnv_hash::hash(__s.data(),
+				    __s.length() * sizeof(wchar_t)); }
     };
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
@@ -2914,10 +2912,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       size_t
       operator()(const u16string& __s) const
-      {
-	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(char16_t));
-      }
+      { return std::_Fnv_hash::hash(__s.data(),
+				    __s.length() * sizeof(char16_t)); }
     };
 
   /// std::hash specialization for u32string.
@@ -2927,10 +2923,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       size_t
       operator()(const u32string& __s) const
-      {
-	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(char32_t));
-      }
+      { return std::_Fnv_hash::hash(__s.data(),
+				    __s.length() * sizeof(char32_t)); }
     };
 #endif
 

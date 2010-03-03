@@ -694,10 +694,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_t __words = __b.size() / _S_word_bit;
       if (__words)
 	{
-	  const char* __data
-	    = reinterpret_cast<const char*>(__b._M_impl._M_start._M_p);
-	  const size_t __size = __words * sizeof(_Bit_type);
-	  __hash = std::_Fnv_hash::hash(__data, __size);
+	  const size_t __clength = __words * sizeof(_Bit_type);
+	  __hash = std::_Fnv_hash::hash(__b._M_impl._M_start._M_p, __clength);
 	}
 
       const size_t __extrabits = __b.size() % _S_word_bit;
@@ -706,13 +704,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _Bit_type __hiword = *__b._M_impl._M_finish._M_p;
 	  __hiword &= ~((~static_cast<_Bit_type>(0)) << __extrabits);
 
-	  const char* __data = reinterpret_cast<const char*>(&__hiword);
-	  const size_t __size
+	  const size_t __clength
 	    = (__extrabits + __CHAR_BIT__ - 1) / __CHAR_BIT__;
 	  if (__words)
-	    __hash = std::_Fnv_hash::hash(__data, __size, __hash);
+	    __hash = std::_Fnv_hash::hash(&__hiword, __clength, __hash);
 	  else
-	    __hash = std::_Fnv_hash::hash(__data, __size);
+	    __hash = std::_Fnv_hash::hash(&__hiword, __clength);
 	}
 
       return __hash;
