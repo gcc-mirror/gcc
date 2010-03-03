@@ -122,45 +122,51 @@ namespace std
   template<size_t>
     struct _Fnv_hash_base
     {
-      static size_t
-      hash(const char* __first, size_t __length, size_t __hash = 0)
-      {
-	for (; __length; --__length)
-	  __hash = (__hash * 131) + *__first++;
-	return __hash;
-      }
+      template<typename _Tp>
+        static size_t
+        hash(const _Tp* __ptr, size_t __clength, size_t __hash = 0)
+        {
+	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
+	  for (; __clength; --__clength)
+	    __hash = (__hash * 131) + *__cptr++;
+	  return __hash;
+	}
     };
 
   template<>
     struct _Fnv_hash_base<4>
     {
-      static size_t
-      hash(const char* __first, size_t __length,
-	   size_t __hash = static_cast<size_t>(2166136261UL))
-      {
-	for (; __length; --__length)
-	  {
-	    __hash ^= static_cast<size_t>(*__first++);
-	    __hash *= static_cast<size_t>(16777619UL);
-	  }
-	return __hash;
-      }
+      template<typename _Tp>
+        static size_t
+        hash(const _Tp* __ptr, size_t __clength,
+	     size_t __hash = static_cast<size_t>(2166136261UL))
+        {
+	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
+	  for (; __clength; --__clength)
+	    {
+	      __hash ^= static_cast<size_t>(*__cptr++);
+	      __hash *= static_cast<size_t>(16777619UL);
+	    }
+	  return __hash;
+	}
     };
   
   template<>
     struct _Fnv_hash_base<8>
     {
-      static size_t
-      hash(const char* __first, size_t __length,
-	   size_t __hash = static_cast<size_t>(14695981039346656037ULL))
-      {
-	for (; __length; --__length)
-	  {
-	    __hash ^= static_cast<size_t>(*__first++);
-	    __hash *= static_cast<size_t>(1099511628211ULL);
-	  }
-	return __hash;
-      }
+      template<typename _Tp>
+        static size_t
+        hash(const _Tp* __ptr, size_t __clength,
+	     size_t __hash = static_cast<size_t>(14695981039346656037ULL))
+        {
+	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
+	  for (; __clength; --__clength)
+	    {
+	      __hash ^= static_cast<size_t>(*__cptr++);
+	      __hash *= static_cast<size_t>(1099511628211ULL);
+	    }
+	  return __hash;
+	}
     };
 
     struct _Fnv_hash
@@ -171,14 +177,12 @@ namespace std
       template<typename _Tp>
         static size_t
         hash(const _Tp& __val)
-        { return hash(reinterpret_cast<const char*>(&__val),
-		      sizeof(__val)); }
+        { return hash(&__val, sizeof(__val)); }
 
       template<typename _Tp>
         static size_t
         __hash_combine(const _Tp& __val, size_t __hash)
-        { return hash(reinterpret_cast<const char*>(&__val),
-		      sizeof(__val), __hash); }
+        { return hash(&__val, sizeof(__val), __hash); }
     };
 
   /// Specialization for float.
@@ -201,7 +205,7 @@ namespace std
 
   /// Specialization for long double.
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<long double>::operator()(long double __val) const;
 
   // @} group hashes
