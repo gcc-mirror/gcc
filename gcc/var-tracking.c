@@ -2478,7 +2478,10 @@ loc_cmp (rtx x, rtx y)
     {
       if (GET_CODE (y) != VALUE)
 	return -1;
-      gcc_assert (GET_MODE (x) == GET_MODE (y));
+      /* Don't assert the modes are the same, that is true only
+	 when not recursing.  (subreg:QI (value:SI 1:1) 0)
+	 and (subreg:QI (value:DI 2:2) 0) can be compared,
+	 even when the modes are different.  */
       if (canon_value_cmp (x, y))
 	return -1;
       else
@@ -4678,6 +4681,10 @@ count_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
    MO_CLOBBER as well.  */
 #define VAL_EXPR_IS_CLOBBERED(x) \
   (RTL_FLAG_CHECK1 ("VAL_EXPR_IS_CLOBBERED", (x), CONCAT)->unchanging)
+/* Whether the location is a CONCAT of the MO_VAL_SET expression and
+   a reverse operation that should be handled afterwards.  */
+#define VAL_EXPR_HAS_REVERSE(x) \
+  (RTL_FLAG_CHECK1 ("VAL_EXPR_HAS_REVERSE", (x), CONCAT)->return_val)
 
 /* Add uses (register and memory references) LOC which will be tracked
    to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
@@ -4863,6 +4870,92 @@ add_uses_1 (rtx *x, void *cui)
   for_each_rtx (x, add_uses, cui);
 }
 
+/* Attempt to reverse the EXPR operation in the debug info.  Say for
+   reg1 = reg2 + 6 even when reg2 is no longer live we
+   can express its value as VAL - 6.  */
+
+static rtx
+reverse_op (rtx val, const_rtx expr)
+{
+  rtx src, arg, ret;
+  cselib_val *v;
+  enum rtx_code code;
+
+  if (GET_CODE (expr) != SET)
+    return NULL_RTX;
+
+  if (!REG_P (SET_DEST (expr)) || GET_MODE (val) != GET_MODE (SET_DEST (expr)))
+    return NULL_RTX;
+
+  src = SET_SRC (expr);
+  switch (GET_CODE (src))
+    {
+    case PLUS:
+    case MINUS:
+    case XOR:
+    case NOT:
+    case NEG:
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      break;
+    default:
+      return NULL_RTX;
+    }
+
+  if (!REG_P (XEXP (src, 0)) || !SCALAR_INT_MODE_P (GET_MODE (src)))
+    return NULL_RTX;
+
+  v = cselib_lookup (XEXP (src, 0), GET_MODE (XEXP (src, 0)), 0);
+  if (!v || !cselib_preserved_value_p (v))
+    return NULL_RTX;
+
+  switch (GET_CODE (src))
+    {
+    case NOT:
+    case NEG:
+      if (GET_MODE (v->val_rtx) != GET_MODE (val))
+	return NULL_RTX;
+      ret = gen_rtx_fmt_e (GET_CODE (src), GET_MODE (val), val);
+      break;
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      ret = gen_lowpart_SUBREG (GET_MODE (v->val_rtx), val);
+      break;
+    case XOR:
+      code = XOR;
+      goto binary;
+    case PLUS:
+      code = MINUS;
+      goto binary;
+    case MINUS:
+      code = PLUS;
+      goto binary;
+    binary:
+      if (GET_MODE (v->val_rtx) != GET_MODE (val))
+	return NULL_RTX;
+      arg = XEXP (src, 1);
+      if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
+	{
+	  arg = cselib_expand_value_rtx (arg, scratch_regs, 5);
+	  if (arg == NULL_RTX)
+	    return NULL_RTX;
+	  if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
+	    return NULL_RTX;
+	}
+      ret = simplify_gen_binary (code, GET_MODE (val), val, arg);
+      if (ret == val)
+	/* Ensure ret isn't VALUE itself (which can happen e.g. for
+	   (plus (reg1) (reg2)) when reg2 is known to be 0), as that
+	   breaks a lot of routines during var-tracking.  */
+	ret = gen_rtx_fmt_ee (PLUS, GET_MODE (val), val, const0_rtx);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return gen_rtx_CONCAT (GET_MODE (v->val_rtx), v->val_rtx, ret);
+}
+
 /* Add stores (register and memory references) LOC which will be tracked
    to VTI (bb)->mos.  EXPR is the RTL expression containing the store.
    CUIP->insn is instruction which the LOC is part of.  */
@@ -4879,6 +4972,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   bool track_p = false;
   cselib_val *v;
   bool resolve, preserve;
+  rtx reverse;
 
   if (type == MO_CLOBBER)
     return;
@@ -5081,6 +5175,16 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
      representations of dst and src, respectively.
 
   */
+
+  if (GET_CODE (PATTERN (cui->insn)) != COND_EXEC)
+    {
+      reverse = reverse_op (v->val_rtx, expr);
+      if (reverse)
+	{
+	  loc = gen_rtx_CONCAT (GET_MODE (mo->u.loc), loc, reverse);
+	  VAL_EXPR_HAS_REVERSE (loc) = 1;
+	}
+    }
 
   mo->u.loc = loc;
 
@@ -5367,10 +5471,17 @@ compute_bb_dataflow (basic_block bb)
 	  case MO_VAL_SET:
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
-	      rtx val, vloc, uloc;
+	      rtx val, vloc, uloc, reverse = NULL_RTX;
 
-	      vloc = uloc = XEXP (loc, 1);
-	      val = XEXP (loc, 0);
+	      vloc = loc;
+	      if (VAL_EXPR_HAS_REVERSE (loc))
+		{
+		  reverse = XEXP (loc, 1);
+		  vloc = XEXP (loc, 0);
+		}
+	      uloc = XEXP (vloc, 1);
+	      val = XEXP (vloc, 0);
+	      vloc = uloc;
 
 	      if (GET_CODE (val) == CONCAT)
 		{
@@ -5443,6 +5554,10 @@ compute_bb_dataflow (basic_block bb)
 		var_regno_delete (out, REGNO (uloc));
 
 	      val_store (out, val, vloc, insn, true);
+
+	      if (reverse)
+		val_store (out, XEXP (reverse, 0), XEXP (reverse, 1),
+			   insn, false);
 	    }
 	    break;
 
@@ -7012,10 +7127,17 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	  case MO_VAL_SET:
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
-	      rtx val, vloc, uloc;
+	      rtx val, vloc, uloc, reverse = NULL_RTX;
 
-	      vloc = uloc = XEXP (loc, 1);
-	      val = XEXP (loc, 0);
+	      vloc = loc;
+	      if (VAL_EXPR_HAS_REVERSE (loc))
+		{
+		  reverse = XEXP (loc, 1);
+		  vloc = XEXP (loc, 0);
+		}
+	      uloc = XEXP (vloc, 1);
+	      val = XEXP (vloc, 0);
+	      vloc = uloc;
 
 	      if (GET_CODE (val) == CONCAT)
 		{
@@ -7082,6 +7204,10 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		var_regno_delete (set, REGNO (uloc));
 
 	      val_store (set, val, vloc, insn, true);
+
+	      if (reverse)
+		val_store (set, XEXP (reverse, 0), XEXP (reverse, 1),
+			   insn, false);
 
 	      emit_notes_for_changes (NEXT_INSN (insn), EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
