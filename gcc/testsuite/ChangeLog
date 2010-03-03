@@ -1,3 +1,7 @@
+2010-03-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr36997.c: Adjust error message.
+
 2010-03-03  Mike Stump  <mikestump@comcast.net>
 
 	* gcc.target/i386/builtin-unreachable.c: Don't expect stack
