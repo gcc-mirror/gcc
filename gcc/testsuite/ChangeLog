@@ -1,3 +1,12 @@
+2010-03-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports-dg.exp (check-flags): Provide defaults for
+	include-opts and exclude-opts; skip checking the flags if arguments
+	are the same as the defaults.
+	(dg-xfail-if): Verify the number of arguments, supply defaults
+	for unspecified optional arguments.
+	(dg-skip-if, dg-xfail-run-if): Verify the number of arguments.
+
 2010-03-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle19-1.C: Adjust for default -Wabi.

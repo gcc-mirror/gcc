@@ -235,9 +235,26 @@ proc check-flags { args } {
 	append compiler_flags "[board_info $dest multilib_flags] "
     }
 
-    # The target list might be an effective-target keyword, so replace
-    # the original list with "*-*-*", since we already know it matches.
-    set result [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]]
+    # The next two arguments are optional.  If they were not specified,
+    # use the defaults.
+    if { [llength $args] == 2 } {
+	lappend $args [list "*"]
+    }
+    if { [llength $args] == 3 } {
+	lappend $args [list ""]
+    }
+
+    # If the option strings are the defaults, or the same as the
+    # defaults, there is no need to call check_conditional_xfail to
+    # compare them to the actual options.
+    if { [string compare [lindex $args 2] "*"] == 0
+	 && [string compare [lindex $args 3] "" ] == 0 } {
+	set result 1    
+    } else {
+	# The target list might be an effective-target keyword, so replace
+	# the original list with "*-*-*", since we already know it matches.
+	set result [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]]
+    }
 
     # Any value in this variable was left over from an earlier test.
     set compiler_flags ""
@@ -256,13 +273,17 @@ proc check-flags { args } {
 # group of tests or flags specified with a previous dg-options command.
 
 proc dg-skip-if { args } {
+    # Verify the number of arguments.  The last two are optional.
+    set args [lreplace $args 0 0]
+    if { [llength $args] < 2 || [llength $args] > 4 } {
+	error "dg-skip-if 2: need 2, 3, or 4 arguments"
+    }
+
     # Don't bother if we're already skipping the test.
     upvar dg-do-what dg-do-what
     if { [lindex ${dg-do-what} 1] == "N" } {
       return
     }
-
-    set args [lreplace $args 0 0]
 
     set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
@@ -276,30 +297,52 @@ proc dg-skip-if { args } {
 # Like check_conditional_xfail, but callable from a dg test.
 
 proc dg-xfail-if { args } {
+    # Verify the number of arguments.  The last three are optional.
+    set args [lreplace $args 0 0]
+    if { [llength $args] < 2 || [llength $args] > 4 } {
+	error "dg-xfail-if: need 2, 3, or 4 arguments"
+    }
+
     # Don't change anything if we're already skipping the test.
     upvar dg-do-what dg-do-what
     if { [lindex ${dg-do-what} 1] == "N" } {
       return
     }
 
-    set args [lreplace $args 0 0]
     set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
 	global compiler_conditional_xfail_data
-	set compiler_conditional_xfail_data [lreplace $args 1 1 "*-*-*"]
+
+	# The target list might be an effective-target keyword.  Replace
+	# the original list with "*-*-*", since we already know it matches.
+	set args [lreplace $args 1 1 "*-*-*"]
+
+	# Supply default values for unspecified optional arguments.
+	if { [llength $args] == 2 } {
+	    lappend $args [list "*"]
+	}
+	if { [llength $args] == 3 } {
+	    lappend $args [list ""]
+	}
+
+	set compiler_conditional_xfail_data $args
     }
 }
 
 # Like dg-xfail-if but for the execute step.
 
 proc dg-xfail-run-if { args } {
+    # Verify the number of arguments.  The last two are optional.
+    set args [lreplace $args 0 0]
+    if { [llength $args] < 2 || [llength $args] > 4 } {
+	error "dg-xfail-run-if: need 2, 3, or 4 arguments"
+    }
+
     # Don't bother if we're already skipping the test.
     upvar dg-do-what dg-do-what
     if { [lindex ${dg-do-what} 1] == "N" } {
       return
     }
-
-    set args [lreplace $args 0 0]
 
     set selector [list target [lindex $args 1]]
     if { [dg-process-target $selector] == "S" } {
