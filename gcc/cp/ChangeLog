@@ -6,6 +6,11 @@
 	ABI version, make the later mangled name an alias.
 	* method.c (make_alias_for): Copy DECL_ARGUMENTS.
 	* Make-lang.in (mangle.o): Depend on cgraph.h.
+	* method.c (make_alias_for): Handle VAR_DECL, too.
+	* decl2.c (vague_linkage_p): Rename from vague_linkage_fn_p.
+	* tree.c (no_linkage_check): Adjust.
+	* decl.c (maybe_commonize_var): Adjust.
+	* cp-tree.h: Adjust.
 
 2010-03-01  Marco Poletti  <poletti.marco@gmail.com>
 
