@@ -3070,9 +3070,6 @@ mangle_decl (const tree decl)
 	inform (DECL_SOURCE_LOCATION (decl), "-fabi-version=4 (or =0) "
 		"avoids this error with a change in vector mangling");
 
-      if (TREE_CODE (decl) != FUNCTION_DECL)
-	return;
-
       save_ver = flag_abi_version;
       flag_abi_version = 0;
       id2 = mangle_decl_string (decl);
@@ -3085,7 +3082,10 @@ mangle_decl (const tree decl)
       DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
       if (vague_linkage_p (decl))
 	DECL_WEAK (alias) = 1;
-      cgraph_same_body_alias (alias, decl);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	cgraph_same_body_alias (alias, decl);
+      else
+	varpool_extra_name_alias (alias, decl);
     }
 #endif
 }
