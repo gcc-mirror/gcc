@@ -1,3 +1,12 @@
+2010-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h (unique_ptr<>::get_deleter): Simplify
+	return type.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+
 2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/bitset (hash): Minor tweaks.
