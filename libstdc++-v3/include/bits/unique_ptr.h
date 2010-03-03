@@ -167,13 +167,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       get() const
       { return std::get<0>(_M_t); }
 
-      typename std::add_lvalue_reference<deleter_type>::type
+      deleter_type&
       get_deleter()
       { return std::get<1>(_M_t); }
 
-      typename std::add_lvalue_reference<
-          typename std::add_const<deleter_type>::type
-              >::type
+      const deleter_type&
       get_deleter() const
       { return std::get<1>(_M_t); }
 
@@ -300,13 +298,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       get() const
       { return std::get<0>(_M_t); }
 
-      typename std::add_lvalue_reference<deleter_type>::type 
+      deleter_type& 
       get_deleter()
       { return std::get<1>(_M_t); }
 
-      typename std::add_lvalue_reference<
-          typename std::add_const<deleter_type>::type
-              >::type 
+      const deleter_type&
       get_deleter() const
       { return std::get<1>(_M_t); }    
 
