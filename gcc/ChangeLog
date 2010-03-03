@@ -5,6 +5,9 @@
 	* varpool.c (varpool_extra_name_alias): New.
 	(varpool_assemble_decl): Emit extra name aliases.
 	(varpool_mark_needed_node): Look past an extra name alias.
+	* lto-streamer.h (LTO_tags): Add LTO_var_decl_alias.
+	* lto-streamer-in.c (lto_input_tree): Read it.
+	* lto-streamer-out.c (output_unreferenced_globals): Write it.
 
 2010-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
