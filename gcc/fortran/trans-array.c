@@ -5474,18 +5474,30 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
   bool no_pack;
   bool array_constructor;
   bool good_allocatable;
+  bool ultimate_ptr_comp;
+  bool ultimate_alloc_comp;
   gfc_symbol *sym;
   stmtblock_t block;
   gfc_ref *ref;
 
+  ultimate_ptr_comp = false;
+  ultimate_alloc_comp = false;
   for (ref = expr->ref; ref; ref = ref->next)
-    if (ref->next == NULL)
-      break;
+    {
+      if (ref->next == NULL)
+        break;
+
+      if (ref->type == REF_COMPONENT)
+	{
+	  ultimate_ptr_comp = ref->u.c.component->attr.pointer;
+	  ultimate_alloc_comp = ref->u.c.component->attr.allocatable;
+	}
+    }
 
   full_array_var = false;
   contiguous = false;
 
-  if (expr->expr_type == EXPR_VARIABLE && ref)
+  if (expr->expr_type == EXPR_VARIABLE && ref && !ultimate_ptr_comp)
     full_array_var = gfc_full_array_ref_p (ref, &contiguous);
 
   sym = full_array_var ? expr->symtree->n.sym : NULL;
@@ -5552,6 +5564,9 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
         }
     }
 
+  /* A convenient reduction in scope.  */
+  contiguous = g77 && !this_array_result && contiguous;
+
   /* There is no need to pack and unpack the array, if it is contiguous
      and not deferred or assumed shape.  */
   no_pack = ((sym && sym->as
@@ -5563,17 +5578,20 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 		  && ref->u.ar.as->type != AS_DEFERRED
 		  && ref->u.ar.as->type != AS_ASSUMED_SHAPE));
 
-  no_pack = g77 && !this_array_result && contiguous && no_pack;
+  no_pack = contiguous && no_pack;
 
   /* Array constructors are always contiguous and do not need packing.  */
   array_constructor = g77 && !this_array_result && expr->expr_type == EXPR_ARRAY;
 
   /* Same is true of contiguous sections from allocatable variables.  */
-  good_allocatable = (g77 && !this_array_result && contiguous
-			&& expr->symtree
-			&& expr->symtree->n.sym->attr.allocatable);
+  good_allocatable = contiguous
+		       && expr->symtree
+		       && expr->symtree->n.sym->attr.allocatable;
 
-  if (no_pack || array_constructor || good_allocatable)
+  /* Or ultimate allocatable components.  */
+  ultimate_alloc_comp = contiguous && ultimate_alloc_comp; 
+
+  if (no_pack || array_constructor || good_allocatable || ultimate_alloc_comp)
     {
       gfc_conv_expr_descriptor (se, expr, ss);
       if (expr->ts.type == BT_CHARACTER)

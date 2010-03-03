@@ -1,3 +1,10 @@
+2010-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43243
+	* trans-array.c (gfc_conv_array_parameter): Contiguous refs to
+	allocatable ultimate components do not need temporaries, whilst
+	ultimate pointer components do.
+
 2010-03-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43169
