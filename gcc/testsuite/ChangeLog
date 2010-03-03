@@ -1,3 +1,10 @@
+2010-03-03  Mike Stump  <mikestump@comcast.net>
+
+	* gcc.target/i386/builtin-unreachable.c: Don't expect stack
+	adjustments to not be present on machines that align the stack to
+	more than 4 bytes and don't have a red zone yet as that is an
+	unimplemented optimization.
+
 2010-03-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43169
