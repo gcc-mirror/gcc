@@ -1,3 +1,8 @@
+2010-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc64-*-solaris2*, sparc-*-solaris2*): Merge into...
+	(sparc*-*-solaris2*): ...this.
+
 2010-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43229

@@ -2378,18 +2378,27 @@ sparc-*-rtems*)
 	tmake_file="sparc/t-elf sparc/t-crtfm t-rtems"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
-sparc64-*-solaris2* | sparcv9-*-solaris2*)
+sparc*-*-solaris2*)
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h"
 	case ${target} in
-	*-*-solaris2.1[0-9]*)
+	    *-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} sol2-10.h"
 		use_gcc_stdint=wrap
 		;;
-	*)
+	    *)
 		use_gcc_stdint=provide
 		;;
 	esac
-	tm_file="${tm_file} sparc/sol2.h sparc/sol2-64.h sparc/sol2-bi.h"
+	tm_file="${tm_file} sparc/sol2.h"
+	case ${target} in
+	    sparc64-*-* | sparcv9-*-*)
+		tm_file="${tm_file} sparc/sol2-64.h"
+		;;
+	    *)
+		test x$with_cpu != x || with_cpu=v9
+		;;
+	esac
+	tm_file="${tm_file} sparc/sol2-bi.h"
 	if test x$gas = xyes; then
 		tm_file="${tm_file} sparc/sol2-gas.h sparc/sol2-gas-bi.h"
 	fi
@@ -2403,42 +2412,6 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
-	c_target_objs="sol2-c.o"
-	cxx_target_objs="sol2-c.o"
-	extra_objs="sol2.o"
-	tm_p_file="${tm_p_file} sol2-protos.h"
-	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
-	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  "":yes:* | yes:yes:* ) thread_file=posix ;;
-	  "":*:yes | yes:*:yes ) thread_file=solaris ;;
-	esac
-	;;
-sparc-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h"
-	case ${target} in
-	*-*-solaris2.1[0-9]*)
-		tm_file="${tm_file} sol2-10.h"
-		use_gcc_stdint=wrap
-		;;
-	*)
-		use_gcc_stdint=provide
-		;;
-	esac
-	tm_file="${tm_file} sparc/sol2.h sparc/sol2-bi.h"
-	if test x$gas = xyes; then
-		tm_file="${tm_file} sparc/sol2-gas.h sparc/sol2-gas-bi.h"
-	fi
-	if test x$gnu_ld = xyes; then
-		tm_file="${tm_file} sparc/sol2-gld.h sparc/sol2-gld-bi.h"
-	fi
-	tm_file="${tm_file} tm-dwarf2.h"
-	tmake_file="t-sol2 sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
-	if test x$gnu_ld = xyes; then
-		tmake_file="$tmake_file t-slibgcc-elf-ver"
-	else
-		tmake_file="$tmake_file t-slibgcc-sld"
-	fi
-	test x$with_cpu != x || with_cpu=v9
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
 	extra_objs="sol2.o"
