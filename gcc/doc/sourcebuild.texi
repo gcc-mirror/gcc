@@ -1019,7 +1019,7 @@ the test
 @item 300
 @end itemize
 
-@item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+@item @{ dg-skip-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Arguments @var{include-opts} and @var{exclude-opts} are lists in which
 each element is a string of zero or more GCC options.
 Skip the test if all of the following conditions are met:
@@ -1029,11 +1029,13 @@ Skip the test if all of the following conditions are met:
 @item for at least one of the option strings in @var{include-opts},
 every option from that string is in the set of options with which
 the test would be compiled; use @samp{"*"} for an @var{include-opts} list
-that matches any options
+that matches any options; that is the default if @var{include-opts} is
+not specified
 
 @item for each of the option strings in @var{exclude-opts}, at least one
 option from that string is not in the set of options with which the test
-would be compiled; use @samp{""} for an empty @var{exclude-opts} list
+would be compiled; use @samp{""} for an empty @var{exclude-opts} list;
+that is the default if @var{exclude-opts} is not specified
 @end itemize
 
 For example, to skip a test if option @code{-Os} is present:
@@ -1067,11 +1069,11 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
-@item  @{ dg-xfail-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+@item  @{ dg-xfail-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Expect the test to fail if the conditions (which are the same as for
 @code{dg-skip-if}) are met.  This does not affect the execute step.
 
-@item  @{ dg-xfail-run-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+@item  @{ dg-xfail-run-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Expect the execute step of a test to fail if the conditions (which are
 the same as for @code{dg-skip-if}) and @code{dg-xfail-if}) are met.
 
@@ -1089,7 +1091,7 @@ is not covered by the effective-target keyword.
 This directive must appear after any @code{dg-do} directive in the test
 and before any @code{dg-additional-sources} directive.
 
-@item  @{ dg-shouldfail @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+@item  @{ dg-shouldfail @var{comment} [@{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]]] @}
 Expect the test executable to return a nonzero exit status if the
 conditions (which are the same as for @code{dg-skip-if}) are met.
 

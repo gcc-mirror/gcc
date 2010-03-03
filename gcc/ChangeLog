@@ -1,3 +1,9 @@
+2010-03-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test directives): Document that arguments
+	include-opts and exclude-opts are now optional for dg-skip-if,
+	dg-xfail-if, dg-xfail-run-if, and dg-shouldfail.
+
 2010-03-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12909
