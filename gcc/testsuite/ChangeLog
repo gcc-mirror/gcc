@@ -1,3 +1,8 @@
+2010-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43243
+	* gfortran.dg/internal_pack_12.f90: New test.
+
 2010-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/pr36997.c: Adjust error message.
