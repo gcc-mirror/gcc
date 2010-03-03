@@ -217,6 +217,9 @@ enum LTO_tags
   /* Special for global streamer. Reference to previously-streamed node.  */
   LTO_tree_pickle_reference,
 
+  /* A decl which exists only to provide an extra symbol for another var.  */
+  LTO_var_decl_alias,
+
   /* References to indexable tree nodes.  These objects are stored in
      tables that are written separately from the function bodies that
      reference them.  This way they can be instantiated even when the

@@ -2696,6 +2696,17 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 	 the code and class.  */
       result = lto_get_builtin_tree (ib, data_in);
     }
+  else if (tag == LTO_var_decl_alias)
+    {
+      /* An extra_name alias for a variable.  */
+      unsigned HOST_WIDE_INT ix;
+      tree target;
+      ix = lto_input_uleb128 (ib);
+      result = lto_file_decl_data_get_var_decl (data_in->file_data, ix);
+      ix = lto_input_uleb128 (ib);
+      target = lto_file_decl_data_get_var_decl (data_in->file_data, ix);
+      varpool_extra_name_alias (result, target);
+    }
   else if (tag == lto_tree_code_to_tag (INTEGER_CST))
     {
       /* For integer constants we only need the type and its hi/low

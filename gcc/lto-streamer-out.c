@@ -1978,6 +1978,8 @@ output_unreferenced_globals (cgraph_node_set set)
 
       if (TREE_CODE (var) == VAR_DECL)
         {
+	  struct varpool_node *alias;
+
           /* Output the object in order to output references used in the
              initialization. */
           lto_output_tree (ob, var, true);
@@ -1985,6 +1987,17 @@ output_unreferenced_globals (cgraph_node_set set)
           /* If it is public we also need a reference to the object itself. */
           if (TREE_PUBLIC (var))
             lto_output_tree_ref (ob, var);
+
+	  /* Also output any extra_name aliases for this variable.  */
+	  for (alias = vnode->extra_name; alias; alias = alias->next)
+	    {
+	      lto_output_tree (ob, alias->decl, true);
+	      output_record_start (ob, LTO_var_decl_alias);
+	      lto_output_var_decl_index (ob->decl_state, ob->main_stream,
+					 alias->decl);
+	      lto_output_var_decl_index (ob->decl_state, ob->main_stream,
+					 var);
+	    }
         }
     }
 
