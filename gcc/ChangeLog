@@ -1,5 +1,11 @@
 2010-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43237
+	* dwarf2out.c (add_bound_info): If a decl bound doesn't have decl_die,
+	fallthrough to default handling, just with want_address 0 instead of 2.
+	For single element lists, add_AT_loc directly, otherwise create an
+	artificial variable DIE and stick location list to it.
+
 	PR debug/43177
 	* var-tracking.c (loc_cmp): Don't assert VALUEs have the same mode.
 	(VAL_EXPR_HAS_REVERSE): Define.
