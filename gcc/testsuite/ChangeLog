@@ -1,5 +1,8 @@
 2010-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43237
+	* gcc.dg/debug/dwarf2/pr43237.c: New test.
+
 	PR debug/43177
 	* gcc.dg/guality/pr43177.c: New test.
 
