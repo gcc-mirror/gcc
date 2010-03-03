@@ -1,5 +1,20 @@
 2010-03-03  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/abi/mangle19-1.C: Adjust for default -Wabi.
+	* g++.dg/abi/mangle23.C: Likewise.
+	* g++.dg/eh/simd-2.C: Likewise.
+	* g++.dg/ext/attribute-test-2.C: Likewise.
+	* g++.dg/ext/vector14.C: Likewise.
+	* g++.dg/other/pr34435.C: Likewise.
+	* g++.dg/template/conv8.C: Likewise.
+	* g++.dg/template/nontype9.C: Likewise.
+	* g++.dg/template/qualttp17.C: Likewise.
+	* g++.dg/template/ref1.C: Likewise.
+	* g++.old-deja/g++.pt/crash68.C: Likewise.
+	* g++.old-deja/g++.pt/ref1.C: Likewise.
+	* g++.old-deja/g++.pt/ref3.C: Likewise.
+	* g++.old-deja/g++.pt/ref4.C: Likewise.
+
 	PR c++/12909
 	* g++.dg/abi/mangle40.C: New.
 	* g++.dg/abi/mangle41.C: New.

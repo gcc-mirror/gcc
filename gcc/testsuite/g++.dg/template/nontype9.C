@@ -1,4 +1,5 @@
 // { dg-do compile  }
+// { dg-prune-output "mangled name" }
 // Contributed by: Giovanni Bajo <giovannibajo at gcc dot gnu dot org>
 int i;
 

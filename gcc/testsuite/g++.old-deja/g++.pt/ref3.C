@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-prune-output "mangled name" }
 // Origin: John Wilkinson <jfw@sgi.com>
 
 template <class T, int& Size> 
