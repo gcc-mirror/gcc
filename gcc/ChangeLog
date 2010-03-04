@@ -1,3 +1,9 @@
+2010-03-04  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR c/43248
+	* c-decl.c (build_compound_literal): Return early if init is
+	an error_mark_node.
+
 2010-03-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43164

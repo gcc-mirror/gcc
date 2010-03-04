@@ -1,3 +1,8 @@
+2010-03-04  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR c/43248
+	* gcc.dg/compound-literal-1.c: New testcase.
+
 2010-03-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43164
