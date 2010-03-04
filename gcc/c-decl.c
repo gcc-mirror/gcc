@@ -4462,7 +4462,8 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
   tree complit;
   tree stmt;
 
-  if (type == error_mark_node)
+  if (type == error_mark_node
+      || init == error_mark_node)
     return error_mark_node;
 
   decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
