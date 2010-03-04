@@ -1,3 +1,11 @@
+2010-03-04  Tobias Burnus  <burnus@net-b.de>
+	    Ken Werner <ken@linux.vnet.ibm.com>
+
+	* gfortran.dg/reassoc_4.f: Add --param max-completely-peel-times
+	to dg-options for spu.
+	* gfortran.dg/vect/vect-7.f90: Add vect_intfloat_cvt to the
+	dump-scan target to exclude spu.
+
 2010-03-04  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/43209

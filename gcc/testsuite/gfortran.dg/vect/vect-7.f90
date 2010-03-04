@@ -11,6 +11,6 @@ subroutine foo (x,nnd)
 
 end subroutine foo 
 
-! { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_unpack } } } 
+! { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_unpack  && vect_intfloat_cvt } } } } 
 ! { dg-final { cleanup-tree-dump "vect" } } 
 
