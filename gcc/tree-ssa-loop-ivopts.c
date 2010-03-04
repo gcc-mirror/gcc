@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -4121,7 +4121,8 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
      TODO: The constant that we're substracting from the cost should
      be target-dependent.  This information should be added to the
      target costs for each backend.  */
-  if (integer_zerop (*bound_cst)
+  if (!infinite_cost_p (elim_cost) /* Do not try to decrease infinite! */
+      && integer_zerop (*bound_cst)
       && (operand_equal_p (*control_var, cand->var_after, 0)
 	  || operand_equal_p (*control_var, cand->var_before, 0)))
     elim_cost.cost -= 1;
