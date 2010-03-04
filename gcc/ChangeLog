@@ -1,3 +1,10 @@
+2010-03-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi (Vector Extensions, X86 Built-in Functions):
+	Use '3DNow!' for the extension of that name, ensure normal space
+	after the string.
+	* doc/invoke.texi (i386 and x86-64 Options): Likewise.
+
 2010-03-03  Jeff Law  <law@redhat.com>
 
 	* PR middle-end/32693
