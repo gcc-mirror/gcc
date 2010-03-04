@@ -1,8 +1,8 @@
 2010-03-04  Changpeng Fang  <changpeng.fang@amd.com>
 
-      PR middle-end/43209
-      * tree-ssa-loop-ivopts.c (determine_use_iv_cost_condition): Do not decrease
-      the cost of an IV candidate when the cost is infinite.
+	PR middle-end/43209
+	* tree-ssa-loop-ivopts.c (determine_use_iv_cost_condition): Do not decrease
+	the cost of an IV candidate when the cost is infinite.
 
 2010-03-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
