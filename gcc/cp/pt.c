@@ -3987,16 +3987,19 @@ process_partial_specialization (tree decl)
                          If they are fully specialized in the
                          specialization, that's OK.  */
                       int j;
+                      int count = 0;
                       for (j = 0; j < nargs; ++j)
                         if (tpd2.parms[j] != 0
                             && tpd.arg_uses_template_parms [j])
-                          {
-                            error ("type %qT of template argument %qE depends "
-                                   "on template parameter(s)", 
-                                   type,
-                                   arg);
-                            break;
-                          }
+                          ++count;
+                      if (count != 0)
+                        error_n (input_location, count,
+                                 "type %qT of template argument %qE depends "
+                                 "on a template parameter",
+                                 "type %qT of template argument %qE depends "
+                                 "on template parameters",
+                                 type,
+                                 arg);
                     }
                 }
             }
