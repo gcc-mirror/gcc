@@ -6056,7 +6056,7 @@ purposes.
 
 On some targets, the instruction set contains SIMD vector instructions that
 operate on multiple values contained in one large register at the same time.
-For example, on the i386 the MMX, 3Dnow! and SSE extensions can be used
+For example, on the i386 the MMX, 3DNow!@: and SSE extensions can be used
 this way.
 
 The first step in using these extensions is to provide the necessary data
@@ -8201,7 +8201,7 @@ The following machine modes are available for use with MMX built-in functions
 vector of eight 8-bit integers.  Some of the built-in functions operate on
 MMX registers as a whole 64-bit entity, these use @code{V1DI} as their mode.
 
-If 3Dnow extensions are enabled, @code{V2SF} is used as a mode for a vector
+If 3DNow!@: extensions are enabled, @code{V2SF} is used as a mode for a vector
 of two 32-bit floating point values.
 
 If SSE extensions are enabled, @code{V4SF} is used for a vector of four 32-bit

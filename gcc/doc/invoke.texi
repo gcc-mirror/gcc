@@ -11715,36 +11715,36 @@ instruction set support.
 @item k6
 AMD K6 CPU with MMX instruction set support.
 @item k6-2, k6-3
-Improved versions of AMD K6 CPU with MMX and 3dNOW!@: instruction set support.
+Improved versions of AMD K6 CPU with MMX and 3DNow!@: instruction set support.
 @item athlon, athlon-tbird
-AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW!@: and SSE prefetch instructions
+AMD Athlon CPU with MMX, 3dNOW!, enhanced 3DNow!@: and SSE prefetch instructions
 support.
 @item athlon-4, athlon-xp, athlon-mp
-Improved AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW!@: and full SSE
+Improved AMD Athlon CPU with MMX, 3DNow!, enhanced 3DNow!@: and full SSE
 instruction set support.
 @item k8, opteron, athlon64, athlon-fx
 AMD K8 core based CPUs with x86-64 instruction set support.  (This supersets
-MMX, SSE, SSE2, 3dNOW!, enhanced 3dNOW!@: and 64-bit instruction set extensions.)
+MMX, SSE, SSE2, 3DNow!, enhanced 3DNow!@: and 64-bit instruction set extensions.)
 @item k8-sse3, opteron-sse3, athlon64-sse3
 Improved versions of k8, opteron and athlon64 with SSE3 instruction set support.
 @item amdfam10, barcelona
 AMD Family 10h core based CPUs with x86-64 instruction set support.  (This
-supersets MMX, SSE, SSE2, SSE3, SSE4A, 3dNOW!, enhanced 3dNOW!, ABM and 64-bit
+supersets MMX, SSE, SSE2, SSE3, SSE4A, 3DNow!, enhanced 3DNow!, ABM and 64-bit
 instruction set extensions.)
 @item winchip-c6
 IDT Winchip C6 CPU, dealt in same way as i486 with additional MMX instruction
 set support.
 @item winchip2
-IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3dNOW!@:
+IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3DNow!@:
 instruction set support.
 @item c3
-Via C3 CPU with MMX and 3dNOW!@: instruction set support.  (No scheduling is
+Via C3 CPU with MMX and 3DNow!@: instruction set support.  (No scheduling is
 implemented for this chip.)
 @item c3-2
 Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
 implemented for this chip.)
 @item geode
-Embedded AMD CPU with MMX and 3dNOW! instruction set support.
+Embedded AMD CPU with MMX and 3DNow!@: instruction set support.
 @end table
 
 While picking a specific @var{cpu-type} will schedule things appropriately
