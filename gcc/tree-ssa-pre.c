@@ -2542,7 +2542,7 @@ compute_antic (void)
 	fprintf (dump_file, "Starting iteration %d\n", num_iterations);
       num_iterations++;
       changed = false;
-      for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
+      for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
 	{
 	  if (TEST_BIT (changed_blocks, postorder[i]))
 	    {
@@ -2573,7 +2573,7 @@ compute_antic (void)
 	    fprintf (dump_file, "Starting iteration %d\n", num_iterations);
 	  num_iterations++;
 	  changed = false;
-	  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
+	  for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1 ; i >= 0; i--)
 	    {
 	      if (TEST_BIT (changed_blocks, postorder[i]))
 		{
@@ -4507,6 +4507,85 @@ remove_dead_inserted_code (void)
   VEC_free (gimple, heap, worklist);
 }
 
+/* Compute a reverse post-order in *POST_ORDER.  If INCLUDE_ENTRY_EXIT is
+   true, then then ENTRY_BLOCK and EXIT_BLOCK are included.  Returns
+   the number of visited blocks.  */
+
+static int
+my_rev_post_order_compute (int *post_order, bool include_entry_exit)
+{
+  edge_iterator *stack;
+  int sp;
+  int post_order_num = 0;
+  sbitmap visited;
+  int count;
+
+  if (include_entry_exit)
+    post_order[post_order_num++] = EXIT_BLOCK;
+
+  /* Allocate stack for back-tracking up CFG.  */
+  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  sp = 0;
+
+  /* Allocate bitmap to track nodes that have been visited.  */
+  visited = sbitmap_alloc (last_basic_block);
+
+  /* None of the nodes in the CFG have been visited yet.  */
+  sbitmap_zero (visited);
+
+  /* Push the last edge on to the stack.  */
+  stack[sp++] = ei_start (EXIT_BLOCK_PTR->preds);
+
+  while (sp)
+    {
+      edge_iterator ei;
+      basic_block src;
+      basic_block dest;
+
+      /* Look at the edge on the top of the stack.  */
+      ei = stack[sp - 1];
+      src = ei_edge (ei)->src;
+      dest = ei_edge (ei)->dest;
+
+      /* Check if the edge destination has been visited yet.  */
+      if (src != ENTRY_BLOCK_PTR && ! TEST_BIT (visited, src->index))
+        {
+          /* Mark that we have visited the destination.  */
+          SET_BIT (visited, src->index);
+
+          if (EDGE_COUNT (src->preds) > 0)
+            /* Since the DEST node has been visited for the first
+               time, check its successors.  */
+            stack[sp++] = ei_start (src->preds);
+          else
+            post_order[post_order_num++] = src->index;
+        }
+      else
+        {
+          if (ei_one_before_end_p (ei) && dest != EXIT_BLOCK_PTR)
+            post_order[post_order_num++] = dest->index;
+
+          if (!ei_one_before_end_p (ei))
+            ei_next (&stack[sp - 1]);
+          else
+            sp--;
+        }
+    }
+
+  if (include_entry_exit)
+    {
+      post_order[post_order_num++] = ENTRY_BLOCK;
+      count = post_order_num;
+    }
+  else
+    count = post_order_num + 2;
+
+  free (stack);
+  sbitmap_free (visited);
+  return post_order_num;
+}
+
+
 /* Initialize data structures used by PRE.  */
 
 static void
@@ -4535,7 +4614,7 @@ init_pre (bool do_fre)
 
 
   postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
-  post_order_compute (postorder, false, false);
+  my_rev_post_order_compute (postorder, false);
 
   FOR_ALL_BB (bb)
     bb->aux = XCNEWVEC (struct bb_bitmap_sets, 1);
