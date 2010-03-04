@@ -1,3 +1,18 @@
+2010-03-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am: Re-organize xml sources.
+	(doc-latex-doxygen): New.
+	(doc-pdf-doxygen): New.
+	(stamp-xml-doxygen, stamp-latex-doxygen): New.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Add support here.
+	* doc/xml/manual/appendix_contributing.xml: Add specifics.
+
+	* doc/xml/manual/concurrency.xml: New.
+	* doc/xml/manual/atomics.xml: New.
+	* doc/xml/manual/spine.xml: Adjust.
+	* doc/xml/manual/diagnostics.xml: Adjust.
+
 2010-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 

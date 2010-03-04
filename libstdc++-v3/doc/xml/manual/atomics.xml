@@ -1,0 +1,61 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+[ ]>
+
+<chapter id="std.atomics" xreflabel="Atomics">
+<?dbhtml filename="atomics.html"?>
+
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+    <keyword>
+      atomic
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>
+  Atomics
+  <indexterm><primary>Atomics</primary></indexterm>
+</title>
+
+<para>
+  Facilities for atomic operations.
+</para>
+
+<!-- Sect1 01 : API -->
+<sect1 id="std.atomics.api">
+  <title>API Reference</title>
+
+  <para>
+    All items are declared in the standard header
+    file <filename>atomic</filename>.
+  </para>
+
+  <para>
+    Set of typedefs that map <type>int</type> to
+    <classname>atomic_int</classname>, and so on for all builtin
+    integral types. Global enumeration <type>memory_order</type> to
+    control memory ordering. Also includes
+    <classname>atomic</classname>, a class template with member
+    functions such as <function>load</function> and
+    <function>store</function> that is instantiable such that
+    <classname>atomic_int</classname> is the base class of
+    <classname>atomic&lt;int&gt;</classname>.
+  </para>
+
+  <para>
+    Full API details.
+  </para>
+
+  <!-- Doxygen XML: api/group__atomics.xml -->
+
+</sect1>
+
+</chapter>

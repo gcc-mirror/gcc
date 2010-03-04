@@ -1169,7 +1169,7 @@ SEARCHENGINE           = NO
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will
 # generate Latex output.
 
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = @do_latex@
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put.
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be
@@ -1180,7 +1180,7 @@ LATEX_OUTPUT           = latex
 # The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be
 # invoked. If left blank `latex' will be used as the default command name.
 
-LATEX_CMD_NAME         = latex
+LATEX_CMD_NAME         = pdflatex
 
 # The MAKEINDEX_CMD_NAME tag can be used to specify the command name to
 # generate index for LaTeX. If left blank `makeindex' will be used as the
@@ -1217,13 +1217,13 @@ LATEX_HEADER           =
 # contain links (just like the HTML output) instead of page references
 # This makes the output suitable for online browsing using a pdf viewer.
 
-PDF_HYPERLINKS         = NO
+PDF_HYPERLINKS         = YES
 
 # If the USE_PDFLATEX tag is set to YES, pdflatex will be used instead of
 # plain latex in the generated Makefile. Set this option to YES to get a
 # higher quality PDF documentation.
 
-USE_PDFLATEX           = NO
+USE_PDFLATEX           = YES
 
 # If the LATEX_BATCHMODE tag is set to YES, doxygen will add the
 # \\batchmode.  command to the generated LaTeX files. This will
@@ -1231,13 +1231,13 @@ USE_PDFLATEX           = NO
 # the user for help.  This option is also used when generating
 # formulas in HTML.
 
-LATEX_BATCHMODE        = NO
+LATEX_BATCHMODE        = YES
 
 # If LATEX_HIDE_INDICES is set to YES then doxygen will not
 # include the index chapters (such as File Index, Compound Index, etc.)
 # in the output.
 
-LATEX_HIDE_INDICES     = NO
+LATEX_HIDE_INDICES     = YES
 
 # If LATEX_SOURCE_CODE is set to YES then doxygen will include source
 # code with syntax highlighting in the LaTeX output. Note that which
