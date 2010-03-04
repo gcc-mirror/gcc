@@ -7810,8 +7810,18 @@ gfc_match_final_decl (void)
   bool first, last;
   gfc_symbol* block;
 
+  if (gfc_current_form == FORM_FREE)
+    {
+      char c = gfc_peek_ascii_char ();
+      if (!gfc_is_whitespace (c) && c != ':')
+	return MATCH_NO;
+    }
+  
   if (gfc_state_stack->state != COMP_DERIVED_CONTAINS)
     {
+      if (gfc_current_form == FORM_FIXED)
+	return MATCH_NO;
+
       gfc_error ("FINAL declaration at %C must be inside a derived type "
 		 "CONTAINS section");
       return MATCH_ERROR;

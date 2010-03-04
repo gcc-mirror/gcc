@@ -1,3 +1,9 @@
+2010-03-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43244
+	* decl.c (gfc_match_final_decl): Make sure variable names starting with
+	'final...' are not misinterpreted as FINAL statements.
+
 2010-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43243
