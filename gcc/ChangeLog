@@ -1,3 +1,7 @@
+2010-03-04  Mike Stump  <mikestump@comcast.net>
+
+	* Makefile.in (TAGS): Remove *.y.
+
 2010-03-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40761
