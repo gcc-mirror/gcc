@@ -85,6 +85,16 @@
 	    parse="xml" href="io.xml">
 </xi:include>
 
+<!-- Chapter 11 : Atomics -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
+	    parse="xml" href="atomics.xml">
+</xi:include>
+
+<!-- Chapter 12 : Concurrency -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
+	    parse="xml" href="concurrency.xml">
+</xi:include>
+
 </part>
 
 <!-- Part 03 : Extensions -->

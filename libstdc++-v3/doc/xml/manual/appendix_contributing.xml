@@ -925,14 +925,16 @@ indicate a place that may require attention for multi-thread safety.
 	the <ulink url="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</ulink>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
-	things very easy.)
+	things very easy.) 
       </para>
 
       <para>
 	To generate the pretty pictures and hierarchy
 	graphs, the
-	<ulink url="http://www.graphviz.org">Graphviz</ulink>
-	package will need to be installed.
+	<ulink url="http://www.graphviz.org">Graphviz</ulink> package
+	will need to be installed. For PDF
+	output, <ulink url="http://www.tug.org/applications/pdftex/">
+	pdflatex</ulink> is required.
       </para>
     </sect3>
 
@@ -940,7 +942,7 @@ indicate a place that may require attention for multi-thread safety.
       <title>Generating the Doxygen Files</title>
       <para>
 	The following Makefile rules run Doxygen to generate HTML
-	docs, XML docs, and the man pages.
+	docs, XML docs, PDF docs, and the man pages.
       </para>
 
       <para>
@@ -949,6 +951,10 @@ indicate a place that may require attention for multi-thread safety.
 
       <para>
       <screen><userinput>make doc-xml-doxygen</userinput></screen>
+      </para>
+
+      <para>
+      <screen><userinput>make doc-pdf-doxygen</userinput></screen>
       </para>
 
       <para>
@@ -1199,13 +1205,14 @@ indicate a place that may require attention for multi-thread safety.
 
       <para>
 	For PDF output, something that transforms valid XML to PDF is
-	required. Possible solutions include <command>xmlto</command>,
-	<ulink url="http://xmlgraphics.apache.org/fop/">Apache
-	FOP</ulink>, or <command>prince</command>. Other options are
-	listed on the DocBook web <ulink
-	url="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</ulink>. Please
+	required. Possible solutions include 
+	<ulink url="http://dblatex.sourceforge.net">dblatex</ulink>, 
+	<command>xmlto</command>, or <command>prince</command>. Other
+	options are listed on the DocBook
+	web <ulink url="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</ulink>. Please
 	consult the <email>libstdc++@gcc.gnu.org</email> list when
-	preparing printed manuals for current best practice and suggestions.
+	preparing printed manuals for current best practice and
+	suggestions.
       </para>
 
       <para>
@@ -1498,20 +1505,6 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
       <para>
       <screen><userinput>make doc-pdf</userinput></screen>
-      </para>
-
-      <para>
-	The following Makefile rules generate (in order): an HTML
-	version of all the DocBook documentation with links into an
-	local Doxygen cache, and a PDF version of the same.
-      </para>
-
-      <para>
-      <screen><userinput>make doc-html-combine</userinput></screen>
-      </para>
-
-      <para>
-      <screen><userinput>make doc-pdf-combine</userinput></screen>
       </para>
   </sect3>
   </sect2>
