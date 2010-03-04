@@ -1,3 +1,10 @@
+2010-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43164
+	PR tree-optimization/43191
+	* tree-sra.c (type_consists_of_records_p): Reject records with
+	zero-size bit-fields at the end.
+
 2010-03-04  Mike Stump  <mikestump@comcast.net>
 
 	* Makefile.in (TAGS): Remove *.y.

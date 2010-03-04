@@ -1,3 +1,10 @@
+2010-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43164
+	PR tree-optimization/43191
+	* gcc.c-torture/compile/pr43164.c: New test.
+	* gcc.c-torture/compile/pr43191.c: Likewise.
+
 2010-03-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43244
