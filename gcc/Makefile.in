@@ -325,7 +325,13 @@ LIBELFINC = @LIBELFINC@
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 
-# Libs and linker option needed for plugin support
+# Compiler needed for plugin support
+PLUGINCC = @CC@
+
+# Flags needed for plugin support
+PLUGINCFLAGS = @CFLAGS@
+
+# Libs and linker options needed for plugin support
 PLUGINLIBS = @pluginlibs@
 
 enable_plugin = @enable_plugin@
@@ -4598,6 +4604,8 @@ site.exp: ./config.status Makefile
 	@echo "set HAVE_LIBSTDCXX_V3 1" >> ./tmp0
 	@if test "@enable_plugin@" = "yes" ; then \
 	  echo "set ENABLE_PLUGIN 1" >> ./tmp0; \
+	  echo "set PLUGINCC \"$(PLUGINCC)\"" >> ./tmp0; \
+	  echo "set PLUGINCFLAGS \"$(PLUGINCFLAGS)\"" >> ./tmp0; \
 	  echo "set GMPINC \"$(GMPINC)\"" >> ./tmp0; \
 	fi
 	@if test "@enable_lto@" = "yes" ; then \
