@@ -63,8 +63,8 @@ proc plugin-test-execute { plugin_src plugin_tests } {
     global srcdir objdir
     global verbose
     global GMPINC
-    global HOSTCC
-    global HOSTCFLAGS
+    global PLUGINCC
+    global PLUGINCFLAGS
 
     set basename [file tail $plugin_src]
     set base [file rootname $basename]
@@ -88,9 +88,9 @@ proc plugin-test-execute { plugin_src plugin_tests } {
 
     set optstr "$includes $extra_flags -DIN_GCC -fPIC -shared"
 
-    # Temporarily switch to the environment for the host compiler.
+    # Temporarily switch to the environment for the plugin compiler.
     restore_ld_library_path_env_vars
-    set status [remote_exec build "$HOSTCC $HOSTCFLAGS $plugin_src $optstr -o $plugin_lib"]
+    set status [remote_exec build "$PLUGINCC $PLUGINCFLAGS $plugin_src $optstr -o $plugin_lib"]
     set status [lindex $status 0]
     set_ld_library_path_env_vars
 

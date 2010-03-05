@@ -1,3 +1,8 @@
+2010-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/plugin-support.exp (plugin-test-execute): Use PLUGINCC in lieu
+	of HOSTCC and PLUGINCFLAGS in lieu of HOSTCFLAGS.
+
 2010-03-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle40.C: Require weak and alias.

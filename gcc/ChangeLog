@@ -1,3 +1,8 @@
+2010-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (PLUGINCC, PLUGINCFLAGS): New variables.
+	(site.exp): Export them when plugins are enabled.
+
 2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42326
