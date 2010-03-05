@@ -1,10 +1,9 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
-// { dg-do run { xfail *-*-* } }
 
 // 2009-09-09  Benjamin Kosnik  <benjamin@redhat.com>
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

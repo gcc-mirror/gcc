@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -728,7 +729,7 @@ namespace std
     : public std::unary_function<__gnu_cxx::throw_value_limit, size_t>
     {
       size_t
-      operator()(__gnu_cxx::throw_value_limit __val) const
+      operator()(const __gnu_cxx::throw_value_limit& __val) const
       {
 	std::hash<std::size_t> h;
 	size_t __result = h(__val._M_i);
@@ -742,7 +743,7 @@ namespace std
     : public std::unary_function<__gnu_cxx::throw_value_random, size_t>
     {
       size_t
-      operator()(__gnu_cxx::throw_value_random __val) const
+      operator()(const __gnu_cxx::throw_value_random& __val) const
       {
 	std::hash<std::size_t> h;
 	size_t __result = h(__val._M_i);

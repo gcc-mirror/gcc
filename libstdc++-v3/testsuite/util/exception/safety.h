@@ -1096,8 +1096,13 @@ namespace __gnu_test
 	{
 	  condition_type::always_adjustor on;
 
-	  _M_erasep(_M_container);
-	  _M_eraser(_M_container);
+	  // NB: Vector and deque are special, erase can throw if the copy
+	  // constructor or assignment operator of value_type throws.
+	  if (!traits<container_type>::has_throwing_erase::value)
+	    {
+	      _M_erasep(_M_container);
+	      _M_eraser(_M_container);
+	    }
 
 	  _M_popf(_M_container);
 	  _M_popb(_M_container);
