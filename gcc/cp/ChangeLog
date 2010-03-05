@@ -1,3 +1,8 @@
+2010-03-05  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (mangle_decl): Give name collision error even without
+	ASM_OUTPUT_DEF.
+
 2010-03-04  Marco Poletti  <poletti.marco@gmail.com>
 
 	* pt.c (process_partial_specialization): Use error_n instead of
