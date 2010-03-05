@@ -3057,19 +3057,21 @@ mangle_decl (const tree decl)
   id = targetm.mangle_decl_assembler_name (decl, id);
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
-#ifdef ASM_OUTPUT_DEF
   if (G.need_abi_warning)
     {
+#ifdef ASM_OUTPUT_DEF
       /* If the mangling will change in the future, emit an alias with the
 	 future mangled name for forward-compatibility.  */
       int save_ver;
       tree id2, alias;
+#endif
 
       SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
       if (IDENTIFIER_GLOBAL_VALUE (id) != decl)
 	inform (DECL_SOURCE_LOCATION (decl), "-fabi-version=4 (or =0) "
 		"avoids this error with a change in vector mangling");
 
+#ifdef ASM_OUTPUT_DEF
       save_ver = flag_abi_version;
       flag_abi_version = 0;
       id2 = mangle_decl_string (decl);
@@ -3086,8 +3088,8 @@ mangle_decl (const tree decl)
 	cgraph_same_body_alias (alias, decl);
       else
 	varpool_extra_name_alias (alias, decl);
-    }
 #endif
+    }
 }
 
 /* Generate the mangled representation of TYPE.  */

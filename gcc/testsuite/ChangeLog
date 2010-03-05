@@ -1,3 +1,7 @@
+2010-03-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle40.C: Require weak and alias.
+
 2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42326
