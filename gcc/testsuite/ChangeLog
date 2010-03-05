@@ -1,3 +1,12 @@
+2010-03-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gnat.exp (gnat_init): Remove GNAT_UNDER_TEST_ORIG.
+	(gnat_target_compile): Likewise.
+	Reinitialize GNAT_UNDER_TEST if target changes.
+	Set ADA_INCLUDE_PATH, ADA_OBJECTS_PATH in environment.
+	(local_find_gnatmake): Pass full --GCC to gnatlink.
+	Remove --LINK.
+
 2010-03-04  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
 
 	PR c/43248
