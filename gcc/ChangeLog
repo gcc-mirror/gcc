@@ -1,3 +1,10 @@
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42326
+	* tree-chrec.c (chrec_fold_plus_1): Do not handle convert expressions
+	that contain scevs.
+	(chrec_fold_multiply): Same.
+
 2010-03-04  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
 
 	PR c/43248

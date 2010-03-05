@@ -1,3 +1,9 @@
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42326
+	* gfortran.dg/graphite/pr42326.f90: New.
+	* gfortran.dg/graphite/pr42326-1.f90: New.
+
 2010-03-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gnat.exp (gnat_init): Remove GNAT_UNDER_TEST_ORIG.
