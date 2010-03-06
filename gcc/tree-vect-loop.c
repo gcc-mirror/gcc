@@ -4236,13 +4236,12 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  if (!stmt_info)
 	    continue;
 
+	  if (MAY_HAVE_DEBUG_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+	    vect_loop_kill_debug_uses (loop, phi);
+
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
-	    {
-	      if (MAY_HAVE_DEBUG_STMTS)
-		vect_loop_kill_debug_uses (loop, phi);
-	      continue;
-	    }
+	    continue;
 
 	  if ((TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
 	        != (unsigned HOST_WIDE_INT) vectorization_factor)
@@ -4279,11 +4278,12 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      continue;
 	    }
 
+	  if (MAY_HAVE_DEBUG_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+	    vect_loop_kill_debug_uses (loop, stmt);
+
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
 	    {
-	      if (MAY_HAVE_DEBUG_STMTS)
-		vect_loop_kill_debug_uses (loop, stmt);
 	      gsi_next (&si);
 	      continue;
 	    }
