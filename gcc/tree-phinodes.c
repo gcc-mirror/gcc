@@ -473,6 +473,10 @@ void
 remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
 {
   gimple phi = gsi_stmt (*gsi);
+
+  if (release_lhs_p)
+    insert_debug_temps_for_defs (gsi);
+
   gsi_remove (gsi, false);
 
   /* If we are deleting the PHI node, then we should release the

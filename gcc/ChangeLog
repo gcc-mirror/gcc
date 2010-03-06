@@ -1,6 +1,12 @@
 2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42897
+	* gimple-iterator.c (gsi_remove): Propagate only PHI DEFs removed
+	permanently.
+
+2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42897
 	* tree-vect-loop.c (vect_transform_loop): Kill out-of-loop debug
 	uses of relevant DEFs that are dead outside the loop too.
 

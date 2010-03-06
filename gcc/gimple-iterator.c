@@ -474,7 +474,8 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
   gimple_seq_node cur, next, prev;
   gimple stmt = gsi_stmt (*i);
 
-  insert_debug_temps_for_defs (i);
+  if (gimple_code (stmt) != GIMPLE_PHI)
+    insert_debug_temps_for_defs (i);
 
   /* Free all the data flow information for STMT.  */
   gimple_set_bb (stmt, NULL);
