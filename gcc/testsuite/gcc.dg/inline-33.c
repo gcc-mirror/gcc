@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized"  } */
-/* { dg-options "-O3 -fdump-tree-optimized -fpie" { target { ! nonpic } } } */
+/* { dg-add-options bind_pic_locally } */
 
 int i;
 

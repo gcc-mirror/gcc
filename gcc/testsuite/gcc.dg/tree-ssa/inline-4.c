@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-einline2" } */
-/* { dg-options "-O2 -fdump-tree-einline2 -fpie" { target { ! nonpic } } } */
+/* { dg-add-options bind_pic_locally } */
 
 extern int rand(void);
 

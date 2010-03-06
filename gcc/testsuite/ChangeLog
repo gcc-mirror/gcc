@@ -1,3 +1,26 @@
+2010-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2009-10-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	* lib/target-supports.exp (add_options_for_bind_pic_locally): New.
+	
+	2009-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	* g++.dg/ipa/iinline-1.C: Use dg-add-options bind_pic_locally.
+	* g++.dg/other/first-global.C: Likewise.
+	* g++.dg/parse/attr-externally-visible-1.C: Likewise.
+	* g++.dg/tree-ssa/nothrow-1.C: Likewise.
+	* gcc.dg/inline-33.c: Likewise.
+	* gcc.dg/ipa/ipa-1.c: Likewise.
+	* gcc.dg/ipa/ipa-2.c: Likewise.
+	* gcc.dg/ipa/ipa-3.c: Likewise.
+	* gcc.dg/ipa/ipa-4.c: Likewise.
+	* gcc.dg/ipa/ipa-5.c: Likewise.
+	* gcc.dg/ipa/ipa-7.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	
+	2010-02-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	* gcc.dg/tree-ssa/inline-4.c: Bind pic locally.
+
 2010-03-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gnat.exp (gnat_init): Remove GNAT_UNDER_TEST_ORIG.

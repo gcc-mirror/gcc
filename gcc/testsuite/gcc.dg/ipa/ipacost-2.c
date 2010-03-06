@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized"  } */
-/* { dg-options "-O3 -fipa-cp -fipa-cp-clone -fdump-ipa-cp -fno-early-inlining -fdump-tree-optimized -fpie" { target { ! nonpic } } } */
+/* { dg-add-options bind_pic_locally } */
 
 int array[100];
 

@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O3 -fwhole-program" }
-// { dg-options "-O3 -fwhole-program -fpie" { target { ! nonpic } } }
+// { dg-add-options bind_pic_locally }
 // { dg-final { scan-assembler "foo1" } }
 // { dg-final { scan-assembler "foo2" } }
 // { dg-final { scan-assembler "foo3" } }
