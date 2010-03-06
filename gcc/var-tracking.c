@@ -2251,18 +2251,12 @@ dv_changed_p (decl_or_value dv)
 	  : DECL_CHANGED (dv_as_decl (dv)));
 }
 
-/* Vector of VALUEs that should have VALUE_RECURSED_INTO bit cleared
-   at the end of find_loc_in_1pdv.  Not a static variable in find_loc_in_1pdv
-   to avoid constant allocation/freeing of it.  */
-static VEC(rtx, heap) *values_to_unmark;
-
-/* Helper function for find_loc_in_1pdv.
-   Return a location list node whose loc is rtx_equal to LOC, in the
+/* Return a location list node whose loc is rtx_equal to LOC, in the
    location list of a one-part variable or value VAR, or in that of
    any values recursively mentioned in the location lists.  */
 
 static location_chain
-find_loc_in_1pdv_1 (rtx loc, variable var, htab_t vars)
+find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 {
   location_chain node;
 
@@ -2290,31 +2284,16 @@ find_loc_in_1pdv_1 (rtx loc, variable var, htab_t vars)
 	  {
 	    location_chain where;
 	    VALUE_RECURSED_INTO (node->loc) = true;
-	    VEC_safe_push (rtx, heap, values_to_unmark, node->loc);
-	    if ((where = find_loc_in_1pdv_1 (loc, var, vars)))
-	      return where;
+	    if ((where = find_loc_in_1pdv (loc, var, vars)))
+	      {
+		VALUE_RECURSED_INTO (node->loc) = false;
+		return where;
+	      }
+	    VALUE_RECURSED_INTO (node->loc) = false;
 	  }
       }
 
   return NULL;
-}
-
-/* Return a location list node whose loc is rtx_equal to LOC, in the
-   location list of a one-part variable or value VAR, or in that of
-   any values recursively mentioned in the location lists.  */
-
-static location_chain
-find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
-{
-  location_chain ret;
-  unsigned int i;
-  rtx value;
-
-  ret = find_loc_in_1pdv_1 (loc, var, vars);
-  for (i = 0; VEC_iterate (rtx, values_to_unmark, i, value); i++)
-    VALUE_RECURSED_INTO (value) = false;
-  VEC_truncate (rtx, values_to_unmark, 0);
-  return ret;
 }
 
 /* Hash table iteration argument passed to variable_merge.  */
@@ -3278,10 +3257,10 @@ variable_merge_over_cur (void **s1slot, void *data)
   return 1;
 }
 
-/* Combine variable in *S1SLOT (in DSM->src) with the corresponding
-   entry in DSM->src.  Only multi-part variables are combined, using
-   variable_union.  onepart dvs were already combined with
-   intersection in variable_merge_over_cur().  */
+/* Copy s2slot (in DSM->src) to DSM->dst if the variable is a
+   multi-part variable.  Unions of multi-part variables and
+   intersections of one-part ones will be handled in
+   variable_merge_over_cur().  */
 
 static int
 variable_merge_over_src (void **s2slot, void *data)
@@ -3304,34 +3283,35 @@ variable_merge_over_src (void **s2slot, void *data)
   return 1;
 }
 
-/* Combine dataflow set information from SRC into DST, using PDST
+/* Combine dataflow set information from SRC2 into DST, using PDST
    to carry over information across passes.  */
 
 static void
-dataflow_set_merge (dataflow_set *dst, dataflow_set *src)
+dataflow_set_merge (dataflow_set *dst, dataflow_set *src2)
 {
-  dataflow_set src2 = *dst;
+  dataflow_set cur = *dst;
+  dataflow_set *src1 = &cur;
   struct dfset_merge dsm;
   int i;
-  size_t src_elems, dst_elems;
+  size_t src1_elems, src2_elems;
 
-  src_elems = htab_elements (shared_hash_htab (src->vars));
-  dst_elems = htab_elements (shared_hash_htab (src2.vars));
+  src1_elems = htab_elements (shared_hash_htab (src1->vars));
+  src2_elems = htab_elements (shared_hash_htab (src2->vars));
   dataflow_set_init (dst);
-  dst->stack_adjust = src2.stack_adjust;
+  dst->stack_adjust = cur.stack_adjust;
   shared_hash_destroy (dst->vars);
   dst->vars = (shared_hash) pool_alloc (shared_hash_pool);
   dst->vars->refcount = 1;
   dst->vars->htab
-    = htab_create (MAX (src_elems, dst_elems), variable_htab_hash,
+    = htab_create (MAX (src1_elems, src2_elems), variable_htab_hash,
 		   variable_htab_eq, variable_htab_free);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    attrs_list_mpdv_union (&dst->regs[i], src->regs[i], src2.regs[i]);
+    attrs_list_mpdv_union (&dst->regs[i], src1->regs[i], src2->regs[i]);
 
   dsm.dst = dst;
-  dsm.src = &src2;
-  dsm.cur = src;
+  dsm.src = src2;
+  dsm.cur = src1;
   dsm.src_onepart_cnt = 0;
 
   htab_traverse (shared_hash_htab (dsm.src->vars), variable_merge_over_src,
@@ -3342,7 +3322,7 @@ dataflow_set_merge (dataflow_set *dst, dataflow_set *src)
   if (dsm.src_onepart_cnt)
     dst_can_be_shared = false;
 
-  dataflow_set_destroy (&src2);
+  dataflow_set_destroy (src1);
 }
 
 /* Mark register equivalences.  */
@@ -5853,7 +5833,6 @@ vt_find_locations (void)
     FOR_EACH_BB (bb)
       gcc_assert (VTI (bb)->flooded);
 
-  VEC_free (rtx, heap, values_to_unmark);
   free (bb_order);
   fibheap_delete (worklist);
   fibheap_delete (pending);

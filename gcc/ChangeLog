@@ -1,3 +1,16 @@
+2010-03-06  Alexandre Oliva <aoliva@redhat.com>
+
+	* var-tracking.c (dataflow_set_merge): Swap src and src2.
+	Reverted:
+	2010-01-13  Jakub Jelinek  <jakub@redhat.com>
+	PR debug/41371
+	* var-tracking.c (values_to_unmark): New variable.
+	(find_loc_in_1pdv): Clear VALUE_RECURSED_INTO of values in
+	values_to_unmark vector.  Moved body to...
+	(find_loc_in_1pdv_1): ... this.  Don't clear VALUE_RECURSED_INTO,
+	instead queue it into values_to_unmark vector.
+	(vt_find_locations): Free values_to_unmark vector.
+
 2010-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (PLUGINCC, PLUGINCFLAGS): New variables.
