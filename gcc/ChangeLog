@@ -1,3 +1,9 @@
+2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42897
+	* tree-vect-loop.c (vect_transform_loop): Kill out-of-loop debug
+	uses of relevant DEFs that are dead outside the loop too.
+
 2010-03-06  Alexandre Oliva <aoliva@redhat.com>
 
 	* var-tracking.c (dataflow_set_merge): Swap src and src2.
