@@ -81,7 +81,9 @@ extern int references_value_p (const_rtx, int);
 extern rtx cselib_expand_value_rtx (rtx, bitmap, int);
 typedef rtx (*cselib_expand_callback)(rtx, bitmap, int, void *);
 extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
-				       cselib_expand_callback, void*);
+				       cselib_expand_callback, void *);
+extern bool cselib_dummy_expand_value_rtx_cb (rtx, bitmap, int,
+					      cselib_expand_callback, void *);
 extern rtx cselib_subst_to_values (rtx);
 extern void cselib_invalidate_rtx (rtx);
 

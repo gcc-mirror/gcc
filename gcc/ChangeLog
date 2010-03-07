@@ -1,3 +1,84 @@
+2010-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43176
+	* Makefile.in (var-tracking.o): Depend on pointer-set.h.
+	* cselib.c (struct expand_value_data): Add dummy field.
+	(cselib_expand_value_rtx, cselib_expand_value_rtx_cb): Initialize
+	dummy to false.
+	(cselib_dummy_expand_value_rtx_cb): New function.
+	(cselib_expand_value_rtx_1): If evd->dummy is true, don't allocate
+	any rtl.
+	* cselib.h (cselib_dummy_expand_value_rtx_cb): New prototype.
+	* var-tracking.c: Include pointer-set.h.
+	(variable): Change n_var_parts to char from int.  Add
+	cur_loc_changed and in_changed_variables fields.
+	(variable_canonicalize): Remove.
+	(shared_var_p): New inline function.
+	(unshare_variable): Maintain cur_loc_changed and
+	in_changed_variables fields.  If var was in changed_variables,
+	replace it there with new_var.  Just copy cur_loc instead of
+	resetting it to something else.
+	(variable_union): Don't recompute cur_loc.  Use shared_var_p.
+	(dataflow_set_union): Don't call variable_canonicalize.
+	(loc_cmp): If both x and y are DEBUG_EXPRs, compare uids
+	of their DEBUG_EXPR_TREE_DECLs.
+	(canonicalize_loc_order_check): Verify that cur_loc is NULL
+	and in_changed_variables and cur_loc_changed is false.
+	(variable_merge_over_cur): Clear cur_loc, in_changed_variables
+	and cur_loc_changed.  Don't update cur_loc here.
+	(variable_merge_over_src): Don't call variable_canonicalize.
+	(dataflow_set_preserve_mem_locs): Use shared_var_p.  When
+	removing loc that is equal to cur_loc, clear cur_loc,
+	set cur_loc_changed and ensure variable_was_changed is called.
+	(dataflow_set_remove_mem_locs): Use shared_var_p.  Only
+	compare pointers in cur_loc check, if it is equal to loc,
+	clear cur_loc and set cur_loc_changed.  Don't recompute cur_loc here.
+	(variable_different_p): Remove compare_current_location argument,
+	don't compare cur_loc.
+	(dataflow_set_different_1): Adjust variable_different_p caller.
+	(variable_was_changed): If dv had some var in changed_variables
+	already, reset in_changed_variables flag for it and propagate
+	cur_loc_changed over to the new variable.  On empty var
+	always set cur_loc_changed.  Set in_changed_variables on whatever
+	var is added to changed_variables.
+	(set_slot_part): Clear cur_loc_changed and in_changed_variables.
+	Use shared_var_p.  When removing loc that is equal to cur_loc,
+	clear cur_loc and set cur_loc_changed.  If cur_loc is NULL at the
+	end, don't set it to something else, just call variable_was_changed.
+	(delete_slot_part): Use shared_var_p.  When cur_loc equals to
+	loc being removed, clear cur_loc and set cur_loc_changed.
+	Set cur_loc_changed if all locations have been removed.
+	(struct expand_loc_callback_data): New type.
+	(vt_expand_loc_callback): Add dummy mode in which no rtxes are
+	allocated.  Always create SUBREGs if simplify_subreg failed.
+	Prefer to use cur_loc, when that fails and still in
+	changed_variables (and seen first time) recompute it.  Set
+	cur_loc_changed of variables which had to change cur_loc and
+	compute elcd->cur_loc_changed if any of the subexpressions used
+	had to change cur_loc.
+	(vt_expand_loc): Adjust to pass arguments in
+	expand_loc_callback_data structure.
+	(vt_expand_loc_dummy): New function.
+	(emitted_notes): New variable.
+	(emit_note_insn_var_location): For VALUEs and DEBUG_EXPR_DECLs
+	that weren't used for any other decl in current
+	emit_notes_for_changes call call vt_expand_loc_dummy to update
+	cur_loc.  For -fno-var-tracking-assignments, set cur_loc to
+	first loc_chain location if NULL before.  Always use just
+	cur_loc instead of first loc_chain location.  When cur_loc_changed
+	is false, when not --enable-checking=rtl just don't emit any note.
+	When rtl checking, compute the note and assert it is the same
+	as previous note.  Clear cur_loc_changed and in_changed_variables
+	at the end before removing from changed_variables.
+	(check_changed_vars_3): New function.
+	(emit_notes_for_changes): Traverse changed_vars to call
+	check_changed_vars_3 on each changed var.
+	(emit_notes_for_differences_1): Clear cur_loc_changed and
+	in_changed_variables.  Recompute cur_loc of new_var.
+	(emit_notes_for_differences_2): Clear cur_loc if new variable
+	appears.
+	(vt_emit_notes): Initialize and destroy emitted_notes.
+
 2010-03-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR rtl-optimization/42220
