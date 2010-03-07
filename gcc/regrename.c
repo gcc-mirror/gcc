@@ -889,13 +889,15 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
       return;
 
     case STRICT_LOW_PART:
-      scan_rtx (insn, &XEXP (x, 0), cl, action, OP_INOUT);
+      scan_rtx (insn, &XEXP (x, 0), cl, action,
+		verify_reg_tracked (XEXP (x, 0)) ? OP_INOUT : OP_OUT);
       return;
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
       scan_rtx (insn, &XEXP (x, 0), cl, action,
-		type == OP_IN ? OP_IN : OP_INOUT);
+		(type == OP_IN ? OP_IN :
+		 verify_reg_tracked (XEXP (x, 0)) ? OP_INOUT : OP_OUT));
       scan_rtx (insn, &XEXP (x, 1), cl, action, OP_IN);
       scan_rtx (insn, &XEXP (x, 2), cl, action, OP_IN);
       return;
@@ -1067,6 +1069,7 @@ build_def_use (basic_block bb)
 	  int n_ops;
 	  rtx note;
 	  rtx old_operands[MAX_RECOG_OPERANDS];
+	  bool has_dup[MAX_RECOG_OPERANDS];
 	  rtx old_dups[MAX_DUP_OPERANDS];
 	  int i;
 	  int alt;
@@ -1105,6 +1108,10 @@ build_def_use (basic_block bb)
 	  n_ops = recog_data.n_operands;
 	  untracked_operands = 0;
 
+	  memset (has_dup, 0, sizeof has_dup);
+	  for (i = 0; i < recog_data.n_dups; i++)
+	    has_dup[(int)recog_data.dup_num[i]] = true;
+
 	  /* Simplify the code below by rewriting things to reflect
 	     matching constraints.  Also promote OP_OUT to OP_INOUT in
 	     predicated instructions, but only for register operands
@@ -1136,6 +1143,20 @@ build_def_use (basic_block bb)
 		      untracked_operands |= 1 << i;
 		      untracked_operands |= 1 << matches;
 		    }
+		}
+	      /* If there's an in-out operand with a register that is not
+		 being tracked at all yet, convert it to an earlyclobber
+		 output operand.
+		 This only works if the operand isn't duplicated, i.e. for
+		 a ZERO_EXTRACT in a SET_DEST.  */
+	      if (recog_data.operand_type[i] == OP_INOUT
+		  && !(untracked_operands & (1 << i))
+		  && !verify_reg_tracked (recog_data.operand[i]))
+		{
+		  if (has_dup[i])
+		    fail_current_block = true;
+		  recog_data.operand_type[i] = OP_OUT;
+		  recog_op_alt[i][alt].earlyclobber = 1;
 		}
 	    }
 

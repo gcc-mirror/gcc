@@ -1,3 +1,13 @@
+2010-03-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-optimization/42220
+	* regrename.c (scan_rtx) <case STRICT_LOW_PART, ZERO_EXTRACT>:
+	Use verify_reg_tracked to determine if we should use OP_OUT rather
+	than OP_INOUT.
+	(build_def_use): If we see an in-out operand for a register that we
+	know nothing about, treat is an output if possible, fail the block if
+	not.
+
 2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42897
