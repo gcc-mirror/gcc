@@ -69,6 +69,7 @@ struct expand_value_data
   bitmap regs_active;
   cselib_expand_callback callback;
   void *callback_arg;
+  bool dummy;
 };
 
 static rtx cselib_expand_value_rtx_1 (rtx, struct expand_value_data *, int);
@@ -1069,6 +1070,7 @@ cselib_expand_value_rtx (rtx orig, bitmap regs_active, int max_depth)
   evd.regs_active = regs_active;
   evd.callback = NULL;
   evd.callback_arg = NULL;
+  evd.dummy = false;
 
   return cselib_expand_value_rtx_1 (orig, &evd, max_depth);
 }
@@ -1088,8 +1090,27 @@ cselib_expand_value_rtx_cb (rtx orig, bitmap regs_active, int max_depth,
   evd.regs_active = regs_active;
   evd.callback = cb;
   evd.callback_arg = data;
+  evd.dummy = false;
 
   return cselib_expand_value_rtx_1 (orig, &evd, max_depth);
+}
+
+/* Similar to cselib_expand_value_rtx_cb, but no rtxs are actually copied
+   or simplified.  Useful to find out whether cselib_expand_value_rtx_cb
+   would return NULL or non-NULL, without allocating new rtx.  */
+
+bool
+cselib_dummy_expand_value_rtx_cb (rtx orig, bitmap regs_active, int max_depth,
+				  cselib_expand_callback cb, void *data)
+{
+  struct expand_value_data evd;
+
+  evd.regs_active = regs_active;
+  evd.callback = cb;
+  evd.callback_arg = data;
+  evd.dummy = true;
+
+  return cselib_expand_value_rtx_1 (orig, &evd, max_depth) != NULL;
 }
 
 /* Internal implementation of cselib_expand_value_rtx and
@@ -1249,7 +1270,10 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
      that all fields need copying, and then clear the fields that should
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
-  copy = shallow_copy_rtx (orig);
+  if (evd->dummy)
+    copy = NULL;
+  else
+    copy = shallow_copy_rtx (orig);
 
   format_ptr = GET_RTX_FORMAT (code);
 
@@ -1263,7 +1287,8 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 						    max_depth - 1);
 	    if (!result)
 	      return NULL;
-	    XEXP (copy, i) = result;
+	    if (copy)
+	      XEXP (copy, i) = result;
 	  }
 	break;
 
@@ -1271,14 +1296,16 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
       case 'V':
 	if (XVEC (orig, i) != NULL)
 	  {
-	    XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
-	    for (j = 0; j < XVECLEN (copy, i); j++)
+	    if (copy)
+	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
+	    for (j = 0; j < XVECLEN (orig, i); j++)
 	      {
 		rtx result = cselib_expand_value_rtx_1 (XVECEXP (orig, i, j),
 							evd, max_depth - 1);
 		if (!result)
 		  return NULL;
-		XVECEXP (copy, i, j) = result;
+		if (copy)
+		  XVECEXP (copy, i, j) = result;
 	      }
 	  }
 	break;
@@ -1298,6 +1325,9 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
       default:
 	gcc_unreachable ();
       }
+
+  if (evd->dummy)
+    return orig;
 
   mode = GET_MODE (copy);
   /* If an operand has been simplified into CONST_INT, which doesn't
