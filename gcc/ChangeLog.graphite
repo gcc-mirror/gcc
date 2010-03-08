@@ -1,5 +1,10 @@
 2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (add_param_constraints): Use
+	lower_bound_in_type and upper_bound_in_type.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (add_param_constraints): Use sizetype
 	instead of unsigned_type_node.
 

@@ -1502,16 +1502,15 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
   tree lb = NULL_TREE;
   tree ub = NULL_TREE;
 
-  if (INTEGRAL_TYPE_P (type))
-    {
-      lb = TYPE_MIN_VALUE (type);
-      ub = TYPE_MAX_VALUE (type);
-    }
-  else if (POINTER_TYPE_P (type))
-    {
-      lb = TYPE_MIN_VALUE (sizetype);
-      ub = TYPE_MAX_VALUE (sizetype);
-    }
+  if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
+    lb = lower_bound_in_type (type, type);
+  else
+    lb = TYPE_MIN_VALUE (type);
+
+  if (POINTER_TYPE_P (type) || !TYPE_MAX_VALUE (type))
+    ub = upper_bound_in_type (type, type);
+  else
+    ub = TYPE_MAX_VALUE (type);
 
   if (lb)
     {
