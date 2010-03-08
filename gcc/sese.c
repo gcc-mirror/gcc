@@ -1106,9 +1106,8 @@ get_false_edge_from_guard_bb (basic_block bb)
 static bool
 name_defined_in_loop_p (tree name, loop_p loop)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (name);
-
-  return (gimple_bb (stmt)->loop_father == loop);
+  return !SSA_NAME_IS_DEFAULT_DEF (name)
+    && gimple_bb (SSA_NAME_DEF_STMT (name))->loop_father == loop;
 }
 
 /* Returns true when EXPR contains SSA_NAMEs defined in LOOP.  */
