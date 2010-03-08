@@ -1,4 +1,9 @@
 2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (add_param_constraints): Use sizetype
+	instead of unsigned_type_node.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
 	    Reza Yazdani  <reza.yazdani@amd.com>
 
 	PR middle-end/43065
