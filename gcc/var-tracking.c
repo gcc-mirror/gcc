@@ -2674,6 +2674,7 @@ remove_value_chains (decl_or_value dv, rtx loc)
   for_each_rtx (&loc, remove_value_chain, dv_as_opaque (dv));
 }
 
+#if ENABLE_CHECKING
 /* If CSELIB_VAL_PTR of value DV refer to VALUEs, remove backlinks from those
    VALUEs to DV.  */
 
@@ -2686,7 +2687,6 @@ remove_cselib_value_chains (decl_or_value dv)
     for_each_rtx (&l->loc, remove_value_chain, dv_as_opaque (dv));
 }
 
-#if ENABLE_CHECKING
 /* Check the order of entries in one-part variables.   */
 
 static int
@@ -3825,8 +3825,6 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
       if (!var->var_part[0].loc_chain)
 	{
 	  var->n_var_parts--;
-	  if (emit_notes && dv_is_value_p (var->dv))
-	    remove_cselib_value_chains (var->dv);
 	  changed = true;
 	}
       if (changed)
@@ -3895,8 +3893,6 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
       if (!var->var_part[0].loc_chain)
 	{
 	  var->n_var_parts--;
-	  if (emit_notes && dv_is_value_p (var->dv))
-	    remove_cselib_value_chains (var->dv);
 	  changed = true;
 	}
       if (changed)
@@ -4654,6 +4650,20 @@ count_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
 #define VAL_EXPR_HAS_REVERSE(x) \
   (RTL_FLAG_CHECK1 ("VAL_EXPR_HAS_REVERSE", (x), CONCAT)->return_val)
 
+/* All preserved VALUEs.  */
+static VEC (rtx, heap) *preserved_values;
+
+/* Ensure VAL is preserved and remember it in a vector for vt_emit_notes.
+   This must be only called when cselib_preserve_only_values will be called
+   with true, the counting phase must use cselib_preserve_value.  */
+
+static void
+preserve_value (cselib_val *val)
+{
+  cselib_preserve_value (val);
+  VEC_safe_push (rtx, heap, preserved_values, val->val_rtx);
+}
+
 /* Add uses (register and memory references) LOC which will be tracked
    to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
 
@@ -4697,7 +4707,7 @@ add_uses (rtx *ploc, void *data)
 		  mon->type = mo->type;
 		  mon->u.loc = mo->u.loc;
 		  mon->insn = mo->insn;
-		  cselib_preserve_value (val);
+		  preserve_value (val);
 		  mo->type = MO_VAL_USE;
 		  mloc = cselib_subst_to_values (XEXP (mloc, 0));
 		  mo->u.loc = gen_rtx_CONCAT (address_mode,
@@ -4733,7 +4743,7 @@ add_uses (rtx *ploc, void *data)
 		  && !cselib_preserved_value_p (val))
 		{
 		  VAL_NEEDS_RESOLUTION (oloc) = 1;
-		  cselib_preserve_value (val);
+		  preserve_value (val);
 		}
 	    }
 	  else if (!VAR_LOC_UNKNOWN_P (vloc))
@@ -4768,7 +4778,7 @@ add_uses (rtx *ploc, void *data)
 		  mon->type = mo->type;
 		  mon->u.loc = mo->u.loc;
 		  mon->insn = mo->insn;
-		  cselib_preserve_value (val);
+		  preserve_value (val);
 		  mo->type = MO_VAL_USE;
 		  mloc = cselib_subst_to_values (XEXP (mloc, 0));
 		  mo->u.loc = gen_rtx_CONCAT (address_mode,
@@ -4817,7 +4827,7 @@ add_uses (rtx *ploc, void *data)
 	  if (!cselib_preserved_value_p (val))
 	    {
 	      VAL_NEEDS_RESOLUTION (mo->u.loc) = 1;
-	      cselib_preserve_value (val);
+	      preserve_value (val);
 	    }
 	}
       else
@@ -5000,7 +5010,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 
 	  if (val && !cselib_preserved_value_p (val))
 	    {
-	      cselib_preserve_value (val);
+	      preserve_value (val);
 	      mo->type = MO_VAL_USE;
 	      mloc = cselib_subst_to_values (XEXP (mloc, 0));
 	      mo->u.loc = gen_rtx_CONCAT (address_mode, val->val_rtx, mloc);
@@ -5073,7 +5083,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	{
 	  micro_operation *nmo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
-	  cselib_preserve_value (oval);
+	  preserve_value (oval);
 
 	  nmo->type = MO_VAL_USE;
 	  nmo->u.loc = gen_rtx_CONCAT (mode, oval->val_rtx, oloc);
@@ -5161,7 +5171,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   if (preserve)
     {
       VAL_NEEDS_RESOLUTION (loc) = resolve;
-      cselib_preserve_value (v);
+      preserve_value (v);
     }
   if (mo->type == MO_CLOBBER)
     VAL_EXPR_IS_CLOBBERED (loc) = 1;
@@ -6094,8 +6104,6 @@ set_slot_part (dataflow_set *set, rtx loc, void **slot,
       *slot = var;
       pos = 0;
       nextp = &var->var_part[0].loc_chain;
-      if (emit_notes && dv_is_value_p (dv))
-	add_cselib_value_chains (dv);
     }
   else if (onepart)
     {
@@ -6483,11 +6491,7 @@ delete_slot_part (dataflow_set *set, rtx loc, void **slot,
 	  changed = true;
 	  var->n_var_parts--;
 	  if (emit_notes)
-	    {
-	      var->cur_loc_changed = true;
-	      if (var->n_var_parts == 0 && dv_is_value_p (var->dv))
-		remove_cselib_value_chains (var->dv);
-	    }
+	    var->cur_loc_changed = true;
 	  while (pos < var->n_var_parts)
 	    {
 	      var->var_part[pos] = var->var_part[pos + 1];
@@ -6968,6 +6972,42 @@ DEF_VEC_ALLOC_P (variable, heap);
 
 static VEC (variable, heap) *changed_variables_stack;
 
+/* VALUEs with no variables that need set_dv_changed (val, false)
+   called before check_changed_vars_3.  */
+
+static VEC (rtx, heap) *changed_values_stack;
+
+/* Helper function for check_changed_vars_1 and check_changed_vars_2.  */
+
+static void
+check_changed_vars_0 (decl_or_value dv, htab_t htab)
+{
+  value_chain vc
+    = (value_chain) htab_find_with_hash (value_chains, dv, dv_htab_hash (dv));
+
+  if (vc == NULL)
+    return;
+  for (vc = vc->next; vc; vc = vc->next)
+    if (!dv_changed_p (vc->dv))
+      {
+	variable vcvar
+	  = (variable) htab_find_with_hash (htab, vc->dv,
+					    dv_htab_hash (vc->dv));
+	if (vcvar)
+	  {
+	    set_dv_changed (vc->dv, true);
+	    VEC_safe_push (variable, heap, changed_variables_stack, vcvar);
+	  }
+	else if (dv_is_value_p (vc->dv))
+	  {
+	    set_dv_changed (vc->dv, true);
+	    VEC_safe_push (rtx, heap, changed_values_stack,
+			   dv_as_value (vc->dv));
+	    check_changed_vars_0 (vc->dv, htab);
+	  }
+      }
+}
+
 /* Populate changed_variables_stack with variable_def pointers
    that need variable_was_changed called on them.  */
 
@@ -6979,24 +7019,7 @@ check_changed_vars_1 (void **slot, void *data)
 
   if (dv_is_value_p (var->dv)
       || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
-    {
-      value_chain vc
-	= (value_chain) htab_find_with_hash (value_chains, var->dv,
-					     dv_htab_hash (var->dv));
-
-      if (vc == NULL)
-	return 1;
-      for (vc = vc->next; vc; vc = vc->next)
-	if (!dv_changed_p (vc->dv))
-	  {
-	    variable vcvar
-	      = (variable) htab_find_with_hash (htab, vc->dv,
-						dv_htab_hash (vc->dv));
-	    if (vcvar)
-	      VEC_safe_push (variable, heap, changed_variables_stack,
-			     vcvar);
-	  }
-    }
+    check_changed_vars_0 (var->dv, htab);
   return 1;
 }
 
@@ -7010,23 +7033,7 @@ check_changed_vars_2 (variable var, htab_t htab)
   variable_was_changed (var, NULL);
   if (dv_is_value_p (var->dv)
       || TREE_CODE (dv_as_decl (var->dv)) == DEBUG_EXPR_DECL)
-    {
-      value_chain vc
-	= (value_chain) htab_find_with_hash (value_chains, var->dv,
-					     dv_htab_hash (var->dv));
-
-      if (vc == NULL)
-	return;
-      for (vc = vc->next; vc; vc = vc->next)
-	if (!dv_changed_p (vc->dv))
-	  {
-	    variable vcvar
-	      = (variable) htab_find_with_hash (htab, vc->dv,
-						dv_htab_hash (vc->dv));
-	    if (vcvar)
-	      check_changed_vars_2 (vcvar, htab);
-	  }
-    }
+    check_changed_vars_0 (var->dv, htab);
 }
 
 /* For each changed decl (except DEBUG_EXPR_DECLs) recompute
@@ -7094,6 +7101,9 @@ emit_notes_for_changes (rtx insn, enum emit_note_where where,
       while (VEC_length (variable, changed_variables_stack) > 0)
 	check_changed_vars_2 (VEC_pop (variable, changed_variables_stack),
 			      htab);
+      while (VEC_length (rtx, changed_values_stack) > 0)
+	set_dv_changed (dv_from_value (VEC_pop (rtx, changed_values_stack)),
+			false);
       htab_traverse (changed_variables, check_changed_vars_3, htab);
     }
 
@@ -7135,8 +7145,6 @@ emit_notes_for_differences_1 (void **slot, void *data)
 	  gcc_assert (old_var->n_var_parts == 1);
 	  for (lc = old_var->var_part[0].loc_chain; lc; lc = lc->next)
 	    remove_value_chains (old_var->dv, lc->loc);
-	  if (dv_is_value_p (old_var->dv))
-	    remove_cselib_value_chains (old_var->dv);
 	}
       variable_was_changed (empty_var, NULL);
       /* Continue traversing the hash table.  */
@@ -7222,8 +7230,6 @@ emit_notes_for_differences_2 (void **slot, void *data)
 	  gcc_assert (new_var->n_var_parts == 1);
 	  for (lc = new_var->var_part[0].loc_chain; lc; lc = lc->next)
 	    add_value_chains (new_var->dv, lc->loc);
-	  if (dv_is_value_p (new_var->dv))
-	    add_cselib_value_chains (new_var->dv);
 	}
       for (i = 0; i < new_var->n_var_parts; i++)
 	new_var->var_part[i].cur_loc = NULL;
@@ -7546,7 +7552,15 @@ vt_emit_notes (void)
   emit_notes = true;
 
   if (MAY_HAVE_DEBUG_INSNS)
-    changed_variables_stack = VEC_alloc (variable, heap, 40);
+    {
+      unsigned int i;
+      rtx val;
+
+      for (i = 0; VEC_iterate (rtx, preserved_values, i, val); i++)
+	add_cselib_value_chains (dv_from_value (val));
+      changed_variables_stack = VEC_alloc (variable, heap, 40);
+      changed_values_stack = VEC_alloc (rtx, heap, 40);
+    }
 
   dataflow_set_init (&cur);
 
@@ -7568,12 +7582,22 @@ vt_emit_notes (void)
 		 emit_notes_for_differences_1,
 		 shared_hash_htab (empty_shared_hash));
   if (MAY_HAVE_DEBUG_INSNS)
-    gcc_assert (htab_elements (value_chains) == 0);
+    {
+      unsigned int i;
+      rtx val;
+
+      for (i = 0; VEC_iterate (rtx, preserved_values, i, val); i++)
+	remove_cselib_value_chains (dv_from_value (val));
+      gcc_assert (htab_elements (value_chains) == 0);
+    }
 #endif
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    VEC_free (variable, heap, changed_variables_stack);
+    {
+      VEC_free (variable, heap, changed_variables_stack);
+      VEC_free (rtx, heap, changed_values_stack);
+    }
 
 #ifdef ENABLE_RTL_CHECKING
   pointer_map_destroy (emitted_notes);
@@ -7699,7 +7723,7 @@ vt_add_function_parameters (void)
 	     cselib.  */
 	  if (val)
 	    {
-	      cselib_preserve_value (val);
+	      preserve_value (val);
 	      set_variable_part (out, val->val_rtx, dv, offset,
 				 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
 	      dv = dv_from_value (val->val_rtx);
@@ -7747,6 +7771,7 @@ vt_initialize (void)
       scratch_regs = BITMAP_ALLOC (NULL);
       valvar_pool = create_alloc_pool ("small variable_def pool",
 				       sizeof (struct variable_def), 256);
+      preserved_values = VEC_alloc (rtx, heap, 256);
     }
   else
     {
@@ -8023,6 +8048,7 @@ vt_finalize (void)
       htab_delete (value_chains);
       free_alloc_pool (value_chain_pool);
       free_alloc_pool (valvar_pool);
+      VEC_free (rtx, heap, preserved_values);
       cselib_finish ();
       BITMAP_FREE (scratch_regs);
       scratch_regs = NULL;

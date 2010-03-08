@@ -1,3 +1,28 @@
+2010-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (remove_cselib_value_chains): Define only for
+	ENABLE_CHECKING.
+	(dataflow_set_preserve_mem_locs, dataflow_set_remove_mem_locs,
+	delete_slot_part, emit_notes_for_differences_1): Don't call
+	remove_cselib_value_chains here.
+	(set_slot_part, emit_notes_for_differences_2): Don't call
+	add_cselib_value_chains here.
+	(preserved_values): New vector.
+	(preserve_value): New function.
+	(add_uses, add_stores, vt_add_function_parameters): Use it
+	instead of cselib_preserve_value.
+	(changed_values_stack): New vector.
+	(check_changed_vars_0): New function.
+	(check_changed_vars_1, check_changed_vars_2): Use it.
+	(emit_notes_for_changes): Call set_dv_changed (*, false) on all
+	changed_values_stack VALUEs.
+	(vt_emit_notes): For all preserved_values call
+	add_cselib_value_chains.  If ENABLE_CHECKING call
+	remove_cselib_value_chains before verifying value_chains is empty.
+	Initialize and free changed_values_stack.
+	(vt_initialize): Initialize preserved_values.
+	(vt_finalize): Free preserved_values.
+
 2010-03-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43269
