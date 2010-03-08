@@ -2556,8 +2556,8 @@ resolve_function (gfc_expr *expr)
     }
 
   /* If this ia a deferred TBP with an abstract interface (which may
-     of course be referenced), expr->value.function.name will be set.  */
-  if (sym && sym->attr.abstract && !expr->value.function.name)
+     of course be referenced), expr->value.function.esym will be set.  */
+  if (sym && sym->attr.abstract && !expr->value.function.esym)
     {
       gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
 		 sym->name, &expr->where);
@@ -5124,7 +5124,7 @@ resolve_compcall (gfc_expr* e, bool fcn)
     return FAILURE;
 
   e->value.function.actual = newactual;
-  e->value.function.name = e->value.compcall.name;
+  e->value.function.name = NULL;
   e->value.function.esym = target->n.sym;
   e->value.function.class_esym = NULL;
   e->value.function.isym = NULL;
@@ -5178,18 +5178,17 @@ check_class_members (gfc_symbol *derived)
       return;
     }
 
-  if (tbp->n.tb->is_generic)
+  /* If we have to match a passed class member, force the actual
+      expression to have the correct type.  */
+  if (!tbp->n.tb->nopass)
     {
-      /* If we have to match a passed class member, force the actual
-	 expression to have the correct type.  */
-      if (!tbp->n.tb->nopass)
-	{
-	  if (e->value.compcall.base_object == NULL)
-	    e->value.compcall.base_object =
-			extract_compcall_passed_object (e);
+      if (e->value.compcall.base_object == NULL)
+	e->value.compcall.base_object = extract_compcall_passed_object (e);
 
-          e->value.compcall.base_object->ts.type = BT_DERIVED;
-          e->value.compcall.base_object->ts.u.derived = derived;
+      if (!derived->attr.abstract)
+	{
+	  e->value.compcall.base_object->ts.type = BT_DERIVED;
+	  e->value.compcall.base_object->ts.u.derived = derived;
 	}
     }
 
