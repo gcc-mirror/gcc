@@ -952,7 +952,7 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
 		 htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		 htab_t params_index)
 {
-  if (!stmt || gloog_error)
+  if (!stmt)
     return next_e;
 
   if (CLAST_STMT_IS_A (stmt, stmt_root))
