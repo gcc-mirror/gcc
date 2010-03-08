@@ -1,3 +1,8 @@
+2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (add_param_constraints): Enabled: remove
+	early return.
+
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43083
