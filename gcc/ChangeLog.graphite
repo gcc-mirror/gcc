@@ -1,3 +1,8 @@
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43065
+	* gcc.dg/graphite/run-id-3.c: New.
+
 2010-03-05  Tobias Grosser  <grosser@fim.uni-passau.de>
 	    Ramakrishna Upadrasta <Ramakrishna.Upadrasta@inria.fr>
 
