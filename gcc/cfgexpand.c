@@ -379,46 +379,6 @@ release_stmt_tree (gimple stmt, tree stmt_tree)
 }
 
 
-/* Verify that there is exactly single jump instruction since last and attach
-   REG_BR_PROB note specifying probability.
-   ??? We really ought to pass the probability down to RTL expanders and let it
-   re-distribute it when the conditional expands into multiple conditionals.
-   This is however difficult to do.  */
-void
-add_reg_br_prob_note (rtx last, int probability)
-{
-  if (profile_status == PROFILE_ABSENT)
-    return;
-  for (last = NEXT_INSN (last); last && NEXT_INSN (last); last = NEXT_INSN (last))
-    if (JUMP_P (last))
-      {
-	/* It is common to emit condjump-around-jump sequence when we don't know
-	   how to reverse the conditional.  Special case this.  */
-	if (!any_condjump_p (last)
-	    || !JUMP_P (NEXT_INSN (last))
-	    || !simplejump_p (NEXT_INSN (last))
-	    || !NEXT_INSN (NEXT_INSN (last))
-	    || !BARRIER_P (NEXT_INSN (NEXT_INSN (last)))
-	    || !NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))
-	    || !LABEL_P (NEXT_INSN (NEXT_INSN (NEXT_INSN (last))))
-	    || NEXT_INSN (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))))
-	  goto failed;
-	gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
-	add_reg_note (last, REG_BR_PROB,
-		      GEN_INT (REG_BR_PROB_BASE - probability));
-	return;
-      }
-  if (!last || !JUMP_P (last) || !any_condjump_p (last))
-    goto failed;
-  gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
-  add_reg_note (last, REG_BR_PROB, GEN_INT (probability));
-  return;
-failed:
-  if (dump_file)
-    fprintf (dump_file, "Failed to add probability note\n");
-}
-
-
 #ifndef STACK_ALIGNMENT_NEEDED
 #define STACK_ALIGNMENT_NEEDED 1
 #endif
@@ -1669,8 +1629,8 @@ expand_gimple_cond (basic_block bb, gimple stmt)
      two-way jump that needs to be decomposed into two basic blocks.  */
   if (false_edge->dest == bb->next_bb)
     {
-      jumpif (pred, label_rtx_for_bb (true_edge->dest));
-      add_reg_br_prob_note (last, true_edge->probability);
+      jumpif (pred, label_rtx_for_bb (true_edge->dest),
+	      true_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
       if (true_edge->goto_locus)
 	{
@@ -1685,8 +1645,8 @@ expand_gimple_cond (basic_block bb, gimple stmt)
     }
   if (true_edge->dest == bb->next_bb)
     {
-      jumpifnot (pred, label_rtx_for_bb (false_edge->dest));
-      add_reg_br_prob_note (last, false_edge->probability);
+      jumpifnot (pred, label_rtx_for_bb (false_edge->dest),
+		 false_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
       if (false_edge->goto_locus)
 	{
@@ -1700,8 +1660,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
       return NULL;
     }
 
-  jumpif (pred, label_rtx_for_bb (true_edge->dest));
-  add_reg_br_prob_note (last, true_edge->probability);
+  jumpif (pred, label_rtx_for_bb (true_edge->dest), true_edge->probability);
   last = get_last_insn ();
   if (false_edge->goto_locus)
     {
