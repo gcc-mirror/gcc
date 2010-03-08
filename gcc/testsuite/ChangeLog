@@ -1,3 +1,11 @@
+2010-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2010-03-04  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR c/43248
+	* gcc.dg/compound-literal-1.c: New testcase.
+
 2010-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
