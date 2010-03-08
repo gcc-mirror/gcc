@@ -673,18 +673,18 @@ ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
    polyhedron POL.  */
 
 void
-ppl_min_for_le_polyhedron (ppl_Polyhedron_t pol,
-			   ppl_Linear_Expression_t le, Value res)
+ppl_min_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
+			 ppl_Linear_Expression_t le, Value res)
 {
   ppl_Coefficient_t num, denom;
   Value dv, nv;
-  int maximum, err;
+  int minimum, err;
 
   value_init (nv);
   value_init (dv);
   ppl_new_Coefficient (&num);
   ppl_new_Coefficient (&denom);
-  err = ppl_Polyhedron_minimize (pol, le, num, denom, &maximum);
+  err = ppl_Pointset_Powerset_C_Polyhedron_minimize (ps, le, num, denom, &minimum);
 
   if (err > 0)
     {
