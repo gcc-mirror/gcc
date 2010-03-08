@@ -1,3 +1,8 @@
+2010-03-04  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c (translate_clast): Do not short-cut
+	code generation with gloog_error.
+
 2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.c (expand_scalar_variables_ssa_name): Add new argument for type.
