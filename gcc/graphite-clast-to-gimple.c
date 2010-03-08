@@ -997,34 +997,30 @@ static const char *
 find_cloog_iv_in_expr (struct clast_expr *expr)
 {
   struct clast_term *term = (struct clast_term *) expr;
-
-  if (expr->type == expr_term
-      && !term->var)
-    return NULL;
+  struct clast_reduction *red;
+  int i;
 
   if (expr->type == expr_term)
     return term->var;
 
-  if (expr->type == expr_red)
+  if (expr->type != expr_red)
+    return NULL;
+
+  red = (struct clast_reduction *) expr;
+  for (i = 0; i < red->n; i++)
     {
-      int i;
-      struct clast_reduction *red = (struct clast_reduction *) expr;
+      const char *res = find_cloog_iv_in_expr (red->elts[i]);
 
-      for (i = 0; i < red->n; i++)
-	{
-	  const char *res = find_cloog_iv_in_expr ((red)->elts[i]);
-
-	  if (res)
-	    return res;
-	}
+      if (res)
+	return res;
     }
 
   return NULL;
 }
 
-/* Build for a clast_user_stmt USER_STMT a map between the CLAST
-   induction variables and the corresponding GCC old induction
-   variables.  This information is stored on each GRAPHITE_BB.  */
+/* Build for USER_STMT a map between the CLAST induction variables and
+   the corresponding GCC old induction variables.  This information is
+   stored on each GRAPHITE_BB.  */
 
 static void
 compute_cloog_iv_types_1 (poly_bb_p pbb, struct clast_user_stmt *user_stmt)

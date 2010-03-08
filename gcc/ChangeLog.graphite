@@ -1,5 +1,10 @@
 2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (find_cloog_iv_in_expr): Simplify
+	and clean up the logic.
+
+2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (add_param_constraints): Enabled: remove
 	early return.
 
