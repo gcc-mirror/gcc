@@ -1509,8 +1509,8 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
     }
   else if (POINTER_TYPE_P (type))
     {
-      lb = TYPE_MIN_VALUE (unsigned_type_node);
-      ub = TYPE_MAX_VALUE (unsigned_type_node);
+      lb = TYPE_MIN_VALUE (sizetype);
+      ub = TYPE_MAX_VALUE (sizetype);
     }
 
   if (lb)
