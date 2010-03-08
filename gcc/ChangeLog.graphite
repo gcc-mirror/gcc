@@ -1,3 +1,9 @@
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (struct poly_scattering): Add layout documentation.
+	(struct poly_bb): Same.
+	(combine_context_id_scat): New.
+
 2010-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42326

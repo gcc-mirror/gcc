@@ -263,7 +263,9 @@ typedef struct poly_scattering *poly_scattering_p;
 
 struct poly_scattering
 {
-  /* The scattering function containing the transformations.  */
+  /* The scattering function containing the transformations: the
+     layout of this polyhedron is: T|I|G with T the transform
+     scattering, I the iteration domain, G the context parameters.  */
   ppl_Polyhedron_t scattering;
 
   /* The number of local variables.  */
@@ -283,7 +285,9 @@ struct poly_bb
   /* Pointer to the SCOP containing this PBB.  */
   scop_p scop;
 
-  /* The iteration domain of this bb.
+  /* The iteration domain of this bb.  The layout of this polyhedron
+     is I|G with I the iteration domain, G the context parameters.
+
      Example:
 
      for (i = a - 7*b + 8; i <= 3*a + 13*b + 20; i++)
@@ -1465,6 +1469,51 @@ restore_scattering (scop_p scop)
     restore_scattering_pbb (pbb);
 
   restore_lst_schedule (scop);
+}
+
+/* For a given PBB, add to RES the scop context, the iteration domain,
+   the original scattering when ORIGINAL_P is true, otherwise add the
+   transformed scattering.  */
+
+static inline void
+combine_context_id_scat (ppl_Pointset_Powerset_C_Polyhedron_t *res,
+			 poly_bb_p pbb, bool original_p)
+{
+  ppl_Pointset_Powerset_C_Polyhedron_t context;
+  ppl_Pointset_Powerset_C_Polyhedron_t id;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+    (res, original_p ?
+     PBB_ORIGINAL_SCATTERING (pbb) : PBB_TRANSFORMED_SCATTERING (pbb));
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&context, SCOP_CONTEXT (PBB_SCOP (pbb)));
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&id, PBB_DOMAIN (pbb));
+
+  /* Extend the context and the iteration domain to the dimension of
+     the scattering: T|I|G.  */
+  {
+    ppl_dimension_type gdim, tdim, idim;
+
+    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (*res, &tdim);
+    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (context, &gdim);
+    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (id, &idim);
+
+    if (tdim > gdim)
+      ppl_insert_dimensions_pointset (context, 0, tdim - gdim);
+
+    if (tdim > idim)
+      ppl_insert_dimensions_pointset (id, 0, tdim - idim);
+  }
+
+  /* Add the context and the iteration domain to the result.  */
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, context);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, id);
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (context);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (id);
 }
 
 #endif
