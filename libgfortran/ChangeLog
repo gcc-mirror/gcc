@@ -1,3 +1,22 @@
+2010-03-08  Kai TIetz  <kai.tietz@onevision.com>
+
+	PR/42950
+	* libgfortran.h (_POSIX): Define if __MINGW32__ is defined.
+	(gfc_printf): Define to gnu_printf for __MINGW32__ case,
+	otherwise to __printf__.
+	(gfc_strtof,gfc_strtod,gfc_strtold): Define for mingw case
+	to POSIX compatible converter functions.
+	(runtime_error): Use instead gfc_printf as formatter
+	attribute name.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(st_printf): Likewise.
+	* intrinsics/date_and_time.c (localtime_r): Undefine
+	possible defined macro.
+	(gmtime_r): Likewise.
+	* io/read.c (convert_real): Use gfc_strtof, gfc_strtod,
+	and gfc_strtold.
+
 2010-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43155

@@ -144,25 +144,25 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
     case 4:
       *((GFC_REAL_4*) dest) =
 #if defined(HAVE_STRTOF)
-	strtof (buffer, NULL);
+	gfc_strtof (buffer, NULL);
 #else
-	(GFC_REAL_4) strtod (buffer, NULL);
+	(GFC_REAL_4) gfc_strtod (buffer, NULL);
 #endif
       break;
 
     case 8:
-      *((GFC_REAL_8*) dest) = strtod (buffer, NULL);
+      *((GFC_REAL_8*) dest) = gfc_strtod (buffer, NULL);
       break;
 
 #if defined(HAVE_GFC_REAL_10) && defined (HAVE_STRTOLD)
     case 10:
-      *((GFC_REAL_10*) dest) = strtold (buffer, NULL);
+      *((GFC_REAL_10*) dest) = gfc_strtold (buffer, NULL);
       break;
 #endif
 
 #if defined(HAVE_GFC_REAL_16) && defined (HAVE_STRTOLD)
     case 16:
-      *((GFC_REAL_16*) dest) = strtold (buffer, NULL);
+      *((GFC_REAL_16*) dest) = gfc_strtold (buffer, NULL);
       break;
 #endif
 
