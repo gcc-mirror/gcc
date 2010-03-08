@@ -1,3 +1,9 @@
+2010-03-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43269
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Fix post-dom
+	region detection.
+
 2010-03-08  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_param_descriptor): Removed the called field.
