@@ -1,3 +1,26 @@
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+	    Reza Yazdani  <reza.yazdani@amd.com>
+
+	PR middle-end/43065
+	* gcc.dg/graphite/run-id-4.c: New.
+
+2010-03-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43065
+	* gcc.dg/graphite/run-id-3.c: New.
+
+2010-03-08  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	PR middle-end/42644
+	PR middle-end/42130
+	* gcc.dg/graphite/id-18.c: New.
+	* gcc.dg/graphite/run-id-pr42644.c: New.
+
+2010-03-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42326
+	* gcc.dg/graphite/pr42326.c: New.
+
 2010-03-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43269
