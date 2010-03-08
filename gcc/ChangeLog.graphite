@@ -1,5 +1,11 @@
 2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-ppl.c (ppl_min_for_le_polyhedron): Renamed
+	ppl_min_for_le_pointset.  Use ppl_Pointset_Powerset_C_Polyhedron_minimize.
+	* graphite-ppl.h (ppl_min_for_le_polyhedron): Update declaration.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (map_into_dep_poly): Removed.
 	(dependence_polyhedron_1): Use combine_context_id_scat.
 
