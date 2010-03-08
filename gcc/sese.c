@@ -778,7 +778,7 @@ expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
    to translate the names of induction variables.  */
 
 static tree
-expand_scalar_variables_ssa_name (tree op0, basic_block bb,
+expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
 				  sese region, htab_t map,
 				  gimple_stmt_iterator *gsi)
 {
@@ -787,7 +787,7 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 
   if (is_parameter (region, op0)
       || is_iv (op0))
-    return get_rename (map, op0);
+    return fold_convert (type, get_rename (map, op0));
 
   def_stmt = SSA_NAME_DEF_STMT (op0);
 
@@ -796,7 +796,7 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 
   if (new_op != op0
       && gimple_bb (SSA_NAME_DEF_STMT (new_op)) == bb)
-    return new_op;
+    return fold_convert (type, new_op);
 
   if (gimple_bb (def_stmt) == bb)
     {
@@ -804,13 +804,13 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 	 we do not need to create a new expression for it, we
 	 only need to ensure its operands are expanded.  */
       expand_scalar_variables_stmt (def_stmt, bb, region, map, gsi);
-      return new_op;
+      return fold_convert (type, new_op);
     }
   else
     {
       if (!gimple_bb (def_stmt)
 	  || !bb_in_sese_p (gimple_bb (def_stmt), region))
-	return new_op;
+	return fold_convert (type, new_op);
 
       switch (gimple_code (def_stmt))
 	{
@@ -871,7 +871,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	  {
 	    tree old_name = TREE_OPERAND (op0, 0);
 	    tree expr = expand_scalar_variables_ssa_name
-	      (old_name, bb, region, map, gsi);
+	      (type, old_name, bb, region, map, gsi);
 
 	    if (TREE_CODE (expr) != SSA_NAME
 		&& is_gimple_reg (old_name))
@@ -938,7 +938,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
     }
 
   if (code == SSA_NAME)
-    return expand_scalar_variables_ssa_name (op0, bb, region, map, gsi);
+    return expand_scalar_variables_ssa_name (type, op0, bb, region, map, gsi);
 
   if (code == ADDR_EXPR)
     {
