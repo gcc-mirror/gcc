@@ -1,3 +1,8 @@
+2010-03-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43269
+	* gcc.c-torture/execute/pr43269.c: New testcase.
+
 2010-03-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43256
