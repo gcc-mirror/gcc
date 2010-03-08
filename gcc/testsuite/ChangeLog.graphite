@@ -1,0 +1,5 @@
+2010-03-05  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* gcc.dg/graphite/id-18.c: New.
+	* gcc.dg/graphite/run-id-pr42644.c: New.
+
