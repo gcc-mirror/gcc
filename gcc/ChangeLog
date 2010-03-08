@@ -1,3 +1,12 @@
+2010-03-08  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_param_descriptor): Removed the called field.
+	(ipa_is_param_called): Removed.
+	* ipa-prop.c (ipa_note_param_call): Do not set the called flag.
+	(ipa_print_node_params): Do not print the called flag.
+	(ipa_write_node_info): Do not stream the called flag.
+	(ipa_read_node_info): Likewise.
+
 2010-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43176

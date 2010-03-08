@@ -169,8 +169,6 @@ struct ipa_param_descriptor
   tree decl;
   /* Whether the value parameter has been modified within the function.  */
   unsigned modified : 1;
-  /* Whether the parameter has been used as a call destination. */
-  unsigned called : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -246,17 +244,6 @@ static inline bool
 ipa_is_param_modified (struct ipa_node_params *info, int i)
 {
   return info->params[i].modified;
-}
-
-/* Return the called flag corresponding to the Ith formal parameter of the
-   function associated with INFO.  Note that there is no setter method as the
-   goal is to set all flags when building the array in
-   ipa_detect_called_params.  */
-
-static inline bool
-ipa_is_param_called (struct ipa_node_params *info, int i)
-{
-  return info->params[i].called;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
