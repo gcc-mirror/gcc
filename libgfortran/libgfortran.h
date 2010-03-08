@@ -28,6 +28,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef LIBGFOR_H
 #define LIBGFOR_H
 
+/* Ensure that ANSI conform stdio is used. This needs to be set before
+   any system header file is included.  */
+#if defined __MINGW32__
+#  define _POSIX 1
+#  define gfc_printf gnu_printf
+#else
+#  define gfc_printf __printf__
+#endif
+
 /* config.h MUST be first because it can affect system headers.  */
 #include "config.h"
 
@@ -36,6 +45,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stddef.h>
 #include <float.h>
 #include <stdarg.h>
+
+#ifdef __MINGW32__
+extern float __strtof (const char *, char **);
+#define gfc_strtof __strtof
+extern double __strtod (const char *, char **);
+#define gfc_strtod __strtod
+extern long double __strtold (const char *, char **);
+#define gfc_strtold __strtold
+#else
+#define gfc_strtof strtof
+#define gfc_strtod strtod
+#define gfc_strtold strtold
+#endif
 
 #if HAVE_COMPLEX_H
 # include <complex.h>
@@ -703,15 +725,15 @@ extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
 
 extern void runtime_error (const char *, ...)
-     __attribute__ ((noreturn, format (printf, 1, 2)));
+     __attribute__ ((noreturn, format (gfc_printf, 1, 2)));
 iexport_proto(runtime_error);
 
 extern void runtime_error_at (const char *, const char *, ...)
-     __attribute__ ((noreturn, format (printf, 2, 3)));
+     __attribute__ ((noreturn, format (gfc_printf, 2, 3)));
 iexport_proto(runtime_error_at);
 
 extern void runtime_warning_at (const char *, const char *, ...)
-     __attribute__ ((format (printf, 2, 3)));
+     __attribute__ ((format (gfc_printf, 2, 3)));
 iexport_proto(runtime_warning_at);
 
 extern void internal_error (st_parameter_common *, const char *)
@@ -795,7 +817,7 @@ extern int unit_to_fd (int);
 internal_proto(unit_to_fd);
 
 extern int st_printf (const char *, ...)
-  __attribute__ ((format (printf, 1, 2)));
+  __attribute__ ((format (gfc_printf, 1, 2)));
 internal_proto(st_printf);
 
 extern int st_vprintf (const char *, va_list);
