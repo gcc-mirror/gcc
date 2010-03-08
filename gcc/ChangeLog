@@ -1,3 +1,8 @@
+2010-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (check_gcc_parallelize): Run dg-torture.exp and
+	builtins.exp in a separate job.
+
 2010-03-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (add_param_constraints): Use

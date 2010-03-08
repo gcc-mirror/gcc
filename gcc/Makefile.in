@@ -495,6 +495,7 @@ lang_checks_parallelized=check-gcc
 check_gcc_parallelize=execute.exp=execute/2* \
 		      execute.exp=execute/\[013-9a-zA-Z\]* \
 		      compile.exp dg.exp \
+		      dg-torture.exp,builtins.exp \
 		      struct-layout-1.exp,unsorted.exp,stackalign.exp,i386.exp
 lang_opt_files=@lang_opt_files@ $(srcdir)/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
