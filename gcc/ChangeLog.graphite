@@ -1,5 +1,10 @@
 2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (map_into_dep_poly): Removed.
+	(dependence_polyhedron_1): Use combine_context_id_scat.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (struct poly_scattering): Add layout documentation.
 	(struct poly_bb): Same.
 	(combine_context_id_scat): New.

@@ -269,28 +269,6 @@ poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
   return !empty_p;
 }
 
-/* Returns a polyhedron of dimension DIM.
-
-   Maps the dimensions [0, ..., cut - 1] of polyhedron P to OFFSET
-   and the dimensions [cut, ..., nb_dim] to DIM - GDIM.  */
-
-static ppl_Pointset_Powerset_C_Polyhedron_t
-map_into_dep_poly (graphite_dim_t dim, graphite_dim_t gdim,
-		   ppl_Pointset_Powerset_C_Polyhedron_t p,
-		   graphite_dim_t cut,
-		   graphite_dim_t offset)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&res, p);
-  ppl_insert_dimensions_pointset (res, 0, offset);
-  ppl_insert_dimensions_pointset (res, offset + cut,
-				  dim - offset - cut - gdim);
-
-  return res;
-}
-
 /* Swap [cut0, ..., cut1] to the end of DR: "a CUT0 b CUT1 c" is
    transformed into "a CUT0 c CUT1' b"
 
@@ -486,41 +464,33 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
   poly_bb_p pbb1 = PDR_PBB (pdr1);
   poly_bb_p pbb2 = PDR_PBB (pdr2);
   scop_p scop = PBB_SCOP (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
   graphite_dim_t tdim1 = original_scattering_p ?
     pbb_nb_scattering_orig (pbb1) : pbb_nb_scattering_transform (pbb1);
   graphite_dim_t tdim2 = original_scattering_p ?
     pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
-  ppl_Polyhedron_t scat1 = original_scattering_p ?
-    PBB_ORIGINAL_SCATTERING (pbb1) : PBB_TRANSFORMED_SCATTERING (pbb1);
-  ppl_Polyhedron_t scat2 = original_scattering_p ?
-    PBB_ORIGINAL_SCATTERING (pbb2) : PBB_TRANSFORMED_SCATTERING (pbb2);
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   graphite_dim_t ddim2 = pbb_dim_iter_domain (pbb2);
   graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
+  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
   graphite_dim_t gdim = scop_nb_params (scop);
   graphite_dim_t dim1 = pdr_dim (pdr1);
   graphite_dim_t dim2 = pdr_dim (pdr2);
   graphite_dim_t dim = tdim1 + tdim2 + dim1 + dim2 - gdim;
   ppl_Pointset_Powerset_C_Polyhedron_t res;
-  ppl_Pointset_Powerset_C_Polyhedron_t id1, id2, isc1, isc2, idr1, idr2;
+  ppl_Pointset_Powerset_C_Polyhedron_t idr1, idr2;
   ppl_Pointset_Powerset_C_Polyhedron_t sc1, sc2, dreq;
-  ppl_Pointset_Powerset_C_Polyhedron_t context;
 
   gcc_assert (PBB_SCOP (pbb1) == PBB_SCOP (pbb2));
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&context, SCOP_CONTEXT (scop));
-  ppl_insert_dimensions_pointset (context, 0, dim - gdim);
+  combine_context_id_scat (&sc1, pbb1, original_scattering_p);
+  combine_context_id_scat (&sc2, pbb2, original_scattering_p);
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc1, scat1);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc2, scat2);
+  ppl_insert_dimensions_pointset (sc1, tdim1 + ddim1,
+				  tdim2 + ddim2 + sdim1 + sdim2);
 
-  id1 = map_into_dep_poly (dim, gdim, d1, ddim1, tdim1);
-  id2 = map_into_dep_poly (dim, gdim, d2, ddim2, tdim1 + ddim1 + tdim2);
-  isc1 = map_into_dep_poly (dim, gdim, sc1, ddim1 + tdim1, 0);
-  isc2 = map_into_dep_poly (dim, gdim, sc2, ddim2 + tdim2, tdim1 + ddim1);
+  ppl_insert_dimensions_pointset (sc2, 0, tdim1 + ddim1);
+  ppl_insert_dimensions_pointset (sc2, tdim1 + ddim1 + tdim2 + ddim2,
+				  sdim1 + sdim2);
 
   idr1 = map_dr_into_dep_poly (dim, PDR_ACCESSES (pdr1), ddim1, ddim1 + gdim,
 			       tdim1, tdim2 + ddim2);
@@ -531,21 +501,13 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
   dreq = dr_equality_constraints (dim, tdim1 + ddim1 + tdim2 + ddim2, sdim1);
 
   ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&res, dim, 0);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, context);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, id1);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, id2);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, isc1);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, isc2);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, sc1);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, sc2);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr1);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr2);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, dreq);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (context);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (id1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (id2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sc1);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sc2);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (isc1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (isc2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (idr1);
   ppl_delete_Pointset_Powerset_C_Polyhedron (idr2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
