@@ -1499,13 +1499,19 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
   ppl_Linear_Expression_t le;
   tree parameter = VEC_index (tree, SESE_PARAMS (SCOP_REGION (scop)), p);
   tree type = TREE_TYPE (parameter);
-  tree lb, ub;
+  tree lb = NULL_TREE;
+  tree ub = NULL_TREE;
 
-  if (!INTEGRAL_TYPE_P (type))
-    return;
-
-  lb = TYPE_MIN_VALUE (type);
-  ub = TYPE_MAX_VALUE (type);
+  if (INTEGRAL_TYPE_P (type))
+    {
+      lb = TYPE_MIN_VALUE (type);
+      ub = TYPE_MAX_VALUE (type);
+    }
+  else if (POINTER_TYPE_P (type))
+    {
+      lb = TYPE_MIN_VALUE (unsigned_type_node);
+      ub = TYPE_MAX_VALUE (unsigned_type_node);
+    }
 
   if (lb)
     {

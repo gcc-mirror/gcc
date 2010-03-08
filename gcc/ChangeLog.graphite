@@ -1,4 +1,13 @@
-2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+	    Reza Yazdani  <reza.yazdani@amd.com>
+
+	PR middle-end/43065
+	* graphite-sese-to-poly.c (add_param_constraints): Insert bounds
+	on pointer type parameters.
+
+	* gcc.dg/graphite/run-id-4.c: New.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43065
 	* gcc.dg/graphite/run-id-3.c: New.
