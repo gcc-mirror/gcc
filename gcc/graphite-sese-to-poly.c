@@ -2893,6 +2893,38 @@ scop_canonicalize_loops (scop_p scop)
       graphite_loop_normal_form (loop);
 }
 
+/* Can all ivs be represented by a signed integer?
+   As CLooG might generate negative values in its expressions, signed loop ivs
+   are required in the backend. */
+static bool
+scop_ivs_can_be_represented (scop_p scop)
+{
+  loop_iterator li;
+  loop_p loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      tree type;
+      int precision;
+
+      if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
+	continue;
+
+      if (!loop->single_iv)
+	continue;
+
+      type = TREE_TYPE(loop->single_iv);
+      precision = TYPE_PRECISION (type);
+
+      if (TYPE_UNSIGNED (type)
+	  && precision >= TYPE_PRECISION (long_long_integer_type_node))
+	return false;
+    }
+
+  return true;
+}
+
+
 /* Builds the polyhedral representation for a SESE region.  */
 
 bool
@@ -2915,6 +2947,10 @@ build_poly_scop (scop_p scop)
     return false;
 
   scop_canonicalize_loops (scop);
+
+  if (!scop_ivs_can_be_represented (scop))
+    return false;
+
   build_sese_loop_nests (region);
   build_sese_conditions (region);
   find_scop_parameters (scop);
