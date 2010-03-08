@@ -1,3 +1,11 @@
+2010-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42326
+	* sese.c (name_defined_in_loop_p): Return false for default
+	definitions.
+
+	* gcc.dg/graphite/pr42326.c: New.
+
 2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (find_cloog_iv_in_expr): Simplify
