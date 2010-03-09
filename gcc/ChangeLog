@@ -1,4 +1,9 @@
-2010-03-08  Jakub Jelinek  <jakub@redhat.com>
+2010-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43304
+	* var-tracking.c (vt_expand_loc_callback) <case SUBREG>: If dummy,
+	call cselib_dummy_expand_value_rtx_cb instead of
+	cselib_expand_value_rtx_cb.
 
 	PR debug/43293
 	* config/i386/t-i386 (i386.o): Depend on debug.h and dwarf2out.h.
