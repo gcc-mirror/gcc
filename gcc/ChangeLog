@@ -1,5 +1,10 @@
 2010-03-09  Jie Zhang  <jie@codesourcery.com>
 
+	* config/arm/arm.md (thumb_mulsi3_v6): Remove trailing
+	whitespaces in output template.
+
+2010-03-09  Jie Zhang  <jie@codesourcery.com>
+
 	* ira-lives.c (check_and_make_def_use_conflict): Don't fall
 	out array boundary.
 
