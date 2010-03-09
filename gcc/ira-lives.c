@@ -456,7 +456,7 @@ check_and_make_def_use_conflict (rtx dreg, enum reg_class def_cl,
      different.  (Indeed, if the constraints for the two
      operands are the same for all alternatives, there's no
      point marking them as commutative.)  */
-  if (use < recog_data.n_operands + 1
+  if (use < recog_data.n_operands - 1
       && recog_data.constraints[use][0] == '%')
     advance_p
       = make_pseudo_conflict (recog_data.operand[use + 1],

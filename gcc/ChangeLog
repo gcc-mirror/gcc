@@ -1,3 +1,8 @@
+2010-03-09  Jie Zhang  <jie@codesourcery.com>
+
+	* ira-lives.c (check_and_make_def_use_conflict): Don't fall
+	out array boundary.
+
 2010-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (check_gcc_parallelize): Run dg-torture.exp and
