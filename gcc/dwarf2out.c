@@ -12826,6 +12826,22 @@ const_ok_for_output_1 (rtx *rtlp, void *data ATTRIBUTE_UNUSED)
 {
   rtx rtl = *rtlp;
 
+  if (GET_CODE (rtl) == UNSPEC)
+    {
+      /* If delegitimize_address couldn't do anything with the UNSPEC, assume
+	 we can't express it in the debug info.  */
+#ifdef ENABLE_CHECKING
+      inform (current_function_decl
+	      ? DECL_SOURCE_LOCATION (current_function_decl)
+	      : UNKNOWN_LOCATION,
+	      "non-delegitimized UNSPEC %d found in variable location",
+	      XINT (rtl, 1));
+#endif
+      expansion_failed (NULL_TREE, rtl,
+			"UNSPEC hasn't been delegitimized.\n");
+      return 1;
+    }
+
   if (GET_CODE (rtl) != SYMBOL_REF)
     return 0;
 
