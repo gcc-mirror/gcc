@@ -6560,15 +6560,22 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
   switch (GET_CODE (x))
     {
     case SUBREG:
+      if (dummy)
+	{
+	  if (cselib_dummy_expand_value_rtx_cb (SUBREG_REG (x), regs,
+						max_depth - 1,
+						vt_expand_loc_callback, data))
+	    return pc_rtx;
+	  else
+	    return NULL;
+	}
+
       subreg = cselib_expand_value_rtx_cb (SUBREG_REG (x), regs,
 					   max_depth - 1,
 					   vt_expand_loc_callback, data);
 
       if (!subreg)
 	return NULL;
-
-      if (dummy)
-	return pc_rtx;
 
       result = simplify_gen_subreg (GET_MODE (x), subreg,
 				    GET_MODE (SUBREG_REG (x)),
