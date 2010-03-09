@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "params.h"
 #include "cselib.h"
+#include "debug.h"
+#include "dwarf2out.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
@@ -7584,6 +7586,9 @@ ix86_file_end (void)
   for (regno = 0; regno < 8; ++regno)
     {
       char name[32];
+#ifdef DWARF2_UNWIND_INFO
+      bool do_cfi;
+#endif
 
       if (! ((pic_labels_used >> regno) & 1))
 	continue;
@@ -7629,10 +7634,19 @@ ix86_file_end (void)
 	  ASM_OUTPUT_LABEL (asm_out_file, name);
 	}
 
+#ifdef DWARF2_UNWIND_INFO
+      do_cfi = dwarf2out_do_cfi_asm ();
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_startproc\n");
+#endif
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
       output_asm_insn ("ret", xops);
+#ifdef DWARF2_UNWIND_INFO
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_endproc\n");
+#endif
     }
 
   if (NEED_INDICATE_EXEC_STACK)
@@ -7673,7 +7687,24 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
       if (!flag_pic)
 	output_asm_insn ("mov%z0\t{%2, %0|%0, %2}", xops);
       else
-	output_asm_insn ("call\t%a2", xops);
+	{
+	  output_asm_insn ("call\t%a2", xops);
+#ifdef DWARF2_UNWIND_INFO
+	  /* The call to next label acts as a push.  */
+	  if (dwarf2out_do_frame ())
+	    {
+	      rtx insn;
+	      start_sequence ();
+	      insn = emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+					     gen_rtx_PLUS (Pmode,
+							   stack_pointer_rtx,
+							   GEN_INT (-4))));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      dwarf2out_frame_debug (insn, true);
+	      end_sequence ();
+	    }
+#endif
+	}
 
 #if TARGET_MACHO
       /* Output the Mach-O "canonical" label name ("Lxx$pb") here too.  This
@@ -7686,7 +7717,27 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
 				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
 
       if (flag_pic)
-	output_asm_insn ("pop%z0\t%0", xops);
+	{
+	  output_asm_insn ("pop%z0\t%0", xops);
+#ifdef DWARF2_UNWIND_INFO
+	  /* The pop is a pop and clobbers dest, but doesn't restore it
+	     for unwind info purposes.  */
+	  if (dwarf2out_do_frame ())
+	    {
+	      rtx insn;
+	      start_sequence ();
+	      insn = emit_insn (gen_rtx_SET (VOIDmode, dest, const0_rtx));
+	      dwarf2out_frame_debug (insn, true);
+	      insn = emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+					     gen_rtx_PLUS (Pmode,
+							   stack_pointer_rtx,
+							   GEN_INT (4))));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      dwarf2out_frame_debug (insn, true);
+	      end_sequence ();
+	    }
+#endif
+	}
     }
   else
     {
@@ -7694,6 +7745,18 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
       get_pc_thunk_name (name, REGNO (dest));
       pic_labels_used |= 1 << REGNO (dest);
 
+#ifdef DWARF2_UNWIND_INFO
+      /* Ensure all queued register saves are flushed before the
+	 call.  */
+      if (dwarf2out_do_frame ())
+	{
+	  rtx insn;
+	  start_sequence ();
+	  insn = emit_barrier ();
+	  end_sequence ();
+	  dwarf2out_frame_debug (insn, false);
+	}
+#endif
       xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
       output_asm_insn ("call\t%X2", xops);
