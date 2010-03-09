@@ -1,3 +1,7 @@
+2010-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* zh_CN.po: Update.
+
 2010-03-01  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* exgettext: Handle the functions that end with _n.
