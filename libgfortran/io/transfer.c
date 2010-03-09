@@ -192,21 +192,11 @@ current_mode (st_parameter_dt *dtp)
    heap.  Hopefully this won't happen very often.  */
 
 char *
-read_sf (st_parameter_dt *dtp, int * length, int no_error)
+read_sf (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
   char *base, *p, q;
   int n, lorig, memread, seen_comma;
-
-  /* If we hit EOF previously with the no_error flag set (i.e. X, T,
-     TR edit descriptors), and we now try to read again, this time
-     without setting no_error.  */
-  if (!no_error && dtp->u.p.at_eof)
-    {
-      *length = 0;
-      hit_eof (dtp);
-      return NULL;
-    }
 
   /* If we have seen an eor previously, return a length of 0.  The
      caller is responsible for correctly padding the input field.  */
@@ -273,8 +263,6 @@ read_sf (st_parameter_dt *dtp, int * length, int no_error)
 	     so we can just continue with a short read.  */
 	  if (dtp->u.p.current_unit->pad_status == PAD_NO)
 	    {
-	      if (likely (no_error))
-		break;
 	      generate_error (&dtp->common, LIBERROR_EOR, NULL);
 	      return NULL;
 	    }
@@ -304,7 +292,7 @@ read_sf (st_parameter_dt *dtp, int * length, int no_error)
      some other stuff. Set the relevant flags.  */
   if (lorig > *length && !dtp->u.p.sf_seen_eor && !seen_comma)
     {
-      if (n > 0 || no_error)
+      if (n > 0)
         {
 	  if (dtp->u.p.advance_status == ADVANCE_NO)
 	    {
@@ -386,7 +374,7 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
       (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL ||
        dtp->u.p.current_unit->flags.access == ACCESS_STREAM))
     {
-      source = read_sf (dtp, nbytes, 0);
+      source = read_sf (dtp, nbytes);
       dtp->u.p.current_unit->strm_pos +=
 	(gfc_offset) (*nbytes + dtp->u.p.sf_seen_eor);
       return source;
@@ -2822,8 +2810,6 @@ next_record_r (st_parameter_dt *dtp)
 		{
                   if (errno != 0)
                     generate_error (&dtp->common, LIBERROR_OS, NULL);
-                  else
-                    hit_eof (dtp);
 		  break;
                 }
 	      
