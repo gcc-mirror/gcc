@@ -1,5 +1,11 @@
 2010-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43299
+	* var-tracking.c (adjust_sets): New function.
+	(count_with_sets, add_with_sets): Use it.
+	(get_adjusted_src): New inline function.
+	(add_stores): Use it.
+
 	PR debug/43304
 	* var-tracking.c (vt_expand_loc_callback) <case SUBREG>: If dummy,
 	call cselib_dummy_expand_value_rtx_cb instead of
