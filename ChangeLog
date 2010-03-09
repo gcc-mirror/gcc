@@ -1,3 +1,7 @@
+2010-03-09  Jie Zhang  <jie@codesourcery.com>
+
+	* MAINTAINERS: Update my email address.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/32499
