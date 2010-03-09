@@ -4601,6 +4601,30 @@ count_stores (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *cui)
   count_uses (&loc, cui);
 }
 
+/* Adjust sets if needed.  Currently this optimizes read-only MEM loads
+   if REG_EQUAL/REG_EQUIV note is present.  */
+
+static void
+adjust_sets (rtx insn, struct cselib_set *sets, int n_sets)
+{
+  if (n_sets == 1 && MEM_P (sets[0].src) && MEM_READONLY_P (sets[0].src))
+    {
+      /* For read-only MEMs containing some constant, prefer those
+	 constants.  */
+      rtx note = find_reg_equal_equiv_note (insn), src;
+
+      if (note && CONSTANT_P (XEXP (note, 0)))
+	{
+	  sets[0].src = src = XEXP (note, 0);
+	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	    src = gen_rtx_IF_THEN_ELSE (GET_MODE (sets[0].dest),
+					COND_EXEC_TEST (PATTERN (insn)),
+					src, sets[0].dest);
+	  sets[0].src_elt = cselib_lookup (src, GET_MODE (sets[0].dest), 1);
+	}
+    }
+}
+
 /* Callback for cselib_record_sets_hook, that counts how many micro
    operations it takes for uses and stores in an insn after
    cselib_record_sets has analyzed the sets in an insn, but before it
@@ -4616,6 +4640,8 @@ count_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
   struct count_use_info cui;
 
   cselib_hook_called = true;
+
+  adjust_sets (insn, sets, n_sets);
 
   cui.insn = insn;
   cui.bb = bb;
@@ -4934,6 +4960,21 @@ reverse_op (rtx val, const_rtx expr)
   return gen_rtx_CONCAT (GET_MODE (v->val_rtx), v->val_rtx, ret);
 }
 
+/* Return SRC, or, if it is a read-only MEM for which adjust_sets
+   replated it with a constant from REG_EQUIV/REG_EQUAL note,
+   that constant.  */
+
+static inline rtx
+get_adjusted_src (struct count_use_info *cui, rtx src)
+{
+  if (cui->n_sets == 1
+      && MEM_P (src)
+      && MEM_READONLY_P (src)
+      && CONSTANT_P (cui->sets[0].src))
+    return cui->sets[0].src;
+  return src;
+}
+
 /* Add stores (register and memory references) LOC which will be tracked
    to VTI (bb)->mos.  EXPR is the RTL expression containing the store.
    CUIP->insn is instruction which the LOC is part of.  */
@@ -4971,7 +5012,10 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       else
 	{
 	  if (GET_CODE (expr) == SET && SET_DEST (expr) == loc)
-	    src = var_lowpart (mode2, SET_SRC (expr));
+	    {
+	      src = get_adjusted_src (cui, SET_SRC (expr));
+	      src = var_lowpart (mode2, src);
+	    }
 	  loc = var_lowpart (mode2, loc);
 
 	  if (src == NULL)
@@ -5030,7 +5074,10 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       else
 	{
 	  if (GET_CODE (expr) == SET && SET_DEST (expr) == loc)
-	    src = var_lowpart (mode2, SET_SRC (expr));
+	    {
+	      src = get_adjusted_src (cui, SET_SRC (expr));
+	      src = var_lowpart (mode2, src);
+	    }
 	  loc = var_lowpart (mode2, loc);
 
 	  if (src == NULL)
@@ -5099,12 +5146,13 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     }
   else if (resolve && GET_CODE (mo->u.loc) == SET)
     {
-      nloc = replace_expr_with_values (SET_SRC (expr));
+      src = get_adjusted_src (cui, SET_SRC (expr));
+      nloc = replace_expr_with_values (src);
 
       /* Avoid the mode mismatch between oexpr and expr.  */
       if (!nloc && mode != mode2)
 	{
-	  nloc = SET_SRC (expr);
+	  nloc = src;
 	  gcc_assert (oloc == SET_DEST (expr));
 	}
 
@@ -5200,6 +5248,8 @@ add_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
   struct count_use_info cui;
 
   cselib_hook_called = true;
+
+  adjust_sets (insn, sets, n_sets);
 
   cui.insn = insn;
   cui.bb = bb;

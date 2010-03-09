@@ -1,5 +1,8 @@
 2010-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43299
+	* gcc.dg/pr43299.c: New test.
+
 	PR debug/43290
 	* g++.dg/eh/unwind2.C: New test.
 
