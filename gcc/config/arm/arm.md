@@ -1265,8 +1265,8 @@
 		 (match_operand:SI 2 "register_operand" "l,0,0")))]
   "TARGET_THUMB1 && arm_arch6"
   "@
-   mul\\t%0, %2 
-   mul\\t%0, %1 
+   mul\\t%0, %2
+   mul\\t%0, %1
    mul\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "insn" "mul")]
