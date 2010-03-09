@@ -285,9 +285,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -304,9 +304,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -321,9 +321,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -338,9 +338,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),

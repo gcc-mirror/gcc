@@ -1,3 +1,26 @@
+2010-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2010-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41975, DR 579
+	* include/bits/hashtable.h (_Hashtable<>::_M_erase_node): Remove.
+	(erase(const_iterator), erase(const_iterator, const_iterator)):
+	Change return type to void.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/unordered_set: Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/23_containers/unordered_map/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erase/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_set/erase/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/24061-map.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/24061-map.cc:
+	Likewise.
+
 2010-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_container_traits.h (traits_base): Add
