@@ -1,3 +1,9 @@
+2010-03-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/43294
+	* config/m68k/m68k.c (TARGET_DELEGITIMIZE_ADDRESS): Define.
+	(m68k_delegitimize_address): New function.
+
 2010-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43299
