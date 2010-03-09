@@ -1,3 +1,8 @@
+2010-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/43276
+	* lto-elf.c: Define EM_* constants if not already defined.
+
 2010-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-elf.c (is_compatible_architecture): New static function.
