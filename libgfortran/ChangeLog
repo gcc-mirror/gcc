@@ -1,3 +1,14 @@
+2010-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	* io/read.c: Include fbuf.h and unix.h to enable lower level I/O for
+	read_x. (read_x): Replace the use of read_sf with equivalent lower level
+	I/O, eliminating unneeded code and handling EOF and EOR conditions.
+	* io/io.h: Revise prototype for read_sf.
+	* io/transfer.c (read_sf): Delete no_error parameter and all uses of it.
+	(read_block_form): Likewise.
+	(next_record_r): Delete wrong code call to hit_eof.
+
 2010-03-08  Kai TIetz  <kai.tietz@onevision.com>
 
 	PR/42950

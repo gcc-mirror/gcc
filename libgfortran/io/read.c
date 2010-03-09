@@ -24,7 +24,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "io.h"
+#include "fbuf.h"
 #include "format.h"
+#include "unix.h"
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
@@ -1022,16 +1024,70 @@ bad_float:
  * and never look at it. */
 
 void
-read_x (st_parameter_dt * dtp, int n)
+read_x (st_parameter_dt *dtp, int n)
 {
+  int length;
+  char *p, q;
+
   if ((dtp->u.p.current_unit->pad_status == PAD_NO || is_internal_unit (dtp))
        && dtp->u.p.current_unit->bytes_left < n)
     n = dtp->u.p.current_unit->bytes_left;
+    
+  if (n == 0)
+    return;
 
-  dtp->u.p.sf_read_comma = 0;
-  if (n > 0)
-    read_sf (dtp, &n, 1);
-  dtp->u.p.sf_read_comma = 1;
+  length = n;
+
+  if (is_internal_unit (dtp))
+    {
+      p = mem_alloc_r (dtp->u.p.current_unit->s, &length);
+      if (unlikely (length < n))
+	n = length;
+      goto done;
+    }
+
+  p = fbuf_read (dtp->u.p.current_unit, &length);
+  if (p == NULL || (length == 0 && dtp->u.p.item_count == 1))
+    {
+      hit_eof (dtp);
+      return;
+    }
+
+  n = 0;
+  while (n < length)
+    {
+      q = *p;
+      if (q == '\n' || q == '\r')
+	{
+	  /* Unexpected end of line. Set the position.  */
+	  fbuf_seek (dtp->u.p.current_unit, n + 1 ,SEEK_CUR);
+	  dtp->u.p.sf_seen_eor = 1;
+
+	  /* If we encounter a CR, it might be a CRLF.  */
+	  if (q == '\r') /* Probably a CRLF */
+	    {
+	      /* See if there is an LF. Use fbuf_read rather then fbuf_getc so
+		 the position is not advanced unless it really is an LF.  */
+	      int readlen = 1;
+	      p = fbuf_read (dtp->u.p.current_unit, &readlen);
+	      if (*p == '\n' && readlen == 1)
+	        {
+		  dtp->u.p.sf_seen_eor = 2;
+		  fbuf_seek (dtp->u.p.current_unit, 1 ,SEEK_CUR);
+		}
+	    }
+	  goto done;
+	}
+      n++;
+      p++;
+    } 
+
+  fbuf_seek (dtp->u.p.current_unit, n, SEEK_CUR);
+  
+ done:
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (GFC_IO_INT) n;
+  dtp->u.p.current_unit->bytes_left -= n;
   dtp->u.p.current_unit->strm_pos += (gfc_offset) n;
 }
 
