@@ -1,4 +1,15 @@
-2010-03-09  Jakub Jelinek  <jakub@redhat.com>
+2010-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43293
+	* config/i386/t-i386 (i386.o): Depend on debug.h and dwarf2out.h.
+	* config/i386/i386.c: Include debug.h and dwarf2out.h.
+	(ix86_file_end): If dwarf2out_do_cfi_asm (), emit .cfi_startproc
+	and .cfi_endproc around the pic thunks.
+	(output_set_got): For TARGET_DEEP_BRANCH_PREDICTION pic, ensure
+	all queued unwind info register saves are saved before the call.
+	For !TARGET_DEEP_BRANCH_PREDICTION pic, ensure the call is
+	considered as sp-=4 for unwind info and the pop as sp+=4 which
+	also clobbers dest, but doesn't actually restore it.
 
 	PR debug/43290
 	* config/i386/i386.c (ix86_get_drap_rtx): Don't set
