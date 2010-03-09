@@ -1,6 +1,9 @@
 2010-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43299
+	* dwarf2out.c (const_ok_for_output_1): Return 1 for UNSPECs.
+
+	PR debug/43299
 	* var-tracking.c (adjust_sets): New function.
 	(count_with_sets, add_with_sets): Use it.
 	(get_adjusted_src): New inline function.
