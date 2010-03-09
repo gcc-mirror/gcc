@@ -243,24 +243,25 @@ namespace __debug
 	return __ret;
       }
 
-      void
+      iterator
       erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
 	__it._M_invalidate();
-	_Base::erase(__it.base());
+	return iterator(_Base::erase(__it.base()), this);
       }
 
-      void
+      iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
 	for (const_iterator __tmp = __first; __tmp != __last;)
-	  {
-	    const_iterator __victim = __tmp++;
-	    __victim._M_invalidate();
-	  }
-	_Base::erase(__first.base(), __last.base());
+	{
+	  const_iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
       }
 
       _Base&
@@ -477,24 +478,25 @@ namespace __debug
 	return __ret;
       }
 
-      void
+      iterator
       erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
 	__it._M_invalidate();
-	_Base::erase(__it.base());
+	return iterator(_Base::erase(__it.base()), this);
       }
 
-      void
+      iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
 	for (const_iterator __tmp = __first; __tmp != __last;)
-	  {
-	    const_iterator __victim = __tmp++;
-	    __victim._M_invalidate();
-	  }
-	_Base::erase(__first.base(), __last.base());
+	{
+	  const_iterator __victim = __tmp++;
+	  __victim._M_invalidate();
+	}
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
       }
 
       _Base&
