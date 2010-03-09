@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-02-04 16:20+0000\n"
-"PO-Revision-Date: 2010-02-24 14:41+0800\n"
+"PO-Revision-Date: 2010-03-09 14:42+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -14330,7 +14330,7 @@ msgstr "需要字面字符串"
 #: c-parser.c:3099
 #, gcc-internal-format
 msgid "ISO C forbids empty initializer braces"
-msgstr "ISO C 不允许用初始值设定中有空的花括号对"
+msgstr "ISO C 不允许在初始值设定中有空的花括号对"
 
 #: c-parser.c:3147
 #, gcc-internal-format
