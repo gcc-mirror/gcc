@@ -1,3 +1,9 @@
+2010-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43290
+	* config/i386/i386.c (ix86_get_drap_rtx): Don't set
+	RTX_FRAME_RELATED_P.
+
 2010-03-09  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.md (thumb_mulsi3_v6): Remove trailing
