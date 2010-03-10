@@ -5298,6 +5298,16 @@ rs6000_delegitimize_address (rtx orig_x)
       return orig_x;
     }
 
+  if (TARGET_MACHO
+      && GET_CODE (orig_x) == LO_SUM
+      && GET_CODE (XEXP (x, 1)) == CONST)
+    {
+      y = XEXP (XEXP (x, 1), 0);
+      if (GET_CODE (y) == UNSPEC
+	  && XINT (y, 1) == UNSPEC_MACHOPIC_OFFSET)
+	return XVECEXP (y, 0, 0);
+    }
+
   return orig_x;
 }
 
