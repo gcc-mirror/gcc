@@ -127,13 +127,13 @@ namespace std
       typedef _Equal                                      key_equal;
       // mapped_type, if present, comes from _Map_base.
       // hasher, if present, comes from _Hash_code_base.
-      typedef typename _Allocator::difference_type        difference_type;
-      typedef typename _Allocator::size_type              size_type;
       typedef typename _Allocator::pointer                pointer;
       typedef typename _Allocator::const_pointer          const_pointer;
       typedef typename _Allocator::reference              reference;
       typedef typename _Allocator::const_reference        const_reference;
-      
+
+      typedef std::size_t                                 size_type;
+      typedef std::ptrdiff_t                              difference_type;
       typedef __detail::_Node_iterator<value_type, __constant_iterators,
 				       __cache_hash_code>
                                                           local_iterator;
@@ -421,7 +421,10 @@ namespace std
 
       // Set number of buckets to be appropriate for container of n element.
       void rehash(size_type __n);
-      
+
+      // DR 1189.
+      // reserve, if present, comes from _Rehash_base.
+
     private:
       // Unconditionally change size of bucket array to n.
       void _M_rehash(size_type __n);
