@@ -1,5 +1,14 @@
 2010-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	Backport:
+	2008-12-12  Uros Bizjak <ubizjak@gmail.com>
+
+	PR testsuite/38163
+	* gcc.dg/tree-ssa/loop-3.c: Compile only on nonpic x86 targets.
+	Remove dg-skip-if directive.
+
+2010-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* g++.old-deja/g++.pt/asm1.C: Don't detect pic via looking for the
 	-fpic/-fPIC flags.
 	* g++.old-deja/g++.pt/asm2.C: Likewise.
