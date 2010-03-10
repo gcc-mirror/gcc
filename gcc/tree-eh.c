@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "except.h"
+#include "pointer-set.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
@@ -3038,9 +3039,10 @@ struct gimple_opt_pass pass_lower_resx =
 };
 
 
-/* At the end of inlining, we can lower EH_DISPATCH.  */
+/* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
+   we have found some duplicate labels and removed some edges.  */
 
-static void
+static bool
 lower_eh_dispatch (basic_block src, gimple stmt)
 {
   gimple_stmt_iterator gsi;
@@ -3048,6 +3050,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
   eh_region r;
   tree filter, fn;
   gimple x;
+  bool redirected = false;
 
   region_nr = gimple_eh_dispatch_region (stmt);
   r = get_eh_region_from_number (region_nr);
@@ -3063,6 +3066,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	eh_catch c;
 	edge_iterator ei;
 	edge e;
+	struct pointer_set_t *seen_values = pointer_set_create ();
 
 	/* Collect the labels for a switch.  Zero the post_landing_pad
 	   field becase we'll no longer have anything keeping these labels
@@ -3071,6 +3075,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	  {
 	    tree tp_node, flt_node, lab = c->label;
+	    bool have_label = false;
 
 	    c->label = NULL;
 	    tp_node = c->type_list;
@@ -3083,14 +3088,29 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	      }
 	    do
 	      {
-		tree t = build3 (CASE_LABEL_EXPR, void_type_node,
-				 TREE_VALUE (flt_node), NULL, lab);
-		VEC_safe_push (tree, heap, labels, t);
+		/* Filter out duplicate labels that arise when this handler 
+		   is shadowed by an earlier one.  When no labels are 
+		   attached to the handler anymore, we remove 
+		   the corresponding edge and then we delete unreachable 
+		   blocks at the end of this pass.  */
+		if (! pointer_set_contains (seen_values, TREE_VALUE (flt_node)))
+		  {
+		    tree t = build3 (CASE_LABEL_EXPR, void_type_node,
+				     TREE_VALUE (flt_node), NULL, lab);
+		    VEC_safe_push (tree, heap, labels, t);
+		    pointer_set_insert (seen_values, TREE_VALUE (flt_node));
+		    have_label = true;
+		  }
 
 		tp_node = TREE_CHAIN (tp_node);
 		flt_node = TREE_CHAIN (flt_node);
 	      }
 	    while (tp_node);
+	    if (! have_label)
+	      {
+	        remove_edge (find_edge (src, label_to_block (lab)));
+	        redirected = true;
+	      }
 	  }
 
 	/* Clean up the edge flags.  */
@@ -3132,6 +3152,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
 	    VEC_free (tree, heap, labels);
 	  }
+	pointer_set_destroy (seen_values);
       }
       break;
 
@@ -3165,6 +3186,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
   /* Replace the EH_DISPATCH with the SWITCH or COND generated above.  */
   gsi_remove (&gsi, true);
+  return redirected;
 }
 
 static unsigned
@@ -3172,6 +3194,7 @@ execute_lower_eh_dispatch (void)
 {
   basic_block bb;
   bool any_rewritten = false;
+  bool redirected = false;
 
   assign_filter_values ();
 
@@ -3180,11 +3203,13 @@ execute_lower_eh_dispatch (void)
       gimple last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_EH_DISPATCH)
 	{
-	  lower_eh_dispatch (bb, last);
+	  redirected |= lower_eh_dispatch (bb, last);
 	  any_rewritten = true;
 	}
     }
 
+  if (redirected)
+    delete_unreachable_blocks ();
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
 

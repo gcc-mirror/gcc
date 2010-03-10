@@ -1,3 +1,8 @@
+2010-03-10  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/42859
+	* g++.dg/eh/pr42859.C: New test.
+
 2010-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43299
