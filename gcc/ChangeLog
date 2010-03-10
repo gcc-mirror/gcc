@@ -1,3 +1,13 @@
+2010-03-10  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR middle-end/42859
+	* tree-eh.c: Include pointer-set.h.
+	(lower_eh_dispatch): Filter out duplicate case labels and
+	remove the unneeded edge when the label is unused.  Return
+	true when some edges are removed.
+	(execute_lower_eh_dispatch): When any lowering resulted in
+	removing an edge, also delete unreachable blocks.
+
 2010-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43287
