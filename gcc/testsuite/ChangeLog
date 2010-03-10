@@ -1,3 +1,11 @@
+2010-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.pt/asm1.C: Don't detect pic via looking for the
+	-fpic/-fPIC flags.
+	* g++.old-deja/g++.pt/asm2.C: Likewise.
+	* gcc.c-torture/compile/20000804-1.c: Likewise.
+	* gcc.target/i386/clobbers.c: Likewise.
+
 2010-03-10  Tobias Burnus  <burnus@net-b.de
 
 	PR fortran/43303
