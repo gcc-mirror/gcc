@@ -1,6 +1,6 @@
 // { dg-do assemble { target i?86-*-linux* x86_64-*-linux* } }
-// We'd use ebx with -fpic/-fPIC, so skip.
-// { dg-skip-if "" { ilp32 } { "-fpic" "-fPIC" } { "" } }
+// We'd use ebx with 32-bit pic code, so skip.
+// { dg-skip-if "" { ilp32 && { ! nonpic } } { "*" } { "" } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>
 
 template<int i> int foo(int v)
