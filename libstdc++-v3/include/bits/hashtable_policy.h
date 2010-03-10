@@ -604,7 +604,7 @@ namespace __detail
     }
 
   // class template _Rehash_base.  Give hashtable the max_load_factor
-  // functions iff the rehash policy is _Prime_rehash_policy.
+  // functions and reserve iff the rehash policy is _Prime_rehash_policy.
   template<typename _RehashPolicy, typename _Hashtable>
     struct _Rehash_base { };
 
@@ -623,6 +623,13 @@ namespace __detail
       {
 	_Hashtable* __this = static_cast<_Hashtable*>(this);
 	__this->__rehash_policy(_Prime_rehash_policy(__z));
+      }
+
+      void
+      reserve(std::size_t __n)
+      {
+	_Hashtable* __this = static_cast<_Hashtable*>(this);
+	__this->rehash(__builtin_ceil(__n / max_load_factor()));
       }
     };
 

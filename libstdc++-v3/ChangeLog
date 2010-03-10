@@ -1,3 +1,14 @@
+2010-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h (_Rehash_base<_Prime_rehash_policy,
+	_Hashtable>::reserve): Add, per DR 1189.
+	* include/bits/hashtable.h (_Hashtable<>::size_type,
+	_Hashtable<>::difference_type): Do not typedef from _Allocator.
+	* testsuite/23_containers/unordered_map/dr1189.cc: New.
+	* testsuite/23_containers/unordered_set/dr1189.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/dr1189.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/dr1189.cc: Likewise.
+
 2010-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
