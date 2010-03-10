@@ -407,12 +407,38 @@ function_and_variable_visibility (bool whole_program)
 			   && !DECL_EXTERNAL (node->decl)
 			   && !node->local.externally_visible);
     }
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    {
+      /* weak flag makes no sense on local variables.  */
+      gcc_assert (!DECL_WEAK (vnode->decl)
+      		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (vnode->decl));
+      /* In several cases declarations can not be common:
+
+	 - when declaration has initializer
+	 - when it is in weak
+	 - when it has specific section
+	 - when it resides in non-generic address space.
+	 - if declaration is local, it will get into .local common section
+	   so common flag is not needed.  Frontends still produce these in
+	   certain cases, such as for:
+
+	     static int a __attribute__ ((common))
+
+	 Canonicalize things here and clear the redundant flag.  */
+      if (DECL_COMMON (vnode->decl)
+	  && (!(TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (vnode->decl))
+	      || (DECL_INITIAL (vnode->decl)
+		  && DECL_INITIAL (vnode->decl) != error_mark_node)
+	      || DECL_WEAK (vnode->decl)
+	      || DECL_SECTION_NAME (vnode->decl) != NULL
+	      || ! (ADDR_SPACE_GENERIC_P
+		    (TYPE_ADDR_SPACE (TREE_TYPE (vnode->decl))))))
+	DECL_COMMON (vnode->decl) = 0;
+    }
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
       if (!vnode->finalized)
         continue;
-      gcc_assert ((!DECL_WEAK (vnode->decl) && !DECL_COMMON (vnode->decl))
-      		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (vnode->decl));
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
 	  && (!whole_program

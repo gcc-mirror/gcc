@@ -1,3 +1,7 @@
+2010-03-10  Jan Hubicka   <jh@suse.cz>
+
+	* gcc.dg/compile/pr43288.c: New test.
+
 2010-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.pt/asm1.C: Don't detect pic via looking for the
@@ -6,7 +10,7 @@
 	* gcc.c-torture/compile/20000804-1.c: Likewise.
 	* gcc.target/i386/clobbers.c: Likewise.
 
-2010-03-10  Tobias Burnus  <burnus@net-b.de
+2010-03-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43303
 	* gfortran.dg/c_assoc_3.f90: New test.
