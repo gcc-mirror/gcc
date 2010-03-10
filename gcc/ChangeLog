@@ -1,3 +1,16 @@
+2010-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43290
+	* reg-notes.def (REG_CFA_SET_VDRAP): New note.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Remove rule 20 - setting
+	of fde->vdrap_reg.
+	(dwarf2out_frame_debug): Handle REG_CFA_SET_VDRAP note.
+	(based_loc_descr): Only express drap or vdrap regno based expressions
+	using DW_OP_fbreg when not optimizing.
+	* config/i386/i386.c (ix86_get_drap_rtx): When not optimizing,
+	make the vDRAP = DRAP assignment RTX_FRAME_RELATED_P and add
+	REG_CFA_SET_VDRAP note.
+
 2010-03-10  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR tree-optimization/43236

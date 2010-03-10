@@ -2160,15 +2160,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
                && cfa.indirect == 0
                && cfa.reg != HARD_FRAME_POINTER_REGNUM
   effects: Use DW_CFA_def_cfa_expression to define cfa
-  	   cfa.reg == fde->drap_reg
-
-  Rule 20:
-  (set reg fde->drap_reg)
-  constraints: fde->vdrap_reg == INVALID_REGNUM
-  effects: fde->vdrap_reg = reg.
-  (set mem fde->drap_reg)
-  constraints: fde->drap_reg_saved == 1
-  effects: none.  */
+  	   cfa.reg == fde->drap_reg  */
 
 static void
 dwarf2out_frame_debug_expr (rtx expr, const char *label)
@@ -2238,24 +2230,6 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
     }
 
   fde = current_fde ();
-
-  if (REG_P (src)
-      && fde
-      && fde->drap_reg == REGNO (src)
-      && (fde->drap_reg_saved
-	  || REG_P (dest)))
-    {
-      /* Rule 20 */
-      /* If we are saving dynamic realign argument pointer to a
-	 register, the destination is virtual dynamic realign
-	 argument pointer.  It may be used to access argument.  */
-      if (REG_P (dest))
-	{
-	  gcc_assert (fde->vdrap_reg == INVALID_REGNUM);
-	  fde->vdrap_reg = REGNO (dest);
-	}
-      return;
-    }
 
   switch (GET_CODE (dest))
     {
@@ -2778,6 +2752,20 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	    n = XEXP (n, 0);
 	  }
 	dwarf2out_frame_debug_cfa_restore (n, label);
+	handled_one = true;
+	break;
+
+      case REG_CFA_SET_VDRAP:
+	n = XEXP (note, 0);
+	if (REG_P (n))
+	  {
+	    dw_fde_ref fde = current_fde ();
+	    gcc_assert (fde
+			&& fde->drap_reg != INVALID_REGNUM
+			&& fde->vdrap_reg == INVALID_REGNUM);
+	    if (REG_P (n))
+	      fde->vdrap_reg = REGNO (n);
+	  }
 	handled_one = true;
 	break;
 
@@ -12736,13 +12724,18 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	  return new_loc_descr (DW_OP_fbreg, offset, 0);
 	}
     }
-  else if (fde
+  else if (!optimize
+	   && fde
 	   && fde->drap_reg != INVALID_REGNUM
 	   && (fde->drap_reg == REGNO (reg)
 	       || fde->vdrap_reg == REGNO (reg)))
     {
       /* Use cfa+offset to represent the location of arguments passed
-	 on stack when drap is used to align stack.  */
+	 on the stack when drap is used to align stack.
+	 Only do this when not optimizing, for optimized code var-tracking
+	 is supposed to track where the arguments live and the register
+	 used as vdrap or drap in some spot might be used for something
+	 else in other part of the routine.  */
       return new_loc_descr (DW_OP_fbreg, offset, 0);
     }
 
