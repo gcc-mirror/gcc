@@ -1,10 +1,15 @@
+2010-03-10  Tobias Burnus  <burnus@net-b.de
+
+	PR fortran/43303
+	* symbol.c (get_iso_c_sym): Set sym->result.
+
 2010-03-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43256
 	* resolve.c (resolve_compcall): Don't set 'value.function.name' here
 	for TBPs, otherwise they will not be resolved properly.
 	(resolve_function): Use 'value.function.esym' instead of
-        'value.function.name' to check if we're dealing with a TBP.
+	'value.function.name' to check if we're dealing with a TBP.
 	(check_class_members): Set correct type of passed object for all TBPs,
 	not only generic ones, except if the type is abstract.
 

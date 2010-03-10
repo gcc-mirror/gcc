@@ -1,3 +1,8 @@
+2010-03-10  Tobias Burnus  <burnus@net-b.de
+
+	PR fortran/43303
+	* gfortran.dg/c_assoc_3.f90: New test.
+
 2010-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728
