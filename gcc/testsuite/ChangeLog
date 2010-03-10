@@ -1,3 +1,9 @@
+2010-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36728
+	* gcc.dg/guality/pr36728-1.c: New test.
+	* gcc.dg/guality/pr36728-2.c: New test.
+
 2010-03-10  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* gcc.dg/h8300-div-delay-slot.c: New test.
