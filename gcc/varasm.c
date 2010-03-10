@@ -1174,12 +1174,13 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
   if (TREE_TYPE (decl) != error_mark_node)
     as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
 
-  /* If the decl has been given an explicit section name, or it resides
-     in a non-generic address space, then it isn't common, and shouldn't
-     be handled as such.  */
-  if (DECL_COMMON (decl) && DECL_SECTION_NAME (decl) == NULL
-      && ADDR_SPACE_GENERIC_P (as))
+  if (DECL_COMMON (decl))
     {
+      /* If the decl has been given an explicit section name, or it resides
+	 in a non-generic address space, then it isn't common, and shouldn't
+	 be handled as such.  */
+      gcc_assert (DECL_SECTION_NAME (decl) == NULL
+		  && ADDR_SPACE_GENERIC_P (as));
       if (DECL_THREAD_LOCAL_P (decl))
 	return tls_comm_section;
       /* This cannot be common bss for an emulated TLS object without
@@ -1434,15 +1435,16 @@ make_decl_rtl (tree decl)
 
   /* Specifying a section attribute on a variable forces it into a
      non-.bss section, and thus it cannot be common.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_SECTION_NAME (decl) != NULL_TREE
-      && DECL_INITIAL (decl) == NULL_TREE
-      && DECL_COMMON (decl))
-    DECL_COMMON (decl) = 0;
+  gcc_assert (!(TREE_CODE (decl) == VAR_DECL
+	      && DECL_SECTION_NAME (decl) != NULL_TREE
+	      && DECL_INITIAL (decl) == NULL_TREE
+	      && DECL_COMMON (decl))
+	      || !DECL_COMMON (decl));
 
   /* Variables can't be both common and weak.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
-    DECL_COMMON (decl) = 0;
+  gcc_assert (TREE_CODE (decl) != VAR_DECL
+	      || !DECL_WEAK (decl)
+	      || !DECL_COMMON (decl));
 
   if (use_object_blocks_p () && use_blocks_for_decl_p (decl))
     x = create_block_symbol (name, get_block_for_decl (decl), -1);
@@ -5507,6 +5509,10 @@ do_assemble_alias (tree decl, tree target)
   if (TREE_ASM_WRITTEN (decl))
     return;
 
+  /* We must force creation of DECL_RTL for debug info generation, even though
+     we don't use it here.  */
+  make_decl_rtl (decl);
+
   TREE_ASM_WRITTEN (decl) = 1;
   TREE_ASM_WRITTEN (DECL_ASSEMBLER_NAME (decl)) = 1;
 
@@ -5724,10 +5730,6 @@ assemble_alias (tree decl, tree target)
 # endif
 #endif
     }
-
-  /* We must force creation of DECL_RTL for debug info generation, even though
-     we don't use it here.  */
-  make_decl_rtl (decl);
   TREE_USED (decl) = 1;
 
   /* A quirk of the initial implementation of aliases required that the user

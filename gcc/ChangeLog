@@ -1,3 +1,12 @@
+2010-03-10  Jan Hubicka  <jh@suse.cz>
+
+	PR c/43288
+	* ipa.c (function_and_variable_visibility) Normalize COMMON bits.
+	* varasm.c (get_variable_section): Don't do that here...
+	(make_decl_rtl): ... and here.
+	(do_assemble_alias): Produce decl RTL.
+	(assemble_alias): Likewise.
+
 2010-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43290
