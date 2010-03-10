@@ -1,3 +1,8 @@
+2010-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2-bi.h (CC1_SPEC): Default to -mcpu=v9 for -m32.
+	* config/sparc/t-sol2-64 (MULTILIB_DIRNAMES): Use sparcv8plus.
+
 2010-03-10  Jan Hubicka  <jh@suse.cz>
 
 	PR c/43288

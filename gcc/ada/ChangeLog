@@ -1,3 +1,7 @@
+2010-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (SPARC/Solaris): Use sparcv8plus.
+
 2010-02-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/42253

@@ -960,7 +960,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
       $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
     endif
   else
-    ifeq ($(strip $(MULTISUBDIR)),/sparcv7)
+    ifeq ($(strip $(MULTISUBDIR)),/sparcv8plus)
       LIBGNAT_TARGET_PAIRS = \
       $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
     else
