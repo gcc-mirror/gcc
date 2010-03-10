@@ -1,3 +1,11 @@
+2010-03-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/43236
+	* tree-loop-distribution.c (generate_memset_zero): Fix off-by-one
+	error in calculation of base address in reverse iteration case.
+	(generate_builtin): Take number of latch executions if the statement
+	is in the latch.
+
 2010-03-10  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR middle-end/42859
