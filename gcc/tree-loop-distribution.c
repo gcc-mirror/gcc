@@ -285,6 +285,8 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
       addr_base = fold_convert_loc (loc, sizetype, addr_base);
       addr_base = size_binop_loc (loc, MINUS_EXPR, addr_base,
 				  fold_convert_loc (loc, sizetype, nb_bytes));
+      addr_base = size_binop_loc (loc, PLUS_EXPR, addr_base,
+				  TYPE_SIZE_UNIT (TREE_TYPE (op0)));
       addr_base = fold_build2_loc (loc, POINTER_PLUS_EXPR,
 				   TREE_TYPE (DR_BASE_ADDRESS (dr)),
 				   DR_BASE_ADDRESS (dr), addr_base);
@@ -389,6 +391,8 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
 		goto end;
 
 	      write = stmt;
+	      if (bb == loop->latch)
+		nb_iter = number_of_latch_executions (loop);
 	    }
 	}
     }
