@@ -2091,6 +2091,14 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	    }
 	}
 
+      if (is_array_section == 1 && dtp->u.p.expanded_read == 1)
+     	{
+	  int i;
+	  dtp->u.p.expanded_read = 0;
+	  for (i = 0; i < dim; i++)
+	    ls[i].end = ls[i].start;
+      	}
+
       /* Check the values of the triplet indices.  */
       if ((ls[dim].start > (ssize_t) GFC_DIMENSION_UBOUND(ad[dim]))
 	   || (ls[dim].start < (ssize_t) GFC_DIMENSION_LBOUND(ad[dim]))

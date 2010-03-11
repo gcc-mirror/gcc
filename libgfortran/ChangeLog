@@ -1,3 +1,9 @@
+2010-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43228
+	* io/list_read.c (nml_parse_qualifier): Disable expanded_read
+	for array sections.
+
 2010-03-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43320
