@@ -946,7 +946,8 @@ maybe_fixup_handled_component (tree op)
 }
 
 /* Fixup reference tree operands for substituted prevailing decls
-   with mismatched types in STMT.  */
+   with mismatched types in STMT.  This handles plain DECLs where
+   we need the stmt for context to lookup the required type.  */
 
 static void
 maybe_fixup_decls (gimple stmt)
@@ -967,8 +968,6 @@ maybe_fixup_decls (gimple stmt)
 	    gimple_assign_set_rhs1 (stmt, build1 (VIEW_CONVERT_EXPR,
 						  TREE_TYPE (lhs), rhs));
 	}
-      else if (handled_component_p (rhs))
-	maybe_fixup_handled_component (rhs);
       /* Then catch scalar stores.  */
       else if (TREE_CODE (lhs) == VAR_DECL)
 	{
@@ -976,8 +975,6 @@ maybe_fixup_decls (gimple stmt)
 	    gimple_assign_set_lhs (stmt, build1 (VIEW_CONVERT_EXPR,
 						 TREE_TYPE (rhs), lhs));
 	}
-      else if (handled_component_p (lhs))
-	maybe_fixup_handled_component (lhs);
     }
   else if (is_gimple_call (stmt))
     {
@@ -991,8 +988,6 @@ maybe_fixup_decls (gimple stmt)
 					       gimple_call_return_type (stmt),
 					       lhs));
 	}
-      else if (lhs && handled_component_p (lhs))
-	maybe_fixup_handled_component (lhs);
 
       /* Arguments, especially for varargs functions will be funny...  */
     }
@@ -1069,9 +1064,29 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	{
 	  tree op = lto_input_tree (ib, data_in);
 	  gimple_set_op (stmt, i, op);
+	  if (!op)
+	    continue;
 
-	  /* Fixup FIELD_DECLs.  */
-	  while (op && handled_component_p (op))
+	  /* Fixup reference tree operands for substituted prevailing decls
+	     with mismatched types.  For plain VAR_DECLs we need to look
+	     at context to determine the wanted type - we do that below
+	     after the stmt is completed.  */
+	  if (TREE_CODE (op) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (op, 0)) == VAR_DECL
+	      && !useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op)),
+					     TREE_TYPE (op)))
+	    {
+	      TREE_OPERAND (op, 0)
+		= build1 (VIEW_CONVERT_EXPR, TREE_TYPE (TREE_TYPE (op)),
+			  TREE_OPERAND (op, 0));
+	      continue;
+	    }
+
+	  /* Fixup FIELD_DECLs in COMPONENT_REFs, they are not handled
+	     by decl merging.  */
+	  if (TREE_CODE (op) == ADDR_EXPR)
+	    op = TREE_OPERAND (op, 0);
+	  while (handled_component_p (op))
 	    {
 	      if (TREE_CODE (op) == COMPONENT_REF)
 		{
@@ -1096,8 +1111,17 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		    TREE_OPERAND (op, 1) = tem;
 		}
 
+	      /* Preserve the last handled component for the fixup of
+	         its operand below.  */
+	      if (!handled_component_p (TREE_OPERAND (op, 0)))
+		break;
 	      op = TREE_OPERAND (op, 0);
 	    }
+
+	  /* Fixup reference tree operands for substituted prevailing decls
+	     with mismatched types.  */
+	  if (handled_component_p (op))
+	    maybe_fixup_handled_component (op);
 	}
       break;
 

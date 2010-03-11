@@ -1,3 +1,10 @@
+2010-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43200
+	* lto-streamer-in.c (maybe_fixup_decls): Simplify.
+	(input_gimple_stmt): Fixup handled component types during
+	operand read.  Also fix up decls in ADDR_EXPRs.
+
 2010-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-bi.h (CC1_SPEC): Default to -mcpu=v9 for -m32.

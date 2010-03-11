@@ -1,3 +1,9 @@
+2010-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43200
+	* gcc.dg/lto/20100227-1_0.c: New testcase.
+	* gcc.dg/lto/20100227-1_1.c: Likewise.
+
 2010-03-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43320
