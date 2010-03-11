@@ -836,6 +836,8 @@ cgraph_analyze_function (struct cgraph_node *node)
   current_function_decl = decl;
   push_cfun (DECL_STRUCT_FUNCTION (decl));
 
+  assign_assembler_name_if_neeeded (node->decl);
+
   /* Make sure to gimplify bodies only once.  During analyzing a
      function we lower it, which will require gimplified nested
      functions, so we can end up here with an already gimplified

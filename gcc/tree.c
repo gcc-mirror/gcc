@@ -4831,6 +4831,33 @@ find_decls_types_in_var (struct varpool_node *v, struct free_lang_data_d *fld)
   find_decls_types (v->decl, fld);
 }
 
+/* If T needs an assembler name, have one created for it.  */
+
+void
+assign_assembler_name_if_neeeded (tree t)
+{
+  if (need_assembler_name_p (t))
+    {
+      /* When setting DECL_ASSEMBLER_NAME, the C++ mangler may emit
+	 diagnostics that use input_location to show locus
+	 information.  The problem here is that, at this point,
+	 input_location is generally anchored to the end of the file
+	 (since the parser is long gone), so we don't have a good
+	 position to pin it to.
+
+	 To alleviate this problem, this uses the location of T's
+	 declaration.  Examples of this are
+	 testsuite/g++.dg/template/cond2.C and
+	 testsuite/g++.dg/template/pr35240.C.  */
+      location_t saved_location = input_location;
+      input_location = DECL_SOURCE_LOCATION (t);
+
+      decl_assembler_name (t);
+
+      input_location = saved_location;
+    }
+}
+
 
 /* Free language specific information for every operand and expression
    in every node of the call graph.  This process operates in three stages:
@@ -4880,26 +4907,7 @@ free_lang_data_in_cgraph (void)
      now because free_lang_data_in_decl will invalidate data needed
      for mangling.  This breaks mangling on interdependent decls.  */
   for (i = 0; VEC_iterate (tree, fld.decls, i, t); i++)
-    if (need_assembler_name_p (t))
-      {
-	/* When setting DECL_ASSEMBLER_NAME, the C++ mangler may emit
-	   diagnostics that use input_location to show locus
-	   information.  The problem here is that, at this point,
-	   input_location is generally anchored to the end of the file
-	   (since the parser is long gone), so we don't have a good
-	   position to pin it to.
-
-	   To alleviate this problem, this uses the location of T's
-	   declaration.  Examples of this are
-	   testsuite/g++.dg/template/cond2.C and
-	   testsuite/g++.dg/template/pr35240.C.  */
-	location_t saved_location = input_location;
-	input_location = DECL_SOURCE_LOCATION (t);
-
-	decl_assembler_name (t);
-
-	input_location = saved_location;
-      }
+    assign_assembler_name_if_neeeded (t);
 
   /* Traverse every decl found freeing its language data.  */
   for (i = 0; VEC_iterate (tree, fld.decls, i, t); i++)

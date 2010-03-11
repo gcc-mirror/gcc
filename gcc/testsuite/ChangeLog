@@ -1,3 +1,8 @@
+2010-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43257
+	* g++.dg/torture/pr43257.C: New test.
+
 2010-03-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43228

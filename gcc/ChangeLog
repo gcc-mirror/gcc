@@ -1,3 +1,13 @@
+2010-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43257
+	* tree.c (assign_assembler_name_if_neeeded): New function.
+	(free_lang_data_in_cgraph): Assembler name assignment moved to the
+	above new function.
+	* tree.h (assign_assembler_name_if_neeeded): Declare.
+	* cgraphunit.c (cgraph_analyze_function): Create an assembler name for
+	the function if needed.
+
 2010-03-11  Chris Demetriou  <cgd@google.com>
 
 	* Makefile.in (stmp-int-hdrs): Make include/unwind.h,
