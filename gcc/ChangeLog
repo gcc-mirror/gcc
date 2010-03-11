@@ -1,3 +1,8 @@
+2010-03-11  Chris Demetriou  <cgd@google.com>
+
+	* Makefile.in (stmp-int-hdrs): Make include/unwind.h,
+	include/stdint-gcc.h, and include/stdint.h world-readable.
+
 2010-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43255
