@@ -3,7 +3,7 @@
 	PR libfortran/43320
 	PR libfortran/43265
 	* gfortran.dg/read_eof_6.f: New test
-	* gfortran.dg/read_x_eof.f90: Update test.
+	* gfortran.dg/read_x_eof.f90: New test.
 	* gfortran.dg/read_x_past.f: Update test.
 
 2010-03-10  Jan Hubicka   <jh@suse.cz>
