@@ -2810,6 +2810,8 @@ next_record_r (st_parameter_dt *dtp)
 		{
                   if (errno != 0)
                     generate_error (&dtp->common, LIBERROR_OS, NULL);
+		  else if (dtp->u.p.item_count == 1)
+		    hit_eof (dtp);
 		  break;
                 }
 	      
