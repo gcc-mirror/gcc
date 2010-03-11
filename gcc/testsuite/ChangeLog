@@ -1,3 +1,8 @@
+2010-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43255
+	* gcc.c-torture/compile/pr43255.c: New testcase.
+
 2010-03-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/optimize-bswapdi-1.c: Add OpenSSL bswap variant.
