@@ -1,3 +1,8 @@
+2010-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43228
+	* gfortran.dg/namelist_61.f90: New test.
+
 2010-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43255
