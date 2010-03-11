@@ -1,3 +1,9 @@
+2010-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43255
+	* tree-vrp.c (process_assert_insertions_for): Do not insert
+	asserts for trivial conditions.
+
 2010-03-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR tree-optimization/43280

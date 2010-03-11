@@ -4836,6 +4836,10 @@ process_assert_insertions_for (tree name, assert_locus_t loc)
   edge_iterator ei;
   edge e;
 
+  /* If we have X <=> X do not insert an assert expr for that.  */
+  if (loc->expr == loc->val)
+    return false;
+
   cond = build2 (loc->comp_code, boolean_type_node, loc->expr, loc->val);
   assert_stmt = build_assert_expr_for (cond, name);
   if (loc->e)
