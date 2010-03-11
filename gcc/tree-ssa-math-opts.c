@@ -940,15 +940,18 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	{
 	  /* Set up the symbolic number N by setting each byte to a
 	     value between 1 and the byte size of rhs1.  The highest
-	     order byte is set to 1 and the lowest order byte to
-	     n.size.  */
+	     order byte is set to n->size and the lowest order
+	     byte to 1.  */
 	  n->size = TYPE_PRECISION (TREE_TYPE (rhs1));
 	  if (n->size % BITS_PER_UNIT != 0)
 	    return NULL_TREE;
 	  n->size /= BITS_PER_UNIT;
 	  n->n = (sizeof (HOST_WIDEST_INT) < 8 ? 0 :
-		  (unsigned HOST_WIDEST_INT)0x01020304 << 32 | 0x05060708);
-	  n->n >>= (sizeof (HOST_WIDEST_INT) - n->size) * BITS_PER_UNIT;
+		  (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201);
+
+	  if (n->size < (int)sizeof (HOST_WIDEST_INT))
+	    n->n &= ((unsigned HOST_WIDEST_INT)1 <<
+		     (n->size * BITS_PER_UNIT)) - 1;
 
 	  source_expr1 = rhs1;
 	}
@@ -988,9 +991,9 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      {
 		/* If STMT casts to a smaller type mask out the bits not
 		   belonging to the target type.  */
-		n->size = type_size / BITS_PER_UNIT;
 		n->n &= ((unsigned HOST_WIDEST_INT)1 << type_size) - 1;
 	      }
+	    n->size = type_size / BITS_PER_UNIT;
 	  }
 	  break;
 	default:
@@ -1051,11 +1054,11 @@ static tree
 find_bswap (gimple stmt)
 {
 /* The number which the find_bswap result should match in order to
-   have a full byte swap.  The insignificant bytes are masked out
-   before using it.  */
+   have a full byte swap.  The number is shifted to the left according
+   to the size of the symbolic number before using it.  */
   unsigned HOST_WIDEST_INT cmp =
     sizeof (HOST_WIDEST_INT) < 8 ? 0 :
-    (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201;
+    (unsigned HOST_WIDEST_INT)0x01020304 << 32 | 0x05060708;
 
   struct symbolic_number n;
   tree source_expr;
@@ -1079,7 +1082,7 @@ find_bswap (gimple stmt)
 	((unsigned HOST_WIDEST_INT)1 << (n.size * BITS_PER_UNIT)) - 1;
 
       n.n &= mask;
-      cmp &= mask;
+      cmp >>= (sizeof (HOST_WIDEST_INT) - n.size) * BITS_PER_UNIT;
     }
 
   /* A complete byte swap should make the symbolic number to start

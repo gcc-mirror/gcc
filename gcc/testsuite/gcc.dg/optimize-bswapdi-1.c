@@ -43,6 +43,19 @@ swap64_b (DItype u)
 	  | (((u) & 0x00000000000000ffull) << 56));
 }
 
+/* The OpenSSL variant.  */
 
-/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 2 "bswap" } } */
+uint64_t
+swap64_c (uint64_t x)
+{
+  uint32_t a = x >> 32;
+  uint32_t b = (uint32_t) x;
+  return ((uint64_t) ((((((b)) >> (8)) | (((b)) << (32 - (8)))) & 0xff00ff00L)
+		      | (((((b)) << (8)) | (((b)) >> (32 - (8)))) & 0x00ff00ffL)) << 32)
+          | (uint64_t) ((((((a)) >> (8)) | (((a)) << (32 - (8)))) & 0xff00ff00L)
+			| (((((a)) << (8)) | (((a)) >> (32 - (8)))) & 0x00ff00ffL));
+}
+
+
+/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 3 "bswap" } } */
 /* { dg-final { cleanup-tree-dump "bswap" } } */

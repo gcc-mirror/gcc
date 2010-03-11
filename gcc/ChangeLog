@@ -1,3 +1,10 @@
+2010-03-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR tree-optimization/43280
+	* tree-ssa-math-opts.c (find_bswap_1): Modify symbolic number generation.
+	Move calculation of size out of the if branch.
+	(find_bswap): Modify compare number generation.
+
 2010-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43200
