@@ -135,8 +135,8 @@
   if (GET_MODE (dst) != DImode)
     dst = gen_reg_rtx (DImode);
 
-  emit_insn (gen_memory_barrier ());
   emit_insn (gen_cmpxchg_rel_<mode> (dst, operands[1], ccv, operands[3]));
+  emit_insn (gen_memory_barrier ());
 
   if (dst != operands[0])
     emit_move_insn (operands[0], gen_lowpart (<MODE>mode, dst));
