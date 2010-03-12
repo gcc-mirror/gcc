@@ -863,7 +863,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       t = format_lex (fmt);
       if (t != FMT_POSINT)
 	{
-	  if (notification_std(GFC_STD_GNU) == ERROR)
+	  if (notification_std(GFC_STD_GNU) == NOTIFICATION_ERROR)
 	    {
 	      fmt->error = posint_required;
 	      goto finished;
@@ -912,7 +912,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       u = format_lex (fmt);
       if (t == FMT_G && u == FMT_ZERO)
 	{
-	  if (notification_std (GFC_STD_F2008) == ERROR
+	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
 	      fmt->error = zero_width;
