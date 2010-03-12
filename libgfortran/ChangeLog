@@ -1,3 +1,15 @@
+2010-03-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	Backport from trunk.
+	* io/read.c (read_x): Replace the use of read_sf with equivalent lower
+	level I/O, eliminating unneeded code and handling EOF and EOR
+	conditions.
+	* io/io.h: Revise prototype for read_sf.
+	* io/transfer.c (read_sf): Delete no_error parameter and all uses of it.
+	Set eof and eor condition flags. (read_block_form): Likewise.
+	(next_record_r): Add condition to call to hit_eof.
+	
 2010-03-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43228
