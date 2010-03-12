@@ -1,3 +1,8 @@
+2010-03-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gfortran.dg/default_format_denormal_1.f90: Don't assume
+	fail for *-*-mingw* targets.
+
 2010-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43329
