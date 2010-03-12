@@ -1,3 +1,8 @@
+2010-03-11  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac (gcc_cv_as_cfi_advance_working): Skip a multiple of four.
+	* configure: Rebuild.
+
 2010-03-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43257
