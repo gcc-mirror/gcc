@@ -1,3 +1,8 @@
+2010-03-12  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/42869
+	* config/ia64/sync.md (sync_compare_and_swap): Move memory fence.
+
 2010-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR middle-end/42431
