@@ -45,7 +45,7 @@ To make your fix, you will need to do several things:
     "test_text" entry(ies) that validate your fix.  This will
     help ensure that future fixes won't negate your work.
 
-5.  Go into the fixinc build directory and type, "make check".
+5.  Go into the fixincludes build directory and type, "make check".
     You are guaranteed to have issues printed out as a result.
     Look at the diffs produced.  Make sure you have not clobbered
     the proper functioning of a different fix.  Make sure your
@@ -319,7 +319,7 @@ EXAMPLES OF FIXES:
 
     I would really recommend, however:
 
-        cd ${top_builddir}/gcc/fixinc
+        cd ${top_builddir}/fixincludes
         make check
 
     To do this, you *must* have autogen installed on your system.
