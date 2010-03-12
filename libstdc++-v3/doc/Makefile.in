@@ -267,8 +267,6 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script = ${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
-
-# Chance of loooooonnggg wait time when creating this file.
 doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
 
 # Docbook configuration.
@@ -337,7 +335,8 @@ xml_sources_manual = \
 
 xml_sources_extra = \
 	${xml_dir}/gnu/fdl-1.2.xml \
-	${xml_dir}/gnu/gpl-2.0.xml
+	${xml_dir}/gnu/gpl-2.0.xml \
+	${xml_dir}/gnu/gpl-3.0.xml
 
 xml_sources = \
 	${xml_sources_basic} \
@@ -347,10 +346,7 @@ xml_sources = \
 xml_noinst = \
 	${xml_dir}/book.txml \
 	${xml_dir}/chapter.txml \
-	${xml_dir}/class.txml \
-	${xsl_dir}/doxygen2boostbook.xsl \
-	${xsl_dir}/boostbook2docbook.xsl \
-	${xsl_dir}/lookup.xsl
+	${xml_dir}/class.txml
 
 XSLTPROC = xsltproc
 XSLTPROC_FLAGS = --nonet --xinclude
@@ -365,8 +361,8 @@ XMLLINT = xmllint
 #LINT_FLAGS = --debug --nonet --xinclude --nsclean --postvalid --nowarning
 #LINT_FLAGS = --noblanks --noout --xinclude --postvalid --noent
 LINT_FLAGS = --postvalid --debug --xinclude --noent --noblanks  --nonet --noout
-VALID_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
-XMLLINT_FLAGS = $(LINT_FLAGS) $(VALID_FLAGS)
+DTD_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
+XMLLINT_FLAGS = $(LINT_FLAGS) $(DTD_FLAGS)
 
 # PDF 1
 # fop
@@ -598,10 +594,11 @@ uninstall-am:
 doc-man: doc-man-doxygen
 
 # PDF
-doc-pdf: doc-pdf-dblatex-docbook
+doc-pdf: doc-pdf-docbook
 
 # HTML
 doc-html: doc-html-docbook
+
 doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
@@ -620,7 +617,7 @@ doc-xml-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
 
-doc-xml-single-doxygen: doc-xml-doxygen
+doc-xml-single-doxygen:
 	@echo "Generating doxygen xml single file..."
 	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
 	${doxygen_outdir}/xml/index.xml > ${doxygen_outdir}/xml/api-spine.xml;
@@ -631,6 +628,7 @@ doc-latex-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
 
+# Chance of loooooonnggg creation time on this rule.
 doc-pdf-doxygen: stamp-latex-doxygen
 	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
 	echo "Generating doxygen pdf file...";
@@ -641,8 +639,15 @@ doc-pdf-doxygen: stamp-latex-doxygen
 	  exit 12; \
 	fi
 
+stamp-pdf-doxygen:
+	@if [ ! -f stamp-pdf-doxygen ]; then \
+	  $(MAKE) doc-pdf-doxygen; \
+	fi
+	$(STAMP) stamp-pdf-doxygen
+
 stamp-xml-doxygen:
 	@if [ ! -f stamp-xml-doxygen ]; then \
+	  $(MAKE) doc-xml-doxygen; \
 	  $(MAKE) doc-xml-single-doxygen; \
 	fi
 	$(STAMP) stamp-xml-doxygen
@@ -712,6 +717,8 @@ doc-pdf-prince-docbook: $(xml_sources) ${docbook_outdir}/pdf
 doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+
+doc-pdf-docbook: doc-pdf-dblatex-docbook
 doc-html-performance:
 	-@(chmod + ${doc_performance_script}; \
 	${doc_performance_script} ${top_srcdir} \

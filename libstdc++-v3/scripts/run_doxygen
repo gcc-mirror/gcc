@@ -162,69 +162,48 @@ esac
 mkdir -p $outdir
 chmod u+w $outdir
 
-if $do_xml; then
-    mkdir -p $outdir/xml
-fi
-
+# Run it
 (
-  set -e
-  cd $builddir
-  sed -e "s=@outdir@=${outdir}=g" \
-      -e "s=@srcdir@=${srcdir}=g" \
-      -e "s=@shortname@=${shortname}=g" \
-      -e "s=@builddir@=${builddir}=g" \
-      -e "s=@host_alias@=${host_alias}=g" \
-      -e "s=@enabled_sections@=${enabled_sections}=" \
-      -e "s=@do_html@=${do_html}=" \
-      -e "s=@do_latex@=${do_latex}=" \
-      -e "s=@do_man@=${do_man}=" \
-     -e "s=@do_xml@=${do_xml}=" \
-      -e "s=@generate_tagfile@=${generate_tagfile}=" \
-      ${srcdir}/doc/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
-  echo :: NOTE that this may take some time...
-  echo doxygen ${outdir}/${mode}.cfg
-  doxygen ${outdir}/${mode}.cfg
-  echo :: Finished, exit code was $?
+    set -e
+    cd $builddir
+    sed -e "s=@outdir@=${outdir}=g" \
+	-e "s=@srcdir@=${srcdir}=g" \
+	-e "s=@shortname@=${shortname}=g" \
+	-e "s=@builddir@=${builddir}=g" \
+	-e "s=@host_alias@=${host_alias}=g" \
+	-e "s=@enabled_sections@=${enabled_sections}=" \
+	-e "s=@do_html@=${do_html}=" \
+	-e "s=@do_latex@=${do_latex}=" \
+	-e "s=@do_man@=${do_man}=" \
+	-e "s=@do_xml@=${do_xml}=" \
+	-e "s=@generate_tagfile@=${generate_tagfile}=" \
+	${srcdir}/doc/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
+    echo :: NOTE that this may take some time...
+    echo doxygen ${outdir}/${mode}.cfg
+    doxygen ${outdir}/${mode}.cfg
 )
 ret=$?
 test $ret -ne 0 && exit $ret
+
+if $do_xml; then
+    echo ::
+    echo :: XML pages begin with
+    echo :: ${outdir}/xml/index.xml
+fi
 
 if $do_latex; then
-    mkdir -p $outdir/latex
+    cd ${outdir}/${mode}
+
+    # Also drop in the header file and style sheet
+    doxygen -w latex header.tex doxygen.sty
+    
+    echo ::
+    echo :: LaTeX pages begin with
+    echo :: ${outdir}/latex/refman.tex
 fi
-
-(
-  set -e
-  cd $builddir
-  sed -e "s=@outdir@=${outdir}=g" \
-      -e "s=@srcdir@=${srcdir}=g" \
-      -e "s=@shortname@=${shortname}=g" \
-      -e "s=@builddir@=${builddir}=g" \
-      -e "s=@host_alias@=${host_alias}=g" \
-      -e "s=@enabled_sections@=${enabled_sections}=" \
-      -e "s=@do_html@=${do_html}=" \
-      -e "s=@do_latex@=${do_latex}=" \
-      -e "s=@do_man@=${do_man}=" \
-     -e "s=@do_xml@=${do_xml}=" \
-      -e "s=@generate_tagfile@=${generate_tagfile}=" \
-      ${srcdir}/doc/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
-  echo :: NOTE that this may take some time...
-  echo doxygen ${outdir}/${mode}.cfg
-  doxygen ${outdir}/${mode}.cfg
-
-  # Also drop in the header file and style sheet
-  cd ${outdir}/${mode}
-  doxygen -w latex header.tex doxygen.sty
-  echo :: Finished, exit code was $?
-  echo ::
-  echo :: LaTeX pages begin with
-  echo :: ${outdir}/latex/refman.tex
-)
-ret=$?
-test $ret -ne 0 && exit $ret
-
+    
 if $do_html; then
-  cd ${outdir}/html
+  cd ${outdir}/${mode}
 
   #doxytag -t libstdc++.tag . > /dev/null 2>&1
   sed -e '/<path>/d' libstdc++.tag > TEMP
@@ -242,6 +221,7 @@ if $do_html; then
   mv annstrip.html annotated.html
 
   cp ${srcdir}/doc/doxygen/tables.html tables.html
+
   echo ::
   echo :: HTML pages begin with
   echo :: ${outdir}/html/index.html
