@@ -180,7 +180,7 @@ TAB_SIZE               = 4
 # You can put \n's in the value part of an alias to insert newlines.
 
 ALIASES                = "doctodo=@todo\nDoc me!  See doc/doxygen/TODO and http://gcc.gnu.org/ml/libstdc++/2002-02/msg00003.html for more.  " \
-                         "isiosfwd=One of the @link ios I/O @endlink  "
+			 "isiosfwd=One of the @link ios I/O @endlink  "
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C
 # sources only. Doxygen will then generate output that is more tailored for C.
@@ -587,156 +587,156 @@ WARN_LOGFILE           =
 # files or directories with spaces.
 
 INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
-                         @srcdir@/libsupc++/cxxabi.h \
-                         @srcdir@/libsupc++/cxxabi-forced.h \
-                         @srcdir@/libsupc++/exception \
-                         @srcdir@/libsupc++/exception_ptr.h \
-                         @srcdir@/libsupc++/initializer_list \
-                         @srcdir@/libsupc++/nested_exception.h \
-                         @srcdir@/libsupc++/new \
-                         @srcdir@/libsupc++/typeinfo \
-                         include/algorithm \
-                         include/array \
-                         include/atomic \
-                         include/bitset \
-                         include/chrono \
-                         include/complex \
-                         include/condition_variable \
-                         include/deque \
-                         include/fstream \
-                         include/functional \
-                         include/future \
-                         include/iomanip \
-                         include/ios \
-                         include/iosfwd \
-                         include/iostream \
-                         include/istream \
-                         include/iterator \
-                         include/limits \
-                         include/list \
-                         include/locale \
-                         include/map \
-                         include/memory \
-                         include/mutex \
-                         include/numeric \
-                         include/ostream \
-                         include/queue \
-                         include/random \
-                         include/ratio \
-                         include/regex \
-                         include/set \
-                         include/sstream \
-                         include/stack \
-                         include/stdexcept \
-                         include/streambuf \
-                         include/string \
-                         include/system_error \
-                         include/thread \
-                         include/tuple \
-                         include/type_traits \
-                         include/unordered_map \
-                         include/unordered_set \
-                         include/utility \
-                         include/valarray \
-                         include/vector \
-                         include/cassert \
-                         include/ccomplex \
-                         include/cctype \
-                         include/cerrno \
-                         include/cfenv \
-                         include/cfloat \
-                         include/cinttypes \
-                         include/ciso646 \
-                         include/climits \
-                         include/clocale \
-                         include/cmath \
-                         include/csetjmp \
-                         include/csignal \
-                         include/cstdarg \
-                         include/cstdbool \
-                         include/cstddef \
-                         include/cstdint \
-                         include/cstdio \
-                         include/cstdlib \
-                         include/cstring \
-                         include/ctgmath \
-                         include/ctime \
-                         include/cwchar \
-                         include/cwctype \
-                         include/backward/hash_map \
-                         include/backward/hash_set \
-                         include/backward/strstream \
-                         include/debug/bitset \
-                         include/debug/deque \
-                         include/debug/list \
-                         include/debug/map \
-                         include/debug/set \
-                         include/debug/string \
-                         include/debug/unordered_map \
-                         include/debug/unordered_set \
-                         include/debug/vector \
-                         include/profile/bitset \
-                         include/profile/deque \
-                         include/profile/list \
-                         include/profile/map \
-                         include/profile/set \
-                         include/profile/unordered_map \
-                         include/profile/unordered_set \
-                         include/profile/vector \
-                         include/ext/algorithm \
-                         include/ext/functional \
-                         include/ext/iterator \
-                         include/ext/memory \
-                         include/ext/numeric \
-                         include/ext/rb_tree \
-                         include/ext/rope \
-                         include/ext/slist \
-                         include/parallel/algorithm \
-                         include/parallel/numeric \
-                         include/tr1/ccomplex \
-                         include/tr1/cctype \
-                         include/tr1/cfenv \
-                         include/tr1/cfloat \
-                         include/tr1/cinttypes \
-                         include/tr1/climits \
-                         include/tr1/cmath \
-                         include/tr1/complex \
-                         include/tr1/cstdarg \
-                         include/tr1/cstdbool \
-                         include/tr1/cstdint \
-                         include/tr1/cstdio \
-                         include/tr1/cstdlib \
-                         include/tr1/ctgmath \
-                         include/tr1/ctime \
-                         include/tr1/cwchar \
-                         include/tr1/cwctype \
-                         include/tr1_impl/array \
-                         include/tr1_impl/cctype \
-                         include/tr1_impl/cfenv \
-                         include/tr1_impl/cinttypes \
-                         include/tr1_impl/cmath \
-                         include/tr1_impl/complex \
-                         include/tr1_impl/cstdint \
-                         include/tr1_impl/cstdio \
-                         include/tr1_impl/cstdlib \
-                         include/tr1_impl/cwchar \
-                         include/tr1_impl/cwctype \
-                         include/tr1_impl/regex \
-                         include/tr1_impl/type_traits \
-                         include/tr1_impl/utility \
-                         include/tr1_impl \
-                         include/decimal/decimal \
-                         include/ \
-                         include/@host_alias@/bits \
-                         include/backward \
-                         include/bits \
-                         include/debug \
-                         include/parallel \
-                         include/profile \
-                         include/profile/impl \
-                         include/ext \
-                         include/ext/pb_ds \
-                         include/ext/pb_ds/detail
+			 @srcdir@/libsupc++/cxxabi.h \
+			 @srcdir@/libsupc++/cxxabi-forced.h \
+			 @srcdir@/libsupc++/exception \
+			 @srcdir@/libsupc++/exception_ptr.h \
+			 @srcdir@/libsupc++/initializer_list \
+			 @srcdir@/libsupc++/nested_exception.h \
+			 @srcdir@/libsupc++/new \
+			 @srcdir@/libsupc++/typeinfo \
+			 include/algorithm \
+			 include/array \
+			 include/atomic \
+			 include/bitset \
+			 include/chrono \
+			 include/complex \
+			 include/condition_variable \
+			 include/deque \
+			 include/fstream \
+			 include/functional \
+			 include/future \
+			 include/iomanip \
+			 include/ios \
+			 include/iosfwd \
+			 include/iostream \
+			 include/istream \
+			 include/iterator \
+			 include/limits \
+			 include/list \
+			 include/locale \
+			 include/map \
+			 include/memory \
+			 include/mutex \
+			 include/numeric \
+			 include/ostream \
+			 include/queue \
+			 include/random \
+			 include/ratio \
+			 include/regex \
+			 include/set \
+			 include/sstream \
+			 include/stack \
+			 include/stdexcept \
+			 include/streambuf \
+			 include/string \
+			 include/system_error \
+			 include/thread \
+			 include/tuple \
+			 include/type_traits \
+			 include/unordered_map \
+			 include/unordered_set \
+			 include/utility \
+			 include/valarray \
+			 include/vector \
+			 include/cassert \
+			 include/ccomplex \
+			 include/cctype \
+			 include/cerrno \
+			 include/cfenv \
+			 include/cfloat \
+			 include/cinttypes \
+			 include/ciso646 \
+			 include/climits \
+			 include/clocale \
+			 include/cmath \
+			 include/csetjmp \
+			 include/csignal \
+			 include/cstdarg \
+			 include/cstdbool \
+			 include/cstddef \
+			 include/cstdint \
+			 include/cstdio \
+			 include/cstdlib \
+			 include/cstring \
+			 include/ctgmath \
+			 include/ctime \
+			 include/cwchar \
+			 include/cwctype \
+			 include/backward/hash_map \
+			 include/backward/hash_set \
+			 include/backward/strstream \
+			 include/debug/bitset \
+			 include/debug/deque \
+			 include/debug/list \
+			 include/debug/map \
+			 include/debug/set \
+			 include/debug/string \
+			 include/debug/unordered_map \
+			 include/debug/unordered_set \
+			 include/debug/vector \
+			 include/profile/bitset \
+			 include/profile/deque \
+			 include/profile/list \
+			 include/profile/map \
+			 include/profile/set \
+			 include/profile/unordered_map \
+			 include/profile/unordered_set \
+			 include/profile/vector \
+			 include/ext/algorithm \
+			 include/ext/functional \
+			 include/ext/iterator \
+			 include/ext/memory \
+			 include/ext/numeric \
+			 include/ext/rb_tree \
+			 include/ext/rope \
+			 include/ext/slist \
+			 include/parallel/algorithm \
+			 include/parallel/numeric \
+			 include/tr1/ccomplex \
+			 include/tr1/cctype \
+			 include/tr1/cfenv \
+			 include/tr1/cfloat \
+			 include/tr1/cinttypes \
+			 include/tr1/climits \
+			 include/tr1/cmath \
+			 include/tr1/complex \
+			 include/tr1/cstdarg \
+			 include/tr1/cstdbool \
+			 include/tr1/cstdint \
+			 include/tr1/cstdio \
+			 include/tr1/cstdlib \
+			 include/tr1/ctgmath \
+			 include/tr1/ctime \
+			 include/tr1/cwchar \
+			 include/tr1/cwctype \
+			 include/tr1_impl/array \
+			 include/tr1_impl/cctype \
+			 include/tr1_impl/cfenv \
+			 include/tr1_impl/cinttypes \
+			 include/tr1_impl/cmath \
+			 include/tr1_impl/complex \
+			 include/tr1_impl/cstdint \
+			 include/tr1_impl/cstdio \
+			 include/tr1_impl/cstdlib \
+			 include/tr1_impl/cwchar \
+			 include/tr1_impl/cwctype \
+			 include/tr1_impl/regex \
+			 include/tr1_impl/type_traits \
+			 include/tr1_impl/utility \
+			 include/tr1_impl \
+			 include/decimal/decimal \
+			 include/ \
+			 include/@host_alias@/bits \
+			 include/backward \
+			 include/bits \
+			 include/debug \
+			 include/parallel \
+			 include/profile \
+			 include/profile/impl \
+			 include/ext \
+			 include/ext/pb_ds \
+			 include/ext/pb_ds/detail
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -754,8 +754,8 @@ INPUT_ENCODING         = UTF-8
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
 FILE_PATTERNS          = *.h \
-                         *.hpp \
-                         *.tcc
+			 *.hpp \
+			 *.tcc
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
@@ -782,10 +782,10 @@ EXCLUDE_SYMLINKS       = NO
 # for example use the pattern */test/*
 
 EXCLUDE_PATTERNS       = stamp-* \
-                         *stdc++.h* \
-                         *stdtr1c++.h* \
-                         *extc++.h* \
-                         */.svn/*
+			 *stdc++.h* \
+			 *stdtr1c++.h* \
+			 *extc++.h* \
+			 */.svn/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -1180,7 +1180,7 @@ LATEX_OUTPUT           = latex
 # The LATEX_CMD_NAME tag can be used to specify the LaTeX command name to be
 # invoked. If left blank `latex' will be used as the default command name.
 
-LATEX_CMD_NAME         = pdflatex
+LATEX_CMD_NAME         = latex
 
 # The MAKEINDEX_CMD_NAME tag can be used to specify the command name to
 # generate index for LaTeX. If left blank `makeindex' will be used as the
@@ -1349,7 +1349,7 @@ XML_DTD                =
 # and cross-referencing information) to the XML output. Note that
 # enabling this will significantly increase the size of the XML output.
 
-XML_PROGRAMLISTING     = YES
+XML_PROGRAMLISTING     = NO
 
 #---------------------------------------------------------------------------
 # configuration options for the AutoGen Definitions output
@@ -1448,37 +1448,37 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = __cplusplus \
-                         __GTHREADS \
-                         _GLIBCXX_HAS_GTHREADS \
-                         __GXX_EXPERIMENTAL_CXX0X__ \
-                         _GLIBCXX_INCLUDE_AS_CXX0X \
-                         "_GLIBCXX_STD_P= " \
-                         "_GLIBCXX_STD_D= " \
-                         _GLIBCXX_STD=std \
-                         "_GLIBCXX_TR1= " \
-                         "_GLIBCXX_BEGIN_NAMESPACE_TR1= " \
-                         "_GLIBCXX_END_NAMESPACE_TR1= " \
-                         "_GLIBCXX_BEGIN_NAMESPACE(name)=namespace name {  " \
-                         "_GLIBCXX_BEGIN_NESTED_NAMESPACE(name, unused)=namespace name {  " \
-                         _GLIBCXX_END_NAMESPACE=} \
-                         _GLIBCXX_END_NESTED_NAMESPACE=} \
-                         "_GLIBCXX_TEMPLATE_ARGS=...  " \
-                         _GLIBCXX_DEPRECATED \
-                         _GLIBCXX_USE_WCHAR_T \
-                         _GLIBCXX_USE_LONG_LONG \
-                         _GLIBCXX_USE_C99_STDINT_TR1 \
-                         _GLIBCXX_ATOMIC_BUILTINS_1 \
-                         _GLIBCXX_ATOMIC_BUILTINS_2 \
-                         _GLIBCXX_ATOMIC_BUILTINS_4 \
-                         _GLIBCXX_ATOMIC_BUILTINS_8 \
-                         _GLIBCXX_USE_SCHED_YIELD \
-                         _GLIBCXX_USE_NANOSLEEP \
-                         __GXX_RTTI \
-                         __glibcxx_function_requires=// \
-                         __glibcxx_class_requires=// \
-                         __glibcxx_class_requires2=// \
-                         __glibcxx_class_requires3=// \
-                         __glibcxx_class_requires4=//
+			 __GTHREADS \
+			 _GLIBCXX_HAS_GTHREADS \
+			 __GXX_EXPERIMENTAL_CXX0X__ \
+			 _GLIBCXX_INCLUDE_AS_CXX0X \
+			 "_GLIBCXX_STD_P= " \
+			 "_GLIBCXX_STD_D= " \
+			 _GLIBCXX_STD=std \
+			 "_GLIBCXX_TR1= " \
+			 "_GLIBCXX_BEGIN_NAMESPACE_TR1= " \
+			 "_GLIBCXX_END_NAMESPACE_TR1= " \
+			 "_GLIBCXX_BEGIN_NAMESPACE(name)=namespace name {  " \
+			 "_GLIBCXX_BEGIN_NESTED_NAMESPACE(name, unused)=namespace name {  " \
+			 _GLIBCXX_END_NAMESPACE=} \
+			 _GLIBCXX_END_NESTED_NAMESPACE=} \
+			 "_GLIBCXX_TEMPLATE_ARGS=...  " \
+			 _GLIBCXX_DEPRECATED \
+			 _GLIBCXX_USE_WCHAR_T \
+			 _GLIBCXX_USE_LONG_LONG \
+			 _GLIBCXX_USE_C99_STDINT_TR1 \
+			 _GLIBCXX_ATOMIC_BUILTINS_1 \
+			 _GLIBCXX_ATOMIC_BUILTINS_2 \
+			 _GLIBCXX_ATOMIC_BUILTINS_4 \
+			 _GLIBCXX_ATOMIC_BUILTINS_8 \
+			 _GLIBCXX_USE_SCHED_YIELD \
+			 _GLIBCXX_USE_NANOSLEEP \
+			 __GXX_RTTI \
+			 __glibcxx_function_requires=// \
+			 __glibcxx_class_requires=// \
+			 __glibcxx_class_requires2=// \
+			 __glibcxx_class_requires3=// \
+			 __glibcxx_class_requires4=//
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

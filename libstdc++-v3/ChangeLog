@@ -1,3 +1,11 @@
+2010-03-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Adjust.
+	* doc/doxygen/user.cfg.in: Adjust latex, xml prefs.
+	* doc/xml/api.xml: Update.
+	* doc/Makefile.am: Re-do stamp rules.
+	* doc/Makefile.in: Regenerate.
+
 2010-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/hashtable_policy.h (_Rehash_base<_Prime_rehash_policy,
