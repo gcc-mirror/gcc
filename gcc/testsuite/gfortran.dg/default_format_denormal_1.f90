@@ -1,4 +1,4 @@
-! { dg-do run { xfail *-*-darwin[89]* *-*-freebsd* *-*-mingw* *-*-cygwin* spu-*-* } }
+! { dg-do run { xfail *-*-darwin[89]* *-*-freebsd* *-*-cygwin* spu-*-* } }
 ! Test XFAILed on these platforms because the system's printf() lacks
 ! proper support for denormals.
 !
