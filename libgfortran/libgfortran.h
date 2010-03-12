@@ -586,7 +586,7 @@ st_option;
    that were given (-std=, -pedantic) we should issue an error, a warning
    or nothing.  */
 typedef enum
-{ SILENT, WARNING, ERROR }
+{ NOTIFICATION_SILENT, NOTIFICATION_WARNING, NOTIFICATION_ERROR }
 notification;
 
 /* This is returned by notify_std and several io functions.  */
@@ -701,6 +701,8 @@ internal_proto(show_backtrace);
 
 #if defined(HAVE_GFC_REAL_16)
 #define GFC_LARGEST_BUF (sizeof (GFC_REAL_16))
+#elif defined(HAVE_GFC_INTEGER_16)
+#define GFC_LARGEST_BUF (sizeof (GFC_INTEGER_LARGEST))
 #elif defined(HAVE_GFC_REAL_10)
 #define GFC_LARGEST_BUF (sizeof (GFC_REAL_10))
 #else

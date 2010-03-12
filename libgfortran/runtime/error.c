@@ -452,13 +452,13 @@ notification_std (int std)
   int warning;
 
   if (!compile_options.pedantic)
-    return SILENT;
+    return NOTIFICATION_SILENT;
 
   warning = compile_options.warn_std & std;
   if ((compile_options.allow_std & std) != 0 && !warning)
-    return SILENT;
+    return NOTIFICATION_SILENT;
 
-  return warning ? WARNING : ERROR;
+  return warning ? NOTIFICATION_WARNING : NOTIFICATION_ERROR;
 }
 
 

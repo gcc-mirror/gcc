@@ -1,3 +1,12 @@
+2010-03-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/42950
+	* io/format.c (parse_format_list): Add to ERROR, WARNING,
+	SILENT enumerators NOTIFICATION_ prefix.
+	* runtime/error.c (notification_std): Likewise.
+	* libgfortran.h (notification): Likewise.
+	(GFC_LARGEST_BUF): Check for HAVE_GFC_INTEGER_16.
+
 2010-03-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43228
