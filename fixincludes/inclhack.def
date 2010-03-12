@@ -3248,6 +3248,45 @@ fix = {
 
 
 /*
+<<<<<<< .mine
+ *  On OpenServer and on UnixWare 7, <math.h> uses the native compiler
+ *  __builtin_generic. We fix that usage to use the GCC equivalent.
+ * It also has a plethora of inline functions that conflict with libstdc++.
+ */
+fix = {
+    hackname = sco_math;
+    files    = math.h, '*/math.h';
+    select   = "inline double abs";
+    bypass   = "__GNUG__";
+    sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
+	       "#ifndef __GNUC__\n";
+    sed      =
+"/.*__builtin_generic/a\\\n"
+"#else\\\n"
+"#define __fp_class(a) \\\\\\\n"
+"\\  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
+"\\   __fpclassifyl(a), \\\\\\\n"
+"\\    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
+"\\      __fpclassifyf(a),__fpclassify(a)))\\\n"
+"#endif\n";
+
+    sed      = "/extern \"C++\"/N;"
+	       "/inline double abs/i\\\n"
+               "#ifndef __GNUC__\n";
+    sed      = "/inline long double trunc/N;"
+	       "/inline long double trunc.*}.*extern \"C++\"/a\\\n"
+	       "#endif /* ! __GNUC__ */\n";
+
+    test_text =
+    "#define __fp_class(a) \\\\\n"
+    " __builtin_generic(a,\"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify\")\n";
+
+};
+
+
+/*
+=======
+>>>>>>> .r157397
  * Solaris 10+ complex.h defines _Complex_I and _Imaginary_I in terms of
  * themselves, which are Sun Studio compiler intrinsics.  Remove _Imaginary_I
  * and imaginary definitions which are not supported by GCC.
