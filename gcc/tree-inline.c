@@ -533,7 +533,6 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
   for (old_var = decls; old_var; old_var = TREE_CHAIN (old_var))
     {
       tree new_var;
-      tree origin_var = DECL_ORIGIN (old_var);
 
       if (can_be_nonlocal (old_var, id))
 	{
@@ -545,7 +544,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    VEC_safe_push (tree, gc, *nonlocalized_list, origin_var);
+	    VEC_safe_push (tree, gc, *nonlocalized_list, old_var);
 	  continue;
 	}
 
@@ -563,7 +562,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    VEC_safe_push (tree, gc, *nonlocalized_list, origin_var);
+	    VEC_safe_push (tree, gc, *nonlocalized_list, old_var);
 	}
       else
 	{
