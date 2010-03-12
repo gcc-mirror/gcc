@@ -1,6 +1,6 @@
 /* Common subexpression elimination library for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -155,8 +155,6 @@ void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
 
 #define PRESERVED_VALUE_P(RTX) \
   (RTL_FLAG_CHECK1("PRESERVED_VALUE_P", (RTX), VALUE)->unchanging)
-#define LONG_TERM_PRESERVED_VALUE_P(RTX) \
-  (RTL_FLAG_CHECK1("LONG_TERM_PRESERVED_VALUE_P", (RTX), VALUE)->in_struct)
 
 
 
@@ -436,50 +434,13 @@ cselib_preserved_value_p (cselib_val *v)
   return PRESERVED_VALUE_P (v->val_rtx);
 }
 
-/* Mark preserved values as preserved for the long term.  */
-
-static int
-cselib_preserve_definitely (void **slot, void *info ATTRIBUTE_UNUSED)
-{
-  cselib_val *v = (cselib_val *)*slot;
-
-  if (PRESERVED_VALUE_P (v->val_rtx)
-      && !LONG_TERM_PRESERVED_VALUE_P (v->val_rtx))
-    LONG_TERM_PRESERVED_VALUE_P (v->val_rtx) = true;
-
-  return 1;
-}
-
-/* Clear the preserve marks for values not preserved for the long
-   term.  */
-
-static int
-cselib_clear_preserve (void **slot, void *info ATTRIBUTE_UNUSED)
-{
-  cselib_val *v = (cselib_val *)*slot;
-
-  if (PRESERVED_VALUE_P (v->val_rtx)
-      && !LONG_TERM_PRESERVED_VALUE_P (v->val_rtx))
-    {
-      PRESERVED_VALUE_P (v->val_rtx) = false;
-      if (!v->locs)
-	n_useless_values++;
-    }
-
-  return 1;
-}
-
 /* Clean all non-constant expressions in the hash table, but retain
    their values.  */
 
 void
-cselib_preserve_only_values (bool retain)
+cselib_preserve_only_values (void)
 {
   int i;
-
-  htab_traverse (cselib_hash_table,
-		 retain ? cselib_preserve_definitely : cselib_clear_preserve,
-		 NULL);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     cselib_invalidate_regno (i, reg_raw_mode[i]);

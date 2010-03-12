@@ -91,6 +91,6 @@ extern void cselib_reset_table (unsigned int);
 extern unsigned int cselib_get_next_uid (void);
 extern void cselib_preserve_value (cselib_val *);
 extern bool cselib_preserved_value_p (cselib_val *);
-extern void cselib_preserve_only_values (bool);
+extern void cselib_preserve_only_values (void);
 
 extern void dump_cselib_table (FILE *);
