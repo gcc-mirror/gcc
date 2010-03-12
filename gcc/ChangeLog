@@ -1,3 +1,9 @@
+2010-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR middle-end/42431
+	* gcc/config/rs6000/rs6000.c (rs6000_emit_move): Delete band-aid
+	code added to work around reload clobbering CONST insns.
+
 2010-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* cselib.c (LONG_TERM_PRESERVED_VALUE_P): Remove.
