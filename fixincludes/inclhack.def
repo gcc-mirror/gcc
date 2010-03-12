@@ -3349,9 +3349,11 @@ fix = {
                 "\t\t\t     ? __builtin_signbitl(x) \\\n"
                 "\t\t\t     : __builtin_signbit(x))";
     c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#define	signbit(x)	__builtin_signbit(x)";
+    test_text = <<- _EOText_
+	#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
+	#undef	signbit
+	#define	signbit(x)	__builtin_signbit(x);
+	_EOText_;
 };
 
 fix = {
