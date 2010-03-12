@@ -6,7 +6,7 @@ See also:  http://autogen.SourceForge.net/fixinc.html
 
 The set of fixes required was distilled down to just the data required
 to specify what needed to happen for each fix.  Those data were edited
-into a file named gcc/fixinc/inclhack.def.  A program called AutoGen
+into a file named fixincludes/inclhack.def.  A program called AutoGen
 (http://autogen.SourceForge.net) uses these definitions to instantiate
 several different templates that then produces code for a fixinclude
 program (fixincl.x) and a shell script to test its functioning.  On
