@@ -2308,12 +2308,12 @@ gcc_GAS_CHECK_FEATURE([working cfi advance], gcc_cv_as_cfi_advance_working,
 [	.text
 	.cfi_startproc
 	.cfi_adjust_cfa_offset 64
-	.skip 75031, 0
+	.skip 75040, 0
 	.cfi_adjust_cfa_offset 128
 	.cfi_endproc],
 [[
 if $gcc_cv_readelf -wf conftest.o 2>/dev/null \
-    | grep 'DW_CFA_advance_loc[124]:[ 	][ 	]*75031[ 	]' >/dev/null; then
+    | grep 'DW_CFA_advance_loc[24]:[ 	][ 	]*75040[ 	]' >/dev/null; then
    gcc_cv_as_cfi_advance_working=yes
 fi
 ]])
