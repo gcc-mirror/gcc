@@ -1,3 +1,7 @@
+2010-02-10  Bruce Korb  <bkorb@gnu.org>
+
+	* README: fix up references to old gcc/fixinc directory
+
 2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (solaris_int_limits_3): New fix.
