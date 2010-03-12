@@ -1,3 +1,20 @@
+2010-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43291
+	PR fortran/43326
+	* resolve.c (resolve_compcall): Add new boolean dummy argument
+	'class_members'. Only resolve expression at end if false.
+	Remove redundant, static variable 'class_object'.
+	(check_class_members): Add extra argument to call of
+	resolve_compcall.
+	(resolve_typebound_function): Renamed resolve_class_compcall.
+	Do all the detection of class references here. Correct calls to
+	resolve_compcall for extra argument.
+	(resolve_typebound_subroutine): resolve_class_typebound_call
+	renamed. Otherwise same as resolve_typebound_function.
+	(gfc_resolve_expr): Call resolve_typebound_function.
+	(resolve_code): Call resolve_typebound_subroutine.
+
 2010-03-10  Tobias Burnus  <burnus@net-b.de
 
 	PR fortran/43303

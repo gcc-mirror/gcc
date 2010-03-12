@@ -1,3 +1,9 @@
+2010-03-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43291
+	PR fortran/43326
+	* gfortran.dg/dynamic_dispatch_7.f03: New test.
+
 2010-03-12  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gfortran.dg/default_format_denormal_1.f90: Don't assume
