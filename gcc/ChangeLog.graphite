@@ -1,5 +1,10 @@
 2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (build_poly_scop): Do not return bool.
+	* graphite-sese-to-poly.h (build_poly_scop): Same.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_poly_scop): Limit scops following
 	the number of parameters in the scop.  Use as an upper bound
 	PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS.

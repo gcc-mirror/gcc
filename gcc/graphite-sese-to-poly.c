@@ -2932,7 +2932,7 @@ scop_ivs_can_be_represented (scop_p scop)
 
 /* Builds the polyhedral representation for a SESE region.  */
 
-bool
+void
 build_poly_scop (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
@@ -2950,12 +2950,11 @@ build_poly_scop (scop_p scop)
      sense to optimize a scop containing only PBBs that do not belong
      to any loops.  */
   if (nb_pbbs_in_loops (scop) == 0)
-    return false;
+    return;
 
   scop_canonicalize_loops (scop);
-
   if (!scop_ivs_can_be_represented (scop))
-    return false;
+    return;
 
   build_sese_loop_nests (region);
   build_sese_conditions (region);
@@ -2963,7 +2962,7 @@ build_poly_scop (scop_p scop)
 
   max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
   if (scop_nb_params (scop) > max_dim)
-    return false;
+    return;
 
   build_scop_iteration_domain (scop);
   build_scop_context (scop);
@@ -2972,9 +2971,10 @@ build_poly_scop (scop_p scop)
   scop_to_lst (scop);
   build_scop_scattering (scop);
   build_scop_drs (scop);
-  POLY_SCOP_P (scop) = true;
 
-  return true;
+  /* This SCoP has been translated to the polyhedral
+     representation.  */
+  POLY_SCOP_P (scop) = true;
 }
 
 /* Always return false.  Exercise the scop_to_clast function.  */

@@ -28,7 +28,7 @@ struct base_alias_pair
   int *alias_set;
 };
 
-bool build_poly_scop (scop_p);
+void build_poly_scop (scop_p);
 void check_poly_representation (scop_p);
 
 #endif
