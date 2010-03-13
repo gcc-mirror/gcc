@@ -4141,7 +4141,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::make_pair(__min, __max);
     }
 
-  // N2722 + fixes.
+  // N2722 + DR 915.
   template<typename _Tp>
     inline _Tp
     min(initializer_list<_Tp> __l)
