@@ -38,9 +38,9 @@ class javax::swing::plaf::basic::BasicIconFactory$1 : public ::java::lang::Objec
 public: // actually package-private
   BasicIconFactory$1();
 public:
-  jint getIconHeight();
-  jint getIconWidth();
-  void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
+  virtual jint getIconHeight();
+  virtual jint getIconWidth();
+  virtual void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
   static ::java::lang::Class class$;
 };
 

@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicButtonListener$2 : public ::javax::swing::
 public: // actually package-private
   BasicButtonListener$2(::javax::swing::plaf::basic::BasicButtonListener *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicButtonListener * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

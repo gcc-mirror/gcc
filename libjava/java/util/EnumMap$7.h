@@ -14,7 +14,7 @@ class java::util::EnumMap$7 : public ::java::util::AbstractMap$SimpleEntry
 public: // actually package-private
   EnumMap$7(::java::util::EnumMap$6 *, ::java::lang::Enum *, ::java::lang::Object *);
 public:
-  ::java::lang::Object * setValue(::java::lang::Object *);
+  virtual ::java::lang::Object * setValue(::java::lang::Object *);
 public: // actually package-private
   ::java::util::EnumMap$6 * __attribute__((aligned(__alignof__( ::java::util::AbstractMap$SimpleEntry)))) this$2;
 public:

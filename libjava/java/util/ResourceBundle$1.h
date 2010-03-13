@@ -14,7 +14,7 @@ class java::util::ResourceBundle$1 : public ::java::util::LinkedHashMap
 public: // actually package-private
   ResourceBundle$1(jint, jfloat, jboolean);
 public:
-  jboolean removeEldestEntry(::java::util::Map$Entry *);
+  virtual jboolean removeEldestEntry(::java::util::Map$Entry *);
   static ::java::lang::Class class$;
 };
 

@@ -14,12 +14,12 @@ class java::util::Collections$7 : public ::java::lang::Object
 public: // actually package-private
   Collections$7(::java::util::Collections$6 *, ::java::util::Map$Entry *);
 public:
-  jboolean equals(::java::lang::Object *);
-  ::java::lang::Object * getKey();
-  ::java::lang::Object * getValue();
-  jint hashCode();
-  ::java::lang::Object * setValue(::java::lang::Object *);
-  ::java::lang::String * toString();
+  virtual jboolean equals(::java::lang::Object *);
+  virtual ::java::lang::Object * getKey();
+  virtual ::java::lang::Object * getValue();
+  virtual jint hashCode();
+  virtual ::java::lang::Object * setValue(::java::lang::Object *);
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   ::java::util::Collections$6 * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$3;
 private:

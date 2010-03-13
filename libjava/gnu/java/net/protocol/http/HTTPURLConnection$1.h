@@ -35,7 +35,7 @@ class gnu::java::net::protocol::http::HTTPURLConnection$1 : public ::java::lang:
 public: // actually package-private
   HTTPURLConnection$1(::gnu::java::net::protocol::http::HTTPURLConnection *, ::gnu::java::net::protocol::http::Credentials *);
 public:
-  ::gnu::java::net::protocol::http::Credentials * getCredentials(::java::lang::String *, jint);
+  virtual ::gnu::java::net::protocol::http::Credentials * getCredentials(::java::lang::String *, jint);
 public: // actually package-private
   ::gnu::java::net::protocol::http::HTTPURLConnection * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

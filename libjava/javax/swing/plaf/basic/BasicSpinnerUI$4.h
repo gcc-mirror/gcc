@@ -42,10 +42,10 @@ class javax::swing::plaf::basic::BasicSpinnerUI$4 : public ::java::awt::event::M
 public: // actually package-private
   BasicSpinnerUI$4(::javax::swing::plaf::basic::BasicSpinnerUI *);
 public:
-  void mousePressed(::java::awt::event::MouseEvent *);
-  void mouseReleased(::java::awt::event::MouseEvent *);
+  virtual void mousePressed(::java::awt::event::MouseEvent *);
+  virtual void mouseReleased(::java::awt::event::MouseEvent *);
 public: // actually package-private
-  void decrement();
+  virtual void decrement();
   jboolean volatile __attribute__((aligned(__alignof__( ::java::awt::event::MouseAdapter)))) mouseDown;
   ::javax::swing::Timer * timer;
   ::javax::swing::plaf::basic::BasicSpinnerUI * this$0;

@@ -62,7 +62,7 @@ class gnu::javax::security::auth::callback::SwingCallbackHandler$2 : public ::ja
 public: // actually package-private
   SwingCallbackHandler$2(::gnu::javax::security::auth::callback::SwingCallbackHandler *, ::javax::security::auth::callback::ChoiceCallback *, ::javax::swing::JList *, jint, ::javax::swing::JDialog *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::gnu::javax::security::auth::callback::SwingCallbackHandler * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

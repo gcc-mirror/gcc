@@ -28,7 +28,7 @@ class javax::swing::text::ComponentView$1 : public ::java::lang::Object
 public: // actually package-private
   ComponentView$1(::javax::swing::text::ComponentView *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::text::ComponentView * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

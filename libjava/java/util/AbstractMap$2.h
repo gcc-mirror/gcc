@@ -14,9 +14,9 @@ class java::util::AbstractMap$2 : public ::java::lang::Object
 public: // actually package-private
   AbstractMap$2(::java::util::AbstractMap$1 *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) map_iterator;
 public: // actually package-private

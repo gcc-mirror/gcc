@@ -57,9 +57,9 @@ class gnu::javax::swing::text::html::parser::support::Parser$2 : public ::gnu::j
 public: // actually package-private
   Parser$2(::gnu::javax::swing::text::html::parser::support::Parser *, ::javax::swing::text::html::parser::DTD *);
 public: // actually protected
-  void s_error(::java::lang::String *);
-  void handleSupposedEndTag(::javax::swing::text::html::parser::Element *);
-  void handleSupposedStartTag(::javax::swing::text::html::parser::Element *);
+  virtual void s_error(::java::lang::String *);
+  virtual void handleSupposedEndTag(::javax::swing::text::html::parser::Element *);
+  virtual void handleSupposedStartTag(::javax::swing::text::html::parser::Element *);
 public: // actually package-private
   ::gnu::javax::swing::text::html::parser::support::Parser * __attribute__((aligned(__alignof__( ::gnu::javax::swing::text::html::parser::htmlValidator)))) this$0;
 public:

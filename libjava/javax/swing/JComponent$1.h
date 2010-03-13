@@ -25,7 +25,7 @@ class javax::swing::JComponent$1 : public ::java::lang::Object
 public: // actually package-private
   JComponent$1(::javax::swing::JComponent *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::JComponent * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

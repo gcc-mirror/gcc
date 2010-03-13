@@ -30,7 +30,7 @@ class org::w3c::dom::bootstrap::DOMImplementationRegistry$3 : public ::java::lan
 public: // actually package-private
   DOMImplementationRegistry$3(::java::lang::String *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$name;
 public:

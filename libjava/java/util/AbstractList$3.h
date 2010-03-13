@@ -16,15 +16,15 @@ public: // actually package-private
 private:
   void checkMod();
 public:
-  jboolean hasNext();
-  jboolean hasPrevious();
-  ::java::lang::Object * next();
-  ::java::lang::Object * previous();
-  jint nextIndex();
-  jint previousIndex();
-  void remove();
-  void set(::java::lang::Object *);
-  void add(::java::lang::Object *);
+  virtual jboolean hasNext();
+  virtual jboolean hasPrevious();
+  virtual ::java::lang::Object * next();
+  virtual ::java::lang::Object * previous();
+  virtual jint nextIndex();
+  virtual jint previousIndex();
+  virtual void remove();
+  virtual void set(::java::lang::Object *);
+  virtual void add(::java::lang::Object *);
 private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) knownMod;
   jint position;

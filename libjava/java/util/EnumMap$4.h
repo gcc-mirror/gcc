@@ -14,9 +14,9 @@ class java::util::EnumMap$4 : public ::java::lang::Object
 public: // actually package-private
   EnumMap$4(::java::util::EnumMap$3 *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) count;
   jint index;

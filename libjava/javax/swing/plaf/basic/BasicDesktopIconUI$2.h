@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicDesktopIconUI$2 : public ::java::lang::Obj
 public: // actually package-private
   BasicDesktopIconUI$2(::javax::swing::plaf::basic::BasicDesktopIconUI *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicDesktopIconUI * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

@@ -14,7 +14,7 @@ class java::util::Collections$9 : public ::java::util::Collections$ReverseCompar
 public: // actually package-private
   Collections$9(::java::util::Comparator *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 private:
   ::java::util::Comparator * __attribute__((aligned(__alignof__( ::java::util::Collections$ReverseComparator)))) val$c;
 public:

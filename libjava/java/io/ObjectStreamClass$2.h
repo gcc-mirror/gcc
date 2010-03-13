@@ -14,7 +14,7 @@ class java::io::ObjectStreamClass$2 : public ::java::lang::Object
 public: // actually package-private
   ObjectStreamClass$2(::java::io::ObjectStreamClass *, ::java::lang::reflect::Constructor *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::io::ObjectStreamClass * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

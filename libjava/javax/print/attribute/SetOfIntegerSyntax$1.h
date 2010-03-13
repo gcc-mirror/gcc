@@ -27,7 +27,7 @@ class javax::print::attribute::SetOfIntegerSyntax$1 : public ::java::lang::Objec
 public: // actually package-private
   SetOfIntegerSyntax$1();
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
   static ::java::lang::Class class$;
 };
 

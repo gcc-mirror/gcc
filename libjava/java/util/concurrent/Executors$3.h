@@ -14,7 +14,7 @@ class java::util::concurrent::Executors$3 : public ::java::lang::Object
 public: // actually package-private
   Executors$3(::java::util::concurrent::Executors$PrivilegedThreadFactory *, ::java::lang::Runnable *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   static ::java::util::concurrent::Executors$PrivilegedThreadFactory * access$0(::java::util::concurrent::Executors$3 *);
   ::java::util::concurrent::Executors$PrivilegedThreadFactory * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;

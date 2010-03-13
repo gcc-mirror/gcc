@@ -30,7 +30,7 @@ class gnu::java::rmi::server::UnicastConnectionManager$1 : public ::java::lang::
 public: // actually package-private
   UnicastConnectionManager$1();
 public:
-  void run();
+  virtual void run();
   static ::java::lang::Class class$;
 };
 

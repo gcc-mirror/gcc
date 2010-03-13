@@ -14,7 +14,7 @@ class java::util::Collections$6 : public ::java::util::Collections$CheckedIterat
 public: // actually package-private
   Collections$6(::java::util::Collections$CheckedMap$CheckedEntrySet *, ::java::util::Iterator *, ::java::lang::Class *);
 public:
-  ::java::lang::Object * next();
+  virtual ::java::lang::Object * next();
 public: // actually package-private
   static ::java::util::Collections$CheckedMap$CheckedEntrySet * access$0(::java::util::Collections$6 *);
   ::java::util::Collections$CheckedMap$CheckedEntrySet * __attribute__((aligned(__alignof__( ::java::util::Collections$CheckedIterator)))) this$2;

@@ -35,7 +35,7 @@ class javax::swing::ProgressMonitor$1 : public ::java::lang::Object
 public: // actually package-private
   ProgressMonitor$1(::javax::swing::ProgressMonitor *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::ProgressMonitor * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

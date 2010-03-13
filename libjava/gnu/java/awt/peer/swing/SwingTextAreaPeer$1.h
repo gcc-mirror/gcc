@@ -41,7 +41,7 @@ class gnu::java::awt::peer::swing::SwingTextAreaPeer$1 : public ::javax::swing::
 public: // actually package-private
   SwingTextAreaPeer$1(::gnu::java::awt::peer::swing::SwingTextAreaPeer *);
 public:
-  ::java::awt::Image * createImage(jint, jint);
+  virtual ::java::awt::Image * createImage(jint, jint);
 public: // actually package-private
   ::gnu::java::awt::peer::swing::SwingTextAreaPeer * __attribute__((aligned(__alignof__( ::javax::swing::JViewport)))) this$0;
 public:

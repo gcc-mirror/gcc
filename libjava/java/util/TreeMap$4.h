@@ -14,9 +14,9 @@ class java::util::TreeMap$4 : public ::java::lang::Object
 public: // actually package-private
   TreeMap$4(::java::util::TreeMap$3 *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   ::java::util::Map$Entry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) last;
   ::java::util::Map$Entry * next__;

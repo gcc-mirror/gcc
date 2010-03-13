@@ -39,9 +39,9 @@ class javax::swing::plaf::basic::BasicTreeUI$1 : public ::java::lang::Object
 public: // actually package-private
   BasicTreeUI$1(::javax::swing::plaf::basic::BasicTreeUI *);
 public:
-  jint getIconHeight();
-  jint getIconWidth();
-  void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
+  virtual jint getIconHeight();
+  virtual jint getIconWidth();
+  virtual void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicTreeUI * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

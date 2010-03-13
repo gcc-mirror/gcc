@@ -25,8 +25,8 @@ class java::security::UnresolvedPermissionCollection$1 : public ::java::lang::Ob
 public: // actually package-private
   UnresolvedPermissionCollection$1(::java::security::UnresolvedPermissionCollection *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::java::util::Enumeration * __attribute__((aligned(__alignof__( ::java::lang::Object)))) main_enum;
   ::java::util::Enumeration * sub_enum;

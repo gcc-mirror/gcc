@@ -25,11 +25,11 @@ class javax::swing::Spring$1 : public ::javax::swing::Spring
 public: // actually package-private
   Spring$1(jfloat, ::javax::swing::Spring *);
 public:
-  jint getMaximumValue();
-  jint getMinimumValue();
-  jint getPreferredValue();
-  jint getValue();
-  void setValue(jint);
+  virtual jint getMaximumValue();
+  virtual jint getMinimumValue();
+  virtual jint getPreferredValue();
+  virtual jint getValue();
+  virtual void setValue(jint);
 private:
   jfloat __attribute__((aligned(__alignof__( ::javax::swing::Spring)))) val$factor;
   ::javax::swing::Spring * val$spring;

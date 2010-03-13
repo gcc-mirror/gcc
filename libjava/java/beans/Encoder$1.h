@@ -26,7 +26,7 @@ class java::beans::Encoder$1 : public ::java::beans::PersistenceDelegate
 public: // actually package-private
   Encoder$1();
 public: // actually protected
-  ::java::beans::Expression * instantiate(::java::lang::Object *, ::java::beans::Encoder *);
+  virtual ::java::beans::Expression * instantiate(::java::lang::Object *, ::java::beans::Encoder *);
 public:
   static ::java::lang::Class class$;
 };

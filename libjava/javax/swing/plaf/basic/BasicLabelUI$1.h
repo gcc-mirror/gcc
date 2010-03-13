@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicLabelUI$1 : public ::javax::swing::Abstrac
 public: // actually package-private
   BasicLabelUI$1(::javax::swing::plaf::basic::BasicLabelUI *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicLabelUI * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

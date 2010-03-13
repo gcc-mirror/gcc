@@ -30,7 +30,7 @@ class javax::security::auth::login::Configuration$1 : public ::java::lang::Objec
 public: // actually package-private
   Configuration$1();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

@@ -30,7 +30,7 @@ class javax::swing::JEditorPane$1 : public ::java::lang::Object
 public: // actually package-private
   JEditorPane$1(::javax::swing::JEditorPane$PlainEditorKit *);
 public:
-  ::javax::swing::text::View * create(::javax::swing::text::Element *);
+  virtual ::javax::swing::text::View * create(::javax::swing::text::Element *);
 public: // actually package-private
   ::javax::swing::JEditorPane$PlainEditorKit * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

@@ -14,7 +14,7 @@ class java::util::zip::ZipFile$1 : public ::java::util::zip::InflaterInputStream
 public: // actually package-private
   ZipFile$1(::java::util::zip::ZipFile *, ::java::io::InputStream *, ::java::util::zip::Inflater *, jint);
 public:
-  jint available();
+  virtual jint available();
 public: // actually package-private
   ::java::util::zip::ZipFile * __attribute__((aligned(__alignof__( ::java::util::zip::InflaterInputStream)))) this$0;
 private:

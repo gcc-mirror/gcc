@@ -14,11 +14,11 @@ class java::util::Hashtable$1 : public ::java::util::AbstractSet
 public: // actually package-private
   Hashtable$1(::java::util::Hashtable *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
-  jboolean contains(::java::lang::Object *);
-  jboolean remove(::java::lang::Object *);
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
+  virtual jboolean contains(::java::lang::Object *);
+  virtual jboolean remove(::java::lang::Object *);
 public: // actually package-private
   ::java::util::Hashtable * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$0;
 public:

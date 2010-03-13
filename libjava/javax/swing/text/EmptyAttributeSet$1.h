@@ -28,8 +28,8 @@ class javax::swing::text::EmptyAttributeSet$1 : public ::java::lang::Object
 public: // actually package-private
   EmptyAttributeSet$1(::javax::swing::text::EmptyAttributeSet *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::javax::swing::text::EmptyAttributeSet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

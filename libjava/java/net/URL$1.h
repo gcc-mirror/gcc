@@ -24,8 +24,8 @@ class java::net::URL$1 : public ::java::lang::Object
 public: // actually package-private
   URL$1();
 public:
-  ::java::lang::ClassLoader * URL$1$run();
-  ::java::lang::Object * run();
+  virtual ::java::lang::ClassLoader * URL$1$run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

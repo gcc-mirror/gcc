@@ -25,7 +25,7 @@ class gnu::CORBA::gnuRequest$1 : public ::java::lang::Thread
 public: // actually package-private
   gnuRequest$1(::gnu::CORBA::gnuRequest *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::CORBA::gnuRequest * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) this$0;
 public:
