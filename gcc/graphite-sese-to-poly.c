@@ -180,7 +180,7 @@ reduction_phi_p (sese region, gimple_stmt_iterator *psi)
 
   if (simple_copy_phi_p (phi))
     {
-      /* FIXME: PRE introduces phi nodes like these, for an example,
+      /* PRE introduces phi nodes like these, for an example,
 	 see id-5.f in the fortran graphite testsuite:
 
 	 # prephitmp.85_265 = PHI <prephitmp.85_258(33), prephitmp.85_265(18)>
@@ -1038,6 +1038,74 @@ gbb_from_bb (basic_block bb)
   return (gimple_bb_p) bb->aux;
 }
 
+/* Insert in the SCOP context constraints from the estimation of the
+   number of iterations.  UB_EXPR is a linear expression describing
+   the number of iterations in a loop.  This expression is bounded by
+   the estimation NIT.  */
+
+static void
+add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
+				     ppl_dimension_type dim,
+				     ppl_Linear_Expression_t ub_expr)
+{
+  Value val;
+  ppl_Linear_Expression_t nb_iters_le;
+  ppl_Polyhedron_t pol;
+  ppl_Coefficient_t coef;
+  ppl_Constraint_t ub;
+
+  ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
+  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
+  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
+						    ub_expr);
+
+  /* Construct the negated number of last iteration in VAL.  */
+  value_init (val);
+  mpz_set_double_int (val, nit, false);
+  value_sub_int (val, val, 1);
+  value_oppose (val, val);
+
+  /* NB_ITERS_LE holds the number of last iteration in
+     parametrical form.  Subtract estimated number of last
+     iteration and assert that result is not positive.  */
+  ppl_new_Coefficient_from_mpz_t (&coef, val);
+  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
+  ppl_delete_Coefficient (coef);
+  ppl_new_Constraint (&ub, nb_iters_le,
+		      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+  ppl_Polyhedron_add_constraint (pol, ub);
+
+  /* Remove all but last GDIM dimensions from POL to obtain
+     only the constraints on the parameters.  */
+  {
+    graphite_dim_t gdim = scop_nb_params (scop);
+    ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - gdim);
+    graphite_dim_t i;
+
+    for (i = 0; i < dim - gdim; i++)
+      dims[i] = i;
+
+    ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - gdim);
+    XDELETEVEC (dims);
+  }
+
+  /* Add the constraints on the parameters to the SCoP context.  */
+  {
+    ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
+
+    ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+      (&constraints_ps, pol);
+    ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
+      (SCOP_CONTEXT (scop), constraints_ps);
+    ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
+  }
+
+  ppl_delete_Polyhedron (pol);
+  ppl_delete_Linear_Expression (nb_iters_le);
+  ppl_delete_Constraint (ub);
+  value_clear (val);
+}
+
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
    the constraints for the surrounding loops.  */
 
@@ -1113,64 +1181,8 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
       scan_tree_for_params (SCOP_REGION (scop), nb_iters, ub_expr, one);
       value_clear (one);
 
-      /* N <= estimated_nb_iters
-
-	 FIXME: This is a workaround that should go away once we will
-	 have the PIP algorithm.  */
       if (estimated_loop_iterations (loop, true, &nit))
-	{
-	  Value val;
-	  ppl_Linear_Expression_t nb_iters_le;
-	  ppl_Polyhedron_t pol;
-	  graphite_dim_t n = scop_nb_params (scop);
-	  ppl_Coefficient_t coef;
-
-	  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
-	  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
-							    ub_expr);
-
-	  /* Construct the negated number of last iteration in VAL.  */
-	  value_init (val);
-	  mpz_set_double_int (val, nit, false);
-	  value_sub_int (val, val, 1);
-	  value_oppose (val, val);
-
-	  /* NB_ITERS_LE holds number of last iteration in parametrical form.
-	  Subtract estimated number of last iteration and assert that result
-	  is not positive.  */
-	  ppl_new_Coefficient_from_mpz_t (&coef, val);
-	  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
-	  ppl_delete_Coefficient (coef);
-	  ppl_new_Constraint (&ub, nb_iters_le,
-			      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
-	  ppl_Polyhedron_add_constraint (pol, ub);
-
-	  /* Remove all but last N dimensions from POL to obtain constraints
-	     on parameters.  */
-	    {
-	      ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - n);
-	      graphite_dim_t i;
-	      for (i = 0; i < dim - n; i++)
-		dims[i] = i;
-	      ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - n);
-	      XDELETEVEC (dims);
-	    }
-
-	  /* Add constraints on parameters to SCoP context.  */
-	    {
-	      ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
-	      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-	       (&constraints_ps, pol);
-	      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-	       (SCOP_CONTEXT (scop), constraints_ps);
-	      ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
-	    }
-
-	  ppl_delete_Polyhedron (pol);
-	  ppl_delete_Linear_Expression (nb_iters_le);
-	  ppl_delete_Constraint (ub);
-	  value_clear (val);
-	}
+	add_upper_bounds_from_estimated_nit (scop, nit, dim, ub_expr);
 
       /* loop_i <= expr_nb_iters */
       ppl_set_coef (ub_expr, nb, -1);
