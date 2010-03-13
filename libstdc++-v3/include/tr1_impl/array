@@ -229,7 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp, std::size_t _Nm>
     inline void
     swap(array<_Tp, _Nm>& __one, array<_Tp, _Nm>& __two)
-    { std::swap_ranges(__one.begin(), __one.end(), __two.begin()); }
+    { __one.swap(__two); }
 
   // Tuple interface to class template array [6.2.2.5].
 
