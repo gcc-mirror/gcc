@@ -823,9 +823,6 @@ translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
   return next_e;
 }
 
-static tree gcc_type_for_iv_of_clast_loop (struct clast_for *);
-
-
 /* Creates a new if region protecting the loop to be executed, if the execution
    count is zero (lb > ub).  */
 static edge

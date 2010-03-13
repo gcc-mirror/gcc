@@ -1,3 +1,11 @@
+2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop): Remove
+	forward declaration.
+	* graphite-sese-to-poly.c (reduction_phi_p): Remove FIXME comment.
+	(add_upper_bounds_from_estimated_nit): New.
+	(build_loop_iteration_domains): Use it.
+
 2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi (PARAM_LOOP_BLOCK_TILE_SIZE): Document.
