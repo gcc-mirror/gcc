@@ -1,5 +1,9 @@
 2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* doc/invoke.texi (PARAM_LOOP_BLOCK_TILE_SIZE): Document.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/43306
 	* tree-chrec.c (evolution_function_right_is_integer_cst): CHREC_RIGHT
 	should be an INTEGER_CST.  Also handle CASE_CONVERT.
