@@ -2200,7 +2200,8 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple stmt = gimple_build_assign (res, zero_dim_array);
   tree arg = gimple_phi_arg_def (phi, 0);
 
-  if (TREE_CODE (arg) == SSA_NAME)
+  if (TREE_CODE (arg) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (arg))
     insert_out_of_ssa_copy (zero_dim_array, arg);
   else
     insert_out_of_ssa_copy_on_edge (single_pred_edge (gimple_bb (phi)),
