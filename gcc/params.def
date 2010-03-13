@@ -749,14 +749,14 @@ DEFPARAM (PARAM_LOOP_BLOCK_TILE_SIZE,
 
 DEFPARAM (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS,
 	  "graphite-max-nb-scop-params",
-	  "maximal number of parameters in a SCoP",
+	  "maximum number of parameters in a SCoP",
 	  10, 0, 0)
 
 /* Maximal number of basic blocks in the functions analyzed by Graphite.  */
 
 DEFPARAM (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION,
 	  "graphite-max-bbs-per-function",
-	  "maximal number of basic blocks per function to be analyzed by Graphite",
+	  "maximum number of basic blocks per function to be analyzed by Graphite",
 	  100, 0, 0)
 
 /* Avoid doing loop invariant motion on very large loops.  */

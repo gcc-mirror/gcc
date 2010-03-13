@@ -1,5 +1,13 @@
 2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* doc/invoke.texi: Fix documentation of graphite-max-nb-scop-params,
+	graphite-max-bbs-per-function, and loop-block-tile-size.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Replace "maximal"
+	with "maximum".
+	(PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Same.
+
+2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop): Remove
 	forward declaration.
 	* graphite-sese-to-poly.c (reduction_phi_p): Remove FIXME comment.
