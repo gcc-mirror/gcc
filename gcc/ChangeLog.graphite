@@ -1,5 +1,12 @@
 2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/43306
+	* tree-chrec.c (evolution_function_right_is_integer_cst): CHREC_RIGHT
+	should be an INTEGER_CST.  Also handle CASE_CONVERT.
+	* gcc.dg/graphite/pr43306.c: New.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite.c (graphite_initialize): To bound the number of bbs per
 	function, use PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION.
 	* params.def (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Declared.
