@@ -1,3 +1,8 @@
+2010-03-12  David S. Miller  <davem@davemloft.net>
+
+	* gcc.dg/lto/20090313_0.c: Add -mcpu=v9 to dg-lto-options on
+	sparc.
+
 2010-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.target/arm/sibcall-1.c: Allow PLT to appear with pic code.
