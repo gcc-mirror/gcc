@@ -59,7 +59,7 @@
 
 2010-03-10  Jan Hubicka   <jh@suse.cz>
 
-	* gcc.dg/compile/pr43288.c: New test.
+	* gcc.c-torture/compile/pr43288.c: New test.
 
 2010-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
