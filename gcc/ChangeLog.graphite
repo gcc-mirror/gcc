@@ -1,4 +1,11 @@
-2010-03-11  Sebastian Pop  <sebastian.pop@amd.com>
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43354
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Do not
+	call insert_out_of_ssa_copy for default definitions.
+	* gfortran.dg/graphite/id-pr43354.f: New.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43349
 	* gfortran.dg/graphite/pr43349.f: New.
