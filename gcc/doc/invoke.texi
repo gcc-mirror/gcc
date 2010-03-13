@@ -8492,6 +8492,10 @@ parameters only when their cumulative size is less or equal to
 @option{ipa-sra-ptr-growth-factor} times the size of the original
 pointer parameter.
 
+@item graphite-max-nb-scop-params
+To avoid exponential effects in the Graphite loop transforms, the
+number of parameters in a SCoP is bounded by 10.
+
 @end table
 @end table
 
