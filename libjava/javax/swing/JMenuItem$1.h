@@ -32,7 +32,7 @@ class javax::swing::JMenuItem$1 : public ::java::lang::Object
 public: // actually package-private
   JMenuItem$1(::javax::swing::JMenuItem *);
 public:
-  void propertyChange(::java::beans::PropertyChangeEvent *);
+  virtual void propertyChange(::java::beans::PropertyChangeEvent *);
 public: // actually package-private
   ::javax::swing::JMenuItem * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

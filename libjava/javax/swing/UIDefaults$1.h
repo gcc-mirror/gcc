@@ -26,7 +26,7 @@ class javax::swing::UIDefaults$1 : public ::java::lang::Object
 public: // actually package-private
   UIDefaults$1(::javax::swing::UIDefaults$ProxyLazyValue *, ::java::lang::String *);
 public:
-  ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
+  virtual ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
 public: // actually package-private
   ::javax::swing::UIDefaults$ProxyLazyValue * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 private:

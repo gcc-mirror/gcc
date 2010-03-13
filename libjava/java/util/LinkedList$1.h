@@ -16,9 +16,9 @@ public: // actually package-private
 private:
   void checkMod();
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) knownMod;
   ::java::util::LinkedList$Entry * next__;

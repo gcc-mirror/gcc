@@ -28,7 +28,7 @@ class gnu::java::security::Properties$1 : public ::java::lang::Object
 public: // actually package-private
   Properties$1(::gnu::java::security::Properties *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::gnu::java::security::Properties * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

@@ -28,8 +28,8 @@ class javax::swing::text::StyleContext$1 : public ::java::lang::Object
 public: // actually package-private
   StyleContext$1(::javax::swing::text::StyleContext$SmallAttributeSet *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) i;
   ::javax::swing::text::StyleContext$SmallAttributeSet * this$1;

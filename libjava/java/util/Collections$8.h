@@ -14,8 +14,8 @@ class java::util::Collections$8 : public ::java::lang::Object
 public: // actually package-private
   Collections$8(::java::util::Iterator *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$i;
 public:

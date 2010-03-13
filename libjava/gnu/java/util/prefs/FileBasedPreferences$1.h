@@ -31,7 +31,7 @@ class gnu::java::util::prefs::FileBasedPreferences$1 : public ::java::lang::Obje
 public: // actually package-private
   FileBasedPreferences$1(::gnu::java::util::prefs::FileBasedPreferences *);
 public:
-  jboolean accept(::java::io::File *, ::java::lang::String *);
+  virtual jboolean accept(::java::io::File *, ::java::lang::String *);
 public: // actually package-private
   ::gnu::java::util::prefs::FileBasedPreferences * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

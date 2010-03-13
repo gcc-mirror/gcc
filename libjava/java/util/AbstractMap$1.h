@@ -14,9 +14,9 @@ class java::util::AbstractMap$1 : public ::java::util::AbstractSet
 public: // actually package-private
   AbstractMap$1(::java::util::AbstractMap *);
 public:
-  jint size();
-  jboolean contains(::java::lang::Object *);
-  ::java::util::Iterator * iterator();
+  virtual jint size();
+  virtual jboolean contains(::java::lang::Object *);
+  virtual ::java::util::Iterator * iterator();
 public: // actually package-private
   static ::java::util::AbstractMap * access$0(::java::util::AbstractMap$1 *);
   ::java::util::AbstractMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$0;

@@ -36,8 +36,8 @@ class javax::swing::colorchooser::DefaultHSBChooserPanel$2 : public ::javax::swi
 public: // actually package-private
   DefaultHSBChooserPanel$2(::javax::swing::colorchooser::DefaultHSBChooserPanel *);
 public:
-  ::java::awt::Dimension * getPreferredSize();
-  void paint(::java::awt::Graphics *);
+  virtual ::java::awt::Dimension * getPreferredSize();
+  virtual void paint(::java::awt::Graphics *);
 public: // actually package-private
   ::javax::swing::colorchooser::DefaultHSBChooserPanel * __attribute__((aligned(__alignof__( ::javax::swing::JPanel)))) this$0;
 public:

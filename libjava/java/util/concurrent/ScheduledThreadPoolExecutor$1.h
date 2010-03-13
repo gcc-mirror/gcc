@@ -14,10 +14,10 @@ class java::util::concurrent::ScheduledThreadPoolExecutor$1 : public ::java::lan
 public: // actually package-private
   ScheduledThreadPoolExecutor$1(::java::util::concurrent::ScheduledThreadPoolExecutor$DelayedWorkQueue *);
 public:
-  jboolean hasNext();
-  ::java::lang::Runnable * ScheduledThreadPoolExecutor$1$next();
-  void remove();
-  ::java::lang::Object * next();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Runnable * ScheduledThreadPoolExecutor$1$next();
+  virtual void remove();
+  virtual ::java::lang::Object * next();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) it;
 public: // actually package-private

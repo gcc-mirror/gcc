@@ -24,7 +24,7 @@ class java::util::concurrent::Executors$5 : public ::java::lang::Object
 public: // actually package-private
   Executors$5(::java::security::PrivilegedAction *);
 public:
-  ::java::lang::Object * call();
+  virtual ::java::lang::Object * call();
 private:
   ::java::security::PrivilegedAction * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$action;
 public:

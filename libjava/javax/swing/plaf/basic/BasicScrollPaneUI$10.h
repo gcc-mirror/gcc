@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicScrollPaneUI$10 : public ::javax::swing::A
 public: // actually package-private
   BasicScrollPaneUI$10(::javax::swing::plaf::basic::BasicScrollPaneUI *, ::java::lang::String *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicScrollPaneUI * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

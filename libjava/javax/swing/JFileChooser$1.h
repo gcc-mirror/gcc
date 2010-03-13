@@ -35,7 +35,7 @@ class javax::swing::JFileChooser$1 : public ::java::awt::event::WindowAdapter
 public: // actually package-private
   JFileChooser$1(::javax::swing::JFileChooser *);
 public:
-  void windowClosing(::java::awt::event::WindowEvent *);
+  virtual void windowClosing(::java::awt::event::WindowEvent *);
 public: // actually package-private
   ::javax::swing::JFileChooser * __attribute__((aligned(__alignof__( ::java::awt::event::WindowAdapter)))) this$0;
 public:

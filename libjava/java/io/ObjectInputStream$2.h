@@ -16,17 +16,17 @@ class java::io::ObjectInputStream$2 : public ::java::io::ObjectInputStream$GetFi
 public: // actually package-private
   ObjectInputStream$2(::java::io::ObjectInputStream *, ::java::io::ObjectStreamClass *, JArray< jbyte > *, JArray< ::java::lang::Object * > *);
 public:
-  ::java::io::ObjectStreamClass * getObjectStreamClass();
-  jboolean defaulted(::java::lang::String *);
-  jboolean get(::java::lang::String *, jboolean);
-  jchar get(::java::lang::String *, jchar);
-  jbyte get(::java::lang::String *, jbyte);
-  jshort get(::java::lang::String *, jshort);
-  jint get(::java::lang::String *, jint);
-  jlong get(::java::lang::String *, jlong);
-  jfloat get(::java::lang::String *, jfloat);
-  jdouble get(::java::lang::String *, jdouble);
-  ::java::lang::Object * get(::java::lang::String *, ::java::lang::Object *);
+  virtual ::java::io::ObjectStreamClass * getObjectStreamClass();
+  virtual jboolean defaulted(::java::lang::String *);
+  virtual jboolean get(::java::lang::String *, jboolean);
+  virtual jchar get(::java::lang::String *, jchar);
+  virtual jbyte get(::java::lang::String *, jbyte);
+  virtual jshort get(::java::lang::String *, jshort);
+  virtual jint get(::java::lang::String *, jint);
+  virtual jlong get(::java::lang::String *, jlong);
+  virtual jfloat get(::java::lang::String *, jfloat);
+  virtual jdouble get(::java::lang::String *, jdouble);
+  virtual ::java::lang::Object * get(::java::lang::String *, ::java::lang::Object *);
 private:
   ::java::io::ObjectStreamField * getField(::java::lang::String *, ::java::lang::Class *);
 public: // actually package-private

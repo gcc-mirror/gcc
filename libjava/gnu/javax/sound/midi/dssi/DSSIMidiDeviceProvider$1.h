@@ -33,7 +33,7 @@ class gnu::javax::sound::midi::dssi::DSSIMidiDeviceProvider$1 : public ::java::l
 public: // actually package-private
   DSSIMidiDeviceProvider$1();
 public:
-  jboolean accept(::java::io::File *, ::java::lang::String *);
+  virtual jboolean accept(::java::io::File *, ::java::lang::String *);
   static ::java::lang::Class class$;
 };
 

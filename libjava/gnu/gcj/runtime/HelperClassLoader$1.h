@@ -28,7 +28,7 @@ class gnu::gcj::runtime::HelperClassLoader$1 : public ::java::lang::Object
 public: // actually package-private
   HelperClassLoader$1(::gnu::gcj::runtime::HelperClassLoader *);
 public:
-  jboolean accept(::java::io::File *, ::java::lang::String *);
+  virtual jboolean accept(::java::io::File *, ::java::lang::String *);
 public: // actually package-private
   ::gnu::gcj::runtime::HelperClassLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

@@ -40,7 +40,7 @@ class javax::swing::text::html::FormView$1 : public ::java::lang::Object
 public: // actually package-private
   FormView$1(::javax::swing::text::html::FormView$SubmitThread *, ::javax::swing::text::html::HTMLDocument *, ::javax::swing::JEditorPane *, ::java::lang::String *, ::java::net::URL *, ::java::lang::String *, ::java::net::URL *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::text::html::FormView$SubmitThread * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 private:

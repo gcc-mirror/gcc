@@ -31,11 +31,11 @@ class java::awt::geom::CubicCurve2D$1 : public ::java::lang::Object
 public: // actually package-private
   CubicCurve2D$1(::java::awt::geom::CubicCurve2D *, ::java::awt::geom::AffineTransform *);
 public:
-  jint getWindingRule();
-  jboolean isDone();
-  void next();
-  jint currentSegment(JArray< jfloat > *);
-  jint currentSegment(JArray< jdouble > *);
+  virtual jint getWindingRule();
+  virtual jboolean isDone();
+  virtual void next();
+  virtual jint currentSegment(JArray< jfloat > *);
+  virtual jint currentSegment(JArray< jdouble > *);
 private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) current;
 public: // actually package-private

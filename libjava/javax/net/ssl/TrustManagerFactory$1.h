@@ -27,7 +27,7 @@ class javax::net::ssl::TrustManagerFactory$1 : public ::java::lang::Object
 public: // actually package-private
   TrustManagerFactory$1();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

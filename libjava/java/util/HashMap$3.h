@@ -14,11 +14,11 @@ class java::util::HashMap$3 : public ::java::util::AbstractSet
 public: // actually package-private
   HashMap$3(::java::util::HashMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
-  jboolean contains(::java::lang::Object *);
-  jboolean remove(::java::lang::Object *);
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
+  virtual jboolean contains(::java::lang::Object *);
+  virtual jboolean remove(::java::lang::Object *);
 public: // actually package-private
   ::java::util::HashMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$0;
 public:

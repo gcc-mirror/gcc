@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicSliderUI$3 : public ::javax::swing::Abstra
 public: // actually package-private
   BasicSliderUI$3(::javax::swing::plaf::basic::BasicSliderUI *, ::java::lang::String *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicSliderUI * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

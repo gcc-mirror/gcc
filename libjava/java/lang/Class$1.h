@@ -14,7 +14,7 @@ class java::lang::Class$1 : public ::java::lang::Object
 public: // actually package-private
   Class$1(::java::lang::reflect::AccessibleObject *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 private:
   ::java::lang::reflect::AccessibleObject * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$obj;
 public:

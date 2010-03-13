@@ -33,8 +33,8 @@ class javax::swing::text::html::HTMLDocument$1 : public ::javax::swing::text::ht
 public: // actually package-private
   HTMLDocument$1(::javax::swing::text::html::HTMLDocument *, jint, jint, jint, ::javax::swing::text::html::HTML$Tag *);
 public:
-  void handleStartTag(::javax::swing::text::html::HTML$Tag *, ::javax::swing::text::MutableAttributeSet *, jint);
-  void handleEndTag(::javax::swing::text::html::HTML$Tag *, jint);
+  virtual void handleStartTag(::javax::swing::text::html::HTML$Tag *, ::javax::swing::text::MutableAttributeSet *, jint);
+  virtual void handleEndTag(::javax::swing::text::html::HTML$Tag *, jint);
 public: // actually package-private
   ::javax::swing::text::html::HTMLDocument * __attribute__((aligned(__alignof__( ::javax::swing::text::html::HTMLDocument$HTMLReader)))) this$0;
 public:

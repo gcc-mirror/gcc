@@ -14,10 +14,10 @@ class java::util::EnumMap$6 : public ::java::lang::Object
 public: // actually package-private
   EnumMap$6(::java::util::EnumMap$5 *);
 public:
-  jboolean hasNext();
-  ::java::util::Map$Entry * EnumMap$6$next();
-  void remove();
-  ::java::lang::Object * next();
+  virtual jboolean hasNext();
+  virtual ::java::util::Map$Entry * EnumMap$6$next();
+  virtual void remove();
+  virtual ::java::lang::Object * next();
 public: // actually package-private
   static ::java::util::EnumMap$5 * access$1(::java::util::EnumMap$6 *);
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) count;

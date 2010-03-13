@@ -32,7 +32,7 @@ class javax::swing::text::html::ImageView$1 : public ::java::lang::Object
 public: // actually package-private
   ImageView$1(::javax::swing::text::html::ImageView *, ::javax::swing::text::View *, jboolean, jboolean);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::text::html::ImageView * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

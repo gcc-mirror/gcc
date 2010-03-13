@@ -31,11 +31,11 @@ class javax::swing::Spring$2 : public ::javax::swing::Spring
 public: // actually package-private
   Spring$2(::java::awt::Component *);
 public:
-  jint getMaximumValue();
-  jint getMinimumValue();
-  jint getPreferredValue();
-  jint getValue();
-  void setValue(jint);
+  virtual jint getMaximumValue();
+  virtual jint getMinimumValue();
+  virtual jint getPreferredValue();
+  virtual jint getValue();
+  virtual void setValue(jint);
 private:
   ::java::awt::Component * __attribute__((aligned(__alignof__( ::javax::swing::Spring)))) val$component;
 public:

@@ -1,3 +1,8 @@
+2010-03-13  Matthias Klose  <doko@ubuntu.com>
+
+	PR libgcj/42676
+	* Regenerate .h files for anonymous inner classes.
+
 2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.host (mips-sgi-irix6*): Don't set libgcj_interpreter.

@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicSplitPaneUI$4 : public ::javax::swing::Abs
 public: // actually package-private
   BasicSplitPaneUI$4(::javax::swing::plaf::basic::BasicSplitPaneUI *, ::java::lang::String *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicSplitPaneUI * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

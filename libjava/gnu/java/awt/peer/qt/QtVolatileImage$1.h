@@ -34,7 +34,7 @@ class gnu::java::awt::peer::qt::QtVolatileImage$1 : public ::java::awt::ImageCap
 public: // actually package-private
   QtVolatileImage$1(::gnu::java::awt::peer::qt::QtVolatileImage *, jboolean);
 public:
-  jboolean isTrueVolatile();
+  virtual jboolean isTrueVolatile();
 public: // actually package-private
   ::gnu::java::awt::peer::qt::QtVolatileImage * __attribute__((aligned(__alignof__( ::java::awt::ImageCapabilities)))) this$0;
 public:

@@ -28,7 +28,7 @@ class javax::imageio::metadata::IIOMetadataFormatImpl$1 : public ::javax::imagei
 public: // actually package-private
   IIOMetadataFormatImpl$1(::java::lang::String *, jint);
 public:
-  jboolean canNodeAppear(::java::lang::String *, ::javax::imageio::ImageTypeSpecifier *);
+  virtual jboolean canNodeAppear(::java::lang::String *, ::javax::imageio::ImageTypeSpecifier *);
   static ::java::lang::Class class$;
 };
 

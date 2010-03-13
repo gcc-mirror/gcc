@@ -14,8 +14,8 @@ class java::util::TreeMap$6 : public ::java::lang::Object
 public: // actually package-private
   TreeMap$6(::java::util::TreeMap$NavigableEntrySet *);
 public:
-  jint TreeMap$6$compare(::java::util::Map$Entry *, ::java::util::Map$Entry *);
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint TreeMap$6$compare(::java::util::Map$Entry *, ::java::util::Map$Entry *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::java::util::TreeMap$NavigableEntrySet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

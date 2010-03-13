@@ -30,7 +30,7 @@ class org::w3c::dom::bootstrap::DOMImplementationRegistry$2 : public ::java::lan
 public: // actually package-private
   DOMImplementationRegistry$2();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

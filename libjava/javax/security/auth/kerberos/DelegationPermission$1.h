@@ -38,9 +38,9 @@ class javax::security::auth::kerberos::DelegationPermission$1 : public ::java::s
 public: // actually package-private
   DelegationPermission$1(::javax::security::auth::kerberos::DelegationPermission *);
 public:
-  void add(::java::security::Permission *);
-  jboolean implies(::java::security::Permission *);
-  ::java::util::Enumeration * elements();
+  virtual void add(::java::security::Permission *);
+  virtual jboolean implies(::java::security::Permission *);
+  virtual ::java::util::Enumeration * elements();
 private:
   ::java::util::Vector * __attribute__((aligned(__alignof__( ::java::security::PermissionCollection)))) permissions;
 public: // actually package-private

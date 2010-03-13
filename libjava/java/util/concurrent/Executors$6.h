@@ -24,7 +24,7 @@ class java::util::concurrent::Executors$6 : public ::java::lang::Object
 public: // actually package-private
   Executors$6(::java::security::PrivilegedExceptionAction *);
 public:
-  ::java::lang::Object * call();
+  virtual ::java::lang::Object * call();
 private:
   ::java::security::PrivilegedExceptionAction * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$action;
 public:

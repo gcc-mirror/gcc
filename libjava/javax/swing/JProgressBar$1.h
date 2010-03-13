@@ -29,7 +29,7 @@ class javax::swing::JProgressBar$1 : public ::java::lang::Object
 public: // actually package-private
   JProgressBar$1(::javax::swing::JProgressBar *);
 public:
-  void stateChanged(::javax::swing::event::ChangeEvent *);
+  virtual void stateChanged(::javax::swing::event::ChangeEvent *);
 public: // actually package-private
   ::javax::swing::JProgressBar * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

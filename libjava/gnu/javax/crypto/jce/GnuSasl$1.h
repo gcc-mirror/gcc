@@ -31,7 +31,7 @@ class gnu::javax::crypto::jce::GnuSasl$1 : public ::java::lang::Object
 public: // actually package-private
   GnuSasl$1(::gnu::javax::crypto::jce::GnuSasl *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::gnu::javax::crypto::jce::GnuSasl * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

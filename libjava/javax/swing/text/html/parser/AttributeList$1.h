@@ -33,7 +33,7 @@ class javax::swing::text::html::parser::AttributeList$1 : public ::gnu::javax::s
 public: // actually package-private
   AttributeList$1();
 public: // actually protected
-  void create();
+  virtual void create();
 public:
   static ::java::lang::Class class$;
 };

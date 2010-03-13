@@ -35,7 +35,7 @@ class javax::swing::plaf::basic::BasicColorChooserUI$1 : public ::java::lang::Ob
 public: // actually package-private
   BasicColorChooserUI$1(::javax::swing::plaf::basic::BasicColorChooserUI *);
 public:
-  void stateChanged(::javax::swing::event::ChangeEvent *);
+  virtual void stateChanged(::javax::swing::event::ChangeEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicColorChooserUI * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:
