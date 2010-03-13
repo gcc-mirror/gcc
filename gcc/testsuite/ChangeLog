@@ -1,3 +1,18 @@
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43354
+	* gfortran.dg/graphite/id-pr43354.f: New.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43349
+	* gfortran.dg/graphite/pr43349.f: New.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43306
+	* gcc.dg/graphite/pr43306.c: New.
+
 2010-03-12  David S. Miller  <davem@davemloft.net>
 
 	* gcc.dg/lto/20090313_0.c: Add -mcpu=v9 to dg-lto-options on

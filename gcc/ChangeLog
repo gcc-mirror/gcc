@@ -1,3 +1,62 @@
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43354
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Do not
+	call insert_out_of_ssa_copy for default definitions.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (my_long_long): Defined.
+	(gcc_type_for_cloog_iv): Use it instead of long_long_integer_type_node.
+	* graphite-sese-to-poly.c (my_long_long): Defined.
+	(scop_ivs_can_be_represented): Use it.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi: Fix documentation of graphite-max-nb-scop-params,
+	graphite-max-bbs-per-function, and loop-block-tile-size.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Replace "maximal"
+	with "maximum".
+	(PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Same.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop): Remove
+	forward declaration.
+	* graphite-sese-to-poly.c (reduction_phi_p): Remove FIXME comment.
+	(add_upper_bounds_from_estimated_nit): New.
+	(build_loop_iteration_domains): Use it.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi (PARAM_LOOP_BLOCK_TILE_SIZE): Document.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43306
+	* tree-chrec.c (evolution_function_right_is_integer_cst): CHREC_RIGHT
+	should be an INTEGER_CST.  Also handle CASE_CONVERT.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite.c (graphite_initialize): To bound the number of bbs per
+	function, use PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION.
+	* params.def (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Declared.
+	* doc/invoke.texi: Document it.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Do not return bool.
+	* graphite-sese-to-poly.h (build_poly_scop): Same.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Limit scops following
+	the number of parameters in the scop.  Use as an upper bound
+	PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Declared.
+	* doc/invoke.texi: Document it.
+
 2010-03-13  Jerry Quinn  <jlquinn@optonline.net>
 
 	* Makefile.in (TEXI_GCCINT_FILES): Remove c-tree.texi.
