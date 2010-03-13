@@ -4059,5 +4059,5 @@ does not contain all the information about the program.
 
 The proper way to interface GCC to a new language front end is with
 the ``tree'' data structure, described in the files @file{tree.h} and
-@file{tree.def}.  The documentation for this structure (@pxref{Trees})
+@file{tree.def}.  The documentation for this structure (@pxref{GENERIC})
 is incomplete.
