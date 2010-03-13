@@ -8496,6 +8496,11 @@ pointer parameter.
 To avoid exponential effects in the Graphite loop transforms, the
 number of parameters in a SCoP is bounded by 10.
 
+@item graphite-max-bbs-per-function
+To avoid exponential effects in the detection of SCoPs, the functions
+with more than 100 basic blocks are not handled by the Graphite loop
+transforms.
+
 @end table
 @end table
 

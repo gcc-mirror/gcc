@@ -1,5 +1,12 @@
 2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite.c (graphite_initialize): To bound the number of bbs per
+	function, use PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION.
+	* params.def (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Declared.
+	* doc/invoke.texi: Document it.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_poly_scop): Do not return bool.
 	* graphite-sese-to-poly.h (build_poly_scop): Same.
 
