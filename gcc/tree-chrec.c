@@ -1529,14 +1529,12 @@ evolution_function_right_is_integer_cst (const_tree chrec)
       return true;
 
     case POLYNOMIAL_CHREC:
-      if (!evolution_function_right_is_integer_cst (CHREC_RIGHT (chrec)))
-	return false;
+      return TREE_CODE (CHREC_RIGHT (chrec)) == INTEGER_CST
+	&& (TREE_CODE (CHREC_LEFT (chrec)) != POLYNOMIAL_CHREC
+	    || evolution_function_right_is_integer_cst (CHREC_LEFT (chrec)));
 
-      if (TREE_CODE (CHREC_LEFT (chrec)) == POLYNOMIAL_CHREC
-	&& !evolution_function_right_is_integer_cst (CHREC_LEFT (chrec)))
-	return false;
-
-      return true;
+    CASE_CONVERT:
+      return evolution_function_right_is_integer_cst (TREE_OPERAND (chrec, 0));
 
     default:
       return false;
