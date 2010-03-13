@@ -1,3 +1,10 @@
+2010-03-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (my_long_long): Defined.
+	(gcc_type_for_cloog_iv): Use it instead of long_long_integer_type_node.
+	* graphite-sese-to-poly.c (my_long_long): Defined.
+	(scop_ivs_can_be_represented): Use it.
+
 2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi: Fix documentation of graphite-max-nb-scop-params,

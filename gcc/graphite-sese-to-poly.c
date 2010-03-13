@@ -2910,6 +2910,9 @@ scop_canonicalize_loops (scop_p scop)
       graphite_loop_normal_form (loop);
 }
 
+/* Java does not initialize long_long_integer_type_node.  */
+#define my_long_long (long_long_integer_type_node ? long_long_integer_type_node : ssizetype)
+
 /* Can all ivs be represented by a signed integer?
    As CLooG might generate negative values in its expressions, signed loop ivs
    are required in the backend. */
@@ -2934,13 +2937,14 @@ scop_ivs_can_be_represented (scop_p scop)
       precision = TYPE_PRECISION (type);
 
       if (TYPE_UNSIGNED (type)
-	  && precision >= TYPE_PRECISION (long_long_integer_type_node))
+	  && precision >= TYPE_PRECISION (my_long_long))
 	return false;
     }
 
   return true;
 }
 
+#undef my_long_long
 
 /* Builds the polyhedral representation for a SESE region.  */
 
