@@ -6675,7 +6675,9 @@ Graphite loop transformation infrastructure.
 Perform loop strip mining transformations on loops.  Strip mining
 splits a loop into two nested loops.  The outer loop has strides
 equal to the strip size and the inner loop has strides of the
-original loop within a strip.  For example, given a loop like:
+original loop within a strip.  The strip length can be changed
+using the @option{loop-block-tile-size} parameter.  For example,
+given a loop like:
 @smallexample
 DO I = 1, N
   A(I) = A(I) + C
@@ -6683,8 +6685,8 @@ ENDDO
 @end smallexample
 loop strip mining will transform the loop as if the user had written:
 @smallexample
-DO II = 1, N, 4
-  DO I = II, min (II + 3, N)
+DO II = 1, N, 51
+  DO I = II, min (II + 50, N)
     A(I) = A(I) + C
   ENDDO
 ENDDO
@@ -6697,7 +6699,9 @@ enable the Graphite loop transformation infrastructure.
 @item -floop-block
 Perform loop blocking transformations on loops.  Blocking strip mines
 each loop in the loop nest such that the memory accesses of the
-element loops fit inside caches.  For example, given a loop like:
+element loops fit inside caches.  The strip length can be changed
+using the @option{loop-block-tile-size} parameter.  For example, given
+a loop like:
 @smallexample
 DO I = 1, N
   DO J = 1, M
@@ -6707,10 +6711,10 @@ ENDDO
 @end smallexample
 loop blocking will transform the loop as if the user had written:
 @smallexample
-DO II = 1, N, 64
-  DO JJ = 1, M, 64
-    DO I = II, min (II + 63, N)
-      DO J = JJ, min (JJ + 63, M)
+DO II = 1, N, 51
+  DO JJ = 1, M, 51
+    DO I = II, min (II + 50, N)
+      DO J = JJ, min (JJ + 50, M)
         A(J, I) = B(I) + C(J)
       ENDDO
     ENDDO
@@ -8500,6 +8504,11 @@ number of parameters in a SCoP is bounded by 10.
 To avoid exponential effects in the detection of SCoPs, the functions
 with more than 100 basic blocks are not handled by the Graphite loop
 transforms.
+
+@item loop-block-tile-size
+The default factor for the loop blocking or strip mining transforms,
+enabled with @option{-floop-block} or @option{-floop-strip-mine}, is
+51.
 
 @end table
 @end table
