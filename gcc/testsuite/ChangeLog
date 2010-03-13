@@ -1,3 +1,7 @@
+2010-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.target/arm/sibcall-1.c: Allow PLT to appear with pic code.
+
 2010-03-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43291
