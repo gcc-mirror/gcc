@@ -1,3 +1,13 @@
+2010-03-13  Jerry Quinn  <jlquinn@optonline.net>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Remove c-tree.texi.
+	* doc/c-tree.texi: Remove.
+	* doc/generic.texi: Merge c-tree.texi here.
+	* doc/gccint.texi (Trees): Remove menu entry.
+	(c-tree.texi): Remove @include.
+	* doc/rtl.texi (Reading RTL): Update pxref from Trees to GENERIC.
+	* doc/languages.texi (Reading RTL): Ditto.
+
 2010-03-12  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/42869

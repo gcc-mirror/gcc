@@ -6,7 +6,7 @@
 @chapter Language Front Ends in GCC
 
 The interface to front ends for languages in GCC, and in particular
-the @code{tree} structure (@pxref{Trees}), was initially designed for
+the @code{tree} structure (@pxref{GENERIC}), was initially designed for
 C, and many aspects of it are still somewhat biased towards C and
 C-like languages.  It is, however, reasonably well suited to other
 procedural languages, and front ends for many such languages have been
