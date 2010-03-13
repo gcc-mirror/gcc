@@ -547,6 +547,9 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
   gcc_unreachable ();
 }
 
+/* Java does not initialize long_long_integer_type_node.  */
+#define my_long_long (long_long_integer_type_node ? long_long_integer_type_node : ssizetype)
+
 /* Given a CLOOG_IV, return the type that CLOOG_IV should have in GCC
    land.  The selected type is big enough to include the original loop
    iteration variable, but signed to work with the subtractions CLooG
@@ -581,8 +584,8 @@ gcc_type_for_cloog_iv (const char *cloog_iv, gimple_bb_p gbb)
 	  if (type_precision <= TYPE_PRECISION (long_integer_type_node))
 	    return long_integer_type_node;
 
-	  if (type_precision <= TYPE_PRECISION (long_long_integer_type_node))
-	    return long_long_integer_type_node;
+	  if (type_precision <= TYPE_PRECISION (my_long_long))
+	    return my_long_long;
 
 	  gcc_unreachable ();
 	}
@@ -593,16 +596,18 @@ gcc_type_for_cloog_iv (const char *cloog_iv, gimple_bb_p gbb)
       if (type_precision < TYPE_PRECISION (long_integer_type_node))
 	return long_integer_type_node;
 
-      if (type_precision < TYPE_PRECISION (long_long_integer_type_node))
-	return long_long_integer_type_node;
+      if (type_precision < TYPE_PRECISION (my_long_long))
+	return my_long_long;
 
       /* There is no signed type available, that is large enough to hold the
 	 original value.  */
       gcc_unreachable ();
     }
 
-  return long_long_integer_type_node;
+  return my_long_long;
 }
+
+#undef my_long_long
 
 /* Returns the induction variable for the loop that gets translated to
    STMT.  */
