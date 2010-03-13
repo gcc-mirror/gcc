@@ -2937,6 +2937,7 @@ build_poly_scop (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
   sbitmap reductions = sbitmap_alloc (last_basic_block * 2);
+  graphite_dim_t max_dim;
 
   sbitmap_zero (reductions);
   rewrite_commutative_reductions_out_of_ssa (region, reductions);
@@ -2959,6 +2960,10 @@ build_poly_scop (scop_p scop)
   build_sese_loop_nests (region);
   build_sese_conditions (region);
   find_scop_parameters (scop);
+
+  max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
+  if (scop_nb_params (scop) > max_dim)
+    return false;
 
   build_scop_iteration_domain (scop);
   build_scop_context (scop);
