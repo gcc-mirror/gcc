@@ -921,6 +921,16 @@ resolve_structure_cons (gfc_expr *expr)
 		     "for pointer component '%s' should be a POINTER or "
 		     "a TARGET", &cons->expr->where, comp->name);
 	}
+
+      /* F2003, C1272 (3).  */
+      if (gfc_pure (NULL) && cons->expr->expr_type == EXPR_VARIABLE
+	  && gfc_impure_variable (cons->expr->symtree->n.sym))
+	{
+	  t = FAILURE;
+	  gfc_error ("Invalid expression in the derived type constructor for pointer "
+		     "component '%s' at %L in PURE procedure", comp->name,
+		     &cons->expr->where);
+	}
     }
 
   return t;
@@ -7947,6 +7957,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       if (lhs->ts.type == BT_DERIVED
 	    && lhs->expr_type == EXPR_VARIABLE
 	    && lhs->ts.u.derived->attr.pointer_comp
+	    && rhs->expr_type == EXPR_VARIABLE
 	    && gfc_impure_variable (rhs->symtree->n.sym))
 	{
 	  gfc_error ("The impure variable at %L is assigned to "
