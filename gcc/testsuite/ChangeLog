@@ -1,6 +1,6 @@
 2010-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
-	* g++.dg/abi/packed1.C: Expect warning on the SH.
+	* g++.dg/abi/packed1.C: Expect warning on the alpha*-*-*.
 
 2010-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
