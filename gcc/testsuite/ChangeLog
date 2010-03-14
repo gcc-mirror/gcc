@@ -1,3 +1,11 @@
+2010-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/abi/packed1.C: Expect warning on the SH.
+
+2010-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/graphite/pr43026.C (dg-options): Remove -m32.
+
 2010-03-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43362
