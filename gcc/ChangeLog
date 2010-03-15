@@ -1,3 +1,10 @@
+2010-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug): Don't assert drap_reg
+	has been set.
+	(based_loc_descr): Use DW_OP_fbreg for vdrap_reg even when
+	drap_reg has not been set.
+
 2010-03-15  Michael Matz  <matz@suse.de>
 
 	PR middle-end/43300

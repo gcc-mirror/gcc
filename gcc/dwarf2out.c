@@ -2760,11 +2760,12 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	if (REG_P (n))
 	  {
 	    dw_fde_ref fde = current_fde ();
-	    gcc_assert (fde
-			&& fde->drap_reg != INVALID_REGNUM
-			&& fde->vdrap_reg == INVALID_REGNUM);
-	    if (REG_P (n))
-	      fde->vdrap_reg = REGNO (n);
+	    if (fde)
+	      {
+		gcc_assert (fde->vdrap_reg == INVALID_REGNUM);
+		if (REG_P (n))
+		  fde->vdrap_reg = REGNO (n);
+	      }
 	  }
 	handled_one = true;
 	break;
@@ -12726,7 +12727,6 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
     }
   else if (!optimize
 	   && fde
-	   && fde->drap_reg != INVALID_REGNUM
 	   && (fde->drap_reg == REGNO (reg)
 	       || fde->vdrap_reg == REGNO (reg)))
     {
