@@ -2366,7 +2366,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (def_bb != gimple_bb (use_stmt)
-	&& gimple_code (use_stmt) != GIMPLE_PHI)
+	&& gimple_code (use_stmt) != GIMPLE_PHI
+	&& !is_gimple_debug (use_stmt))
       {
 	if (!zero_dim_array)
 	  {
