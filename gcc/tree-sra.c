@@ -4048,6 +4048,26 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   return;
 }
 
+/* Create an abstract origin declaration for OLD_DECL and make it an abstract
+   origin of the provided decl so that there are preserved parameters for debug
+   information.  */
+
+static void
+create_abstract_origin (tree old_decl)
+{
+  if (!DECL_ABSTRACT_ORIGIN (old_decl))
+    {
+      tree new_decl = copy_node (old_decl);
+
+      DECL_ABSTRACT (new_decl) = 1;
+      SET_DECL_ASSEMBLER_NAME (new_decl, NULL_TREE);
+      SET_DECL_RTL (new_decl, NULL);
+      DECL_STRUCT_FUNCTION (new_decl) = NULL;
+      DECL_ARTIFICIAL (old_decl) = 1;
+      DECL_ABSTRACT_ORIGIN (old_decl) = new_decl;
+    }
+}
+
 /* Perform all the modification required in IPA-SRA for NODE to have parameters
    as given in ADJUSTMENTS.  */
 
@@ -4059,6 +4079,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
     ipa_modify_formal_parameters (alias->decl, adjustments, "ISRA");
   /* current_function_decl must be handled last, after same_body aliases,
      as following functions will use what it computed.  */
+  create_abstract_origin (current_function_decl);
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   scan_function (sra_ipa_modify_expr, sra_ipa_modify_assign,
 		 replace_removed_params_ssa_names, false, adjustments);
