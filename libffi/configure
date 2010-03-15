@@ -12419,6 +12419,29 @@ $as_echo "#define FFI_MMAP_EXEC_WRIT 1" >>confdefs.h
      ;;
 esac
 
+if test x$TARGET = xX86_64; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports unwind section type" >&5
+$as_echo_n "checking assembler supports unwind section type... " >&6; }
+if test "${libffi_cv_as_x86_64_unwind_section_type+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	libffi_cv_as_x86_64_unwind_section_type=yes
+	echo '.section .eh_frame,"a",@unwind' > conftest.s
+	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+	    libffi_cv_as_x86_64_unwind_section_type=no
+	fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_x86_64_unwind_section_type" >&5
+$as_echo "$libffi_cv_as_x86_64_unwind_section_type" >&6; }
+    if test "x$libffi_cv_as_x86_64_unwind_section_type" = xyes; then
+
+$as_echo "#define HAVE_AS_X86_64_UNWIND_SECTION_TYPE 1" >>confdefs.h
+
+    fi
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether .eh_frame section should be read-only" >&5
 $as_echo_n "checking whether .eh_frame section should be read-only... " >&6; }
 if test "${libffi_cv_ro_eh_frame+set}" = set; then :
