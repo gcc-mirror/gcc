@@ -1,3 +1,8 @@
+2010-03-15  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43300
+	* gcc.dg/pr43300.c: New testcase.
+
 2010-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43367
