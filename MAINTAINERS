@@ -30,7 +30,7 @@ Jason Merrill					jason@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
 Diego Novillo					dnovillo@google.com
-Bernd Schmidt					bernd.schmidt@analog.com
+Bernd Schmidt					bernds@codesourcery.com
 Ian Lance Taylor				ian@airs.com
 Jim Wilson					wilson@codesourcery.com
 
@@ -47,7 +47,7 @@ arm port		Paul Brook		paul@codesourcery.com
 avr port		Denis Chertykov		chertykov@gmail.com
 avr port		Anatoly Sokolov		aesok@post.ru
 avr port		Eric Weddington		eric.weddington@atmel.com
-bfin port		Bernd Schmidt		bernd.schmidt@analog.com
+bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jie@codesourcery.com
 cris port		Hans-Peter Nilsson	hp@axis.com
 crx port		Pompapathi V Gadad 	Pompapathi.V.Gadad@nsc.com
@@ -223,7 +223,7 @@ profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
 reload			Ulrich Weigand		uweigand@de.ibm.com
-reload			Bernd Schmidt		bernd.schmidt@analog.com
+reload			Bernd Schmidt		bernds@codesourcery.com
 dfp.c, related		Ben Elliston		bje@gnu.org
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 auto-vectorizer		Richard Guenther	rguenther@suse.de
