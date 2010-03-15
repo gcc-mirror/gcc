@@ -1389,6 +1389,7 @@ create_new_general_access (struct access_site *acc, d_str str)
 	 for now just reset all debug stmts referencing objects that have
 	 been peeled.  */
       gimple_debug_bind_reset_value (stmt);
+      update_stmt (stmt);
       break;
 
     default:
