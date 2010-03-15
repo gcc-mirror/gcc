@@ -1,3 +1,8 @@
+2010-03-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Skip
+	debug statements.
+
 2010-03-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug): Don't assert drap_reg
