@@ -1,3 +1,59 @@
+2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2008-11-11  Bob Walters  <bob.s.walters@gmail.com>
+
+	* include/bits/forward_list.h: Support non-standard pointer types
+	(_Fwd_list_node_base): Add _Alloc template parameter.
+	(_Fwd_list_node<>): Likewise.
+	(_Fwd_list_iterator<>): Likewise.
+	(_Fwd_list_const_iterator<>): Likewise.
+	(_Fwd_list_node_base::_M_next, _M_transfer_after, _M_reverse_after):
+	Use _Alloc<_Tp>::pointer.
+	(_Fwd_list_iterator<>::_M_node): Use _Node_base::_Pointer.
+	(_Fwd_list_base<>::_M_get_node, _M_create_node, _M_create_node,
+	_M_insert_after, _M_put_node, _M_erase_after): Likewise.
+	(_Fwd_list_const_iterator<>::_M_node): use _Node_base::_Const_pointer.
+	(forward_list<>): Use __static_pointer_cast in place of static_cast,
+	and __const_pointer_cast in place of const_cast.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_node<>::_M_sort_after): Using _Pointer typedefs in place
+	of standard pointers, __static_pointer_cast in place of static_cast.
+	(_Fwd_list_base<>::_Fwd_list_base, _M_insert_after, _M_erase_after):
+	Likewise.
+	(forward_list<>::_M_initialize_dispatch, _M_fill_initialize,
+	splice_after, remove, remove_if, merge): Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/1.cc: New.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/2.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/3.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/4.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/5.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/2.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/3.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/4.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/5.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/6.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/7.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/1.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/1.cc: Likewise.
+
 2010-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/array (swap(array<>&, array<>&)): Use member swap.
