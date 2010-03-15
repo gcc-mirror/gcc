@@ -1,3 +1,9 @@
+2010-03-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree/optimization/43141
+	* tree-sra.c (create_abstract_origin): New function.
+	(modify_function): Call create_abstract_origin.
+
 2010-03-15  Chris Demetriou  <cgd@google.com>
 
 	* Makefile.in (stmp-int-hdrs): Don't chmod include/stdint.h if it
