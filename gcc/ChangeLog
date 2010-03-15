@@ -1,6 +1,11 @@
+2010-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43317
+	* ipa-struct-reorg.c (create_new_general_access): Update stmt.
+
 2010-03-15  Martin Jambor  <mjambor@suse.cz>
 
-	PR tree/optimization/43141
+	PR tree-optimization/43141
 	* tree-sra.c (create_abstract_origin): New function.
 	(modify_function): Call create_abstract_origin.
 
