@@ -1,3 +1,12 @@
+2010-03-15  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43300
+	* tree-outof-ssa.c (emit_partition_copy): New argument sizeexp,
+	use it to expand block copies.
+	(insert_partition_copy_on_edge, insert_rtx_to_part_on_edge,
+	insert_part_to_rtx_on_edge): Adjust callers of emit_partition_copy.
+	(insert_value_copy_on_edge): Use store_expr for BLKmode values.
+
 2010-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43367
