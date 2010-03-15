@@ -3842,10 +3842,11 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) $(UNWIND_H) fixinc_list
 	  cp $(srcdir)/ginclude/stdint-gcc.h include/stdint-gcc.h; \
 	  chmod a+r include/stdint-gcc.h; \
 	  cp $(srcdir)/ginclude/stdint-wrap.h include/stdint.h; \
+	  chmod a+r include/stdint.h; \
 	elif [ $(USE_GCC_STDINT) = provide ]; then \
 	  cp $(srcdir)/ginclude/stdint-gcc.h include/stdint.h; \
+	  chmod a+r include/stdint.h; \
 	fi
-	chmod a+r include/stdint.h
 	set -e; for ml in `cat fixinc_list`; do \
 	  sysroot_headers_suffix=`echo $${ml} | sed -e 's/;.*$$//'`; \
 	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \

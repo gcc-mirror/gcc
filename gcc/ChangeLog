@@ -1,3 +1,8 @@
+2010-03-15  Chris Demetriou  <cgd@google.com>
+
+	* Makefile.in (stmp-int-hdrs): Don't chmod include/stdint.h if it
+	wasn't copied.
+
 2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43354
