@@ -284,6 +284,21 @@ case "$target" in
      ;;
 esac
 
+if test x$TARGET = xX86_64; then
+    AC_CACHE_CHECK([assembler supports unwind section type],
+	libffi_cv_as_x86_64_unwind_section_type, [
+	libffi_cv_as_x86_64_unwind_section_type=yes
+	echo '.section .eh_frame,"a",@unwind' > conftest.s
+	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+	    libffi_cv_as_x86_64_unwind_section_type=no
+	fi
+	])
+    if test "x$libffi_cv_as_x86_64_unwind_section_type" = xyes; then
+	AC_DEFINE(HAVE_AS_X86_64_UNWIND_SECTION_TYPE, 1,
+		  [Define if your assembler supports unwind section type.])
+    fi
+fi
+
 AC_CACHE_CHECK([whether .eh_frame section should be read-only],
     libffi_cv_ro_eh_frame, [
 	libffi_cv_ro_eh_frame=no
