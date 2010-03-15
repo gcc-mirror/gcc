@@ -31,94 +31,43 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  template<typename _Alloc>
-    void
-    _Fwd_list_node_base<_Alloc>::
-    _M_transfer_after(_Pointer __bbegin)
-    {
-      _Pointer __bend = __bbegin;
-      while (__bend && __bend->_M_next)
-	__bend = __bend->_M_next;
-      _M_transfer_after(__bbegin, __bend);
-    }
-
-  template<typename _Alloc>
-    void
-    _Fwd_list_node_base<_Alloc>::
-    _M_transfer_after(_Pointer __bbegin, _Pointer __bend)
-    {
-      _Pointer __keep = __bbegin->_M_next;
-      if (__bend)
-	{
-	  __bbegin->_M_next = __bend->_M_next;
-	  __bend->_M_next = _M_next;
-	}
-      else
-	__bbegin->_M_next = 0;
-      _M_next = __keep;
-    }
- 
-  template<typename _Alloc>
-    void
-    _Fwd_list_node_base<_Alloc>::
-    _M_reverse_after()
-    {
-      _Pointer __tail = _M_next;
-      if (!__tail)
-	return;
-      while (_Pointer __temp = __tail->_M_next)
-	{
-	  _Pointer __keep = _M_next;
-	  _M_next = __temp;
-	  __tail->_M_next = __temp->_M_next;
-	  _M_next->_M_next = __keep;
-	}
-    }
-
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
     _Fwd_list_base(const _Fwd_list_base& __lst, const _Alloc& __a)
     : _M_impl(__a)
     {
       this->_M_impl._M_head._M_next = 0;
-      typename _Node_base::_Pointer __to = &this->_M_impl._M_head;
-      typename _Node::_Pointer __curr 
-        = __static_pointer_cast<typename _Node::_Pointer>
-                               (__lst._M_impl._M_head._M_next);
+      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
+      _Node* __curr = static_cast<_Node*>(__lst._M_impl._M_head._M_next);
+
       while (__curr)
         {
           __to->_M_next = _M_create_node(__curr->_M_value);
           __to = __to->_M_next;
-          __curr = __static_pointer_cast<typename _Node::_Pointer>
-                                        (__curr->_M_next);
+          __curr = static_cast<_Node*>(__curr->_M_next);
         }
     }
 
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
-      typename _Fwd_list_base<_Tp, _Alloc>::_Node_base::_Pointer
+      _Fwd_list_node_base*
       _Fwd_list_base<_Tp, _Alloc>::
       _M_insert_after(const_iterator __pos, _Args&&... __args)
       {
-        typename _Node_base::_Pointer __to 
-          = __const_pointer_cast<typename _Node_base::_Pointer>
-                                (__pos._M_node);
-        typename _Node::_Pointer __thing 
-          = __static_pointer_cast<typename _Node::_Pointer>( 
-                _M_create_node(std::forward<_Args>(__args)...) );
+        _Fwd_list_node_base* __to
+	  = const_cast<_Fwd_list_node_base*>(__pos._M_node);
+	_Node* __thing = _M_create_node(std::forward<_Args>(__args)...);
         __thing->_M_next = __to->_M_next;
         __to->_M_next = __thing;
-        return __static_pointer_cast<typename _Node_base::_Pointer>
-                                    (__to->_M_next);
+        return __to->_M_next;
       }
 
   template<typename _Tp, typename _Alloc>
     void
     _Fwd_list_base<_Tp, _Alloc>::
-    _M_erase_after(typename _Node_base::_Pointer __pos)
+    _M_erase_after(_Fwd_list_node_base* __pos)
     {
-      typename _Node::_Pointer __curr
-        = __static_pointer_cast<typename _Node::_Pointer>(__pos->_M_next);
+      _Node* __curr = static_cast<_Node*>(__pos->_M_next);
       __pos->_M_next = __curr->_M_next;
       _M_get_Node_allocator().destroy(__curr);
       _M_put_node(__curr);
@@ -127,16 +76,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     void
     _Fwd_list_base<_Tp, _Alloc>::
-    _M_erase_after(typename _Node_base::_Pointer __pos, 
-                   typename _Node_base::_Pointer __last)
+    _M_erase_after(_Fwd_list_node_base* __pos, 
+                   _Fwd_list_node_base* __last)
     {
-      typename _Node::_Pointer __curr 
-        = __static_pointer_cast<typename _Node::_Pointer>(__pos->_M_next);
+      _Node* __curr = static_cast<_Node*>(__pos->_M_next);
       while (__curr != __last)
         {
-          typename _Node::_Pointer __temp = __curr;
-          __curr = __static_pointer_cast<typename _Node::_Pointer>
-                                        (__curr->_M_next);
+          _Node* __temp = __curr;
+          __curr = static_cast<_Node*>(__curr->_M_next);
           _M_get_Node_allocator().destroy(__temp);
           _M_put_node(__temp);
         }
@@ -151,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_initialize_dispatch(_InputIterator __first, _InputIterator __last,
                              __false_type)
       {
-        typename _Node_base::_Pointer __to = &this->_M_impl._M_head;
+        _Node_base* __to = &this->_M_impl._M_head;
         for (; __first != __last; ++__first)
           {
             __to->_M_next = this->_M_create_node(*__first);
@@ -166,7 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     forward_list<_Tp, _Alloc>::
     _M_fill_initialize(size_type __n, const value_type& __value)
     {
-      typename _Node_base::_Pointer __to = &this->_M_impl._M_head;
+      _Node_base* __to = &this->_M_impl._M_head;
       for (; __n > 0; --__n)
         {
           __to->_M_next = this->_M_create_node(__value);
@@ -179,7 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     forward_list(size_type __n)
     : _Base()
     {
-      typename _Node_base::_Pointer __to = &this->_M_impl._M_head;
+      _Node_base* __to = &this->_M_impl._M_head;
       for (; __n > 0; --__n)
         {
           __to->_M_next = this->_M_create_node();
@@ -262,13 +209,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       if (!__list.empty() && &__list != this)
         {
-          typename _Node_base::_Pointer __tmp 
-            = __const_pointer_cast<typename _Node_base::_Pointer>
-                                  (__pos._M_node);
+          _Node_base* __tmp = const_cast<_Node_base*>(__pos._M_node);
           const_iterator __before = __list.cbefore_begin();
-          __tmp->_M_transfer_after(__const_pointer_cast
-                                     <typename _Node_base::_Pointer>
-                                     (__before._M_node));
+          __tmp->_M_transfer_after(const_cast<_Node_base*>(__before._M_node));
         }
     }
 
@@ -278,14 +221,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     splice_after(const_iterator __pos, forward_list&& __list,
                  const_iterator __before, const_iterator __last)
     {
-      typename _Node_base::_Pointer __tmp 
-        = __const_pointer_cast<typename _Node_base::_Pointer>(__pos._M_node);
-      __tmp->_M_transfer_after(__const_pointer_cast
-                                 <typename _Node_base::_Pointer>
-                                 (__before._M_node),
-                               __const_pointer_cast
-                                 <typename _Node_base::_Pointer>
-                                 (__last._M_node));
+      _Node_base* __tmp = const_cast<_Node_base*>(__pos._M_node);
+      __tmp->_M_transfer_after(const_cast<_Node_base*>(__before._M_node),
+                               const_cast<_Node_base*>(__last._M_node));
     }
 
   template<typename _Tp, typename _Alloc>
@@ -293,17 +231,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     forward_list<_Tp, _Alloc>::
     remove(const _Tp& __val)
     {
-      typename _Node::_Pointer __curr 
-        = __static_pointer_cast<typename _Node::_Pointer>
-                               (&this->_M_impl._M_head);
-      while (typename _Node::_Pointer __temp = 
-             __static_pointer_cast<typename _Node::_Pointer>(__curr->_M_next))
+      _Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
+      while (_Node* __temp = static_cast<_Node*>(__curr->_M_next))
         {
           if (__temp->_M_value == __val)
             this->_M_erase_after(__curr);
           else
-            __curr = __static_pointer_cast<typename _Node::_Pointer>
-                                          (__curr->_M_next);
+            __curr = static_cast<_Node*>(__curr->_M_next);
         }
     }
 
@@ -313,17 +247,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       forward_list<_Tp, _Alloc>::
       remove_if(_Pred __pred)
       {
-        typename _Node::_Pointer __curr 
-          = __static_pointer_cast<typename _Node::_Pointer>
-                                 (&this->_M_impl._M_head);
-        while (typename _Node::_Pointer __temp = 
-               __static_pointer_cast<typename _Node::_Pointer>(__curr->_M_next))
+	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
+        while (_Node* __temp = static_cast<_Node*>(__curr->_M_next))
           {
             if (__pred(__temp->_M_value))
               this->_M_erase_after(__curr);
             else
-              __curr = __static_pointer_cast<typename _Node::_Pointer>
-                                            (__curr->_M_next);
+              __curr = static_cast<_Node*>(__curr->_M_next);
           }
       }
 
@@ -354,12 +284,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       forward_list<_Tp, _Alloc>::
       merge(forward_list&& __list, _Comp __comp)
       {
-        typename _Node_base::_Pointer __node = &this->_M_impl._M_head;
+        _Node_base* __node = &this->_M_impl._M_head;
         while (__node->_M_next && __list._M_impl._M_head._M_next)
           {
-            if (__comp(__static_pointer_cast<typename _Node::_Pointer>
+            if (__comp(static_cast<_Node*>
                        (__list._M_impl._M_head._M_next)->_M_value,
-                       __static_pointer_cast<typename _Node::_Pointer>
+                       static_cast<_Node*>
                        (__node->_M_next)->_M_value))
               __node->_M_transfer_after(&__list._M_impl._M_head,
                                         __list._M_impl._M_head._M_next);
@@ -400,11 +330,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       forward_list<_Tp, _Alloc>::
       sort(_Comp __comp)
       {
-	typedef typename _Node::_Pointer _Pointer;
-
         // If `next' is 0, return immediately.
-        _Pointer __list =
-	  __static_pointer_cast<_Pointer>(this->_M_impl._M_head._M_next);
+        _Node* __list = static_cast<_Node*>(this->_M_impl._M_head._M_next);
         if (!__list)
           return;
 
@@ -412,9 +339,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
         while (1)
           {
-            _Pointer __p = __list;
+            _Node* __p = __list;
             __list = 0;
-            _Pointer __tail = 0;
+            _Node* __tail = 0;
 
             // Count number of merges we do in this pass.
             unsigned long __nmerges = 0;
@@ -424,12 +351,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                 ++__nmerges;
                 // There exists a merge to be done.
                 // Step `insize' places along from p.
-                _Pointer __q = __p;
+                _Node* __q = __p;
                 unsigned long __psize = 0;
                 for (unsigned long __i = 0; __i < __insize; ++__i)
                   {
                     ++__psize;
-                    __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                    __q = static_cast<_Node*>(__q->_M_next);
                     if (!__q)
                       break;
                   }
@@ -441,33 +368,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                 while (__psize > 0 || (__qsize > 0 && __q))
                   {
                     // Decide whether next node of merge comes from p or q.
-                    _Pointer __e;
+                    _Node* __e;
                     if (__psize == 0)
                       {
                         // p is empty; e must come from q.
                         __e = __q;
-                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                        __q = static_cast<_Node*>(__q->_M_next);
                         --__qsize;
                       }
                     else if (__qsize == 0 || !__q)
                       {
                         // q is empty; e must come from p.
                         __e = __p;
-                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
+                        __p = static_cast<_Node*>(__p->_M_next);
                         --__psize;
                       }
                     else if (__comp(__p->_M_value, __q->_M_value))
                       {
                         // First node of p is lower; e must come from p.
                         __e = __p;
-                        __p = __static_pointer_cast<_Pointer>(__p->_M_next);
+                        __p = static_cast<_Node*>(__p->_M_next);
                         --__psize;
                       }
                     else
                       {
                         // First node of q is lower; e must come from q.
                         __e = __q;
-                        __q = __static_pointer_cast<_Pointer>(__q->_M_next);
+                        __q = static_cast<_Node*>(__q->_M_next);
                         --__qsize;
                       }
 
