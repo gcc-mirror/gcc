@@ -1,3 +1,8 @@
+2010-03-15  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/43363
+	* g++.dg/ext/altivec-17.C: Handle changes to error message.
+
 2010-03-15  Michael Matz  <matz@suse.de>
 
 	PR middle-end/43300
