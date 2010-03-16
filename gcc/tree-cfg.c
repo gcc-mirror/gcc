@@ -1617,6 +1617,9 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	      FOR_EACH_IMM_USE_STMT (stmt, iter, def)
 		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		  SET_USE (use_p, use);
+
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
+		SSA_NAME_OCCURS_IN_ABNORMAL_PHI (use) = 1;
 	    }
 	  else
             replace_uses_by (def, use);
