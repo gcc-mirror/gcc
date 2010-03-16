@@ -1,3 +1,7 @@
+2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gnat.dg/socket1.adb: Disable on *-*-solaris2*.
+
 2010-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43379
