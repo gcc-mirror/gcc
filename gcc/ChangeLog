@@ -1,3 +1,10 @@
+2010-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/43365
+	* tree-eh.c (replace_goto_queue): Also replace in the eh_seq.
+	(lower_try_finally): Save and restore eh_seq around the expansion
+	of the try-finally.
+
 2010-03-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	* graphite-sese-to-poly.c (split_reduction_stmt): Skip debug
