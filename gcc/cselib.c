@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 static bool cselib_record_memory;
+static bool cselib_preserve_constants;
 static int entry_and_rtx_equal_p (const void *, const void *);
 static hashval_t get_value_hash (const void *);
 static struct elt_list *new_elt_list (struct elt_list *, cselib_val *);
@@ -134,6 +135,11 @@ static int values_became_useless;
 /* Used as stop element of the containing_mem list so we can check
    presence in the list by checking the next pointer.  */
 static cselib_val dummy_val;
+
+/* If non-NULL, value of the eliminated arg_pointer_rtx or frame_pointer_rtx
+   that is constant through the whole function and should never be
+   eliminated.  */
+static cselib_val *cfa_base_preserved_val;
 
 /* Used to list all values that contain memory reference.
    May or may not contain the useless values - the list is compacted
@@ -229,6 +235,35 @@ cselib_clear_table (void)
   cselib_reset_table (1);
 }
 
+/* Remove from hash table all VALUEs except constants.  */
+
+static int
+preserve_only_constants (void **x, void *info ATTRIBUTE_UNUSED)
+{
+  cselib_val *v = (cselib_val *)*x;
+
+  if (v->locs != NULL
+      && v->locs->next == NULL)
+    {
+      if (CONSTANT_P (v->locs->loc)
+	  && (GET_CODE (v->locs->loc) != CONST
+	      || !references_value_p (v->locs->loc, 0)))
+	return 1;
+      if (cfa_base_preserved_val)
+	{
+	  if (v == cfa_base_preserved_val)
+	    return 1;
+	  if (GET_CODE (v->locs->loc) == PLUS
+	      && CONST_INT_P (XEXP (v->locs->loc, 1))
+	      && XEXP (v->locs->loc, 0) == cfa_base_preserved_val->val_rtx)
+	    return 1;
+	}
+    }
+
+  htab_clear_slot (cselib_hash_table, x);
+  return 1;
+}
+
 /* Remove all entries from the hash table, arranging for the next
    value to be numbered NUM.  */
 
@@ -237,15 +272,37 @@ cselib_reset_table (unsigned int num)
 {
   unsigned int i;
 
-  for (i = 0; i < n_used_regs; i++)
-    REG_VALUES (used_regs[i]) = 0;
-
   max_value_regs = 0;
 
-  n_used_regs = 0;
+  if (cfa_base_preserved_val)
+    {
+      unsigned int regno = REGNO (cfa_base_preserved_val->locs->loc);
+      unsigned int new_used_regs = 0;
+      for (i = 0; i < n_used_regs; i++)
+	if (used_regs[i] == regno)
+	  {
+	    new_used_regs = 1;
+	    continue;
+	  }
+	else
+	  REG_VALUES (used_regs[i]) = 0;
+      gcc_assert (new_used_regs == 1);
+      n_used_regs = new_used_regs;
+      used_regs[0] = regno;
+      max_value_regs
+	= hard_regno_nregs[regno][GET_MODE (cfa_base_preserved_val->locs->loc)];
+    }
+  else
+    {
+      for (i = 0; i < n_used_regs; i++)
+	REG_VALUES (used_regs[i]) = 0;
+      n_used_regs = 0;
+    }
 
-  /* ??? Preserve constants?  */
-  htab_empty (cselib_hash_table);
+  if (cselib_preserve_constants)
+    htab_traverse (cselib_hash_table, preserve_only_constants, NULL);
+  else
+    htab_empty (cselib_hash_table);
 
   n_useless_values = 0;
 
@@ -432,6 +489,18 @@ bool
 cselib_preserved_value_p (cselib_val *v)
 {
   return PRESERVED_VALUE_P (v->val_rtx);
+}
+
+/* Arrange for a REG value to be assumed constant through the whole function,
+   never invalidated and preserved across cselib_reset_table calls.  */
+
+void
+cselib_preserve_cfa_base_value (cselib_val *v)
+{
+  if (cselib_preserve_constants
+      && v->locs
+      && REG_P (v->locs->loc))
+    cfa_base_preserved_val = v;
 }
 
 /* Clean all non-constant expressions in the hash table, but retain
@@ -1600,7 +1669,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
 	    this_last = end_hard_regno (GET_MODE (v->val_rtx), i) - 1;
 
-	  if (this_last < regno || v == NULL)
+	  if (this_last < regno || v == NULL || v == cfa_base_preserved_val)
 	    {
 	      l = &(*l)->next;
 	      continue;
@@ -2018,7 +2087,7 @@ cselib_process_insn (rtx insn)
    init_alias_analysis.  */
 
 void
-cselib_init (bool record_memory)
+cselib_init (int record_what)
 {
   elt_list_pool = create_alloc_pool ("elt_list",
 				     sizeof (struct elt_list), 10);
@@ -2027,7 +2096,8 @@ cselib_init (bool record_memory)
   cselib_val_pool = create_alloc_pool ("cselib_val_list",
 				       sizeof (cselib_val), 10);
   value_pool = create_alloc_pool ("value", RTX_CODE_SIZE (VALUE), 100);
-  cselib_record_memory = record_memory;
+  cselib_record_memory = record_what & CSELIB_RECORD_MEMORY;
+  cselib_preserve_constants = record_what & CSELIB_PRESERVE_CONSTANTS;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything,
      see canon_true_dependence.  This is only created once.  */
@@ -2061,6 +2131,8 @@ void
 cselib_finish (void)
 {
   cselib_discard_hook = NULL;
+  cselib_preserve_constants = false;
+  cfa_base_preserved_val = NULL;
   free_alloc_pool (elt_list_pool);
   free_alloc_pool (elt_loc_list_pool);
   free_alloc_pool (cselib_val_pool);

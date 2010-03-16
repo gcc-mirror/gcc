@@ -350,15 +350,14 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
-/* Replace all occurrences of OLD_RTX in X with FN (X', DATA), where X'
-   is an expression in X that is equal to OLD_RTX.  Canonicalize and
-   simplify the result.
-
-   If FN is null, assume FN (X', DATA) == copy_rtx (DATA).  */
+/* If FN is NULL, replace all occurrences of OLD_RTX in X with copy_rtx (DATA)
+   and simplify the result.  If FN is non-NULL, call this callback on each
+   X, if it returns non-NULL, replace X with its return value and simplify the
+   result.  */
 
 rtx
 simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
-			 rtx (*fn) (rtx, void *), void *data)
+			 rtx (*fn) (rtx, const_rtx, void *), void *data)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -368,17 +367,14 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
   rtvec vec, newvec;
   int i, j;
 
-  /* If X is OLD_RTX, return FN (X, DATA), with a null FN.  Otherwise,
-     if this is an expression, try to build a new expression, substituting
-     recursively.  If we can't do anything, return our input.  */
-
-  if (rtx_equal_p (x, old_rtx))
+  if (__builtin_expect (fn != NULL, 0))
     {
-      if (fn)
-	return fn (x, data);
-      else
-	return copy_rtx ((rtx) data);
+      newx = fn (x, old_rtx, data);
+      if (newx)
+	return newx;
     }
+  else if (rtx_equal_p (x, old_rtx))
+    return copy_rtx ((rtx) data);
 
   switch (GET_RTX_CLASS (code))
     {

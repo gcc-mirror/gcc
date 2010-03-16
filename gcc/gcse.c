@@ -1,7 +1,7 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2724,7 +2724,7 @@ local_cprop_pass (void)
   struct reg_use *reg_used;
   bool changed = false;
 
-  cselib_init (false);
+  cselib_init (0);
   FOR_EACH_BB (bb)
     {
       FOR_BB_INSNS (bb, insn)

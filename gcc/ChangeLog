@@ -1,3 +1,73 @@
+2010-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43051
+	PR debug/43092
+	* cselib.c (cselib_preserve_constants,
+	cfa_base_preserved_val): New static variables.
+	(preserve_only_constants): New function.
+	(cselib_reset_table): If cfa_base_preserved_val is non-NULL, don't
+	clear its REG_VALUES.  If cselib_preserve_constants, don't 
+	empty the whole hash table, but preserve there VALUEs with constants,
+	cfa_base_preserved_val and cfa_base_preserved_val plus constant.
+	(cselib_preserve_cfa_base_value): New function.
+	(cselib_invalidate_regno): Don't invalidate cfa_base_preserved_val.
+	(cselib_init): Change argument to int bitfield.  Set
+	cselib_preserve_constants to whether CSELIB_PRESERVE_CONSTANTS
+	is in it.
+	(cselib_finish): Clear cselib_preserve_constants and
+	cfa_base_preserved_val.
+	* cselib.h (enum cselib_record_what): New enum.
+	(cselib_init): Change argument to int.
+	(cselib_preserve_cfa_base_value): New prototype.
+	* postreload.c (reload_cse_regs_1): Adjust cselib_init caller.
+	* dse.c (dse_step1): Likewise.
+	* cfgcleanup.c (thread_jump): Likewise.
+	* sched-deps.c (sched_analyze): Likewise.
+	* gcse.c (local_cprop_pass): Likewise.
+	* simplify-rtx.c (simplify_replace_fn_rtx): Add argument to callback.
+	If FN is non-NULL, call the callback always and whenever it returns
+	non-NULL just return that.  Only do rtx_equal_p if FN is NULL.
+	* rtl.h (simplify_replace_fn_rtx): Add argument to callback.
+	* combine.c (propagate_for_debug_subst): Add old_rtx argument,
+	compare from with old_rtx and if it isn't rtx_equal_p, return NULL.
+	* Makefile.in (var-tracking.o): Depend on $(RECOG_H).
+	* var-tracking.c: Include recog.h.
+	(bb_stack_adjust_offset): Remove.
+	(vt_stack_adjustments): Don't call it, instead just gather the
+	adjustments using insn_stack_adjust_offset_pre_post on each bb insn.
+	(adjust_stack_reference): Remove.
+	(compute_cfa_pointer): New function.
+	(hard_frame_pointer_adjustment, cfa_base_rtx): New static variables.
+	(struct adjust_mem_data): New type.
+	(adjust_mems, adjust_mem_uses, adjust_mem_stores, adjust_insn): New
+	functions.
+	(get_address_mode): New function.
+	(replace_expr_with_values): Use it.
+	(use_type): Don't do cselib_lookup for VAR_LOC_UNKNOWN_P.
+	Use get_address_mode.  For cfa_base_rtx return MO_CLOBBER.
+	(adjust_sets): Remove.
+	(add_uses): Don't add extra MO_VAL_USE for cfa_base_rtx plus constant.
+	Use get_address_mode.
+	(get_adjusted_src): Remove.
+	(add_stores): Don't call it.  Never reuse expr SET.  Don't add extra
+	MO_VAL_USE for cfa_base_rtx plus constant.  Use get_address_mode.
+	(add_with_sets): Don't call adjust_sets.
+	(fp_setter, vt_init_cfa_base): New functions.
+	(vt_initialize): Change return type to bool.  Move most of pool etc.
+	initialization to the beginning of the function from end.  Pass
+	CSELIB_RECORD_MEMORY | CSELIB_PRESERVE_CONSTANTS to cselib_init.
+	If !frame_pointer_needed, call vt_stack_adjustment before mos
+	vector is filled, call vt_init_cfa_base if argp/framep has been
+	eliminated to sp.  If frame_pointer_needed and argp/framep has
+	been eliminated to hard frame pointer, set
+	hard_frame_pointer_adjustment and call vt_init_cfa_base after
+	encountering fp setter in the prologue.  For MO_ADJUST, call
+	log_op_type before pusing the op into mos vector, not afterwards.
+	Call adjust_insn before cselib_process_insn/add_with_sets,
+	call cancel_changes (0) afterwards.
+	(variable_tracking_main_1): Adjust for vt_initialize calling
+	vt_stack_adjustments and returning whether it succeeded or not.
+
 2010-03-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Skip

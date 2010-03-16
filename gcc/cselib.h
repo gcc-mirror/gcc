@@ -66,12 +66,18 @@ struct cselib_set
   cselib_val *dest_addr_elt;
 };
 
+enum cselib_record_what
+{
+  CSELIB_RECORD_MEMORY = 1,
+  CSELIB_PRESERVE_CONSTANTS = 2
+};
+
 extern void (*cselib_discard_hook) (cselib_val *);
 extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
 					int n_sets);
 
 extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
-extern void cselib_init (bool record_memory);
+extern void cselib_init (int);
 extern void cselib_clear_table (void);
 extern void cselib_finish (void);
 extern void cselib_process_insn (rtx);
@@ -92,5 +98,6 @@ extern unsigned int cselib_get_next_uid (void);
 extern void cselib_preserve_value (cselib_val *);
 extern bool cselib_preserved_value_p (cselib_val *);
 extern void cselib_preserve_only_values (void);
+extern void cselib_preserve_cfa_base_value (cselib_val *);
 
 extern void dump_cselib_table (FILE *);
