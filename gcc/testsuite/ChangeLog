@@ -1,5 +1,9 @@
 2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* ada/acats/run_all.sh: Log start and end times.
+
+2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gnat.dg/socket1.adb: Disable on *-*-solaris2*.
 
 2010-03-16  Richard Guenther  <rguenther@suse.de>

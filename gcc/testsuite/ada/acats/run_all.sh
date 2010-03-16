@@ -76,6 +76,8 @@ EXTERNAL_OBJECTS=""
 
 rm -f $dir/acats.sum $dir/acats.log
 
+display "Test Run By $USER on `date`"
+
 display "		=== acats configuration ==="
 
 target=`$GCC -dumpmachine`
@@ -311,5 +313,7 @@ fi
 if [ $glob_countok -ne $glob_countn ]; then
    display "*** FAILURES: $failed"
 fi
+
+display "$0 completed at `date`"
 
 exit 0
