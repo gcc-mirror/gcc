@@ -11,6 +11,11 @@
 2010-03-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12909
+	* mangle.c (mangle_decl): Handle VAR_DECL, too.
+
+2010-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12909
 	* mangle.c: Include cgraph.h.
 	(mangle_decl): If the mangled name will change in a later
 	ABI version, make the later mangled name an alias.
