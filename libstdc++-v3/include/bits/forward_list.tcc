@@ -203,27 +203,66 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _Tp, typename _Alloc>
-    void
+    typename forward_list<_Tp, _Alloc>::iterator
     forward_list<_Tp, _Alloc>::
-    splice_after(const_iterator __pos, forward_list&& __list)
+    _M_splice_after(const_iterator __pos, forward_list&& __list)
     {
-      if (!__list.empty() && &__list != this)
-        {
-          _Node_base* __tmp = const_cast<_Node_base*>(__pos._M_node);
-          const_iterator __before = __list.cbefore_begin();
-          __tmp->_M_transfer_after(const_cast<_Node_base*>(__before._M_node));
-        }
+      _Node_base* __tmp = const_cast<_Node_base*>(__pos._M_node);
+      iterator __before = __list.before_begin();
+      return iterator(__tmp->_M_transfer_after(__before._M_node));
     }
 
   template<typename _Tp, typename _Alloc>
     void
     forward_list<_Tp, _Alloc>::
-    splice_after(const_iterator __pos, forward_list&& __list,
+    splice_after(const_iterator __pos, forward_list&&,
                  const_iterator __before, const_iterator __last)
     {
       _Node_base* __tmp = const_cast<_Node_base*>(__pos._M_node);
       __tmp->_M_transfer_after(const_cast<_Node_base*>(__before._M_node),
                                const_cast<_Node_base*>(__last._M_node));
+    }
+
+  template<typename _Tp, typename _Alloc>
+    typename forward_list<_Tp, _Alloc>::iterator
+    forward_list<_Tp, _Alloc>::
+    insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
+    {
+      if (__n)
+	{
+	  forward_list __tmp(__n, __val, this->_M_get_Node_allocator());
+	  return _M_splice_after(__pos, std::move(__tmp));
+	}
+      else
+	return iterator(const_cast<_Node_base*>(__pos._M_node));
+    }
+
+  template<typename _Tp, typename _Alloc>
+    template<typename _InputIterator>
+      typename forward_list<_Tp, _Alloc>::iterator
+      forward_list<_Tp, _Alloc>::
+      insert_after(const_iterator __pos,
+		   _InputIterator __first, _InputIterator __last)
+      {
+	forward_list __tmp(__first, __last, this->_M_get_Node_allocator());
+	if (!__tmp.empty())
+	  return _M_splice_after(__pos, std::move(__tmp));
+	else
+	  return iterator(const_cast<_Node_base*>(__pos._M_node));
+      }
+
+  template<typename _Tp, typename _Alloc>
+    typename forward_list<_Tp, _Alloc>::iterator
+    forward_list<_Tp, _Alloc>::
+    insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
+    {
+      if (__il.size())
+	{
+	  forward_list __tmp(__il, this->_M_get_Node_allocator());
+	  return _M_splice_after(__pos, std::move(__tmp));
+	}
+      else
+	return iterator(const_cast<_Node_base*>(__pos._M_node));
     }
 
   template<typename _Tp, typename _Alloc>
