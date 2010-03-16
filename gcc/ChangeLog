@@ -1,3 +1,12 @@
+2010-03-16  Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Testsuites): Fix markup.
+	Use pathnames relative to gcc/testsuite.
+	(Test Directives): Move description of how timeout is determined.
+	(Ada Tests): Favor gnat.exp over ada/acats/tests/gcc.
+	(C Tests): Correct gcc.misc-tests directory.
+	Framework tests now live in gcc.test-framework.
+
 2010-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43379

@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -930,7 +930,7 @@ effective-target keyword; or a logical expression.  Depending on the
 context, the selector specifies whether a test is skipped and reported
 as unsupported or is expected to fail.  Use @samp{*-*-*} to match any
 target.
-Effective-target keywords are defined in @file{target-supports.exp} in
+Effective-target keywords are defined in @file{lib/target-supports.exp} in
 the GCC testsuite.
 
 A selector expression appears within curly braces and uses a single
@@ -972,10 +972,10 @@ If the directive includes the optional @samp{@{ target @var{selector} @}}
 then the test is skipped unless the target system is included in the
 list of target triplets or matches the effective-target keyword.
 
-If @samp{do-what-keyword} is @code{run} and the directive includes
+If @var{do-what-keyword} is @code{run} and the directive includes
 the optional @samp{@{ xfail @var{selector} @}} and the selector is met
 then the test is expected to fail.  The @code{xfail} clause is ignored
-for other values of @samp{do-what-keyword}; those tests can use
+for other values of @var{do-what-keyword}; those tests can use
 directive @code{dg-xfail-if}.
 
 @item @{ dg-options @var{options} [@{ target @var{selector} @}] @}
@@ -1001,11 +1001,7 @@ and only then in certain modes.
 
 @item @{ dg-timeout @var{n} [@{target @var{selector} @}] @}
 Set the time limit for the compilation and for the execution of the test
-to the specified number of seconds.
-
-@item @{ dg-timeout-factor @var{x} [@{ target @var{selector} @}] @}
-Multiply the normal time limit for compilation and execution of the test
-by the specified floating-point factor.  The normal timeout limit, in
+to the specified number of seconds.  The normal timeout limit, in
 seconds, is found by searching the following in order:
 
 @itemize @bullet
@@ -1018,6 +1014,10 @@ the test
 
 @item 300
 @end itemize
+
+@item @{ dg-timeout-factor @var{x} [@{ target @var{selector} @}] @}
+Multiply the normal time limit for compilation and execution of the test
+by the specified floating-point factor.
 
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Arguments @var{include-opts} and @var{exclude-opts} are lists in which
@@ -1075,11 +1075,11 @@ Expect the test to fail if the conditions (which are the same as for
 
 @item  @{ dg-xfail-run-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Expect the execute step of a test to fail if the conditions (which are
-the same as for @code{dg-skip-if}) and @code{dg-xfail-if}) are met.
+the same as for @code{dg-skip-if} and @code{dg-xfail-if}) are met.
 
 @item @{ dg-require-@var{support} args @}
 Skip the test if the target does not provide the required support;
-see @file{gcc-dg.exp} in the GCC testsuite for the actual directives.
+see @file{lib/gcc-dg.exp} in the GCC testsuite for the actual directives.
 These directives must appear after any @code{dg-do} directive in the test
 and before any @code{dg-additional-sources} directive.
 They require at least one argument, which can be an empty string if the
@@ -1241,7 +1241,7 @@ Check branch and/or call counts, in addition to line counts, in
 
 The Ada testsuite includes executable tests from the ACATS 2.5
 testsuite, publicly available at
-@uref{http://www.adaic.org/compilers/acats/2.5}
+@uref{http://www.adaic.org/compilers/acats/2.5}.
 
 These tests are integrated in the GCC testsuite in the
 @file{gcc/testsuite/ada/acats} directory, and
@@ -1257,11 +1257,12 @@ $ make check-ada CHAPTERS="c3 c9"
 @end smallexample
 
 The tests are organized by directory, each directory corresponding to
-a chapter of the Ada Reference Manual.  So for example, c9 corresponds
+a chapter of the Ada Reference Manual.  So for example, @file{c9} corresponds
 to chapter 9, which deals with tasking features of the language.
 
 There is also an extra chapter called @file{gcc} containing a template for
-creating new executable tests.
+creating new executable tests, although this is deprecated in favor of
+the @file{gnat.dg} testsuite.
 
 The tests are run using two @command{sh} scripts: @file{run_acats} and
 @file{run_all.sh}.  To run the tests using a simulator or a cross
@@ -1291,7 +1292,7 @@ unless other options are given in the test.  Except as noted below they
 are not run with multiple optimization options.
 @item gcc.dg/compat
 This subdirectory contains tests for binary compatibility using
-@file{compat.exp}, which in turn uses the language-independent support
+@file{lib/compat.exp}, which in turn uses the language-independent support
 (@pxref{compat Testing, , Support for testing binary compatibility}).
 @item gcc.dg/cpp
 This subdirectory contains tests of the preprocessor.
@@ -1341,20 +1342,18 @@ This contains tests which are specific to IEEE floating point.
 FIXME: describe this.
 
 This directory should probably not be used for new tests.
-@item gcc.c-torture/misc-tests
+@item gcc.misc-tests
 This directory contains C tests that require special handling.  Some
 of these tests have individual expect files, and others share
 special-purpose expect files:
 
 @table @file
 @item @code{bprob*.c}
-Test @option{-fbranch-probabilities} using @file{bprob.exp}, which
+Test @option{-fbranch-probabilities} using
+@file{gcc.misc-tests/bprob.exp}, which
 in turn uses the generic, language-independent framework
 (@pxref{profopt Testing, , Support for testing profile-directed
 optimizations}).
-
-@item @code{dg-*.c}
-Test the testsuite itself using @file{dg-test.exp}.
 
 @item @code{gcov*.c}
 Test @command{gcov} output using @file{gcov.exp}, which in turn uses the
@@ -1362,6 +1361,12 @@ language-independent support (@pxref{gcov Testing, , Support for testing gcov}).
 
 @item @code{i386-pf-*.c}
 Test i386-specific support for data prefetch using @file{i386-prefetch.exp}.
+@end table
+
+@item gcc.test-framework
+@table @file
+@item @code{dg-*.c}
+Test the testsuite itself using @file{gcc.test-framework/test-framework.exp}.
 @end table
 
 @end table
@@ -1433,8 +1438,8 @@ each of these sets of options.
 
 Language-independent support for testing @command{gcov}, and for checking
 that branch profiling produces expected values, is provided by the
-expect file @file{gcov.exp}.  @command{gcov} tests also rely on procedures
-in @file{gcc.dg.exp} to compile and run the test program.  A typical
+expect file @file{lib/gcov.exp}.  @command{gcov} tests also rely on procedures
+in @file{lib/gcc-dg.exp} to compile and run the test program.  A typical
 @command{gcov} test contains the following DejaGnu commands within comments:
 
 @smallexample
@@ -1607,7 +1612,7 @@ following from @file{@var{objdir}/gcc}:
 rm site.exp
 make -k \
   ALT_CXX_UNDER_TEST=$@{alt_prefix@}/bin/g++ \
-  COMPAT_OPTIONS="lists as shown above" \
+  COMPAT_OPTIONS="@var{lists as shown above}" \
   check-c++ \
   RUNTESTFLAGS="compat.exp"
 @end smallexample
@@ -1646,7 +1651,7 @@ targets.
 Throughout the compiler testsuite there are several directories whose
 tests are run multiple times, each with a different set of options.
 These are known as torture tests.
-@file{gcc/testsuite/lib/torture-options.exp} defines procedures to
+@file{lib/torture-options.exp} defines procedures to
 set up these lists:
 
 @table @code
