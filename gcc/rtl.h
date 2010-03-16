@@ -1778,7 +1778,7 @@ extern rtx simplify_subreg (enum machine_mode, rtx, enum machine_mode,
 extern rtx simplify_gen_subreg (enum machine_mode, rtx, enum machine_mode,
 				unsigned int);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
-				    rtx (*fn) (rtx, void *), void *);
+				    rtx (*fn) (rtx, const_rtx, void *), void *);
 extern rtx simplify_replace_rtx (rtx, const_rtx, rtx);
 extern rtx simplify_rtx (const_rtx);
 extern rtx avoid_constant_pool_reference (rtx);
