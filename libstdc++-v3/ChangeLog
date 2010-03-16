@@ -1,5 +1,11 @@
 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/43394
+	* include/parallel/compatibility.h: Add __k8 and __core2 among the
+	i386 targets supporting atomic operations.
+
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/backward/hash_map: Use consistently the _BACKWARD_*
 	prefix for the include guard.
 	* include/backward/hash_fun.h: Likewise.
