@@ -1,3 +1,10 @@
+2010-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43379
+	* tree-cfg.c (gimple_merge_blocks): When propagating virtual
+	PHI operands make sure to merge SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+	properly.
+
 2010-03-16  Aldy Hernandez  <aldyh@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 

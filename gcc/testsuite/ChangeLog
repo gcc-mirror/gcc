@@ -1,3 +1,8 @@
+2010-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43379
+	* gcc.dg/pr43379.c: New testcase.
+
 2010-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43051
