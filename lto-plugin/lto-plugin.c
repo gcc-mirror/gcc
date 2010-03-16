@@ -524,6 +524,7 @@ all_symbols_read_handler (void)
 static enum ld_plugin_status
 cleanup_handler (void)
 {
+  unsigned int i;
   int t;
 
   if (debug)
@@ -539,6 +540,12 @@ cleanup_handler (void)
     {
       t = unlink (resolution_file);
       check (t == 0, LDPL_FATAL, "could not unlink resolution file");
+    }
+
+  for (i = 0; i < num_output_files; i++)
+    {
+      t = unlink (output_files[i]);
+      check (t == 0, LDPL_FATAL, "could not unlink output file");
     }
 
   free_2 ();

@@ -1,3 +1,8 @@
+2010-03-16  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR lto/43336
+	* lto-plugin.c (cleanup_handler): Delete temporary output files.
+
 2010-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41569
