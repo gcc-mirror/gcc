@@ -1657,7 +1657,7 @@ remove_iv (gimple iv_stmt)
 	    continue;
 
 	  FOR_EACH_IMM_USE_STMT (stmt, imm_iter, arg)
-	    if (stmt != iv_stmt)
+	    if (stmt != iv_stmt && !is_gimple_debug (stmt))
 	      used = true;
 
 	  if (!used)
@@ -1839,6 +1839,9 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	  gimple_seq stmts;
 	  lambda_body_vector lbv, newlbv;
 
+	  if (is_gimple_debug (stmt))
+	    continue;
+
 	  /* Compute the new expression for the induction
 	     variable.  */
 	  depth = VEC_length (tree, new_ivs);
@@ -1885,7 +1888,8 @@ not_interesting_stmt (gimple stmt)
      loop, we would have already failed the number of exits tests.  */
   if (gimple_code (stmt) == GIMPLE_LABEL
       || gimple_code (stmt) == GIMPLE_GOTO
-      || gimple_code (stmt) == GIMPLE_COND)
+      || gimple_code (stmt) == GIMPLE_COND
+      || is_gimple_debug (stmt))
     return true;
   return false;
 }

@@ -1,3 +1,11 @@
+2010-03-16  Aldy Hernandez  <aldyh@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/42917
+	* lambda-code.c (remove_iv): Skip debug statements.
+	(lambda_loopnest_to_gcc_loopnest): Likewise.
+	(not_interesting_stmt): Debug statements are not interesting.
+
 2010-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43051
