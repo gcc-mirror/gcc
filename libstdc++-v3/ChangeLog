@@ -1,5 +1,16 @@
 2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/backward/hash_map: Use consistently the _BACKWARD_*
+	prefix for the include guard.
+	* include/backward/hash_fun.h: Likewise.
+	* include/backward/hashtable.h: Likewise.
+	* include/backward/auto_ptr.h: Likewise.
+	* include/backward/strstream: Likewise.
+	* include/backward/binders.h: Likewise.
+	* include/backward/hash_set: Likewise.
+
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.h (operator==(const uniform_int_distribution<>&,
 	const uniform_int_distribution<>&), operator==(const
 	uniform_real_distribution<>&, const uniform_real_distribution<>&),

@@ -1,6 +1,7 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,8 +41,8 @@
 // MAY BE REMOVED in a future standard revision.  One should use the
 // header <sstream> instead.
 
-#ifndef _GLIBCXX_STRSTREAM
-#define _GLIBCXX_STRSTREAM
+#ifndef _BACKWARD_STRSTREAM
+#define _BACKWARD_STRSTREAM
 
 #include "backward_warning.h"
 #include <iosfwd>
