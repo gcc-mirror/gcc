@@ -1,3 +1,8 @@
+2010-03-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* graphite-sese-to-poly.c (split_reduction_stmt): Skip debug
+	statements before splitting block.
+
 2010-03-16  Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Testsuites): Fix markup.
