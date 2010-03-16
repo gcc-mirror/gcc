@@ -1627,6 +1627,26 @@ namespace std
 	return __ret;
       }
 
+  template<typename _RealType>
+    bool
+    operator==(const std::normal_distribution<_RealType>& __d1,
+	       const std::normal_distribution<_RealType>& __d2)
+    {
+      if (__d1._M_param == __d2._M_param
+	  && __d1._M_saved_available == __d2._M_saved_available)
+	{
+	  if (__d1._M_saved_available
+	      && __d1._M_saved == __d2._M_saved)
+	    return true;
+	  else if(!__d1._M_saved_available)
+	    return true;
+	  else
+	    return false;
+	}
+      else
+	return false;
+    }
+
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,

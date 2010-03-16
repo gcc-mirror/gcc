@@ -1,3 +1,137 @@
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (operator==(const uniform_int_distribution<>&,
+	const uniform_int_distribution<>&), operator==(const
+	uniform_real_distribution<>&, const uniform_real_distribution<>&),
+	operator==(const lognormal_distribution<>&,
+	const lognormal_distribution<>&), operator==(const
+	chi_squared_distribution<>&, const chi_squared_distribution<>&),
+	operator==(const cauchy_distribution<>&, const cauchy_distribution<>&),
+	operator==(const fisher_distribution<>&, const fisher_distribution<>&),
+	operator==(const student_t_distribution<>&,
+	const student_t_distribution<>&), operator==(const
+	bernoulli_distribution<>&, const bernoulli_distribution<>&),
+	operator==(const binomial_distribution<>&, const
+	binomial_distribution<>&), operator==(const geometric_distribution<>&,
+	const geometric_distribution<>&), operator==(const
+	negative_binomial_distribution<>&, const
+	negative_binomial_distribution<>&), operator==(const
+	poisson_distribution<>&, const poisson_distribution<>&),
+	operator==(const exponential_distribution<>&,
+	const exponential_distribution<>&), operator==(const
+	gamma_distribution<>&, const gamma_distribution<>&), operator==(const
+	weibull_distribution<>&, const weibull_distribution<>&),
+	operator==(const extreme_value_distribution<>&,
+	const extreme_value_distribution<>&), operator==(const
+	discrete_distribution<>&, const discrete_distribution<>&),
+	operator==(const piecewise_constant_distribution<>&,
+	const piecewise_constant_distribution<>&), operator==(const
+	piecewise_linear_distribution<>&, const
+	piecewise_linear_distribution<>&)): Add, likewise for operator!=.
+	(operator!=(const independent_bits_engine<>&, const
+	independent_bits_engine<>&), operator!=(const
+	subtract_with_carry_engine<>&, const subtract_with_carry_engine<>&),
+	operator!=(const discard_block_engine<>&, const
+	discard_block_engine<>&), operator!=(const mersenne_twister_engine<>&,
+	const mersenne_twister_engine<>&), operator!=(const
+	linear_congruential_engine<>&, const linear_congruential_engine<>&),
+	operator!=(const shuffle_order_engine<>&, const
+	shuffle_order_engine<>&): Add.
+	* include/bits/random.tcc (operator==(const normal_distribution<>&,
+	const normal_distribution<>&)): Add.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	inequal.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	equal.cc: Likewise.
+
 2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.tcc (_Fwd_list_node_base::
