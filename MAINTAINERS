@@ -128,7 +128,7 @@ windows, cygwin, mingw	Dave Korn		dave.korn.cygwin@gmail.com
 
 			Language Front Ends Maintainers
 
-C front end/ISO C99	Joseph Myers		jsm@polyomino.org.uk
+C front end/ISO C99	Joseph Myers		joseph@codesourcery.com
 C front end/ISO C99	Richard Henderson	rth@redhat.com
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
@@ -161,7 +161,7 @@ libffi testsuite	Andreas Tobler		andreast@gcc.gnu.org
 libobjc			Nicola Pero		nicola.pero@meta-innovation.com
 libobjc			Andrew Pinski		pinskia@gmail.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
-soft-fp			Joseph Myers		jsm@polyomino.org.uk
+soft-fp			Joseph Myers		joseph@codesourcery.com
 scheduler (+ haifa)	Jim Wilson		wilson@codesourcery.com
 scheduler (+ haifa)	Michael Meissner	gnu@the-meissners.org
 scheduler (+ haifa)	Jeff Law		law@redhat.com
@@ -191,14 +191,14 @@ build status lists	Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pth@suse.de
-i18n			Joseph Myers		jsm@polyomino.org.uk
+i18n			Joseph Myers		joseph@codesourcery.com
 diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 build machinery (*.in)	Paolo Bonzini		bonzini@gnu.org
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
-docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
+docs co-maintainer	Joseph Myers		joseph@codesourcery.com
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
 gcov			Jan Hubicka		jh@suse.cz
@@ -250,7 +250,7 @@ outside of the parts of the compiler they maintain.
 dataflow		Paolo Bonzini		bonzini@gnu.org
 dataflow		Seongbae Park		seongbae.park@gmail.com
 dataflow 		Kenneth Zadeck		zadeck@naturalbridge.com
-driver			Joseph Myers		jsm@polyomino.org.uk
+driver			Joseph Myers		joseph@codesourcery.com
 Fortran			Janne Blomqvist		jb@gcc.gnu.org
 Fortran			Tobias Burnus		burnus@net-b.de
 Fortran			Jerry DeLisle		jvdelisle@gcc.gnu.org
