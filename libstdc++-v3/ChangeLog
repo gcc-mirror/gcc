@@ -1,5 +1,28 @@
 2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.tcc (_Fwd_list_node_base::
+	_M_transfer_after): Return _Fwd_list_node_base*.
+	(forward_list<>::_M_splice_after): Add.
+	(forward_list<>::insert_after(const_iterator, size_type, const _Tp&),
+	insert_after(const_iterator, _InputIterator, _InputIterator),
+	insert_after(const_iterator, initializer_list<>)): Use the above,
+	implement DR 1278 ([Ready] in Pittsburgh).
+	* include/bits/forward_list.h (insert_after(const_iterator,
+	size_type, const _Tp&), insert_after(const_iterator, _InputIterator,
+	_InputIterator), insert_after(const_iterator, initializer_list<>)):
+	Only declare.
+	* testsuite/23_containers/forward_list/modifiers/2.cc: Adjust.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/23_containers/forward_list/requirements/dr438/
 	assign_neg.cc: Adjust dg-error line number.
 	* testsuite/23_containers/forward_list/requirements/dr438/

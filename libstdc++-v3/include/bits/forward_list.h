@@ -51,28 +51,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     swap(_Fwd_list_node_base& __x, _Fwd_list_node_base& __y)
     { std::swap(__x._M_next, __y._M_next); }
 
-    void
-    _M_transfer_after(_Fwd_list_node_base* __bbegin)
+    _Fwd_list_node_base*
+    _M_transfer_after(_Fwd_list_node_base* __begin)
     {
-      _Fwd_list_node_base* __bend = __bbegin;
-      while (__bend && __bend->_M_next)
-	__bend = __bend->_M_next;
-      _M_transfer_after(__bbegin, __bend);
+      _Fwd_list_node_base* __end = __begin;
+      while (__end && __end->_M_next)
+	__end = __end->_M_next;
+      return _M_transfer_after(__begin, __end);
     }
 
-    void
-    _M_transfer_after(_Fwd_list_node_base* __bbegin,
-		      _Fwd_list_node_base* __bend)
+    _Fwd_list_node_base*
+    _M_transfer_after(_Fwd_list_node_base* __begin,
+		      _Fwd_list_node_base* __end)
     {
-      _Fwd_list_node_base* __keep = __bbegin->_M_next;
-      if (__bend)
+      _Fwd_list_node_base* __keep = __begin->_M_next;
+      if (__end)
 	{
-	  __bbegin->_M_next = __bend->_M_next;
-	  __bend->_M_next = _M_next;
+	  __begin->_M_next = __end->_M_next;
+	  __end->_M_next = _M_next;
 	}
       else
-	__bbegin->_M_next = 0;
+	__begin->_M_next = 0;
       _M_next = __keep;
+      return __end;
     }
 
     void
@@ -865,7 +866,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  pos  An iterator into the %forward_list.
        *  @param  n  Number of elements to be inserted.
        *  @param  val  Data to be inserted.
-       *  @return  pos.
+       *  @return  An iterator pointing to the last inserted copy of
+       *           @a val or @a pos if @a n == 0.
        *
        *  This function will insert a specified number of copies of the
        *  given data after the location specified by @a pos.
@@ -874,19 +876,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       iterator
-      insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
-      {
-        forward_list __tmp(__n, __val, this->_M_get_Node_allocator());
-        splice_after(__pos, std::move(__tmp));
-	return iterator(const_cast<_Node_base*>(__pos._M_node));
-      }
+      insert_after(const_iterator __pos, size_type __n, const _Tp& __val);
 
       /**
        *  @brief  Inserts a range into the %forward_list.
        *  @param  position  An iterator into the %forward_list.
        *  @param  first  An input iterator.
        *  @param  last   An input iterator.
-       *  @return  pos.
+       *  @return  An iterator pointing to the last inserted element or
+       *           @a pos if @a first == @a last.
        *
        *  This function will insert copies of the data in the range [@a
        *  first,@a last) into the %forward_list after the location specified
@@ -898,19 +896,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _InputIterator>
         iterator
         insert_after(const_iterator __pos,
-                     _InputIterator __first, _InputIterator __last)
-        {
-          forward_list __tmp(__first, __last, this->_M_get_Node_allocator());
-          splice_after(__pos, std::move(__tmp));
-	  return iterator(const_cast<_Node_base*>(__pos._M_node));
-        }
+                     _InputIterator __first, _InputIterator __last);
 
       /**
        *  @brief  Inserts the contents of an initializer_list into
        *          %forward_list after the specified iterator.
        *  @param  pos  An iterator into the %forward_list.
        *  @param  il  An initializer_list of value_type.
-       *  @return  pos.
+       *  @return  An iterator pointing to the last inserted element
+       *           or @a pos if @a il is empty.
        *
        *  This function will insert copies of the data in the
        *  initializer_list @a il into the %forward_list before the location
@@ -920,12 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  does not invalidate iterators and references.
        */
       iterator
-      insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
-      {
-        forward_list __tmp(__il, this->_M_get_Node_allocator());
-        splice_after(__pos, std::move(__tmp));
-	return iterator(const_cast<_Node_base*>(__pos._M_node));
-      }
+      insert_after(const_iterator __pos, std::initializer_list<_Tp> __il);
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
@@ -1037,7 +1026,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Requires this != @a x.
        */
       void
-      splice_after(const_iterator __pos, forward_list&& __list);
+      splice_after(const_iterator __pos, forward_list&& __list)
+      {
+	if (!__list.empty())
+	  _M_splice_after(__pos, std::move(__list));
+      }
 
       /**
        *  @brief  Insert element from another %forward_list.
@@ -1210,6 +1203,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // turns out to be the same thing.
       void
       _M_fill_initialize(size_type __n, const value_type& __value);
+
+      // Called by splice_after and insert_after.
+      iterator
+      _M_splice_after(const_iterator __pos, forward_list&& __list);
     };
 
   /**
