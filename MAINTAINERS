@@ -298,7 +298,6 @@ David Billinghurst				David.Billinghurst@riotinto.com
 Tomas Bily					tbily@suse.cz
 Laurynas Biveinis				laurynas.biveinis@gmail.com
 Eric Blake					ericb@gcc.gnu.org
-Jim Blandy					jimb@codesourcery.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Segher Boessenkool				segher@kernel.crashing.org
@@ -350,7 +349,6 @@ Jon Grimm					jgrimm2@us.ibm.com
 Laurent Guerby					laurent@guerby.net
 Xuepeng Guo					xuepeng.guo@intel.com
 Wei Guozhi					carrot@google.com
-Daniel Gutson					dgutson@codesourcery.com
 Mostafa Hagog					hagog@gcc.gnu.org
 Olivier Hainque					hainque@act-europe.fr
 Stuart Hastings					stuart@apple.com
@@ -428,7 +426,6 @@ Dorit Nuzman					dorit@il.ibm.com
 David O'Brien					obrien@FreeBSD.org
 Carlos O'Donell					carlos@codesourcery.com
 Peter O'Gorman					pogma@thewrittenword.com
-Jeffrey D. Oldham				oldham@codesourcery.com
 Andrea Ornstein					andrea.ornstein@st.com
 Seongbae Park					seongbae.park@gmail.com
 Devang Patel					dpatel@apple.com
@@ -456,7 +453,6 @@ Duncan Sands					baldrick@gcc.gnu.org
 Dodji Seketeli					dseketel@redhat.com
 Svein Seldal					svein@dev.seldal.com
 Thiemo Seufer					ths@networkno.de
-Mark Shinwell					shinwell@codesourcery.com
 Ghassan Shobaki					ghassan.shobaki@amd.com
 Johannes Singler				singler@kit.edu
 Franz Sirl					franz.sirl-kernel@lauterbach.com

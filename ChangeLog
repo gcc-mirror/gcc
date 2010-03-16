@@ -1,5 +1,10 @@
 2010-03-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* MAINTAINERS (Write After Approval): Remove Jim Blandy, Daniel
+	Gutson, Jeffrey D. Oldham and Mark Shinwell.
+
+2010-03-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* MAINTAINERS: Update my email address.
 
 2010-03-16  Daniel Jacobowitz  <dan@codesourcery.com>
