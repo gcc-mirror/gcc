@@ -54,8 +54,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _GLIBCXX_BINDERS_H
-#define _GLIBCXX_BINDERS_H 1
+#ifndef _BACKWARD_BINDERS_H
+#define _BACKWARD_BINDERS_H 1
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -166,4 +166,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _GLIBCXX_BINDERS_H */
+#endif /* _BACKWARD_BINDERS_H */

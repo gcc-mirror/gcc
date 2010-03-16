@@ -1,6 +1,7 @@
 // Hashing set implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2005, 2006, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,8 +54,8 @@
  *  containing extensions from the HP/SGI STL subset).
  */
 
-#ifndef _HASH_SET
-#define _HASH_SET 1
+#ifndef _BACKWARD_HASH_SET
+#define _BACKWARD_HASH_SET 1
 
 #include "backward_warning.h"
 #include <bits/c++config.h>
