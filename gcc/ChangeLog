@@ -1,3 +1,9 @@
+2010-03-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43347
+	* tree-sra.c (create_access_replacement): Set TREE_NO_WARNING when the
+	original base is DECL_ARTIFICIAL or DECL_IGNORED_P.
+
 2010-03-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR rtl-optimization/42216
