@@ -598,6 +598,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 
   if (!sym->attr.target
       && !sym->attr.pointer
+      && !sym->attr.cray_pointee
       && !sym->attr.proc_pointer)
     DECL_RESTRICTED_P (decl) = 1;
 }
@@ -3159,10 +3160,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
 	    case AS_ASSUMED_SIZE:
 	      /* Must be a dummy parameter.  */
-	      gcc_assert (sym->attr.dummy);
+	      gcc_assert (sym->attr.dummy || sym->as->cp_was_assumed);
 
 	      /* We should always pass assumed size arrays the g77 way.  */
-	      fnbody = gfc_trans_g77_array (sym, fnbody);
+	      if (sym->attr.dummy)
+		fnbody = gfc_trans_g77_array (sym, fnbody);
               break;
 
 	    case AS_ASSUMED_SHAPE:

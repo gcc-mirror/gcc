@@ -21,7 +21,7 @@ subroutine err3
   real array(*)
   pointer (ipt, array)
   ipt = loc (target)
-  array = 0    ! { dg-error "Vector assignment" }
+  array = 0    ! { dg-error "upper bound in the last dimension" }
 end subroutine err3
 
 subroutine err4

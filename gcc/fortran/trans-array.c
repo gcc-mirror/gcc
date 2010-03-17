@@ -2404,8 +2404,8 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 
 	  index = gfc_trans_array_bound_check (se, info->descriptor,
 			index, dim, &ar->where,
-			(ar->as->type != AS_ASSUMED_SIZE
-			 && !ar->as->cp_was_assumed) || dim < ar->dimen - 1);
+			ar->as->type != AS_ASSUMED_SIZE
+			|| dim < ar->dimen - 1);
 	  break;
 
 	case DIMEN_VECTOR:
@@ -2431,8 +2431,8 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  /* Do any bounds checking on the final info->descriptor index.  */
 	  index = gfc_trans_array_bound_check (se, info->descriptor,
 			index, dim, &ar->where,
-			(ar->as->type != AS_ASSUMED_SIZE
-			 && !ar->as->cp_was_assumed) || dim < ar->dimen - 1);
+			ar->as->type != AS_ASSUMED_SIZE
+			|| dim < ar->dimen - 1);
 	  break;
 
 	case DIMEN_RANGE:
@@ -2581,8 +2581,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 
 	  /* Upper bound, but not for the last dimension of assumed-size
 	     arrays.  */
-	  if (n < ar->dimen - 1
-	      || (ar->as->type != AS_ASSUMED_SIZE && !ar->as->cp_was_assumed))
+	  if (n < ar->dimen - 1 || ar->as->type != AS_ASSUMED_SIZE)
 	    {
 	      tmp = gfc_conv_array_ubound (se->expr, n);
 	      if (sym->attr.temporary)
@@ -3207,8 +3206,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		continue;
 
 	      if (dim == info->ref->u.ar.dimen - 1
-		  && (info->ref->u.ar.as->type == AS_ASSUMED_SIZE
-		      || info->ref->u.ar.as->cp_was_assumed))
+		  && info->ref->u.ar.as->type == AS_ASSUMED_SIZE)
 		check_upper = false;
 	      else
 		check_upper = true;

@@ -1,3 +1,8 @@
+2010-03-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43331
+	* gfortran.dg/cray_pointers_1.f90: Update dg-error message.
+
 2010-03-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/graphite/block-3.c: Add dg-timeout-factor.

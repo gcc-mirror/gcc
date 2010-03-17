@@ -11010,7 +11010,7 @@ resolve_symbol (gfc_symbol *sym)
      arguments.  */
 
   if (sym->as != NULL
-      && (sym->as->type == AS_ASSUMED_SIZE
+      && ((sym->as->type == AS_ASSUMED_SIZE && !sym->as->cp_was_assumed)
 	  || sym->as->type == AS_ASSUMED_SHAPE)
       && sym->attr.dummy == 0)
     {
