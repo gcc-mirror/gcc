@@ -1,3 +1,14 @@
+2010-03-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-optimization/42216
+	* regrename.c (create_new_chain): New function, broken out from...
+	(scan_rtx_reg): ... here.  Call it.  Handle the case where we are
+	appending a use to an empty chain.
+	(build_def_use): Remove previous changes that convert OP_INOUT to
+	OP_OUT operands; instead detect the case where an OP_INOUT operand
+	uses a previously untracked register and create an empty chain for
+	it.
+
 2010-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/extend.texi (Function Attributes): Rewrite unfinished

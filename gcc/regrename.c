@@ -509,6 +509,72 @@ note_sets_clobbers (rtx x, const_rtx set, void *data)
     add_to_hard_reg_set (&chain->hard_conflicts, GET_MODE (x), REGNO (x));
 }
 
+/* Create a new chain for THIS_NREGS registers starting at THIS_REGNO,
+   and record its occurrence in *LOC, which is being written to in INSN.
+   This access requires a register of class CL.  */
+
+static void
+create_new_chain (unsigned this_regno, unsigned this_nregs, rtx *loc,
+		  rtx insn, enum reg_class cl)
+{
+  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
+  struct du_chain *this_du;
+  int nregs;
+
+  head->next_chain = open_chains;
+  open_chains = head;
+  head->regno = this_regno;
+  head->nregs = this_nregs;
+  head->need_caller_save_reg = 0;
+  head->cannot_rename = 0;
+  head->terminated = 0;
+
+  VEC_safe_push (du_head_p, heap, id_to_chain, head);
+  head->id = current_id++;
+
+  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
+  bitmap_copy (&head->conflicts, &open_chains_set);
+  mark_conflict (open_chains, head->id);
+
+  /* Since we're tracking this as a chain now, remove it from the
+     list of conflicting live hard registers and track it in
+     live_in_chains instead.  */
+  nregs = head->nregs;
+  while (nregs-- > 0)
+    {
+      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+    }
+
+  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+  bitmap_set_bit (&open_chains_set, head->id);
+
+  open_chains = head;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Creating chain %s (%d)",
+	       reg_names[head->regno], head->id);
+      if (insn != NULL_RTX)
+	fprintf (dump_file, " at insn %d", INSN_UID (insn));
+      fprintf (dump_file, "\n");
+    }
+
+  if (insn == NULL_RTX)
+    {
+      head->first = head->last = NULL;
+      return;
+    }
+
+  this_du = XOBNEW (&rename_obstack, struct du_chain);
+  head->first = head->last = this_du;
+
+  this_du->next_use = 0;
+  this_du->loc = loc;
+  this_du->insn = insn;
+  this_du->cl = cl;
+}
+
 static void
 scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	      enum op_type type)
@@ -522,53 +588,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
   if (action == mark_write)
     {
       if (type == OP_OUT)
-	{
-	  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
-	  struct du_chain *this_du = XOBNEW (&rename_obstack, struct du_chain);
-	  int nregs;
-
-	  head->next_chain = open_chains;
-	  open_chains = head;
-	  head->first = head->last = this_du;
-	  head->regno = this_regno;
-	  head->nregs = this_nregs;
-	  head->need_caller_save_reg = 0;
-	  head->cannot_rename = 0;
-	  head->terminated = 0;
-
-	  VEC_safe_push (du_head_p, heap, id_to_chain, head);
-	  head->id = current_id++;
-
-	  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
-	  bitmap_copy (&head->conflicts, &open_chains_set);
-	  mark_conflict (open_chains, head->id);
-
-	  /* Since we're tracking this as a chain now, remove it from the
-	     list of conflicting live hard registers and track it in
-	     live_in_chains instead.  */
-	  nregs = head->nregs;
-	  while (nregs-- > 0)
-	    {
-	      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
-	      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
-	    }
-
-	  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
-	  bitmap_set_bit (&open_chains_set, head->id);
-
-	  open_chains = head;
-
-	  this_du->next_use = 0;
-	  this_du->loc = loc;
-	  this_du->insn = insn;
-	  this_du->cl = cl;
-
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Creating chain %s (%d) at insn %d (%s)\n",
-		     reg_names[head->regno], head->id, INSN_UID (insn),
-		     scan_actions_name[(int) action]);
-	}
+	create_new_chain (this_regno, this_nregs, loc, insn, cl);
       return;
     }
 
@@ -636,7 +656,10 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	      this_du->loc = loc;
 	      this_du->insn = insn;
 	      this_du->cl = cl;
-	      head->last->next_use = this_du;
+	      if (head->first == NULL)
+		head->first = this_du;
+	      else
+		head->last->next_use = this_du;
 	      head->last = this_du;
 
 	    }
@@ -1069,7 +1092,6 @@ build_def_use (basic_block bb)
 	  int n_ops;
 	  rtx note;
 	  rtx old_operands[MAX_RECOG_OPERANDS];
-	  bool has_dup[MAX_RECOG_OPERANDS];
 	  rtx old_dups[MAX_DUP_OPERANDS];
 	  int i;
 	  int alt;
@@ -1108,10 +1130,6 @@ build_def_use (basic_block bb)
 	  n_ops = recog_data.n_operands;
 	  untracked_operands = 0;
 
-	  memset (has_dup, 0, sizeof has_dup);
-	  for (i = 0; i < recog_data.n_dups; i++)
-	    has_dup[(int)recog_data.dup_num[i]] = true;
-
 	  /* Simplify the code below by rewriting things to reflect
 	     matching constraints.  Also promote OP_OUT to OP_INOUT in
 	     predicated instructions, but only for register operands
@@ -1121,14 +1139,13 @@ build_def_use (basic_block bb)
 	  predicated = GET_CODE (PATTERN (insn)) == COND_EXEC;
 	  for (i = 0; i < n_ops; ++i)
 	    {
+	      rtx op = recog_data.operand[i];
 	      int matches = recog_op_alt[i][alt].matches;
 	      if (matches >= 0)
 		recog_op_alt[i][alt].cl = recog_op_alt[matches][alt].cl;
 	      if (matches >= 0 || recog_op_alt[i][alt].matched >= 0
-	          || (predicated && recog_data.operand_type[i] == OP_OUT
-		      && verify_reg_tracked (recog_data.operand[i])))
+	          || (predicated && recog_data.operand_type[i] == OP_OUT))
 		{
-		  rtx op = recog_data.operand[i];
 		  recog_data.operand_type[i] = OP_INOUT;
 		  /* A special case to deal with instruction patterns that
 		     have matching operands with different modes.  If we're
@@ -1145,18 +1162,17 @@ build_def_use (basic_block bb)
 		    }
 		}
 	      /* If there's an in-out operand with a register that is not
-		 being tracked at all yet, convert it to an earlyclobber
-		 output operand.
-		 This only works if the operand isn't duplicated, i.e. for
-		 a ZERO_EXTRACT in a SET_DEST.  */
+		 being tracked at all yet, open a chain.  */
 	      if (recog_data.operand_type[i] == OP_INOUT
 		  && !(untracked_operands & (1 << i))
-		  && !verify_reg_tracked (recog_data.operand[i]))
+		  && REG_P (op)
+		  && !verify_reg_tracked (op))
 		{
-		  if (has_dup[i])
-		    fail_current_block = true;
-		  recog_data.operand_type[i] = OP_OUT;
-		  recog_op_alt[i][alt].earlyclobber = 1;
+		  enum machine_mode mode = GET_MODE (op);
+		  unsigned this_regno = REGNO (op);
+		  unsigned this_nregs = hard_regno_nregs[this_regno][mode];
+		  create_new_chain (this_regno, this_nregs, NULL, NULL_RTX,
+				    NO_REGS);
 		}
 	    }
 
