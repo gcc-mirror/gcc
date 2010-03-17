@@ -1,3 +1,20 @@
+2010-03-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43331
+	* trans-array.c (gfc_conv_array_index_offset,gfc_conv_array_ref,
+	gfc_conv_ss_startstride): Remove no-longer-needed cp_was_assumed
+	check.
+	* decl.c (gfc_match_derived_decl): Don't mark assumed-size Cray
+	pointees as having explizit size.
+	* expr.c (gfc_check_assign): Remove now unreachable Cray pointee
+	check.
+	* trans-types.c (gfc_is_nodesc_array): Add cp_was_assumed to assert.
+	(gfc_sym_type): Don't mark Cray pointees as restricted pointers.
+	* resolve.c (resolve_symbol): Handle cp_was_assumed.
+	* trans-decl.c (gfc_trans_deferred_vars): Ditto.
+	(gfc_finish_var_decl): Don't mark Cray pointees as restricted
+	pointers.
+
 2010-03-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43362

@@ -1193,7 +1193,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
   if (sym->attr.result || sym->attr.function)
     return 0;
 
-  gcc_assert (sym->as->type == AS_EXPLICIT);
+  gcc_assert (sym->as->type == AS_EXPLICIT || sym->as->cp_was_assumed);
 
   return 1;
 }
@@ -1775,7 +1775,7 @@ gfc_sym_type (gfc_symbol * sym)
     byref = 0;
 
   restricted = !sym->attr.target && !sym->attr.pointer
-               && !sym->attr.proc_pointer;
+               && !sym->attr.proc_pointer && !sym->attr.cray_pointee;
   if (sym->attr.dimension)
     {
       if (gfc_is_nodesc_array (sym))

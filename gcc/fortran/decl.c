@@ -6969,22 +6969,14 @@ gfc_match_derived_decl (void)
 
 
 /* Cray Pointees can be declared as: 
-      pointer (ipt, a (n,m,...,*)) 
-   By default, this is treated as an AS_ASSUMED_SIZE array.  We'll
-   cheat and set a constant bound of 1 for the last dimension, if this
-   is the case. Since there is no bounds-checking for Cray Pointees,
-   this will be okay.  */
+      pointer (ipt, a (n,m,...,*))  */
 
 match
 gfc_mod_pointee_as (gfc_array_spec *as)
 {
   as->cray_pointee = true; /* This will be useful to know later.  */
   if (as->type == AS_ASSUMED_SIZE)
-    {
-      as->type = AS_EXPLICIT;
-      as->upper[as->rank - 1] = gfc_int_expr (1);
-      as->cp_was_assumed = true;
-    }
+    as->cp_was_assumed = true;
   else if (as->type == AS_ASSUMED_SHAPE)
     {
       gfc_error ("Cray Pointee at %C cannot be assumed shape array");
