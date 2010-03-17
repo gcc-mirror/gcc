@@ -2706,7 +2706,8 @@ attribute tells the compiler to use the Microsoft ABI, while the
 GNU/Linux and other systems.  The default is to use the Microsoft ABI
 when targeting Windows.  On all other systems, the default is the AMD ABI.
 
-Note, This feature is currently sorried out for Windows targets trying to
+Note, the @code{ms_abi} attribute for Windows targets currently requires
+the @option{-maccumulate-outgoing-args} option.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute

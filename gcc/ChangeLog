@@ -1,3 +1,8 @@
+2010-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi (Function Attributes): Rewrite unfinished
+	sentence in ms_abi documentation.
+
 2010-03-17  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux64.opt (mprofile-kernel): Use profile_kernel var.
