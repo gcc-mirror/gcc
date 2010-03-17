@@ -1664,6 +1664,7 @@ create_access_replacement (struct access *access)
 
   DECL_SOURCE_LOCATION (repl) = DECL_SOURCE_LOCATION (access->base);
   DECL_ARTIFICIAL (repl) = 1;
+  DECL_IGNORED_P (repl) = DECL_IGNORED_P (access->base);
 
   if (DECL_NAME (access->base)
       && !DECL_IGNORED_P (access->base)
@@ -1676,11 +1677,10 @@ create_access_replacement (struct access *access)
 
       SET_DECL_DEBUG_EXPR (repl, access->expr);
       DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
-      DECL_IGNORED_P (repl) = 0;
+      TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
     }
-
-  DECL_IGNORED_P (repl) = DECL_IGNORED_P (access->base);
-  TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
+  else
+    TREE_NO_WARNING (repl) = 1;
 
   if (dump_file)
     {
