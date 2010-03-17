@@ -1,3 +1,8 @@
+2010-03-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* MAINTAINERS (dwarak.rajagopal@amd.com): Removed.
+	(ghassan.shobaki@amd.com): Removed.
+
 2010-03-17  Alan Modra  <amodra@gmail.com>
 
 	* MAINTAINERS: Update my email address.
