@@ -500,12 +500,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -515,18 +515,21 @@ namespace std
       // Handle objects
       _Res
       operator()(_Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(_Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res
 	operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -544,12 +547,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -559,17 +562,20 @@ namespace std
       // Handle objects
       _Res
       operator()(const _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(const _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -587,12 +593,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -602,18 +608,21 @@ namespace std
       // Handle objects
       _Res
       operator()(volatile _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(volatile _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res
 	operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -631,12 +640,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -646,17 +655,20 @@ namespace std
       // Handle objects
       _Res 
       operator()(const volatile _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res 
       operator()(const volatile _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
