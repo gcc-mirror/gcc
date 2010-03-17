@@ -1,3 +1,7 @@
+2010-03-17  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/pr43300.c: Add -w.
+
 2010-03-17  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pr43379.c: Add -w.

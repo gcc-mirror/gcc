@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os" } */
+/* { dg-options "-Os -w" } */
 typedef float V2SF __attribute__ ((vector_size (128)));
 
 V2SF
