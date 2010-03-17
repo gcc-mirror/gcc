@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit PowerPC linux.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009  Free Software Foundation, Inc.
+   2009, 2010  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -61,6 +61,8 @@ extern int dot_symbols;
 #define DOT_SYMBOLS dot_symbols
 #endif
 
+#define TARGET_PROFILE_KERNEL profile_kernel
+
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_POWER6
 #undef  PROCESSOR_DEFAULT64
@@ -119,7 +121,7 @@ extern int dot_symbols;
 	    error (INVALID_32BIT, "32");			\
 	  if (TARGET_PROFILE_KERNEL)				\
 	    {							\
-	      SET_PROFILE_KERNEL (0);				\
+	      TARGET_PROFILE_KERNEL = 0;			\
 	      error (INVALID_32BIT, "profile-kernel");		\
 	    }							\
 	}							\

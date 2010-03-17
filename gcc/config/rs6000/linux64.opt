@@ -1,6 +1,6 @@
 ; Options for 64-bit PowerPC Linux.
 ;
-; Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -20,5 +20,5 @@
 ; <http://www.gnu.org/licenses/>.
 
 mprofile-kernel
-Target Report Var(TARGET_PROFILE_KERNEL)
+Target Report Var(profile_kernel)
 Call mcount for profiling before a function prologue

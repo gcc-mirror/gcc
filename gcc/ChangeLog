@@ -1,3 +1,10 @@
+2010-03-17  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux64.opt (mprofile-kernel): Use profile_kernel var.
+	* config/rs6000/linux64.h (TARGET_PROFILE_KERNEL): Define.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Don't use SET_PROFILE_KERNEL.
+	* config/rs6000/rs6000.c (SET_PROFILE_KERNEL): Don't define.
+
 2010-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/43365
