@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftracer" } */
+/* { dg-options "-O2 -ftracer -w" } */
 
 void *foo(int i, int *p)
 {
