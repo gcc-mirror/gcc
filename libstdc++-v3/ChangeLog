@@ -1,5 +1,9 @@
 2010-03-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/debug_mode.xml: Correct debug headers.
+
+2010-03-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/43397
 	* include/std/functional (_Mem_fn): Use perfect forwarding.
 	* testsuite/20_util/function/43397.cc: New.
