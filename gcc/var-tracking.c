@@ -4738,6 +4738,33 @@ preserve_value (cselib_val *val)
   VEC_safe_push (rtx, heap, preserved_values, val->val_rtx);
 }
 
+/* Helper function for MO_VAL_LOC handling.  Return non-zero if
+   any rtxes not suitable for CONST use not replaced by VALUEs
+   are discovered.  */
+
+static int
+non_suitable_const (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  if (*x == NULL_RTX)
+    return 0;
+
+  switch (GET_CODE (*x))
+    {
+    case REG:
+    case DEBUG_EXPR:
+    case PC:
+    case SCRATCH:
+    case CC0:
+    case ASM_INPUT:
+    case ASM_OPERANDS:
+      return 1;
+    case MEM:
+      return !MEM_READONLY_P (*x);
+    default:
+      return 0;
+    }
+}
+
 /* Add uses (register and memory references) LOC which will be tracked
    to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
 
@@ -4794,8 +4821,12 @@ add_uses (rtx *ploc, void *data)
 		}
 	    }
 
-	  if (!VAR_LOC_UNKNOWN_P (vloc)
-	      && (val = find_use_val (vloc, GET_MODE (oloc), cui)))
+	  if (CONSTANT_P (vloc)
+	      && (GET_CODE (vloc) != CONST
+		  || for_each_rtx (&vloc, non_suitable_const, NULL)))
+	    /* For constants don't look up any value.  */;
+	  else if (!VAR_LOC_UNKNOWN_P (vloc)
+		   && (val = find_use_val (vloc, GET_MODE (oloc), cui)))
 	    {
 	      enum machine_mode mode2;
 	      enum micro_operation_type type2;
@@ -5508,6 +5539,11 @@ compute_bb_dataflow (basic_block bb)
 				     VAR_INIT_STATUS_INITIALIZED, NULL_RTX,
 				     INSERT);
 		}
+	      else if (!VAR_LOC_UNKNOWN_P (PAT_VAR_LOCATION_LOC (vloc)))
+		set_variable_part (out, PAT_VAR_LOCATION_LOC (vloc),
+				   dv_from_decl (var), 0,
+				   VAR_INIT_STATUS_INITIALIZED, NULL_RTX,
+				   INSERT);
 	    }
 	    break;
 
@@ -6902,6 +6938,8 @@ emit_note_insn_var_location (void **varp, void *data)
 	}
       loc[n_var_parts] = loc2;
       mode = GET_MODE (var->var_part[i].cur_loc);
+      if (mode == VOIDmode && dv_onepart_p (var->dv))
+	mode = DECL_MODE (decl);
       for (lc = var->var_part[i].loc_chain; lc; lc = lc->next)
 	if (var->var_part[i].cur_loc == lc->loc)
 	  {
@@ -7423,6 +7461,11 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 				     VAR_INIT_STATUS_INITIALIZED, NULL_RTX,
 				     INSERT);
 		}
+	      else if (!VAR_LOC_UNKNOWN_P (PAT_VAR_LOCATION_LOC (vloc)))
+		set_variable_part (set, PAT_VAR_LOCATION_LOC (vloc),
+				   dv_from_decl (var), 0,
+				   VAR_INIT_STATUS_INITIALIZED, NULL_RTX,
+				   INSERT);
 
 	      emit_notes_for_changes (insn, EMIT_NOTE_AFTER_INSN, set->vars);
 	    }

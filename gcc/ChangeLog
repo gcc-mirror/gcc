@@ -1,3 +1,15 @@
+2010-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43058
+	* var-tracking.c (non_suitable_const): New function.
+	(add_uses): For DEBUG_INSNs with constants, don't record any
+	value, instead just the constant value itself.
+	(compute_bb_dataflow) <case MO_VAL_LOC>: If PAT_VAR_LOCATION_LOC
+	is not VAR_LOC_UNKNOWN_P, set var to the constant.
+	(emit_notes_in_bb): Likewise.
+	(emit_note_insn_var_location): For onepart variables if
+	cur_loc is a VOIDmode constant, use DECL_MODE.
+
 2010-03-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42450
