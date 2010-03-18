@@ -1,3 +1,9 @@
+2010-03-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42873
+	* var-tracking.c (canonicalize_vars_star): New.
+	(dataflow_post_merge_adjust): Use it.
+
 2010-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43058

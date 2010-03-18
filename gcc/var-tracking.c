@@ -3168,6 +3168,67 @@ canonicalize_values_star (void **slot, void *data)
   return 1;
 }
 
+/* Bind one-part variables to the canonical value in an equivalence
+   set.  Not doing this causes dataflow convergence failure in rare
+   circumstances, see PR42873.  Unfortunately we can't do this
+   efficiently as part of canonicalize_values_star, since we may not
+   have determined or even seen the canonical value of a set when we
+   get to a variable that references another member of the set.  */
+
+static int
+canonicalize_vars_star (void **slot, void *data)
+{
+  dataflow_set *set = (dataflow_set *)data;
+  variable var = (variable) *slot;
+  decl_or_value dv = var->dv;
+  location_chain node;
+  rtx cval;
+  decl_or_value cdv;
+  void **cslot;
+  variable cvar;
+  location_chain cnode;
+
+  if (!dv_onepart_p (dv) || dv_is_value_p (dv))
+    return 1;
+
+  gcc_assert (var->n_var_parts == 1);
+
+  node = var->var_part[0].loc_chain;
+
+  if (GET_CODE (node->loc) != VALUE)
+    return 1;
+
+  gcc_assert (!node->next);
+  cval = node->loc;
+
+  /* Push values to the canonical one.  */
+  cdv = dv_from_value (cval);
+  cslot = shared_hash_find_slot_noinsert (set->vars, cdv);
+  if (!cslot)
+    return 1;
+  cvar = (variable)*cslot;
+  gcc_assert (cvar->n_var_parts == 1);
+
+  cnode = cvar->var_part[0].loc_chain;
+
+  /* CVAL is canonical if its value list contains non-VALUEs or VALUEs
+     that are not “more canonical” than it.  */
+  if (GET_CODE (cnode->loc) != VALUE
+      || !canon_value_cmp (cnode->loc, cval))
+    return 1;
+
+  /* CVAL was found to be non-canonical.  Change the variable to point
+     to the canonical VALUE.  */
+  gcc_assert (!cnode->next);
+  cval = cnode->loc;
+
+  slot = set_slot_part (set, cval, slot, dv, 0,
+			node->init, node->set_src);
+  slot = clobber_slot_part (set, cval, slot, 0, node->set_src);
+
+  return 1;
+}
+
 /* Combine variable or value in *S1SLOT (in DSM->cur) with the
    corresponding entry in DSM->src.  Multi-part variables are combined
    with variable_union, whereas onepart dvs are combined with
@@ -3830,6 +3891,7 @@ dataflow_post_merge_adjust (dataflow_set *set, dataflow_set **permp)
     htab_traverse (shared_hash_htab ((*permp)->vars),
 		   variable_post_merge_perm_vals, &dfpm);
   htab_traverse (shared_hash_htab (set->vars), canonicalize_values_star, set);
+  htab_traverse (shared_hash_htab (set->vars), canonicalize_vars_star, set);
 }
 
 /* Return a node whose loc is a MEM that refers to EXPR in the
