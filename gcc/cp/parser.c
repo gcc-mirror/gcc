@@ -8352,7 +8352,7 @@ cp_parser_for_init_statement (cp_parser* parser)
 	return;
     }
 
-  cp_parser_expression_statement (parser, false);
+  cp_parser_expression_statement (parser, NULL_TREE);
 }
 
 /* Parse a jump-statement.
