@@ -1,3 +1,13 @@
+2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-03-18  Steven Bosscher  <steven@gcc.gnu.org>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/43360
+	* loop-invariant.c (move_invariant_reg): Remove the REG_EQUAL
+	note if we don't know its invariant status.
+
 2010-03-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (override_options): Fix -mtune error message.
