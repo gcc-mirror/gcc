@@ -1,3 +1,10 @@
+2010-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/43403
+	* var-tracking.c (vt_init_cfa_base): Do nothing if
+	cfa_base_rtx would be hard_frame_pointer_rtx or non-fixed
+	register.
+
 2010-03-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42873

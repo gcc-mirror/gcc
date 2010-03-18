@@ -8004,6 +8004,12 @@ vt_init_cfa_base (void)
 #else
   cfa_base_rtx = arg_pointer_rtx;
 #endif
+  if (cfa_base_rtx == hard_frame_pointer_rtx
+      || !fixed_regs[REGNO (cfa_base_rtx)])
+    {
+      cfa_base_rtx = NULL_RTX;
+      return;
+    }
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
 
