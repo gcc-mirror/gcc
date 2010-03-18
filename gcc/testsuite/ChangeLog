@@ -1,3 +1,11 @@
+2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/43360
+	* gcc.dg/torture/pr43360.c: New.
+
 2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43265
