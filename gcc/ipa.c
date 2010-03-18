@@ -262,10 +262,10 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  if (!clone)
 		    {
 		      cgraph_release_function_body (node);
-		      cgraph_node_remove_callees (node);
 		      node->analyzed = false;
 		      node->local.inlinable = false;
 		    }
+		  cgraph_node_remove_callees (node);
 		  if (node->prev_sibling_clone)
 		    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
 		  else if (node->clone_of)

@@ -1650,6 +1650,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 				   bb->frequency,
 				   copy_basic_block->frequency);
 			}
+		      stmt = cgraph_redirect_edge_call_stmt_to_callee (edge);
 		    }
 		  break;
 
