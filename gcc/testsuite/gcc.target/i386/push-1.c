@@ -12,4 +12,4 @@ bar (void)
   foo (x, x, x, x, 5);
 }
 
-/* { dg-final { scan-assembler-not "movups" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "movups" { xfail { ! *-*-darwin* } } } } */
