@@ -642,9 +642,6 @@ internal_proto(type_name);
 extern void * read_block_form (st_parameter_dt *, int *);
 internal_proto(read_block_form);
 
-extern char *read_sf (st_parameter_dt *, int *);
-internal_proto(read_sf);
-
 extern void *write_block (st_parameter_dt *, int);
 internal_proto(write_block);
 
