@@ -1,3 +1,9 @@
+2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43383
+	* config/i386/libgcc-glibc.ver: Add __extendxftf2 to GCC_4.5.0
+	for 32bit.
+
 2010-03-18  Michael Matz  <matz@suse.de>
 
 	PR middle-end/43419

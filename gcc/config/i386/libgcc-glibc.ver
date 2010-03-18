@@ -180,4 +180,7 @@ GCC_4.4.0 {
   __trunctfxf2
   __unordtf2
 }
+GCC_4.5.0 {
+  __extendxftf2
+}
 %endif
