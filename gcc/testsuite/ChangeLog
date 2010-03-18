@@ -1,3 +1,8 @@
+2010-03-18  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43402
+	* gcc.dg/pr43402.c: New testcase.
+
 2010-03-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/42427
