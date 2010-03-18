@@ -1423,14 +1423,16 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       emit_insn_after (gen_move_insn (dest, reg), inv->insn);
       reorder_insns (inv->insn, inv->insn, BB_END (preheader));
 
-      /* If there is a REG_EQUAL note on the insn we just moved, and
-	 insn is in a basic block that is not always executed, the note
-	 may no longer be valid after we move the insn.
-	 Note that uses in REG_EQUAL notes are taken into account in
-	 the computation of invariants.  Hence it is safe to retain the
-	 note even if the note contains register references.  */
-      if (! inv->always_executed
-	  && (note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX)))
+      /* If there is a REG_EQUAL note on the insn we just moved, and the
+	 insn is in a basic block that is not always executed or the note
+	 contains something for which we don't know the invariant status,
+	 the note may no longer be valid after we move the insn.  Note that
+	 uses in REG_EQUAL notes are taken into account in the computation
+	 of invariants, so it is safe to retain the note even if it contains
+	 register references for which we know the invariant status.  */
+      if ((note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX))
+	  && (!inv->always_executed
+	      || !check_maybe_invariant (XEXP (note, 0))))
 	remove_note (inv->insn, note);
     }
   else

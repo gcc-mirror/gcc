@@ -1,3 +1,10 @@
+2010-03-18  Steven Bosscher  <steven@gcc.gnu.org>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/43360
+	* loop-invariant.c (move_invariant_reg): Remove the REG_EQUAL
+	note if we don't know its invariant status.
+
 2010-03-18  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43402

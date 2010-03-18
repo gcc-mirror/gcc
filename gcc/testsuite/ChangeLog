@@ -1,3 +1,8 @@
+2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/43360
+	* gcc.dg/torture/pr43360.c: New.
+
 2010-03-18  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43402
