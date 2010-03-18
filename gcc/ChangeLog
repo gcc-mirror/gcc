@@ -1,3 +1,20 @@
+2010-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42450
+	* cgraph.h (cgraph_redirect_edge_call_stmt_to_callee): Declare.
+	* cgraphunit.c (cgraph_materialize_all_clones): Update calls in
+	all non-clones.  Moved call redirection...
+	(cgraph_redirect_edge_call_stmt_to_callee): ...to this new
+	function.
+	(cgraph_materialize_all_clones): Dispose of all
+	combined_args_to_skip bitmaps.
+	(verify_cgraph_node): Do not check for edges pointing to wrong
+	nodes in inline clones.
+	* tree-inline.c (copy_bb): Call
+	cgraph_redirect_edge_call_stmt_to_callee.
+	* ipa.c (cgraph_remove_unreachable_nodes): Call
+	cgraph_node_remove_callees even when there are used clones.
+
 2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/libgcc-glibc.ver: Make GCC_4.5.0 inherit GCC_4.4.0.
