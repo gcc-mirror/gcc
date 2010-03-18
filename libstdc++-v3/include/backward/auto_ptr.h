@@ -27,8 +27,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _STL_AUTO_PTR_H
-#define _STL_AUTO_PTR_H 1
+#ifndef _BACKWARD_AUTO_PTR_H
+#define _BACKWARD_AUTO_PTR_H 1
 
 #include <bits/c++config.h>
 #include <debug/debug.h>
@@ -289,4 +289,4 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
-#endif /* _STL_AUTO_PTR_H */
+#endif /* _BACKWARD_AUTO_PTR_H */

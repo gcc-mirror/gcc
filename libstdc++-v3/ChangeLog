@@ -1,3 +1,14 @@
+2010-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/backward/hash_map: Use consistently the _BACKWARD_*
+	prefix for the include guard.
+	* include/backward/hash_fun.h: Likewise.
+	* include/backward/hashtable.h: Likewise.
+	* include/backward/auto_ptr.h: Likewise.
+	* include/backward/strstream: Likewise.
+	* include/backward/binders.h: Likewise.
+	* include/backward/hash_set: Likewise.
+
 2010-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:

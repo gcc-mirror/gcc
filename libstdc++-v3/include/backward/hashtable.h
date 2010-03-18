@@ -1,6 +1,6 @@
 // Hashtable implementation used by containers -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -54,8 +54,8 @@
  *  containing extensions from the HP/SGI STL subset).
  */
 
-#ifndef _HASHTABLE_H
-#define _HASHTABLE_H 1
+#ifndef _BACKWARD_HASHTABLE_H
+#define _BACKWARD_HASHTABLE_H 1
 
 // Hashtable class, used to implement the hashed associative containers
 // hash_set, hash_map, hash_multiset, and hash_multimap.
