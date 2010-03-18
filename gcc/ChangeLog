@@ -1,3 +1,7 @@
+2010-03-18  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* common.opt (dumpdir): Remove redundant tab.
+
 2010-03-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43347

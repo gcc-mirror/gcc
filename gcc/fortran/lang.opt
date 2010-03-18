@@ -246,7 +246,7 @@ Allow arbitrary character line width in fixed mode
 
 ffixed-line-length-
 Fortran RejectNegative Joined UInteger
--ffixed-line-length-<n>		Use n as character line width in fixed mode
+-ffixed-line-length-<n>	Use n as character line width in fixed mode
 
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
@@ -262,7 +262,7 @@ Allow arbitrary character line width in free mode
 
 ffree-line-length-
 Fortran RejectNegative Joined UInteger
--ffree-line-length-<n>		Use n as character line width in free mode
+-ffree-line-length-<n>	Use n as character line width in free mode
 
 fimplicit-none
 Fortran
