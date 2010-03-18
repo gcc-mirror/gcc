@@ -162,9 +162,7 @@ current_mode (st_parameter_dt *dtp)
 }
 
 
-/* Mid level data transfer statements.  These subroutines do reading
-   and writing in the style of salloc_r()/salloc_w() within the
-   current record.  */
+/* Mid level data transfer statements.  */
 
 /* When reading sequential formatted records we have a problem.  We
    don't know how long the line is until we read the trailing newline,
@@ -177,13 +175,19 @@ current_mode (st_parameter_dt *dtp)
    we hit the newline.  For small allocations, we use a static buffer.
    For larger allocations, we are forced to allocate memory on the
    heap.  Hopefully this won't happen very often.  */
+   
+/* Read sequential file - internal unit  */
 
-char *
-read_sf (st_parameter_dt *dtp, int * length)
+static char *
+read_sf_internal (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
-  char *base, *p, q;
-  int n, lorig, memread, seen_comma;
+  char *base;
+  int lorig;
+
+  if (dtp->internal_unit_len == 0
+      && dtp->u.p.current_unit->pad_status == PAD_NO)
+    hit_eof (dtp);
 
   /* If we have seen an eor previously, return a length of 0.  The
      caller is responsible for correctly padding the input field.  */
@@ -195,17 +199,40 @@ read_sf (st_parameter_dt *dtp, int * length)
       return (char*) empty_string;
     }
 
-  if (is_internal_unit (dtp))
+  lorig = *length;
+  base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+  if (unlikely (lorig > *length))
     {
-      memread = *length;
-      base = mem_alloc_r (dtp->u.p.current_unit->s, length);
-      if (unlikely (memread > *length))
-	{
-          hit_eof (dtp);
-	  return NULL;
-	}
-      n = *length;
-      goto done;
+      hit_eof (dtp);
+      return NULL;
+    }
+
+  dtp->u.p.current_unit->bytes_left -= *length;
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (GFC_IO_INT) *length;
+
+  return base;
+
+}
+
+/* Read sequential file - external unit */
+
+static char *
+read_sf (st_parameter_dt *dtp, int * length)
+{
+  static char *empty_string[0];
+  char *base, *p, q;
+  int n, lorig, seen_comma;
+
+  /* If we have seen an eor previously, return a length of 0.  The
+     caller is responsible for correctly padding the input field.  */
+  if (dtp->u.p.sf_seen_eor)
+    {
+      *length = 0;
+      /* Just return something that isn't a NULL pointer, otherwise the
+         caller thinks an error occured.  */
+      return (char*) empty_string;
     }
 
   n = seen_comma = 0;
@@ -294,11 +321,14 @@ read_sf (st_parameter_dt *dtp, int * length)
 	  else
 	    dtp->u.p.at_eof = 1;
 	}
-      else
-        {
-          hit_eof (dtp);
-          return NULL;
-        }
+      else if (dtp->u.p.advance_status == ADVANCE_NO
+	       || dtp->u.p.current_unit->pad_status == PAD_NO
+	       || dtp->u.p.current_unit->bytes_left
+		    == dtp->u.p.current_unit->recl)
+	{
+	  hit_eof (dtp);
+	  return NULL;
+	}
     }
 
  done:
@@ -339,7 +369,8 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
             dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 	  else
 	    {
-	      if (unlikely (dtp->u.p.current_unit->pad_status == PAD_NO))
+	      if (unlikely (dtp->u.p.current_unit->pad_status == PAD_NO)
+		  && !is_internal_unit (dtp))
 		{
 		  /* Not enough data left.  */
 		  generate_error (&dtp->common, LIBERROR_EOR, NULL);
@@ -347,9 +378,10 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
 		}
 	    }
 
-	  if (unlikely (dtp->u.p.current_unit->bytes_left == 0))
+	  if (unlikely (dtp->u.p.current_unit->bytes_left == 0
+	      && !is_internal_unit(dtp)))
 	    {
-              hit_eof (dtp);
+	      hit_eof (dtp);
 	      return NULL;
 	    }
 
@@ -361,7 +393,11 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
       (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL ||
        dtp->u.p.current_unit->flags.access == ACCESS_STREAM))
     {
-      source = read_sf (dtp, nbytes);
+      if (is_internal_unit (dtp))
+	source = read_sf_internal (dtp, nbytes);
+      else
+	source = read_sf (dtp, nbytes);
+
       dtp->u.p.current_unit->strm_pos +=
 	(gfc_offset) (*nbytes + dtp->u.p.sf_seen_eor);
       return source;
@@ -2642,7 +2678,7 @@ min_off (gfc_offset a, gfc_offset b)
 /* Space to the next record for read mode.  */
 
 static void
-next_record_r (st_parameter_dt *dtp)
+next_record_r (st_parameter_dt *dtp, int done)
 {
   gfc_offset record;
   int bytes_left;
@@ -2669,10 +2705,9 @@ next_record_r (st_parameter_dt *dtp)
     case FORMATTED_SEQUENTIAL:
       /* read_sf has already terminated input because of an '\n', or
          we have hit EOF.  */
-      if (dtp->u.p.sf_seen_eor || dtp->u.p.at_eof)
+      if (dtp->u.p.sf_seen_eor)
 	{
 	  dtp->u.p.sf_seen_eor = 0;
-          dtp->u.p.at_eof = 0;
 	  break;
 	}
 
@@ -2684,6 +2719,8 @@ next_record_r (st_parameter_dt *dtp)
 
 	      record = next_array_record (dtp, dtp->u.p.current_unit->ls,
 					  &finished);
+	      if (!done && finished)
+		hit_eof (dtp);
 
 	      /* Now seek to this record.  */
 	      record = record * dtp->u.p.current_unit->recl;
@@ -2721,7 +2758,8 @@ next_record_r (st_parameter_dt *dtp)
 		{
                   if (errno != 0)
                     generate_error (&dtp->common, LIBERROR_OS, NULL);
-		  else if (dtp->u.p.item_count == 1)
+		  else if (dtp->u.p.item_count == 1
+			   || dtp->u.p.pending_spaces == 0)
 		    hit_eof (dtp);
 		  break;
                 }
@@ -3062,7 +3100,7 @@ next_record (st_parameter_dt *dtp, int done)
   dtp->u.p.current_unit->read_bad = 0;
 
   if (dtp->u.p.mode == READING)
-    next_record_r (dtp);
+    next_record_r (dtp, done);
   else
     next_record_w (dtp, done);
 
