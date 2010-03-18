@@ -804,7 +804,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
     case POST_MODIFY:
       if (addr == loc)
 	addr = XEXP (loc, 0);
-      gcc_assert (amd->mem_mode != VOIDmode && amd->mem_mode != BLKmode);
+      gcc_assert (amd->mem_mode != VOIDmode);
       addr = simplify_replace_fn_rtx (addr, old_rtx, adjust_mems, data);
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,

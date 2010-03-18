@@ -1,5 +1,9 @@
 2010-03-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/43399
+	* var-tracking.c (adjust_mems) <case POST_MODIFY>: Allow BLKmode
+	mem_mode.
+
 	PR bootstrap/43403
 	* var-tracking.c (vt_init_cfa_base): Do nothing if
 	cfa_base_rtx would be hard_frame_pointer_rtx or non-fixed
