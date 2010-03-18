@@ -1,3 +1,9 @@
+2010-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43418
+	* parser.c (cp_parser_for_init_statement): Use NULL_TREE, not
+	false, in the cp_parser_expression_statement call.
+
 2010-03-05  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (mangle_decl): Give name collision error even without
