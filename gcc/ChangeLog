@@ -1,3 +1,9 @@
+2010-03-18  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43419
+	* builtins.c (expand_builtin_pow): Don't transform pow(x, 0.5)
+	into sqrt(x) if we need to preserve signed zeros.
+
 2010-03-18  Steven Bosscher  <steven@gcc.gnu.org>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
