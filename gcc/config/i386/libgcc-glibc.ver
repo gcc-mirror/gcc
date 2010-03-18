@@ -180,6 +180,9 @@ GCC_4.4.0 {
   __trunctfxf2
   __unordtf2
 }
+# It is OK to have a duplicate of %inherit in libgcc-std.ver since
+# mkmap-symver.awk always takes the last %inherit statement.
+%inherit GCC_4.5.0 GCC_4.4.0
 GCC_4.5.0 {
   __extendxftf2
 }
