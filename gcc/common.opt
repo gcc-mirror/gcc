@@ -255,7 +255,7 @@ Common Separate
 
 dumpdir
 Common Separate
--dumpdir <dir>		Set the directory name to be used for dumps
+-dumpdir <dir>	Set the directory name to be used for dumps
 
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
