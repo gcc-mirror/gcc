@@ -1476,6 +1476,38 @@ make_decl_rtl (tree decl)
   if (flag_mudflap && TREE_CODE (decl) == VAR_DECL)
     mudflap_enqueue_decl (decl);
 }
+
+/* Like make_decl_rtl, but inhibit creation of new alias sets when
+   calling make_decl_rtl.  Also, reset DECL_RTL before returning the
+   rtl.  */
+
+rtx
+make_decl_rtl_for_debug (tree decl)
+{
+  unsigned int save_aliasing_flag;
+  rtx rtl;
+
+  if (DECL_RTL_SET_P (decl))
+    return DECL_RTL (decl);
+
+  /* Kludge alert!  Somewhere down the call chain, make_decl_rtl will
+     call new_alias_set.  If running with -fcompare-debug, sometimes
+     we do not want to create alias sets that will throw the alias
+     numbers off in the comparison dumps.  So... clearing
+     flag_strict_aliasing will keep new_alias_set() from creating a
+     new set.  */
+  save_aliasing_flag = flag_strict_aliasing;
+  flag_strict_aliasing = 0;
+
+  rtl = DECL_RTL (decl);
+  /* Reset DECL_RTL back, as various parts of the compiler expects
+     DECL_RTL set meaning it is actually going to be output.  */
+  SET_DECL_RTL (decl, NULL);
+
+  flag_strict_aliasing = save_aliasing_flag;
+
+  return rtl;
+}
 
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
