@@ -1,3 +1,17 @@
+2010-03-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/42427
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Add support for
+	non-offsettable and pre_modify update addressing.
+	* config/rs6000/dfp.md (*movdd_hardfloat32): Make the "0", "1"
+	and "2" alternatives "#".
+	(*movdd_softfloat32): Make all alternatives "#";
+	* config/rs6000/rs6000.md (DIFD): New define_mode_iterator.
+	(*movdf_hardfloat32): Make the "0", "1" and "2" alternatives "#".
+	(*movdf_softfloat32): Make all alternatives "#";
+	(movdi): Use the new DIFD mode iterator to create a common splitter
+	for movdi, movdf and movdd patterns.
+
 2010-03-18  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* common.opt (dumpdir): Remove redundant tab.

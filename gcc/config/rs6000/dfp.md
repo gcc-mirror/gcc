@@ -293,71 +293,9 @@
     default:
       gcc_unreachable ();
     case 0:
-      /* We normally copy the low-numbered register first.  However, if
-	 the first register operand 0 is the same as the second register
-	 of operand 1, we must copy in the opposite order.  */
-      if (REGNO (operands[0]) == REGNO (operands[1]) + 1)
-	return \"mr %L0,%L1\;mr %0,%1\";
-      else
-	return \"mr %0,%1\;mr %L0,%L1\";
     case 1:
-      if (rs6000_offsettable_memref_p (operands[1])
-	  || (GET_CODE (operands[1]) == MEM
-	      && (GET_CODE (XEXP (operands[1], 0)) == LO_SUM
-		  || GET_CODE (XEXP (operands[1], 0)) == PRE_INC
-		  || GET_CODE (XEXP (operands[1], 0)) == PRE_DEC)))
-	{
-	  /* If the low-address word is used in the address, we must load
-	     it last.  Otherwise, load it first.  Note that we cannot have
-	     auto-increment in that case since the address register is
-	     known to be dead.  */
-	  if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-				 operands[1], 0))
-	    return \"{l|lwz} %L0,%L1\;{l|lwz} %0,%1\";
-	  else
-	    return \"{l%U1|lwz%U1} %0,%1\;{l|lwz} %L0,%L1\";
-	}
-      else
-	{
-	  rtx addreg;
-
-	  addreg = find_addr_reg (XEXP (operands[1], 0));
-	  if (refers_to_regno_p (REGNO (operands[0]),
-				 REGNO (operands[0]) + 1,
-				 operands[1], 0))
-	    {
-	      output_asm_insn (\"{cal|la} %0,4(%0)\", &addreg);
-	      output_asm_insn (\"{lx|lwzx} %L0,%1\", operands);
-	      output_asm_insn (\"{cal|la} %0,-4(%0)\", &addreg);
-	      return \"{lx|lwzx} %0,%1\";
-	    }
-	  else
-	    {
-	      output_asm_insn (\"{lx|lwzx} %0,%1\", operands);
-	      output_asm_insn (\"{cal|la} %0,4(%0)\", &addreg);
-	      output_asm_insn (\"{lx|lwzx} %L0,%1\", operands);
-	      output_asm_insn (\"{cal|la} %0,-4(%0)\", &addreg);
-	      return \"\";
-	    }
-	}
     case 2:
-      if (rs6000_offsettable_memref_p (operands[0])
-	  || (GET_CODE (operands[0]) == MEM
-	      && (GET_CODE (XEXP (operands[0], 0)) == LO_SUM
-		  || GET_CODE (XEXP (operands[0], 0)) == PRE_INC
-		  || GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)))
-	return \"{st%U0|stw%U0} %1,%0\;{st|stw} %L1,%L0\";
-      else
-	{
-	  rtx addreg;
-
-	  addreg = find_addr_reg (XEXP (operands[0], 0));
-	  output_asm_insn (\"{stx|stwx} %1,%0\", operands);
-	  output_asm_insn (\"{cal|la} %0,4(%0)\", &addreg);
-	  output_asm_insn (\"{stx|stwx} %L1,%0\", operands);
-	  output_asm_insn (\"{cal|la} %0,-4(%0)\", &addreg);
-	  return \"\";
-	}
+      return \"#\";
     case 3:
       return \"fmr %0,%1\";
     case 4:
@@ -379,38 +317,7 @@
   "! TARGET_POWERPC64 && (TARGET_SOFT_FLOAT || !TARGET_FPRS)
    && (gpc_reg_operand (operands[0], DDmode)
        || gpc_reg_operand (operands[1], DDmode))"
-  "*
-{
-  switch (which_alternative)
-    {
-    default:
-      gcc_unreachable ();
-    case 0:
-      /* We normally copy the low-numbered register first.  However, if
-	 the first register operand 0 is the same as the second register of
-	 operand 1, we must copy in the opposite order.  */
-      if (REGNO (operands[0]) == REGNO (operands[1]) + 1)
-	return \"mr %L0,%L1\;mr %0,%1\";
-      else
-	return \"mr %0,%1\;mr %L0,%L1\";
-    case 1:
-      /* If the low-address word is used in the address, we must load
-	 it last.  Otherwise, load it first.  Note that we cannot have
-	 auto-increment in that case since the address register is
-	 known to be dead.  */
-      if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			     operands[1], 0))
-	return \"{l|lwz} %L0,%L1\;{l|lwz} %0,%1\";
-      else
-	return \"{l%U1|lwz%U1} %0,%1\;{l|lwz} %L0,%L1\";
-    case 2:
-      return \"{st%U0|stw%U0} %1,%0\;{st|stw} %L1,%L0\";
-    case 3:
-    case 4:
-    case 5:
-      return \"#\";
-    }
-}"
+  "#"
   [(set_attr "type" "two,load,store,*,*,*")
    (set_attr "length" "8,8,8,8,12,16")])
 
