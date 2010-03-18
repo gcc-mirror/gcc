@@ -1,3 +1,17 @@
+2010-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/43039
+        * trans-expr.c (conv_parent_component_references): Ensure that
+	'dt' has a backend_decl.
+
+        PR fortran/43043
+        * trans-expr.c (gfc_conv_structure): Ensure that the derived
+	type has a backend_decl.
+
+        PR fortran/43044
+        * resolve.c (resolve_global_procedure): Check that the 'cl'
+	structure is not NULL.
+
 2010-03-18  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* lang.opt (-ffixed-line-length-, ffree-line-length-): Remove

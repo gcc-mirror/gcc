@@ -507,6 +507,9 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   parent.u.c.sym = dt;
   parent.u.c.component = dt->components;
 
+  if (dt->backend_decl == NULL)
+    gfc_get_derived_type (dt);
+
   if (dt->attr.extension && dt->components)
     {
       if (dt->attr.is_class)
@@ -4454,6 +4457,8 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	{
 	  gfc_component *data;
 	  data = gfc_find_component (cm->ts.u.derived, "$data", true, true);
+	  if (!data->backend_decl)
+	    gfc_get_derived_type (cm->ts.u.derived);
 	  val = gfc_conv_initializer (c->expr, &cm->ts,
 				      TREE_TYPE (data->backend_decl),
 				      data->attr.dimension,
