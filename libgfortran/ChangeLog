@@ -1,5 +1,10 @@
 2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	* io/transfer.c (read_sf_internal): Remove stray function declaration
+	used during debigging.
+
+2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/43265
 	* io/io.h: Delete prototype for read_sf, making it static.
 	* io/read.c (read_x): Modify to call hit_eof if PAD="no".

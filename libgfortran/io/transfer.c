@@ -191,9 +191,7 @@ current_mode (st_parameter_dt *dtp)
    
 /* Read sequential file - internal unit  */
 
-char *
-read_sf_internal (st_parameter_dt *dtp, int * length);
-char *
+static char *
 read_sf_internal (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
