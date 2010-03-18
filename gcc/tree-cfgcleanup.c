@@ -103,20 +103,28 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	    /* For conditions try harder and lookup single-argument
 	       PHI nodes.  Only do so from the same basic-block though
 	       as other basic-blocks may be dead already.  */
-	    if (TREE_CODE (lhs) == SSA_NAME)
+	    if (TREE_CODE (lhs) == SSA_NAME
+		&& !name_registered_for_update_p (lhs))
 	      {
 		gimple def_stmt = SSA_NAME_DEF_STMT (lhs);
 		if (gimple_code (def_stmt) == GIMPLE_PHI
 		    && gimple_phi_num_args (def_stmt) == 1
-		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		    && gimple_bb (def_stmt) == gimple_bb (stmt)
+		    && (TREE_CODE (PHI_ARG_DEF (def_stmt, 0)) != SSA_NAME
+			|| !name_registered_for_update_p (PHI_ARG_DEF (def_stmt,
+								       0))))
 		  lhs = PHI_ARG_DEF (def_stmt, 0);
 	      }
-	    if (TREE_CODE (rhs) == SSA_NAME)
+	    if (TREE_CODE (rhs) == SSA_NAME
+		&& !name_registered_for_update_p (rhs))
 	      {
 		gimple def_stmt = SSA_NAME_DEF_STMT (rhs);
 		if (gimple_code (def_stmt) == GIMPLE_PHI
 		    && gimple_phi_num_args (def_stmt) == 1
-		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		    && gimple_bb (def_stmt) == gimple_bb (stmt)
+		    && (TREE_CODE (PHI_ARG_DEF (def_stmt, 0)) != SSA_NAME
+			|| !name_registered_for_update_p (PHI_ARG_DEF (def_stmt,
+								       0))))
 		  rhs = PHI_ARG_DEF (def_stmt, 0);
 	      }
 	    val = fold_binary_loc (loc, gimple_cond_code (stmt),

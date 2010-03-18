@@ -1,3 +1,9 @@
+2010-03-18  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43402
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Don't follow
+	PHI chains of ssa names registered for update.
+
 2010-03-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/42427
