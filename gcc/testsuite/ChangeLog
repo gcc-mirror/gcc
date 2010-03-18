@@ -1,3 +1,11 @@
+2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	*gfortran.dg/read_empty_file.f: New test.
+	*gfortran.dg/read_eof_all.f90: New test.
+	*gfortran.dg/namelist_27.f90: Eliminate infinite loop posibility.
+	*gfortran.dg/namelist_28.f90: Eliminate infinite loop posibility.
+
 2010-03-17  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/pr43300.c: Add -w.
