@@ -2339,8 +2339,7 @@ expand_debug_expr (tree exp)
 	      || mode == VOIDmode)
 	    return NULL;
 
-	  op0 = DECL_RTL (exp);
- 	  SET_DECL_RTL (exp, NULL);
+	  op0 = make_decl_rtl_for_debug (exp);
 	  if (!MEM_P (op0)
 	      || GET_CODE (XEXP (op0, 0)) != SYMBOL_REF
 	      || SYMBOL_REF_DECL (XEXP (op0, 0)) != exp)

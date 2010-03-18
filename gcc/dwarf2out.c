@@ -15770,10 +15770,7 @@ rtl_for_decl_location (tree decl)
       && !DECL_HARD_REGISTER (decl)
       && DECL_MODE (decl) != VOIDmode)
     {
-      rtl = DECL_RTL (decl);
-      /* Reset DECL_RTL back, as various parts of the compiler expects
-	 DECL_RTL set meaning it is actually going to be output.  */
-      SET_DECL_RTL (decl, NULL);
+      rtl = make_decl_rtl_for_debug (decl);
       if (!MEM_P (rtl)
 	  || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF
 	  || SYMBOL_REF_DECL (XEXP (rtl, 0)) != decl)

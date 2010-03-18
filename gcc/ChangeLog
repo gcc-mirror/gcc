@@ -1,3 +1,10 @@
+2010-03-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree.h: Declare make_decl_rtl_for_debug.
+	* varasm.c (make_decl_rtl_for_debug): New.
+	* dwarf2out.c (rtl_for_decl_location): Call it.
+	* cfgexpand.c (expand_debug_expr): Call it.
+
 2010-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43399

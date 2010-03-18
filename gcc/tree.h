@@ -5131,6 +5131,7 @@ extern unsigned int update_alignment_for_field (record_layout_info, tree,
                                                 unsigned int);
 /* varasm.c */
 extern void make_decl_rtl (tree);
+extern rtx make_decl_rtl_for_debug (tree);
 extern void make_decl_one_only (tree, tree);
 extern int supports_one_only (void);
 extern void resolve_unique_section (tree, int, int);
