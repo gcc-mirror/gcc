@@ -1,6 +1,6 @@
 // <algorithm> parallel extensions -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -690,7 +690,12 @@ namespace __parallel
 
   template<typename _RAIter, typename _RandomNumberGenerator>
     void
-    random_shuffle(_RAIter, _RAIter, _RandomNumberGenerator&);
+    random_shuffle(_RAIter, _RAIter,
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+		   _RandomNumberGenerator&&);
+#else
+		   _RandomNumberGenerator&);
+#endif
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
     _OIter

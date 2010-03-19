@@ -1695,20 +1695,6 @@ namespace std
       { return _M_param.b(); }
 
       /**
-       * @brief Returns the inclusive lower bound of the distribution range.
-       */
-      result_type
-      min() const
-      { return this->a(); }
-
-      /**
-       * @brief Returns the inclusive upper bound of the distribution range.
-       */
-      result_type
-      max() const
-      { return this->b(); }
-
-      /**
        * @brief Returns the parameter set of the distribution.
        */
       param_type
@@ -1724,19 +1710,27 @@ namespace std
       { _M_param = __param; }
 
       /**
-       * Gets a uniformly distributed random number in the range
-       * @f$(min, max)@f$.
+       * @brief Returns the inclusive lower bound of the distribution range.
+       */
+      result_type
+      min() const
+      { return this->a(); }
+
+      /**
+       * @brief Returns the inclusive upper bound of the distribution range.
+       */
+      result_type
+      max() const
+      { return this->b(); }
+
+      /**
+       * @brief Generating functions.
        */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
         { return this->operator()(__urng, this->param()); }
 
-      /**
-       * Gets a uniform random number in the range @f$[0, n)@f$.
-       *
-       * This function is aimed at use with std::random_shuffle.
-       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
@@ -1876,20 +1870,6 @@ namespace std
       { return _M_param.b(); }
 
       /**
-       * @brief Returns the inclusive lower bound of the distribution range.
-       */
-      result_type
-      min() const
-      { return this->a(); }
-
-      /**
-       * @brief Returns the inclusive upper bound of the distribution range.
-       */
-      result_type
-      max() const
-      { return this->b(); }
-
-      /**
        * @brief Returns the parameter set of the distribution.
        */
       param_type
@@ -1904,6 +1884,23 @@ namespace std
       param(const param_type& __param)
       { _M_param = __param; }
 
+      /**
+       * @brief Returns the inclusive lower bound of the distribution range.
+       */
+      result_type
+      min() const
+      { return this->a(); }
+
+      /**
+       * @brief Returns the inclusive upper bound of the distribution range.
+       */
+      result_type
+      max() const
+      { return this->b(); }
+
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2095,6 +2092,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2265,6 +2265,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2456,6 +2459,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2613,6 +2619,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2786,6 +2795,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -2959,6 +2971,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -3129,6 +3144,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
         operator()(_UniformRandomNumberGenerator& __urng)
@@ -3310,7 +3328,7 @@ namespace std
     { return std::numeric_limits<result_type>::max(); }
 
     /**
-     * @brief Returns the next value in the Bernoullian sequence.
+     * @brief Generating functions.
      */
     template<typename _UniformRandomNumberGenerator>
       result_type
@@ -3510,6 +3528,19 @@ namespace std
       { return _M_param.t(); }
 
       /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, this->param()); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p);
+
+      /**
        * @brief Return true if two binomial distributions have
        *        the same parameters and the sequences that would
        *        be generated are equal.
@@ -3523,16 +3554,6 @@ namespace std
 #else
         { return __d1.param() == __d2.param(); }
 #endif
-
-      template<typename _UniformRandomNumberGenerator>
-	result_type
-	operator()(_UniformRandomNumberGenerator& __urng)
-	{ return this->operator()(__urng, this->param()); }
-
-      template<typename _UniformRandomNumberGenerator>
-	result_type
-	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p);
 
       /**
        * @brief Inserts a %binomial_distribution random number distribution
@@ -3691,6 +3712,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -3860,6 +3884,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
         operator()(_UniformRandomNumberGenerator& __urng);
@@ -4040,6 +4067,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -4219,6 +4249,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -4396,6 +4429,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -4568,6 +4604,9 @@ namespace std
       max() const
       { return std::numeric_limits<result_type>::max(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -4756,6 +4795,9 @@ namespace std
       max() const
       { return this->_M_param._M_prob.size() - 1; }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -4960,6 +5002,9 @@ namespace std
       max() const
       { return this->_M_param._M_int.back(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
@@ -5168,6 +5213,9 @@ namespace std
       max() const
       { return this->_M_param._M_int.back(); }
 
+      /**
+       * @brief Generating functions.
+       */
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)

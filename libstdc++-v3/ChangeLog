@@ -1,3 +1,25 @@
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (shuffle): Add, per D3056.
+	(random_shuffle): Fix signature in C++0x mode.
+	(lower_bound, __lg): Move...
+	* include/bits/stl_algobase.h: ... here.
+	* include/bits/algorithmfwd.h: Adjust.
+	* include/parallel/algorithmfwd.h: Likewise.
+	* include/parallel/algo.h: Likewise.
+	* include/bits/hashtable_policy.h (__lower_bound): Remove,
+	adjust callers.
+	* include/tr1/hashtable_policy.h (__lower_bound): Likewise.
+	* include/bits/random.tcc (__detail::__transform): Add,
+	adjust std::transform callers; don't include <algorithm>.
+	* testsuite/25_algorithms/shuffle/1.cc: Add.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+	* include/bits/random.h: Add comments.
+
 2010-03-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/debug_mode.xml: Correct debug headers.

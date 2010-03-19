@@ -1645,7 +1645,7 @@ namespace __parallel
   // Sequential fallback.
   template<typename _RAIter, typename _RandomNumberGenerator>
     inline void
-    random_shuffle(_RAIter __begin, _RAIter __end, 
+    random_shuffle(_RAIter __begin, _RAIter __end,
                    _RandomNumberGenerator& __rand,
                    __gnu_parallel::sequential_tag)
     { _GLIBCXX_STD_P::random_shuffle(__begin, __end, __rand); }
@@ -1673,8 +1673,12 @@ namespace __parallel
   // Parallel algorithm for random access iterators.
   template<typename _RAIter, typename _RandomNumberGenerator>
     void
-    random_shuffle(_RAIter __begin, _RAIter __end, 
+    random_shuffle(_RAIter __begin, _RAIter __end,
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+                   _RandomNumberGenerator&& __rand)
+#else
                    _RandomNumberGenerator& __rand)
+#endif
     {
       if (__begin == __end)
         return;
