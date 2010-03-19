@@ -1,3 +1,9 @@
+2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+
+	PR rtl-optimization/42258
+	* ira-lives.c (check_and_make_def_conflict): Ignore conflict for a
+	use that may match DEF.
+
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116
