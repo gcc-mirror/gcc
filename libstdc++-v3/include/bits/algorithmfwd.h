@@ -1,6 +1,6 @@
 // <algorithm> declarations  -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -111,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     set_intersection
     set_symmetric_difference
     set_union
+    shuffle (C++0x)
     sort
     sort_heap
     stable_partition
@@ -517,6 +518,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // set_symmetric_difference
   // set_union
 
+#if defined(__GXX_EXPERIMENTAL_CXX0X__) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+  template<typename _RAIter, typename _UGenerator>
+    void
+    shuffle(_RAIter, _RAIter, _UGenerator&&);
+#endif
+
   template<typename _RAIter>
     void 
     sort_heap(_RAIter, _RAIter);
@@ -684,7 +691,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   template<typename _RAIter, typename _Generator>
     void 
-    random_shuffle(_RAIter, _RAIter, _Generator&);
+    random_shuffle(_RAIter, _RAIter,
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+		   _Generator&&);
+#else
+		   _Generator&);
+#endif
 
   template<typename _FIter, typename _Tp>
     void 
