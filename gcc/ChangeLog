@@ -4,6 +4,14 @@
 	* ira-lives.c (check_and_make_def_conflict): Ignore conflict for a
 	use that may match DEF.
 
+	PR target/40697
+	* optabs.c (avoid_expensive_constant): Use rtx_cost to find out
+	the cost of loading the constant rather than assuming
+	COSTS_N_INSNS (1).
+	* config/arm/arm.c (thumb1_rtx_costs) <case CONST_INT>: If the
+	outer code is AND, do the same tests as the andsi3 expander and
+	return COSTS_N_INSNS (1) if and is cheap.
+	
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116
