@@ -1,5 +1,13 @@
 2010-03-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	Revert
+	2009-10-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_override_options): Turn off
+	flag_dwarf2_cfi_asm for AAPCS variants.
+
+2010-03-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	PR target/43399
 	* config/arm/arm.c (emit_multi_reg_push): Update comments.
 	Use PRE_MODIFY instead of PRE_DEC.
