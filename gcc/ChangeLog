@@ -1,3 +1,11 @@
+2010-03-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/43399
+	* config/arm/arm.c (emit_multi_reg_push): Update comments.
+	Use PRE_MODIFY instead of PRE_DEC.
+	(emit_sfm): Use PRE_MODIFY instead of PRE_DEC.
+	(vfp_emit_fstmd): Likewise.
+
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR target/43305
