@@ -679,8 +679,19 @@ the address of a function local variable).
 @end deftypefn
 
 @deftypefn {GIMPLE function} is_gimple_min_invariant_address (tree t)
+Return true if t is an @code{ADDR_EXPR} that does not change once a
+function is running.
+@end deftypefn
+
+@deftypefn {GIMPLE function} is_gimple_ip_invariant (tree t)
+Return true if t is an interprocedural invariant.  This means that t
+is a valid invariant in all functions (e.g. it can be an address of a
+global variable but not of a local one).
+@end deftypefn
+
+@deftypefn {GIMPLE function} is_gimple_ip_invariant_address (tree t)
 Return true if t is an @code{ADDR_EXPR} that does not change once the
-program is running.
+program is running (and which is valid in all functions).
 @end deftypefn
 
 
