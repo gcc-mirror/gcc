@@ -286,6 +286,7 @@ decl_attributes (tree *node, tree attributes, int flags)
       tree *anode = node;
       const struct attribute_spec *spec = lookup_attribute_spec (name);
       bool no_add_attrs = 0;
+      int fn_ptr_quals = 0;
       tree fn_ptr_tmp = NULL_TREE;
 
       if (spec == NULL)
@@ -353,6 +354,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 		 This would all be simpler if attributes were part of the
 		 declarator, grumble grumble.  */
 	      fn_ptr_tmp = TREE_TYPE (*anode);
+	      fn_ptr_quals = TYPE_QUALS (*anode);
 	      anode = &fn_ptr_tmp;
 	      flags &= ~(int) ATTR_FLAG_TYPE_IN_PLACE;
 	    }
@@ -449,6 +451,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  /* Rebuild the function pointer type and put it in the
 	     appropriate place.  */
 	  fn_ptr_tmp = build_pointer_type (fn_ptr_tmp);
+	  if (fn_ptr_quals)
+	    fn_ptr_tmp = build_qualified_type (fn_ptr_tmp, fn_ptr_quals);
 	  if (DECL_P (*node))
 	    TREE_TYPE (*node) = fn_ptr_tmp;
 	  else
