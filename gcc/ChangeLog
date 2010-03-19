@@ -1,3 +1,21 @@
+2010-03-19  David S. Miller  <davem@davemloft.net>
+
+	With help from Eric Botcazou.
+	* config/sparc/sparc.c: Include dwarf2out.h.
+	(emit_pic_helper): Delete.
+	(pic_helper_symbol_name): Delete.
+	(pic_helper_emitted_p): Delete.
+	(pic_helper_needed): New.
+	(USE_HIDDEN_LINKONCE): Define to '1' if HAVE_GAS_HIDDEN else '0'.
+	(get_pc_thunk_name): New.
+	(load_pic_register): Remove 'delay_pic_helper' arg.  Use
+	get_thunk_pc_name and ggc_strdup to generate PIC thunk symbol.
+	Set pic_helper_needed to true.  Don't call emit_pic_helper.
+	(sparc_expand_prologue): Update load_pic_register call.
+	(sparc_output_mi_thunk): Likewise.
+	(sparc_file_end): Emit a hidden comdat symbol for the PIC
+	thunk if possible.  Output CFI information as needed.
+
 2010-03-11  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
