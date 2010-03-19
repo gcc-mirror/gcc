@@ -1,3 +1,8 @@
+2010-03-19  Martin Jambor  <mjambor@suse.cz>
+
+	* doc/gimple.texi (Logical Operators): Describe is_gimple_ip_invariant
+	and is_gimple_ip_invariant_address.
+
 2010-03-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Revert
