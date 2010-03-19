@@ -6,6 +6,9 @@
 	PR target/40697
 	* gcc.target/arm/thumb-andsi.c: New test.
 
+	* gcc.target/arm/thumb-andsi.c: Correct dg-options and add
+	dg-require-effective-target.
+
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116
