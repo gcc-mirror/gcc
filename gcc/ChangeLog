@@ -1,3 +1,10 @@
+2010-03-19  Michael Matz  <matz@suse.de>
+
+	PR target/43305
+	* builtins.c (expand_builtin_interclass_mathfn,
+	expand_builtin_signbit): Use maybe_emit_unop_insn, emit libcalls
+	if that fails.
+
 2010-03-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43415

@@ -1,3 +1,8 @@
+2010-03-19  Michael Matz  <matz@suse.de>
+
+	PR target/43305
+	* gcc.dg/pr43305.c: New testcase.
+
 2010-03-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43415
