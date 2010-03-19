@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "params.h"
 #include "df.h"
+#include "dwarf2out.h"
 
 /* Processor costs */
 static const
@@ -362,8 +363,7 @@ static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx);
-static void emit_pic_helper (void);
-static void load_pic_register (bool);
+static void load_pic_register (void);
 static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
@@ -2908,9 +2908,8 @@ sparc_cannot_force_const_mem (rtx x)
 }
 
 /* PIC support.  */
-static GTY(()) char pic_helper_symbol_name[256];
+static GTY(()) bool pic_helper_needed = false;
 static GTY(()) rtx pic_helper_symbol;
-static GTY(()) bool pic_helper_emitted_p = false;
 static GTY(()) rtx global_offset_table;
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
@@ -3521,34 +3520,31 @@ sparc_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   return x;
 }
 
-/* Emit the special PIC helper function.  */
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
 
 static void
-emit_pic_helper (void)
+get_pc_thunk_name (char name[32], unsigned int regno)
 {
-  const char *pic_name = reg_names[REGNO (pic_offset_table_rtx)];
-  int align;
+  const char *pic_name = reg_names[regno];
 
-  switch_to_section (text_section);
+  /* Skip the leading '%' as that cannot be used in a
+     symbol name.  */
+  pic_name += 1;
 
-  align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-  if (align > 0)
-    ASM_OUTPUT_ALIGN (asm_out_file, align);
-  ASM_OUTPUT_LABEL (asm_out_file, pic_helper_symbol_name);
-  if (flag_delayed_branch)
-    fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
-	    pic_name, pic_name);
+  if (USE_HIDDEN_LINKONCE)
+    sprintf (name, "__sparc_get_pc_thunk.%s", pic_name);
   else
-    fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
-	    pic_name, pic_name);
-
-  pic_helper_emitted_p = true;
+    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
 }
 
 /* Emit code to load the PIC register.  */
 
 static void
-load_pic_register (bool delay_pic_helper)
+load_pic_register (void)
 {
   int orig_flag_pic = flag_pic;
 
@@ -3560,17 +3556,17 @@ load_pic_register (bool delay_pic_helper)
     }
 
   /* If we haven't initialized the special PIC symbols, do so now.  */
-  if (!pic_helper_symbol_name[0])
+  if (!pic_helper_needed)
     {
-      ASM_GENERATE_INTERNAL_LABEL (pic_helper_symbol_name, "LADDPC", 0);
-      pic_helper_symbol = gen_rtx_SYMBOL_REF (Pmode, pic_helper_symbol_name);
+      char name[32];
+
+      pic_helper_needed = true;
+
+      get_pc_thunk_name (name, REGNO (pic_offset_table_rtx));
+      pic_helper_symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
+
       global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
     }
-
-  /* If we haven't emitted the special PIC helper function, do so now unless
-     we are requested to delay it.  */
-  if (!delay_pic_helper && !pic_helper_emitted_p)
-    emit_pic_helper ();
 
   flag_pic = 0;
   if (TARGET_ARCH64)
@@ -4221,7 +4217,7 @@ sparc_expand_prologue (void)
 
   /* Load the PIC register if needed.  */
   if (flag_pic && crtl->uses_pic_offset_table)
-    load_pic_register (false);
+    load_pic_register ();
 }
 
 /* This function generates the assembly code for function entry, which boils
@@ -8882,7 +8878,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  start_sequence ();
 	  /* Delay emitting the PIC helper function because it needs to
 	     change the section and we are emitting assembly code.  */
-	  load_pic_register (true);  /* clobbers %o7 */
+	  load_pic_register ();  /* clobbers %o7 */
 	  scratch = legitimize_pic_address (funexp, scratch);
 	  seq = get_insns ();
 	  end_sequence ();
@@ -9037,9 +9033,59 @@ sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static void
 sparc_file_end (void)
 {
-  /* If we haven't emitted the special PIC helper function, do so now.  */
-  if (pic_helper_symbol_name[0] && !pic_helper_emitted_p)
-    emit_pic_helper ();
+  /* If need to emit the special PIC helper function, do so now.  */
+  if (pic_helper_needed)
+    {
+      unsigned int regno = REGNO (pic_offset_table_rtx);
+      const char *pic_name = reg_names[regno];
+      char name[32];
+#ifdef DWARF2_UNWIND_INFO
+      bool do_cfi;
+#endif
+
+      get_pc_thunk_name (name, regno);
+      if (USE_HIDDEN_LINKONCE)
+	{
+	  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+				  get_identifier (name),
+				  build_function_type (void_type_node,
+						       void_list_node));
+	  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+					   NULL_TREE, void_type_node);
+	  TREE_STATIC (decl) = 1;
+	  make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	  allocate_struct_function (decl, true);
+	  current_function_decl = decl;
+	  init_varasm_status ();
+	  assemble_start_function (decl, name);
+	}
+      else
+	{
+	  const int align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+          switch_to_section (text_section);
+	  if (align > 0)
+	    ASM_OUTPUT_ALIGN (asm_out_file, align);
+	  ASM_OUTPUT_LABEL (asm_out_file, name);
+	}
+
+#ifdef DWARF2_UNWIND_INFO
+      do_cfi = dwarf2out_do_cfi_asm ();
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_startproc\n");
+#endif
+      if (flag_delayed_branch)
+	fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
+		 pic_name, pic_name);
+      else
+	fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
+		 pic_name, pic_name);
+#ifdef DWARF2_UNWIND_INFO
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_endproc\n");
+#endif
+    }
 
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
