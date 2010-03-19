@@ -1,3 +1,9 @@
+2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR C/43211
+	* gcc.dg/pr43211.c: New test.
+	* gcc.dg/pr18809-1.c: Don't expect an error when calling foo.
+
 2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	PR rtl-optimization/42258

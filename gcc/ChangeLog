@@ -1,3 +1,8 @@
+2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR C/43211
+	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was an error.
+
 2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	PR rtl-optimization/42258

@@ -6118,6 +6118,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 
 		  TREE_VALUE (typelt) = error_mark_node;
 		  TREE_TYPE (parm) = error_mark_node;
+		  arg_types = NULL_TREE;
 		}
 	      else if (VOID_TYPE_P (type))
 		{
@@ -6138,6 +6139,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 	      error (errmsg);
 	      TREE_VALUE (typelt) = error_mark_node;
 	      TREE_TYPE (parm) = error_mark_node;
+	      arg_types = NULL_TREE;
 	    }
 
 	  if (DECL_NAME (parm) && TREE_USED (parm))
