@@ -1,3 +1,9 @@
+2010-03-19  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR ada/42554
+	* configure.ac: Only pass -c to ranlib for darwin9 and earlier.
+	* configure: Regenerate.
+
 2010-03-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* MAINTAINERS: Update my email address.
