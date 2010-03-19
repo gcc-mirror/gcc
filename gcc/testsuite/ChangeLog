@@ -8,7 +8,7 @@
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/36399
-	* gcc/testsuite/gcc.target/i386/push-1.c: Don't xfail
+	* gcc.target/i386/push-1.c: Don't xfail
 	  scan-assembler-not "movups" on darwin.
 
 2010-03-18  Jakub Jelinek  <jakub@redhat.com>

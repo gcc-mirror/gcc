@@ -20,7 +20,7 @@
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/36399
-	* gcc/config/i386/i386.h: Fix ABI on darwin x86-32.
+	* config/i386/i386.h: Fix ABI on darwin x86-32.
 
 2010-03-18  Aldy Hernandez  <aldyh@redhat.com>
 
