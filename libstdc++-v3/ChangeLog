@@ -1,5 +1,18 @@
 2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.tcc: Minor formatting changes.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (shuffle): Fix typo in signature.
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algo.h (shuffle): Add, per D3056.
 	(random_shuffle): Fix signature in C++0x mode.
 	(lower_bound, __lg): Move...

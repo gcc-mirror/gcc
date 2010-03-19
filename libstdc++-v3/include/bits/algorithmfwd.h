@@ -521,7 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if defined(__GXX_EXPERIMENTAL_CXX0X__) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
   template<typename _RAIter, typename _UGenerator>
     void
-    shuffle(_RAIter, _RAIter, _UGenerator&&);
+    shuffle(_RAIter, _RAIter, _UGenerator&);
 #endif
 
   template<typename _RAIter>

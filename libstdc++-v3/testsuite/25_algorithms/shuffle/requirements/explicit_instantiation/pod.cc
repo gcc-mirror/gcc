@@ -33,5 +33,5 @@ namespace std
   typedef value_type* 	               iterator_type;
   typedef std::mt19937_64            ugenerator_type;
 
-  template void shuffle(iterator_type, iterator_type, ugenerator_type&&);
+  template void shuffle(iterator_type, iterator_type, ugenerator_type&);
 } 

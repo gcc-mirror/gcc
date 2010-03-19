@@ -4079,7 +4079,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	   typename _UniformRandomNumberGenerator>
     void
     shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _UniformRandomNumberGenerator&& __g)
+	    _UniformRandomNumberGenerator& __g)
     {
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
