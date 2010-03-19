@@ -4,7 +4,7 @@
 	* gnat.dg/case_optimization2.adb: New test.
 	* gnat.dg/case_optimization_pkg2.ad[sb]: New helper.
 
-2010-03-11  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+2010-03-18  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/36399

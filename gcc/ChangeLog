@@ -16,7 +16,7 @@
 	(sparc_file_end): Emit a hidden comdat symbol for the PIC
 	thunk if possible.  Output CFI information as needed.
 
-2010-03-11  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
+2010-03-18  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/36399
