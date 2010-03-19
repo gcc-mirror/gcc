@@ -1,3 +1,8 @@
+2010-03-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43415
+	* gcc.c-torture/compile/pr43415.c: New testcase.
+
 2010-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/43106

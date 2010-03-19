@@ -1,3 +1,11 @@
+2010-03-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43415
+	* tree-ssa-pre.c (phi_translate): Split out worker to ...
+	(phi_translate_1): ... this.
+	(phi_translate): Move all caching here.  Cache all NARY
+	and REFERENCE translations.
+
 2010-03-19  David S. Miller  <davem@davemloft.net>
 
 	With help from Eric Botcazou.
