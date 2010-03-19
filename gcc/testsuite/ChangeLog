@@ -2,7 +2,10 @@
 
 	PR rtl-optimization/42258
 	* gcc.target/arm/thumb1-mul-moves.c: New test.
-	
+
+	PR target/40697
+	* gcc.target/arm/thumb-andsi.c: New test.
+
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116

@@ -1389,11 +1389,11 @@ static rtx
 avoid_expensive_constant (enum machine_mode mode, optab binoptab,
 			  rtx x, bool unsignedp)
 {
+  bool speed = optimize_insn_for_speed_p ();
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
-      && rtx_cost (x, binoptab->code, optimize_insn_for_speed_p ())
-                   > COSTS_N_INSNS (1))
+      && rtx_cost (x, binoptab->code, speed) > rtx_cost (x, SET, speed))
     {
       if (CONST_INT_P (x))
 	{

@@ -6228,6 +6228,15 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       else if ((outer == IOR || outer == XOR || outer == AND)
 	       && INTVAL (x) < 256 && INTVAL (x) >= -256)
 	return COSTS_N_INSNS (1);
+      else if (outer == AND)
+	{
+	  int i;
+	  /* This duplicates the tests in the andsi3 expander.  */
+	  for (i = 9; i <= 31; i++)
+	    if ((((HOST_WIDE_INT) 1) << i) - 1 == INTVAL (x)
+		|| (((HOST_WIDE_INT) 1) << i) - 1 == ~INTVAL (x))
+	      return COSTS_N_INSNS (2);
+	}
       else if (outer == ASHIFT || outer == ASHIFTRT
 	       || outer == LSHIFTRT)
 	return 0;
