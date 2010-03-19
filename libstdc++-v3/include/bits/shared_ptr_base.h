@@ -316,14 +316,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if _GLIBCXX_DEPRECATED
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
-	explicit __shared_count(std::auto_ptr<_Tp>&& __r)
+	__shared_count(std::auto_ptr<_Tp>&& __r)
 	: _M_pi(new _Sp_counted_ptr<_Tp*, _Lp>(__r.get()))
 	{ __r.release(); }
 #endif
 
       // Special case for unique_ptr<_Tp,_Del> to provide the strong guarantee.
       template<typename _Tp, typename _Del>
-	explicit __shared_count(std::unique_ptr<_Tp, _Del>&& __r)
+	__shared_count(std::unique_ptr<_Tp, _Del>&& __r)
 	: _M_pi(_S_create_from_up(std::move(__r)))
 	{ __r.release(); }
 
@@ -608,7 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // If an exception is thrown this constructor has no effect.
       template<typename _Tp1, typename _Del>
-	explicit __shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
+	__shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
@@ -620,7 +620,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if _GLIBCXX_DEPRECATED
       // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Tp1>
-	explicit __shared_ptr(std::auto_ptr<_Tp1>&& __r)
+	__shared_ptr(std::auto_ptr<_Tp1>&& __r)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)

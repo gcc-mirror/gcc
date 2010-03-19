@@ -204,13 +204,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #if _GLIBCXX_DEPRECATED
       template<typename _Tp1>
-	explicit
 	shared_ptr(std::auto_ptr<_Tp1>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 #endif
 
       template<typename _Tp1, typename _Del>
-	explicit shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
+	shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
       template<typename _Tp1>
