@@ -11,7 +11,9 @@
 	* config/arm/arm.c (thumb1_rtx_costs) <case CONST_INT>: If the
 	outer code is AND, do the same tests as the andsi3 expander and
 	return COSTS_N_INSNS (1) if and is cheap.
-	
+
+	* optabs.c (avoid_expensive_constant): Fix formatting.
+
 2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116
