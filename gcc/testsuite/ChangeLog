@@ -1,3 +1,9 @@
+2010-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/43106
+	* gnat.dg/case_optimization2.adb: New test.
+	* gnat.dg/case_optimization_pkg2.ad[sb]: New helper.
+
 2010-03-11  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 
