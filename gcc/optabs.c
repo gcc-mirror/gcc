@@ -1390,6 +1390,7 @@ avoid_expensive_constant (enum machine_mode mode, optab binoptab,
 			  rtx x, bool unsignedp)
 {
   bool speed = optimize_insn_for_speed_p ();
+
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
