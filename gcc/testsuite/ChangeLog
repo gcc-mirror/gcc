@@ -1,3 +1,8 @@
+2010-03-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43375
+	* g++.dg/abi/mangle42.C: New test.
+
 2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
 
 	PR C/43211
