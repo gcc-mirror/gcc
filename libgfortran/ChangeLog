@@ -1,7 +1,15 @@
+2010-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	* io/unix.h: Add prototype for new function to return file size.
+	* io/unix.c (file_size): New function.
+	* io/inquire.c (inquire_via_unit): Use new function.
+	(inquire_via_filename): Use new function.
+
 2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/transfer.c (read_sf_internal): Remove stray function declaration
-	used during debigging.
+	used during debugging.
 
 2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

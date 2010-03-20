@@ -1,3 +1,9 @@
+2010-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	* ioparm.def: Change inquire size variable to type pointer to
+	GFC_IO_INT type.
+
 2010-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/43039
