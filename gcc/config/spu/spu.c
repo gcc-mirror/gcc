@@ -1957,10 +1957,6 @@ spu_expand_prologue (void)
   rtx scratch_reg_0, scratch_reg_1;
   rtx insn, real;
 
-  /* A NOTE_INSN_DELETED is supposed to be at the start and end of
-     the "toplevel" insn chain.  */
-  emit_note (NOTE_INSN_DELETED);
-
   if (flag_pic && optimize == 0)
     crtl->uses_pic_offset_table = 1;
 
@@ -2066,7 +2062,6 @@ spu_expand_prologue (void)
 	}
     }
 
-  emit_note (NOTE_INSN_DELETED);
 }
 
 void
@@ -2076,10 +2071,6 @@ spu_expand_epilogue (bool sibcall_p)
   HOST_WIDE_INT saved_regs_size, total_size;
   rtx sp_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   rtx jump, scratch_reg_0;
-
-  /* A NOTE_INSN_DELETED is supposed to be at the start and end of
-     the "toplevel" insn chain.  */
-  emit_note (NOTE_INSN_DELETED);
 
   if (spu_naked_function_p (current_function_decl))
     return;
@@ -2125,7 +2116,6 @@ spu_expand_epilogue (bool sibcall_p)
       emit_barrier_after (jump);
     }
 
-  emit_note (NOTE_INSN_DELETED);
 }
 
 rtx
