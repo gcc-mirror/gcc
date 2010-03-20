@@ -298,3 +298,5 @@ extern void darwin_x86_file_end (void);
    used in Mach-O.  */
 #undef MACHO_SYMBOL_FLAG_VARIABLE
 #define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
+
+#define SUBTARGET32_DEFAULT_CPU "i686"

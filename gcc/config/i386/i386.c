@@ -1912,6 +1912,10 @@ static unsigned int ix86_minimum_incoming_stack_boundary (bool);
 static enum calling_abi ix86_function_abi (const_tree);
 
 
+#ifndef SUBTARGET32_DEFAULT_CPU
+#define SUBTARGET32_DEFAULT_CPU "i386"
+#endif
+
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  */
 #ifndef DEFAULT_PCC_STRUCT_RETURN
@@ -2878,7 +2882,7 @@ override_options (bool main_args_p)
     }
 
   if (!ix86_arch_string)
-    ix86_arch_string = TARGET_64BIT ? "x86-64" : "i386";
+    ix86_arch_string = TARGET_64BIT ? "x86-64" : SUBTARGET32_DEFAULT_CPU;
   else
     ix86_arch_specified = 1;
 
