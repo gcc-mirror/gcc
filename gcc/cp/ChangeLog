@@ -1,3 +1,9 @@
+2010-03-20  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/43081:
+	* decl2.c (grokfield): Handle invalid initializers for member
+	functions.
+
 2010-03-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43375

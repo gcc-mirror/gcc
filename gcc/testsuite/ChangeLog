@@ -1,3 +1,9 @@
+2010-03-20  Simon Martin  <simartin@users.sourceforge.net>
+	    Michael Matz  <matz@suse.de>
+
+	PR c++/43081
+	* g++.dg/parse/crash56.C: New test.
+
 2010-03-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43450
