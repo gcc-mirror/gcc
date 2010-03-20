@@ -1655,7 +1655,8 @@ vague_linkage_p (tree decl)
   return (DECL_COMDAT (decl)
 	  || (((TREE_CODE (decl) == FUNCTION_DECL
 		&& DECL_DECLARED_INLINE_P (decl))
-	       || DECL_TEMPLATE_INSTANTIATION (decl))
+	       || (DECL_LANG_SPECIFIC (decl)
+		   && DECL_TEMPLATE_INSTANTIATION (decl)))
 	      && TREE_PUBLIC (decl)));
 }
 
