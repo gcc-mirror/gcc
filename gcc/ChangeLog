@@ -1,3 +1,10 @@
+2010-03-20  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/43438
+	* combine.c (make_extraction): Properly zero-/sign-extend an
+	extraction of the low part of a CONST_INT.  Also handle
+	CONST_DOUBLE.
+
 2010-03-19  Mike Stump  <mikestump@comcast.net>
 
 	* config/i386/darwin.h (SUBTARGET32_DEFAULT_CPU): Add.
