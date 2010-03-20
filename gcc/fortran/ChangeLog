@@ -1,3 +1,9 @@
+2010-03-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43450
+	* trans-decl.c (gfc_create_module_variable): With -fwhole-file
+	do not assert the context of derived types.
+
 2010-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43409

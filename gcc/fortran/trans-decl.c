@@ -3382,11 +3382,16 @@ gfc_create_module_variable (gfc_symbol * sym)
     {
       decl = sym->backend_decl;
       gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
-      gcc_assert (TYPE_CONTEXT (decl) == NULL_TREE
-		  || TYPE_CONTEXT (decl) == sym->ns->proc_name->backend_decl);
-      gcc_assert (DECL_CONTEXT (TYPE_STUB_DECL (decl)) == NULL_TREE
-		  || DECL_CONTEXT (TYPE_STUB_DECL (decl))
-		     == sym->ns->proc_name->backend_decl);
+
+      /* -fwhole-file mixes up the contexts so these asserts are unnecessary.  */
+      if (!(gfc_option.flag_whole_file && sym->attr.use_assoc))
+	{
+	  gcc_assert (TYPE_CONTEXT (decl) == NULL_TREE
+		      || TYPE_CONTEXT (decl) == sym->ns->proc_name->backend_decl);
+	  gcc_assert (DECL_CONTEXT (TYPE_STUB_DECL (decl)) == NULL_TREE
+		      || DECL_CONTEXT (TYPE_STUB_DECL (decl))
+			   == sym->ns->proc_name->backend_decl);
+	}
       TYPE_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
       DECL_CONTEXT (TYPE_STUB_DECL (decl)) = sym->ns->proc_name->backend_decl;
       gfc_module_add_decl (cur_module, TYPE_STUB_DECL (decl));
