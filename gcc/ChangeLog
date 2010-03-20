@@ -1,3 +1,10 @@
+2010-03-20  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/43156
+	* config/spu/spu.c (spu_expand_prologue): Don't emit NOTE_INSN_DELETED
+	at the begining or end.
+	(spu_expand_epilogue): Likewise.
+
 2010-03-20  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/43438
