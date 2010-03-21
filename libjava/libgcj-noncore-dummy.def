@@ -1,0 +1,7 @@
+
+LIBRARY cyggcj-noncore-11.dll
+
+EXPORTS
+
+  _ZN3org4ietf4jgss10GSSManagerC1Ev
+
