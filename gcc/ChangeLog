@@ -1,3 +1,9 @@
+2010-03-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/42321
+	* arm.c (arm_output_epilogue): Correctly match VFP pop instructions
+	with their corresponding prologue pushes.
+
 2010-03-20  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/43156
