@@ -833,14 +833,14 @@ struct exclusion {
 struct roots {
 	ptr_t r_start;
 	ptr_t r_end;
-#	if !defined(MSWIN32) && !defined(MSWINCE)
+#	if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
 	  struct roots * r_next;
 #	endif
 	GC_bool r_tmp;
 	  	/* Delete before registering new dynamic libraries */
 };
 
-#if !defined(MSWIN32) && !defined(MSWINCE)
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
     /* Size of hash table index to roots.	*/
 #   define LOG_RT_SIZE 6
 #   define RT_SIZE (1 << LOG_RT_SIZE) /* Power of 2, may be != MAX_ROOT_SETS */
@@ -1024,7 +1024,7 @@ struct _GC_arrays {
   struct HeapSect {
       ptr_t hs_start; word hs_bytes;
   } _heap_sects[MAX_HEAP_SECTS];
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
     ptr_t _heap_bases[MAX_HEAP_SECTS];
     		/* Start address of memory regions obtained from kernel. */
 # endif
@@ -1033,7 +1033,7 @@ struct _GC_arrays {
     		/* Commited lengths of memory regions obtained from kernel. */
 # endif
   struct roots _static_roots[MAX_ROOT_SETS];
-# if !defined(MSWIN32) && !defined(MSWINCE)
+# if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
     struct roots * _root_index[RT_SIZE];
 # endif
   struct exclusion _excl_table[MAX_EXCLUSIONS];
@@ -1091,7 +1091,7 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # ifdef USE_MUNMAP
 #   define GC_unmapped_bytes GC_arrays._unmapped_bytes
 # endif
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined (CYGWIN32)
 #   define GC_heap_bases GC_arrays._heap_bases
 # endif
 # ifdef MSWINCE
@@ -1187,7 +1187,7 @@ extern word GC_n_heap_sects;	/* Number of separately added heap	*/
 
 extern word GC_page_size;
 
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
   struct _SYSTEM_INFO;
   extern struct _SYSTEM_INFO GC_sysinfo;
   extern word GC_n_heap_bases;	/* See GC_heap_bases.	*/
@@ -1479,7 +1479,7 @@ void GC_remove_roots_inner GC_PROTO((char * b, char * e));
 GC_bool GC_is_static_root GC_PROTO((ptr_t p));
   		/* Is the address p in one of the registered static	*/
   		/* root sections?					*/
-# if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION)
+# if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION) || defined(CYGWIN32)
 GC_bool GC_is_tmp_root GC_PROTO((ptr_t p));
 		/* Is the address p in one of the temporary static	*/
 		/* root sections?					*/
