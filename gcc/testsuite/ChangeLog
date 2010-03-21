@@ -1,3 +1,8 @@
+2010-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.target/powerpc/ppc-sdata-1.c: Require nonpic.
+	* gcc.target/powerpc/ppc-sdata-2.c: Likewise.
+
 2010-03-20  Simon Martin  <simartin@users.sourceforge.net>
 	    Michael Matz  <matz@suse.de>
 
