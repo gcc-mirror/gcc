@@ -1,3 +1,60 @@
+2010-03-21  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/42811 (prerequisite)
+	* include/private/gc_priv.h (struct roots) [CYGWIN32]: Don't
+	declare r_next member on Cygwin as on other windows hosts.
+	(LOG_RT_SIZE) [CYGWIN32]: Don't define likewise.
+	(RT_SIZE) [CYGWIN32]: Likewise.
+	(struct _GC_arrays) [CYGWIN32]: Do declare _heap_bases[] member
+	likewise.
+	(GC_heap_bases) [CYGWIN32]: Do define likewise.
+	(struct _SYSTEM_INFO) [CYGWIN32]: Do forward-declare likewise.
+	(GC_sysinfo) [CYGWIN32]: Do declare extern likewise.
+	(GC_n_heap_bases) [CYGWIN32]: Likewise.
+	(GC_is_tmp_root) [CYGWIN32]: Do prototype likewise.
+	* include/private/gcconfig.h (GC_win32_get_mem) [CYGWIN32]: Likewise.
+	(GET_MEM) [CYGWIN32]: Do define likewise.
+	* boehm-gc/ptr_chck.c (GC_is_visible) [CYGWIN32]: Do handle dynamic
+	registration likewise.
+	* boehm-gc/os_dep.c (GC_setpagesize) [CYGWIN32]: Do define likewise.
+	(GC_no_win32_dlls) [CYGWIN32]: Define as constant false, unlike
+	other windows hosts.
+	(GC_sysinfo) [CYGWIN32]: Define as on other windows hosts.
+	(GC_n_heap_bases) [CYGWIN32]: Likewise.
+	(GLOBAL_ALLOC_TEST) [CYGWIN32]: Likewise.
+	(GC_win32_get_mem) [CYGWIN32]: Likewise, but wrapping GC_unix_get_mem
+	rather than GlobalAlloc/VirtualAlloc.
+	(GC_win32_free_heap) [CYGWIN32]: Likewise, but wrapping free instead
+	of GlobalFree (even though the function body is optimised away).
+	* boehm-gc/mark_rts.c (add_roots_to_index) [CYGWIN32]: Define as on
+	other windows hosts.
+	(GC_add_roots_inner) [CYGWIN32]: Avoid overlapping or adjacent
+	intervals likewise.
+	(GC_clear_roots) [CYGWIN32]: Clear GC_root_index[] likewise.
+	(GC_rebuild_root_index) [CYGWIN32]: Define as on other windows hosts.
+	(GC_remove_tmp_roots) [CYGWIN32]: Call it likewise.
+	(GC_remove_roots) [CYGWIN32]: Don't define, as on other windows hosts.
+	(GC_is_tmp_root) [CYGWIN32]: Define, as on other windows hosts.
+	(GC_cond_register_dynamic_libraries) [CYGWIN32]: Handle temporary
+	roots and dynamic registration likewise.
+	* boehm-gc/dyn_load.c (GC_has_static_roots) [CYGWIN32]: Define as on
+	other windows hosts.
+	(GC_register_has_static_roots_callback) [CYGWIN32]: Likewise.
+	(GC_cond_add_roots) [CYGWIN32]: Likewise.
+	(GC_register_main_static_data) [CYGWIN32]: Define to always return
+	false, as on MSWINCE
+	(HAVE_REGISTER_MAIN_STATIC_DATA) [CYGWIN32]: Define as on other
+	windows hosts.
+	(GC_warn_fb) [CYGWIN32]: Likewise.
+	(GC_disallow_ignore_fb) [CYGWIN32]: Likewise.
+	(GC_ignore_fb_mb) [CYGWIN32]: Likewise.
+	(GC_ignore_fb) [CYGWIN32]: Likewise.
+	(is_frame_buffer) [CYGWIN32]: Likewise.
+	(GC_dump_meminfo) [CYGWIN32]: Likewise.
+	(GC_wnt) [CYGWIN32]: Define to constant true.
+	(GC_register_dynamic_libraries) [CYGWIN32]: Define as on other
+	windows hosts.
+
 2009-12-09  Matthias Klose  <doko@ubuntu.com> 
 
 	* include/private/gc_locks.h: For __ARM_EABI__ define
