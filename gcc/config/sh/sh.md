@@ -1,6 +1,6 @@
 ;;- Machine description for Renesas / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;;  2003, 2004, 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -734,7 +734,7 @@
   [(set (pc)
 	(if_then_else (match_operator 0 "comparison_operator"
 			[(match_operand:DI 1 "arith_operand" "r,r")
-			 (match_operand:DI 2 "arith_operand" "rN,i")])
+			 (match_operand:DI 2 "arith_operand" "rN,I08")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))
    (clobber (match_scratch:SI 4 "=X,&r"))

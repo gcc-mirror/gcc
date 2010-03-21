@@ -1,3 +1,12 @@
+2010-03-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/43417
+	* config/sh/sh.md (cbranchdi4_i): Use an "I08" constraint
+	instead of "i" constraint.
+
 2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
