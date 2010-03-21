@@ -1,5 +1,30 @@
 2010-03-21  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR target/42811
+	* libjava/configure.ac (DLLTOOL): Call AC_CHECK_TOOL.
+	(libgcj_sublib_core_extra_deps): New host-dependent configure var.
+	(LIBGCJ_SUBLIB_CORE_EXTRA_DEPS): AC_SUBST it.
+	* libjava/configure.host (libgcj_sublib_core_extra_deps): Define
+	appropriately on Cygwin and MinGW.
+	(libgcj_sublib_core_extra_deps): Add libgcj-noncore-dummy import
+	stub library on Cygwin and MinGW.
+	* libjava/Makefile.am (LIBJAVA_CORE_EXTRA): Import AC_SUBST'd
+	LIBGCJ_SUBLIB_CORE_EXTRA_DEPS if building sublibs, else define empty.
+	(libgcj_la_DEPENDENCIES): Use it.
+	(DLL_VERSION): New makefile macro.
+	(libgcj-noncore-dummy.dll.a): New build rule for dummy import stub
+	library.
+	(libgcj_noncore_la_LIBADD): Trim superfluous convenience libs.
+	(AM_MAKEFLAGS): Add DLLTOOL recursive propagation.
+	* libjava/libgcj-noncore-dummy.def: New file.
+	* libjava/Makefile.in: Regenerate.
+	* libjava/include/Makefile.in: Likewise.
+	* libjava/testsuite/Makefile.in: Likewise.
+	* libjava/configure: Likewise.
+	* libjava/gcj/Makefile.in: Likewise.
+
+2010-03-21  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	PR target/42811 (prerequisite)
 	* jvmti.cc (_Jv_GetJVMTIEnv): Avoid use of uninitialised memory.
 

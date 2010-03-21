@@ -18,7 +18,8 @@
 #   libgcj_cflags	Special CFLAGS to use when building
 #   libgcj_cxxflags	Special CXXFLAGS to use when building
 #   libgcj_javaflags	Special JAVAFLAGS to use when building
-#   libgcj_sublib_ltflags  Special Libtool flags to use when building.
+#   libgcj_sublib_ltflags  Special Libtool flags to use when building sublibs
+#   libgcj_sublib_core_extra_deps  Extra dependencies to add to core sublib
 #   libgcj_interpreter  If the bytecode interpreter supports this platform.
 #   enable_java_net_default  If java.net native code should be enabled by
 #                            default.
@@ -43,6 +44,7 @@ libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 libgcj_sublib_ltflags=
+libgcj_sublib_core_extra_deps=
 libgcj_interpreter=
 enable_java_net_default=yes
 enable_hash_synchronization_default=no
@@ -351,7 +353,9 @@ case "${host}" in
   	BACKTRACESPEC=
 	# Win32 DLLs are limited to 64k exported symbols each.
 	enable_libgcj_sublibs_default=yes
-	libgcj_sublib_ltflags='-no-undefined -bindir $(bindir)'
+	libgcj_sublib_ltflags='-no-undefined -bindir $(bindir) \
+	    -Wl,-u,__ZN3org4ietf4jgss10GSSManagerC1Ev,-L..,-lgcj-noncore-dummy'
+	libgcj_sublib_core_extra_deps=libgcj-noncore-dummy.dll.a
   ;;
 esac
 

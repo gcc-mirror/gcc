@@ -184,14 +184,13 @@ am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
-am__DEPENDENCIES_1 =
 am_libgcj_noncore_la_OBJECTS =
 libgcj_noncore_la_OBJECTS = $(am_libgcj_noncore_la_OBJECTS)
 @BUILD_SUBLIBS_TRUE@am_libgcj_noncore_la_rpath = -rpath \
 @BUILD_SUBLIBS_TRUE@	$(toolexeclibdir)
 am_libgcj_tools_la_OBJECTS = classpath/tools/libgcj_tools_la-tools.lo
 libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
-@INTERPRETER_TRUE@am__DEPENDENCIES_2 = gnu/classpath/jdwp.lo \
+@INTERPRETER_TRUE@am__DEPENDENCIES_1 = gnu/classpath/jdwp.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/event.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/event/filters.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/exception.lo \
@@ -200,7 +199,7 @@ libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/transport.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/util.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/value.lo gnu/gcj/jvmti.lo
-am__DEPENDENCIES_3 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
+am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/debug.lo gnu/classpath/toolkit.lo gnu/gcj.lo \
 	gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/runtime.lo \
 	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
@@ -317,12 +316,13 @@ am__DEPENDENCIES_3 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/undo.lo javax/tools.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo sun/awt.lo \
 	sun/misc.lo sun/reflect.lo sun/reflect/annotation.lo \
-	sun/reflect/misc.lo $(am__DEPENDENCIES_2)
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3) $(propertyo_files) \
+	sun/reflect/misc.lo $(am__DEPENDENCIES_1)
+am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2) $(propertyo_files) \
 	$(bc_objects)
-@BUILD_SUBLIBS_FALSE@am__DEPENDENCIES_5 = $(am__DEPENDENCIES_4)
-@BUILD_SUBLIBS_TRUE@am__DEPENDENCIES_5 =  \
+@BUILD_SUBLIBS_FALSE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
+@BUILD_SUBLIBS_TRUE@am__DEPENDENCIES_4 =  \
 @BUILD_SUBLIBS_TRUE@	$(CORE_PACKAGE_SOURCE_FILES_LO)
+am__DEPENDENCIES_5 =
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc verify.cc jvmti.cc \
 	interpret.cc gnu/classpath/jdwp/natVMFrame.cc \
@@ -660,6 +660,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DIRLTDL = @DIRLTDL@
 DIVIDESPEC = @DIVIDESPEC@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -727,6 +728,7 @@ LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
 LIBGCJ_LD_SYMBOLIC = @LIBGCJ_LD_SYMBOLIC@
 LIBGCJ_LD_SYMBOLIC_FUNCTIONS = @LIBGCJ_LD_SYMBOLIC_FUNCTIONS@
 LIBGCJ_SPEC = @LIBGCJ_SPEC@
+LIBGCJ_SUBLIB_CORE_EXTRA_DEPS = @LIBGCJ_SUBLIB_CORE_EXTRA_DEPS@
 LIBGCJ_SUBLIB_LTFLAGS = @LIBGCJ_SUBLIB_LTFLAGS@
 LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
@@ -1047,6 +1049,8 @@ CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACK
 @BUILD_SUBLIBS_TRUE@libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
 @BUILD_SUBLIBS_FALSE@LIBJAVA_LDFLAGS_NOUNDEF = 
 @BUILD_SUBLIBS_TRUE@LIBJAVA_LDFLAGS_NOUNDEF = $(LIBGCJ_SUBLIB_LTFLAGS)
+@BUILD_SUBLIBS_FALSE@LIBJAVA_CORE_EXTRA = 
+@BUILD_SUBLIBS_TRUE@LIBJAVA_CORE_EXTRA = @LIBGCJ_SUBLIB_CORE_EXTRA_DEPS@
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
 jardir = $(datadir)/java
@@ -1158,14 +1162,13 @@ libgcj_la_LIBADD = \
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
 	java/lang/Class.lo java/process-$(PLATFORM).lo \
 	$(ALL_PACKAGE_SOURCE_FILES_LO) $(LIBLTDL) $(libgcj_la_LIBADD) \
-	$(am__append_20)
+	$(LIBJAVA_CORE_EXTRA) $(am__append_20)
 libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
+@BUILD_SUBLIBS_TRUE@DLL_VERSION = `expr \`grep -v '^\#' $(srcdir)/libtool-version | sed -e 's/\(.*\):\(.*\):.*/\1 + \2/'\``
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_SOURCES = 
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
-@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) \
-@BUILD_SUBLIBS_TRUE@		$(LIBFFI) $(ZLIBS) $(GCLIBS) libgcj.la
-
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) libgcj.la
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_DEPENDENCIES =  \
 @BUILD_SUBLIBS_TRUE@	libgcj-$(gcc_version).jar $(LIBLTDL) \
 @BUILD_SUBLIBS_TRUE@	$(libgcj_noncore_la_LIBADD) libgcj.la \
@@ -8770,6 +8773,7 @@ AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
+	"DLLTOOL=$(DLLTOOL)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \
@@ -10787,6 +10791,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 
 
 interpret.lo:  AM_CXXFLAGS += -fwrapv
+@BUILD_SUBLIBS_TRUE@libgcj-noncore-dummy.dll.a : $(srcdir)/libgcj-noncore-dummy.def
+@BUILD_SUBLIBS_TRUE@	$(DLLTOOL) -d $^ -l $@ --dllname cyggcj-noncore-$(DLL_VERSION).dll 
 
 $(db_name): gcj-dbtool$(EXEEXT)
 	@rm -f $(db_name)
