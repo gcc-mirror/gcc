@@ -141,14 +141,20 @@ namespace __parallel
   template<typename _IIter1, typename _IIter2>
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2)
-    { return mismatch(__begin1, __end1, __begin2).first == __end1; }
+    {
+      return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2).first
+              == __end1;
+    }
 
   // Public interface
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
           _Predicate __pred)
-    { return mismatch(__begin1, __end1, __begin2, __pred).first == __end1; }
+    {
+      return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2, __pred).first
+              == __end1;
+    }
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>
