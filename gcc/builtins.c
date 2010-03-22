@@ -2984,10 +2984,16 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	  && ((flag_unsafe_math_optimizations
 	       && optimize_insn_for_speed_p ()
 	       && powi_cost (n/2) <= POWI_MAX_MULTS)
-	      /* Even the c==0.5 case cannot be done unconditionally
+	      /* Even the c == 0.5 case cannot be done unconditionally
 	         when we need to preserve signed zeros, as
 		 pow (-0, 0.5) is +0, while sqrt(-0) is -0.  */
-	      || (!HONOR_SIGNED_ZEROS (mode) && n == 1)))
+	      || (!HONOR_SIGNED_ZEROS (mode) && n == 1)
+	      /* For c == 1.5 we can assume that x * sqrt (x) is always
+	         smaller than pow (x, 1.5) if sqrt will not be expanded
+		 as a call.  */
+	      || (n == 3
+		  && (optab_handler (sqrt_optab, mode)->insn_code
+		      != CODE_FOR_nothing))))
 	{
 	  tree call_expr = build_call_nofold (fn, 1, narg0);
 	  /* Use expand_expr in case the newly built call expression
