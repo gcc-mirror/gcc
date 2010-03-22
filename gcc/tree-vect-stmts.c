@@ -4417,6 +4417,14 @@ get_vectype_for_scalar_type (tree scalar_type)
   if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
     return NULL_TREE;
 
+  /* If we'd build a vector type of elements whose mode precision doesn't
+     match their types precision we'll get mismatched types on vector
+     extracts via BIT_FIELD_REFs.  This effectively means we disable
+     vectorization of bool and/or enum types in some languages.  */
+  if (INTEGRAL_TYPE_P (scalar_type)
+      && GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type))
+    return NULL_TREE;
+
   /* FORNOW: Only a single vector size per mode (UNITS_PER_SIMD_WORD)
      is expected.  */
   nunits = UNITS_PER_SIMD_WORD (inner_mode) / nbytes;

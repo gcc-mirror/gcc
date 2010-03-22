@@ -1,5 +1,11 @@
 2010-03-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43390
+	* tree-vect-stmts.c (get_vectype_for_scalar_type): Make
+	sure vector extracts are type correct.
+
+2010-03-22  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40106
 	* builtins.c (expand_builtin_pow): Expand pow (x, 1.5) as
 	x * sqrt (x) even when optimizing for size if the target
