@@ -1,3 +1,8 @@
+2010-03-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_target_string): Fix a typo in
+	comments.  Add -mfma.
+
 2010-03-22  Mike Stump  <mikestump@comcast.net>
 
 	PR target/23071
