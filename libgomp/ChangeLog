@@ -1,3 +1,13 @@
+2010-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/42942
+	* env.c (parse_unsigned_long): Add ALLOW_ZERO argument.
+	(initialize_env): Adjust callers.
+	(omp_set_max_active_levels): Set gomp_max_active_levels_var even
+	when the argument is 0.
+
+	* testsuite/libgomp.c/pr42942.c: New test.
+
 2010-03-08  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	PR middle-end/42644
