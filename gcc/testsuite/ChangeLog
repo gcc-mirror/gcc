@@ -3,6 +3,9 @@
 	Backport from mainline:
 	2010-03-19  Michael Matz  <matz@suse.de>
 
+	PR c++/43116
+	* g++.dg/other/pr43116.C: New testcase.
+
 	PR target/43305
 	* gcc.dg/pr43305.c: New testcase.
 
