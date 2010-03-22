@@ -283,7 +283,7 @@ namespace __parallel
       typedef typename
         __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::result_type
         _MultipliesResultType;
-      return inner_product(__first1, __last1, __first2, __init,
+      return _GLIBCXX_STD_P::inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
                            __gnu_parallel::
                            _Multiplies<_ValueType1, _ValueType2>(),
@@ -303,7 +303,7 @@ namespace __parallel
       typedef typename
         __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::result_type
         _MultipliesResultType;
-      return inner_product(__first1, __last1, __first2, __init,
+      return _GLIBCXX_STD_P::inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
                            __gnu_parallel::
                            _Multiplies<_ValueType1, _ValueType2>());
@@ -359,7 +359,8 @@ namespace __parallel
     partial_sum(_IIter __begin, _IIter __end, _OutputIterator __result)
     {
       typedef typename iterator_traits<_IIter>::value_type _ValueType;
-      return partial_sum(__begin, __end, __result, std::plus<_ValueType>());
+      return _GLIBCXX_STD_P::partial_sum(__begin, __end,
+                                         __result, std::plus<_ValueType>());
     }
 
   // Public interface

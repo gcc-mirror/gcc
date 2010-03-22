@@ -158,7 +158,8 @@ namespace __gnu_parallel
         else
           {
             ::new(&(__sums[__iam]))
-              _ValueType(std::accumulate(__begin + __borders[__iam] + 1,
+              _ValueType(__gnu_parallel::accumulate(
+                                         __begin + __borders[__iam] + 1,
                                          __begin + __borders[__iam + 1],
                                          *(__begin + __borders[__iam]),
                                          __bin_op,

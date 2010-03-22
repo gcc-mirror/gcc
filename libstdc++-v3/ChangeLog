@@ -1,3 +1,14 @@
+2010-03-22  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/numeric (inner_product, partial_sum):
+        Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity 
+        between __gnu_parallel:: and std::
+        * include/parallel/algobase.h (equal): Likewise.
+        * include/parallel/algo.h (find_first_of, search_n, merge, nth_element,
+        partial_sort, max_element, min_element): Likewise.
+        * include/parallel/partial_sum.h (__parallel_partial_sum_linear):
+        Qualify accumulate call with __gnu_parallel::.
+
 2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/base.h (_PseudoSequence): Do not forward declare.
