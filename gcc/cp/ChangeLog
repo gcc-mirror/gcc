@@ -1,5 +1,8 @@
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43333
+	* tree.c (pod_type_p): Use old meaning in C++98 mode.
+
 	PR c++/43281
 	* pt.c (contains_auto_r): New fn.
 	(do_auto_deduction): Use it.
