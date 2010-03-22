@@ -1,3 +1,9 @@
+2010-03-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43475
+	* recog.c (validate_replace_rtx_group): Replace also in
+	REG_EQUAL and REG_EQUIV notes.
+
 2010-03-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43390
