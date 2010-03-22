@@ -331,7 +331,7 @@ typedef struct
   CHARACTER2 (round);
   CHARACTER1 (sign);
   GFC_INTEGER_4 *pending;
-  GFC_INTEGER_4 *size;
+  GFC_IO_INT *size;
   GFC_INTEGER_4 *id;
 }
 st_parameter_inquire;
