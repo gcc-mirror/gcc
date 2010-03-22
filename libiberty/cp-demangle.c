@@ -4506,9 +4506,9 @@ d_print_mod (struct d_print_info *dpi,
       d_print_comp (dpi, d_left (mod));
       return;
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
-      d_append_string (dpi, " vector[");
+      d_append_string (dpi, " __vector(");
       d_print_comp (dpi, d_left (mod));
-      d_append_char (dpi, ']');
+      d_append_char (dpi, ')');
       return;
 
     default:

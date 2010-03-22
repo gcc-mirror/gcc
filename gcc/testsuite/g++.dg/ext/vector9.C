@@ -6,5 +6,5 @@ typedef int   v4i __attribute__((vector_size(8)));
 void foo()
 {
   v4f v;
-  !(v4i)v; // { dg-error "int __vector.2|argument" }
+  !(v4i)v; // { dg-error "__vector.2. int|argument" }
 }
