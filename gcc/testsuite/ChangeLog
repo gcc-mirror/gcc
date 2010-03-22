@@ -1,5 +1,8 @@
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43281
+	* g++.dg/cpp0x/auto18.C: New.
+
 	* gcc.dg/pr36997.c: Adjust error message.
 	* g++.dg/ext/vector9.C: Likewise.
 	* g++.dg/conversion/simd3.C: Likewise.
