@@ -1,5 +1,14 @@
 2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/parallel/base.h (_PseudoSequence): Do not forward declare.
+	(_VoidFunctor): Remove, unused.
+	(__median_of_three_iterators): Take __comp by value.
+	(_PseudoSequenceIterator<>::operator++(int)): Do not const qualify
+	the return type.
+	(_PseudoSequenceIterator<>::operator!=): Fix return type to bool.
+
+2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/parallel/base.h (_Less): Use std::less.
 	(_Plus): Likewise use std::plus.
 	(_Multiplies): Likewise use std::multiplies.
