@@ -1,5 +1,8 @@
 2010-03-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* varasm.c (make_decl_rtl_for_debug): Also clear
+	flag_mudflap for the duration of make_decl_rtl call.
+
 	PR debug/43443
 	* var-tracking.c (add_cselib_value_chains): Remove ASM_OPERANDS
 	locs from preserved VALUEs.
