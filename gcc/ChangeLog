@@ -1,5 +1,21 @@
 2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/configfiles.texi (Configuration Files): Removed
+	fixinc/Makefile*, intl/Makefile.*.
+	* doc/makefile.texi: Fixed markup.
+	Abstract from version control system used.
+	(Makefile): Removed obsolete gcc/java/parse.y example.
+	* doc/sourcebuild.texi: Likewise.
+	(Top Level): Added config, gnattools, libdecnumber, libgcc,
+	libgomp, libssp.
+	Removed fastjar.
+	(Miscellaneous Docs): Clarify location.
+	Added COPYING3, COPYING3.LIB.
+	(Front End Directory): Moved Make-lang.in entry to new
+	subsubsection.
+
+2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR target/38085
 	* config/i386/i386.c (x86_function_profiler)
 	[!NO_PROFILE_COUNTERS]: Fix typo.
