@@ -1,3 +1,9 @@
+2010-03-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/42718
+	* pa.md (movmemsi): Set align to one if zero.
+	(movmemdi): Likewise.
+
 2010-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
