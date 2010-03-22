@@ -2390,7 +2390,9 @@ pod_type_p (const_tree t)
      argument unmodified and we assign it to a const_tree.  */
   t = strip_array_types (CONST_CAST_TREE(t));
 
-  if (CLASS_TYPE_P (t))
+  if (!CLASS_TYPE_P (t))
+    return scalarish_type_p (t);
+  else if (cxx_dialect > cxx98)
     /* [class]/10: A POD struct is a class that is both a trivial class and a
        standard-layout class, and has no non-static data members of type
        non-POD struct, non-POD union (or array of such types).
@@ -2399,7 +2401,8 @@ pod_type_p (const_tree t)
        non-std-layout or non-trivial, the class will be too.  */
     return (std_layout_type_p (t) && trivial_type_p (t));
   else
-    return scalarish_type_p (t);
+    /* The C++98 definition of POD is different.  */
+    return !CLASSTYPE_NON_LAYOUT_POD_P (t);
 }
 
 /* Returns true iff T is POD for the purpose of layout, as defined in the

@@ -1,5 +1,9 @@
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43333
+	* g++.dg/ext/is_pod.C: Pass -std=c++0x.
+	* g++.dg/ext/is_pod_98.C: New.
+
 	PR c++/43281
 	* g++.dg/cpp0x/auto18.C: New.
 
