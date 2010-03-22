@@ -914,6 +914,18 @@ FIXME: discuss non-C testsuites here.
 @node Test Directives
 @section Directives used within DejaGnu tests
 
+@menu
+* Directives::  Syntax and descriptions of test directives.
+* Selectors:: Selecting targets to which a test applies.
+* Effective-Target Keywords:: Keywords describing target attributes.
+* Add Options:: Features for @code{dg-add-options}
+* Require Support:: Variants of @code{dg-require-@var{support}}
+* Final Actions:: Commands for use in @code{dg-final}
+@end menu
+
+@node Directives
+@subsection Syntax and Descriptions of test directives
+
 Test directives appear within comments in a test source file and begin
 with @code{dg-}.  Some of these are defined within DejaGnu and others
 are local to the GCC testsuite.
@@ -923,27 +935,10 @@ directives local to GCC sometimes override information used by the
 DejaGnu directives, which know nothing about the GCC directives, so the
 DejaGnu directives must precede GCC directives.
 
-Several test directives include selectors which are usually preceded by
-the keyword @code{target} or @code{xfail}.  A selector is: one or more
-target triplets, possibly including wildcard characters; a single
-effective-target keyword; or a logical expression.  Depending on the
-context, the selector specifies whether a test is skipped and reported
-as unsupported or is expected to fail.  Use @samp{*-*-*} to match any
-target.
-Effective-target keywords are defined in @file{lib/target-supports.exp} in
-the GCC testsuite.
+Several test directives include selectors (@pxref{Selectors, , })
+which are usually preceded by the keyword @code{target} or @code{xfail}.
 
-A selector expression appears within curly braces and uses a single
-logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An
-operand is another selector expression, an effective-target keyword,
-a single target triplet, or a list of target triplets within quotes or
-curly braces.  For example:
-
-@smallexample
-@{ target @{ ! "hppa*-*-* ia64*-*-*" @} @}
-@{ target @{ powerpc*-*-* && lp64 @} @}
-@{ xfail @{ lp64 || vect_no_align @} @}
-@end smallexample
+@subsubsection Specify how to build the test
 
 @table @code
 @item @{ dg-do @var{do-what-keyword} [@{ target/xfail @var{selector} @}] @}
@@ -969,15 +964,19 @@ tests by redefining @code{dg-do-what-default} within the @code{.exp}
 file for those tests.
 
 If the directive includes the optional @samp{@{ target @var{selector} @}}
-then the test is skipped unless the target system is included in the
-list of target triplets or matches the effective-target keyword.
+then the test is skipped unless the target system matches the
+@var{selector}.
 
 If @var{do-what-keyword} is @code{run} and the directive includes
 the optional @samp{@{ xfail @var{selector} @}} and the selector is met
 then the test is expected to fail.  The @code{xfail} clause is ignored
 for other values of @var{do-what-keyword}; those tests can use
 directive @code{dg-xfail-if}.
+@end table
 
+@subsubsection Specify additional compiler options
+
+@table @code
 @item @{ dg-options @var{options} [@{ target @var{selector} @}] @}
 This DejaGnu directive provides a list of compiler options, to be used
 if the target system matches @var{selector}, that replace the default
@@ -988,21 +987,13 @@ Add any compiler options that are needed to access certain features.
 This directive does nothing on targets that enable the features by
 default, or that don't provide them at all.  It must come after
 all @code{dg-options} directives.
-
-The supported values of @var{feature} are:
-@table @code
-@item c99_runtime
-The target's C99 runtime (both headers and libraries).
-
-@item mips16_attribute
-@code{mips16} function attributes.  Only MIPS targets support this feature,
-and only then in certain modes.
+For supported values of @var{feature} see @ref{Add Options, ,}.
 @end table
 
-@item @{ dg-timeout @var{n} [@{target @var{selector} @}] @}
-Set the time limit for the compilation and for the execution of the test
-to the specified number of seconds.  The normal timeout limit, in
-seconds, is found by searching the following in order:
+@subsubsection Modify the test timeout value
+
+The normal timeout limit, in seconds, is found by searching the
+following in order:
 
 @itemize @bullet
 @item the value defined by an earlier @code{dg-timeout} directive in
@@ -1015,10 +1006,19 @@ the test
 @item 300
 @end itemize
 
+@table @code
+@item @{ dg-timeout @var{n} [@{target @var{selector} @}] @}
+Set the time limit for the compilation and for the execution of the test
+to the specified number of seconds.
+
 @item @{ dg-timeout-factor @var{x} [@{ target @var{selector} @}] @}
 Multiply the normal time limit for compilation and execution of the test
 by the specified floating-point factor.
+@end table
 
+@subsubsection Skip a test for some targets
+
+@table @code
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Arguments @var{include-opts} and @var{exclude-opts} are lists in which
 each element is a string of zero or more GCC options.
@@ -1056,7 +1056,7 @@ To skip a test if either @code{-O2} or @code{-O3} is present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2" "-O3" @} @{ "" @} @} */
 @end smallexample
 
-To skip a test unless option @code{-OS} is present:
+To skip a test unless option @code{-Os} is present:
 
 @smallexample
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "*" @} @{ "-Os" @} @} */
@@ -1069,39 +1069,52 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
+@item @{ dg-require-effective-target @var{keyword} @}
+Skip the test if the test target, including current multilib flags,
+is not covered by the effective-target keyword.
+This directive must appear after any @code{dg-do} directive in the test
+and before any @code{dg-additional-sources} directive.
+@xref{Effective-Target Keywords, , }.
+
+@item @{ dg-require-@var{support} args @}
+Skip the test if the target does not provide the required support.
+These directives must appear after any @code{dg-do} directive in the test
+and before any @code{dg-additional-sources} directive.
+They require at least one argument, which can be an empty string if the
+specific procedure does not examine the argument.
+@xref{Require Support, , }, for a complete list of these directives.
+@end table
+
+@subsubsection Expect a test to fail for some targets
+
+@table @code
 @item  @{ dg-xfail-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Expect the test to fail if the conditions (which are the same as for
 @code{dg-skip-if}) are met.  This does not affect the execute step.
 
 @item  @{ dg-xfail-run-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Expect the execute step of a test to fail if the conditions (which are
-the same as for @code{dg-skip-if} and @code{dg-xfail-if}) are met.
+the same as for @code{dg-skip-if}) are met.
+@end table
 
-@item @{ dg-require-@var{support} args @}
-Skip the test if the target does not provide the required support;
-see @file{lib/gcc-dg.exp} in the GCC testsuite for the actual directives.
-These directives must appear after any @code{dg-do} directive in the test
-and before any @code{dg-additional-sources} directive.
-They require at least one argument, which can be an empty string if the
-specific procedure does not examine the argument.
+@subsubsection Expect the test executable to fail
 
-@item @{ dg-require-effective-target @var{keyword} @}
-Skip the test if the test target, including current multilib flags,
-is not covered by the effective-target keyword.
-This directive must appear after any @code{dg-do} directive in the test
-and before any @code{dg-additional-sources} directive.
-
+@table @code
 @item  @{ dg-shouldfail @var{comment} [@{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]]] @}
 Expect the test executable to return a nonzero exit status if the
 conditions (which are the same as for @code{dg-skip-if}) are met.
+@end table
 
+@subsubsection Verify compiler messages
+
+@table @code
 @item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
 This DejaGnu directive appears on a source line that is expected to get
 an error message, or else specifies the source line associated with the
 message.  If there is no message for that line or if the text of that
 message is not matched by @var{regexp} then the check fails and
 @var{comment} is included in the @code{FAIL} message.  The check does
-not look for the string @samp{"error"} unless it is part of @var{regexp}.
+not look for the string @samp{error} unless it is part of @var{regexp}.
 
 @item @{ dg-warning @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
 This DejaGnu directive appears on a source line that is expected to get
@@ -1109,7 +1122,7 @@ a warning message, or else specifies the source line associated with the
 message.  If there is no message for that line or if the text of that
 message is not matched by @var{regexp} then the check fails and
 @var{comment} is included in the @code{FAIL} message.  The check does
-not look for the string @samp{"warning"} unless it is part of @var{regexp}.
+not look for the string @samp{warning} unless it is part of @var{regexp}.
 
 @item @{ dg-message @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
 The line is expected to get a message other than an error or warning.
@@ -1130,13 +1143,21 @@ to compiler messages that are not handled by @samp{dg-error},
 @samp{dg-warning} or @samp{dg-bogus}.  For this directive @samp{xfail}
 has the same effect as @samp{target}.
 
+@item @{ dg-prune-output @var{regexp} @}
+Prune messages matching @var{regexp} from the test output.
+@end table
+
+@subsubsection Verify output of the test executable
+
+@table @code
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
+@end table
 
-@item @{ dg-prune-output @var{regexp} @}
-Prune messages matching @var{regexp} from test output.
+@subsubsection Specify additional files for a test
 
+@table @code
 @item @{ dg-additional-files "@var{filelist}" @}
 Specify additional files, other than source files, that must be copied
 to the system where the compiler runs.
@@ -1144,56 +1165,777 @@ to the system where the compiler runs.
 @item @{ dg-additional-sources "@var{filelist}" @}
 Specify additional source files to appear in the compile line
 following the main test file.
+@end table
 
+@subsubsection Add checks at the end of a test
+
+@table @code
 @item @{ dg-final @{ @var{local-directive} @} @}
 This DejaGnu directive is placed within a comment anywhere in the
 source file and is processed after the test has been compiled and run.
 Multiple @samp{dg-final} commands are processed in the order in which
-they appear in the source file.
+they appear in the source file.  @xref{Final Actions, , }, for a list
+of directives that can be used within @code{dg-final}.
+@end table
+
+@node Selectors
+@subsection Selecting targets to which a test applies
+
+Several test directives include @var{selector}s to limit the targets
+for which a test is run or to declare that a test is expected to fail
+on particular targets.
+
+A selector is:
+@itemize @bullet
+@item one or more target triplets, possibly including wildcard characters
+@item a single effective-target keyword (@pxref{Effective-Target Keywords})
+@item a logical expression
+@end itemize
+
+Depending on the
+context, the selector specifies whether a test is skipped and reported
+as unsupported or is expected to fail.  Use @samp{*-*-*} to match any
+target.
+
+A selector expression appears within curly braces and uses a single
+logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An
+operand is another selector expression, an effective-target keyword,
+a single target triplet, or a list of target triplets within quotes or
+curly braces.  For example:
+
+@smallexample
+@{ target @{ ! "hppa*-*-* ia64*-*-*" @} @}
+@{ target @{ powerpc*-*-* && lp64 @} @}
+@{ xfail @{ lp64 || vect_no_align @} @}
+@end smallexample
+
+@node Effective-Target Keywords
+@subsection Keywords describing target attributes
+
+Effective-target keywords identify sets of targets that support
+particular functionality.  They are used to limit tests to be run only
+for particular targets, or to specify that particular sets of targets
+are expected to fail some tests.
+
+Effective-target keywords are defined in @file{lib/target-supports.exp} in
+the GCC testsuite, with the exception of those that are documented as
+being local to a particular test directory.
+
+The @samp{effective target} takes into account all of the compiler options
+with which the test will be compiled, including the multilib options.
+By convention, keywords ending in @code{_nocache} can also include options
+specified for the particular test in an earlier @code{dg-options} or
+@code{dg-add-options} directive.
+
+@subsubsection Data type sizes
+
+@table @code
+@item ilp32
+Target has 32-bit @code{int}, @code{long}, and pointers.
+
+@item lp64
+Target has 32-bit @code{int}, 64-bit @code{long} and pointers.
+
+@item llp64
+Target has 32-bit @code{int} and @code{long}, 64-bit @code{long long}
+and pointers.
+
+@item double64
+Target has 64-bit @code{double}.
+
+@item double64plus
+Target has @code{double} that is 64 bits or longer.
+
+@item int32plus
+Target has @code{int} that is at 32 bits or longer.
+
+@item int16
+Target has @code{int} that is 16 bits or shorter.
+
+@item large_double
+Target supports @code{double} that is longer than @code{float}.
+
+@item large_long_double
+Target supports @code{long double} that is longer than @code{double}.
+
+@item ptr32plus
+Target has pointers that are 32 bits or longer.
+
+@item size32plus
+Target supports array and structure sizes that are 32 bits or longer.
+
+@item 4byte_wchar_t
+Target has @code{wchar_t} that is at least 4 bytes.
+@end table
+
+@subsubsection Fortran-specific attributes
+
+@table @code
+@item fortran_integer_16
+Target supports Fortran @code{integer} that is 16 bytes or longer.
+
+@item fortran_large_int
+Target supports Fortran @code{integer} kinds larger than @code{integer(8)}.
+
+@item fortran_large_real
+Target supports Fortran @code{real} kinds larger than @code{real(8)}.
+@end table
+
+@subsubsection Vector-specific attributes
+
+@table @code
+@item vect_condition
+Target supports vector conditional operations.
+
+@item vect_double
+Target supports hardware vectors of @code{double}.
+
+@item vect_float
+Target supports hardware vectors of @code{float}.
+
+@item vect_int
+Target supports hardware vectors of @code{int}.
+
+@item vect_int_mult
+Target supports a vector widening multiplication of @code{short} operands
+into an @code{int} result, or supports promotion (unpacking) from
+@code{short} to @code{int} and a non-widening multiplication of @code{int}.
+
+@item vect_long
+Target supports hardware vectors of @code{long}.
+
+@item vect_long_long
+Target supports hardware vectors of @code{long long}.
+
+@item vect_aligned_arrays
+Target aligns arrays to vector alignment boundary.
+
+@item vect_hw_misalign
+Target supports a vector misalign access.
+
+@item vect_no_align
+Target does not support a vector alignment mechanism.
+
+@item vect_no_int_max
+Target does not support a vector max instruction on @code{int}.
+
+@item vect_no_int_add
+Target does not support a vector add instruction on @code{int}.
+
+@item vect_no_bitwise
+Target does not support vector bitwise instructions.
+
+@item vect_char_mult
+Target supports @code{vector char} multiplication.
+
+@item vect_short_mult
+Target supports @code{vector short} multiplication.
+
+@item vect_int_mult
+Target supports @code{vector int} multiplication.
+
+@item vect_extract_even_odd
+Target supports vector even/odd element extraction.
+
+@item vect_extract_even_odd_wide
+Target supports vector even/odd element extraction of vectors with elements
+@code{SImode} or larger.
+
+@item vect_interleave
+Target supports vector interleaving.
+
+@item vect_strided
+Target supports vector interleaving and extract even/odd.
+
+@item vect_strided_wide
+Target supports vector interleaving and extract even/odd for wide
+element types.
+
+@item vect_perm
+Target supports vector permutation.
+
+@item vect_shift
+Target supports a hardware vector shift operation.
+
+@item vect_widen_sum_hi_to_si
+Target supports a vector widening summation of @code{short} operands
+into @code{int} results, or can promote (unpack) from @code{short}
+to @code{int}.
+
+@item vect_widen_sum_qi_to_hi
+Target supports a vector widening summation of @code{char} operands
+into @code{short} results, or can promote (unpack) from @code{char}
+to @code{short}.
+
+@item vect_widen_sum_qi_to_si
+Target supports a vector widening summation of @code{char} operands
+into @code{int} results.
+
+@item vect_widen_mult_qi_to_hi
+Target supports a vector widening multiplication of @code{char} operands
+into @code{short} results, or can promote (unpack) from @code{char} to
+@code{short} and perform non-widening multiplication of @code{short}.
+
+@item vect_widen_mult_hi_to_si
+Target supports a vector widening multiplication of @code{short} operands
+into @code{int} results, or can promote (unpack) from @code{short} to
+@code{int} and perform non-widening multiplication of @code{int}.
+
+@item vect_sdot_qi
+Target supports a vector dot-product of @code{signed char}.
+
+@item vect_udot_qi
+Target supports a vector dot-product of @code{unsigned char}.
+
+@item vect_sdot_hi
+Target supports a vector dot-product of @code{signed short}.
+
+@item vect_udot_hi
+Target supports a vector dot-product of @code{unsigned short}.
+
+@item vect_pack_trunc
+Target supports a vector demotion (packing) of @code{short} to @code{char}
+and from @code{int} to @code{short} using modulo arithmetic.
+
+@item vect_unpack
+Target supports a vector promotion (unpacking) of @code{char} to @code{short}
+and from @code{char} to @code{int}.
+
+@item vect_intfloat_cvt
+Target supports conversion from @code{signed int} to @code{float}.
+
+@item vect_uintfloat_cvt
+Target supports conversion from @code{unsigned int} to @code{float}.
+
+@item vect_floatint_cvt
+Target supports conversion from @code{float} to @code{signed int}.
+
+@item vect_floatuint_cvt
+Target supports conversion from @code{float} to @code{unsigned int}.
+@end table
+
+@subsubsection Thread Local Storage attributes
+
+@table @code
+@item tls
+Target supports thread-local storage.
+
+@item tls_native
+Target supports native (rather than emulated) thread-local storage.
+
+@item tls_runtime
+Test system supports executing TLS executables.
+@end table
+
+@subsubsection Decimal floating point attributes
+
+@table @code
+@item dfp
+Targets supports compiling decimal floating point extension to C.
+
+@item dfp_nocache
+Including the options used to compile this particular test, the
+target supports compiling decimal floating point extension to C.
+
+@item dfprt
+Test system can execute decimal floating point tests.
+
+@item dfprt_nocache
+Including the options used to compile this particular test, the
+test system can execute decimal floating point tests.
+
+@item hard_dfp
+Target generates decimal floating point instructions with current options.
+@end table
+
+@subsubsection ARM-specific attributes
+
+@table @code
+@item arm32
+ARM target generates 32-bit code.
+
+@item arm_eabi
+ARM target adheres to the ABI for the ARM Architecture.
+
+@item arm_hard_vfp_ok
+ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
+Some multilibs may be incompatible with these options.
+
+@item arm_iwmmxt_ok
+ARM target supports @code{-mcpu=iwmmxt}.
+Some multilibs may be incompatible with this option.
+
+@item arm_neon
+ARM target supports generating NEON instructions.
+
+@item arm_neon_hw
+Test system supports executing NEON instructions.
+
+@item arm_neon_ok
+ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp}.
+Some multilibs may be incompatible with these options.
+
+@item arm_thumb1_ok
+ARM target generates Thumb-1 code for @code{-mthumb}.
+
+@item arm_thumb2_ok
+ARM target generates Thumb-2 code for @code{-mthumb}.
+
+@item arm_vfp_ok
+ARM target supports @code{-mfpu=vfp -mfloat-abi=softfp}.
+Some multilibs may be incompatible with these options.
+@end table
+
+@subsubsection MIPS-specific attributes
+
+@table @code
+@item mips64
+MIPS target supports 64-bit instructions.
+
+@item nomips16
+MIPS target does not produce MIPS16 code.
+
+@item mips16_attribute
+MIPS target can generate MIPS16 code.
+
+@item mips_loongson
+MIPS target is a Loongson-2E or -2F target using an ABI that supports
+the Loongson vector modes.
+
+@item mips_newabi_large_long_double
+MIPS target supports @code{long double} larger than @code{double}
+when using the new ABI.
+
+@item mpaired_single
+MIPS target supports @code{-mpaired-single}.
+@end table
+
+@subsubsection PowerPC-specific attributes
+
+@table @code
+@item powerpc64
+Test system supports executing 64-bit instructions.
+
+@item powerpc_altivec
+PowerPC target supports AltiVec.
+
+@item powerpc_altivec_ok
+PowerPC target supports @code{-maltivec}.
+
+@item powerpc_fprs
+PowerPC target supports floating-point registers.
+
+@item powerpc_hard_double
+PowerPC target supports hardware double-precision floating-point.
+
+@item powerpc_ppu_ok
+PowerPC target supports @code{-mcpu=cell}.
+
+@item powerpc_spe
+PowerPC target supports PowerPC SPE.
+
+@item powerpc_spe_nocache
+Including the options used to compile this particular test, the
+PowerPC target supports PowerPC SPE.
+
+@item powerpc_spu
+PowerPC target supports PowerPC SPU.
+
+@item spu_auto_overlay
+SPU target has toolchain that supports automatic overlay generation.
+
+@item powerpc_vsx_ok
+PowerPC target supports @code{-mvsx}.
+
+@item powerpc_405_nocache
+Including the options used to compile this particular test, the
+PowerPC target supports PowerPC 405.
+
+@item vmx_hw
+PowerPC target supports executing AltiVec instructions.
+@end table
+
+@subsubsection Other hardware attributes
+
+@table @code
+@item avx
+Target supports compiling AVX instructions.
+
+@item cell_hw
+Test system can execute AltiVec and Cell PPU instructions.
+
+@item coldfire_fpu
+Target uses a ColdFire FPU.
+
+@item hard_float
+Target supports FPU instructions.
+
+@item sync_char_short
+Target supports atomic operations on @code{char} and @code{short}.
+
+@item sync_int_long
+Target supports atomic operations on @code{int} and @code{long}.
+
+@item ultrasparc_hw
+Test environment appears to run executables on a simulator that
+accepts only @code{EM_SPARC} executables and chokes on @code{EM_SPARC32PLUS}
+or @code{EM_SPARCV9} executables.
+
+@item vect_cmdline_needed
+Target requires a command line argument to enable a SIMD instruction set.
+@end table
+
+@subsubsection Environment attributes
+
+@table @code
+@item c
+The language for the compiler under test is C.
+
+@item c++
+The language for the compiler under test is C++.
+
+@item c99_runtime
+Target provides a full C99 runtime.
+
+@item correct_iso_cpp_string_wchar_protos
+Target @code{string.h} and @code{wchar.h} headers provide C++ required
+overloads for @code{strchr} etc. functions.
+
+@item dummy_wcsftime
+Target uses a dummy @code{wcsftime} function that always returns zero.
+
+@item fd_truncate
+Target can truncate a file from a file descriptor, as used by
+@file{libgfortran/io/unix.c:fd_truncate}; i.e. @code{ftruncate} or
+@code{chsize}.
+
+@item freestanding
+Target is @samp{freestanding} as defined in section 4 of the C99 standard.
+Effectively, it is a target which supports no extra headers or libraries
+other than what is considered essential.
+
+@item init_priority
+Target supports constructors with initialization priority arguments.
+
+@item inttypes_types
+Target has the basic signed and unsigned types in @code{inttypes.h}.
+This is for tests that GCC's notions of these types agree with those
+in the header, as some systems have only @code{inttypes.h}.
+
+@item lax_strtofp
+Target might have errors of a few ULP in string to floating-point
+conversion functions and overflow is not always detected correctly by
+those functions.
+
+@item newlib
+Target supports Newlib.
+
+@item pow10
+Target provides @code{pow10} function.
+
+@item pthread
+Target can compile using @code{pthread.h} with no errors or warnings.
+
+@item pthread_h
+Target has @code{pthread.h}.
+
+@item simulator
+Test system runs executables on a simulator (i.e. slowly) rather than
+hardware (i.e. fast).
+
+@item stdint_types
+Target has the basic signed and unsigned C types in @code{stdint.h}.
+This will be obsolete when GCC ensures a working @code{stdint.h} for
+all targets.
+
+@item trampolines
+Target supports trampolines.
+
+@item uclibc
+Target supports uClibc.
+
+@item unwrapped
+Target does not use a status wrapper.
+
+@item vxworks_kernel
+Target is a VxWorks kernel.
+
+@item vxworks_rtp
+Target is a VxWorks RTP.
+
+@item wchar
+Target supports wide characters.
+@end table
+
+@subsubsection Other attributes
+
+@table @code
+@item automatic_stack_alignment
+Target supports automatic stack alignment.
+
+@item cxa_atexit
+Target uses @code{__cxa_atexit}.
+
+@item default_packed
+Target has packed layout of structure members by default.
+
+@item fgraphite
+Target supports Graphite optimizations.
+
+@item fixed_point
+Target supports fixed-point extension to C.
+
+@item fopenmp
+Target supports OpenMP via @option{-fopenmp}.
+
+@item fpic
+Target supports @option{-fpic} and @option{-fPIC}.
+
+@item freorder
+Target supports @option{-freorder-blocks-and-partition}.
+
+@item fstack_protector
+Target supports @option{-fstack-protector}.
+
+@item gc_sections
+Target supports @option{--gc-sections}.
+
+@item keeps_null_pointer_checks
+Target keeps null pointer checks, either due to the use of
+@option{-fno-delete-null-pointer-checks} or hardwired into the target.
+
+@item lto
+Compiler has been configured to support link-time optimization (LTO).
+
+@item named_sections
+Target supports named sections.
+
+@item natural_alignment_32
+Target uses natural alignment (aligned to type size) for types of
+32 bits or less.
+
+@item target_natural_alignment_64
+Target uses natural alignment (aligned to type size) for types of
+64 bits or less.
+
+@item nonpic
+Target does not generate PIC by default.
+
+@item pcc_bitfield_type_matters
+Target defines @code{PCC_BITFIELD_TYPE_MATTERS}.
+
+@item pe_aligned_commons
+Target supports @option{-mpe-aligned-commons}.
+
+@item section_anchors
+Target supports section anchors.
+
+@item short_enums
+Target defaults to short enums.
+
+@item static
+Target supports @option{-static}.
+
+@item static_libgfortran
+Target supports statically linking @samp{libgfortran}.
+
+@item string_merging
+Target supports merging string constants at link time.
+
+@item ucn
+Target supports compiling and assembling UCN.
+
+@item ucn_nocache
+Including the options used to compile this particular test, the
+target supports compiling and assembling UCN.
+
+@item unaligned_stack
+Target does not guarantee that its @code{STACK_BOUNDARY} is greater than
+or equal to the required vector alignment.
+
+@item vector_alignment_reachable
+Vector alignment is reachable for types of 32 bits or less.
+
+@item vector_alignment_reachable_for_64bit
+Vector alignment is reachable for types of 64 bits or less.
+
+@item wchar_t_char16_t_compatible
+Target supports @code{wchar_t} that is compatible with @code{char16_t}.
+
+@item wchar_t_char32_t_compatible
+Target supports @code{wchar_t} that is compatible with @code{char32_t}.
+@end table
+
+@subsubsection Local to tests in @code{gcc.target/i386}
+
+@table @code
+@item aes
+Target supports compiling @code{aes} instructions.
+
+@item fma4
+Target supports compiling @code{fma4} instructions.
+
+@item ms_hook_prologue
+Target supports attribute @code{ms_hook_prologue}.
+
+@item pclmul
+Target supports compiling @code{pclmul} instructions.
+
+@item sse4
+Target supports compiling @code{sse4} instructions.
+
+@item sse4a
+Target supports compiling @code{sse4a} instructions.
+
+@item ssse3
+Target supports compiling @code{ssse3} instructions.
+
+@item vaes
+Target supports compiling @code{vaes} instructions.
+
+@item vpclmul
+Target supports compiling @code{vpclmul} instructions.
+
+@item xop
+Target supports compiling @code{xop} instructions.
+@end table
+
+@subsubsection Local to tests in @code{gcc.target/spu/ea}
+
+@table @code
+@item ealib
+Target @code{__ea} library functions are available.
+@end table
+
+@subsubsection Local to tests in @code{gcc.test-framework}
+
+@table @code
+@item no
+Always returns 0.
+
+@item yes
+Always returns 1.
+@end table
+
+@node Add Options
+@subsection Features for @code{dg-add-options}
+
+The supported values of @var{feature} for directive @code{dg-add-options}
+are:
+
+@table @code
+@item bind_pic_locally
+Add the target-specific flags needed to enable functions to bind
+locally when using pic/PIC passes in the testsuite.
+
+@item c99_runtime
+Add the target-specific flags needed to access the C99 runtime.
+
+@item ieee
+Add the target-specific flags needed to enable full IEEE
+compliance mode.
+
+@item mips16_attribute
+@code{mips16} function attributes.
+Only MIPS targets support this feature, and only then in certain modes.
+@end table
+
+@node Require Support
+@subsection Variants of @code{dg-require-@var{support}}
+
+A few of the @code{dg-require} directives take arguments.
+
+@table @code
+@item dg-require-iconv @var{codeset}
+Skip the test if the target does not support iconv.  @var{codeset} is
+the codeset to convert to.
+
+@item dg-require-profiling @var{profopt}
+Skip the test if the target does not support profiling with option
+@var{profopt}.
+
+@item dg-require-visibility @var{vis}
+Skip the test if the target does not support the @code{visibility} attribute.
+If @var{vis} is @code{""}, support for @code{visibility("hidden")} is
+checked, for @code{visibility("@var{vis}")} otherwise.
+@end table
+
+The original @code{dg-require} directives were defined before there
+was support for effective-target keywords.  The directives that do not
+take arguments could be replaced with effective-target keywords.
+
+@table @code
+@item dg-require-alias ""
+Skip the test if the target does not support the @samp{alias} attribute.
+
+@item dg-require-compat-dfp ""
+Skip this test unless both compilers in a @file{compat} testsuite
+support decimal floating point.
+
+@item dg-require-cxa-atexit ""
+Skip the test if the target does not support @code{__cxa_atexit}.
+This is equivalent to @code{dg-require-effective-target cxa_atexit}.
+
+@item dg-require-dll ""
+Skip the test if the target does not support DLL attributes.
+
+@item dg-require-fork ""
+Skip the test if the target does not support @code{fork}.
+
+@item dg-require-gc-sections ""
+Skip the test if the target's linker does not support the
+@code{--gc-sections} flags.
+This is equivalent to @code{dg-require-effective-target gc-sections}.
+
+@item dg-require-host-local ""
+Skip the test if the host is remote, rather than the same as the build
+system.  Some tests are incompatible with DejaGnu's handling of remote
+hosts, which involves copying the source file to the host and compiling
+it with a relative path and "@code{-o a.out}".
+
+@item dg-require-mkfifo ""
+Skip the test if the target does not support @code{mkfifo}.
+
+@item dg-require-named-sections ""
+Skip the test is the target does not support named sections.
+This is equivalent to @code{dg-require-effective-target named_sections}.
+
+@item dg-require-weak ""
+Skip the test if the target does not support weak symbols.
+
+@item dg-require-weak-override ""
+Skip the test if the target does not support overriding weak symbols.
+@end table
+
+@node Final Actions
+@subsection Commands for use in @code{dg-final}
 
 The GCC testsuite defines the following directives to be used within
 @code{dg-final}.
 
+@subsubsection Scan a particular file
+
 @table @code
-@item cleanup-coverage-files
-Removes coverage data files generated for this test.
-
-@item cleanup-repo-files
-Removes files generated for this test for @option{-frepo}.
-
-@item cleanup-rtl-dump @var{suffix}
-Removes RTL dump files generated for this test.
-
-@item cleanup-tree-dump @var{suffix}
-Removes tree dump files matching @var{suffix} which were generated for
-this test.
-
-@item cleanup-saved-temps
-Removes files for the current test which were kept for @option{--save-temps}.
-
 @item scan-file @var{filename} @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if @var{regexp} matches text in @var{filename}.
-
 @item scan-file-not @var{filename} @var{regexp} [@{ target/xfail @var{selector} @}]
 Passes if @var{regexp} does not match text in @var{filename}.
+@item scan-module @var{module} @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if @var{regexp} matches in Fortran module @var{module}.
+@end table
 
-@item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
-Passes if @var{symbol} is defined as a hidden symbol in the test's
-assembly output.
+@subsubsection Scan the assembly output
 
-@item scan-not-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
-Passes if @var{symbol} is not defined as a hidden symbol in the test's
-assembly output.
-
-@item scan-assembler-times @var{regex} @var{num} [@{ target/xfail @var{selector} @}]
-Passes if @var{regex} is matched exactly @var{num} times in the test's
-assembler output.
-
+@table @code
 @item scan-assembler @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches text in the test's assembler output.
 
 @item scan-assembler-not @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} does not match text in the test's assembler output.
+
+@item scan-assembler-times @var{regex} @var{num} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is matched exactly @var{num} times in the test's
+assembler output.
 
 @item scan-assembler-dem @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches text in the test's demangled assembler output.
@@ -1202,31 +1944,61 @@ Passes if @var{regex} matches text in the test's demangled assembler output.
 Passes if @var{regex} does not match text in the test's demangled assembler
 output.
 
-@item scan-tree-dump-times @var{regex} @var{num} @var{suffix} [@{ target/xfail @var{selector} @}]
-Passes if @var{regex} is found exactly @var{num} times in the dump file
-with suffix @var{suffix}.
+@item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
+Passes if @var{symbol} is defined as a hidden symbol in the test's
+assembly output.
 
-@item scan-tree-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+@item scan-not-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
+Passes if @var{symbol} is not defined as a hidden symbol in the test's
+assembly output.
+@end table
+
+@subsubsection Scan optimization dump files
+
+These commands are available for @var{kind} of @code{tree}, @code{rtl},
+and @code{ipa}.
+
+@table @code
+@item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches text in the dump file with suffix @var{suffix}.
 
-@item scan-tree-dump-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+@item scan-@var{kind}-dump-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} does not match text in the dump file with suffix
 @var{suffix}.
 
-@item scan-tree-dump-dem @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+@item scan-@var{kind}-dump-times @var{regex} @var{num} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is found exactly @var{num} times in the dump file
+with suffix @var{suffix}.
+
+@item scan-@var{kind}-dump-dem @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches demangled text in the dump file with
 suffix @var{suffix}.
 
-@item scan-tree-dump-dem-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+@item scan-@var{kind}-dump-dem-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
+@end table
 
+@subsubsection Verify that an output files exists or not
+
+@table @code
 @item output-exists [@{ target/xfail @var{selector} @}]
 Passes if compiler output file exists.
 
 @item output-exists-not [@{ target/xfail @var{selector} @}]
 Passes if compiler output file does not exist.
+@end table
 
+@subsubsection Check for LTO tests
+
+@table @code
+@item scan-symbol @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if the pattern is present in the final executable.
+@end table
+
+@subsubsection Checks for @command{gcov} tests
+
+@table @code
 @item run-gcov @var{sourcefile}
 Check line counts in @command{gcov} tests.
 
@@ -1234,6 +2006,34 @@ Check line counts in @command{gcov} tests.
 Check branch and/or call counts, in addition to line counts, in
 @command{gcov} tests.
 @end table
+
+@subsubsection Clean up generated test files
+
+@table @code
+@item cleanup-coverage-files
+Removes coverage data files generated for this test.
+
+@item cleanup-ipa-dump @var{suffix}
+Removes IPA dump files generated for this test.
+
+@item cleanup-modules
+Removes Fortran module files generated for this test.
+
+@item cleanup-profile-file
+Removes profiling files generated for this test.
+
+@item cleanup-repo-files
+Removes files generated for this test for @option{-frepo}.
+
+@item cleanup-rtl-dump @var{suffix}
+Removes RTL dump files generated for this test.
+
+@item cleanup-saved-temps
+Removes files for the current test which were kept for @option{-save-temps}.
+
+@item cleanup-tree-dump @var{suffix}
+Removes tree dump files matching @var{suffix} which were generated for
+this test.
 @end table
 
 @node Ada Tests
@@ -1244,7 +2044,7 @@ testsuite, publicly available at
 @uref{http://www.adaic.org/compilers/acats/2.5}.
 
 These tests are integrated in the GCC testsuite in the
-@file{gcc/testsuite/ada/acats} directory, and
+@file{ada/acats} directory, and
 enabled automatically when running @code{make check}, assuming
 the Ada language has been enabled when configuring GCC@.
 
@@ -1431,6 +2231,12 @@ Unlike @code{dg-do}, @code{dg-lto-do} does not support an optional
 This directive provides a list of one or more sets of compiler options
 to override @var{LTO_OPTIONS}.  Each test will be compiled and run with
 each of these sets of options.
+
+@item @{ dg-extra-ld-options @var{options} @}
+This directive adds @var{options} to the linker options used.
+
+@item @{ dg-suppress-ld-options @var{options} @}
+This directive removes @var{options} from the set of linker options used.
 @end table
 
 @node gcov Testing
@@ -1536,6 +2342,14 @@ suffix of profile data files
 @item PROFOPT_OPTIONS
 list of options with which to run each test, similar to the lists for
 torture tests
+
+@item @{ dg-final-generate @{ @var{local-directive} @} @}
+This directive is similar to @code{dg-final}, but the
+@var{local-directive} is run after the generation of profile data.
+
+@item @{ dg-final-use @{ @var{local-directive} @} @}
+The @var{local-directive} is run after the profile data have been
+used.
 @end table
 
 @node compat Testing
