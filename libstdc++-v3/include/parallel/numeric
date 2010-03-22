@@ -280,7 +280,7 @@ namespace __parallel
       typedef typename
 	__gnu_parallel::multiplies<value_type1, value_type2>::result
         multiplies_result_type;
-      return inner_product(first1, last1, first2, init,
+      return _GLIBCXX_STD_P::inner_product(first1, last1, first2, init,
                            __gnu_parallel::plus<T, multiplies_result_type>(),
                            __gnu_parallel::
 			   multiplies<value_type1, value_type2>(),
@@ -300,7 +300,7 @@ namespace __parallel
       typedef typename
 	__gnu_parallel::multiplies<value_type1, value_type2>::result
         multiplies_result_type;
-      return inner_product(first1, last1, first2, init,
+      return _GLIBCXX_STD_P::inner_product(first1, last1, first2, init,
                            __gnu_parallel::plus<T, multiplies_result_type>(),
                            __gnu_parallel::
 			   multiplies<value_type1, value_type2>());
@@ -355,7 +355,8 @@ namespace __parallel
     partial_sum(InputIterator begin, InputIterator end, OutputIterator result)
     {
       typedef typename iterator_traits<InputIterator>::value_type value_type;
-      return partial_sum(begin, end, result, std::plus<value_type>());
+      return _GLIBCXX_STD_P::partial_sum(begin, end, result,
+                                         std::plus<value_type>());
     }
 
   // Public interface

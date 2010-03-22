@@ -289,8 +289,8 @@ namespace __parallel
       typedef typename iteratori_traits::value_type valuei_type;
       typedef typename iteratorf_traits::value_type valuef_type;
 
-      return find_first_of(begin1, end1, begin2, end2, __gnu_parallel::
-                           equal_to<valuei_type, valuef_type>());
+      return _GLIBCXX_STD_P::find_first_of(begin1, end1, begin2, end2,
+                __gnu_parallel::equal_to<valuei_type, valuef_type>());
     }
 
   // Sequential fallback
@@ -1152,7 +1152,7 @@ namespace __parallel
              const T& val)
     {
       typedef typename iterator_traits<ForwardIterator>::value_type value_type;
-      return search_n(begin, end, count, val,
+      return _GLIBCXX_STD_P::search_n(begin, end, count, val,
                       __gnu_parallel::equal_to<value_type, T>());
     }
 
@@ -2093,7 +2093,7 @@ namespace __parallel
       typedef typename iterator1_traits::value_type value1_type;
       typedef typename iterator2_traits::value_type value2_type;
 
-      return merge(begin1, end1, begin2, end2, result, 
+      return _GLIBCXX_STD_P::merge(begin1, end1, begin2, end2, result, 
                    __gnu_parallel::less<value1_type, value2_type>());
     }
 
@@ -2134,7 +2134,7 @@ namespace __parallel
     {
       typedef iterator_traits<RandomAccessIterator> traits_type;
       typedef typename traits_type::value_type value_type;
-      nth_element(begin, nth, end, std::less<value_type>());
+      _GLIBCXX_STD_P::nth_element(begin, nth, end, std::less<value_type>());
     }
 
   // Sequential fallback
@@ -2175,7 +2175,8 @@ namespace __parallel
     {
       typedef iterator_traits<RandomAccessIterator> traits_type;
       typedef typename traits_type::value_type value_type;
-      partial_sort(begin, middle, end, std::less<value_type>());
+      _GLIBCXX_STD_P::partial_sort(begin, middle, end,
+                                   std::less<value_type>());
     }
 
   // Sequential fallback
@@ -2244,7 +2245,7 @@ namespace __parallel
     max_element(ForwardIterator begin, ForwardIterator end)
     {
       typedef typename iterator_traits<ForwardIterator>::value_type value_type;
-      return max_element(begin, end, std::less<value_type>());
+      return _GLIBCXX_STD_P::max_element(begin, end, std::less<value_type>());
     }
 
   // Public interface
@@ -2335,7 +2336,7 @@ namespace __parallel
     min_element(ForwardIterator begin, ForwardIterator end)
     {
       typedef typename iterator_traits<ForwardIterator>::value_type value_type;
-      return min_element(begin, end, std::less<value_type>());
+      return _GLIBCXX_STD_P::min_element(begin, end, std::less<value_type>());
     }
 
   // Public interface

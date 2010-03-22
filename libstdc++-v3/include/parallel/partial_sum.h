@@ -155,7 +155,7 @@ template<typename InputIterator,
         else
           {
             ::new(&(sums[iam]))
-	      value_type(std::accumulate(begin + borders[iam] + 1,
+	      value_type(__gnu_parallel::accumulate(begin + borders[iam] + 1,
 					 begin + borders[iam + 1],
 					 *(begin + borders[iam]),
 					 bin_op,
