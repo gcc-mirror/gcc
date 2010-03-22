@@ -1,3 +1,9 @@
+2010-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43443
+	* var-tracking.c (add_cselib_value_chains): Remove ASM_OPERANDS
+	locs from preserved VALUEs.
+
 2010-03-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/42718

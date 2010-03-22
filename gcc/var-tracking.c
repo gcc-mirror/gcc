@@ -2791,15 +2791,23 @@ add_value_chains (decl_or_value dv, rtx loc)
 }
 
 /* If CSELIB_VAL_PTR of value DV refer to VALUEs, add backlinks from those
-   VALUEs to DV.  */
+   VALUEs to DV.  Add the same time get rid of ASM_OPERANDS from locs list,
+   that is something we never can express in .debug_info and can prevent
+   reverse ops from being used.  */
 
 static void
 add_cselib_value_chains (decl_or_value dv)
 {
-  struct elt_loc_list *l;
+  struct elt_loc_list **l;
 
-  for (l = CSELIB_VAL_PTR (dv_as_value (dv))->locs; l; l = l->next)
-    for_each_rtx (&l->loc, add_value_chain, dv_as_opaque (dv));
+  for (l = &CSELIB_VAL_PTR (dv_as_value (dv))->locs; *l;)
+    if (GET_CODE ((*l)->loc) == ASM_OPERANDS)
+      *l = (*l)->next;
+    else
+      {
+	for_each_rtx (&(*l)->loc, add_value_chain, dv_as_opaque (dv));
+	l = &(*l)->next;
+      }
 }
 
 /* If decl or value DVP refers to VALUE from *LOC, remove backlinks
