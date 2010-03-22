@@ -1,3 +1,10 @@
+2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (_Less): Use std::less.
+	(_Plus): Likewise use std::plus.
+	(_Multiplies): Likewise use std::multiplies.
+	* include/parallel/numeric: Adjust.
+
 2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/17_intro/freestanding.cc: Avoid -Wall warnings.
