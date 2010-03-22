@@ -1,6 +1,6 @@
 # gmon build rule:
 $(T)gmon.o:	$(gcc_srcdir)/config/i386/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CFLAGS) \
 		-c $(gcc_srcdir)/config/i386/gmon-sol2.c -o $(T)gmon.o
 
 # Assemble startup files.
@@ -9,16 +9,16 @@ $(T)gmon.o:	$(gcc_srcdir)/config/i386/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 # the comments with sed.  This bug may only be in the Early Access releases.
 $(T)gcrt1.o: $(gcc_srcdir)/config/i386/sol2-gc1.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(gcc_srcdir)/config/i386/sol2-gc1.asm >gcrt1.s
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)gcrt1.o gcrt1.s
+	$(GCC_FOR_TARGET) $(CFLAGS) -c -o $(T)gcrt1.o gcrt1.s
 $(T)crt1.o: $(gcc_srcdir)/config/i386/sol2-c1.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(gcc_srcdir)/config/i386/sol2-c1.asm >crt1.s
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crt1.o crt1.s
+	$(GCC_FOR_TARGET) $(CFLAGS) -c -o $(T)crt1.o crt1.s
 $(T)crti.o: $(gcc_srcdir)/config/i386/sol2-ci.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(gcc_srcdir)/config/i386/sol2-ci.asm >crti.s
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crti.o crti.s
+	$(GCC_FOR_TARGET) $(CFLAGS) -c -o $(T)crti.o crti.s
 $(T)crtn.o: $(gcc_srcdir)/config/i386/sol2-cn.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(gcc_srcdir)/config/i386/sol2-cn.asm >crtn.s
-	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $(T)crtn.o crtn.s
+	$(GCC_FOR_TARGET) $(CFLAGS) -c -o $(T)crtn.o crtn.s
 
 # We need to use -fPIC when we are using gcc to compile the routines in
 # crtstuff.c.  This is only really needed when we are going to use gcc/g++

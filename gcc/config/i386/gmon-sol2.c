@@ -268,7 +268,7 @@ asm(".globl _mcount\n"
        FROMPCINDEX (via the frame pointer.  */
     "\tmovq\t0x38(%rsp),%rdi\n"
     "\tmovq\t0x8(%rbp),%rsi\n"
-    "\tcallq\tinternal_mcount\n"
+    "\tcall\tinternal_mcount\n"
     /* Restore the saved registers.  */
     "\tmovq\t0x30(%rsp),%r9\n"
     "\tmovq\t0x28(%rsp),%r8\n"

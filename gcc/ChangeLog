@@ -1,3 +1,11 @@
+2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38085
+	* config/i386/i386.c (x86_function_profiler)
+	[!NO_PROFILE_COUNTERS]: Fix typo.
+	* config/i386/gmon-sol2.c (_mcleanup) [__x86_64__]: Use call
+	instead of callq.
+
 2010-03-22  Janis Johnson  <janis187@us.ibm.com>
 	    Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
 
