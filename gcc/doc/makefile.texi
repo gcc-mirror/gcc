@@ -1,4 +1,4 @@
-@c Copyright (C) 2001, 2002, 2003, 2004, 2006, 2008
+@c Copyright (C) 2001, 2002, 2003, 2004, 2006, 2008, 2010
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -46,12 +46,11 @@ That, and all the files created by @command{configure}.
 @item maintainer-clean
 Distclean plus any file that can be generated from other files.  Note
 that additional tools may be required beyond what is normally needed to
-build gcc.
+build GCC.
 
 @item srcextra
-Generates files in the source directory that do not exist in CVS but
-should go into a release tarball.  One example is @file{gcc/java/parse.c}
-which is generated from the CVS source file @file{gcc/java/parse.y}.
+Generates files in the source directory that are not version-controlled but
+should go into a release tarball.
 
 @item srcinfo
 @itemx srcman
@@ -59,16 +58,16 @@ Copies the info-formatted and manpage documentation into the source
 directory usually for the purpose of generating a release tarball.
 
 @item install
-Installs gcc.
+Installs GCC.
 
 @item uninstall
-Deletes installed files.
+Deletes installed files, though this is not supported.
 
 @item check
 Run the testsuite.  This creates a @file{testsuite} subdirectory that
 has various @file{.sum} and @file{.log} files containing the results of
 the testing.  You can run subsets with, for example, @samp{make check-gcc}.
-You can specify specific tests by setting RUNTESTFLAGS to be the name
+You can specify specific tests by setting @env{RUNTESTFLAGS} to be the name
 of the @file{.exp} file, optionally followed by (for some tests) an equals
 and a file wildcard, like:
 
@@ -77,7 +76,7 @@ make check-gcc RUNTESTFLAGS="execute.exp=19980413-*"
 @end smallexample
 
 Note that running the testsuite may require additional tools be
-installed, such as TCL or dejagnu.
+installed, such as Tcl or DejaGnu.
 @end table
 
 The toplevel tree from which you start GCC compilation is not
