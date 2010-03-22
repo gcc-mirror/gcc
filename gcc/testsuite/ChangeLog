@@ -1,6 +1,11 @@
 2010-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline:
+	2010-03-20  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/43438
+	* gcc.c-torture/execute/pr43438.c: New testcase.
+
 	2010-03-19  Michael Matz  <matz@suse.de>
 
 	PR c++/43116
