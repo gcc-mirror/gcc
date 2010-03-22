@@ -1,3 +1,8 @@
+2010-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	* io/io.h: Fix type of size in st_parameter_inquire structure.
+
 2010-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43409
