@@ -1,3 +1,9 @@
+2010-03-22  Mike Stump  <mikestump@comcast.net>
+
+	PR target/23071
+	* config/rs6000/rs6000.c (darwin_rs6000_special_round_type_align):
+	Don't overly align based upon packed packed fields.
+
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
 	* c-pretty-print.c (pp_c_specifier_qualifier_list) [VECTOR_TYPE]:
