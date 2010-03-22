@@ -1,3 +1,10 @@
+2010-03-22  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/pr36997.c: Adjust error message.
+	* g++.dg/ext/vector9.C: Likewise.
+	* g++.dg/conversion/simd3.C: Likewise.
+	* g++.dg/other/error23.C: Likewise.
+
 2010-03-22  Michael Matz  <matz@suse.de>
 
 	PR middle-end/43475

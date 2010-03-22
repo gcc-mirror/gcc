@@ -454,16 +454,17 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
 
     case VECTOR_TYPE:
     case COMPLEX_TYPE:
-      pp_c_specifier_qualifier_list (pp, TREE_TYPE (t));
       if (code == COMPLEX_TYPE)
 	pp_c_ws_string (pp, flag_isoc99 ? "_Complex" : "__complex__");
       else if (code == VECTOR_TYPE)
 	{
 	  pp_c_ws_string (pp, "__vector");
-	  pp_c_left_bracket (pp);
+	  pp_c_left_paren (pp);
 	  pp_wide_integer (pp, TYPE_VECTOR_SUBPARTS (t));
-	  pp_c_right_bracket (pp);
+	  pp_c_right_paren (pp);
+	  pp_c_whitespace (pp);
 	}
+      pp_c_specifier_qualifier_list (pp, TREE_TYPE (t));
       break;
 
     default:

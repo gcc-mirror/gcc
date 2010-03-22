@@ -3928,10 +3928,10 @@ _Z1fN1SUt_E
 f(S::{unnamed type#1})
 --format=gnu-v3
 _Z1fDv32_f
-f(float vector[32])
+f(float __vector(32))
 --format=gnu-v3
 _Z1fIfLi4EEvDv_T0__T_
-void f<float, 4>(float vector[4])
+void f<float, 4>(float __vector(4))
 --format=gnu-v3
 _Z1fI1AEDTclonplfp_fp_EET_
 decltype ((operator+)({parm#1}, {parm#1})) f<A>(A)

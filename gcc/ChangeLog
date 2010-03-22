@@ -1,3 +1,8 @@
+2010-03-22  Jason Merrill  <jason@redhat.com>
+
+	* c-pretty-print.c (pp_c_specifier_qualifier_list) [VECTOR_TYPE]:
+	Use () rather than [], and move before the element type.
+
 2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/configfiles.texi (Configuration Files): Removed
