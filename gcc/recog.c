@@ -787,12 +787,18 @@ validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
 
 }
 
-/* Try replacing every occurrence of FROM in INSN with TO.  */
+/* Try replacing every occurrence of FROM in INSN with TO.  This also
+   will replace in REG_EQUAL and REG_EQUIV notes.  */
 
 void
 validate_replace_rtx_group (rtx from, rtx to, rtx insn)
 {
+  rtx note;
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    if (REG_NOTE_KIND (note) == REG_EQUAL
+	|| REG_NOTE_KIND (note) == REG_EQUIV)
+      validate_replace_rtx_1 (&XEXP (note, 0), from, to, insn, true);
 }
 
 /* Function called by note_uses to replace used subexpressions.  */
