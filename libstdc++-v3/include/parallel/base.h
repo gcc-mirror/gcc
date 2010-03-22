@@ -297,9 +297,6 @@ namespace __gnu_parallel
     struct _Multiplies<_Tp, _Tp, _Tp>
     : public std::multiplies<_Tp> { };
 
-  template<typename _Tp, typename _DifferenceTp>
-    class _PseudoSequence;
-
   /** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
    *  If features the usual random-access iterator functionality.
    *  @param _Tp Sequence _M_value type.
@@ -311,11 +308,6 @@ namespace __gnu_parallel
     public:
       typedef _DifferenceTp _DifferenceType;
 
-    private:
-      const _Tp& _M_val;
-      _DifferenceType _M_pos;
-
-    public:
       _PseudoSequenceIterator(const _Tp& __val, _DifferenceType __pos)
       : _M_val(__val), _M_pos(__pos) { }
 
@@ -328,7 +320,7 @@ namespace __gnu_parallel
       }
 
       // Post-increment operator.
-      const _PseudoSequenceIterator
+      _PseudoSequenceIterator
       operator++(int)
       { return _PseudoSequenceIterator(_M_pos++); }
 
@@ -344,13 +336,17 @@ namespace __gnu_parallel
       operator==(const _PseudoSequenceIterator& __i2)
       { return _M_pos == __i2._M_pos; }
 
-      _DifferenceType
+      bool
       operator!=(const _PseudoSequenceIterator& __i2)
       { return _M_pos != __i2._M_pos; }
 
       _DifferenceType
       operator-(const _PseudoSequenceIterator& __i2)
       { return _M_pos - __i2._M_pos; }
+
+    private:
+      const _Tp& _M_val;
+      _DifferenceType _M_pos;
     };
 
   /** @brief Sequence that conceptually consists of multiple copies of
@@ -390,14 +386,6 @@ namespace __gnu_parallel
       _DifferenceType _M_count;
     };
 
-  /** @brief Functor that does nothing */
-  template<typename _ValueTp>
-    class _VoidFunctor
-    {
-      inline void
-      operator()(const _ValueTp& __v) const { }
-    };
-
   /** @brief Compute the median of three referenced elements,
       according to @c __comp.
       *  @param __a First iterator.
@@ -408,7 +396,7 @@ namespace __gnu_parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     __median_of_three_iterators(_RAIter __a, _RAIter __b,
-				_RAIter __c, _Compare& __comp)
+				_RAIter __c, _Compare __comp)
     {
       if (__comp(*__a, *__b))
 	if (__comp(*__b, *__c))
