@@ -26369,7 +26369,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleaq\t" LPREFIX "P%d@(%%rip),%%r11\n", labelno);
+      fprintf (file, "\tleaq\t" LPREFIX "P%d(%%rip),%%r11\n", labelno);
 #endif
 
       if (DEFAULT_ABI == SYSV_ABI && flag_pic)

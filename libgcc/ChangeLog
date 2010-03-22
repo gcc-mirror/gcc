@@ -1,3 +1,13 @@
+2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38085
+	* config/i386/t-sol2 ($(T)gmon.o): Use CFLAGS instead of
+	MULTILIB_CFLAGS.
+	($(T)gcrt1.o): Likewise.
+	($(T)crt1.o): Likewise.
+	($(T)crti.o): Likewise.
+	($(T)crtn.o): Likewise.
+
 2010-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/42980
