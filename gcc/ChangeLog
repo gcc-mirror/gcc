@@ -1,3 +1,17 @@
+2010-03-22  Janis Johnson  <janis187@us.ibm.com>
+	    Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Test Directives): Split into six
+	subsections, with most of the current text in new subsections
+	Directives, Selectors, and Final Actions.
+	(Directives): Split list of test directives into multiple
+	subsubsections.
+	(Selectors): Describe use and syntax of selectors.
+	(Effective-Target Keywords): Describe all existing keywords.
+	(Add Options): Describe features for dg-add-options.
+	(Require Support): Describe variants of dg-require-support.
+	(Final Actions): Describe commands to use in dg-final.
+
 2010-03-22  Michael Matz  <matz@suse.de>
 
 	PR middle-end/43475
