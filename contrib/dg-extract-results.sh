@@ -299,7 +299,7 @@ BEGIN {
     next
   }
 }
-/\===/ { curvar = ""; next }
+/^\t\t=== .* ===$/ { curvar = ""; next }
 /^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|WARNING|ERROR|UNSUPPORTED|UNTESTED|KFAIL):/ {
   testname=\$2
   # Ugly hack for gfortran.dg/dg.exp

@@ -1,3 +1,9 @@
+2010-03-22  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	Fix *.log tests output containing "===".
+	* dg-extract-results.sh (/\===/): Rename to ...
+	(/^\t\t=== .* ===$/): ... this pattern.
+
 2010-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dg-extract-results.sh: Fix result order to match sequential case.
