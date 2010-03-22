@@ -1,3 +1,10 @@
+2010-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43281
+	* pt.c (contains_auto_r): New fn.
+	(do_auto_deduction): Use it.
+	(tsubst): Don't look at TREE_TYPE of a TEMPLATE_TYPE_PARM.
+
 2010-03-20  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/43081:
