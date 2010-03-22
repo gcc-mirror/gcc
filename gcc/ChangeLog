@@ -1,3 +1,10 @@
+2010-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40106
+	* builtins.c (expand_builtin_pow): Expand pow (x, 1.5) as
+	x * sqrt (x) even when optimizing for size if the target
+	has native support for sqrt.
+
 2010-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (make_decl_rtl_for_debug): Also clear
