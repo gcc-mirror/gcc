@@ -281,7 +281,7 @@ namespace __parallel
       typedef typename _TraitsType2::value_type _ValueType2;
 
       typedef typename
-        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::__result
+        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::result_type
         _MultipliesResultType;
       return inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
@@ -301,7 +301,7 @@ namespace __parallel
       typedef typename _TraitsType2::value_type _ValueType2;
 
       typedef typename
-        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::__result
+        __gnu_parallel::_Multiplies<_ValueType1, _ValueType2>::result_type
         _MultipliesResultType;
       return inner_product(__first1, __last1, __first2, __init,
                            __gnu_parallel::_Plus<_Tp, _MultipliesResultType>(),
