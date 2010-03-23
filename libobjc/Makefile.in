@@ -291,35 +291,6 @@ libobjc_gc$(libsuffix).la: $(OBJS_GC)
 		-version-info $(LIBOBJC_GC_VERSION) $(extra_ldflags_libobjc) \
 		$(LTLDFLAGS)
 
-#
-# FIXME -- The following part does not fit in the libtool context. 
-# Libtool is supposed to [going to] be able to create a win 32 DLL 
-# without extra code but since I don't have a win machine to test 
-# if it already works, I leave the old code here.
-#
-libobjc_s.a: libobjc.la
-	mv libobjc.a libobjc_s.a
-
-# Create a relocatable DLL
-libobjc.dll: libobjc_s.a libobjc_entry.o
-	$(CC) -mdll -Wl,--base-file -Wl,libobjc.base \
-		-o libobjc.dll libobjc_s.a libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/libobjc.def \
-		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) -mdll -Wl,--base-file libobjc.base libobjc.exp \
-		-o libobjc.dll libobjc_s.a libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/libobjc.def \
-		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) libobjc.exp -mdll \
-		-o libobjc.dll libobjc_s.a libobjc_entry.o -lkernel32
-	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/libobjc.def \
-		--output-lib libobjc.a
-#
-#
-#
-#
-#
-
 info:
 dvi:
 pdf:
