@@ -1,3 +1,8 @@
+2010-03-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.sub: Update to version 2010-03-22.
+	* config.guess: Update to version 2009-12-30.
+
 2010-03-19  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR ada/42554
