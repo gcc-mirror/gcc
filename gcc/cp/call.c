@@ -2944,15 +2944,10 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       for (fns = TREE_VALUE (conv_fns); fns; fns = OVL_NEXT (fns))
 	{
 	  tree fn = OVL_CURRENT (fns);
-	  tree first = first_arg;
 
 	  if (DECL_NONCONVERTING_P (fn)
 	      && (flags & LOOKUP_ONLYCONVERTING))
 	    continue;
-
-	  /* Lambdas have a static conversion op.  */
-	  if (DECL_STATIC_FUNCTION_P (fn))
-	    first = NULL_TREE;
 
 	  /* [over.match.funcs] For conversion functions, the function
 	     is considered to be a member of the class of the implicit
@@ -2964,14 +2959,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    cand = add_template_candidate (&candidates, fn, fromtype,
 					   NULL_TREE,
-					   first, NULL, totype,
+					   first_arg, NULL, totype,
 					   TYPE_BINFO (fromtype),
 					   conversion_path,
 					   flags,
 					   DEDUCE_CONV);
 	  else
 	    cand = add_function_candidate (&candidates, fn, fromtype,
-					   first, NULL,
+					   first_arg, NULL,
 					   TYPE_BINFO (fromtype),
 					   conversion_path,
 					   flags);
@@ -3379,29 +3374,20 @@ build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 	{
 	  tree fn = OVL_CURRENT (fns);
 
-	  tree lfirst = first_mem_arg;
-	  if (DECL_STATIC_FUNCTION_P (fn))
-	    lfirst = NULL_TREE;
-
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    add_template_candidate (&candidates, fn, base, NULL_TREE,
-				    lfirst, *args, NULL_TREE,
+				    first_mem_arg, *args, NULL_TREE,
 				    TYPE_BINFO (type),
 				    TYPE_BINFO (type),
 				    LOOKUP_NORMAL, DEDUCE_CALL);
 	  else
 	    add_function_candidate
-	      (&candidates, fn, base, lfirst, *args, TYPE_BINFO (type),
+	      (&candidates, fn, base, first_mem_arg, *args, TYPE_BINFO (type),
 	       TYPE_BINFO (type), LOOKUP_NORMAL);
 	}
     }
 
-  /* Rather than mess with handling static conversion ops here, just don't
-     look at conversions in lambdas.  */
-  if (LAMBDA_TYPE_P (type))
-    convs = NULL_TREE;
-  else
-    convs = lookup_conversions (type, /*lookup_template_convs_p=*/true);
+  convs = lookup_conversions (type, /*lookup_template_convs_p=*/true);
 
   for (; convs; convs = TREE_CHAIN (convs))
     {

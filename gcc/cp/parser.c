@@ -7390,18 +7390,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     declarator = make_id_declarator (NULL_TREE, ansi_opname (CALL_EXPR),
 				     sfk_none);
 
-    quals = TYPE_UNQUALIFIED;
-    if (LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) == NULL_TREE
-	&& LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_NONE)
-      {
-	/* A lambda with no captures has a static op() and a conversion op
-	   to function type.  */
-	if (LAMBDA_EXPR_MUTABLE_P (lambda_expr))
-	  error ("lambda expression with no captures declared mutable");
-	return_type_specs.storage_class = sc_static;
-      }
-    else if (!LAMBDA_EXPR_MUTABLE_P (lambda_expr))
-      quals = TYPE_QUAL_CONST;
+    quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
+	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
     declarator = make_call_declarator (declarator, param_list, quals,
 				       exception_spec,
                                        /*late_return_type=*/NULL_TREE);

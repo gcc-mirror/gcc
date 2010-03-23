@@ -156,8 +156,9 @@ change_return_type (tree new_ret, tree fntype)
   if (TREE_CODE (fntype) == FUNCTION_TYPE)
     newtype = build_function_type (new_ret, args);
   else
-    newtype = build_method_type_directly (TYPE_METHOD_BASETYPE (fntype),
-					  new_ret, TREE_CHAIN (args));
+    newtype = build_method_type_directly
+      (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
+       new_ret, TREE_CHAIN (args));
   if (raises)
     newtype = build_exception_variant (newtype, raises);
   if (attrs)
@@ -4006,6 +4007,18 @@ mark_used (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))
     {
+      if (DECL_ARTIFICIAL (decl))
+	{
+	  if (DECL_OVERLOADED_OPERATOR_P (decl) == TYPE_EXPR
+	      && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
+	    {
+	      /* We mark a lambda conversion op as deleted if we can't
+		 generate it properly; see maybe_add_lambda_conv_op.  */
+	      sorry ("converting lambda which uses %<...%> to "
+		     "function pointer");
+	      return;
+	    }
+	}
       error ("deleted function %q+D", decl);
       error ("used here");
       return;

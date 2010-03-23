@@ -1,3 +1,19 @@
+2010-03-23  Jason Merrill  <jason@redhat.com>
+
+	Make lambda conversion op and op() non-static.
+	* semantics.c (maybe_add_lambda_conv_op): Make non-static.
+	Also add the thunk function returned by the conversion op.
+	Mark the conversion deleted if the op() is variadic.
+	* decl2.c (mark_used): Give helpful message about deleted conversion.
+	* parser.c (cp_parser_lambda_declarator_opt): Don't make op() static.
+	* semantics.c (finish_this_expr): Adjust.
+	* mangle.c (write_closure_type_name): Adjust.
+	* decl.c (grok_op_properties): Don't allow it.
+	* call.c (build_user_type_conversion_1): No static conversion ops.
+	(build_op_call): Or op().
+
+	* decl2.c (change_return_type): Fix 'this' quals.
+
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43333
