@@ -1,3 +1,10 @@
+2010-03-23  Mike Stump  <mikestump@comcast.net>
+
+	PR target/33120
+	* config/darwin.h (ASM_OUTPUT_ALIGNED_BSS): Add.
+	* config/darwin.c (darwin_output_aligned_bss): Add.
+	* config/darwin-protos.h: Add darwin_output_aligned_bss.
+
 2010-03-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/43413
