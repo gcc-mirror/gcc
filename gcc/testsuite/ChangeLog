@@ -1,3 +1,10 @@
+2010-03-23  Mike Stump  <mikestump@comcast.net>
+
+	PR target/33120
+	* g++.dg/ext/instantiate2.C: Update for .zerofill as it doesn't
+	follow the usual conventions for symbol definitions.
+	* gcc.target/i386/darwin-zerofill.c: Add.
+
 2010-03-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43333

@@ -728,6 +728,9 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
       }									\
   } while (0)
 
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
+  darwin_output_aligned_bss(FILE, DECL, NAME, SIZE, ALIGN)
+
 /* The maximum alignment which the object file format can support in
    bits.  For Mach-O, this is 2^15 bytes.  */
 
