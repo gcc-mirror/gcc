@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// 2010-02-21  Paolo Carlini  <pcarlini@suse.de>
+// 2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
@@ -53,30 +53,14 @@ struct PODType // both trivial and standard-layout
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::is_pod;
+  using std::is_standard_layout;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_pod, int>(true)) );
-  VERIFY( (test_category<is_pod, float>(true)) );
-  VERIFY( (test_category<is_pod, EnumType>(true)) );
-  VERIFY( (test_category<is_pod, int*>(true)) );
-  VERIFY( (test_category<is_pod, int(*)(int)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_category<is_pod, int[2]>(true)) );
-  VERIFY( (test_category<is_pod, float[][3]>(true)) );
-  VERIFY( (test_category<is_pod, EnumType[2][3][4]>(true)) );
-  VERIFY( (test_category<is_pod, int*[3]>(true)) );
-  VERIFY( (test_category<is_pod, int(*[][2])(int)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
-  VERIFY( (test_category<is_pod, ClassType>(true)) );
-  VERIFY( (test_category<is_pod, PODType>(true)) );
+  VERIFY( (test_category<is_standard_layout, SLType>(true)) );
+  VERIFY( (test_category<is_standard_layout, PODType>(true)) );
 
-  VERIFY( (test_category<is_pod, void>(false)) );
-  VERIFY( (test_category<is_pod, NType>(false)) );
-  VERIFY( (test_category<is_pod, TType>(false)) );
-  VERIFY( (test_category<is_pod, SLType>(false)) );
+  VERIFY( (test_category<is_standard_layout, NType>(false)) );
+  VERIFY( (test_category<is_standard_layout, TType>(false)) );
 }
 
 int main()
