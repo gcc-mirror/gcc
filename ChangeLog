@@ -1,5 +1,10 @@
 2010-03-23  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac (tic6x-*-*): New case.
+	* configure: Regenerate.
+
+2010-03-23  Joseph Myers  <joseph@codesourcery.com>
+
 	* config.sub: Update to version 2010-03-22.
 	* config.guess: Update to version 2009-12-30.
 
