@@ -1,3 +1,7 @@
+2010-03-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* symcat.h (CONCAT5, CONCAT6, XCONCAT5, XCONCAT6): Define.
+
 2010-01-13  Joel Brobecker  <brobecker@adacore.com>
 
 	Add new DW_AT_use_GNAT_descriptive_type CU attribute.
