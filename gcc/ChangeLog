@@ -6,8 +6,8 @@
 
 2010-03-22  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (ix86_target_string): Fix a typo in
-	comments.  Add -mfma.
+	* config/i386/i386.c (ix86_target_string): Fix a typo in comments.
+	Add -mfma.
 
 2010-03-22  Mike Stump  <mikestump@comcast.net>
 
@@ -120,8 +120,9 @@
 
 2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
 
-	PR C/43211
-	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was an error.
+	PR c/43211
+	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was an
+	error.
 
 2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
