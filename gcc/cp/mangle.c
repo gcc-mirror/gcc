@@ -1331,7 +1331,7 @@ write_closure_type_name (const tree type)
   MANGLE_TRACE_TREE ("closure-type-name", type);
 
   write_string ("Ul");
-  write_method_parms (parms, DECL_NONSTATIC_MEMBER_FUNCTION_P (fn), fn);
+  write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
   write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
 }

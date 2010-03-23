@@ -1,3 +1,12 @@
+2010-03-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-const-neg.C: Adjust for non-static op().
+	* g++.dg/cpp0x/lambda/lambda-conv.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-non-const.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-conv2.C: New.
+	* g++.dg/cpp0x/lambda/lambda-conv3.C: New.
+
 2010-03-23  Mike Stump  <mikestump@comcast.net>
 
 	PR target/33120

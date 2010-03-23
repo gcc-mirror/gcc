@@ -2104,13 +2104,17 @@ finish_this_expr (void)
 {
   tree result;
 
-  /* In a lambda expression, 'this' refers to the captured 'this'.  */
-  if (current_function_decl
-      && LAMBDA_FUNCTION_P (current_function_decl))
-    result = (lambda_expr_this_capture
-	      (CLASSTYPE_LAMBDA_EXPR (current_class_type)));
-  else if (current_class_ptr)
-    result = current_class_ptr;
+  if (current_class_ptr)
+    {
+      tree type = TREE_TYPE (current_class_ref);
+
+      /* In a lambda expression, 'this' refers to the captured 'this'.  */
+      if (LAMBDA_TYPE_P (type))
+        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type));
+      else
+        result = current_class_ptr;
+
+    }
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
     {
@@ -5861,14 +5865,22 @@ maybe_add_lambda_conv_op (tree type)
   bool nested = (current_function_decl != NULL_TREE);
   tree callop = lambda_function (type);
   tree rettype, name, fntype, fn, body, compound_stmt;
+  tree thistype, stattype, statfn, convfn, call, arg;
+  VEC (tree, gc) *argvec;
 
-  if (!DECL_STATIC_FUNCTION_P (callop))
+  if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
     return;
 
-  rettype = build_pointer_type (TREE_TYPE (callop));
+  stattype = build_function_type (TREE_TYPE (TREE_TYPE (callop)),
+				  FUNCTION_ARG_CHAIN (callop));
+
+  /* First build up the conversion op.  */
+
+  rettype = build_pointer_type (stattype);
   name = mangle_conv_op_name_for_type (rettype);
-  fntype = build_function_type (rettype, void_list_node);
-  fn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+  fntype = build_method_type_directly (thistype, rettype, void_list_node);
+  fn = convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
 
   if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
@@ -5883,7 +5895,39 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_ARGUMENTS (fn) = build_this_parm (fntype, TYPE_QUAL_CONST);
+  if (nested)
+    DECL_INTERFACE_KNOWN (fn) = 1;
+
+  add_method (type, fn, NULL_TREE);
+
+  /* Generic thunk code fails for varargs; we'll complain in mark_used if
+     the conversion op is used.  */
+  if (varargs_function_p (callop))
+    {
+      DECL_DELETED_FN (fn) = 1;
+      return;
+    }
+
+  /* Now build up the thunk to be returned.  */
+
+  name = get_identifier ("_FUN");
+  fn = statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
+  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
+      && DECL_ALIGN (fn) < 2 * BITS_PER_UNIT)
+    DECL_ALIGN (fn) = 2 * BITS_PER_UNIT;
+  grokclassfn (type, fn, NO_SPECIAL);
+  set_linkage_according_to_type (type, fn);
+  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  DECL_IN_AGGR_P (fn) = 1;
+  DECL_ARTIFICIAL (fn) = 1;
+  DECL_NOT_REALLY_EXTERN (fn) = 1;
+  DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
+  DECL_ARGUMENTS (fn) = copy_list (TREE_CHAIN (DECL_ARGUMENTS (callop)));
+  for (arg = DECL_ARGUMENTS (fn); arg; arg = TREE_CHAIN (arg))
+    DECL_CONTEXT (arg) = fn;
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
@@ -5891,17 +5935,55 @@ maybe_add_lambda_conv_op (tree type)
 
   if (nested)
     push_function_context ();
-  start_preparsed_function (fn, NULL_TREE,
+
+  /* Generate the body of the thunk.  */
+
+  start_preparsed_function (statfn, NULL_TREE,
 			    SF_PRE_PARSED | SF_INCLASS_INLINE);
+  if (DECL_ONE_ONLY (statfn))
+    {
+      /* Put the thunk in the same comdat group as the call op.  */
+      struct cgraph_node *callop_node, *thunk_node;
+      DECL_COMDAT_GROUP (statfn) = DECL_COMDAT_GROUP (callop);
+      callop_node = cgraph_node (callop);
+      thunk_node = cgraph_node (statfn);
+      gcc_assert (callop_node->same_comdat_group == NULL);
+      gcc_assert (thunk_node->same_comdat_group == NULL);
+      callop_node->same_comdat_group = thunk_node;
+      thunk_node->same_comdat_group = callop_node;
+    }
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
-  finish_return_stmt (decay_conversion (callop));
+  arg = build1 (NOP_EXPR, TREE_TYPE (DECL_ARGUMENTS (callop)), void_zero_node);
+  argvec = make_tree_vector ();
+  VEC_quick_push (tree, argvec, arg);
+  for (arg = DECL_ARGUMENTS (statfn); arg; arg = TREE_CHAIN (arg))
+    VEC_safe_push (tree, gc, argvec, arg);
+  call = build_cxx_call (callop, VEC_length (tree, argvec),
+			 VEC_address (tree, argvec));
+  CALL_FROM_THUNK_P (call) = 1;
+  finish_return_stmt (call);
 
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
 
   expand_or_defer_fn (finish_function (2));
+
+  /* Generate the body of the conversion op.  */
+
+  start_preparsed_function (convfn, NULL_TREE,
+			    SF_PRE_PARSED | SF_INCLASS_INLINE);
+  body = begin_function_body ();
+  compound_stmt = begin_compound_stmt (0);
+
+  finish_return_stmt (decay_conversion (statfn));
+
+  finish_compound_stmt (compound_stmt);
+  finish_function_body (body);
+
+  expand_or_defer_fn (finish_function (2));
+
   if (nested)
     pop_function_context ();
 }
