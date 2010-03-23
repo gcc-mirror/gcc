@@ -1,7 +1,13 @@
+2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (lower_bound(_ForwardIterator,
+	_ForwardIterator, const _Tp&, _Compare)): Move...
+	* include/bits/stl_algo.h: ... here.
+
 2010-03-22  Johannes Singler  <singler@kit.edu>
 
         * include/parallel/numeric (inner_product, partial_sum):
-        Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity 
+        Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity
         between __gnu_parallel:: and std::
         * include/parallel/algobase.h (equal): Likewise.
         * include/parallel/algo.h (find_first_of, search_n, merge, nth_element,
