@@ -129,6 +129,33 @@ namespace __gnu_test
     explicit ExplicitClass(int&);
   };
 
+  struct NType   // neither trivial nor standard-layout
+  {
+    int i;
+    int j;
+    virtual ~NType();
+  };
+
+  struct TType   // trivial but not standard-layout
+  {
+    int i;
+  private:
+    int j;
+  };
+
+  struct SLType  // standard-layout but not trivial
+  {
+    int i;
+    int j;
+    ~SLType();
+  };
+
+  struct PODType // both trivial and standard-layout
+  {
+    int i;
+    int j;
+  };
+
   int truncate_float(float x) { return (int)x; }
   long truncate_double(double x) { return (long)x; }
 

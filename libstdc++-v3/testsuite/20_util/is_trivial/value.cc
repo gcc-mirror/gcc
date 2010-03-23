@@ -22,34 +22,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
-struct NType   // neither trivial nor standard-layout
-{
-  int i;
-  int j;
-  virtual ~NType();
-};
-
-struct TType   // trivial but not standard-layout
-{
-  int i;
-
-private:
-  int j;
-};
-
-struct SLType  // standard-layout but not trivial
-{
-  int i;
-  int j;
-  ~SLType();
-};
-
-struct PODType // both trivial and standard-layout
-{
-  int i;
-  int j;
-};
-
 void test01()
 {
   bool test __attribute__((unused)) = true;

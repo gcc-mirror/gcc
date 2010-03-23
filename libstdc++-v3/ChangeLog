@@ -1,5 +1,12 @@
 2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/util/testsuite_tr1.h (NType, TType, SLType, PODType): Add.
+	* testsuite/20_util/is_trivial/value.cc: Adjust.
+	* testsuite/20_util/is_standard_layout/value.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Likewise.
+
+2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/20_util/is_trivial/value.cc: New.
 	* testsuite/20_util/is_standard_layout/value.cc: Likewise.
 	* testsuite/20_util/is_pod/value.cc: Extend.
