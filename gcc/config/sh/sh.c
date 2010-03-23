@@ -1,6 +1,6 @@
 /* Output routines for GCC for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -6720,13 +6720,13 @@ sh_expand_epilogue (bool sibcall_p)
 	  pop (PR_REG);
 	}
 
-      /* Banked registers are poped first to avoid being scheduled in the
+      /* Banked registers are popped first to avoid being scheduled in the
 	 delay slot. RTE switches banks before the ds instruction.  */
       if (current_function_interrupt)
 	{
-	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
-	    if (TEST_HARD_REG_BIT (live_regs_mask, i)) 
-	      pop (LAST_BANKED_REG - i);
+	  for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
+	    if (TEST_HARD_REG_BIT (live_regs_mask, i))
+	      pop (i);
 
 	  last_reg = FIRST_PSEUDO_REGISTER - LAST_BANKED_REG - 1;
 	}
