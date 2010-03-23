@@ -1,3 +1,9 @@
+2010-03-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/43413
+	* ira-color.c (setup_allocno_available_regs_num): Count prohibited
+	hard regs too.
+
 2010-03-22  James E. Wilson  <wilson@codesourcery.com>
 
 	PR target/43348
