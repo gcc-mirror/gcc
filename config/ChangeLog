@@ -1,3 +1,7 @@
+2010-03-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* mh-mingw: Revert accidentally checking r156315.
+
 2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* stdint.m4 (GCC_HEADER_STDINT): Don't typedef uint8_t etc. if
