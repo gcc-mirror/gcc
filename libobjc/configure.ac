@@ -161,6 +161,10 @@ case "${host}" in
     # Darwin needs -single_module when linking libobjc
     extra_ldflags_libobjc=-Wl,-single_module
     ;;
+  *-cygwin*|*-mingw*)
+    # Tell libtool to build DLLs on Windows
+    extra_ldflags_libobjc='-no-undefined -bindir $(bindir)'
+    ;;
 esac
 AC_SUBST(extra_ldflags_libobjc)
 

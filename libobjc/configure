@@ -3321,6 +3321,10 @@ case "${host}" in
     # Darwin needs -single_module when linking libobjc
     extra_ldflags_libobjc=-Wl,-single_module
     ;;
+  *-cygwin*|*-mingw*)
+    # Tell libtool to build DLLs on Windows
+    extra_ldflags_libobjc='-no-undefined -bindir $(bindir)'
+    ;;
 esac
 
 
@@ -10562,7 +10566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10565 "configure"
+#line 10569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10668,7 +10672,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10671 "configure"
+#line 10675 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11242,7 +11246,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 11245 "configure"
+#line 11249 "configure"
 @interface Frob
 @end
 @implementation Frob

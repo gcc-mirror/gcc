@@ -1,3 +1,12 @@
+2010-03-23  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR libobjc/30445
+	* configure.ac (extra_ldflags_libobjc): Define appropriately for
+	Cygwin and MinGW hosts.
+	* Makefile.am (libobjc_s.a): Remove dead pre-libtool target.
+	(libobjc.dll): Likewise.
+	* configure: Regenerate.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
