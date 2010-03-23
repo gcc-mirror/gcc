@@ -1,3 +1,9 @@
+2010-03-22  James E. Wilson  <wilson@codesourcery.com>
+
+	PR target/43348
+	* ia64.md (call_nogp, call_value_nogp, sibcall_nogp, call_gp,
+	call_value_gp,sibcall_gp): Use 's' constraint not 'i'.
+
 2010-03-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_target_string): Fix a typo in
