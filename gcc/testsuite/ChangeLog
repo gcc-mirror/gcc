@@ -1,3 +1,8 @@
+2010-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43502
+	* g++.dg/cpp0x/lambda/lambda-debug.C: New.
+
 2010-03-24  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipa-1.c: Delete trailing spaces, put the call to f into

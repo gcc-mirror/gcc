@@ -890,6 +890,7 @@ make_declarator (cp_declarator_kind kind)
   declarator->attributes = NULL_TREE;
   declarator->declarator = NULL;
   declarator->parameter_pack_p = false;
+  declarator->id_loc = UNKNOWN_LOCATION;
 
   return declarator;
 }
@@ -7395,6 +7396,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     declarator = make_call_declarator (declarator, param_list, quals,
 				       exception_spec,
                                        /*late_return_type=*/NULL_TREE);
+    declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
