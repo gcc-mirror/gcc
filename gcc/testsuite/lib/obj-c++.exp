@@ -42,10 +42,10 @@ proc obj-c++_version { } {
     
     obj-c++_init
 
-    # ignore any arguments after the command
+    # Ignore any arguments after the command.
     set compiler [lindex $OBJCXX_UNDER_TEST 0]
     
-    # verify that the compiler exists
+    # Verify that the compiler exists.
     if { [is_remote host] || [which $compiler] != 0 } then {
 	set tmp [remote_exec host "$compiler -v"]
 	set status [lindex $tmp 0];
@@ -61,7 +61,7 @@ proc obj-c++_version { } {
 	    clone_output "Couldn't determine version of [which $compiler]\n"
 	}
     } else {
-	# compiler does not exist (this should have already been detected)
+	# Compiler does not exist (this should have already been detected)
 	warning "$compiler does not exist"
     }
 }
@@ -93,7 +93,7 @@ proc obj-c++_include_flags { paths } {
 
 #
 # obj-c++_link_flags -- provide new version of obj-c++_link_flags
-# (originally from libgloss.exp) which knows about the gcc tree structure
+# (originally from libgloss.exp) which knows about the gcc tree structure.
 #
 
 proc obj-c++_link_flags { paths } {
@@ -115,27 +115,31 @@ proc obj-c++_link_flags { paths } {
           append ld_library_path ":${gccpath}/lib"
       }
       if [file exists "${gccpath}/libg++/libg++.a"] {
-          append flags "-L${gccpath}/libg++ "
+          append flags " -L${gccpath}/libg++ "
           append ld_library_path ":${gccpath}/libg++"
       }
       if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
-          append flags "-L${gccpath}/libstdc++ "
+          append flags " -L${gccpath}/libstdc++ "
           append ld_library_path ":${gccpath}/libstdc++"
       }
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
+          # Allow for %s spec substitutions
+          append flags " -B${gccpath}/libstdc++-v3/src/.libs "
           append flags " -L${gccpath}/libstdc++-v3/src/.libs "
           append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
       # Look for libstdc++.${shlib_ext}.
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
+	  # Allow for %s spec substitutions
+	  append flags " -B${gccpath}/libstdc++-v3/src/.libs "
 	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
 	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
-          append flags "-L${gccpath}/libiberty "
+          append flags " -L${gccpath}/libiberty "
       }
       if [file exists "${gccpath}/librx/librx.a"] {
-          append flags "-L${gccpath}/librx "
+          append flags " -L${gccpath}/librx "
       }
 
       set objcpath "[get_multilibs]"
@@ -145,24 +149,23 @@ proc obj-c++_link_flags { paths } {
       }
       # Now check if we have a shared only build.
       if { $libobjc_dir == ""} {
-	  set libobjc_dir \
-	      [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
-      }
-      if { $libobjc_dir == ""} {
-	  set libobjc_dir \
-	      [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
+	  set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
+	  if { $libobjc_dir == ""} {
+	      set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
+	  }
       }
 
       verbose "libobjc_dir: $libobjc_dir"
 
       if { $libobjc_dir != "" } {
 	  set libobjc_dir [file dirname ${libobjc_dir}]
-	  append flags "-L${libobjc_dir}"
+	  # Allow for %s spec substitutions
+	  append flags " -B${libobjc_dir} "
+	  append flags " -L${libobjc_dir} "
 	  append ld_library_path ":${libobjc_dir}"
       }
       append ld_library_path \
 	  [gcc-set-multilib-library-path $OBJCXX_UNDER_TEST]
-
     } else {
       global tool_root_dir;
 
@@ -264,7 +267,7 @@ proc obj-c++_init { args } {
 
     if { [string match "*-*-darwin*" $target_triplet] } {
 	lappend ALWAYS_OBJCXXFLAGS "ldflags=-multiply_defined suppress"
-       }
+    }
 
     verbose -log "ALWAYS_OBJCXXFLAGS set to $ALWAYS_OBJCXXFLAGS"
 
@@ -284,43 +287,74 @@ proc obj-c++_target_compile { source dest type options } {
     global OBJCXX_UNDER_TEST
     global shlib_ext
 
-    lappend options "libs=-lobjc"
     set shlib_ext [get_shlib_extension]
-    verbose "shared lib extension: $shlib_ext"
+    verbose "input-options: $options" 4
+
+    # We have to figure out which runtime will be used on darwin because
+    # we need to add the include path for the gnu runtime if that is in
+    # use.
+    # First, set the default...
+    if { [istarget "*-*-darwin*"] } {
+	set nextruntime 1
+    } else {
+	set nextruntime 0
+    }
+    verbose "initial next runtime state : $nextruntime" 2
+    # Next, see if we define the option in dg-options...
+    foreach opt $options {
+	if [regexp ".*-fnext-runtime.*" $opt] {
+	    set nextruntime 1
+	}
+	if [regexp ".*-fgnu-runtime.*" $opt] {
+	    set nextruntime 0
+	}
+    }
+    verbose "next runtime state after dg opts: $nextruntime" 2
+   
+    set tgt [target_info name]
+    if [board_info $tgt exists multilib_flags] {
+	set lb [board_info $tgt multilib_flags]
+	verbose "board multilib_flags $lb" 2
+	foreach opt $lb {
+	    if [regexp ".*-fnext-runtime.*" $opt] {
+		set nextruntime 1
+	    }
+	    if [regexp ".*-fgnu-runtime.*" $opt] {
+		set nextruntime 0
+	    }
+	}
+    }
+    verbose "next runtime state after any multilib opts: $nextruntime" 2
+
+    lappend options "libs=-lobjc"
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=${wrap_flags}"
     }
 
-    # If we have built libobjc along with the compiler (which usually
-    # _is not_ the case on Mac OS X systems), point the test harness
+    # If we have built libobjc along with the compiler, point the test harness
     # at it (and associated headers).
 
     set objcpath "[get_multilibs]"
 
     set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
     if { $libobjc_dir == ""} {
-      verbose "see if we have -fgnu-runtime in options"
-      if [regexp ".*-fgnu-runtime.*" "${options}" ] {
-	  set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
-      }
+      set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
     }
     if { $libobjc_dir == ""} {
-	set libobjc_dir \
-	    [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
-    }
-    if { $libobjc_dir == ""} {
-	verbose "see if we have -fgnu-runtime in options"
-	if [regexp ".*-fgnu-runtime.*" "${options}"] {
-	 set libobjc_dir \
-	     [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
+	set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
+	if { $libobjc_dir == ""} {
+	    set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
 	}
     }
 
     if { $libobjc_dir != "" } {
-	set objc_include_dir "${srcdir}/../../libobjc"
-	lappend options "additional_flags=-I${objc_include_dir}"
+	# If we are using the gnu runtime, add its includes.
+	if { $nextruntime == 0 } {
+	    set objc_include_dir "${srcdir}/../../libobjc"
+	    lappend options "additional_flags=-I${objc_include_dir}"
+	}
     }
 
     lappend options "additional_flags=[libio_include_flags]"

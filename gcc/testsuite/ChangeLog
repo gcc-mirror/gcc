@@ -1,3 +1,13 @@
+2010-03-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR testsuite/42348
+	* lib/target-supports.exp: Add support for ObjC/ObjC++ tools in
+	standard tests.
+	(check_effective_target_objc2): New proc.
+	(check_effective_target_next_runtime): New proc.
+	* lib/objc.exp: Determine which runtime is in force and support it.
+	* lib/obj-c++.exp: Ditto.
+
 2010-03-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43502

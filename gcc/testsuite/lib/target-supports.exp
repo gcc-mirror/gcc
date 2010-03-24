@@ -29,10 +29,17 @@
 # If ARGS is not empty, its first element is a string that
 # should be added to the command line.
 #
-# Assume by default that CONTENTS is C code.  C++ code should contain
-# "// C++" and Fortran code should contain "! Fortran".
+# Assume by default that CONTENTS is C code.  
+# Otherwise, code should contain:
+# "// C++" for c++,
+# "! Fortran" for Fortran code,
+# "/* ObjC", for ObjC
+# and "// ObjC++" for ObjC++
+# If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
+# allow for ObjC/ObjC++ specific flags.
 proc check_compile {basename type contents args} {
     global tool
+    verbose "check_compile tool: $tool for $basename" 
 
     if { [llength $args] > 0 } {
 	set options [list "additional_flags=[lindex $args 0]"]
@@ -42,8 +49,17 @@ proc check_compile {basename type contents args} {
     switch -glob -- $contents {
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
-	default { set src ${basename}[pid].c }
+	"*// ObjC++*" { set src ${basename}[pid].mm }
+	"*/* ObjC*" { set src ${basename}[pid].m }
+	default {
+	    switch -- $tool {
+		"objc" { set src ${basename}[pid].m }
+		"obj-c++" { set src ${basename}[pid].mm }
+		default { set src ${basename}[pid].c }
+	    }
+	}
     }
+
     set compile_type $type
     switch -glob $type {
 	assembly { set output ${basename}[pid].s }
@@ -1188,6 +1204,25 @@ proc check_cxa_atexit_available { } {
     }]
 }
 
+proc check_effective_target_objc2 { } {
+    return [check_no_compiler_messages objc2 object {
+	#ifdef __OBJC2__
+	int dummy[1];
+	#else
+	#error
+	#endif 
+    }]
+}
+
+proc check_effective_target_next_runtime { } {
+    return [check_no_compiler_messages objc2 object {
+	#ifdef __NEXT_RUNTIME__
+	int dummy[1];
+	#else
+	#error
+	#endif 
+    }]
+}
 
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
