@@ -1,3 +1,7 @@
+2010-03-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/strncpy-fix-1.c: New test.
+
 2010-03-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR testsuite/41609
