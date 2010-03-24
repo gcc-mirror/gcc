@@ -23,7 +23,9 @@ foo (int a)
 int
 main ()
 {
-  foo (7);
+  int i;
+  for (i = 0; i < 100; i++)
+    foo (7);
   return 0;
 }
 
