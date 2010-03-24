@@ -1,5 +1,7 @@
 2010-03-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/altivec-17.C: Adjust error message.
+
 	* g++.dg/cpp0x/lambda/lambda-const-neg.C: Adjust for non-static op().
 	* g++.dg/cpp0x/lambda/lambda-conv.C: Likewise.
 	* g++.dg/cpp0x/lambda/lambda-mangle.C: Likewise.
