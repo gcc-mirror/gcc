@@ -13572,6 +13572,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case POPCOUNT:
     case PARITY:
     case ASM_OPERANDS:
+    case VEC_MERGE:
+    case VEC_SELECT:
+    case VEC_CONCAT:
+    case VEC_DUPLICATE:
     case UNSPEC:
     case HIGH:
       /* If delegitimize_address couldn't do anything with the UNSPEC, we
