@@ -1,3 +1,10 @@
+2010-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43498
+	* config/i386/i386.c (x86_output_mi_thunk): Call final_start_function
+	at the beginning and final_end_function at the end.
+	* config/s390/s390.c (s390_output_mi_thunk): Likewise.
+
 2010-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (i[34567]86-*-*): Handle Solaris 2/x86 TLS support
