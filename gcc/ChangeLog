@@ -1,5 +1,9 @@
 2010-03-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43479
+	* ira.c (adjust_cleared_regs): New function.
+	(update_equiv_regs): Adjust cleared_regs in DEBUG_INSNs.
+
 	PR debug/19192
 	PR debug/43479
 	* cfgexpand.c (gimple_assign_rhs_to_tree): Also set TREE_BLOCK
