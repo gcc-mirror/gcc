@@ -13,12 +13,14 @@ int f (int a)
   if (a > 0)
     g (a, 3);
   else
-    g (a, 5); 	
+    g (a, 5);
 }
 int main ()
 {
-  f (7);
-  return 0;	
+  int i;
+  for (i = 0; i < 100; i++)
+    f (7);
+  return 0;
 }
 
 

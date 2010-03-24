@@ -1,3 +1,19 @@
+2010-03-24  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-1.c: Delete trailing spaces, put the call to f into
+	a loop.	
+	* gcc.dg/ipa/ipa-2.c: Likewise.
+	* gcc.dg/ipa/ipa-3.c: Likewise.
+	* gcc.dg/ipa/ipa-4.c: Likewise.
+	* gcc.dg/ipa/ipa-5.c: Likewise.
+	* gcc.dg/ipa/ipa-7.c: Likewise.
+	* gcc.dg/ipa/ipa-6.c: Delete trailing spaces, put the call to foo into
+	a loop.
+	* gcc.dg/ipa/ipacost-2.c: Delete trailing spaces, put the call to
+	i_can_not_be_propagated_fully2 into a loop.
+	* gcc.dg/ipa/ipa-8.c: New test.
+	* g++.dg/ipa/iinline-1.C: Put the call to docalling into a loop.
+
 2010-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/19192
