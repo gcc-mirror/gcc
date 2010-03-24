@@ -26191,13 +26191,16 @@ x86_can_output_mi_thunk (const_tree thunk ATTRIBUTE_UNUSED,
    *(*this + vcall_offset) should be added to THIS.  */
 
 static void
-x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
+x86_output_mi_thunk (FILE *file,
 		     tree thunk ATTRIBUTE_UNUSED, HOST_WIDE_INT delta,
 		     HOST_WIDE_INT vcall_offset, tree function)
 {
   rtx xops[3];
   rtx this_param = x86_this_parameter (function);
   rtx this_reg, tmp;
+
+  /* Make sure unwind info is emitted for the thunk if needed.  */
+  final_start_function (emit_barrier (), file, 1);
 
   /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
      pull it in now and let DELTA benefit.  */
@@ -26327,6 +26330,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	  output_asm_insn ("jmp\t{*}%1", xops);
 	}
     }
+  final_end_function ();
 }
 
 static void
