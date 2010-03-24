@@ -7137,6 +7137,14 @@ need to do other things in that hook, have your hook function call
 this function.
 @end deftypefun
 
+@deftypefn {Target Hook} void TARGET_ASM_CODE_END (void)
+Output to @code{asm_out_file} any text which is needed before emitting
+unwind info and debug info at the end of a file.  Some targets emit
+here PIC setup thunks that cannot be emitted at the end of file,
+because they couldn't have unwind info then.  The default is to output
+nothing.
+@end deftypefn
+
 @defmac ASM_COMMENT_START
 A C string constant describing how to begin a comment in the target
 assembler language.  The compiler assumes that the comment will end at

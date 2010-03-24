@@ -1627,9 +1627,6 @@ typedef struct ix86_args {
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&(CUM), (MODE), (TYPE), (NAMED))
 
-#define TARGET_ASM_FILE_END ix86_file_end
-#define NEED_INDICATE_EXEC_STACK 0
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 

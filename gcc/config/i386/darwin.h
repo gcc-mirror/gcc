@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -141,9 +141,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
-extern void darwin_x86_file_end (void);
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END darwin_x86_file_end
+#define TARGET_ASM_FILE_END darwin_file_end
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 

@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -202,8 +202,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC2_TF_CEXT q
 #define TF_SIZE 113
 
-#undef NEED_INDICATE_EXEC_STACK
-#define NEED_INDICATE_EXEC_STACK 1
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 #define MD_UNWIND_SUPPORT "config/i386/linux-unwind.h"
 
