@@ -1,3 +1,7 @@
+2010-03-23  Mike Stump  <mikestump@comcast.net>
+
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Enhance portability.
+
 2010-03-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/altivec-17.C: Adjust error message.
