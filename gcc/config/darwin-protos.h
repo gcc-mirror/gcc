@@ -90,6 +90,3 @@ extern void darwin_asm_output_anchor (rtx symbol);
 extern bool darwin_kextabi_p (void);
 extern void darwin_override_options (void);
 extern void darwin_patch_builtins (void);
-extern void darwin_output_aligned_bss (FILE *, tree, const char *,
-				       unsigned HOST_WIDE_INT size,
-				       unsigned int align);

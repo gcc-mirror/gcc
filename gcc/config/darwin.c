@@ -1788,41 +1788,5 @@ darwin_patch_builtins (void)
 #undef PATCH_BUILTIN_VARIADIC
 }
 
-void
-darwin_output_aligned_bss(FILE *fp, tree decl, const char *name,
-			  unsigned HOST_WIDE_INT size, unsigned int align)
-{
-  bool weak = (DECL_P (decl)
-	       && DECL_WEAK (decl)
-	       && !lookup_attribute ("weak_import",
-				     DECL_ATTRIBUTES (decl)));
-  if (size == 0)
-    size = 1;
-  align = floor_log2 (align / BITS_PER_UNIT);
-  if (DECL_ONE_ONLY (decl) || weak) {
-    if (TREE_READONLY (decl) || TREE_CONSTANT (decl))
-      switch_to_section (darwin_sections[const_data_coal_section]);
-    else
-      switch_to_section (darwin_sections[data_coal_section]);
-    ASM_OUTPUT_ALIGN (fp, align);
-    ASM_DECLARE_OBJECT_NAME (fp, name, decl);
-    ASM_OUTPUT_SKIP (fp, size);
-    return;
-  }
-
-  fputs (".zerofill ", fp);
-  /* We uniquely name sections based upon the alignment as otherwise
-     all symbols in the section would get that alignment.  */
-  if (TREE_READONLY (decl) || TREE_CONSTANT (decl))
-    fputs ("__TEXT, ", fp);
-  else
-    fputs ("__DATA, ", fp);
-  fprintf (fp, "__bss%d, ", align);
-  assemble_name (fp, name);
-  fprintf (fp, ", "HOST_WIDE_INT_PRINT_UNSIGNED", %u\n",
-	   size, align);
-  (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
-  machopic_define_symbol (DECL_RTL (decl));
-}
 
 #include "gt-darwin.h"
