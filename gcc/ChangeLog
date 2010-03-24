@@ -1,5 +1,30 @@
 2010-03-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43293
+	* target.h (struct gcc_target): Add code_end hook.
+	* target-def.h (TARGET_ASM_CODE_END): Define to hook_void_void
+	if not yet defined.
+	(TARGET_ASM_OUT): Add TARGET_ASM_CODE_END.
+	* toplev.c (compile_file): Call targetm.asm_out.code_end
+	hook before unwind info/debug info output.
+	* config/i386/winnt.c (i386_pe_file_end): Don't call ix86_file_end.
+	* config/i386/linux.h (NEED_INDICATE_EXEC_STACK): Don't define.
+	(TARGET_ASM_FILE_END): Define to file_end_indicate_exec_stack.
+	* config/i386/linux64.h (NEED_INDICATE_EXEC_STACK): Don't define.
+	(TARGET_ASM_FILE_END): Define to file_end_indicate_exec_stack.
+	* config/i386/i386.c (ix86_file_end): Renamed to...
+	(ix86_code_end): ... this.  Make static.  Don't call
+	file_end_indicate_exec_stack.  Emit unwind info using
+	final_start_function/final_end_function.
+	(darwin_x86_file_end): Remove.
+	(TARGET_ASM_CODE_END): Define.
+	* config/i386/i386.h (TARGET_ASM_FILE_END,
+	NEED_INDICATE_EXEC_STACK): Don't define.
+	* config/i386/darwin.h (darwin_x86_file_end): Remove prototype.
+	(TARGET_ASM_FILE_END): Define to darwin_file_end.
+	* config/i386/i386-protos.h (ix86_file_end): Remove prototype.
+	* doc/tm.texi (TARGET_ASM_CODE_END): Document.
+
 	PR target/43498
 	* config/i386/i386.c (x86_output_mi_thunk): Call final_start_function
 	at the beginning and final_end_function at the end.
