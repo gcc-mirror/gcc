@@ -44,7 +44,7 @@ proc default_objc_version { } {
 
     objc_init
 
-    # ignore any arguments after the command
+    # Ignore any arguments after the command.
     set compiler [lindex $OBJC_UNDER_TEST 0]
 
     if ![is_remote host] {
@@ -53,7 +53,7 @@ proc default_objc_version { } {
 	set compiler_name $compiler
     }
 
-    # verify that the compiler exists
+    # Verify that the compiler exists.
     if { $compiler_name != 0 } then {
 	set tmp [remote_exec host "$compiler -v"]
 	set status [lindex $tmp 0]
@@ -65,7 +65,7 @@ proc default_objc_version { } {
 	    clone_output "Couldn't determine version of $compiler_name: $output\n"
 	}
     } else {
-	# compiler does not exist (this should have already been detected)
+	# Compiler does not exist (this should have already been detected).
 	warning "$compiler does not exist"
     }
 }
@@ -98,7 +98,8 @@ proc objc_init { args } {
     global gcc_warning_prefix
     global gcc_error_prefix
 
-    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    # We set LC_ALL and LANG to C so that we get the same error messages as
+    # expected.
     setenv LC_ALL C
     setenv LANG C
 
@@ -141,11 +142,48 @@ proc objc_target_compile { source dest type options } {
     global ld_library_path
     global objc_libgcc_s_path
     global shlib_ext
-
-    set ld_library_path ".:${objc_libgcc_s_path}"
-    lappend options "libs=-lobjc"
+    
     set shlib_ext [get_shlib_extension]
-    verbose "shared lib extension: $shlib_ext"
+    set ld_library_path ".:${objc_libgcc_s_path}"
+    
+    # We have to figure out which runtime will be used on darwin because
+    # we need to add the include path for the gnu runtime if that is in 
+    # use.
+    # First set the default...
+    if { [istarget "*-*-darwin*"] } {
+	set nextruntime 1
+    } else {
+	set nextruntime 0
+    }
+    verbose "initial next runtime state : $nextruntime" 2
+    # Next, see if we define the option in dg-options...
+    foreach opt $options {
+	if [regexp ".*-fnext-runtime.*" $opt] {
+	    set nextruntime 1
+	}
+	if [regexp ".*-fgnu-runtime.*" $opt] {
+	    set nextruntime 0
+	}
+    }
+    verbose "next runtime state after dg opts: $nextruntime"  2
+   
+    set tgt [target_info name]
+    if [board_info $tgt exists multilib_flags] {
+	set lb [board_info $tgt multilib_flags]
+	verbose "board multilib_flags $lb" 2
+	foreach opt $lb {
+	    if [regexp ".*-fnext-runtime.*" $opt] {
+		set nextruntime 1
+	    }
+	    if [regexp ".*-fgnu-runtime.*" $opt] {
+		set nextruntime 0
+	    }
+	}
+    }
+    verbose "next runtime state after any multilib opts: $nextruntime" 2
+
+    lappend options "libs=-lobjc"
+    verbose "shared lib extension: $shlib_ext" 3
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -167,42 +205,43 @@ proc objc_target_compile { source dest type options } {
 	set options [concat "{additional_flags=$TOOL_OPTIONS}" $options]
     }
 
-    # If we have built libobjc along with the compiler (which usually
-    # _is not_ the case on Mac OS X systems), point the test harness
+    # If we have built libobjc along with the compiler, point the test harness
     # at it (and associated headers).
 
     set objcpath "[get_multilibs]"
 
     set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
-    if { $libobjc_dir == ""} {
-      verbose "see if we have -fgnu-runtime in options"
-      if [regexp ".*-fgnu-runtime.*" "${options}"] {
+    if { $libobjc_dir == "" } {
+	# On darwin there is, potentially, a gnu runtime too.
 	set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
-      }
     }
-    # Now check if we have a shared only build.
-    if { $libobjc_dir == ""} {
-     set libobjc_dir \
-	 [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
-    }
-    if { $libobjc_dir == ""} {
-	verbose "see if we have -fgnu-runtime in options"
-	if [regexp ".*-fgnu-runtime.*" "${options}"] {
-	 set libobjc_dir \
-	     [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
+    # Perhaps we didn't build static libs.
+    if { $libobjc_dir == "" } {
+	set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.${shlib_ext}]
+	# On darwin there is, potentially, a gnu runtime too.
+	if { $libobjc_dir == "" } {
+	    set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.${shlib_ext}]
 	}
     }
+    
     if { $libobjc_dir != "" } {
-	set objc_include_dir "${srcdir}/../../libobjc"
-	lappend options "additional_flags=-I${objc_include_dir}"
+	# If we are using the gnu runtime, add its includes.
+	if { $nextruntime == 0 } {
+	    set objc_include_dir "${srcdir}/../../libobjc"
+	    lappend options "additional_flags=-I${objc_include_dir}"
+	    verbose "adding gnu runtime include dir: $objc_include_dir "
+	}
 	set libobjc_dir [file dirname ${libobjc_dir}]
-	set objc_link_flags "-L${libobjc_dir}"
+	# Allow for %s spec substitutions..
+	set objc_link_flags " -B${libobjc_dir} "
+	lappend options "additional_flags=${objc_link_flags}"
+	set objc_link_flags " -L${libobjc_dir} "
 	lappend options "additional_flags=${objc_link_flags}"
 	append ld_library_path ":${libobjc_dir}"
     }
     if { $type == "precompiled_header" } {
 	# If we generating a precompiled header, we have say this is an
-	# objective-C header
+	# objective-C header.
 	set source [concat "-x objective-c-header" $source]
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
@@ -214,7 +253,7 @@ proc objc_target_compile { source dest type options } {
 }
 
 #
-# objc_pass -- utility to record a testcase passed
+# objc_pass -- utility to record a testcase passed.
 #
 
 proc objc_pass { testcase cflags } {
