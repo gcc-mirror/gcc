@@ -1,5 +1,11 @@
 2010-03-24  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
+	PR testsuite/41609
+	* lib/objc-torture.exp (objc-set-runtime-options): New.
+	* objc/execute/execute.exp: Check runtime options on each pass.
+	* objc/execute/exceptions/exceptions.exp: Ditto.
+	* objc/compile/compile.exp: Ditto.
+
 	PR testsuite/42348
 	* lib/target-supports.exp: Add support for ObjC/ObjC++ tools in
 	standard tests.

@@ -18,24 +18,61 @@
 # This file was written by Rob Savoye. (rob@cygnus.com)
 
 load_lib file-format.exp
+load_lib target-supports.exp
 
-if ![info exists OBJC_RUNTIME_OPTIONS] {
-  set OBJC_RUNTIME_OPTIONS ""
-  foreach type {-fgnu-runtime -fnext-runtime} {
-    global srcdir subdir
-
-    set comp_output [objc_target_compile \
-    "$srcdir/$subdir/trivial.m" "trivial.exe" executable "additional_flags=$type"]
-
-    # If we get any error, then we failed
-    if ![string match "" $comp_output] then {
-      continue;
+# Make sure that the runtime list is re-evaluated for each multilib.
+proc objc-set-runtime-options { dowhat args } {
+    global OBJC_RUNTIME_OPTIONS
+    if ![info exists OBJC_RUNTIME_OPTIONS] {
+	set rtlist [list "-fgnu-runtime" "-fnext-runtime" ]
+    } else {
+	set rtlist [list "-fgnu-runtime" "-fnext-runtime" ]
+	foreach other $OBJC_RUNTIME_OPTIONS {
+	    # Don't do tests twice...
+	    if { ( $other == "-fnext-runtime"  || $other == "-fgnu-runtime" ) } {
+		continue
+	    }
+	    lappend rtlist $other
+	}
     }
-    lappend OBJC_RUNTIME_OPTIONS $type
-  }
-}
-verbose -log "Using the following runtimes: $OBJC_RUNTIME_OPTIONS"
 
+    set OBJC_RUNTIME_OPTIONS ""
+
+    foreach type $rtlist {
+	global srcdir subdir target_triplet tmpdir
+
+	set options "additional_flags=$type"
+	if [info exists args] {
+	    lappend options $args
+	}
+	verbose "options $options"
+	set test_obj "trivial.exe"
+	set comp_output [objc_target_compile \
+	"$srcdir/$subdir/trivial.m" $test_obj executable $options]
+
+	# If we get any error, then we failed.
+	if ![string match "" $comp_output] then {
+	    remote_file build delete $test_obj
+	    continue;
+	}
+	if [info exists dowhat] {
+	    if { $dowhat == "execute" } {
+		set result [objc_load "$tmpdir/$test_obj" "" ""]
+		set status [lindex $result 0]
+		set output [lindex $result 1]
+		if { $status != "pass" } {
+		    remote_file build delete $test_obj
+		    verbose -log "trivial execute failed with $status $output"
+		    continue;
+		}
+	    }
+	}
+	remote_file build delete $test_obj
+	lappend OBJC_RUNTIME_OPTIONS $type
+    }
+
+    verbose -log "Using the following runtimes: $OBJC_RUNTIME_OPTIONS"
+}
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
@@ -62,7 +99,7 @@ if [info exists TORTURE_OPTIONS] {
 }
 
 if [info exists ADDITIONAL_TORTURE_OPTIONS] {
-  set OBJC_TORTURE_OPTIONS \
+    set OBJC_TORTURE_OPTIONS \
 	[concat $OBJC_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
@@ -150,6 +187,9 @@ proc objc-torture-execute { src args } {
     set oldstatus "foo"
     foreach option $option_list {
 	if { $count > 0 } {
+	    if [info exists oldexec] {
+		remote_file build delete $oldexec
+	    }
 	    set oldexec $execname
 	}
 	set execname "${executable}${count}"
@@ -164,7 +204,7 @@ proc objc-torture-execute { src args } {
 	# torture_execute_before_{compile,execute} can be set by the .x script
 	# (if present)
 	if [info exists torture_eval_before_compile] {
-            set ignore_me [eval $torture_eval_before_compile]
+	  set ignore_me [eval $torture_eval_before_compile]
 	}
 
 	remote_file build delete $execname
@@ -188,6 +228,7 @@ proc objc-torture-execute { src args } {
 	if [target_info exists no_long_long] then {
 	    if [expr [search_for $src "long long"]] then {
 		unsupported "$testcase execution, $option"
+		remote_file build delete $execname
 		continue
 	    }
 	}
@@ -197,7 +238,7 @@ proc objc-torture-execute { src args } {
 	}
 
 	if [info exists torture_eval_before_execute] {
-            set ignore_me [eval $torture_eval_before_execute]
+	    set ignore_me [eval $torture_eval_before_execute]
 	}
 
 
@@ -218,6 +259,7 @@ proc objc-torture-execute { src args } {
 	if { ![isnative] && [info exists oldexec] } {
 	    if { [remote_file build cmp $oldexec $execname] == 0 } {
 		set skip 1
+		set status $oldstatus
 	    }
 	}
 	if { $skip == 0 } {
@@ -225,16 +267,16 @@ proc objc-torture-execute { src args } {
 	    set status [lindex $result 0]
 	    set output [lindex $result 1]
 	}
-        if { $oldstatus == "pass" } {
-	    remote_file build delete $oldexec
-        }
 	$status "$testcase execution, $option"
 	set oldstatus $status
+    # for each option
+    } 
+    # tidy up
+    if [info exists execname] {
+	remote_file build delete $execname
     }
-    if [info exists status] {
-	if { $status == "pass" } {
-	    remote_file build delete $execname
-	}
+    if [info exists oldexec] {
+	remote_file build delete $oldexec
     }
 }
 
@@ -293,9 +335,9 @@ proc objc-torture { args } {
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
     if [expr [search_for $src "for*("]+[search_for $src "while*("]] then {
-	set option_list $torture_with_loops
+	    set option_list $torture_with_loops
     } else {
-	set option_list $torture_without_loops
+	    set option_list $torture_without_loops
     }
 
     # loop through all the options
@@ -307,7 +349,7 @@ proc objc-torture { args } {
 
 	# torture_execute_before_compile is set by the .x script (if present)
 	if [info exists torture_eval_before_compile] {
-            set ignore_me [eval $torture_eval_before_compile]
+	    set ignore_me [eval $torture_eval_before_compile]
 	}
 
 	objc-torture-compile $src "$option $options"
