@@ -1,6 +1,6 @@
 /* Definitions of various defaults for tm.h macros.
    Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008, 2009
+   2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
@@ -118,11 +118,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+#ifndef TLS_COMMON_ASM_OP
+#define TLS_COMMON_ASM_OP ".tls_common"
+#endif
+
 #if defined (HAVE_AS_TLS) && !defined (ASM_OUTPUT_TLS_COMMON)
 #define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)			\
   do									\
     {									\
-      fprintf ((FILE), "\t.tls_common\t");				\
+      fprintf ((FILE), "\t%s\t", TLS_COMMON_ASM_OP);			\
       assemble_name ((FILE), (NAME));					\
       fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
 	       (SIZE), DECL_ALIGN (DECL) / BITS_PER_UNIT);		\

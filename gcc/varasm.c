@@ -6067,6 +6067,10 @@ default_no_named_section (const char *name ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+#ifndef TLS_SECTION_ASM_FLAG
+#define TLS_SECTION_ASM_FLAG 'T'
+#endif
+
 void
 default_elf_asm_named_section (const char *name, unsigned int flags,
 			       tree decl ATTRIBUTE_UNUSED)
@@ -6097,7 +6101,7 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
   if (flags & SECTION_STRINGS)
     *f++ = 'S';
   if (flags & SECTION_TLS)
-    *f++ = 'T';
+    *f++ = TLS_SECTION_ASM_FLAG;
   if (HAVE_COMDAT_GROUP && (flags & SECTION_LINKONCE))
     *f++ = 'G';
   *f = '\0';

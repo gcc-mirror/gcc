@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright 2002, 2003, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2004, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -263,6 +264,24 @@ __enable_execute_stack (void *addr)					\
 	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
       solaris_output_init_fini (FILE, DECL);			\
     }								\
+  while (0)
+
+/* Solaris 'as' has a bug: a .common directive in .tbss section
+   behaves as .tls_common rather than normal non-TLS .common.  */
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+  do									\
+    {									\
+      if (TARGET_SUN_TLS						\
+	  && in_section							\
+	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
+	      == (SECTION_TLS | SECTION_BSS)))				\
+	switch_to_section (bss_section);				\
+      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
+	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
+    }									\
   while (0)
 
 extern GTY(()) tree solaris_pending_aligns;

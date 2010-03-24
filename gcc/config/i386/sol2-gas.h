@@ -26,3 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Undefine this so that BNSYM/ENSYM pairs are emitted by STABS+.  */
 #undef NO_DBX_BNSYM_ENSYM
+
+/* Restore default; gas doesn't understand Sun as .tcomm.  */
+#undef TLS_COMMON_ASM_OP

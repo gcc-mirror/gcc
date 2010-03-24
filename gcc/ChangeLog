@@ -1,5 +1,46 @@
 2010-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (i[34567]86-*-*): Handle Solaris 2/x86 TLS support
+	and Sun as TLS syntax.
+	(TLS_SECTION_ASM_FLAG) [on_solaris && !gas_flag]: Define.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* varasm.c (TLS_SECTION_ASM_FLAG): Define default.
+	(default_elf_asm_named_section): Use it.
+	* config/i386/i386.c (output_pic_addr_const): Lowercase @DTPOFF.
+	(i386_output_dwarf_dtprel): Likewise.
+	(output_addr_const_extra): Likewise.
+	(output_pic_addr_const): Lowercase @GOTTPOFF.
+	(output_addr_const_extra): Likewise.
+	(output_pic_addr_const): Lowercase @GOTNTPOFF.
+	(output_addr_const_extra): Likewise.
+	(output_pic_addr_const): Lowercase @INDNTPOFF.
+	(output_addr_const_extra): Likewise.
+	(output_pic_addr_const): Lowercase @NTPOFF.
+	(output_addr_const_extra): Likewise.
+	(output_pic_addr_const): Lowercase @TPOFF.
+	(output_addr_const_extra): Likewise.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Lowercase
+	@TLSGD.
+	(*tls_global_dynamic_64): Likewise.
+	(*tls_local_dynamic_base_32_gnu): Lowercase @TLSLDM.
+	(*tls_local_dynamic_base_64): Lowercase	@TLSLD.
+
+	* defaults.h (TLS_COMMON_ASM_OP): Provide default.
+	(ASM_OUTPUT_TLS_COMMON): Use it.
+	* config/i386/sol2-gas.h (TLS_COMMON_ASM_OP): Undef.
+
+	PR target/38118
+	* config.gcc (sparc*-*-solaris2*) [$gas=yes]: Add usegas.h to
+	tm_file.
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Move ...
+	* config/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): ... here.
+	* config/i386/sol2-10.h (ASM_OUTPUT_ALIGNED_COMMON): Redefine.
+	* config/i386/sol2.h (TARGET_SUN_TLS): Redefine.
+	(ASM_DECLARE_OBJECT_NAME) [!USE_GAS]: Redefine.
+
+2010-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/i386/i386.c (override_options): Don't accept
 	-mtls-dialect=sun any longer.
 	* config/i386/i386.h (TARGET_SUN_TLS): Define as 0.
