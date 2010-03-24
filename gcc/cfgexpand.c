@@ -77,8 +77,12 @@ gimple_assign_rhs_to_tree (gimple stmt)
     {
       t = gimple_assign_rhs1 (stmt);
       /* Avoid modifying this tree in place below.  */
-      if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
-	  && gimple_location (stmt) != EXPR_LOCATION (t))
+      if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
+	   && gimple_location (stmt) != EXPR_LOCATION (t))
+	  || (gimple_block (stmt)
+	      && currently_expanding_to_rtl
+	      && EXPR_P (t)
+	      && gimple_block (stmt) != TREE_BLOCK (t)))
 	t = copy_node (t);
     }
   else
@@ -86,6 +90,8 @@ gimple_assign_rhs_to_tree (gimple stmt)
 
   if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, gimple_location (stmt));
+  if (gimple_block (stmt) && currently_expanding_to_rtl && EXPR_P (t))
+    TREE_BLOCK (t) = gimple_block (stmt);
 
   return t;
 }

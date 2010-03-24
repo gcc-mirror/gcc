@@ -1,3 +1,11 @@
+2010-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/19192
+	PR debug/43479
+	* gcc.dg/guality/pr43479.c: New test.
+	* gcc.dg/debug/dwarf2/inline2.c (third): Make a a global var
+	and add volatile keyword.
+
 2010-03-23  Mike Stump  <mikestump@comcast.net>
 
 	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: Enhance portability.
