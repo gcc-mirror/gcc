@@ -16832,6 +16832,16 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 		{
 		  rtx basereg = XEXP (XEXP (dst, 0), 0);
 		  rtx offsetreg = XEXP (XEXP (dst, 0), 1);
+		  gcc_assert (GET_CODE (XEXP (dst, 0)) == PLUS
+			      && REG_P (basereg)
+			      && REG_P (offsetreg)
+			      && REGNO (basereg) != REGNO (offsetreg));
+		  if (REGNO (basereg) == 0)
+		    {
+		      rtx tmp = offsetreg;
+		      offsetreg = basereg;
+		      basereg = tmp;
+		    }
 		  emit_insn (gen_add3_insn (basereg, basereg, offsetreg));
 		  restore_basereg = gen_sub3_insn (basereg, basereg, offsetreg);
 		  dst = replace_equiv_address (dst, basereg);
