@@ -1,3 +1,9 @@
+2010-03-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (glibc_strncpy): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/bits/string2.h: Update.
+
 2010-03-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40722

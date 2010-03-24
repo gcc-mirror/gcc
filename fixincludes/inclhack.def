@@ -1598,6 +1598,28 @@ fix = {
 };
 
 
+/* Some versions of glibc have a version of bits/string2.h that
+   produces "value computed is not used" warnings from strncpy; fix
+   this definition by using __builtin_strncpy instead as in newer
+   versions.  */
+fix = {
+    hackname  = glibc_strncpy;
+    files     = bits/string2.h;
+    bypass    = "__builtin_strncpy";
+    c_fix     = format;
+    c_fix_arg = "#  define strncpy(dest, src, n) __builtin_strncpy (dest, src, n)";
+    c_fix_arg = "#  define strncpy([^\n]*\\\\\n)*[^\n]*";
+    test_text = <<-EOT
+	#  define strncpy(dest, src, n) \
+	  (__extension__ (__builtin_constant_p (src) && __builtin_constant_p (n)      \\
+			  ? (strlen (src) + 1 >= ((size_t) (n))			      \\
+			     ? (char *) memcpy (dest, src, n)			      \\
+			     : strncpy (dest, src, n))				      \\
+			  : strncpy (dest, src, n)))
+	EOT;
+
+};
+
 /* glibc's tgmath.h relies on an expression that is not an integer
    constant expression being treated as it was by GCC 4.4 and
    earlier.  */
