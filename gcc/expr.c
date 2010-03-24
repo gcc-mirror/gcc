@@ -7176,6 +7176,8 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
   if (cfun && EXPR_HAS_LOCATION (exp))
     {
       location_t saved_location = input_location;
+      location_t saved_curr_loc = get_curr_insn_source_location ();
+      tree saved_block = get_curr_insn_block ();
       input_location = EXPR_LOCATION (exp);
       set_curr_insn_source_location (input_location);
 
@@ -7185,6 +7187,8 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
       ret = expand_expr_real_1 (exp, target, tmode, modifier, alt_rtl);
 
       input_location = saved_location;
+      set_curr_insn_block (saved_block);
+      set_curr_insn_source_location (saved_curr_loc);
     }
   else
     {
@@ -8409,8 +8413,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	gimple g = get_gimple_for_ssa_name (exp);
 	if (g)
-	  return expand_expr_real_1 (gimple_assign_rhs_to_tree (g), target,
-				     tmode, modifier, NULL);
+	  return expand_expr_real (gimple_assign_rhs_to_tree (g), target,
+				   tmode, modifier, NULL);
       }
       decl_rtl = get_rtx_for_ssa_name (exp);
       exp = SSA_NAME_VAR (exp);
