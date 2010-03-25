@@ -1,3 +1,61 @@
+2010-03-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43333
+	* g++.dg/ext/is_pod_98.C: New.
+
+	2010-03-22  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43475
+	* gfortran.dg/pr43475.f90: New testcase.
+
+	2010-03-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43390
+	* gfortran.fortran-torture/execute/pr43390.f90: New testcase.
+
+	2010-03-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43375
+	* g++.dg/abi/mangle42.C: New test.
+
+	2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
+
+	PR C/43211
+	* gcc.dg/pr43211.c: New test.
+
+	2010-03-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42450
+	* g++.dg/torture/pr42450.C: New test.
+
+	2010-03-18  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43402
+	* gcc.dg/pr43402.c: New testcase.
+
+	2010-03-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/42427
+	* gcc.dg/pr42427.c: New test.
+
+	2010-03-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43379
+	* gcc.dg/pr43379.c: New testcase.
+
+	2010-03-15  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43300
+	* gcc.dg/pr43300.c: New testcase.
+
+	2010-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43367
+	* gcc.c-torture/compile/pr43367.c: New testcase.
+
 2010-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/43385
