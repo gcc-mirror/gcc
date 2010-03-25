@@ -2839,6 +2839,25 @@ get_primary_template_innermost_parameters (const_tree t)
   return parms;
 }
 
+/* Return the template parameters of the LEVELth level from the full list
+   of template parameters PARMS.  */
+
+tree
+get_template_parms_at_level (tree parms, unsigned level)
+{
+  tree p;
+  if (!parms
+      || TREE_CODE (parms) != TREE_LIST
+      || level > TMPL_PARMS_DEPTH (parms))
+    return NULL_TREE;
+
+  for (p = parms; p; p = TREE_CHAIN (p))
+    if (TMPL_PARMS_DEPTH (p) == level)
+      return p;
+
+  return NULL_TREE;
+}
+
 /* Returns the template arguments of T if T is a template instantiation,
    NULL otherwise.  */
 

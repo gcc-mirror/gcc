@@ -1,3 +1,16 @@
+2010-03-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43206
+	* cp-tree.h (get_template_parms_at_level): Declare ...
+	* pt.c (get_template_parms_at_level): ... new function.
+	* typeck.c (get_template_parms_of_dependent_type): If a template
+	type parm's DECL_CONTEXT isn't yet set, get its siblings from
+	current_template_parms. Use get_template_parms_at_level. Remove
+	useless test.
+	(incompatible_dependent_types_p): If we get empty parms from just one
+	of the template type parms we are comparing then the template parms are
+	incompatible.
+
 2010-03-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43502
