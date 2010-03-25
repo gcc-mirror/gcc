@@ -1113,9 +1113,17 @@ get_template_parms_of_dependent_type (tree t)
   /* If T1 is a typedef or whatever has a template info associated
      to its context, get the template parameters from that context.  */
   else if (typedef_variant_p (t)
-      && DECL_CONTEXT (TYPE_NAME (t))
-      && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
+	   && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
     tinfo = get_template_info (DECL_CONTEXT (TYPE_NAME (t)));
+  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+	   && DECL_CONTEXT (TYPE_NAME (t)) == NULL_TREE)
+    /* We have not yet created the DECL_TEMPLATE this
+       template type parm belongs to. It probably means
+       that we are in the middle of parsing the template parameters
+       of a template, and T is one of the parameters we have parsed.
+       Let's return the list of template parms we have parsed so far.  */
+    return get_template_parms_at_level (current_template_parms,
+					TEMPLATE_TYPE_LEVEL (t));
   else if (TYPE_CONTEXT (t)
 	   && !NAMESPACE_SCOPE_P (t))
     tinfo = get_template_info (TYPE_CONTEXT (t));
@@ -1169,6 +1177,17 @@ incompatible_dependent_types_p (tree t1, tree t2)
 
   tparms1 = get_template_parms_of_dependent_type (t1);
   tparms2 = get_template_parms_of_dependent_type (t2);
+
+  /* If T2 is a template type parm and if we could not get the template
+     parms it belongs to, that means we have not finished parsing the
+     full set of template parameters of the template declaration it
+     belongs to yet. If we could get the template parms T1 belongs to,
+     that mostly means T1 and T2 belongs to templates that are
+     different and incompatible.  */
+  if (TREE_CODE (t1) == TEMPLATE_TYPE_PARM
+      && (tparms1 == NULL_TREE || tparms2 == NULL_TREE)
+      && tparms1 != tparms2)
+    return true;
 
   if (tparms1 == NULL_TREE
       || tparms2 == NULL_TREE
