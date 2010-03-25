@@ -7614,6 +7614,7 @@ ix86_code_end (void)
 	  assemble_name (asm_out_file, name);
 	  fputs ("\n", asm_out_file);
 	  ASM_OUTPUT_LABEL (asm_out_file, name);
+	  DECL_WEAK (decl) = 1;
 	}
       else
 #endif
@@ -7639,6 +7640,7 @@ ix86_code_end (void)
       DECL_INITIAL (decl) = make_node (BLOCK);
       current_function_decl = decl;
       init_function_start (decl);
+      first_function_block_is_cold = false;
       /* Make sure unwind info is emitted for the thunk if needed.  */
       final_start_function (emit_barrier (), asm_out_file, 1);
 
