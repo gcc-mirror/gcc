@@ -1,3 +1,9 @@
+2010-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43385
+	* gimplify.c (gimple_boolify): Only recurse on __builtin_expect
+	argument if the argument is truth_value_p.
+
 2010-03-23  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:
