@@ -1,3 +1,8 @@
+2010-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43385
+	* gcc.c-torture/execute/pr43385.c: New test.
+
 2010-03-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/strncpy-fix-1.c: New test.

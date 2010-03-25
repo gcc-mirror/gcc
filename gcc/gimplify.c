@@ -2727,7 +2727,8 @@ gimple_boolify (tree expr)
       tree call = TREE_OPERAND (expr, 0);
       tree fn = get_callee_fndecl (call);
 
-      /* For __builtin_expect ((long) (x), y) recurse into x as well.  */
+      /* For __builtin_expect ((long) (x), y) recurse into x as well
+	 if x is truth_value_p.  */
       if (fn
 	  && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (fn) == BUILT_IN_EXPECT
@@ -2739,9 +2740,12 @@ gimple_boolify (tree expr)
 	      if (TREE_CODE (arg) == NOP_EXPR
 		  && TREE_TYPE (arg) == TREE_TYPE (call))
 		arg = TREE_OPERAND (arg, 0);
-	      arg = gimple_boolify (arg);
-	      CALL_EXPR_ARG (call, 0)
-		= fold_convert_loc (loc, TREE_TYPE (call), arg);
+	      if (truth_value_p (TREE_CODE (arg)))
+		{
+		  arg = gimple_boolify (arg);
+		  CALL_EXPR_ARG (call, 0)
+		    = fold_convert_loc (loc, TREE_TYPE (call), arg);
+		}
 	    }
 	}
     }
