@@ -1,5 +1,9 @@
 2010-03-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/43511
+	* config/i386/i386.c (ix86_code_end): Set DECL_WEAK if TARGET_MACHO.
+	Clear first_function_block_is_cold.
+
 	PR c/43385
 	* gimplify.c (gimple_boolify): Only recurse on __builtin_expect
 	argument if the argument is truth_value_p.
