@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fobjc-exceptions" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 int main (int argc, const char * argv[]) {
   Object * pool = [Object new];

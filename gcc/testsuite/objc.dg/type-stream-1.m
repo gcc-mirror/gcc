@@ -1,5 +1,5 @@
-/* { dg-options "-fgnu-runtime" } */
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 #include <objc/typedstream.h>
 #include <stdio.h>
 #include <stdlib.h>

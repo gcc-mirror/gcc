@@ -2,7 +2,7 @@
 /* { dg-options "-Wstrict-selector-match" } */
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface Class1
 - (void)setWindow:(Object *)wdw;

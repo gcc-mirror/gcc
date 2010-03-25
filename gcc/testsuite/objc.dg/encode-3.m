@@ -2,7 +2,10 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
 
-#include <objc/Protocol.h>
+#include <stdlib.h>
+#include "../objc-obj-c++-shared/Protocol1.h"
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+
 #ifdef __cplusplus
 #define ProtoBool bool
 #else

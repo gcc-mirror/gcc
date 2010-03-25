@@ -5,7 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fobjc-exceptions" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 const char *foo(void)
 {

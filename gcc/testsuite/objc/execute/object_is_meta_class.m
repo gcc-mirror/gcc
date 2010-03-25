@@ -1,9 +1,7 @@
 /* Contributed by Nicola Pero - Tue Jul  3 10:55:21 BST 2001 */
-#include <objc/objc.h>
+#import "../../objc-obj-c++-shared/Object1.h"
+#import "../../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc-api.h>
-#include <objc/Object.h>
-
-#include "next_mapping.h"
 
 /* This test demonstrate a failure in object_is_meta_class which was fixed */
 

@@ -1,4 +1,4 @@
-#import <objc/Object.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 
 int main(void)
 {

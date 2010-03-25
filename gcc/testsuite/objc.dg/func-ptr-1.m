@@ -1,7 +1,8 @@
 /* Test for handling of function pointer ivars */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 extern int strcmp(const char *, const char *);
 extern void abort(void);
@@ -45,4 +46,6 @@ int main ()
   CHECK_IF(!strcmp(enc, "{MyObject=#^?^?}"));
   return(0);
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"
 

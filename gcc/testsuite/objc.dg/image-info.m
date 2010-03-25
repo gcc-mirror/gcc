@@ -2,15 +2,12 @@
    __OBJC,__image_info section to be emitted.  This is only
    usable on MacOS X 10.3 and later. */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
+
+/* { dg-do compile { target { *-*-darwin* } } } */
 /* { dg-options "-freplace-objc-classes" } */
-/* { dg-do compile { target *-*-darwin* } } */
 
-#ifndef __NEXT_RUNTIME__
-#error Feature not currently supported by the GNU runtime
-#endif
-
+#include "../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 extern void abort(void);
 

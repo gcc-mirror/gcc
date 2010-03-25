@@ -1,6 +1,6 @@
-#include <objc/Object.h>
 #include <stdio.h>
 #include <stdlib.h>
+#import "../../../objc-obj-c++-shared/Object1.h"
 
 static int made_try = 0;
 

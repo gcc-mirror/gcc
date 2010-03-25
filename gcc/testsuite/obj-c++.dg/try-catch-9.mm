@@ -7,7 +7,7 @@
 /* { dg-prune-output ".*internal compiler error.*" } */
 /* { dg-options "-fobjc-exceptions -O2" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -65,3 +65,4 @@ int main(void) {
   foo(15, &gf1);
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

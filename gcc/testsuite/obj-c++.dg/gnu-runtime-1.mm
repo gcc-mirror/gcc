@@ -2,7 +2,7 @@
    the system runtime used).  */
 /* Author: Ziemowit Laski <zlaski@apple.com>  */
 /* { dg-do compile } */
-/* { dg-options "-fgnu-runtime" } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 #include <objc/Object.h>
 

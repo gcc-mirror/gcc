@@ -2,8 +2,8 @@
  * Contributed by Nicola Pero <n.pero@mi.flashnet.it>
  * Tue Sep 19 4:34AM
  */
+#include "../../objc-obj-c++-shared/Protocol1.h"
 #include <objc/objc.h>
-#include <objc/Protocol.h>
 
 @protocol MyProtocol
 + (oneway void) methodA;

@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-fgnu-runtime " } */
 
 /* There was an ICE due to diving by zero in the objc front-end. */
 

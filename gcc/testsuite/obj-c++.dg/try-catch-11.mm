@@ -1,10 +1,10 @@
 /* Ensure that @try/@catch blocks do not mess with types of
    local objects (other than their volatile bits).  */
 
-/* { dg-options "-fobjc-exceptions -fnext-runtime" } */
+/* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @protocol Proto1
 - (int)meth1;

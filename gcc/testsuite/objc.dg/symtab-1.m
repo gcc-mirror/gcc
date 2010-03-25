@@ -1,9 +1,10 @@
 /* Check if the objc_symtab descriptor is being laid out correctly.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime" } */
-/* { dg-do compile { target *-*-darwin* } } */
 
-#include <objc/Object.h>
+/* { dg-do compile { target { *-*-darwin* } } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface Base: Object 
 - (void)setValues;

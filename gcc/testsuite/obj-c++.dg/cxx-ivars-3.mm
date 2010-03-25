@@ -1,9 +1,12 @@
 // Check if ObjC classes with non-POD C++ ivars are specially marked in the metadata.
 
 // { dg-do run { target *-*-darwin* } }
-// { dg-options "-fobjc-call-cxx-cdtors -fnext-runtime" }
+// { dg-options "-fobjc-call-cxx-cdtors" }
+// { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } 
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 
-#include <objc/objc-runtime.h>
 #include <stdlib.h>
 #define CHECK_IF(expr) if(!(expr)) abort()
 
@@ -37,10 +40,16 @@ int main (void)
 {
   Class cls;
 
-  cls = objc_getClass("Foo");
+  cls = objc_get_class("Foo");
+#if NEXT_OBJC_USE_NEW_INTERFACE
+  CHECK_IF(class_isMetaClass(cls) & CLS_HAS_CXX_STRUCTORS);
+  cls = objc_getClass("Bar");
+  CHECK_IF(!(class_isMetaClass(cls) & CLS_HAS_CXX_STRUCTORS));
+#else
   CHECK_IF(cls->info & CLS_HAS_CXX_STRUCTORS);
   cls = objc_getClass("Bar");
   CHECK_IF(!(cls->info & CLS_HAS_CXX_STRUCTORS));
-
+#endif
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

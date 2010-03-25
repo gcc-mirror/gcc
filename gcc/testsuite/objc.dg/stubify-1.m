@@ -2,6 +2,7 @@
    _objc_msgSend<end-of-line>" without the $stub suffix.  */
 
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-Os -mdynamic-no-pic" } */
 
 typedef struct objc_object { } *id ;

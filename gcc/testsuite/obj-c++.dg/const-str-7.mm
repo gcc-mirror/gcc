@@ -2,17 +2,15 @@
    scopes.  */
 /* Developed by Andrew Pinski <pinskia@physics.uc.edu> */
 
+/* { dg-options "-fconstant-string-class=Foo" } */
+/* { dg-do run } */
 
-/* { dg-options "-fnext-runtime -fconstant-string-class=Foo -lobjc" } */
-/* { dg-do run { target *-*-darwin* } } */
-
-
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <objc/objc.h>
-#include <objc/Object.h>
-
 
 @interface Foo: Object {
   char *cString;
@@ -21,8 +19,11 @@
 - (char *)customString;
 @end
 
+#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+struct fudge_objc_class _FooClassReference;
+#else
 struct objc_class _FooClassReference;
-
+#endif
 
 @implementation Foo : Object
 - (char *)customString {
@@ -36,11 +37,10 @@ int main () {
   {
     Foo *string2 = @"bla";
 
-
     if(string != string2)
       abort();
     printf("Strings are being uniqued properly\n");
    }
   return 0;
 }
-
+#include "../objc-obj-c++-shared/Object1-implementation.h"

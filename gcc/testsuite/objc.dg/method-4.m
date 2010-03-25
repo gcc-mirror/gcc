@@ -1,10 +1,11 @@
 /* Check if class references (generated for the NeXT runtime) are appropriately 
-   folded.  This test is safe to run on all targets.  */
+   folded. */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime" } */
-/* { dg-do compile } */
+/* The ABI is different for m64 darwin so skip this test for now */
+/* { dg-do compile { target { *-*-darwin* && { ! lp64 } } } } */
+/* { dg-skip-if "" { *-*-darwin* } { "-fgnu-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 typedef Object ObjectTypedef1;
 typedef ObjectTypedef1 ObjectTypedef2;

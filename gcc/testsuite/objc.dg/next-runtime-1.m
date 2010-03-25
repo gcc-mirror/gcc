@@ -3,9 +3,9 @@
 /* Author: Ziemowit Laski <zlaski@apple.com>  */
 
 /* { dg-do compile { target *-*-darwin* } } */
-/* { dg-options "-fnext-runtime" } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface FooBar: Object
 - (void)boo;

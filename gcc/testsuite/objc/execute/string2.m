@@ -1,11 +1,10 @@
 /* Based on a test case contributed by Nicola Pero.  */
 
+#import "../../objc-obj-c++-shared/next-mapping.h"
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef __NEXT_RUNTIME__
-#include "next_mapping.h"
-#else
+#ifndef __NEXT_RUNTIME__
 #include <objc/NXConstStr.h>
 #endif
 

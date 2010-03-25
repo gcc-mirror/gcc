@@ -1,16 +1,22 @@
 /* Method encoding tests for stand-alone @protocol declarations.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
-#include <objc/Protocol.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
+#include "../objc-obj-c++-shared/Protocol1.h"
 #ifdef __cplusplus
 #define ProtoBool bool
 #else
 #define ProtoBool _Bool
 #endif
 
-#ifndef __NEXT_RUNTIME__
+#ifdef __NEXT_RUNTIME__
+#define METHOD Method
+#else
 #include <objc/objc-api.h>
+#define METHOD Method_t
+#define method_get_types(M) (M)->method_types
 #endif
 
 #include <stdio.h>
@@ -37,6 +43,7 @@ typedef struct _XXRect { XXPoint origin; XXSize size; struct _XXRect *next; } XX
 
 Protocol *proto = @protocol(Proto);
 struct objc_method_description *meth;
+
 unsigned totsize, offs0, offs1, offs2, offs3, offs4, offs5, offs6, offs7;
 
 static void scan_initial(const char *pattern) {
@@ -71,3 +78,4 @@ int main(void) {
   CHECK_IF(totsize == offs2 + sizeof(ObjCBool **));
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

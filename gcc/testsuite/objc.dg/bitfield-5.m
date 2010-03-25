@@ -7,8 +7,8 @@
 /* { dg-options "-Wpadded" } */
 /* { dg-do run } */
 
+#include "../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 #include <stdlib.h>
 
 #define CHECK_IF(expr) if(!(expr)) abort()

@@ -1,8 +1,8 @@
 /* Contributed by Nicola Pero - Fri Mar  9 19:39:15 CET 2001 */
-#include <objc/objc.h>
-#include <objc/objc-api.h>
 
-#include "next_mapping.h"
+#include <stdlib.h>
+#include "../../objc-obj-c++-shared/next-mapping.h"
+#include <objc/objc-api.h>
 
 /* Test the hidden argument _cmd to method calls */
 
