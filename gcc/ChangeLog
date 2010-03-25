@@ -1,3 +1,8 @@
+2010-03-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/tm.texi (Sections): Document TLS_COMMON_ASM_OP,
+	TLS_SECTION_ASM_FLAG.
+
 2010-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43511
