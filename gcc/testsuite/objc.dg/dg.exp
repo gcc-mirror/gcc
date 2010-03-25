@@ -29,7 +29,13 @@ dg-init
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[m\]]] \
-	"" $DEFAULT_CFLAGS
+	"-fgnu-runtime" $DEFAULT_CFLAGS
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[m\]]] \
+	"-fnext-runtime" $DEFAULT_CFLAGS
+}
 
 # All done.
 dg-finish

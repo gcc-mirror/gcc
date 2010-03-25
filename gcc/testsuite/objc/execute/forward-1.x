@@ -20,9 +20,8 @@ if { [istarget alpha*-*-linux*]
      || [istarget alpha*-dec-osf*]
      || ([istarget i?86-*-solaris2*] && [check_effective_target_lp64] )
      || [istarget mips-sgi-irix*]
-     || [istarget powerpc*-*-darwin*]
      || [istarget sparc*-sun-solaris2*]
-     || ([istarget x86_64-*-darwin*] && [check_effective_target_lp64] ) } {
+     || ([istarget *-*-darwin*] && [check_effective_target_lp64] ) } {
     set torture_eval_before_execute {
 	global compiler_conditional_xfail_data
 	set compiler_conditional_xfail_data {

@@ -1,4 +1,4 @@
-#include <objc/Object.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 
 @interface Foo : Object
 + bar;

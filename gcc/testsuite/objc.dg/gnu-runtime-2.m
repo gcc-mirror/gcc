@@ -2,7 +2,7 @@
    regardless of runtime used on target system.  */
 
 /* { dg-do compile } */
-/* { dg-options "-fgnu-runtime" } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 #include <objc/Object.h>
 #include <string.h>

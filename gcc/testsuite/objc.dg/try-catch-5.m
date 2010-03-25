@@ -4,7 +4,7 @@
    generating the warning message.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wall -fnext-runtime -fobjc-exceptions" } */
+/* { dg-options "-Wall -fobjc-exceptions" } */
 
 @interface Exception
 @end

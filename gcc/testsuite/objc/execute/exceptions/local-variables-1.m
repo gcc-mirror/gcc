@@ -2,9 +2,9 @@
    block survive until the @catch block is reached.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-#include <objc/Object.h>
 #include <stdlib.h>
 #include <stdio.h>
+#import "../../../objc-obj-c++-shared/Object1.h"
 
 int gi1 = 9, gi2 = 19;
 float gf1 = 9.0, gf2 = 19.0;

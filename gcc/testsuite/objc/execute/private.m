@@ -1,6 +1,6 @@
 /* Contributed by Nicola Pero - Fri Mar  9 19:39:15 CET 2001 */
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 /* Test the @private, @protected, @public keyworks for ivars.  We only
    check syntax. */

@@ -1,7 +1,8 @@
+#include <stdlib.h>
+#include "../../objc-obj-c++-shared/next-mapping.h"
 #ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
 #endif
-#include "next_mapping.h"
 
 void print_ivars (Class class)
 {

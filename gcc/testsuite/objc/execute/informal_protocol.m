@@ -1,6 +1,6 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 @interface Object (StopProtocol)
 - (void) stop;

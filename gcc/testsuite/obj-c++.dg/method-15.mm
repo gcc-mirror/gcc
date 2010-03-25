@@ -3,7 +3,7 @@
 /* { dg-options "-Wstrict-selector-match" } */
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @protocol MyObject
 - (id)initWithData:(Object *)data;

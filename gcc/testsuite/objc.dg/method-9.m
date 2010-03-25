@@ -1,11 +1,11 @@
 /* Check if finding multiple signatures for a method is handled gracefully
    when method lookup succeeds (see also method-7.m).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>  */
-
 /* { dg-do compile } */
 /* { dg-options "-Wstrict-selector-match" } */
 
-#include <objc/Object.h>
+
+#include "../objc-obj-c++-shared/Object1.h"
 
 @protocol MyObject
 - (id)initWithData:(Object *)data;

@@ -1,11 +1,12 @@
 /* Check if the @defs() construct preserves the correct
    offsets of ivars.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-lobjc" } */
+/* { dg-options "" } */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
+//#include <objc/objc.h>
 
 extern void abort(void);
 
@@ -65,3 +66,5 @@ int main(void) {
 
   return 0;
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"

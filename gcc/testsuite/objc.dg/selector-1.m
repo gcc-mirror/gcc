@@ -1,7 +1,8 @@
 /* Test warning for non existing selectors.  */
 /* Contributed by Devang Patel <dpatel@apple.com>.  */
-/* { dg-options "-Wselector -fnext-runtime" } */
+/* { dg-options "-Wselector" } */
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 typedef struct objc_selector    *SEL;

@@ -2,10 +2,10 @@
    constant string classes get derived.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>  */
 
-/* { dg-options "-fnext-runtime" } */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface NSString: Object
 @end
@@ -20,7 +20,11 @@
 @interface NSConstantString : NSSimpleCString
 @end
 
+#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+Class _NSConstantStringClassReference;
+#else
 extern struct objc_class _NSConstantStringClassReference;
+#endif
 
 const NSConstantString *appKey = @"MyApp";
 

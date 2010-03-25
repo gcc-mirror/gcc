@@ -4,7 +4,7 @@
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 #include <stdio.h>
 #include <setjmp.h>
 

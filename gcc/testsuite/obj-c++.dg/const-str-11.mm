@@ -2,10 +2,11 @@
    constant string classes get derived.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>  */
 
-/* { dg-options "-fnext-runtime -fconstant-string-class=XStr" } */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-options "-fconstant-string-class=XStr" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface XString: Object {
 @protected
@@ -19,7 +20,11 @@
 }
 @end
 
+#ifndef NEXT_OBJC_USE_NEW_INTERFACE
 extern struct objc_class _XStrClassReference;
+#else
+extern Class _XStrClassReference;
+#endif
 
 const XStr *appKey = @"MyApp";
 

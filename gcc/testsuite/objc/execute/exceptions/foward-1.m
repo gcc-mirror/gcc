@@ -1,9 +1,9 @@
 /* Check that throwing an exception from a -forward:: works.  */
 /* Developed by Marcin Koziej <creep@desk.pl>.  */
 
-#import <objc/Object.h>
-#import <objc/objc-api.h>
 #include <stdlib.h>
+#import "../../../objc-obj-c++-shared/Object1.h"
+#import <objc/objc-api.h>
 
 static int i;
 

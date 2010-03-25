@@ -2,14 +2,18 @@
    runtime.  */
 /* Developed by Markus Hitter <mah@jump-ing.de>.  */
 
-/* { dg-options "-fnext-runtime -fconstant-string-class=Foo -lobjc" } */
+/* { dg-options "-fconstant-string-class=Foo" } */
 /* { dg-do run { target *-*-darwin* } } */
 
+#import "../objc-obj-c++-shared/Object1.h"
+#import "../objc-obj-c++-shared/next-mapping.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <objc/objc.h>
-#include <objc/Object.h>
+#ifndef __NEXT_RUNTIME__
+#include <objc/objc-api.h>
+#endif
 
 @interface Foo: Object {
   char *cString;
@@ -18,7 +22,11 @@
 - (char *)customString;
 @end
 
+#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+struct fudge_objc_class _FooClassReference;
+#else
 struct objc_class _FooClassReference;
+#endif
 
 @implementation Foo : Object
 - (char *)customString {
@@ -38,7 +46,7 @@ int main () {
      constant string object. Can't be moved to +initialize since _that_
      is already a message. */
 
-  memcpy(&_FooClassReference, objc_getClass("Foo"), sizeof(_FooClassReference));
+  memcpy(&_FooClassReference, objc_get_class("Foo"), sizeof(_FooClassReference));
   if (strcmp ([string customString], "bla")) {
     abort ();
   }
@@ -46,3 +54,4 @@ int main () {
   printf([@"This is a working constant string object\n" customString]);
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

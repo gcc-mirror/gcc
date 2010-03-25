@@ -8,8 +8,9 @@
     proper order.
  */
 
+#include <stdlib.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 @interface A : Object
 @end

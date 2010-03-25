@@ -1,7 +1,6 @@
 /* Test calling super from within a category class method.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>  */
 /* { dg-do compile } */
-/* { dg-options "-fnext-runtime" } */
 
 typedef struct objc_object { struct objc_class *isa; } *id;
 

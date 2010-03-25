@@ -8,14 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-
-@interface Object {
-  Class isa;  
-}
-+ alloc;
-- init;
-@end
+#include "../objc-obj-c++-shared/Object1.h"
 
 // ObjectiveC class header
 @interface ObjCclass : Object {
@@ -69,3 +62,5 @@ void CPPclass::function1()
 	/* Shouldn't be here because we threw.  */
 	abort ();
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"

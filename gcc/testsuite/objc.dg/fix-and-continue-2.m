@@ -6,7 +6,7 @@
 /* { dg-do assemble { target *-*-darwin* } } */
 /* { dg-options "-mfix-and-continue" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface Foo: Object
 + (Object *)indexableFileTypes;

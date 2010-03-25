@@ -1,8 +1,12 @@
 /* Contributed by Nicola Pero - Fri Dec 14 08:36:00 GMT 2001 */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+
+#import "../../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
+#ifndef __NEXT_RUNTIME__
 #include <objc/objc-api.h>
-#include <objc/Object.h>
+#endif
 
 extern void abort (void);
 
@@ -69,3 +73,5 @@ int main (void)
 
   return 0;
 }
+
+#import "../../objc-obj-c++-shared/Object1-implementation.h"

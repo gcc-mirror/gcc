@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wstrict-selector-match" } */
 
-#include <objc/Protocol.h>
+#include "../objc-obj-c++-shared/Protocol1.h"
 
 @interface Base
 - (unsigned)port;

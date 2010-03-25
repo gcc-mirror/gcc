@@ -1,10 +1,12 @@
 /* Check if the '-fzero-link' flag correctly emits an objc_getClass() call. */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime -fzero-link" } */
-/* { dg-do compile } */
 
+/* { dg-do compile { target *-*-darwin*  } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-options "-fzero-link" } */
+
+#include "../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort();

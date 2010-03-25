@@ -1,10 +1,10 @@
 /* Check if finding multiple signatures for a method is handled gracefully.  */
 /* Author:  Ziemowit Laski <zlaski@apple.com>  */
-
 /* { dg-do compile } */
 /* { dg-options "-Wstrict-selector-match" } */
 
-#include <objc/Object.h>
+
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface Class1
 - (void)setWindow:(Object *)wdw;

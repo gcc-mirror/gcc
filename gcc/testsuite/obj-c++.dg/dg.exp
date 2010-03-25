@@ -31,7 +31,12 @@ dg-init
 set tests [lsort [find $srcdir/$subdir *.mm]]
 
 # Main loop.
-dg-runtest $tests "" $DEFAULT_OBJCXXFLAGS
+dg-runtest $tests "-fgnu-runtime" $DEFAULT_OBJCXXFLAGS
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+dg-runtest $tests "-fnext-runtime" $DEFAULT_OBJCXXFLAGS
+}
 
 # All done.
 dg-finish

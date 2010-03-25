@@ -1,7 +1,8 @@
-/* { dg-options "-Wall -funit-at-a-time -fgnu-runtime" } */
+/* { dg-options "-Wall -funit-at-a-time" } */
 /* { dg-do compile }  */
 /* PR objc/27438, make sure that the decl produced by the front-end
    does not cause a warning to be produced. */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 @interface NXConstantString
 {

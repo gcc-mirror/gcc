@@ -3,7 +3,7 @@
 // { dg-do run }
 // { dg-options "-fno-objc-call-cxx-cdtors" }
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 #include <stdlib.h>
 #define CHECK_IF(expr) if(!(expr)) abort()
 
@@ -40,3 +40,4 @@ int main (void)
   [obj manipulate_ivars];
   [obj free];
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

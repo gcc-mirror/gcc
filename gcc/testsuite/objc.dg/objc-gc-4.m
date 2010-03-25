@@ -5,7 +5,7 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-options "-fobjc-gc" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @class MyWindow;
 

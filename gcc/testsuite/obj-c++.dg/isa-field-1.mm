@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-xfail-if "PR23613" { "*-*-*" } { "*" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface Object (Test)
 - (Class) test1: (id)object;
@@ -42,3 +42,4 @@ Class test3(id object) {
   Class cls = object->isa;
   return cls;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

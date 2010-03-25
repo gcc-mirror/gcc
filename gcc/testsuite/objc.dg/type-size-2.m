@@ -3,16 +3,17 @@
    encoded as pointers.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
-#include <objc/objc.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
+//#include <objc/objc.h>
 #ifdef __NEXT_RUNTIME__
 #include <objc/objc-runtime.h>
-#define OBJC_GETCLASS objc_getClass
-#define CLASS_GETINSTANCEMETHOD class_getInstanceMethod
+#define METHOD Method
 #else
 #include <objc/objc-api.h>
-#define OBJC_GETCLASS objc_get_class
-#define CLASS_GETINSTANCEMETHOD class_get_instance_method
+#define METHOD Method_t
+#define method_get_types(M) (M)->method_types
 #endif
 
 extern int sscanf(const char *str, const char *format, ...);
@@ -32,27 +33,29 @@ enum Enum { one, two, three, four };
 @end
 
 Class cls;
-struct objc_method *meth;
+METHOD meth ;
+
 unsigned totsize, offs0, offs1, offs2, offs3, offs4, offs5, offs6, offs7;
 
 static void scan_initial(const char *pattern) {
   totsize = offs0 = offs1 = offs2 = offs3 = offs4 = offs5 = offs6 = offs7 = (unsigned)-1;
-  sscanf(meth->method_types, pattern, &totsize, &offs0, &offs1, &offs2, &offs3,
+  sscanf(method_get_types(meth), pattern, &totsize, &offs0, &offs1, &offs2, &offs3,
       &offs4, &offs5, &offs6, &offs7);
   CHECK_IF(!offs0 && offs1 == sizeof(id) && offs2 == offs1 + sizeof(SEL) && totsize >= offs2);
 }
 
 int main(void) {
-  cls = OBJC_GETCLASS("ArrayTest");
+  cls = objc_get_class("ArrayTest");
 
-  meth = CLASS_GETINSTANCEMETHOD(cls, @selector(str:with:and:));
+  meth = class_get_instance_method(cls, @selector(str:with:and:));
   scan_initial("r*%u@%u:%u*%u*%u[4i]%u");
   CHECK_IF(offs3 == offs2 + sizeof(signed char *) && offs4 == offs3 + sizeof(unsigned char *));
   CHECK_IF(totsize == offs4 + sizeof(enum Enum *));
-  meth = CLASS_GETINSTANCEMETHOD(cls, @selector(meth1:with:with:));
+  meth = class_get_instance_method(cls, @selector(meth1:with:with:));
   scan_initial("i%u@%u:%u^i%u[0i]%u[2i]%u");
   CHECK_IF(offs3 == offs2 + sizeof(int *) && offs4 == offs3 + sizeof(int *));
   CHECK_IF(totsize == offs4 + sizeof(int *));                                           
   return 0;
 }
 
+#include "../objc-obj-c++-shared/Object1-implementation.h"
