@@ -1,3 +1,12 @@
+2010-03-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/xml/manual/profile_mode.xml (Profile Diagnostics): Correct
+	cols.
+	* doc/xml/manual/using.xml (C++ 1998 Library Headers): Add missing
+	c5 colspec.
+	(C++ 1998 Library Headers for C Library Facilities): Likewise.
+	(C++ 200x Library Headers): Likewise.
+
 2010-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/unordered_map.h (operator==, operator!=): Add per N3068.
