@@ -1,3 +1,14 @@
+2010-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43540
+	* dwarf2out.c (reg_save): For DW_CFA_expression put regnum
+	into first operand and location into second.
+	(dw_cfi_oprnd1_desc): Return dw_cfi_oprnd_reg_num instead of
+	dw_cfi_oprnd_loc for DW_CFA_expression.
+	(dw_cfi_oprnd2_desc): Return dw_cfi_oprnd_loc for DW_CFA_expression.
+	(output_cfa_loc, output_cfa_loc_raw): For DW_CFA_expression
+	assume first argument is regnum and second argument is location.
+
 2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42113
