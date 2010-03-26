@@ -22557,12 +22557,19 @@ bar:
   test $ac_status = 0; }; }
     then
 	if test x$gcc_cv_ld != x \
-       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
-       && (test x$gnu_ld_flag = xno \
-           || (test x$gcc_cv_objdump != x \
-               && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
-                  | grep ' 03000004 82186004 c405c001'> /dev/null 2>&1)); then
-	 gcc_cv_as_sparc_gotdata_op=yes
+       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+         if $gcc_cv_ld -v | grep GNU >/dev/null 2>&1; then
+           if test x$gcc_cv_objdump != x; then
+             if $gcc_cv_objdump -s -j .text conftest 2> /dev/null \
+                | grep ' 03000004 82186004 c405c001'> /dev/null 2>&1; then
+	       gcc_cv_as_sparc_gotdata_op=no
+             else
+	       gcc_cv_as_sparc_gotdata_op=yes
+             fi
+           fi
+         else
+	   gcc_cv_as_sparc_gotdata_op=yes
+         fi
        fi
        rm -f conftest
     else
