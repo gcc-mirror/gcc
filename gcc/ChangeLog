@@ -1,3 +1,8 @@
+2010-03-26  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Fix sparc GOTDATA_OP bug check.
+	* configure: Rebuild.
+
 2010-03-26  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.md (cmptf_internal2): Correct comparison.
