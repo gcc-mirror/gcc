@@ -1,3 +1,9 @@
+2010-03-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43509
+	* parser.c (cp_parser_qualifying_entity): Do accept enum names in
+	c++0x mode, but not other type-names.
+
 2010-03-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43327

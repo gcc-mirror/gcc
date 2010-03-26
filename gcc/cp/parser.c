@@ -4441,6 +4441,16 @@ cp_parser_qualifying_entity (cp_parser *parser,
      
       /* Parse a typedef-name or enum-name.  */
       scope = cp_parser_nonclass_name (parser);
+
+      /* "If the name found does not designate a namespace or a class,
+	 enumeration, or dependent type, the program is ill-formed."
+
+         We cover classes and dependent types above and namespaces below,
+         so this code is only looking for enums.  */
+      if (!scope || TREE_CODE (scope) != TYPE_DECL
+	  || TREE_CODE (TREE_TYPE (scope)) != ENUMERAL_TYPE)
+	cp_parser_simulate_error (parser);
+
       successful_parse_p = cp_parser_parse_definitely (parser);
     }
   /* If that didn't work, try for a namespace-name.  */
