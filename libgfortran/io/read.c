@@ -1046,6 +1046,9 @@ read_x (st_parameter_dt *dtp, int n)
       goto done;
     }
 
+  if (dtp->u.p.sf_seen_eor)
+    return;
+
   p = fbuf_read (dtp->u.p.current_unit, &length);
   if (p == NULL)
     {
