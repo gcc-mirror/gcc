@@ -17826,7 +17826,7 @@
 	* config/i386/cygming-crtbegin.c: New file.
 	* config/i386/cygming-crtend.c: New file.
 
-2007-06-14  Pascal Obry Pascal Obry  <obry@adacore.com>
+2007-06-14  Pascal Obry  <obry@adacore.com>
 
 	* config/i386/w32-unwind.h: New file.
 
