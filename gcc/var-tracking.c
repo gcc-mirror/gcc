@@ -6860,14 +6860,13 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
 		result = pc_rtx;
 		break;
 	      }
-	    else
-	      {
-		result = cselib_expand_value_rtx_cb (loc->loc, regs, max_depth,
-						     vt_expand_loc_callback,
-						     data);
-		if (result)
-		  break;
-	      }
+	  }
+	else
+	  {
+	    result = cselib_expand_value_rtx_cb (loc->loc, regs, max_depth,
+						 vt_expand_loc_callback, data);
+	    if (result)
+	      break;
 	  }
       if (dummy && (result || var->var_part[0].cur_loc))
 	var->cur_loc_changed = true;
