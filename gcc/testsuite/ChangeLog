@@ -1,3 +1,8 @@
+2010-03-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/43381
+	* gcc.dg/parm-impl-decl-3.c: New test.
+
 2010-03-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43509
