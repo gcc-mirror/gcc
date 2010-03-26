@@ -1,5 +1,14 @@
 2010-03-26  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/43327
+	* pt.c (add_to_template_args): Support NULL ARGS;
+	(most_specialized_class): call coerce_template_parms on
+	template arguments passed to get_class_bindings. Use
+	add_to_template_args.
+	(unify): Handle VAR_DECLs.
+
+2010-03-26  Dodji Seketeli  <dodji@redhat.com>
+
 	* cp-tree.h (get_template_parms_at_level): Change unsigned parm
 	into int.
 	* pt.c (get_template_parms_at_level): Adjust.
