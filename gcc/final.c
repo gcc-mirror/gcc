@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -206,6 +206,9 @@ static int dialect_number;
 
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
+
+/* True if printing into -fdump-final-insns= dump.  */   
+bool final_insns_dump_p;
 
 #ifdef HAVE_ATTR_length
 static int asm_insn_count (rtx);
@@ -4384,6 +4387,7 @@ rest_of_clean_state (void)
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
 	    dump_flags |= TDF_NOUID;
+	  final_insns_dump_p = true;
 
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    if (LABEL_P (insn))
@@ -4417,6 +4421,7 @@ rest_of_clean_state (void)
     {
       flag_dump_noaddr = save_noaddr;
       flag_dump_unnumbered = save_unnumbered;
+      final_insns_dump_p = false;
 
       if (fclose (final_output))
 	{

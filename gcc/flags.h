@@ -182,6 +182,10 @@ extern int flag_gen_aux_info;
 
 extern int flag_dump_unnumbered;
 
+/* True if printing into -fdump-final-insns= dump.  */
+
+extern bool final_insns_dump_p;
+
 /* Nonzero means change certain warnings into errors.
    Usually these are warnings about failure to conform to some standard.  */
 

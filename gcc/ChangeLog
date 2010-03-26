@@ -1,3 +1,13 @@
+2010-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43516
+	* flags.h (final_insns_dump_p): New extern.
+	* final.c (final_insns_dump_p): New variable.
+	(rest_of_clean_state): Set it before -fdump-final-insns=
+	dumping, clear afterwards.
+	* print-rtl.c (print_rtx): If final_insns_dump_p don't dump
+	MEM_ALIAS_SET on MEMs.
+
 2010-03-26  David S. Miller  <davem@davemloft.net>
 
 	* configure.ac: Fix sparc GOTDATA_OP bug check.
