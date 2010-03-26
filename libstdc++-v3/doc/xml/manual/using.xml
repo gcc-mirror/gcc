@@ -128,6 +128,7 @@
 <colspec colname='c2'></colspec>
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
 <tbody>
 <row>
 <entry><filename class="headerfile">algorithm</filename></entry>
@@ -187,6 +188,7 @@
 <colspec colname='c2'></colspec>
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
 <tbody>
 <row>
 <entry><filename class="headerfile">cassert</filename></entry>
@@ -231,6 +233,7 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <colspec colname='c2'></colspec>
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
 <tbody>
 
 <row>
