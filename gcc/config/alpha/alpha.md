@@ -4186,20 +4186,22 @@
 		   (match_operand:SI 3 "const48_operand" "I")
 		   (const_int 0))
 	         (match_operand:SI 4 "sext_add_operand" "rIO")))
-   (clobber (match_scratch:SI 5 "=r"))]
+   (clobber (match_scratch:DI 5 "=r"))]
   ""
   "#"
   ""
   [(set (match_dup 5)
-	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(plus:SI (mult:SI (match_dup 5) (match_dup 3))
+	(plus:SI (mult:SI (match_dup 6) (match_dup 3))
 		 (match_dup 4)))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (SImode);
+    operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = operands[0];
+    operands[5] = gen_lowpart (DImode, operands[0]);
+
+  operands[6] = gen_lowpart (SImode, operands[5]);
 })
 
 (define_insn_and_split "*cmp_sadd_sidi"
@@ -4212,20 +4214,22 @@
 		     (match_operand:SI 3 "const48_operand" "I")
 		     (const_int 0))
 	           (match_operand:SI 4 "sext_add_operand" "rIO"))))
-   (clobber (match_scratch:SI 5 "=r"))]
+   (clobber (match_scratch:DI 5 "=r"))]
   ""
   "#"
   ""
   [(set (match_dup 5)
-	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(sign_extend:DI (plus:SI (mult:SI (match_dup 5) (match_dup 3))
+	(sign_extend:DI (plus:SI (mult:SI (match_dup 6) (match_dup 3))
 				 (match_dup 4))))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (SImode);
+    operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = gen_lowpart (SImode, operands[0]);
+    operands[5] = operands[0];
+
+  operands[6] = gen_lowpart (SImode, operands[5]);
 })
 
 (define_insn_and_split "*cmp_ssub_di"
@@ -4262,20 +4266,22 @@
 		    (match_operand:SI 3 "const48_operand" "I")
 		    (const_int 0))
 	          (match_operand:SI 4 "reg_or_8bit_operand" "rI")))
-   (clobber (match_scratch:SI 5 "=r"))]
+   (clobber (match_scratch:DI 5 "=r"))]
   ""
   "#"
   ""
   [(set (match_dup 5)
-	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(minus:SI (mult:SI (match_dup 5) (match_dup 3))
+	(minus:SI (mult:SI (match_dup 6) (match_dup 3))
 		 (match_dup 4)))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (SImode);
+    operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = operands[0];
+    operands[5] = gen_lowpart (DImode, operands[0]);
+
+  operands[6] = gen_lowpart (SImode, operands[5]);
 })
 
 (define_insn_and_split "*cmp_ssub_sidi"
@@ -4288,20 +4294,22 @@
 		      (match_operand:SI 3 "const48_operand" "I")
 		      (const_int 0))
 	            (match_operand:SI 4 "reg_or_8bit_operand" "rI"))))
-   (clobber (match_scratch:SI 5 "=r"))]
+   (clobber (match_scratch:DI 5 "=r"))]
   ""
   "#"
   ""
   [(set (match_dup 5)
-	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(sign_extend:DI (minus:SI (mult:SI (match_dup 5) (match_dup 3))
+	(sign_extend:DI (minus:SI (mult:SI (match_dup 6) (match_dup 3))
 				  (match_dup 4))))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (SImode);
+    operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = gen_lowpart (SImode, operands[0]);
+    operands[5] = operands[0];
+
+  operands[6] = gen_lowpart (SImode, operands[5]);
 })
 
 ;; Here are the CALL and unconditional branch insns.  Calls on NT and OSF
