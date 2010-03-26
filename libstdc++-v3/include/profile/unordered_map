@@ -272,6 +272,20 @@ namespace __profile
 	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
+  template<typename _Key, typename _Tp, typename _Hash,
+	   typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Key, typename _Tp, typename _Hash,
+	   typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
+
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_BASE unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>
@@ -481,6 +495,20 @@ namespace __profile
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
+
+  template<typename _Key, typename _Tp, typename _Hash,
+	   typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Key, typename _Tp, typename _Hash,
+	   typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
 
 } // namespace __profile
 } // namespace std

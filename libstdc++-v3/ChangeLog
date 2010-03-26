@@ -1,3 +1,24 @@
+2010-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unordered_map.h (operator==, operator!=): Add per N3068.
+	* include/bits/unordered_set.h (operator==, operator!=): Likewise.
+	* include/debug/unordered_map (operator==, operator!=): Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/23_containers/unordered_map/operators/1.cc: New.
+	* testsuite/23_containers/unordered_multimap/operators/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/operators/2.cc: Likewise.
+	* testsuite/23_containers/unordered_set/operators/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/operators/1.cc: Likewise.
+
+2010-03-25  John Lakos  <jlakos@bloomberg.net>
+	    Pablo Halpern  <phalpern@halpernwightsoftware.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h (struct _Equality_base): Add.
+	* include/bits/hashtable.h (_Hashtable<>): Derive from the latter.
+
 2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_tr1.h (NType, TType, SLType, PODType): Add.

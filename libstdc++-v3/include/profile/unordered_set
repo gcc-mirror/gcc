@@ -262,6 +262,18 @@ namespace __profile
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
+
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
@@ -473,6 +485,18 @@ namespace __profile
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
 
 } // namespace __profile
 } // namespace std

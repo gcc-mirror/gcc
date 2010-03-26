@@ -118,7 +118,15 @@ namespace std
 					    _RehashPolicy,
 					    __cache_hash_code,
 					    __constant_iterators,
-					    __unique_keys> >
+					    __unique_keys> >,
+      public __detail::_Equality_base<_ExtractKey, __unique_keys,
+				      _Hashtable<_Key, _Value, _Allocator,
+						 _ExtractKey,
+						 _Equal, _H1, _H2, _Hash,
+						 _RehashPolicy,
+						 __cache_hash_code,
+						 __constant_iterators,
+						 __unique_keys> >
     {
     public:
       typedef _Allocator                                  allocator_type;
