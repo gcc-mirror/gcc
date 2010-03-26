@@ -7099,8 +7099,12 @@ emit_note_insn_var_location (void **varp, void *data)
 				    (int) initialized);
   else if (n_var_parts == 1)
     {
-      rtx expr_list
-	= gen_rtx_EXPR_LIST (VOIDmode, loc[0], GEN_INT (offsets[0]));
+      rtx expr_list;
+
+      if (offsets[0] || GET_CODE (loc[0]) == PARALLEL)
+	expr_list = gen_rtx_EXPR_LIST (VOIDmode, loc[0], GEN_INT (offsets[0]));
+      else
+	expr_list = loc[0];
 
       note_vl = gen_rtx_VAR_LOCATION (VOIDmode, decl, expr_list,
 				      (int) initialized);

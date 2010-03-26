@@ -1,5 +1,10 @@
 2010-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* var-tracking.c (emit_note_insn_var_location): For one part
+	notes with offset 0, don't add EXPR_LIST around the location.
+	* dwarf2out.c (loc_descriptor, dw_loc_list_1,
+	add_location_or_const_value_attribute): Adjust for that change.
+
 	PR debug/43540
 	* dwarf2out.c (reg_save): For DW_CFA_expression put regnum
 	into first operand and location into second.
