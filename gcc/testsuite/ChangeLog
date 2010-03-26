@@ -1,7 +1,12 @@
+2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43524
+	* gcc.target/i386/pr43524.c: New test.
+
 2010-03-26  Martin Jambor  <mjambor@suse.cz>
 
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre1.c: Deleted trailing
-	whitespace, renamed main to foo.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre1.c: Delete trailing
+	whitespace, rename main to foo.
 	* gcc/testsuite/gcc.dg/tree-ssa/loadpre14.c: Likewise.
 	* gcc/testsuite/gcc.dg/tree-ssa/loadpre15.c: Likewise.
 	* gcc/testsuite/gcc.dg/tree-ssa/loadpre16.c: Likewise.
@@ -37,7 +42,7 @@
 	* objc-obj-c++-shared/next-mapping.h: New file.
 	* objc/execute/next_mapping.h: Delete.
 	* objc.dg/special/special.exp: For all targets run the tests with
-	-fgnu-runtime, for darwin targets also run the tests with 
+	-fgnu-runtime, for darwin targets also run the tests with
 	-fnext-runtime.
 	* objc.dg/dg.exp: Ditto.
 	* obj-c++.dg/dg.exp: Ditto.
@@ -46,7 +51,7 @@
 	include use of updated NeXT interface.
 	* objc/execute/formal_protocol-5.m: Ditto.
 	* objc/execute/protocol-isEqual-2.m: Ditto.
-	* objc/execute/protocol-isEqual-4.m: Ditto.	
+	* objc/execute/protocol-isEqual-4.m: Ditto.
 	* objc/execute/class-11.m: Use shared wrapper headers (Object1.h,
 	Protocol1.h) and next-mapping.h as required.
 	* objc/execute/object_is_class.m: Ditto.
@@ -188,7 +193,7 @@
 	* objc.dg/fix-and-continue-2.m: Ditto.
 	* objc.dg/method-9.m: Ditto.
 	* objc.dg/isa-field-1.m: Ditto.
-	* objc.dg/local-decl-2.m: Ditto.	
+	* objc.dg/local-decl-2.m: Ditto.
 	* objc.dg/objc-gc-4.m: Ditto.
 	* objc.dg/type-stream-1.m: Skip for NeXT runtime.
 	* objc.dg/gnu-runtime-3.m: Ditto.
@@ -197,7 +202,7 @@
 	* objc.dg/selector-3.m: Ditto.
 	* objc.dg/gnu-runtime-1.m: Ditto.
 	* objc.dg/const-str-12.m: Ditto.
-	* objc.dg/gnu-runtime-2.m: Ditto.	
+	* objc.dg/gnu-runtime-2.m: Ditto.
 	* objc.dg/no-extra-load.m: Skip for gnu-runtime.
 	* objc.dg/selector-1.m: Ditto.
 	* objc.dg/stubify-2.m: Ditto.
@@ -207,27 +212,27 @@
 	* objc.dg/next-runtime-1.m: Ditto.
 	* objc.dg/symtab-1.m: Ditto.
 	* objc.dg/stubify-1.m: Ditto.
-	* objc.dg/bitfield-2.m: Ditto.	
+	* objc.dg/bitfield-2.m: Ditto.
 	* objc.dg/try-catch-10.m: Apply to both runtimes.
 	* objc.dg/const-str-1.m: Ditto.
 	* objc.dg/image-info.m: Ditto.
-	* objc.dg/encode-9.m: Ditto.	
+	* objc.dg/encode-9.m: Ditto.
 	* objc.dg/pragma-1.m: Apply test to all targets.
 	* objc.dg/const-str-4.m: Ditto.
 	* objc.dg/const-str-8.m: Ditto.
 	* objc.dg/super-class-2.m: Ditto.
 	* objc.dg/try-catch-5.m: Ditto.
 	* objc.dg/const-str-10.m: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. Use new NeXT 
+	Protocol1.h) and next-mapping.h as required. Use new NeXT
 	interface as required.  Skip for gnu-runtime.  Test for .quad
 	at m64.
 	* objc.dg/const-str-11.m: Ditto.
-	* objc.dg/const-str-9.m: Ditto.	
+	* objc.dg/const-str-9.m: Ditto.
 	* objc.dg/method-4.m: Skip for 64Bit NeXT.
 	* objc.dg/encode-1.m: Remove redundant -lobjc.
 	* objc.dg/try-catch-9.m: Tidy space.
 	* obj-c++.dg/method-19.mm: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT 
+	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT
 	and 64bit. Use new NeXT interface as required.
 	* obj-c++.dg/template-4.mm: Ditto.
 	* obj-c++.dg/defs.mm: Ditto.
@@ -247,7 +252,7 @@
 	* obj-c++.dg/template-1.mm: Ditto.
 	* obj-c++.dg/encode-6.mm: Ditto.
 	* obj-c++.dg/bitfield-2.mm:  Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. Use new NeXT 
+	Protocol1.h) and next-mapping.h as required. Use new NeXT
 	interface as required.
 	* obj-c++.dg/except-1.mm: Ditto.
 	* obj-c++.dg/const-str-7.mm: Ditto.
@@ -292,15 +297,15 @@
 	* obj-c++.dg/gnu-runtime-2.mm: Skip if NeXT runtime.
 	* obj-c++.dg/gnu-runtime-3.mm: Ditto.
 	* obj-c++.dg/gnu-runtime-1.mm: Ditto.
-	* objc.dg/zero-link-2.m: Skip if gnu runtime. Use shared wrapper 
-	headers (Object1.h, Protocol1.h) and next-mapping.h as required. 
+	* objc.dg/zero-link-2.m: Skip if gnu runtime. Use shared wrapper
+	headers (Object1.h, Protocol1.h) and next-mapping.h as required.
 	Use new NeXT interface as required.
 	* obj-c++.dg/const-str-10.mm: Ditto.
 	* obj-c++.dg/const-str-11.mm: Ditto.
 	* obj-c++.dg/const-str-9.mm: Ditto.
 	* obj-c++.dg/method-11.mm: Ditto.
-	* obj-c++.dg/cxx-ivars-3.mm: Skip if gnu runtime. Use shared wrapper 
-	headers (Object1.h, Protocol1.h) and next-mapping.h as required. 
+	* obj-c++.dg/cxx-ivars-3.mm: Skip if gnu runtime. Use shared wrapper
+	headers (Object1.h, Protocol1.h) and next-mapping.h as required.
 	Use new NeXT interface as required. XFAIL run if NeXT and 64bit.
 	* obj-c++.dg/encode-8.mm: Remove redundant -lobjc.
 	* obj-c++.dg/const-str-1.mm: Run for NeXT as well as gnu.
@@ -343,7 +348,7 @@
 2010-03-24  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipa-1.c: Delete trailing spaces, put the call to f into
-	a loop.	
+	a loop.
 	* gcc.dg/ipa/ipa-2.c: Likewise.
 	* gcc.dg/ipa/ipa-3.c: Likewise.
 	* gcc.dg/ipa/ipa-4.c: Likewise.
