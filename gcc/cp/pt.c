@@ -2843,7 +2843,7 @@ get_primary_template_innermost_parameters (const_tree t)
    of template parameters PARMS.  */
 
 tree
-get_template_parms_at_level (tree parms, unsigned level)
+get_template_parms_at_level (tree parms, int level)
 {
   tree p;
   if (!parms

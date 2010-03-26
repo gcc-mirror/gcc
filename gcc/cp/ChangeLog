@@ -1,3 +1,9 @@
+2010-03-26  Dodji Seketeli  <dodji@redhat.com>
+
+	* cp-tree.h (get_template_parms_at_level): Change unsigned parm
+	into int.
+	* pt.c (get_template_parms_at_level): Adjust.
+
 2010-03-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43206
