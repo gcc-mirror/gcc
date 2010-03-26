@@ -493,6 +493,9 @@ add_to_template_args (tree args, tree extra_args)
   int i;
   int j;
 
+  if (args == NULL_TREE)
+    return extra_args;
+
   extra_depth = TMPL_ARGS_DEPTH (extra_args);
   new_args = make_tree_vec (TMPL_ARGS_DEPTH (args) + extra_depth);
 
@@ -15055,6 +15058,13 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       /* Matched cases are handled by the ARG == PARM test above.  */
       return 1;
 
+    case VAR_DECL:
+      /* A non-type template parameter that is a variable should be a
+	 an integral constant, in which case, it whould have been
+	 folded into its (constant) value. So we should not be getting
+	 a variable here.  */
+      gcc_unreachable ();
+
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
       {
@@ -15937,6 +15947,18 @@ most_specialized_class (tree type, tree tmpl)
 
 	  --processing_template_decl;
 	}
+
+      partial_spec_args =
+	  coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
+				 add_to_template_args (outer_args,
+						       partial_spec_args),
+				 tmpl, tf_none,
+				 /*require_all_args=*/true,
+				 /*use_default_args=*/true);
+
+      if (partial_spec_args == error_mark_node)
+	return error_mark_node;
+
       spec_args = get_class_bindings (parms,
 				      partial_spec_args,
 				      args);
