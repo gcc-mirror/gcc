@@ -13731,10 +13731,12 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 
     case VAR_LOCATION:
       /* Single part.  */
-      if (GET_CODE (XEXP (rtl, 1)) != PARALLEL)
+      if (GET_CODE (PAT_VAR_LOCATION_LOC (rtl)) != PARALLEL)
 	{
-	  loc_result = loc_descriptor (XEXP (XEXP (rtl, 1), 0), mode,
-				       initialized);
+	  rtx loc = PAT_VAR_LOCATION_LOC (rtl);
+	  if (GET_CODE (loc) == EXPR_LIST)
+	    loc = XEXP (loc, 0);
+	  loc_result = loc_descriptor (loc, mode, initialized);
 	  break;
 	}
 
@@ -13986,9 +13988,11 @@ dw_loc_list_1 (tree loc, rtx varloc, int want_address,
     {
       gcc_assert (GET_CODE (varloc) == VAR_LOCATION);
       /* Single part.  */
-      if (GET_CODE (XEXP (varloc, 1)) != PARALLEL)
+      if (GET_CODE (PAT_VAR_LOCATION_LOC (varloc)) != PARALLEL)
 	{
-	  varloc = XEXP (XEXP (varloc, 1), 0);
+	  varloc = PAT_VAR_LOCATION_LOC (varloc);
+	  if (GET_CODE (varloc) == EXPR_LIST)
+	    varloc = XEXP (varloc, 0);
 	  mode = GET_MODE (varloc);
 	  if (MEM_P (varloc))
 	    {
@@ -15891,7 +15895,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 
       node = loc_list->first;
       rtl = NOTE_VAR_LOCATION_LOC (node->var_loc_note);
-      if (GET_CODE (rtl) != PARALLEL)
+      if (GET_CODE (rtl) == EXPR_LIST)
 	rtl = XEXP (rtl, 0);
       if ((CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
 	  && add_const_value_attribute (die, rtl))
