@@ -1,5 +1,15 @@
 2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/42113
+	* config/alpha/alpha.md (*cmp_sadd_si): Change mode
+	of scratch register to DImode.  Split to DImode comparison operator.
+	Use SImode subreg of scratch register in the multiplication.
+	(*cmp_sadd_sidi): Ditto.
+	(*cmp_ssub_si): Ditto.
+	(*cmp_ssub_sidi): Ditto.
+
+2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/43524
 	* config/i386/i386.c (ix86_expand_prologue) [TARGET_STACK_PROBE]:
 	Remove invalid assert and wrong comment.
