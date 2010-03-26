@@ -1,3 +1,19 @@
+2010-03-26  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre1.c: Deleted trailing
+	whitespace, renamed main to foo.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre14.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre15.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre16.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre17.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre19.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre20.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre3.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/loadpre5.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-1.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-4.c: Likewise.
+	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-6.c: Likewise.
+
 2010-03-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43327
