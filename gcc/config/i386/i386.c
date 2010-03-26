@@ -8628,12 +8628,9 @@ ix86_expand_prologue (void)
 			       ix86_cfa_state->reg == stack_pointer_rtx);
   else
     {
-      /* Only valid for Win32.  */
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       bool eax_live;
       rtx t;
-
-      gcc_assert (!TARGET_64BIT || cfun->machine->call_abi == MS_ABI);
 
       if (cfun->machine->call_abi == MS_ABI)
 	eax_live = false;

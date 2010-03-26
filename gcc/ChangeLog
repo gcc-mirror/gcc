@@ -1,3 +1,9 @@
+2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43524
+	* config/i386/i386.c (ix86_expand_prologue) [TARGET_STACK_PROBE]:
+	Remove invalid assert and wrong comment.
+
 2010-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43516
@@ -34,8 +40,7 @@
 
 2010-03-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	* config/rs6000/constraints.md: Update copyright year for my
-	changes.
+	* config/rs6000/constraints.md: Update copyright year for my changes.
 
 	PR target/43484
 	* config/rs6000/rs6000.c (rs6000_split_multireg_move): If r0 is
@@ -95,8 +100,7 @@
 	(output_addr_const_extra): Likewise.
 	(output_pic_addr_const): Lowercase @TPOFF.
 	(output_addr_const_extra): Likewise.
-	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Lowercase
-	@TLSGD.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Lowercase @TLSGD.
 	(*tls_global_dynamic_64): Likewise.
 	(*tls_local_dynamic_base_32_gnu): Lowercase @TLSLDM.
 	(*tls_local_dynamic_base_64): Lowercase	@TLSLD.
@@ -106,8 +110,7 @@
 	* config/i386/sol2-gas.h (TLS_COMMON_ASM_OP): Undef.
 
 	PR target/38118
-	* config.gcc (sparc*-*-solaris2*) [$gas=yes]: Add usegas.h to
-	tm_file.
+	* config.gcc (sparc*-*-solaris2*) [$gas=yes]: Add usegas.h to tm_file.
 	* config/sparc/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Move ...
 	* config/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): ... here.
 	* config/i386/sol2-10.h (ASM_OUTPUT_ALIGNED_COMMON): Redefine.
@@ -153,12 +156,12 @@
 
 	PR target/43348
 	* ia64.md (call_nogp, call_value_nogp, sibcall_nogp, call_gp,
-	call_value_gp,sibcall_gp): Use 's' constraint not 'i'.
+	call_value_gp, sibcall_gp): Use 's' constraint not 'i'.
 
 2010-03-22  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (ix86_target_string): Fix a typo in comments.
-	Add -mfma.
+	* config/i386/i386.c (ix86_target_string): Add -mfma.
+	Fix a typo in comment.
 
 2010-03-22  Mike Stump  <mikestump@comcast.net>
 
@@ -175,17 +178,15 @@
 
 	* doc/configfiles.texi (Configuration Files): Removed
 	fixinc/Makefile*, intl/Makefile.*.
-	* doc/makefile.texi: Fixed markup.
-	Abstract from version control system used.
+	* doc/makefile.texi: Fixed markup. Abstract from version
+	control system used.
 	(Makefile): Removed obsolete gcc/java/parse.y example.
 	* doc/sourcebuild.texi: Likewise.
 	(Top Level): Added config, gnattools, libdecnumber, libgcc,
-	libgomp, libssp.
-	Removed fastjar.
+	libgomp, libssp.  Removed fastjar.
 	(Miscellaneous Docs): Clarify location.
 	Added COPYING3, COPYING3.LIB.
-	(Front End Directory): Moved Make-lang.in entry to new
-	subsubsection.
+	(Front End Directory): Moved Make-lang.in entry to new subsubsection.
 
 2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -272,8 +273,8 @@
 2010-03-19  Andrew Pinski  <andrew_pinski@caviumnetworks.com>
 
 	PR c/43211
-	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was an
-	error.
+	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was
+	an error.
 
 2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
@@ -372,8 +373,7 @@
 
 	PR bootstrap/43403
 	* var-tracking.c (vt_init_cfa_base): Do nothing if
-	cfa_base_rtx would be hard_frame_pointer_rtx or non-fixed
-	register.
+	cfa_base_rtx would be hard_frame_pointer_rtx or non-fixed register.
 
 2010-03-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -399,8 +399,7 @@
 	* cgraph.h (cgraph_redirect_edge_call_stmt_to_callee): Declare.
 	* cgraphunit.c (cgraph_materialize_all_clones): Update calls in
 	all non-clones.  Moved call redirection...
-	(cgraph_redirect_edge_call_stmt_to_callee): ...to this new
-	function.
+	(cgraph_redirect_edge_call_stmt_to_callee): ...to this new function.
 	(cgraph_materialize_all_clones): Dispose of all
 	combined_args_to_skip bitmaps.
 	(verify_cgraph_node): Do not check for edges pointing to wrong
@@ -471,8 +470,7 @@
 	appending a use to an empty chain.
 	(build_def_use): Remove previous changes that convert OP_INOUT to
 	OP_OUT operands; instead detect the case where an OP_INOUT operand
-	uses a previously untracked register and create an empty chain for
-	it.
+	uses a previously untracked register and create an empty chain for it.
 
 2010-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -510,9 +508,8 @@
 2010-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43379
-	* tree-cfg.c (gimple_merge_blocks): When propagating virtual
-	PHI operands make sure to merge SSA_NAME_OCCURS_IN_ABNORMAL_PHI
-	properly.
+	* tree-cfg.c (gimple_merge_blocks): When propagating virtual PHI
+	operands make sure to merge SSA_NAME_OCCURS_IN_ABNORMAL_PHI properly.
 
 2010-03-16  Aldy Hernandez  <aldyh@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
@@ -530,7 +527,7 @@
 	cfa_base_preserved_val): New static variables.
 	(preserve_only_constants): New function.
 	(cselib_reset_table): If cfa_base_preserved_val is non-NULL, don't
-	clear its REG_VALUES.  If cselib_preserve_constants, don't 
+	clear its REG_VALUES.  If cselib_preserve_constants, don't
 	empty the whole hash table, but preserve there VALUEs with constants,
 	cfa_base_preserved_val and cfa_base_preserved_val plus constant.
 	(cselib_preserve_cfa_base_value): New function.
