@@ -1115,8 +1115,8 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
       && sreg == INVALID_REGNUM)
     {
       cfi->dw_cfi_opc = DW_CFA_expression;
-      cfi->dw_cfi_oprnd2.dw_cfi_reg_num = reg;
-      cfi->dw_cfi_oprnd1.dw_cfi_loc
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+      cfi->dw_cfi_oprnd2.dw_cfi_loc
 	= build_cfa_aligned_loc (offset, fde->stack_realignment);
     }
   else if (sreg == INVALID_REGNUM)
@@ -2911,6 +2911,7 @@ dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
     case DW_CFA_same_value:
     case DW_CFA_def_cfa_register:
     case DW_CFA_register:
+    case DW_CFA_expression:
       return dw_cfi_oprnd_reg_num;
 
     case DW_CFA_def_cfa_offset:
@@ -2919,7 +2920,6 @@ dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
       return dw_cfi_oprnd_offset;
 
     case DW_CFA_def_cfa_expression:
-    case DW_CFA_expression:
       return dw_cfi_oprnd_loc;
 
     default:
@@ -2945,6 +2945,9 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
 
     case DW_CFA_register:
       return dw_cfi_oprnd_reg_num;
+
+    case DW_CFA_expression:
+      return dw_cfi_oprnd_loc;
 
     default:
       return dw_cfi_oprnd_unused;
@@ -5193,10 +5196,14 @@ output_cfa_loc (dw_cfi_ref cfi)
   unsigned long size;
 
   if (cfi->dw_cfi_opc == DW_CFA_expression)
-    dw2_asm_output_data (1, cfi->dw_cfi_oprnd2.dw_cfi_reg_num, NULL);
+    {
+      dw2_asm_output_data (1, cfi->dw_cfi_oprnd1.dw_cfi_reg_num, NULL);
+      loc = cfi->dw_cfi_oprnd2.dw_cfi_loc;
+    }
+  else
+    loc = cfi->dw_cfi_oprnd1.dw_cfi_loc;
 
   /* Output the size of the block.  */
-  loc = cfi->dw_cfi_oprnd1.dw_cfi_loc;
   size = size_of_locs (loc);
   dw2_asm_output_data_uleb128 (size, NULL);
 
@@ -5213,10 +5220,14 @@ output_cfa_loc_raw (dw_cfi_ref cfi)
   unsigned long size;
 
   if (cfi->dw_cfi_opc == DW_CFA_expression)
-    fprintf (asm_out_file, "0x%x,", cfi->dw_cfi_oprnd2.dw_cfi_reg_num);
+    {
+      fprintf (asm_out_file, "0x%x,", cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
+      loc = cfi->dw_cfi_oprnd2.dw_cfi_loc;
+    }
+  else
+    loc = cfi->dw_cfi_oprnd1.dw_cfi_loc;
 
   /* Output the size of the block.  */
-  loc = cfi->dw_cfi_oprnd1.dw_cfi_loc;
   size = size_of_locs (loc);
   dw2_asm_output_data_uleb128_raw (size);
   fputc (',', asm_out_file);
