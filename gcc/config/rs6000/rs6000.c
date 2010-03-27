@@ -909,7 +909,7 @@ static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
 static rtx rs6000_make_savres_rtx (rs6000_stack_t *, rtx, int,
 				   enum machine_mode, bool, bool, bool);
 static bool rs6000_reg_live_or_pic_offset_p (int);
-static tree rs6000_builtin_vectorized_function (unsigned int, tree, tree);
+static tree rs6000_builtin_vectorized_function (tree, tree, tree);
 static int rs6000_savres_strategy (rs6000_stack_t *, bool, int, int);
 static void rs6000_restore_saved_cr (rtx, int);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -3179,15 +3179,17 @@ rs6000_parse_fpu_option (const char *option)
    if it is not available.  */
 
 static tree
-rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
+rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
 				    tree type_in)
 {
   enum machine_mode in_mode, out_mode;
   int in_n, out_n;
+  enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE
-      || !TARGET_VECTORIZE_BUILTINS)
+      || !TARGET_VECTORIZE_BUILTINS
+      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));

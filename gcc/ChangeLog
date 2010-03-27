@@ -1,3 +1,18 @@
+2010-03-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR tree-optimization/43544
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION):
+	First argument for builtin vectorized function hook is now a
+	tree to be able to distinguish between machine specific and
+	standard builtins.
+	* targhooks.c (default_builtin_vectorized_function): Ditto.
+	* targhooks.h (default_builtin_vectorized_function): Ditto.
+	* target.h (struct gcc_target): Ditto.
+	* tree-vect-stmts.c (vectorizable_function): Ditto.
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Ditto.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function):
+	Ditto.
+
 2010-03-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/43381
