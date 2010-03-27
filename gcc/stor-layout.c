@@ -1346,11 +1346,12 @@ place_field (record_layout_info rli, tree field)
 	     until we see a bitfield (and come by here again) we just skip
 	     calculating it.  */
 	  if (DECL_SIZE (field) != NULL
-	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 0)
-	      && host_integerp (DECL_SIZE (field), 0))
+	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 1)
+	      && host_integerp (DECL_SIZE (field), 1))
 	    {
-	      HOST_WIDE_INT bitsize = tree_low_cst (DECL_SIZE (field), 1);
-	      HOST_WIDE_INT typesize
+	      unsigned HOST_WIDE_INT bitsize
+		= tree_low_cst (DECL_SIZE (field), 1);
+	      unsigned HOST_WIDE_INT typesize
 		= tree_low_cst (TYPE_SIZE (TREE_TYPE (field)), 1);
 
 	      if (typesize < bitsize)

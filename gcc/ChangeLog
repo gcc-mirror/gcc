@@ -1,3 +1,9 @@
+2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/43528
+	* stor-layout.c (place_field): Check that constant fits into
+	unsigned HWI when skipping calculation of MS bitfield layout.
+
 2010-03-27  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/43391

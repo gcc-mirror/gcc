@@ -1,3 +1,8 @@
+2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/43528
+	* gcc.target/i386/pr43528.c: New test.
+
 2010-03-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/43381
