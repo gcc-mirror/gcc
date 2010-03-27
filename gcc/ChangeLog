@@ -1,3 +1,9 @@
+2010-03-27  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/43391
+	* varasm.c (make_decl_rtl): Deal with COMMON flag to make
+	notice_global_symbol work.
+
 2010-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf2_debug_hooks): Use dwarf2out_function_decl

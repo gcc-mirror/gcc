@@ -1435,16 +1435,19 @@ make_decl_rtl (tree decl)
 
   /* Specifying a section attribute on a variable forces it into a
      non-.bss section, and thus it cannot be common.  */
-  gcc_assert (!(TREE_CODE (decl) == VAR_DECL
-	      && DECL_SECTION_NAME (decl) != NULL_TREE
-	      && DECL_INITIAL (decl) == NULL_TREE
-	      && DECL_COMMON (decl))
-	      || !DECL_COMMON (decl));
+  /* FIXME: In general this code should not be necessary because
+     visibility pass is doing the same work.  But notice_global_symbol
+     is called early and it needs to make DECL_RTL to get the name.
+     we take care of recomputing the DECL_RTL after visibility is changed.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_SECTION_NAME (decl) != NULL_TREE
+      && DECL_INITIAL (decl) == NULL_TREE
+      && DECL_COMMON (decl))
+    DECL_COMMON (decl) = 0;
 
   /* Variables can't be both common and weak.  */
-  gcc_assert (TREE_CODE (decl) != VAR_DECL
-	      || !DECL_WEAK (decl)
-	      || !DECL_COMMON (decl));
+  if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
+    DECL_COMMON (decl) = 0;
 
   if (use_object_blocks_p () && use_blocks_for_decl_p (decl))
     x = create_block_symbol (name, get_block_for_decl (decl), -1);
