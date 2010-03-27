@@ -1946,7 +1946,11 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
   DECL_SAVED_TREE (decl) = body;
-  TREE_PUBLIC (decl) = ! targetm.have_ctors_dtors;
+  if (!targetm.have_ctors_dtors)
+    {
+      TREE_PUBLIC (decl) = 1;
+      DECL_PRESERVE_P (decl) = 1;
+    }
   DECL_UNINLINABLE (decl) = 1;
 
   DECL_INITIAL (decl) = make_node (BLOCK);
