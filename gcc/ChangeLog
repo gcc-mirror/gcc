@@ -1,3 +1,12 @@
+2010-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (dwarf2_debug_hooks): Use dwarf2out_function_decl
+	instead of dwarf2out_decl.
+	(struct var_loc_node): Remove section_label field.
+	(dwarf2out_function_decl): New function.
+	(dwarf2out_var_location): Don't set section_label field.
+	(dwarf2out_begin_function): Don't empty decl_loc_table here.
+
 2010-03-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR tree-optimization/43544
