@@ -471,7 +471,7 @@ struct gcc_target
 
     /* Returns a code for builtin that realizes vectorized version of
        function, or NULL_TREE if not available.  */
-    tree (* builtin_vectorized_function) (unsigned, tree, tree);
+    tree (* builtin_vectorized_function) (tree, tree, tree);
 
     /* Returns a code for builtin that realizes vectorized version of
        conversion, or NULL_TREE if not available.  */

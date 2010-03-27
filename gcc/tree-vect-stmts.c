@@ -1,6 +1,6 @@
 /* Statement Analysis and Transformation for Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
-   Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -1189,7 +1189,6 @@ tree
 vectorizable_function (gimple call, tree vectype_out, tree vectype_in)
 {
   tree fndecl = gimple_call_fndecl (call);
-  enum built_in_function code;
 
   /* We only handle functions that do not read or clobber memory -- i.e.
      const or novops ones.  */
@@ -1201,8 +1200,7 @@ vectorizable_function (gimple call, tree vectype_out, tree vectype_in)
       || !DECL_BUILT_IN (fndecl))
     return NULL_TREE;
 
-  code = DECL_FUNCTION_CODE (fndecl);
-  return targetm.vectorize.builtin_vectorized_function (code, vectype_out,
+  return targetm.vectorize.builtin_vectorized_function (fndecl, vectype_out,
 						        vectype_in);
 }
 
