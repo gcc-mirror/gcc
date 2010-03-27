@@ -317,6 +317,8 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
     return false;
   if (!whole_program)
     return true;
+  if (DECL_PRESERVE_P (node->decl))
+    return true;
   /* COMDAT functions must be shared only if they have address taken,
      otherwise we can produce our own private implementation with
      -fwhole-program.  */
