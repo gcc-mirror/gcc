@@ -1,3 +1,8 @@
+2010-03-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40722
+	* mkfixinc.sh: Revert the last change for mingw.
+
 2010-03-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (glibc_strncpy): New fix.
