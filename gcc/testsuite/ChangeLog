@@ -1,3 +1,8 @@
+2010-03-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/43505
+	* gfortran.dg/pr43505.f90: New testcase.
+
 2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/43528
