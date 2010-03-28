@@ -1,3 +1,9 @@
+2010-03-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/43505
+	* cgraph.c (cgraph_clone_node): When clonning a clone, replacement
+	map should not be copied.
+
 2010-03-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/41674
