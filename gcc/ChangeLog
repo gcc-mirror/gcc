@@ -1,3 +1,11 @@
+2010-03-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43560
+	* tree-ssa-loop-im.c (ref_always_accessed_p): Add store_p
+	parameter.
+	(can_sm_ref_p): Treat stores to readonly locations as
+	trapping.
+
 2010-03-29  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43564
