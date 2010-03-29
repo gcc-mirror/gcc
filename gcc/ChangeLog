@@ -1,5 +1,11 @@
 2010-03-29  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/43431
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters):
+	Improve vectorization cost model diagnostic.
+
+2010-03-29  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/43436
 	* tree-vect-data-refs.c (vect_analyze_data_refs): When
 	compute_data_dependences_for_loop returns false, early exit
