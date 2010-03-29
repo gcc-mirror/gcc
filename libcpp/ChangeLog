@@ -1,5 +1,13 @@
 2010-03-29  Jason Merrill  <jason@redhat.com>
 
+	More N3077 raw string changes
+	* charset.c (cpp_interpret_string): Don't transform UCNs in raw
+	strings.
+	* lex.c (bufring_append): Split out from...
+	(lex_raw_string): ...here.  Undo trigraph and line splicing
+	transformations.  Do process line notes in multi-line literals.
+	(_cpp_process_line_notes): Ignore notes that were already handled.
+
 	Some raw string changes from N3077
 	* charset.c (cpp_interpret_string): Change inner delimiters to ().
 	* lex.c (lex_raw_string): Likewise.  Also disallow '\' in delimiter.

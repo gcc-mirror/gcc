@@ -1403,23 +1403,10 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 	  if (limit >= p + (p - prefix) + 1)
 	    limit -= (p - prefix) + 1;
 
-	  for (;;)
-	    {
-	      base = p;
-	      while (p < limit && (*p != '\\' || (p[1] != 'u' && p[1] != 'U')))
-		p++;
-	      if (p > base)
-		{
-		  /* We have a run of normal characters; these can be fed
-		     directly to convert_cset.  */
-		  if (!APPLY_CONVERSION (cvt, base, p - base, &tbuf))
-		    goto fail;
-		}
-	      if (p == limit)
-		break;
-
-	      p = convert_ucn (pfile, p + 1, limit, &tbuf, cvt);
-	    }
+	  /* Raw strings are all normal characters; these can be fed
+	     directly to convert_cset.  */
+	  if (!APPLY_CONVERSION (cvt, p, limit - p, &tbuf))
+	    goto fail;
 
 	  continue;
 	}

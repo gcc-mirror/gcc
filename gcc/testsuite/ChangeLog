@@ -1,5 +1,13 @@
 2010-03-29  Jason Merrill  <jason@redhat.com>
 
+	N3077
+	* c-c++-common/raw-string-1.c: Update handling of trigraphs, line
+	splicing and UCNs.
+	* c-c++-common/raw-string-2.c: Add trigraph test.
+	* c-c++-common/raw-string-8.c: New.
+	* c-c++-common/raw-string-9.c: New.
+	* c-c++-common/raw-string-10.c: New.
+
 	* c-c++-common/raw-string-1.c: Combine C and C++ raw string tests.
 	* c-c++-common/raw-string-2.c: Combine C and C++ raw string tests.
 	* c-c++-common/raw-string-3.c: Combine C and C++ raw string tests.
