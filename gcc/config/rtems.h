@@ -38,6 +38,5 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC "%{!qrtems: " STD_LIB_SPEC "} " \
 "%{!nostdlib: %{qrtems: --start-group \
- %{!qrtems_debug: -lrtemsbsp -lrtemscpu} \
- %{qrtems_debug: -lrtemsbsp_g -lrtemscpu_g} \
+ -lrtemsbsp -lrtemscpu \
  -lc -lgcc --end-group %{!qnolinkcmds: -T linkcmds%s}}}"

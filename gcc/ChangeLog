@@ -1,3 +1,7 @@
+2010-03-29  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config/rtems.h: Abandon -qrtems_debug.
+
 2010-03-28  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/43505
