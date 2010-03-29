@@ -240,7 +240,8 @@ struct _cpp_line_note
 
   /* Type of note.  The 9 'from' trigraph characters represent those
      trigraphs, '\\' an escaped newline, ' ' an escaped newline with
-     intervening space, and anything else is invalid.  */
+     intervening space, 0 represents a note that has already been handled,
+     and anything else is invalid.  */
   unsigned int type;
 };
 
