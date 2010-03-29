@@ -1,3 +1,8 @@
+2010-03-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43560
+	* gcc.dg/torture/pr43560.c: New testcase.
+
 2010-03-29  Jason Merrill  <jason@redhat.com>
 
 	N3077

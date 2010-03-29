@@ -1900,22 +1900,44 @@ hoist_memory_references (struct loop *loop, bitmap mem_refs,
     }
 }
 
-/* Returns true if REF is always accessed in LOOP.  */
+/* Returns true if REF is always accessed in LOOP.  If STORED_P is true
+   make sure REF is always stored to in LOOP.  */
 
 static bool
-ref_always_accessed_p (struct loop *loop, mem_ref_p ref)
+ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
   VEC (mem_ref_loc_p, heap) *locs = NULL;
   unsigned i;
   mem_ref_loc_p loc;
   bool ret = false;
   struct loop *must_exec;
+  tree base;
+
+  base = get_base_address (ref->mem);
+  if (INDIRECT_REF_P (base))
+    base = TREE_OPERAND (base, 0);
 
   get_all_locs_in_loop (loop, ref, &locs);
   for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
     {
       if (!get_lim_data (loc->stmt))
 	continue;
+
+      /* If we require an always executed store make sure the statement
+         stores to the reference.  */
+      if (stored_p)
+	{
+	  tree lhs;
+	  if (!gimple_get_lhs (loc->stmt))
+	    continue;
+	  lhs = get_base_address (gimple_get_lhs (loc->stmt));
+	  if (!lhs)
+	    continue;
+	  if (INDIRECT_REF_P (lhs))
+	    lhs = TREE_OPERAND (lhs, 0);
+	  if (lhs != base)
+	    continue;
+	}
 
       must_exec = get_lim_data (loc->stmt)->always_executed_in;
       if (!must_exec)
@@ -2054,6 +2076,8 @@ ref_indep_loop_p (struct loop *loop, mem_ref_p ref)
 static bool
 can_sm_ref_p (struct loop *loop, mem_ref_p ref)
 {
+  tree base;
+
   /* Unless the reference is stored in the loop, there is nothing to do.  */
   if (!bitmap_bit_p (ref->stored, loop->num))
     return false;
@@ -2064,9 +2088,14 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
       || !for_each_index (&ref->mem, may_move_till, loop))
     return false;
 
-  /* If it can trap, it must be always executed in LOOP.  */
-  if (tree_could_trap_p (ref->mem)
-      && !ref_always_accessed_p (loop, ref))
+  /* If it can trap, it must be always executed in LOOP.
+     Readonly memory locations may trap when storing to them, but
+     tree_could_trap_p is a predicate for rvalues, so check that
+     explicitly.  */
+  base = get_base_address (ref->mem);
+  if ((tree_could_trap_p (ref->mem)
+       || (DECL_P (base) && TREE_READONLY (base)))
+      && !ref_always_accessed_p (loop, ref, true))
     return false;
 
   /* And it must be independent on all other memory references
