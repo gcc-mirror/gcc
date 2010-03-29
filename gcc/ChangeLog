@@ -1,3 +1,11 @@
+2010-03-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43436
+	* tree-vect-data-refs.c (vect_analyze_data_refs): When
+	compute_data_dependences_for_loop returns false, early exit
+	and output an extra diagnostic for the failed data reference
+	analysis.
+
 2010-03-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43560
