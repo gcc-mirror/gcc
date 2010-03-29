@@ -2173,9 +2173,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   else
     {
       if (vect_print_dump_info (REPORT_COST))
-        fprintf (vect_dump, "cost model: vector iteration cost = %d "
-                 "is divisible by scalar iteration cost = %d by a factor "
-                 "greater than or equal to the vectorization factor = %d .",
+        fprintf (vect_dump, "cost model: the vector iteration cost = %d "
+		 "divided by the scalar iteration cost = %d "
+		 "is greater or equal to the vectorization factor = %d.",
                  vec_inside_cost, scalar_single_iter_cost, vf);
       return -1;
     }
