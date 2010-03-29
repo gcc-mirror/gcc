@@ -1,5 +1,14 @@
 // { dg-do run }
-// { dg-options "-std=c++0x" }
+// { dg-require-effective-target wchar }
+// { dg-options "-std=gnu99 -Wno-c++-compat" { target c } }
+// { dg-options "-std=c++0x" { target c++ } }
+
+#ifndef __cplusplus
+#include <wchar.h>
+
+typedef __CHAR16_TYPE__	char16_t;
+typedef __CHAR32_TYPE__ char32_t;
+#endif
 
 #define R
 #define u

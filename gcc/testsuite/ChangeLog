@@ -1,3 +1,13 @@
+2010-03-29  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/raw-string-1.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-2.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-3.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-4.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-5.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-6.c: Combine C and C++ raw string tests.
+	* c-c++-common/raw-string-7.c: Combine C and C++ raw string tests.
+
 2010-03-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43560
