@@ -703,7 +703,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     {
       switch (raw_prefix[raw_prefix_len])
 	{
-	case ' ': case '[': case ']': case '\t':
+	case ' ': case '(': case ')': case '\\': case '\t':
 	case '\v': case '\f': case '\n': default:
 	  break;
 	/* Basic source charset except the above chars.  */
@@ -719,18 +719,18 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	case 'Y': case 'Z':
 	case '0': case '1': case '2': case '3': case '4': case '5':
 	case '6': case '7': case '8': case '9':
-	case '_': case '{': case '}': case '#': case '(': case ')':
+	case '_': case '{': case '}': case '#': case '[': case ']':
 	case '<': case '>': case '%': case ':': case ';': case '.':
 	case '?': case '*': case '+': case '-': case '/': case '^':
 	case '&': case '|': case '~': case '!': case '=': case ',':
-	case '\\': case '"': case '\'':
+	case '"': case '\'':
 	  raw_prefix_len++;
 	  continue;
 	}
       break;
     }
 
-  if (raw_prefix[raw_prefix_len] != '[')
+  if (raw_prefix[raw_prefix_len] != '(')
     {
       int col = CPP_BUF_COLUMN (pfile->buffer, raw_prefix + raw_prefix_len)
 		+ 1;
@@ -751,7 +751,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     {
       cppchar_t c = *cur++;
 
-      if (c == ']'
+      if (c == ')'
 	  && strncmp ((const char *) cur, (const char *) raw_prefix,
 		      raw_prefix_len) == 0
 	  && cur[raw_prefix_len] == '"')

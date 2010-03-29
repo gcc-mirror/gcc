@@ -1,3 +1,16 @@
+2010-03-29  Jason Merrill  <jason@redhat.com>
+
+	N3077
+	* g++.dg/ext/raw-string-1.C: Change [] to ().
+	* g++.dg/ext/raw-string-2.C: Change [] to ().
+	Don't use \ in delimiter.
+	* g++.dg/ext/raw-string-3.C: Change [] to ().
+	* g++.dg/ext/raw-string-4.C: Change [] to ().
+	* g++.dg/ext/raw-string-5.C: Change [] to ().
+	Test for error on \ in delimiter.
+	* g++.dg/ext/raw-string-6.C: Change [] to ().
+	* g++.dg/ext/raw-string-7.C: Change [] to ().
+
 2010-03-29  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43564
