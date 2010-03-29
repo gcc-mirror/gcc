@@ -496,13 +496,17 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
           s->ndirty += nbyte;
         }
       else
-        {
-          if (s->file_length != -1 && s->physical_offset != s->logical_offset
-              && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
-            return -1;
-          nbyte = raw_write (s, buf, nbyte);
-          s->physical_offset += nbyte;
-        }
+	{
+	  if (s->file_length != -1 && s->physical_offset != s->logical_offset)
+	    {
+	      if (lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
+		return -1;
+	      s->physical_offset = s->logical_offset;
+	    }
+
+	  nbyte = raw_write (s, buf, nbyte);
+	  s->physical_offset += nbyte;
+	}
     }
   s->logical_offset += nbyte;
   /* Don't increment file_length if the file is non-seekable.  */
