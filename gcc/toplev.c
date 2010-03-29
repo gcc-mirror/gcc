@@ -2148,6 +2148,10 @@ process_options (void)
 	       "for correctness");
       flag_omit_frame_pointer = 0;
     }
+
+  /* Save the current optimization options.  */
+  optimization_default_node = build_optimization_node ();
+  optimization_current_node = optimization_default_node;
 }
 
 /* This function can be called multiple times to reinitialize the compiler

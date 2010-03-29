@@ -1034,6 +1034,7 @@ decode_options (unsigned int argc, const char **argv)
 	flag_pic = flag_pie;
       if (flag_pic && !flag_pie)
 	flag_shlib = 1;
+      first_time_p = false;
     }
 
   if (optimize == 0)
@@ -1112,13 +1113,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_ira_algorithm = IRA_ALGORITHM_PRIORITY;
     }
 
-  /* Save the current optimization options if this is the first call.  */
-  if (first_time_p)
-    {
-      optimization_default_node = build_optimization_node ();
-      optimization_current_node = optimization_default_node;
-      first_time_p = false;
-    }
   if (flag_conserve_stack)
     {
       if (!PARAM_SET_P (PARAM_LARGE_STACK_FRAME))
