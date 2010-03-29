@@ -1396,7 +1396,7 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 	  /* Skip over 'R"'.  */
 	  p += 2;
 	  prefix = p;
-	  while (*p != '[')
+	  while (*p != '(')
 	    p++;
 	  p++;
 	  limit = from[i].text + from[i].len;

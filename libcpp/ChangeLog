@@ -1,3 +1,9 @@
+2010-03-29  Jason Merrill  <jason@redhat.com>
+
+	Some raw string changes from N3077
+	* charset.c (cpp_interpret_string): Change inner delimiters to ().
+	* lex.c (lex_raw_string): Likewise.  Also disallow '\' in delimiter.
+
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (read_original_filename): Don't call read_original_directory

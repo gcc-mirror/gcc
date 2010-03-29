@@ -1,60 +1,60 @@
 // { dg-do run }
 // { dg-options "-std=c++0x" }
 
-const char s0[] = R"[a\
+const char s0[] = R"(a\
 \u010d\U0000010D\\\'\"\?\a\b\f\n\r\t\v\0\00\000\xa\xabb
-c]";
+c)";
 const char s1[] = "a\U0000010d\u010d\\\\\\'\\\"\\?\\a\\b\\f\\n\\r\\t\\v\\0\\00\\000\\xa\\xabb\nc";
-const char s2[] = R"*|*[a\
+const char s2[] = R"*|*(a\
 b
-c]"
-c]*|"
-c]*|*";
-const char s3[] = "ab\nc]\"\nc]*|\"\nc";
+c)"
+c)*|"
+c)*|*";
+const char s3[] = "ab\nc)\"\nc)*|\"\nc";
 
-const char t0[] = u8R"[a\
+const char t0[] = u8R"(a\
 \u010d\U0000010D\\\'\"\?\a\b\f\n\r\t\v\0\00\000\xa\xabb
-c]";
+c)";
 const char t1[] = u8"a\U0000010d\u010d\\\\\\'\\\"\\?\\a\\b\\f\\n\\r\\t\\v\\0\\00\\000\\xa\\xabb\nc";
-const char t2[] = u8R"*|*[a\
+const char t2[] = u8R"*|*(a\
 b
-c]"
-c]*|"
-c]*|*";
-const char t3[] = u8"ab\nc]\"\nc]*|\"\nc";
+c)"
+c)*|"
+c)*|*";
+const char t3[] = u8"ab\nc)\"\nc)*|\"\nc";
 
-const char16_t u0[] = uR"[a\
+const char16_t u0[] = uR"(a\
 \u010d\U0000010D\\\'\"\?\a\b\f\n\r\t\v\0\00\000\xa\xabb
-c]";
+c)";
 const char16_t u1[] = u"a\U0000010d\u010d\\\\\\'\\\"\\?\\a\\b\\f\\n\\r\\t\\v\\0\\00\\000\\xa\\xabb\nc";
-const char16_t u2[] = uR"*|*[a\
+const char16_t u2[] = uR"*|*(a\
 b
-c]"
-c]*|"
-c]*|*";
-const char16_t u3[] = u"ab\nc]\"\nc]*|\"\nc";
+c)"
+c)*|"
+c)*|*";
+const char16_t u3[] = u"ab\nc)\"\nc)*|\"\nc";
 
-const char32_t U0[] = UR"[a\
+const char32_t U0[] = UR"(a\
 \u010d\U0000010D\\\'\"\?\a\b\f\n\r\t\v\0\00\000\xa\xabb
-c]";
+c)";
 const char32_t U1[] = U"a\U0000010d\u010d\\\\\\'\\\"\\?\\a\\b\\f\\n\\r\\t\\v\\0\\00\\000\\xa\\xabb\nc";
-const char32_t U2[] = UR"*|*[a\
+const char32_t U2[] = UR"*|*(a\
 b
-c]"
-c]*|"
-c]*|*";
-const char32_t U3[] = U"ab\nc]\"\nc]*|\"\nc";
+c)"
+c)*|"
+c)*|*";
+const char32_t U3[] = U"ab\nc)\"\nc)*|\"\nc";
 
-const wchar_t L0[] = LR"[a\
+const wchar_t L0[] = LR"(a\
 \u010d\U0000010D\\\'\"\?\a\b\f\n\r\t\v\0\00\000\xa\xabb
-c]";
+c)";
 const wchar_t L1[] = L"a\U0000010d\u010d\\\\\\'\\\"\\?\\a\\b\\f\\n\\r\\t\\v\\0\\00\\000\\xa\\xabb\nc";
-const wchar_t L2[] = LR"*|*[a\
+const wchar_t L2[] = LR"*|*(a\
 b
-c]"
-c]*|"
-c]*|*";
-const wchar_t L3[] = L"ab\nc]\"\nc]*|\"\nc";
+c)"
+c)*|"
+c)*|*";
+const wchar_t L3[] = L"ab\nc)\"\nc)*|\"\nc";
 
 int
 main (void)
@@ -89,8 +89,8 @@ main (void)
   if (sizeof (L2) != sizeof (L3)
       || __builtin_memcmp (L2, L3, sizeof (L2)) != 0)
     __builtin_abort ();
-  if (sizeof (R"*[]*") != 1
-      || __builtin_memcmp (R"*[]*", "", 1) != 0)
+  if (sizeof (R"*()*") != 1
+      || __builtin_memcmp (R"*()*", "", 1) != 0)
     __builtin_abort ();
   return 0;
 }
