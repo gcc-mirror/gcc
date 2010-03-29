@@ -1,3 +1,7 @@
+2010-03-28  Andrew Pinski  <pinskia@gmail.com>
+
+	* MAINTAINERS (spu port): Remove me.
+
 2010-03-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (tic6x-*-*): New case.
