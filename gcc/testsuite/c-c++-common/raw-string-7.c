@@ -1,17 +1,18 @@
 // The trailing whitespace after \ and before newline extension
 // breaks full compliance for raw strings.
 // { dg-do run { xfail *-*-* } }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu99" { target c } }
+// { dg-options "-std=c++0x" { target c++ } }
 
 // Note, there is a single space after \ on the following line.
 const char *s0 = R"(\ 
 )";
-// { dg-bogus "backslash and newline separated by space" "" { xfail *-*-* } 7 }
+// { dg-bogus "backslash and newline separated by space" "" { xfail *-*-* } 8 }
 
 // Note, there is a single tab after \ on the following line.
 const char *s1 = R"(\	
 )";
-// { dg-bogus "backslash and newline separated by space" "" { xfail *-*-* } 12 }
+// { dg-bogus "backslash and newline separated by space" "" { xfail *-*-* } 13 }
 
 int
 main (void)
