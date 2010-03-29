@@ -1,5 +1,7 @@
 2010-03-29  Jason Merrill  <jason@redhat.com>
 
+	* gcc.dg/cpp/include6.c: Change [] to ().
+
 	N3077
 	* c-c++-common/raw-string-1.c: Update handling of trigraphs, line
 	splicing and UCNs.
