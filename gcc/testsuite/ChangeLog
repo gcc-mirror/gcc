@@ -1,3 +1,8 @@
+2010-03-29  Jie Zhang  <jie@codesourcery.com>
+
+	PR 43564
+	* gcc.dg/pr43564.c: New test.
+
 2010-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43551
