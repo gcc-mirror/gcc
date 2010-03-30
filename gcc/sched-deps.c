@@ -2286,7 +2286,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (dest));
 
 	  t = shallow_copy_rtx (dest);
-	  cselib_lookup (XEXP (t, 0), address_mode, 1);
+	  cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1, insn);
 	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	}
       t = canon_rtx (t);
@@ -2443,7 +2443,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	      = targetm.addr_space.address_mode (MEM_ADDR_SPACE (t));
 
 	    t = shallow_copy_rtx (t);
-	    cselib_lookup (XEXP (t, 0), address_mode, 1);
+	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1, insn);
 	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	  }
 

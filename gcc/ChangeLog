@@ -1,3 +1,34 @@
+2010-03-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42977
+	* cselib.c (n_useless_values): Document handling of debug locs.
+	(n_useless_debug_values, n_debug_values): New variables.
+	(new_elt_loc_list): Don't add to debug values, keep count.
+	(promote_debug_loc): New.
+	(cselib_reset_table): Zero new variables.
+	(entry_and_rtx_equal_p): Promote debug locs.
+	(discard_useless_locs): Increment n_useless_debug_values for
+	debug values.
+	(remove_useless_values): Adjust n_useless_values and n_debug_values
+	with n_useless_debug_values.
+	(add_mem_for_addr): Promote debug locs.
+	(cselib_lookup_mem): Likewise.
+	(cselib_lookup_addr): Renamed to...
+	(cselib_lookup_addr_1): ... this.  Promote debug locs.
+	Don't call...
+	(cselib_log_lookup): ... this.  Turn into...
+	(cselib_lookup_addr): ... new wrapper.
+	(cselib_lookup_from_insn): New.
+	(cselib_invalidate_regno): Increment n_useless_debug_values for
+	debug values.
+	(cselib_invalidate_mem): Likewise.
+	(cselib_process_insn): Take n_deleted and n_debug_values into
+	account to guard remove_useless_value call.
+	(cselib_finish): Zero n_useless_debug_values.
+	* cselib.h (cselib_lookup_from_insn): Declare.
+	* sched-deps.c (sched_analyze_1): Use cselib_lookup_from_insn.
+	(sched_analyze_2): Likewise.
+
 2010-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (use_narrower_mode_test, use_narrower_mode): New
