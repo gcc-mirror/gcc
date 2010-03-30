@@ -1,3 +1,8 @@
+2010-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	* gfortran.dg/read_eof_8.f90: New test.
+
 2010-03-29  Jason Merrill  <jason@redhat.com>
 
 	* gcc.dg/cpp/include6.c: Change [] to ().
