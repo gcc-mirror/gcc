@@ -1,3 +1,8 @@
+2010-03-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Omit issuing a dynamic
+	stack check if the mask would be zero.
+
 2010-03-30  Seongbae Park <seongbae.park@gmail.com>
 	    Jack Howarth <howarth@bromo.med.uc.edu>
 

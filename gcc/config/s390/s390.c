@@ -7802,16 +7802,35 @@ s390_emit_prologue (void)
 	    }
 	  else
 	    {
-	      HOST_WIDE_INT stack_check_mask = ((s390_stack_size - 1)
-						& ~(stack_guard - 1));
-	      rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
-				   GEN_INT (stack_check_mask));
-	      if (TARGET_64BIT)
-	        emit_insn (gen_ctrapdi4 (gen_rtx_EQ (VOIDmode, t, const0_rtx),
-				         t, const0_rtx, const0_rtx));
+	      /* stack_guard has to be smaller than s390_stack_size.
+		 Otherwise we would emit an AND with zero which would
+		 not match the test under mask pattern.  */
+	      if (stack_guard >= s390_stack_size)
+		{
+		  warning (0, "frame size of function %qs is "
+			   HOST_WIDE_INT_PRINT_DEC
+			   " bytes which is more than half the stack size. "
+			   "The dynamic check would not be reliable. "
+			   "No check emitted for this function.",
+			   current_function_name(),
+			   cfun_frame_layout.frame_size);
+		}
 	      else
-	        emit_insn (gen_ctrapsi4 (gen_rtx_EQ (VOIDmode, t, const0_rtx),
-				         t, const0_rtx, const0_rtx));
+		{
+		  HOST_WIDE_INT stack_check_mask = ((s390_stack_size - 1)
+						    & ~(stack_guard - 1));
+
+		  rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
+				       GEN_INT (stack_check_mask));
+		  if (TARGET_64BIT)
+		    emit_insn (gen_ctrapdi4 (gen_rtx_EQ (VOIDmode,
+							 t, const0_rtx),
+					     t, const0_rtx, const0_rtx));
+		  else
+		    emit_insn (gen_ctrapsi4 (gen_rtx_EQ (VOIDmode,
+							 t, const0_rtx),
+					     t, const0_rtx, const0_rtx));
+		}
 	    }
   	}
 
