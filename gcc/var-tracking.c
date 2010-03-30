@@ -4170,7 +4170,7 @@ dataflow_set_clear_at_call (dataflow_set *set)
   int r;
 
   for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-    if (TEST_HARD_REG_BIT (call_used_reg_set, r))
+    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, r))
       var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_INSNS)

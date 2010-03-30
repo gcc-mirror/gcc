@@ -1,3 +1,10 @@
+2010-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43593
+	* var-tracking.c (dataflow_set_clear_at_call): Invalidate
+	just regs_invalidated_by_call instead all call_used_reg_set
+	registers.
+
 2010-03-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43430
