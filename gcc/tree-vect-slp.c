@@ -246,14 +246,16 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	      if ((i == 0
 		   && (*first_stmt_dt0 != dt[i]
 		       || (*first_stmt_def0_type && def
-			   && *first_stmt_def0_type != TREE_TYPE (def))))
+			   && !types_compatible_p (*first_stmt_def0_type,
+						   TREE_TYPE (def)))))
 		  || (i == 1
 		      && (*first_stmt_dt1 != dt[i]
 			  || (*first_stmt_def1_type && def
-			      && *first_stmt_def1_type != TREE_TYPE (def))))
+			      && !types_compatible_p (*first_stmt_def1_type,
+						      TREE_TYPE (def)))))
 		  || (!def
-		      && TREE_TYPE (*first_stmt_const_oprnd)
-		      != TREE_TYPE (oprnd)))
+		      && !types_compatible_p (TREE_TYPE (*first_stmt_const_oprnd),
+					      TREE_TYPE (oprnd))))
 		{
 		  if (vect_print_dump_info (REPORT_SLP))
 		    fprintf (vect_dump, "Build SLP failed: different types ");

@@ -1268,7 +1268,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 
       /* We can only handle calls with arguments of the same type.  */
       if (rhs_type
-	  && rhs_type != TREE_TYPE (op))
+	  && !types_compatible_p (rhs_type, TREE_TYPE (op)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "argument types differ.");
@@ -3863,7 +3863,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 
   /* We do not handle two different vector types for the condition
      and the values.  */
-  if (TREE_TYPE (TREE_OPERAND (cond_expr, 0)) != TREE_TYPE (vectype))
+  if (!types_compatible_p (TREE_TYPE (TREE_OPERAND (cond_expr, 0)),
+			   TREE_TYPE (vectype)))
     return false;
 
   if (TREE_CODE (then_clause) == SSA_NAME)
