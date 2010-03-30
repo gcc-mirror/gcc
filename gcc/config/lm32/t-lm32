@@ -1,0 +1,2 @@
+# for multilib
+MULTILIB_OPTIONS = mmultiply-enabled mbarrel-shift-enabled

@@ -1,3 +1,7 @@
+2010-03-30  Tarik Graba  <tarik.graba@telecom-paristech.fr>
+
+	* config/lm32/t-lm32: Remove misplaced MULTILIB_OPTIONS.
+
 2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/38085
