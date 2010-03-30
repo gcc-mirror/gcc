@@ -556,6 +556,7 @@ LIBOBJS
 asm_hidden_op
 extra_parts
 tmake_file
+set_use_emutls
 set_have_cc_tls
 vis_hide
 fixed_point
@@ -3808,6 +3809,42 @@ $as_echo "$gcc_cv_have_cc_tls" >&6; }
 set_have_cc_tls=
 if test "$enable_tls $gcc_cv_have_cc_tls" = "yes yes"; then
   set_have_cc_tls="-DHAVE_CC_TLS"
+fi
+
+
+# See if we have emulated thread-local storage.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the thread-local storage support is from emutls" >&5
+$as_echo_n "checking whether the thread-local storage support is from emutls... " >&6; }
+if test "${gcc_cv_use_emutls+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    gcc_cv_use_emutls=no
+    echo '__thread int a; int b; int main() { return a = b; }' > conftest.c
+    if { ac_try='${CC-cc} -Werror -S -o conftest.s conftest.c 1>&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then
+      if grep __emutls_get_address conftest.s > /dev/null; then
+	gcc_cv_use_emutls=yes
+      fi
+    fi
+    rm -f conftest.*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_use_emutls" >&5
+$as_echo "$gcc_cv_use_emutls" >&6; }
+  if test "$gcc_cv_use_emutls" = "yes" ; then
+
+$as_echo "#define USE_EMUTLS 1" >>confdefs.h
+
+  fi
+set_use_emutls=
+if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
+  set_use_emutls="-DUSE_EMUTLS"
 fi
 
 
