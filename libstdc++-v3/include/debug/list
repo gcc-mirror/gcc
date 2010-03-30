@@ -31,7 +31,6 @@
 #define _GLIBCXX_DEBUG_LIST 1
 
 #include <list>
-#include <bits/stl_algo.h>
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 

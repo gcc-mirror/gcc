@@ -30,15 +30,13 @@
 #ifndef _GLIBCXX_DEBUG_UNORDERED_MAP
 #define _GLIBCXX_DEBUG_UNORDERED_MAP 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <unordered_map>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <bits/c++0x_warning.h>
-#endif
+#else
+# include <unordered_map>
 
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
-#include <initializer_list>
 
 namespace std
 {
@@ -554,5 +552,7 @@ namespace __debug
 
 } // namespace __debug
 } // namespace std
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif
