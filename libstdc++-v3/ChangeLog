@@ -1,3 +1,11 @@
+2010-03-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/unordered_map: Clean-up includes and guards.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/list: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+
 2010-03-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43458

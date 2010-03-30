@@ -34,15 +34,12 @@
 #ifndef _GLIBCXX_PROFILE_UNORDERED_SET
 #define _GLIBCXX_PROFILE_UNORDERED_SET 1
 
-#include <profile/base.h>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <unordered_set>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <bits/c++0x_warning.h>
-#endif
+#else
+# include <unordered_set>
 
-#include <initializer_list>
+#include <profile/base.h>
 
 #define _GLIBCXX_BASE unordered_set<_Key, _Hash, _Pred, _Alloc>
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
@@ -503,5 +500,7 @@ namespace __profile
 
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif
