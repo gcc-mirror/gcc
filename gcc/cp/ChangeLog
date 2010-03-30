@@ -1,5 +1,11 @@
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41185
+	PR c++/41786
+	* parser.c (cp_parser_direct_declarator): Don't allow VLAs in
+	function parameter context.  Don't print an error if parsing
+	tentatively.
+
 	PR c++/43559
 	* pt.c (more_specialized_fn): Don't control cv-qualifier check
 	with same_type_p.
