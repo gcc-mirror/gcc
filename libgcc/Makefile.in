@@ -226,7 +226,7 @@ override CFLAGS := $(filter-out -fprofile-generate -fprofile-use,$(CFLAGS))
 # will usually contain -g, so for the moment CFLAGS goes first.  We must
 # include CFLAGS - that's where multilib options live.
 INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
-		  $(INCLUDES) @set_have_cc_tls@
+		  $(INCLUDES) @set_have_cc_tls@ @set_use_emutls@
 
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)

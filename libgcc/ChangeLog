@@ -1,3 +1,11 @@
+2010-03-30  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR c/43553
+	* Makefile.in (INTERNAL_CFLAGS): Add @set_use_emutls@.
+	* configure.ac: Use GCC_CHECK_EMUTLS to see if emulated TLS
+	is used and substitute set_use_emutls.
+	* configure: Regenerated.
+
 2010-03-30  Tarik Graba  <tarik.graba@telecom-paristech.fr>
 
 	* config/lm32/t-lm32: Remove misplaced MULTILIB_OPTIONS.
