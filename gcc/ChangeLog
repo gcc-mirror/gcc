@@ -1,3 +1,13 @@
+2010-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/25232
+	* libgcc-std.ver (GCC_4.5.0): Define version.  Include __unordxf2
+	and __unordtf2.
+	* config/bfin/libgcc-bfin.ver (GCC_4.5.0): Define version.
+	Include ___unordxf2 and ___unordtf2.
+	* config/i386/libgcc-glibc.ver: Do not define inheritance from
+	GCC_4.4.0 here.
+
 2010-03-30  Tarik Graba  <tarik.graba@telecom-paristech.fr>
 
 	* config/lm32/t-lm32: New file.
