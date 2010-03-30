@@ -1,3 +1,8 @@
+2010-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43559
+	* g++.dg/template/partial7.C: New.
+
 2010-03-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/stackcheck1.c: New testcase.
