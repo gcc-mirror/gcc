@@ -14106,11 +14106,13 @@ cp_parser_direct_declarator (cp_parser* parser,
 		bounds = fold_non_dependent_expr (bounds);
 	      /* Normally, the array bound must be an integral constant
 		 expression.  However, as an extension, we allow VLAs
-		 in function scopes.  */
-	      else if (!parser->in_function_body)
+		 in function scopes as long as they aren't part of a
+		 parameter declaration.  */
+	      else if (!parser->in_function_body
+		       || current_binding_level->kind == sk_function_parms)
 		{
-		  error_at (token->location,
-			    "array bound is not an integer constant");
+		  cp_parser_error (parser,
+				   "array bound is not an integer constant");
 		  bounds = error_mark_node;
 		}
 	      else if (processing_template_decl && !error_operand_p (bounds))
