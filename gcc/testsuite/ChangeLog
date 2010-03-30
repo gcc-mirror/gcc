@@ -1,3 +1,8 @@
+2010-03-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43430
+	* gcc.dg/vect/pr43430-1.c: New.
+
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43559
