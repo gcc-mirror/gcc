@@ -77,6 +77,7 @@ extern void (*cselib_record_sets_hook) (rtx insn, struct cselib_set *sets,
 					int n_sets);
 
 extern cselib_val *cselib_lookup (rtx, enum machine_mode, int);
+extern cselib_val *cselib_lookup_from_insn (rtx, enum machine_mode, int, rtx);
 extern void cselib_init (int);
 extern void cselib_clear_table (void);
 extern void cselib_finish (void);

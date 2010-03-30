@@ -97,9 +97,47 @@ static unsigned int next_uid;
 /* The number of registers we had when the varrays were last resized.  */
 static unsigned int cselib_nregs;
 
-/* Count values without known locations.  Whenever this grows too big, we
-   remove these useless values from the table.  */
+/* Count values without known locations, or with only locations that
+   wouldn't have been known except for debug insns.  Whenever this
+   grows too big, we remove these useless values from the table.
+
+   Counting values with only debug values is a bit tricky.  We don't
+   want to increment n_useless_values when we create a value for a
+   debug insn, for this would get n_useless_values out of sync, but we
+   want increment it if all locs in the list that were ever referenced
+   in nondebug insns are removed from the list.
+
+   In the general case, once we do that, we'd have to stop accepting
+   nondebug expressions in the loc list, to avoid having two values
+   equivalent that, without debug insns, would have been made into
+   separate values.  However, because debug insns never introduce
+   equivalences themselves (no assignments), the only means for
+   growing loc lists is through nondebug assignments.  If the locs
+   also happen to be referenced in debug insns, it will work just fine.
+
+   A consequence of this is that there's at most one debug-only loc in
+   each loc list.  If we keep it in the first entry, testing whether
+   we have a debug-only loc list takes O(1).
+
+   Furthermore, since any additional entry in a loc list containing a
+   debug loc would have to come from an assignment (nondebug) that
+   references both the initial debug loc and the newly-equivalent loc,
+   the initial debug loc would be promoted to a nondebug loc, and the
+   loc list would not contain debug locs any more.
+
+   So the only case we have to be careful with in order to keep
+   n_useless_values in sync between debug and nondebug compilations is
+   to avoid incrementing n_useless_values when removing the single loc
+   from a value that turns out to not appear outside debug values.  We
+   increment n_useless_debug_values instead, and leave such values
+   alone until, for other reasons, we garbage-collect useless
+   values.  */
 static int n_useless_values;
+static int n_useless_debug_values;
+
+/* Count values whose locs have been taken exclusively from debug
+   insns for the entire life of the value.  */
+static int n_debug_values;
 
 /* Number of useless values before we remove them from the hash table.  */
 #define MAX_USELESS_VALUES 32
@@ -188,7 +226,31 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
   el->next = next;
   el->loc = loc;
   el->setting_insn = cselib_current_insn;
+  gcc_assert (!next || !next->setting_insn
+	      || !DEBUG_INSN_P (next->setting_insn));
+
+  /* If we're creating the first loc in a debug insn context, we've
+     just created a debug value.  Count it.  */
+  if (!next && cselib_current_insn && DEBUG_INSN_P (cselib_current_insn))
+    n_debug_values++;
+
   return el;
+}
+
+/* Promote loc L to a nondebug cselib_current_insn if L is marked as
+   originating from a debug insn, maintaining the debug values
+   count.  */
+
+static inline void
+promote_debug_loc (struct elt_loc_list *l)
+{
+  if (l->setting_insn && DEBUG_INSN_P (l->setting_insn)
+      && (!cselib_current_insn || !DEBUG_INSN_P (cselib_current_insn)))
+    {
+      n_debug_values--;
+      l->setting_insn = cselib_current_insn;
+      gcc_assert (!l->next);
+    }
 }
 
 /* The elt_list at *PL is no longer needed.  Unchain it and free its
@@ -305,6 +367,8 @@ cselib_reset_table (unsigned int num)
     htab_empty (cselib_hash_table);
 
   n_useless_values = 0;
+  n_useless_debug_values = 0;
+  n_debug_values = 0;
 
   next_uid = num;
 
@@ -349,7 +413,10 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
     if (rtx_equal_for_cselib_p (l->loc, x))
-      return 1;
+      {
+	promote_debug_loc (l);
+	return 1;
+      }
 
   return 0;
 }
@@ -403,7 +470,8 @@ discard_useless_locs (void **x, void *info ATTRIBUTE_UNUSED)
 {
   cselib_val *v = (cselib_val *)*x;
   struct elt_loc_list **p = &v->locs;
-  int had_locs = v->locs != 0;
+  bool had_locs = v->locs != NULL;
+  rtx setting_insn = v->locs ? v->locs->setting_insn : NULL;
 
   while (*p)
     {
@@ -415,7 +483,10 @@ discard_useless_locs (void **x, void *info ATTRIBUTE_UNUSED)
 
   if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
     {
-      n_useless_values++;
+      if (setting_insn && DEBUG_INSN_P (setting_insn))
+	n_useless_debug_values++;
+      else
+	n_useless_values++;
       values_became_useless = 1;
     }
   return 1;
@@ -449,6 +520,7 @@ static void
 remove_useless_values (void)
 {
   cselib_val **p, *v;
+
   /* First pass: eliminate locations that reference the value.  That in
      turn can make more values useless.  */
   do
@@ -468,6 +540,10 @@ remove_useless_values (void)
 	p = &(*p)->next_containing_mem;
       }
   *p = &dummy_val;
+
+  n_useless_values += n_useless_debug_values;
+  n_debug_values -= n_useless_debug_values;
+  n_useless_debug_values = 0;
 
   htab_traverse (cselib_hash_table, discard_useless_values, 0);
 
@@ -947,7 +1023,10 @@ add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
   for (l = mem_elt->locs; l; l = l->next)
     if (MEM_P (l->loc)
 	&& CSELIB_VAL_PTR (XEXP (l->loc, 0)) == addr_elt)
-      return;
+      {
+	promote_debug_loc (l);
+	return;
+      }
 
   addr_elt->addr_list = new_elt_list (addr_elt->addr_list, mem_elt);
   mem_elt->locs
@@ -985,7 +1064,10 @@ cselib_lookup_mem (rtx x, int create)
   /* Find a value that describes a value of our mode at that address.  */
   for (l = addr->addr_list; l; l = l->next)
     if (GET_MODE (l->elt->val_rtx) == mode)
-      return l->elt;
+      {
+	promote_debug_loc (l->elt->locs);
+	return l->elt;
+      }
 
   if (! create)
     return 0;
@@ -1516,30 +1598,13 @@ cselib_subst_to_values (rtx x)
   return copy;
 }
 
-/* Log a lookup of X to the cselib table along with the result RET.  */
-
-static cselib_val *
-cselib_log_lookup (rtx x, cselib_val *ret)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fputs ("cselib lookup ", dump_file);
-      print_inline_rtx (dump_file, x, 2);
-      fprintf (dump_file, " => %u:%u\n",
-	       ret ? ret->uid : 0,
-	       ret ? ret->hash : 0);
-    }
-
-  return ret;
-}
-
 /* Look up the rtl expression X in our tables and return the value it has.
    If CREATE is zero, we return NULL if we don't know the value.  Otherwise,
    we create a new one if possible, using mode MODE if X doesn't have a mode
    (i.e. because it's a constant).  */
 
-cselib_val *
-cselib_lookup (rtx x, enum machine_mode mode, int create)
+static cselib_val *
+cselib_lookup_1 (rtx x, enum machine_mode mode, int create)
 {
   void **slot;
   cselib_val *e;
@@ -1561,10 +1626,13 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
 	l = l->next;
       for (; l; l = l->next)
 	if (mode == GET_MODE (l->elt->val_rtx))
-	  return cselib_log_lookup (x, l->elt);
+	  {
+	    promote_debug_loc (l->elt->locs);
+	    return l->elt;
+	  }
 
       if (! create)
-	return cselib_log_lookup (x, 0);
+	return 0;
 
       if (i < FIRST_PSEUDO_REGISTER)
 	{
@@ -1587,25 +1655,25 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
       REG_VALUES (i)->next = new_elt_list (REG_VALUES (i)->next, e);
       slot = htab_find_slot_with_hash (cselib_hash_table, x, e->hash, INSERT);
       *slot = e;
-      return cselib_log_lookup (x, e);
+      return e;
     }
 
   if (MEM_P (x))
-    return cselib_log_lookup (x, cselib_lookup_mem (x, create));
+    return cselib_lookup_mem (x, create);
 
   hashval = cselib_hash_rtx (x, create);
   /* Can't even create if hashing is not possible.  */
   if (! hashval)
-    return cselib_log_lookup (x, 0);
+    return 0;
 
   slot = htab_find_slot_with_hash (cselib_hash_table, wrap_constant (mode, x),
 				   hashval, create ? INSERT : NO_INSERT);
   if (slot == 0)
-    return cselib_log_lookup (x, 0);
+    return 0;
 
   e = (cselib_val *) *slot;
   if (e)
-    return cselib_log_lookup (x, e);
+    return e;
 
   e = new_cselib_val (hashval, mode, x);
 
@@ -1614,7 +1682,51 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
      cselib_subst_to_values will need to do lookups.  */
   *slot = (void *) e;
   e->locs = new_elt_loc_list (e->locs, cselib_subst_to_values (x));
-  return cselib_log_lookup (x, e);
+  return e;
+}
+
+/* Wrapper for cselib_lookup, that indicates X is in INSN.  */
+
+cselib_val *
+cselib_lookup_from_insn (rtx x, enum machine_mode mode,
+			 int create, rtx insn)
+{
+  cselib_val *ret;
+
+  gcc_assert (!cselib_current_insn);
+  cselib_current_insn = insn;
+
+  ret = cselib_lookup (x, mode, create);
+
+  cselib_current_insn = NULL;
+
+  return ret;
+}
+
+/* Wrapper for cselib_lookup_1, that logs the lookup result and
+   maintains invariants related with debug insns.  */
+
+cselib_val *
+cselib_lookup (rtx x, enum machine_mode mode, int create)
+{
+  cselib_val *ret = cselib_lookup_1 (x, mode, create);
+
+  /* ??? Should we return NULL if we're not to create an entry, the
+     found loc is a debug loc and cselib_current_insn is not DEBUG?
+     If so, we should also avoid converting val to non-DEBUG; probably
+     easiest setting cselib_current_insn to NULL before the call
+     above.  */
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fputs ("cselib lookup ", dump_file);
+      print_inline_rtx (dump_file, x, 2);
+      fprintf (dump_file, " => %u:%u\n",
+	       ret ? ret->uid : 0,
+	       ret ? ret->hash : 0);
+    }
+
+  return ret;
 }
 
 /* Invalidate any entries in reg_values that overlap REGNO.  This is called
@@ -1663,6 +1775,8 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
       while (*l)
 	{
 	  cselib_val *v = (*l)->elt;
+	  bool had_locs;
+	  rtx setting_insn;
 	  struct elt_loc_list **p;
 	  unsigned int this_last = i;
 
@@ -1689,6 +1803,9 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	  else
 	    unchain_one_elt_list (l);
 
+	  had_locs = v->locs != NULL;
+	  setting_insn = v->locs ? v->locs->setting_insn : NULL;
+
 	  /* Now, we clear the mapping from value to reg.  It must exist, so
 	     this code will crash intentionally if it doesn't.  */
 	  for (p = &v->locs; ; p = &(*p)->next)
@@ -1701,8 +1818,14 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 		  break;
 		}
 	    }
-	  if (v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
-	    n_useless_values++;
+
+	  if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
+	    {
+	      if (setting_insn && DEBUG_INSN_P (setting_insn))
+		n_useless_debug_values++;
+	      else
+		n_useless_values++;
+	    }
 	}
     }
 }
@@ -1740,7 +1863,8 @@ cselib_invalidate_mem (rtx mem_rtx)
     {
       bool has_mem = false;
       struct elt_loc_list **p = &v->locs;
-      int had_locs = v->locs != 0;
+      bool had_locs = v->locs != NULL;
+      rtx setting_insn = v->locs ? v->locs->setting_insn : NULL;
 
       while (*p)
 	{
@@ -1785,7 +1909,12 @@ cselib_invalidate_mem (rtx mem_rtx)
 	}
 
       if (had_locs && v->locs == 0 && !PRESERVED_VALUE_P (v->val_rtx))
-	n_useless_values++;
+	{
+	  if (setting_insn && DEBUG_INSN_P (setting_insn))
+	    n_useless_debug_values++;
+	  else
+	    n_useless_values++;
+	}
 
       next = v->next_containing_mem;
       if (has_mem)
@@ -2079,7 +2208,10 @@ cselib_process_insn (rtx insn)
       /* remove_useless_values is linear in the hash table size.  Avoid
          quadratic behavior for very large hashtables with very few
 	 useless elements.  */
-      && (unsigned int)n_useless_values > cselib_hash_table->n_elements / 4)
+      && ((unsigned int)n_useless_values
+	  > (cselib_hash_table->n_elements
+	     - cselib_hash_table->n_deleted
+	     - n_debug_values) / 4))
     remove_useless_values ();
 }
 
@@ -2143,6 +2275,8 @@ cselib_finish (void)
   used_regs = 0;
   cselib_hash_table = 0;
   n_useless_values = 0;
+  n_useless_debug_values = 0;
+  n_debug_values = 0;
   next_uid = 0;
 }
 
