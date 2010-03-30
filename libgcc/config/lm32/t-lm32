@@ -8,5 +8,3 @@ LIB2ADD += \
         $(srcdir)/config/lm32/_modsi3.c \
         $(srcdir)/config/lm32/_udivsi3.c \
         $(srcdir)/config/lm32/_umodsi3.c
-
-MULTILIB_OPTIONS = mmultiply-enabled mbarrel-shift-enabled 

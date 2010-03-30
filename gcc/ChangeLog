@@ -1,3 +1,8 @@
+2010-03-30  Tarik Graba  <tarik.graba@telecom-paristech.fr>
+
+	* config/lm32/t-lm32: New file.
+	* config.gcc: Use the above file when targetting lm32.
+
 2010-03-28  Duncan Sands  <baldrick@free.fr>
 
        * Makefile.in (PLUGIN_HEADERS): Add except.h.
