@@ -1,3 +1,7 @@
+2010-03-28  Duncan Sands  <baldrick@free.fr>
+
+       * Makefile.in (PLUGIN_HEADERS): Add except.h.
+
 2010-03-29  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43431
