@@ -1,3 +1,9 @@
+2010-03-30  Seongbae Park <seongbae.park@gmail.com>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* tree-profile.c (tree_init_ic_make_global_vars): Make static
+	variables TLS.
+
 2010-03-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/25232
