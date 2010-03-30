@@ -322,10 +322,16 @@ namespace __gnu_parallel
 	}
 #endif
 
-      __num_threads = std::min<_BinIndex>(__num_threads, __num_bins);
+      __num_bins = __round_up_to_pow2(
+                        std::max<_BinIndex>(__num_threads, __num_bins));
 
       if (__num_threads <= 1)
-	return __sequential_random_shuffle(__begin, __end, __rng);
+      {
+        _RandomNumber __derived_rng(
+                            __rng(std::numeric_limits<uint32_t>::max()));
+	__sequential_random_shuffle(__begin, __end, __derived_rng);
+        return;
+      }
 
       _DRandomShufflingGlobalData<_RAIter> __sd(__begin);
       _DRSSorterPU<_RAIter, _RandomNumber >* __pus;
