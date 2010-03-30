@@ -1,3 +1,10 @@
+2010-03-30  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/random_shuffle.h
+        (__parallel_random_shuffle_drs) : Take as many threads as
+        possible, i. e. favor parallelism over cache efficiency.
+        Use own PRNG also for the 1 thread case.
+
 2010-03-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/unordered_map: Clean-up includes and guards.
