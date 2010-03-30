@@ -4548,6 +4548,9 @@ push_template_decl_real (tree decl, bool is_friend)
 
 	    if (current == decl)
 	      current = ctx;
+	    else if (current == NULL_TREE)
+	      /* Can happen in erroneous input.  */
+	      break;
 	    else
 	      current = (TYPE_P (current)
 			 ? TYPE_CONTEXT (current)
