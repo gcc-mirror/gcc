@@ -1,5 +1,11 @@
 2010-03-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* var-tracking.c (use_narrower_mode_test, use_narrower_mode): New
+	functions.
+	(adjust_mems): Replace narrowing SUBREG of expression containing
+	just PLUS, MINUS, MULT and ASHIFT of registers and constants
+	with operations in the narrower mode.
+
 	PR debug/43593
 	* var-tracking.c (dataflow_set_clear_at_call): Invalidate
 	just regs_invalidated_by_call instead all call_used_reg_set
