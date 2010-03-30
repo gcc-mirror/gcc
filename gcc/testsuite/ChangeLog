@@ -1,5 +1,8 @@
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43076
+	* g++.dg/template/error-recovery1.C: New.
+
 	PR c++/41786
 	* g++.dg/parse/ambig5.C: New.
 

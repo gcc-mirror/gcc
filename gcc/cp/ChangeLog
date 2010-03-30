@@ -1,5 +1,9 @@
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43076
+	* pt.c (push_template_decl_real): Deal better with running out of
+	scopes before running out of template parms.
+
 	PR c++/41185
 	PR c++/41786
 	* parser.c (cp_parser_direct_declarator): Don't allow VLAs in
