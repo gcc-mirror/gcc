@@ -385,12 +385,19 @@ number_of_write_pdrs (poly_bb_p pbb)
   return res;
 }
 
+/* The basic block of the PBB.  */
+static inline basic_block
+pbb_bb (poly_bb_p pbb)
+{
+  return GBB_BB (PBB_BLACK_BOX (pbb));
+}
+
 /* The index of the PBB.  */
 
 static inline int
 pbb_index (poly_bb_p pbb)
 {
-  return GBB_BB (PBB_BLACK_BOX (pbb))->index;
+  return pbb_bb (pbb)->index;
 }
 
 /* The loop of the PBB.  */
