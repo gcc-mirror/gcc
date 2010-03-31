@@ -349,6 +349,9 @@ extern bool elimination_target_reg_p (rtx);
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);
 
+/* True if caller-save has been reinitialized.  */
+extern bool caller_save_initialized_p;
+
 /* Functions in caller-save.c:  */
 
 /* Initialize for caller-save.  */
