@@ -8101,10 +8101,10 @@ vt_init_cfa_base (void)
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
 
-  val = cselib_lookup (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1);
+  val = cselib_lookup_from_insn (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1,
+				 get_insns ());
   preserve_value (val);
   cselib_preserve_cfa_base_value (val);
-  val->locs->setting_insn = get_insns ();
   var_reg_decl_set (&VTI (ENTRY_BLOCK_PTR)->out, cfa_base_rtx,
 		    VAR_INIT_STATUS_INITIALIZED, dv_from_value (val->val_rtx),
 		    0, NULL_RTX, INSERT);
