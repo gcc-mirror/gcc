@@ -1,3 +1,9 @@
+2010-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43557
+	* cfgexpand.c (expand_debug_expr): Handle VOIDmode mode like
+	BLKmode.
+
 2010-03-31  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43562
