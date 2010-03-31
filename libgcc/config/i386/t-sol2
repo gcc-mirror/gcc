@@ -32,3 +32,6 @@ $(T)crtn.o: $(gcc_srcdir)/config/i386/sol2-cn.asm $(GCC_PASSES)
 
 CRTSTUFF_T_CFLAGS = -fPIC -O2
 TARGET_LIBGCC2_CFLAGS = -fPIC
+
+# Add support for the introduction of 128-bit long double.
+SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-sol2.ver

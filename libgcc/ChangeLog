@@ -1,3 +1,14 @@
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Uros Bizjak <ubizjak@gmail.com>
+
+	PR target/39048
+	* config.host (i[34567]86-*-solaris2): Handle 32-bit Solaris 2/x86
+	like other remaining 32-bit x86 OSes.
+	* config/i386/32/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Support Sun
+	assembler syntax.
+	* config/i386/libgcc-sol2.ver: New file.
+	* config/i386/t-sol2 (SHLIB_MAPFILES): Add it.
+
 2010-03-30  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR c/43553

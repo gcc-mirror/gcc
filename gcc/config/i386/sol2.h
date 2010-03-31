@@ -165,4 +165,10 @@ along with GCC; see the file COPYING3.  If not see
 #define USE_HIDDEN_LINKONCE 0
 #endif
 
+/* Put all *tf routines in libgcc.  */
+#undef LIBGCC2_HAS_TF_MODE
+#define LIBGCC2_HAS_TF_MODE 1
+#define LIBGCC2_TF_CEXT q
+#define TF_SIZE 113
+
 #define MD_UNWIND_SUPPORT "config/i386/sol2-unwind.h"
