@@ -1,3 +1,10 @@
+2010-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/43596
+	* cselib.c (cselib_process_insn): Clear cselib_current_insn
+	even before returning from label, setjmp call or volatile asm
+	handling.
+
 2010-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43600
