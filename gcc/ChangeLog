@@ -1,5 +1,9 @@
 2010-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/43580
+	* config/arm/arm.c (arm_save_coproc_regs): Use Pmode instead of
+	V2SImode or XFmode on PRE_DEC.
+
 	PR debug/43557
 	* cfgexpand.c (expand_debug_expr): Handle VOIDmode mode like
 	BLKmode.

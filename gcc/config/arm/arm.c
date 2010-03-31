@@ -1,6 +1,6 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -14431,7 +14431,7 @@ arm_save_coproc_regs(void)
   for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
     if (df_regs_ever_live_p (reg) && ! call_used_regs[reg])
       {
-	insn = gen_rtx_PRE_DEC (V2SImode, stack_pointer_rtx);
+	insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	insn = gen_rtx_MEM (V2SImode, insn);
 	insn = emit_set_insn (insn, gen_rtx_REG (V2SImode, reg));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -14445,7 +14445,7 @@ arm_save_coproc_regs(void)
       for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
 	if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
 	  {
-	    insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
+	    insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	    insn = gen_rtx_MEM (XFmode, insn);
 	    insn = emit_set_insn (insn, gen_rtx_REG (XFmode, reg));
 	    RTX_FRAME_RELATED_P (insn) = 1;
