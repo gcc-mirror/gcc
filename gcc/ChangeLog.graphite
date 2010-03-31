@@ -1,3 +1,31 @@
+2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-ssa-copy.c: Revert this previous change:
+	(init_copy_prop): Loop closed phi nodes cancontain more than one
+	argument.
+	(execute_copy_prop): Revert the previous change: do not call
+	rewrite_into_loop_closed_ssa.
+
+2010-03-21  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (init_copy_prop): Loop closed phi nodes can
+	contain more than one argument.
+	(execute_copy_prop): Revert the previous change: do not call
+	rewrite_into_loop_closed_ssa.
+
+	* gcc.dg/graphite/id-pr43464.c: Remove compile warning.
+	* gcc.dg/graphite/id-pr43464-1.c: New.
+
+2010-03-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (execute_copy_prop): Call rewrite_into_loop_closed_ssa
+	and verify_loop_closed_ssa when copy prop is executed in the LNO.
+
+	* gcc.dg/graphite/id-pr43464.c: New.
+
 2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (graphite_loop_normal_form): Add the IV bump
