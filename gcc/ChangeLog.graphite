@@ -1,5 +1,10 @@
 2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* passes.c (init_optimization_passes): Add pass_copy_prop
+	after Graphite.
+
+2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (print_scattering_function): Pretty print following
 	the scoplib format.
 	(print_pdr): Same.
