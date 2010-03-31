@@ -254,6 +254,10 @@ __enable_execute_stack (void *addr)					\
   { "init",      0, 0, true,  false,  false, NULL },			\
   { "fini",      0, 0, true,  false,  false, NULL }
 
+/* Solaris/x86 as and gas support the common ELF .section/.pushsection
+   syntax.  */
+#define PUSHSECTION_FORMAT	"\t.pushsection\t%s\n"
+
 /* This is how to declare the size of a function.  For Solaris, we output
    any .init or .fini entries here.  */
 #undef ASM_DECLARE_FUNCTION_SIZE

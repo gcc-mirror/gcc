@@ -105,14 +105,14 @@ solaris_output_init_fini (FILE *file, tree decl)
 {
   if (lookup_attribute ("init", DECL_ATTRIBUTES (decl)))
     {
-      fprintf (file, "\t.pushsection\t\".init\"\n");
+      fprintf (file, PUSHSECTION_FORMAT, ".init");
       ASM_OUTPUT_CALL (file, decl);
       fprintf (file, "\t.popsection\n");
     }
 
   if (lookup_attribute ("fini", DECL_ATTRIBUTES (decl)))
     {
-      fprintf (file, "\t.pushsection\t\".fini\"\n");
+      fprintf (file, PUSHSECTION_FORMAT, ".fini");
       ASM_OUTPUT_CALL (file, decl);
       fprintf (file, "\t.popsection\n");
     }

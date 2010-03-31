@@ -1,3 +1,13 @@
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sysv4.h (PUSHSECTION_FORMAT): Remove undef.
+	(PUSHSECTION_ASM_OP): Remove.
+	(POPSECTION_ASM_OP): Remove.
+	(PUSHSECTION_FORMAT): Remove.
+	* config/sol2.h (PUSHSECTION_FORMAT): Define.
+	* config/sparc/sol2.h [!USE_GAS] (PUSHSECTION_FORMAT): Redefine.
+	* config/sol2.c (solaris_output_init_fini): Use it.
+
 2010-03-31  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43574
