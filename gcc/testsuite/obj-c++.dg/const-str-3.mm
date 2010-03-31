@@ -4,6 +4,7 @@
 
 /* { dg-options "-fconstant-string-class=Foo" } */
 /* { dg-do run { target *-*-darwin* } } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #import "../objc-obj-c++-shared/Object1.h"
 #import "../objc-obj-c++-shared/next-mapping.h"

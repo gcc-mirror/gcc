@@ -3,7 +3,8 @@
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do run } */
-/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "" } } */
+/* { dg-xfail-if "PR23616" { "*-*-*" } { "*" } { "-fnext-runtime" } } */
+/* { dg-xfail-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } 
 /* { dg-options "-fobjc-exceptions" } */
 
 #include "../objc-obj-c++-shared/Object1.h"

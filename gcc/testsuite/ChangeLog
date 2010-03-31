@@ -1,5 +1,24 @@
 2010-03-31  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
+	PR testsuite/35165
+	* obj-c++.dg/try-catch-9.mm: Don't XFAIL m32 NeXT runtime.
+	* obj-c++.dg/try-catch-2.mm: Ditto.
+	* obj-c++.dg/lookup-2.mm: Ditto.
+	* obj-c++.dg/encode-8.m: Ditto.
+	* obj-c++.dg/cxx-ivars-2.mm: Ditto.
+	* obj-c++.dg/cxx-ivars-3.mm: Skip for GNU, XFail for m64 NeXT.
+	* obj-c++.dg/const-str-10.mm: Skip for GNU, match .quad for m64 NeXT.
+	* obj-c++.dg/const-str-11.mm: Ditto.
+	* obj-c++.dg/const-str-9.mm: Ditto.
+	* obj-c++.dg/bitfield-3.mm: Skip for GNU runtime.
+	* obj-c++.dg/bitfield-2.mm: XFAIL run for m64 NeXT runtime.
+	* obj-c++.dg/except-1.mm: Ditto.
+	* obj-c++.dg/const-str-7.mm: Ditto.
+	* obj-c++.dg/cxx-ivars-1.mm: Ditto.
+	* obj-c++.dg/const-str-3.mm: Ditto.
+	* obj-c++.dg/const-str-7.mm: Ditto.
+	* obj-c++.dg/stubify-2.mm: Change dump file name.
+
 	PR objc++/23613
 	* gcc/testsuite/objc-obj-c++-shared/next-mapping.h (CLASSPTRFIELD):
 	New macro.

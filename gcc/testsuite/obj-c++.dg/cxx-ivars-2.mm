@@ -1,7 +1,8 @@
 // Check if the '- .cxx_construct' and '-.cxx_destruct' methods get called
 // and if they perform their desired function.
 
-// { dg-do run { xfail { "*-*-*" } } } PR27247/PR23681
+// { dg-xfail-run-if "PR27247/PR23681" { *-*-* } { "-fgnu-runtime" } { "" } }
+// { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } }
 // { dg-options "-fobjc-call-cxx-cdtors" }
 
 #include "../objc-obj-c++-shared/Object1.h"
