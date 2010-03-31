@@ -1,3 +1,13 @@
+2010-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	Back port from trunk.
+	* io/io.h: Fix type of size in st_parameter_inquire structure.
+	Add prototype for new function to return file size.
+	* io/unix.c (file_size): New function.
+	* io/inquire.c (inquire_via_unit): Use new function.
+	(inquire_via_filename): Use new function.
+
 2010-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43265

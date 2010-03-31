@@ -368,7 +368,7 @@ typedef struct
   CHARACTER2 (round);
   CHARACTER1 (sign);
   GFC_INTEGER_4 *pending;
-  GFC_INTEGER_4 *size;
+  GFC_IO_INT *size;
   GFC_INTEGER_4 *id;
 }
 st_parameter_inquire;
@@ -727,6 +727,9 @@ internal_proto(delete_file);
 
 extern int file_exists (const char *file, gfc_charlen_type file_len);
 internal_proto(file_exists);
+
+extern GFC_IO_INT file_size (const char *file, gfc_charlen_type file_len);
+internal_proto(file_size);
 
 extern const char *inquire_sequential (const char *, int);
 internal_proto(inquire_sequential);
