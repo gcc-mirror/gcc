@@ -2882,6 +2882,9 @@ do
       skip_next=$separate_arg
       continue
       ;;
+    --enable-multilib | --disable-multilib)
+      continue
+      ;;
     -*)
       # An option.  Add it.
       case $ac_arg in
@@ -2950,10 +2953,12 @@ if test x${is_cross_compiler} = xyes ; then
   target_configargs="--with-cross-host=${host_noncanonical} ${target_configargs}"
 fi
 
-# Default to --enable-multilib.
-if test x${enable_multilib} = x ; then
+# Pass --enable-multilib to target dirs; default to --enable-multilib.
+case $enable_multilib in
+'' | yes)
   target_configargs="--enable-multilib ${target_configargs}"
-fi
+  ;;
+esac
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
 # changed from the earlier setting of with_newlib.
