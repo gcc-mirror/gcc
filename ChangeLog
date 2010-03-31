@@ -1,3 +1,7 @@
+2010-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* MAINTAINERS: Remove myself.
+
 2010-03-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/43328

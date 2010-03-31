@@ -186,7 +186,6 @@ gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		gerald@pfeifer.com
-build status lists	Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pth@suse.de
@@ -203,7 +202,6 @@ contrib/regression	Geoff Keating		geoffk@geoffk.org
 gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
-testsuite		Janis Johnson		janis187@us.ibm.com
 middle-end		Jeff Law		law@redhat.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
