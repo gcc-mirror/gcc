@@ -1,6 +1,6 @@
 /* Operating system specific prototypes to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright 2004, 2007 Free Software Foundation, Inc.
+   Copyright 2004, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,3 +21,4 @@ along with GCC; see the file COPYING3.  If not see
 extern void solaris_insert_attributes (tree, tree *);
 extern void solaris_register_pragmas (void);
 extern void solaris_output_init_fini (FILE *, tree);
+extern void solaris_assemble_visibility (tree, int);

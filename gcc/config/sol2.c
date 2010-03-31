@@ -1,5 +1,5 @@
 /* General Solaris system support.
-   Copyright (C) 2004, 2005 , 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 , 2007, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "output.h"
 #include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -117,3 +118,42 @@ solaris_output_init_fini (FILE *file, tree decl)
     }
 }
 
+/* Emit an assembler directive to set symbol for DECL visibility to
+   the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
+
+void
+solaris_assemble_visibility (tree decl, int vis)
+{
+  /* Sun as uses .symbolic for STV_PROTECTED.  STV_INTERNAL is marked as
+     `currently reserved', but the linker treats it like STV_HIDDEN.  Sun
+     Studio 12.1 cc emits .hidden instead.
+
+     There are 3 Sun extensions GCC doesn't yet know about: STV_EXPORTED,
+     STV_SINGLETON, and STV_ELIMINATE.
+
+     See Linker and Libraries Guide, Ch. 2, Link-Editor, Defining
+     Additional Symbols with a mapfile,
+     http://docs.sun.com/app/docs/doc/819-0690/gdzmc?a=view
+     and Ch. 7, Object-File Format, Symbol Table Section,
+     http://docs.sun.com/app/docs/doc/819-0690/chapter6-79797?a=view  */
+
+  static const char * const visibility_types[] = {
+    NULL, "symbolic", "hidden", "hidden"
+  };
+
+  const char *name, *type;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  type = visibility_types[vis];
+
+  /* .hidden dates back before Solaris 2.5, but .symbolic was only added in
+     Solaris 9 12/02.  */
+#ifdef HAVE_GAS_HIDDEN
+  fprintf (asm_out_file, "\t.%s\t", type);
+  assemble_name (asm_out_file, name);
+  fprintf (asm_out_file, "\n");
+#else
+  warning (OPT_Wattributes, "visibility attribute not supported "
+	   "in this configuration; ignored");
+#endif
+}

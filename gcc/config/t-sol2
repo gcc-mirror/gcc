@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,6 +25,6 @@ sol2-c.o: $(srcdir)/config/sol2-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 # Solaris-specific attributes
 sol2.o: $(srcdir)/config/sol2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h $(TM_H) $(TM_P_H) toplev.h $(GGC_H)
+  tree.h output.h $(TM_H) $(TM_P_H) toplev.h $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/sol2.c
