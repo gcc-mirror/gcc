@@ -1,7 +1,7 @@
 // Check if ivars may be accessed via the C++ dot notation.
-
 // { dg-do run }
 // { dg-options "-fno-objc-call-cxx-cdtors" }
+// { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } 
 
 #include "../objc-obj-c++-shared/Object1.h"
 #include <stdlib.h>

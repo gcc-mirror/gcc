@@ -1,9 +1,10 @@
 // Check if ObjC classes with non-POD C++ ivars are specially marked in the metadata.
 
 // { dg-do run { target *-*-darwin* } }
-// { dg-options "-fobjc-call-cxx-cdtors" }
 // { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } 
-/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+// { dg-options "-fobjc-call-cxx-cdtors" }
+// { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } }
+
 #include "../objc-obj-c++-shared/Object1.h"
 #include "../objc-obj-c++-shared/next-mapping.h"
 
