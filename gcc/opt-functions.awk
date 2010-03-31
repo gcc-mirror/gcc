@@ -136,7 +136,7 @@ function var_type(flags)
 }
 
 # Return the type of variable that should be associated with the given flags
-# for use within a structure.  Simple variables are changed to unsigned char
+# for use within a structure.  Simple variables are changed to signed char
 # type instead of int to save space.
 function var_type_struct(flags)
 {
@@ -146,7 +146,7 @@ function var_type_struct(flags)
 		if (flag_set_p(".*Mask.*", flags))
 			return "int "
 		else
-			return "unsigned char "
+			return "signed char "
 	}
 	else
 		return "const char *"
