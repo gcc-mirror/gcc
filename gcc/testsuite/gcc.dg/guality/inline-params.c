@@ -1,6 +1,10 @@
-/* { dg-do run { xfail *-*-* } } */
-/* IPA-SRA removes the argumet as dead, so we don't see their values.  */
-/* { dg-options "-g -fno-ipa-sra" } */
+/* { dg-do run } */
+/* IPA-SRA removes the arguments as dead, so we don't see their values, early
+   inlining inlines the functions too early to test the real IPA passes (such
+   as IPA-CP).  */
+/* { dg-options "-g -fno-early-inlining -fno-ipa-sra" } */
+/* { dg-xfail-run-if "" { "*-*-*" } { "-O2" "-O3" "-Os" } { "-fwhopr" } } */
+
 #define GUALITY_DONT_FORCE_LIVE_AFTER -1
 
 #ifndef STATIC_INLINE

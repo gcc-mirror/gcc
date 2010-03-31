@@ -1,3 +1,8 @@
+2010-03-31  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/guality/inline-params.c: Disable early inlining.  Xfail run
+	only with -O2, -O3 or -Os and not with -fwhopr.
+
 2010-03-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43558
