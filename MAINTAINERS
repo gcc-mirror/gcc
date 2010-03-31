@@ -96,6 +96,7 @@ sparc port		Jakub Jelinek		jakub@redhat.com
 sparc port		Eric Botcazou		ebotcazou@libertysurf.fr
 spu port		Trevor Smigiel		trevor_smigiel@playstation.sony.com
 spu port		David Edelsohn		edelsohn@gnu.org
+spu port		Ulrich Weigand		uweigand@de.ibm.com
 v850 port		Nick Clifton		nickc@redhat.com
 vax port		Matt Thomas		matt@3am-software.com
 x86-64 port		Jan Hubicka		jh@suse.cz

@@ -1,3 +1,7 @@
+2010-03-31  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself for spu port.
+
 2010-03-31  Janis Johnson  <janis187@us.ibm.com>
 
 	* MAINTAINERS: Remove myself.
