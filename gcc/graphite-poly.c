@@ -145,7 +145,16 @@ print_scattering_function (FILE *file, poly_bb_p pbb)
   if (!PBB_TRANSFORMED (pbb))
     return;
 
-  fprintf (file, "scattering bb_%d (\n", pbb_index (pbb));
+  if (PBB_TRANSFORMED_SCATTERING (pbb)
+      || PBB_ORIGINAL_SCATTERING (pbb))
+    fprintf (file, "# Scattering function is provided\n1\n");
+  else
+    {
+      fprintf (file, "# Scattering function is not provided\n0\n");
+      return;
+    }
+
+  fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
   fprintf (file, "#  eq");
 
   for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
@@ -162,9 +171,14 @@ print_scattering_function (FILE *file, poly_bb_p pbb)
 
   fprintf (file, "    cst\n");
 
-  ppl_print_polyhedron_matrix (file, PBB_TRANSFORMED_SCATTERING (pbb));
+  /* Number of disjunct components.  Remove this when
+     PBB_TRANSFORMED_SCATTERING will be a pointset_powerset.  */
+  fprintf (file, "1\n");
+  ppl_print_polyhedron_matrix (file, PBB_TRANSFORMED_SCATTERING (pbb)
+			       ? PBB_TRANSFORMED_SCATTERING (pbb)
+			       : PBB_ORIGINAL_SCATTERING (pbb));
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Prints to FILE the iteration domain of PBB.  */
@@ -411,7 +425,7 @@ print_pdr_access_layout (FILE *file, poly_dr_p pdr)
 void
 print_pdr (FILE *file, poly_dr_p pdr)
 {
-  fprintf (file, "pdr_%d (", PDR_ID (pdr));
+  fprintf (file, "# pdr_%d (", PDR_ID (pdr));
 
   switch (PDR_TYPE (pdr))
     {
@@ -433,12 +447,12 @@ print_pdr (FILE *file, poly_dr_p pdr)
 
   dump_data_reference (file, (data_reference_p) PDR_CDR (pdr));
 
-  fprintf (file, "data accesses (\n");
+  fprintf (file, "# data accesses (\n");
   print_pdr_access_layout (file, pdr);
   ppl_print_powerset_matrix (file, PDR_ACCESSES (pdr));
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Prints to STDERR the polyhedral data reference PDR.  */
@@ -503,7 +517,7 @@ print_pbb_domain (FILE *file, poly_bb_p pbb)
   if (!PBB_DOMAIN (pbb))
     return;
 
-  fprintf (file, "domains bb_%d (\n", GBB_BB (gbb)->index);
+  fprintf (file, "# Iteration domain of bb_%d (\n", GBB_BB (gbb)->index);
   fprintf (file, "#  eq");
 
   for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
@@ -516,8 +530,10 @@ print_pbb_domain (FILE *file, poly_bb_p pbb)
 
   if (PBB_DOMAIN (pbb))
     ppl_print_powerset_matrix (file, PBB_DOMAIN (pbb));
+  else
+    fprintf (file, "0\n");
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Dump the cases of a graphite basic block GBB on FILE.  */
@@ -536,12 +552,15 @@ dump_gbb_cases (FILE *file, gimple_bb_p gbb)
   if (VEC_empty (gimple, cases))
     return;
 
-  fprintf (file, "cases bb_%d (", GBB_BB (gbb)->index);
+  fprintf (file, "# cases bb_%d (\n", GBB_BB (gbb)->index);
 
   for (i = 0; VEC_iterate (gimple, cases, i, stmt); i++)
-    print_gimple_stmt (file, stmt, 0, 0);
+    {
+      fprintf (file, "# ");
+      print_gimple_stmt (file, stmt, 0, 0);
+    }
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Dump conditions of a graphite basic block GBB on FILE.  */
@@ -560,12 +579,15 @@ dump_gbb_conditions (FILE *file, gimple_bb_p gbb)
   if (VEC_empty (gimple, conditions))
     return;
 
-  fprintf (file, "conditions bb_%d (", GBB_BB (gbb)->index);
+  fprintf (file, "# conditions bb_%d (\n", GBB_BB (gbb)->index);
 
   for (i = 0; VEC_iterate (gimple, conditions, i, stmt); i++)
-    print_gimple_stmt (file, stmt, 0, 0);
+    {
+      fprintf (file, "# ");
+      print_gimple_stmt (file, stmt, 0, 0);
+    }
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Print to FILE all the data references of PBB.  */
@@ -575,9 +597,38 @@ print_pdrs (FILE *file, poly_bb_p pbb)
 {
   int i;
   poly_dr_p pdr;
+  int nb_reads = 0;
+  int nb_writes = 0;
+
+  if (VEC_length (poly_dr_p, PBB_DRS (pbb)) == 0)
+    {
+      fprintf (file, "# Access informations are not provided\n0\n");
+      return;
+    }
+
+  fprintf (file, "# Data references (\n");
+  fprintf (file, "# Access informations are provided\n1\n");
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
-    print_pdr (file, pdr);
+    if (PDR_TYPE (pdr) == PDR_READ)
+      nb_reads++;
+    else
+      nb_writes++;
+
+  fprintf (file, "# Read data references (\n");
+  fprintf (file, "# Read access informations\n%d\n", nb_reads);
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+    if (PDR_TYPE (pdr) == PDR_READ)
+      print_pdr (file, pdr);
+  fprintf (file, "#)\n");
+
+  fprintf (file, "# Write data references (\n");
+  fprintf (file, "# Write access informations\n%d\n", nb_writes);
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+    if (PDR_TYPE (pdr) != PDR_READ)
+      print_pdr (file, pdr);
+  fprintf (file, "#)\n");
+  fprintf (file, "#)\n");
 }
 
 /* Print to STDERR all the data references of PBB.  */
@@ -588,18 +639,34 @@ debug_pdrs (poly_bb_p pbb)
   print_pdrs (stderr, pbb);
 }
 
+/* Print to FILE the body of PBB.  */
+
+static void
+print_pbb_body (FILE *file, poly_bb_p pbb)
+{
+  fprintf (file, "# Body (\n");
+  fprintf (file, "# Statement body is provided\n1\n");
+  fprintf (file, "# Original iterator names\n# Iterator names are not provided yet.\n");
+  fprintf (file, "# Statement body\n");
+  fprintf (file, "{\n");
+  dump_bb (pbb_bb (pbb), file, 0);
+  fprintf (file, "}\n");
+  fprintf (file, "#)\n");
+}
+
 /* Print to FILE the domain and scattering function of PBB.  */
 
 void
 print_pbb (FILE *file, poly_bb_p pbb)
 {
-  fprintf (file, "pbb_%d (\n", pbb_index (pbb));
+  fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
   dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
   dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
-  print_pdrs (file, pbb);
   print_pbb_domain (file, pbb);
   print_scattering_function (file, pbb);
-  fprintf (file, ")\n");
+  print_pdrs (file, pbb);
+  print_pbb_body (file, pbb);
+  fprintf (file, "#)\n");
 }
 
 /* Print to FILE the parameters of SCOP.  */
@@ -610,14 +677,19 @@ print_scop_params (FILE *file, scop_p scop)
   int i;
   tree t;
 
-  fprintf (file, "parameters (\n");
+  fprintf (file, "# parameters (\n");
+
+  if (VEC_length (tree, SESE_PARAMS (SCOP_REGION (scop))))
+    fprintf (file, "# Parameter names are provided\n1\n# Parameter names \n");
+  else
+    fprintf (file, "# Parameter names are not provided\n0\n");
+
   for (i = 0; VEC_iterate (tree, SESE_PARAMS (SCOP_REGION (scop)), i, t); i++)
     {
-      fprintf (file, "p_%d -> ", i);
       print_generic_expr (file, t, 0);
-      fprintf (file, "\n");
+      fprintf (file, " # p_%d \n", i);
     }
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Print to FILE the context of SCoP.  */
@@ -626,7 +698,7 @@ print_scop_context (FILE *file, scop_p scop)
 {
   graphite_dim_t i;
 
-  fprintf (file, "context (\n");
+  fprintf (file, "# Context (\n");
   fprintf (file, "#  eq");
 
   for (i = 0; i < scop_nb_params (scop); i++)
@@ -636,8 +708,10 @@ print_scop_context (FILE *file, scop_p scop)
 
   if (SCOP_CONTEXT (scop))
     ppl_print_powerset_matrix (file, SCOP_CONTEXT (scop));
+  else
+    fprintf (file, "0 %d\n", (int) scop_nb_params (scop) + 2);
 
-  fprintf (file, ")\n");
+  fprintf (file, "# )\n");
 }
 
 /* Print to FILE the SCOP.  */
@@ -648,22 +722,25 @@ print_scop (FILE *file, scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  fprintf (file, "scop (\n");
-  print_scop_params (file, scop);
+  fprintf (file, "SCoP #(\n");
+  fprintf (file, "# Language\nGimple\n");
   print_scop_context (file, scop);
+  print_scop_params (file, scop);
+  fprintf (file, "# Number of statements\n%d\n",
+	   VEC_length (poly_bb_p, SCOP_BBS (scop)));
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     print_pbb (file, pbb);
 
-  fprintf (file, "original_lst (\n");
+  fprintf (file, "# original_lst (\n");
   print_lst (file, SCOP_ORIGINAL_SCHEDULE (scop), 0);
-  fprintf (file, ")\n");
+  fprintf (file, "\n#)\n");
 
-  fprintf (file, "transformed_lst (\n");
+  fprintf (file, "# transformed_lst (\n");
   print_lst (file, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
-  fprintf (file, ")\n");
+  fprintf (file, "\n#)\n");
 
-  fprintf (file, ")\n");
+  fprintf (file, "#)\n");
 }
 
 /* Print to STDERR the domain of PBB.  */
@@ -901,6 +978,20 @@ scop_to_lst (scop_p scop)
   SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (res);
 }
 
+/* Print to FILE on a new line COLUMN white spaces.  */
+
+static void
+lst_indent_to (FILE *file, int column)
+{
+  int i;
+
+  if (column > 0)
+    fprintf (file, "\n#");
+
+  for (i = 0; i < column; i++)
+    fprintf (file, " ");
+}
+
 /* Print LST to FILE with INDENT spaces of indentation.  */
 
 void
@@ -909,7 +1000,7 @@ print_lst (FILE *file, lst_p lst, int indent)
   if (!lst)
     return;
 
-  indent_to (file, indent);
+  lst_indent_to (file, indent);
 
   if (LST_LOOP_P (lst))
     {
@@ -919,7 +1010,7 @@ print_lst (FILE *file, lst_p lst, int indent)
       if (LST_LOOP_FATHER (lst))
 	fprintf (file, "%d (loop", lst_dewey_number (lst));
       else
-	fprintf (file, "(root");
+	fprintf (file, "#(root");
 
       for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
 	print_lst (file, l, indent + 2);
