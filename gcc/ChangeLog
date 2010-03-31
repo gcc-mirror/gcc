@@ -1,3 +1,14 @@
+2010-03-31  Jie Zhang  <jie@codesourcery.com>
+
+	PR 43562
+	* reload.h (caller_save_initialized_p): Declare.
+	* toplev.c (backend_init_target): Don't call
+	init_caller_save but set caller_save_initialized_p
+	to false.
+	* caller-save.c (caller_save_initialized_p): Define.
+	(init_caller_save): Check caller_save_initialized_p.
+	* ira.c (ira): Call init_caller_save if flag_caller_saves.
+
 2010-03-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42977

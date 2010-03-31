@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "ggc.h"
 
+/* True if caller-save has been initialized.  */
+bool caller_save_initialized_p;
+
 /* Call used hard registers which can not be saved because there is no
    insn for this.  */
 HARD_REG_SET no_caller_save_reg_set;
@@ -207,6 +210,11 @@ init_caller_save (void)
   int offset;
   rtx address;
   int i, j;
+
+  if (caller_save_initialized_p)
+    return;
+
+  caller_save_initialized_p = true;
 
   CLEAR_HARD_REG_SET (no_caller_save_reg_set);
   /* First find all the registers that we need to deal with and all

@@ -3127,6 +3127,9 @@ ira (FILE *f)
 
   timevar_push (TV_IRA);
 
+  if (flag_caller_saves)
+    init_caller_save ();
+
   if (flag_ira_verbose < 10)
     {
       internal_flag_ira_verbose = flag_ira_verbose;
