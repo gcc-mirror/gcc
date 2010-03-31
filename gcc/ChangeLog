@@ -19,6 +19,15 @@
 	(init_caller_save): Check caller_save_initialized_p.
 	* ira.c (ira): Call init_caller_save if flag_caller_saves.
 
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39048
+	* config.gcc (i[34567]86-*-solaris2*): Add i386/t-fprules-softfp
+	and soft-fp/t-softfp to tmake_file.
+	* config/i386/sol2.h (LIBGCC2_HAS_TF_MODE): Redefine.
+	(LIBGCC2_TF_CEXT): Define.
+	(TF_SIZE): Define.
+
 2010-03-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42977
