@@ -1,3 +1,8 @@
+2010-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release (build_tarfiles): Make directories mode 755, not
+	777.
+
 2009-08-04  Release Manager
 
 	* GCC 4.3.4 released.
