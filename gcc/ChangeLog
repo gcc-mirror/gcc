@@ -1,5 +1,8 @@
 2010-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* var-tracking.c (vt_init_cfa_base): Use cselib_lookup_from_insn
+	instead of cselib_lookup following by tweaking locs->setting_insn.
+
 	PR bootstrap/43596
 	* cselib.c (cselib_process_insn): Clear cselib_current_insn
 	even before returning from label, setjmp call or volatile asm
