@@ -1,3 +1,16 @@
+2010-03-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/43528
+	* gcc.target/i386/pr43528.c: New test.
+
+	2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43524
+	* gcc.target/i386/pr43524.c: New test.
+
 2010-03-31  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43562

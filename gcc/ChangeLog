@@ -1,3 +1,18 @@
+2010-03-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/43528
+	* stor-layout.c (place_field): Check that constant fits into
+	unsigned HWI when skipping calculation of MS bitfield layout.
+
+	2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43524
+	* config/i386/i386.c (ix86_expand_prologue) [TARGET_STACK_PROBE]:
+	Remove invalid assert and wrong comment.
+
 2010-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43600
@@ -8,9 +23,8 @@
 
 	PR 43562
 	* reload.h (caller_save_initialized_p): Declare.
-	* toplev.c (backend_init_target): Don't call
-	init_caller_save but set caller_save_initialized_p
-	to false.
+	* toplev.c (backend_init_target): Don't call init_caller_save but
+	set caller_save_initialized_p to false.
 	* caller-save.c (caller_save_initialized_p): Define.
 	(init_caller_save): Check caller_save_initialized_p.
 	* ira.c (ira): Call init_caller_save if flag_caller_saves.
