@@ -1,3 +1,11 @@
+2010-03-31  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR objc++/23613
+	* gcc/testsuite/objc-obj-c++-shared/next-mapping.h (CLASSPTRFIELD):
+	New macro.
+	* gcc/testsuite/obj-c++.dg/isa-field-1.mm: Use new CLASSPTRFIELD macro.
+	Remove dg-xfail-if.
+
 2010-03-31  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/guality/inline-params.c: Disable early inlining.  Xfail run
