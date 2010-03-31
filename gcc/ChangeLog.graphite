@@ -1,3 +1,12 @@
+2010-03-30  Richard Guenther  <rguenther@suse.de>
+	    Zdenek Dvorak  <ook@ucw.cz>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (init_copy_prop): Handle loop close phi nodes
+	with multiple arguments.
+	(execute_copy_prop): Remove call to rewrite_into_loop_closed_ssa.
+
 2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (print_pddr): Call print_pdr with an
