@@ -1,3 +1,9 @@
+2010-03-31  Jie Zhang  <jie@codesourcery.com>
+
+	PR 43574
+	* opt-functions.awk (var_type_struct): Use signed char type
+	for simple variables.
+
 2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.c: Include output.h.
