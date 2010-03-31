@@ -5,7 +5,11 @@
 /*	    David Ayers <d.ayers@inode.at>  */
 /* Darwin 64bit/OBJC2 modifications Iain Sandoe */ 
 
-#ifdef __NEXT_RUNTIME__
+#ifndef __NEXT_RUNTIME__
+
+#define CLASSPTRFIELD(x) (x)->class_pointer
+
+#else
 /* Includes next-abi.h to set NEXT_OBJC_USE_NEW_INTERFACE etc.*/
 #ifndef _OBJC_OBJECT1_H_
 #include "Object1.h"
@@ -22,6 +26,8 @@
 #define sel_get_name(S) sel_getName(S)
 #define class_create_instance(C) class_createInstance(C, 0)
 #define	class_get_class_name(C) object_getClassName(C)
+
+#define CLASSPTRFIELD(x) (x)->isa
 
 #ifdef NEXT_OBJC_USE_NEW_INTERFACE
 #  define object_class_name(O) (object_getClassName(O)) 
