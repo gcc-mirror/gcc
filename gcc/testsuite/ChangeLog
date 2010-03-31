@@ -1,3 +1,8 @@
+2010-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43409
+	* gfortran.dg/inquire_size.f90: New test.
+
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41786
