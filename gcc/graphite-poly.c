@@ -135,29 +135,33 @@ unify_scattering_dimensions (scop_p scop)
   return max_scattering;
 }
 
-/* Prints to FILE the scattering function of PBB.  */
+/* Prints to FILE the scattering function of PBB, at some VERBOSITY
+   level.  */
 
 static void
-print_scattering_function_1 (FILE *file, poly_bb_p pbb)
+print_scattering_function_1 (FILE *file, poly_bb_p pbb, int verbosity)
 {
   graphite_dim_t i;
 
-  fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
-  fprintf (file, "#  eq");
+  if (verbosity > 0)
+    {
+      fprintf (file, "# scattering bb_%d (\n", pbb_index (pbb));
+      fprintf (file, "#  eq");
 
-  for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
-    fprintf (file, "     s%d", (int) i);
+      for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
+	fprintf (file, "     s%d", (int) i);
 
-  for (i = 0; i < pbb_nb_local_vars (pbb); i++)
-    fprintf (file, "    lv%d", (int) i);
+      for (i = 0; i < pbb_nb_local_vars (pbb); i++)
+	fprintf (file, "    lv%d", (int) i);
 
-  for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
-    fprintf (file, "     i%d", (int) i);
+      for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
+	fprintf (file, "     i%d", (int) i);
 
-  for (i = 0; i < pbb_nb_params (pbb); i++)
-    fprintf (file, "     p%d", (int) i);
+      for (i = 0; i < pbb_nb_params (pbb); i++)
+	fprintf (file, "     p%d", (int) i);
 
-  fprintf (file, "    cst\n");
+      fprintf (file, "    cst\n");
+    }
 
   /* Number of disjunct components.  Remove this when
      PBB_TRANSFORMED_SCATTERING will be a pointset_powerset.  */
@@ -166,92 +170,109 @@ print_scattering_function_1 (FILE *file, poly_bb_p pbb)
 			       ? PBB_TRANSFORMED_SCATTERING (pbb)
 			       : PBB_ORIGINAL_SCATTERING (pbb));
 
-  fprintf (file, "#)\n");
+  if (verbosity > 0)
+    fprintf (file, "#)\n");
 }
 
-/* Prints to FILE the scattering function of PBB.  */
+/* Prints to FILE the scattering function of PBB, at some VERBOSITY
+   level.  */
 
 void
-print_scattering_function (FILE *file, poly_bb_p pbb)
+print_scattering_function (FILE *file, poly_bb_p pbb, int verbosity)
 {
   if (!PBB_TRANSFORMED (pbb))
     return;
 
   if (PBB_TRANSFORMED_SCATTERING (pbb)
       || PBB_ORIGINAL_SCATTERING (pbb))
-    fprintf (file, "# Scattering function is provided\n1\n");
+    {
+      if (verbosity > 0)
+	fprintf (file, "# Scattering function is provided\n");
+
+      fprintf (file, "1\n");
+    }
   else
     {
-      fprintf (file, "# Scattering function is not provided\n0\n");
+      if (verbosity > 0)
+	fprintf (file, "# Scattering function is not provided\n");
+
+      fprintf (file, "0\n");
       return;
     }
 
-  print_scattering_function_1 (file, pbb);
+  print_scattering_function_1 (file, pbb, verbosity);
 }
 
-/* Prints to FILE the iteration domain of PBB.  */
+/* Prints to FILE the iteration domain of PBB, at some VERBOSITY
+   level.  */
 
 void
-print_iteration_domain (FILE *file, poly_bb_p pbb)
+print_iteration_domain (FILE *file, poly_bb_p pbb, int verbosity)
 {
-  print_pbb_domain (file, pbb);
+  print_pbb_domain (file, pbb, verbosity);
 }
 
 /* Prints to FILE the scattering functions of every PBB of SCOP.  */
 
 void
-print_scattering_functions (FILE *file, scop_p scop)
+print_scattering_functions (FILE *file, scop_p scop, int verbosity)
 {
   int i;
   poly_bb_p pbb;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    print_scattering_function (file, pbb);
+    print_scattering_function (file, pbb, verbosity);
 }
 
-/* Prints to FILE the iteration domains of every PBB of SCOP.  */
+/* Prints to FILE the iteration domains of every PBB of SCOP, at some
+   VERBOSITY level.  */
 
 void
-print_iteration_domains (FILE *file, scop_p scop)
+print_iteration_domains (FILE *file, scop_p scop, int verbosity)
 {
   int i;
   poly_bb_p pbb;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    print_iteration_domain (file, pbb);
+    print_iteration_domain (file, pbb, verbosity);
 }
 
-/* Prints to STDERR the scattering function of PBB.  */
+/* Prints to STDERR the scattering function of PBB, at some VERBOSITY
+   level.  */
 
 void
-debug_scattering_function (poly_bb_p pbb)
+debug_scattering_function (poly_bb_p pbb, int verbosity)
 {
-  print_scattering_function (stderr, pbb);
+  print_scattering_function (stderr, pbb, verbosity);
 }
 
-/* Prints to STDERR the iteration domain of PBB.  */
+/* Prints to STDERR the iteration domain of PBB, at some VERBOSITY
+   level.  */
 
 void
-debug_iteration_domain (poly_bb_p pbb)
+debug_iteration_domain (poly_bb_p pbb, int verbosity)
 {
-  print_iteration_domain (stderr, pbb);
+  print_iteration_domain (stderr, pbb, verbosity);
 }
 
-/* Prints to STDERR the scattering functions of every PBB of SCOP.  */
+/* Prints to STDERR the scattering functions of every PBB of SCOP, at
+   some VERBOSITY level.  */
 
 void
-debug_scattering_functions (scop_p scop)
+debug_scattering_functions (scop_p scop, int verbosity)
 {
-  print_scattering_functions (stderr, scop);
+  print_scattering_functions (stderr, scop, verbosity);
 }
 
-/* Prints to STDERR the iteration domains of every PBB of SCOP.  */
+/* Prints to STDERR the iteration domains of every PBB of SCOP, at
+   some VERBOSITY level.  */
 
 void
-debug_iteration_domains (scop_p scop)
+debug_iteration_domains (scop_p scop, int verbosity)
 {
-  print_iteration_domains (stderr, scop);
+  print_iteration_domains (stderr, scop, verbosity);
 }
+
 
 /* Apply graphite transformations to all the basic blocks of SCOP.  */
 
@@ -428,47 +449,59 @@ print_pdr_access_layout (FILE *file, poly_dr_p pdr)
   fprintf (file, "    cst\n");
 }
 
-/* Prints to FILE the polyhedral data reference PDR.  */
+/* Prints to FILE the polyhedral data reference PDR, at some VERBOSITY
+   level.  */
 
 void
-print_pdr (FILE *file, poly_dr_p pdr)
+print_pdr (FILE *file, poly_dr_p pdr, int verbosity)
 {
-  fprintf (file, "# pdr_%d (", PDR_ID (pdr));
-
-  switch (PDR_TYPE (pdr))
+  if (verbosity > 1)
     {
-    case PDR_READ:
-      fprintf (file, "read \n");
-      break;
+      fprintf (file, "# pdr_%d (", PDR_ID (pdr));
 
-    case PDR_WRITE:
-      fprintf (file, "write \n");
-      break;
+      switch (PDR_TYPE (pdr))
+	{
+	case PDR_READ:
+	  fprintf (file, "read \n");
+	  break;
 
-    case PDR_MAY_WRITE:
-      fprintf (file, "may_write \n");
-      break;
+	case PDR_WRITE:
+	  fprintf (file, "write \n");
+	  break;
 
-    default:
-      gcc_unreachable ();
+	case PDR_MAY_WRITE:
+	  fprintf (file, "may_write \n");
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      dump_data_reference (file, (data_reference_p) PDR_CDR (pdr));
     }
 
-  dump_data_reference (file, (data_reference_p) PDR_CDR (pdr));
+  if (verbosity > 0)
+    {
+      fprintf (file, "# data accesses (\n");
+      print_pdr_access_layout (file, pdr);
+    }
 
-  fprintf (file, "# data accesses (\n");
-  print_pdr_access_layout (file, pdr);
   ppl_print_powerset_matrix (file, PDR_ACCESSES (pdr));
-  fprintf (file, "#)\n");
 
-  fprintf (file, "#)\n");
+  if (verbosity > 0)
+    fprintf (file, "#)\n");
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
 }
 
-/* Prints to STDERR the polyhedral data reference PDR.  */
+/* Prints to STDERR the polyhedral data reference PDR, at some
+   VERBOSITY level.  */
 
 void
-debug_pdr (poly_dr_p pdr)
+debug_pdr (poly_dr_p pdr, int verbosity)
 {
-  print_pdr (stderr, pdr);
+  print_pdr (stderr, pdr, verbosity);
 }
 
 /* Creates a new SCOP containing REGION.  */
@@ -514,10 +547,10 @@ free_scop (scop_p scop)
   XDELETE (scop);
 }
 
-/* Print to FILE the domain of PBB.  */
+/* Print to FILE the domain of PBB, at some VERBOSITY level.  */
 
 void
-print_pbb_domain (FILE *file, poly_bb_p pbb)
+print_pbb_domain (FILE *file, poly_bb_p pbb, int verbosity)
 {
   graphite_dim_t i;
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
@@ -525,23 +558,27 @@ print_pbb_domain (FILE *file, poly_bb_p pbb)
   if (!PBB_DOMAIN (pbb))
     return;
 
-  fprintf (file, "# Iteration domain of bb_%d (\n", GBB_BB (gbb)->index);
-  fprintf (file, "#  eq");
+  if (verbosity > 0)
+    {
+      fprintf (file, "# Iteration domain of bb_%d (\n", GBB_BB (gbb)->index);
+      fprintf (file, "#  eq");
 
-  for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
-    fprintf (file, "     i%d", (int) i);
+      for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
+	fprintf (file, "     i%d", (int) i);
 
-  for (i = 0; i < pbb_nb_params (pbb); i++)
-    fprintf (file, "     p%d", (int) i);
+      for (i = 0; i < pbb_nb_params (pbb); i++)
+	fprintf (file, "     p%d", (int) i);
 
-  fprintf (file, "    cst\n");
+      fprintf (file, "    cst\n");
+    }
 
   if (PBB_DOMAIN (pbb))
     ppl_print_powerset_matrix (file, PBB_DOMAIN (pbb));
   else
     fprintf (file, "0\n");
 
-  fprintf (file, "#)\n");
+  if (verbosity > 0)
+    fprintf (file, "#)\n");
 }
 
 /* Dump the cases of a graphite basic block GBB on FILE.  */
@@ -598,10 +635,11 @@ dump_gbb_conditions (FILE *file, gimple_bb_p gbb)
   fprintf (file, "#)\n");
 }
 
-/* Print to FILE all the data references of PBB.  */
+/* Print to FILE all the data references of PBB, at some VERBOSITY
+   level.  */
 
 void
-print_pdrs (FILE *file, poly_bb_p pbb)
+print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
 {
   int i;
   poly_dr_p pdr;
@@ -610,12 +648,18 @@ print_pdrs (FILE *file, poly_bb_p pbb)
 
   if (VEC_length (poly_dr_p, PBB_DRS (pbb)) == 0)
     {
-      fprintf (file, "# Access informations are not provided\n0\n");
+      if (verbosity > 0)
+	fprintf (file, "# Access informations are not provided\n");\
+      fprintf (file, "0\n");
       return;
     }
 
-  fprintf (file, "# Data references (\n");
-  fprintf (file, "# Access informations are provided\n1\n");
+  if (verbosity > 1)
+    fprintf (file, "# Data references (\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Access informations are provided\n");
+  fprintf (file, "1\n");
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
     if (PDR_TYPE (pdr) == PDR_READ)
@@ -623,160 +667,245 @@ print_pdrs (FILE *file, poly_bb_p pbb)
     else
       nb_writes++;
 
-  fprintf (file, "# Read data references (\n");
-  fprintf (file, "# Read access informations\n%d\n", nb_reads);
+  if (verbosity > 1)
+    fprintf (file, "# Read data references (\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Read access informations\n");
+  fprintf (file, "%d\n", nb_reads);
+
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
     if (PDR_TYPE (pdr) == PDR_READ)
-      print_pdr (file, pdr);
-  fprintf (file, "#)\n");
+      print_pdr (file, pdr, verbosity);
 
-  fprintf (file, "# Write data references (\n");
-  fprintf (file, "# Write access informations\n%d\n", nb_writes);
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
+
+  if (verbosity > 1)
+    fprintf (file, "# Write data references (\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Write access informations\n");
+  fprintf (file, "%d\n", nb_writes);
+
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
     if (PDR_TYPE (pdr) != PDR_READ)
-      print_pdr (file, pdr);
-  fprintf (file, "#)\n");
-  fprintf (file, "#)\n");
+      print_pdr (file, pdr, verbosity);
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
 }
 
 /* Print to STDERR all the data references of PBB.  */
 
 void
-debug_pdrs (poly_bb_p pbb)
+debug_pdrs (poly_bb_p pbb, int verbosity)
 {
-  print_pdrs (stderr, pbb);
+  print_pdrs (stderr, pbb, verbosity);
 }
 
-/* Print to FILE the body of PBB.  */
+/* Print to FILE the body of PBB, at some VERBOSITY level.  */
 
 static void
-print_pbb_body (FILE *file, poly_bb_p pbb)
+print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity)
 {
-  fprintf (file, "# Body (\n");
-  fprintf (file, "# Statement body is provided\n1\n");
-  fprintf (file, "# Original iterator names\n# Iterator names are not provided yet.\n");
-  fprintf (file, "# Statement body\n");
+  if (verbosity > 1)
+    fprintf (file, "# Body (\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Statement body is provided\n");
+  fprintf (file, "1\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Original iterator names\n# Iterator names are not provided yet.\n");
+
+  if (verbosity > 0)
+    fprintf (file, "# Statement body\n");
+
   fprintf (file, "{\n");
   dump_bb (pbb_bb (pbb), file, 0);
   fprintf (file, "}\n");
-  fprintf (file, "#)\n");
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
 }
 
-/* Print to FILE the domain and scattering function of PBB.  */
+/* Print to FILE the domain and scattering function of PBB, at some
+   VERBOSITY level.  */
 
 void
-print_pbb (FILE *file, poly_bb_p pbb)
+print_pbb (FILE *file, poly_bb_p pbb, int verbosity)
 {
-  fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
-  dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
-  dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
-  print_pbb_domain (file, pbb);
-  print_scattering_function (file, pbb);
-  print_pdrs (file, pbb);
-  print_pbb_body (file, pbb);
-  fprintf (file, "#)\n");
+  if (verbosity > 1)
+    {
+      fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
+      dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
+      dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
+    }
+
+  print_pbb_domain (file, pbb, verbosity);
+  print_scattering_function (file, pbb, verbosity);
+  print_pdrs (file, pbb, verbosity);
+  print_pbb_body (file, pbb, verbosity);
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
 }
 
-/* Print to FILE the parameters of SCOP.  */
+/* Print to FILE the parameters of SCOP, at some VERBOSITY level.  */
 
 void
-print_scop_params (FILE *file, scop_p scop)
+print_scop_params (FILE *file, scop_p scop, int verbosity)
 {
   int i;
   tree t;
 
-  fprintf (file, "# parameters (\n");
+  if (verbosity > 1)
+    fprintf (file, "# parameters (\n");
 
   if (VEC_length (tree, SESE_PARAMS (SCOP_REGION (scop))))
-    fprintf (file, "# Parameter names are provided\n1\n# Parameter names\n");
+    {
+      if (verbosity > 0)
+	fprintf (file, "# Parameter names are provided\n");
+
+      fprintf (file, "1\n");
+
+      if (verbosity > 0)
+	fprintf (file, "# Parameter names\n");
+    }
   else
-    fprintf (file, "# Parameter names are not provided\n0\n");
+    {
+      if (verbosity > 0)
+	fprintf (file, "# Parameter names are not provided\n");
+      fprintf (file, "0\n");
+    }
 
   for (i = 0; VEC_iterate (tree, SESE_PARAMS (SCOP_REGION (scop)), i, t); i++)
     {
       print_generic_expr (file, t, 0);
       fprintf (file, " ");
     }
-  fprintf (file, "#)\n");
+
+  fprintf (file, "\n");
+
+  if (verbosity > 1)
+    fprintf (file, "#)\n");
 }
 
-/* Print to FILE the context of SCoP.  */
+/* Print to FILE the context of SCoP, at some VERBOSITY level.  */
+
 void
-print_scop_context (FILE *file, scop_p scop)
+print_scop_context (FILE *file, scop_p scop, int verbosity)
 {
   graphite_dim_t i;
 
-  fprintf (file, "# Context (\n");
-  fprintf (file, "#  eq");
+  if (verbosity > 0)
+    {
+      fprintf (file, "# Context (\n");
+      fprintf (file, "#  eq");
 
-  for (i = 0; i < scop_nb_params (scop); i++)
-    fprintf (file, "     p%d", (int) i);
+      for (i = 0; i < scop_nb_params (scop); i++)
+	fprintf (file, "     p%d", (int) i);
 
-  fprintf (file, "    cst\n");
+      fprintf (file, "    cst\n");
+    }
 
   if (SCOP_CONTEXT (scop))
     ppl_print_powerset_matrix (file, SCOP_CONTEXT (scop));
   else
     fprintf (file, "0 %d\n", (int) scop_nb_params (scop) + 2);
 
-  fprintf (file, "# )\n");
+  if (verbosity > 0)
+    fprintf (file, "# )\n");
 }
 
-/* Print to FILE the SCOP.  */
+/* Print to FILE the SCOP, at some VERBOSITY level.  */
 
 void
-print_scop (FILE *file, scop_p scop)
+print_scop (FILE *file, scop_p scop, int verbosity)
 {
   int i;
   poly_bb_p pbb;
 
   fprintf (file, "SCoP #(\n");
   fprintf (file, "# Language\nGimple\n");
-  print_scop_context (file, scop);
-  print_scop_params (file, scop);
-  fprintf (file, "# Number of statements\n%d\n",
-	   VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  print_scop_context (file, scop, verbosity);
+  print_scop_params (file, scop, verbosity);
+
+  if (verbosity > 0)
+    fprintf (file, "# Number of statements\n");
+
+  fprintf (file, "%d\n",VEC_length (poly_bb_p, SCOP_BBS (scop)));
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    print_pbb (file, pbb);
+    print_pbb (file, pbb, verbosity);
 
-  fprintf (file, "# original_lst (\n");
-  print_lst (file, SCOP_ORIGINAL_SCHEDULE (scop), 0);
-  fprintf (file, "\n#)\n");
+  if (verbosity > 1)
+    {
+      fprintf (file, "# original_lst (\n");
+      print_lst (file, SCOP_ORIGINAL_SCHEDULE (scop), 0);
+      fprintf (file, "\n#)\n");
 
-  fprintf (file, "# transformed_lst (\n");
-  print_lst (file, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
-  fprintf (file, "\n#)\n");
+      fprintf (file, "# transformed_lst (\n");
+      print_lst (file, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
+      fprintf (file, "\n#)\n");
+    }
 
   fprintf (file, "#)\n");
 }
 
-/* Print to FILE the input file that CLooG would expect as input.  */
+/* Print to FILE the input file that CLooG would expect as input, at
+   some VERBOSITY level.  */
 
 void
-print_cloog (FILE *file, scop_p scop)
+print_cloog (FILE *file, scop_p scop, int verbosity)
 {
   int i;
   poly_bb_p pbb;
 
   fprintf (file, "# SCoP (generated by GCC/Graphite\n");
-  fprintf (file, "# CLooG output language\nc\n");
-  print_scop_context (file, scop);
-  print_scop_params (file, scop);
-  fprintf (file, "# Number of statements\n%d\n",
-	   VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  if (verbosity > 0)
+    fprintf (file, "# CLooG output language\n");
+  fprintf (file, "c\n");
+
+  print_scop_context (file, scop, verbosity);
+  print_scop_params (file, scop, verbosity);
+
+  if (verbosity > 0)
+    fprintf (file, "# Number of statements\n");
+
+  fprintf (file, "%d\n", VEC_length (poly_bb_p, SCOP_BBS (scop)));
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     {
-      fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
-      print_pbb_domain (file, pbb);
-      fprintf (file, "0 0 0 # For future CLooG options.\n#)\n");
+      if (verbosity > 1)
+	fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
+
+      print_pbb_domain (file, pbb, verbosity);
+      fprintf (file, "0 0 0");
+
+      if (verbosity > 0)
+	fprintf (file, "# For future CLooG options.\n");
+      else
+	fprintf (file, "\n");
+
+      if (verbosity > 1)
+	fprintf (file, "#)\n");
     }
 
-  fprintf (file, "0 # Don't set the iterator names.\n");
+  fprintf (file, "0");
+  if (verbosity > 0)
+    fprintf (file, "# Don't set the iterator names.\n");
+  else
+    fprintf (file, "\n");
 
-  fprintf (file, "# Number of scattering functions\n%d\n",
-	   VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  if (verbosity > 0)
+    fprintf (file, "# Number of scattering functions\n");
+
+  fprintf (file, "%d\n", VEC_length (poly_bb_p, SCOP_BBS (scop)));
   unify_scattering_dimensions (scop);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
@@ -786,61 +915,73 @@ print_cloog (FILE *file, scop_p scop)
 	       || PBB_ORIGINAL_SCATTERING (pbb)))
 	continue;
 
-      fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
-      print_scattering_function_1 (file, pbb);
-      fprintf (file, "#)\n");
+      if (verbosity > 1)
+	fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
+
+      print_scattering_function_1 (file, pbb, verbosity);
+
+      if (verbosity > 1)
+	fprintf (file, "#)\n");
     }
 
-  fprintf (file, "0 # Don't set the scattering dimension names.\n");
+  fprintf (file, "0");
+  if (verbosity > 0)
+    fprintf (file, "# Don't set the scattering dimension names.\n");
+  else
+    fprintf (file, "\n");
+
   fprintf (file, "#)\n");
 }
 
-/* Print to STDERR the domain of PBB.  */
+/* Print to STDERR the domain of PBB, at some VERBOSITY level.  */
 
 void
-debug_pbb_domain (poly_bb_p pbb)
+debug_pbb_domain (poly_bb_p pbb, int verbosity)
 {
-  print_pbb_domain (stderr, pbb);
+  print_pbb_domain (stderr, pbb, verbosity);
 }
 
-/* Print to FILE the domain and scattering function of PBB.  */
+/* Print to FILE the domain and scattering function of PBB, at some
+   VERBOSITY level.  */
 
 void
-debug_pbb (poly_bb_p pbb)
+debug_pbb (poly_bb_p pbb, int verbosity)
 {
-  print_pbb (stderr, pbb);
+  print_pbb (stderr, pbb, verbosity);
 }
 
-/* Print to STDERR the context of SCOP.  */
+/* Print to STDERR the context of SCOP, at some VERBOSITY level.  */
 
 void
-debug_scop_context (scop_p scop)
+debug_scop_context (scop_p scop, int verbosity)
 {
-  print_scop_context (stderr, scop);
+  print_scop_context (stderr, scop, verbosity);
 }
 
-/* Print to STDERR the SCOP.  */
+/* Print to STDERR the SCOP, at some VERBOSITY level.  */
 
 void
-debug_scop (scop_p scop)
+debug_scop (scop_p scop, int verbosity)
 {
-  print_scop (stderr, scop);
+  print_scop (stderr, scop, verbosity);
 }
 
-/* Print to STDERR the SCOP under CLooG format.  */
+/* Print to STDERR the SCOP under CLooG format, at some VERBOSITY
+   level.  */
 
 void
-debug_cloog (scop_p scop)
+debug_cloog (scop_p scop, int verbosity)
 {
-  print_cloog (stderr, scop);
+  print_cloog (stderr, scop, verbosity);
 }
 
-/* Print to STDERR the parameters of SCOP.  */
+/* Print to STDERR the parameters of SCOP, at some VERBOSITY
+   level.  */
 
 void
-debug_scop_params (scop_p scop)
+debug_scop_params (scop_p scop, int verbosity)
 {
-  print_scop_params (stderr, scop);
+  print_scop_params (stderr, scop, verbosity);
 }
 
 

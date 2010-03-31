@@ -184,10 +184,10 @@ print_pddr (FILE *file, poly_ddr_p pddr)
     fprintf (file, "has_dependence");
 
   fprintf (file, "\n  source ");
-  print_pdr (file, PDDR_SOURCE (pddr));
+  print_pdr (file, PDDR_SOURCE (pddr), 2);
 
   fprintf (file, "\n  sink ");
-  print_pdr (file, PDDR_SINK (pddr));
+  print_pdr (file, PDDR_SINK (pddr), 2);
 
   if (PDDR_KIND (pddr) == has_dependence)
     {
