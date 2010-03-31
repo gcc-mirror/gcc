@@ -1,5 +1,15 @@
 2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (print_scattering_function_1): New.
+	(print_scattering_function): Call it.
+	(print_scop_params): Remove spaces at the end of lines.
+	(print_cloog): New.
+	(debug_cloog): New.
+	* graphite-poly.h (print_cloog): Declared.
+	(debug_cloog): Declared.
+
+2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-ssa-copy.c: Revert this previous change:
 	(init_copy_prop): Loop closed phi nodes cancontain more than one
 	argument.
