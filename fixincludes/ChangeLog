@@ -1,3 +1,9 @@
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (alpha_assert): Allow for more whitespace in
+	select.
+	* fixincl.x: Regenerate.
+
 2010-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40722
