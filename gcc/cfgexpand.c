@@ -2358,7 +2358,8 @@ expand_debug_expr (tree exp)
 	  /* If op0 is not BLKmode, but BLKmode is, adjust_mode
 	     below would ICE.  While it is likely a FE bug,
 	     try to be robust here.  See PR43166.  */
-	  || mode == BLKmode)
+	  || mode == BLKmode
+	  || (mode == VOIDmode && GET_MODE (op0) != VOIDmode))
 	{
 	  gcc_assert (MEM_P (op0));
 	  op0 = adjust_address_nv (op0, mode, 0);

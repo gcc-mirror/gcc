@@ -1,3 +1,9 @@
+2010-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43557
+	* gcc.dg/pr43557-1.c: New test.
+	* gcc.dg/pr43557-2.c: New file.
+
 2010-03-31  Jie Zhang  <jie@codesourcery.com>
 
 	PR 43562
