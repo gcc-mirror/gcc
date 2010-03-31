@@ -136,7 +136,7 @@ struct fenv
     if (_fex & FP_EX_INVALID)						\
       {									\
 	float f = 0.0;							\
-	__asm__ __volatile__ ("fdiv %0" : "+t" (f));			\
+	__asm__ __volatile__ ("fdiv {%y0, %0|%0, %y0}" : "+t" (f));	\
 	__asm__ __volatile__ ("fwait");					\
       }									\
     if (_fex & FP_EX_DIVZERO)						\
