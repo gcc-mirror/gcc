@@ -1,3 +1,12 @@
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.c: Include output.h.
+	(solaris_assemble_visibility): New function.
+	* config/t-sol2 (sol2.o): Add output.h dependency.
+	* config/sol2-protos.h (solaris_assemble_visibility): Declare.
+	* config/sol2.h [!USE_GAS] (TARGET_ASM_ASSEMBLE_VISIBILITY):
+	Redefine.
+
 2010-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43580

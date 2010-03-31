@@ -284,6 +284,11 @@ __enable_execute_stack (void *addr)					\
     }									\
   while (0)
 
+#ifndef USE_GAS
+#undef TARGET_ASM_ASSEMBLE_VISIBILITY
+#define TARGET_ASM_ASSEMBLE_VISIBILITY solaris_assemble_visibility
+#endif
+
 extern GTY(()) tree solaris_pending_aligns;
 extern GTY(()) tree solaris_pending_inits;
 extern GTY(()) tree solaris_pending_finis;
