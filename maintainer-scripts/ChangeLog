@@ -1,3 +1,8 @@
+2010-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release (build_tarfiles): Make directories mode 755, not
+	777.
+
 2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_svn: Update BUGURL to http://gcc.gnu.org/bugs/.
