@@ -1,3 +1,107 @@
+2010-03-31  Richard Guenther  <rguenther@suse.de>
+	    Zdenek Dvorak  <ook@ucw.cz>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (init_copy_prop): Handle loop close phi nodes
+	with multiple arguments.
+	(execute_copy_prop): Remove call to rewrite_into_loop_closed_ssa.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (print_pddr): Call print_pdr with an
+	extra argument.
+	* graphite-poly.c (debug_pdr): Add an extra argument for the
+	verbosity level.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(print_pbb): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_cloog): Same.
+	(debug_pbb_domain): Same.
+	(debug_pbb): Same.
+	(print_pdrs): Same.
+	(debug_pdrs): Same.
+	(debug_scop_context): Same.
+	(debug_scop): Same.
+	(debug_cloog): Same.
+	(print_scop_params): Same.
+	(debug_scop_params): Same.
+	(print_iteration_domain): Same.
+	(print_iteration_domains): Same.
+	(debug_iteration_domain): Same.
+	(debug_iteration_domains): Same.
+	(print_scattering_function): Same.
+	(print_scattering_functions): Same.
+	(debug_scattering_function): Same.
+	(debug_scattering_functions): Same.
+	* graphite-poly.h (debug_pdr): Update declaration.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(print_pbb): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_cloog): Same.
+	(debug_pbb_domain): Same.
+	(debug_pbb): Same.
+	(print_pdrs): Same.
+	(debug_pdrs): Same.
+	(debug_scop_context): Same.
+	(debug_scop): Same.
+	(debug_cloog): Same.
+	(print_scop_params): Same.
+	(debug_scop_params): Same.
+	(print_iteration_domain): Same.
+	(print_iteration_domains): Same.
+	(debug_iteration_domain): Same.
+	(debug_iteration_domains): Same.
+	(print_scattering_function): Same.
+	(print_scattering_functions): Same.
+	(debug_scattering_function): Same.
+	(debug_scattering_functions): Same.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_scattering_function_1): New.
+	(print_scattering_function): Call it.
+	(print_scop_params): Remove spaces at the end of lines.
+	(print_cloog): New.
+	(debug_cloog): New.
+	* graphite-poly.h (print_cloog): Declared.
+	(debug_cloog): Declared.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (graphite_loop_normal_form): Add the IV bump
+	in loop->header.
+	* tree-flow.h (canonicalize_loop_ivs): Updated declaration.
+	* tree-parloops.c (gen_parallel_loop): Add the IV bump in loop->latch.
+	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Add a new parameter
+	to switch between adding the IV bump in loop->latch or in loop->header.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_scattering_function): Pretty print following
+	the scoplib format.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(dump_gbb_cases): Same.
+	(dump_gbb_conditions): Same.
+	(print_pdrs): Same.
+	(print_pbb): Same.
+	(print_scop_params): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_pbb_body): New.
+	(lst_indent_to): New.
+	(print_lst): Start new lines with a #.
+	* graphite-poly.h (pbb_bb): New.
+	(pbb_index): Use pbb_bb.
+	* graphite-ppl.c (ppl_print_powerset_matrix): Print the number of
+	disjuncts.
+	* tree-data-ref.c (dump_data_reference): Start new lines with a #.
+
 2010-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (size_of_die): For -gdwarf-4 use

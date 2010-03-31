@@ -1,3 +1,14 @@
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* gcc.dg/graphite/id-pr43464.c: New.
+	* gcc.dg/graphite/id-pr43464-1.c: New.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43351
+	* gcc.dg/graphite/id-pr43351.c
+
 2010-03-31  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR testsuite/35165
