@@ -1,5 +1,17 @@
 2010-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (size_of_die): For -gdwarf-4 use
+	uleb128 size instead of fixed 1 or 2 for dw_val_class_loc
+	and 0 instead of 1 for dw_val_class_flag.
+	(value_format): For -gdwarf-4 use DW_FORM_sec_offset for
+	dw_val_class_range_list, dw_val_class_loc_list,
+	dw_val_class_lineptr and dw_val_class_macptr, use
+	DW_FORM_flag_present for dw_val_class_flag and
+	DW_FORM_exprloc for dw_val_class_loc.
+	(output_die): For -gdwarf-4 print dw_val_class_loc
+	size as uleb128 instead of 1 or 2 bytes and don't print
+	anything for dw_val_class_flag.
+
 	* var-tracking.c (vt_init_cfa_base): Use cselib_lookup_from_insn
 	instead of cselib_lookup following by tweaking locs->setting_insn.
 

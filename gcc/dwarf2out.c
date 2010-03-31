@@ -9920,7 +9920,10 @@ size_of_die (dw_die_ref die)
 	    unsigned long lsize = size_of_locs (AT_loc (a));
 
 	    /* Block length.  */
-	    size += constant_size (lsize);
+	    if (dwarf_version >= 4)
+	      size += size_of_uleb128 (lsize);
+	    else
+	      size += constant_size (lsize);
 	    size += lsize;
 	  }
 	  break;
@@ -9948,7 +9951,16 @@ size_of_die (dw_die_ref die)
 		    * a->dw_attr_val.v.val_vec.elt_size; /* block */
 	  break;
 	case dw_val_class_flag:
-	  size += 1;
+	  if (dwarf_version >= 4)
+	    /* Currently all add_AT_flag calls pass in 1 as last argument,
+	       so DW_FORM_flag_present can be used.  If that ever changes,
+	       we'll need to use DW_FORM_flag and have some optimization
+	       in build_abbrev_table that will change those to
+	       DW_FORM_flag_present if it is set to 1 in all DIEs using
+	       the same abbrev entry.  */
+	    gcc_assert (a->dw_attr_val.v.val_flag == 1);
+	  else
+	    size += 1;
 	  break;
 	case dw_val_class_die_ref:
 	  if (AT_ref_external (a))
@@ -10142,8 +10154,11 @@ value_format (dw_attr_ref a)
 	  gcc_unreachable ();
 	}
     case dw_val_class_range_list:
-    case dw_val_class_offset:
     case dw_val_class_loc_list:
+      if (dwarf_version >= 4)
+	return DW_FORM_sec_offset;
+      /* FALLTHRU */
+    case dw_val_class_offset:
       switch (DWARF_OFFSET_SIZE)
 	{
 	case 4:
@@ -10154,6 +10169,8 @@ value_format (dw_attr_ref a)
 	  gcc_unreachable ();
 	}
     case dw_val_class_loc:
+      if (dwarf_version >= 4)
+	return DW_FORM_exprloc;
       switch (constant_size (size_of_locs (AT_loc (a))))
 	{
 	case 1:
@@ -10206,6 +10223,17 @@ value_format (dw_attr_ref a)
 	  gcc_unreachable ();
 	}
     case dw_val_class_flag:
+      if (dwarf_version >= 4)
+	{
+	  /* Currently all add_AT_flag calls pass in 1 as last argument,
+	     so DW_FORM_flag_present can be used.  If that ever changes,
+	     we'll need to use DW_FORM_flag and have some optimization
+	     in build_abbrev_table that will change those to
+	     DW_FORM_flag_present if it is set to 1 in all DIEs using
+	     the same abbrev entry.  */
+	  gcc_assert (a->dw_attr_val.v.val_flag == 1);
+	  return DW_FORM_flag_present;
+	}
       return DW_FORM_flag;
     case dw_val_class_die_ref:
       if (AT_ref_external (a))
@@ -10218,7 +10246,7 @@ value_format (dw_attr_ref a)
       return DW_FORM_addr;
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
-      return DW_FORM_data;
+      return dwarf_version >= 4 ? DW_FORM_sec_offset : DW_FORM_data;
     case dw_val_class_str:
       return AT_string_form (a);
     case dw_val_class_file:
@@ -10450,7 +10478,10 @@ output_die (dw_die_ref die)
 	  size = size_of_locs (AT_loc (a));
 
 	  /* Output the block length for this list of location operations.  */
-	  dw2_asm_output_data (constant_size (size), size, "%s", name);
+	  if (dwarf_version >= 4)
+	    dw2_asm_output_data_uleb128 (size, "%s", name);
+	  else
+	    dw2_asm_output_data (constant_size (size), size, "%s", name);
 
 	  output_loc_sequence (AT_loc (a));
 	  break;
@@ -10518,6 +10549,20 @@ output_die (dw_die_ref die)
 	  }
 
 	case dw_val_class_flag:
+	  if (dwarf_version >= 4)
+	    {
+	      /* Currently all add_AT_flag calls pass in 1 as last argument,
+		 so DW_FORM_flag_present can be used.  If that ever changes,
+		 we'll need to use DW_FORM_flag and have some optimization
+		 in build_abbrev_table that will change those to
+		 DW_FORM_flag_present if it is set to 1 in all DIEs using
+		 the same abbrev entry.  */
+	      gcc_assert (AT_flag (a) == 1);
+	      if (flag_debug_asm)
+		fprintf (asm_out_file, "\t\t\t%s %s\n",
+			 ASM_COMMENT_START, name);
+	      break;
+	    }
 	  dw2_asm_output_data (1, AT_flag (a), "%s", name);
 	  break;
 
