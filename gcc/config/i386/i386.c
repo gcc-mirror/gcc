@@ -6393,12 +6393,9 @@ ix86_expand_prologue (void)
 			       GEN_INT (-allocate), -1);
   else
     {
-      /* Only valid for Win32.  */
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       bool eax_live;
       rtx t;
-
-      gcc_assert (!TARGET_64BIT || TARGET_64BIT_MS_ABI);
 
       if (TARGET_64BIT_MS_ABI)
 	eax_live = false;

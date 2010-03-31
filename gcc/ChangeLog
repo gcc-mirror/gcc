@@ -1,3 +1,18 @@
+2010-03-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/43528
+	* stor-layout.c (place_field): Check that constant fits into
+	unsigned HWI when skipping calculation of MS bitfield layout.
+
+	2010-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43524
+	* config/i386/i386.c (ix86_expand_prologue) [TARGET_STACK_PROBE]:
+	Remove invalid assert and wrong comment.
+
 2010-03-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_prologue): Omit issuing a dynamic
