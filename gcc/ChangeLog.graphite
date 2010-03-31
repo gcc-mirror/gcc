@@ -1,5 +1,14 @@
 2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (graphite_loop_normal_form): Add the IV bump
+	in loop->header.
+	* tree-flow.h (canonicalize_loop_ivs): Updated declaration.
+	* tree-parloops.c (gen_parallel_loop): Add the IV bump in loop->latch.
+	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Add a new parameter
+	to switch between adding the IV bump in loop->latch or in loop->header.
+
+2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* passes.c (init_optimization_passes): Add pass_copy_prop
 	after Graphite.
 
