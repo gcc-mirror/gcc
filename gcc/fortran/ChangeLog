@@ -1,3 +1,30 @@
+2010-03-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	* ioparm.def : Update copyright.
+	* lang.opt : ditto
+	* trans-array.c : ditto
+	* trans-array.h : ditto
+	* expr.c: ditto
+	* trans-types.c: ditto
+	* dependency.c : ditto
+	* gfortran.h : ditto
+	* options.c : ditto
+	* trans-io.c : ditto
+	* trans-intrinsic.c : ditto
+	* libgfortran.h : ditto
+	* invoke.texi : ditto
+	* intrinsic.texi : ditto
+	* trans.c : ditto
+	* trans.h : ditto
+	* intrinsic.c : ditto
+	* interface.c : ditto
+	* iresolve.c : ditto
+	* trans-stmt.c : ditto
+	* trans-stmt.h : ditto
+	* parse,c : ditto
+	* match.h : ditto
+	* error.c : ditto
+
 2010-03-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43450
