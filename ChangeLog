@@ -1,3 +1,11 @@
+2010-03-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/43328
+	* configure.ac: Do not pass --enable-multilib nor
+	--disable-multilib in baseargs.  Accept explicitly passed
+	--enable_multilib.
+	* configure: Regenerate.
+
 2010-03-28  Andrew Pinski  <pinskia@gmail.com>
 
 	* MAINTAINERS (spu port): Remove me.
