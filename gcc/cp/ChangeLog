@@ -1,3 +1,15 @@
+2010-03-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43558
+	* cp-tree.h (TEMPLATE_TYPE_PARM_SIBLING_PARMS): New accessor macro.
+	* pt.c (end_template_parm_list): Store sibling template parms of
+	each TEMPLATE_TYPE_PARMs into its TEMPLATE_TYPE_PARM_SIBLING_PARMS.
+	(push_template_decl_real): Don't store the containing template decl
+	into the DECL_CONTEXT of TEMPLATE_TYPE_PARMs anymore.
+	* typeck.c (get_template_parms_of_dependent_type): Get sibling parms
+	of a TEMPLATE_TYPE_PARM from TEMPLATE_TYPE_PARM_SIBLING_PARMS.
+	Simplify the logic.
+
 2010-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43076

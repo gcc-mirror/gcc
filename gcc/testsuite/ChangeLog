@@ -1,3 +1,8 @@
+2010-03-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43558
+	* g++.dg/template/typedef31.C: New test.
+
 2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/ext/visibility/pragma-override1.C: Allow for .hidden in

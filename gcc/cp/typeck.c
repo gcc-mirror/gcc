@@ -1110,36 +1110,22 @@ get_template_parms_of_dependent_type (tree t)
      template info from T itself.  */
   if ((tinfo = get_template_info (t)))
     ;
-  /* If T1 is a typedef or whatever has a template info associated
-     to its context, get the template parameters from that context.  */
+  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+    return TEMPLATE_TYPE_PARM_SIBLING_PARMS (t);
   else if (typedef_variant_p (t)
 	   && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
     tinfo = get_template_info (DECL_CONTEXT (TYPE_NAME (t)));
-  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-	   && DECL_CONTEXT (TYPE_NAME (t)) == NULL_TREE)
-    /* We have not yet created the DECL_TEMPLATE this
-       template type parm belongs to. It probably means
-       that we are in the middle of parsing the template parameters
-       of a template, and T is one of the parameters we have parsed.
-       Let's return the list of template parms we have parsed so far.  */
-    return get_template_parms_at_level (current_template_parms,
-					TEMPLATE_TYPE_LEVEL (t));
+  /* If T is a TYPENAME_TYPE which context is a template type
+     parameter, get the template parameters from that context.  */
+  else if (TYPE_CONTEXT (t)
+	   && TREE_CODE (TYPE_CONTEXT (t)) == TEMPLATE_TYPE_PARM)
+   return TEMPLATE_TYPE_PARM_SIBLING_PARMS (TYPE_CONTEXT (t));
   else if (TYPE_CONTEXT (t)
 	   && !NAMESPACE_SCOPE_P (t))
     tinfo = get_template_info (TYPE_CONTEXT (t));
 
   if (tinfo)
     tparms = DECL_TEMPLATE_PARMS (TI_TEMPLATE (tinfo));
-  /* If T is a template type parameter, get the template parameter
-     set it is part of.  */
-  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-	   && DECL_CONTEXT (TYPE_NAME (t)))
-    tparms = DECL_TEMPLATE_PARMS (DECL_CONTEXT (TYPE_NAME (t)));
-  /* If T is a TYPENAME_TYPE which context is a template type
-     parameter, get the template parameters from that context.  */
-  else if (TYPE_CONTEXT (t)
-	   && TREE_CODE (TYPE_CONTEXT (t)) == TEMPLATE_TYPE_PARM)
-    tparms = get_template_parms_of_dependent_type (TYPE_CONTEXT (t));
 
   return tparms;
 }
