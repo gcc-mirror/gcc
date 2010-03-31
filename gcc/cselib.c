@@ -2155,12 +2155,13 @@ cselib_process_insn (rtx insn)
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
       cselib_reset_table (next_uid);
+      cselib_current_insn = NULL_RTX;
       return;
     }
 
   if (! INSN_P (insn))
     {
-      cselib_current_insn = 0;
+      cselib_current_insn = NULL_RTX;
       return;
     }
 
@@ -2202,7 +2203,7 @@ cselib_process_insn (rtx insn)
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 
-  cselib_current_insn = 0;
+  cselib_current_insn = NULL_RTX;
 
   if (n_useless_values > MAX_USELESS_VALUES
       /* remove_useless_values is linear in the hash table size.  Avoid
