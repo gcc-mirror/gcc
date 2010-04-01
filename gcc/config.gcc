@@ -1236,6 +1236,10 @@ i[34567]86-*-rtems*)
 	;;
 i[34567]86-*-solaris2*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h"
+	# Set default arch and tune to pentium4 like the other i386 targets,
+	# although config.guess defaults to i386-pc-solaris2*.
+	with_arch_32=${with_arch_32:-pentium4}
+	with_tune_32=${with_tune_32:-pentium4}
 	case ${target} in
 	*-*-solaris2.1[0-9]*)
 		tm_file="${tm_file} sol2-10.h"

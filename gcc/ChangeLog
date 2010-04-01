@@ -1,3 +1,8 @@
+2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.guess (i[34567]86-*-solaris2*): Default with_arch_32,
+	with_tune_32 to pentium4.
+
 2010-04-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/cpuid.h (__get_cpuid_max): Move misplaced comment.
