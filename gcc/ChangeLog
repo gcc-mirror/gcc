@@ -1,3 +1,7 @@
+2010-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (__get_cpuid_max): Move misplaced comment.
+
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips-sgi-irix5): Document IRIX 5
@@ -195,8 +199,7 @@
 	PR 43562
 	* reload.h (caller_save_initialized_p): Declare.
 	* toplev.c (backend_init_target): Don't call
-	init_caller_save but set caller_save_initialized_p
-	to false.
+	init_caller_save but set caller_save_initialized_p to false.
 	* caller-save.c (caller_save_initialized_p): Define.
 	(init_caller_save): Check caller_save_initialized_p.
 	* ira.c (ira): Call init_caller_save if flag_caller_saves.
@@ -226,8 +229,7 @@
 	(add_mem_for_addr): Promote debug locs.
 	(cselib_lookup_mem): Likewise.
 	(cselib_lookup_addr): Renamed to...
-	(cselib_lookup_addr_1): ... this.  Promote debug locs.
-	Don't call...
+	(cselib_lookup_addr_1): ... this.  Promote debug locs.  Don't call...
 	(cselib_log_lookup): ... this.  Turn into...
 	(cselib_lookup_addr): ... new wrapper.
 	(cselib_lookup_from_insn): New.
@@ -250,9 +252,8 @@
 	with operations in the narrower mode.
 
 	PR debug/43593
-	* var-tracking.c (dataflow_set_clear_at_call): Invalidate
-	just regs_invalidated_by_call instead all call_used_reg_set
-	registers.
+	* var-tracking.c (dataflow_set_clear_at_call): Invalidate just
+	regs_invalidated_by_call instead all call_used_reg_set registers.
 
 2010-03-30  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -290,7 +291,7 @@
 
 2010-03-28  Duncan Sands  <baldrick@free.fr>
 
-       * Makefile.in (PLUGIN_HEADERS): Add except.h.
+	* Makefile.in (PLUGIN_HEADERS): Add except.h.
 
 2010-03-29  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -309,10 +310,8 @@
 2010-03-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43560
-	* tree-ssa-loop-im.c (ref_always_accessed_p): Add store_p
-	parameter.
-	(can_sm_ref_p): Treat stores to readonly locations as
-	trapping.
+	* tree-ssa-loop-im.c (ref_always_accessed_p): Add store_p parameter.
+	(can_sm_ref_p): Treat stores to readonly locations as trapping.
 
 2010-03-29  Jie Zhang  <jie@codesourcery.com>
 
