@@ -1,3 +1,9 @@
+2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
+            Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/43605
+	* gfortran.dg/ftell_3.f90: Enhance test case by reading more.
+
 2010-04-01  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/43325

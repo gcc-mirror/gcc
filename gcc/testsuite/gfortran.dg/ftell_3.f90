@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! PR43605 FTELL intrinsic returns incorrect position
-! Contributed by Janne Blomqvist and Manfred Schwarb
+! Contributed by Janne Blomqvist, Manfred Schwarb
+! and Dominique d'Humieres.
 program ftell_3
   integer :: i
   character(len=99) :: buffer
@@ -13,6 +14,14 @@ program ftell_3
   read(10, '(a)') buffer
   call ftell(10, i)
   if(i /= 7) then
+     call abort()
+  end if
+  read(10,'(a)') buffer
+  if (trim(buffer) /= "789") then
+     call abort()
+  end if
+  call ftell(10,i)
+  if (i /= 11) then
      call abort()
   end if
   close(10)
