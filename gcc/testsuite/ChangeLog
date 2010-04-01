@@ -1,3 +1,7 @@
+2010-04-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist12.C: Adjust expected errors.
+
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
 	    Manfred Schwarb  <manfred99@gmx.ch>
 
