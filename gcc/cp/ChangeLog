@@ -1,3 +1,8 @@
+2010-04-01  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (maybe_add_lambda_conv_op): Use null_pointer_node
+	instead of void_zero_node.
+
 2010-03-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43558
