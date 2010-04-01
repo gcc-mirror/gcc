@@ -1,3 +1,9 @@
+2010-04-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cgraph.c (cgraph_add_function_insertion_hook): Update comment.
+	(cgraph_remove_function_insertion_hook): Same.
+	(cgraph_call_function_insertion_hooks): Same.
+
 2010-04-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43614

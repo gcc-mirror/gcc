@@ -273,7 +273,7 @@ cgraph_call_node_removal_hooks (struct cgraph_node *node)
   }
 }
 
-/* Register HOOK to be called with DATA on each removed node.  */
+/* Register HOOK to be called with DATA on each inserted node.  */
 struct cgraph_node_hook_list *
 cgraph_add_function_insertion_hook (cgraph_node_hook hook, void *data)
 {
@@ -290,7 +290,7 @@ cgraph_add_function_insertion_hook (cgraph_node_hook hook, void *data)
   return entry;
 }
 
-/* Remove ENTRY from the list of hooks called on removing nodes.  */
+/* Remove ENTRY from the list of hooks called on inserted nodes.  */
 void
 cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *entry)
 {
@@ -302,7 +302,7 @@ cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *entry)
   free (entry);
 }
 
-/* Call all node removal hooks.  */
+/* Call all node insertion hooks.  */
 void
 cgraph_call_function_insertion_hooks (struct cgraph_node *node)
 {
