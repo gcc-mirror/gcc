@@ -1,3 +1,14 @@
+2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp/_Pragma1.C: Skip on alpha*-dec-osf*.
+	* g++.dg/eh/spbp.C: Likewise.
+	* g++.dg/ext/label13.C (C::C): xfail dg-bogus on alpha*-dec-osf*.
+	* g++.dg/other/pragma-ep-1.C: Properly define p, remove
+	superfluous casts.
+	* gcc.dg/mtune.c: Add dg-bogus "mcpu".
+	* objc.dg/dwarf-1.m: Skip on  alpha*-dec-osf*.
+	* objc.dg/dwarf-2.m: Likewise.
+
 2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43464
