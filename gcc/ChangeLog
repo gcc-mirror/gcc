@@ -1,3 +1,9 @@
+2010-04-01  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43325
+	* dwarf2out.c (gen_variable_die): Allow debug info for variable
+	re-declaration when it happens in a function.
+
 2010-04-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cgraph.c (cgraph_add_function_insertion_hook): Update comment.
