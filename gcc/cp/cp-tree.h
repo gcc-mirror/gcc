@@ -4727,6 +4727,7 @@ extern bool cp_missing_noreturn_ok_p		(tree);
 extern void initialize_artificial_var		(tree, tree);
 extern tree check_var_type			(tree, tree);
 extern tree reshape_init (tree, tree);
+extern tree next_initializable_field (tree);
 
 extern bool defer_mark_used_calls;
 extern GTY(()) VEC(tree, gc) *deferred_mark_used_calls;

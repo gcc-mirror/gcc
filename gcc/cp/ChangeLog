@@ -1,5 +1,10 @@
 2010-04-01  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (next_initializable_field): No longer static.
+	* cp-tree.h: Declare it.
+	* call.c (build_aggr_conv): Fail if there are more initializers
+	than initializable fields.
+
 	* semantics.c (maybe_add_lambda_conv_op): Use null_pointer_node
 	instead of void_zero_node.
 

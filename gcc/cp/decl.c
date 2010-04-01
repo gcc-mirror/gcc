@@ -104,7 +104,6 @@ static tree build_cp_library_fn (tree, enum tree_code, tree);
 static void store_parm_decls (tree);
 static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
-static tree next_initializable_field (tree);
 
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
@@ -4723,7 +4722,7 @@ static tree reshape_init_r (tree, reshape_iter *, bool);
    initialized.  If there are no more such fields, the return value
    will be NULL.  */
 
-static tree
+tree
 next_initializable_field (tree field)
 {
   while (field

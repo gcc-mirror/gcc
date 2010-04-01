@@ -626,22 +626,26 @@ build_aggr_conv (tree type, tree ctor, int flags)
 {
   unsigned HOST_WIDE_INT i = 0;
   conversion *c;
-  tree field = TYPE_FIELDS (type);
+  tree field = next_initializable_field (TYPE_FIELDS (type));
 
-  for (; field; field = TREE_CHAIN (field), ++i)
+  for (; field; field = next_initializable_field (TREE_CHAIN (field)))
     {
-      if (TREE_CODE (field) != FIELD_DECL)
-	continue;
       if (i < CONSTRUCTOR_NELTS (ctor))
 	{
 	  constructor_elt *ce = CONSTRUCTOR_ELT (ctor, i);
 	  if (!can_convert_arg (TREE_TYPE (field), TREE_TYPE (ce->value),
 				ce->value, flags))
 	    return NULL;
+	  ++i;
+	  if (TREE_CODE (type) == UNION_TYPE)
+	    break;
 	}
       else if (build_value_init (TREE_TYPE (field)) == error_mark_node)
 	return NULL;
     }
+
+  if (i < CONSTRUCTOR_NELTS (ctor))
+    return NULL;
 
   c = alloc_conversion (ck_aggr);
   c->type = type;
