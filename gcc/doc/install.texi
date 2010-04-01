@@ -3803,36 +3803,60 @@ made after Nov. 9, 2006) should be free from both of these problems.
 @end html
 @heading @anchor{mips-sgi-irix5}mips-sgi-irix5
 
+Support for IRIX 5 has been obsoleted in GCC 4.5, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.6.
+
 In order to compile GCC on an SGI running IRIX 5, the @samp{compiler_dev.hdr}
 subsystem must be installed from the IDO CD-ROM supplied by SGI@.
 It is also available for download from
-@uref{ftp://ftp.sgi.com/sgi/IRIX5.3/iris-development-option-5.3.tardist}.
+@uref{http://freeware.sgi.com/ido.html}.
 
 If you use the MIPS C compiler to bootstrap, it may be necessary
 to increase its table size for switch statements with the
 @option{-Wf,-XNg1500} option.  If you use the @option{-O2}
 optimization option, you also need to use @option{-Olimit 3000}.
+@c FIXME: verify.
+
+GCC must be configured to use GNU @command{as}.  The latest version, from GNU
+binutils 2.20.1, is known to work.
 
 To enable debugging under IRIX 5, you must use GNU binutils 2.15 or
 later, and use the @option{--with-gnu-ld} @command{configure} option
-when configuring GCC@.  You need to use GNU @command{ar} and @command{nm},
+when configuring GCC@.
+You need to use GNU @command{ar} and @command{nm},
 also distributed with GNU binutils.
+@c FIXME: which parts of this are still true?
 
-Some users have reported that @command{/bin/sh} will hang during bootstrap.
-This problem can be avoided by running the commands:
+Configuring GCC with @command{/bin/sh} is @emph{extremely} slow and may
+even hang.  This problem can be avoided by running @command{configure}
+like this:
 
 @smallexample
-   % CONFIG_SHELL=/bin/ksh
+   % CONFIG_SHELL=/usr/local/bin/bash
    % export CONFIG_SHELL
+   % $CONFIG_SHELL @var{srcdir}/configure [@var{options}]
 @end smallexample
 
 @noindent
-before starting the build.
+@command{/bin/ksh} doesn't work properly either.
 
 @html
 <hr />
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
+
+Support for IRIX 6 releases before 6.5 has been obsoleted in GCC 4.5,
+but can still be enabled by configuring with @option{--enable-obsolete}.
+Support will be removed in GCC 4.6, which will also disable support for
+the O32 ABI.  It is @emph{strongly} recommended to upgrade to at least
+IRIX 6.5.18.  This release introduced full ISO C99 support, though for
+the N32 and N64 ABIs only.
+
+To build and use GCC on IRIX 6, you need the IRIX Development Foundation
+(IDF) and IRIX Development Libraries (IDL).  They are included with the
+IRIX 6.5 media and can be downloaded from
+@uref{http://freeware.sgi.com/idf_idl.html} for older IRIX 6 releases.
 
 If you are using SGI's MIPSpro @command{cc} as your bootstrap compiler, you must
 ensure that the N32 ABI is in use.  To test this, compile a simple C
@@ -3897,9 +3921,9 @@ try to use them.  This will disable building the O32 libraries, too.
 Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 
-To enable debugging for the O32 ABI, you must use GNU @command{as} from
-GNU binutils 2.15 or later.  You may also use GNU @command{ld}, but
-this is not required and currently causes some problems with Ada.
+GCC must be configured with GNU @command{as}.  The latest version, from GNU
+binutils 2.20.1, is known to work.  On the other hand, bootstrap fails
+with GNU @command{ld} at least since GNU binutils 2.17.
 
 The @option{--enable-libgcj}
 option is disabled by default: IRIX 6 uses a very low default limit
@@ -3909,14 +3933,12 @@ to build despite this, running into an internal error of the native
 @command{ld}.  A sure fix is to increase this limit (@samp{ncargs}) to
 its maximum of 262144 bytes.  If you have root access, you can use the
 @command{systune} command to do this.
+@c FIXME: does this work with current libtool?
 
 @code{wchar_t} support in @samp{libstdc++} is not available for old
 IRIX 6.5.x releases, @math{x < 19}.  The problem cannot be autodetected
 and in order to build GCC for such targets you need to configure with
 @option{--disable-wchar_t}.
-
-See @uref{http://freeware.sgi.com/} for more
-information about using GCC on IRIX platforms.
 
 @html
 <hr />

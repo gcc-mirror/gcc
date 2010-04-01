@@ -1,5 +1,20 @@
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/install.texi (Specific, mips-sgi-irix5): Document IRIX 5
+	obsoletion, removal.
+	Update IDO URL.
+	Document GNU as requirement.
+	Update configure requirements.
+	(Specific, mips-sgi-irix6): Document IRIX 6 < 6.5 obsoletion,
+	removal.
+	Recomment IRIX 6.5.18+.
+	Document IDF/IDL requirement.
+	Document GNU as requirement.
+	Document GNU ld bootstrap failure.
+	Remove freeware.sgi.com reference.
+
+2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/install.texi (Specific, alpha*-dec-osf*): Document Tru64
 	UNIX V4.0, V5.0 obsoletion, removal.
 	Remove --with-gc=simple reference.
