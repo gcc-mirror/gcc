@@ -1,5 +1,16 @@
 2010-04-01  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/43614
+	* tree-ssa-address.c (copy_mem_ref_info): Copy TREE_SIDE_EFFECTS
+	and TREE_THIS_VOLATILE.
+	(copy_ref_info): Likewise.
+	* tree-ssa-operands.c (get_tmr_operands): Check TREE_THIS_VOLATILE.
+	* tree.c (build6_stat): Ignore side-effects of all but arg5
+	for TARGET_MEM_REF.  Set TREE_THIS_VOLATILE from arg5 of
+	TARGET_MEM_REF.
+
+2010-04-01  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43607
 	* ipa-type-escape.c (check_call): Do not access non-existing
 	arguments.

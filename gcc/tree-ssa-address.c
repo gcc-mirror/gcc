@@ -765,6 +765,8 @@ copy_mem_ref_info (tree to, tree from)
 {
   /* And the info about the original reference.  */
   TMR_ORIGINAL (to) = TMR_ORIGINAL (from);
+  TREE_SIDE_EFFECTS (to) = TREE_SIDE_EFFECTS (from);
+  TREE_THIS_VOLATILE (to) = TREE_THIS_VOLATILE (from);
 }
 
 /* Move constants in target_mem_ref REF to offset.  Returns the new target
