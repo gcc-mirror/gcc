@@ -108,7 +108,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CXX_WRAP_SPEC_OPT "muse-libstdc-wrappers"
 #endif
 
-#define CXX_WRAP_SPEC "%{" CXX_WRAP_SPEC_OPT ":" CXX_WRAP_SPEC_LIST "}"
+#define CXX_WRAP_SPEC "%{!mno-cygwin:%{" CXX_WRAP_SPEC_OPT ":" CXX_WRAP_SPEC_LIST "}}"
 
 #else /* !defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)  */
 
