@@ -260,19 +260,27 @@ fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
 
 /* FTELL intrinsic */
 
+static gfc_offset
+gf_ftell (int unit)
+{
+  gfc_unit * u = find_unit (unit);
+  if (u == NULL)
+    return -1;
+  int pos = fbuf_reset (u);
+  if (pos != 0)
+    sseek (u->s, pos, SEEK_CUR);
+  gfc_offset ret = stell (u->s);
+  unlock_unit (u);
+  return ret;
+}
+
 extern size_t PREFIX(ftell) (int *);
 export_proto_np(PREFIX(ftell));
 
 size_t
 PREFIX(ftell) (int * unit)
 {
-  gfc_unit * u = find_unit (*unit);
-  gfc_offset ret;
-  if (u == NULL)
-    return ((size_t) -1);
-  ret = stell (u->s) + fbuf_reset (u);
-  unlock_unit (u);
-  return ret;
+  return gf_ftell (*unit);
 }
 
 #define FTELL_SUB(kind) \
@@ -281,14 +289,7 @@ PREFIX(ftell) (int * unit)
   void \
   ftell_i ## kind ## _sub (int * unit, GFC_INTEGER_ ## kind * offset) \
   { \
-    gfc_unit * u = find_unit (*unit); \
-    if (u == NULL) \
-      *offset = -1; \
-    else \
-      { \
-	*offset = stell (u->s) + fbuf_reset (u);	\
-	unlock_unit (u); \
-      } \
+    *offset = gf_ftell (*unit);			\
   }
 
 FTELL_SUB(1)
