@@ -1,8 +1,8 @@
 /* Implementation of the FGET, FGETC, FPUT, FPUTC, FLUSH 
    FTELL, TTYNAM and ISATTY intrinsics.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -267,10 +267,10 @@ size_t
 PREFIX(ftell) (int * unit)
 {
   gfc_unit * u = find_unit (*unit);
-  size_t ret;
+  gfc_offset ret;
   if (u == NULL)
     return ((size_t) -1);
-  ret = (size_t) stell (u->s);
+  ret = stell (u->s) + fbuf_reset (u);
   unlock_unit (u);
   return ret;
 }
@@ -286,7 +286,7 @@ PREFIX(ftell) (int * unit)
       *offset = -1; \
     else \
       { \
-	*offset = stell (u->s); \
+	*offset = stell (u->s) + fbuf_reset (u);	\
 	unlock_unit (u); \
       } \
   }
