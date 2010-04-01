@@ -1,3 +1,17 @@
+2010-04-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/43615
+	PR bootstrap/43328
+
+	Revert:
+
+	2010-03-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Do not pass --enable-multilib nor
+	--disable-multilib in baseargs.  Accept explicitly passed
+	--enable_multilib.
+	* configure: Regenerate.
+
 2010-03-31  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself for spu port.
