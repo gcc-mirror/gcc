@@ -1,3 +1,7 @@
+2010-04-01  Diego Novillo  <dnovillo@google.com>
+
+	* MAINTAINERS (Plugin): Add myself and Le-Chun Wu.
+
 2010-04-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/43615
