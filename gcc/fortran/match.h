@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003, 2005, 2007, 2008
+   Copyright (C) 2003, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
