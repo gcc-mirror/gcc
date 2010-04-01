@@ -1,6 +1,13 @@
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/43605
+	* io/intrinsics.c (gf_ftell): New function, seek to correct offset.
+        (ftell): Call gf_ftell.
+	(FTELL_SUB): Likewise.
+
+2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/43605
 	* io/intrinsics.c (ftell): Reset fbuf, correct offset.
 	(FTELL_SUB): Likewise.
 
