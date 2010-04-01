@@ -1,3 +1,18 @@
+2010-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	* io/transfer.c : Update copyright.
+	* io/unix.c : ditto
+	* io/read.c : ditto
+	* io/io.h : ditto
+	* io/unix.h : ditto
+	* io/inquire.c : ditto
+	* io/format.c : ditto
+	* io/list_read.c : ditto
+	* runtime/error.c : ditto
+	* libgfortran.h : ditto
+	* intrinsics/date_and_time.c: ditto
+	* intrinsics/args.c : ditto
+
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/43605
