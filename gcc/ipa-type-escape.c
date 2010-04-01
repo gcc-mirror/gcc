@@ -1340,7 +1340,8 @@ check_call (gimple call)
       if (TYPE_ARG_TYPES (TREE_TYPE (callee_t)))
 	{
 	  for (arg_type = TYPE_ARG_TYPES (TREE_TYPE (callee_t)), i = 0;
-	       arg_type && TREE_VALUE (arg_type) != void_type_node;
+	       arg_type && TREE_VALUE (arg_type) != void_type_node
+	       && i < gimple_call_num_args (call);
 	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
 	      tree operand = gimple_call_arg (call, i);
@@ -1362,7 +1363,7 @@ check_call (gimple call)
 	     have to do this; the front ends should always process
 	     the arg list from the TYPE_ARG_LIST. */
 	  for (arg_type = DECL_ARGUMENTS (callee_t), i = 0;
-	       arg_type;
+	       arg_type && i < gimple_call_num_args (call);
 	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
 	      tree operand = gimple_call_arg (call, i);
