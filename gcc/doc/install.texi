@@ -3006,61 +3006,38 @@ shared libraries.
 @end html
 @heading @anchor{alpha-dec-osf}alpha*-dec-osf*
 Systems using processors that implement the DEC Alpha architecture and
-are running the DEC/Compaq Unix (DEC OSF/1, Digital UNIX, or Compaq
+are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
 As of GCC 3.2, versions before @code{alpha*-dec-osf4} are no longer
 supported.  (These are the versions which identify themselves as DEC
-OSF/1.)
+OSF/1.)  As of GCC 4.5, support for Tru64 UNIX V4.0 and V5.0 has been
+obsoleted, but can still be enabled by configuring with
+@option{--enable-obsolete}.  Support will be removed in GCC 4.6.
 
-In Digital Unix V4.0, virtual memory exhausted bootstrap failures
-may be fixed by configuring with @option{--with-gc=simple},
-reconfiguring Kernel Virtual Memory and Swap parameters
+On Tru64 UNIX, virtual memory exhausted bootstrap failures
+may be fixed by reconfiguring Kernel Virtual Memory and Swap parameters
 per the @command{/usr/sbin/sys_check} Tuning Suggestions,
 or applying the patch in
-@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.
+@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.  Depending on
+the OS version used, you need a data segment size between 512 MB and
+1 GB, so simply use @command{ulimit -Sd unlimited}.
 
-In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
-currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
-we need to use the old assembler, invoked via the barely documented
-@option{-oldas} option.  To bootstrap GCC, you either need to use the
-Compaq C Compiler:
-
-@smallexample
-   % CC=cc @var{srcdir}/configure [@var{options}] [@var{target}]
-@end smallexample
-
-or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
-
-@smallexample
-   % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{options}] [@var{target}]
-@end smallexample
-
-As of GNU binutils 2.11.2, neither GNU @command{as} nor GNU @command{ld}
+As of GNU binutils 2.20.1, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
 the system header file @file{/usr/include/stamp.h}.  If you install a
-new version of DEC Unix, you should rebuild GCC to pick up the new version
+new version of Tru64 UNIX, you should rebuild GCC to pick up the new version
 stamp.
-
-@samp{make compare} may fail on old versions of DEC Unix unless you add
-@option{-save-temps} to @code{BOOT_CFLAGS}.  On these systems, the name
-of the assembler input file is stored in the object file, and that makes
-comparison fail if it differs between the @code{stage1} and
-@code{stage2} compilations.  The option @option{-save-temps} forces a
-fixed name to be used for the assembler input file, instead of a
-randomly chosen name in @file{/tmp}.  Do not add @option{-save-temps}
-unless the comparisons fail without that option.  If you add
-@option{-save-temps}, you will have to manually delete the @samp{.i} and
-@samp{.s} files after each series of compilations.
 
 GCC now supports both the native (ECOFF) debugging format used by DBX
 and GDB and an encapsulated STABS format for use only with GDB@.  See the
 discussion of the @option{--with-stabs} option of @file{configure} above
 for more information on these formats and how to select them.
+@c FIXME: does this work at all?  If so, perhaps make default.
 
 There is a bug in DEC's assembler that produces incorrect line numbers
 for ECOFF format when the @samp{.align} directive is used.  To work
@@ -3073,6 +3050,8 @@ different depending on whether or not @option{-g} is also specified.
 To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
 DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
+
+@c FIXME: still applicable?
 
 @html
 <hr />
