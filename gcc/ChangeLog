@@ -1,5 +1,16 @@
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/install.texi (Prerequisites): Document libelf usability on
+	IRIX 5/6 and Solaris 2.
+	(Specific, i?86-*-solaris2.10): No 64-bit default configuration.
+	Update GNU as, GNU ld requirements.
+	(Specific, *-*-solaris2*): Document Solaris 7 obsoletion, removal.
+	Document Sun Studio compiler download.
+	Update and simplify as, ld recommendations.
+	(Specific, *-*-solaris2.7): Note obsoletion, removal.
+
+2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.guess (i[34567]86-*-solaris2*): Default with_arch_32,
 	with_tune_32 to pentium4.
 

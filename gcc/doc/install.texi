@@ -359,7 +359,9 @@ Necessary to build libgcj, the GCJ runtime.
 
 Necessary to build link-time optimization (LTO) support.  It can be
 downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
-though it is commonly available in several systems.
+though it is commonly available in several systems.  The versions in
+IRIX 5 and 6 don't work since they lack @file{gelf.h}.  The version in
+recent releases of Solaris 11 does work, previous ones don't yet.
 
 The @option{--with-libelf} configure option should be used if libelf is
 not installed in your default library search patch.
@@ -3463,12 +3465,30 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
-configuration is supported by GCC 4.0 and later versions only.
+configuration is supported by GCC 4.0 and later versions only.  Unlike
+@samp{sparcv9-sun-solaris2*}, there is no corresponding 64-bit
+configuration like @samp{amd64-*-solaris2*} or @samp{x86_64-*-solaris2*}.
+@c FIXME: will there ever be?
 
-It is recommended that you configure GCC to use the GNU assembler in
-@file{/usr/sfw/bin/gas} but the Sun linker, using the options
-@option{--with-gnu-as --with-as=/usr/sfw/bin/gas --without-gnu-ld
---with-ld=/usr/ccs/bin/ld}.
+It is recommended that you configure GCC to use the GNU assembler, in
+@file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
+binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
+although the latest (as of 2010-04-01) version, from GNU binutils
+2.20.1, is known to work, too.  Recent versions of the Sun assembler in
+@file{/usr/ccs/bin/as} work almost as well, though.
+@c FIXME: as patch requirements?
+
+For linking, the Sun linker, is preferred.  If you want to use the GNU
+linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
+due to a packaging bug the version in Solaris 10, from GNU binutils
+2.15, cannot be used, while the version in Solaris 11, from GNU binutils
+2.19, works, as does the latest version, from GNU binutils 2.20.1.
+
+To use GNU @command{as}, configure with the options
+@option{--with-gnu-as --with-as=/usr/sfw/bin/gas}.  It may be necessary
+to configure with @option{--without-gnu-ld --with-ld=/usr/ccs/bin/ld} to
+guarantee use of Sun @command{ld}.
+@c FIXME: why --without-gnu-ld --with-ld?
 
 @html
 <hr />
@@ -4063,12 +4083,18 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Sun does not ship a C compiler with Solaris 2.  To bootstrap and install
-GCC you first have to install a pre-built compiler, see the
+Support for Solaris 7 has been obsoleted in GCC 4.5, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.6.
+
+Sun does not ship a C compiler with Solaris 2, though you can download
+the Sun Studio compilers for free from
+@uref{http://developers.sun.com/sunstudio/downloads/}.  Alternatively,
+you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@file{libstdc++-v3}, @file{boehm-gc} or @file{libjava}.  We therefore
+@samp{libstdc++-v3}, @samp{boehm-gc} or @samp{libjava}.  We therefore
 recommend using the following initial sequence of commands
 
 @smallexample
@@ -4076,9 +4102,10 @@ recommend using the following initial sequence of commands
    % export CONFIG_SHELL
 @end smallexample
 
+@noindent
 and proceed as described in @uref{configure.html,,the configure instructions}.
 In addition we strongly recommend specifying an absolute path to invoke
-@var{srcdir}/configure.
+@command{@var{srcdir}/configure}.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 are needed to use GCC fully, namely @code{SUNWarc},
@@ -4101,28 +4128,21 @@ The build process works more smoothly with the legacy Sun tools so, if you
 have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
-We recommend the use of GNU binutils 2.14 or later, or the vendor tools
-(Sun @command{as}, Sun @command{ld}).  Note that your mileage may vary
+We recommend the use of the vendor tools (Sun @command{as}, Sun
+@command{ld}), or eventually GNU @command{as}.  The GNU @command{as}
+versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
+from GNU binutils 2.19, are known to work.  They can be found in
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1 as of
+2010-04-01) are known work either.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} is known to
 cause memory corruption at runtime in some cases for C++ programs.
-
-The stock GNU binutils 2.15 release is broken on this platform because of a
-single bug.  It has been fixed on the 2.15 branch in the CVS repository.
-You can obtain a working version by checking out the binutils-2_15-branch
-from the CVS repository or applying the patch
-@uref{http://sourceware.org/ml/binutils-cvs/2004-09/msg00036.html} to the
-release.
-
-We recommend the use of GNU binutils 2.16 or later in conjunction with GCC
-4.x, or the vendor tools (Sun @command{as}, Sun @command{ld}).  However,
-for Solaris 10 and above, an additional patch is required in order for the
-GNU linker to be able to cope with a new flavor of shared libraries.  You
-can obtain a working version by checking out the binutils-2_16-branch from
-the CVS repository or applying the patch
-@uref{http://sourceware.org/ml/binutils-cvs/2005-07/msg00122.html} to the
-release.
+@c FIXME: still?
+GNU @command{ld} usually works either, though the version included in
+Solaris 10 cannot be used due to several bugs.  Again, the current
+version (2.20.1) is known to work, but generally lacks platform specific
+features, so better stay with Sun @command{ld}.
 
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer: @command{g++} will complain that types are missing.  These headers
@@ -4153,7 +4173,7 @@ SPARC, 117172-11 or newer for Intel) that address this problem.
 @end html
 @heading @anchor{sparc-sun-solaris2}sparc-sun-solaris2*
 
-When GCC is configured to use binutils 2.14 or later the binaries
+When GCC is configured to use GNU binutils 2.14 or later, the binaries
 produced are smaller than the ones produced using Sun's native tools;
 this difference is quite significant for binaries containing debugging
 information.
@@ -4183,7 +4203,7 @@ and 5.5 (Sun ONE Studio 8) of the Sun compiler, which causes a bootstrap
 failure in form of a miscompilation of the stage1 compiler by the Sun
 compiler.  This is Sun bug 4974440.  This is fixed with patch 112760-07.
 
-GCC 3.4 changed the default debugging format from STABS to DWARF-2 for
+GCC 3.4 changed the default debugging format from Stabs to DWARF-2 for
 32-bit code on Solaris 7 and later.  If you use the Sun assembler, this
 change apparently runs afoul of Sun bug 4910101 (which is referenced as
 an x86-only problem by Sun, probably because they do not use DWARF-2).
@@ -4196,13 +4216,14 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
   .debug_info cannot be processed at runtime: relocation ignored.
 @end smallexample
 
+@noindent
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
 When configuring the GNU Multiple Precision Library (GMP) or the MPFR
 library on a Solaris 7 or later system, the canonical target triplet
 must be specified as the @command{build} parameter on the configure
-line.  This triplet can be obtained by invoking ./config.guess in
+line.  This triplet can be obtained by invoking @command{./config.guess} in
 the toplevel source directory of GCC (and not that of GMP or MPFR).
 For example on a Solaris 7 system:
 
@@ -4214,6 +4235,9 @@ For example on a Solaris 7 system:
 <hr />
 @end html
 @heading @anchor{sparc-sun-solaris27}sparc-sun-solaris2.7
+
+@emph{Note} that this configuration has been obsoleted in GCC 4.5, and will be
+removed in GCC 4.6.
 
 Sun patch 107058-01 (1999-01-13) for Solaris 7/SPARC triggers a bug in
 the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
@@ -4252,13 +4276,14 @@ the Solaris 7 Recommended Patch Cluster.
 
 GCC 3.3 triggers a bug in version 5.0 Alpha 03/27/98 of the Sun assembler,
 which causes a bootstrap failure when linking the 64-bit shared version of
-libgcc.  A typical error message is:
+@samp{libgcc}.  A typical error message is:
 
 @smallexample
 ld: fatal: relocation error: R_SPARC_32: file libgcc/sparcv9/_muldi3.o:
   symbol <unknown>:  offset 0xffffffff7ec133e7 is non-aligned.
 @end smallexample
 
+@noindent
 This bug has been fixed in the final 5.0 version of the assembler.
 
 A similar problem was reported for version Sun WorkShop 6 99/08/18 of the
@@ -4270,6 +4295,7 @@ ld: fatal: relocation error: R_SPARC_DISP32:
     symbol <unknown>: offset 0xfccd33ad is non-aligned
 @end smallexample
 
+@noindent
 This bug has been fixed in more recent revisions of the assembler.
 
 @html
@@ -4285,6 +4311,7 @@ ld: fatal: relocation error: R_SPARC_TLS_LE_HIX22: file /var/tmp//ccamPA1v.o:
   symbol <unknown>: bad symbol type SECT: symbol type must be TLS
 @end smallexample
 
+@noindent
 This bug is fixed in Sun patch 118683-03 or later.
 
 @html
@@ -4318,6 +4345,7 @@ step in order to bootstrap this target with the Sun compiler:
    % CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
+@noindent
 @option{-xarch=v9} specifies the SPARC-V9 architecture to the Sun toolchain
 and @option{-xildoff} turns off the incremental linker.
 
@@ -4326,7 +4354,7 @@ and @option{-xildoff} turns off the incremental linker.
 @end html
 @heading @anchor{sparcv9-x-solaris2}sparcv9-*-solaris2*
 
-This is a synonym for sparc64-*-solaris2*.
+This is a synonym for @samp{sparc64-*-solaris2*}.
 
 @html
 <hr />
