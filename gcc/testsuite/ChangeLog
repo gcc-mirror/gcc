@@ -1,3 +1,8 @@
+2010-04-01  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43325
+	* c-c++-common/dwarf2/redeclaration-1.C: New test.
+
 2010-04-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist12.C: Adjust expected errors.
