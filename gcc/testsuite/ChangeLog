@@ -1,3 +1,8 @@
+2010-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43141
+	* gcc.dg/guality/pr43141.c: New test.
+	
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp/_Pragma1.C: Skip on alpha*-dec-osf*.
