@@ -3824,10 +3824,14 @@ build6_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(2);
   PROCESS_ARG(3);
   PROCESS_ARG(4);
+  if (code == TARGET_MEM_REF)
+    side_effects = 0;
   PROCESS_ARG(5);
 
   TREE_SIDE_EFFECTS (t) = side_effects;
-  TREE_THIS_VOLATILE (t) = 0;
+  TREE_THIS_VOLATILE (t)
+    = (code == TARGET_MEM_REF
+       && arg5 && TREE_THIS_VOLATILE (arg5));
 
   return t;
 }

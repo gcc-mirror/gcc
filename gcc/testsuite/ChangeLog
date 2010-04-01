@@ -1,3 +1,8 @@
+2010-04-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43614
+	* gcc.c-torture/compile/pr43614.c: New testcase.
+
 2010-04-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43141
