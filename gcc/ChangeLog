@@ -1,3 +1,8 @@
+2010-04-01  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/42609
+	* config/i386/cygwin.h (CXX_WRAP_SPEC): Disable spec when -mno-cygwin.
+
 2010-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (output_compilation_unit_header): For
