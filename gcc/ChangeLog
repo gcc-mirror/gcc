@@ -1,3 +1,15 @@
+2010-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_compilation_unit_header): For
+	-gdwarf-4 use version 4 instead of version 3.
+	(output_line_info): For version 4 and above emit additional
+	maximum ops per insn header field.
+	(DWARF_LINE_DEFAULT_MAX_OPS_PER_INSN): Define.
+
+	* dwarf2out.c (is_c_family, is_java): Remove.
+	(lower_bound_default): New function.
+	(add_bound_info, gen_descr_array_type_die): Use it.
+
 2010-04-01  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/43325
