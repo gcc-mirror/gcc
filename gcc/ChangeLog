@@ -1,3 +1,9 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* doc/install.texi (Prerequisites): Bump Automake version to 1.11.1.
+	* aclocal.m4: Regenerate.
+
 2010-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43629

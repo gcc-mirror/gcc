@@ -745,6 +745,7 @@ am__fastdepGCJ_FALSE
 am__fastdepGCJ_TRUE
 GCJDEPMODE
 GCJFLAGS
+ac_ct_GCJ
 GCJ
 CXXCPP
 CPP
@@ -13337,7 +13338,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13340 "configure"
+#line 13341 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13443,7 +13444,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13446 "configure"
+#line 13447 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16709,10 +16710,11 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-for ac_prog in gcj
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gcj
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_GCJ+set}" = set; then :
@@ -16728,7 +16730,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ="$ac_prog"
+    ac_cv_prog_GCJ="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -16748,9 +16750,65 @@ $as_echo "no" >&6; }
 fi
 
 
-  test -n "$GCJ" && break
+    test -n "$GCJ" && break
+  done
+fi
+if test -z "$GCJ"; then
+  ac_ct_GCJ=$GCJ
+  for ac_prog in gcj
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_ac_ct_GCJ+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_GCJ"; then
+  ac_cv_prog_ac_ct_GCJ="$ac_ct_GCJ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_ac_ct_GCJ="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
 done
-test -n "$GCJ" || GCJ="gcj"
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GCJ=$ac_cv_prog_ac_ct_GCJ
+if test -n "$ac_ct_GCJ"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GCJ" >&5
+$as_echo "$ac_ct_GCJ" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_GCJ" && break
+done
+
+  if test "x$ac_ct_GCJ" = x; then
+    GCJ="gcj"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GCJ=$ac_ct_GCJ
+  fi
+fi
 
 test -z "$GCJ" && as_fn_error "no acceptable gcj found in \$PATH" "$LINENO" 5
 if test "x${GCJFLAGS-unset}" = xunset; then
@@ -16884,10 +16942,11 @@ fi
 
 
 
-for ac_prog in gcj
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gcj
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_GCJ+set}" = set; then :
@@ -16903,7 +16962,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ="$ac_prog"
+    ac_cv_prog_GCJ="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -16923,9 +16982,65 @@ $as_echo "no" >&6; }
 fi
 
 
-  test -n "$GCJ" && break
+    test -n "$GCJ" && break
+  done
+fi
+if test -z "$GCJ"; then
+  ac_ct_GCJ=$GCJ
+  for ac_prog in gcj
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_ac_ct_GCJ+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_GCJ"; then
+  ac_cv_prog_ac_ct_GCJ="$ac_ct_GCJ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_ac_ct_GCJ="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
 done
-test -n "$GCJ" || GCJ="gcj"
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GCJ=$ac_cv_prog_ac_ct_GCJ
+if test -n "$ac_ct_GCJ"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GCJ" >&5
+$as_echo "$ac_ct_GCJ" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_GCJ" && break
+done
+
+  if test "x$ac_ct_GCJ" = x; then
+    GCJ="gcj"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GCJ=$ac_ct_GCJ
+  fi
+fi
 
 test -z "$GCJ" && as_fn_error "no acceptable gcj found in \$PATH" "$LINENO" 5
 if test "x${GCJFLAGS-unset}" = xunset; then
@@ -19308,7 +19423,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19311 "configure"
+#line 19426 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -23003,10 +23118,11 @@ if test ! -f gnu/classpath/Configuration.java; then
 fi
 
 
-for ac_prog in gcj
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gcj
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_GCJ+set}" = set; then :
@@ -23022,7 +23138,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_GCJ="$ac_prog"
+    ac_cv_prog_GCJ="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -23042,9 +23158,65 @@ $as_echo "no" >&6; }
 fi
 
 
-  test -n "$GCJ" && break
+    test -n "$GCJ" && break
+  done
+fi
+if test -z "$GCJ"; then
+  ac_ct_GCJ=$GCJ
+  for ac_prog in gcj
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_prog_ac_ct_GCJ+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_GCJ"; then
+  ac_cv_prog_ac_ct_GCJ="$ac_ct_GCJ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_ac_ct_GCJ="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
 done
-test -n "$GCJ" || GCJ="gcj"
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GCJ=$ac_cv_prog_ac_ct_GCJ
+if test -n "$ac_ct_GCJ"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GCJ" >&5
+$as_echo "$ac_ct_GCJ" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_GCJ" && break
+done
+
+  if test "x$ac_ct_GCJ" = x; then
+    GCJ="gcj"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GCJ=$ac_ct_GCJ
+  fi
+fi
 
 test -z "$GCJ" && as_fn_error "no acceptable gcj found in \$PATH" "$LINENO" 5
 if test "x${GCJFLAGS-unset}" = xunset; then

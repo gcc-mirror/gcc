@@ -1,3 +1,9 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/42942
