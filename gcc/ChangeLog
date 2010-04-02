@@ -1,3 +1,8 @@
+2010-04-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* read-rtl.c (read_rtx_1): Give an error for EOF while looking for
+	']'.
+
 2010-04-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/43469

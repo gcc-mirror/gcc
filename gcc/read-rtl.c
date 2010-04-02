@@ -1595,6 +1595,8 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	  obstack_init (&vector_stack);
 	  while ((c = read_skip_spaces (infile)) && c != ']')
 	    {
+	      if (c == EOF)
+		fatal_expected_char (infile, ']', c);
 	      ungetc (c, infile);
 	      list_counter++;
 	      obstack_ptr_grow (&vector_stack, read_rtx_1 (infile, mode_maps));
