@@ -5843,7 +5843,7 @@ legitimize_tls_address (rtx x, rtx reg)
       if (TARGET_ARM)
 	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
       else if (TARGET_THUMB2)
-	emit_insn (gen_tls_load_dot_plus_four (reg, reg, labelno));
+	emit_insn (gen_tls_load_dot_plus_four (reg, NULL, reg, labelno));
       else
 	{
 	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
@@ -8801,28 +8801,21 @@ tls_mentioned_p (rtx x)
     }
 }
 
-/* Must not copy a SET whose source operand is PC-relative.  */
+/* Must not copy any rtx that uses a pc-relative address.  */
+
+static int
+arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (*x) == UNSPEC
+      && XINT (*x, 1) == UNSPEC_PIC_BASE)
+    return 1;
+  return 0;
+}
 
 static bool
 arm_cannot_copy_insn_p (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-
-  if (GET_CODE (pat) == SET)
-    {
-      rtx rhs = SET_SRC (pat);
-
-      if (GET_CODE (rhs) == UNSPEC
-	  && XINT (rhs, 1) == UNSPEC_PIC_BASE)
-	return TRUE;
-
-      if (GET_CODE (rhs) == MEM
-	  && GET_CODE (XEXP (rhs, 0)) == UNSPEC
-	  && XINT (XEXP (rhs, 0), 1) == UNSPEC_PIC_BASE)
-	return TRUE;
-    }
-
-  return FALSE;
+  return for_each_rtx (&PATTERN (insn), arm_note_pic_base, NULL);
 }
 
 enum rtx_code

@@ -244,18 +244,19 @@
 )
 
 (define_insn "tls_load_dot_plus_four"
-  [(set (match_operand:SI 0 "register_operand" "=l,r")
-	(mem:SI (unspec:SI [(match_operand:SI 1 "register_operand" "+l,r")
+  [(set (match_operand:SI 0 "register_operand" "=l,l,r,r")
+	(mem:SI (unspec:SI [(match_operand:SI 2 "register_operand" "0,1,0,1")
 			    (const_int 4)
-			    (match_operand 2 "" "")]
-			   UNSPEC_PIC_BASE)))]
+			    (match_operand 3 "" "")]
+			   UNSPEC_PIC_BASE)))
+   (clobber (match_scratch:SI 1 "=X,l,X,r"))]
   "TARGET_THUMB2"
   "*
   (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
-			     INTVAL (operands[2]));
-  return \"add\\t%1, %|pc\;ldr%?\\t%0, [%1]\";
+			     INTVAL (operands[3]));
+  return \"add\\t%2, %|pc\;ldr%?\\t%0, [%2]\";
   "
-  [(set_attr "length" "4,6")]
+  [(set_attr "length" "4,4,6,6")]
 )
 
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
