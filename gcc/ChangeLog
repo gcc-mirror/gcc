@@ -1,3 +1,9 @@
+2010-04-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Print "buggy but acceptable" when CLooG
+	revision is less than 9.
+	* configure: Regenerated.
+
 2010-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43629
