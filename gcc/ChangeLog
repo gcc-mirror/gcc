@@ -1,5 +1,10 @@
 2010-04-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* configure.ac: Add brackets around AC_TRY_COMPILE alternative.
+	* configure: Regenerated.
+
+2010-04-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* configure.ac: Print "buggy but acceptable" when CLooG
 	revision is less than 9.
 	* configure: Regenerated.

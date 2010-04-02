@@ -1354,13 +1354,13 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,0)
   choke me
   #endif
-  ], AC_TRY_COMPILE([#include <gmp.h>],[
+  ], [AC_TRY_COMPILE([#include <gmp.h>],[
   #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
   #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
   #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,3,2)
   choke me
   #endif
-  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])]),
+  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
    [AC_MSG_RESULT([no]); have_gmp=no])
 
   # If we have GMP, check the MPFR version.
@@ -1372,12 +1372,12 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,1)
     choke me
     #endif
-    ], AC_TRY_COMPILE([#include <gmp.h>
+    ], [AC_TRY_COMPILE([#include <gmp.h>
     #include <mpfr.h>],[
     #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,2)
     choke me
     #endif
-    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])]),
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
      [AC_MSG_RESULT([no]); have_gmp=no])
   fi
 
@@ -1389,11 +1389,11 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     #if MPC_VERSION < MPC_VERSION_NUM(0,8,0)
     choke me
     #endif
-    ], AC_TRY_COMPILE([#include <mpc.h>],[
+    ], [AC_TRY_COMPILE([#include <mpc.h>],[
     #if MPC_VERSION < MPC_VERSION_NUM(0,8,1)
     choke me
     #endif
-    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])]),
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
      [AC_MSG_RESULT([no]); have_gmp=no])
   fi
 
@@ -1617,11 +1617,11 @@ if test "x$with_cloog" != "xno" -a "${ENABLE_CLOOG_CHECK}" = "yes"; then
   #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15 || CLOOG_VERSION_REVISION < 5
   choke me
   #endif
-  ], AC_TRY_COMPILE([#include "cloog/cloog.h"],[
+  ], [AC_TRY_COMPILE([#include "cloog/cloog.h"],[
   #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15 || CLOOG_VERSION_REVISION < 9
   choke me
   #endif
-  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])]),
+  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
   [AC_MSG_RESULT([no]); clooglibs= ; clooginc= ])
   CFLAGS="$saved_CFLAGS"
 fi
