@@ -357,7 +357,7 @@ ia64-hp-*vms*)
 	;;
 iq2000*-*-elf*)
         ;;
-lm32-*-elf*)
+lm32-*-elf*|lm32-*-rtems*)
         extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         tmake_file="lm32/t-lm32 lm32/t-elf t-softfp"
 	;;

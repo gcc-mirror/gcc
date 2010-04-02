@@ -1,3 +1,7 @@
+2010-04-01	Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config.host: Add lm32-*-rtems*.
+
 2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Uros Bizjak <ubizjak@gmail.com>
 
