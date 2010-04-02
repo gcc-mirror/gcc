@@ -1,3 +1,8 @@
+2010-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* gcc.c-torture/execute/pr43629.c: New testcase.
+
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
             Dominique d'Humieres  <dominiq@lps.ens.fr>
 

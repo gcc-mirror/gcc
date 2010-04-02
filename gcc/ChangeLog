@@ -1,3 +1,9 @@
+2010-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* tree-ssa-ccp.c (likely_value): Reset all_undefined_operands
+	if we have seen a constant value.
+
 2010-04-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* read-rtl.c (read_rtx_1): Give an error for EOF while looking for
