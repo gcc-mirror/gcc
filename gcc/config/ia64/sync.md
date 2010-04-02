@@ -1,5 +1,5 @@
 ;; GCC machine description for IA-64 synchronization instructions.
-;; Copyright (C) 2005, 2007, 2008, 2009
+;; Copyright (C) 2005, 2007, 2008, 2009, 2010
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.

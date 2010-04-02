@@ -1,5 +1,5 @@
-@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007, 2008 Free Software Foundation,
-@c Inc.
+@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007, 2008, 2010
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
