@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
    Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000, 2001, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

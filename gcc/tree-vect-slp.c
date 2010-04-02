@@ -1,6 +1,6 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
-   Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
