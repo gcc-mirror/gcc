@@ -1,3 +1,12 @@
+2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+        * config.gcc (lm32-*-rtems*): Add t-lm32.
+
+2010-04-01  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+        * config.gcc: Add lm32-*-rtems*.
+        * config/lm32/rtems.h: New file.
+
 2010-04-01  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/42609
