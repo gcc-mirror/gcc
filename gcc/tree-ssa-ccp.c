@@ -1,6 +1,6 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -557,6 +557,9 @@ likely_value (gimple stmt)
       if (is_gimple_min_invariant (op))
 	has_constant_operand = true;
     }
+
+  if (has_constant_operand)
+    all_undefined_operands = false;
 
   /* If the operation combines operands like COMPLEX_EXPR make sure to
      not mark the result UNDEFINED if only one part of the result is
