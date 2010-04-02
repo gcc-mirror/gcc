@@ -1,3 +1,13 @@
+2010-04-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/43469
+	* arm.c (legitimize_tls_address): Adjust call to 
+	gen_tls_load_dot_plus_four.
+	(arm_note_pic_base): New function.
+	(arm_cannot_copy_insn_p): Use it.
+	* thumb2.md (tls_load_dot_plus_four): Rework to avoid use of '+' in
+	constraint.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/43531
