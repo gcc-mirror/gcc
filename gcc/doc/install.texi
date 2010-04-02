@@ -376,7 +376,7 @@ not installed in your default library search patch.
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.
 
-@item automake version 1.11
+@item automake version 1.11.1
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -387,7 +387,7 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.11 series, which is currently 1.11.  When regenerating a directory
+the 1.11 series, which is currently 1.11.1.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
 

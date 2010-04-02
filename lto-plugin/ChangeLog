@@ -1,3 +1,8 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2010-03-16  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR lto/43336

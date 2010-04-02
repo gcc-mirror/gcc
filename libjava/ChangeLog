@@ -1,3 +1,12 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-03-21  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/42811

@@ -1,3 +1,8 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2009-12-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Disable libtool support for unused languages,

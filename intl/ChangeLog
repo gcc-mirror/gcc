@@ -1,3 +1,7 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+
 2009-10-15  Jim Blandy  <jimb@red-bean.com>
 
 	* libgnuintl.h (_INTL_MAY_RETURN_STRING_ARG, gettext, dgettext)

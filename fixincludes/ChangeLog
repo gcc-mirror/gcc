@@ -1,3 +1,7 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+
 2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (alpha_assert): Allow for more whitespace in
