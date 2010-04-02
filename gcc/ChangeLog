@@ -1,3 +1,13 @@
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/43531
+
+	Revert:
+	2009-09-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in ($(out_object_file)): Depend on
+	gt-$(basename $(notdir $(out_file))).h.
+
 2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
 
         * config.gcc (lm32-*-rtems*): Add t-lm32.
