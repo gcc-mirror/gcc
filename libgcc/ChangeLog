@@ -1,4 +1,4 @@
-2010-04-01	Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config.host: Add lm32-*-rtems*.
 
