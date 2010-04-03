@@ -1,3 +1,9 @@
+2010-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42509
+	* alias.c (nonoverlapping_memrefs_p): For spill-slot accesses
+	require a non-NULL MEM_OFFSET.
+
 2010-04-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ada/gcc-interface/Make-lang.in, alias.c, attribs.c, auto-inc-dec.c, 
