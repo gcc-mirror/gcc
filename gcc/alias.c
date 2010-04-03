@@ -2147,6 +2147,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   if (exprx == 0 || expry == 0)
     return 0;
 
+  /* For spill-slot accesses make sure we have valid offsets.  */
+  if ((exprx == get_spill_slot_decl (false)
+       && ! MEM_OFFSET (x))
+      || (expry == get_spill_slot_decl (false)
+	  && ! MEM_OFFSET (y)))
+    return 0;
+
   /* If both are field references, we may be able to determine something.  */
   if (TREE_CODE (exprx) == COMPONENT_REF
       && TREE_CODE (expry) == COMPONENT_REF
