@@ -1219,11 +1219,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
        *  Removes the characters in the range [pos,pos + n1) from this
-       *  string.  In place, the first @a __n characters of @a __s are
-       *  inserted.  If @a pos is beyond end of string, out_of_range
-       *  is thrown.  If the length of result exceeds max_size(),
-       *  length_error is thrown.  The value of the string doesn't
-       *  change if an error is thrown.
+       *  string.  In place, the characters of @a __s are inserted.  If
+       *  @a pos is beyond end of string, out_of_range is thrown.  If
+       *  the length of result exceeds max_size(), length_error is thrown.  
+       *  The value of the string doesn't change if an error is thrown.
       */
       __versa_string&
       replace(size_type __pos, size_type __n1, const _CharT* __s)
