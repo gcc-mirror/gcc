@@ -1,3 +1,7 @@
+2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/vect/pr43430-1.c: Don't use uint8_t.
+
 2010-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43629

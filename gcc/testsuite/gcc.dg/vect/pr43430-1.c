@@ -5,15 +5,15 @@
 
 #define N 16
 
-typedef int uint8_t;
-uint8_t data_ch1[N + 1] =
+typedef int myint;
+myint data_ch1[N + 1] =
   { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 };
-uint8_t data_ch2[N + 1] =
+myint data_ch2[N + 1] =
   { 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30 };
 #define SUM 480
 
 __attribute__ ((noinline)) int
-foo (uint8_t * s1, uint8_t * s2, int stride)
+foo (myint * s1, myint * s2, int stride)
 {
   int score = 0;
   int x;
