@@ -1,3 +1,8 @@
+2010-04-04  Matthias Klose  <doko@ubuntu.com>
+
+	* graphite-sese-to-poly.c (translate_scalar_reduction_to_array):
+	Initialize variable.
+
 2010-04-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42509

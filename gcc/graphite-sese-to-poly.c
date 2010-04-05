@@ -2787,7 +2787,7 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
 {
   unsigned int i;
   gimple loop_phi;
-  tree red;
+  tree red = NULL_TREE;
 
   for (i = 0; VEC_iterate (gimple, in, i, loop_phi); i++)
     {
