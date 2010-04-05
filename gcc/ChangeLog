@@ -1,3 +1,9 @@
+2010-04-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/invoke.texi (Optimize Options): Document that LTO
+	won't remove object access purely due to incompatible
+	declarations.
+
 2010-04-04  Matthias Klose  <doko@ubuntu.com>
 
 	* graphite-sese-to-poly.c (translate_scalar_reduction_to_array):

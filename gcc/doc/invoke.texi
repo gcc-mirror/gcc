@@ -7294,6 +7294,11 @@ regular (non-LTO) compilation.  This means that if your build process
 was mixing languages before, all you need to add is @option{-flto} to
 all the compile and link commands.
 
+If LTO encounters objects with C linkage declared with incompatible
+types in separate translation units to be linked together (undefined
+behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
+issued.  The behavior is still undefined at runtime.
+
 If object files containing GIMPLE bytecode are stored in a library
 archive, say @file{libfoo.a}, it is possible to extract and use them
 in an LTO link if you are using @command{gold} as the linker (which,
