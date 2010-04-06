@@ -11,4 +11,4 @@ foo ()
 {
   char a[2500];
   bar (a);
-}
+}	/* { dg-warning "more than half" } */
