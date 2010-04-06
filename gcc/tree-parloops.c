@@ -1970,7 +1970,7 @@ parallelize_loops (void)
       verify_flow_info ();
       verify_dominators (CDI_DOMINATORS);
       verify_loop_structure ();
-      verify_loop_closed_ssa ();
+      verify_loop_closed_ssa (true);
     }
 
   free_stmt_vec_info_vec ();

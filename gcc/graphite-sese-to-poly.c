@@ -2402,8 +2402,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 
   FOR_EACH_BB (bb)
@@ -2413,8 +2412,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 
@@ -2868,8 +2866,7 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
   gsi_commit_edge_inserts ();
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 
