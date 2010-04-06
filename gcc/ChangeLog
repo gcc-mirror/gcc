@@ -1,3 +1,11 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43667
+	* config/i386/i386.c (bdesc_multi_arg): Use OPTION_MASK_ISA_XOP
+	instead of OPTION_MASK_ISA_AVX for __builtin_ia32_vpermil2p*.
+	(ix86_expand_args_builtin): Use V*_FTYPE_* enum codes instead of
+	MULTI_* defines for 4 argument vpermil2p* builtins.
+
 2010-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
