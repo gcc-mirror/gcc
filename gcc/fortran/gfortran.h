@@ -563,6 +563,13 @@ typedef enum
 }
 init_local_integer;
 
+typedef enum
+{
+  GFC_FCOARRAY_NONE = 0,
+  GFC_FCOARRAY_SINGLE
+}
+gfc_fcoarray;
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */
@@ -2158,6 +2165,7 @@ typedef struct
 
   int fpe;
   int rtcheck;
+  gfc_fcoarray coarray;
 
   int warn_std;
   int allow_std;

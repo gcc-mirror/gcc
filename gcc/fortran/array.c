@@ -458,6 +458,12 @@ coarray:
       == FAILURE)
     goto cleanup;
 
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+       gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       goto cleanup;
+    }
+
   for (;;)
     {
       as->corank++;

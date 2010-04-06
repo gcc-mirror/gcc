@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-fcoarray=single" }
 ! 
 ! Coarray support
 ! PR fortran/18918

@@ -166,8 +166,8 @@ and warnings}.
 @gccoptlist{-fno-automatic  -ff2c  -fno-underscoring @gol
 -fwhole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
--fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>}
--fmax-stack-var-size=@var{n} @gol
+-fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
+-fcoarray=@var{<none|single>} -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
@@ -1211,6 +1211,20 @@ is implemented as a reference to the link-time external symbol
 @code{max_count__}, instead of @code{max_count_}.  This is required
 for compatibility with @command{g77} and @command{f2c}, and is implied
 by use of the @option{-ff2c} option.
+
+@item -fcoarray=@var{<keyword>}
+@opindex @code{fcoarray}
+@cindex coarrays
+
+@table @asis
+@item @samp{none}
+Disable coarray support; using coarray declarations and image-control
+statements will produce a compile-time error. (Default)
+
+@item @samp{single}
+Single-image mode, i.e. @code{num_images()} is always one.
+@end table
+
 
 @item -fcheck=@var{<keyword>}
 @opindex @code{fcheck}
