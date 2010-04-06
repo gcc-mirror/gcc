@@ -2183,6 +2183,9 @@ scalar_close_phi_node_p (gimple phi)
       || !is_gimple_reg (gimple_phi_result (phi)))
     return false;
 
+  /* Note that loop close phi nodes should have a single argument
+     because we translated the representation into a canonical form
+     before Graphite: see canonicalize_loop_closed_ssa_form.  */
   return (gimple_phi_num_args (phi) == 1);
 }
 
@@ -2199,6 +2202,11 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
   gimple stmt = gimple_build_assign (res, zero_dim_array);
   tree arg = gimple_phi_arg_def (phi, 0);
+
+  /* Note that loop close phi nodes should have a single argument
+     because we translated the representation into a canonical form
+     before Graphite: see canonicalize_loop_closed_ssa_form.  */
+  gcc_assert (gimple_phi_num_args (phi) == 1);
 
   if (TREE_CODE (arg) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (arg))
@@ -2664,6 +2672,11 @@ detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
 
       if (TREE_CODE (arg) != SSA_NAME)
 	return NULL;
+
+      /* Note that loop close phi nodes should have a single argument
+	 because we translated the representation into a canonical form
+	 before Graphite: see canonicalize_loop_closed_ssa_form.  */
+      gcc_assert (gimple_phi_num_args (stmt) == 1);
 
       def = SSA_NAME_DEF_STMT (arg);
       loop_phi = detect_commutative_reduction (def, in, out);
