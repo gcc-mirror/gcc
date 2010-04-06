@@ -1303,7 +1303,7 @@ canonicalize_loop_closed_ssa_form (void)
   loop_p loop;
 
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 
   FOR_EACH_LOOP (li, loop, 0)
@@ -1313,7 +1313,7 @@ canonicalize_loop_closed_ssa_form (void)
   update_ssa (TODO_update_ssa);
 
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 

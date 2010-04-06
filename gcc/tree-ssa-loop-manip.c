@@ -440,10 +440,11 @@ check_loop_closed_ssa_stmt (basic_block bb, gimple stmt)
     check_loop_closed_ssa_use (bb, var);
 }
 
-/* Checks that invariants of the loop closed ssa form are preserved.  */
+/* Checks that invariants of the loop closed ssa form are preserved.
+   Call verify_ssa when VERIFY_SSA_P is true.  */
 
 void
-verify_loop_closed_ssa (void)
+verify_loop_closed_ssa (bool verify_ssa_p)
 {
   basic_block bb;
   gimple_stmt_iterator bsi;
@@ -454,7 +455,8 @@ verify_loop_closed_ssa (void)
   if (number_of_loops () <= 1)
     return;
 
-  verify_ssa (false);
+  if (verify_ssa_p)
+    verify_ssa (false);
 
   FOR_EACH_BB (bb)
     {
@@ -616,7 +618,7 @@ gimple_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
 #ifdef ENABLE_CHECKING
   if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    verify_loop_closed_ssa ();
+    verify_loop_closed_ssa (true);
 #endif
 
   first_new_block = last_basic_block;
@@ -1095,7 +1097,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   verify_flow_info ();
   verify_dominators (CDI_DOMINATORS);
   verify_loop_structure ();
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 

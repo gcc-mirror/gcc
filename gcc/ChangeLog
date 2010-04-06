@@ -1,5 +1,24 @@
 2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (graphite_verify): Remove redundant
+	call to verify_ssa.  Invoke verify_loop_closed_ssa with an extra
+	argument.
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa_form): Same.
+	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa): Same.
+	(rewrite_commutative_reductions_out_of_ssa): Same.
+	* passes.c (execute_function_todo): Call verify_ssa for every pass
+	in the LNO.  Invoke verify_loop_closed_ssa with an extra argument.
+	* tree-flow.h (verify_loop_closed_ssa): Update declaration.
+	* tree-parloops.c (parallelize_loops): Invoke verify_loop_closed_ssa
+	with an extra argument.
+	* tree-ssa-loop-manip.c (check_loop_closed_ssa_stmt): Same.  Call
+	verify_ssa only when the extra argument is true.
+	(gimple_duplicate_loop_to_header_edge): Invoke verify_loop_closed_ssa
+	with an extra argument.
+	(tree_transform_and_unroll_loop): Same.
+
+2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* passes.c (execute_function_todo): Call verify_loop_closed_ssa
 	for all the passes of the LNO having LOOP_CLOSED_SSA.
 	* tree-if-conv.c (pass_if_conversion): Remove TODO_verify_loops.

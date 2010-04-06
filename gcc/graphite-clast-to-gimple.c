@@ -65,8 +65,7 @@ graphite_verify (void)
   verify_loop_structure ();
   verify_dominators (CDI_DOMINATORS);
   verify_dominators (CDI_POST_DOMINATORS);
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 

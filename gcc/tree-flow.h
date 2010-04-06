@@ -715,7 +715,7 @@ enum ev_direction scev_direction (const_tree);
 void free_numbers_of_iterations_estimates (void);
 void free_numbers_of_iterations_estimates_loop (struct loop *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);
-void verify_loop_closed_ssa (void);
+void verify_loop_closed_ssa (bool);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *, bool,
 		tree *, tree *);
