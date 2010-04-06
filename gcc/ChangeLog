@@ -1,3 +1,8 @@
+2010-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove comment about 'e' and 'E'
+	operand modifier.
+
 2010-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43627
