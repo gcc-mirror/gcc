@@ -1,3 +1,9 @@
+2010-04-06  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR middle-end/32824
+	* passes.c (init_optimization_passes): Move pass_lim before
+	pass_copy_prop and pass_dce_loop.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43667
