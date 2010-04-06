@@ -1,3 +1,13 @@
+2010-04-06  Jan Hubicka  <jh@suse.czpli
+
+	PR tree-optimization/42906
+
+	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Add IGNORE_SELF
+	argument; set visited_control_parents for fully processed BBs.
+	(find_obviously_necessary_stmts): Update call of
+	mark_control_dependent_edges_necessary.
+	(propagate_necessity): Likewise; handle PHI edges more curefully.
+
 2010-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove comment about 'e' and 'E'
