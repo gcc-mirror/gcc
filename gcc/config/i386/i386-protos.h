@@ -44,6 +44,7 @@ extern int symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
+extern bool x86_maybe_negate_const_int (rtx *, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
 extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);

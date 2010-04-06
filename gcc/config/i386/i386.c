@@ -26202,10 +26202,7 @@ x86_output_mi_thunk (FILE *file,
   /* Adjust the this parameter by a fixed constant.  */
   if (delta)
     {
-      /* Make things pretty and `subl $4,%eax' rather than `addl $-4,%eax'.
-         Exceptions: -128 encodes smaller than 128, so swap sign and op.  */
-      bool sub = delta < 0 || delta == 128;
-      xops[0] = GEN_INT (sub ? -delta : delta);
+      xops[0] = GEN_INT (delta);
       xops[1] = this_reg ? this_reg : this_param;
       if (TARGET_64BIT)
 	{
@@ -26217,12 +26214,12 @@ x86_output_mi_thunk (FILE *file,
 	      xops[0] = tmp;
 	      xops[1] = this_param;
 	    }
-	  if (sub)
+	  if (x86_maybe_negate_const_int (&xops[0], DImode))
 	    output_asm_insn ("sub{q}\t{%0, %1|%1, %0}", xops);
 	  else
 	    output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
 	}
-      else if (sub)
+      else if (x86_maybe_negate_const_int (&xops[0], SImode))
 	output_asm_insn ("sub{l}\t{%0, %1|%1, %0}", xops);
       else
 	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
@@ -26647,6 +26644,52 @@ x86_extended_reg_mentioned_p (rtx insn)
 {
   return for_each_rtx (INSN_P (insn) ? &PATTERN (insn) : &insn,
 		       extended_reg_mentioned_1, NULL);
+}
+
+/* If profitable, negate (without causing overflow) integer constant
+   of mode MODE at location LOC.  Return true in this case.  */
+bool
+x86_maybe_negate_const_int (rtx *loc, enum machine_mode mode)
+{
+  HOST_WIDE_INT val;
+
+  if (!CONST_INT_P (*loc))
+    return false;
+
+  switch (mode)
+    {
+    case DImode:
+      /* DImode x86_64 constants must fit in 32 bits.  */
+      gcc_assert (x86_64_immediate_operand (*loc, mode));
+
+      mode = SImode;
+      break;
+
+    case SImode:
+    case HImode:
+    case QImode:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Avoid overflows.  */
+  if (mode_signbit_p (mode, *loc))
+    return false;
+
+  val = INTVAL (*loc);
+
+  /* Make things pretty and `subl $4,%eax' rather than `addl $-4,%eax'.
+     Exceptions: -128 encodes smaller than 128, so swap sign and op.  */
+  if ((val < 0 && val != -128)
+      || val == 128)
+    {
+      *loc = GEN_INT (-val);
+      return true;
+    }
+
+  return false;
 }
 
 /* Generate an unsigned DImode/SImode to FP conversion.  This is the same code
