@@ -1,3 +1,9 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43638
+	* config/i386/i386.c (print_operand): Remove 'e' and 'E' code
+	handling.
+
 2010-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43661
