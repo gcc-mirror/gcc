@@ -1,3 +1,8 @@
+2010-04-06  Jan Hubicka  <jh@suse.czpli
+
+	PR tree-optimization/42906
+	* gcc.dg/tree-ssa/dce-1.c: New testcase.
+
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43178
