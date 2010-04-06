@@ -1,5 +1,7 @@
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* BASE-VER: Change to 4.6.0.
+
 	PR target/43638
 	* config/i386/i386.c (print_operand): Remove 'e' and 'E' code
 	handling.
