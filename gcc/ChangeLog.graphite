@@ -1,3 +1,39 @@
+2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* Makefile.in (graphite-clast-to-gimple.o): Depends on langhooks.h.
+	* graphite-clast-to-gimple.c: Include langhooks.h.
+	(max_signed_precision_type): New.
+	(max_precision_type): Takes two types as arguments.
+	(precision_for_value): New.
+	(precision_for_interval): New.
+	(gcc_type_for_interval): New.
+	(gcc_type_for_value): New.
+	(gcc_type_for_clast_term): New.
+	(gcc_type_for_clast_red): New.
+	(gcc_type_for_clast_bin): New.
+	(gcc_type_for_clast_expr): Split up into several functions.
+	(gcc_type_for_clast_eq): Rewritten.
+	(compute_bounds_for_level): New.
+	(compute_type_for_level_1): New.
+	(compute_type_for_level): New.
+	(gcc_type_for_cloog_iv): Removed.
+	(gcc_type_for_iv_of_clast_loop): Rewritten.
+	(graphite_create_new_loop): Compute the lower and upper bound types
+	with gcc_type_for_clast_expr.
+	(graphite_create_new_loop_guard): Same.
+	(find_cloog_iv_in_expr): Removed.
+	(compute_cloog_iv_types_1): Removed.
+	(compute_cloog_iv_types): Removed.
+	(gloog): Do not call compute_cloog_iv_types.
+	* graphite-sese-to-poly.c (new_gimple_bb): Do not initialize
+	GBB_CLOOG_IV_TYPES.
+	(free_data_refs_aux): Do not free GBB_CLOOG_IV_TYPES.
+	* sese.h (struct gimple_bb): Removed field cloog_iv_types.
+	(GBB_CLOOG_IV_TYPES): Removed.
+
+	* gcc.dg/graphite/run-id-pr42644.c: Call abort.
+
 2010-04-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Reverted this commit: as at this point the loop closed SSA form

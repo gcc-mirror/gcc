@@ -280,7 +280,6 @@ new_gimple_bb (basic_block bb, VEC (data_reference_p, heap) *drs)
   GBB_DATA_REFS (gbb) = drs;
   GBB_CONDITIONS (gbb) = NULL;
   GBB_CONDITION_CASES (gbb) = NULL;
-  GBB_CLOOG_IV_TYPES (gbb) = NULL;
 
   return gbb;
 }
@@ -308,9 +307,6 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
 static void
 free_gimple_bb (struct gimple_bb *gbb)
 {
-  if (GBB_CLOOG_IV_TYPES (gbb))
-    htab_delete (GBB_CLOOG_IV_TYPES (gbb));
-
   free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
 

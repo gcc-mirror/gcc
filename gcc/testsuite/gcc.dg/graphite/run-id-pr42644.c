@@ -18,6 +18,8 @@ void foo(double Ke[2], int i, double ds[],  int column)
     }
 }
 
+extern void abort ();
+
 int
 main ()
 {
@@ -28,5 +30,8 @@ main ()
 
   foo(Ke, 0, ds, -1);
 
-  return (int) Ke[0] != 124;
+  if ((int) Ke[0] != 124)
+    abort ();
+
+  return 0;
 }
