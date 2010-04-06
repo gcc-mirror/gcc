@@ -1,3 +1,7 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/stackcheck1.c: Add dg-warning.
+
 2010-03-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
