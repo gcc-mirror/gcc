@@ -33,6 +33,6 @@ int main()
 }
 
 // { dg-error "deleted function" "" { target *-*-* } 72 }
-// { dg-error "used here" "" { target *-*-* } 31 }
+// { dg-error "used here" "" { target *-*-* } 30 }
 // { dg-error "first required here" "" { target *-*-* } 30 }
 // { dg-excess-errors "copy constructor" }

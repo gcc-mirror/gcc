@@ -1,7 +1,7 @@
 //PR c++/28258
 
-struct A 
-{            // { dg-message "note" }
+struct A			// { dg-message "note" }
+{
   A(void x); // { dg-error "invalid use|incomplete type|candidates" }
 };
 

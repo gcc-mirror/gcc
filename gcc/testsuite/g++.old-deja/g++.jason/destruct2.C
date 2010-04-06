@@ -10,8 +10,8 @@ struct X
 struct Y : public X
 {};
 
-struct Z : public Y, public X
-{};				// { dg-warning "" } 
+struct Z : public Y, public X	// { dg-warning "" }
+{};
 
 void foo ()
 {

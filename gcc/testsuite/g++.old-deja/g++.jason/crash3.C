@@ -2,8 +2,8 @@
 // Bug: g++ tries to generate initialization semantics for a Node from an int,
 // and fails.
 
-struct Node
-{				// { dg-message "note" } 
+struct Node			// { dg-message "note" }
+{
   Node* child[2];
 };
 

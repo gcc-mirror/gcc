@@ -12,8 +12,8 @@ template <template <class> class TT> struct X
 	TT<int> y;
 };
 
-template <class T> struct X<T::template B>
-{	// { dg-error "previous" }
+template <class T> struct X<T::template B> // { dg-error "previous" }
+{
 	T z;
 };
 

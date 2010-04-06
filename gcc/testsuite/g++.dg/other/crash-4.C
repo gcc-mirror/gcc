@@ -14,8 +14,8 @@ struct a
   int m;
   a(const a&);
 };
-struct b
-{ // { dg-error "cannot bind packed field" "" { target { ! default_packed } } }
+struct b // { dg-error "cannot bind packed field" "" { target { ! default_packed } } }
+{
   char c;
   a aa __attribute__((packed)); // { dg-warning "attribute ignored" "" { target default_packed } }
 };

@@ -5,8 +5,8 @@
 
 template<class T>
 class X {
-	class Y : public T
-	{ // { dg-error "base type .* fails to be" }
+	class Y : public T	// { dg-error "base type .* fails to be" }
+	{
 	};
 	Y y;			// { dg-message "instantiated" }
 };
