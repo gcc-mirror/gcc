@@ -1,3 +1,11 @@
+2010-04-06  Matthias Klose  <doko@ubuntu.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Show test result.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml, doc/html/manual/configure.html:
+	Document --enable-libstdcxx-time as the short form for
+	--enable-libstdcxx-time=yes.
+
 2010-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/basic_string.h: Fix pasto in comment.

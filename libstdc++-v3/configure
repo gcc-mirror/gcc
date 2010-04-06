@@ -18860,8 +18860,10 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
   ac_save_LIBS="$LIBS"
 
-  ac_has_clock_monotonic=no;
-  ac_has_clock_realtime=no;
+  ac_has_clock_monotonic=no
+  ac_has_clock_realtime=no
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_time" >&5
+$as_echo "$enable_libstdcxx_time" >&6; }
 
   if test x"$enable_libstdcxx_time" != x"no"; then
 
