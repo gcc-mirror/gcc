@@ -1035,7 +1035,8 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
   one = gmp_cst_to_tree (type, gmp_one);
   value_clear (gmp_one);
 
-  ub = fold_build2 (PLUS_EXPR, type, ub, one);
+  ub = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR : PLUS_EXPR,
+		    type, ub, one);
   cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub);
 
   exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
