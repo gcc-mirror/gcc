@@ -27,7 +27,7 @@ struct c4 : virtual c3, virtual c0, virtual c1
   int m;
 };
 
-struct c6 : c0, c3, c4
-{ // { dg-warning "direct base" "" }
+struct c6 : c0, c3, c4		// { dg-warning "direct base" "" }
+{
   virtual c1 &f2() volatile;
 };

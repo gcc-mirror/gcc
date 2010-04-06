@@ -19,8 +19,8 @@ inline istream& operator>>(istream& is, Empty& ) { return is;}
 
 
 template<class VertexType, class EdgeType>
-class Graph
-{  // { dg-message "note" } candidates
+class Graph			// { dg-message "note" } candidates
+{
   public:
     // public type interface
     typedef std::map<int, EdgeType > Successor;

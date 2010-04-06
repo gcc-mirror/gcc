@@ -16,8 +16,8 @@ public:
         int i;
         };
 
-class some_derived : public some_base
-        {  // { dg-message "note" }
+class some_derived : public some_base // { dg-message "note" }
+        {
 public:
         class derived_func_args;
         void func(derived_func_args &);

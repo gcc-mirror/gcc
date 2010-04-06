@@ -1,3 +1,45 @@
+2010-04-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/pr31437.C: Adjust error location.
+	* g++.dg/ext/attrib18.C: Likewise.
+	* g++.dg/ext/bitfield2.C: Likewise.
+	* g++.dg/ext/bitfield4.C: Likewise.
+	* g++.dg/ext/visibility/warn2.C: Likewise.
+	* g++.dg/ext/visibility/warn3.C: Likewise.
+	* g++.dg/gomp/pr26690-1.C: Likewise.
+	* g++.dg/inherit/covariant7.C: Likewise.
+	* g++.dg/init/synth2.C: Likewise.
+	* g++.dg/lookup/using7.C: Likewise.
+	* g++.dg/other/crash-4.C: Likewise.
+	* g++.dg/other/error13.C: Likewise.
+	* g++.dg/other/error20.C: Likewise.
+	* g++.dg/parse/crash31.C: Likewise.
+	* g++.dg/parse/error16.C: Likewise.
+	* g++.dg/parse/error19.C: Likewise.
+	* g++.dg/parse/error27.C: Likewise.
+	* g++.dg/parse/error28.C: Likewise.
+	* g++.dg/parse/fused-params1.C: Likewise.
+	* g++.dg/template/error2.C: Likewise.
+	* g++.dg/template/local6.C: Likewise.
+	* g++.dg/template/qualttp15.C: Likewise.
+	* g++.dg/warn/Wnvdtor-2.C: Likewise.
+	* g++.dg/warn/anonymous-namespace-3.C: Likewise.
+	* g++.old-deja/g++.benjamin/15309-1.C: Likewise.
+	* g++.old-deja/g++.brendan/crash29.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.jason/crash3.C: Likewise.
+	* g++.old-deja/g++.jason/destruct2.C: Likewise.
+	* g++.old-deja/g++.law/ctors5.C: Likewise.
+	* g++.old-deja/g++.law/ctors9.C: Likewise.
+	* g++.old-deja/g++.mike/p3538a.C: Likewise.
+	* g++.old-deja/g++.mike/p3538b.C: Likewise.
+	* g++.old-deja/g++.other/struct1.C: Likewise.
+	* g++.old-deja/g++.other/volatile1.C: Likewise.
+	* g++.old-deja/g++.pt/crash36.C: Likewise.
+	* g++.old-deja/g++.pt/derived3.C: Likewise.
+	* g++.old-deja/g++.robertl/eb109.C: Likewise.
+	* g++.old-deja/g++.robertl/eb4.C: Likewise.
+
 2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43519

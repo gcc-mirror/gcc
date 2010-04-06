@@ -16395,6 +16395,9 @@ cp_parser_class_head (cp_parser* parser,
       end_specialization ();
       --parser->num_template_parameter_lists;
     }
+
+  if (type)
+    DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
   *attributes_p = attributes;
   return type;
 }

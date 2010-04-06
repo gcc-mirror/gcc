@@ -1,8 +1,8 @@
 // { dg-options "-fshow-column -fmessage-length=0   -ansi -pedantic-errors -Wno-long-long " }
 // PR C++/17867
 
-struct A
-{  // { dg-message "1:candidate is:" }
+struct A			// { dg-message "8:candidate is:" }
+{
   A(int);
 };
 

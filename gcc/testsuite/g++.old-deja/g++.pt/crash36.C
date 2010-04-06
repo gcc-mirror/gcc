@@ -13,8 +13,8 @@ struct iterator {
 
 
 template <class Iterator>
-struct reverse_iterator : public
-iterator<typename iterator_traits<Iterator>::iterator_category> { // { dg-message "instantiated" } no type iterator_category
+struct reverse_iterator : public // { dg-message "instantiated" } no type iterator_category
+iterator<typename iterator_traits<Iterator>::iterator_category> {
   protected:
   Iterator current;
   

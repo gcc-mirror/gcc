@@ -6,8 +6,8 @@ union Value
 	Value(){}
 };
 
-struct GlobalAddress
-{// { dg-message "note" }
+struct GlobalAddress		// { dg-message "note" }
+{
 	GlobalAddress(Value *nvar){} // { dg-message "candidates" }
 };
 
