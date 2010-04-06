@@ -1,3 +1,8 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DWARF2_Internal_LineInfo): Add li_max_ops_per_insn
+	field.
+
 2010-03-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* symcat.h (CONCAT5, CONCAT6, XCONCAT5, XCONCAT6): Define.
