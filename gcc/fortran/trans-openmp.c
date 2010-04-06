@@ -624,11 +624,12 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
 					    build_int_cst (pvoid_type_node, 0),
 					    size, NULL, NULL);
       gfc_conv_descriptor_data_set (&block, decl, ptr);
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false));
+      gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false,
+			     false));
       stmt = gfc_finish_block (&block);
     }
   else
-    stmt = gfc_trans_assignment (e1, e2, false);
+    stmt = gfc_trans_assignment (e1, e2, false, false);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
@@ -645,12 +646,13 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       stmtblock_t block;
 
       gfc_start_block (&block);
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false));
+      gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false,
+			     true));
       gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl));
       stmt = gfc_finish_block (&block);
     }
   else
-    stmt = gfc_trans_assignment (e3, e4, false);
+    stmt = gfc_trans_assignment (e3, e4, false, true);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else

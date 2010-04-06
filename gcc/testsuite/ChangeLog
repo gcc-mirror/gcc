@@ -1,3 +1,10 @@
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43178
+	* gfortran.dg/alloc_comp_basics_1.f90: Update scan-tree-dump-times.
+	* gfortran.dg/alloc_comp_constructor_1.f90: Ditto.
+	* gfortran.dg/auto_dealloc_1.f90: Ditto.
+
 2010-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43627
