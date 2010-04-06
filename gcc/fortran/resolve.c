@@ -258,6 +258,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 
       if (gfc_elemental (proc))
 	{
+	  /* F2008, C1289.  */
+	  if (sym->attr.codimension)
+	    {
+	      gfc_error ("Coarray dummy argument '%s' at %L to elemental "
+			 "procedure", sym->name, &sym->declared_at);
+	      continue;
+	    }
+
 	  if (sym->as != NULL)
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L must "
@@ -955,7 +963,7 @@ was_declared (gfc_symbol *sym)
   if (a.allocatable || a.dimension || a.dummy || a.external || a.intrinsic
       || a.optional || a.pointer || a.save || a.target || a.volatile_
       || a.value || a.access != ACCESS_UNKNOWN || a.intent != INTENT_UNKNOWN
-      || a.asynchronous)
+      || a.asynchronous || a.codimension)
     return 1;
 
   return 0;
@@ -8691,13 +8699,12 @@ is_non_constant_shape_array (gfc_symbol *sym)
       /* Unfortunately, !gfc_is_compile_time_shape hits a legal case that
 	 has not been simplified; parameter array references.  Do the
 	 simplification now.  */
-      for (i = 0; i < sym->as->rank; i++)
+      for (i = 0; i < sym->as->rank + sym->as->corank; i++)
 	{
 	  e = sym->as->lower[i];
 	  if (e && (resolve_index_expr (e) == FAILURE
 		    || !gfc_is_constant_expr (e)))
 	    not_constant = true;
-
 	  e = sym->as->upper[i];
 	  if (e && (resolve_index_expr (e) == FAILURE
 		    || !gfc_is_constant_expr (e)))
@@ -9147,7 +9154,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
       || sym->attr.intrinsic || sym->attr.result)
     no_init_flag = 1;
-  else if (sym->attr.dimension && !sym->attr.pointer
+  else if ((sym->attr.dimension || sym->attr.codimension) && !sym->attr.pointer
 	   && is_non_constant_shape_array (sym))
     {
       no_init_flag = automatic_flag = 1;
@@ -10431,6 +10438,15 @@ resolve_fl_derived (gfc_symbol *sym)
 
   super_type = gfc_get_derived_super_type (sym);
 
+  /* F2008, C432. */
+  if (super_type && sym->attr.coarray_comp && !super_type->attr.coarray_comp)
+    {
+      gfc_error ("As extending type '%s' at %L has a coarray component, "
+		 "parent type '%s' shall also have one", sym->name,
+		 &sym->declared_at, super_type->name);
+      return FAILURE;
+    }
+
   /* Ensure the extended type gets resolved before we do.  */
   if (super_type && resolve_fl_derived (super_type) == FAILURE)
     return FAILURE;
@@ -10445,6 +10461,34 @@ resolve_fl_derived (gfc_symbol *sym)
 
   for (c = sym->components; c != NULL; c = c->next)
     {
+      /* F2008, C442.  */
+      if (c->attr.codimension
+	  && (!c->attr.allocatable || c->as->type != AS_DEFERRED))
+	{
+	  gfc_error ("Coarray component '%s' at %L must be allocatable with "
+		     "deferred shape", c->name, &c->loc);
+	  return FAILURE;
+	}
+
+      /* F2008, C443.  */
+      if (c->attr.codimension && c->ts.type == BT_DERIVED
+	  && c->ts.u.derived->ts.is_iso_c)
+	{
+	  gfc_error ("Component '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
+		     "shall not be a coarray", c->name, &c->loc);
+	  return FAILURE;
+	}
+
+      /* F2008, C444.  */
+      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
+	  && (c->attr.codimension || c->attr.pointer || c->attr.dimension))
+	{
+	  gfc_error ("Component '%s' at %L with coarray component "
+		     "shall be a nonpointer, nonallocatable scalar",
+		     c->name, &c->loc);
+	  return FAILURE;
+	}
+
       if (c->attr.proc_pointer && c->ts.interface)
 	{
 	  if (c->ts.interface->attr.procedure)
@@ -11274,6 +11318,57 @@ resolve_symbol (gfc_symbol *sym)
 	    }
 	}
     }
+
+  if (sym->attr.codimension && sym->attr.allocatable
+      && sym->as->type != AS_DEFERRED)
+    gfc_error ("Allocatable coarray variable '%s' at %L must have "
+	       "deferred shape", sym->name, &sym->declared_at);
+
+  /* F2008, C526.  */
+  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+       || sym->attr.codimension)
+      && sym->attr.result)
+    gfc_error ("Function result '%s' at %L shall not be a coarray or have "
+	       "a coarray component", sym->name, &sym->declared_at);
+
+  /* F2008, C524.  */
+  if (sym->attr.codimension && sym->ts.type == BT_DERIVED
+      && sym->ts.u.derived->ts.is_iso_c)
+    gfc_error ("Variable '%s' at %L of TYPE(C_PTR) or TYPE(C_FUNPTR) "
+	       "shall not be a coarray", sym->name, &sym->declared_at);
+
+  /* F2008, C525.  */
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp
+      && (sym->attr.codimension || sym->attr.pointer || sym->attr.dimension
+	  || sym->attr.allocatable))
+    gfc_error ("Variable '%s' at %L with coarray component "
+	       "shall be a nonpointer, nonallocatable scalar",
+	       sym->name, &sym->declared_at);
+
+  /* F2008, C526.  The function-result case was handled above.  */
+  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+       || sym->attr.codimension)
+      && !(sym->attr.allocatable || sym->attr.dummy || sym->attr.save
+	   || sym->ns->proc_name->attr.flavor == FL_MODULE
+	   || sym->ns->proc_name->attr.is_main_program
+	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))
+    gfc_error ("Variable '%s' at %L is a coarray or has a coarray "
+	       "component and is not ALLOCATABLE, SAVE nor a "
+	       "dummy argument", sym->name, &sym->declared_at);
+
+  /* F2008, C541.  */
+  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
+       || (sym->attr.codimension && sym->attr.allocatable))
+      && sym->attr.dummy && sym->attr.intent == INTENT_OUT)
+    gfc_error ("Variable '%s' at %L is INTENT(OUT) and can thus not be an "
+	       "allocatable coarray or have coarray components",
+	       sym->name, &sym->declared_at);
+
+  if (sym->attr.codimension && sym->attr.dummy
+      && sym->ns->proc_name && sym->ns->proc_name->attr.is_bind_c)
+    gfc_error ("Coarray dummy variable '%s' at %L not allowed in BIND(C) "
+	       "procedure '%s'", sym->name, &sym->declared_at,
+	       sym->ns->proc_name->name);
 
   switch (sym->attr.flavor)
     {

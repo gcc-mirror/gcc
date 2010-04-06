@@ -138,6 +138,7 @@ decode_specification_statement (void)
       break;
 
     case 'c':
+      match ("codimension", gfc_match_codimension, ST_ATTR_DECL);
       break;
 
     case 'd':
@@ -349,6 +350,7 @@ decode_statement (void)
       match ("common", gfc_match_common, ST_COMMON);
       match ("contains", gfc_match_eos, ST_CONTAINS);
       match ("class", gfc_match_class_is, ST_CLASS_IS);
+      match ("codimension", gfc_match_codimension, ST_ATTR_DECL);
       break;
 
     case 'd':
@@ -2111,6 +2113,10 @@ endType:
 	  || (c->ts.type == BT_DERIVED
 	      && c->ts.u.derived->attr.proc_pointer_comp))
 	sym->attr.proc_pointer_comp = 1;
+
+      /* Looking for coarray components.  */
+      if (c->attr.codimension || c->attr.coarray_comp)
+	sym->attr.coarray_comp = 1;
 
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE
