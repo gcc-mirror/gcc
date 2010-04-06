@@ -1,7 +1,7 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -297,6 +297,7 @@ gfc_expr *gfc_simplify_nearest (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_new_line (gfc_expr *);
 gfc_expr *gfc_simplify_nint (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_null (gfc_expr *);
+gfc_expr *gfc_simplify_num_images (void);
 gfc_expr *gfc_simplify_idnint (gfc_expr *);
 gfc_expr *gfc_simplify_not (gfc_expr *);
 gfc_expr *gfc_simplify_or (gfc_expr *, gfc_expr *);

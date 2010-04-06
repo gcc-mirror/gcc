@@ -1105,6 +1105,10 @@ trans_code (gfc_code * code, tree cond)
 	  res = NULL_TREE;
 	  break;
 
+	case EXEC_CRITICAL:
+	  res = gfc_trans_critical (code);
+	  break;
+
 	case EXEC_CYCLE:
 	  res = gfc_trans_cycle (code);
 	  break;
@@ -1126,7 +1130,8 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_STOP:
-	  res = gfc_trans_stop (code);
+	case EXEC_ERROR_STOP:
+	  res = gfc_trans_stop (code, code->op == EXEC_ERROR_STOP);
 	  break;
 
 	case EXEC_CALL:
@@ -1189,6 +1194,12 @@ trans_code (gfc_code * code, tree cond)
 
 	case EXEC_FLUSH:
 	  res = gfc_trans_flush (code);
+	  break;
+
+	case EXEC_SYNC_ALL:
+	case EXEC_SYNC_IMAGES:
+	case EXEC_SYNC_MEMORY:
+	  res = gfc_trans_sync (code, code->op);
 	  break;
 
 	case EXEC_FORALL:

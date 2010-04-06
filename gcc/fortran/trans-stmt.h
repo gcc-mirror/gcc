@@ -36,13 +36,14 @@ tree gfc_trans_class_assign (gfc_code *code);
 
 /* trans-stmt.c */
 tree gfc_trans_cycle (gfc_code *);
+tree gfc_trans_critical (gfc_code *);
 tree gfc_trans_exit (gfc_code *);
 tree gfc_trans_label_assign (gfc_code *);
 tree gfc_trans_label_here (gfc_code *);
 tree gfc_trans_goto (gfc_code *);
 tree gfc_trans_entry (gfc_code *);
 tree gfc_trans_pause (gfc_code *);
-tree gfc_trans_stop (gfc_code *);
+tree gfc_trans_stop (gfc_code *, bool);
 tree gfc_trans_call (gfc_code *, bool, tree, tree, bool);
 tree gfc_trans_return (gfc_code *);
 tree gfc_trans_if (gfc_code *);
@@ -51,6 +52,7 @@ tree gfc_trans_block_construct (gfc_code *);
 tree gfc_trans_do (gfc_code *, tree);
 tree gfc_trans_do_while (gfc_code *);
 tree gfc_trans_select (gfc_code *);
+tree gfc_trans_sync (gfc_code *, gfc_exec_op);
 tree gfc_trans_forall (gfc_code *);
 tree gfc_trans_where (gfc_code *);
 tree gfc_trans_allocate (gfc_code *);

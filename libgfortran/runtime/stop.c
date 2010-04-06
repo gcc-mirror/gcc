@@ -1,5 +1,5 @@
 /* Implementation of the STOP statement.
-   Copyright 2002, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -52,4 +52,23 @@ stop_string (const char *string, GFC_INTEGER_4 len)
   st_printf ("\n");
 
   sys_exit (0);
+}
+
+extern void error_stop_string (const char *, GFC_INTEGER_4);
+export_proto(error_stop_string);
+
+
+/* Per Fortran 2008, section 8.4:  "Execution of a STOP statement initiates
+   normal termination of execution. Execution of an ERROR STOP statement
+   initiates error termination of execution."  Thus, error_stop_string returns
+   a nonzero exit status code.  */
+void
+error_stop_string (const char *string, GFC_INTEGER_4 len)
+{
+  st_printf ("ERROR STOP ");
+  while (len--)
+    st_printf ("%c", *(string++));
+  st_printf ("\n");
+
+  sys_exit (1);
 }

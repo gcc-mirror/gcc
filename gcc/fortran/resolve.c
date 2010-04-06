@@ -7315,6 +7315,48 @@ find_reachable_labels (gfc_code *block)
     }
 }
 
+
+static void
+resolve_sync (gfc_code *code)
+{
+  /* Check imageset. The * case matches expr1 == NULL.  */
+  if (code->expr1)
+    {
+      if (code->expr1->ts.type != BT_INTEGER || code->expr1->rank > 1)
+	gfc_error ("Imageset argument at %L must be a scalar or rank-1 "
+		   "INTEGER expression", &code->expr1->where);
+      if (code->expr1->expr_type == EXPR_CONSTANT && code->expr1->rank == 0
+	  && mpz_cmp_si (code->expr1->value.integer, 1) < 0)
+	gfc_error ("Imageset argument at %L must between 1 and num_images()",
+		   &code->expr1->where);
+      else if (code->expr1->expr_type == EXPR_ARRAY
+	       && gfc_simplify_expr (code->expr1, 0) == SUCCESS)
+	{
+	   gfc_constructor *cons;
+	   for (cons = code->expr1->value.constructor; cons; cons = cons->next)
+	     if (cons->expr->expr_type == EXPR_CONSTANT
+		 &&  mpz_cmp_si (cons->expr->value.integer, 1) < 0)
+	       gfc_error ("Imageset argument at %L must between 1 and "
+			  "num_images()", &cons->expr->where);
+	}
+    }
+
+  /* Check STAT.  */
+  if (code->expr2
+      && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
+	  || code->expr2->expr_type != EXPR_VARIABLE))
+    gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
+	       &code->expr2->where);
+
+  /* Check ERRMSG.  */
+  if (code->expr3
+      && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
+	  || code->expr3->expr_type != EXPR_VARIABLE))
+    gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
+	       &code->expr3->where);
+}
+
+
 /* Given a branch to a label, see if the branch is conforming.
    The code node describes where the branch is located.  */
 
@@ -7355,15 +7397,36 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
      the bitmap reachable_labels.  */
 
   if (bitmap_bit_p (cs_base->reachable_labels, label->value))
-    return;
+    {
+      /* Check now whether there is a CRITICAL construct; if so, check
+	 whether the label is still visible outside of the CRITICAL block,
+	 which is invalid.  */
+      for (stack = cs_base; stack; stack = stack->prev)
+	if (stack->current->op == EXEC_CRITICAL
+	    && bitmap_bit_p (stack->reachable_labels, label->value))
+	  gfc_error ("GOTO statement at %L leaves CRITICAL construct for label"
+		      " at %L", &code->loc, &label->where);
+
+      return;
+    }
 
   /* Step four:  If we haven't found the label in the bitmap, it may
     still be the label of the END of the enclosing block, in which
     case we find it by going up the code_stack.  */
 
   for (stack = cs_base; stack; stack = stack->prev)
-    if (stack->current->next && stack->current->next->here == label)
-      break;
+    {
+      if (stack->current->next && stack->current->next->here == label)
+	break;
+      if (stack->current->op == EXEC_CRITICAL)
+	{
+	  /* Note: A label at END CRITICAL does not leave the CRITICAL
+	     construct as END CRITICAL is still part of it.  */
+	  gfc_error ("GOTO statement at %L leaves CRITICAL construct for label"
+		      " at %L", &code->loc, &label->where);
+	  return;
+	}
+    }
 
   if (stack)
     {
@@ -7788,6 +7851,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_FORALL:
 	case EXEC_DO:
 	case EXEC_DO_WHILE:
+	case EXEC_CRITICAL:
 	case EXEC_READ:
 	case EXEC_WRITE:
 	case EXEC_IOLENGTH:
@@ -8068,10 +8132,18 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
 	case EXEC_STOP:
+	case EXEC_ERROR_STOP:
 	case EXEC_EXIT:
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:
 	case EXEC_ASSIGN_CALL:
+	case EXEC_CRITICAL:
+	  break;
+
+	case EXEC_SYNC_ALL:
+	case EXEC_SYNC_IMAGES:
+	case EXEC_SYNC_MEMORY:
+	  resolve_sync (code);
 	  break;
 
 	case EXEC_ENTRY:

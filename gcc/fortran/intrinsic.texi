@@ -204,6 +204,7 @@ Some basic guidelines for editing this document:
 * @code{NINT}:          NINT,      Nearest whole number
 * @code{NOT}:           NOT,       Logical negation
 * @code{NULL}:          NULL,      Function that returns an disassociated pointer
+* @code{NUM_IMAGES}:    NUM_IMAGES, Number of images
 * @code{OR}:            OR,        Bitwise logical OR
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PERROR}:        PERROR,    Print system error message
@@ -8371,6 +8372,49 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 
 @item @emph{See also}:
 @ref{ASSOCIATED}
+@end table
+
+
+
+@node NUM_IMAGES
+@section @code{NUM_IMAGES} --- Function that returns the number of images
+@fnindex NUM_IMAGES
+@cindex coarray, NUM_IMAGES
+@cindex images, number of
+
+@table @asis
+@item @emph{Description}:
+Returns the number of images.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@code{RESULT = NUM_IMAGES()}
+
+@item @emph{Arguments}: None.
+
+@item @emph{Return value}:
+Scalar default-kind integer.
+
+@item @emph{Example}:
+@smallexample
+INTEGER :: value[*]
+INTEGER :: i
+value = THIS_IMAGE()
+SYNC ALL
+IF (THIS_IMAGE() == 1) THEN
+  DO i = 1, NUM_IMAGES()
+    WRITE(*,'(2(a,i0))') 'value[', i, '] is ', value[i]
+  END DO
+END IF
+@end smallexample
+
+@item @emph{See also}:
+@c FIXME: ref{THIS_IMAGE}
 @end table
 
 

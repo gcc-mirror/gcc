@@ -1098,6 +1098,11 @@ GFORTRAN_1.2 {
     _gfortran_is_extension_of;
 } GFORTRAN_1.1; 
 
+GFORTRAN_1.3 {
+  global:
+    _gfortran_error_stop_string;
+} GFORTRAN_1.2; 
+
 F2C_1.0 {
   global:
     _gfortran_f2c_specific__abs_c4;

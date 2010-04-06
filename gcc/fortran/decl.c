@@ -5476,6 +5476,12 @@ gfc_match_end (gfc_statement *st)
       eos_ok = 0;
       break;
 
+    case COMP_CRITICAL:
+      *st = ST_END_CRITICAL;
+      target = " critical";
+      eos_ok = 0;
+      break;
+
     case COMP_SELECT:
     case COMP_SELECT_TYPE:
       *st = ST_END_SELECT;
@@ -5534,7 +5540,8 @@ gfc_match_end (gfc_statement *st)
     {
 
       if (*st != ST_ENDDO && *st != ST_ENDIF && *st != ST_END_SELECT
-	  && *st != ST_END_FORALL && *st != ST_END_WHERE && *st != ST_END_BLOCK)
+	  && *st != ST_END_FORALL && *st != ST_END_WHERE && *st != ST_END_BLOCK
+	  && *st != ST_END_CRITICAL)
 	return MATCH_YES;
 
       if (!block_name)
