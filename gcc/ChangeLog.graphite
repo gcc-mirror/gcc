@@ -1,4 +1,21 @@
-2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Use
+	lang_hooks.types.type_for_size instead of build_nonstandard_integer_type.
+	When converting an unsigned type to signed, double its precision.
+	(gcc_type_for_interval): Use lang_hooks.types.type_for_size.
+	(gcc_type_for_iv_of_clast_loop): Call max_signed_precision_type.
+	(graphite_create_new_loop_guard): When ub + 1 wraps around, use lb <= ub.
+
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Use
+	build_nonstandard_integer_type.
+	(gcc_type_for_interval): Same.
+
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43519
 	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use

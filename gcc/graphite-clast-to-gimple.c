@@ -231,8 +231,15 @@ max_signed_precision_type (tree type1, tree type2)
 {
   int p1 = TYPE_PRECISION (type1);
   int p2 = TYPE_PRECISION (type2);
-  int precision = p1 > p2 ? p1 : p2;
-  tree type = lang_hooks.types.type_for_size (precision, false);
+  int precision;
+  tree type;
+
+  if (p1 > p2)
+    precision = TYPE_UNSIGNED (type1) ? p1 * 2 : p1;
+  else
+    precision = TYPE_UNSIGNED (type2) ? p2 * 2 : p2;
+
+  type = lang_hooks.types.type_for_size (precision, false);
 
   if (!type)
     {
@@ -247,7 +254,6 @@ max_signed_precision_type (tree type1, tree type2)
 static tree
 max_precision_type (tree type1, tree type2)
 {
-
   if (POINTER_TYPE_P (type1))
     return type1;
 
@@ -790,9 +796,9 @@ gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
   CloogStatement *cs = body->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
 
-  return max_precision_type (lb_type, max_precision_type
-			     (ub_type, compute_type_for_level (pbb,
-							       level - 1)));
+  return max_signed_precision_type (lb_type, max_precision_type
+				    (ub_type, compute_type_for_level
+				     (pbb, level - 1)));
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
@@ -1022,22 +1028,28 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 				     newivs_index, params_index);
   tree ub = clast_to_gcc_expression (type, stmt->UB, region, newivs,
 				     newivs_index, params_index);
+  tree ub_one;
 
-  /* XXX: Adding +1 and using LT_EXPR helps with loop latches that have a
+  /* Adding +1 and using LT_EXPR helps with loop latches that have a
      loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
      2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
-     However lb < ub + 1 is false, as expected.
-     There might be a problem with cases where ub is 2^32.  */
+     However lb < ub + 1 is false, as expected.  */
   tree one;
   Value gmp_one;
+
   value_init (gmp_one);
   value_set_si (gmp_one, 1);
   one = gmp_cst_to_tree (type, gmp_one);
   value_clear (gmp_one);
 
-  ub = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR : PLUS_EXPR,
-		    type, ub, one);
-  cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub);
+  ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR : PLUS_EXPR,
+			type, ub, one);
+
+  /* When ub + 1 wraps around, use lb <= ub.  */
+  if (integer_zerop (ub_one))
+    cond_expr = fold_build2 (LE_EXPR, boolean_type_node, lb, ub);
+  else
+    cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub_one);
 
   exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
 
