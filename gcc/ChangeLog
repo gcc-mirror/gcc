@@ -1,3 +1,11 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43667
+	* config/i386/i386.c (bdesc_multi_arg): Use OPTION_MASK_ISA_XOP
+	instead of OPTION_MASK_ISA_AVX for __builtin_ia32_vpermil2p*.
+	(ix86_expand_args_builtin): Use V*_FTYPE_* enum codes instead of
+	MULTI_* defines for 4 argument vpermil2p* builtins.
+
 2010-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (x86_maybe_negate_const_int): Declare.
@@ -12,7 +20,6 @@
 	check from instruction predicate.  Update comments.
 	* config/i386/sync.md (sync_add<mode>): Use
 	x86_maybe_negate_const_int to output insn mnemonic.
-
 
 2010-04-06  Jan Hubicka  <jh@suse.cz>
 
