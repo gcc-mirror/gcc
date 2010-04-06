@@ -1,3 +1,24 @@
+2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* passes.c (execute_function_todo): Call verify_loop_closed_ssa
+	for all the passes of the LNO having LOOP_CLOSED_SSA.
+	* tree-if-conv.c (pass_if_conversion): Remove TODO_verify_loops.
+	* tree-loop-distribution.c (pass_loop_distribution): Same.
+	* tree-pass.h (TODO_verify_loops): Removed.
+	* tree-ssa-loop.c (pass_tree_loop_init): Same.
+	(pass_lim): Same.
+	(pass_tree_unswitch): Same.
+	(pass_predcom): Same.
+	(pass_vectorize): Same.
+	(pass_linear_transform): Same.
+	(pass_graphite_transforms): Same.
+	(pass_iv_canon): Same.
+	(pass_complete_unroll): Same.
+	(pass_complete_unrolli): Same.
+	(pass_parallelize_loops): Same.
+	(pass_loop_prefetch): Same.
+	(pass_iv_optimize): Same.
+
 2010-04-06  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/32824

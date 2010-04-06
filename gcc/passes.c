@@ -1262,7 +1262,7 @@ execute_function_todo (void *data)
     verify_flow_info ();
   if (flags & TODO_verify_stmts)
     verify_stmts ();
-  if (flags & TODO_verify_loops)
+  if (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA))
     verify_loop_closed_ssa ();
   if (flags & TODO_verify_rtl_sharing)
     verify_rtl_sharing ();
