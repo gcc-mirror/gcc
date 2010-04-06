@@ -1,3 +1,7 @@
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/stackcheck1.c: Add dg-warning.
+
 2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/vect/pr43430-1.c: Don't use uint8_t.
