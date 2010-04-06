@@ -238,7 +238,6 @@ struct dump_file_info
 #define TODO_verify_flow		(1 << 3)
 #define TODO_verify_stmts		(1 << 4)
 #define TODO_cleanup_cfg        	(1 << 5)
-#define TODO_verify_loops		(1 << 6)
 #define TODO_dump_cgraph		(1 << 7)
 #define TODO_remove_functions		(1 << 8)
 #define TODO_rebuild_frequencies	(1 << 9)
