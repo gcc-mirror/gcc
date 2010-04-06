@@ -1,3 +1,7 @@
+2010-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* cpplib.pot: Regenerate.
+
 2010-02-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* zh_CN.po: Update.
