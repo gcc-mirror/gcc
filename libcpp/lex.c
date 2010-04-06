@@ -828,7 +828,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		  /* Don't warn about this trigraph in
 		     _cpp_process_line_notes, since trigraphs show up as
 		     trigraphs in raw strings.  */
-		  unsigned type = note->type;
+		  uchar type = note->type;
 		  note->type = 0;
 
 		  if (!CPP_OPTION (pfile, trigraphs))
