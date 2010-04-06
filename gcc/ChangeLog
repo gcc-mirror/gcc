@@ -1,3 +1,10 @@
+2010-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43627
+	* tree-vrp.c (extract_range_from_unary_expr): Widenings
+	of [1, +INF(OVF)] go to [1, +INF(OVF)] of the wider type,
+	not varying.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Change to 4.6.0.

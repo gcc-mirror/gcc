@@ -2715,8 +2715,16 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	   || vr0.type == VR_ANTI_RANGE)
 	  && TREE_CODE (vr0.min) == INTEGER_CST
 	  && TREE_CODE (vr0.max) == INTEGER_CST
-	  && !is_overflow_infinity (vr0.min)
-	  && !is_overflow_infinity (vr0.max)
+	  && (!is_overflow_infinity (vr0.min)
+	      || (vr0.type == VR_RANGE
+		  && TYPE_PRECISION (outer_type) > TYPE_PRECISION (inner_type)
+		  && needs_overflow_infinity (outer_type)
+		  && supports_overflow_infinity (outer_type)))
+	  && (!is_overflow_infinity (vr0.max)
+	      || (vr0.type == VR_RANGE
+		  && TYPE_PRECISION (outer_type) > TYPE_PRECISION (inner_type)
+		  && needs_overflow_infinity (outer_type)
+		  && supports_overflow_infinity (outer_type)))
 	  && (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
 	      || (vr0.type == VR_RANGE
 		  && integer_zerop (int_const_binop (RSHIFT_EXPR,
@@ -2730,6 +2738,10 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	  new_max = force_fit_type_double (outer_type,
 					   TREE_INT_CST_LOW (vr0.max),
 					   TREE_INT_CST_HIGH (vr0.max), 0, 0);
+	  if (is_overflow_infinity (vr0.min))
+	    new_min = negative_overflow_infinity (outer_type);
+	  if (is_overflow_infinity (vr0.max))
+	    new_max = positive_overflow_infinity (outer_type);
 	  set_and_canonicalize_value_range (vr, vr0.type,
 					    new_min, new_max, NULL);
 	  return;

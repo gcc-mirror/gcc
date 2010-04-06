@@ -1,3 +1,8 @@
+2010-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43627
+	* gcc.dg/tree-ssa/vrp49.c: New testcase.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43638
