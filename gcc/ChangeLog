@@ -1,12 +1,28 @@
-2010-04-06  Jan Hubicka  <jh@suse.czpli
+2010-04-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (x86_maybe_negate_const_int): Declare.
+	* config/i386/i386.c (x86_maybe_negate_const_int): New.
+	(x86_output_mi_thunk): Use x86_maybe_negate_const_int.
+	* config/i386/i386.md (*add<mode>_1, *addsi_1_zext, *addhi_1,
+	*addhi_1_lea, *addqi_1, *addqi_1_lea, *addqi_1_slp, *add<mode>_2,
+	*addsi_2_zext, *addhi_2, *addqi_2, *add<mode>_3, *addsi_3_zext,
+	*addhi_3, *addqi_3,*add<mode>_5, *addhi_5, *addqi_5):
+	Use x86_maybe_negate_const_int to output insn mnemonic.
+	(*adddi_4, *addsi_4, *addhi_4, *addqi_4): Ditto.  Remove overflow
+	check from instruction predicate.  Update comments.
+	* config/i386/sync.md (sync_add<mode>): Use
+	x86_maybe_negate_const_int to output insn mnemonic.
+
+
+2010-04-06  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/42906
-
-	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Add IGNORE_SELF
-	argument; set visited_control_parents for fully processed BBs.
+	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Add
+	IGNORE_SELF argument.  Set visited_control_parents for fully
+	processed BBs.
 	(find_obviously_necessary_stmts): Update call of
 	mark_control_dependent_edges_necessary.
-	(propagate_necessity): Likewise; handle PHI edges more curefully.
+	(propagate_necessity): Likewise.  Handle PHI edges more curefully.
 
 2010-04-06  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -52,7 +68,7 @@
 
 2010-04-02  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* ada/gcc-interface/Make-lang.in, alias.c, attribs.c, auto-inc-dec.c, 
+	* ada/gcc-interface/Make-lang.in, alias.c, attribs.c, auto-inc-dec.c,
 	basic-block.h, bb-reorder.c, calls.c, c-common.c, cgraph.h,
 	collect2.h, config/alpha/alpha.c, config/alpha/alpha.md,
 	config/alpha/predicates.md, config/arm/arm.md,
@@ -123,7 +139,7 @@
 2010-04-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/43469
-	* arm.c (legitimize_tls_address): Adjust call to 
+	* arm.c (legitimize_tls_address): Adjust call to
 	gen_tls_load_dot_plus_four.
 	(arm_note_pic_base): New function.
 	(arm_cannot_copy_insn_p): Use it.
@@ -2684,7 +2700,7 @@
 
 2010-02-15  Nick Clifton  <nickc@redhat.com>
 
-	* config/h8300/h8300.c: (h8300_push_pop): Use bool type for
+	* config/h8300/h8300.c (h8300_push_pop): Use bool type for
 	boolean parameters.  Use emit_jump_insn when emitting a pop
 	instruction containing a return insn.
 	(push): Use 'true' rather than '1' as second parameter to F.

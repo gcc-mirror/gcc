@@ -202,6 +202,9 @@
 	return "lock{%;| }dec{<imodesuffix>}\t%0";
     }
 
+  if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
+    return "lock{%;| }sub{<imodesuffix>}\t{%1, %0|%0, %1}";
+
   return "lock{%;| }add{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
