@@ -5401,6 +5401,11 @@ use_iso_fortran_env_module (void)
 			   gfc_option.flag_default_integer
 			     ? "-fdefault-integer-8" : "-fdefault-real-8");
 
+        if (gfc_notify_std (symbol[i].standard, "The symbol '%s', referrenced "
+			    "at %C, is not in the selected standard",
+			    symbol[i].name) == FAILURE)
+	  continue;
+
 	create_int_parameter (u->local_name[0] ? u->local_name
 					       : symbol[i].name,
 			      symbol[i].value, mod, INTMOD_ISO_FORTRAN_ENV,
@@ -5411,6 +5416,10 @@ use_iso_fortran_env_module (void)
       for (i = 0; symbol[i].name; i++)
 	{
 	  local_name = NULL;
+
+	  if ((gfc_option.allow_std & symbol[i].standard) == 0)
+	    break;
+
 	  for (u = gfc_rename_list; u; u = u->next)
 	    {
 	      if (strcmp (symbol[i].name, u->use_name) == 0)

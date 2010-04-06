@@ -1,5 +1,17 @@
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/18918
+	* iso-fortran-env.def: Add the integer parameters atomic_int_kind,
+	atomic_logical_kind, iostat_inquire_internal_unit, stat_locked,
+	stat_locked_other_image, stat_stopped_image and stat_unlocked of
+	Fortran 2008.
+	* intrinsic.texi (iso_fortran_env): Ditto.
+	* libgfortran.h (libgfortran_stat_codes): New enum.
+	* module.c (use_iso_fortran_env_module): Honour -std= when loading
+	constants from the intrinsic module.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/39997
 	* intrinsic.c (add_functions): Add num_images.
 	* decl.c (gfc_match_end): Handle END CRITICAL.

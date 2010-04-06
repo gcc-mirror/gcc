@@ -96,6 +96,15 @@ typedef enum
 }
 libgfortran_error_codes;
 
+typedef enum
+{
+  GFC_STAT_UNLOCKED = 0,
+  GFC_STAT_LOCKED,
+  GFC_STAT_LOCKED_OTHER_IMAGE,
+  GFC_STAT_STOPPED_IMAGE,
+  GFC_INQUIRE_INTERNAL_UNIT  /* Must be different from STAT_STOPPED_IMAGE.  */
+}
+libgfortran_stat_codes;
 
 /* Default unit number for preconnected standard input and output.  */
 #define GFC_STDIN_UNIT_NUMBER 5
