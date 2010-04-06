@@ -1,5 +1,5 @@
 /* Build executable statement trees.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -98,6 +98,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_IF:
     case EXEC_PAUSE:
     case EXEC_STOP:
+    case EXEC_ERROR_STOP:
     case EXEC_EXIT:
     case EXEC_WHERE:
     case EXEC_IOLENGTH:
@@ -108,6 +109,10 @@ gfc_free_statement (gfc_code *p)
     case EXEC_LABEL_ASSIGN:
     case EXEC_ENTRY:
     case EXEC_ARITHMETIC_IF:
+    case EXEC_CRITICAL:
+    case EXEC_SYNC_ALL:
+    case EXEC_SYNC_IMAGES:
+    case EXEC_SYNC_MEMORY:
       break;
 
     case EXEC_BLOCK:

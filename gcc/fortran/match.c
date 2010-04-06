@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1547,6 +1547,7 @@ gfc_match_if (gfc_statement *if_type)
   match ("cycle", gfc_match_cycle, ST_CYCLE)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
+  match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
   match ("exit", gfc_match_exit, ST_EXIT)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
@@ -1562,6 +1563,9 @@ gfc_match_if (gfc_statement *if_type)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
   match ("wait", gfc_match_wait, ST_WAIT)
+  match ("sync all", gfc_match_sync_all, ST_SYNC_CALL);
+  match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
+  match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
 
@@ -1705,6 +1709,53 @@ gfc_free_iterator (gfc_iterator *iter, int flag)
 
   if (flag)
     gfc_free (iter);
+}
+
+
+/* Match a CRITICAL statement.  */
+match
+gfc_match_critical (void)
+{
+  gfc_st_label *label = NULL;
+
+  if (gfc_match_label () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match (" critical") != MATCH_YES)
+    return MATCH_NO;
+
+  if (gfc_match_st_label (&label) == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match_eos () != MATCH_YES)
+    {
+      gfc_syntax_error (ST_CRITICAL);
+      return MATCH_ERROR;
+    }
+
+  if (gfc_pure (NULL))
+    {
+      gfc_error ("Image control statement CRITICAL at %C in PURE procedure");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CRITICAL statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+    {
+      gfc_error ("Nested CRITICAL block at %C");
+      return MATCH_ERROR;
+    }
+
+  new_st.op = EXEC_CRITICAL;
+
+  if (label != NULL
+      && gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+    return MATCH_ERROR;
+
+  return MATCH_YES;
 }
 
 
@@ -1871,6 +1922,12 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       break;
     else if (o == NULL && p->state == COMP_OMP_STRUCTURED_BLOCK)
       o = p;
+    else if (p->state == COMP_CRITICAL)
+      {
+	gfc_error("%s statement at %C leaves CRITICAL construct",
+		  gfc_ascii_statement (st));
+	return MATCH_ERROR;
+      }
 
   if (p == NULL)
     {
@@ -1930,7 +1987,7 @@ gfc_match_cycle (void)
 }
 
 
-/* Match a number or character constant after a STOP or PAUSE statement.  */
+/* Match a number or character constant after an (ALL) STOP or PAUSE statement.  */
 
 static match
 gfc_match_stopcode (gfc_statement st)
@@ -1978,7 +2035,27 @@ gfc_match_stopcode (gfc_statement st)
       goto cleanup;
     }
 
-  new_st.op = st == ST_STOP ? EXEC_STOP : EXEC_PAUSE;
+  if (st == ST_STOP && gfc_find_state (COMP_CRITICAL) == SUCCESS)
+    {
+      gfc_error ("Image control statement STOP at %C in CRITICAL block");
+      return MATCH_ERROR;
+    }
+
+  switch (st)
+    {
+    case ST_STOP:
+      new_st.op = EXEC_STOP;
+      break;
+    case ST_ERROR_STOP:
+      new_st.op = EXEC_ERROR_STOP;
+      break;
+    case ST_PAUSE:
+      new_st.op = EXEC_PAUSE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   new_st.expr1 = e;
   new_st.ext.stop_code = stop_code;
 
@@ -2019,6 +2096,193 @@ match
 gfc_match_stop (void)
 {
   return gfc_match_stopcode (ST_STOP);
+}
+
+
+/* Match the ERROR STOP statement.  */
+
+match
+gfc_match_error_stop (void)
+{
+  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: ERROR STOP statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  return gfc_match_stopcode (ST_ERROR_STOP);
+}
+
+
+/* Match SYNC ALL/IMAGES/MEMORY statement. Syntax:
+     SYNC ALL [(sync-stat-list)]
+     SYNC MEMORY [(sync-stat-list)]
+     SYNC IMAGES (image-set [, sync-stat-list] )
+   with sync-stat is int-expr or *.  */
+
+static match
+sync_statement (gfc_statement st)
+{
+  match m;
+  gfc_expr *tmp, *imageset, *stat, *errmsg;
+  bool saw_stat, saw_errmsg;
+
+  tmp = imageset = stat = errmsg = NULL;
+  saw_stat = saw_errmsg = false;
+
+  if (gfc_pure (NULL))
+    {
+      gfc_error ("Image control statement SYNC at %C in PURE procedure");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SYNC statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+    {
+      gfc_error ("Image control statement SYNC at %C in CRITICAL block");
+      return MATCH_ERROR;
+    }
+	
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      if (st == ST_SYNC_IMAGES)
+	goto syntax;
+      goto done;
+    }
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    goto syntax;
+
+  if (st == ST_SYNC_IMAGES)
+    {
+      /* Denote '*' as imageset == NULL.  */
+      m = gfc_match_char ('*');
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_NO)
+	{
+	  if (gfc_match ("%e", &imageset) != MATCH_YES)
+	    goto syntax;
+	}
+      m = gfc_match_char (',');
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_NO)
+	{
+	  m = gfc_match_char (')');
+	  if (m == MATCH_YES)
+	    goto done;
+	  goto syntax;
+	}
+    }
+
+  for (;;)
+    {
+      m = gfc_match (" stat = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_YES)
+	{
+	  if (saw_stat)
+	    {
+	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+	  stat = tmp;
+	  saw_stat = true;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    continue;
+	}
+
+      m = gfc_match (" errmsg = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto syntax;
+      if (m == MATCH_YES)
+	{
+	  if (saw_errmsg)
+	    {
+	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+	  errmsg = tmp;
+	  saw_errmsg = true;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    continue;
+	}
+
+      gfc_gobble_whitespace ();
+
+      if (gfc_peek_char () == ')')
+	break;
+
+      goto syntax;
+    }
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
+  switch (st)
+    {
+    case ST_SYNC_ALL:
+      new_st.op = EXEC_SYNC_ALL;
+      break;
+    case ST_SYNC_IMAGES:
+      new_st.op = EXEC_SYNC_IMAGES;
+      break;
+    case ST_SYNC_MEMORY:
+      new_st.op = EXEC_SYNC_MEMORY;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  new_st.expr1 = imageset;
+  new_st.expr2 = stat;
+  new_st.expr3 = errmsg;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (st);
+
+cleanup:
+  gfc_free_expr (tmp);
+  gfc_free_expr (imageset);
+  gfc_free_expr (stat);
+  gfc_free_expr (errmsg);
+
+  return MATCH_ERROR;
+}
+
+
+/* Match SYNC ALL statement.  */
+
+match
+gfc_match_sync_all (void)
+{
+  return sync_statement (ST_SYNC_ALL);
+}
+
+
+/* Match SYNC IMAGES statement.  */
+
+match
+gfc_match_sync_images (void)
+{
+  return sync_statement (ST_SYNC_IMAGES);
+}
+
+
+/* Match SYNC MEMORY statement.  */
+
+match
+gfc_match_sync_memory (void)
+{
+  return sync_statement (ST_SYNC_MEMORY);
 }
 
 
@@ -2850,6 +3114,13 @@ gfc_match_return (void)
   gfc_compile_state s;
 
   e = NULL;
+
+  if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
+    {
+      gfc_error ("Image control statement RETURN at %C in CRITICAL block");
+      return MATCH_ERROR;
+    }
+
   if (gfc_match_eos () == MATCH_YES)
     goto done;
 

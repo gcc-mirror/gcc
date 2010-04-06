@@ -1,3 +1,9 @@
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39997
+	* runtime/stop.c (error_stop_string): New function.
+	* gfortran.map (_gfortran_error_stop_string): Add.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
@@ -7,7 +13,7 @@
 
 	PR libfortran/43605
 	* io/intrinsics.c (gf_ftell): New function, seek to correct offset.
-        (ftell): Call gf_ftell.
+	(ftell): Call gf_ftell.
 	(FTELL_SUB): Likewise.
 
 2010-04-01  Paul Thomas  <pault@gcc.gnu.org>

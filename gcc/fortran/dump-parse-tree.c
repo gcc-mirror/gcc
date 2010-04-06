@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
@@ -1273,6 +1273,10 @@ show_code_node (int level, gfc_code *c)
 
       break;
 
+    case EXEC_ERROR_STOP:
+      fputs ("ERROR ", dumpfile);
+      /* Fall through.  */
+
     case EXEC_STOP:
       fputs ("STOP ", dumpfile);
 
@@ -1281,6 +1285,52 @@ show_code_node (int level, gfc_code *c)
       else
 	fprintf (dumpfile, "%d", c->ext.stop_code);
 
+      break;
+
+    case EXEC_SYNC_ALL:
+      fputs ("SYNC ALL ", dumpfile);
+      if (c->expr2 != NULL)
+	{
+	  fputs (" stat=", dumpfile);
+	  show_expr (c->expr2);
+	}
+      if (c->expr3 != NULL)
+	{
+	  fputs (" errmsg=", dumpfile);
+	  show_expr (c->expr3);
+	}
+      break;
+
+    case EXEC_SYNC_MEMORY:
+      fputs ("SYNC MEMORY ", dumpfile);
+      if (c->expr2 != NULL)
+ 	{
+	  fputs (" stat=", dumpfile);
+	  show_expr (c->expr2);
+	}
+      if (c->expr3 != NULL)
+	{
+	  fputs (" errmsg=", dumpfile);
+	  show_expr (c->expr3);
+	}
+      break;
+
+    case EXEC_SYNC_IMAGES:
+      fputs ("SYNC IMAGES  image-set=", dumpfile);
+      if (c->expr1 != NULL)
+	show_expr (c->expr1);
+      else
+	fputs ("* ", dumpfile);
+      if (c->expr2 != NULL)
+	{
+	  fputs (" stat=", dumpfile);
+	  show_expr (c->expr2);
+	}
+      if (c->expr3 != NULL)
+	{
+	  fputs (" errmsg=", dumpfile);
+	  show_expr (c->expr3);
+	}
       break;
 
     case EXEC_ARITHMETIC_IF:
@@ -1398,6 +1448,13 @@ show_code_node (int level, gfc_code *c)
 
       code_indent (level, 0);
       fputs ("END FORALL", dumpfile);
+      break;
+
+    case EXEC_CRITICAL:
+      fputs ("CRITICAL\n", dumpfile);
+      show_code (level + 1, c->block->next);
+      code_indent (level, 0);
+      fputs ("END CRITICAL", dumpfile);
       break;
 
     case EXEC_DO:
