@@ -2,6 +2,9 @@
 
 	* gcc.target/s390/stackcheck1.c: Add dg-warning.
 
+	PR target/43638
+	* gcc.target/i386/pr43638.c: New test.
+
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
             Dominique d'Humieres  <dominiq@lps.ens.fr>
 
