@@ -1,6 +1,14 @@
 2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43519
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use
+	POINTER_PLUS_EXPR for pointer types.
+
+	* gcc.dg/graphite/id-19.c: New.
+
+2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
 	* Makefile.in (graphite-clast-to-gimple.o): Depends on langhooks.h.
 	* graphite-clast-to-gimple.c: Include langhooks.h.
 	(max_signed_precision_type): New.
