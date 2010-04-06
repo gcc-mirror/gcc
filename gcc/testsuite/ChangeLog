@@ -1,3 +1,8 @@
+2010-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43661
+	* gcc.c-torture/compile/pr43661.c: New testcase.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/s390/stackcheck1.c: Add dg-warning.
