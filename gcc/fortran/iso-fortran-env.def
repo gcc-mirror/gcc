@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,10 @@ along with GCC; see the file COPYING3.  If not see
      -- the value it has
      -- the standard that supports this type  */ 
 
+NAMED_INTCST (ISOFORTRANENV_FILE_ATOMIC_INT_KIND, "atomic_int_kind", \
+              gfc_default_integer_kind, GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_FILE_ATOMIC_LOGICAL_KIND, "atomic_logical_kind", \
+              gfc_default_logical_kind, GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_CHARACTER_STORAGE_SIZE, "character_storage_size", \
               gfc_character_storage_size, GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_ERROR_UNIT, "error_unit", GFC_STDERR_UNIT_NUMBER, \
@@ -45,6 +49,9 @@ NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", LIBERROR_END, \
               GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR, \
               GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_IOSTAT_INQUIRE_INTERNAL_UNIT, \
+              "iostat_inquire_internal_unit", GFC_INQUIRE_INTERNAL_UNIT, \
+              GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
               gfc_numeric_storage_size, GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", GFC_STDOUT_UNIT_NUMBER, \
@@ -55,3 +62,13 @@ NAMED_INTCST (ISOFORTRANENV_REAL64, "real64", \
               gfc_get_real_kind_from_width_isofortranenv (64), GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_REAL128, "real128", \
               gfc_get_real_kind_from_width_isofortranenv (128), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_FILE_STAT_LOCKED, "stat_locked", \
+              GFC_STAT_LOCKED, GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_FILE_STAT_LOCKED_OTHER_IMAGE, \
+              "stat_locked_other_image", \
+	      GFC_STAT_LOCKED_OTHER_IMAGE, GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_FILE_STAT_STOPPED_IMAGE, "stat_stopped_image", \
+              GFC_STAT_STOPPED_IMAGE, GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_FILE_STAT_UNLOCKED, "stat_unlocked", \
+              GFC_STAT_UNLOCKED, GFC_STD_F2008)
+

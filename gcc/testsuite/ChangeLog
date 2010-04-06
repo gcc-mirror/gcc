@@ -1,5 +1,11 @@
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/18918
+	* gfortran.dg/iso_fortran_env_5.f90: New test.
+	* gfortran.dg/iso_fortran_env_6.f90: New test.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/39997
 	* gfortran.dg/coarray_1.f90: New test.
 	* gfortran.dg/coarray_2.f90: New test.
