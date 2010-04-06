@@ -1,3 +1,29 @@
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43178
+	* trans-array.c (gfc_conv_expr_descriptor): Update
+	gfc_trans_scalar_assign call.
+	(has_default_initializer): New function.
+	(gfc_trans_deferred_array): Nullify less often.
+	* trans-expr.c (gfc_conv_subref_array_arg,
+	gfc_trans_subcomponent_assign): Update call to
+	gfc_trans_scalar_assign.
+	(gfc_trans_scalar_assign): Add parameter and pass it on.
+	(gfc_trans_assignment_1): Optionally, do not dealloc before
+	assignment.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Update
+	call to gfc_trans_scalar_assign.
+	* trans-decl.c (gfc_get_symbol_decl): Do not always apply
+	initializer to static variables.
+	(gfc_init_default_dt): Add dealloc parameter and pass it on.
+	* trans-stmt.c (forall_make_variable_temp,
+	generate_loop_for_temp_to_lhs, generate_loop_for_rhs_to_temp,
+	gfc_trans_forall_1, gfc_trans_where_assign, gfc_trans_where_3
+	gfc_trans_allocate): Update gfc_trans_assignment call.
+	* trans.h (gfc_trans_scalar_assign, gfc_init_default_dt,
+	gfc_init_default_dt, gfc_trans_assignment): Add bool dealloc
+	parameter to prototype.
+
 2010-03-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	* ioparm.def : Update copyright.

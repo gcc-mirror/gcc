@@ -5214,7 +5214,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       lse.string_length = rse.string_length;
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true,
-				     expr->expr_type == EXPR_VARIABLE);
+				     expr->expr_type == EXPR_VARIABLE, true);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Finish the copying loops.  */
@@ -6176,6 +6176,25 @@ gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 }
 
 
+/* Check for default initializer; sym->value is not enough as it is also
+   set for EXPR_NULL of allocatables.  */
+
+static bool
+has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+
+  gcc_assert (der->attr.flavor == FL_DERIVED);
+  for (c = der->components; c; c = c->next)
+    if ((c->ts.type != BT_DERIVED && c->initializer)
+        || (c->ts.type == BT_DERIVED
+            && (!c->attr.pointer && has_default_initializer (c->ts.u.derived))))
+      break;
+
+  return c != NULL;
+}
+
+
 /* NULLIFY an allocatable/pointer array on function entry, free it on exit.
    Do likewise, recursively if necessary, with the allocatable components of
    derived types.  */
@@ -6236,17 +6255,21 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
 
   /* Get the descriptor type.  */
   type = TREE_TYPE (sym->backend_decl);
-    
+
   if (sym_has_alloc_comp && !(sym->attr.pointer || sym->attr.allocatable))
     {
-      if (!sym->attr.save)
+      if (!sym->attr.save
+	  && !(TREE_STATIC (sym->backend_decl) && sym->attr.is_main_program))
 	{
-	  rank = sym->as ? sym->as->rank : 0;
-	  tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, descriptor, rank);
-	  gfc_add_expr_to_block (&fnblock, tmp);
-	  if (sym->value)
+	  if (sym->value == NULL || !has_default_initializer (sym->ts.u.derived))
 	    {
-	      tmp = gfc_init_default_dt (sym, NULL);
+	      rank = sym->as ? sym->as->rank : 0;
+	      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, descriptor, rank);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+	  else
+	    {
+	      tmp = gfc_init_default_dt (sym, NULL, false);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	}

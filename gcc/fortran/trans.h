@@ -320,7 +320,8 @@ void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
 /* gfc_trans_* shouldn't call push/poplevel, use gfc_push/pop_scope */
 
 /* Generate code for a scalar assignment.  */
-tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool);
+tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
+			      bool);
 
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
@@ -401,7 +402,7 @@ tree gfc_get_symbol_decl (gfc_symbol *);
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
 
 /* Assign a default initializer to a derived type.  */
-tree gfc_init_default_dt (gfc_symbol *, tree);
+tree gfc_init_default_dt (gfc_symbol *, tree, bool);
 
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
@@ -485,7 +486,7 @@ tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
 
 /* Generate code for an assignment, includes scalarization.  */
-tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool);
+tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
 
 /* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
