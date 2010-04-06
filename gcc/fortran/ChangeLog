@@ -1,6 +1,18 @@
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* array.c (gfc_match_array_spec): Add error for -fcoarray=none.
+	* match.c (gfc_match_critical, sync_statement): Ditto.
+	* gfortran.h (gfc_fcoarray): New enum.
+	(gfc_option_t): Use it.
+	* lang.opt (fcoarray): Add new flag.
+	* invoke.texi (fcoarray): Document it.
+	* options.c (gfc_init_options,gfc_handle_option): Handle -fcoarray=.
+	(gfc_handle_coarray_option): New function.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* gfortran.h (gfc_array_spec): Add cotype.
 	* array.c (gfc_match_array_spec,gfc_set_array_spec): Use it
 	and defer error diagnostic.

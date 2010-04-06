@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fcoarray=single" }
 ! { dg-shouldfail "error stop" }
 ! 
 ! Coarray support

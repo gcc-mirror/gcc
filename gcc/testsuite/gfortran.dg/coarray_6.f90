@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-fcoarray=single" }
 !
 ! Coarray support -- corank declarations
 ! PR fortran/18918

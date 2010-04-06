@@ -1743,6 +1743,12 @@ gfc_match_critical (void)
       == FAILURE)
     return MATCH_ERROR;
 
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+       gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       return MATCH_ERROR;
+    }
+
   if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
     {
       gfc_error ("Nested CRITICAL block at %C");
@@ -2137,6 +2143,12 @@ sync_statement (gfc_statement st)
   if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SYNC statement at %C")
       == FAILURE)
     return MATCH_ERROR;
+
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+       gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+       return MATCH_ERROR;
+    }
 
   if (gfc_find_state (COMP_CRITICAL) == SUCCESS)
     {
