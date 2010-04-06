@@ -868,7 +868,7 @@ typedef struct
 {
   int rank;	/* A rank of zero means that a variable is a scalar.  */
   int corank;
-  array_type type;
+  array_type type, cotype;
   struct gfc_expr *lower[GFC_MAX_DIMENSIONS], *upper[GFC_MAX_DIMENSIONS];
 
   /* These two fields are used with the Cray Pointer extension.  */

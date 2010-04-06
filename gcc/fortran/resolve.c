@@ -10481,7 +10481,8 @@ resolve_fl_derived (gfc_symbol *sym)
 
       /* F2008, C444.  */
       if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
-	  && (c->attr.codimension || c->attr.pointer || c->attr.dimension))
+	  && (c->attr.codimension || c->attr.pointer || c->attr.dimension
+	      || c->attr.allocatable))
 	{
 	  gfc_error ("Component '%s' at %L with coarray component "
 		     "shall be a nonpointer, nonallocatable scalar",
@@ -11319,11 +11320,6 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
-  if (sym->attr.codimension && sym->attr.allocatable
-      && sym->as->type != AS_DEFERRED)
-    gfc_error ("Allocatable coarray variable '%s' at %L must have "
-	       "deferred shape", sym->name, &sym->declared_at);
-
   /* F2008, C526.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || sym->attr.codimension)
@@ -11355,6 +11351,16 @@ resolve_symbol (gfc_symbol *sym)
     gfc_error ("Variable '%s' at %L is a coarray or has a coarray "
 	       "component and is not ALLOCATABLE, SAVE nor a "
 	       "dummy argument", sym->name, &sym->declared_at);
+  /* F2008, C528.  */
+  else if (sym->attr.codimension && !sym->attr.allocatable
+      && sym->as->cotype == AS_DEFERRED)
+    gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
+		"deferred shape", sym->name, &sym->declared_at);
+  else if (sym->attr.codimension && sym->attr.allocatable
+      && (sym->as->type != AS_DEFERRED || sym->as->cotype != AS_DEFERRED))
+    gfc_error ("Allocatable coarray variable '%s' at %L must have "
+	       "deferred shape", sym->name, &sym->declared_at);
+
 
   /* F2008, C541.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)

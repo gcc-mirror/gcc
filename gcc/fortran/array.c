@@ -342,7 +342,6 @@ match
 gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 {
   array_type current_type;
-  array_type coarray_type = AS_UNKNOWN;
   gfc_array_spec *as;
   int i;
  
@@ -467,23 +466,10 @@ coarray:
       if (current_type == AS_UNKNOWN)
 	goto cleanup;
 
-      if (as->rank && as->type != AS_DEFERRED && current_type == AS_DEFERRED)
-	{
-	  gfc_error ("Array at %C has non-deferred shape and deferred "
-		     "coshape");
-          goto cleanup;
-	}
-      if (as->rank && as->type == AS_DEFERRED && current_type != AS_DEFERRED)
-	{
-	  gfc_error ("Array at %C has deferred shape and non-deferred "
-		     "coshape");
-          goto cleanup;
-	}
-
       if (as->corank == 1)
-	coarray_type = current_type;
+	as->cotype = current_type;
       else
-	switch (coarray_type)
+	switch (as->cotype)
 	  { /* See how current spec meshes with the existing.  */
 	    case AS_UNKNOWN:
 	      goto cleanup;
@@ -491,7 +477,7 @@ coarray:
 	    case AS_EXPLICIT:
 	      if (current_type == AS_ASSUMED_SIZE)
 		{
-		  coarray_type = AS_ASSUMED_SIZE;
+		  as->cotype = AS_ASSUMED_SIZE;
 		  break;
 		}
 
@@ -518,7 +504,7 @@ coarray:
 
 	      if (current_type == AS_ASSUMED_SHAPE)
 		{
-		  as->type = AS_ASSUMED_SHAPE;
+		  as->cotype = AS_ASSUMED_SHAPE;
 		  break;
 		}
 
@@ -553,10 +539,11 @@ coarray:
       goto cleanup;
     }
 
-  if (as->rank == 0 && coarray_type == AS_ASSUMED_SIZE)
-    as->type = AS_EXPLICIT;
-  else if (as->rank == 0)
-    as->type = coarray_type;
+  if (as->cotype == AS_ASSUMED_SIZE)
+    as->cotype = AS_EXPLICIT;
+
+  if (as->rank == 0)
+    as->type = as->cotype;
 
 done:
   if (as->rank == 0 && as->corank == 0)
@@ -613,26 +600,13 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       return SUCCESS;
     }
 
-  if (sym->as->type == AS_DEFERRED && as->type != AS_DEFERRED)
-    {
-      gfc_error ("'%s' at %L has deferred shape and non-deferred coshape",
-		 sym->name, error_loc);
-      return FAILURE;
-    }
-
-  if (sym->as->type != AS_DEFERRED && as->type == AS_DEFERRED)
-    {
-      gfc_error ("'%s' at %L has non-deferred shape and deferred coshape",
-		 sym->name, error_loc);
-      return FAILURE;
-    }
-
   if (as->corank)
     {
       /* The "sym" has no corank (checked via gfc_add_codimension). Thus
 	 the codimension is simply added.  */
       gcc_assert (as->rank == 0 && sym->as->corank == 0);
 
+      sym->as->cotype = as->cotype;
       sym->as->corank = as->corank;
       for (i = 0; i < as->corank; i++)
 	{

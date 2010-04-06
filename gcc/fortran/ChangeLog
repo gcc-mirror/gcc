@@ -1,6 +1,16 @@
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* gfortran.h (gfc_array_spec): Add cotype.
+	* array.c (gfc_match_array_spec,gfc_set_array_spec): Use it
+	and defer error diagnostic.
+	* resolve.c (resolve_fl_derived): Add missing check.
+	(resolve_symbol): Add cotype/type check.
+	* parse.c (parse_derived): Fix setting of coarray_comp.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* array.c (gfc_free_array_spec,gfc_resolve_array_spec,
 	match_array_element_spec,gfc_copy_array_spec,
 	gfc_compare_array_spec): Include corank.

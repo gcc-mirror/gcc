@@ -48,7 +48,7 @@ subroutine invalid(n)
   integer, save :: hf4(5)[n,*] ! { dg-error "cannot have the SAVE attribute" }
 
   integer, allocatable :: a2[*] ! { dg-error "must have deferred shape" }
-  integer, allocatable :: a3(:)[*] ! { dg-error "deferred shape and non-deferred coshape" }
+  integer, allocatable :: a3(:)[*] ! { dg-error "must have deferred shape" }
   integer, allocatable :: a4[*] ! { dg-error "must have deferred shape" }
 end subroutine invalid
 
