@@ -2115,7 +2115,8 @@ endType:
 	sym->attr.proc_pointer_comp = 1;
 
       /* Looking for coarray components.  */
-      if (c->attr.codimension || c->attr.coarray_comp)
+      if (c->attr.codimension
+	  || (c->attr.coarray_comp && !c->attr.pointer && !c->attr.allocatable))
 	sym->attr.coarray_comp = 1;
 
       /* Look for private components.  */

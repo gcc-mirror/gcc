@@ -1,6 +1,12 @@
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* gfortran.dg/coarray_4.f90: Fix test.
+	* gfortran.dg/coarray_6.f90: Add more tests.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* gfortran.dg/coarray_4.f90: New test.
 	* gfortran.dg/coarray_5.f90: New test.
 	* gfortran.dg/coarray_6.f90: New test.
