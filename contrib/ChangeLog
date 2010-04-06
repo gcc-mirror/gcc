@@ -1,3 +1,7 @@
+2010-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gennews (files): Add files for GCC 4.5.
+
 2010-03-22  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	Fix *.log tests output containing "===".
