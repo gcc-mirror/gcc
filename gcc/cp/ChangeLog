@@ -1,3 +1,9 @@
+2010-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43621
+	* pt.c (maybe_update_decl_type): Check the return value from
+	push_scope.
+
 2010-04-01  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (next_initializable_field): No longer static.
