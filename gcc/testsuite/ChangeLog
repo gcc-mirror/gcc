@@ -1,5 +1,8 @@
 2010-04-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43648
+	* g++.dg/template/dtor8.C: New.
+
 	PR c++/43621
 	* g++.dg/template/error-recovery2.C: New.
 
