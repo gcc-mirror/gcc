@@ -1,3 +1,8 @@
+2010-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43661
+	* fold-const.c (fold_comparison): Handle X * 0 CMP 0.
+
 2010-04-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Optimize Options): Document that LTO

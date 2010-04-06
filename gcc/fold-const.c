@@ -9576,7 +9576,9 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       tree variable1 = TREE_OPERAND (arg0, 0);
       enum tree_code cmp_code = code;
 
-      gcc_assert (!integer_zerop (const1));
+      /* Handle unfolded multiplication by zero.  */
+      if (integer_zerop (const1))
+	return fold_build2_loc (loc, cmp_code, type, const1, const2);
 
       fold_overflow_warning (("assuming signed overflow does not occur when "
 			      "eliminating multiplication in comparison "
