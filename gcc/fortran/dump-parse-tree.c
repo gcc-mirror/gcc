@@ -141,9 +141,9 @@ show_array_spec (gfc_array_spec *as)
       return;
     }
 
-  fprintf (dumpfile, "(%d", as->rank);
+  fprintf (dumpfile, "(%d [%d]", as->rank, as->corank);
 
-  if (as->rank != 0)
+  if (as->rank + as->corank > 0)
     {
       switch (as->type)
       {
@@ -157,7 +157,7 @@ show_array_spec (gfc_array_spec *as)
       }
       fprintf (dumpfile, " %s ", c);
 
-      for (i = 0; i < as->rank; i++)
+      for (i = 0; i < as->rank + as->corank; i++)
 	{
 	  show_expr (as->lower[i]);
 	  fputc (' ', dumpfile);
@@ -591,6 +591,8 @@ show_attr (symbol_attribute *attr)
     fputs (" ALLOCATABLE", dumpfile);
   if (attr->asynchronous)
     fputs (" ASYNCHRONOUS", dumpfile);
+  if (attr->codimension)
+    fputs (" CODIMENSION", dumpfile);
   if (attr->dimension)
     fputs (" DIMENSION", dumpfile);
   if (attr->external)

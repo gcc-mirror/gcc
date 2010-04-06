@@ -3562,7 +3562,7 @@ gfc_match_common (void)
 
 	  /* Deal with an optional array specification after the
 	     symbol name.  */
-	  m = gfc_match_array_spec (&as);
+	  m = gfc_match_array_spec (&as, true, true);
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
 

@@ -651,7 +651,7 @@ extern const ext_attr_t ext_attr_list[];
 typedef struct
 {
   /* Variable attributes.  */
-  unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
+  unsigned allocatable:1, dimension:1, codimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, target:1, value:1, volatile_:1, temporary:1,
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1, subref_array_pointer:1, proc_pointer:1, asynchronous:1;
@@ -735,7 +735,7 @@ typedef struct
      possibly nested.  zero_comp is true if the derived type has no
      component at all.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
-	   private_comp:1, zero_comp:1;
+	   private_comp:1, zero_comp:1, coarray_comp:1;
 
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;
@@ -867,6 +867,7 @@ gfc_typespec;
 typedef struct
 {
   int rank;	/* A rank of zero means that a variable is a scalar.  */
+  int corank;
   array_type type;
   struct gfc_expr *lower[GFC_MAX_DIMENSIONS], *upper[GFC_MAX_DIMENSIONS];
 
@@ -2400,6 +2401,7 @@ void gfc_set_sym_referenced (gfc_symbol *);
 gfc_try gfc_add_attribute (symbol_attribute *, locus *);
 gfc_try gfc_add_ext_attribute (symbol_attribute *, ext_attr_id_t, locus *);
 gfc_try gfc_add_allocatable (symbol_attribute *, locus *);
+gfc_try gfc_add_codimension (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_dimension (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_external (symbol_attribute *, locus *);
 gfc_try gfc_add_intrinsic (symbol_attribute *, locus *);

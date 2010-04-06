@@ -371,7 +371,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *cray_pointee = "CRAY POINTEE", *data = "DATA", *value = "VALUE",
     *volatile_ = "VOLATILE", *is_protected = "PROTECTED",
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
-    *asynchronous = "ASYNCHRONOUS";
+    *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION";
   static const char *threadprivate = "THREADPRIVATE";
 
   const char *a1, *a2;
@@ -477,11 +477,13 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (in_common, dummy);
   conf (in_common, allocatable);
+  conf (in_common, codimension);
   conf (in_common, result);
 
   conf (dummy, result);
 
   conf (in_equivalence, use_assoc);
+  conf (in_equivalence, codimension);
   conf (in_equivalence, dummy);
   conf (in_equivalence, target);
   conf (in_equivalence, pointer);
@@ -503,6 +505,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (is_bind_c, cray_pointer);
   conf (is_bind_c, cray_pointee);
+  conf (is_bind_c, codimension);
   conf (is_bind_c, allocatable);
   conf (is_bind_c, elemental);
 
@@ -513,6 +516,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   /* Cray pointer/pointee conflicts.  */
   conf (cray_pointer, cray_pointee);
   conf (cray_pointer, dimension);
+  conf (cray_pointer, codimension);
   conf (cray_pointer, pointer);
   conf (cray_pointer, target);
   conf (cray_pointer, allocatable);
@@ -524,6 +528,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (cray_pointer, entry);
 
   conf (cray_pointee, allocatable);
+  conf (cray_pointer, codimension);
   conf (cray_pointee, intent);
   conf (cray_pointee, optional);
   conf (cray_pointee, dummy);
@@ -547,7 +552,10 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (value, function)
   conf (value, volatile_)
   conf (value, dimension)
+  conf (value, codimension)
   conf (value, external)
+
+  conf (codimension, result)
 
   if (attr->value
       && (attr->intent == INTENT_OUT || attr->intent == INTENT_INOUT))
@@ -576,6 +584,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (procedure, allocatable)
   conf (procedure, dimension)
+  conf (procedure, codimension)
   conf (procedure, intrinsic)
   conf (procedure, is_protected)
   conf (procedure, target)
@@ -601,6 +610,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     case FL_BLOCK_DATA:
     case FL_MODULE:
     case FL_LABEL:
+      conf2 (codimension);
       conf2 (dimension);
       conf2 (dummy);
       conf2 (volatile_);
@@ -653,6 +663,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  conf2 (volatile_);
 	  conf2 (asynchronous);
 	  conf2 (in_namelist);
+	  conf2 (codimension);
 	  conf2 (dimension);
 	  conf2 (function);
 	  conf2 (threadprivate);
@@ -722,6 +733,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (threadprivate);
       conf2 (value);
       conf2 (is_bind_c);
+      conf2 (codimension);
       conf2 (result);
       break;
 
@@ -862,6 +874,32 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
 
   attr->allocatable = 1;
   return check_conflict (attr, NULL, where);
+}
+
+
+gfc_try
+gfc_add_codimension (symbol_attribute *attr, const char *name, locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  if (attr->codimension)
+    {
+      duplicate_attr ("CODIMENSION", where);
+      return FAILURE;
+    }
+
+  if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
+      && gfc_find_state (COMP_INTERFACE) == FAILURE)
+    {
+      gfc_error ("CODIMENSION specified for '%s' outside its INTERFACE body "
+		 "at %L", name, where);
+      return FAILURE;
+    }
+
+  attr->codimension = 1;
+  return check_conflict (attr, name, where);
 }
 
 
@@ -1096,7 +1134,7 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 {
   /* No check_used needed as 11.2.1 of the F2003 standard allows
      that the local identifier made accessible by a use statement can be
-     given a VOLATILE attribute.  */
+     given a VOLATILE attribute - unless it is a coarray (F2008, C560).  */
 
   if (attr->volatile_ && attr->volatile_ns == gfc_current_ns)
     if (gfc_notify_std (GFC_STD_LEGACY, 
@@ -1676,6 +1714,8 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
 
   if (src->dimension && gfc_add_dimension (dest, NULL, where) == FAILURE)
+    goto fail;
+  if (src->codimension && gfc_add_codimension (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->optional && gfc_add_optional (dest, where) == FAILURE)
     goto fail;
@@ -4713,6 +4753,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.pointer = attr->pointer || attr->dummy;
       c->attr.allocatable = attr->allocatable;
       c->attr.dimension = attr->dimension;
+      c->attr.codimension = attr->codimension;
       c->attr.abstract = ts->u.derived->attr.abstract;
       c->as = (*as);
       c->initializer = gfc_get_expr ();
