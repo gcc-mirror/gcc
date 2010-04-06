@@ -1,3 +1,9 @@
+2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* gcc.dg/graphite/run-id-pr42644.c: Call abort.
+	* gcc.dg/graphite/id-19.c: New.
+
 2010-04-06  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/32824
