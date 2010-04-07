@@ -1,3 +1,8 @@
+2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43628
+	* g++.dg/debug/dwarf2/typedef2.C: New test.
+
 2010-04-06  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/debug/dwarf2/redeclaration-1.C: Moved from 
