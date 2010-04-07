@@ -1,3 +1,8 @@
+2010-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (i[34567]86-*-solaris2*): Default with_tune_32 to
+	generic.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43667
@@ -207,7 +212,7 @@
 
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config.guess (i[34567]86-*-solaris2*): Default with_arch_32,
+	* config.gcc (i[34567]86-*-solaris2*): Default with_arch_32,
 	with_tune_32 to pentium4.
 
 2010-04-01  Uros Bizjak  <ubizjak@gmail.com>
