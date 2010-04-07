@@ -2127,6 +2127,10 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_ftree_salias:
     case OPT_ftree_store_ccp:
     case OPT_Wunreachable_code:
+    case OPT_fargument_alias:
+    case OPT_fargument_noalias:
+    case OPT_fargument_noalias_anything:
+    case OPT_fargument_noalias_global:
       /* These are no-ops, preserved for backward compatibility.  */
       break;
 

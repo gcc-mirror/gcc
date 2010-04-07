@@ -1,3 +1,7 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	* options.c (gfc_init_options): Do not set.
+
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

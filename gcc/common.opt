@@ -307,29 +307,21 @@ Align the start of loops
 falign-loops=
 Common RejectNegative Joined UInteger
 
-; This flag is only tested if alias checking is enabled.
-; 0 if pointer arguments may alias each other.  True in C.
-; 1 if pointer arguments may not alias each other but may alias
-;   global variables.
-; 2 if pointer arguments may not alias each other and may not
-;   alias global variables.
-; 3 if pointer arguments may not alias anything.  True in Fortran.
-;   Set by the front end.
 fargument-alias
-Common Report Var(flag_argument_noalias,0) Optimization
-Specify that arguments may alias each other and globals
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias
-Common Report Var(flag_argument_noalias,1) VarExists Optimization
-Assume arguments may alias globals but not each other
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-global
-Common Report Var(flag_argument_noalias,2) VarExists Optimization
-Assume arguments alias neither each other nor globals
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-anything
-Common Report Var(flag_argument_noalias,3) VarExists Optimization
-Assume arguments alias no other storage
+Common
+Does nothing. Preserved for backward compatibility.
 
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization

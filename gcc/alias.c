@@ -1691,14 +1691,7 @@ base_alias_check (rtx x, rtx y, enum machine_mode x_mode,
       || (GET_CODE (y_base) == ADDRESS && GET_MODE (y_base) == Pmode))
     return 0;
 
-  if (! flag_argument_noalias)
-    return 1;
-
-  if (flag_argument_noalias > 1)
-    return 0;
-
-  /* Weak noalias assertion (arguments are distinct, but may match globals).  */
-  return ! (GET_MODE (x_base) == VOIDmode && GET_MODE (y_base) == VOIDmode);
+  return 1;
 }
 
 /* Convert the address X into something we can use.  This is done by returning
@@ -2189,13 +2182,6 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
 	exprx = t;
       }
     }
-  else if (INDIRECT_REF_P (exprx))
-    {
-      exprx = TREE_OPERAND (exprx, 0);
-      if (flag_argument_noalias < 2
-	  || TREE_CODE (exprx) != PARM_DECL)
-	return 0;
-    }
 
   moffsety = MEM_OFFSET (y);
   if (TREE_CODE (expry) == COMPONENT_REF)
@@ -2216,13 +2202,6 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
 	moffsety = adjust_offset_for_component_ref (expry, moffsety);
 	expry = t;
       }
-    }
-  else if (INDIRECT_REF_P (expry))
-    {
-      expry = TREE_OPERAND (expry, 0);
-      if (flag_argument_noalias < 2
-	  || TREE_CODE (expry) != PARM_DECL)
-	return 0;
     }
 
   if (! DECL_P (exprx) || ! DECL_P (expry))

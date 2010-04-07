@@ -1751,14 +1751,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 the size we got from the type?  */
 	    }
 
-	  else if (flag_argument_noalias > 1
-		   && (INDIRECT_REF_P (t2))
-		   && TREE_CODE (TREE_OPERAND (t2, 0)) == PARM_DECL)
-	    {
-	      expr = t2;
-	      offset = NULL;
-	    }
-
 	  /* If this is an indirect reference, record it.  */
 	  else if (TREE_CODE (t) == INDIRECT_REF
 		   || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
@@ -1767,16 +1759,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      offset = const0_rtx;
 	      apply_bitpos = bitpos;
 	    }
-	}
-
-      /* If this is a Fortran indirect argument reference, record the
-	 parameter decl.  */
-      else if (flag_argument_noalias > 1
-	       && (INDIRECT_REF_P (t))
-	       && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
-	{
-	  expr = t;
-	  offset = NULL;
 	}
 
       /* If this is an indirect reference, record it.  */

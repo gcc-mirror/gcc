@@ -1,5 +1,20 @@
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
+	* doc/invoke.texi (-fargument-alias, -fargument-noalias,
+	-fargument-noalias-global, -fargument-noalias-anything): Remove.
+	* common.opt: Likewise.
+	* tree-ssa-structalias.c (intra_create_variable_infos): Adjust
+	comment.
+	* alias.c (base_alias_check): Remove flag_argument_noalias
+	handling.
+	(nonoverlapping_memrefs_p): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* opts.c (common_handle_option): Handle OPT_fargument_alias,
+	OPT_fargument_noalias, OPT_fargument_noalias_anything and
+	OPT_fargument_noalias_global for backward compatibility.
+
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43270
 	* tree-vrp.c (check_array_ref): Fix flexible array member
 	detection.

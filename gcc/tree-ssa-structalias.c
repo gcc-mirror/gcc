@@ -4611,7 +4611,8 @@ intra_create_variable_infos (void)
   tree t;
 
   /* For each incoming pointer argument arg, create the constraint ARG
-     = NONLOCAL or a dummy variable if flag_argument_noalias is set.  */
+     = NONLOCAL or a dummy variable if it is a restrict qualified
+     passed-by-reference argument.  */
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = TREE_CHAIN (t))
     {
       varinfo_t p;
