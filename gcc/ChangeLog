@@ -1,3 +1,10 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* tree-ssa-ccp.c (likely_value): Properly look for constant
+	values.  Reset all_undefined_operands if we have seen a
+	constant value.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43638

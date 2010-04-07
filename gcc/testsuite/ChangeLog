@@ -1,3 +1,8 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* gcc.c-torture/execute/pr43629.c: New testcase.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/s390/stackcheck1.c: Add dg-warning.

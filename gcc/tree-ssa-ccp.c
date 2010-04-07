@@ -505,6 +505,7 @@ likely_value (gimple stmt)
   bool has_constant_operand, has_undefined_operand, all_undefined_operands;
   tree use;
   ssa_op_iter iter;
+  unsigned i;
 
   enum gimple_code code = gimple_code (stmt);
 
@@ -558,6 +559,22 @@ likely_value (gimple stmt)
       if (val->lattice_val == CONSTANT)
 	has_constant_operand = true;
     }
+
+  /* There may be constants in regular rhs operands.  For calls we
+     have to ignore lhs, fndecl and static chain, otherwise only
+     the lhs.  */
+  for (i = (is_gimple_call (stmt) ? 2 : 0) + gimple_has_lhs (stmt);
+       i < gimple_num_ops (stmt); ++i)
+    {
+      tree op = gimple_op (stmt, i);
+      if (!op || TREE_CODE (op) == SSA_NAME)
+	continue;
+      if (is_gimple_min_invariant (op))
+	has_constant_operand = true;
+    }
+
+  if (has_constant_operand)
+    all_undefined_operands = false;
 
   /* If the operation combines operands like COMPLEX_EXPR make sure to
      not mark the result UNDEFINED if only one part of the result is
