@@ -1,5 +1,5 @@
 /* Built-in and inline functions for gcj
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2009
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -323,6 +323,7 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
+      (void) value_type; /* Avoid set but not used warning.  */
 
       addr = build_addr_sum (int_type_node, obj_arg, offset_arg);
       stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_4],
@@ -347,6 +348,7 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
+      (void) value_type; /* Avoid set but not used warning.  */
 
       addr = build_addr_sum (long_type_node, obj_arg, offset_arg);
       stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_8],
@@ -410,7 +412,8 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 {
   tree addr, stmt, modify_stmt, tmp;
   UNMARSHAL3 (orig_call);
-  
+  (void) this_arg; /* Avoid set but not used warning.  */
+
   addr = build_addr_sum (method_return_type, obj_arg, offset_arg);
   addr 
     = fold_convert (build_pointer_type (build_type_variant 

@@ -1,6 +1,6 @@
 // java-assert.h - Header file holding assertion definitions.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2010  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,8 +29,8 @@ void _Jv_Abort (const char *, const char *, int, const char *)
 #else /* __GCJ_DEBUG */
 
 #define _Jv_AssertDoCall(Message)
-#define JvAssertMessage(Expr, Message)
-#define JvAssert(Expr)
+#define JvAssertMessage(Expr, Message) (void) sizeof (Expr)
+#define JvAssert(Expr) (void) sizeof (Expr)
 #define JvFail(Message) _Jv_Abort (0, 0, 0, Message)
 
 #endif /* not __GCJ_DEBUG */

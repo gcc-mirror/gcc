@@ -4,7 +4,7 @@
    internationalization features.)
 
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2005 Free Software Foundation, Inc.
+   2002, 2005, 2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -7140,8 +7140,8 @@ byte_re_match_2_internal (struct re_pattern_buffer *bufp,
                register from the stack, since lowest will == highest in
                `pop_failure_point'.  */
             active_reg_t dummy_low_reg, dummy_high_reg;
-            UCHAR_T *pdummy = NULL;
-            const CHAR_T *sdummy = NULL;
+            UCHAR_T *pdummy ATTRIBUTE_UNUSED = NULL;
+            const CHAR_T *sdummy ATTRIBUTE_UNUSED = NULL;
 
             DEBUG_PRINT1 ("EXECUTING pop_failure_jump.\n");
             POP_FAILURE_POINT (sdummy, pdummy,

@@ -1,6 +1,6 @@
 /* Generate code from machine description to emit insns as rtl.
    Copyright (C) 1987, 1988, 1991, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -520,12 +520,13 @@ gen_expand (rtx expand)
 	 (unless we aren't going to use them at all).  */
       if (XVEC (expand, 1) != 0)
 	{
-	  for (i = 0; i < operands; i++)
-	    printf ("    operand%d = operands[%d];\n", i, i);
-	  for (; i <= max_dup_opno; i++)
-	    printf ("    operand%d = operands[%d];\n", i, i);
-	  for (; i <= max_scratch_opno; i++)
-	    printf ("    operand%d = operands[%d];\n", i, i);
+	  for (i = 0;
+	       i < MAX (operands, MAX (max_scratch_opno, max_dup_opno) + 1);
+	       i++)
+	    {
+	      printf ("    operand%d = operands[%d];\n", i, i);
+	      printf ("    (void) operand%d;\n", i);
+	    }
 	}
       printf ("  }\n");
     }
@@ -647,7 +648,10 @@ gen_split (rtx split)
 
   /* Output code to copy the arguments back out of `operands'  */
   for (i = 0; i < operands; i++)
-    printf ("  operand%d = operands[%d];\n", i, i);
+    {
+      printf ("  operand%d = operands[%d];\n", i, i);
+      printf ("  (void) operand%d;\n", i);
+    }
 
   /* Output code to construct the rtl for the instruction bodies.
      Use emit_insn to add them to the sequence being accumulated.

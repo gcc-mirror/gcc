@@ -1,3 +1,18 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-pre.c (my_rev_post_order_compute): Remove set but not
+	used count variable.
+	* genemit.c (gen_expand, gen_split): Avoid set but not used warnings
+	when operandN variables aren't used in the body of the expander
+	or splitter.
+	* tree-outof-ssa.c (FOR_EACH_ELIM_GRAPH_SUCC,
+	FOR_EACH_ELIM_GRAPH_PRED): Avoid set but not used warnings.
+	* tree-ssa-operands.h (FOR_EACH_SSA_TREE_OPERAND): Likewise.
+	* tree-flow.h (FOR_EACH_IMM_USE_FAST, FOR_EACH_IMM_USE_STMT,
+	FOR_EACH_IMM_USE_ON_STMT): Likewise.
+	* tree.h (FOR_EACH_CONSTRUCTOR_ELT): Likewise.
+	* tree.c (PROCESS_ARG): Likewise.
+
 2010-04-07  Simon Baldwin  <simonb@google.com>
 
 	* diagnostic.h (diagnostic_override_option_index): New macro to

@@ -1,3 +1,10 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-choose-expr.c: Avoid set but not used warnings.
+	* gcc.dg/trunc-1.c: Likewise.
+	* gcc.dg/vla-9.c: Likewise.
+	* gcc.dg/dfp/composite-type.c: Likewise.
+
 2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
 
 	PR objc/35996

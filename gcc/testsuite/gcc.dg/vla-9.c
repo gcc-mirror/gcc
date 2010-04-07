@@ -6,4 +6,5 @@ void f(__SIZE_TYPE__ d)
 {
   typedef int t[d];
   t *g = (__typeof (g)) d;
+  (void) g;
 }
