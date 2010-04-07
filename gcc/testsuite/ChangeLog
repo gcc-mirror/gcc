@@ -1,3 +1,9 @@
+2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR objc/35996
+	* objc.dg/objc-gc-4.m: Run for all targets, prune new warning.
+	* obj-c++.dg/objc-gc-3.mm: Ditto.
+
 2010-04-07  Simon Baldwin  <simonb@google.com>
 
 	* gcc.dg/cpp/warn-undef-2.c: New.
@@ -41,7 +47,8 @@
 	* gfortran.dg/warning-directive-4.F90: New.
 
 2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
-PR objc++/23716
+
+	PR objc++/23716
 	* obj-c++.dg/comp-types-10.mm: Remove XFAIL.
 
 2010-04-07  Jason Merrill  <jason@redhat.com>
