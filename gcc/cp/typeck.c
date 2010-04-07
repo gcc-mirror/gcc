@@ -878,6 +878,19 @@ merge_types (tree t1, tree t2)
     return cp_build_type_attribute_variant (t1, attributes);
 }
 
+/* Return the ARRAY_TYPE type without its domain.  */
+
+tree
+strip_array_domain (tree type)
+{
+  tree t2;
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+  if (TYPE_DOMAIN (type) == NULL_TREE)
+    return type;
+  t2 = build_cplus_array_type (TREE_TYPE (type), NULL_TREE);
+  return cp_build_type_attribute_variant (t2, TYPE_ATTRIBUTES (type));
+}
+
 /* Wrapper around cp_common_type that is used by c-common.c and other
    front end optimizations that remove promotions.  
 
@@ -1595,6 +1608,13 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
 
       return e;
     }
+
+  /* To get the size of a static data member declared as an array of
+     unknown bound, we need to instantiate it.  */
+  if (TREE_CODE (e) == VAR_DECL
+      && VAR_HAD_UNKNOWN_BOUND (e)
+      && DECL_TEMPLATE_INSTANTIATION (e))
+    instantiate_decl (e, /*defer_ok*/true, /*expl_inst_mem*/false);
 
   if (TREE_CODE (e) == COMPONENT_REF
       && TREE_CODE (TREE_OPERAND (e, 1)) == FIELD_DECL

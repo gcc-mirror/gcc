@@ -785,6 +785,10 @@ finish_static_data_member_decl (tree decl,
   DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
 
+  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+      && TYPE_DOMAIN (TREE_TYPE (decl)) == NULL_TREE)
+    SET_VAR_HAD_UNKNOWN_BOUND (decl);
+
   cp_finish_decl (decl, init, init_const_expr_p, asmspec_tree, flags);
 }
 
