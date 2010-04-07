@@ -130,7 +130,7 @@ ifc_temp_var (tree type, tree exp)
   return stmt;
 }
 
-/* Add condition COND into predicate list of basic block BB.  */
+/* Add condition NEW_COND into predicate list of basic block BB.  */
 
 static void
 add_to_predicate_list (basic_block bb, tree new_cond)
@@ -139,16 +139,18 @@ add_to_predicate_list (basic_block bb, tree new_cond)
 
   if (cond)
     cond = fold_build2_loc (EXPR_LOCATION (cond),
-			TRUTH_OR_EXPR, boolean_type_node,
-			unshare_expr (cond), new_cond);
+			    TRUTH_OR_EXPR, boolean_type_node,
+			    unshare_expr (cond), new_cond);
   else
     cond = new_cond;
 
   bb->aux = cond;
 }
 
-/* Add condition COND into BB's predicate list.  PREV_COND is
-   existing condition.  */
+/* And condition COND to the previous condition PREV_COND and add this
+   to the predicate list of the destination of edge E.  GSI is the
+   place where the gimplification of the resulting condition should
+   output code.  LOOP is the loop to be if-converted.  */
 
 static tree
 add_to_dst_predicate_list (struct loop *loop, edge e,
@@ -254,7 +256,7 @@ tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
    loop.  It is used here when it is required to delete current statement.  */
 
 static tree
-tree_if_convert_stmt (struct loop *  loop, gimple t, tree cond,
+tree_if_convert_stmt (struct loop *loop, gimple t, tree cond,
 		      gimple_stmt_iterator *gsi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -872,8 +874,8 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
     }
 }
 
-/* Process phi nodes for the given  LOOP.  Replace phi nodes with cond
-   modify expr.  */
+/* Process phi nodes for the given LOOP.  Replace phi nodes with
+   conditional modify expressions.  */
 
 static void
 process_phi_nodes (struct loop *loop)
@@ -882,7 +884,6 @@ process_phi_nodes (struct loop *loop)
   unsigned int orig_loop_num_nodes = loop->num_nodes;
   unsigned int i;
 
-  /* Replace phi nodes with cond. modify expr.  */
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
       gimple phi;
@@ -897,7 +898,7 @@ process_phi_nodes (struct loop *loop)
       phi_gsi = gsi_start_phis (bb);
       gsi = gsi_after_labels (bb);
 
-      /* BB has two predecessors. Using predecessor's aux field, set
+      /* BB has two predecessors.  Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
       if (!gsi_end_p (phi_gsi))
 	true_bb = find_phi_replacement_condition (loop, bb, &cond, &gsi);
@@ -914,8 +915,8 @@ process_phi_nodes (struct loop *loop)
   return;
 }
 
-/* Combine all basic block from the given LOOP into one or two super
-   basic block.  Replace PHI nodes with conditional modify expression.  */
+/* Combine all the basic blocks from LOOP into one or two super basic
+   blocks.  Replace PHI nodes with conditional modify expressions.  */
 
 static void
 combine_blocks (struct loop *loop)

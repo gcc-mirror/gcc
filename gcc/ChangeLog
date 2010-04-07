@@ -1,5 +1,9 @@
 2010-04-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c: Fix indentation and comments.
+
+2010-04-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c: Sort static functions in topological order.
 
 2010-04-07  Sebastian Pop  <sebastian.pop@amd.com>
