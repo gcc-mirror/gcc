@@ -181,7 +181,7 @@ Part I: Invoking GNU Fortran
 
 Part II: Language Reference
 * Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
-* Compiler Characteristics::      KIND type parameters supported.
+* Compiler Characteristics::      User-visible implementation details.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
@@ -914,14 +914,13 @@ made and you should only use it for experimental purposes.
 @node Compiler Characteristics
 @chapter Compiler Characteristics
 
-@c TODO: Formulate this introduction a little more generally once
-@c there is more here than KIND type parameters.
-
-This chapter describes certain characteristics of the GNU Fortran compiler,
-namely the KIND type parameter values supported.
+This chapter describes certain characteristics of the GNU Fortran
+compiler, that are not specified by the Fortran standard, but which
+might in some way or another become visible to the programmer.
 
 @menu
 * KIND Type Parameters::
+* Internal representation of LOGICAL variables::
 @end menu
 
 
@@ -963,6 +962,33 @@ The @code{KIND} value matches the storage size in bytes, except for
 @code{COMPLEX} where the storage size is twice as much (or both real and
 imaginary part are a real value of the given size).  It is recommended to use
 the @code{SELECT_*_KIND} intrinsics instead of the concrete values.
+
+
+@node Internal representation of LOGICAL variables
+@section Internal representation of LOGICAL variables
+@cindex logical, variable representation
+
+The Fortran standard does not specify how variables of @code{LOGICAL}
+type are represented, beyond requiring that @code{LOGICAL} variables
+of default kind have the same storage size as default @code{INTEGER}
+and @code{REAL} variables.  The GNU Fortran internal representation is
+as follows.
+
+A @code{LOGICAL(KIND=N)} variable is represented as an
+@code{INTEGER(KIND=N)} variable, however, with only two permissible
+values: @code{1} for @code{.TRUE.} and @code{0} for
+@code{.FALSE.}. Any other integer value results in undefined behavior.
+
+Note that for mixed-language programming using the
+@code{ISO_C_BINDING} feature, there is a @code{C_BOOL} kind that can
+be used to create @code{LOGICAL(KIND=C_BOOL)} variables which are
+interoperable with the C99 _Bool type.  The C99 _Bool type has an
+internal representation described in the C99 standard, which is
+identical to the above description, i.e. with 1 for true and 0 for
+false being the only permissible values.  Thus the internal
+representation of @code{LOGICAL} variables in GNU Fortran is identical
+to C99 _Bool, except for a possible difference in storage size
+depending on the kind.
 
 
 @c ---------------------------------------------------------------------
