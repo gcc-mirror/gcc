@@ -1,5 +1,11 @@
 2010-04-07  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/42697
+	*pt.c (tsubst_decl): Get the arguments of a specialization from
+	the specialization template, not from the most general template.
+
+2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/40239
 	* typeck2.c (process_init_constructor_record):
 	value-initialize members that are are not explicitely
