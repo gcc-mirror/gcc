@@ -1,13 +1,14 @@
 with Interfaces;
 
-package Bit_Packed_Array is
+package Bit_Packed_Array1 is
 
    type laser_illuminator_code_group_t is (zero, one);
    pragma Convention (C, laser_illuminator_code_group_t);
 
    subtype lic_array_index_t is Interfaces.Unsigned_8 range 0 .. 3;
 
-   type lic_array_t is array (lic_array_index_t) of laser_illuminator_code_group_t;
+   type lic_array_t is array (lic_array_index_t)
+    of laser_illuminator_code_group_t;
    pragma Convention (C, lic_array_t);
 
    type Eighty_Bytes_T is array (1 .. 80) of Interfaces.Unsigned_8;
@@ -30,4 +31,4 @@ package Bit_Packed_Array is
 
    procedure Generate_Callforward;
 
-end Bit_Packed_Array; 
+end Bit_Packed_Array1;

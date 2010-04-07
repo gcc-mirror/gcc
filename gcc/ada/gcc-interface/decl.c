@@ -1593,6 +1593,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			   gnat_to_gnu_type
 			   (Original_Array_Type (gnat_entity)));
 
+      /* We have to handle clauses that under-align the type specially.  */
+      if ((Present (Alignment_Clause (gnat_entity))
+	   || (Is_Packed_Array_Type (gnat_entity)
+	       && Present
+		  (Alignment_Clause (Original_Array_Type (gnat_entity)))))
+	  && UI_Is_In_Int_Range (Alignment (gnat_entity)))
+	{
+	  align = UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT;
+	  if (align >= TYPE_ALIGN (gnu_type))
+	    align = 0;
+	}
+
       /* If the type we are dealing with represents a bit-packed array,
 	 we need to have the bits left justified on big-endian targets
 	 and right justified on little-endian targets.  We also need to
@@ -1605,38 +1617,46 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	{
 	  tree gnu_field_type, gnu_field;
 
-	  /* Set the RM size before wrapping up the type.  */
+	  /* Set the RM size before wrapping up the original type.  */
 	  SET_TYPE_RM_SIZE (gnu_type,
 			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
+
+	  /* Create a stripped-down declaration, mainly for debugging.  */
+	  create_type_decl (gnu_entity_name, gnu_type, NULL, true,
+			    debug_info_p, gnat_entity);
+
+	  /* Now save it and build the enclosing record type.  */
 	  gnu_field_type = gnu_type;
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
-
-	  /* Propagate the alignment of the modular type to the record.
-	     This means that bit-packed arrays have "ceil" alignment for
-	     their size, which may seem counter-intuitive but makes it
-	     possible to easily overlay them on modular types.  */
-	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
+	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
+	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
+	  SET_TYPE_ADA_SIZE (gnu_type, TYPE_RM_SIZE (gnu_field_type));
 
-	  /* Create a stripped-down declaration of the original type, mainly
-	     for debugging.  */
-	  create_type_decl (gnu_entity_name, gnu_field_type, NULL, true,
-			    debug_info_p, gnat_entity);
+	  /* Propagate the alignment of the modular type to the record type,
+	     unless there is an alignment clause that under-aligns the type.
+	     This means that bit-packed arrays are given "ceil" alignment for
+	     their size by default, which may seem counter-intuitive but makes
+	     it possible to overlay them on modular types easily.  */
+	  TYPE_ALIGN (gnu_type)
+	    = align > 0 ? align : TYPE_ALIGN (gnu_field_type);
+
+	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
 	     bitfield.  */
 	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
-					 gnu_field_type, gnu_type, 1, 0, 0, 0);
+					 gnu_field_type, gnu_type, 1,
+					 NULL_TREE, bitsize_zero_node, 0);
 
 	  /* Do not emit debug info until after the parallel type is added.  */
-	  finish_record_type (gnu_type, gnu_field, 0, false);
+	  finish_record_type (gnu_type, gnu_field, 2, false);
+	  compute_record_mode (gnu_type);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
-
-	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  if (debug_info_p)
 	    {
@@ -1653,44 +1673,41 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* If the type we are dealing with has got a smaller alignment than the
 	 natural one, we need to wrap it up in a record type and under-align
 	 the latter.  We reuse the padding machinery for this purpose.  */
-      else if (Present (Alignment_Clause (gnat_entity))
-	       && UI_Is_In_Int_Range (Alignment (gnat_entity))
-	       && (align = UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT)
-	       && align < TYPE_ALIGN (gnu_type))
+      else if (align > 0)
 	{
 	  tree gnu_field_type, gnu_field;
 
 	  /* Set the RM size before wrapping up the type.  */
 	  SET_TYPE_RM_SIZE (gnu_type,
 			    UI_To_gnu (RM_Size (gnat_entity), bitsizetype));
+
+	  /* Create a stripped-down declaration, mainly for debugging.  */
+	  create_type_decl (gnu_entity_name, gnu_type, NULL, true,
+			    debug_info_p, gnat_entity);
+
+	  /* Now save it and build the enclosing record type.  */
 	  gnu_field_type = gnu_type;
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "PAD");
-
-	  TYPE_ALIGN (gnu_type) = align;
 	  TYPE_PACKED (gnu_type) = 1;
-
-	  /* Create a stripped-down declaration of the original type, mainly
-	     for debugging.  */
-	  create_type_decl (gnu_entity_name, gnu_field_type, NULL, true,
-			    debug_info_p, gnat_entity);
+	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
+	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
+	  SET_TYPE_ADA_SIZE (gnu_type, TYPE_RM_SIZE (gnu_field_type));
+	  TYPE_ALIGN (gnu_type) = align;
+	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
 	     bitfield.  */
-	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
-					 gnu_field_type, gnu_type, 1, 0, 0, 0);
+	  gnu_field = create_field_decl (get_identifier ("F"),
+					 gnu_field_type, gnu_type, 1,
+					 NULL_TREE, bitsize_zero_node, 0);
 
-	  finish_record_type (gnu_type, gnu_field, 0, debug_info_p);
+	  finish_record_type (gnu_type, gnu_field, 2, debug_info_p);
+	  compute_record_mode (gnu_type);
 	  TYPE_PADDING_P (gnu_type) = 1;
-
-	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 	}
-
-      /* Otherwise reset the alignment lest we computed it above.  */
-      else
-	align = 0;
 
       break;
 

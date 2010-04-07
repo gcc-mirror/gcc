@@ -3,7 +3,7 @@
 
 -- { dg-do compile }
 
-package body Bit_Packed_Array is
+package body Bit_Packed_Array1 is
 
   procedure Generate_Callforward is
       Compiler_Crash : String :=
@@ -13,4 +13,4 @@ package body Bit_Packed_Array is
       null;
   end Generate_Callforward;
 
-end Bit_Packed_Array;
+end Bit_Packed_Array1;

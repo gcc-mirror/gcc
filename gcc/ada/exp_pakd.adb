@@ -1134,16 +1134,6 @@ package body Exp_Pakd is
                 (Len_Bits <= System_Word_Size
                    or else (Len_Bits <= System_Max_Binary_Modulus_Power
                               and then Support_Long_Shifts_On_Target))
-
-            --  Also test for alignment given. If an alignment is given which
-            --  is smaller than the natural modular alignment, force the array
-            --  of bytes representation to accommodate the alignment.
-
-              and then
-                (No (Alignment_Clause (Typ))
-                   or else
-                 Alignment (Typ) >= ((Len_Bits + System_Storage_Unit)
-                                             / System_Storage_Unit))
             then
                --  We can use the modular type, it has the form:
 
@@ -1193,6 +1183,14 @@ package body Exp_Pakd is
                end if;
 
                Install_PAT;
+
+               --  Propagate a given alignment to the modular type. This can
+               --  cause it to be under-aligned, but that's OK.
+
+               if Present (Alignment_Clause (Typ)) then
+                  Set_Alignment (PAT, Alignment (Typ));
+               end if;
+
                return;
             end if;
          end if;

@@ -595,10 +595,10 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   if (rep_level > 0)
     {
       TYPE_ALIGN (record_type) = MAX (BITS_PER_UNIT, TYPE_ALIGN (record_type));
-      SET_TYPE_MODE (record_type, BLKmode);
 
       if (!had_size_unit)
 	TYPE_SIZE_UNIT (record_type) = size_zero_node;
+
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
 
