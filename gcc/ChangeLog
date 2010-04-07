@@ -1,3 +1,12 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42617
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not
+	discard plain indirect references.
+	* fold-const.c (operand_equal_p): Guard against NULL_TREE
+	type.
+	* tree.c (tree_nop_conversion): Likewise.
+
 2010-04-07  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/43628

@@ -3170,6 +3170,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       || TREE_TYPE (arg1) == error_mark_node)
     return 0;
 
+  /* Similar, if either does not have a type (like a released SSA name), 
+     they aren't equal.  */
+  if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
+    return 0;
+
   /* Check equality of integer constants before bailing out due to
      precision differences.  */
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
