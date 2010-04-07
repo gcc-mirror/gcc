@@ -1,3 +1,7 @@
+2010-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* crontab: Switch 4.5 snapshots to 4.5 branch.
+
 2010-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_release (build_tarfiles): Make directories mode 755, not
