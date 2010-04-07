@@ -1,5 +1,8 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38392
+	* g++.dg/template/friend51.C: New test.
+
 	PR c++/41970
 	* g++.old-deja/g++.other/linkage1.C: Adjust.
 

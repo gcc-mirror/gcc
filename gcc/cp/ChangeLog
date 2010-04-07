@@ -1,5 +1,9 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/38392
+	* pt.c (tsubst_friend_function): Instatiate a friend that has already
+	been used.
+
 	* pt.c (print_template_statistics): New.
 	* cp-tree.h: Declare it.
 	* tree.c (cxx_print_statistics): Call it.
