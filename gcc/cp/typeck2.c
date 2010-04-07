@@ -549,13 +549,15 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
    expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.  */
 
 static void
-split_nonconstant_init_1 (tree dest, tree init)
+split_nonconstant_init_1 (tree dest, tree *initp)
 {
   unsigned HOST_WIDE_INT idx;
+  tree init = *initp;
   tree field_index, value;
   tree type = TREE_TYPE (dest);
   tree inner_type = NULL;
   bool array_type_p = false;
+  HOST_WIDE_INT num_type_elements, num_initialized_elements;
 
   switch (TREE_CODE (type))
     {
@@ -567,6 +569,7 @@ split_nonconstant_init_1 (tree dest, tree init)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
+      num_initialized_elements = 0;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx,
 				field_index, value)
 	{
@@ -589,12 +592,13 @@ split_nonconstant_init_1 (tree dest, tree init)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      split_nonconstant_init_1 (sub, value);
+	      split_nonconstant_init_1 (sub, &value);
 	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
 	      tree sub;
+	      HOST_WIDE_INT inner_elements;
 
 	      /* FIXME: Ordered removal is O(1) so the whole function is
 		 worst-case quadratic. This could be fixed using an aside
@@ -617,9 +621,22 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      code = build2 (INIT_EXPR, inner_type, sub, value);
 	      code = build_stmt (input_location, EXPR_STMT, code);
 	      add_stmt (code);
+
+	      inner_elements = count_type_elements (inner_type, true);
+	      if (inner_elements < 0)
+		num_initialized_elements = -1;
+	      else if (num_initialized_elements >= 0)
+		num_initialized_elements += inner_elements;
 	      continue;
 	    }
 	}
+
+      num_type_elements = count_type_elements (type, true);
+      /* If all elements of the initializer are non-constant and
+	 have been split out, we don't need the empty CONSTRUCTOR.  */
+      if (num_type_elements > 0
+	  && num_type_elements == num_initialized_elements)
+	*initp = NULL;
       break;
 
     case VECTOR_TYPE:
@@ -655,7 +672,7 @@ split_nonconstant_init (tree dest, tree init)
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       code = push_stmt_list ();
-      split_nonconstant_init_1 (dest, init);
+      split_nonconstant_init_1 (dest, &init);
       code = pop_stmt_list (code);
       DECL_INITIAL (dest) = init;
       TREE_READONLY (dest) = 0;
