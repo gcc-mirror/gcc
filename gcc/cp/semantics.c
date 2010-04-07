@@ -4836,6 +4836,14 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
   /* The type denoted by decltype(e) is defined as follows:  */
 
   expr = resolve_nondeduced_context (expr);
+
+  /* To get the size of a static data member declared as an array of
+     unknown bound, we need to instantiate it.  */
+  if (TREE_CODE (expr) == VAR_DECL
+      && VAR_HAD_UNKNOWN_BOUND (expr)
+      && DECL_TEMPLATE_INSTANTIATION (expr))
+    instantiate_decl (expr, /*defer_ok*/true, /*expl_inst_mem*/false);
+
   if (id_expression_or_member_access_p)
     {
       /* If e is an id-expression or a class member access (5.2.5

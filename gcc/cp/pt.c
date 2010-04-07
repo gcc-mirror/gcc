@@ -9496,6 +9496,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      type = DECL_ORIGINAL_TYPE (t);
 	    else
 	      type = TREE_TYPE (t);
+	    if (TREE_CODE (t) == VAR_DECL && VAR_HAD_UNKNOWN_BOUND (t))
+	      type = strip_array_domain (type);
 	    type = tsubst (type, args, complain, in_decl);
 	  }
 	if (TREE_CODE (r) == VAR_DECL)
@@ -16456,10 +16458,15 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	DECL_DECLARED_INLINE_P (decl) = 1;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
-    DECL_INITIAL (decl) =
-      tsubst_expr (DECL_INITIAL (code_pattern), args,
-		   tf_error, DECL_TI_TEMPLATE (decl),
-		   /*integral_constant_expression_p=*/false);
+    {
+      DECL_INITIAL (decl) =
+	tsubst_expr (DECL_INITIAL (code_pattern), args,
+		     tf_error, DECL_TI_TEMPLATE (decl),
+		     /*integral_constant_expression_p=*/false);
+      if (VAR_HAD_UNKNOWN_BOUND (decl))
+	TREE_TYPE (decl) = tsubst (TREE_TYPE (code_pattern), args,
+				   tf_error, DECL_TI_TEMPLATE (decl));
+    }
   else
     gcc_unreachable ();
 
@@ -17729,6 +17736,15 @@ type_dependent_expression_p (tree expression)
 	}
       return false;
     }
+
+  /* A static data member of the current instantiation with incomplete
+     array type is type-dependent, as the definition and specializations
+     can have different bounds.  */
+  if (TREE_CODE (expression) == VAR_DECL
+      && DECL_CLASS_SCOPE_P (expression)
+      && dependent_type_p (DECL_CONTEXT (expression))
+      && VAR_HAD_UNKNOWN_BOUND (expression))
+    return true;
 
   if (TREE_TYPE (expression) == unknown_type_node)
     {

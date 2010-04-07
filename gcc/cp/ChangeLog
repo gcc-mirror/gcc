@@ -1,5 +1,17 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/11094, DR 408
+	* cp-tree.h (VAR_HAD_UNKNOWN_BOUND, SET_VAR_HAD_UNKNOWN_BOUND): New.
+	* decl2.c (finish_static_data_member_decl): Set it.
+	* decl.c (duplicate_decls): Propagate it.
+	* pt.c (tsubst_decl): Don't substitute the domain of an array
+	VAR_DECL if it's set.
+	(regenerate_decl_from_template): Substitute it here.
+	(type_dependent_expression_p): Return true if it's set.
+	* semantics.c (finish_decltype_type): Instantiate such a variable.
+	* typeck.c (cxx_sizeof_expr): Likewise.
+	(strip_array_domain): New.
+
 	* name-lookup.c (current_decl_namespace): Non-static.
 	(pop_nested_namespace): Sanity check.
 	* cp-tree.h: Declare current_decl_namespace.

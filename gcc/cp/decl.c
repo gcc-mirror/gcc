@@ -1929,6 +1929,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  if (DECL_VIRTUAL_P (newdecl))
 	    DECL_THUNKS (newdecl) = DECL_THUNKS (olddecl);
 	}
+      /* Only variables have this field.  */
+      else if (TREE_CODE (newdecl) == VAR_DECL
+	       && VAR_HAD_UNKNOWN_BOUND (olddecl))
+	SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
