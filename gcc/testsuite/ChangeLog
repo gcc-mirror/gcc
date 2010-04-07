@@ -1,3 +1,8 @@
+2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR objc++/23716
+	* obj-c++.dg/comp-types-10.mm: Remove XFAIL.
+
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/dr408.C: New.
