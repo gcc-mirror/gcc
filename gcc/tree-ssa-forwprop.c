@@ -398,25 +398,27 @@ forward_propagate_into_gimple_cond (gimple stmt)
 
   do {
     tree tmp = NULL_TREE;
-    tree name, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
+    tree name = NULL_TREE, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
     gimple def_stmt;
     bool single_use0_p = false, single_use1_p = false;
     enum tree_code code = gimple_cond_code (stmt);
 
     /* We can do tree combining on SSA_NAME and comparison expressions.  */
-    if (TREE_CODE_CLASS (gimple_cond_code (stmt)) == tcc_comparison
-        && TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME)
+    if (TREE_CODE_CLASS (gimple_cond_code (stmt)) == tcc_comparison)
       {
 	/* For comparisons use the first operand, that is likely to
 	   simplify comparisons against constants.  */
-	name = gimple_cond_lhs (stmt);
-	def_stmt = get_prop_source_stmt (name, false, &single_use0_p);
-	if (def_stmt && can_propagate_from (def_stmt))
+	if (TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME)
 	  {
-	    tree op1 = gimple_cond_rhs (stmt);
-	    rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
-	    tmp = combine_cond_expr_cond (loc, code, boolean_type_node, rhs0,
-					  op1, !single_use0_p);
+	    name = gimple_cond_lhs (stmt);
+	    def_stmt = get_prop_source_stmt (name, false, &single_use0_p);
+	    if (def_stmt && can_propagate_from (def_stmt))
+	      {
+		tree op1 = gimple_cond_rhs (stmt);
+		rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
+		tmp = combine_cond_expr_cond (loc, code, boolean_type_node,
+					      rhs0, op1, !single_use0_p);
+	      }
 	  }
 	/* If that wasn't successful, try the second operand.  */
 	if (tmp == NULL_TREE

@@ -8561,10 +8561,11 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 				      &mode, &unsignedp, &volatilep, false);
 	  /* If the reference was to a (constant) zero offset, we can use
 	     the address of the base if it has the same base type
-	     as the result type.  */
+	     as the result type and the pointer type is unqualified.  */
 	  if (! offset && bitpos == 0
-	      && TYPE_MAIN_VARIANT (TREE_TYPE (type))
+	      && (TYPE_MAIN_VARIANT (TREE_TYPE (type))
 		  == TYPE_MAIN_VARIANT (TREE_TYPE (base)))
+	      && TYPE_QUALS (type) == TYPE_UNQUALIFIED)
 	    return fold_convert_loc (loc, type,
 				     build_fold_addr_expr_loc (loc, base));
         }

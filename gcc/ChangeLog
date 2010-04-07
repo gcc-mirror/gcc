@@ -1,5 +1,29 @@
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-reference.c (mark_load): Use get_base_address.
+	(mark_store): Likewise.
+
+	* tree-ssa-ccp.c (gimplify_and_update_call_from_tree): Avoid
+	inserting GIMPLE_NOPs into the IL.
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Explicitly strip handled components and indirect references.
+  
+	* fold-const.c (fold_unary_loc): Do not strip qualifiers when
+	folding address expressions.
+	* gimple.c (gimple_ior_addresses_taken_1): Use get_base_address.
+	* tree-ssa-alias.c (decl_refs_may_alias_p): Do not use
+	operand_equal_p to compare decls.
+	(ptr_deref_may_alias_decl_p): Likewise.
+	* tree-ssa-operands.c (get_asm_expr_operands): Simplify
+	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond):
+	Handle reversed comparison ops.
+	* tree-sra.c (asm_visit_addr): Use get_base_address.
+	* ipa-prop.c (visit_store_addr_for_mod_analysis): Use
+	get_base_address.
+	* ipa-reference.c (mark_address): Use get_base_address.
+
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr):
 	Propagate constants everywhere.
 

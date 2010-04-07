@@ -189,7 +189,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 	ptr = TREE_OPERAND (base, 0);
       else if (base
 	       && SSA_VAR_P (base))
-	return operand_equal_p (base, decl, 0);
+	return base == decl;
       else if (base
 	       && CONSTANT_CLASS_P (base))
 	return false;
@@ -629,7 +629,7 @@ decl_refs_may_alias_p (tree base1,
   gcc_assert (SSA_VAR_P (base1) && SSA_VAR_P (base2));
 
   /* If both references are based on different variables, they cannot alias.  */
-  if (!operand_equal_p (base1, base2, 0))
+  if (base1 != base2)
     return false;
 
   /* If both references are based on the same variable, they cannot alias if
