@@ -1,6 +1,13 @@
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42617
+	* expr.c (expand_expr_real_1): For TARGET_MEM_REFs with
+	pointer bases build simple mem attributes to retain
+	points-to information.
+
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42617
 	* alias.c (ao_ref_from_mem): Without MEM_OFFSET or MEM_SIZE
 	preserve points-to related information.
 
