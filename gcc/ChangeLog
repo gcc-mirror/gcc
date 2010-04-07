@@ -1,3 +1,9 @@
+2010-04-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/generic.texi (Working with declarations)
+	(Function Properties, C and C++ Trees): Fix typos.
+	* doc/sourcebuild.texi (Top Level): Likewise.
+
 2010-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (i[34567]86-*-solaris2*): Default with_tune_32 to

@@ -33,7 +33,7 @@ The Boehm conservative garbage collector, used as part of the Java
 runtime library.
 
 @item config
-Autoconf macros and Makefile fragments used throught the tree.
+Autoconf macros and Makefile fragments used throughout the tree.
 
 @item contrib
 Contributed scripts that may be found useful in conjunction with GCC@.
