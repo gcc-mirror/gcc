@@ -613,9 +613,9 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  || h->flags & NODE_POISONED)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
-		       "%s: not used because `%.*s' is poisoned",
-		       name, m.name_length, namebuf);
+	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
+		                "%s: not used because `%.*s' is poisoned",
+		                name, m.name_length, namebuf);
 	  goto fail;
 	}
 
@@ -635,9 +635,9 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	    continue;
 
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
-		       "%s: not used because `%.*s' not defined",
-		       name, m.name_length, namebuf);
+	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
+		                "%s: not used because `%.*s' not defined",
+		                name, m.name_length, namebuf);
 	  goto fail;
 	}
 
@@ -647,7 +647,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	  || memcmp (namebuf, newdefn, m.definition_length) != 0)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
+	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
 	       "%s: not used because `%.*s' defined as `%s' not `%.*s'",
 		       name, m.name_length, namebuf, newdefn + m.name_length,
 		       m.definition_length - m.name_length,
@@ -688,9 +688,9 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
       else
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, CPP_DL_WARNING_SYSHDR,
-		       "%s: not used because `%s' is defined",
-		       name, first);
+	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
+		                "%s: not used because `%s' is defined",
+		                name, first);
 	  goto fail;
 	}
     }
@@ -708,9 +708,9 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
   if (counter && r->counter)
     {
       if (CPP_OPTION (r, warn_invalid_pch))
-	cpp_error (r, CPP_DL_WARNING_SYSHDR,
-		   "%s: not used because `__COUNTER__' is invalid",
-		   name);
+	cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
+		            "%s: not used because `__COUNTER__' is invalid",
+		            name);
 	goto fail;
     }
 

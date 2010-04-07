@@ -497,9 +497,9 @@ struct cpp_callbacks
 
   /* Called to emit a diagnostic.  This callback receives the
      translated message.  */
-  bool (*error) (cpp_reader *, int, source_location, unsigned int,
+  bool (*error) (cpp_reader *, int, int, source_location, unsigned int,
 		 const char *, va_list *)
-       ATTRIBUTE_FPTR_PRINTF(5,0);
+       ATTRIBUTE_FPTR_PRINTF(6,0);
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */
@@ -829,24 +829,56 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
    position in the translation unit with it, use cpp_error_with_line
    with a line number of zero.  */
 
-/* Warning, an error with -Werror.  */
-#define CPP_DL_WARNING		0x00
-/* Same as CPP_DL_WARNING, except it is not suppressed in system headers.  */
-#define CPP_DL_WARNING_SYSHDR	0x01
-/* Warning, an error with -pedantic-errors or -Werror.  */
-#define CPP_DL_PEDWARN		0x02
-/* An error.  */
-#define CPP_DL_ERROR		0x03
-/* An internal consistency check failed.  Prints "internal error: ",
-   otherwise the same as CPP_DL_ERROR.  */
-#define CPP_DL_ICE		0x04
-/* An informative note following a warning.  */
-#define CPP_DL_NOTE		0x05
-/* A fatal error.  */
-#define CPP_DL_FATAL		0x06
+enum {
+  /* Warning, an error with -Werror.  */
+  CPP_DL_WARNING = 0,
+  /* Same as CPP_DL_WARNING, except it is not suppressed in system headers.  */
+  CPP_DL_WARNING_SYSHDR,
+  /* Warning, an error with -pedantic-errors or -Werror.  */
+  CPP_DL_PEDWARN,
+  /* An error.  */
+  CPP_DL_ERROR,
+  /* An internal consistency check failed.  Prints "internal error: ",
+     otherwise the same as CPP_DL_ERROR.  */
+  CPP_DL_ICE,
+  /* An informative note following a warning.  */
+  CPP_DL_NOTE,
+  /* A fatal error.  */
+  CPP_DL_FATAL
+};
+
+/* Warning reason codes. Use a reason code of zero for unclassified warnings
+   and errors that are not warnings.  */
+enum {
+  CPP_W_NONE = 0,
+  CPP_W_DEPRECATED,
+  CPP_W_COMMENTS,
+  CPP_W_MISSING_INCLUDE_DIRS,
+  CPP_W_TRIGRAPHS,
+  CPP_W_MULTICHAR,
+  CPP_W_TRADITIONAL,
+  CPP_W_LONG_LONG,
+  CPP_W_ENDIF_LABELS,
+  CPP_W_NUM_SIGN_CHANGE,
+  CPP_W_VARIADIC_MACROS,
+  CPP_W_BUILTIN_MACRO_REDEFINED,
+  CPP_W_DOLLARS,
+  CPP_W_UNDEF,
+  CPP_W_UNUSED_MACROS,
+  CPP_W_CXX_OPERATOR_NAMES,
+  CPP_W_NORMALIZE,
+  CPP_W_INVALID_PCH,
+  CPP_W_WARNING_DIRECTIVE
+};
 
 /* Output a diagnostic of some kind.  */
 extern bool cpp_error (cpp_reader *, int, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_3;
+extern bool cpp_warning (cpp_reader *, int, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_3;
+extern bool cpp_pedwarning (cpp_reader *, int, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_3;
+extern bool cpp_warning_syshdr (cpp_reader *, int, const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
 /* Output a diagnostic with "MSGID: " preceding the
@@ -856,8 +888,18 @@ extern bool cpp_errno (cpp_reader *, int, const char *msgid);
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
-extern bool cpp_error_with_line (cpp_reader *, int, source_location, unsigned,
-				 const char *msgid, ...) ATTRIBUTE_PRINTF_5;
+extern bool cpp_error_with_line (cpp_reader *, int, source_location,
+                                 unsigned, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_5;
+extern bool cpp_warning_with_line (cpp_reader *, int, source_location,
+                                   unsigned, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_5;
+extern bool cpp_pedwarning_with_line (cpp_reader *, int, source_location,
+                                      unsigned, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_5;
+extern bool cpp_warning_with_line_syshdr (cpp_reader *, int, source_location,
+                                          unsigned, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_5;
 
 /* In lex.c */
 extern int cpp_ideq (const cpp_token *, const char *);

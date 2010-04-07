@@ -199,6 +199,11 @@ extern diagnostic_context *global_dc;
    diagnostic.  */
 #define diagnostic_override_column(DI, COL) (DI)->override_column = (COL)
 
+/* Override the option index to be used for reporting a
+   diagnostic.  */
+#define diagnostic_override_option_index(DI, OPTIDX) \
+    ((DI)->option_index = (OPTIDX))
+
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);

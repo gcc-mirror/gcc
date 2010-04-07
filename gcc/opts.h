@@ -105,6 +105,7 @@ extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
 extern void set_option (const struct cl_option *, int, const char *);
 
+extern void register_warning_as_error_callback (void (*callback) (int));
 extern void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask);
 extern void print_ignored_options (void);

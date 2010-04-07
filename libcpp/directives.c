@@ -104,7 +104,7 @@ static const char *parse_include (cpp_reader *, int *, const cpp_token ***,
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static bool strtolinenum (const uchar *, size_t, linenum_type *, bool *);
-static void do_diagnostic (cpp_reader *, int, int);
+static void do_diagnostic (cpp_reader *, int, int, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *, bool);
 static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
 static void do_include_common (cpp_reader *, enum include_type);
@@ -355,8 +355,8 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
       else if (((dir->flags & DEPRECATED) != 0
 		|| (dir == &dtable[T_IMPORT] && !CPP_OPTION (pfile, objc)))
 	       && CPP_OPTION (pfile, warn_deprecated))
-	cpp_error (pfile, CPP_DL_WARNING, "#%s is a deprecated GCC extension",
-		   dir->name);
+	cpp_warning (pfile, CPP_W_DEPRECATED,
+                     "#%s is a deprecated GCC extension", dir->name);
     }
 
   /* Traditionally, a directive is ignored unless its # is in
@@ -368,16 +368,16 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
   if (CPP_WTRADITIONAL (pfile))
     {
       if (dir == &dtable[T_ELIF])
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "suggest not using #elif in traditional C");
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "suggest not using #elif in traditional C");
       else if (indented && dir->origin == KANDR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "traditional C ignores #%s with the # indented",
-		   dir->name);
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "traditional C ignores #%s with the # indented",
+		     dir->name);
       else if (!indented && dir->origin != KANDR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "suggest hiding #%s from traditional C with an indented #",
-		   dir->name);
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "suggest hiding #%s from traditional C with an indented #",
+		     dir->name);
     }
 }
 
@@ -1045,7 +1045,7 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 /* Report a warning or error detected by the program we are
    processing.  Use the directive's tokens in the error message.  */
 static void
-do_diagnostic (cpp_reader *pfile, int code, int print_dir)
+do_diagnostic (cpp_reader *pfile, int code, int reason, int print_dir)
 {
   const unsigned char *dir_name;
   unsigned char *line;
@@ -1059,21 +1059,26 @@ do_diagnostic (cpp_reader *pfile, int code, int print_dir)
   line = cpp_output_line_to_string (pfile, dir_name);
   pfile->state.prevent_expansion--;
 
-  cpp_error_with_line (pfile, code, src_loc, 0, "%s", line);
+  if (code == CPP_DL_WARNING_SYSHDR && reason)
+    cpp_warning_with_line_syshdr (pfile, reason, src_loc, 0, "%s", line);
+  else if (code == CPP_DL_WARNING && reason)
+    cpp_warning_with_line (pfile, reason, src_loc, 0, "%s", line);
+  else
+    cpp_error_with_line (pfile, code, src_loc, 0, "%s", line);
   free (line);
 }
 
 static void
 do_error (cpp_reader *pfile)
 {
-  do_diagnostic (pfile, CPP_DL_ERROR, 1);
+  do_diagnostic (pfile, CPP_DL_ERROR, 0, 1);
 }
 
 static void
 do_warning (cpp_reader *pfile)
 {
   /* We want #warning diagnostics to be emitted in system headers too.  */
-  do_diagnostic (pfile, CPP_DL_WARNING_SYSHDR, 1);
+  do_diagnostic (pfile, CPP_DL_WARNING_SYSHDR, CPP_W_WARNING_DIRECTIVE, 1);
 }
 
 /* Report program identification.  */
@@ -1595,7 +1600,7 @@ do_pragma_dependency (cpp_reader *pfile)
       if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
-	  do_diagnostic (pfile, CPP_DL_WARNING, 0);
+	  do_diagnostic (pfile, CPP_DL_WARNING, 0, 0);
 	}
     }
 

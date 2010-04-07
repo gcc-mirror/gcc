@@ -1,3 +1,45 @@
+2010-04-07  Simon Baldwin  <simonb@google.com>
+
+	* directives.c (do_diagnostic): Add warning reason argument,
+	call appropriate error reporting function for code.
+	(directive_diagnostics): Call specific warning functions with
+	warning reason where appropriate.
+	(do_error, do_warning, do_pragma_dependency): Add warning reason
+	argument to do_diagnostic calls.
+	* macro.c (_cpp_warn_if_unused_macro, enter_macro_context,
+	_cpp_create_definition): Call specific warning functions with
+	warning reason where appropriate.
+	* Makefile.in: Add new diagnostic functions to gettext translations.
+	* include/cpplib.h (struct cpp_callbacks): Add warning reason code
+	to error callback.
+	(CPP_DL_WARNING, CPP_DL_WARNING_SYSHDR, CPP_DL_PEDWARN, CPP_DL_ERROR,
+	CPP_DL_ICE, CPP_DL_NOTE, CPP_DL_FATAL): Replace macros with enums.
+	(CPP_W_NONE, CPP_W_DEPRECATED, CPP_W_COMMENTS,
+	CPP_W_MISSING_INCLUDE_DIRS, CPP_W_TRIGRAPHS, CPP_W_MULTICHAR,
+	CPP_W_TRADITIONAL, CPP_W_LONG_LONG, CPP_W_ENDIF_LABELS,
+	CPP_W_NUM_SIGN_CHANGE, CPP_W_VARIADIC_MACROS,
+	CPP_W_BUILTIN_MACRO_REDEFINED, CPP_W_DOLLARS, CPP_W_UNDEF,
+	CPP_W_UNUSED_MACROS, CPP_W_CXX_OPERATOR_NAMES, CPP_W_NORMALIZE,
+	CPP_W_INVALID_PCH, CPP_W_WARNING_DIRECTIVE): New enums for cpp
+	warning reason codes.
+	(cpp_warning, cpp_pedwarning, cpp_warning_syshdr,
+	cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): New specific error reporting functions.
+	* pch.c (cpp_valid_state): Call specific warning functions with
+	warning reason where appropriate.
+	* errors.c (cpp_diagnostic, cpp_diagnostic_with_line): New central
+	diagnostic handlers.
+	(cpp_warning, cpp_pedwarning, cpp_warning_syshdr,
+	cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): New specific error reporting functions.
+	* expr.c (cpp_classify_number, eval_token, num_unary_op): Call
+	specific warning functions with warning reason where appropriate.
+	* lex.c (_cpp_process_line_notes, _cpp_skip_block_comment,
+	warn_about_normalization, lex_identifier_intern, lex_identifier,
+	_cpp_lex_direct): Ditto.
+	* charset.c (_cpp_valid_ucn, convert_hex, convert_escape,
+	narrow_str_to_charconst): Ditto.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/43642

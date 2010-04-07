@@ -2396,6 +2396,20 @@ set_option (const struct cl_option *option, int value, const char *arg)
     }
 }
 
+
+/* Callback function, called when -Werror= enables a warning.  */
+
+static void (*warning_as_error_callback) (int) = NULL;
+
+/* Register a callback for enable_warning_as_error calls.  */
+
+void
+register_warning_as_error_callback (void (*callback) (int))
+{
+  gcc_assert (warning_as_error_callback == NULL || callback == NULL);
+  warning_as_error_callback = callback;
+}
+
 /* Enable a warning option as an error.  This is used by -Werror= and
    also by legacy Werror-implicit-function-declaration.  */
 
@@ -2415,14 +2429,20 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
     }
   else
     {
-      diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
-      diagnostic_classify_diagnostic (global_dc, option_index, kind);
+      const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
 
-      /* -Werror=foo implies -Wfoo.  */
-      if (cl_options[option_index].var_type == CLVC_BOOLEAN
-	  && cl_options[option_index].flag_var
-	  && kind == DK_ERROR)
-	*(int *) cl_options[option_index].flag_var = 1;
+      diagnostic_classify_diagnostic (global_dc, option_index, kind);
+      if (kind == DK_ERROR)
+	{
+	  const struct cl_option * const option = cl_options + option_index;
+
+	  /* -Werror=foo implies -Wfoo.  */
+	  if (option->var_type == CLVC_BOOLEAN && option->flag_var)
+	    *(int *) option->flag_var = 1;
+
+	  if (warning_as_error_callback)
+	    warning_as_error_callback (option_index);
+	}
     }
   free (new_option);
 }
