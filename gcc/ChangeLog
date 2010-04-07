@@ -1,3 +1,11 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43516
+	* tree.c (MAX_INT_CACHED_PREC): Define.
+	(nonstandard_integer_type_cache): New array.
+	(build_nonstandard_integer_type): Cache results for precision
+	<= MAX_INT_CACHED_PREC.
+
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi (-fargument-alias, -fargument-noalias,
