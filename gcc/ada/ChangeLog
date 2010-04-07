@@ -1,5 +1,17 @@
 2010-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_pakd.adb (Create_Packed_Array_Type): Always use a modular type
+	if the size is small enough.  Propagate the alignment if there is an
+	alignment clause on the original array type.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Subtype>
+	Deal with under-aligned packed array types.  Copy the size onto the
+	justified modular type and don't lay it out again.  Likewise for the
+	padding type built for other under-aligned subtypes.
+	* gcc-interface/utils.c (finish_record_type): Do not set a default mode
+	on the type.
+
+2010-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Set default
 	alignment on the RETURN type built for the Copy-In Copy-Out mechanism.
 
