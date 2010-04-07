@@ -18554,4 +18554,19 @@ init_template_processing (void)
 					  ggc_free);
 }
 
+/* Print stats about the template hash tables for -fstats.  */
+
+void
+print_template_statistics (void)
+{
+  fprintf (stderr, "decl_specializations: size %ld, %ld elements, "
+	   "%f collisions\n", (long) htab_size (decl_specializations),
+	   (long) htab_elements (decl_specializations),
+	   htab_collisions (decl_specializations));
+  fprintf (stderr, "type_specializations: size %ld, %ld elements, "
+	   "%f collisions\n", (long) htab_size (type_specializations),
+	   (long) htab_elements (type_specializations),
+	   htab_collisions (type_specializations));
+}
+
 #include "gt-cp-pt.h"

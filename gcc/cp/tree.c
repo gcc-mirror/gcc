@@ -1664,6 +1664,7 @@ cxx_print_statistics (void)
 {
   print_search_statistics ();
   print_class_statistics ();
+  print_template_statistics ();
 #ifdef GATHER_STATISTICS
   fprintf (stderr, "maximum template instantiation depth reached: %d\n",
 	   depth_reached);
