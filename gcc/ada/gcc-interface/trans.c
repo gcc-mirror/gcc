@@ -2464,6 +2464,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    = create_var_decl (create_tmp_var_name ("LR"), NULL, gnu_obj_type,
 			       NULL, false, false, false, false, NULL,
 			       gnat_node);
+
+	  *gnu_result_type_p = gnu_ret_type;
 	}
 
       gnu_actual_list
@@ -2788,38 +2790,19 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
      the call should be emitted or not.  */
   if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
     {
-      /* Conceptually, what we need is a COMPOUND_EXPR with the call followed
-	 by the target object converted to the proper type.  Doing so would
-	 potentially be very inefficient, however, as this expression might
-	 end up wrapped into an outer SAVE_EXPR later on, which would incur a
-	 pointless temporary copy of the whole object.
+      /* Conceptually, what we need is a COMPOUND_EXPR of the call followed by
+	 the target object.  Doing so would potentially be inefficient though,
+	 as this expression might be wrapped up into a SAVE_EXPR later, which
+	 would incur a pointless temporary copy of the whole object.
 
 	 What we do instead is build a COMPOUND_EXPR returning the address of
-	 the target, and then dereference.  Wrapping the COMPOUND_EXPR into a
-	 SAVE_EXPR later on then only incurs a pointer copy.  */
-
-      tree gnu_result_type
-	= TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (gnu_subprog_type)));
-
-      /* Build and return
-	 (result_type) *[gnu_subprog_call (&gnu_target, ...), &gnu_target]  */
-
-      tree gnu_target_address
-	= build_unary_op (ADDR_EXPR, NULL_TREE, gnu_target);
-      set_expr_location_from_node (gnu_target_address, gnat_node);
-
-      gnu_result
-	= build2 (COMPOUND_EXPR, TREE_TYPE (gnu_target_address),
-		  gnu_subprog_call, gnu_target_address);
-
-      gnu_result
-	= unchecked_convert (gnu_result_type,
-			     build_unary_op (INDIRECT_REF, NULL_TREE,
-					     gnu_result),
-			     false);
-
-      *gnu_result_type_p = gnu_result_type;
-      return gnu_result;
+	 the target, and then dereference.  Wrapping up the COMPOUND_EXPR into
+	 a SAVE_EXPR then only incurs a mere pointer copy.  */
+      tree gnu_target_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_target);
+      set_expr_location_from_node (gnu_target_addr, gnat_node);
+      gnu_result = build2 (COMPOUND_EXPR, TREE_TYPE (gnu_target_addr),
+			   gnu_subprog_call, gnu_target_addr);
+      return build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
     }
 
   /* If it is a function call, the result is the call expression unless
@@ -7321,12 +7304,16 @@ protect_multiple_eval (tree exp)
   return build1 (TREE_CODE (exp), type,
 		 protect_multiple_eval (TREE_OPERAND (exp, 0)));
 
-  /* If this is a fat pointer or something that can be placed into a
-     register, just make a SAVE_EXPR.  */
-  if (TYPE_IS_FAT_POINTER_P (type) || TYPE_MODE (type) != BLKmode)
+  /* If this is a fat pointer or something that can be placed in a register,
+     just make a SAVE_EXPR.  Likewise for a CALL_EXPR as large objects are
+     returned via invisible reference in most ABIs so the temporary will
+     directly be filled by the callee.  */
+  if (TYPE_IS_FAT_POINTER_P (type)
+      || TYPE_MODE (type) != BLKmode
+      || TREE_CODE (exp) == CALL_EXPR)
     return save_expr (exp);
 
-  /* Otherwise, reference, protect the address and dereference.  */
+  /* Otherwise reference, protect the address and dereference.  */
   return
     build_unary_op (INDIRECT_REF, type,
 		    save_expr (build_unary_op (ADDR_EXPR,
@@ -7403,14 +7390,8 @@ maybe_stabilize_reference (tree ref, bool force, bool *success)
 		       NULL_TREE, NULL_TREE);
       break;
 
-    case COMPOUND_EXPR:
-      result = gnat_stabilize_reference_1 (ref, force);
-      break;
-
     case CALL_EXPR:
-      /* This generates better code than the scheme in protect_multiple_eval
-	 because large objects will be returned via invisible reference in
-	 most ABIs so the temporary will directly be filled by the callee.  */
+    case COMPOUND_EXPR:
       result = gnat_stabilize_reference_1 (ref, force);
       break;
 
