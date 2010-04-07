@@ -1,3 +1,8 @@
+2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43628
+	* dwarf2out.c (modified_type_die): Ignore artificial typedefs.
+
 2010-04-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (ix86_handle_cconv_attribute): Ignore
