@@ -1,4 +1,4 @@
-2010-04-06  H.J. Lu  <hongjiu.lu@intel.com>
+2010-04-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43668
 	* gcc.target/i386/pr43668.c: New.

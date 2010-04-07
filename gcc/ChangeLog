@@ -1,13 +1,8 @@
-2010-04-06  H.J. Lu  <hongjiu.lu@intel.com>
+2010-04-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43668
 	* config/i386/i386.c (setup_incoming_varargs_64): Align stack to
 	16byte for FP register save area.
-
-2010-04-06  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR target/43668
-	* gcc.target/i386/pr43668.c: New.
 
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
