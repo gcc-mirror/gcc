@@ -955,9 +955,10 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	}
 
       /* If the use is in a deeper loop nest, then we do not want
-	 to propagate the ADDR_EXPR into the loop as that is likely
-	 adding expression evaluations into the loop.  */
-      if (gimple_bb (use_stmt)->loop_depth > stmt_loop_depth)
+	 to propagate non-invariant ADDR_EXPRs into the loop as that
+	 is likely adding expression evaluations into the loop.  */
+      if (gimple_bb (use_stmt)->loop_depth > stmt_loop_depth
+	  && !is_gimple_min_invariant (rhs))
 	{
 	  all = false;
 	  continue;
