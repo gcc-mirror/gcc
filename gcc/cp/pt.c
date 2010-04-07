@@ -7330,11 +7330,18 @@ tsubst_friend_function (tree decl, tree args)
 	      DECL_TEMPLATE_INFO (old_decl) = new_friend_template_info;
 
 	      if (TREE_CODE (old_decl) != TEMPLATE_DECL)
-		/* We should have called reregister_specialization in
-		   duplicate_decls.  */
-		gcc_assert (retrieve_specialization (new_template,
-						     new_args, 0)
-			    == old_decl);
+		{
+		  /* We should have called reregister_specialization in
+		     duplicate_decls.  */
+		  gcc_assert (retrieve_specialization (new_template,
+						       new_args, 0)
+			      == old_decl);
+
+		  /* Instantiate it if the global has already been used.  */
+		  if (DECL_ODR_USED (old_decl))
+		    instantiate_decl (old_decl, /*defer_ok=*/true,
+				      /*expl_inst_class_mem_p=*/false);
+		}
 	      else
 		{
 		  tree t;
