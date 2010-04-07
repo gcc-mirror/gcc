@@ -1,3 +1,8 @@
+2010-04-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43668
+	* gcc.target/i386/pr43668.c: New.
+
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43629
@@ -11,7 +16,7 @@
 	* gcc.target/i386/pr43638.c: New test.
 
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
-            Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/43605
 	* gfortran.dg/ftell_3.f90: Enhance test case by reading more.
