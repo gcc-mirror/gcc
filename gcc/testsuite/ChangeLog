@@ -1,3 +1,8 @@
+2010-04-07  Jie Zhang  <jie@codesourcery.com>
+
+	PR c++/42556
+	* g++.dg/init/pr42556.C: New test.
+
 2010-04-07  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/43628

@@ -1,3 +1,9 @@
+2010-04-07  Jie Zhang  <jie@codesourcery.com>
+
+	PR c++/42556
+	* typeck2.c (split_nonconstant_init_1): Drop empty CONSTRUCTOR
+	when all of its elements are non-constant and have been split out.
+
 2010-04-06  Taras Glek  <taras@mozilla.com>
 	    Jason Merrill  <jason@redhat.com>
 
