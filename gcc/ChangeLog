@@ -1,3 +1,7 @@
+2010-04-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-if-conv.c: Fix indentation and comments.
+
 2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43519
