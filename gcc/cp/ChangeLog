@@ -1,5 +1,11 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	* name-lookup.c (current_decl_namespace): Non-static.
+	(pop_nested_namespace): Sanity check.
+	* cp-tree.h: Declare current_decl_namespace.
+	* decl.c (grokvardecl): Use it instead of current_namespace.
+	(grokfndecl): Likewise.
+
 	PR c++/38392
 	* pt.c (tsubst_friend_function): Instatiate a friend that has already
 	been used.

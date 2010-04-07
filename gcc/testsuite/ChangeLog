@@ -1,5 +1,7 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/lookup/ns4.C: New.
+
 	PR c++/38392
 	* g++.dg/template/friend51.C: New test.
 

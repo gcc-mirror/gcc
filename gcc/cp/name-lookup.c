@@ -3170,7 +3170,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 /* Return the namespace where the current declaration is declared.  */
 
-static tree
+tree
 current_decl_namespace (void)
 {
   tree result;
@@ -3342,6 +3342,7 @@ void
 pop_nested_namespace (tree ns)
 {
   timevar_push (TV_NAME_LOOKUP);
+  gcc_assert (current_namespace == ns);
   while (ns != global_namespace)
     {
       pop_namespace ();
