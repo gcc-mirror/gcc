@@ -132,9 +132,6 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.rtcheck = 0;
   gfc_option.coarray = GFC_FCOARRAY_NONE;
 
-  /* Argument pointers cannot point to anything but their argument.  */
-  flag_argument_noalias = 3;
-
   flag_errno_math = 0;
 
   set_default_std_flags ();
