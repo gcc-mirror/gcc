@@ -1,3 +1,9 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* native/jni/midi-alsa/gnu_javax_sound_midi_alsa_AlsaPortDevice.c
+	(Java_gnu_javax_sound_midi_alsa_AlsaPortDevice_run_1receiver_1thread_1):
+	Avoid set but not used warning.
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/java/rmi/registry/RegistryImpl.java (version): Update

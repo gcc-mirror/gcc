@@ -1,6 +1,6 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3329,6 +3329,7 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
   {									\
     int saw_index = 0;							\
     int index     = OPERAND_VALUE;					\
+    (void) saw_index; /* Avoid set but not used warning.  */		\
     build_java_ret							\
       (find_local_variable (index, return_address_type_node, oldpc));	\
   }

@@ -1,5 +1,6 @@
 /* SSA operand management for trees.
-   Copyright (C) 2003, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -160,7 +161,7 @@ typedef struct ssa_operand_iterator_d
 #define FOR_EACH_SSA_TREE_OPERAND(TREEVAR, STMT, ITER, FLAGS)	\
   for (TREEVAR = op_iter_init_tree (&(ITER), STMT, FLAGS);	\
        !op_iter_done (&(ITER));					\
-       TREEVAR = op_iter_next_tree (&(ITER)))
+       (void) (TREEVAR = op_iter_next_tree (&(ITER))))
 
 /* This macro executes a loop over the operands of STMT specified in FLAG,
    returning each operand as a 'use_operand_p' in the variable USEVAR.

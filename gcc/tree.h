@@ -1507,9 +1507,9 @@ struct GTY(()) tree_vec {
 #define FOR_EACH_CONSTRUCTOR_ELT(V, IX, INDEX, VAL) \
   for (IX = 0; (IX >= VEC_length (constructor_elt, V)) \
 	       ? false \
-	       : ((VAL = VEC_index (constructor_elt, V, IX)->value), \
+	       : (((void) (VAL = VEC_index (constructor_elt, V, IX)->value)), \
 		  (INDEX = VEC_index (constructor_elt, V, IX)->index), \
-	       true); \
+		  true); \
        (IX)++)
 
 /* Append a new constructor element to V, with the specified INDEX and VAL.  */

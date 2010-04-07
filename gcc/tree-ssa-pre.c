@@ -4498,7 +4498,6 @@ my_rev_post_order_compute (int *post_order, bool include_entry_exit)
   int sp;
   int post_order_num = 0;
   sbitmap visited;
-  int count;
 
   if (include_entry_exit)
     post_order[post_order_num++] = EXIT_BLOCK;
@@ -4553,12 +4552,7 @@ my_rev_post_order_compute (int *post_order, bool include_entry_exit)
     }
 
   if (include_entry_exit)
-    {
-      post_order[post_order_num++] = ENTRY_BLOCK;
-      count = post_order_num;
-    }
-  else
-    count = post_order_num + 2;
+    post_order[post_order_num++] = ENTRY_BLOCK;
 
   free (stack);
   sbitmap_free (visited);

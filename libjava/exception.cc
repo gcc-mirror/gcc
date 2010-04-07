@@ -1,6 +1,6 @@
 // Functions for Exception Support for Java.
 
-/* Copyright (C) 1998, 1999, 2001, 2002, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2010  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -111,11 +111,10 @@ _Jv_Throw (jthrowable value)
 
   /* We're happy with setjmp/longjmp exceptions or region-based
      exception handlers: entry points are provided here for both.  */
-  _Unwind_Reason_Code code;
 #ifdef SJLJ_EXCEPTIONS
-  code = _Unwind_SjLj_RaiseException (&xh->unwindHeader);
+  _Unwind_SjLj_RaiseException (&xh->unwindHeader);
 #else
-  code = _Unwind_RaiseException (&xh->unwindHeader);
+  _Unwind_RaiseException (&xh->unwindHeader);
 #endif
 
   /* If code == _URC_END_OF_STACK, then we reached top of stack without

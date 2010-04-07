@@ -1,3 +1,9 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* exception.cc (_Jv_Throw): Avoid set but not used warning.
+	* include/java-assert.h (JvAssertMessage, JvAssert): Use argument in
+	sizeof to avoid set but not used warnings.
+
 2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
 
 	* lang.c (java_post_options): Constify variable "dot".

@@ -1,3 +1,8 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.c (parse_derived, parse_enum): Avoid set but not used
+	warning.
+
 2010-04-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/40539
