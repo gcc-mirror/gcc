@@ -1,6 +1,7 @@
 /* Implement classes and message passing for Objective C.
    Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GCC.
@@ -1531,6 +1532,7 @@ finish_var_decl (tree var, tree initializer)
   mark_decl_referenced (var);
   /* Mark the decl to avoid "defined but not used" warning.  */
   TREE_USED (var) = 1;
+  DECL_READ_P (var) = 1;
   /* We reserve the right for the runtime to use/modify these variables
      in ways that are opaque to us.  */
   DECL_PRESERVE_P (var) = 1;
@@ -3867,6 +3869,7 @@ objc_begin_catch_clause (tree decl)
   /* ??? As opposed to __attribute__((unused))?  Anyway, this appears to
      be what the previous objc implementation did.  */
   TREE_USED (decl) = 1;
+  DECL_READ_P (decl) = 1;
 
   /* Verify that the type of the catch is valid.  It must be a pointer
      to an Objective-C class, or "id" (which is catch-all).  */
@@ -8722,7 +8725,9 @@ really_start_method (tree method,
 
   /* Suppress unused warnings.  */
   TREE_USED (self_decl) = 1;
+  DECL_READ_P (self_decl) = 1;
   TREE_USED (TREE_CHAIN (self_decl)) = 1;
+  DECL_READ_P (TREE_CHAIN (self_decl)) = 1;
 #ifdef OBJCPLUS
   pop_lang_context ();
 #endif
@@ -8799,6 +8804,7 @@ get_super_receiver (void)
 				       objc_super_template);
 	/* This prevents `unused variable' warnings when compiling with -Wall.  */
 	TREE_USED (UOBJC_SUPER_decl) = 1;
+	DECL_READ_P (UOBJC_SUPER_decl) = 1;
 	lang_hooks.decls.pushdecl (UOBJC_SUPER_decl);
         finish_decl (UOBJC_SUPER_decl, input_location, NULL_TREE, NULL_TREE,
 	    	     NULL_TREE);
@@ -9422,6 +9428,7 @@ handle_class_ref (tree chain)
   DECL_INITIAL (decl) = exp;
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
+  DECL_READ_P (decl) = 1;
   /* Force the output of the decl as this forces the reference of the class.  */
   mark_decl_referenced (decl);
 

@@ -1796,6 +1796,12 @@ process_options (void)
     warn_unused_parameter = (warn_unused && extra_warnings);
   if (warn_unused_variable == -1)
     warn_unused_variable = warn_unused;
+  /* Wunused-but-set-parameter is enabled if both -Wunused -Wextra are
+     enabled.  */
+  if (warn_unused_but_set_parameter == -1)
+    warn_unused_but_set_parameter = (warn_unused && extra_warnings);
+  if (warn_unused_but_set_variable == -1)
+    warn_unused_but_set_variable = warn_unused;
   if (warn_unused_value == -1)
     warn_unused_value = warn_unused;
 

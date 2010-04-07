@@ -1,5 +1,40 @@
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/18624
+	* tree.h (DECL_READ_P): Define.
+	(struct tree_decl_common): Add decl_read_flag.
+	* c-decl.c (pop_scope): If TREE_USED but !DECL_READ_P, issue
+	a set but not used warning.
+	(merge_decls): Merge DECL_READ_P flag.
+	(finish_decl, build_compound_literal): Set DECL_READ_P flag.
+	(finish_function): Issue -Wunused-but-set-parameter diagnostics.
+	* c-common.c (handle_used_attribute, handle_unused_attribute):
+	Likewise.
+	* c-tree.h (default_function_array_read_conversion, mark_exp_read):
+	New prototypes.
+	* c-typeck.c (default_function_array_read_conversion, mark_exp_read):
+	New functions.
+	(default_conversion, c_process_expr_stmt): Call mark_exp_read.
+	* c-parser.c (c_parser_initializer, c_parser_expr_no_commas,
+	c_parser_binary_expression, c_parser_cast_expression,
+	c_parser_expr_list, c_parser_omp_atomic, c_parser_omp_for_loop):
+	Call default_function_array_read_conversion instead of
+	default_function_array_conversion where needed.
+	(c_parser_unary_expression, c_parser_conditional_expression,
+	c_parser_postfix_expression_after_primary, c_parser_initelt):
+	Likewise.  Call mark_exp_read where needed.
+	(c_parser_statement_after_labels, c_parser_asm_operands,
+	c_parser_typeof_specifier, c_parser_sizeof_expression,
+	c_parser_alignof_expression, c_parser_initval): Call mark_exp_read
+	where needed.
+	* common.opt (Wunused-but-set-variable, Wunused-but-set-parameter):
+	New.
+	* toplev.c (warn_unused_but_set_variable): Default to warn_unused.
+	(warn_unused_but_set_parameter): Default to warn_unused
+	&& extra_warnings.
+	* doc/invoke.texi: Document -Wunused-but-set-variable and
+	-Wunused-but-set-parameter.
+
 	* tree-ssa-pre.c (my_rev_post_order_compute): Remove set but not
 	used count variable.
 	* genemit.c (gen_expand, gen_split): Avoid set but not used warnings

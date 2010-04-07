@@ -1,5 +1,14 @@
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/18624
+	* gcc.dg/Wunused-var-1.c: New test.
+	* gcc.dg/Wunused-var-2.c: New test.
+	* gcc.dg/Wunused-var-3.c: New test.
+	* gcc.dg/Wunused-var-4.c: New test.
+	* gcc.dg/Wunused-var-5.c: New test.
+	* gcc.dg/Wunused-var-6.c: New test.
+	* gcc.dg/Wunused-parm-1.c: New test.
+
 	* gcc.dg/builtin-choose-expr.c: Avoid set but not used warnings.
 	* gcc.dg/trunc-1.c: Likewise.
 	* gcc.dg/vla-9.c: Likewise.

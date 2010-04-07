@@ -6121,6 +6121,8 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
     {
       TREE_USED (node) = 1;
       DECL_PRESERVE_P (node) = 1;
+      if (TREE_CODE (node) == VAR_DECL)
+	DECL_READ_P (node) = 1;
     }
   else
     {
@@ -6147,7 +6149,12 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	  || TREE_CODE (decl) == FUNCTION_DECL
 	  || TREE_CODE (decl) == LABEL_DECL
 	  || TREE_CODE (decl) == TYPE_DECL)
-	TREE_USED (decl) = 1;
+	{
+	  TREE_USED (decl) = 1;
+	  if (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == PARM_DECL)
+	    DECL_READ_P (decl) = 1;
+	}
       else
 	{
 	  warning (OPT_Wattributes, "%qE attribute ignored", name);

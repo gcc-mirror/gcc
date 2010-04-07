@@ -1164,14 +1164,21 @@ pop_scope (void)
 
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
-	  if (!TREE_USED (p)
+	  if ((!TREE_USED (p) || !DECL_READ_P (p))
 	      && !TREE_NO_WARNING (p)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
 	      && scope != file_scope
 	      && scope != external_scope)
-	    warning (OPT_Wunused_variable, "unused variable %q+D", p);
+	    {
+	      if (!TREE_USED (p))
+		warning (OPT_Wunused_variable, "unused variable %q+D", p);
+	      else if (DECL_CONTEXT (p) == current_function_decl)
+		warning_at (DECL_SOURCE_LOCATION (p),
+			    OPT_Wunused_but_set_variable,
+			    "variable %qD set but not used", p);
+	    }
 
 	  if (b->inner_comp)
 	    {
@@ -2387,6 +2394,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+  if (TREE_CODE (olddecl) == VAR_DECL || TREE_CODE (olddecl) == PARM_DECL)
+    DECL_READ_P (newdecl) |= DECL_READ_P (olddecl);
   if (DECL_PRESERVE_P (olddecl))
     DECL_PRESERVE_P (newdecl) = 1;
   else if (DECL_PRESERVE_P (newdecl))
@@ -4232,7 +4241,10 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	}
 
       if (TREE_USED (type))
-	TREE_USED (decl) = 1;
+	{
+	  TREE_USED (decl) = 1;
+	  DECL_READ_P (decl) = 1;
+	}
     }
 
   /* If this is a function and an assembler name is specified, reset DECL_RTL
@@ -4380,6 +4392,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  /* Don't warn about decl unused; the cleanup uses it.  */
 	  TREE_USED (decl) = 1;
 	  TREE_USED (cleanup_decl) = 1;
+	  DECL_READ_P (decl) = 1;
 
 	  push_cleanup (decl, cleanup, false);
 	}
@@ -4472,6 +4485,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
   TREE_STATIC (decl) = (current_scope == file_scope);
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_USED (decl) = 1;
+  DECL_READ_P (decl) = 1;
   TREE_TYPE (decl) = type;
   TREE_READONLY (decl) = TYPE_READONLY (type);
   store_init_value (loc, decl, init, NULL_TREE);
@@ -8058,6 +8072,25 @@ finish_function (void)
       warning (OPT_Wreturn_type,
 	       "no return statement in function returning non-void");
       TREE_NO_WARNING (fndecl) = 1;
+    }
+
+  /* Complain about parameters that are only set, but never otherwise used.  */
+  if (warn_unused_but_set_parameter)
+    {
+      tree decl;
+
+      for (decl = DECL_ARGUMENTS (fndecl);
+	   decl;
+	   decl = TREE_CHAIN (decl))
+	if (TREE_USED (decl)
+	    && TREE_CODE (decl) == PARM_DECL
+	    && !DECL_READ_P (decl)
+	    && DECL_NAME (decl)
+	    && !DECL_ARTIFICIAL (decl)
+	    && !TREE_NO_WARNING (decl))
+	  warning_at (DECL_SOURCE_LOCATION (decl),
+		      OPT_Wunused_but_set_parameter,
+		      "parameter %qD set but not used", decl);
     }
 
   /* Store the end of the function, so that we get good line number
