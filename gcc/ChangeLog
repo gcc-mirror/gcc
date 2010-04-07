@@ -1,3 +1,8 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr):
+	Propagate constants everywhere.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43516
