@@ -3354,6 +3354,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   gimple_stmt_iterator i;
   gimple_seq stmts = gimple_seq_alloc();
   struct gimplify_ctx gctx;
+  gimple last = NULL;
 
   stmt = gsi_stmt (*si_p);
 
@@ -3375,22 +3376,31 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
   /* The replacement can expose previously unreferenced variables.  */
   for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
-  {
-    new_stmt = gsi_stmt (i);
-    find_new_referenced_vars (new_stmt);
-    gsi_insert_before (si_p, new_stmt, GSI_NEW_STMT);
-    mark_symbols_for_renaming (new_stmt);
-    gsi_next (si_p);
-  }
+    {
+      if (last)
+	{
+	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
+	  gsi_next (si_p);
+	}
+      new_stmt = gsi_stmt (i);
+      find_new_referenced_vars (new_stmt);
+      mark_symbols_for_renaming (new_stmt);
+      last = new_stmt;
+    }
 
   if (lhs == NULL_TREE)
     {
-      new_stmt = gimple_build_nop ();
       unlink_stmt_vdef (stmt);
       release_defs (stmt);
+      new_stmt = last;
     }
   else
     {
+      if (last)
+	{
+	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
+	  gsi_next (si_p);
+	}
       new_stmt = gimple_build_assign (lhs, tmp);
       gimple_set_vuse (new_stmt, gimple_vuse (stmt));
       gimple_set_vdef (new_stmt, gimple_vdef (stmt));

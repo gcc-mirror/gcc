@@ -199,7 +199,9 @@ visit_store_addr_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
 {
   struct ipa_node_params *info = (struct ipa_node_params *) data;
 
-  if (TREE_CODE (op) == PARM_DECL)
+  op = get_base_address (op);
+  if (op
+      && TREE_CODE (op) == PARM_DECL)
     {
       int index = ipa_get_param_decl_index (info, op);
       gcc_assert (index >= 0);
