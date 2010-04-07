@@ -301,14 +301,16 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 	      && (!in_comment || warn_in_comment (pfile, note)))
 	    {
 	      if (CPP_OPTION (pfile, trigraphs))
-		cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
-				     "trigraph ??%c converted to %c",
-				     note->type,
-				     (int) _cpp_trigraph_map[note->type]);
+		cpp_warning_with_line (pfile, CPP_W_TRIGRAPHS,
+                                       pfile->line_table->highest_line, col,
+				       "trigraph ??%c converted to %c",
+				       note->type,
+				       (int) _cpp_trigraph_map[note->type]);
 	      else
 		{
-		  cpp_error_with_line 
-		    (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
+		  cpp_warning_with_line 
+		    (pfile, CPP_W_TRIGRAPHS,
+                     pfile->line_table->highest_line, col,
 		     "trigraph ??%c ignored, use -trigraphs to enable",
 		     note->type);
 		}
@@ -355,9 +357,10 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	      && cur[0] == '*' && cur[1] != '/')
 	    {
 	      buffer->cur = cur;
-	      cpp_error_with_line (pfile, CPP_DL_WARNING,
-				   pfile->line_table->highest_line, CPP_BUF_COL (buffer),
-				   "\"/*\" within comment");
+	      cpp_warning_with_line (pfile, CPP_W_COMMENTS,
+				     pfile->line_table->highest_line,
+				     CPP_BUF_COL (buffer),
+				     "\"/*\" within comment");
 	    }
 	}
       else if (c == '\n')
@@ -460,11 +463,11 @@ warn_about_normalization (cpp_reader *pfile,
 
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
-	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFKC", (int) sz, buf);
+	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+			       "`%.*s' is not in NFKC", (int) sz, buf);
       else
-	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFC", (int) sz, buf);
+	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+			       "`%.*s' is not in NFC", (int) sz, buf);
     }
 }
 
@@ -545,9 +548,9 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "identifier \"%s\" is a special operator name in C++",
-		   NODE_NAME (result));
+	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
+		     "identifier \"%s\" is a special operator name in C++",
+		     NODE_NAME (result));
     }
 
   return result;
@@ -622,9 +625,9 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "identifier \"%s\" is a special operator name in C++",
-		   NODE_NAME (result));
+	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
+		     "identifier \"%s\" is a special operator name in C++",
+		     NODE_NAME (result));
     }
 
   return result;
@@ -1531,7 +1534,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    }
 
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
-	    cpp_error (pfile, CPP_DL_WARNING, "multi-line comment");
+	    cpp_warning (pfile, CPP_W_COMMENTS, "multi-line comment");
 	}
       else if (c == '=')
 	{

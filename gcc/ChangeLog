@@ -1,3 +1,25 @@
+2010-04-07  Simon Baldwin  <simonb@google.com>
+
+	* diagnostic.h (diagnostic_override_option_index): New macro to
+	set a diagnostic's option_index.
+	* c-tree.h (c_cpp_error): Add warning reason argument.
+	* opts.c (_warning_as_error_callback): New.
+	(register_warning_as_error_callback): Store callback for
+	warnings enabled via enable_warning_as_error.
+	(enable_warning_as_error): Call callback, minor code tidy.
+	* opts.h (register_warning_as_error_callback): Declare.
+	* c-opts.c (warning_as_error_callback): New, set cpp_opts flag in
+	response to -Werror=.
+	(c_common_init_options): Register warning_as_error_callback in opts.c.
+	* common.opt: Add -Wno-cpp option.
+	* c-common.c (struct reason_option_codes_t): Map cpp warning
+	reason codes to gcc option indexes.
+	* (c_option_controlling_cpp_error): New function, lookup the gcc
+	option index for a cpp warning reason code.
+	* (c_cpp_error): Add warning reason argument, call
+	c_option_controlling_cpp_error for diagnostic_override_option_index.
+	* doc/invoke.texi: Document -Wno-cpp.
+
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-reference.c (mark_load): Use get_base_address.

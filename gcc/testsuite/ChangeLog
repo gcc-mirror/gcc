@@ -1,6 +1,47 @@
-2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-04-07  Simon Baldwin  <simonb@google.com>
 
-	PR objc++/23716
+	* gcc.dg/cpp/warn-undef-2.c: New.
+	* gcc.dg/cpp/warn-traditional-2.c: New.
+	* gcc.dg/cpp/warn-comments-2.c: New.
+	* gcc.dg/cpp/warning-directive-1.c: New.
+	* gcc.dg/cpp/warn-long-long.c: New.
+	* gcc.dg/cpp/warn-traditional.c: New.
+	* gcc.dg/cpp/warn-variadic-2.c: New.
+	* gcc.dg/cpp/warn-undef.c: New.
+	* gcc.dg/cpp/warn-normalized-1.c: New.
+	* gcc.dg/cpp/warning-directive-2.c: New.
+	* gcc.dg/cpp/warn-long-long-2.c: New.
+	* gcc.dg/cpp/warn-variadic.c: New.
+	* gcc.dg/cpp/warn-normalized-2.c: New.
+	* gcc.dg/cpp/warning-directive-3.c: New.
+	* gcc.dg/cpp/warn-deprecated-2.c: New.
+	* gcc.dg/cpp/warn-trigraphs-1.c: New.
+	* gcc.dg/cpp/warn-multichar-2.c: New.
+	* gcc.dg/cpp/warn-normalized-3.c: New.
+	* gcc.dg/cpp/warning-directive-4.c: New.
+	* gcc.dg/cpp/warn-unused-macros.c: New.
+	* gcc.dg/cpp/warn-trigraphs-2.c: New.
+	* gcc.dg/cpp/warn-cxx-compat-2.c: New.
+	* gcc.dg/cpp/warn-cxx-compat.c: New.
+	* gcc.dg/cpp/warn-redefined.c: New.
+	* gcc.dg/cpp/warn-trigraphs-3.c: New.
+	* gcc.dg/cpp/warn-unused-macros-2.c: New.
+	* gcc.dg/cpp/warn-deprecated.c: New.
+	* gcc.dg/cpp/warn-trigraphs-4.c: New.
+	* gcc.dg/cpp/warn-redefined-2.c: New.
+	* gcc.dg/cpp/warn-comments.c: New.
+	* gcc.dg/cpp/warn-multichar.c: New.
+	* g++.dg/cpp/warning-directive-1.C: New.
+	* g++.dg/cpp/warning-directive-2.C: New.
+	* g++.dg/cpp/warning-directive-3.C: New.
+	* g++.dg/cpp/warning-directive-4.C: New.
+	* gfortran.dg/warning-directive-1.F90: New.
+	* gfortran.dg/warning-directive-3.F90: New.
+	* gfortran.dg/warning-directive-2.F90: New.
+	* gfortran.dg/warning-directive-4.F90: New.
+
+2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+PR objc++/23716
 	* obj-c++.dg/comp-types-10.mm: Remove XFAIL.
 
 2010-04-07  Jason Merrill  <jason@redhat.com>

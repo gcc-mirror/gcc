@@ -196,6 +196,90 @@ defer_opt (enum opt_code code, const char *arg)
   deferred_count++;
 }
 
+/* -Werror= may set a warning option to enable a warning that is emitted
+   by the preprocessor.  Set any corresponding flag in cpp_opts.  */
+
+static void
+warning_as_error_callback (int option_index)
+{
+  switch (option_index)
+    {
+      default:
+	/* Ignore options not associated with the preprocessor.  */
+	break;
+
+      case OPT_Wdeprecated:
+	cpp_opts->warn_deprecated = 1;
+	break;
+
+      case OPT_Wcomment:
+      case OPT_Wcomments:
+	cpp_opts->warn_comments = 1;
+	break;
+
+      case OPT_Wtrigraphs:
+	cpp_opts->warn_trigraphs = 1;
+	break;
+
+      case OPT_Wmultichar:
+	cpp_opts->warn_multichar = 1;
+	break;
+
+      case OPT_Wtraditional:
+	cpp_opts->warn_traditional = 1;
+	break;
+
+      case OPT_Wlong_long:
+	cpp_opts->warn_long_long = 1;
+	break;
+
+      case OPT_Wendif_labels:
+	cpp_opts->warn_endif_labels = 1;
+	break;
+
+      case OPT_Wvariadic_macros:
+	/* Set the local flag that is used later to update cpp_opts.  */
+	warn_variadic_macros = 1;
+	break;
+
+      case OPT_Wbuiltin_macro_redefined:
+	cpp_opts->warn_builtin_macro_redefined = 1;
+	break;
+
+      case OPT_Wundef:
+	cpp_opts->warn_undef = 1;
+	break;
+
+      case OPT_Wunused_macros:
+	/* Set the local flag that is used later to update cpp_opts.  */
+	warn_unused_macros = 1;
+	break;
+
+      case OPT_Wc___compat:
+	/* Add warnings in the same way as c_common_handle_option below.  */
+	if (warn_enum_compare == -1)
+	  warn_enum_compare = 1;
+	if (warn_jump_misses_init == -1)
+	  warn_jump_misses_init = 1;
+	cpp_opts->warn_cxx_operator_names = 1;
+	break;
+
+      case OPT_Wnormalized_:
+	inform (input_location, "-Werror=normalized=: Set -Wnormalized=nfc");
+	cpp_opts->warn_normalize = normalized_C;
+	break;
+
+      case OPT_Winvalid_pch:
+	cpp_opts->warn_invalid_pch = 1;
+	break;
+
+      case OPT_Wcpp:
+	/* Handled by standard diagnostics using the option's associated
+	   boolean variable.  */
+	break;
+    }
+}
+
 /* Common initialization before parsing options.  */
 unsigned int
 c_common_init_options (unsigned int argc, const char **argv)
@@ -203,6 +287,9 @@ c_common_init_options (unsigned int argc, const char **argv)
   static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
   unsigned int i, result;
   struct cpp_callbacks *cb;
+
+  /* Register callback for warnings enabled by -Werror=.  */
+  register_warning_as_error_callback (warning_as_error_callback);
 
   /* This is conditionalized only because that is the way the front
      ends used to do it.  Maybe this should be unconditional?  */

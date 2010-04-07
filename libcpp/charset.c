@@ -993,9 +993,9 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     cpp_error (pfile, CPP_DL_WARNING,
 	       "universal character names are only valid in C++ and C99");
   else if (CPP_WTRADITIONAL (pfile) && identifier_pos == 0)
-    cpp_error (pfile, CPP_DL_WARNING,
-	       "the meaning of '\\%c' is different in traditional C",
-	       (int) str[-1]);
+    cpp_warning (pfile, CPP_W_TRADITIONAL,
+	         "the meaning of '\\%c' is different in traditional C",
+	         (int) str[-1]);
 
   if (str[-1] == 'u')
     length = 4;
@@ -1174,8 +1174,8 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
   size_t mask = width_to_mask (width);
 
   if (CPP_WTRADITIONAL (pfile))
-    cpp_error (pfile, CPP_DL_WARNING,
-	       "the meaning of '\\x' is different in traditional C");
+    cpp_warning (pfile, CPP_W_TRADITIONAL,
+	         "the meaning of '\\x' is different in traditional C");
 
   from++;  /* Skip 'x'.  */
   while (from < limit)
@@ -1302,8 +1302,8 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
     case 'a':
       if (CPP_WTRADITIONAL (pfile))
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "the meaning of '\\a' is different in traditional C");
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "the meaning of '\\a' is different in traditional C");
       c = charconsts[0];
       break;
 
@@ -1509,7 +1509,7 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 		 "character constant too long for its type");
     }
   else if (i > 1 && CPP_OPTION (pfile, warn_multichar))
-    cpp_error (pfile, CPP_DL_WARNING, "multi-character character constant");
+    cpp_warning (pfile, CPP_W_MULTICHAR, "multi-character character constant");
 
   /* Multichar constants are of type int and therefore signed.  */
   if (i > 1)

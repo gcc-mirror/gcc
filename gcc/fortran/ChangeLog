@@ -1,3 +1,8 @@
+2010-04-07  Simon Baldwin  <simonb@google.com>
+
+	* cpp.c (cb_cpp_error): Add warning reason argument, set a value
+	for diagnostic_override_option_index if CPP_W_WARNING_DIRECTIVE.
+
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	* options.c (gfc_init_options): Do not set.
