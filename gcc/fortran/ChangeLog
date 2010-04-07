@@ -1,3 +1,9 @@
+2010-04-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/40539
+	* gfortran.texi: Add section about representation of
+        LOGICAL variables.
+
 2010-04-07  Simon Baldwin  <simonb@google.com>
 
 	* cpp.c (cb_cpp_error): Add warning reason argument, set a value
