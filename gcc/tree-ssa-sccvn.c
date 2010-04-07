@@ -889,6 +889,76 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
   *i_p = i;
 }
 
+/* Optimize the reference REF to a constant if possible or return
+   NULL_TREE if not.  */
+
+tree
+fully_constant_vn_reference_p (vn_reference_t ref)
+{
+  VEC (vn_reference_op_s, heap) *operands = ref->operands;
+  vn_reference_op_t op;
+
+  /* Try to simplify the translated expression if it is
+     a call to a builtin function with at most two arguments.  */
+  op = VEC_index (vn_reference_op_s, operands, 0);
+  if (op->opcode == CALL_EXPR
+      && TREE_CODE (op->op0) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
+      && DECL_BUILT_IN (TREE_OPERAND (op->op0, 0))
+      && VEC_length (vn_reference_op_s, operands) >= 2
+      && VEC_length (vn_reference_op_s, operands) <= 3)
+    {
+      vn_reference_op_t arg0, arg1 = NULL;
+      bool anyconst = false;
+      arg0 = VEC_index (vn_reference_op_s, operands, 1);
+      if (VEC_length (vn_reference_op_s, operands) > 2)
+	arg1 = VEC_index (vn_reference_op_s, operands, 2);
+      if (TREE_CODE_CLASS (arg0->opcode) == tcc_constant
+	  || (arg0->opcode == ADDR_EXPR
+	      && is_gimple_min_invariant (arg0->op0)))
+	anyconst = true;
+      if (arg1
+	  && (TREE_CODE_CLASS (arg1->opcode) == tcc_constant
+	      || (arg1->opcode == ADDR_EXPR
+		  && is_gimple_min_invariant (arg1->op0))))
+	anyconst = true;
+      if (anyconst)
+	{
+	  tree folded = build_call_expr (TREE_OPERAND (op->op0, 0),
+					 arg1 ? 2 : 1,
+					 arg0->op0,
+					 arg1 ? arg1->op0 : NULL);
+	  if (folded
+	      && TREE_CODE (folded) == NOP_EXPR)
+	    folded = TREE_OPERAND (folded, 0);
+	  if (folded
+	      && is_gimple_min_invariant (folded))
+	    return folded;
+	}
+    }
+
+  /* Simplify reads from constant strings.  */
+  else if (op->opcode == ARRAY_REF
+	   && TREE_CODE (op->op0) == INTEGER_CST
+	   && integer_zerop (op->op1)
+	   && VEC_length (vn_reference_op_s, operands) == 2)
+    {
+      vn_reference_op_t arg0;
+      arg0 = VEC_index (vn_reference_op_s, operands, 1);
+      if (arg0->opcode == STRING_CST
+	  && (TYPE_MODE (op->type)
+	      == TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0->op0))))
+	  && GET_MODE_CLASS (TYPE_MODE (op->type)) == MODE_INT
+	  && GET_MODE_SIZE (TYPE_MODE (op->type)) == 1
+	  && compare_tree_int (op->op0, TREE_STRING_LENGTH (arg0->op0)) < 0)
+	return build_int_cst_type (op->type,
+				   (TREE_STRING_POINTER (arg0->op0)
+				    [TREE_INT_CST_LOW (op->op0)]));
+    }
+
+  return NULL_TREE;
+}
+
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
    structures into their value numbers.  This is done in-place, and
    the vector passed in is returned.  */
@@ -1194,6 +1264,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 {
   struct vn_reference_s vr1;
   vn_reference_t tmp;
+  tree cst;
 
   if (!vnresult)
     vnresult = &tmp;
@@ -1212,8 +1283,10 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
   vr1.type = type;
   vr1.set = set;
   vr1.hashcode = vn_reference_compute_hash (&vr1);
-  vn_reference_lookup_1 (&vr1, vnresult);
+  if ((cst = fully_constant_vn_reference_p (&vr1)))
+    return cst;
 
+  vn_reference_lookup_1 (&vr1, vnresult);
   if (!*vnresult
       && maywalk
       && vr1.vuse)
@@ -1246,6 +1319,7 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
 {
   VEC (vn_reference_op_s, heap) *operands;
   struct vn_reference_s vr1;
+  tree cst;
 
   if (vnresult)
     *vnresult = NULL;
@@ -1255,6 +1329,8 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
   vr1.type = TREE_TYPE (op);
   vr1.set = get_alias_set (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
+  if ((cst = fully_constant_vn_reference_p (&vr1)))
+    return cst;
 
   if (maywalk
       && vr1.vuse)
