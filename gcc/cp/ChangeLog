@@ -1,5 +1,8 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43016
+	* decl.c (start_preparsed_function): Do defer nested functions.
+
 	PR c++/11094, DR 408
 	* cp-tree.h (VAR_HAD_UNKNOWN_BOUND, SET_VAR_HAD_UNKNOWN_BOUND): New.
 	* decl2.c (finish_static_data_member_decl): Set it.
