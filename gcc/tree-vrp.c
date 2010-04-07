@@ -4998,23 +4998,46 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 {
   value_range_t* vr = NULL;
   tree low_sub, up_sub;
-  tree low_bound, up_bound = array_ref_up_bound (ref);
+  tree low_bound, up_bound, up_bound_p1;
+  tree base;
 
-  low_sub = up_sub = TREE_OPERAND (ref, 1);
-
-  if (!up_bound || TREE_NO_WARNING (ref)
-      || TREE_CODE (up_bound) != INTEGER_CST
-      /* Can not check flexible arrays.  */
-      || (TYPE_SIZE (TREE_TYPE (ref)) == NULL_TREE
-          && TYPE_DOMAIN (TREE_TYPE (ref)) != NULL_TREE
-          && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (ref))) == NULL_TREE)
-      /* Accesses after the end of arrays of size 0 (gcc
-         extension) and 1 are likely intentional ("struct
-         hack").  */
-      || compare_tree_int (up_bound, 1) <= 0)
+  if (TREE_NO_WARNING (ref))
     return;
 
+  low_sub = up_sub = TREE_OPERAND (ref, 1);
+  up_bound = array_ref_up_bound (ref);
+
+  /* Can not check flexible arrays.  */
+  if (!up_bound
+      || TREE_CODE (up_bound) != INTEGER_CST)
+    return;
+
+  /* Accesses to trailing arrays via pointers may access storage
+     beyond the types array bounds.  */
+  base = get_base_address (ref);
+  if (base
+      && INDIRECT_REF_P (base))
+    {
+      tree cref, next = NULL_TREE;
+
+      if (TREE_CODE (TREE_OPERAND (ref, 0)) != COMPONENT_REF)
+	return;
+
+      cref = TREE_OPERAND (ref, 0);
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (cref, 0))) == RECORD_TYPE)
+	for (next = TREE_CHAIN (TREE_OPERAND (cref, 1));
+	     next && TREE_CODE (next) != FIELD_DECL;
+	     next = TREE_CHAIN (next))
+	  ;
+
+      /* If this is the last field in a struct type or a field in a
+	 union type do not warn.  */
+      if (!next)
+	return;
+    }
+
   low_bound = array_ref_low_bound (ref);
+  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound, integer_one_node, 0);
 
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
@@ -5039,14 +5062,11 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
         }
     }
   else if (TREE_CODE (up_sub) == INTEGER_CST
-           && tree_int_cst_lt (up_bound, up_sub)
-           && !tree_int_cst_equal (up_bound, up_sub)
-           && (!ignore_off_by_one
-               || !tree_int_cst_equal (int_const_binop (PLUS_EXPR,
-                                                        up_bound,
-                                                        integer_one_node,
-                                                        0),
-                                       up_sub)))
+	   && (ignore_off_by_one
+	       ? (tree_int_cst_lt (up_bound, up_sub)
+		  && !tree_int_cst_equal (up_bound_p1, up_sub))
+	       : (tree_int_cst_lt (up_bound, up_sub)
+		  || tree_int_cst_equal (up_bound_p1, up_sub))))
     {
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript is above array bounds");

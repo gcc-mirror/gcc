@@ -1,3 +1,17 @@
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43270
+	* tree-vrp.c (check_array_ref): Fix flexible array member
+	detection.
+	* tree-ssa-sccvn.h (fully_constant_vn_reference_p): Declare.
+	* tree-ssa-pre.c (phi_translate_1): Adjust.
+	(fully_constant_expression): Split out vn_reference handling to ...
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): ... here.
+	Fold reads from constant strings.
+	(vn_reference_lookup): Handle fully constant references.
+	(vn_reference_lookup_pieces): Likewise.
+	* Makefile.in (expmed.o-warn): Add -Wno-error.
+
 2010-04-07  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (find_param_candidates): Allow scalar va_list types.
