@@ -6821,8 +6821,9 @@ grokfndecl (tree ctype,
 		/* Allow this; it's pretty common in C.  */;
 	      else
 		{
-		  permerror (input_location, "non-local function %q#D uses anonymous type",
-			      decl);
+		  permerror (input_location, "anonymous type with no linkage "
+			     "used to declare function %q#D with linkage",
+			     decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
 		    permerror (input_location, "%q+#D does not refer to the unqualified "
 			       "type, so it is not used for linkage",
@@ -6830,7 +6831,8 @@ grokfndecl (tree ctype,
 		}
 	    }
 	  else
-	    permerror (input_location, "non-local function %q#D uses local type %qT", decl, t);
+	    permerror (input_location, "type %qT with no linkage used to "
+		       "declare function %q#D with linkage", t, decl);
 	}
     }
 
@@ -7104,8 +7106,8 @@ grokvardecl (tree type,
 		     no linkage can only be used to declare extern "C"
 		     entities.  Since it's not always an error in the
 		     ISO C++ 90 Standard, we only issue a warning.  */
-		  warning (0, "non-local variable %q#D uses anonymous type",
-			   decl);
+		  warning (0, "anonymous type with no linkage used to declare "
+			   "variable %q#D with linkage", decl);
 		  if (DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
 		    warning (0, "%q+#D does not refer to the unqualified "
 			     "type, so it is not used for linkage",
@@ -7113,7 +7115,8 @@ grokvardecl (tree type,
 		}
 	    }
 	  else
-	    warning (0, "non-local variable %q#D uses local type %qT", decl, t);
+	    warning (0, "type %qT with no linkage used to declare variable "
+		     "%q#D with linkage", t, decl);
 	}
     }
   else
