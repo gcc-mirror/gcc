@@ -1,5 +1,10 @@
 2010-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Set default
+	alignment on the RETURN type built for the Copy-In Copy-Out mechanism.
+
+2010-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (call_to_gnu): In the return-by-target-ptr case
 	do not set the result type if there is a specified target and do not
 	convert the result in any cases.

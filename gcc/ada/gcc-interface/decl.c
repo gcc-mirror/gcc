@@ -4062,6 +4062,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gcc_assert (TREE_CODE (gnu_return_type) == VOID_TYPE);
 		    gnu_return_type = make_node (RECORD_TYPE);
 		    TYPE_NAME (gnu_return_type) = get_identifier ("RETURN");
+		    /* Set a default alignment to speed up accesses.  */
+		    TYPE_ALIGN (gnu_return_type)
+		      = get_mode_alignment (ptr_mode);
 		    has_copy_in_out = true;
 		  }
 
