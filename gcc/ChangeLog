@@ -1,6 +1,12 @@
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42617
+	* alias.c (ao_ref_from_mem): Without MEM_OFFSET or MEM_SIZE
+	preserve points-to related information.
+
+2010-04-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42617
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not
 	discard plain indirect references.
 	* fold-const.c (operand_equal_p): Guard against NULL_TREE

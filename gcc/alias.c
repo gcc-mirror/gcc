@@ -265,11 +265,6 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (!expr)
     return false;
 
-  /* If MEM_OFFSET or MEM_SIZE are NULL punt.  */
-  if (!MEM_OFFSET (mem)
-      || !MEM_SIZE (mem))
-    return false;
-
   ao_ref_init (ref, expr);
 
   /* Get the base of the reference and see if we have to reject or
@@ -278,15 +273,15 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (base == NULL_TREE)
     return false;
 
+  /* The tree oracle doesn't like to have these.  */
+  if (TREE_CODE (base) == FUNCTION_DECL
+      || TREE_CODE (base) == LABEL_DECL)
+    return false;
+
   /* If this is a pointer dereference of a non-SSA_NAME punt.
      ???  We could replace it with a pointer to anything.  */
   if (INDIRECT_REF_P (base)
       && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
-    return false;
-
-  /* The tree oracle doesn't like to have these.  */
-  if (TREE_CODE (base) == FUNCTION_DECL
-      || TREE_CODE (base) == LABEL_DECL)
     return false;
 
   /* If this is a reference based on a partitioned decl replace the
@@ -306,6 +301,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
     }
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
+
+  /* If MEM_OFFSET or MEM_SIZE are NULL we have to punt.
+     Keep points-to related information though.  */
+  if (!MEM_OFFSET (mem)
+      || !MEM_SIZE (mem))
+    {
+      ref->ref = NULL_TREE;
+      ref->offset = 0;
+      ref->size = -1;
+      ref->max_size = -1;
+      return true;
+    }
 
   /* If the base decl is a parameter we can have negative MEM_OFFSET in
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
