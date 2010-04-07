@@ -744,7 +744,7 @@ specified for it, while DECL_TYPE may be a modified type with lesser precision,
 according to the size of the bit field.
 
 @item NAMESPACE_DECL
-Namespaces provide a name hierarchy for other delarations.  They
+Namespaces provide a name hierarchy for other declarations.  They
 appear in the @code{DECL_CONTEXT} of other @code{_DECL} nodes.
 
 @end table
@@ -2379,7 +2379,7 @@ This predicate holds if the function does not return normally.
 This predicate holds if the function can only read its arguments.
 
 @item DECL_PURE_P
-This predicate holds if the function can only read its arguemnts, but
+This predicate holds if the function can only read its arguments, but
 may also read global memory.
 
 @item DECL_VIRTUAL_P
@@ -2467,7 +2467,7 @@ The C and C++ front ends generate a mix of GENERIC trees and ones
 specific to C and C++.  These language-specific trees are higher-level
 constructs than the ones in GENERIC to make the parser's job easier.
 This section describes those trees that aren't part of GENERIC as well
-as aspects of GENERIC trees that are treated in a lanugage-specific
+as aspects of GENERIC trees that are treated in a language-specific
 manner.
 
 If you are developing a ``back end'', be it is a code-generator or some
