@@ -212,6 +212,14 @@ Wunused
 Common Var(warn_unused) Init(0) Warning
 Enable all -Wunused- warnings
 
+Wunused-but-set-parameter
+Common Var(warn_unused_but_set_parameter) Init(-1) Warning
+Warn when a function parameter is only set, otherwise unused
+
+Wunused-but-set-variable
+Common Var(warn_unused_but_set_variable) Init(-1) Warning
+Warn when a variable is only set, otherwise unused
+
 Wunused-function
 Common Var(warn_unused_function) Init(-1) Warning
 Warn when a function is unused

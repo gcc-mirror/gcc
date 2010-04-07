@@ -1,3 +1,10 @@
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/18624
+	* objc-act.c (finish_var_decl, objc_begin_catch_clause,
+	really_start_method, get_super_receiver, handle_class_ref): Set
+	DECL_READ_P in addition to TREE_USED.
+
 2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
 
 	PR objc/35996
