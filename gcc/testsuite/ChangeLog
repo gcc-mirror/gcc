@@ -1,3 +1,8 @@
+2010-04-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43668
+	* gcc.target/i386/pr43668.c: New.
+
 2010-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43648

@@ -6785,6 +6785,10 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 
   if (ix86_varargs_fpr_size)
     {
+      /* Stack must be aligned to 16byte for FP register save area.  */
+      if (crtl->stack_alignment_needed < 128)
+	crtl->stack_alignment_needed = 128;
+
       /* Now emit code to save SSE registers.  The AX parameter contains number
 	 of SSE parameter registers used to call this function.  We use
 	 sse_prologue_save insn template that produces computed jump across
