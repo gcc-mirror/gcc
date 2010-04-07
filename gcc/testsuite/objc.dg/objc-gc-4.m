@@ -2,8 +2,9 @@
    (where component references get rewritten).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>  */
 
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-do compile } */
 /* { dg-options "-fobjc-gc" } */
+/* { dg-prune-output "cc1obj: warning: '-fobjc-gc' is ignored for '-fgnu-runtime'" } */
 
 #include "../objc-obj-c++-shared/Object1.h"
 
