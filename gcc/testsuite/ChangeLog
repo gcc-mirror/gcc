@@ -1,3 +1,9 @@
+2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40239
+	* g++.dg/init/aggr5.C: New test.
+	* g++.dg/init/aggr5.C: New test.
+
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43270

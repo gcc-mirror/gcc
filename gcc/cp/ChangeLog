@@ -1,3 +1,10 @@
+2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40239
+	* typeck2.c (process_init_constructor_record):
+	value-initialize members that are are not explicitely
+	initialized.
+
 2010-04-07  Jie Zhang  <jie@codesourcery.com>
 
 	PR c++/42556
