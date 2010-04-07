@@ -1,3 +1,8 @@
+2010-04-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (ix86_handle_cconv_attribute): Ignore
+	calling convention attributes on METHOD_TYPEs for w64 ABI, too.
+
 2010-04-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-if-conv.c: Fix indentation and comments.
