@@ -1,3 +1,8 @@
+2010-04-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR driver/41594
+	* gcc.c: Add -static-libstdc++ to list of recognized options.
+
 2010-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (i[34567]86-*-solaris2*): Default with_tune_32 to
