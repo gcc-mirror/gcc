@@ -1,5 +1,9 @@
 2010-04-07  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (print_template_statistics): New.
+	* cp-tree.h: Declare it.
+	* tree.c (cxx_print_statistics): Call it.
+
 	PR c++/41970
 	* decl.c (grokvardecl): Tweak warning message.
 	(grokfndecl): Likewise.

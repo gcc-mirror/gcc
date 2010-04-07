@@ -4975,6 +4975,7 @@ extern void pop_tinst_level                     (void);
 extern struct tinst_level *outermost_tinst_level(void);
 extern bool parameter_of_template_p		(tree, tree);
 extern void init_template_processing		(void);
+extern void print_template_statistics		(void);
 bool template_template_parameter_p		(const_tree);
 extern bool primary_template_instantiation_p    (const_tree);
 extern tree get_primary_template_innermost_parameters	(const_tree);
