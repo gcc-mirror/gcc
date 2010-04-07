@@ -4644,6 +4644,7 @@ extern tree pushdecl_top_level_and_finish	(tree, tree);
 extern tree check_for_out_of_scope_variable	(tree);
 extern void print_other_binding_stack		(struct cp_binding_level *);
 extern tree maybe_push_decl			(tree);
+extern tree current_decl_namespace		(void);
 
 /* decl.c */
 extern tree poplevel				(int, int, int);

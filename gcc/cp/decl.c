@@ -6758,7 +6758,7 @@ grokfndecl (tree ctype,
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
   else if (!ctype)
-    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+    DECL_CONTEXT (decl) = FROB_CONTEXT (current_decl_namespace ());
 
   /* `main' and builtins have implicit 'C' linkage.  */
   if ((MAIN_NAME_P (declarator)
@@ -7020,7 +7020,7 @@ grokvardecl (tree type,
       /* An explicit "extern" specifier indicates a namespace-scope
 	 variable.  */
       if (declspecs->storage_class == sc_extern)
-	scope = current_namespace;
+	scope = current_decl_namespace ();
       else if (!at_function_scope_p ())
 	scope = current_scope ();
     }

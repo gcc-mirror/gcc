@@ -1,3 +1,8 @@
+2010-04-07  Jason Merrill  <jason@redhat.com>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc (findCore): Move
+	declaration of _Jv_create_core out of the function.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
