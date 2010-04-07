@@ -2391,11 +2391,17 @@ build_module_initializer_routine (void)
 
   objc_push_parm (build_decl (input_location,
 			      PARM_DECL, NULL_TREE, void_type_node));
+#ifdef OBJCPLUS
+  objc_start_function (get_identifier (TAG_GNUINIT),
+		       build_function_type (void_type_node,
+					    OBJC_VOID_AT_END),
+		       NULL_TREE, NULL_TREE);
+#else
   objc_start_function (get_identifier (TAG_GNUINIT),
 		       build_function_type (void_type_node,
 					    OBJC_VOID_AT_END),
 		       NULL_TREE, objc_get_parm_info (0));
-
+#endif
   body = c_begin_compound_stmt (true);
   add_stmt (build_function_call
 	    (input_location,
