@@ -1,3 +1,11 @@
+2010-04-08  Jing Yu  <jingyu@google.com>
+	    Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/42720
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Move one-time
+	loop unswitch conditions here from
+	(tree_unswitch_single_loop).
+
 2010-04-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-if-conv.c: Fix comments and simplify logic.
