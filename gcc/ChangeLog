@@ -1,3 +1,11 @@
+2010-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42956
+	* gimplify.c (gimple_fold_indirect_ref): Avoid generating
+	new ARRAY_REFs on variable size element or minimal index arrays.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Use
+	gimple_fold_indirect_ref.
+
 2010-04-08  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adjust the z10
