@@ -3940,6 +3940,24 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 
       emit_label (loop_start_label);
 
+      if (TARGET_Z10
+	  && (GET_CODE (len) != CONST_INT || INTVAL (len) > 768))
+	{
+	  rtx prefetch;
+
+	  /* Issue a read prefetch for the +3 cache line.  */
+	  prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, src_addr, GEN_INT (768)),
+				   const0_rtx, const0_rtx);
+	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;
+	  emit_insn (prefetch);
+
+	  /* Issue a write prefetch for the +3 cache line.  */
+	  prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (768)),
+				   const1_rtx, const0_rtx);
+	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;
+	  emit_insn (prefetch);
+	}
+
       emit_insn (gen_movmem_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
@@ -4060,6 +4078,17 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 
       emit_label (loop_start_label);
 
+      if (TARGET_Z10
+	  && (GET_CODE (len) != CONST_INT || INTVAL (len) > 1024))
+	{
+	  /* Issue a write prefetch for the +4 cache line.  */
+	  rtx prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, dst_addr,
+						     GEN_INT (1024)),
+				       const1_rtx, const0_rtx);
+	  emit_insn (prefetch);
+	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;
+	}
+
       if (val == const0_rtx)
 	emit_insn (gen_clrmem_short (dst, GEN_INT (255)));
       else
@@ -4154,6 +4183,24 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 			       EQ, NULL_RTX, mode, 1, loop_end_label);
 
       emit_label (loop_start_label);
+
+      if (TARGET_Z10
+	  && (GET_CODE (len) != CONST_INT || INTVAL (len) > 512))
+	{
+	  rtx prefetch;
+
+	  /* Issue a read prefetch for the +2 cache line of operand 1.  */
+	  prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, addr0, GEN_INT (512)),
+				   const0_rtx, const0_rtx);
+	  emit_insn (prefetch);
+	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;
+
+	  /* Issue a read prefetch for the +2 cache line of operand 2.  */
+	  prefetch = gen_prefetch (gen_rtx_PLUS (Pmode, addr1, GEN_INT (512)),
+				   const0_rtx, const0_rtx);
+	  emit_insn (prefetch);
+	  PREFETCH_SCHEDULE_BARRIER_P (prefetch) = true;
+	}
 
       emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (255)));
       temp = gen_rtx_NE (VOIDmode, ccreg, const0_rtx);
