@@ -19,8 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This pass implements tree level if-conversion transformation of loops.
-   Initial goal is to help vectorizer vectorize loops with conditions.
+/* This pass implements a tree level if-conversion of loops.  Its
+   initial goal is to help the vectorizer to vectorize loops with
+   conditions.
 
    A short description of if-conversion:
 
@@ -103,7 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
 
-/* Make a new temp variable of type TYPE.  Add GIMPLE_ASSIGN to assign EXP
+/* Create a new temp variable of type TYPE.  Add GIMPLE_ASSIGN to assign EXP
    to the new variable.  */
 
 static gimple
@@ -130,7 +131,7 @@ ifc_temp_var (tree type, tree exp)
   return stmt;
 }
 
-/* Add condition NEW_COND into predicate list of basic block BB.  */
+/* Add condition NEW_COND to the predicate list of basic block BB.  */
 
 static void
 add_to_predicate_list (basic_block bb, tree new_cond)
@@ -147,7 +148,7 @@ add_to_predicate_list (basic_block bb, tree new_cond)
   bb->aux = cond;
 }
 
-/* And condition COND to the previous condition PREV_COND and add this
+/* Add the condition COND to the previous condition PREV_COND, and add this
    to the predicate list of the destination of edge E.  GSI is the
    place where the gimplification of the resulting condition should
    output code.  LOOP is the loop to be if-converted.  */
@@ -175,9 +176,9 @@ add_to_dst_predicate_list (struct loop *loop, edge e,
       cond = force_gimple_operand_gsi (gsi, unshare_expr (cond),
 				       true, NULL, true, GSI_SAME_STMT);
 
-      /* Add the condition to aux field of the edge.  In case edge
-	 destination is a PHI node, this condition will be ANDed with
-	 block predicate to construct complete condition.  */
+      /* Add the condition COND to the e->aux field.  In case the edge
+	 destination is a PHI node, this condition will be added to
+	 the block predicate to construct a complete condition.  */
       e->aux = cond;
 
       tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -191,29 +192,25 @@ add_to_dst_predicate_list (struct loop *loop, edge e,
   return new_cond;
 }
 
-/* Return true if one of the basic block BB edge is exit of LOOP.  */
+/* Return true if one of the successor edges of BB exits LOOP.  */
 
 static bool
 bb_with_exit_edge_p (struct loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  bool exit_edge_found = false;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (loop_exit_edge_p (loop, e))
-      {
-	exit_edge_found = true;
-	break;
-      }
+      return true;
 
-  return exit_edge_found;
+  return false;
 }
 
 /* STMT is a GIMPLE_COND.  Update two destination's predicate list.
-   Remove COND_EXPR, if it is not the loop exit condition.  Otherwise
-   update loop exit condition appropriately.  GSI is the iterator
-   used to traverse statement list.  STMT is part of loop LOOP.  */
+   Remove COND_EXPR, if it is not the exit condition of LOOP.
+   Otherwise update the exit condition of LOOP appropriately.  GSI
+   points to the statement STMT.  */
 
 static void
 tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
@@ -237,23 +234,23 @@ tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
   c2 = invert_truthvalue_loc (loc, unshare_expr (c));
   add_to_dst_predicate_list (loop, false_edge, cond, c2, gsi);
 
-  /* Now this conditional statement is redundant.  Remove it.
-     But, do not remove exit condition!  Update exit condition
-     using new condition.  */
+  /* Now this conditional statement is redundant.  Remove it.  But, do
+     not remove the exit condition!  Update the exit condition using
+     the new condition.  */
   if (!bb_with_exit_edge_p (loop, gimple_bb (stmt)))
     {
       gsi_remove (gsi, true);
       cond = NULL_TREE;
     }
-  return;
 }
 
 /* If-convert stmt T which is part of LOOP.
-   If T is a GIMPLE_ASSIGN then it is converted into conditional modify
-   expression using COND.  For conditional expressions, add condition in the
-   destination basic block's predicate list and remove conditional
-   expression itself.  BSI is the iterator used to traverse statements of
-   loop.  It is used here when it is required to delete current statement.  */
+
+   If T is a GIMPLE_ASSIGN then it is converted into a conditional
+   modify expression using COND.  For conditional expressions, add
+   a condition in the destination basic block's predicate list and
+   remove the conditional expression itself.  GSI points to the
+   statement T.  */
 
 static tree
 tree_if_convert_stmt (struct loop *loop, gimple t, tree cond,
@@ -299,13 +296,15 @@ tree_if_convert_stmt (struct loop *loop, gimple t, tree cond,
     default:
       gcc_unreachable ();
     }
+
   return cond;
 }
 
-/* Return true, iff PHI is if-convertible.  PHI is part of loop LOOP
+/* Return true when PHI is if-convertible.  PHI is part of loop LOOP
    and it belongs to basic block BB.
-   PHI is not if-convertible
-   - if it has more than 2 arguments,
+
+   PHI is not if-convertible if:
+   - it has more than 2 arguments,
    - virtual PHI is immediately used in another PHI node,
    - virtual PHI on BB other than header.  */
 
@@ -350,29 +349,26 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
   return true;
 }
 
-/* Return true, if STMT is if-convertible.
+/* Return true when STMT is if-convertible.
+
    GIMPLE_ASSIGN statement is not if-convertible if,
    - it is not movable,
    - it could trap,
    - LHS is not var decl.
+
    GIMPLE_ASSIGN is part of block BB, which is inside loop LOOP.  */
 
 static bool
 if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
     				     gimple stmt)
 {
-  tree lhs;
-
-  if (!is_gimple_assign (stmt))
-    return false;
+  tree lhs = gimple_assign_lhs (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "-------------------------\n");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-
-  lhs = gimple_assign_lhs (stmt);
 
   /* Some of these constrains might be too conservative.  */
   if (stmt_ends_bb_p (stmt)
@@ -410,11 +406,13 @@ if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
   return true;
 }
 
-/* Return true, iff STMT is if-convertible.
-   Statement is if-convertible if,
-   - it is if-convertible GIMPLE_ASSGIN,
-   - it is GIMPLE_LABEL or GIMPLE_COND.
-   STMT is inside block BB, which is inside loop LOOP.  */
+/* Return true when STMT is if-convertible.
+
+   A statement is if-convertible if:
+   - it is an if-convertible GIMPLE_ASSGIN,
+   - it is a GIMPLE_LABEL or a GIMPLE_COND.
+
+   STMT is inside BB, which is inside loop LOOP.  */
 
 static bool
 if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
@@ -422,18 +420,12 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
   switch (gimple_code (stmt))
     {
     case GIMPLE_LABEL:
-      break;
-
     case GIMPLE_DEBUG:
-      break;
+    case GIMPLE_COND:
+      return true;
 
     case GIMPLE_ASSIGN:
-      if (!if_convertible_gimple_assign_stmt_p (loop, bb, stmt))
-	return false;
-      break;
-
-    case GIMPLE_COND:
-      break;
+      return if_convertible_gimple_assign_stmt_p (loop, bb, stmt);
 
     default:
       /* Don't know what to do with 'em so don't do anything.  */
@@ -449,14 +441,16 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
   return true;
 }
 
-/* Return true, iff BB is if-convertible.
-   Note: This routine does _not_ check basic block statements and phis.
-   Basic block is not if-convertible if:
-   - basic block is non-empty and it is after exit block (in BFS order),
-   - basic block is after exit block but before latch,
-   - basic block edge(s) is not normal.
-   EXIT_BB_SEEN is true if basic block with exit edge is already seen.
-   BB is inside loop LOOP.  */
+/* Return true when BB is if-convertible.  This routine does not check
+   basic block's statements and phis.
+
+   A basic block is not if-convertible if:
+   - it is non-empty and it is after the exit block (in BFS order),
+   - it is after the exit block but before the latch,
+   - its edges are not normal.
+
+   EXIT_BB is the basic block containing the exit of the LOOP.  BB is
+   inside LOOP.  */
 
 static bool
 if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
@@ -497,15 +491,15 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 	(EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_ABNORMAL | EDGE_IRREDUCIBLE_LOOP))
       {
 	if (dump_file && (dump_flags & TDF_DETAILS))
-	  fprintf (dump_file,"Difficult to handle edges\n");
+	  fprintf (dump_file, "Difficult to handle edges\n");
 	return false;
       }
 
   return true;
 }
 
-/* Return TRUE iff, all pred blocks of BB are visited.
-   Bitmap VISITED keeps history of visited blocks.  */
+/* Return true when all predecessor blocks of BB are visited.  The
+   VISITED bitmap keeps track of the visited blocks.  */
 
 static bool
 pred_blocks_visited_p (basic_block bb, bitmap *visited)
@@ -578,7 +572,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   return blocks;
 }
 
-/* Return true, iff LOOP is if-convertible.
+/* Return true when LOOP is if-convertible.
    LOOP is if-convertible if:
    - it is innermost,
    - it has two or more basic blocks,
@@ -675,10 +669,11 @@ if_convertible_loop_p (struct loop *loop)
   return true;
 }
 
-/* During if-conversion aux field from basic block structure is used to hold
-   predicate list.  Clean each basic block's predicate list for the given LOOP.
-   Also clean aux field of successor edges, used to hold true and false
-   condition from conditional expression.  */
+/* During if-conversion, the bb->aux field is used to hold a predicate
+   list.  This function cleans for all the basic blocks in the given
+   LOOP their predicate list.  It also cleans up the e->aux field of
+   all the successor edges: e->aux is used to hold the true and false
+   conditions for conditional expressions.  */
 
 static void
 clean_predicate_lists (struct loop *loop)
@@ -698,9 +693,11 @@ clean_predicate_lists (struct loop *loop)
   free (bb);
 }
 
-/* Basic block BB has two predecessors. Using predecessor's aux field, set
-   appropriate condition COND for the PHI node replacement.  Return true block
-   whose phi arguments are selected when cond is true.  */
+/* Basic block BB has two predecessors.  Using predecessor's bb->aux
+   field, set appropriate condition COND for the PHI node replacement.
+   Return true block whose phi arguments are selected when cond is
+   true.  LOOP is the loop containing the if-converted region, GSI is
+   the place to insert the code for the if-conversion.  */
 
 static basic_block
 find_phi_replacement_condition (struct loop *loop,
@@ -759,15 +756,13 @@ find_phi_replacement_condition (struct loop *loop,
     {
       *cond = (tree) (second_edge->src)->aux;
 
-      /* If there is a condition on an incoming edge,
-	 AND it with the incoming bb predicate.  */
+      /* If there is a condition on an incoming edge, add it to the
+	 incoming bb predicate.  */
       if (second_edge->aux)
 	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
 			*cond, (tree) second_edge->aux);
 
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
-	/* We can be smart here and choose inverted
-	   condition without switching bbs.  */
 	*cond = invert_truthvalue (*cond);
       else
 	/* Select non loop header bb.  */
@@ -775,21 +770,20 @@ find_phi_replacement_condition (struct loop *loop,
     }
   else
     {
-      /* FIRST_BB is not loop header */
       *cond = (tree) (first_edge->src)->aux;
 
-      /* If there is a condition on an incoming edge,
-	 AND it with the incoming bb predicate.  */
+      /* If there is a condition on an incoming edge, add it to the
+	 incoming bb predicate.  */
       if (first_edge->aux)
 	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
 			*cond, (tree) first_edge->aux);
     }
 
-  /* Create temp. for the condition. Vectorizer prefers to have gimple
-     value as condition. Various targets use different means to communicate
-     condition in vector compare operation. Using gimple value allows
-     compiler to emit vector compare and select RTL without exposing
-     compare's result.  */
+  /* Gimplify the condition: the vectorizer prefers to have gimple
+     values as conditions.  Various targets use different means to
+     communicate conditions in vector compare operations.  Using a
+     gimple value allows the compiler to emit vector compare and
+     select RTL without exposing compare's result.  */
   *cond = force_gimple_operand_gsi (gsi, unshare_expr (*cond),
 				    false, NULL_TREE,
 				    true, GSI_SAME_STMT);
@@ -807,16 +801,17 @@ find_phi_replacement_condition (struct loop *loop,
   return first_edge->src;
 }
 
+/* Replace PHI node with conditional modify expr using COND.  This
+   routine does not handle PHI nodes with more than two arguments.
 
-/* Replace PHI node with conditional modify expr using COND.
-   This routine does not handle PHI nodes with more than two arguments.
    For example,
      S1: A = PHI <x1(1), x2(5)
    is converted into,
      S2: A = cond ? x1 : x2;
-   S2 is inserted at the top of basic block's statement list.
-   When COND is true, phi arg from TRUE_BB is selected.
-*/
+
+   The generated code is inserted at GSI that points to the top of
+   basic block's statement list.  When COND is true, phi arg from
+   TRUE_BB is selected.  */
 
 static void
 replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
@@ -828,12 +823,9 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
   tree rhs;
   tree arg_0, arg_1;
 
-  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
+  gcc_assert (gimple_code (phi) == GIMPLE_PHI
+	      && gimple_phi_num_args (phi) == 2);
 
-  /* If this is not filtered earlier, then now it is too late.  */
-  gcc_assert (gimple_phi_num_args (phi) == 2);
-
-  /* Find basic block and initialize iterator.  */
   bb = gimple_bb (phi);
 
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
@@ -853,13 +845,8 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
 	        unshare_expr (cond), unshare_expr (arg_0),
 	        unshare_expr (arg_1));
 
-  /* Create new GIMPLE_ASSIGN statement using RHS.  */
   new_stmt = gimple_build_assign (unshare_expr (PHI_RESULT (phi)), rhs);
-
-  /* Make new statement definition of the original phi result.  */
   SSA_NAME_DEF_STMT (gimple_phi_result (phi)) = new_stmt;
-
-  /* Insert using iterator.  */
   gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
   update_stmt (new_stmt);
 
@@ -908,7 +895,6 @@ process_phi_nodes (struct loop *loop)
 	}
       set_phi_nodes (bb, NULL);
     }
-  return;
 }
 
 /* Combine all the basic blocks from LOOP into one or two super basic
@@ -926,8 +912,8 @@ combine_blocks (struct loop *loop)
   /* Process phi nodes to prepare blocks for merge.  */
   process_phi_nodes (loop);
 
-  /* Merge basic blocks.  First remove all the edges in the loop, except
-     for those from the exit block.  */
+  /* Merge basic blocks: first remove all the edges in the loop,
+     except for those from the exit block.  */
   exit_bb = NULL;
   for (i = 0; i < orig_loop_num_nodes; i++)
     {
@@ -957,7 +943,7 @@ combine_blocks (struct loop *loop)
     {
       if (exit_bb != loop->header)
 	{
-	  /* Connect this node with loop header.  */
+	  /* Connect this node to loop header.  */
 	  make_edge (loop->header, exit_bb, EDGE_FALLTHRU);
 	  set_immediate_dominator (CDI_DOMINATORS, exit_bb, loop->header);
 	}
@@ -972,7 +958,7 @@ combine_blocks (struct loop *loop)
     }
   else
     {
-      /* If the loop does not have exit then reconnect header and latch.  */
+      /* If the loop does not have an exit, reconnect header and latch.  */
       make_edge (loop->header, loop->latch, EDGE_FALLTHRU);
       set_immediate_dominator (CDI_DOMINATORS, loop->latch, loop->header);
     }
@@ -1008,30 +994,30 @@ combine_blocks (struct loop *loop)
       delete_basic_block (bb);
     }
 
-  /* Now if possible, merge loop header and block with exit edge.
-     This reduces number of basic blocks to 2.  Auto vectorizer addresses
-     loops with two nodes only.  FIXME: Use cleanup_tree_cfg().  */
+  /* If possible, merge loop header to the block with the exit edge.
+     This reduces the number of basic blocks to two, to please the
+     vectorizer that handles only loops with two nodes.
+
+     FIXME: Call cleanup_tree_cfg.  */
   if (exit_bb
       && exit_bb != loop->header
       && can_merge_blocks_p (loop->header, exit_bb))
     merge_blocks (loop->header, exit_bb);
 }
 
-/* Main entry point.  Apply if-conversion to the LOOP.  Return true if
-   successful otherwise return false.  If false is returned then loop
-   remains unchanged.  */
+/* Main entry point: return true when LOOP is if-converted, otherwise
+   the loop remains unchanged.  */
 
 static bool
 tree_if_conversion (struct loop *loop)
 {
-  basic_block bb;
   gimple_stmt_iterator itr;
   unsigned int i;
 
   ifc_bbs = NULL;
 
   /* If-conversion is not appropriate for all loops.  First, check if
-     loop is if-convertible or not.  */
+     the loop is if-convertible.  */
   if (!if_convertible_loop_p (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1045,17 +1031,12 @@ tree_if_conversion (struct loop *loop)
       return false;
     }
 
-  /* Do actual work now.  */
   for (i = 0; i < loop->num_nodes; i++)
     {
-      tree cond;
+      basic_block bb = ifc_bbs [i];
+      tree cond = (tree) bb->aux;
 
-      bb = ifc_bbs [i];
-
-      /* Update condition using predicate list.  */
-      cond = (tree) bb->aux;
-
-      /* Process all statements in this basic block.
+      /* Process all the statements in this basic block.
 	 Remove conditional expression, if any, and annotate
 	 destination basic block(s) appropriately.  */
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); /* empty */)
@@ -1072,9 +1053,9 @@ tree_if_conversion (struct loop *loop)
 	{
 	  basic_block bb_n = single_succ (bb);
 
-	  /* Successor bb inherits predicate of its predecessor.  If there
-	     is no predicate in predecessor bb, then consider successor bb
-	     as always executed.  */
+	  /* The successor bb inherits the predicate of its
+	     predecessor.  If there is no predicate in the predecessor
+	     bb, then consider the successor bb as always executed.  */
 	  if (cond == NULL_TREE)
 	    cond = boolean_true_node;
 
@@ -1083,8 +1064,8 @@ tree_if_conversion (struct loop *loop)
     }
 
   /* Now, all statements are if-converted and basic blocks are
-     annotated appropriately.  Combine all basic block into one huge
-     basic block.  */
+     annotated appropriately.  Combine all the basic blocks into one
+     huge basic block.  */
   combine_blocks (loop);
 
   /* clean up */
