@@ -1262,6 +1262,9 @@ block_move_libcall_safe_for_call_parm (void)
      an outgoing argument.  */
 #if defined (REG_PARM_STACK_SPACE)
   fn = emit_block_move_libcall_fn (false);
+  /* Avoid set but not used warning if *REG_PARM_STACK_SPACE doesn't
+     depend on its argument.  */
+  (void) fn;
   if (OUTGOING_REG_PARM_STACK_SPACE ((!fn ? NULL_TREE : TREE_TYPE (fn)))
       && REG_PARM_STACK_SPACE (fn) != 0)
     return false;
