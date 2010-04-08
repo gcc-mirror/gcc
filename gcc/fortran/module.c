@@ -5431,9 +5431,6 @@ use_iso_fortran_env_module (void)
 	{
 	  local_name = NULL;
 
-	  if ((gfc_option.allow_std & symbol[i].standard) == 0)
-	    break;
-
 	  for (u = gfc_rename_list; u; u = u->next)
 	    {
 	      if (strcmp (symbol[i].name, u->use_name) == 0)
@@ -5443,6 +5440,13 @@ use_iso_fortran_env_module (void)
 		  break;
 		}
 	    }
+
+	  if (u && gfc_notify_std (symbol[i].standard, "The symbol '%s', "
+				   "referrenced at %C, is not in the selected "
+				   "standard", symbol[i].name) == FAILURE)
+	    continue;
+	  else if ((gfc_option.allow_std & symbol[i].standard) == 0)
+	    continue;
 
 	  if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
 	      && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)

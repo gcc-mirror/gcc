@@ -1,3 +1,7 @@
+2010-04-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/iso_fortran_env_6.f90: Add more checks.
+
 2010-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43679
