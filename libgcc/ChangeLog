@@ -1,3 +1,16 @@
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38085
+	* config/i386/t-sol2 ($(T)gmon.o): Use CFLAGS instead of
+	MULTILIB_CFLAGS.
+	($(T)gcrt1.o): Likewise.
+	($(T)crt1.o): Likewise.
+	($(T)crti.o): Likewise.
+	($(T)crtn.o): Likewise.
+
 2010-01-21  Release Manager
 
 	* GCC 4.4.3 released.

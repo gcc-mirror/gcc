@@ -1,3 +1,19 @@
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/43643
+	* config/i386/gmon-sol2.c [__x86_64__]: Properly restore %rcx.
+
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38085
+	* config/i386/i386.c (x86_function_profiler)
+	[!NO_PROFILE_COUNTERS]: Fix typo.
+	* config/i386/gmon-sol2.c (_mcleanup) [__x86_64__]: Use call
+	instead of callq.
+
 2010-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42956
