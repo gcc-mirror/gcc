@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2196,6 +2196,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
        ? Corresponding_Spec (gnat_node) : Defining_Entity (gnat_node));
   /* The FUNCTION_DECL node corresponding to the subprogram spec.   */
   tree gnu_subprog_decl;
+  /* Its RESULT_DECL node.  */
+  tree gnu_result_decl;
   /* The FUNCTION_TYPE node corresponding to the subprogram spec.  */
   tree gnu_subprog_type;
   tree gnu_cico_list;
@@ -2219,8 +2221,17 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     = gnat_to_gnu_entity (gnat_subprog_id, NULL_TREE,
 			  Acts_As_Spec (gnat_node)
 			  && !present_gnu_tree (gnat_subprog_id));
-
+  gnu_result_decl = DECL_RESULT (gnu_subprog_decl);
   gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
+
+  /* If the function returns by invisible reference, make it explicit in the
+     function body.  See gnat_to_gnu_entity, E_Subprogram_Type case.  */
+  if (TREE_ADDRESSABLE (gnu_subprog_type))
+    {
+      TREE_TYPE (gnu_result_decl)
+	= build_reference_type (TREE_TYPE (gnu_result_decl));
+      relayout_decl (gnu_result_decl);
+    }
 
   /* Propagate the debug mode.  */
   if (!Needs_Debug_Info (gnat_subprog_id))
@@ -2319,9 +2330,18 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       gnu_result = end_stmt_group ();
     }
 
-  /* If we made a special return label, we need to make a block that contains
-     the definition of that label and the copying to the return value.  That
-     block first contains the function, then the label and copy statement.  */
+    /* If we are dealing with a return from an Ada procedure with parameters
+       passed by copy-in/copy-out, we need to return a record containing the
+       final values of these parameters.  If the list contains only one entry,
+       return just that entry though.
+
+       For a full description of the copy-in/copy-out parameter mechanism, see
+       the part of the gnat_to_gnu_entity routine dealing with the translation
+       of subprograms.
+
+       We need to make a block that contains the definition of that label and
+       the copying of the return value.  It first contains the function, then
+       the label and copy statement.  */
   if (TREE_VALUE (gnu_return_label_stack))
     {
       tree gnu_retval;
@@ -2339,12 +2359,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	gnu_retval = gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
 					     gnu_cico_list);
 
-      if (DECL_P (gnu_retval) && DECL_BY_REF_P (gnu_retval))
-	gnu_retval = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_retval);
-
-      add_stmt_with_node
-	(build_return_expr (DECL_RESULT (gnu_subprog_decl), gnu_retval),
-	 End_Label (Handled_Statement_Sequence (gnat_node)));
+      add_stmt_with_node (build_return_expr (gnu_result_decl, gnu_retval),
+			  End_Label (Handled_Statement_Sequence (gnat_node)));
       gnat_poplevel ();
       gnu_result = end_stmt_group ();
     }
@@ -2396,8 +2412,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   tree gnu_subprog_node = gnat_to_gnu (Name (gnat_node));
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog_node);
-  tree gnu_subprog_addr = build_unary_op (ADDR_EXPR, NULL_TREE,
-					  gnu_subprog_node);
+  tree gnu_subprog_addr
+    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_subprog_node);
   Entity_Id gnat_formal;
   Node_Id gnat_actual;
   tree gnu_actual_list = NULL_TREE;
@@ -2431,51 +2447,6 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	else
 	  return call_expr;
       }
-    }
-
-  /* If we are calling by supplying a pointer to a target, set up that pointer
-     as the first argument.  Use GNU_TARGET if one was passed; otherwise, make
-     a target by building a variable and use the maximum size of the type if
-     it has self-referential size.  */
-  if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
-    {
-      tree gnu_ret_type
-	= TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (gnu_subprog_type)));
-
-      if (!gnu_target)
-	{
-	  tree gnu_obj_type;
-
-	  if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_ret_type)))
-	    gnu_obj_type
-	      = maybe_pad_type (gnu_ret_type,
-				max_size (TYPE_SIZE (gnu_ret_type), true),
-				0, Etype (Name (gnat_node)), false, false,
-				false, true);
-	  else
-	    gnu_obj_type = gnu_ret_type;
-
-	  /* ??? We may be about to create a static temporary if we happen to
-	     be at the global binding level.  That's a regression from what
-	     the 3.x back-end would generate in the same situation, but we
-	     don't have a mechanism in Gigi for creating automatic variables
-	     in the elaboration routines.  */
-	  gnu_target
-	    = create_var_decl (create_tmp_var_name ("LR"), NULL, gnu_obj_type,
-			       NULL, false, false, false, false, NULL,
-			       gnat_node);
-
-	  *gnu_result_type_p = gnu_ret_type;
-	}
-
-      gnu_actual_list
-	= tree_cons (NULL_TREE,
-		     build_unary_op (ADDR_EXPR, NULL_TREE,
-				     unchecked_convert (gnu_ret_type,
-							gnu_target,
-							false)),
-		     NULL_TREE);
-
     }
 
   /* The only way we can be making a call via an access type is if Name is an
@@ -2784,53 +2755,43 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 				      nreverse (gnu_actual_list));
   set_expr_location_from_node (gnu_subprog_call, gnat_node);
 
-  /* If we return by passing a target, the result is the target after the
-     call.  We must not emit the call directly here because this might be
-     evaluated as part of an expression with conditions to control whether
-     the call should be emitted or not.  */
-  if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
-    {
-      /* Conceptually, what we need is a COMPOUND_EXPR of the call followed by
-	 the target object.  Doing so would potentially be inefficient though,
-	 as this expression might be wrapped up into a SAVE_EXPR later, which
-	 would incur a pointless temporary copy of the whole object.
-
-	 What we do instead is build a COMPOUND_EXPR returning the address of
-	 the target, and then dereference.  Wrapping up the COMPOUND_EXPR into
-	 a SAVE_EXPR then only incurs a mere pointer copy.  */
-      tree gnu_target_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_target);
-      set_expr_location_from_node (gnu_target_addr, gnat_node);
-      gnu_result = build2 (COMPOUND_EXPR, TREE_TYPE (gnu_target_addr),
-			   gnu_subprog_call, gnu_target_addr);
-      return build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
-    }
-
-  /* If it is a function call, the result is the call expression unless
-     a target is specified, in which case we copy the result into the target
-     and return the assignment statement.  */
-  else if (Nkind (gnat_node) == N_Function_Call)
+  /* If it's a function call, the result is the call expression unless a target
+     is specified, in which case we copy the result into the target and return
+     the assignment statement.  */
+  if (Nkind (gnat_node) == N_Function_Call)
     {
       gnu_result = gnu_subprog_call;
+      enum tree_code op_code;
 
-      /* If the function returns an unconstrained array or by reference,
-	 we have to de-dereference the pointer.  */
-      if (TYPE_RETURNS_UNCONSTRAINED_P (gnu_subprog_type)
-	  || TYPE_RETURNS_BY_REF_P (gnu_subprog_type))
+      /* If the function returns an unconstrained array or by direct reference,
+	 we have to dereference the pointer.  */
+      if (TYPE_RETURN_UNCONSTRAINED_P (gnu_subprog_type)
+	  || TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type))
 	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
 
       if (gnu_target)
-	gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
-				      gnu_target, gnu_result);
+	{
+	  /* ??? If the return type has non-constant size, then force the
+	     return slot optimization as we would not be able to generate
+	     a temporary.  That's what has been done historically.  */
+	  if (TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_subprog_type))))
+	    op_code = MODIFY_EXPR;
+	  else
+	    op_code = INIT_EXPR;
+
+	  gnu_result
+	    = build_binary_op (op_code, NULL_TREE, gnu_target, gnu_result);
+	}
       else
 	*gnu_result_type_p = get_unpadded_type (Etype (gnat_node));
 
       return gnu_result;
     }
 
-  /* If this is the case where the GNAT tree contains a procedure call
-     but the Ada procedure has copy in copy out parameters, the special
-     parameter passing mechanism must be used.  */
-  else if (TYPE_CI_CO_LIST (gnu_subprog_type) != NULL_TREE)
+  /* If this is the case where the GNAT tree contains a procedure call but the
+     Ada procedure has copy-in/copy-out parameters, then the special parameter
+     passing mechanism must be used.  */
+  if (TYPE_CI_CO_LIST (gnu_subprog_type))
     {
       /* List of FIELD_DECLs associated with the PARM_DECLs of the copy
 	 in copy out parameters.  */
@@ -4636,25 +4597,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Return_Statement:
       {
-	/* The gnu function type of the subprogram currently processed.  */
-	tree gnu_subprog_type = TREE_TYPE (current_function_decl);
-	/* The return value from the subprogram.  */
-	tree gnu_ret_val = NULL_TREE;
-	/* The place to put the return value.  */
-	tree gnu_lhs;
+	tree gnu_ret_val, gnu_ret_obj;
 
-	/* If we are dealing with a "return;" from an Ada procedure with
-	   parameters passed by copy in copy out, we need to return a record
-	   containing the final values of these parameters.  If the list
-	   contains only one entry, return just that entry.
-
-	   For a full description of the copy in copy out parameter mechanism,
-	   see the part of the gnat_to_gnu_entity routine dealing with the
-	   translation of subprograms.
-
-	   But if we have a return label defined, convert this into
-	   a branch to that label.  */
-
+	/* If we have a return label defined, convert this into a branch to
+	   that label.  The return proper will be handled elsewhere.  */
 	if (TREE_VALUE (gnu_return_label_stack))
 	  {
 	    gnu_result = build1 (GOTO_EXPR, void_type_node,
@@ -4662,90 +4608,69 @@ gnat_to_gnu (Node_Id gnat_node)
 	    break;
 	  }
 
-	else if (TYPE_CI_CO_LIST (gnu_subprog_type))
+	/* If the subprogram is a function, we must return the expression.  */
+	if (Present (Expression (gnat_node)))
 	  {
-	    gnu_lhs = DECL_RESULT (current_function_decl);
-	    if (list_length (TYPE_CI_CO_LIST (gnu_subprog_type)) == 1)
-	      gnu_ret_val = TREE_VALUE (TYPE_CI_CO_LIST (gnu_subprog_type));
-	    else
-	      gnu_ret_val
-		= gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
-					  TYPE_CI_CO_LIST (gnu_subprog_type));
-	  }
+	    tree gnu_subprog_type = TREE_TYPE (current_function_decl);
+	    tree gnu_result_decl = DECL_RESULT (current_function_decl);
+	    gnu_ret_val = gnat_to_gnu (Expression (gnat_node));
 
-	/* If the Ada subprogram is a function, we just need to return the
-	   expression.   If the subprogram returns an unconstrained
-	   array, we have to allocate a new version of the result and
-	   return it.  If we return by reference, return a pointer.  */
+	    /* Do not remove the padding from GNU_RET_VAL if the inner type is
+	       self-referential since we want to allocate the fixed size.  */
+	    if (TREE_CODE (gnu_ret_val) == COMPONENT_REF
+		&& TYPE_IS_PADDING_P
+		   (TREE_TYPE (TREE_OPERAND (gnu_ret_val, 0)))
+		&& CONTAINS_PLACEHOLDER_P
+		   (TYPE_SIZE (TREE_TYPE (gnu_ret_val))))
+	      gnu_ret_val = TREE_OPERAND (gnu_ret_val, 0);
 
-	else if (Present (Expression (gnat_node)))
-	  {
-	    /* If the current function returns by target pointer and we
-	       are doing a call, pass that target to the call.  */
-	    if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type)
-		&& Nkind (Expression (gnat_node)) == N_Function_Call)
+	    /* If the subprogram returns by direct reference, return a pointer
+	       to the return value.  */
+	    if (TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type)
+		|| By_Ref (gnat_node))
+	      gnu_ret_val = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_ret_val);
+
+	    /* Otherwise, if it returns an unconstrained array, we have to
+	       allocate a new version of the result and return it.  */
+	    else if (TYPE_RETURN_UNCONSTRAINED_P (gnu_subprog_type))
 	      {
-		gnu_lhs
-		  = build_unary_op (INDIRECT_REF, NULL_TREE,
-				    DECL_ARGUMENTS (current_function_decl));
-		gnu_result = call_to_gnu (Expression (gnat_node),
-					  &gnu_result_type, gnu_lhs);
+		gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
+		gnu_ret_val = build_allocator (TREE_TYPE (gnu_ret_val),
+					       gnu_ret_val,
+					       TREE_TYPE (gnu_subprog_type),
+					       Procedure_To_Call (gnat_node),
+					       Storage_Pool (gnat_node),
+					       gnat_node, false);
 	      }
-	    else
+
+	    /* If the subprogram returns by invisible reference, dereference
+	       the pointer it is passed using the type of the return value
+	       and build the copy operation manually.  This ensures that we
+	       don't copy too much data, for example if the return type is
+	       unconstrained with a maximum size.  */
+	    if (TREE_ADDRESSABLE (gnu_subprog_type))
 	      {
-		gnu_ret_val = gnat_to_gnu (Expression (gnat_node));
-
-		if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
-		  /* The original return type was unconstrained so dereference
-		     the TARGET pointer in the actual return value's type.  */
-		  gnu_lhs
-		    = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
-				      DECL_ARGUMENTS (current_function_decl));
-		else
-		  gnu_lhs = DECL_RESULT (current_function_decl);
-
-		/* Do not remove the padding from GNU_RET_VAL if the inner
-		   type is self-referential since we want to allocate the fixed
-		   size in that case.  */
-		if (TREE_CODE (gnu_ret_val) == COMPONENT_REF
-		    && TYPE_IS_PADDING_P
-		       (TREE_TYPE (TREE_OPERAND (gnu_ret_val, 0)))
-		    && CONTAINS_PLACEHOLDER_P
-		       (TYPE_SIZE (TREE_TYPE (gnu_ret_val))))
-		  gnu_ret_val = TREE_OPERAND (gnu_ret_val, 0);
-
-		if (TYPE_RETURNS_BY_REF_P (gnu_subprog_type)
-		    || By_Ref (gnat_node))
-		  gnu_ret_val
-		    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_ret_val);
-
-		else if (TYPE_RETURNS_UNCONSTRAINED_P (gnu_subprog_type))
-		  {
-		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
-		    gnu_ret_val
-		      = build_allocator (TREE_TYPE (gnu_ret_val),
-					 gnu_ret_val,
-					 TREE_TYPE (gnu_subprog_type),
-					 Procedure_To_Call (gnat_node),
-					 Storage_Pool (gnat_node),
-					 gnat_node, false);
-		  }
+		gnu_ret_obj
+		  = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
+				    gnu_result_decl);
+		gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
+					      gnu_ret_obj, gnu_ret_val);
+		add_stmt_with_node (gnu_result, gnat_node);
+		gnu_ret_val = NULL_TREE;
+		gnu_ret_obj = gnu_result_decl;
 	      }
+
+	    /* Otherwise, build a regular return.  */
+	    else
+	      gnu_ret_obj = gnu_result_decl;
 	  }
 	else
-	  /* If the Ada subprogram is a regular procedure, just return.  */
-	  gnu_lhs = NULL_TREE;
-
-	if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
 	  {
-	    if (gnu_ret_val)
-	      gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
-					    gnu_lhs, gnu_ret_val);
-	    add_stmt_with_node (gnu_result, gnat_node);
-	    gnu_lhs = NULL_TREE;
+	    gnu_ret_val = NULL_TREE;
+	    gnu_ret_obj = NULL_TREE;
 	  }
 
-	gnu_result = build_return_expr (gnu_lhs, gnu_ret_val);
+	gnu_result = build_return_expr (gnu_ret_obj, gnu_ret_val);
       }
       break;
 
@@ -5605,7 +5530,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
       else
 	t = gnu_decl;
 
-      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, t, gnu_init);
+      gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, t, gnu_init);
 
       DECL_INITIAL (gnu_decl) = NULL_TREE;
       if (TREE_READONLY (gnu_decl))

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -545,19 +545,19 @@ extern void add_parallel_type (tree decl, tree parallel_type);
 /* Return the parallel type associated to a type, if any.  */
 extern tree get_parallel_type (tree type);
 
-/* Returns a FUNCTION_TYPE node. RETURN_TYPE is the type returned by the
-   subprogram. If it is void_type_node, then we are dealing with a procedure,
-   otherwise we are dealing with a function. PARAM_DECL_LIST is a list of
-   PARM_DECL nodes that are the subprogram arguments.  CICO_LIST is the
-   copy-in/copy-out list to be stored into TYPE_CI_CO_LIST.
-   RETURNS_UNCONSTRAINED is true if the function returns an unconstrained
-   object.  RETURNS_BY_REF is true if the function returns by reference.
-   RETURNS_BY_TARGET_PTR is true if the function is to be passed (as its
-   first parameter) the address of the place to copy its result.  */
+/* Return a FUNCTION_TYPE node.  RETURN_TYPE is the type returned by the
+   subprogram.  If it is VOID_TYPE, then we are dealing with a procedure,
+   otherwise we are dealing with a function.  PARAM_DECL_LIST is a list of
+   PARM_DECL nodes that are the subprogram parameters.  CICO_LIST is the
+   copy-in/copy-out list to be stored into the TYPE_CICO_LIST field.
+   RETURN_UNCONSTRAINED_P is true if the function returns an unconstrained
+   object.  RETURN_BY_DIRECT_REF_P is true if the function returns by direct
+   reference.  RETURN_BY_INVISI_REF_P is true if the function returns by
+   invisible reference.  */
 extern tree create_subprog_type (tree return_type, tree param_decl_list,
-                                 tree cico_list, bool returns_unconstrained,
-                                 bool returns_by_ref,
-                                 bool returns_by_target_ptr);
+				 tree cico_list, bool return_unconstrained_p,
+				 bool return_by_direct_ref_p,
+				 bool return_by_invisi_ref_p);
 
 /* Return a copy of TYPE, but safe to modify in any way.  */
 extern tree copy_type (tree type);
@@ -804,7 +804,7 @@ extern tree build_cond_expr (tree result_type, tree condition_operand,
                              tree true_operand, tree false_operand);
 
 /* Similar, but for RETURN_EXPR.  */
-extern tree build_return_expr (tree result_decl, tree ret_val);
+extern tree build_return_expr (tree ret_obj, tree ret_val);
 
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
    the CALL_EXPR.  */

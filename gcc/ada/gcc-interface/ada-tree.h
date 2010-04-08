@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -90,7 +90,7 @@ do {							    \
 
 /* For FUNCTION_TYPE, nonzero if this denotes a function returning an
    unconstrained array or record.  */
-#define TYPE_RETURNS_UNCONSTRAINED_P(NODE) \
+#define TYPE_RETURN_UNCONSTRAINED_P(NODE) \
   TYPE_LANG_FLAG_1 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
@@ -135,8 +135,10 @@ do {							    \
 #define TYPE_CONVENTION_FORTRAN_P(NODE) \
   TYPE_LANG_FLAG_4 (ARRAY_TYPE_CHECK (NODE))
 
-/* For FUNCTION_TYPEs, nonzero if the function returns by reference.  */
-#define TYPE_RETURNS_BY_REF_P(NODE) \
+/* For FUNCTION_TYPEs, nonzero if the function returns by direct reference,
+   i.e. the callee returns a pointer to a memory location it has allocated
+   and the caller only needs to dereference the pointer.  */
+#define TYPE_RETURN_BY_DIRECT_REF_P(NODE) \
   TYPE_LANG_FLAG_4 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For VOID_TYPE, ENUMERAL_TYPE, UNION_TYPE, and RECORD_TYPE, nonzero if this
@@ -147,11 +149,6 @@ do {							    \
   ((TREE_CODE (NODE) == VOID_TYPE || TREE_CODE (NODE) == RECORD_TYPE	\
     || TREE_CODE (NODE) == UNION_TYPE || TREE_CODE (NODE) == ENUMERAL_TYPE) \
    && TYPE_DUMMY_P (NODE))
-
-/* For FUNCTION_TYPEs, nonzero if function returns by being passed a pointer
-   to a place to store its result.  */
-#define TYPE_RETURNS_BY_TARGET_PTR_P(NODE) \
-  TYPE_LANG_FLAG_5 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For an INTEGER_TYPE, nonzero if TYPE_ACTUAL_BOUNDS is present.  */
 #define TYPE_HAS_ACTUAL_BOUNDS_P(NODE) \
