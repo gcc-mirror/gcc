@@ -1,3 +1,9 @@
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.10): Fix grammar.
+	(Specific, *-*-solaris2*): Likewise.
+	Don't prefer Sun as over GNU as.
+
 2010-04-08  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adjust the z10
