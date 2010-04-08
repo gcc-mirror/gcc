@@ -2089,7 +2089,7 @@ expand_call (tree exp, rtx target, int ignore)
   /* Set up a place to return a structure.  */
 
   /* Cater to broken compilers.  */
-  if (aggregate_value_p (exp, (!fndecl ? fntype : fndecl)))
+  if (aggregate_value_p (exp, fntype))
     {
       /* This call returns a big structure.  */
       flags &= ~(ECF_CONST | ECF_PURE | ECF_LOOPING_CONST_OR_PURE);

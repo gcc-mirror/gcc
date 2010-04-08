@@ -1,3 +1,13 @@
+2010-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (TREE_ADDRESSABLE): Document its effect for function types.
+	* calls.c (expand_call): Pass the function type to aggregate_value_p.
+	* function.c (aggregate_value_p): Do not honor DECL_BY_REFERENCE on
+	the target function of a CALL_EXPR.  Honor TREE_ADDRESSABLE on the
+	function type instead.  Reorder and simplify checks.
+
+	* gimplify.c (gimplify_modify_expr_rhs) <WITH_SIZE_EXPR>: New case.
+
 2010-04-08  Jing Yu  <jingyu@google.com>
 	    Zdenek Dvorak  <ook@ucw.cz>
 

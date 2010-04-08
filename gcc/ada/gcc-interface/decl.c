@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3799,13 +3799,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_field_list = NULL_TREE;
 	/* Non-null for subprograms containing parameters passed by copy-in
 	   copy-out (Ada In Out or Out parameters not passed by reference),
-	   in which case it is the list of nodes used to specify the values of
-	   the in out/out parameters that are returned as a record upon
+	   in which case it is the list of nodes used to specify the values
+	   of the In Out/Out parameters that are returned as a record upon
 	   procedure return.  The TREE_PURPOSE of an element of this list is
 	   a field of the record and the TREE_VALUE is the PARM_DECL
 	   corresponding to that field.  This list will be saved in the
 	   TYPE_CI_CO_LIST field of the FUNCTION_TYPE node we create.  */
-	tree gnu_return_list = NULL_TREE;
+	tree gnu_cico_list = NULL_TREE;
 	/* If an import pragma asks to map this subprogram to a GCC builtin,
 	   this is the builtin DECL node.  */
 	tree gnu_builtin_decl = NULL_TREE;
@@ -3831,9 +3831,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     && Is_Pure (gnat_entity));
 
 	bool volatile_flag = No_Return (gnat_entity);
-	bool returns_by_ref = false;
-	bool returns_unconstrained = false;
-	bool returns_by_target_ptr = false;
+	bool return_by_direct_ref_p = false;
+	bool return_by_invisi_ref_p = false;
+	bool return_unconstrained_p = false;
 	bool has_copy_in_out = false;
 	bool has_stub = false;
 	int parmnum;
@@ -3885,37 +3885,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (kind == E_Function || kind == E_Subprogram_Type)
 	  gnu_return_type = gnat_to_gnu_type (Etype (gnat_entity));
 
-	/* If this function returns by reference, make the actual
-	   return type of this function the pointer and mark the decl.  */
+	/* If this function returns by reference, make the actual return
+	   type of this function the pointer and mark the decl.  */
 	if (Returns_By_Ref (gnat_entity))
 	  {
-	    returns_by_ref = true;
 	    gnu_return_type = build_pointer_type (gnu_return_type);
+	    return_by_direct_ref_p = true;
 	  }
 
-	/* If the Mechanism is By_Reference, ensure the return type uses
-	   the machine's by-reference mechanism, which may not the same
-	   as above (e.g., it might be by passing a fake parameter).  */
-	else if (kind == E_Function
-		 && Mechanism (gnat_entity) == By_Reference)
-	  {
-	    TREE_ADDRESSABLE (gnu_return_type) = 1;
+	/* If the Mechanism is By_Reference, ensure this function uses the
+	   target's by-invisible-reference mechanism, which may not be the
+	   same as above (e.g. it might be passing an extra parameter).
 
-	    /* We expect this bit to be reset by gigi shortly, so can avoid a
-	       type node copy here.  This actually also prevents troubles with
-	       the generation of debug information for the function, because
-	       we might have issued such info for this type already, and would
-	       be attaching a distinct type node to the function if we made a
-	       copy here.  */
-	  }
+	   Prior to GCC 4, this was handled by just setting TREE_ADDRESSABLE
+	   on the result type.  Everything required to pass by invisible
+	   reference using the target's mechanism (e.g. an extra parameter)
+	   was handled at RTL expansion time.
 
-	/* If we are supposed to return an unconstrained array,
-	   actually return a fat pointer and make a note of that.  Return
-	   a pointer to an unconstrained record of variable size.  */
+	   This doesn't work with GCC 4 any more for several reasons.  First,
+	   the gimplification process might need to create temporaries of this
+	   type and the gimplifier ICEs on such attempts; that's why the flag
+	   is now set on the function type instead.  Second, the middle-end
+	   now also relies on a different attribute, DECL_BY_REFERENCE on the
+	   RESULT_DECL, and expects the by-invisible-reference-ness to be made
+	   explicit in the function body.  */
+	else if (kind == E_Function && Mechanism (gnat_entity) == By_Reference)
+	  return_by_invisi_ref_p = true;
+
+	/* If we are supposed to return an unconstrained array, actually return
+	   a fat pointer and make a note of that.  */
 	else if (TREE_CODE (gnu_return_type) == UNCONSTRAINED_ARRAY_TYPE)
 	  {
 	    gnu_return_type = TREE_TYPE (gnu_return_type);
-	    returns_unconstrained = true;
+	    return_unconstrained_p = true;
 	  }
 
 	/* If the type requires a transient scope, the result is allocated
@@ -3924,7 +3926,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else if (Requires_Transient_Scope (Etype (gnat_entity)))
 	  {
 	    gnu_return_type = build_pointer_type (gnu_return_type);
-	    returns_unconstrained = true;
+	    return_unconstrained_p = true;
 	  }
 
 	/* If the type is a padded type and the underlying type would not
@@ -3936,20 +3938,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || Has_Foreign_Convention (gnat_entity)))
 	  gnu_return_type = TREE_TYPE (TYPE_FIELDS (gnu_return_type));
 
-	/* If the return type has a non-constant size, we convert the function
-	   into a procedure and its caller will pass a pointer to an object as
-	   the first parameter when we call the function.  This can happen for
-	   an unconstrained type with a maximum size or a constrained type with
-	   a size not known at compile time.  */
-	if (TYPE_SIZE_UNIT (gnu_return_type)
-	    && !TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_return_type)))
+	/* If the return type is unconstrained, that means it must have a
+	   maximum size.  Use the padded type as the effective return type.
+	   And ensure the function uses the target's by-invisible-reference
+	   mechanism to avoid copying too much data when it returns.  */
+	if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_return_type)))
 	  {
-	    returns_by_target_ptr = true;
-	    gnu_param_list
-	      = create_param_decl (get_identifier ("TARGET"),
-				   build_reference_type (gnu_return_type),
-				   true);
-	    gnu_return_type = void_type_node;
+	    gnu_return_type
+	      = maybe_pad_type (gnu_return_type,
+				max_size (TYPE_SIZE (gnu_return_type), true),
+				0, gnat_entity, false, false, false, true);
+	    return_by_invisi_ref_p = true;
 	  }
 
 	/* If the return type has a size that overflows, we cannot have
@@ -4091,8 +4090,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			       &DECL_SOURCE_LOCATION (gnu_field));
 		TREE_CHAIN (gnu_field) = gnu_field_list;
 		gnu_field_list = gnu_field;
-		gnu_return_list = tree_cons (gnu_field, gnu_param,
-					     gnu_return_list);
+		gnu_cico_list
+		  = tree_cons (gnu_field, gnu_param, gnu_cico_list);
 	      }
 	  }
 
@@ -4105,8 +4104,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If we have a CICO list but it has only one entry, we convert
 	   this function into a function that simply returns that one
 	   object.  */
-	if (list_length (gnu_return_list) == 1)
-	  gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_return_list));
+	if (list_length (gnu_cico_list) == 1)
+	  gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_cico_list));
 
 	if (Has_Stdcall_Convention (gnat_entity))
 	  prepend_one_attribute_to
@@ -4131,22 +4130,25 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_param_list = nreverse (gnu_param_list);
 	if (has_stub)
 	  gnu_stub_param_list = nreverse (gnu_stub_param_list);
-	gnu_return_list = nreverse (gnu_return_list);
+	gnu_cico_list = nreverse (gnu_cico_list);
 
 	if (Ekind (gnat_entity) == E_Function)
-	  Set_Mechanism (gnat_entity,
-			 (returns_by_ref || returns_unconstrained
-			  ? By_Reference : By_Copy));
+	  Set_Mechanism (gnat_entity, return_unconstrained_p
+				      || return_by_direct_ref_p
+				      || return_by_invisi_ref_p
+				      ? By_Reference : By_Copy);
 	gnu_type
 	  = create_subprog_type (gnu_return_type, gnu_param_list,
-				 gnu_return_list, returns_unconstrained,
-				 returns_by_ref, returns_by_target_ptr);
+				 gnu_cico_list, return_unconstrained_p,
+				 return_by_direct_ref_p,
+				 return_by_invisi_ref_p);
 
 	if (has_stub)
 	  gnu_stub_type
 	    = create_subprog_type (gnu_return_type, gnu_stub_param_list,
-				   gnu_return_list, returns_unconstrained,
-				   returns_by_ref, returns_by_target_ptr);
+				   gnu_cico_list, return_unconstrained_p,
+				   return_by_direct_ref_p,
+				   return_by_invisi_ref_p);
 
 	/* A subprogram (something that doesn't return anything) shouldn't
 	   be considered const since there would be no reason for such a

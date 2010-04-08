@@ -1110,9 +1110,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    In CONSTRUCTOR nodes, it means object constructed must be in memory.
    In LABEL_DECL nodes, it means a goto for this label has been seen
    from a place outside all binding contours that restore stack levels.
-   In ..._TYPE nodes, it means that objects of this type must
-   be fully addressable.  This means that pieces of this
-   object cannot go into register parameters, for example.
+   In ..._TYPE nodes, it means that objects of this type must be fully
+   addressable.  This means that pieces of this object cannot go into
+   register parameters, for example.  If this a function type, this
+   means that the value must be returned in memory.
    In IDENTIFIER_NODEs, this means that some extern decl for this name
    had its address taken.  That matters for inline functions.  */
 #define TREE_ADDRESSABLE(NODE) ((NODE)->base.addressable_flag)

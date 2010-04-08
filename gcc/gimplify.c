@@ -4278,6 +4278,18 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	ret = GS_UNHANDLED;
 	break;
 
+      case WITH_SIZE_EXPR:
+	/* Likewise for calls that return an aggregate of non-constant size,
+	   since we would not be able to generate a temporary at all.  */
+	if (TREE_CODE (TREE_OPERAND (*from_p, 0)) == CALL_EXPR)
+	  {
+	    *from_p = TREE_OPERAND (*from_p, 0);
+	    ret = GS_OK;
+	  }
+	else
+	  ret = GS_UNHANDLED;
+	break;
+
 	/* If we're initializing from a container, push the initialization
 	   inside it.  */
       case CLEANUP_POINT_EXPR:

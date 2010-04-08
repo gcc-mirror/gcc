@@ -1853,41 +1853,36 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
 int
 aggregate_value_p (const_tree exp, const_tree fntype)
 {
+  const_tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
   int i, regno, nregs;
   rtx reg;
-
-  const_tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
-
-  /* DECL node associated with FNTYPE when relevant, which we might need to
-     check for by-invisible-reference returns, typically for CALL_EXPR input
-     EXPressions.  */
-  const_tree fndecl = NULL_TREE;
 
   if (fntype)
     switch (TREE_CODE (fntype))
       {
       case CALL_EXPR:
-	fndecl = get_callee_fndecl (fntype);
-	fntype = (fndecl
-		  ? TREE_TYPE (fndecl)
-		  : TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (fntype))));
+	{
+	  tree fndecl = get_callee_fndecl (fntype);
+	  fntype = (fndecl
+		    ? TREE_TYPE (fndecl)
+		    : TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (fntype))));
+	}
 	break;
       case FUNCTION_DECL:
-	fndecl = fntype;
-	fntype = TREE_TYPE (fndecl);
+	fntype = TREE_TYPE (fntype);
 	break;
       case FUNCTION_TYPE:
       case METHOD_TYPE:
         break;
       case IDENTIFIER_NODE:
-	fntype = 0;
+	fntype = NULL_TREE;
 	break;
       default:
-	/* We don't expect other rtl types here.  */
+	/* We don't expect other tree types here.  */
 	gcc_unreachable ();
       }
 
-  if (TREE_CODE (type) == VOID_TYPE)
+  if (VOID_TYPE_P (type))
     return 0;
 
   /* If a record should be passed the same as its first (and only) member
@@ -1901,24 +1896,21 @@ aggregate_value_p (const_tree exp, const_tree fntype)
       && DECL_BY_REFERENCE (exp))
     return 1;
 
-  /* If the EXPression is a CALL_EXPR, honor DECL_BY_REFERENCE set on the
-     called function RESULT_DECL, meaning the function returns in memory by
-     invisible reference.  This check lets front-ends not set TREE_ADDRESSABLE
-     on the function type, which used to be the way to request such a return
-     mechanism but might now be causing troubles at gimplification time if
-     temporaries with the function type need to be created.  */
-  if (TREE_CODE (exp) == CALL_EXPR && fndecl && DECL_RESULT (fndecl)
-      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+  /* Function types that are TREE_ADDRESSABLE force return in memory.  */
+  if (fntype && TREE_ADDRESSABLE (fntype))
     return 1;
 
-  if (targetm.calls.return_in_memory (type, fntype))
-    return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
      and thus can't be returned in registers.  */
   if (TREE_ADDRESSABLE (type))
     return 1;
+
   if (flag_pcc_struct_return && AGGREGATE_TYPE_P (type))
     return 1;
+
+  if (targetm.calls.return_in_memory (type, fntype))
+    return 1;
+
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
   reg = hard_function_value (type, 0, fntype, 0);
@@ -1933,6 +1925,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   for (i = 0; i < nregs; i++)
     if (! call_used_regs[regno + i])
       return 1;
+
   return 0;
 }
 

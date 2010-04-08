@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -609,6 +609,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
   switch (op_code)
     {
+    case INIT_EXPR:
     case MODIFY_EXPR:
       /* If there were integral or pointer conversions on the LHS, remove
 	 them; we'll be putting them back below if needed.  Likewise for
@@ -1397,45 +1398,40 @@ build_cond_expr (tree result_type, tree condition_operand,
   return result;
 }
 
-/* Similar, but for RETURN_EXPR.  If RESULT_DECL is non-zero, build
-   a RETURN_EXPR around the assignment of RET_VAL to RESULT_DECL.
-   If RESULT_DECL is zero, build a bare RETURN_EXPR.  */
+/* Similar, but for RETURN_EXPR.  If RET_VAL is non-null, build a RETURN_EXPR
+   around the assignment of RET_VAL to RET_OBJ.  Otherwise just build a bare
+   RETURN_EXPR around RESULT_OBJ, which may be null in this case.  */
 
 tree
-build_return_expr (tree result_decl, tree ret_val)
+build_return_expr (tree ret_obj, tree ret_val)
 {
   tree result_expr;
 
-  if (result_decl)
+  if (ret_val)
     {
       /* The gimplifier explicitly enforces the following invariant:
 
-           RETURN_EXPR
-               |
-           MODIFY_EXPR
-           /        \
-          /          \
-      RESULT_DECL    ...
+	      RETURN_EXPR
+		  |
+	      MODIFY_EXPR
+	      /        \
+	     /          \
+	 RET_OBJ        ...
 
-      As a consequence, type-homogeneity dictates that we use the type
-      of the RESULT_DECL as the operation type.  */
+	 As a consequence, type consistency dictates that we use the type
+	 of the RET_OBJ as the operation type.  */
+      tree operation_type = TREE_TYPE (ret_obj);
 
-      tree operation_type = TREE_TYPE (result_decl);
-
-      /* Convert the right operand to the operation type.  Note that
-         it's the same transformation as in the MODIFY_EXPR case of
-         build_binary_op with the additional guarantee that the type
-         cannot involve a placeholder, since otherwise the function
-         would use the "target pointer" return mechanism.  */
-
+      /* Convert the right operand to the operation type.  Note that it's the
+	 same transformation as in the MODIFY_EXPR case of build_binary_op,
+	 with the assumption that the type cannot involve a placeholder.  */
       if (operation_type != TREE_TYPE (ret_val))
 	ret_val = convert (operation_type, ret_val);
 
-      result_expr
-	= build2 (MODIFY_EXPR, operation_type, result_decl, ret_val);
+      result_expr = build2 (MODIFY_EXPR, operation_type, ret_obj, ret_val);
     }
   else
-    result_expr = NULL_TREE;
+    result_expr = ret_obj;
 
   return build1 (RETURN_EXPR, void_type_node, result_expr);
 }
