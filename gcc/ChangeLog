@@ -1,5 +1,10 @@
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/43643
+	* config/i386/gmon-sol2.c [__x86_64__]: Properly restore %rcx.
+
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/install.texi (Specific, i?86-*-solaris2.10): Fix grammar.
 	(Specific, *-*-solaris2*): Likewise.
 	Don't prefer Sun as over GNU as.
