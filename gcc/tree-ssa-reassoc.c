@@ -467,6 +467,8 @@ eliminate_duplicate_pair (enum tree_code opcode,
   return false;
 }
 
+static VEC(tree, heap) *plus_negates;
+
 /* If OPCODE is PLUS_EXPR, CURR->OP is really a negate expression,
    look in OPS for a corresponding positive operation to cancel it
    out.  If we find one, remove the other from OPS, replace
@@ -520,6 +522,10 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	  return true;
 	}
     }
+
+  /* CURR->OP is a negate expr in a plus expr: save it for later
+     inspection in repropagate_negates().  */
+  VEC_safe_push (tree, heap, plus_negates, curr->op);
 
   return false;
 }
@@ -1500,8 +1506,6 @@ get_single_immediate_use (tree lhs)
   return NULL;
 }
 
-static VEC(tree, heap) *broken_up_subtracts;
-
 /* Recursively negate the value of TONEGATE, and return the SSA_NAME
    representing the negated value.  Insertions of any necessary
    instructions go before GSI.
@@ -1544,7 +1548,6 @@ negate_value (tree tonegate, gimple_stmt_iterator *gsi)
   tonegate = fold_build1 (NEGATE_EXPR, TREE_TYPE (tonegate), tonegate);
   resultofnegate = force_gimple_operand_gsi (gsi, tonegate, true,
 					     NULL_TREE, true, GSI_SAME_STMT);
-  VEC_safe_push (tree, heap, broken_up_subtracts, resultofnegate);
   return resultofnegate;
 }
 
@@ -1700,7 +1703,7 @@ repropagate_negates (void)
   unsigned int i = 0;
   tree negate;
 
-  for (i = 0; VEC_iterate (tree, broken_up_subtracts, i, negate); i++)
+  for (i = 0; VEC_iterate (tree, plus_negates, i, negate); i++)
     {
       gimple user = get_single_immediate_use (negate);
 
@@ -2014,7 +2017,7 @@ init_reassoc (void)
 
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);
-  broken_up_subtracts = NULL;
+  plus_negates = NULL;
 }
 
 /* Cleanup after the reassociation pass, and print stats if
@@ -2035,7 +2038,7 @@ fini_reassoc (void)
   pointer_map_destroy (operand_rank);
   free_alloc_pool (operand_entry_pool);
   free (bb_rank);
-  VEC_free (tree, heap, broken_up_subtracts);
+  VEC_free (tree, heap, plus_negates);
   free_dominance_info (CDI_POST_DOMINATORS);
   loop_optimizer_finalize ();
 }

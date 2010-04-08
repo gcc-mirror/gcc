@@ -1,3 +1,12 @@
+2010-04-08  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR middle-end/40815
+	* tree-ssa-reassoc.c (broken_up_substracts): Rename to plus_negates.
+	(negate_value): Move code to push elements to broken_up_substracts ...
+	(eliminate_plus_minus_pair): ... here.  Push operands that have no
+	negative pair to plus_negates.
+	(repropagate_negates, init_reassoc, fini_reassoc): Update.
+
 2010-04-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/install.texi (Configuration): Move description of

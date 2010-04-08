@@ -1,3 +1,8 @@
+2010-04-08  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR middle-end/40815
+	* gcc.dg/tree-ssa/reassoc-19.c: New.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/18624
