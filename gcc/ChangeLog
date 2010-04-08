@@ -1,3 +1,11 @@
+2010-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43670
+	* cfgexpand.c (expand_debug_expr): If for non-NULL offset
+	op0 is not a MEM, just return NULL instead of assertion
+	failure.
+	(discover_nonconstant_array_refs): Don't walk debug stmts.
+
 2010-04-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43668
