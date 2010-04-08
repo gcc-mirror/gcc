@@ -1,3 +1,9 @@
+2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, i?86-*-solaris2.10): Fix grammar.
+	(Specific, *-*-solaris2*): Likewise.
+	Don't prefer Sun as over GNU as.
+
 2010-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43679
