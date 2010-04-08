@@ -1,3 +1,12 @@
+2010-04-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 42485
+	* doc/invoke.texi (-b,-V): Delete.
+	* doc/tm.texi: Do not mention -b.
+	* gcc.c (display_help): Delete -b and -V.
+	(process_command): Delete -b and -V.
+	* gcc.h (DEFAULT_SWITCH_TAKES_ARG): Delete -b and -V.
+	
 2010-04-08  Christian Borntraeger  <borntraeger@de.ibm.com>
             Wolfgang Gellerich  <gellerich@de.ibm.com>
 
