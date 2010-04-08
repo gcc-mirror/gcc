@@ -1,5 +1,9 @@
 2010-04-08  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c: Fix comments and simplify logic.
+
+2010-04-08  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (if_convertible_loop_p): Remove unused parameter.
 	(tree_if_conversion): Same.  Update call to if_convertible_loop_p.
 	(main_tree_if_conversion): Update call to tree_if_conversion.
