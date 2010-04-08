@@ -352,6 +352,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   struct loop *loop;
   bool changed;
   enum unroll_level ul;
+  int iteration = 0;
 
   do
     {
@@ -384,7 +385,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  scev_reset ();
 	}
     }
-  while (changed);
+  while (changed
+	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
 
   return 0;
 }
