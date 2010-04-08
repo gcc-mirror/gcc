@@ -1,3 +1,10 @@
+2010-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_movmem): Issue prefetch
+	instructions for z10.
+	(s390_expand_setmem): Likewise.
+	(s390_expand_cmpmem): Likewise.
+
 2010-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43679
