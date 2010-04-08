@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "df.h"
 #include "params.h"
+#include "cfgloop.h"
 
 
 /* Define the specific costs for a given cpu.  */
@@ -10245,6 +10246,62 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
   last_scheduled_insn = NULL_RTX;
 }
 
+/* This function checks the whole of insn X for memory references. The
+   function always returns zero because the framework it is called
+   from would stop recursively analyzing the insn upon a return value
+   other than zero. The real result of this function is updating
+   counter variable MEM_COUNT.  */
+static int
+check_dpu (rtx *x, unsigned *mem_count)
+{
+  if (*x != NULL_RTX && MEM_P (*x))
+    (*mem_count)++;
+  return 0;
+}
+
+/* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
+   a new number struct loop *loop should be unrolled if tuned for the z10
+   cpu. The loop is analyzed for memory accesses by calling check_dpu for
+   each rtx of the loop. Depending on the loop_depth and the amount of
+   memory accesses a new number <=nunroll is returned to improve the
+   behaviour of the hardware prefetch unit.  */
+static unsigned
+s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+  basic_block *bbs;
+  rtx insn;
+  unsigned i;
+  unsigned mem_count = 0;
+
+  /* Only z10 needs special handling.  */
+  if (s390_tune != PROCESSOR_2097_Z10)
+    return nunroll;
+
+  /* Count the number of memory references within the loop body.  */
+  bbs = get_loop_body (loop);
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      for (insn = BB_HEAD (bbs[i]); insn != BB_END (bbs[i]); insn = NEXT_INSN (insn))
+	if (INSN_P (insn) && INSN_CODE (insn) != -1)
+            for_each_rtx (&insn, (rtx_function) check_dpu, &mem_count);
+    }
+  free (bbs);
+
+  /* Prevent division by zero, and we do not need to adjust nunroll in this case.  */
+  if (mem_count == 0)
+    return nunroll;
+
+  switch (loop_depth(loop))
+    {
+    case 1:
+      return MIN (nunroll, 28 / mem_count);
+    case 2:
+      return MIN (nunroll, 22 / mem_count);
+    default:
+      return MIN (nunroll, 16 / mem_count);
+    }
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -10372,6 +10429,9 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate
+
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST s390_loop_unroll_adjust
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE s390_asm_trampoline_template

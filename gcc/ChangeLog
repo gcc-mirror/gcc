@@ -1,3 +1,15 @@
+2010-04-08  Christian Borntraeger  <borntraeger@de.ibm.com>
+            Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+        Implement target hook for loop unrolling
+        * target.h (loop_unroll_adjust): Add a new target hook function.
+        * target-def.h (TARGET_LOOP_UNROLL_ADJUST): Likewise.
+        * doc/tm.texi (TARGET_LOOP_UNROLL_ADJUST): Document it.
+        * config/s390/s390.c (TARGET_LOOP_UNROLL_ADJUST): Define it.
+        (s390_loop_unroll_adjust): Implement the new target hook for s390.
+        * loop-unroll.c (decide_unroll_runtime_iterations): Call loop unroll target hook
+        (decide_unroll_stupid): Likewise.
+
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/43643

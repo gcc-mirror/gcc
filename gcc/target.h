@@ -97,6 +97,9 @@ struct _dep;
 /* This is defined in ddg.h .  */
 struct ddg;
 
+/* This is defined in cfgloop.h .  */
+struct loop;
+
 /* Assembler instructions for creating various kinds of integer object.  */
 
 struct asm_int_op
@@ -636,6 +639,9 @@ struct gcc_target
 
   /* Return true if the target supports conditional execution.  */
   bool (* have_conditional_execution) (void);
+
+  /* Return a new value for loop unroll size.  */
+  unsigned (* loop_unroll_adjust) (unsigned nunroll, struct loop *loop);
 
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) (rtx);
