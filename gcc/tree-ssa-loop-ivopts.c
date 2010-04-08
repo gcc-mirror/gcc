@@ -5290,6 +5290,8 @@ copy_ref_info (tree new_ref, tree old_ref)
     {
       TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
       TMR_TAG (new_ref) = get_ref_tag (old_ref, TMR_ORIGINAL (new_ref));
+      TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
+      TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
     }
 }
 

@@ -1606,6 +1606,9 @@ get_tmr_operands (gimple stmt, tree expr, int flags)
   /* Mark the statement as having memory operands.  */
   gimple_set_references_memory (stmt, true);
 
+  if (TREE_THIS_VOLATILE (expr))
+    gimple_set_has_volatile_ops (stmt, true);
+
   /* First record the real operands.  */
   get_expr_operands (stmt, &TMR_BASE (expr), opf_use);
   get_expr_operands (stmt, &TMR_INDEX (expr), opf_use);

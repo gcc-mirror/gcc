@@ -3455,7 +3455,11 @@ build7_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(6);
 
   TREE_SIDE_EFFECTS (t) = side_effects;
-  TREE_THIS_VOLATILE (t) = 0;
+  if (code == TARGET_MEM_REF)
+    TREE_SIDE_EFFECTS (t) = (arg5 && TREE_SIDE_EFFECTS (arg5));
+  TREE_THIS_VOLATILE (t)
+    = (code == TARGET_MEM_REF
+       && arg5 && TREE_THIS_VOLATILE (arg5));
 
   return t;
 }
