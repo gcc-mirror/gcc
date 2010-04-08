@@ -1,3 +1,9 @@
+2010-04-08  Doug Kwan  <dougkwan@google.com>
+
+	* configure.ac: Recognize gold and do not use its version number
+	to test ld features.
+	* configure: Regenerate.
+
 2010-04-08  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR middle-end/40815

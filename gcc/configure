@@ -20609,6 +20609,19 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+# Check to see if we are using gold instead of ld
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are using gold" >&5
+$as_echo_n "checking whether we are using gold... " >&6; }
+ld_is_gold=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "GNU gold" > /dev/null; then
+    ld_is_gold=yes
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_gold" >&5
+$as_echo "$ld_is_gold" >&6; }
+
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 
 case "$ORIGINAL_LD_FOR_TARGET" in
@@ -21188,7 +21201,9 @@ $as_echo "$gcc_cv_as_hidden" >&6; }
 
 if test $in_tree_ld != yes ; then
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
-  if echo "$ld_ver" | grep GNU > /dev/null; then
+  if test x"$ld_is_gold" = xyes; then
+    gcc_cv_ld_hidden=yes
+  elif echo "$ld_ver" | grep GNU > /dev/null; then
     ld_vers=`echo $ld_ver | sed -n \
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
@@ -21785,7 +21800,9 @@ fi
 $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
 
 fi
-if test $in_tree_ld = yes ; then
+if test x"$ld_is_gold" = xyes; then
+  comdat_group=yes
+elif test $in_tree_ld = yes ; then
   comdat_group=no
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
