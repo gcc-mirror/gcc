@@ -1,3 +1,7 @@
+2010-04-08  Tobias Burnus  <burnus@net-b.de>
+
+	* module.c (use_iso_fortran_env_module): Fix standard check.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.c (parse_derived, parse_enum): Avoid set but not used
@@ -7,7 +11,7 @@
 
 	PR fortran/40539
 	* gfortran.texi: Add section about representation of
-        LOGICAL variables.
+	LOGICAL variables.
 
 2010-04-07  Simon Baldwin  <simonb@google.com>
 
