@@ -1,3 +1,9 @@
+2010-04-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-if-conv.c (if_convertible_loop_p): Remove unused parameter.
+	(tree_if_conversion): Same.  Update call to if_convertible_loop_p.
+	(main_tree_if_conversion): Update call to tree_if_conversion.
+
 2010-04-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 42485
@@ -6,7 +12,7 @@
 	* gcc.c (display_help): Delete -b and -V.
 	(process_command): Delete -b and -V.
 	* gcc.h (DEFAULT_SWITCH_TAKES_ARG): Delete -b and -V.
-	
+
 2010-04-08  Christian Borntraeger  <borntraeger@de.ibm.com>
             Wolfgang Gellerich  <gellerich@de.ibm.com>
 

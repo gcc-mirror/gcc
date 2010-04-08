@@ -584,14 +584,10 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
    - it has two or more basic blocks,
    - it has only one exit,
    - loop header is not the exit edge,
-   - if its basic blocks and phi nodes are if convertible.  See above for
-     more info.
-   FOR_VECTORIZER enables vectorizer specific checks, for example, support
-   for vector conditions, data dependency checks, etc.
-   (Not implemented yet).  */
+   - if its basic blocks and phi nodes are if convertible.  */
 
 static bool
-if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
+if_convertible_loop_p (struct loop *loop)
 {
   basic_block bb;
   gimple_stmt_iterator itr;
@@ -1023,13 +1019,10 @@ combine_blocks (struct loop *loop)
 
 /* Main entry point.  Apply if-conversion to the LOOP.  Return true if
    successful otherwise return false.  If false is returned then loop
-   remains unchanged.  FOR_VECTORIZER is a boolean flag.  It indicates
-   whether if-conversion is used for vectorizer or not.  If it is used
-   for vectorizer, additional checks are used. (Vectorization checks
-   are not yet implemented).  */
+   remains unchanged.  */
 
 static bool
-tree_if_conversion (struct loop *loop, bool for_vectorizer)
+tree_if_conversion (struct loop *loop)
 {
   basic_block bb;
   gimple_stmt_iterator itr;
@@ -1039,7 +1032,7 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
 
   /* If-conversion is not appropriate for all loops.  First, check if
      loop is if-convertible or not.  */
-  if (!if_convertible_loop_p (loop, for_vectorizer))
+  if (!if_convertible_loop_p (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,"-------------------------\n");
@@ -1114,9 +1107,8 @@ main_tree_if_conversion (void)
     return 0;
 
   FOR_EACH_LOOP (li, loop, 0)
-    {
-      tree_if_conversion (loop, true);
-    }
+    tree_if_conversion (loop);
+
   return 0;
 }
 
