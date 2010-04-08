@@ -3472,7 +3472,7 @@ configuration like @samp{amd64-*-solaris2*} or @samp{x86_64-*-solaris2*}.
 It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
 binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
-although the latest (as of 2010-04-01) version, from GNU binutils
+although the current version, from GNU binutils
 2.20.1, is known to work, too.  Recent versions of the Sun assembler in
 @file{/usr/ccs/bin/as} work almost as well, though.
 @c FIXME: as patch requirements?
@@ -4127,18 +4127,18 @@ The build process works more smoothly with the legacy Sun tools so, if you
 have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
-We recommend the use of the vendor tools (Sun @command{as}, Sun
-@command{ld}), or eventually GNU @command{as}.  The GNU @command{as}
+We recommend the use of the Sun assembler or the GNU assembler, in
+conjunction with the Sun linker.  The GNU @command{as}
 versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
 from GNU binutils 2.19, are known to work.  They can be found in
-@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1 as of
-2010-04-01) are known work either.  Note that your mileage may vary
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1)
+are known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} is known to
 cause memory corruption at runtime in some cases for C++ programs.
 @c FIXME: still?
-GNU @command{ld} usually works either, though the version included in
+GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
 version (2.20.1) is known to work, but generally lacks platform specific
 features, so better stay with Sun @command{ld}.
