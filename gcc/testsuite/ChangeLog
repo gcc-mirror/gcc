@@ -1,3 +1,8 @@
+2010-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43670
+	* gcc.dg/pr43670.c: New test.
+
 2010-04-08  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR middle-end/40815
