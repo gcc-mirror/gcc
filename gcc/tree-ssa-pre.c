@@ -4379,15 +4379,16 @@ eliminate (void)
   for (i = 0; VEC_iterate (gimple, to_remove, i, stmt); ++i)
     {
       tree lhs = gimple_assign_lhs (stmt);
+      tree rhs = gimple_assign_rhs1 (stmt);
       use_operand_p use_p;
       gimple use_stmt;
 
       /* If there is a single use only, propagate the equivalency
 	 instead of keeping the copy.  */
       if (TREE_CODE (lhs) == SSA_NAME
+	  && TREE_CODE (rhs) == SSA_NAME
 	  && single_imm_use (lhs, &use_p, &use_stmt)
-	  && may_propagate_copy (USE_FROM_PTR (use_p),
-				 gimple_assign_rhs1 (stmt)))
+	  && may_propagate_copy (USE_FROM_PTR (use_p), rhs))
 	{
 	  SET_USE (use_p, gimple_assign_rhs1 (stmt));
 	  update_stmt (use_stmt);

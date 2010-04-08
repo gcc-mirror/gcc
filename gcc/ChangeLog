@@ -1,3 +1,8 @@
+2010-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43679
+	* tree-ssa-pre.c (eliminate): Only propagate copies.
+
 2010-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43670
