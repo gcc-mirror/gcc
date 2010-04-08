@@ -38,7 +38,7 @@ struct spec_function
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'J' || (CHAR) == 'm' \
    || (CHAR) == 'x' || (CHAR) == 'L' || (CHAR) == 'A' \
-   || (CHAR) == 'V' || (CHAR) == 'B' || (CHAR) == 'b')
+   || (CHAR) == 'B' )
 
 /* This defines which multi-letter switches take arguments.  */
 

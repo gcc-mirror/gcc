@@ -262,11 +262,11 @@ static int use_pipes;
 
 static const char *compiler_version;
 
-/* The target version specified with -V */
+/* The target version.  */
 
 static const char *const spec_version = DEFAULT_TARGET_VERSION;
 
-/* The target machine specified with -b.  */
+/* The target machine.  */
 
 static const char *spec_machine = DEFAULT_TARGET_MACHINE;
 
@@ -3420,8 +3420,6 @@ display_help (void)
   --sysroot=<directory>    Use <directory> as the root directory for headers\n\
                            and libraries\n"), stdout);
   fputs (_("  -B <directory>           Add <directory> to the compiler's search paths\n"), stdout);
-  fputs (_("  -b <machine>             Run gcc for target <machine>, if installed\n"), stdout);
-  fputs (_("  -V <version>             Run gcc version number <version>, if installed\n"), stdout);
   fputs (_("  -v                       Display the programs invoked by the compiler\n"), stdout);
   fputs (_("  -###                     Like -v but options quoted and commands not executed\n"), stdout);
   fputs (_("  -E                       Preprocess only; do not compile, assemble or link\n"), stdout);
@@ -3524,81 +3522,6 @@ process_command (int argc, const char **argv)
 	  *temp1 = '\0';
 	  break;
 	}
-    }
-
-  /* If there is a -V or -b option (or both), process it now, before
-     trying to interpret the rest of the command line.
-     Use heuristic that all configuration names must have at least
-     one dash '-'. This allows us to pass options starting with -b.  */
-  if (argc > 1 && argv[1][0] == '-'
-      && (argv[1][1] == 'V'
-	  || (argv[1][1] == 'b'
-	      && (argv[1][2] == '\0'
-		  || NULL != strchr (argv[1] + 2, '-')))))
-    {
-      const char *new_version = DEFAULT_TARGET_VERSION;
-      const char *new_machine = DEFAULT_TARGET_MACHINE;
-      const char *progname = argv[0];
-      char **new_argv;
-      char *new_argv0;
-      int baselen;
-      int status = 0;
-      int err = 0;
-      const char *errmsg;
-
-      while (argc > 1 && argv[1][0] == '-'
-	     && (argv[1][1] == 'V'
-		 || (argv[1][1] == 'b'
-		     && (argv[1][2] == '\0'
-			 || NULL != strchr (argv[1] + 2, '-')))))
-	{
-	  char opt = argv[1][1];
-	  const char *arg;
-	  if (argv[1][2] != '\0')
-	    {
-	      arg = argv[1] + 2;
-	      argc -= 1;
-	      argv += 1;
-	    }
-	  else if (argc > 2)
-	    {
-	      arg = argv[2];
-	      argc -= 2;
-	      argv += 2;
-	    }
-	  else
-	    fatal ("'-%c' option must have argument", opt);
-	  if (opt == 'V')
-	    new_version = arg;
-	  else
-	    new_machine = arg;
-	}
-
-      for (baselen = strlen (progname); baselen > 0; baselen--)
-	if (IS_DIR_SEPARATOR (progname[baselen-1]))
-	  break;
-      new_argv0 = XDUPVAR (char, progname, baselen,
-			   baselen + concat_length (new_version, new_machine,
-						    "-gcc-", NULL) + 1);
-      strcpy (new_argv0 + baselen, new_machine);
-      strcat (new_argv0, "-gcc-");
-      strcat (new_argv0, new_version);
-
-      new_argv = XDUPVEC (char *, argv, argc + 1);
-      new_argv[0] = new_argv0;
-
-      errmsg = pex_one (PEX_SEARCH, new_argv0, new_argv, progname, NULL,
-			NULL, &status, &err);
-
-      if (errmsg)
-	{
-	  if (err == 0)
-	    fatal ("couldn't run '%s': %s", new_argv0, errmsg);
-	  else
-	    fatal ("couldn't run '%s': %s: %s", new_argv0, errmsg,
-		    xstrerror (err));
-        }
-      exit (status);
     }
 
   /* Convert new-style -- options to old-style.  */
@@ -4094,15 +4017,6 @@ process_command (int argc, const char **argv)
 
 	  switch (c)
 	    {
-	    case 'b':
-	      if (p[1] && NULL == strchr (argv[i] + 2, '-'))
-		goto normal_switch;
-
-	      /* Fall through.  */
-	    case 'V':
-	      fatal ("'-%c' must come at the start of the command line", c);
-	      break;
-
 	    case 'B':
 	      {
 		const char *value;

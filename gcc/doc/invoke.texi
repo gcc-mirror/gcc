@@ -428,11 +428,6 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-B@var{prefix}  -I@var{dir}  -iquote@var{dir}  -L@var{dir}
 -specs=@var{file}  -I- --sysroot=@var{dir}}
 
-@item Target Options
-@c I wrote this xref this way to avoid overfull hbox. -- rms
-@xref{Target Options}.
-@gccoptlist{-V @var{version}  -b @var{machine}}
-
 @item Machine Dependent Options
 @xref{Submodel Options,,Hardware Models and Configurations}.
 @c This list is ordered alphanumerically by subsection name.
@@ -9556,33 +9551,7 @@ proper position among the other output files.
 The usual way to run GCC is to run the executable called @file{gcc}, or
 @file{<machine>-gcc} when cross-compiling, or
 @file{<machine>-gcc-<version>} to run a version other than the one that
-was installed last.  Sometimes this is inconvenient, so GCC provides
-options that will switch to another cross-compiler or version.
-
-@table @gcctabopt
-@item -b @var{machine}
-@opindex b
-The argument @var{machine} specifies the target machine for compilation.
-
-The value to use for @var{machine} is the same as was specified as the
-machine type when configuring GCC as a cross-compiler.  For
-example, if a cross-compiler was configured with @samp{configure
-arm-elf}, meaning to compile for an arm processor with elf binaries,
-then you would specify @option{-b arm-elf} to run that cross compiler.
-Because there are other options beginning with @option{-b}, the
-configuration must contain a hyphen, or @option{-b} alone should be one
-argument followed by the configuration in the next argument.
-
-@item -V @var{version}
-@opindex V
-The argument @var{version} specifies which version of GCC to run.
-This is useful when multiple versions are installed.  For example,
-@var{version} might be @samp{4.0}, meaning to run GCC version 4.0.
-@end table
-
-The @option{-V} and @option{-b} options work by running the
-@file{<machine>-gcc-<version>} executable, so there's no real reason to
-use them if you can just run that directly.
+was installed last.
 
 @node Submodel Options
 @section Hardware Models and Configurations
@@ -9591,11 +9560,7 @@ use them if you can just run that directly.
 @cindex hardware models and configurations, specifying
 @cindex machine dependent options
 
-Earlier we discussed the standard option @option{-b} which chooses among
-different installed compilers for completely different target
-machines, such as VAX vs.@: 68000 vs.@: 80386.
-
-In addition, each of these target machine types can have its own
+Each target machine types can have its own
 special options, starting with @samp{-m}, to choose among various
 hardware models or configurations---for example, 68010 vs 68020,
 floating coprocessor or none.  A single installed version of the
