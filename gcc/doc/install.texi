@@ -1233,6 +1233,10 @@ This is the default for the m32r platform.
 Specify that the user visible @command{cpp} program should be installed
 in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
 
+@item --enable-comdat
+Enable COMDAT group support.  This is primarily used to override the
+automatically detected value.
+
 @item --enable-initfini-array
 Force the use of sections @code{.init_array} and @code{.fini_array}
 (instead of @code{.init} and @code{.fini}) for constructors and
