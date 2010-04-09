@@ -1,5 +1,9 @@
 2010-04-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42623
+	* c-common.c (c_sizeof_or_alignof_type): Return error_mark_node
+	for incomplete type.
+
 	PR c++/41788
 	* stor-layout.c (finalize_record_size): Don't change TYPE_PACKED
 	based on a warning flag.
