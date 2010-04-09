@@ -1,3 +1,33 @@
+2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 42965
+	* gcc.dg/Werror-6.c: Adjust.
+	* gcc.dg/Werror-implicit-function-declaration.c: Likewise.
+	* gcc.dg/Werror-4.c: Likewise.
+	* gcc.dg/Wdeclaration-after-statement-3.c: Likewise.
+	* gcc.dg/Wswitch-enum-error.c: Likewise.
+	* gcc.dg/Wpointer-arith.c: Likewise.
+	* gcc.dg/Wfatal.c: Likewise.
+	* gcc.dg/Wswitch-error.c: Likewise.
+	* g++.dg/warn/unused-result1-Werror.c: Likewise.
+	* gcc.dg/Werror-9.c: Delete. Duplicate of Werror-4.c.
+	* gcc.dg/cpp/warn-undef-2.c: Likewise.
+	* gcc.dg/cpp/warn-traditional-2.c: Likewise.
+	* gcc.dg/cpp/warn-comments-2.c: Likewise.
+	* gcc.dg/cpp/warn-variadic-2.c: Likewise.
+	* gcc.dg/cpp/warning-directive-2.c: Likewise.
+	* gcc.dg/cpp/warn-long-long-2.c: Likewise.
+	* gcc.dg/cpp/warn-deprecated-2.c: Likewise.
+	* gcc.dg/cpp/warn-multichar-2.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-3.c: Likewise.
+	* gcc.dg/cpp/warn-cxx-compat-2.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-3.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros-2.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-4.c: Likewise.
+	* gcc.dg/cpp/warn-redefined-2.c: Likewise.
+	* g++.dg/cpp/warning-directive-2.C: Likewise.
+	* gfortran.dg/warning-directive-2.F90: Likewise.
+
 2010-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42623

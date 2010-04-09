@@ -1,3 +1,17 @@
+2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 42965
+	* diagnostic.c (diagnostic_initialize): Initialize
+	some_warnings_are_errors.
+	(diagnostic_finish): New.
+	(diagnostic_action_after_output): Call it before exiting.
+	(diagnostic_report_diagnostic): Do not print message here. Set
+	some_warnings_are_errors.
+	* diagnostic.h (diagnostic_context): Delete
+	issue_warnings_are_errors_message. Add some_warnings_are_errors.
+	(diagnostic_finish): Declare.
+	* toplev.c (toplev_main): Call it before exit.
+
 2010-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42623

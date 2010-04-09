@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-std=gnu99 -fdiagnostics-show-option -Werror=traditional -Wno-deprecated -Wno-long-long" }
-
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */
 #assert x(x)         // { dg-error "suggest hiding #assert from traditional C with an indented # .-Wtraditional." }
 
  #define X X         // { dg-error "traditional C ignores #define with the # indented .-Wtraditional." }
