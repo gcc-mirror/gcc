@@ -1,3 +1,22 @@
+2010-04-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Add
+	__thiscall and _thiscall as predefined macros.
+	* config/i386/i386.c (ix86_handle_cconv_attribute): Add
+	thiscall attribute handling.
+	(ix86_comp_type_attributes): Likewise.
+	(ix86_function_regparm): Likewise.
+	(ix86_return_pops_args): Likewise.
+	(init_cumulative_args): Likewise.
+	(find_drap_reg): Likewise.
+	(ix86_static_chain): Likewise.
+	(x86_this_parameter): Likewise.
+	(x86_output_mi_thunk): Likewise.
+	(ix86_attribute_table): Add description for thiscall attribute.
+	* config/i386/i386.h (ix86_args): Adjust comment for member
+	fastcall.
+	* doc/extend.texi: Add documentation for thiscall.
+	
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/28584

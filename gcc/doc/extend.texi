@@ -2323,6 +2323,18 @@ and other typed arguments are passed on the stack.  The called function will
 pop the arguments off the stack.  If the number of arguments is variable all
 arguments are pushed on the stack.
 
+@item thiscall
+@cindex functions that pop the argument stack on the 386
+On the Intel 386, the @code{thiscall} attribute causes the compiler to
+pass the first argument (if of integral type) in the register ECX.
+Subsequent and other typed arguments are passed on the stack. The called
+function will pop the arguments off the stack.
+If the number of arguments is variable all arguments are pushed on the
+stack.
+The @code{thiscall} attribute is intended for C++ non-static member functions.
+As gcc extension this calling convention can be used for C-functions
+and for static member methods.
+
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
 @opindex Wformat
