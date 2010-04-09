@@ -1,3 +1,10 @@
+2010-04-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43684
+	* gfortranspec.c (lang_specific_driver): Do not expose vars 
+	only used by HAVE_LD_STATIC_DYNAMIC targets unless compiling
+	for such.
+
 2010-04-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
