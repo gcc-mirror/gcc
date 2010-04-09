@@ -4183,7 +4183,7 @@ paired_emit_vector_compare (enum rtx_code rcode,
                             rtx cc_op0, rtx cc_op1)
 {
   rtx tmp = gen_reg_rtx (V2SFmode);
-  rtx tmp1, max, min, equal_zero;
+  rtx tmp1, max, min;
 
   gcc_assert (TARGET_PAIRED_FLOAT);
   gcc_assert (GET_MODE (op0) == GET_MODE (op1));
@@ -4210,8 +4210,8 @@ paired_emit_vector_compare (enum rtx_code rcode,
       tmp1 = gen_reg_rtx (V2SFmode);
       max = gen_reg_rtx (V2SFmode);
       min = gen_reg_rtx (V2SFmode);
-      equal_zero = gen_reg_rtx (V2SFmode);
-
+      gen_reg_rtx (V2SFmode);
+      
       emit_insn (gen_subv2sf3 (tmp, cc_op0, cc_op1));
       emit_insn (gen_selv2sf4
                  (max, tmp, cc_op0, cc_op1, CONST0_RTX (SFmode)));
@@ -5412,14 +5412,14 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	      else
 		{
 		  rtx tmp3, mem;
-		  rtx first, last;
+		  rtx last;
 
 		  tmp1 = gen_reg_rtx (Pmode);
 		  tmp2 = gen_reg_rtx (Pmode);
 		  tmp3 = gen_reg_rtx (Pmode);
 		  mem = gen_const_mem (Pmode, tmp1);
 
-		  first = emit_insn (gen_load_toc_v4_PIC_1b (gsym));
+		  emit_insn (gen_load_toc_v4_PIC_1b (gsym));
 		  emit_move_insn (tmp1,
 				  gen_rtx_REG (Pmode, LR_REGNO));
 		  emit_move_insn (tmp2, mem);
@@ -10148,7 +10148,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
-  enum machine_mode mode0, mode1, mode2;
+  enum machine_mode mode0, mode1;
   rtx pat, op0, op1, op2;
   const struct builtin_description *d;
   size_t i;
@@ -10168,7 +10168,6 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	op2 = expand_normal (arg2);
 	mode0 = insn_data[d->icode].operand[0].mode;
 	mode1 = insn_data[d->icode].operand[1].mode;
-	mode2 = insn_data[d->icode].operand[2].mode;
 
 	/* Invalid arguments, bail out before generating bad rtl.  */
 	if (arg0 == error_mark_node

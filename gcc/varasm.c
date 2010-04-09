@@ -5803,8 +5803,10 @@ assemble_alias (tree decl, tree target)
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.  */
 
 void
-default_assemble_visibility (tree decl, int vis)
+default_assemble_visibility (tree decl ATTRIBUTE_UNUSED, 
+			     int vis ATTRIBUTE_UNUSED)
 {
+#ifdef HAVE_GAS_HIDDEN
   static const char * const visibility_types[] = {
     NULL, "protected", "hidden", "internal"
   };
@@ -5814,7 +5816,6 @@ default_assemble_visibility (tree decl, int vis)
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   type = visibility_types[vis];
 
-#ifdef HAVE_GAS_HIDDEN
   fprintf (asm_out_file, "\t.%s\t", type);
   assemble_name (asm_out_file, name);
   fprintf (asm_out_file, "\n");
