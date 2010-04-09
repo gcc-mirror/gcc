@@ -1,3 +1,9 @@
+2010-04-09  Manuel López-Ibáñez <manu@gcc.gnu.org>
+
+	PR cpp/43195
+	* gcc.dg/cpp/pr43195.c: New.
+	* gcc.dg/cpp/pr43195.h: New.
+
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 42965
