@@ -1,3 +1,11 @@
+2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43707
+	PR target/43709
+	* config/i386/i386.md (*ashl<mode>3_doubleword): Split to insn
+	and splitter pattern.  Change splitter operand 1 predicate to
+	nonmemory_operand.
+
 2010-04-09  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_lats_are_equal): Return true also if the two
@@ -6,7 +14,7 @@
 	* ipa-prop.c (ipa_print_node_jump_functions): Likewise.
 
 2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
-            Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+	    Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	* loop-invariant.c (replace_uses): New static function.
 	(move_invariant_reg): Use it to ensure we can replace the uses.
@@ -37,8 +45,7 @@
 
 2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/sparc/sol2-gld.h: Remove SPARC reference.
-	Rename ...
+	* config/sparc/sol2-gld.h: Remove SPARC reference.  Rename ...
 	* config/sol2-gld.h: ... here.
 	* config.gcc (sparc*-*-solaris2*): Reflect this.
 	(i[34567]86-*-solaris2*): Use it.
@@ -80,15 +87,15 @@
 2010-04-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43684
-	* varasm.c (default_assemble_visibility): Wrap vars that are 
+	* varasm.c (default_assemble_visibility): Wrap vars that are
 	set, but unused, by targets without GAS.
-	* config/rs6000/rs6000.c: (paired_emit_vector_compare): 
+	* config/rs6000/rs6000.c: (paired_emit_vector_compare):
 	Remove set, but unused, vars.
 	(rs6000_legitimize_tls_address): Likewise.
 	(altivec_expand_dst_builtin): Likewise.
 	* config/darwin.c (machopic_classify_symbol): Likewise.
 	(machopic_indirection_name): Likewise.
-	
+
 2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (DWI): New mode iterator.
