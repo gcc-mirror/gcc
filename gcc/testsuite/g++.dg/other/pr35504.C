@@ -8,6 +8,7 @@
 #define ATTR5 __attribute__((__stdcall__))
 #define ATTR6 __attribute__((__cdecl__))
 #define ATTR7
+#define ATTR8 __attribute__((__thiscall__))
 
 extern "C" void abort (void);
 
@@ -69,6 +70,11 @@ public:
   {
     return ret;
   }
+
+  virtual ATTR8 struct long_struct method8 ()
+  {
+    return ret;
+  }
 };
 
 class c3:c1, public c2
@@ -126,6 +132,11 @@ public:
   {
     return check_this (7);
   }
+
+  virtual ATTR8 struct long_struct method8 ()
+  {
+    return check_this (7);
+  }
 };
 
 class c3 c3_instance;
@@ -142,6 +153,7 @@ main ()
   c2_ptr->method5 ();
   c2_ptr->method6 ();
   c2_ptr->method7 ();
+  c2_ptr->method8 ();
 
   return 0;
 }
