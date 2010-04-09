@@ -1,3 +1,32 @@
+2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (DWI): New mode iterator.
+	(S): New mode attribute.
+	(shift_operand): Ditto.
+	(shift_immediate_operand): Ditto.
+	(ashl_input_operand): Ditto.
+	(ashl<mode>3): Macroize expander from ashl{qi,hi,si,di,ti}3_1
+	using SDWIM mode iterator.
+	(*ashl<mode>3_doubleword): New insn_and_split_pattern.  Macroize
+	pattern from *ashl{di,ti}3_1 and corresponding splitters using
+	DWI mode iterator.
+	(*ashl<mode>3_doubleword peephole2): Macroize peephole2 pattern
+	from corresponding peephole2 patterns.
+	(x86_shift<mode>_adj_1): Macroize expander from x86_shift_adj_1
+	and x86_64_shift_adj_1 using SWI48 mode iterator.
+	(x86_shift<mode>_adj_2): Ditto.
+	(*ashldi3_1_rex64): Split TYPE_LEA pattern.
+	(*ashl<mode>3_1): Macroize insn from *ashlsi3_1 and *ashldi3_1_rex64
+	using SWI48 mode iterator.
+	(*ashl<mode>3_cmp): Macroize insn from *ashl{qi,hi,si}3_cmp and
+	*ashldi3_cmp_rex64 using SWI mode iterator.
+	(*ashl<mode>3_cconly): Macroize insn from *ashl{qi,hi,si}3_cconly and
+	*ashldi3_cconly_rex64 using SWI mode iterator.
+	* config/i386/i386.c (ix86_split_ashl): Update for renamed
+	x86_shift<mode>_adj_{1,2}.
+	(ix86_split_ashr): Ditto.
+	(ix86_split_lshr): Ditto.
+
 2010-04-09  Richard Guenther  <rguenther@suse.de>
 
 	* target.h (builtin_conversion): Pass in input and output types.
@@ -58,8 +87,7 @@
 	(x86_this_parameter): Likewise.
 	(x86_output_mi_thunk): Likewise.
 	(ix86_attribute_table): Add description for thiscall attribute.
-	* config/i386/i386.h (ix86_args): Adjust comment for member
-	fastcall.
+	* config/i386/i386.h (ix86_args): Adjust comment for member fastcall.
 	* doc/extend.texi: Add documentation for thiscall.
 	
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
@@ -83,8 +111,8 @@
 
 	PR tree-optimization/42720
 	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Move one-time
-	loop unswitch conditions here from
-	(tree_unswitch_single_loop).
+	loop unswitch conditions here from ...
+	(tree_unswitch_single_loop): ... here.
 
 2010-04-08  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -108,14 +136,15 @@
 2010-04-08  Christian Borntraeger  <borntraeger@de.ibm.com>
             Wolfgang Gellerich  <gellerich@de.ibm.com>
 
-        Implement target hook for loop unrolling
-        * target.h (loop_unroll_adjust): Add a new target hook function.
-        * target-def.h (TARGET_LOOP_UNROLL_ADJUST): Likewise.
-        * doc/tm.texi (TARGET_LOOP_UNROLL_ADJUST): Document it.
-        * config/s390/s390.c (TARGET_LOOP_UNROLL_ADJUST): Define it.
-        (s390_loop_unroll_adjust): Implement the new target hook for s390.
-        * loop-unroll.c (decide_unroll_runtime_iterations): Call loop unroll target hook
-        (decide_unroll_stupid): Likewise.
+	Implement target hook for loop unrolling
+	* target.h (loop_unroll_adjust): Add a new target hook function.
+	* target-def.h (TARGET_LOOP_UNROLL_ADJUST): Likewise.
+	* doc/tm.texi (TARGET_LOOP_UNROLL_ADJUST): Document it.
+	* config/s390/s390.c (TARGET_LOOP_UNROLL_ADJUST): Define it.
+	(s390_loop_unroll_adjust): Implement the new target hook for s390.
+	* loop-unroll.c (decide_unroll_runtime_iterations): Call loop unroll
+	target hook.
+	(decide_unroll_stupid): Likewise.
 
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -131,8 +160,8 @@
 2010-04-08  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adjust the z10
-          defaults for max-unroll-times, max-completely-peeled-insns
-          and max-completely-peel-times.
+	  defaults for max-unroll-times, max-completely-peeled-insns
+	  and max-completely-peel-times.
 
 2010-04-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
@@ -283,8 +312,7 @@
 	* tree-ssa-forwprop.c (forward_propagate_into_gimple_cond):
 	Handle reversed comparison ops.
 	* tree-sra.c (asm_visit_addr): Use get_base_address.
-	* ipa-prop.c (visit_store_addr_for_mod_analysis): Use
-	get_base_address.
+	* ipa-prop.c (visit_store_addr_for_mod_analysis): Use get_base_address.
 	* ipa-reference.c (mark_address): Use get_base_address.
 
 2010-04-07  Richard Guenther  <rguenther@suse.de>
@@ -305,10 +333,8 @@
 	* doc/invoke.texi (-fargument-alias, -fargument-noalias,
 	-fargument-noalias-global, -fargument-noalias-anything): Remove.
 	* common.opt: Likewise.
-	* tree-ssa-structalias.c (intra_create_variable_infos): Adjust
-	comment.
-	* alias.c (base_alias_check): Remove flag_argument_noalias
-	handling.
+	* tree-ssa-structalias.c (intra_create_variable_infos): Adjust comment.
+	* alias.c (base_alias_check): Remove flag_argument_noalias handling.
 	(nonoverlapping_memrefs_p): Likewise.
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
 	* opts.c (common_handle_option): Handle OPT_fargument_alias,
@@ -318,8 +344,7 @@
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43270
-	* tree-vrp.c (check_array_ref): Fix flexible array member
-	detection.
+	* tree-vrp.c (check_array_ref): Fix flexible array member detection.
 	* tree-ssa-sccvn.h (fully_constant_vn_reference_p): Declare.
 	* tree-ssa-pre.c (phi_translate_1): Adjust.
 	(fully_constant_expression): Split out vn_reference handling to ...
@@ -340,15 +365,13 @@
 
 2010-04-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config.gcc (i[34567]86-*-solaris2*): Default with_tune_32 to
-	generic.
+	* config.gcc (i[34567]86-*-solaris2*): Default with_tune_32 to generic.
 
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42617
-	* expr.c (expand_expr_real_1): For TARGET_MEM_REFs with
-	pointer bases build simple mem attributes to retain
-	points-to information.
+	* expr.c (expand_expr_real_1): For TARGET_MEM_REFs with pointer
+	bases build simple mem attributes to retain points-to information.
 
 2010-04-07  Richard Guenther  <rguenther@suse.de>
 
@@ -361,8 +384,7 @@
 	PR middle-end/42617
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not
 	discard plain indirect references.
-	* fold-const.c (operand_equal_p): Guard against NULL_TREE
-	type.
+	* fold-const.c (operand_equal_p): Guard against NULL_TREE type.
 	* tree.c (tree_nop_conversion): Likewise.
 
 2010-04-07  Dodji Seketeli  <dodji@redhat.com>
@@ -391,11 +413,13 @@
 
 	PR middle-end/43519
 	* graphite-clast-to-gimple.c (max_signed_precision_type): Use
-	lang_hooks.types.type_for_size instead of build_nonstandard_integer_type.
+	lang_hooks.types.type_for_size instead of
+	build_nonstandard_integer_type.
 	When converting an unsigned type to signed, double its precision.
 	(gcc_type_for_interval): Use lang_hooks.types.type_for_size.
 	(gcc_type_for_iv_of_clast_loop): Call max_signed_precision_type.
-	(graphite_create_new_loop_guard): When ub + 1 wraps around, use lb <= ub.
+	(graphite_create_new_loop_guard): When ub + 1 wraps around,
+	use lb <= ub.
 
 2010-04-06  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -631,8 +655,7 @@
 
 2010-04-02  Joseph Myers  <joseph@codesourcery.com>
 
-	* read-rtl.c (read_rtx_1): Give an error for EOF while looking for
-	']'.
+	* read-rtl.c (read_rtx_1): Give an error for EOF while looking for ']'.
 
 2010-04-02  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -656,12 +679,12 @@
 
 2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
 
-        * config.gcc (lm32-*-rtems*): Add t-lm32.
+	* config.gcc (lm32-*-rtems*): Add t-lm32.
 
 2010-04-01  Joel Sherrill <joel.sherrill@oarcorp.com>
 
-        * config.gcc: Add lm32-*-rtems*.
-        * config/lm32/rtems.h: New file.
+	* config.gcc: Add lm32-*-rtems*.
+	* config/lm32/rtems.h: New file.
 
 2010-04-01  Dave Korn  <dave.korn.cygwin@gmail.com>
 
@@ -714,7 +737,7 @@
 	PR middle-end/43602
 	Revert
 	2010-03-30  Seongbae Park <seongbae.park@gmail.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+		    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
 	variables TLS.
@@ -746,8 +769,7 @@
 	Update IDO URL.
 	Document GNU as requirement.
 	Update configure requirements.
-	(Specific, mips-sgi-irix6): Document IRIX 6 < 6.5 obsoletion,
-	removal.
+	(Specific, mips-sgi-irix6): Document IRIX 6 < 6.5 obsoletion, removal.
 	Recomment IRIX 6.5.18+.
 	Document IDF/IDL requirement.
 	Document GNU as requirement.

@@ -308,7 +308,7 @@
 	* gcc.c-torture/execute/pr43629.c: New testcase.
 
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
-            Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/43605
 	* gfortran.dg/ftell_3.f90: Enhance test case by reading more.
