@@ -1,3 +1,8 @@
+2010-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42623
+	* g++.dg/template/sizeof13.C: New.
+
 2010-04-09  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/other/pr35504.C: Add check for thiscall.

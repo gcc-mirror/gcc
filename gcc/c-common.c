@@ -4390,7 +4390,7 @@ c_sizeof_or_alignof_type (location_t loc,
       if (complain)
 	error_at (loc, "invalid application of %qs to incomplete type %qT ",
 		  op_name, type);
-      value = size_zero_node;
+      return error_mark_node;
     }
   else
     {
