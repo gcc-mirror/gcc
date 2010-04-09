@@ -990,7 +990,7 @@ static tree rs6000_builtin_reciprocal (unsigned int, bool, bool);
 static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
-static tree rs6000_builtin_conversion (unsigned int, tree);
+static tree rs6000_builtin_conversion (unsigned int, tree, tree);
 static tree rs6000_builtin_vec_perm (tree, tree *);
 static bool rs6000_builtin_support_vector_misalignment (enum
 							machine_mode,
@@ -2883,24 +2883,24 @@ rs6000_builtin_mask_for_load (void)
 
 /* Implement targetm.vectorize.builtin_conversion.
    Returns a decl of a function that implements conversion of an integer vector
-   into a floating-point vector, or vice-versa. TYPE is the type of the integer
-   side of the conversion.
+   into a floating-point vector, or vice-versa.  DEST_TYPE is the
+   destination type and SRC_TYPE the source type of the conversion.
    Return NULL_TREE if it is not available.  */
 static tree
-rs6000_builtin_conversion (unsigned int tcode, tree type)
+rs6000_builtin_conversion (unsigned int tcode, tree dest_type, tree src_type)
 {
   enum tree_code code = (enum tree_code) tcode;
 
   switch (code)
     {
     case FIX_TRUNC_EXPR:
-      switch (TYPE_MODE (type))
+      switch (TYPE_MODE (dest_type))
 	{
 	case V2DImode:
 	  if (!VECTOR_UNIT_VSX_P (V2DFmode))
 	    return NULL_TREE;
 
-	  return TYPE_UNSIGNED (type)
+	  return TYPE_UNSIGNED (dest_type)
 	    ? rs6000_builtin_decls[VSX_BUILTIN_XVCVDPUXDS_UNS]
 	    : rs6000_builtin_decls[VSX_BUILTIN_XVCVDPSXDS];
 
@@ -2908,7 +2908,7 @@ rs6000_builtin_conversion (unsigned int tcode, tree type)
 	  if (VECTOR_UNIT_NONE_P (V4SImode) || VECTOR_UNIT_NONE_P (V4SFmode))
 	    return NULL_TREE;
 
-	  return TYPE_UNSIGNED (type)
+	  return TYPE_UNSIGNED (dest_type)
 	    ? rs6000_builtin_decls[VECTOR_BUILTIN_FIXUNS_V4SF_V4SI]
 	    : rs6000_builtin_decls[VECTOR_BUILTIN_FIX_V4SF_V4SI];
 
@@ -2917,13 +2917,13 @@ rs6000_builtin_conversion (unsigned int tcode, tree type)
 	}
 
     case FLOAT_EXPR:
-      switch (TYPE_MODE (type))
+      switch (TYPE_MODE (src_type))
 	{
 	case V2DImode:
 	  if (!VECTOR_UNIT_VSX_P (V2DFmode))
 	    return NULL_TREE;
 
-	  return TYPE_UNSIGNED (type)
+	  return TYPE_UNSIGNED (src_type)
 	    ? rs6000_builtin_decls[VSX_BUILTIN_XVCVUXDDP]
 	    : rs6000_builtin_decls[VSX_BUILTIN_XVCVSXDDP];
 
@@ -2931,7 +2931,7 @@ rs6000_builtin_conversion (unsigned int tcode, tree type)
 	  if (VECTOR_UNIT_NONE_P (V4SImode) || VECTOR_UNIT_NONE_P (V4SFmode))
 	    return NULL_TREE;
 
-	  return TYPE_UNSIGNED (type)
+	  return TYPE_UNSIGNED (src_type)
 	    ? rs6000_builtin_decls[VECTOR_BUILTIN_UNSFLOAT_V4SI_V4SF]
 	    : rs6000_builtin_decls[VECTOR_BUILTIN_FLOAT_V4SI_V4SF];
 

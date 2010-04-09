@@ -430,7 +430,8 @@ default_builtin_vectorized_function (tree fndecl ATTRIBUTE_UNUSED,
 
 tree
 default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
-				       tree type ATTRIBUTE_UNUSED)
+				       tree dest_type ATTRIBUTE_UNUSED,
+				       tree src_type ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
 }
