@@ -1,5 +1,10 @@
 2010-04-09  Richard Guenther  <rguenther@suse.de>
 
+	PR target/43152
+	* config/i386/sse.md (vcond<mode>): Handle AVX modes as well.
+
+2010-04-09  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vectorizer.h (struct _stmt_vec_info): Document
 	that vectype is the type of the LHS.
 	(supportable_widening_operation, supportable_narrowing_operation): 
