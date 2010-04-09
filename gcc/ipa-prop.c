@@ -291,6 +291,13 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	      tree val = jump_func->value.constant;
 	      fprintf (f, "CONST: ");
 	      print_generic_expr (f, val, 0);
+	      if (TREE_CODE (val) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
+		{
+		  fprintf (f, " -> ");
+		  print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)),
+						       0);
+		}
 	      fprintf (f, "\n");
 	    }
 	  else if (type == IPA_JF_CONST_MEMBER_PTR)

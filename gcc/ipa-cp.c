@@ -227,10 +227,14 @@ ipcp_lats_are_equal (struct ipcp_lattice *lat1, struct ipcp_lattice *lat2)
   if (lat1->type != lat2->type)
     return false;
 
-  if (operand_equal_p (lat1->constant, lat2->constant, 0))
-    return true;
-
-  return false;
+  if (TREE_CODE (lat1->constant) ==  ADDR_EXPR
+      && TREE_CODE (lat2->constant) ==  ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (lat1->constant, 0)) == CONST_DECL
+      && TREE_CODE (TREE_OPERAND (lat2->constant, 0)) == CONST_DECL)
+    return operand_equal_p (DECL_INITIAL (TREE_OPERAND (lat1->constant, 0)),
+			    DECL_INITIAL (TREE_OPERAND (lat2->constant, 0)), 0);
+  else
+    return operand_equal_p (lat1->constant, lat2->constant, 0);
 }
 
 /* Compute Meet arithmetics:
@@ -386,8 +390,16 @@ ipcp_print_all_lattices (FILE * f)
 	  fprintf (f, "    param [%d]: ", i);
 	  if (lat->type == IPA_CONST_VALUE)
 	    {
+	      tree cst = lat->constant;
 	      fprintf (f, "type is CONST ");
-	      print_generic_expr (f, lat->constant, 0);
+	      print_generic_expr (f, cst, 0);
+	      if (TREE_CODE (cst) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (cst, 0)) == CONST_DECL)
+		{
+		  fprintf (f, " -> ");
+		  print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (cst, 0)),
+						       0);
+		}
 	      fprintf (f, "\n");
 	    }
 	  else if (lat->type == IPA_TOP)
