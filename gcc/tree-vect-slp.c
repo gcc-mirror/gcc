@@ -1971,7 +1971,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   stmt_info = vinfo_for_stmt (stmt);
 
   /* VECTYPE is the type of the destination.  */
-  vectype = get_vectype_for_scalar_type (TREE_TYPE (gimple_assign_lhs (stmt)));
+  vectype = STMT_VINFO_VECTYPE (stmt_info);
   nunits = (unsigned int) TYPE_VECTOR_SUBPARTS (vectype);
   group_size = SLP_INSTANCE_GROUP_SIZE (instance);
 

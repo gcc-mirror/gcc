@@ -1,3 +1,31 @@
+2010-04-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Document
+	that vectype is the type of the LHS.
+	(supportable_widening_operation, supportable_narrowing_operation): 
+	Get both input and output vector types as arguments.
+	(vect_is_simple_use_1): Declare.
+	(get_same_sized_vectype): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor):
+	Set STMT_VINFO_VECTYPE to the vector type of the def.
+	(vectorizable_reduction): Adjust.
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern):
+	Adjust.  Specify the output vector type.
+	(vect_pattern_recog_1): Adjust.
+	* tree-vect-stmts.c (get_same_sized_vectype): New function.
+	(vectorizable_call): Adjust.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_type_promotion): Likewise.
+	(vect_analyze_stmt): Set STMT_VINFO_VECTYPE to the vector type of
+	the def.
+	(vect_is_simple_use_1): New function.
+	(supportable_widening_operation): Get both input and output
+	vector types.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Adjust.
+
 2010-04-09  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Add

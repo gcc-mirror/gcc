@@ -1223,7 +1223,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   int nunits_in;
   int nunits_out;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  tree fndecl, new_temp, def, rhs_type, lhs_type;
+  tree fndecl, new_temp, def, rhs_type;
   gimple def_stmt;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   gimple new_stmt = NULL;
@@ -1252,8 +1252,11 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   if (TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
+  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
   /* Process function arguments.  */
   rhs_type = NULL_TREE;
+  vectype_in = NULL_TREE;
   nargs = gimple_call_num_args (stmt);
 
   /* Bail out if the function has more than two arguments, we
@@ -1264,6 +1267,8 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 
   for (i = 0; i < nargs; i++)
     {
+      tree opvectype;
+
       op = gimple_call_arg (stmt, i);
 
       /* We can only handle calls with arguments of the same type.  */
@@ -1274,28 +1279,35 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
 	    fprintf (vect_dump, "argument types differ.");
 	  return false;
 	}
-      rhs_type = TREE_TYPE (op);
+      if (!rhs_type)
+	rhs_type = TREE_TYPE (op);
 
-      if (!vect_is_simple_use (op, loop_vinfo, NULL, &def_stmt, &def, &dt[i]))
+      if (!vect_is_simple_use_1 (op, loop_vinfo, NULL,
+				 &def_stmt, &def, &dt[i], &opvectype))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
 	  return false;
 	}
+
+      if (!vectype_in)
+	vectype_in = opvectype;
+      else if (opvectype
+	       && opvectype != vectype_in)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "argument vector types differ.");
+	  return false;
+	}
     }
-
-  vectype_in = get_vectype_for_scalar_type (rhs_type);
+  /* If all arguments are external or constant defs use a vector type with
+     the same size as the output vector type.  */
   if (!vectype_in)
-    return false;
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-
-  lhs_type = TREE_TYPE (gimple_call_lhs (stmt));
-  vectype_out = get_vectype_for_scalar_type (lhs_type);
-  if (!vectype_out)
-    return false;
-  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
+    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
 
   /* FORNOW */
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
+  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in == nunits_out / 2)
     modifier = NARROW;
   else if (nunits_out == nunits_in)
@@ -1546,7 +1558,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   int nunits_out;
   tree vectype_out, vectype_in;
   int ncopies, j;
-  tree rhs_type, lhs_type;
+  tree rhs_type;
   tree builtin_decl;
   enum { NARROW, NONE, WIDEN } modifier;
   int i;
@@ -1578,21 +1590,27 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* Check types of lhs and rhs.  */
+  scalar_dest = gimple_assign_lhs (stmt);
+  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
   op0 = gimple_assign_rhs1 (stmt);
   rhs_type = TREE_TYPE (op0);
-  vectype_in = get_vectype_for_scalar_type (rhs_type);
+  /* Check the operands of the operation.  */
+  if (!vect_is_simple_use_1 (op0, loop_vinfo, NULL,
+			     &def_stmt, &def, &dt[0], &vectype_in))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "use not simple.");
+      return false;
+    }
+  /* If op0 is an external or constant defs use a vector type of
+     the same size as the output vector type.  */
   if (!vectype_in)
-    return false;
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
-
-  scalar_dest = gimple_assign_lhs (stmt);
-  lhs_type = TREE_TYPE (scalar_dest);
-  vectype_out = get_vectype_for_scalar_type (lhs_type);
-  if (!vectype_out)
-    return false;
-  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
+    vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
 
   /* FORNOW */
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
+  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in == nunits_out / 2)
     modifier = NARROW;
   else if (nunits_out == nunits_in)
@@ -1600,14 +1618,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   else if (nunits_out == nunits_in / 2)
     modifier = WIDEN;
   else
-    return false;
-
-  if (modifier == NONE)
-    gcc_assert (STMT_VINFO_VECTYPE (stmt_info) == vectype_out);
-
-  /* Bail out if the types are both integral or non-integral.  */
-  if ((INTEGRAL_TYPE_P (rhs_type) && INTEGRAL_TYPE_P (lhs_type))
-      || (!INTEGRAL_TYPE_P (rhs_type) && !INTEGRAL_TYPE_P (lhs_type)))
     return false;
 
   integral_type = INTEGRAL_TYPE_P (rhs_type) ? vectype_in : vectype_out;
@@ -1626,24 +1636,17 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
-  /* Check the operands of the operation.  */
-  if (!vect_is_simple_use (op0, loop_vinfo, NULL, &def_stmt, &def, &dt[0]))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "use not simple.");
-      return false;
-    }
-
   /* Supportable by target?  */
   if ((modifier == NONE
        && !targetm.vectorize.builtin_conversion (code, integral_type))
       || (modifier == WIDEN
-	  && !supportable_widening_operation (code, stmt, vectype_in,
+	  && !supportable_widening_operation (code, stmt,
+					      vectype_out, vectype_in,
 					      &decl1, &decl2,
 					      &code1, &code2,
                                               &dummy_int, &dummy))
       || (modifier == NARROW
-	  && !supportable_narrowing_operation (code, stmt, vectype_in,
+	  && !supportable_narrowing_operation (code, vectype_out, vectype_in,
 					       &code1, &dummy_int, &dummy)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1653,7 +1656,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (modifier != NONE)
     {
-      STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
       /* FORNOW: SLP not supported.  */
       if (STMT_SLP_TYPE (stmt_info))
 	return false;
@@ -1718,8 +1720,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	    vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
 	  else
 	    vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd0);
-
-	  STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
 
 	  /* Generate first half of the widened result:  */
 	  new_stmt
@@ -1918,7 +1918,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   tree op0, op1 = NULL;
   tree vec_oprnd1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code;
   enum machine_mode vec_mode;
@@ -1932,7 +1932,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   gimple new_stmt = NULL;
   stmt_vec_info prev_stmt_info;
-  int nunits_in = TYPE_VECTOR_SUBPARTS (vectype);
+  int nunits_in;
   int nunits_out;
   tree vectype_out;
   int ncopies;
@@ -1943,21 +1943,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   bool scalar_shift_arg = false;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
-
-  if (loop_vinfo)
-    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  else
-    vf = 1;
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
-
-  gcc_assert (ncopies >= 1);
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -1970,14 +1955,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
-    return false;
-
-  scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
-  if (!vectype_out)
-    return false;
-  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_out != nunits_in)
     return false;
 
   code = gimple_assign_rhs_code (stmt);
@@ -1996,13 +1973,27 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
+  scalar_dest = gimple_assign_lhs (stmt);
+  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
   op0 = gimple_assign_rhs1 (stmt);
-  if (!vect_is_simple_use (op0, loop_vinfo, bb_vinfo, &def_stmt, &def, &dt[0]))
+  if (!vect_is_simple_use_1 (op0, loop_vinfo, bb_vinfo,
+			     &def_stmt, &def, &dt[0], &vectype))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
       return false;
     }
+  /* If op0 is an external or constant def use a vector type with
+     the same size as the output vector type.  */
+  if (!vectype)
+    vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+  gcc_assert (vectype);
+
+  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype);
+  if (nunits_out != nunits_in)
+    return false;
 
   if (op_type == binary_op)
     {
@@ -2015,6 +2006,21 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	  return false;
 	}
     }
+
+  if (loop_vinfo)
+    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  else
+    vf = 1;
+
+  /* Multiple types in SLP are handled by creating the appropriate number of
+     vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
+     case of SLP.  */
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
+
+  gcc_assert (ncopies >= 1);
 
   /* If this is a shift/rotate, determine whether the shift amount is a vector,
      or scalar.  If the shift/rotate amount is a vector, use the vector/vector
@@ -2423,16 +2429,32 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   if (!CONVERT_EXPR_CODE_P (code))
     return false;
 
+  scalar_dest = gimple_assign_lhs (stmt);
+  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
+  /* Check the operands of the operation.  */
   op0 = gimple_assign_rhs1 (stmt);
-  vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
+  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
+	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
+	     && CONVERT_EXPR_CODE_P (code))))
+    return false;
+  if (!vect_is_simple_use_1 (op0, loop_vinfo, NULL,
+			     &def_stmt, &def, &dt[0], &vectype_in))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "use not simple.");
+      return false;
+    }
+  /* If op0 is an external def use a vector type with the
+     same size as the output vector type if possible.  */
+  if (!vectype_in)
+    vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
   if (!vectype_in)
     return false;
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
-  scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
-  if (!vectype_out)
-    return false;
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in >= nunits_out)
     return false;
@@ -2446,27 +2468,10 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
   gcc_assert (ncopies >= 1);
 
-  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
-	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && CONVERT_EXPR_CODE_P (code))))
-    return false;
-
-  /* Check the operands of the operation.  */
-  if (!vect_is_simple_use (op0, loop_vinfo, NULL, &def_stmt, &def, &dt[0]))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "use not simple.");
-      return false;
-    }
-
   /* Supportable by target?  */
-  if (!supportable_narrowing_operation (code, stmt, vectype_in, &code1,
-                                        &multi_step_cvt, &interm_types))
+  if (!supportable_narrowing_operation (code, vectype_out, vectype_in,
+					&code1, &multi_step_cvt, &interm_types))
     return false;
-
-  STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -2693,16 +2698,32 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       && code != WIDEN_MULT_EXPR)
     return false;
 
+  scalar_dest = gimple_assign_lhs (stmt);
+  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+
+  /* Check the operands of the operation.  */
   op0 = gimple_assign_rhs1 (stmt);
-  vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
+  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
+	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
+	     && CONVERT_EXPR_CODE_P (code))))
+    return false;
+  if (!vect_is_simple_use_1 (op0, loop_vinfo, NULL,
+			     &def_stmt, &def, &dt[0], &vectype_in))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "use not simple.");
+      return false;
+    }
+  /* If op0 is an external or constant def use a vector type with
+     the same size as the output vector type.  */
+  if (!vectype_in)
+    vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
   if (!vectype_in)
     return false;
-  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
-  scalar_dest = gimple_assign_lhs (stmt);
-  vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
-  if (!vectype_out)
-    return false;
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in <= nunits_out)
     return false;
@@ -2717,21 +2738,6 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   gcc_assert (ncopies >= 1);
 
-  if (! ((INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (op0)))
-	 || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (scalar_dest))
-	     && SCALAR_FLOAT_TYPE_P (TREE_TYPE (op0))
-	     && CONVERT_EXPR_CODE_P (code))))
-    return false;
-
-  /* Check the operands of the operation.  */
-  if (!vect_is_simple_use (op0, loop_vinfo, NULL, &def_stmt, &def, &dt[0]))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "use not simple.");
-      return false;
-    }
-
   op_type = TREE_CODE_LENGTH (code);
   if (op_type == binary_op)
     {
@@ -2745,7 +2751,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   /* Supportable by target?  */
-  if (!supportable_widening_operation (code, stmt, vectype_in,
+  if (!supportable_widening_operation (code, stmt, vectype_out, vectype_in,
 				       &decl1, &decl2, &code1, &code2,
                                        &multi_step_cvt, &interm_types))
     return false;
@@ -2753,8 +2759,6 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   /* Binary widening operation can only be supported directly by the
      architecture.  */
   gcc_assert (!(multi_step_cvt && op_type == binary_op));
-
-  STMT_VINFO_VECTYPE (stmt_info) = vectype_in;
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -3944,7 +3948,6 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   enum vect_relevant relevance = STMT_VINFO_RELEVANT (stmt_info);
   bool ok;
-  HOST_WIDE_INT dummy;
   tree scalar_type, vectype;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -4002,7 +4005,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
     {
       gcc_assert (PURE_SLP_STMT (stmt_info));
 
-      scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
+      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
       if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "get vectype for scalar type:  ");
@@ -4455,6 +4458,17 @@ get_vectype_for_scalar_type (tree scalar_type)
   return vectype;
 }
 
+/* Function get_same_sized_vectype
+
+   Returns a vector type corresponding to SCALAR_TYPE of size
+   VECTOR_TYPE if supported by the target.  */
+
+tree
+get_same_sized_vectype (tree scalar_type, tree vector_type ATTRIBUTE_UNUSED)
+{
+  return get_vectype_for_scalar_type (scalar_type);
+}
+
 /* Function vect_is_simple_use.
 
    Input:
@@ -4588,12 +4602,55 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo,
   return true;
 }
 
+/* Function vect_is_simple_use_1.
+
+   Same as vect_is_simple_use_1 but also determines the vector operand
+   type of OPERAND and stores it to *VECTYPE.  If the definition of
+   OPERAND is vect_uninitialized_def, vect_constant_def or
+   vect_external_def *VECTYPE will be set to NULL_TREE and the caller
+   is responsible to compute the best suited vector type for the
+   scalar operand.  */
+
+bool
+vect_is_simple_use_1 (tree operand, loop_vec_info loop_vinfo,
+		      bb_vec_info bb_vinfo, gimple *def_stmt,
+		      tree *def, enum vect_def_type *dt, tree *vectype)
+{
+  if (!vect_is_simple_use (operand, loop_vinfo, bb_vinfo, def_stmt, def, dt))
+    return false;
+
+  /* Now get a vector type if the def is internal, otherwise supply
+     NULL_TREE and leave it up to the caller to figure out a proper
+     type for the use stmt.  */
+  if (*dt == vect_internal_def
+      || *dt == vect_induction_def
+      || *dt == vect_reduction_def
+      || *dt == vect_double_reduction_def
+      || *dt == vect_nested_cycle)
+    {
+      stmt_vec_info stmt_info = vinfo_for_stmt (*def_stmt);
+      if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+	stmt_info = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+      *vectype = STMT_VINFO_VECTYPE (stmt_info);
+      gcc_assert (*vectype != NULL_TREE);
+    }
+  else if (*dt == vect_uninitialized_def
+	   || *dt == vect_constant_def
+	   || *dt == vect_external_def)
+    *vectype = NULL_TREE;
+  else
+    gcc_unreachable ();
+
+  return true;
+}
+
 
 /* Function supportable_widening_operation
 
    Check whether an operation represented by the code CODE is a
    widening operation that is supported by the target platform in
-   vector form (i.e., when operating on arguments of type VECTYPE).
+   vector form (i.e., when operating on arguments of type VECTYPE_IN
+   producing a result of type VECTYPE_OUT).
 
    Widening operations we currently support are NOP (CONVERT), FLOAT
    and WIDEN_MULT.  This function checks if these operations are supported
@@ -4613,7 +4670,8 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo,
    widening operation (short in the above example).  */
 
 bool
-supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
+supportable_widening_operation (enum tree_code code, gimple stmt,
+				tree vectype_out, tree vectype_in,
                                 tree *decl1, tree *decl2,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
@@ -4626,8 +4684,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
   enum machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;
-  tree type = gimple_expr_type (stmt);
-  tree wide_vectype = get_vectype_for_scalar_type (type);
+  tree vectype = vectype_in;
+  tree wide_vectype = vectype_out;
   enum tree_code c1, c2;
 
   /* The result of a vectorized widening operation usually requires two vectors
@@ -4726,8 +4784,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
   if (code == FIX_TRUNC_EXPR)
     {
       /* The signedness is determined from output operand.  */
-      optab1 = optab_for_tree_code (c1, type, optab_default);
-      optab2 = optab_for_tree_code (c2, type, optab_default);
+      optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
+      optab2 = optab_for_tree_code (c2, vectype_out, optab_default);
     }
   else
     {
@@ -4809,7 +4867,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
 
    Check whether an operation represented by the code CODE is a
    narrowing operation that is supported by the target platform in
-   vector form (i.e., when operating on arguments of type VECTYPE).
+   vector form (i.e., when operating on arguments of type VECTYPE_IN
+   and producing a result of type VECTYPE_OUT).
 
    Narrowing operations we currently support are NOP (CONVERT) and
    FIX_TRUNC. This function checks if these operations are supported by
@@ -4826,15 +4885,15 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
 
 bool
 supportable_narrowing_operation (enum tree_code code,
-				 const_gimple stmt, tree vectype,
+				 tree vectype_out, tree vectype_in,
 				 enum tree_code *code1, int *multi_step_cvt,
                                  VEC (tree, heap) **interm_types)
 {
   enum machine_mode vec_mode;
   enum insn_code icode1;
   optab optab1, interm_optab;
-  tree type = gimple_expr_type (stmt);
-  tree narrow_vectype = get_vectype_for_scalar_type (type);
+  tree vectype = vectype_in;
+  tree narrow_vectype = vectype_out;
   enum tree_code c1;
   tree intermediate_type, prev_type;
   int i;
@@ -4860,7 +4919,7 @@ supportable_narrowing_operation (enum tree_code code,
 
   if (code == FIX_TRUNC_EXPR)
     /* The signedness is determined from output operand.  */
-    optab1 = optab_for_tree_code (c1, type, optab_default);
+    optab1 = optab_for_tree_code (c1, vectype_out, optab_default);
   else
     optab1 = optab_for_tree_code (c1, vectype, optab_default);
 
