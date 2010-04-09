@@ -409,7 +409,7 @@ typedef struct _stmt_vec_info {
      used outside the loop.  */
   bool live;
 
-  /* The vector type to be used.  */
+  /* The vector type to be used for the LHS of this statement.  */
   tree vectype;
 
   /* The vectorized version of the stmt.  */
@@ -760,15 +760,18 @@ extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
 extern tree get_vectype_for_scalar_type (tree);
+extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_is_simple_use (tree, loop_vec_info, bb_vec_info, gimple *,
                                 tree *,  enum vect_def_type *);
-extern bool supportable_widening_operation (enum tree_code, gimple, tree,
+extern bool vect_is_simple_use_1 (tree, loop_vec_info, bb_vec_info, gimple *,
+				  tree *,  enum vect_def_type *, tree *);
+extern bool supportable_widening_operation (enum tree_code, gimple, tree, tree,
                                             tree *, tree *, enum tree_code *,
                                             enum tree_code *, int *,
                                             VEC (tree, heap) **);
-extern bool supportable_narrowing_operation (enum tree_code, const_gimple,
-                                             tree, enum tree_code *, int *,
-                                             VEC (tree, heap) **);
+extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
+					     enum tree_code *,
+					     int *, VEC (tree, heap) **);
 extern stmt_vec_info new_stmt_vec_info (gimple stmt, loop_vec_info,
                                         bb_vec_info);
 extern void free_stmt_vec_info (gimple stmt);

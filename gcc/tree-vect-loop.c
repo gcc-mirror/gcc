@@ -240,6 +240,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
+	  tree vf_vectype;
 	  gimple stmt = gsi_stmt (si);
 	  stmt_info = vinfo_for_stmt (stmt);
 
@@ -294,14 +295,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info)
 			  && !is_pattern_stmt_p (stmt_info));
 
-	      scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
-                                                           &dummy);
+	      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		{
 		  fprintf (vect_dump, "get vectype for scalar type:  ");
 		  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
 		}
-
 	      vectype = get_vectype_for_scalar_type (scalar_type);
 	      if (!vectype)
 		{
@@ -313,23 +312,60 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		    }
 		  return false;
 		}
+
 	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
             }
+
+	  /* The vectorization factor is according to the smallest
+	     scalar type (or the largest vector size, but we only
+	     support one vector size per loop).  */
+	  scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
+						       &dummy);
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "get vectype for scalar type:  ");
+	      print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+	    }
+	  vf_vectype = get_vectype_for_scalar_type (scalar_type);
+	  if (!vf_vectype)
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: unsupported data-type ");
+		  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+		}
+	      return false;
+	    }
+
+	  if ((GET_MODE_SIZE (TYPE_MODE (vectype))
+	       != GET_MODE_SIZE (TYPE_MODE (vf_vectype))))
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+		{
+		  fprintf (vect_dump,
+			   "not vectorized: different sized vector "
+			   "types in statement, ");
+		  print_generic_expr (vect_dump, vectype, TDF_SLIM);
+		  fprintf (vect_dump, " and ");
+		  print_generic_expr (vect_dump, vf_vectype, TDF_SLIM);
+		}
+	      return false;
+	    }
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
 	      fprintf (vect_dump, "vectype: ");
-	      print_generic_expr (vect_dump, vectype, TDF_SLIM);
+	      print_generic_expr (vect_dump, vf_vectype, TDF_SLIM);
 	    }
 
-	  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	  nunits = TYPE_VECTOR_SUBPARTS (vf_vectype);
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "nunits = %d", nunits);
 
 	  if (!vectorization_factor
 	      || (nunits > vectorization_factor))
 	    vectorization_factor = nunits;
-
         }
     }
 
@@ -3446,7 +3482,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   tree scalar_dest;
   tree loop_vec_def0 = NULL_TREE, loop_vec_def1 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  tree vectype_in = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, orig_code, epilog_reduc_code;
@@ -3464,8 +3501,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info orig_stmt_info;
   tree expr = NULL_TREE;
   int i;
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+  int ncopies;
   int epilog_copies;
   stmt_vec_info prev_stmt_info, prev_phi_info;
   gimple first_phi = NULL;
@@ -3490,8 +3526,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       loop = loop->inner;
       nested_cycle = true;
     }
-
-  gcc_assert (ncopies >= 1);
 
   /* FORNOW: SLP not supported.  */
   if (STMT_SLP_TYPE (stmt_info))
@@ -3579,12 +3613,16 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      reduction variable.  */
   for (i = 0; i < op_type-1; i++)
     {
+      tree tem;
+
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
       if (i == 0 && code == COND_EXPR)
         continue;
 
-      is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
-					  &def, &dt);
+      is_simple_use = vect_is_simple_use_1 (ops[i], loop_vinfo, NULL,
+					    &def_stmt, &def, &dt, &tem);
+      if (!vectype_in)
+	vectype_in = tem;
       gcc_assert (is_simple_use);
       if (dt != vect_internal_def
 	  && dt != vect_external_def
@@ -3602,7 +3640,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
-                                      &def, &dt);
+				      &def, &dt);
   gcc_assert (is_simple_use);
   gcc_assert (dt == vect_reduction_def
               || dt == vect_nested_cycle
@@ -3625,7 +3663,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
 
-  vec_mode = TYPE_MODE (vectype);
+
+  ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	     / TYPE_VECTOR_SUBPARTS (vectype_in));
+  gcc_assert (ncopies >= 1);
+
+  vec_mode = TYPE_MODE (vectype_in);
 
   if (code == COND_EXPR)
     {
@@ -3642,7 +3685,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       /* 4. Supportable by target?  */
 
       /* 4.1. check support for the operation in the loop  */
-      optab = optab_for_tree_code (code, vectype, optab_default);
+      optab = optab_for_tree_code (code, vectype_in, optab_default);
       if (!optab)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
@@ -3666,7 +3709,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
 
       /* Worthwhile without SIMD support?  */
-      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+      if (!VECTOR_MODE_P (TYPE_MODE (vectype_in))
           && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
    	     < vect_min_worthwhile_factor (code))
         {
@@ -3716,18 +3759,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       /* This is a reduction pattern: get the vectype from the type of the
          reduction variable, and get the tree-code from orig_stmt.  */
       orig_code = gimple_assign_rhs_code (orig_stmt);
-      vectype = get_vectype_for_scalar_type (TREE_TYPE (def));
-      if (!vectype)
-	{
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "unsupported data-type ");
-              print_generic_expr (vect_dump, TREE_TYPE (def), TDF_SLIM);
-            }
-          return false;
-        }
-
-      vec_mode = TYPE_MODE (vectype);
+      gcc_assert (vectype_out);
+      vec_mode = TYPE_MODE (vectype_out);
     }
   else
     {
@@ -3755,7 +3788,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   epilog_reduc_code = ERROR_MARK;
   if (reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
     {
-      reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype,
+      reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype_out,
                                          optab_default);
       if (!reduc_optab)
         {
@@ -3812,7 +3845,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     gcc_assert (ncopies == 1);
 
   /* Create the destination vector  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -3910,22 +3943,22 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       if (op_type == binary_op)
         {
           if (reduc_index == 0)
-            expr = build2 (code, vectype, reduc_def, loop_vec_def0);
+            expr = build2 (code, vectype_out, reduc_def, loop_vec_def0);
           else
-            expr = build2 (code, vectype, loop_vec_def0, reduc_def);
+            expr = build2 (code, vectype_out, loop_vec_def0, reduc_def);
         }
       else
         {
           if (reduc_index == 0)
-            expr = build3 (code, vectype, reduc_def, loop_vec_def0,
+            expr = build3 (code, vectype_out, reduc_def, loop_vec_def0,
                            loop_vec_def1);
           else
             {
               if (reduc_index == 1)
-                expr = build3 (code, vectype, loop_vec_def0, reduc_def,
+                expr = build3 (code, vectype_out, loop_vec_def0, reduc_def,
                                loop_vec_def1);
               else
-                expr = build3 (code, vectype, loop_vec_def0, loop_vec_def1,
+                expr = build3 (code, vectype_out, loop_vec_def0, loop_vec_def1,
 	     	               reduc_def);
             }
         }

@@ -362,7 +362,7 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
   tree oprnd0, oprnd1;
   tree type, half_type0, half_type1;
   gimple pattern_stmt;
-  tree vectype;
+  tree vectype, vectype_out;
   tree dummy;
   tree var;
   enum tree_code dummy_code;
@@ -405,14 +405,16 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
 
   /* Check target support  */
   vectype = get_vectype_for_scalar_type (half_type0);
+  vectype_out = get_vectype_for_scalar_type (type);
   if (!vectype
-      || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt, vectype,
+      || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
+					  vectype_out, vectype,
 					  &dummy, &dummy, &dummy_code,
 					  &dummy_code, &dummy_int, &dummy_vec))
     return NULL;
 
   *type_in = vectype;
-  *type_out = NULL_TREE;
+  *type_out = vectype_out;
 
   /* Pattern supported. Create a stmt to be used to replace the pattern: */
   var = vect_recog_temp_ssa_var (type, NULL);
@@ -677,7 +679,9 @@ vect_pattern_recog_1 (
     {
       /* No need to check target support (already checked by the pattern
          recognition function).  */
-      pattern_vectype = type_in;
+      if (type_out)
+	gcc_assert (VECTOR_MODE_P (TYPE_MODE (type_out)));
+      pattern_vectype = type_out ? type_out : type_in;
     }
   else
     {
@@ -686,9 +690,14 @@ vect_pattern_recog_1 (
       optab optab;
 
       /* Check target support  */
-      pattern_vectype = get_vectype_for_scalar_type (type_in);
-      if (!pattern_vectype)
-        return;
+      type_in = get_vectype_for_scalar_type (type_in);
+      if (!type_in)
+	return;
+      if (type_out)
+	type_out = get_vectype_for_scalar_type (type_out);
+      else
+	type_out = type_in;
+      pattern_vectype = type_out;
 
       if (is_gimple_assign (pattern_stmt))
 	code = gimple_assign_rhs_code (pattern_stmt);
@@ -698,15 +707,12 @@ vect_pattern_recog_1 (
 	  code = CALL_EXPR;
 	}
 
-      optab = optab_for_tree_code (code, pattern_vectype, optab_default);
-      vec_mode = TYPE_MODE (pattern_vectype);
+      optab = optab_for_tree_code (code, type_in, optab_default);
+      vec_mode = TYPE_MODE (type_in);
       if (!optab
           || (icode = optab_handler (optab, vec_mode)->insn_code) ==
               CODE_FOR_nothing
-          || (type_out
-              && (!get_vectype_for_scalar_type (type_out)
-                  || (insn_data[icode].operand[0].mode !=
-                      TYPE_MODE (get_vectype_for_scalar_type (type_out))))))
+          || (insn_data[icode].operand[0].mode != TYPE_MODE (type_out)))
 	return;
     }
 
