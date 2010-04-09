@@ -24691,43 +24691,92 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
 
 
 /* Returns a decl of a function that implements conversion of an integer vector
-   into a floating-point vector, or vice-versa. TYPE is the type of the integer
-   side of the conversion.
+   into a floating-point vector, or vice-versa.  DEST_TYPE and SRC_TYPE
+   are the types involved when converting according to CODE.
    Return NULL_TREE if it is not available.  */
 
 static tree
-ix86_vectorize_builtin_conversion (unsigned int code, tree type)
+ix86_vectorize_builtin_conversion (unsigned int code,
+				   tree dest_type, tree src_type)
 {
-  if (! (TARGET_SSE2 && TREE_CODE (type) == VECTOR_TYPE))
+  if (! TARGET_SSE2)
     return NULL_TREE;
 
   switch (code)
     {
     case FLOAT_EXPR:
-      switch (TYPE_MODE (type))
+      switch (TYPE_MODE (src_type))
 	{
 	case V4SImode:
-	  return TYPE_UNSIGNED (type)
-	    ? ix86_builtins[IX86_BUILTIN_CVTUDQ2PS]
-	    : ix86_builtins[IX86_BUILTIN_CVTDQ2PS];
+	  switch (TYPE_MODE (dest_type))
+	    {
+	    case V4SFmode:
+	      return (TYPE_UNSIGNED (src_type)
+		      ? ix86_builtins[IX86_BUILTIN_CVTUDQ2PS]
+		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS]);
+	    case V4DFmode:
+	      return (TYPE_UNSIGNED (src_type)
+		      ? NULL_TREE
+		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PD256]);
+	    default:
+	      return NULL_TREE;
+	    }
+	  break;
+	case V8SImode:
+	  switch (TYPE_MODE (dest_type))
+	    {
+	    case V8SFmode:
+	      return (TYPE_UNSIGNED (src_type)
+		      ? NULL_TREE
+		      : ix86_builtins[IX86_BUILTIN_CVTDQ2PS]);
+	    default:
+	      return NULL_TREE;
+	    }
+	  break;
 	default:
 	  return NULL_TREE;
 	}
 
     case FIX_TRUNC_EXPR:
-      switch (TYPE_MODE (type))
+      switch (TYPE_MODE (dest_type))
 	{
 	case V4SImode:
-	  return TYPE_UNSIGNED (type)
-	    ? NULL_TREE
-	    : ix86_builtins[IX86_BUILTIN_CVTTPS2DQ];
+	  switch (TYPE_MODE (src_type))
+	    {
+	    case V4SFmode:
+	      return (TYPE_UNSIGNED (dest_type)
+		      ? NULL_TREE
+		      : ix86_builtins[IX86_BUILTIN_CVTTPS2DQ]);
+	    case V4DFmode:
+	      return (TYPE_UNSIGNED (dest_type)
+		      ? NULL_TREE
+		      : ix86_builtins[IX86_BUILTIN_CVTTPD2DQ256]);
+	    default:
+	      return NULL_TREE;
+	    }
+	  break;
+
+	case V8SImode:
+	  switch (TYPE_MODE (src_type))
+	    {
+	    case V8SFmode:
+	      return (TYPE_UNSIGNED (dest_type)
+		      ? NULL_TREE
+		      : ix86_builtins[IX86_BUILTIN_CVTTPS2DQ256]);
+	    default:
+	      return NULL_TREE;
+	    }
+	  break;
+
 	default:
 	  return NULL_TREE;
 	}
+
     default:
       return NULL_TREE;
-
     }
+
+  return NULL_TREE;
 }
 
 /* Returns a code for a target-specific builtin that implements

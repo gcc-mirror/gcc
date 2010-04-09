@@ -72,7 +72,7 @@ extern const char * default_invalid_within_doloop (const_rtx);
 
 extern tree default_builtin_vectorized_function (tree, tree, tree);
 
-extern tree default_builtin_vectorized_conversion (unsigned int, tree);
+extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 
 extern tree default_builtin_reciprocal (unsigned int, bool, bool);
 

@@ -5700,13 +5700,9 @@ Target builtin that implements vector permute.
 Return true if a vector created for @code{builtin_vec_perm} is valid.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{type})
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})
 This hook should return the DECL of a function that implements conversion of the
-input vector of type @var{type}.
-If @var{type} is an integral type, the result of the conversion is a vector of
-floating-point type of the same size.
-If @var{type} is a floating-point type, the result of the conversion is a vector
-of integral type of the same size.
+input vector of type @var{src_type} to type @var{dest_type}.
 The value of @var{code} is one of the enumerators in @code{enum tree_code} and
 specifies how the conversion is to be applied
 (truncation, rounding, etc.).

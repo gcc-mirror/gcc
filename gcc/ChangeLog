@@ -1,5 +1,17 @@
 2010-04-09  Richard Guenther  <rguenther@suse.de>
 
+	* target.h (builtin_conversion): Pass in input and output types.
+	* targhooks.c (default_builtin_vectorized_conversion): Adjust.
+	* targhooks.h (default_builtin_vectorized_conversion): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Adjust.
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_CONVERSION): Adjust.
+
+	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Adjust.
+	Handle AVX modes.
+	* config/rs6000/rs6000.c (rs6000_builtin_conversion): Adjust.
+
+2010-04-09  Richard Guenther  <rguenther@suse.de>
+
 	PR target/43152
 	* config/i386/sse.md (vcond<mode>): Handle AVX modes as well.
 
