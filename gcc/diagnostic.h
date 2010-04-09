@@ -69,7 +69,7 @@ struct diagnostic_context
 
   /* True if we should display the "warnings are being tread as error"
      message, usually displayed once per compiler run.  */
-  bool issue_warnings_are_errors_message;
+  bool some_warnings_are_errors;
 
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
@@ -206,6 +206,7 @@ extern diagnostic_context *global_dc;
 
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *);
+extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);
 extern void diagnostic_report_current_function (diagnostic_context *,
 						diagnostic_info *);

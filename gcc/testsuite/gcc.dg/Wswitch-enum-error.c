@@ -1,7 +1,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Werror=switch-enum -Wswitch" } */
-
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */
 enum e { e1, e2 };
 
 int

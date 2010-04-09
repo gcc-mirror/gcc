@@ -8,3 +8,4 @@ void *test(){
   if(a) a++; /* { dg-error "wrong type argument to increment" } */
   return a+x; /* { dg-error "pointer of type" } */
 }
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */

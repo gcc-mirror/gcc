@@ -2466,6 +2466,7 @@ toplev_main (int argc, char **argv)
 
   if (warningcount || errorcount)
     print_ignored_options ();
+  diagnostic_finish (global_dc);
 
   /* Invoke registered plugin callbacks if any.  */
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);

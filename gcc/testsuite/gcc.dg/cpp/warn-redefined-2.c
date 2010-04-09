@@ -1,6 +1,6 @@
 // { dg-do preprocess }
 // { dg-options "-std=gnu99 -fdiagnostics-show-option -Werror=builtin-macro-redefined" }
-
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */
 #ifndef __TIME__
 #error "__TIME__ builtin is not defined"
 // { dg-bogus "__TIME__ builtin is not defined" "no-time" { target *-*-* } 5 }

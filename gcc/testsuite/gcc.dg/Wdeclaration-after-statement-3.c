@@ -1,7 +1,7 @@
 /* PR 35058: -Werror= works only with some warnings. */
 /* { dg-do compile } */
 /* { dg-options "-std=c99 -pedantic -Werror=declaration-after-statement" } */
-
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */
 extern void abort (void);
 extern void exit (int);
 
