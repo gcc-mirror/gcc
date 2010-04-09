@@ -17130,20 +17130,22 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 		  : gen_x86_64_shld) (high[0], low[0], operands[2]));
     }
 
-  emit_insn ((mode == DImode ? gen_ashlsi3 : gen_ashldi3) (low[0], low[0], operands[2]));
+  emit_insn ((mode == DImode
+	      ? gen_ashlsi3
+	      : gen_ashldi3) (low[0], low[0], operands[2]));
 
   if (TARGET_CMOVE && scratch)
     {
       ix86_expand_clear (scratch);
       emit_insn ((mode == DImode
-		  ? gen_x86_shift_adj_1
-		  : gen_x86_64_shift_adj_1) (high[0], low[0], operands[2],
-					     scratch));
+		  ? gen_x86_shiftsi_adj_1
+		  : gen_x86_shiftdi_adj_1) (high[0], low[0], operands[2],
+					    scratch));
     }
   else
     emit_insn ((mode == DImode
-		? gen_x86_shift_adj_2
-		: gen_x86_64_shift_adj_2) (high[0], low[0], operands[2]));
+		? gen_x86_shiftsi_adj_2
+		: gen_x86_shiftdi_adj_2) (high[0], low[0], operands[2]));
 }
 
 void
@@ -17216,9 +17218,9 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
 		      : gen_ashrdi3) (scratch, scratch,
 				      GEN_INT (single_width - 1)));
 	  emit_insn ((mode == DImode
-		      ? gen_x86_shift_adj_1
-		      : gen_x86_64_shift_adj_1) (low[0], high[0], operands[2],
-						 scratch));
+		      ? gen_x86_shiftsi_adj_1
+		      : gen_x86_shiftdi_adj_1) (low[0], high[0], operands[2],
+						scratch));
 	}
       else
 	emit_insn ((mode == DImode
@@ -17281,14 +17283,14 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
 	{
 	  ix86_expand_clear (scratch);
 	  emit_insn ((mode == DImode
-		      ? gen_x86_shift_adj_1
-		      : gen_x86_64_shift_adj_1) (low[0], high[0], operands[2],
-						 scratch));
+		      ? gen_x86_shiftsi_adj_1
+		      : gen_x86_shiftdi_adj_1) (low[0], high[0], operands[2],
+						scratch));
 	}
       else
 	emit_insn ((mode == DImode
-		    ? gen_x86_shift_adj_2
-		    : gen_x86_64_shift_adj_2) (low[0], high[0], operands[2]));
+		    ? gen_x86_shiftsi_adj_2
+		    : gen_x86_shiftdi_adj_2) (low[0], high[0], operands[2]));
     }
 }
 
