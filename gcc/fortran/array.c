@@ -61,12 +61,13 @@ gfc_copy_array_ref (gfc_array_ref *src)
    expression.  */
 
 static match
-match_subscript (gfc_array_ref *ar, int init)
+match_subscript (gfc_array_ref *ar, int init, bool match_star)
 {
   match m;
+  bool star = false;
   int i;
 
-  i = ar->dimen;
+  i = ar->dimen + ar->codimen;
 
   ar->c_where[i] = gfc_current_locus;
   ar->start[i] = ar->end[i] = ar->stride[i] = NULL;
@@ -81,9 +82,12 @@ match_subscript (gfc_array_ref *ar, int init)
     goto end_element;
 
   /* Get start element.  */
-  if (init)
+  if (match_star && (m = gfc_match_char ('*')) == MATCH_YES)
+    star = true;
+
+  if (!star && init)
     m = gfc_match_init_expr (&ar->start[i]);
-  else
+  else if (!star)
     m = gfc_match_expr (&ar->start[i]);
 
   if (m == MATCH_NO)
@@ -92,14 +96,22 @@ match_subscript (gfc_array_ref *ar, int init)
     return MATCH_ERROR;
 
   if (gfc_match_char (':') == MATCH_NO)
-    return MATCH_YES;
+    goto matched;
+
+  if (star)
+    {
+      gfc_error ("Unexpected '*' in coarray subscript at %C");
+      return MATCH_ERROR;
+    }
 
   /* Get an optional end element.  Because we've seen the colon, we
      definitely have a range along this dimension.  */
 end_element:
   ar->dimen_type[i] = DIMEN_RANGE;
 
-  if (init)
+  if (match_star && (m = gfc_match_char ('*')) == MATCH_YES)
+    star = true;
+  else if (init)
     m = gfc_match_init_expr (&ar->end[i]);
   else
     m = gfc_match_expr (&ar->end[i]);
@@ -110,6 +122,12 @@ end_element:
   /* See if we have an optional stride.  */
   if (gfc_match_char (':') == MATCH_YES)
     {
+      if (star)
+	{
+	  gfc_error ("Strides not allowed in coarray subscript at %C");
+	  return MATCH_ERROR;
+	}
+
       m = init ? gfc_match_init_expr (&ar->stride[i])
 	       : gfc_match_expr (&ar->stride[i]);
 
@@ -118,6 +136,10 @@ end_element:
       if (m != MATCH_YES)
 	return MATCH_ERROR;
     }
+
+matched:
+  if (star)
+    ar->dimen_type[i] = DIMEN_STAR;
 
   return MATCH_YES;
 }
@@ -128,14 +150,23 @@ end_element:
    to consist of init expressions.  */
 
 match
-gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init)
+gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
+		     int corank)
 {
   match m;
+  bool matched_bracket = false;
 
   memset (ar, '\0', sizeof (ar));
 
   ar->where = gfc_current_locus;
   ar->as = as;
+  ar->type = AR_UNKNOWN;
+
+  if (gfc_match_char ('[') == MATCH_YES)
+    {
+       matched_bracket = true;
+       goto coarray;
+    }
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
@@ -144,34 +175,73 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init)
       return MATCH_YES;
     }
 
-  ar->type = AR_UNKNOWN;
-
   for (ar->dimen = 0; ar->dimen < GFC_MAX_DIMENSIONS; ar->dimen++)
     {
-      m = match_subscript (ar, init);
+      m = match_subscript (ar, init, false);
       if (m == MATCH_ERROR)
-	goto error;
+	return MATCH_ERROR;
 
       if (gfc_match_char (')') == MATCH_YES)
-	goto matched;
+	{
+	  ar->dimen++;
+	  goto coarray;
+	}
 
       if (gfc_match_char (',') != MATCH_YES)
 	{
 	  gfc_error ("Invalid form of array reference at %C");
-	  goto error;
+	  return MATCH_ERROR;
 	}
     }
 
   gfc_error ("Array reference at %C cannot have more than %d dimensions",
 	     GFC_MAX_DIMENSIONS);
-
-error:
   return MATCH_ERROR;
 
-matched:
-  ar->dimen++;
+coarray:
+  if (!matched_bracket && gfc_match_char ('[') != MATCH_YES)
+    {
+      if (ar->dimen > 0)
+	return MATCH_YES;
+      else
+	return MATCH_ERROR;
+    }
 
-  return MATCH_YES;
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      return MATCH_ERROR;
+    }
+
+  if (corank == 0)
+    {
+	gfc_error ("Unexpected coarray designator at %C");
+	return MATCH_ERROR;
+    }
+
+  for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS; ar->codimen++)
+    {
+      m = match_subscript (ar, init, ar->codimen == (corank - 1));
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+
+      if (gfc_match_char (']') == MATCH_YES)
+	{
+	  ar->codimen++;
+	  return MATCH_YES;
+	}
+
+      if (gfc_match_char (',') != MATCH_YES)
+	{
+	  gfc_error ("Invalid form of coarray reference at %C");
+	  return MATCH_ERROR;
+	}
+    }
+
+  gfc_error ("Array reference at %C cannot have more than %d dimensions",
+	     GFC_MAX_DIMENSIONS);
+  return MATCH_ERROR;
+
 }
 
 
@@ -460,8 +530,8 @@ coarray:
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-       gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
-       goto cleanup;
+      gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      goto cleanup;
     }
 
   for (;;)

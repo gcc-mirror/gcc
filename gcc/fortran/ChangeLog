@@ -1,3 +1,39 @@
+2010-04-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* decl.c (variable_decl, match_attr_spec): Fix setting the array
+	spec.
+	* array.c (match_subscript,gfc_match_array_ref): Add coarray support.
+	* data.c (gfc_assign_data_value): Ditto.
+	* expr.c (gfc_check_pointer_assign): Add check for coarray constraint.
+	(gfc_traverse_expr): Traverse also through codimension expressions.
+	(gfc_is_coindexed, gfc_has_ultimate_allocatable,
+	gfc_has_ultimate_pointer): New functions.
+	* gfortran.h (gfc_array_ref_dimen_type): Add DIMEN_STAR for coarrays.
+	(gfc_array_ref): Add codimen.
+	(gfc_array_ref): Add in_allocate.
+	(gfc_is_coindexed, gfc_has_ultimate_allocatable,
+	gfc_has_ultimate_pointer): Add prototypes.
+	* interface.c (compare_parameter, compare_actual_formal,
+	check_intents): Add coarray constraints.
+	* match.c (gfc_match_iterator): Add coarray constraint.
+	* match.h (gfc_match_array_ref): Update interface.
+	* primary.c (gfc_match_varspec): Handle codimensions.
+	* resolve.c (coarray_alloc, inquiry_argument): New static variables.
+	(check_class_members): Return gfc_try instead for error recovery.
+	(resolve_typebound_function,resolve_typebound_subroutine,
+	check_members): Handle return value of check_class_members.
+	(resolve_structure_cons, resolve_actual_arglist, resolve_function,
+	check_dimension, compare_spec_to_ref, resolve_array_ref,
+	resolve_ref, resolve_variable, gfc_resolve_expr, conformable_arrays,
+	resolve_allocate_expr, resolve_ordinary_assign): Add coarray
+	support.
+	* trans-array.c (gfc_conv_array_ref, gfc_walk_variable_expr):
+	Skip over coarray refs.
+	(gfc_array_allocate) Add support for references containing coindexes.
+	* trans-expr.c (gfc_add_interface_mapping): Copy coarray attribute.
+	(gfc_map_intrinsic_function): Ignore codimensions.
+
 2010-04-08  Bud Davis  <bdavis9659@sbcglobal.net>
 
 	PR fortran/28039

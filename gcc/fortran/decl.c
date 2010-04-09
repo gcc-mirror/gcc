@@ -570,6 +570,62 @@ cleanup:
 
 /************************ Declaration statements *********************/
 
+
+/* Auxilliary function to merge DIMENSION and CODIMENSION array specs.  */
+
+static void
+merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
+{
+  int i;
+
+  if (to->rank == 0 && from->rank > 0)
+    {
+      to->rank = from->rank;
+      to->type = from->type;
+      to->cray_pointee = from->cray_pointee;
+      to->cp_was_assumed = from->cp_was_assumed;
+
+      for (i = 0; i < to->corank; i++)
+	{
+	  to->lower[from->rank + i] = to->lower[i];
+	  to->upper[from->rank + i] = to->upper[i];
+	}
+      for (i = 0; i < from->rank; i++)
+	{
+	  if (copy)
+	    {
+	      to->lower[i] = gfc_copy_expr (from->lower[i]);
+	      to->upper[i] = gfc_copy_expr (from->upper[i]);
+	    }
+	  else
+	    {
+	      to->lower[i] = from->lower[i];
+	      to->upper[i] = from->upper[i];
+	    }
+	}
+    }
+  else if (to->corank == 0 && from->corank > 0)
+    {
+      to->corank = from->corank;
+      to->cotype = from->cotype;
+
+      for (i = 0; i < from->corank; i++)
+	{
+	  if (copy)
+	    {
+	      to->lower[to->rank + i] = gfc_copy_expr (from->lower[i]);
+	      to->upper[to->rank + i] = gfc_copy_expr (from->upper[i]);
+	    }
+	  else
+	    {
+	      to->lower[to->rank + i] = from->lower[i];
+	      to->upper[to->rank + i] = from->upper[i];
+	    }
+	}
+    }
+}
+
+
 /* Match an intent specification.  Since this can only happen after an
    INTENT word, a legal intent-spec must follow.  */
 
@@ -1603,6 +1659,8 @@ variable_decl (int elem)
 
   if (m == MATCH_NO)
     as = gfc_copy_array_spec (current_as);
+  else if (current_as)
+    merge_array_spec (current_as, as, true);
 
   char_len = NULL;
   cl = NULL;
@@ -3050,27 +3108,27 @@ match_attr_spec (void)
       seen[d]++;
       seen_at[d] = gfc_current_locus;
 
-      if (d == DECL_DIMENSION)
+      if (d == DECL_DIMENSION || d == DECL_CODIMENSION)
 	{
-	  m = gfc_match_array_spec (&current_as, true, false);
+	  gfc_array_spec *as = NULL;
 
-	  if (m == MATCH_NO)
+	  m = gfc_match_array_spec (&as, d == DECL_DIMENSION,
+				    d == DECL_CODIMENSION);
+
+	  if (current_as == NULL)
+	    current_as = as;
+	  else if (m == MATCH_YES)
 	    {
-	      gfc_error ("Missing dimension specification at %C");
-	      m = MATCH_ERROR;
+	      merge_array_spec (as, current_as, false);
+	      gfc_free (as);
 	    }
 
-	  if (m == MATCH_ERROR)
-	    goto cleanup;
-	}
-
-      if (d == DECL_CODIMENSION)
-	{
-	  m = gfc_match_array_spec (&current_as, false, true);
-
 	  if (m == MATCH_NO)
 	    {
-	      gfc_error ("Missing codimension specification at %C");
+	      if (d == DECL_CODIMENSION)
+		gfc_error ("Missing codimension specification at %C");
+	      else
+		gfc_error ("Missing dimension specification at %C");
 	      m = MATCH_ERROR;
 	    }
 

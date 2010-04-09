@@ -2531,6 +2531,9 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
   gfc_se indexse;
   gfc_se tmpse;
 
+  if (ar->dimen == 0)
+    return;
+
   /* Handle scalarized references separately.  */
   if (ar->type != AR_ELEMENT)
     {
@@ -3958,13 +3961,26 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   /* Find the last reference in the chain.  */
   while (ref && ref->next != NULL)
     {
-      gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
+      gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT
+		  || (ref->u.ar.dimen == 0 && ref->u.ar.codimen > 0));
       prev_ref = ref;
       ref = ref->next;
     }
 
   if (ref == NULL || ref->type != REF_ARRAY)
     return false;
+
+  /* Return if this is a scalar coarray.  */
+  if (!prev_ref && !expr->symtree->n.sym->attr.dimension)
+    {
+      gcc_assert (expr->symtree->n.sym->attr.codimension);
+      return false;
+    }
+  else if (prev_ref && !prev_ref->u.c.component->attr.dimension)
+    {
+      gcc_assert (prev_ref->u.c.component->attr.codimension);
+      return false;
+    }
 
   if (!prev_ref)
     allocatable_array = expr->symtree->n.sym->attr.allocatable;
@@ -6361,6 +6377,13 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	continue;
 
       ar = &ref->u.ar;
+
+      if (ar->as->rank == 0)
+	{
+	  /* Scalar coarray.  */
+	  continue;
+	}
+
       switch (ar->type)
 	{
 	case AR_ELEMENT:
