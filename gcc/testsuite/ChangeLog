@@ -1,3 +1,8 @@
+2010-04-08  Bud Davis  <bdavis9659@sbcglobal.net>
+
+	PR fortran/28039
+	* gfortran.dg/fmt_with_extra.f: Remove xfail and update test.
+
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/43643
