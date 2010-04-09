@@ -1,3 +1,15 @@
+2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/28584
+	* gcc.dg/Wint-to-pointer-cast-1.c: Move to...
+	* c-c++-common/Wint-to-pointer-cast-1.c: ...  here.
+	* gcc.dg/Wint-to-pointer-cast-2.c: Move to...	
+	* c-c++-common/Wint-to-pointer-cast-2.c: ...  here.
+	* gcc.dg/Wint-to-pointer-cast-3.c: Move to...	
+	* c-c++-common/Wint-to-pointer-cast-3.c: ...  here. Update.
+	* g++.old-deja/g++.mike/warn1.C: Add -Wno-int-to-pointer-cast.
+	* g++.dg/other/increment1.C: Likewise.
+
 2010-04-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
