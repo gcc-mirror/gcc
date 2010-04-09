@@ -1,3 +1,8 @@
+2010-04-09  Manuel López-Ibáñez <manu@gcc.gnu.org>
+
+	PR cpp/43195
+	* files.c (report_missing_guard): Test for #pragma once.
+
 2010-04-07  Simon Baldwin  <simonb@google.com>
 
 	* directives.c (do_diagnostic): Add warning reason argument,
