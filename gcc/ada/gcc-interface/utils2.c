@@ -254,10 +254,10 @@ compare_arrays (tree result_type, tree a1, tree a2)
   /* If either operand has side-effects, they have to be evaluated only once
      in spite of the multiple references to the operand in the comparison.  */
   if (a1_side_effects_p)
-    a1 = protect_multiple_eval (a1);
+    a1 = gnat_protect_expr (a1);
 
   if (a2_side_effects_p)
-    a2 = protect_multiple_eval (a2);
+    a2 = gnat_protect_expr (a2);
 
   /* Process each dimension separately and compare the lengths.  If any
      dimension has a size known to be zero, set SIZE_ZERO_P to 1 to
@@ -471,7 +471,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   /* For subtraction, add the modulus back if we are negative.  */
   else if (op_code == MINUS_EXPR)
     {
-      result = protect_multiple_eval (result);
+      result = gnat_protect_expr (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (LT_EXPR, integer_type_node, result,
 					 convert (op_type, integer_zero_node)),
@@ -482,7 +482,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   /* For the other operations, subtract the modulus if we are >= it.  */
   else
     {
-      result = protect_multiple_eval (result);
+      result = gnat_protect_expr (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (GE_EXPR, integer_type_node,
 					 result, modulus),
@@ -1800,7 +1800,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
     {
       /* Latch malloc's return value and get a pointer to the aligning field
 	 first.  */
-      tree storage_ptr = protect_multiple_eval (malloc_ptr);
+      tree storage_ptr = gnat_protect_expr (malloc_ptr);
 
       tree aligning_record_addr
 	= convert (build_pointer_type (aligning_type), storage_ptr);
@@ -1961,7 +1961,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 
       storage = build_call_alloc_dealloc (NULL_TREE, size, storage_type,
 					  gnat_proc, gnat_pool, gnat_node);
-      storage = convert (storage_ptr_type, protect_multiple_eval (storage));
+      storage = convert (storage_ptr_type, gnat_protect_expr (storage));
 
       if (TYPE_IS_PADDING_P (type))
 	{
@@ -2039,7 +2039,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
      and return the address with a COMPOUND_EXPR.  */
   if (init)
     {
-      result = protect_multiple_eval (result);
+      result = gnat_protect_expr (result);
       result
 	= build2 (COMPOUND_EXPR, TREE_TYPE (result),
 		  build_binary_op
@@ -2146,4 +2146,294 @@ gnat_mark_addressable (tree t)
       default:
 	return true;
     }
+}
+
+/* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.c
+   but we know how to handle our own nodes.  */
+
+tree
+gnat_save_expr (tree exp)
+{
+  tree type = TREE_TYPE (exp);
+  enum tree_code code = TREE_CODE (exp);
+
+  if (TREE_CONSTANT (exp) || code == SAVE_EXPR || code == NULL_EXPR)
+    return exp;
+
+  if (code == UNCONSTRAINED_ARRAY_REF)
+    {
+      tree t = build1 (code, type, gnat_save_expr (TREE_OPERAND (exp, 0)));
+      TREE_READONLY (t) = TYPE_READONLY (type);
+      return t;
+    }
+
+  /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
+     This may be more efficient, but will also allow us to more easily find
+     the match for the PLACEHOLDER_EXPR.  */
+  if (code == COMPONENT_REF
+      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+    return build3 (code, type, gnat_save_expr (TREE_OPERAND (exp, 0)),
+		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+
+  return save_expr (exp);
+}
+
+/* Protect EXP for immediate reuse.  This is a variant of gnat_save_expr that
+   is optimized under the assumption that EXP's value doesn't change before
+   its subsequent reuse(s) except through its potential reevaluation.  */
+
+tree
+gnat_protect_expr (tree exp)
+{
+  tree type = TREE_TYPE (exp);
+  enum tree_code code = TREE_CODE (exp);
+
+  if (TREE_CONSTANT (exp) || code == SAVE_EXPR || code == NULL_EXPR)
+    return exp;
+
+  /* If EXP has no side effects, we theoritically don't need to do anything.
+     However, we may be recursively passed more and more complex expressions
+     involving checks which will be reused multiple times and eventually be
+     unshared for gimplification; in order to avoid a complexity explosion
+     at that point, we protect any expressions more complex than a simple
+     arithmetic expression.  */
+  if (!TREE_SIDE_EFFECTS (exp)
+      && !EXPRESSION_CLASS_P (skip_simple_arithmetic (exp)))
+    return exp;
+
+  /* If this is a conversion, protect what's inside the conversion.  */
+  if (code == NON_LVALUE_EXPR
+      || CONVERT_EXPR_CODE_P (code)
+      || code == VIEW_CONVERT_EXPR)
+  return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
+
+  /* If we're indirectly referencing something, we only need to protect the
+     address since the data itself can't change in these situations.  */
+  if (code == INDIRECT_REF || code == UNCONSTRAINED_ARRAY_REF)
+    {
+      tree t = build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
+      TREE_READONLY (t) = TYPE_READONLY (type);
+      return t;
+    }
+
+  /* If this is a COMPONENT_REF of a fat pointer, save the entire fat pointer.
+     This may be more efficient, but will also allow us to more easily find
+     the match for the PLACEHOLDER_EXPR.  */
+  if (code == COMPONENT_REF
+      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+    return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
+		   TREE_OPERAND (exp, 1), TREE_OPERAND (exp, 2));
+
+  /* If this is a fat pointer or something that can be placed in a register,
+     just make a SAVE_EXPR.  Likewise for a CALL_EXPR as large objects are
+     returned via invisible reference in most ABIs so the temporary will
+     directly be filled by the callee.  */
+  if (TYPE_IS_FAT_POINTER_P (type)
+      || TYPE_MODE (type) != BLKmode
+      || code == CALL_EXPR)
+    return save_expr (exp);
+
+  /* Otherwise reference, protect the address and dereference.  */
+  return
+    build_unary_op (INDIRECT_REF, type,
+		    save_expr (build_unary_op (ADDR_EXPR,
+					       build_reference_type (type),
+					       exp)));
+}
+
+/* This is equivalent to stabilize_reference_1 in tree.c but we take an extra
+   argument to force evaluation of everything.  */
+
+static tree
+gnat_stabilize_reference_1 (tree e, bool force)
+{
+  enum tree_code code = TREE_CODE (e);
+  tree type = TREE_TYPE (e);
+  tree result;
+
+  /* We cannot ignore const expressions because it might be a reference
+     to a const array but whose index contains side-effects.  But we can
+     ignore things that are actual constant or that already have been
+     handled by this function.  */
+  if (TREE_CONSTANT (e) || code == SAVE_EXPR)
+    return e;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_exceptional:
+    case tcc_declaration:
+    case tcc_comparison:
+    case tcc_expression:
+    case tcc_reference:
+    case tcc_vl_exp:
+      /* If this is a COMPONENT_REF of a fat pointer, save the entire
+	 fat pointer.  This may be more efficient, but will also allow
+	 us to more easily find the match for the PLACEHOLDER_EXPR.  */
+      if (code == COMPONENT_REF
+	  && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (e, 0))))
+	result
+	  = build3 (code, type,
+		    gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), force),
+		    TREE_OPERAND (e, 1), TREE_OPERAND (e, 2));
+      /* If the expression has side-effects, then encase it in a SAVE_EXPR
+	 so that it will only be evaluated once.  */
+      /* The tcc_reference and tcc_comparison classes could be handled as
+	 below, but it is generally faster to only evaluate them once.  */
+      else if (TREE_SIDE_EFFECTS (e) || force)
+	return save_expr (e);
+      else
+	return e;
+      break;
+
+    case tcc_binary:
+      /* Recursively stabilize each operand.  */
+      result
+	= build2 (code, type,
+		  gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), force),
+		  gnat_stabilize_reference_1 (TREE_OPERAND (e, 1), force));
+      break;
+
+    case tcc_unary:
+      /* Recursively stabilize each operand.  */
+      result
+	= build1 (code, type,
+		  gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), force));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* See similar handling in gnat_stabilize_reference.  */
+  TREE_READONLY (result) = TREE_READONLY (e);
+  TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
+  TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+
+  return result;
+}
+
+/* This is equivalent to stabilize_reference in tree.c but we know how to
+   handle our own nodes and we take extra arguments.  FORCE says whether to
+   force evaluation of everything.  We set SUCCESS to true unless we walk
+   through something we don't know how to stabilize.  */
+
+tree
+gnat_stabilize_reference (tree ref, bool force, bool *success)
+{
+  tree type = TREE_TYPE (ref);
+  enum tree_code code = TREE_CODE (ref);
+  tree result;
+
+  /* Assume we'll success unless proven otherwise.  */
+  if (success)
+    *success = true;
+
+  switch (code)
+    {
+    case CONST_DECL:
+    case VAR_DECL:
+    case PARM_DECL:
+    case RESULT_DECL:
+      /* No action is needed in this case.  */
+      return ref;
+
+    case ADDR_EXPR:
+    CASE_CONVERT:
+    case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case VIEW_CONVERT_EXPR:
+      result
+	= build1 (code, type,
+		  gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+					    success));
+      break;
+
+    case INDIRECT_REF:
+    case UNCONSTRAINED_ARRAY_REF:
+      result = build1 (code, type,
+		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 0),
+						   force));
+      break;
+
+    case COMPONENT_REF:
+     result = build3 (COMPONENT_REF, type,
+		      gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+						success),
+		      TREE_OPERAND (ref, 1), NULL_TREE);
+      break;
+
+    case BIT_FIELD_REF:
+      result = build3 (BIT_FIELD_REF, type,
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+						 success),
+		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
+						   force),
+		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 2),
+						   force));
+      break;
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      result = build4 (code, type,
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+						 success),
+		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
+						   force),
+		       NULL_TREE, NULL_TREE);
+      break;
+
+    case CALL_EXPR:
+    case COMPOUND_EXPR:
+      result = gnat_stabilize_reference_1 (ref, force);
+      break;
+
+    case CONSTRUCTOR:
+      /* Constructors with 1 element are used extensively to formally
+	 convert objects to special wrapping types.  */
+      if (TREE_CODE (type) == RECORD_TYPE
+	  && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (ref)) == 1)
+	{
+	  tree index
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->index;
+	  tree value
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->value;
+	  result
+	    = build_constructor_single (type, index,
+					gnat_stabilize_reference_1 (value,
+								    force));
+	}
+      else
+	{
+	  if (success)
+	    *success = false;
+	  return ref;
+	}
+      break;
+
+    case ERROR_MARK:
+      ref = error_mark_node;
+
+      /* ...  fall through to failure ... */
+
+      /* If arg isn't a kind of lvalue we recognize, make no change.
+	 Caller should recognize the error for an invalid lvalue.  */
+    default:
+      if (success)
+	*success = false;
+      return ref;
+    }
+
+  /* TREE_THIS_VOLATILE and TREE_SIDE_EFFECTS set on the initial expression
+     may not be sustained across some paths, such as the way via build1 for
+     INDIRECT_REF.  We reset those flags here in the general case, which is
+     consistent with the GCC version of this routine.
+
+     Special care should be taken regarding TREE_SIDE_EFFECTS, because some
+     paths introduce side-effects where there was none initially (e.g. if a
+     SAVE_EXPR is built) and we also want to keep track of that.  */
+  TREE_READONLY (result) = TREE_READONLY (ref);
+  TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (ref);
+  TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
+
+  return result;
 }

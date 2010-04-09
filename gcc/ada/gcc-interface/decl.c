@@ -897,7 +897,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			    && !TREE_SIDE_EFFECTS (gnu_expr))))
 		  {
 		    maybe_stable_expr
-		      = maybe_stabilize_reference (gnu_expr, true, &stable);
+		      = gnat_stabilize_reference (gnu_expr, true, &stable);
 
 		    if (stable)
 		      {
@@ -973,7 +973,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    else
 	 	     {
 			maybe_stable_expr
-			  = maybe_stabilize_reference (gnu_expr, true, &stable);
+			  = gnat_stabilize_reference (gnu_expr, true, &stable);
 
 			if (stable)
 			  renamed_obj = maybe_stable_expr;
@@ -5727,29 +5727,6 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
       }
 }
 
-/* Called when we need to protect a variable object using a SAVE_EXPR.  */
-
-tree
-maybe_variable (tree gnu_operand)
-{
-  if (TREE_CONSTANT (gnu_operand)
-      || TREE_READONLY (gnu_operand)
-      || TREE_CODE (gnu_operand) == SAVE_EXPR
-      || TREE_CODE (gnu_operand) == NULL_EXPR)
-    return gnu_operand;
-
-  if (TREE_CODE (gnu_operand) == UNCONSTRAINED_ARRAY_REF)
-    {
-      tree gnu_result
-	= build1 (UNCONSTRAINED_ARRAY_REF, TREE_TYPE (gnu_operand),
-		  variable_size (TREE_OPERAND (gnu_operand, 0)));
-      TREE_READONLY (gnu_result) = TYPE_READONLY (TREE_TYPE (gnu_operand));
-      return gnu_result;
-    }
-
-  return variable_size (gnu_operand);
-}
-
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
    type definition (either a bound or a discriminant value) for GNAT_ENTITY,
    return the GCC tree to use for that expression.  GNU_NAME is the suffix
@@ -5852,7 +5829,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   if (expr_global && expr_variable)
     return gnu_decl;
 
-  return expr_variable ? maybe_variable (gnu_expr) : gnu_expr;
+  return expr_variable ? gnat_save_expr (gnu_expr) : gnu_expr;
 }
 
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
