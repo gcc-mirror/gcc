@@ -1,5 +1,6 @@
 // PR c++/37561
 // { dg-do compile }
+// { dg-options "-Wno-int-to-pointer-cast" }
 
 __PTRDIFF_TYPE__ p;
 char q;

@@ -1,3 +1,9 @@
+2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/28584
+	* c.opt (Wint-to-pointer-cast): Available in C++.
+	* doc/invoke.texi (Wint-to-pointer-cast): Available in C++.
+
 2010-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (TREE_ADDRESSABLE): Document its effect for function types.

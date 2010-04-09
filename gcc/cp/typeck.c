@@ -6289,6 +6289,15 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
       return error_mark_node;
     }
 
+  if (TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+      /* Casting to an integer of smaller size is an error detected elsewhere.  */
+      && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (value))
+      /* Don't warn about converting any constant.  */
+      && !TREE_CONSTANT (value))
+    warning_at (input_location, OPT_Wint_to_pointer_cast, 
+		"cast to pointer from integer of different size");
+
   /* A C-style cast can be a const_cast.  */
   result = build_const_cast_1 (type, value, /*complain=*/false,
 			       &valid_p);
