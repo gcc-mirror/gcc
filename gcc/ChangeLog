@@ -1,3 +1,10 @@
+2010-04-09  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (picochip_rtx_costs): Use correct function
+	template.
+	(picochip_override_options): Enable section anchors only above O1.
+	(picochip_reorg): Fixed a couple of build warnings.
+
 2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (plugin -rdynamic test): Log result.

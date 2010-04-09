@@ -92,7 +92,7 @@ int picochip_sched_reorder (FILE * file, int verbose, rtx * ready,
 void picochip_init_builtins (void);
 rtx picochip_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 
-bool picochip_rtx_costs (rtx x, int code, int outer_code, int* total);
+bool picochip_rtx_costs (rtx x, int code, int outer_code, int* total, bool speed);
 bool picochip_return_in_memory(const_tree type,
                               const_tree fntype ATTRIBUTE_UNUSED);
 bool picochip_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -335,9 +335,9 @@ picochip_override_options (void)
 
   /* Turning on anchored addresses by default. This is an optimization
      that could decrease the code size by placing anchors in data and
-     accessing offsets from the anchor for file local data variables.
-     This isnt the default at O2 as yet. */
-  flag_section_anchors = 1;
+     accessing offsets from the anchor for file local data variables.*/
+  if (optimize >= 1)
+    flag_section_anchors = 1;
 
   /* Turn off the second scheduling pass, and move it to
      picochip_reorg, to avoid having the second jump optimisation
@@ -2957,7 +2957,7 @@ reorder_var_tracking_notes (void)
 void
 picochip_reorg (void)
 {
-  rtx insn, insn1, vliw_start;
+  rtx insn, insn1, vliw_start = NULL_RTX;
   int vliw_insn_location = 0;
 
   /* We are freeing block_for_insn in the toplev to keep compatibility
@@ -3004,7 +3004,7 @@ picochip_reorg (void)
 	     strange behaviour is certain to occur anyway. */
           /* Slight bit of change. If the vliw set contains a branch
              or call instruction, we pick its location.*/
-	  for (insn = get_insns (); insn; insn = next_insn (insn))
+	  for (insn = get_insns (); insn; insn = next_real_insn (insn))
 	    {
 
 	      /* If this is the first instruction in the VLIW packet,
@@ -3017,12 +3017,11 @@ picochip_reorg (void)
               if (JUMP_P (insn) || CALL_P(insn))
               {
                 vliw_insn_location = INSN_LOCATOR (insn);
-                for (insn1 = vliw_start; insn1 != insn ; insn1 = next_insn (insn1))
+                for (insn1 = vliw_start; insn1 != insn ; insn1 = next_real_insn (insn1))
                   INSN_LOCATOR (insn1) = vliw_insn_location;
               }
               /* Tag subsequent instructions with the same location. */
-              if (NONDEBUG_INSN_P (insn))
-                INSN_LOCATOR (insn) = vliw_insn_location;
+              INSN_LOCATOR (insn) = vliw_insn_location;
 	    }
 	}
 
@@ -3450,12 +3449,12 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
 }
 
 bool
-picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int* total)
+picochip_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int* total, bool speed)
 {
 
   int localTotal = 0;
 
-  if (optimize_size)
+  if (!speed)
   {
     /* Need to penalize immediates that need to be encoded as long constants.*/
     if (code == CONST_INT && !(INTVAL (x) >= 0 && INTVAL (x) < 16))
