@@ -1,3 +1,9 @@
+2010-04-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.c (ia64_dfa_new_cycle): Remove unused variable
+	setup_clocks_p.
+	(final_emit_insn_group_barriers): Remove unused variable prev_insn.
+
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 42965

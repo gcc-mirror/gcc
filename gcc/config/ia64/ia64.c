@@ -7075,8 +7075,6 @@ static int
 ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 		    int clock, int *sort_p)
 {
-  int setup_clocks_p = FALSE;
-
   gcc_assert (insn && INSN_P (insn));
 
   if (DEBUG_INSN_P (insn))
@@ -7118,8 +7116,6 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 	    *sort_p = 0;
 	  return 1;
 	}
-      else if (reload_completed)
-	setup_clocks_p = TRUE;
 
       if (last_scheduled_insn)
 	{
@@ -7135,9 +7131,6 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 	    }
 	}
     }
-  else if (reload_completed)
-    setup_clocks_p = TRUE;
-
   return 0;
 }
 
@@ -8892,7 +8885,6 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
   rtx insn;
   int need_barrier_p = 0;
   int seen_good_insn = 0;
-  rtx prev_insn = NULL_RTX;
 
   init_insn_group_barriers ();
 
@@ -8915,7 +8907,6 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	  init_insn_group_barriers ();
 	  seen_good_insn = 0;
 	  need_barrier_p = 0;
-	  prev_insn = NULL_RTX;
 	}
       else if (NONDEBUG_INSN_P (insn))
 	{
@@ -8924,7 +8915,6 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	      init_insn_group_barriers ();
 	      seen_good_insn = 0;
 	      need_barrier_p = 0;
-	      prev_insn = NULL_RTX;
 	    }
 	  else if (need_barrier_p || group_barrier_needed (insn)
 		   || (mflag_sched_stop_bits_after_every_cycle
@@ -8971,14 +8961,10 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 	      if (recog_memoized (insn) >= 0
 		  && important_for_bundling_p (insn))
 		seen_good_insn = 1;
-	      prev_insn = NULL_RTX;
 	    }
 	  else if (recog_memoized (insn) >= 0
 		   && important_for_bundling_p (insn))
-	    {
-	      prev_insn = insn;
-	      seen_good_insn = 1;
-	    }
+	    seen_good_insn = 1;
 	  need_barrier_p = (GET_CODE (insn) == CALL_INSN
 			    || GET_CODE (PATTERN (insn)) == ASM_INPUT
 			    || asm_noperands (PATTERN (insn)) >= 0);
