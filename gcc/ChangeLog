@@ -1,3 +1,13 @@
+2010-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2009-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/41912
+	* pa/linux-unwind.h (pa32_fallback_frame_state): Set fs->signal_frame
+	for signal frames.
+	* pa/hpux-unwind.h (pa32_fallback_frame_state): Likewise.
+
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/43643
