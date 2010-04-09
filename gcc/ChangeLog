@@ -1,8 +1,14 @@
-2010-04-09  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+            Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+
+	* loop-invariant.c (replace_uses): New static function.
+	(move_invariant_reg): Use it to ensure we can replace the uses.
+
+2010-04-09  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_rtx_costs): Use correct function
 	template.
-	(picochip_override_options): Enable section anchors only above O1.
+	(picochip_override_options): Enable section anchors only above -O1.
 	(picochip_reorg): Fixed a couple of build warnings.
 
 2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
@@ -62,8 +68,7 @@
 
 2010-04-09  Richard Guenther  <rguenther@suse.de>
 
-	* tree-pretty-print.c (dump_generic_node): Dump
-	TYPE_VECTOR_SUBPARTS.
+	* tree-pretty-print.c (dump_generic_node): Dump TYPE_VECTOR_SUBPARTS.
 
 2010-04-09  Iain Sandoe  <iains@gcc.gnu.org>
 
