@@ -949,6 +949,8 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
   locus start;
   match m;
 
+  e1 = e2 = e3 = NULL;
+
   /* Match the start of an iterator without affecting the symbol table.  */
 
   start = gfc_current_locus;
@@ -962,9 +964,12 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
   if (m != MATCH_YES)
     return MATCH_NO;
 
-  gfc_match_char ('=');
-
-  e1 = e2 = e3 = NULL;
+  /* F2008, C617 & C565.  */
+  if (var->symtree->n.sym->attr.codimension)
+    {
+      gfc_error ("Loop variable at %C cannot be a coarray");
+      goto cleanup;
+    }
 
   if (var->ref != NULL)
     {
@@ -978,6 +983,8 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
 		 var->symtree->n.sym->name);
       goto cleanup;
     }
+
+  gfc_match_char ('=');
 
   var->symtree->n.sym->attr.implied_index = 1;
 

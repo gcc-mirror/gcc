@@ -77,6 +77,9 @@ static int current_entry_id;
 /* We use bitmaps to determine if a branch target is valid.  */
 static bitmap_obstack labels_obstack;
 
+/* True when simplifying a EXPR_VARIABLE argument to an inquiry function.  */
+static bool inquiry_argument = false;
+
 int
 gfc_is_formal_arg (void)
 {
@@ -932,12 +935,13 @@ resolve_structure_cons (gfc_expr *expr)
 
       /* F2003, C1272 (3).  */
       if (gfc_pure (NULL) && cons->expr->expr_type == EXPR_VARIABLE
-	  && gfc_impure_variable (cons->expr->symtree->n.sym))
+	  && (gfc_impure_variable (cons->expr->symtree->n.sym)
+	      || gfc_is_coindexed (cons->expr)))
 	{
 	  t = FAILURE;
-	  gfc_error ("Invalid expression in the derived type constructor for pointer "
-		     "component '%s' at %L in PURE procedure", comp->name,
-		     &cons->expr->where);
+	  gfc_error ("Invalid expression in the derived type constructor for "
+		     "pointer component '%s' at %L in PURE procedure",
+		     comp->name, &cons->expr->where);
 	}
     }
 
@@ -1319,7 +1323,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_expr *e;
   int save_need_full_assumed_size;
   gfc_component *comp;
-	
+
   for (; arg; arg = arg->next)
     {
       e = arg->expr;
@@ -1549,6 +1553,15 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		}
 	    }
 	}
+
+      /* Fortran 2008, C1237.  */
+      if (e->expr_type == EXPR_VARIABLE && gfc_is_coindexed (e)
+          && gfc_has_ultimate_pointer (e))
+        {
+          gfc_error ("Coindexed actual argument at %L with ultimate pointer "
+		     "component", &e->where);
+          return FAILURE;
+        }
     }
 
   return SUCCESS;
@@ -2590,11 +2603,19 @@ resolve_function (gfc_expr *expr)
   if (expr->symtree && expr->symtree->n.sym)
     p = expr->symtree->n.sym->attr.proc;
 
+  if (expr->value.function.isym && expr->value.function.isym->inquiry)
+    inquiry_argument = true;
   no_formal_args = sym && is_external_proc (sym) && sym->formal == NULL;
+
   if (resolve_actual_arglist (expr->value.function.actual,
 			      p, no_formal_args) == FAILURE)
+    {
+      inquiry_argument = false;
       return FAILURE;
+    }
 
+  inquiry_argument = false;
+ 
   /* Need to setup the call to the correct c_associated, depending on
      the number of cptrs to user gives to compare.  */
   if (sym && sym->attr.is_iso_c == 1)
@@ -3755,6 +3776,17 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 {
   mpz_t last_value;
 
+  if (ar->dimen_type[i] == DIMEN_STAR)
+    {
+      gcc_assert (ar->stride[i] == NULL);
+      /* This implies [*] as [*:] and [*:3] are not possible.  */
+      if (ar->start[i] == NULL)
+	{
+	  gcc_assert (ar->end[i] == NULL);
+	  return SUCCESS;
+	}
+    }
+
 /* Given start, end and stride values, calculate the minimum and
    maximum referenced indexes.  */
 
@@ -3763,21 +3795,36 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
     case DIMEN_VECTOR:
       break;
 
+    case DIMEN_STAR:
     case DIMEN_ELEMENT:
       if (compare_bound (ar->start[i], as->lower[i]) == CMP_LT)
 	{
-	  gfc_warning ("Array reference at %L is out of bounds "
-		       "(%ld < %ld) in dimension %d", &ar->c_where[i],
-		       mpz_get_si (ar->start[i]->value.integer),
-		       mpz_get_si (as->lower[i]->value.integer), i+1);
+	  if (i < as->rank)
+	    gfc_warning ("Array reference at %L is out of bounds "
+			 "(%ld < %ld) in dimension %d", &ar->c_where[i],
+			 mpz_get_si (ar->start[i]->value.integer),
+			 mpz_get_si (as->lower[i]->value.integer), i+1);
+	  else
+	    gfc_warning ("Array reference at %L is out of bounds "
+			 "(%ld < %ld) in codimension %d", &ar->c_where[i],
+			 mpz_get_si (ar->start[i]->value.integer),
+			 mpz_get_si (as->lower[i]->value.integer),
+			 i + 1 - as->rank);
 	  return SUCCESS;
 	}
       if (compare_bound (ar->start[i], as->upper[i]) == CMP_GT)
 	{
-	  gfc_warning ("Array reference at %L is out of bounds "
-		       "(%ld > %ld) in dimension %d", &ar->c_where[i],
-		       mpz_get_si (ar->start[i]->value.integer),
-		       mpz_get_si (as->upper[i]->value.integer), i+1);
+	  if (i < as->rank)
+	    gfc_warning ("Array reference at %L is out of bounds "
+			 "(%ld > %ld) in dimension %d", &ar->c_where[i],
+			 mpz_get_si (ar->start[i]->value.integer),
+			 mpz_get_si (as->upper[i]->value.integer), i+1);
+	  else
+	    gfc_warning ("Array reference at %L is out of bounds "
+			 "(%ld > %ld) in codimension %d", &ar->c_where[i],
+			 mpz_get_si (ar->start[i]->value.integer),
+			 mpz_get_si (as->upper[i]->value.integer),
+			 i + 1 - as->rank);
 	  return SUCCESS;
 	}
 
@@ -3897,9 +3944,31 @@ compare_spec_to_ref (gfc_array_ref *ar)
       return FAILURE;
     }
 
+  /* ar->codimen == 0 is a local array.  */
+  if (as->corank != ar->codimen && ar->codimen != 0)
+    {
+      gfc_error ("Coindex rank mismatch in array reference at %L (%d/%d)",
+		 &ar->where, ar->codimen, as->corank);
+      return FAILURE;
+    }
+
   for (i = 0; i < as->rank; i++)
     if (check_dimension (i, ar, as) == FAILURE)
       return FAILURE;
+
+  /* Local access has no coarray spec.  */
+  if (ar->codimen != 0)
+    for (i = as->rank; i < as->rank + as->corank; i++)
+      {
+	if (ar->dimen_type[i] != DIMEN_ELEMENT && !ar->in_allocate)
+	  {
+	    gfc_error ("Coindex of codimension %d must be a scalar at %L",
+		       i + 1 - as->rank, &ar->where);
+	    return FAILURE;
+	  }
+	if (check_dimension (i, ar, as) == FAILURE)
+	  return FAILURE;
+      }
 
   return SUCCESS;
 }
@@ -4069,7 +4138,7 @@ resolve_array_ref (gfc_array_ref *ar)
   int i, check_scalar;
   gfc_expr *e;
 
-  for (i = 0; i < ar->dimen; i++)
+  for (i = 0; i < ar->dimen + ar->codimen; i++)
     {
       check_scalar = ar->dimen_type[i] == DIMEN_RANGE;
 
@@ -4102,6 +4171,9 @@ resolve_array_ref (gfc_array_ref *ar)
 	    return FAILURE;
 	  }
     }
+
+  if (ar->type == AR_FULL && ar->as->rank == 0)
+    ar->type = AR_ELEMENT;
 
   /* If the reference type is unknown, figure out what kind it is.  */
 
@@ -4307,6 +4379,13 @@ resolve_ref (gfc_expr *expr)
 	  switch (ref->u.ar.type)
 	    {
 	    case AR_FULL:
+	      /* Coarray scalar.  */
+	      if (ref->u.ar.as->rank == 0)
+		{
+		  current_part_dimension = 0;
+		  break;
+		}
+	      /* Fall through.  */
 	    case AR_SECTION:
 	      current_part_dimension = 1;
 	      break;
@@ -4575,6 +4654,47 @@ resolve_variable (gfc_expr *e)
 resolve_procedure:
   if (t == SUCCESS && resolve_procedure_expression (e) == FAILURE)
     t = FAILURE;
+
+  /* F2008, C617 and C1229.  */
+  if (!inquiry_argument && (e->ts.type == BT_CLASS || e->ts.type == BT_DERIVED)
+      && gfc_is_coindexed (e))
+    {
+      gfc_ref *ref, *ref2 = NULL;
+
+      if (e->ts.type == BT_CLASS)
+	{
+	  gfc_error ("Polymorphic subobject of coindexed object at %L",
+		     &e->where);
+	  t = FAILURE;
+	}
+
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_COMPONENT)
+	    ref2 = ref;
+	  if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+	    break;
+	}
+
+      for ( ; ref; ref = ref->next)
+	if (ref->type == REF_COMPONENT)
+	  break;
+
+      /* Expression itself is coindexed object.  */
+      if (ref == NULL)
+	{
+	  gfc_component *c;
+	  c = ref2 ? ref2->u.c.component : e->symtree->n.sym->components;
+	  for ( ; c; c = c->next)
+	    if (c->attr.allocatable && c->ts.type == BT_CLASS)
+	      {
+		gfc_error ("Coindexed object with polymorphic allocatable "
+			 "subcomponent at %L", &e->where);
+		t = FAILURE;
+		break;
+	      }
+	}
+    }
 
   return t;
 }
@@ -5163,7 +5283,7 @@ resolve_compcall (gfc_expr* e, bool fcn, bool class_members)
    of f03 OOP.  As soon as vtables are in place and contain pointers
    to methods, this will no longer be necessary.  */
 static gfc_expr *list_e;
-static void check_class_members (gfc_symbol *);
+static gfc_try check_class_members (gfc_symbol *);
 static gfc_try class_try;
 static bool fcn_flag;
 
@@ -5172,11 +5292,11 @@ static void
 check_members (gfc_symbol *derived)
 {
   if (derived->attr.flavor == FL_DERIVED)
-    check_class_members (derived);
+    (void) check_class_members (derived);
 }
 
 
-static void 
+static gfc_try 
 check_class_members (gfc_symbol *derived)
 {
   gfc_expr *e;
@@ -5193,7 +5313,7 @@ check_class_members (gfc_symbol *derived)
     {
       gfc_error ("no typebound available procedure named '%s' at %L",
 		 e->value.compcall.name, &e->where);
-      return;
+      return FAILURE;
     }
 
   /* If we have to match a passed class member, force the actual
@@ -5202,6 +5322,9 @@ check_class_members (gfc_symbol *derived)
     {
       if (e->value.compcall.base_object == NULL)
 	e->value.compcall.base_object = extract_compcall_passed_object (e);
+
+      if (e->value.compcall.base_object == NULL)
+	return FAILURE;
 
       if (!derived->attr.abstract)
 	{
@@ -5240,6 +5363,8 @@ check_class_members (gfc_symbol *derived)
   /* Burrow down into grandchildren types.  */
   if (derived->f2k_derived)
     gfc_traverse_ns (derived->f2k_derived, check_members);
+
+  return SUCCESS;
 }
 
 
@@ -5393,7 +5518,9 @@ resolve_typebound_function (gfc_expr* e)
   class_try = SUCCESS;
   fcn_flag = true;
   list_e = gfc_copy_expr (e);
-  check_class_members (derived);
+
+  if (check_class_members (derived) == FAILURE)
+    return FAILURE;
 
   class_try = (resolve_compcall (e, true, false) == SUCCESS)
 		 ? class_try : FAILURE;
@@ -5453,7 +5580,9 @@ resolve_typebound_subroutine (gfc_code *code)
   class_try = SUCCESS;
   fcn_flag = false;
   list_e = gfc_copy_expr (code->expr1);
-  check_class_members (derived);
+
+  if (check_class_members (derived) == FAILURE)
+    return FAILURE;
 
   class_try = (resolve_typebound_call (code) == SUCCESS)
 		 ? class_try : FAILURE;
@@ -5585,9 +5714,15 @@ gfc_try
 gfc_resolve_expr (gfc_expr *e)
 {
   gfc_try t;
+  bool inquiry_save;
 
   if (e == NULL)
     return SUCCESS;
+
+  /* inquiry_argument only applies to variables.  */
+  inquiry_save = inquiry_argument;
+  if (e->expr_type != EXPR_VARIABLE)
+    inquiry_argument = false;
 
   switch (e->expr_type)
     {
@@ -5675,6 +5810,8 @@ gfc_resolve_expr (gfc_expr *e)
 
   if (e->ts.type == BT_CHARACTER && t == SUCCESS && !e->ts.u.cl)
     fixup_charlen (e);
+
+  inquiry_argument = inquiry_save;
 
   return t;
 }
@@ -6123,6 +6260,7 @@ static gfc_try
 resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 {
   int i, pointer, allocatable, dimension, check_intent_in, is_abstract;
+  int codimension;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_array_ref *ar;
@@ -6134,8 +6272,17 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
   check_intent_in = 1;
 
+  /* Mark the ultimost array component as being in allocate to allow DIMEN_STAR
+     checking of coarrays.  */
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->next == NULL)
+      break;
+
+  if (ref && ref->type == REF_ARRAY)
+    ref->u.ar.in_allocate = true;
+
   if (gfc_resolve_expr (e) == FAILURE)
-    return FAILURE;
+    goto failure;
 
   /* Make sure the expression is allocatable or a pointer.  If it is
      pointer, the next-to-last reference must be a pointer.  */
@@ -6153,6 +6300,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       attr = gfc_expr_attr (e);
       pointer = attr.pointer;
       dimension = attr.dimension;
+      codimension = attr.codimension;
     }
   else
     {
@@ -6161,6 +6309,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	  allocatable = sym->ts.u.derived->components->attr.allocatable;
 	  pointer = sym->ts.u.derived->components->attr.pointer;
 	  dimension = sym->ts.u.derived->components->attr.dimension;
+	  codimension = sym->ts.u.derived->components->attr.codimension;
 	  is_abstract = sym->ts.u.derived->components->attr.abstract;
 	}
       else
@@ -6168,6 +6317,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	  allocatable = sym->attr.allocatable;
 	  pointer = sym->attr.pointer;
 	  dimension = sym->attr.dimension;
+	  codimension = sym->attr.codimension;
 	}
 
       for (ref = e->ref; ref; ref2 = ref, ref = ref->next)
@@ -6183,12 +6333,21 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		break;
 
 	      case REF_COMPONENT:
+		/* F2008, C644.  */
+		if (gfc_is_coindexed (e))
+		  {
+		    gfc_error ("Coindexed allocatable object at %L",
+			       &e->where);
+		    goto failure;
+		  }
+
 		c = ref->u.c.component;
 		if (c->ts.type == BT_CLASS)
 		  {
 		    allocatable = c->ts.u.derived->components->attr.allocatable;
 		    pointer = c->ts.u.derived->components->attr.pointer;
 		    dimension = c->ts.u.derived->components->attr.dimension;
+		    codimension = c->ts.u.derived->components->attr.codimension;
 		    is_abstract = c->ts.u.derived->components->attr.abstract;
 		  }
 		else
@@ -6196,6 +6355,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		    allocatable = c->attr.allocatable;
 		    pointer = c->attr.pointer;
 		    dimension = c->attr.dimension;
+		    codimension = c->attr.codimension;
 		    is_abstract = c->attr.abstract;
 		  }
 		break;
@@ -6212,7 +6372,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);
-      return FAILURE;
+      goto failure;
     }
 
   /* Some checks for the SOURCE tag.  */
@@ -6223,13 +6383,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	{
 	  gfc_error ("Type of entity at %L is type incompatible with "
 		      "source-expr at %L", &e->where, &code->expr3->where);
-	  return FAILURE;
+	  goto failure;
 	}
 
       /* Check F03:C632 and restriction following Note 6.18.  */
       if (code->expr3->rank > 0
 	  && conformable_arrays (code->expr3, e) == FAILURE)
-	return FAILURE;
+	goto failure;
 
       /* Check F03:C633.  */
       if (code->expr3->ts.kind != e->ts.kind)
@@ -6237,7 +6397,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	  gfc_error ("The allocate-object at %L and the source-expr at %L "
 		      "shall have the same kind type parameter",
 		      &e->where, &code->expr3->where);
-	  return FAILURE;
+	  goto failure;
 	}
     }
   else if (is_abstract&& code->ext.alloc.ts.type == BT_UNKNOWN)
@@ -6245,14 +6405,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       gcc_assert (e->ts.type == BT_CLASS);
       gfc_error ("Allocating %s of ABSTRACT base type at %L requires a "
 		 "type-spec or SOURCE=", sym->name, &e->where);
-      return FAILURE;
+      goto failure;
     }
 
   if (check_intent_in && sym->attr.intent == INTENT_IN)
     {
       gfc_error ("Cannot allocate INTENT(IN) variable '%s' at %L",
 		 sym->name, &e->where);
-      return FAILURE;
+      goto failure;
     }
     
   if (!code->expr3)
@@ -6285,22 +6445,30 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
     }
 
-  if (pointer || dimension == 0)
-    return SUCCESS;
+  if (pointer || (dimension == 0 && codimension == 0))
+    goto success;
 
   /* Make sure the next-to-last reference node is an array specification.  */
 
-  if (ref2 == NULL || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL)
+  if (ref2 == NULL || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL
+      || (dimension && ref2->u.ar.dimen == 0))
     {
       gfc_error ("Array specification required in ALLOCATE statement "
 		 "at %L", &e->where);
-      return FAILURE;
+      goto failure;
     }
 
   /* Make sure that the array section reference makes sense in the
     context of an ALLOCATE specification.  */
 
   ar = &ref2->u.ar;
+
+  if (codimension && ar->codimen == 0)
+    {
+      gfc_error ("Coarray specification required in ALLOCATE statement "
+		 "at %L", &e->where);
+      goto failure;
+    }
 
   for (i = 0; i < ar->dimen; i++)
     {
@@ -6322,13 +6490,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
 	case DIMEN_UNKNOWN:
 	case DIMEN_VECTOR:
+	case DIMEN_STAR:
 	  gfc_error ("Bad array specification in ALLOCATE statement at %L",
 		     &e->where);
-	  return FAILURE;
+	  goto failure;
 	}
 
 check_symbols:
-
       for (a = code->ext.alloc.list; a; a = a->next)
 	{
 	  sym = a->expr->symtree->n.sym;
@@ -6345,12 +6513,46 @@ check_symbols:
 	      gfc_error ("'%s' must not appear in the array specification at "
 			 "%L in the same ALLOCATE statement where it is "
 			 "itself allocated", sym->name, &ar->where);
-	      return FAILURE;
+	      goto failure;
 	    }
 	}
     }
 
+  for (i = ar->dimen; i < ar->codimen + ar->dimen; i++)
+    {
+      if (ar->dimen_type[i] == DIMEN_ELEMENT
+	  || ar->dimen_type[i] == DIMEN_RANGE)
+	{
+	  if (i == (ar->dimen + ar->codimen - 1))
+	    {
+	      gfc_error ("Expected '*' in coindex specification in ALLOCATE "
+			 "statement at %L", &e->where);
+	      goto failure;
+	    }
+	  break;
+	}
+
+      if (ar->dimen_type[i] == DIMEN_STAR && i == (ar->dimen + ar->codimen - 1)
+	  && ar->stride[i] == NULL)
+	break;
+
+      gfc_error ("Bad coarray specification in ALLOCATE statement at %L",
+		 &e->where);
+      goto failure;
+    }
+
+  if (codimension)
+    {
+      gfc_error ("Sorry, allocatable coarrays are no yet supported coarray "
+		 "at %L", &e->where);
+      goto failure;
+    }
+
+success:
   return SUCCESS;
+
+failure:
+  return FAILURE;
 }
 
 static void
@@ -8031,21 +8233,47 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	    && lhs->expr_type == EXPR_VARIABLE
 	    && lhs->ts.u.derived->attr.pointer_comp
 	    && rhs->expr_type == EXPR_VARIABLE
-	    && gfc_impure_variable (rhs->symtree->n.sym))
+	    && (gfc_impure_variable (rhs->symtree->n.sym)
+		|| gfc_is_coindexed (rhs)))
 	{
-	  gfc_error ("The impure variable at %L is assigned to "
-		     "a derived type variable with a POINTER "
-		     "component in a PURE procedure (12.6)",
-		     &rhs->where);
+	  /* F2008, C1283.  */
+	  if (gfc_is_coindexed (rhs))
+	    gfc_error ("Coindexed expression at %L is assigned to "
+			"a derived type variable with a POINTER "
+			"component in a PURE procedure",
+			&rhs->where);
+	  else
+	    gfc_error ("The impure variable at %L is assigned to "
+			"a derived type variable with a POINTER "
+			"component in a PURE procedure (12.6)",
+			&rhs->where);
+	  return rval;
+	}
+
+      /* Fortran 2008, C1283.  */
+      if (gfc_is_coindexed (lhs))
+	{
+	  gfc_error ("Assignment to coindexed variable at %L in a PURE "
+		     "procedure", &rhs->where);
 	  return rval;
 	}
     }
 
   /* F03:7.4.1.2.  */
+  /* FIXME: Valid in Fortran 2008, unless the LHS is both polymorphic
+     and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
   if (lhs->ts.type == BT_CLASS)
     {
       gfc_error ("Variable must not be polymorphic in assignment at %L",
 		 &lhs->where);
+      return false;
+    }
+
+  /* F2008, Section 7.2.1.2.  */
+  if (gfc_is_coindexed (lhs) && gfc_has_ultimate_allocatable (lhs))
+    {
+      gfc_error ("Coindexed variable must not be have an allocatable ultimate "
+		 "component in assignment at %L", &lhs->where);
       return false;
     }
 
@@ -10462,8 +10690,8 @@ resolve_fl_derived (gfc_symbol *sym)
   for (c = sym->components; c != NULL; c = c->next)
     {
       /* F2008, C442.  */
-      if (c->attr.codimension
-	  && (!c->attr.allocatable || c->as->type != AS_DEFERRED))
+      if (c->attr.codimension /* FIXME: c->as check due to PR 43412.  */
+	  && (!c->attr.allocatable || (c->as && c->as->type != AS_DEFERRED)))
 	{
 	  gfc_error ("Coarray component '%s' at %L must be allocatable with "
 		     "deferred shape", c->name, &c->loc);
@@ -11351,9 +11579,9 @@ resolve_symbol (gfc_symbol *sym)
     gfc_error ("Variable '%s' at %L is a coarray or has a coarray "
 	       "component and is not ALLOCATABLE, SAVE nor a "
 	       "dummy argument", sym->name, &sym->declared_at);
-  /* F2008, C528.  */
+  /* F2008, C528.  */  /* FIXME: sym->as check due to PR 43412.  */
   else if (sym->attr.codimension && !sym->attr.allocatable
-      && sym->as->cotype == AS_DEFERRED)
+      && sym->as && sym->as->cotype == AS_DEFERRED)
     gfc_error ("Coarray variable '%s' at %L shall not have codimensions with "
 		"deferred shape", sym->name, &sym->declared_at);
   else if (sym->attr.codimension && sym->attr.allocatable
@@ -11547,6 +11775,13 @@ check_data_variable (gfc_data_variable *var, locus *where)
     {
       if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
 	has_pointer = 1;
+
+      if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+	{
+	  gfc_error ("DATA element '%s' at %L cannot have a coindex",
+		     sym->name, where);
+	  return FAILURE;
+	}
 
       if (has_pointer
 	    && ref->type == REF_ARRAY

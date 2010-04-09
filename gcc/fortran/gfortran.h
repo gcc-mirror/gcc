@@ -1444,13 +1444,15 @@ extern gfc_interface_info current_interface;
 
 enum gfc_array_ref_dimen_type
 {
-  DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_UNKNOWN
+  DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_STAR, DIMEN_UNKNOWN
 };
 
 typedef struct gfc_array_ref
 {
   ar_type type;
   int dimen;			/* # of components in the reference */
+  int codimen;
+  bool in_allocate;		/* For coarray checks. */
   locus where;
   gfc_array_spec *as;
 
@@ -2641,6 +2643,11 @@ void gfc_expr_replace_symbols (gfc_expr *, gfc_symbol *);
 void gfc_expr_replace_comp (gfc_expr *, gfc_component *);
 
 bool gfc_is_proc_ptr_comp (gfc_expr *, gfc_component **);
+
+bool gfc_is_coindexed (gfc_expr *);
+bool gfc_has_ultimate_allocatable (gfc_expr *);
+bool gfc_has_ultimate_pointer (gfc_expr *);
+
 
 /* st.c */
 extern gfc_code new_st;

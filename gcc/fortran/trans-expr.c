@@ -1848,6 +1848,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
   new_sym->as = gfc_copy_array_spec (sym->as);
   new_sym->attr.referenced = 1;
   new_sym->attr.dimension = sym->attr.dimension;
+  new_sym->attr.codimension = sym->attr.codimension;
   new_sym->attr.pointer = sym->attr.pointer;
   new_sym->attr.allocatable = sym->attr.allocatable;
   new_sym->attr.flavor = sym->attr.flavor;
@@ -2076,7 +2077,7 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping *mapping)
       break;
 
     case GFC_ISYM_SIZE:
-      if (!sym->as)
+      if (!sym->as || sym->as->rank == 0)
 	return false;
 
       if (arg2 && arg2->expr_type == EXPR_CONSTANT)
@@ -2114,7 +2115,7 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping *mapping)
 	/* TODO These implementations of lbound and ubound do not limit if
 	   the size < 0, according to F95's 13.14.53 and 13.14.113.  */
 
-      if (!sym->as)
+      if (!sym->as || sym->as->rank == 0)
 	return false;
 
       if (arg2 && arg2->expr_type == EXPR_CONSTANT)

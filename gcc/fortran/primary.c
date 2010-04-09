@@ -1746,7 +1746,25 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   tail = NULL;
 
   gfc_gobble_whitespace ();
+
+  if (gfc_peek_ascii_char () == '[')
+    {
+      if (sym->attr.dimension)
+	{
+	  gfc_error ("Array section designator, e.g. '(:)', is required "
+		     "besides the coarray designator '[...]' at %C");
+	  return MATCH_ERROR;
+	}
+      if (!sym->attr.codimension)
+	{
+	  gfc_error ("Coarray designator at %C but '%s' is not a coarray",
+		     sym->name);
+	  return MATCH_ERROR;
+	}
+    }
+
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
+      || gfc_peek_ascii_char () == '[' || sym->attr.codimension
       || (sym->attr.dimension && !sym->attr.proc_pointer
 	  && !gfc_is_proc_ptr_comp (primary, NULL)
 	  && !(gfc_matching_procptr_assignment
@@ -1761,7 +1779,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       tail->type = REF_ARRAY;
 
       m = gfc_match_array_ref (&tail->u.ar, equiv_flag ? NULL : sym->as,
-			       equiv_flag);
+			       equiv_flag, sym->as ? sym->as->corank : 0);
       if (m != MATCH_YES)
 	return m;
 
@@ -1771,7 +1789,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;
 
-	  m = gfc_match_array_ref (&tail->u.ar, NULL, equiv_flag);
+	  m = gfc_match_array_ref (&tail->u.ar, NULL, equiv_flag, 0);
 	  if (m != MATCH_YES)
 	    return m;
 	}
@@ -1881,7 +1899,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;
 
-	  m = gfc_match_array_ref (&tail->u.ar, component->as, equiv_flag);
+	  m = gfc_match_array_ref (&tail->u.ar, component->as, equiv_flag,
+			  component->as->corank);
 	  if (m != MATCH_YES)
 	    return m;
 	}
@@ -1894,7 +1913,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 
 	  m = gfc_match_array_ref (&tail->u.ar,
 				   component->ts.u.derived->components->as,
-				   equiv_flag);
+				   equiv_flag,
+			   component->ts.u.derived->components->as->corank);
 	  if (m != MATCH_YES)
 	    return m;
 	}
@@ -1947,6 +1967,13 @@ check_substring:
 	case MATCH_ERROR:
 	  return MATCH_ERROR;
 	}
+    }
+
+  /* F2008, C727.  */
+  if (primary->expr_type == EXPR_PPC && gfc_is_coindexed (primary))
+    {
+      gfc_error ("Coindexed procedure-pointer component at %C");
+      return MATCH_ERROR;
     }
 
   return MATCH_YES;
@@ -2023,7 +2050,9 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    break;
 
 	  case AR_ELEMENT:
-	    allocatable = pointer = 0;
+	    /* Handle coarrays.  */
+	    if (ref->u.ar.dimen > 0)
+	      allocatable = pointer = 0;
 	    break;
 
 	  case AR_UNKNOWN:
@@ -2348,6 +2377,15 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
 	    goto syntax;
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
+
+	  /* F2008, R457/C725, for PURE C1283.  */
+          if (this_comp->attr.pointer && gfc_is_coindexed (comp_tail->val))
+	    {
+	      gfc_error ("Coindexed expression to pointer component '%s' in "
+			 "structure constructor at %C!", comp_tail->name);
+	      goto cleanup;
+ 	    }
+
 
 	  /* If not explicitly a parent constructor, gather up the components
 	     and build one.  */
