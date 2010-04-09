@@ -850,11 +850,11 @@ data_desc:
       if (u != FMT_POSINT)
 	{
 	  format_locus.nextc += format_string_pos;
-	  gfc_error_now ("Positive width required in format "
+	  gfc_error ("Positive width required in format "
 			 "specifier %s at %L", token_to_string (t),
 			 &format_locus);
 	  saved_token = u;
-	  goto finished;
+	  goto fail;
 	}
 
       u = format_lex ();
@@ -866,11 +866,11 @@ data_desc:
 	  format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
 	    {
-	      gfc_error_now ("Period required in format "
+	      gfc_error ("Period required in format "
 			     "specifier %s at %L", token_to_string (t),
 			     &format_locus);
 	      saved_token = u;
-	      goto finished;
+              goto fail;
 	    }
 	  else
 	    gfc_warning ("Period required in format "
@@ -970,11 +970,11 @@ data_desc:
 	  gfc_warning ("The H format specifier at %L is"
 		       " a Fortran 95 deleted feature", &format_locus);
 	}
-
       if (mode == MODE_STRING)
 	{
 	  format_string += value;
 	  format_length -= value;
+          format_string_pos += repeat;
 	}
       else
 	{
@@ -1152,6 +1152,8 @@ finished:
 static gfc_try
 check_format_string (gfc_expr *e, bool is_input)
 {
+  gfc_try rv;
+  int i;
   if (!e || e->ts.type != BT_CHARACTER || e->expr_type != EXPR_CONSTANT)
     return SUCCESS;
 
@@ -1162,8 +1164,20 @@ check_format_string (gfc_expr *e, bool is_input)
      format string that has been calculated, but that's probably not worth the
      effort.  */
   format_locus = e->where;
-
-  return check_format (is_input);
+  rv = check_format (is_input);
+  /* check for extraneous characters at the end of an otherwise valid format
+     string, like '(A10,I3)F5'
+     start at the end and move back to the last character processed,
+     spaces are OK */
+  if (rv == SUCCESS && e->value.character.length > format_string_pos)
+    for (i=e->value.character.length-1;i>format_string_pos-1;i--)
+      if (e->value.character.string[i] != ' ')
+        {
+          format_locus.nextc += format_length + 1; 
+          gfc_warning ("Extraneous characters in format at %L", &format_locus); 
+          break;
+        }
+  return rv;
 }
 
 
