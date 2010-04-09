@@ -1538,14 +1538,15 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "vcond<mode>"
-  [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
-        (if_then_else:SSEMODEF2P
+  [(set (match_operand:AVXMODEF2P 0 "register_operand" "")
+        (if_then_else:AVXMODEF2P
           (match_operator 3 ""
-            [(match_operand:SSEMODEF2P 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODEF2P 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODEF2P 1 "general_operand" "")
-          (match_operand:SSEMODEF2P 2 "general_operand" "")))]
-  "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
+            [(match_operand:AVXMODEF2P 4 "nonimmediate_operand" "")
+             (match_operand:AVXMODEF2P 5 "nonimmediate_operand" "")])
+          (match_operand:AVXMODEF2P 1 "general_operand" "")
+          (match_operand:AVXMODEF2P 2 "general_operand" "")))]
+  "(SSE_VEC_FLOAT_MODE_P (<MODE>mode)
+    || AVX_VEC_FLOAT_MODE_P (<MODE>mode))"
 {
   bool ok = ix86_expand_fp_vcond (operands);
   gcc_assert (ok);
