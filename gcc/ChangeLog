@@ -1,3 +1,11 @@
+2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-gld.h: Remove SPARC reference.
+	Rename ...
+	* config/sol2-gld.h: ... here.
+	* config.gcc (sparc*-*-solaris2*): Reflect this.
+	(i[34567]86-*-solaris2*): Use it.
+
 2010-04-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_dfa_new_cycle): Remove unused variable
