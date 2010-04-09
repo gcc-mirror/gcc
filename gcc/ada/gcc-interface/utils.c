@@ -3587,7 +3587,7 @@ convert_to_fat_pointer (tree type, tree expr)
     {
       tree fields = TYPE_FIELDS (TREE_TYPE (etype));
 
-      expr = protect_multiple_eval (expr);
+      expr = gnat_protect_expr (expr);
       if (TREE_CODE (expr) == ADDR_EXPR)
 	expr = TREE_OPERAND (expr, 0);
       else

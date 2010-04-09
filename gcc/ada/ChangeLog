@@ -1,5 +1,45 @@
 2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (maybe_variable): Delete.
+	(protect_multiple_eval): Likewise.
+	(maybe_stabilize_reference): Likewise.
+	(gnat_save_expr): Declare.
+	(gnat_protect_expr): Likewise.
+	(gnat_stabilize_reference): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Use
+	gnat_stabilize_reference.
+	(maybe_variable): Delete.
+	(elaborate_expression_1): Use gnat_save_expr.
+	* gcc-interface/trans.c (Attribute_to_gnu): Use gnat_protect_expr.
+	(call_to_gnu): Pass NULL to gnat_stabilize_reference.
+	(gnat_to_gnu) <N_Object_Declaration>: Use gnat_save_expr.
+	<N_Slice>: Use gnat_protect_exp.
+	<N_Selected_Component>: Pass NULL to gnat_stabilize_reference.
+	<N_In>: Use gnat_protect_expr.
+	Pass NULL to gnat_stabilize_reference.
+	(build_unary_op_trapv): Use gnat_protect_expr.
+	(build_binary_op_trapv): Likewise.
+	(emit_range_check): Likewise.
+	(emit_index_check): Likewise.
+	(convert_with_check): Likewise.
+	(protect_multiple_eval): Move to utils2.c file.
+	(maybe_stabilize_reference): Merge into...
+	(gnat_stabilize_reference): ...this.  Move to utils2.c file.
+	(gnat_stabilize_reference_1): Likewise.
+	* gcc-interface/utils.c (convert_to_fat_pointer): Use gnat_protect_expr
+	instead of protect_multiple_eval.
+	* gcc-interface/utils2.c (compare_arrays): Likewise.
+	(nonbinary_modular_operation): Likewise.
+	(maybe_wrap_malloc): Likewise.
+	(build_allocator): Likewise.
+	(gnat_save_expr): New function.
+	(gnat_protect_expr): Rename from protect_multiple_eval.  Early return
+	in common cases.  Propagate TREE_READONLY onto dereferences.
+	(gnat_stabilize_reference_1): Move from trans.c file.
+	(gnat_stabilize_reference): Likewise.
+
+2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (gnat_mark_addressable): Rename parameter.
 	* gcc-interface/decl.c (maybe_variable): Do not set TREE_STATIC on _REF
 	node.  Use the type of the operand to set TREE_READONLY.
