@@ -1506,8 +1506,6 @@ finalize_record_size (record_layout_info rli)
       unpacked_size = round_up_loc (input_location, TYPE_SIZE (rli->t), rli->unpacked_align);
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rli->t)))
 	{
-	  TYPE_PACKED (rli->t) = 0;
-
 	  if (TYPE_NAME (rli->t))
 	    {
 	      tree name;

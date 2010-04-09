@@ -1,3 +1,9 @@
+2010-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41788
+	* stor-layout.c (finalize_record_size): Don't change TYPE_PACKED
+	based on a warning flag.
+
 2010-04-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Dump
