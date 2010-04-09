@@ -1,5 +1,13 @@
 2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (plugin -rdynamic test): Log result.
+	* configure: Regenerate.
+	* config/sol2.h (LINK_SPEC): Handle -rdynamic.
+	(RDYNAMIC_SPEC): Define.
+	* config/sol2-gld.h (RDYNAMIC_SPEC): Redefine.
+
+2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac: Determine Sun ld version numbers.
 	(comdat_group): Restrict GNU ld version checks to gld.
 	(comdat_group, *-*-solaris2.1[1-9]*): Enable for Sun ld > 1.1688.
