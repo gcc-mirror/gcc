@@ -49,8 +49,6 @@
 #include "gigi.h"
 
 static tree find_common_type (tree, tree);
-static bool contains_save_expr_p (tree);
-static tree contains_null_expr (tree);
 static tree compare_arrays (tree, tree, tree);
 static tree nonbinary_modular_operation (enum tree_code, tree, tree, tree);
 static tree build_simple_component_ref (tree, tree, tree, bool);
@@ -233,100 +231,13 @@ find_common_type (tree t1, tree t2)
   return NULL_TREE;
 }
 
-/* See if EXP contains a SAVE_EXPR in a position where we would
-   normally put it.
+/* Return an expression tree representing an equality comparison of A1 and A2,
+   two objects of type ARRAY_TYPE.  The result should be of type RESULT_TYPE.
 
-   ??? This is a real kludge, but is probably the best approach short
-   of some very general solution.  */
-
-static bool
-contains_save_expr_p (tree exp)
-{
-  switch (TREE_CODE (exp))
-    {
-    case SAVE_EXPR:
-      return true;
-
-    case ADDR_EXPR:  case INDIRECT_REF:
-    case COMPONENT_REF:
-    CASE_CONVERT: case VIEW_CONVERT_EXPR:
-      return contains_save_expr_p (TREE_OPERAND (exp, 0));
-
-    case CONSTRUCTOR:
-      {
-	tree value;
-	unsigned HOST_WIDE_INT ix;
-
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), ix, value)
-	  if (contains_save_expr_p (value))
-	    return true;
-	return false;
-      }
-
-    default:
-      return false;
-    }
-}
-
-/* See if EXP contains a NULL_EXPR in an expression we use for sizes. Return
-   it if so.  This is used to detect types whose sizes involve computations
-   that are known to raise Constraint_Error.  */
-
-static tree
-contains_null_expr (tree exp)
-{
-  tree tem;
-
-  if (TREE_CODE (exp) == NULL_EXPR)
-    return exp;
-
-  switch (TREE_CODE_CLASS (TREE_CODE (exp)))
-    {
-    case tcc_unary:
-      return contains_null_expr (TREE_OPERAND (exp, 0));
-
-    case tcc_comparison:
-    case tcc_binary:
-      tem = contains_null_expr (TREE_OPERAND (exp, 0));
-      if (tem)
-	return tem;
-
-      return contains_null_expr (TREE_OPERAND (exp, 1));
-
-    case tcc_expression:
-      switch (TREE_CODE (exp))
-	{
-	case SAVE_EXPR:
-	  return contains_null_expr (TREE_OPERAND (exp, 0));
-
-	case COND_EXPR:
-	  tem = contains_null_expr (TREE_OPERAND (exp, 0));
-	  if (tem)
-	    return tem;
-
-	  tem = contains_null_expr (TREE_OPERAND (exp, 1));
-	  if (tem)
-	    return tem;
-
-	  return contains_null_expr (TREE_OPERAND (exp, 2));
-
-	default:
-	  return 0;
-	}
-
-    default:
-      return 0;
-    }
-}
-
-/* Return an expression tree representing an equality comparison of
-   A1 and A2, two objects of ARRAY_TYPE.  The returned expression should
-   be of type RESULT_TYPE
-
-   Two arrays are equal in one of two ways: (1) if both have zero length
-   in some dimension (not necessarily the same dimension) or (2) if the
-   lengths in each dimension are equal and the data is equal.  We perform the
-   length tests in as efficient a manner as possible.  */
+   Two arrays are equal in one of two ways: (1) if both have zero length in
+   some dimension (not necessarily the same dimension) or (2) if the lengths
+   in each dimension are equal and the data is equal.  We perform the length
+   tests in as efficient a manner as possible.  */
 
 static tree
 compare_arrays (tree result_type, tree a1, tree a2)
@@ -336,7 +247,17 @@ compare_arrays (tree result_type, tree a1, tree a2)
   tree result = convert (result_type, integer_one_node);
   tree a1_is_null = convert (result_type, integer_zero_node);
   tree a2_is_null = convert (result_type, integer_zero_node);
+  bool a1_side_effects_p = TREE_SIDE_EFFECTS (a1);
+  bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
   bool length_zero_p = false;
+
+  /* If either operand has side-effects, they have to be evaluated only once
+     in spite of the multiple references to the operand in the comparison.  */
+  if (a1_side_effects_p)
+    a1 = protect_multiple_eval (a1);
+
+  if (a2_side_effects_p)
+    a2 = protect_multiple_eval (a2);
 
   /* Process each dimension separately and compare the lengths.  If any
      dimension has a size known to be zero, set SIZE_ZERO_P to 1 to
@@ -350,9 +271,9 @@ compare_arrays (tree result_type, tree a1, tree a2)
       tree bt = get_base_type (TREE_TYPE (lb1));
       tree length1 = fold_build2 (MINUS_EXPR, bt, ub1, lb1);
       tree length2 = fold_build2 (MINUS_EXPR, bt, ub2, lb2);
-      tree nbt;
-      tree tem;
       tree comparison, this_a1_is_null, this_a2_is_null;
+      tree nbt, tem;
+      bool btem;
 
       /* If the length of the first array is a constant, swap our operands
 	 unless the length of the second array is the constant zero.
@@ -367,6 +288,8 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  tem = ub1, ub1 = ub2, ub2 = tem;
 	  tem = length1, length1 = length2, length2 = tem;
 	  tem = a1_is_null, a1_is_null = a2_is_null, a2_is_null = tem;
+	  btem = a1_side_effects_p, a1_side_effects_p = a2_side_effects_p,
+	  a2_side_effects_p = btem;
 	}
 
       /* If the length of this dimension in the second array is the constant
@@ -449,11 +372,13 @@ compare_arrays (tree result_type, tree a1, tree a2)
       tree type = find_common_type (TREE_TYPE (a1), TREE_TYPE (a2));
 
       if (type)
-	a1 = convert (type, a1), a2 = convert (type, a2);
+	{
+	  a1 = convert (type, a1),
+	  a2 = convert (type, a2);
+	}
 
       result = build_binary_op (TRUTH_ANDIF_EXPR, result_type, result,
 				fold_build2 (EQ_EXPR, result_type, a1, a2));
-
     }
 
   /* The result is also true if both sizes are zero.  */
@@ -462,14 +387,13 @@ compare_arrays (tree result_type, tree a1, tree a2)
 					     a1_is_null, a2_is_null),
 			    result);
 
-  /* If either operand contains SAVE_EXPRs, they have to be evaluated before
-     starting the comparison above since the place it would be otherwise
-     evaluated would be wrong.  */
-
-  if (contains_save_expr_p (a1))
+  /* If either operand has side-effects, they have to be evaluated before
+     starting the comparison above since the place they would be otherwise
+     evaluated could be wrong.  */
+  if (a1_side_effects_p)
     result = build2 (COMPOUND_EXPR, result_type, a1, result);
 
-  if (contains_save_expr_p (a2))
+  if (a2_side_effects_p)
     result = build2 (COMPOUND_EXPR, result_type, a2, result);
 
   return result;
@@ -547,7 +471,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   /* For subtraction, add the modulus back if we are negative.  */
   else if (op_code == MINUS_EXPR)
     {
-      result = save_expr (result);
+      result = protect_multiple_eval (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (LT_EXPR, integer_type_node, result,
 					 convert (op_type, integer_zero_node)),
@@ -558,7 +482,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   /* For the other operations, subtract the modulus if we are >= it.  */
   else
     {
-      result = save_expr (result);
+      result = protect_multiple_eval (result);
       result = fold_build3 (COND_EXPR, op_type,
 			    fold_build2 (GE_EXPR, integer_type_node,
 					 result, modulus),
@@ -1241,7 +1165,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	{
 	  result = build1 (UNCONSTRAINED_ARRAY_REF,
 			   TYPE_UNCONSTRAINED_ARRAY (type), operand);
-	  TREE_READONLY (result) = TREE_STATIC (result)
+	  TREE_READONLY (result)
 	    = TYPE_READONLY (TYPE_UNCONSTRAINED_ARRAY (type));
 	}
       else if (TREE_CODE (operand) == ADDR_EXPR)
@@ -1590,13 +1514,6 @@ gnat_build_constructor (tree type, tree list)
 
       if (TREE_SIDE_EFFECTS (val))
 	side_effects = true;
-
-      /* Propagate an NULL_EXPR from the size of the type.  We won't ever
-	 be executing the code we generate here in that case, but handle it
-	 specially to avoid the compiler blowing up.  */
-      if (TREE_CODE (type) == RECORD_TYPE
-	  && (result = contains_null_expr (DECL_SIZE (obj))) != NULL_TREE)
-	return build1 (NULL_EXPR, type, TREE_OPERAND (result, 0));
     }
 
   /* For record types with constant components only, sort field list
@@ -1883,7 +1800,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
     {
       /* Latch malloc's return value and get a pointer to the aligning field
 	 first.  */
-      tree storage_ptr = save_expr (malloc_ptr);
+      tree storage_ptr = protect_multiple_eval (malloc_ptr);
 
       tree aligning_record_addr
 	= convert (build_pointer_type (aligning_type), storage_ptr);
@@ -2118,12 +2035,11 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 					      gnat_proc, gnat_pool,
 					      gnat_node));
 
-  /* If we have an initial value, put the new address into a SAVE_EXPR, assign
-     the value, and return the address.  Do this with a COMPOUND_EXPR.  */
-
+  /* If we have an initial value, protect the new address, assign the value
+     and return the address with a COMPOUND_EXPR.  */
   if (init)
     {
-      result = save_expr (result);
+      result = protect_multiple_eval (result);
       result
 	= build2 (COMPOUND_EXPR, TREE_TYPE (result),
 		  build_binary_op
@@ -2188,14 +2104,14 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
   return gnat_build_constructor (record_type, nreverse (const_list));
 }
 
-/* Indicate that we need to make the address of EXPR_NODE and it therefore
+/* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */
 
 bool
-gnat_mark_addressable (tree expr_node)
+gnat_mark_addressable (tree t)
 {
-  while (1)
-    switch (TREE_CODE (expr_node))
+  while (true)
+    switch (TREE_CODE (t))
       {
       case ADDR_EXPR:
       case COMPONENT_REF:
@@ -2206,27 +2122,27 @@ gnat_mark_addressable (tree expr_node)
       case VIEW_CONVERT_EXPR:
       case NON_LVALUE_EXPR:
       CASE_CONVERT:
-	expr_node = TREE_OPERAND (expr_node, 0);
+	t = TREE_OPERAND (t, 0);
 	break;
 
       case CONSTRUCTOR:
-	TREE_ADDRESSABLE (expr_node) = 1;
+	TREE_ADDRESSABLE (t) = 1;
 	return true;
 
       case VAR_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	TREE_ADDRESSABLE (expr_node) = 1;
+	TREE_ADDRESSABLE (t) = 1;
 	return true;
 
       case FUNCTION_DECL:
-	TREE_ADDRESSABLE (expr_node) = 1;
+	TREE_ADDRESSABLE (t) = 1;
 	return true;
 
       case CONST_DECL:
-	return (DECL_CONST_CORRESPONDING_VAR (expr_node)
-		&& (gnat_mark_addressable
-		    (DECL_CONST_CORRESPONDING_VAR (expr_node))));
+	return DECL_CONST_CORRESPONDING_VAR (t)
+	       && gnat_mark_addressable (DECL_CONST_CORRESPONDING_VAR (t));
+
       default:
 	return true;
     }

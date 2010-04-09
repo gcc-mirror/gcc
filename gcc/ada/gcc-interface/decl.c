@@ -5743,9 +5743,7 @@ maybe_variable (tree gnu_operand)
       tree gnu_result
 	= build1 (UNCONSTRAINED_ARRAY_REF, TREE_TYPE (gnu_operand),
 		  variable_size (TREE_OPERAND (gnu_operand, 0)));
-
-      TREE_READONLY (gnu_result) = TREE_STATIC (gnu_result)
-	= TYPE_READONLY (TREE_TYPE (TREE_TYPE (gnu_operand)));
+      TREE_READONLY (gnu_result) = TYPE_READONLY (TREE_TYPE (gnu_operand));
       return gnu_result;
     }
 

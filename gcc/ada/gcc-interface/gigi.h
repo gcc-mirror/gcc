@@ -871,9 +871,9 @@ extern tree build_allocator (tree type, tree init, tree result_type,
 extern tree fill_vms_descriptor (tree expr, Entity_Id gnat_formal,
                                  Node_Id gnat_actual);
 
-/* Indicate that we need to make the address of EXPR_NODE and it therefore
-   should not be allocated in a register.  Return true if successful.  */
-extern bool gnat_mark_addressable (tree expr_node);
+/* Indicate that we need to take the address of T and that it therefore
+   should not be allocated in a register.  Returns true if successful.  */
+extern bool gnat_mark_addressable (tree t);
 
 /* Implementation of the builtin_function langhook.  */
 extern tree gnat_builtin_function (tree decl);

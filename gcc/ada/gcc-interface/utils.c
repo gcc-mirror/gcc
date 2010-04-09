@@ -3587,7 +3587,7 @@ convert_to_fat_pointer (tree type, tree expr)
     {
       tree fields = TYPE_FIELDS (TREE_TYPE (etype));
 
-      expr = save_expr (expr);
+      expr = protect_multiple_eval (expr);
       if (TREE_CODE (expr) == ADDR_EXPR)
 	expr = TREE_OPERAND (expr, 0);
       else
@@ -3881,7 +3881,8 @@ convert (tree type, tree expr)
 	      /* If packing has made this field a bitfield and the input
 		 value couldn't be emitted statically any more, we need to
 		 clear TREE_CONSTANT on our output.  */
-	      if (!clear_constant && TREE_CONSTANT (expr)
+	      if (!clear_constant
+		  && TREE_CONSTANT (expr)
 		  && !CONSTRUCTOR_BITFIELD_P (efield)
 		  && CONSTRUCTOR_BITFIELD_P (field)
 		  && !initializer_constant_valid_for_bitfield_p (value))
@@ -3900,7 +3901,7 @@ convert (tree type, tree expr)
 	      TREE_TYPE (expr) = type;
 	      CONSTRUCTOR_ELTS (expr) = v;
 	      if (clear_constant)
-		TREE_CONSTANT (expr) = TREE_STATIC (expr) = false;
+		TREE_CONSTANT (expr) = TREE_STATIC (expr) = 0;
 	      return expr;
 	    }
 	}
@@ -4251,8 +4252,7 @@ maybe_unconstrained_array (tree exp)
 			      build_component_ref (TREE_OPERAND (exp, 0),
 						   get_identifier ("P_ARRAY"),
 						   NULL_TREE, false));
-	  TREE_READONLY (new_exp) = TREE_STATIC (new_exp)
-	    = TREE_READONLY (exp);
+	  TREE_READONLY (new_exp) = TREE_READONLY (exp);
 	  return new_exp;
 	}
 
@@ -4735,7 +4735,7 @@ build_void_list_node (void)
 static tree
 builtin_type_for_size (int size, bool unsignedp)
 {
-  tree type = lang_hooks.types.type_for_size (size, unsignedp);
+  tree type = gnat_type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
 }
 

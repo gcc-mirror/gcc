@@ -1,3 +1,35 @@
+2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gnat_mark_addressable): Rename parameter.
+	* gcc-interface/decl.c (maybe_variable): Do not set TREE_STATIC on _REF
+	node.  Use the type of the operand to set TREE_READONLY.
+	* gcc-interface/trans.c (Identifier_to_gnu): Do not set TREE_STATIC on
+	_REF node.  Do not overwrite TREE_READONLY.
+	(call_to_gnu): Rename local variable and fix various nits.  In the
+	copy-in/copy-out case, build the SAVE_EXPR manually.
+	(convert_with_check): Call protect_multiple_eval in lieu of save_expr
+	and fold the computations.
+	(protect_multiple_eval): Always save entire fat pointers.
+	(maybe_stabilize_reference): Minor tweaks.
+	(gnat_stabilize_reference_1): Likewise.  Do not deal with tcc_constant,
+	tcc_type and tcc_statement.
+	* gcc-interface/utils.c (convert_to_fat_pointer): Call
+	protect_multiple_eval in lieu of save_expr.
+	(convert): Minor tweaks.
+	(maybe_unconstrained_array): Do not set TREE_STATIC on _REF node.
+	(builtin_type_for_size): Call gnat_type_for_size directly.
+	* gcc-interface/utils2.c (contains_save_expr_p): Delete.
+	(contains_null_expr): Likewise
+	(gnat_build_constructor): Do not call it.
+	(compare_arrays): Deal with all side-effects, use protect_multiple_eval
+	instead of gnat_stabilize_reference to protect the operands.
+	(nonbinary_modular_operation): Call protect_multiple_eval in lieu of
+	save_expr.
+	(maybe_wrap_malloc): Likewise.
+	(build_allocator): Likewise.
+	(build_unary_op) <INDIRECT_REF>: Do not set TREE_STATIC on _REF node.
+	(gnat_mark_addressable): Rename parameter.
+
 2010-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_RETURNS_UNCONSTRAINED_P): Rename into.
