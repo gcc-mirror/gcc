@@ -1,3 +1,8 @@
+2010-04-10  Jie Zhang  <jie@codesourcery.com>
+
+	PR target/43417
+	* gcc.target/sh/pr43417.c: New test.
+
 2010-04-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/43643
