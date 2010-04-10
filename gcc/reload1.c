@@ -3557,7 +3557,10 @@ eliminate_regs_in_insn (rtx insn, int replace)
     {
       /* Restore the old body.  */
       for (i = 0; i < recog_data.n_operands; i++)
-	*recog_data.operand_loc[i] = orig_operand[i];
+	/* Restoring a top-level match_parallel would clobber the new_body
+	   we installed in the insn.  */
+	if (recog_data.operand_loc[i] != &PATTERN (insn))
+	  *recog_data.operand_loc[i] = orig_operand[i];
       for (i = 0; i < recog_data.n_dups; i++)
 	*recog_data.dup_loc[i] = orig_operand[(int) recog_data.dup_num[i]];
     }
