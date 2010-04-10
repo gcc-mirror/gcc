@@ -224,6 +224,7 @@ static bool arm_can_eliminate (const int, const int);
 static void arm_asm_trampoline_template (FILE *);
 static void arm_trampoline_init (rtx, tree, rtx);
 static rtx arm_trampoline_adjust_address (rtx);
+static rtx arm_pic_static_addr (rtx orig, rtx reg);
 
 
 /* Table of machine attributes.  */
@@ -4905,28 +4906,15 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
     {
       rtx pic_ref, address;
       rtx insn;
-      int subregs = 0;
-
-      /* If this function doesn't have a pic register, create one now.  */
-      require_pic_register ();
 
       if (reg == 0)
 	{
 	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
-
-	  subregs = 1;
+	  address = gen_reg_rtx (Pmode);
 	}
-
-      if (subregs)
-	address = gen_reg_rtx (Pmode);
       else
 	address = reg;
-
-      if (TARGET_32BIT)
-	emit_insn (gen_pic_load_addr_32bit (address, orig));
-      else /* TARGET_THUMB1 */
-	emit_insn (gen_pic_load_addr_thumb1 (address, orig));
 
       /* VxWorks does not impose a fixed gap between segments; the run-time
 	 gap can be different from the object-file gap.  We therefore can't
@@ -4939,15 +4927,22 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	       SYMBOL_REF_LOCAL_P (orig)))
 	  && NEED_GOT_RELOC
 	  && !TARGET_VXWORKS_RTP)
-	pic_ref = gen_rtx_PLUS (Pmode, cfun->machine->pic_reg, address);
+	insn = arm_pic_static_addr (orig, reg);
       else
 	{
+	  /* If this function doesn't have a pic register, create one now.  */
+	  require_pic_register ();
+
+	  if (TARGET_32BIT)
+	    emit_insn (gen_pic_load_addr_32bit (address, orig));
+	  else /* TARGET_THUMB1 */
+	    emit_insn (gen_pic_load_addr_thumb1 (address, orig));
+
 	  pic_ref = gen_const_mem (Pmode,
 				   gen_rtx_PLUS (Pmode, cfun->machine->pic_reg,
 					         address));
+	  insn = emit_move_insn (reg, pic_ref);
 	}
-
-      insn = emit_move_insn (reg, pic_ref);
 
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
@@ -5155,6 +5150,43 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
   emit_use (pic_reg);
 }
 
+/* Generate code to load the address of a static var when flag_pic is set.  */
+static rtx
+arm_pic_static_addr (rtx orig, rtx reg)
+{
+  rtx l1, labelno, offset_rtx, insn;
+
+  gcc_assert (flag_pic);
+
+  /* We use an UNSPEC rather than a LABEL_REF because this label
+     never appears in the code stream.  */
+  labelno = GEN_INT (pic_labelno++);
+  l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  l1 = gen_rtx_CONST (VOIDmode, l1);
+
+  /* On the ARM the PC register contains 'dot + 8' at the time of the
+     addition, on the Thumb it is 'dot + 4'.  */
+  offset_rtx = plus_constant (l1, TARGET_ARM ? 8 : 4);
+  offset_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, orig, offset_rtx),
+                               UNSPEC_SYMBOL_OFFSET);
+  offset_rtx = gen_rtx_CONST (Pmode, offset_rtx);
+
+  if (TARGET_32BIT)
+    {
+      emit_insn (gen_pic_load_addr_32bit (reg, offset_rtx));
+      if (TARGET_ARM)
+        insn = emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
+      else
+        insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
+    }
+  else /* TARGET_THUMB1 */
+    {
+      emit_insn (gen_pic_load_addr_thumb1 (reg, offset_rtx));
+      insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
+    }
+
+  return insn;
+}
 
 /* Return nonzero if X is valid as an ARM state addressing register.  */
 static int
@@ -21322,6 +21354,16 @@ arm_output_addr_const_extra (FILE *fp, rtx x)
 	fputs ("+.", fp);
       fputs ("-(", fp);
       output_addr_const (fp, XVECEXP (x, 0, 0));
+      fputc (')', fp);
+      return TRUE;
+    }
+  else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_SYMBOL_OFFSET)
+    {
+      output_addr_const (fp, XVECEXP (x, 0, 0));
+      if (GOT_PCREL)
+        fputs ("+.", fp);
+      fputs ("-(", fp);
+      output_addr_const (fp, XVECEXP (x, 0, 1));
       fputc (')', fp);
       return TRUE;
     }
