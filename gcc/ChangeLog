@@ -9,6 +9,9 @@
 	(web_main): Call it.
 	(union_defs): Don't try to recognize match_dups.
 
+	* reload1.c (eliminate_regs_in_insn): Don't restore an operand
+	if doing so would replace the entire pattern.
+
 2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43707
