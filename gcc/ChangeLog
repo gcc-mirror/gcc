@@ -2,7 +2,13 @@
 
 	* ira-costs.c (record_reg_classes): Ignore alternatives that are
 	not enabled.
-	
+
+	* Makefile.in (web.o): Depend on insn-config.h and $(RECOG_H).
+	* web.c: Include "insn-config.h" and "recog.h".
+	(union_match_dups): New function.
+	(web_main): Call it.
+	(union_defs): Don't try to recognize match_dups.
+
 2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43707
