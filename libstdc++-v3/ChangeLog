@@ -1,3 +1,9 @@
+2010-04-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/43458
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Xfail hppa*-*-hpux*.
+
 2010-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	Backport:
