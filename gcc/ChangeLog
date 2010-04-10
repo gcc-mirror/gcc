@@ -1,3 +1,8 @@
+2010-04-10  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+
+	* ira-costs.c (record_reg_classes): Ignore alternatives that are
+	not enabled.
+	
 2010-04-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43707
