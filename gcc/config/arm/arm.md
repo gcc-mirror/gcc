@@ -101,6 +101,8 @@
 			  ; a given symbolic address.
    (UNSPEC_THUMB1_CASESI 25) ; A Thumb1 compressed dispatch-table call.
    (UNSPEC_RBIT 26)       ; rbit operation.
+   (UNSPEC_SYMBOL_OFFSET 27) ; The offset of the start of the symbol from
+                             ; another symbolic address.
   ]
 )
 
