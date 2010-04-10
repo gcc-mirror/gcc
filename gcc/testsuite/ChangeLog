@@ -54,15 +54,15 @@
 	* g++.dg/other/pr35504.C: Add check for thiscall.
 	* g++.dg/torture/stackalign/eh-thiscall-1.C: New.
 	* gcc.dg/torture/stackalign/thiscall-1.c: New.
-	
+
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/28584
 	* gcc.dg/Wint-to-pointer-cast-1.c: Move to...
 	* c-c++-common/Wint-to-pointer-cast-1.c: ...  here.
-	* gcc.dg/Wint-to-pointer-cast-2.c: Move to...	
+	* gcc.dg/Wint-to-pointer-cast-2.c: Move to...
 	* c-c++-common/Wint-to-pointer-cast-2.c: ...  here.
-	* gcc.dg/Wint-to-pointer-cast-3.c: Move to...	
+	* gcc.dg/Wint-to-pointer-cast-3.c: Move to...
 	* c-c++-common/Wint-to-pointer-cast-3.c: ...  here. Update.
 	* g++.old-deja/g++.mike/warn1.C: Add -Wno-int-to-pointer-cast.
 	* g++.dg/other/increment1.C: Likewise.
@@ -218,7 +218,7 @@
 
 2010-04-06  Dodji Seketeli  <dodji@redhat.com>
 
-	* g++.dg/debug/dwarf2/redeclaration-1.C: Moved from 
+	* g++.dg/debug/dwarf2/redeclaration-1.C: Moved from
 	c-c++-common/dwarf2/redeclaration-1.C
 
 2010-04-06  Jason Merrill  <jason@redhat.com>
@@ -388,7 +388,7 @@
 
 	PR tree-optimization/43141
 	* gcc.dg/guality/pr43141.c: New test.
-	
+
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp/_Pragma1.C: Skip on alpha*-dec-osf*.
@@ -701,13 +701,13 @@
 	* objc/execute/class_self-2.m: Include <stdlib.h>.
 	* objc/execute/forward-1.x: Do not XFAIL for 32bit powerpc-darwin.
 	* objc.dg/desig-init-1.m: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT 
+	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT
 	and 64bit. Use new NeXT interface as required.
 	* objc.dg/special/unclaimed-category-1.m: Ditto.
 	* objc.dg/special/unclaimed-category-1.h: Ditto.
 	* objc.dg/special/unclaimed-category-1a.m: Ditto.
 	* objc.dg/func-ptr-1.m: Ditto.
-	* objc.dg/stret-1.m: Ditto.	
+	* objc.dg/stret-1.m: Ditto.
 	* objc.dg/encode-2.m: Ditto.
 	* objc.dg/category-1.m: Ditto.
 	* objc.dg/encode-3.m: Ditto.
@@ -727,10 +727,10 @@
 	* objc.dg/call-super-1.m: Ditto.
 	* objc.dg/type-size-2.m: Ditto.
 	* objc.dg/method-10.m: Ditto.
-	* objc.dg/defs.m: Ditto.	
+	* objc.dg/defs.m: Ditto.
 	* objc.dg/const-str-3.m: Ditto.
 	* objc.dg/try-catch-6.m: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. Use new NeXT 
+	Protocol1.h) and next-mapping.h as required. Use new NeXT
 	interface as required.
 	* objc.dg/super-class-4.m: Ditto.
 	* objc.dg/comp-types-8.m: Ditto.
@@ -791,8 +791,7 @@
 	* objc.dg/try-catch-5.m: Ditto.
 	* objc.dg/const-str-10.m: Use shared wrapper headers (Object1.h,
 	Protocol1.h) and next-mapping.h as required. Use new NeXT
-	interface as required.  Skip for gnu-runtime.  Test for .quad
-	at m64.
+	interface as required.  Skip for gnu-runtime.  Test for .quad at m64.
 	* objc.dg/const-str-11.m: Ditto.
 	* objc.dg/const-str-9.m: Ditto.
 	* objc.dg/method-4.m: Skip for 64Bit NeXT.

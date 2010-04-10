@@ -1,3 +1,33 @@
+2010-04-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ashr<mode>3): Macroize expander from
+	ashr{qi,hi,si,di,ti}3_1 using SDWIM mode iterator.
+	(*ashr<mode>3_doubleword): New insn_and_split_pattern.  Macroize
+	pattern from *ashr{di,ti}3_1 and corresponding splitters using
+	DWI mode iterator.
+	(*ashr<mode>3_doubleword peephole2): Macroize peephole2 pattern
+	from corresponding peephole2 patterns.
+	(ashrdi3_cvt): Rename from ashrdi3_63_rex64.
+	(ashrsi3_cvt): Rename from ashrsi3_31.
+	(*ashrsi3_cvt_zext): Rename from *ashrsi3_31_zext.
+	(x86_shift<mode>_adj_3): Macroize expander from x86_shift_adj_3
+	and x86_64_shift_adj_3 using SWI48 mode iterator.
+	(*ashr<mode>3_1): Merge with *ashr{qi,hi,si}3_1_one_bit and
+	*ashrdi3_1_one_bit_rex64. Macroize insn from *ashr{qi,hi,si}3_cmp
+	and *ashrdi3_cmp_rex64 using SWI mode iterator.
+	(*ashrqi3_1_slp): Merge with *ashrqi3_1_one_bit_slp.
+	(*ashr<mode>3_cmp): Merge with *ashr{qi,hi,si}3_one_bit_cmp and
+	*ashrdi3_one_bit_cmp_rex64. Macroize insn from *ashr{qi,hi,si}3_cmp
+	and *ashrdi3_cmp_rex64 using SWI mode iterator.
+	(*ashrsi3_cmp_zext): Merge with *ashrsi3_cmp_one_bit_zext.
+	(*ashr<mode>3_cconly): Merge with *ashr{qi,hi,si}3_one_bit_cconly and
+	*ashrdi3_one_bit_cconly_rex64. Macroize insn from
+	*ashr{qi,hi,si}3_cconly and *ashrdi3_cconly_rex64 using
+	SWI mode iterator.
+	(sign_extend splitters): Update for renamed ashr{di,si}3_patterns.
+	* config/i386/i386.c (ix86_split_ashr): Update for renamed
+	x86_shift<mode>_adj_3 expander.
+
 2010-04-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/42601
@@ -44,8 +74,8 @@
 
 2010-04-09  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
-	* config/picochip/picochip.c (picochip_rtx_costs): Use correct function
-	template.
+	* config/picochip/picochip.c (picochip_rtx_costs): Use correct
+	function template.
 	(picochip_override_options): Enable section anchors only above -O1.
 	(picochip_reorg): Fixed a couple of build warnings.
 
@@ -210,7 +240,7 @@
 	(ix86_attribute_table): Add description for thiscall attribute.
 	* config/i386/i386.h (ix86_args): Adjust comment for member fastcall.
 	* doc/extend.texi: Add documentation for thiscall.
-	
+
 2010-04-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/28584
@@ -255,7 +285,7 @@
 	* gcc.h (DEFAULT_SWITCH_TAKES_ARG): Delete -b and -V.
 
 2010-04-08  Christian Borntraeger  <borntraeger@de.ibm.com>
-            Wolfgang Gellerich  <gellerich@de.ibm.com>
+	    Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	Implement target hook for loop unrolling
 	* target.h (loop_unroll_adjust): Add a new target hook function.
@@ -422,7 +452,7 @@
 	inserting GIMPLE_NOPs into the IL.
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Explicitly strip handled components and indirect references.
-  
+ 
 	* fold-const.c (fold_unary_loc): Do not strip qualifiers when
 	folding address expressions.
 	* gimple.c (gimple_ior_addresses_taken_1): Use get_base_address.
