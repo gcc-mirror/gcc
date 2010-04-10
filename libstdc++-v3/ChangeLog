@@ -1,3 +1,15 @@
+2010-04-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	Backport:
+	2009-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40518
+	* include/bits/basic_string.h (basic_string<>::_Rep::
+	_M_set_length_and_sharable): Do not write the empty rep.
+	(basic_string<>::erase(iterator, iterator)): Likewise,
+	move out of line...
+	* include/bits/basic_string.tcc: ... here.
+
 2010-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43458

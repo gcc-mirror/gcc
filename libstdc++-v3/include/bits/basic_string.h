@@ -197,12 +197,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 	void
 	_M_set_length_and_sharable(size_type __n)
-	{ 
-	  this->_M_set_sharable();  // One reference.
-	  this->_M_length = __n;
-	  traits_type::assign(this->_M_refdata()[__n], _S_terminal);
-	  // grrr. (per 21.3.4)
-	  // You cannot leave those LWG people alone for a second.
+	{
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+	  if (__builtin_expect(this != &_S_empty_rep(), false))
+#endif
+	    {
+	      this->_M_set_sharable();  // One reference.
+	      this->_M_length = __n;
+	      traits_type::assign(this->_M_refdata()[__n], _S_terminal);
+	      // grrr. (per 21.3.4)
+	      // You cannot leave those LWG people alone for a second.
+	    }
 	}
 
 	_CharT*
@@ -1226,16 +1231,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  The value of the string doesn't change if an error is thrown.
       */
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
-				 && __last <= _M_iend());
-        const size_type __pos = __first - _M_ibegin();
-	_M_mutate(__pos, __last - __first, size_type(0));
-	_M_rep()->_M_set_leaked();
-	return iterator(_M_data() + __pos);
-      }
-
+      erase(iterator __first, iterator __last);
+ 
       /**
        *  @brief  Replace characters with value from another string.
        *  @param pos  Index of first character to replace.
