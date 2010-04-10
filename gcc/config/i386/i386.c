@@ -17224,8 +17224,8 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
 	}
       else
 	emit_insn ((mode == DImode
-		    ? gen_x86_shift_adj_3
-		    : gen_x86_64_shift_adj_3) (low[0], high[0], operands[2]));
+		    ? gen_x86_shiftsi_adj_3
+		    : gen_x86_shiftdi_adj_3) (low[0], high[0], operands[2]));
     }
 }
 
