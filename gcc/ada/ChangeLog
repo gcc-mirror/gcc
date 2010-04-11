@@ -1,5 +1,10 @@
 2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_cond_expr): Take the address and
+	dereference if the result type is passed by reference.
+
+2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Case_Statement_to_gnu): Bool-ify variable.
 	(gnat_to_gnu) <N_Null_Statement>: When not optimizing, generate a
 	goto to the next statement.
