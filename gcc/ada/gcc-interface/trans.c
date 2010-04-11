@@ -1876,8 +1876,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
        Present (gnat_when);
        gnat_when = Next_Non_Pragma (gnat_when))
     {
+      bool choices_added_p = false;
       Node_Id gnat_choice;
-      int choices_added = 0;
 
       /* First compile all the different case choices for the current WHEN
 	 alternative.  */
@@ -1940,14 +1940,14 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 				   gnu_low, gnu_high,
 				   create_artificial_label (input_location)),
 				  gnat_choice);
-	      choices_added++;
+	      choices_added_p = true;
 	    }
 	}
 
       /* Push a binding level here in case variables are declared as we want
 	 them to be local to this set of statements instead of to the block
 	 containing the Case statement.  */
-      if (choices_added > 0)
+      if (choices_added_p)
 	{
 	  add_stmt (build_stmt_group (Statements (gnat_when), true));
 	  add_stmt (build1 (GOTO_EXPR, void_type_node,
@@ -4465,7 +4465,22 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Null_Statement:
-      gnu_result = alloc_stmt_list ();
+      /* When not optimizing, turn null statements from source into gotos to
+	 the next statement that the middle-end knows how to preserve.  */
+      if (!optimize && Comes_From_Source (gnat_node))
+	{
+	  tree stmt, label = create_label_decl (NULL_TREE);
+	  start_stmt_group ();
+	  stmt = build1 (GOTO_EXPR, void_type_node, label);
+	  set_expr_location_from_node (stmt, gnat_node);
+	  add_stmt (stmt);
+	  stmt = build1 (LABEL_EXPR, void_type_node, label);
+	  set_expr_location_from_node (stmt, gnat_node);
+	  add_stmt (stmt);
+	  gnu_result = end_stmt_group ();
+	}
+      else
+	gnu_result = alloc_stmt_list ();
       break;
 
     case N_Assignment_Statement:

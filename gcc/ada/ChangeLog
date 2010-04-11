@@ -1,3 +1,9 @@
+2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Bool-ify variable.
+	(gnat_to_gnu) <N_Null_Statement>: When not optimizing, generate a
+	goto to the next statement.
+
 2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (maybe_variable): Delete.
