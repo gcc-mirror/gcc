@@ -1,5 +1,30 @@
 2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (any_shiftrt): New code iterator.
+	(shiftrt_insn): New code attribute.
+	(shiftrt): Ditto.
+	(<shiftrt_insn><mode>3): Macroize expander from ashr<mode>3 and
+	lshr<mode>3 using any_shiftrt code iterator.
+	(*<shiftrt_insn><mode>3_doubleword): Macroize insn_and_split from
+	*ashr<mode>3_doubleword and *lshr<mode>3_doubleword using
+	any_shiftrt code iterator.
+	(*<shiftrt_insn><mode>3_doubleword peephole2): Macroize peephole2
+	pattern from corresponding peephole2 patterns.
+	(*<shiftrt_insn><mode>3_1): Macroize insn from *ashr<mode>3_1
+	and *lshr<mode>3_1 using any_shiftrt code iterator.
+	(*<shiftrt_insn>si3_1_zext): Ditto from *ashrsi3_1_zext
+	and *lshrsi3_1_zext.
+	(*<shiftrt_insn>qi3_1_slp): Ditto from *ashrqi3_1_slp
+	and *lshrqi3_1_slp.
+	(*<shiftrt_insn><mode>3_cmp): Ditto from *ashr<mode>3_cmp
+	and *lshr<mode>3_cmp.
+	(*<shiftrt_insn><mode>3_cmp_zext): Ditto from *ashr<mode>3_cmp_zext
+	and *lshr<mode>3_cmp_zext.
+	(*<shiftrt_insn><mode>3_cconly): Ditto from *ashr<mode>3_cconly
+	and *lshr<mode>3_cconly.
+
+2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*ashr<mode>3_cconly): Fix wrong mode of
 	scratch register.
 	(*lshr<mode>3_cconly): Ditto.
@@ -16,6 +41,7 @@
 	(*lshr<mode>3_1): Merge with *lshr{qi,hi,si}3_1_one_bit and
 	*lshrdi3_1_one_bit_rex64. Macroize insn from *lshr{qi,hi,si}3_cmp
 	and *lshrdi3_cmp_rex64 using SWI mode iterator.
+	(*lshrsi3_1_zext): Merge with *lshrsi3_1_one_bit_zext.
 	(*lshrqi3_1_slp): Merge with *lshrqi3_1_one_bit_slp.
 	(*lshr<mode>3_cmp): Merge with *lshr{qi,hi,si}3_one_bit_cmp and
 	*lshrdi3_one_bit_cmp_rex64. Macroize insn from *lshr{qi,hi,si}3_cmp
@@ -43,6 +69,7 @@
 	(*ashr<mode>3_1): Merge with *ashr{qi,hi,si}3_1_one_bit and
 	*ashrdi3_1_one_bit_rex64. Macroize insn from *ashr{qi,hi,si}3_cmp
 	and *ashrdi3_cmp_rex64 using SWI mode iterator.
+	(*ashrsi3_1_zext): Merge with *ashrsi3_1_one_bit_zext.
 	(*ashrqi3_1_slp): Merge with *ashrqi3_1_one_bit_slp.
 	(*ashr<mode>3_cmp): Merge with *ashr{qi,hi,si}3_one_bit_cmp and
 	*ashrdi3_one_bit_cmp_rex64. Macroize insn from *ashr{qi,hi,si}3_cmp
