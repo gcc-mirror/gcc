@@ -1,5 +1,11 @@
 2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*ashr<mode>3_cconly): Fix wrong mode of
+	scratch register.
+	(*lshr<mode>3_cconly): Ditto.
+
+2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (lshr<mode>3): Macroize expander from
 	lshr{qi,hi,si,di,ti}3_1 using SDWIM mode iterator.
 	(*lshr<mode>3_doubleword): New insn_and_split_pattern.  Macroize
@@ -46,7 +52,7 @@
 	*ashrdi3_one_bit_cconly_rex64. Macroize insn from
 	*ashr{qi,hi,si}3_cconly and *ashrdi3_cconly_rex64 using
 	SWI mode iterator.
-	(sign_extend splitters): Update for renamed ashr{di,si}3_31 patterns.
+	(sign_extend splitters): Update for renamed ashr{di,si}3_cvt patterns.
 	* config/i386/i386.c (ix86_split_ashr): Update for renamed
 	x86_shift<mode>_adj_3 expanders.
 
@@ -221,7 +227,7 @@
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Document
 	that vectype is the type of the LHS.
-	(supportable_widening_operation, supportable_narrowing_operation): 
+	(supportable_widening_operation, supportable_narrowing_operation):
 	Get both input and output vector types as arguments.
 	(vect_is_simple_use_1): Declare.
 	(get_same_sized_vectype): Likewise.
@@ -474,7 +480,7 @@
 	inserting GIMPLE_NOPs into the IL.
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Explicitly strip handled components and indirect references.
- 
+
 	* fold-const.c (fold_unary_loc): Do not strip qualifiers when
 	folding address expressions.
 	* gimple.c (gimple_ior_addresses_taken_1): Use get_base_address.
