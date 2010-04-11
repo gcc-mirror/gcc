@@ -1,3 +1,25 @@
+2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (lshr<mode>3): Macroize expander from
+	lshr{qi,hi,si,di,ti}3_1 using SDWIM mode iterator.
+	(*lshr<mode>3_doubleword): New insn_and_split_pattern.  Macroize
+	pattern from *lshr{di,ti}3_1 and corresponding splitters using
+	DWI mode iterator.
+	(*lshr<mode>3_doubleword peephole2): Macroize peephole2 pattern
+	from corresponding peephole2 patterns.
+	(*lshr<mode>3_1): Merge with *lshr{qi,hi,si}3_1_one_bit and
+	*lshrdi3_1_one_bit_rex64. Macroize insn from *lshr{qi,hi,si}3_cmp
+	and *lshrdi3_cmp_rex64 using SWI mode iterator.
+	(*lshrqi3_1_slp): Merge with *lshrqi3_1_one_bit_slp.
+	(*lshr<mode>3_cmp): Merge with *lshr{qi,hi,si}3_one_bit_cmp and
+	*lshrdi3_one_bit_cmp_rex64. Macroize insn from *lshr{qi,hi,si}3_cmp
+	and *lshrdi3_cmp_rex64 using SWI mode iterator.
+	(*lshrsi3_cmp_zext): Merge with *lshrsi3_cmp_one_bit_zext.
+	(*lshr<mode>3_cconly): Merge with *lshr{qi,hi,si}3_one_bit_cconly and
+	*lshrdi3_one_bit_cconly_rex64. Macroize insn from
+	*lshr{qi,hi,si}3_cconly and *lshrdi3_cconly_rex64 using
+	SWI mode iterator.
+
 2010-04-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ashr<mode>3): Macroize expander from
@@ -24,9 +46,9 @@
 	*ashrdi3_one_bit_cconly_rex64. Macroize insn from
 	*ashr{qi,hi,si}3_cconly and *ashrdi3_cconly_rex64 using
 	SWI mode iterator.
-	(sign_extend splitters): Update for renamed ashr{di,si}3_patterns.
+	(sign_extend splitters): Update for renamed ashr{di,si}3_31 patterns.
 	* config/i386/i386.c (ix86_split_ashr): Update for renamed
-	x86_shift<mode>_adj_3 expander.
+	x86_shift<mode>_adj_3 expanders.
 
 2010-04-10  Wei Guozhi  <carrot@google.com>
 
