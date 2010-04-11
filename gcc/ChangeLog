@@ -1,3 +1,8 @@
+2010-04-11  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+
+	* config/sh/sh.md (*movqi_pop): New insn pattern.
+	* config/sh/predicates.md (sh_no_delay_pop_operand): New predicate.
+
 2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_shiftrt): New code iterator.
