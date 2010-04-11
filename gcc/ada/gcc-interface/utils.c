@@ -4274,12 +4274,13 @@ maybe_unconstrained_array (tree exp)
 	      build_component_ref (new_exp, NULL_TREE,
 				   TREE_CHAIN
 				   (TYPE_FIELDS (TREE_TYPE (new_exp))),
-				   0);
+				   false);
 	}
       else if (TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (exp)))
 	return
 	  build_component_ref (exp, NULL_TREE,
-			       TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (exp))), 0);
+			       TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (exp))),
+			       false);
       break;
 
     default:
@@ -4416,7 +4417,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       layout_type (rec_type);
 
       expr = unchecked_convert (rec_type, expr, notrunc_p);
-      expr = build_component_ref (expr, NULL_TREE, field, 0);
+      expr = build_component_ref (expr, NULL_TREE, field, false);
     }
 
   /* Similarly if we are converting from an integral type whose precision

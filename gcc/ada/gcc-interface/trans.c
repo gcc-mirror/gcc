@@ -655,6 +655,51 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   error_gnat_node = Empty;
 }
 
+/* Return a positive value if an lvalue is required for GNAT_NODE, which is
+   an N_Attribute_Reference.  */
+
+static int
+lvalue_required_for_attribute_p (Node_Id gnat_node)
+{
+  switch (Get_Attribute_Id (Attribute_Name (gnat_node)))
+    {
+    case Attr_Pos:
+    case Attr_Val:
+    case Attr_Pred:
+    case Attr_Succ:
+    case Attr_First:
+    case Attr_Last:
+    case Attr_Range_Length:
+    case Attr_Length:
+    case Attr_Object_Size:
+    case Attr_Value_Size:
+    case Attr_Component_Size:
+    case Attr_Max_Size_In_Storage_Elements:
+    case Attr_Min:
+    case Attr_Max:
+    case Attr_Null_Parameter:
+    case Attr_Passed_By_Reference:
+    case Attr_Mechanism_Code:
+      return 0;
+
+    case Attr_Address:
+    case Attr_Access:
+    case Attr_Unchecked_Access:
+    case Attr_Unrestricted_Access:
+    case Attr_Code_Address:
+    case Attr_Pool_Address:
+    case Attr_Size:
+    case Attr_Alignment:
+    case Attr_Bit_Position:
+    case Attr_Position:
+    case Attr_First_Bit:
+    case Attr_Last_Bit:
+    case Attr_Bit:
+    default:
+      return 1;
+    }
+}
+
 /* Return a positive value if an lvalue is required for GNAT_NODE.  GNU_TYPE
    is the type that will be used for GNAT_NODE in the translated GNU tree.
    CONSTANT indicates whether the underlying object represented by GNAT_NODE
@@ -678,18 +723,7 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       return 1;
 
     case N_Attribute_Reference:
-      {
-	unsigned char id = Get_Attribute_Id (Attribute_Name (gnat_parent));
-	return id == Attr_Address
-	       || id == Attr_Access
-	       || id == Attr_Unchecked_Access
-	       || id == Attr_Unrestricted_Access
-	       || id == Attr_Bit_Position
-	       || id == Attr_Position
-	       || id == Attr_First_Bit
-	       || id == Attr_Last_Bit
-	       || id == Attr_Bit;
-      }
+      return lvalue_required_for_attribute_p (gnat_parent);
 
     case N_Parameter_Association:
     case N_Function_Call:
@@ -3991,7 +4025,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_result
 	      = build_component_ref (gnu_prefix, NULL_TREE, gnu_field,
 				     (Nkind (Parent (gnat_node))
-				      == N_Attribute_Reference));
+				      == N_Attribute_Reference)
+				     && lvalue_required_for_attribute_p
+					(Parent (gnat_node)));
 	  }
 
 	gcc_assert (gnu_result);
