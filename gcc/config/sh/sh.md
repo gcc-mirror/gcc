@@ -1,6 +1,7 @@
 ;;- Machine description for Renesas / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;;  2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -4835,6 +4836,21 @@ label:
   [(set (reg:SI T_REG) (const_int 1))]
   "TARGET_SH1"
   "sett")
+
+;; Define additional pop for SH1 and SH2 so it does not get 
+;; placed in the delay slot.
+(define_insn "*movsi_pop"
+  [(set (match_operand:SI 0 "register_operand" "=r,x,l")
+        (match_operand:SI 1 "sh_no_delay_pop_operand" ">,>,>"))]
+  "(TARGET_SH1 || TARGET_SH2E || TARGET_SH2A)
+   && ! TARGET_SH3"
+  "@
+   mov.l   %1,%0
+   lds.l   %1,%0
+   lds.l   %1,%0"
+  [(set_attr "type" "load_si,mem_mac,pload")
+   (set_attr "length" "2,2,2")
+   (set_attr "in_delay_slot" "no,no,no")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (set (subreg:SI (mem:QI (plus:SI (reg:SI SP_REG) (const_int 12)) 0) 0)
