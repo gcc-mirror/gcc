@@ -1,3 +1,8 @@
+2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack9.adb: Remove -cargs option.
+	* gnat.dg/aggr12.ad[sb]: New test.
+
 2010-04-10  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43417

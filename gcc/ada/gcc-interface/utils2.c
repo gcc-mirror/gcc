@@ -1812,7 +1812,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
 
       tree aligning_field
 	= build_component_ref (aligning_record, NULL_TREE,
-			       TYPE_FIELDS (aligning_type), 0);
+			       TYPE_FIELDS (aligning_type), false);
 
       tree aligning_field_addr
         = build_unary_op (ADDR_EXPR, NULL_TREE, aligning_field);
@@ -2003,7 +2003,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	    build_component_ref
 	    (build_unary_op (INDIRECT_REF, NULL_TREE,
 			     convert (storage_ptr_type, storage)),
-	     NULL_TREE, TYPE_FIELDS (storage_type), 0),
+	     NULL_TREE, TYPE_FIELDS (storage_type), false),
 	    build_template (template_type, type, NULL_TREE)),
 	   convert (result_type, convert (storage_ptr_type, storage)));
     }

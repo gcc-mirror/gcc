@@ -1,5 +1,18 @@
 2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): New static
+	function.
+	(lvalue_required_p) <N_Attribute_Reference>: Call it.
+	(gnat_to_gnu) <N_Selected_Component>: Prevent build_component_ref from
+	folding the result only if lvalue_required_for_attribute_p is true.
+	* gcc-interface/utils.c (maybe_unconstrained_array): Pass correctly
+	typed constant to build_component_ref.
+	(unchecked_convert): Likewise.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Likewise.
+	(build_allocator): Likewise.
+
+2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_cond_expr): Take the address and
 	dereference if the result type is passed by reference.
 
