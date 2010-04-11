@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "expr.h"
 #include "optabs.h"
+#include "reload.h"
 #include "function.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -9623,6 +9624,88 @@ sh_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
     }
 
   return x;
+}
+
+/* Attempt to replace *P, which is an address that needs reloading, with
+   a valid memory address for an operand of mode MODE.
+   Like for sh_legitimize_address, for the SH we try to get a normal form
+   of the address.  That will allow inheritance of the address reloads.  */
+
+bool
+sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
+			      int itype)
+{
+  enum reload_type type = (enum reload_type) itype;
+
+  if (GET_CODE (*p) == PLUS
+      && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
+      && CONST_INT_P (XEXP (*p, 1))
+      && BASE_REGISTER_RTX_P (XEXP (*p, 0))
+      && ! TARGET_SHMEDIA
+      && ! (TARGET_SH4 && mode == DFmode)
+      && ! (mode == PSImode && type == RELOAD_FOR_INPUT_ADDRESS)
+      && (ALLOW_INDEXED_ADDRESS
+	  || XEXP (*p, 0) == stack_pointer_rtx
+	  || XEXP (*p, 0) == hard_frame_pointer_rtx))
+    {
+      rtx index_rtx = XEXP (*p, 1);
+      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;
+      rtx sum;
+
+      if (TARGET_SH2A && mode == DFmode && (offset & 0x7))
+	{
+	  push_reload (*p, NULL_RTX, p, NULL,
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
+	  goto win;
+	}
+      if (TARGET_SH2E && mode == SFmode)
+	{
+	  *p = copy_rtx (*p);
+	  push_reload (*p, NULL_RTX, p, NULL,
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
+	  goto win;
+	}
+      /* Instead of offset_base 128..131 use 124..127, so that
+	 simple add suffices.  */
+      if (offset > 127)
+	offset_base = ((offset + 4) & ~60) - 4;
+      else
+	offset_base = offset & ~60;
+      /* Sometimes the normal form does not suit DImode.  We could avoid
+	 that by using smaller ranges, but that would give less optimized
+	 code when SImode is prevalent.  */
+      if (offset_base != 0
+	  && GET_MODE_SIZE (mode) + offset - offset_base <= 64)
+	{
+	  sum = gen_rtx_PLUS (Pmode, XEXP (*p, 0), GEN_INT (offset_base));
+	  *p = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
+	  push_reload (sum, NULL_RTX, &XEXP (*p, 0), NULL,
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
+	  goto win;
+	}
+    }
+  /* We must re-recognize what we created before.  */
+  else if (GET_CODE (*p) == PLUS
+	   && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
+	   && GET_CODE (XEXP (*p, 0)) == PLUS
+	   && CONST_INT_P (XEXP (XEXP (*p, 0), 1))
+	   && BASE_REGISTER_RTX_P (XEXP (XEXP (*p, 0), 0))
+	   && CONST_INT_P (XEXP (*p, 1))
+	   && ! TARGET_SHMEDIA
+	   && ! (TARGET_SH2E && mode == SFmode))
+    {
+      /* Because this address is so complex, we know it must have
+	 been created by LEGITIMIZE_RELOAD_ADDRESS before; thus,
+	 it is already unshared, and needs no further unsharing.  */
+      push_reload (XEXP (*p, 0), NULL_RTX, &XEXP (*p, 0), NULL,
+		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, opnum, type);
+      goto win;
+    }
+
+  return false;
+
+ win:
+  return true;
 }
 
 /* Mark the use of a constant in the literal table. If the constant

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -2010,84 +2011,13 @@ struct sh_args {
 
 /* A C compound statement that attempts to replace X, which is an address
    that needs reloading, with a valid memory address for an operand of
-   mode MODE.  WIN is a C statement label elsewhere in the code.
-
-   Like for LEGITIMIZE_ADDRESS, for the SH we try to get a normal form
-   of the address.  That will allow inheritance of the address reloads.  */
+   mode MODE.  WIN is a C statement label elsewhere in the code.  */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	\
-{									\
-  if (GET_CODE (X) == PLUS						\
-      && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
-      && CONST_INT_P (XEXP (X, 1))					\
-      && BASE_REGISTER_RTX_P (XEXP (X, 0))				\
-      && ! TARGET_SHMEDIA						\
-      && ! (TARGET_SH4 && (MODE) == DFmode)				\
-      && ! ((MODE) == PSImode && (TYPE) == RELOAD_FOR_INPUT_ADDRESS)	\
-      && (ALLOW_INDEXED_ADDRESS						\
-	  || XEXP ((X), 0) == stack_pointer_rtx				\
-	  || XEXP ((X), 0) == hard_frame_pointer_rtx))			\
-    {									\
-      rtx index_rtx = XEXP (X, 1);					\
-      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;		\
-      rtx sum;								\
-									\
-      if (TARGET_SH2A && (MODE) == DFmode && (offset & 0x7))		\
-	{								\
-	  push_reload (X, NULL_RTX, &X, NULL,				\
-		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
-		       (TYPE));						\
-	  goto WIN;							\
-	}								\
-      if (TARGET_SH2E && MODE == SFmode)				\
-	{								\
-	  X = copy_rtx (X);						\
-	  push_reload (X, NULL_RTX, &X, NULL,				\
-		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
-		       (TYPE));						\
-	  goto WIN;							\
-	}								\
-      /* Instead of offset_base 128..131 use 124..127, so that		\
-	 simple add suffices.  */					\
-      if (offset > 127)							\
-	{								\
-	  offset_base = ((offset + 4) & ~60) - 4;			\
-	}								\
-      else								\
-	offset_base = offset & ~60;					\
-      /* Sometimes the normal form does not suit DImode.  We		\
-	 could avoid that by using smaller ranges, but that		\
-	 would give less optimized code when SImode is			\
-	 prevalent.  */							\
-      if (GET_MODE_SIZE (MODE) + offset - offset_base <= 64)		\
-	{								\
-	  sum = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-			 GEN_INT (offset_base));			\
-	  X = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));\
-	  push_reload (sum, NULL_RTX, &XEXP (X, 0), NULL,		\
-		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
-		       (TYPE));						\
-	  goto WIN;							\
-	}								\
-    }									\
-  /* We must re-recognize what we created before.  */			\
-  else if (GET_CODE (X) == PLUS						\
-	   && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
-	   && GET_CODE (XEXP (X, 0)) == PLUS				\
-	   && CONST_INT_P (XEXP (XEXP (X, 0), 1))			\
-	   && BASE_REGISTER_RTX_P (XEXP (XEXP (X, 0), 0))		\
-	   && CONST_INT_P (XEXP (X, 1))					\
-	   && ! TARGET_SHMEDIA						\
-	   && ! (TARGET_SH2E && MODE == SFmode))			\
-    {									\
-      /* Because this address is so complex, we know it must have	\
-	 been created by LEGITIMIZE_RELOAD_ADDRESS before; thus,	\
-	 it is already unshared, and needs no further unsharing.  */	\
-      push_reload (XEXP ((X), 0), NULL_RTX, &XEXP ((X), 0), NULL,	\
-		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM), (TYPE));\
+  do {									\
+    if (sh_legitimize_reload_address (&(X), (MODE), (OPNUM), (TYPE)))	\
       goto WIN;								\
-    }									\
-}
+  } while (0)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

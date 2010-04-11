@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009
+   2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -59,6 +59,7 @@ extern int fp_one_operand (rtx);
 extern int fp_int_operand (rtx);
 extern rtx get_fpscr_rtx (void);
 extern bool sh_legitimate_index_p (enum machine_mode, rtx);
+extern bool sh_legitimize_reload_address (rtx *, enum machine_mode, int, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern int nonpic_symbol_mentioned_p (rtx);
 extern void emit_sf_insn (rtx);
