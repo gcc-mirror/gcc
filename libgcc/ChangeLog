@@ -1,3 +1,8 @@
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (alpha*-dec-osf[45]*): Removed alpha*-dec-osf4*,
+	alpha-dec-osf5.0* support.
+
 2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config.host: Add lm32-*-rtems*.

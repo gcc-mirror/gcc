@@ -207,9 +207,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   alpha*-dec-osf4*			\
- | alpha*-dec-osf5.0*			\
- | mips-sgi-irix5*			\
+   mips-sgi-irix5*			\
  | mips-sgi-irix6.[0-4]*		\
  | *-*-solaris2.7*			\
  )
@@ -651,7 +649,7 @@ alpha*-*-openbsd*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
 	;;
-alpha*-dec-osf[45]*)
+alpha*-dec-osf5.1*)
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
@@ -661,23 +659,11 @@ alpha*-dec-osf[45]*)
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	use_collect2=yes
-	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf4"
-	tm_file="${tm_file} alpha/osf.h"
+	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf5"
+	tm_file="${tm_file} alpha/osf5.h"
+	tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
 	extra_headers=va_list.h
 	use_gcc_stdint=provide
-	case ${target} in
-	  *-*-osf4*)
-	    # Define TARGET_SUPPORT_ARCH except on 4.0a.
-	    case ${target} in
-		*-*-osf4.0a) ;;
-		*) tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
-	    esac
-	    ;;
-	  *-*-osf5*)
-	    tm_file="${tm_file} alpha/osf5.h"
-	    tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
-	    ;;
-	esac
 	case ${enable_threads} in
 	  "" | yes | posix)
 	    thread_file='posix'
