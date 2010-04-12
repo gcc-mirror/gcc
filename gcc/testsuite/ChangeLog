@@ -1,3 +1,8 @@
+2010-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/43560
+	* gcc.c-torture/execute/pr43560.c: New test.
+
 2010-04-10  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43417
