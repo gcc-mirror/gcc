@@ -1157,6 +1157,10 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	}
     }
 
+  /* Reset alias information.  */
+  if (code == GIMPLE_CALL)
+    gimple_call_reset_alias_info (stmt);
+
   /* Fixup reference tree operands for substituted prevailing decls
      with mismatched types.  */
   maybe_fixup_decls (stmt);

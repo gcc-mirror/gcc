@@ -122,7 +122,7 @@ DEFGSCODE(GIMPLE_ASM, "gimple_asm", GSS_ASM)
    is_gimple_operand.
 
     CHAIN is the optional static chain link for nested functions.  */
-DEFGSCODE(GIMPLE_CALL, "gimple_call", GSS_WITH_MEM_OPS)
+DEFGSCODE(GIMPLE_CALL, "gimple_call", GSS_CALL)
 
 /* GIMPLE_RETURN <RETVAL> represents return statements.
 

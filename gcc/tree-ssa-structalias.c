@@ -5480,6 +5480,7 @@ compute_points_to_sets (void)
   basic_block bb;
   unsigned i;
   varinfo_t vi;
+  struct pt_solution callused;
 
   timevar_push (TV_TREE_PTA);
 
@@ -5516,8 +5517,7 @@ compute_points_to_sets (void)
      call-clobber analysis.  */
   find_what_var_points_to (get_varinfo (escaped_id),
 			   &cfun->gimple_df->escaped);
-  find_what_var_points_to (get_varinfo (callused_id),
-			   &cfun->gimple_df->callused);
+  find_what_var_points_to (get_varinfo (callused_id), &callused);
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -5539,6 +5539,48 @@ compute_points_to_sets (void)
       if (ptr
 	  && POINTER_TYPE_P (TREE_TYPE (ptr)))
 	find_what_p_points_to (ptr);
+    }
+
+  /* Compute the call-used/clobbered sets.  */
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  struct pt_solution *pt;
+	  if (!is_gimple_call (stmt))
+	    continue;
+
+	  pt = gimple_call_use_set (stmt);
+	  if (gimple_call_flags (stmt) & ECF_CONST)
+	    memset (pt, 0, sizeof (struct pt_solution));
+	  else if (gimple_call_flags (stmt) & ECF_PURE)
+	    {
+	      /* For const calls we should now be able to compute the
+		 call-used set per function.  */
+	      *pt = callused;
+	      /* ???  ESCAPED can be empty even though NONLOCAL
+		 always escaped.  */
+	      pt->nonlocal = 1;
+	      pt->escaped = 1;
+	    }
+	  else
+	    {
+	      *pt = cfun->gimple_df->escaped;
+	      pt->nonlocal = 1;
+	    }
+
+	  pt = gimple_call_clobber_set (stmt);
+	  if (gimple_call_flags (stmt) & (ECF_CONST|ECF_PURE|ECF_NOVOPS))
+	    memset (pt, 0, sizeof (struct pt_solution));
+	  else
+	    {
+	      *pt = cfun->gimple_df->escaped;
+	      pt->nonlocal = 1;
+	    }
+	}
     }
 
   timevar_pop (TV_TREE_PTA);

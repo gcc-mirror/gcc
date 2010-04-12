@@ -56,9 +56,6 @@ struct GTY(()) gimple_df {
   /* The PTA solution for the ESCAPED artificial variable.  */
   struct pt_solution escaped;
 
-  /* The PTA solution for the CALLUSED artificial variable.  */
-  struct pt_solution callused;
-
   /* A map of decls to artificial ssa-names that point to the partition
      of the decl.  */
   struct pointer_map_t * GTY((skip(""))) decls_to_pointers;

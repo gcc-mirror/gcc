@@ -1391,6 +1391,13 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 		  default:
 		    break;
 		  }
+
+	      /* Reset alias info.
+	         ???  By maintaining DECL_PT_UID this should not
+		 be necessary, but the plan is to only maintain
+		 it when IPA-PTA was run.  It's not too easy to
+		 detect this here ...  */
+	      gimple_call_reset_alias_info (copy);
 	    }
 	    break;
 
@@ -3724,12 +3731,9 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   	     cg_edge->frequency * REG_BR_PROB_BASE / CGRAPH_FREQ_BASE,
 	     bb, return_block);
 
-  /* Reset the escaped and callused solutions.  */
+  /* Reset the escaped solution.  */
   if (cfun->gimple_df)
-    {
-      pt_solution_reset (&cfun->gimple_df->escaped);
-      pt_solution_reset (&cfun->gimple_df->callused);
-    }
+    pt_solution_reset (&cfun->gimple_df->escaped);
 
   /* Clean up.  */
   if (id->debug_map)

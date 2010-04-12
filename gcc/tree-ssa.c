@@ -1123,7 +1123,6 @@ init_tree_ssa (struct function *fn)
   fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash,
 				                 uid_ssaname_map_eq, NULL);
   pt_solution_reset (&fn->gimple_df->escaped);
-  pt_solution_reset (&fn->gimple_df->callused);
   init_ssanames (fn, 0);
   init_phinodes ();
 }
@@ -1163,7 +1162,6 @@ delete_tree_ssa (void)
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;
   pt_solution_reset (&cfun->gimple_df->escaped);
-  pt_solution_reset (&cfun->gimple_df->callused);
   if (cfun->gimple_df->decls_to_pointers != NULL)
     pointer_map_destroy (cfun->gimple_df->decls_to_pointers);
   cfun->gimple_df->decls_to_pointers = NULL;

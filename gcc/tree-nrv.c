@@ -307,7 +307,7 @@ dest_safe_for_nrv_p (tree dest)
   if (TREE_CODE (dest) == SSA_NAME)
     dest = SSA_NAME_VAR (dest);
 
-  if (is_call_used (dest))
+  if (is_call_clobbered (dest))
     return false;
 
   return true;
