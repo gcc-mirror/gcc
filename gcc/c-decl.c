@@ -7443,6 +7443,10 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
      error_mark_node is replaced below (in pop_scope) with the BLOCK.  */
   DECL_INITIAL (decl1) = error_mark_node;
 
+  /* A nested function is not global.  */
+  if (current_function_decl != 0)
+    TREE_PUBLIC (decl1) = 0;
+
   /* If this definition isn't a prototype and we had a prototype declaration
      before, copy the arg type info from that prototype.  */
   old_decl = lookup_name_in_scope (DECL_NAME (decl1), current_scope);
@@ -7542,10 +7546,6 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
-
-  /* A nested function is not global.  */
-  if (current_function_decl != 0)
-    TREE_PUBLIC (decl1) = 0;
 
   /* This is the earliest point at which we might know the assembler
      name of the function.  Thus, if it's set before this, die horribly.  */
