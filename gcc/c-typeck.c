@@ -8826,11 +8826,13 @@ c_process_expr_stmt (location_t loc, tree expr)
       && warn_unused_value)
     emit_side_effect_warnings (loc, expr);
 
+  if (DECL_P (expr) || handled_component_p (expr))
+    mark_exp_read (expr);
+
   /* If the expression is not of a type to which we cannot assign a line
      number, wrap the thing in a no-op NOP_EXPR.  */
   if (DECL_P (expr) || CONSTANT_CLASS_P (expr))
     {
-      mark_exp_read (expr);
       expr = build1 (NOP_EXPR, TREE_TYPE (expr), expr);
       SET_EXPR_LOCATION (expr, loc);
     }
