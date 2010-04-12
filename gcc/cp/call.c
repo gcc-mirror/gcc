@@ -2263,6 +2263,8 @@ type_decays_to (tree type)
     return build_pointer_type (TREE_TYPE (type));
   if (TREE_CODE (type) == FUNCTION_TYPE)
     return build_pointer_type (type);
+  if (!CLASS_TYPE_P (type))
+    type = cv_unqualified (type);
   return type;
 }
 
