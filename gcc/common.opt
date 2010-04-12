@@ -1539,6 +1539,10 @@ gxcoff+
 Common JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format
 
+iplugindir=
+Common Joined Var(plugindir_string) Init(0)
+-iplugindir=<dir>	Set <dir> to be the default plugin directory
+
 o
 Common Joined Separate
 -o <file>	Place output into <file>

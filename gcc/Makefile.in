@@ -4233,7 +4233,7 @@ distclean: clean lang.distclean
 	-rm -f gcov.pod
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
-	-rmdir ada cp f java objc intl po testsuite 2>/dev/null
+	-rmdir ada cp f java objc intl po testsuite plugin 2>/dev/null
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
@@ -4690,6 +4690,7 @@ $(TESTSUITEDIR)/site.exp: site.exp
 
 # This is only used for check-% targets that aren't parallelized.
 $(filter-out $(lang_checks_parallelized),$(lang_checks)): check-% : site.exp
+	-test -d plugin || mkdir plugin
 	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	test -d $(TESTSUITEDIR)/$* || mkdir $(TESTSUITEDIR)/$*
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
@@ -4777,6 +4778,7 @@ $(patsubst %,%-subtargets,$(lang_checks_parallelized)): check-%-subtargets:
 # Otherwise check-$lang isn't parallelized and runtest is invoked just with
 # the $(RUNTESTFLAGS) arguments.
 check-parallel-% : site.exp
+	-test -d plugin || mkdir plugin
 	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	test -d $(TESTSUITEDIR)/$(check_p_subdir) || mkdir $(TESTSUITEDIR)/$(check_p_subdir)
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
