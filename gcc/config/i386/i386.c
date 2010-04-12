@@ -26232,11 +26232,13 @@ x86_this_parameter (tree function)
 
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
 	regno = aggr ? DX_REG : CX_REG;
-      /* ???: To be verified. It is not absolutely clear how aggregates
-         have to be treated for thiscall.  We assume that they are
-	 identical to fastcall.  */
       else if (lookup_attribute ("thiscall", TYPE_ATTRIBUTES (type)))
-	regno = aggr ? DX_REG : CX_REG;
+        {
+	  regno = CX_REG;
+	  if (aggr)
+	    return gen_rtx_MEM (SImode,
+				plus_constant (stack_pointer_rtx, 4));
+	}
       else
         {
 	  regno = AX_REG;
