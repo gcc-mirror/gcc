@@ -141,4 +141,10 @@ extern void register_callback (const char *plugin_name,
 
 extern int unregister_callback (const char *plugin_name, int event);
 
+
+/* Retrieve the plugin directory name, as returned by the
+   -fprint-file-name=plugin argument to the gcc program, which is the
+   -iplugindir program argument to cc1.  */
+extern const char* default_plugin_dir_name (void);
+
 #endif /* GCC_PLUGIN_H */

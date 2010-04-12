@@ -22,6 +22,11 @@ The plugin arguments are parsed by GCC and passed to respective
 plugins as key-value pairs. Multiple plugins can be invoked by
 specifying multiple @option{-fplugin} arguments.
 
+A plugin can be simply given by its short name (no dots or
+slashes). When simply passing @option{-fplugin=NAME}, the plugin is
+loaded from the @file{plugin} directory, so @option{-fplugin=NAME} is
+the same as @option{-fplugin=`gcc -print-file-name=plugin`/NAME.so},
+using backquote shell syntax to query the @file{plugin} directory.
 
 @section Plugin API
 
@@ -406,6 +411,9 @@ is installed, containing all the header files needed to build plugins.
 On most systems, you can query this @code{plugin} directory by
 invoking @command{gcc -print-file-name=plugin} (replace if needed
 @command{gcc} with the appropriate program path).
+
+Inside plugins, this @code{plugin} directory name can be queried by
+calling @code{default_plugin_dir_name ()}.
 
 The following GNU Makefile excerpt shows how to build a simple plugin:
 
