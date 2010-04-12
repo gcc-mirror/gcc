@@ -1,3 +1,27 @@
+2010-04-12  Richard Guenther  <rguenther@suse.de>
+
+	* ipa.c (cgraph_postorder): Adjust postorder to guarantee
+	single-iteration always-inline inlining.
+	* ipa-inline.c (cgraph_mark_inline): Do not return anything.
+	(cgraph_decide_inlining): Do not handle always-inline
+	specially.
+	(try_inline): Remove always-inline cycle detection special case.
+	Do not recurse on always-inlines.
+	(cgraph_early_inlining): Do not iterate if not optimizing.
+	(cgraph_gate_early_inlining): remove.
+	(pass_early_inline): Run unconditionally.
+	(gate_cgraph_decide_inlining): New function.
+	(pass_ipa_inline): Use it.  Do not run the IPA inliner if
+	not inlining or optimizing.
+	(cgraph_decide_inlining_of_small_functions): Also consider
+	always-inline functions.
+	(cgraph_default_inline_p): Return true for nodes which should
+	disregard inline limits.
+	(estimate_function_body_sizes): Assume zero size and time for
+	nodes which are marked as disregarding inline limits.
+	(cgraph_decide_recursive_inlining): Do not perform recursive
+	inlining on always-inline nodes.
+
 2010-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43699

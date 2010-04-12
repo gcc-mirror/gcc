@@ -70,6 +70,12 @@ cgraph_postorder (struct cgraph_node **order)
 		    node2->aux = edge->next_caller;
 		  else
 		    node2->aux = &last;
+		  /* Break possible cycles involving always-inline
+		     functions by ignoring edges from always-inline
+		     functions to non-always-inline functions.  */
+		  if (edge->caller->local.disregard_inline_limits
+		      && !edge->callee->local.disregard_inline_limits)
+		    continue;
 		  if (!edge->caller->aux)
 		    {
 		      if (!edge->caller->callers)
