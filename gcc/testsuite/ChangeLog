@@ -1,3 +1,7 @@
+2010-04-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-deduce2.C: New.
+
 2010-04-12  Fabien Chene  <fabien.chene@gmail.com>
 
 	PR c++/25811
