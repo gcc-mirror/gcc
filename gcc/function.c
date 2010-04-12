@@ -2066,7 +2066,7 @@ struct assign_parm_data_one
 static void
 assign_parms_initialize_all (struct assign_parm_data_all *all)
 {
-  tree fntype;
+  tree fntype ATTRIBUTE_UNUSED;
 
   memset (all, 0, sizeof (*all));
 
