@@ -1,3 +1,8 @@
+2010-04-12  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/36774
+	* c-decl.c (start_function): Move forward check for nested function.
+
 2010-04-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (sh_legitimize_reload_address): Declare.
