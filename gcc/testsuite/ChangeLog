@@ -1,3 +1,9 @@
+2010-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr13.adb: New test.
+	* gnat.dg/aggr14.adb: Likewise.
+	* gnat.dg/aggr14_pkg.ad[sb]: New helper.
+
 2010-04-12  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/43611

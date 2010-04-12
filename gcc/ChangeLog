@@ -1,3 +1,11 @@
+2010-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (categorize_ctor_elements_1): Properly count sub-elements of
+	non-constant aggregate elements.
+
+	* gimplify.c (gimplify_init_constructor): Do not pre-evaluate if this
+	is a real initialization.
+
 2010-04-12  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/36774

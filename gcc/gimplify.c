@@ -3793,10 +3793,10 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	if (notify_temp_creation)
 	  return GS_OK;
 
-	/* If there are nonzero elements, pre-evaluate to capture elements
-	   overlapping with the lhs into temporaries.  We must do this before
-	   clearing to fetch the values before they are zeroed-out.  */
-	if (num_nonzero_elements > 0)
+	/* If there are nonzero elements and if needed, pre-evaluate to capture
+	   elements overlapping with the lhs into temporaries.  We must do this
+	   before clearing to fetch the values before they are zeroed-out.  */
+	if (num_nonzero_elements > 0 && TREE_CODE (*expr_p) != INIT_EXPR)
 	  {
 	    preeval_data.lhs_base_decl = get_base_address (object);
 	    if (!DECL_P (preeval_data.lhs_base_decl))
