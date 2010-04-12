@@ -1,5 +1,11 @@
 2010-04-12  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/pa/pa.c (hppa_legitimize_address): Remove unused variable
+	orig_base.
+	* config/pa/pa.md (call, call_value): Remove unused variable call_insn.
+
+2010-04-12  Steve Ellcey  <sje@cup.hp.com>
+
 	* function.c (assign_parms_initialize_all): Add unused attribute
 	to fntype.
 

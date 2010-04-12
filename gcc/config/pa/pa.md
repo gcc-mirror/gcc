@@ -7232,7 +7232,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "
 {
-  rtx op, call_insn;
+  rtx op;
   rtx nb = operands[1];
 
   if (TARGET_PORTABLE_RUNTIME)
@@ -7297,11 +7297,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       rtx r4 = gen_rtx_REG (word_mode, 4);
       if (GET_CODE (op) == SYMBOL_REF)
-	call_insn = emit_call_insn (gen_call_symref_64bit (op, nb, r4));
+	emit_call_insn (gen_call_symref_64bit (op, nb, r4));
       else
 	{
 	  op = force_reg (word_mode, op);
-	  call_insn = emit_call_insn (gen_call_reg_64bit (op, nb, r4));
+	  emit_call_insn (gen_call_reg_64bit (op, nb, r4));
 	}
     }
   else
@@ -7311,10 +7311,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_symref_pic (op, nb, r4));
+	      emit_call_insn (gen_call_symref_pic (op, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_symref (op, nb));
+	    emit_call_insn (gen_call_symref (op, nb));
 	}
       else
 	{
@@ -7323,10 +7323,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_reg_pic (nb, r4));
+	      emit_call_insn (gen_call_reg_pic (nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_reg (nb));
+	    emit_call_insn (gen_call_reg (nb));
 	}
     }
 
@@ -7724,7 +7724,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "
 {
-  rtx op, call_insn;
+  rtx op;
   rtx dst = operands[0];
   rtx nb = operands[2];
 
@@ -7790,13 +7790,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       rtx r4 = gen_rtx_REG (word_mode, 4);
       if (GET_CODE (op) == SYMBOL_REF)
-	call_insn
-	  = emit_call_insn (gen_call_val_symref_64bit (dst, op, nb, r4));
+	  emit_call_insn (gen_call_val_symref_64bit (dst, op, nb, r4));
       else
 	{
 	  op = force_reg (word_mode, op);
-	  call_insn
-	    = emit_call_insn (gen_call_val_reg_64bit (dst, op, nb, r4));
+	  emit_call_insn (gen_call_val_reg_64bit (dst, op, nb, r4));
 	}
     }
   else
@@ -7806,11 +7804,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn
-		= emit_call_insn (gen_call_val_symref_pic (dst, op, nb, r4));
+	      emit_call_insn (gen_call_val_symref_pic (dst, op, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_val_symref (dst, op, nb));
+	    emit_call_insn (gen_call_val_symref (dst, op, nb));
 	}
       else
 	{
@@ -7819,10 +7816,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_val_reg_pic (dst, nb, r4));
+	      emit_call_insn (gen_call_val_reg_pic (dst, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_val_reg (dst, nb));
+	    emit_call_insn (gen_call_val_reg (dst, nb));
 	}
     }
 
