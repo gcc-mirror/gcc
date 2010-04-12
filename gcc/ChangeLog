@@ -1,5 +1,37 @@
 2010-04-12  Richard Guenther  <rguenther@suse.de>
 
+	* gsstruct.def (GSS_CALL): New.
+	* gimple.def (GIMPLE_CALL): Change to GSS_CALL.
+	* gimple.h: Include tree-ssa-alias.h.
+	(struct gimple_statement_call): New.
+	(union gimple_statement_struct_d): Add gimple_call member.
+	(gimple_call_reset_alias_info): Declare.
+	(gimple_call_use_set): New function.
+	(gimple_call_clobber_set): Likewise.
+	* Makefile.in (GIMPLE_H): Add tree-ssa-alias.h.
+	* gimple.c (gimple_call_reset_alias_info): New function.
+	(gimple_build_call_1): Call it.
+	* lto-streamer-in.c (input_gimple_stmt): Likewise.
+	* tree-inline.c (remap_gimple_stmt): Likewise.
+	(expand_call_inline): Remove callused handling.
+	* cfgexpand.c (update_alias_info_with_stack_vars): Likewise.
+	* tree-dfa.c (dump_variable): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.
+	* tree-ssa.c (init_tree_ssa): Likewise.
+	(delete_tree_ssa): Likewise.
+	* tree-flow-inline.h (is_call_used): Remove.
+	* tree-flow.h (struct gimple_df): Remove callused member.
+	* tree-nrv.c (dest_safe_for_nrv_p): Adjust predicate.
+	* tree-ssa-alias.c (dump_alias_info): Remove callused handling.
+	(ref_maybe_used_by_call_p_1): Simplify.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-structalias.c (compute_points_to_sets): Set
+	the call stmt used and clobbered sets.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Adjust predicate.
+	(find_tail_calls): Verify the tail call.
+
+2010-04-12  Richard Guenther  <rguenther@suse.de>
+
 	* ipa.c (cgraph_postorder): Adjust postorder to guarantee
 	single-iteration always-inline inlining.
 	* ipa-inline.c (cgraph_mark_inline): Do not return anything.

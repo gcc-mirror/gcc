@@ -136,11 +136,23 @@ suitable_for_tail_opt_p (void)
   if (cfun->stdarg)
     return false;
 
-  /* No local variable nor structure field should be call-used.  */
+  /* No local variable nor structure field should escape to callees.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       if (!is_global_var (var)
-	  && is_call_used (var))
+	  /* ???  We do not have a suitable predicate for escaping to
+	     callees.  With IPA-PTA the following might be incorrect.
+	     We want to catch
+	       foo {
+	         int i;
+		 bar (&i);
+		 foo ();
+	       }
+	     where bar might store &i somewhere and in the next
+	     recursion should not be able to tell if it got the
+	     same (with tail-recursion applied) or a different
+	     address.  */
+	  && is_call_clobbered (var))
 	return false;
     }
 
@@ -430,7 +442,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   func = gimple_call_fndecl (call);
   if (func == current_function_decl)
     {
-      tree arg;
+      tree arg, var;
+      referenced_var_iterator rvi;
+
       for (param = DECL_ARGUMENTS (func), idx = 0;
 	   param && idx < gimple_call_num_args (call);
 	   param = TREE_CHAIN (param), idx ++)
@@ -460,6 +474,15 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	}
       if (idx == gimple_call_num_args (call) && !param)
 	tail_recursion = true;
+
+      /* Make sure the tail invocation of this function does not refer
+	 to local variables.  */
+      FOR_EACH_REFERENCED_VAR (var, rvi)
+	{
+	  if (!is_global_var (var)
+	      && ref_maybe_used_by_stmt_p (call, var))
+	    return;
+	}
     }
 
   /* Now check the statements after the call.  None of them has virtual

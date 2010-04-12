@@ -336,8 +336,6 @@ dump_alias_info (FILE *file)
 
   fprintf (file, "\nESCAPED");
   dump_points_to_solution (file, &cfun->gimple_df->escaped);
-  fprintf (file, "\nCALLUSED");
-  dump_points_to_solution (file, &cfun->gimple_df->callused);
 
   fprintf (file, "\n\nFlow-insensitive points-to information\n\n");
 
@@ -1070,51 +1068,24 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	goto process_args;
     }
 
-  /* If the base variable is call-used or call-clobbered then
-     it may be used.  */
-  if (flags & (ECF_PURE|ECF_CONST|ECF_LOOPING_CONST_OR_PURE|ECF_NOVOPS))
+  /* Check if the base variable is call-used.  */
+  if (DECL_P (base))
     {
-      if (DECL_P (base))
-	{
-	  if (is_call_used (base))
-	    return true;
-	}
-      else if (INDIRECT_REF_P (base)
-	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-	{
-	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
-	  if (!pi)
-	    return true;
+      if (pt_solution_includes (gimple_call_use_set (call), base))
+	return true;
+    }
+  else if (INDIRECT_REF_P (base)
+	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
+      if (!pi)
+	return true;
 
-	  if (pt_solution_includes_global (&pi->pt)
-	      || pt_solutions_intersect (&cfun->gimple_df->callused, &pi->pt)
-	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt))
-	    return true;
-	}
-      else
+      if (pt_solutions_intersect (gimple_call_use_set (call), &pi->pt))
 	return true;
     }
   else
-    {
-      if (DECL_P (base))
-	{
-	  if (is_call_clobbered (base))
-	    return true;
-	}
-      else if (INDIRECT_REF_P (base)
-	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-	{
-	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
-	  if (!pi)
-	    return true;
-
-	  if (pt_solution_includes_global (&pi->pt)
-	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt))
-	    return true;
-	}
-      else
-	return true;
-    }
+    return true;
 
   /* Inspect call arguments for passed-by-value aliases.  */
 process_args:
@@ -1347,8 +1318,9 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	return false;
     }
 
+  /* Check if the base variable is call-clobbered.  */
   if (DECL_P (base))
-    return is_call_clobbered (base);
+    return pt_solution_includes (gimple_call_clobber_set (call), base);
   else if (INDIRECT_REF_P (base)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
@@ -1356,8 +1328,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
       if (!pi)
 	return true;
 
-      return (pt_solution_includes_global (&pi->pt)
-	      || pt_solutions_intersect (&cfun->gimple_df->escaped, &pi->pt));
+      return pt_solutions_intersect (gimple_call_clobber_set (call), &pi->pt);
     }
 
   return true;

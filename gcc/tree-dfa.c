@@ -284,8 +284,6 @@ dump_variable (FILE *file, tree var)
 
   if (is_call_clobbered (var))
     fprintf (file, ", call clobbered");
-  else if (is_call_used (var))
-    fprintf (file, ", call used");
 
   if (ann && ann->noalias_state == NO_ALIAS)
     fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");

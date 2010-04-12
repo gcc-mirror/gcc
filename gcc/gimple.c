@@ -198,6 +198,21 @@ gimple_build_return (tree retval)
   return s;
 }
 
+/* Reset alias information on call S.  */
+
+void
+gimple_call_reset_alias_info (gimple s)
+{
+  if (gimple_call_flags (s) & ECF_CONST)
+    memset (gimple_call_use_set (s), 0, sizeof (struct pt_solution));
+  else
+    pt_solution_reset (gimple_call_use_set (s));
+  if (gimple_call_flags (s) & (ECF_CONST|ECF_PURE|ECF_NOVOPS))
+    memset (gimple_call_clobber_set (s), 0, sizeof (struct pt_solution));
+  else
+    pt_solution_reset (gimple_call_clobber_set (s));
+}
+
 /* Helper for gimple_build_call, gimple_build_call_vec and
    gimple_build_call_from_tree.  Build the basic components of a
    GIMPLE_CALL statement to function FN with NARGS arguments.  */
@@ -209,6 +224,7 @@ gimple_build_call_1 (tree fn, unsigned nargs)
   if (TREE_CODE (fn) == FUNCTION_DECL)
     fn = build_fold_addr_expr (fn);
   gimple_set_op (s, 1, fn);
+  gimple_call_reset_alias_info (s);
   return s;
 }
 
