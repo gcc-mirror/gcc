@@ -1714,12 +1714,8 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
 	      /* Set the register pointer flag and register alignment
 		 if the declaration for this memory reference is a
-		 pointer type.  Fortran indirect argument references
-		 are ignored.  */
-	      if (decl
-		  && !(flag_argument_noalias > 1
-		       && TREE_CODE (decl) == INDIRECT_REF
-		       && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
+		 pointer type.  */
+	      if (decl)
 		{
 		  tree type;
 
