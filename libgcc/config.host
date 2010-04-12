@@ -189,7 +189,7 @@ alpha*-*-netbsd*)
 	;;
 alpha*-*-openbsd*)
 	;;
-alpha*-dec-osf[45]*)
+alpha*-dec-osf5.1*)
 	;;
 alpha64-dec-*vms*)
 	tmake_file="vms/t-vms vms/t-vms64 alpha/t-vms"

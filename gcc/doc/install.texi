@@ -2862,7 +2862,7 @@ information are.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#alpha-dec-osf,,alpha*-dec-osf*}
+@uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
 @uref{#arc-x-elf,,arc-*-elf}
 @item
@@ -3009,16 +3009,15 @@ shared libraries.
 @html
 <hr />
 @end html
-@heading @anchor{alpha-dec-osf}alpha*-dec-osf*
+@heading @anchor{alpha-dec-osf51}alpha*-dec-osf5.1
 Systems using processors that implement the DEC Alpha architecture and
 are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
 As of GCC 3.2, versions before @code{alpha*-dec-osf4} are no longer
 supported.  (These are the versions which identify themselves as DEC
-OSF/1.)  As of GCC 4.5, support for Tru64 UNIX V4.0 and V5.0 has been
-obsoleted, but can still be enabled by configuring with
-@option{--enable-obsolete}.  Support will be removed in GCC 4.6.
+OSF/1.)  As of GCC 4.6, support for Tru64 UNIX V4.0 and V5.0 has been
+removed.
 
 On Tru64 UNIX, virtual memory exhausted bootstrap failures
 may be fixed by reconfiguring Kernel Virtual Memory and Swap parameters

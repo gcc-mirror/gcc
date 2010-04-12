@@ -1,5 +1,5 @@
 # GCC build-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008, 2009
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2007, 2008, 2009, 2010
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -51,11 +51,6 @@ build_file_translate=
 
 # System-specific settings.
 case $build in
-  alpha*-dec-osf4*)
-    # Some versions of OSF4 (specifically X4.0-9 296.7) have
-    # a broken tar, so we use cpio instead.
-    build_install_headers_dir=install-headers-cpio
-    ;;
   alpha64-dec-*vms*)
     build_xm_file="vms/xm-vms.h vms/xm-vms64.h"
     build_exeext=.exe

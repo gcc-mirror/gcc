@@ -1,5 +1,24 @@
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.build (alpha*-dec-osf4*): Remove.
+	* config.gcc: Remove alpha*-dec-osf4*, alpha-dec-osf5.0* from list
+	of obsolete configurations.
+	(alpha*-dec-osf[45]*): Remove alpha*-dec-osf4*, alpha-dec-osf5.0*
+	support.
+	* config/alpha/t-osf4: Renamed to ...
+	* config/alpha/t-osf5: ... this.
+	* config/alpha/osf.h: Renamed to ...
+	* config/alpha/osf5.h: ... this.
+	Merged old osf5.h contents.
+	Update comments.
+	(ASM_SPEC): Use ASM_OLDAS_SPEC directly.
+	(EXTRA_SPECS): Removed.
+	* doc/install.texi (Specific, alpha*-dec-osf5.1): Renamed to
+	reflect removal of Tru64 UNIX V4.0/V5.0 support.
+	Document that.
+
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/contrib.texi (Contributors, Rainer Orth): Update.
 
 2010-04-12  Kai Tietz  <kai.tietz@onevision.com>
