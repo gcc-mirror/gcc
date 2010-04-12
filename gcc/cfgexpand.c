@@ -540,8 +540,6 @@ update_alias_info_with_stack_vars (void)
 
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
 				     decls_to_partitions, visited, temp);
-      add_partitioned_vars_to_ptset (&cfun->gimple_df->callused,
-				     decls_to_partitions, visited, temp);
 
       pointer_set_destroy (visited);
       pointer_map_destroy (decls_to_partitions);
