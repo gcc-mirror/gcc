@@ -1,3 +1,9 @@
+2010-04-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/43702
+	* config/i386/i386.c (x86_this_parameter): Handle aggregate for
+	__thiscall convention.
+
 2010-04-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/pa.c (hppa_legitimize_address): Remove unused variable
