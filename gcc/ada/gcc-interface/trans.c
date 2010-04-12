@@ -997,18 +997,17 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       && DECL_P (gnu_result)
       && DECL_INITIAL (gnu_result))
     {
-      tree object
-	= (TREE_CODE (gnu_result) == CONST_DECL
-	   ? DECL_CONST_CORRESPONDING_VAR (gnu_result) : gnu_result);
+      bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
+			    && !DECL_CONST_CORRESPONDING_VAR (gnu_result));
 
-      /* If there is a corresponding variable, we only want to return
-	 the CST value if an lvalue is not required.  Evaluate this
+      /* If there is a (corresponding) variable, we only want to return
+	 the constant value if an lvalue is not required.  Evaluate this
 	 now if we have not already done so.  */
-      if (object && require_lvalue < 0)
+      if (!constant_only && require_lvalue < 0)
 	require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
 					    Is_Aliased (gnat_temp));
 
-      if (!object || !require_lvalue)
+      if (constant_only || !require_lvalue)
 	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
     }
 
@@ -2500,14 +2499,14 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
       tree gnu_formal_type = gnat_to_gnu_type (Etype (gnat_formal));
-      /* We must suppress conversions that can cause the creation of a
-	 temporary in the Out or In Out case because we need the real
-	 object in this case, either to pass its address if it's passed
-	 by reference or as target of the back copy done after the call
-	 if it uses the copy-in copy-out mechanism.  We do it in the In
-	 case too, except for an unchecked conversion because it alone
-	 can cause the actual to be misaligned and the addressability
-	 test is applied to the real object.  */
+      /* In the Out or In Out case, we must suppress conversions that yield
+	 an lvalue but can nevertheless cause the creation of a temporary,
+	 because we need the real object in this case, either to pass its
+	 address if it's passed by reference or as target of the back copy
+	 done after the call if it uses the copy-in copy-out mechanism.
+	 We do it in the In case too, except for an unchecked conversion
+	 because it alone can cause the actual to be misaligned and the
+	 addressability test is applied to the real object.  */
       bool suppress_type_conversion
 	= ((Nkind (gnat_actual) == N_Unchecked_Type_Conversion
 	    && Ekind (gnat_formal) != E_In_Parameter)
@@ -2539,8 +2538,9 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	{
 	  tree gnu_copy = gnu_name;
 
-	  /* If the type is by_reference, a copy is not allowed.  */
-	  if (Is_By_Reference_Type (Etype (gnat_formal)))
+	  /* If the type is passed by reference, a copy is not allowed.  */
+	  if (AGGREGATE_TYPE_P (gnu_formal_type)
+	      && TYPE_BY_REFERENCE_P (gnu_formal_type))
 	    post_error
 	      ("misaligned actual cannot be passed by reference", gnat_actual);
 
@@ -2610,44 +2610,29 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	 So do it here for the part we will use as an input, if any.  */
       if (Ekind (gnat_formal) != E_Out_Parameter
 	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_actual)))
-	gnu_actual = convert (get_unpadded_type (Etype (gnat_actual)),
-			      gnu_actual);
+	gnu_actual
+	  = convert (get_unpadded_type (Etype (gnat_actual)), gnu_actual);
 
-      /* Do any needed conversions for the actual and make sure that it is
-	 in range of the formal's type.  */
-      if (suppress_type_conversion)
-	{
-	  /* Put back the conversion we suppressed above in the computation
-	     of the real object.  Note that we treat a conversion between
-	     aggregate types as if it is an unchecked conversion here.  */
-	  gnu_actual
-	    = unchecked_convert (gnat_to_gnu_type (Etype (gnat_actual)),
-				 gnu_actual,
-				 (Nkind (gnat_actual)
-				  == N_Unchecked_Type_Conversion)
-				 && No_Truncation (gnat_actual));
-
-	  if (Ekind (gnat_formal) != E_Out_Parameter
-	      && Do_Range_Check (gnat_actual))
-	    gnu_actual = emit_range_check (gnu_actual, Etype (gnat_formal),
-					   gnat_actual);
-	}
+      /* Put back the conversion we suppressed above in the computation of the
+	 real object.  And even if we didn't suppress any conversion there, we
+	 may have suppressed a conversion to the Etype of the actual earlier,
+	 since the parent is a procedure call, so put it back here.  */
+      if (suppress_type_conversion
+	  && Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
+	gnu_actual
+	  = unchecked_convert (gnat_to_gnu_type (Etype (gnat_actual)),
+			       gnu_actual, No_Truncation (gnat_actual));
       else
-	{
-	  if (Ekind (gnat_formal) != E_Out_Parameter
-	      && Do_Range_Check (gnat_actual))
-	    gnu_actual = emit_range_check (gnu_actual, Etype (gnat_formal),
-					   gnat_actual);
+	gnu_actual
+	  = convert (gnat_to_gnu_type (Etype (gnat_actual)), gnu_actual);
 
-	  /* We may have suppressed a conversion to the Etype of the actual
-	     since the parent is a procedure call.  So put it back here.
-	     ??? We use the reverse order compared to the case above because
-	     of an awkward interaction with the check.  */
-	  if (TREE_CODE (gnu_actual) != SAVE_EXPR)
-	    gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
-				  gnu_actual);
-	}
+      /* Make sure that the actual is in range of the formal's type.  */
+      if (Ekind (gnat_formal) != E_Out_Parameter
+	  && Do_Range_Check (gnat_actual))
+	gnu_actual
+	  = emit_range_check (gnu_actual, Etype (gnat_formal), gnat_actual);
 
+      /* And convert it to this type.  */
       if (TREE_CODE (gnu_actual) != SAVE_EXPR)
 	gnu_actual = convert (gnu_formal_type, gnu_actual);
 
@@ -2657,8 +2642,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  && TREE_CODE (gnu_name) == CONSTRUCTOR
 	  && TREE_CODE (TREE_TYPE (gnu_name)) == RECORD_TYPE
 	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (gnu_name)))
-	gnu_name = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_name))),
-			    gnu_name);
+	gnu_name
+	  = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_name))), gnu_name);
 
       /* If we have not saved a GCC object for the formal, it means it is an
 	 Out parameter not passed by reference and that need not be copied in.
