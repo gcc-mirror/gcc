@@ -1,3 +1,33 @@
+2010-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_rotate): New code iterator.
+	(rotate_insn): New code attribute.
+	(rotate): Ditto.
+	(SWIM124): New mode iterator.
+	(<rotate_insn>ti3): New expander.
+	(<rotate_insn>di3): Macroize expander from {rotl,rotr}di3 using
+	any_rotate code iterator.
+	(<rotate_insn><mode>3) Macroize expander from {rotl,rotr}{qi,hi,si}3
+	using any_rotate code iterator and SWIM124 mode iterator.
+	(ix86_rotlti3): New insn_and_split pattern.
+	(ix86_rotrti3): Ditto.
+	(ix86_rotl<dwi>3_doubleword): Macroize insn_and_split pattern from
+	ix86_rotl{di,ti}3 patterns.
+	(ix86_rotr<dwi>3_doubleword): Ditto from ix86_rotr{di,ti}3 patterns.
+	(*<rotate_insn><mode>3_1): Merge with *{rotl,rotr}{qi,hi,si}3_1_one_bit
+	and *{rotl,rotr}di3_1_one_bit_rex64. Macroize insn from
+	*{rotl,rotr}{qi,hi,si}3_1 and *{rotl,rotr}di3_1_rex64 using any_rotate
+	code iterator and SWI mode iterator.
+	(*<rotate_insn>si3_1_zext): Merge with *{rotl,rotr}si3_1_one_bit_zext.
+	Macroize insn from {rotl,rotr}si3_1_zext using any_rotate
+	code iterator.
+	(*<rotate_insn>qi3_1_slp): Merge with *{rotl,rotr}qi3_1_one_bit_slp.
+	Macroize insn from {rotl,rotr}qi3_1_slp using any_rotate code iterator.
+	(bswap rotatert splitter): Add splitter.
+	(bswap splitter): Macroize splitter using any_rotate code iterator.
+	Add insn predicate to split only for TARGET_USE_XCHGB or when
+	optimizing function for size.
+
 2010-04-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/pa.c (emit_move_sequence): Remove use of
@@ -95,8 +125,7 @@
 	* ipa.c (cgraph_postorder): Adjust postorder to guarantee
 	single-iteration always-inline inlining.
 	* ipa-inline.c (cgraph_mark_inline): Do not return anything.
-	(cgraph_decide_inlining): Do not handle always-inline
-	specially.
+	(cgraph_decide_inlining): Do not handle always-inline specially.
 	(try_inline): Remove always-inline cycle detection special case.
 	Do not recurse on always-inlines.
 	(cgraph_early_inlining): Do not iterate if not optimizing.
@@ -151,25 +180,20 @@
 	* config/i386/i386.md (any_shiftrt): New code iterator.
 	(shiftrt_insn): New code attribute.
 	(shiftrt): Ditto.
-	(<shiftrt_insn><mode>3): Macroize expander from ashr<mode>3 and
-	lshr<mode>3 using any_shiftrt code iterator.
+	(<shiftrt_insn><mode>3): Macroize expander from {ashr,lshr}<mode>3
+	using any_shiftrt code iterator.
 	(*<shiftrt_insn><mode>3_doubleword): Macroize insn_and_split from
-	*ashr<mode>3_doubleword and *lshr<mode>3_doubleword using
-	any_shiftrt code iterator.
+	*{ashr,lshr}<mode>3_doubleword using any_shiftrt code iterator.
 	(*<shiftrt_insn><mode>3_doubleword peephole2): Macroize peephole2
 	pattern from corresponding peephole2 patterns.
-	(*<shiftrt_insn><mode>3_1): Macroize insn from *ashr<mode>3_1
-	and *lshr<mode>3_1 using any_shiftrt code iterator.
-	(*<shiftrt_insn>si3_1_zext): Ditto from *ashrsi3_1_zext
-	and *lshrsi3_1_zext.
-	(*<shiftrt_insn>qi3_1_slp): Ditto from *ashrqi3_1_slp
-	and *lshrqi3_1_slp.
-	(*<shiftrt_insn><mode>3_cmp): Ditto from *ashr<mode>3_cmp
-	and *lshr<mode>3_cmp.
-	(*<shiftrt_insn><mode>3_cmp_zext): Ditto from *ashr<mode>3_cmp_zext
-	and *lshr<mode>3_cmp_zext.
-	(*<shiftrt_insn><mode>3_cconly): Ditto from *ashr<mode>3_cconly
-	and *lshr<mode>3_cconly.
+	(*<shiftrt_insn><mode>3_1): Macroize insn from *{ashr,lshr}<mode>3_1
+	using any_shiftrt code iterator.
+	(*<shiftrt_insn>si3_1_zext): Ditto from *{ashr,lshr}si3_1_zext.
+	(*<shiftrt_insn>qi3_1_slp): Ditto from *{ashr,lshr}qi3_1_slp.
+	(*<shiftrt_insn><mode>3_cmp): Ditto from *{ashr,lshr}<mode>3_cmp.
+	(*<shiftrt_insn><mode>3_cmp_zext): Ditto from
+	*{ashr,lshr}<mode>3_cmp_zext.
+	(*<shiftrt_insn><mode>3_cconly): Ditto from *{ashr,lshr}<mode>3_cconly.
 
 2010-04-11  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -187,8 +211,8 @@
 	(*lshr<mode>3_doubleword peephole2): Macroize peephole2 pattern
 	from corresponding peephole2 patterns.
 	(*lshr<mode>3_1): Merge with *lshr{qi,hi,si}3_1_one_bit and
-	*lshrdi3_1_one_bit_rex64. Macroize insn from *lshr{qi,hi,si}3_cmp
-	and *lshrdi3_cmp_rex64 using SWI mode iterator.
+	*lshrdi3_1_one_bit_rex64. Macroize insn from *lshr{qi,hi,si}3_1
+	and *lshrdi3_1_rex64 using SWI mode iterator.
 	(*lshrsi3_1_zext): Merge with *lshrsi3_1_one_bit_zext.
 	(*lshrqi3_1_slp): Merge with *lshrqi3_1_one_bit_slp.
 	(*lshr<mode>3_cmp): Merge with *lshr{qi,hi,si}3_one_bit_cmp and
@@ -215,8 +239,8 @@
 	(x86_shift<mode>_adj_3): Macroize expander from x86_shift_adj_3
 	and x86_64_shift_adj_3 using SWI48 mode iterator.
 	(*ashr<mode>3_1): Merge with *ashr{qi,hi,si}3_1_one_bit and
-	*ashrdi3_1_one_bit_rex64. Macroize insn from *ashr{qi,hi,si}3_cmp
-	and *ashrdi3_cmp_rex64 using SWI mode iterator.
+	*ashrdi3_1_one_bit_rex64. Macroize insn from *ashr{qi,hi,si}3_1
+	and *ashrdi3_1_rex64 using SWI mode iterator.
 	(*ashrsi3_1_zext): Merge with *ashrsi3_1_one_bit_zext.
 	(*ashrqi3_1_slp): Merge with *ashrqi3_1_one_bit_slp.
 	(*ashr<mode>3_cmp): Merge with *ashr{qi,hi,si}3_one_bit_cmp and

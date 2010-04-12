@@ -1,8 +1,11 @@
+2010-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/rotate-2.c: New test.
+
 2010-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43641
 	* g++.dg/cpp0x/lambda/lambda-conv4.C: New.
-
 	* g++.dg/cpp0x/lambda/lambda-deduce2.C: New.
 
 2010-04-12  Fabien Chene  <fabien.chene@gmail.com>
