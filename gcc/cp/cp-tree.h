@@ -1,6 +1,6 @@
 /* Definitions for C++ parsing and type checking.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -4852,6 +4852,7 @@ extern tree create_temporary_var		(tree);
 extern void initialize_vtbl_ptrs		(tree);
 extern tree build_java_class_ref		(tree);
 extern tree integral_constant_value		(tree);
+extern void diagnose_uninitialized_cst_or_ref_member (tree, bool);
 
 /* in lex.c */
 extern void cxx_dup_lang_specific_decl		(tree);
