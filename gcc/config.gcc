@@ -209,7 +209,6 @@ md_file=
 case ${target} in
    mips-sgi-irix5*			\
  | mips-sgi-irix6.[0-4]*		\
- | *-*-solaris2.7*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -236,8 +235,8 @@ case ${target} in
  | *-*-linux*oldld*			\
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
- | *-*-solaris2.[0-6]			\
- | *-*-solaris2.[0-6].*			\
+ | *-*-solaris2.[0-7]			\
+ | *-*-solaris2.[0-7].*			\
  | *-*-sysv*		\
  | vax-*-vms*				\
  )

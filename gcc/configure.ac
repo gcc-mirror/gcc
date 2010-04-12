@@ -2633,7 +2633,7 @@ foo:	.long	25
 	;;
   i[34567]86-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.[56789]*)
+      i[34567]86-*-solaris2.[89]*)
 	# TLS was introduced in the Solaris 9 4/04 release but
 	# we do not enable it by default on Solaris 9 either.
 	if test "x$enable_tls" = xyes ; then
@@ -2859,7 +2859,7 @@ foo:	.long	25
 	;;
   sparc*-*-*)
     case "$target" in
-      sparc*-sun-solaris2.[56789]*)
+      sparc*-sun-solaris2.[89]*)
 	# TLS was introduced in the Solaris 9 4/04 release but
 	# we do not enable it by default on Solaris 9 either.
 	if test "x$enable_tls" = xyes ; then
