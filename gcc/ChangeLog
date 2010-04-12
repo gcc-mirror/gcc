@@ -1,3 +1,9 @@
+2010-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/43699
+	* c-typeck.c (c_process_expr_stmt): Call mark_exp_read even
+	for exprs satisfying handled_component_p.
+
 2010-04-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (categorize_ctor_elements_1): Properly count sub-elements of

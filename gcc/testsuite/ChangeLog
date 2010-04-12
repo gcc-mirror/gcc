@@ -1,5 +1,8 @@
 2010-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/43699
+	* gcc.dg/Wunused-var-7.c: New test.
+
 	PR tree-optimization/43560
 	* gcc.c-torture/execute/pr43560.c: New test.
 
