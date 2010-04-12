@@ -1,3 +1,14 @@
+2010-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Use boolean variable.
+	(call_to_gnu): Test gigi's flag TYPE_BY_REFERENCE_P instead of calling
+	front-end's predicate Is_By_Reference_Type.  Use consistent order and
+	remove ??? comment.  Use original conversion in all cases, if any.
+	* gcc-interface/utils.c (make_dummy_type): Minor tweak.
+	(convert): Use local copy in more cases.
+	<INDIRECT_REF>: Remove deactivated code.
+	(unchecked_convert): Use a couple of local copies.
+
 2010-04-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (lvalue_required_for_attribute_p): New static

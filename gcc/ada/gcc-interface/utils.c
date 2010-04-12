@@ -294,8 +294,8 @@ make_dummy_type (Entity_Id gnat_type)
   TYPE_DUMMY_P (gnu_type) = 1;
   TYPE_STUB_DECL (gnu_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
-  if (AGGREGATE_TYPE_P (gnu_type))
-    TYPE_BY_REFERENCE_P (gnu_type) = Is_By_Reference_Type (gnat_type);
+  if (AGGREGATE_TYPE_P (gnu_type) && Is_By_Reference_Type (gnat_type))
+    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
   SET_DUMMY_NODE (gnat_underlying, gnu_type);
 
@@ -3656,12 +3656,12 @@ convert_to_thin_pointer (tree type, tree expr)
 tree
 convert (tree type, tree expr)
 {
-  enum tree_code code = TREE_CODE (type);
   tree etype = TREE_TYPE (expr);
   enum tree_code ecode = TREE_CODE (etype);
+  enum tree_code code = TREE_CODE (type);
 
-  /* If EXPR is already the right type, we are done.  */
-  if (type == etype)
+  /* If the expression is already of the right type, we are done.  */
+  if (etype == type)
     return expr;
 
   /* If both input and output have padding and are of variable size, do this
@@ -3708,7 +3708,7 @@ convert (tree type, tree expr)
       /* If the inner type is of self-referential size and the expression type
 	 is a record, do this as an unchecked conversion.  But first pad the
 	 expression if possible to have the same size on both sides.  */
-      if (TREE_CODE (etype) == RECORD_TYPE
+      if (ecode == RECORD_TYPE
 	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
 	{
 	  if (TREE_CONSTANT (TYPE_SIZE (etype)))
@@ -3721,7 +3721,7 @@ convert (tree type, tree expr)
 	 final conversion as an unchecked conversion, again to avoid the need
 	 for some variable-sized temporaries.  If valid, this conversion is
 	 very likely purely technical and without real effects.  */
-      if (TREE_CODE (etype) == ARRAY_TYPE
+      if (ecode == ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == ARRAY_TYPE
 	  && !TREE_CONSTANT (TYPE_SIZE (etype))
 	  && !TREE_CONSTANT (TYPE_SIZE (type)))
@@ -3998,25 +3998,6 @@ convert (tree type, tree expr)
 	      return convert (type, op0);
 	  }
       }
-      break;
-
-    case INDIRECT_REF:
-      /* If both types are record types, just convert the pointer and
-	 make a new INDIRECT_REF.
-
-	 ??? Disable this for now since it causes problems with the
-	 code in build_binary_op for MODIFY_EXPR which wants to
-	 strip off conversions.  But that code really is a mess and
-	 we need to do this a much better way some time.  */
-      if (0
-	  && (TREE_CODE (type) == RECORD_TYPE
-	      || TREE_CODE (type) == UNION_TYPE)
-	  && (TREE_CODE (etype) == RECORD_TYPE
-	      || TREE_CODE (etype) == UNION_TYPE)
-	  && !TYPE_IS_FAT_POINTER_P (type) && !TYPE_IS_FAT_POINTER_P (etype))
-	return build_unary_op (INDIRECT_REF, NULL_TREE,
-			       convert (build_pointer_type (type),
-					TREE_OPERAND (expr, 0)));
       break;
 
     default:
@@ -4359,29 +4340,26 @@ tree
 unchecked_convert (tree type, tree expr, bool notrunc_p)
 {
   tree etype = TREE_TYPE (expr);
+  enum tree_code ecode = TREE_CODE (etype);
+  enum tree_code code = TREE_CODE (type);
 
-  /* If the expression is already the right type, we are done.  */
+  /* If the expression is already of the right type, we are done.  */
   if (etype == type)
     return expr;
 
   /* If both types types are integral just do a normal conversion.
      Likewise for a conversion to an unconstrained array.  */
   if ((((INTEGRAL_TYPE_P (type)
-	 && !(TREE_CODE (type) == INTEGER_TYPE
-	      && TYPE_VAX_FLOATING_POINT_P (type)))
+	 && !(code == INTEGER_TYPE && TYPE_VAX_FLOATING_POINT_P (type)))
 	|| (POINTER_TYPE_P (type) && ! TYPE_IS_THIN_POINTER_P (type))
-	|| (TREE_CODE (type) == RECORD_TYPE
-	    && TYPE_JUSTIFIED_MODULAR_P (type)))
+	|| (code == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (type)))
        && ((INTEGRAL_TYPE_P (etype)
-	    && !(TREE_CODE (etype) == INTEGER_TYPE
-		 && TYPE_VAX_FLOATING_POINT_P (etype)))
+	    && !(ecode == INTEGER_TYPE && TYPE_VAX_FLOATING_POINT_P (etype)))
 	   || (POINTER_TYPE_P (etype) && !TYPE_IS_THIN_POINTER_P (etype))
-	   || (TREE_CODE (etype) == RECORD_TYPE
-	       && TYPE_JUSTIFIED_MODULAR_P (etype))))
-      || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+	   || (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype))))
+      || code == UNCONSTRAINED_ARRAY_TYPE)
     {
-      if (TREE_CODE (etype) == INTEGER_TYPE
-	  && TYPE_BIASED_REPRESENTATION_P (etype))
+      if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
 	{
 	  tree ntype = copy_type (etype);
 	  TYPE_BIASED_REPRESENTATION_P (ntype) = 0;
@@ -4389,8 +4367,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  expr = build1 (NOP_EXPR, ntype, expr);
 	}
 
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_BIASED_REPRESENTATION_P (type))
+      if (code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
 	{
 	  tree rtype = copy_type (type);
 	  TYPE_BIASED_REPRESENTATION_P (rtype) = 0;
@@ -4441,8 +4418,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   /* We have a special case when we are converting between two unconstrained
      array types.  In that case, take the address, convert the fat pointer
      types, and dereference.  */
-  else if (TREE_CODE (etype) == UNCONSTRAINED_ARRAY_TYPE
-	   && TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+  else if (ecode == code && code == UNCONSTRAINED_ARRAY_TYPE)
     expr = build_unary_op (INDIRECT_REF, NULL_TREE,
 			   build1 (VIEW_CONVERT_EXPR, TREE_TYPE (type),
 				   build_unary_op (ADDR_EXPR, NULL_TREE,
@@ -4450,8 +4426,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 
   /* Another special case is when we are converting to a vector type from its
      representative array type; this a regular conversion.  */
-  else if (TREE_CODE (type) == VECTOR_TYPE
-	   && TREE_CODE (etype) == ARRAY_TYPE
+  else if (code == VECTOR_TYPE
+	   && ecode == ARRAY_TYPE
 	   && gnat_types_compatible_p (TYPE_REPRESENTATIVE_ARRAY (type),
 				       etype))
     expr = convert (type, expr);
@@ -4460,6 +4436,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
     {
       expr = maybe_unconstrained_array (expr);
       etype = TREE_TYPE (expr);
+      ecode = TREE_CODE (etype);
       if (can_fold_for_view_convert_p (expr))
 	expr = fold_build1 (VIEW_CONVERT_EXPR, type, expr);
       else
@@ -4472,8 +4449,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      is a biased type or if both the input and output are unsigned.  */
   if (!notrunc_p
       && INTEGRAL_TYPE_P (type) && TYPE_RM_SIZE (type)
-      && !(TREE_CODE (type) == INTEGER_TYPE
-	   && TYPE_BIASED_REPRESENTATION_P (type))
+      && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
       && 0 != compare_tree_int (TYPE_RM_SIZE (type),
 				GET_MODE_BITSIZE (TYPE_MODE (type)))
       && !(INTEGRAL_TYPE_P (etype)
@@ -4484,8 +4460,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 			       0))
       && !(TYPE_UNSIGNED (type) && TYPE_UNSIGNED (etype)))
     {
-      tree base_type = gnat_type_for_mode (TYPE_MODE (type),
-					   TYPE_UNSIGNED (type));
+      tree base_type
+	= gnat_type_for_mode (TYPE_MODE (type), TYPE_UNSIGNED (type));
       tree shift_expr
 	= convert (base_type,
 		   size_binop (MINUS_EXPR,
