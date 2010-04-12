@@ -1066,7 +1066,7 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     {
 
       /* First, try and figure out what to use as a base register.  */
-      rtx reg1, reg2, base, idx, orig_base;
+      rtx reg1, reg2, base, idx;
 
       reg1 = XEXP (XEXP (x, 0), 1);
       reg2 = XEXP (x, 1);
@@ -1088,7 +1088,6 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	  && REG_POINTER (reg1))
 	{
 	  base = reg1;
-	  orig_base = XEXP (XEXP (x, 0), 1);
 	  idx = gen_rtx_PLUS (Pmode,
 			      gen_rtx_MULT (Pmode,
 					    XEXP (XEXP (XEXP (x, 0), 0), 0),
@@ -1099,7 +1098,6 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	       && REG_POINTER (reg2))
 	{
 	  base = reg2;
-	  orig_base = XEXP (x, 1);
 	  idx = XEXP (x, 0);
 	}
 
