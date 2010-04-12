@@ -1,3 +1,9 @@
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host (os_include_dir): Removed solaris2.7 support.
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Likewise.
+	* configure: Regenerate.
+
 2010-04-06  Matthias Klose  <doko@ubuntu.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Show test result.

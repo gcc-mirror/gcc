@@ -1,5 +1,20 @@
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.gcc: Removed *-*-solaris2.7* from list of obsolete
+	configurations.
+	Add to unsupported targets list.
+	* configure.ac (gcc_cv_as_tls): Removed i[34567]86-*-solaris2.[567]*,
+	sparc*-sun-solaris2.[567]* from target lists.
+	* configure: Regenerate.
+	* doc/install.texi (Specific, *-*-solaris2*): Document Solaris 7
+	removal.
+	Remove Solaris 7 patch references.
+	(Specific, sparc-sun-solaris2.7): Removed.
+	(sparc-sun-solaris2*): Update Solaris 7 example.
+	(sparc64-*-solaris2*): Likewise.
+
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.build (alpha*-dec-osf4*): Remove.
 	* config.gcc: Remove alpha*-dec-osf4*, alpha-dec-osf5.0* from list
 	of obsolete configurations.

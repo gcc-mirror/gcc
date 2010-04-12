@@ -57091,7 +57091,7 @@ $as_echo "$ac_ld_relro" >&6; }
     ;;
   *-solaris*)
     case "$target" in
-      *-solaris2.7 | *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
+      *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
 
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld

@@ -1,3 +1,9 @@
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/warn/miss-format-1.C: Removed *-*-solaris2.7 from
+	dg-error, dg-warning.
+	* gcc.dg/c99-stdint-6.c: Removed *-*-solaris2.7 from dg-options.
+
 2010-04-12  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/inline-2.c: New testcase.
