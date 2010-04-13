@@ -1,3 +1,23 @@
+2010-04-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc.dg/cpp/cpp.exp: Test also c-c++-common/cpp.
+	* g++.dg/dg.exp: Likewise.
+	* gcc.dg/cpp/warning-directive-1.c: Move to ...
+	* c-c++-common/cpp/warning-directive-1.c: ... here.
+	* gcc.dg/cpp/warning-directive-2.c: Move to ...
+	* c-c++-common/cpp/warning-directive-2.c: ... here.
+	* gcc.dg/cpp/warning-directive-3.c: Move to ...
+	* c-c++-common/cpp/warning-directive-3.c: ... here.
+	* gcc.dg/cpp/warning-directive-4.c: Move to ...
+	* c-c++-common/cpp/warning-directive-4.c: ... here.
+	* g++.dg/cpp/warning-directive-1.C: Delete.
+	* g++.dg/cpp/warning-directive-2.C: Delete.
+	* g++.dg/cpp/warning-directive-3.C: Delete.
+	* g++.dg/cpp/warning-directive-4.C: Delete.
+	* gcc.dg/cpp/normalised-3.c: Delete.
+	* g++.dg/cpp/normalised-1.C: Rename as ...
+	* c-c++-common/cpp/normalised-3.c: ... this.
+
 2010-04-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/tree-ssa/sra-9.c: New test.
