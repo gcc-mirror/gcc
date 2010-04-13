@@ -1,3 +1,9 @@
+2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (walk_gimple_op) <GIMPLE_ASSIGN>: Do not request a pure
+	rvalue on the RHS if the LHS is of a non-renamable type.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_component_ref): Fold result.
+
 2010-04-13  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc.c (cc1_options): Handle -iplugindir before processing

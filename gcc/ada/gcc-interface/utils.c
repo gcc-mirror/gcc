@@ -294,8 +294,8 @@ make_dummy_type (Entity_Id gnat_type)
   TYPE_DUMMY_P (gnu_type) = 1;
   TYPE_STUB_DECL (gnu_type)
     = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
-  if (AGGREGATE_TYPE_P (gnu_type) && Is_By_Reference_Type (gnat_type))
-    TYPE_BY_REFERENCE_P (gnu_type) = 1;
+  if (Is_By_Reference_Type (gnat_type))
+    TREE_ADDRESSABLE (gnu_type) = 1;
 
   SET_DUMMY_NODE (gnat_underlying, gnu_type);
 
@@ -3852,11 +3852,14 @@ convert (tree type, tree expr)
 	  return expr;
 	}
 
-      /* Likewise for a conversion between original and packable version, but
-	 we have to work harder in order to preserve type consistency.  */
+      /* Likewise for a conversion between original and packable version, or
+	 conversion between types of the same size and with the same list of
+	 fields, but we have to work harder to preserve type consistency.  */
       if (code == ecode
 	  && code == RECORD_TYPE
-	  && TYPE_NAME (type) == TYPE_NAME (etype))
+	  && (TYPE_NAME (type) == TYPE_NAME (etype)
+	      || tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (etype))))
+
 	{
 	  VEC(constructor_elt,gc) *e = CONSTRUCTOR_ELTS (expr);
 	  unsigned HOST_WIDE_INT len = VEC_length (constructor_elt, e);
@@ -3871,10 +3874,14 @@ convert (tree type, tree expr)
 
 	  FOR_EACH_CONSTRUCTOR_ELT(e, idx, index, value)
 	    {
-	      constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
-	      /* We expect only simple constructors.  Otherwise, punt.  */
-	      if (!(index == efield || index == DECL_ORIGINAL_FIELD (efield)))
+	      constructor_elt *elt;
+	      /* We expect only simple constructors.  */
+	      if (!SAME_FIELD_P (index, efield))
 		break;
+	      /* The field must be the same.  */
+	      if (!SAME_FIELD_P (efield, field))
+		break;
+	      elt = VEC_quick_push (constructor_elt, v, NULL);
 	      elt->index = field;
 	      elt->value = convert (TREE_TYPE (field), value);
 

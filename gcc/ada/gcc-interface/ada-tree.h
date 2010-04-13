@@ -102,9 +102,6 @@ do {							    \
    front-end.  */
 #define TYPE_EXTRA_SUBTYPE_P(NODE) TYPE_LANG_FLAG_2 (NODE)
 
-/* Nonzero for composite types if this is a by-reference type.  */
-#define TYPE_BY_REFERENCE_P(NODE) TYPE_LANG_FLAG_2 (NODE)
-
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is the
    type for an object whose type includes its template in addition to
    its value (only true for RECORD_TYPE).  */
@@ -325,6 +322,10 @@ do {						   \
    been elaborated and TREE_READONLY is not set on it.  */
 #define DECL_READONLY_ONCE_ELAB(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
 
+/* Nonzero in a CONST_DECL if its value is (essentially) the address of a
+   constant CONSTRUCTOR.  */
+#define DECL_CONST_ADDRESS_P(NODE) DECL_LANG_FLAG_0 (CONST_DECL_CHECK (NODE))
+
 /* Nonzero if this decl is always used by reference; i.e., an INDIRECT_REF
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
@@ -368,6 +369,20 @@ do {						   \
   GET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))
 #define SET_DECL_ORIGINAL_FIELD(NODE, X) \
   SET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE), X)
+
+/* Set DECL_ORIGINAL_FIELD of FIELD1 to (that of) FIELD2.  */
+#define SET_DECL_ORIGINAL_FIELD_TO_FIELD(FIELD1, FIELD2)	\
+  SET_DECL_ORIGINAL_FIELD ((FIELD1),				\
+			   DECL_ORIGINAL_FIELD (FIELD2)		\
+			   ? DECL_ORIGINAL_FIELD (FIELD2) : (FIELD2))
+
+/* Return true if FIELD1 and FIELD2 represent the same field.  */
+#define SAME_FIELD_P(FIELD1, FIELD2)					\
+  ((FIELD1) == (FIELD2)							\
+   || DECL_ORIGINAL_FIELD (FIELD1) == (FIELD2)				\
+   || (FIELD1) == DECL_ORIGINAL_FIELD (FIELD2)				\
+   || (DECL_ORIGINAL_FIELD (FIELD1)					\
+       && (DECL_ORIGINAL_FIELD (FIELD1) == DECL_ORIGINAL_FIELD (FIELD2))))
 
 /* In a VAR_DECL, points to the object being renamed if the VAR_DECL is a
    renaming pointer, otherwise 0.  Note that this object is guaranteed to
