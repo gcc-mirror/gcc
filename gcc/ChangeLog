@@ -1,3 +1,9 @@
+2010-04-13  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43730
+	* builtins.c (expand_builtin_interclass_mathfn): Also create
+	a register if the predicate doesn't match.
+
 2010-04-13  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (c-pch.o, ggc-common.o): Depend on timevar.h.

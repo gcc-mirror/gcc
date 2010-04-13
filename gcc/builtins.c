@@ -2316,7 +2316,8 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
       tree orig_arg = arg;
       /* Make a suitable register to place result in.  */
       if (!target
-	  || GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+	  || GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp))
+	  || !insn_data[icode].operand[0].predicate (target, GET_MODE (target)))
          target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 
       gcc_assert (insn_data[icode].operand[0].predicate

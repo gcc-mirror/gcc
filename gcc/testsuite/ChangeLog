@@ -1,5 +1,10 @@
 2010-04-13  Michael Matz  <matz@suse.de>
 
+	PR middle-end/43730
+	* gcc.dg/pr43730.c: New test.
+
+2010-04-13  Michael Matz  <matz@suse.de>
+
 	* gcc.dg/tree-ssa/negate.c: New testcase.
 
 2010-04-13  Richard Guenther  <rguenther@suse.de>
