@@ -1,3 +1,7 @@
+2010-04-13  Matthias Klose  <doko@ubuntu.com>
+
+	* elf: Remove empty directory.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DWARF2_Internal_LineInfo): Add li_max_ops_per_insn
@@ -40,7 +44,7 @@
 2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR40790
-        * plugin-api.h: Don't include stdint.h unconditionally.
+	* plugin-api.h: Don't include stdint.h unconditionally.
 
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
