@@ -1,3 +1,20 @@
+2010-04-13  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (c-pch.o, ggc-common.o): Depend on timevar.h.
+	* c-pch.c: Include timevar.h.
+	(c_common_write_pch): Use TV_PCH_SAVE and TV_PCH_CPP_SAVE timers.
+	(c_common_read_pch): Use TV_PCH_RESTORE and TV_PCH_CPP_RESTORE
+	timers.
+	* ggc-common.c: Include timevar.h.
+	(gt_pch_save): Use TV_PCH_PTR_REALLOC and TV_PCH_PTR_SORT
+	timers.
+	* timevar.def (TV_PCH_SAVE): Define.
+	(TV_PCH_CPP_SAVE): Define.
+	(TV_PCH_PTR_REALLOC): Define.
+	(TV_PCH_PTR_SORT): Define.
+	(TV_PCH_RESTORE): Define.
+	(TV_PCH_CPP_RESTORE): Define.
+
 2010-04-13  Michael Matz  <matz@suse.de>
 
 	* tree-ssa-reassoc.c (repropagate_negates): Merge negates also
