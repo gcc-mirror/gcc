@@ -396,6 +396,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 						     int64_type, NULL_TREE),
 			   NULL_TREE, false, true, true, NULL, Empty);
 
+  /* Name of the _Parent field in tagged record types.  */
+  parent_name_id = get_identifier (Get_Name_String (Name_uParent));
+
   /* Make the types and functions used for exception processing.  */
   jmpbuf_type
     = build_array_type (gnat_type_for_mode (Pmode, 0),
@@ -794,12 +797,28 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Atomic (Entity (Name (gnat_parent)))));
 
+    case N_Type_Conversion:
+    case N_Qualified_Expression:
+      /* We must look through all conversions for composite types because we
+	 may need to bypass an intermediate conversion to a narrower record
+	 type that is generated for a formal conversion, e.g. the conversion
+	 to the root type of a hierarchy of tagged types generated for the
+	 formal conversion to the class-wide type.  */
+      if (!Is_Composite_Type (Underlying_Type (Etype (gnat_node))))
+	return 0;
+
+      /* ... fall through ... */
+
     case N_Unchecked_Type_Conversion:
-      /* Returning 0 is very likely correct but we get better code if we
-	 go through the conversion.  */
       return lvalue_required_p (gnat_parent,
 				get_unpadded_type (Etype (gnat_parent)),
 				constant, address_of_constant, aliased);
+
+    case N_Allocator:
+      /* We should only reach here through the N_Qualified_Expression case
+	 and, therefore, only for composite types.  Force an lvalue since
+	 a block-copy to the newly allocated area of memory is made.  */
+      return 1;
 
    case N_Explicit_Dereference:
       /* We look through dereferences for address of constant because we need

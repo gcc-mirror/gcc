@@ -2851,8 +2851,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    /* ...and reference the _Parent field of this record.  */
 	    gnu_field
-	      = create_field_decl (get_identifier
-				   (Get_Name_String (Name_uParent)),
+	      = create_field_decl (parent_name_id,
 				   gnu_parent, gnu_type, 0,
 				   has_rep
 				   ? TYPE_SIZE (gnu_parent) : NULL_TREE,
@@ -4392,6 +4391,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      handling alignment and possible padding.  */
   if (is_type && (!gnu_decl || this_made_decl))
     {
+      /* Tell the middle-end that objects of tagged types are guaranteed to
+	 be properly aligned.  This is necessary because conversions to the
+	 class-wide type are translated into conversions to the root type,
+	 which can be less aligned than some of its derived types.  */
       if (Is_Tagged_Type (gnat_entity)
 	  || Is_Class_Wide_Equivalent_Type (gnat_entity))
 	TYPE_ALIGN_OK (gnu_type) = 1;
