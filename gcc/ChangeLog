@@ -1,3 +1,10 @@
+2010-04-13  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-reassoc.c (repropagate_negates): Merge negates also
+	into MINUS_EXPRs.
+	(can_reassociate_p): New function.
+	(break_up_subtract_bb, reassociate_bb): Use it.
+
 2010-04-13  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/43737
