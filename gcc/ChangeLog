@@ -1,3 +1,8 @@
+2010-04-13  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/43737
+	* builtins.c (c_readstr): Fix assert.
+
 2010-04-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (extendsidi2 splitter): Also check for DX_REG
