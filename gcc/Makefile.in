@@ -2088,7 +2088,8 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 	$(C_COMMON_H) output.h $(TOPLEV_H) $(C_PRAGMA_H) $(GGC_H) debug.h \
-	langhooks.h $(FLAGS_H) hosthooks.h version.h $(TARGET_H) opts.h
+	langhooks.h $(FLAGS_H) hosthooks.h version.h $(TARGET_H) opts.h \
+	timevar.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
 	  $< $(OUTPUT_OPTION)
@@ -2183,7 +2184,7 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 	$(GGC_H) $(HASHTAB_H) $(TOPLEV_H) $(PARAMS_H) hosthooks.h	\
-	$(HOSTHOOKS_DEF_H) vec.h $(PLUGIN_H)
+	$(HOSTHOOKS_DEF_H) vec.h $(PLUGIN_H) timevar.h
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	$(FLAGS_H) $(TOPLEV_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H) $(TREE_FLOW_H) $(PLUGIN_H)

@@ -39,6 +39,14 @@ DEFTIMEVAR (TV_GC                    , "garbage collection")
 /* Time spent generating dump files.  */
 DEFTIMEVAR (TV_DUMP                  , "dump files")
 
+/* Time spent saving/restoring PCH state.  */
+DEFTIMEVAR (TV_PCH_SAVE              , "PCH main state save")
+DEFTIMEVAR (TV_PCH_CPP_SAVE          , "PCH preprocessor state save")
+DEFTIMEVAR (TV_PCH_PTR_REALLOC       , "PCH pointer reallocation")
+DEFTIMEVAR (TV_PCH_PTR_SORT          , "PCH pointer sort")
+DEFTIMEVAR (TV_PCH_RESTORE           , "PCH main state restore")
+DEFTIMEVAR (TV_PCH_CPP_RESTORE       , "PCH preprocessor state restore")
+
 DEFTIMEVAR (TV_CGRAPH                , "callgraph construction")
 DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
 DEFTIMEVAR (TV_IPA_CONSTANT_PROP     , "ipa cp")
