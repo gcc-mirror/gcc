@@ -31,9 +31,6 @@ void gfc_mpfr_to_mpz (mpz_t, mpfr_t, locus *);
 void gfc_set_model_kind (int);
 void gfc_set_model (mpfr_t);
 
-/* Return a constant result of a given type and kind, with locus.  */
-gfc_expr *gfc_constant_result (bt, int, locus *);
-
 /* Make sure a gfc_expr expression is within its allowed range.  Checks
    for overflow and underflow.  */
 arith gfc_range_check (gfc_expr *);

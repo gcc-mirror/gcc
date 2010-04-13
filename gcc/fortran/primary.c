@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "toplev.h"
+#include "constructor.h"
 
 /* Matches a kind-parameter expression, which is either a named
    symbolic constant or a nonnegative integer constant.  If
@@ -276,8 +277,8 @@ match_hollerith_constant (gfc_expr **result)
       else
 	{
 	  gfc_free_expr (e);
-	  e = gfc_constant_result (BT_HOLLERITH, gfc_default_character_kind,
-				   &gfc_current_locus);
+	  e = gfc_get_constant_expr (BT_HOLLERITH, gfc_default_character_kind,
+				     &gfc_current_locus);
 
 	  e->representation.string = XCNEWVEC (char, num + 1);
 
@@ -711,7 +712,7 @@ match_substring (gfc_charlen *cl, int init, gfc_ref **result)
 
       ref->type = REF_SUBSTRING;
       if (start == NULL)
-	start = gfc_int_expr (1);
+	start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
       ref->u.ss.start = start;
       if (end == NULL && cl)
 	end = gfc_copy_expr (cl->length);
@@ -969,19 +970,10 @@ got_delim:
   if (peek == 'b' || peek == 'o' || peek =='z' || peek == 'x')
     goto no_match;
 
-
-  e = gfc_get_expr ();
-
-  e->expr_type = EXPR_CONSTANT;
+  e = gfc_get_character_expr (kind, &start_locus, NULL, length);
   e->ref = NULL;
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = kind;
   e->ts.is_c_interop = 0;
   e->ts.is_iso_c = 0;
-  e->where = start_locus;
-
-  e->value.character.string = p = gfc_get_wide_string (length + 1);
-  e->value.character.length = length;
 
   gfc_current_locus = start_locus;
   gfc_next_char ();		/* Skip delimiter */
@@ -991,6 +983,7 @@ got_delim:
   warn_ampersand = gfc_option.warn_ampersand;
   gfc_option.warn_ampersand = 0;
 
+  p = e->value.character.string;
   for (i = 0; i < length; i++)
     {
       c = next_string_char (delimiter, &ret);
@@ -1084,15 +1077,9 @@ match_logical_constant (gfc_expr **result)
       return MATCH_ERROR;
     }
 
-  e = gfc_get_expr ();
-
-  e->expr_type = EXPR_CONSTANT;
-  e->value.logical = i;
-  e->ts.type = BT_LOGICAL;
-  e->ts.kind = kind;
+  e = gfc_get_logical_expr (kind, &gfc_current_locus, i);
   e->ts.is_c_interop = 0;
   e->ts.is_iso_c = 0;
-  e->where = gfc_current_locus;
 
   *result = e;
   return MATCH_YES;
@@ -2175,10 +2162,9 @@ gfc_free_structure_ctor_component (gfc_structure_ctor_component *comp)
    for components without explicit value given.  */
 static gfc_try
 build_actual_constructor (gfc_structure_ctor_component **comp_head,
-			  gfc_constructor **ctor_head, gfc_symbol *sym)
+			  gfc_constructor_base *ctor_head, gfc_symbol *sym)
 {
   gfc_structure_ctor_component *comp_iter;
-  gfc_constructor *ctor_tail = NULL;
   gfc_component *comp;
 
   for (comp = sym->components; comp; comp = comp->next)
@@ -2199,11 +2185,10 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	 a value expression for the parent derived type and calling self.  */
       if (!comp_iter && comp == sym->components && sym->attr.extension)
 	{
-	  value = gfc_get_expr ();
-	  value->expr_type = EXPR_STRUCTURE;
-	  value->value.constructor = NULL;
+	  value = gfc_get_structure_constructor_expr (comp->ts.type,
+						      comp->ts.kind,
+						      &gfc_current_locus);
 	  value->ts = comp->ts;
-	  value->where = gfc_current_locus;
 
 	  if (build_actual_constructor (comp_head, &value->value.constructor,
 					comp->ts.u.derived) == FAILURE)
@@ -2211,8 +2196,8 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	      gfc_free_expr (value);
 	      return FAILURE;
 	    }
-	  *ctor_head = ctor_tail = gfc_get_constructor ();
-	  ctor_tail->expr = value;
+
+	  gfc_constructor_append_expr (ctor_head, value, NULL);
 	  continue;
 	}
 
@@ -2239,15 +2224,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	value = comp_iter->val;
 
       /* Add the value to the constructor chain built.  */
-      if (ctor_tail)
-	{
-	  ctor_tail->next = gfc_get_constructor ();
-	  ctor_tail = ctor_tail->next;
-	}
-      else
-	*ctor_head = ctor_tail = gfc_get_constructor ();
-      gcc_assert (value);
-      ctor_tail->expr = value;
+      gfc_constructor_append_expr (ctor_head, value, NULL);
 
       /* Remove the entry from the component list.  We don't want the expression
 	 value to be free'd, so set it to NULL.  */
@@ -2266,7 +2243,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
 				 bool parent)
 {
   gfc_structure_ctor_component *comp_tail, *comp_head, *comp_iter;
-  gfc_constructor *ctor_head, *ctor_tail;
+  gfc_constructor_base ctor_head = NULL;
   gfc_component *comp; /* Is set NULL when named component is first seen */
   gfc_expr *e;
   locus where;
@@ -2274,7 +2251,6 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
   const char* last_name = NULL;
 
   comp_tail = comp_head = NULL;
-  ctor_head = ctor_tail = NULL;
 
   if (!parent && gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -2439,14 +2415,8 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
   else
     gcc_assert (!comp_head);
 
-  e = gfc_get_expr ();
-
-  e->expr_type = EXPR_STRUCTURE;
-
-  e->ts.type = BT_DERIVED;
+  e = gfc_get_structure_constructor_expr (BT_DERIVED, 0, &where);
   e->ts.u.derived = sym;
-  e->where = where;
-
   e->value.constructor = ctor_head;
 
   *result = e;
@@ -2462,7 +2432,7 @@ cleanup:
       gfc_free_structure_ctor_component (comp_iter);
       comp_iter = next;
     }
-  gfc_free_constructor (ctor_head);
+  gfc_constructor_free (ctor_head);
   return MATCH_ERROR;
 }
 

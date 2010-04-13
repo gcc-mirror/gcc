@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dependency.h"
 #include "data.h"
 #include "target-memory.h" /* for gfc_simplify_transfer */
+#include "constructor.h"
 
 /* Types used in equivalence statements.  */
 
@@ -227,7 +228,8 @@ resolve_formal_arglist (gfc_symbol *proc)
 	{
 	  sym->as->type = AS_ASSUMED_SHAPE;
 	  for (i = 0; i < sym->as->rank; i++)
-	    sym->as->lower[i] = gfc_int_expr (1);
+	    sym->as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind,
+						  NULL, 1);
 	}
 
       if ((sym->as && sym->as->rank > 0 && sym->as->type == AS_ASSUMED_SHAPE)
@@ -841,7 +843,7 @@ resolve_structure_cons (gfc_expr *expr)
   symbol_attribute a;
 
   t = SUCCESS;
-  cons = expr->value.constructor;
+  cons = gfc_constructor_first (expr->value.constructor);
   /* A constructor may have references if it is the result of substituting a
      parameter variable.  In this case we just pull out the component we
      want.  */
@@ -867,7 +869,7 @@ resolve_structure_cons (gfc_expr *expr)
       && cons->expr && cons->expr->expr_type == EXPR_NULL)
     return SUCCESS;
 
-  for (; comp; comp = comp->next, cons = cons->next)
+  for (; comp && cons; comp = comp->next, cons = gfc_constructor_next (cons))
     {
       int rank;
 
@@ -4309,7 +4311,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
   else
-    start = gfc_int_expr (1);
+    start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
 
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
@@ -4323,7 +4325,9 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
   /* Length = (end - start +1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
-  e->ts.u.cl->length = gfc_add (e->ts.u.cl->length, gfc_int_expr (1));
+  e->ts.u.cl->length = gfc_add (e->ts.u.cl->length,
+				gfc_get_int_expr (gfc_default_integer_kind,
+						  NULL, 1));
 
   e->ts.u.cl->length->ts.type = BT_INTEGER;
   e->ts.u.cl->length->ts.kind = gfc_charlen_int_kind;
@@ -4820,12 +4824,14 @@ gfc_resolve_character_operator (gfc_expr *e)
   if (op1->ts.u.cl && op1->ts.u.cl->length)
     e1 = gfc_copy_expr (op1->ts.u.cl->length);
   else if (op1->expr_type == EXPR_CONSTANT)
-    e1 = gfc_int_expr (op1->value.character.length);
+    e1 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			   op1->value.character.length);
 
   if (op2->ts.u.cl && op2->ts.u.cl->length)
     e2 = gfc_copy_expr (op2->ts.u.cl->length);
   else if (op2->expr_type == EXPR_CONSTANT)
-    e2 = gfc_int_expr (op2->value.character.length);
+    e2 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			   op2->value.character.length);
 
   e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
@@ -5690,15 +5696,16 @@ gfc_is_expandable_expr (gfc_expr *e)
       /* Traverse the constructor looking for variables that are flavor
 	 parameter.  Parameters must be expanded since they are fully used at
 	 compile time.  */
-      for (con = e->value.constructor; con; con = con->next)
+      con = gfc_constructor_first (e->value.constructor);
+      for (; con; con = gfc_constructor_next (con))
 	{
 	  if (con->expr->expr_type == EXPR_VARIABLE
-	  && con->expr->symtree
-	  && (con->expr->symtree->n.sym->attr.flavor == FL_PARAMETER
+	      && con->expr->symtree
+	      && (con->expr->symtree->n.sym->attr.flavor == FL_PARAMETER
 	      || con->expr->symtree->n.sym->attr.flavor == FL_VARIABLE))
 	    return true;
 	  if (con->expr->expr_type == EXPR_ARRAY
-	    && gfc_is_expandable_expr (con->expr))
+	      && gfc_is_expandable_expr (con->expr))
 	    return true;
 	}
     }
@@ -7282,12 +7289,14 @@ resolve_select_type (gfc_code *code)
   for (body = code->block; body; body = body->block)
     {
       c = body->ext.case_list;
-      
+
       if (c->ts.type == BT_DERIVED)
-	c->low = c->high = gfc_int_expr (c->ts.u.derived->hash_value);
+	c->low = c->high = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+					     c->ts.u.derived->hash_value);
+
       else if (c->ts.type == BT_UNKNOWN)
 	continue;
-      
+
       /* Assign temporary to selector.  */
       if (c->ts.type == BT_CLASS)
 	sprintf (name, "tmp$class$%s", c->ts.u.derived->name);
@@ -7543,7 +7552,8 @@ resolve_sync (gfc_code *code)
 	       && gfc_simplify_expr (code->expr1, 0) == SUCCESS)
 	{
 	   gfc_constructor *cons;
-	   for (cons = code->expr1->value.constructor; cons; cons = cons->next)
+	   cons = gfc_constructor_first (code->expr1->value.constructor);
+	   for (; cons; cons = gfc_constructor_next (cons))
 	     if (cons->expr->expr_type == EXPR_CONSTANT
 		 &&  mpz_cmp_si (cons->expr->value.integer, 1) < 0)
 	       gfc_error ("Imageset argument at %L must between 1 and "
@@ -8895,7 +8905,8 @@ resolve_charlen (gfc_charlen *cl)
 	gfc_warning_now ("CHARACTER variable at %L has negative length %d,"
 			 " the length has been set to zero",
 			 &cl->length->where, i);
-      gfc_replace_expr (cl->length, gfc_int_expr (0));
+      gfc_replace_expr (cl->length,
+			gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
     }
 
   /* Check that the character length is not too large.  */
@@ -9027,12 +9038,9 @@ build_default_init_expr (gfc_symbol *sym)
     return NULL;
 
   /* Now we'll try to build an initializer expression.  */
-  init_expr = gfc_get_expr ();
-  init_expr->expr_type = EXPR_CONSTANT;
-  init_expr->ts.type = sym->ts.type;
-  init_expr->ts.kind = sym->ts.kind;
-  init_expr->where = sym->declared_at;
-  
+  init_expr = gfc_get_constant_expr (sym->ts.type, sym->ts.kind,
+				     &sym->declared_at);
+
   /* We will only initialize integers, reals, complex, logicals, and
      characters, and only if the corresponding command-line flags
      were set.  Otherwise, we free init_expr and return null.  */
@@ -12398,7 +12406,8 @@ resolve_equivalence (gfc_equiv *eq)
 		{
 		  ref->type = REF_SUBSTRING;
 		  if (start == NULL)
-		    start = gfc_int_expr (1);
+		    start = gfc_get_int_expr (gfc_default_integer_kind,
+					      NULL, 1);
 		  ref->u.ss.start = start;
 		  if (end == NULL && e->ts.u.cl)
 		    end = gfc_copy_expr (e->ts.u.cl->length);

@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "gfortran.h"
 #include "dependency.h"
+#include "constructor.h"
 
 /* static declarations */
 /* Enums  */
@@ -843,7 +844,8 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 
     case EXPR_ARRAY:
       /* Loop through the array constructor's elements.  */
-      for (c = expr2->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr2->value.constructor);
+	   c; c = gfc_constructor_next (c))
 	{
 	  /* If this is an iterator, assume the worst.  */
 	  if (c->iterator)
@@ -1190,7 +1192,8 @@ contains_forall_index_p (gfc_expr *expr)
 
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
-      for (c = expr->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; gfc_constructor_next (c))
 	if (contains_forall_index_p (c->expr))
 	  return true;
       break;

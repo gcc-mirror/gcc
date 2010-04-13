@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "gfortran.h"
 #include "data.h"
+#include "constructor.h"
 
 static void formalize_init_expr (gfc_expr *);
 
@@ -76,67 +77,18 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
   mpz_clear (tmp);
 }
 
-
-/* Find if there is a constructor which offset is equal to OFFSET.  */
-
-static gfc_constructor *
-find_con_by_offset (splay_tree spt, mpz_t offset)
-{
-  mpz_t tmp;
-  gfc_constructor *ret = NULL;
-  gfc_constructor *con;
-  splay_tree_node sptn;
-
-  /* The complexity is due to needing quick access to the linked list of
-     constructors.  Both a linked list and a splay tree are used, and both
-     are kept up to date if they are array elements (which is the only time
-     that a specific constructor has to be found).  */  
-
-  gcc_assert (spt != NULL);
-  mpz_init (tmp);
-
-  sptn = splay_tree_lookup (spt, (splay_tree_key) mpz_get_si (offset));
-
-  if (sptn)
-    ret = (gfc_constructor*) sptn->value;  
-  else
-    {
-       /* Need to check and see if we match a range, so we will pull
-	  the next lowest index and see if the range matches.  */
-       sptn = splay_tree_predecessor (spt,
-				      (splay_tree_key) mpz_get_si (offset));
-       if (sptn)
-	 {
-	    con = (gfc_constructor*) sptn->value;
-	    if (mpz_cmp_ui (con->repeat, 1) > 0)
-	      {
-		 mpz_init (tmp);
-		 mpz_add (tmp, con->n.offset, con->repeat);
-		 if (mpz_cmp (offset, tmp) < 0)
-		   ret = con;
-		 mpz_clear (tmp);
-	      }
-	    else 
-	      ret = NULL; /* The range did not match.  */
-	 }
-      else
-	ret = NULL; /* No pred, so no match.  */
-    }
-
-  return ret;
-}
-
-
-/* Find if there is a constructor which component is equal to COM.  */
+/* Find if there is a constructor which component is equal to COM.
+   TODO: remove this, use symbol.c(gfc_find_component) instead.  */
 
 static gfc_constructor *
-find_con_by_component (gfc_component *com, gfc_constructor *con)
+find_con_by_component (gfc_component *com, gfc_constructor_base base)
 {
-  for (; con; con = con->next)
-    {
-      if (com == con->n.component)
-	return con;
-    }
+  gfc_constructor *c;
+
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
+    if (com == c->n.component)
+      return c;
+
   return NULL;
 }
 
@@ -158,20 +110,11 @@ create_character_intializer (gfc_expr *init, gfc_typespec *ts,
   if (init == NULL)
     {
       /* Create a new initializer.  */
-      init = gfc_get_expr ();
-      init->expr_type = EXPR_CONSTANT;
+      init = gfc_get_character_expr (ts->kind, NULL, NULL, len);
       init->ts = *ts;
-      
-      dest = gfc_get_wide_string (len + 1);
-      dest[len] = '\0';
-      init->value.character.length = len;
-      init->value.character.string = dest;
-      /* Blank the string if we're only setting a substring.  */
-      if (ref != NULL)
-	gfc_wide_memset (dest, ' ', len);
     }
-  else
-    dest = init->value.character.string;
+
+  dest = init->value.character.string;
 
   if (ref)
     {
@@ -254,12 +197,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
   gfc_expr *expr;
   gfc_constructor *con;
   gfc_constructor *last_con;
-  gfc_constructor *pred;
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
-  splay_tree spt;
-  splay_tree_node sptn;
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
@@ -343,40 +283,13 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 		}
 	    }
 
-	  /* Splay tree containing offset and gfc_constructor.  */
-	  spt = expr->con_by_offset;
-
-	  if (spt == NULL)
+	  con = gfc_constructor_lookup (expr->value.constructor,
+					mpz_get_si (offset));
+	  if (!con)
 	    {
-	       spt = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
-	       expr->con_by_offset = spt; 
-	       con = NULL;
-	    }
-	 else
-	  con = find_con_by_offset (spt, offset);
-
-	  if (con == NULL)
-	    {
-	      splay_tree_key j;
-
-	      /* Create a new constructor.  */
-	      con = gfc_get_constructor ();
-	      mpz_set (con->n.offset, offset);
-	      j = (splay_tree_key) mpz_get_si (offset);
-	      sptn = splay_tree_insert (spt, j, (splay_tree_value) con);
-	      /* Fix up the linked list.  */
-	      sptn = splay_tree_predecessor (spt, j);
-	      if (sptn == NULL)
-		{  /* Insert at the head.  */
-		   con->next = expr->value.constructor;
-		   expr->value.constructor = con;
-		}
-	      else
-		{  /* Insert in the chain.  */
-		   pred = (gfc_constructor*) sptn->value;
-		   con->next = pred->next;
-		   pred->next = con;
-		}
+	      con = gfc_constructor_insert_expr (&expr->value.constructor,
+						 NULL, NULL,
+						 mpz_get_si (offset));
 	    }
 	  break;
 
@@ -393,16 +306,15 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	  last_ts = &ref->u.c.component->ts;
 
 	  /* Find the same element in the existing constructor.  */
-	  con = expr->value.constructor;
-	  con = find_con_by_component (ref->u.c.component, con);
+	  con = find_con_by_component (ref->u.c.component,
+				       expr->value.constructor);
 
 	  if (con == NULL)
 	    {
 	      /* Create a new constructor.  */
-	      con = gfc_get_constructor ();
+	      con = gfc_constructor_append_expr (&expr->value.constructor,
+						 NULL, NULL);
 	      con->n.component = ref->u.c.component;
-	      con->next = expr->value.constructor;
-	      expr->value.constructor = con;
 	    }
 	  break;
 
@@ -469,12 +381,9 @@ gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
   gfc_ref *ref;
   gfc_expr *init, *expr;
   gfc_constructor *con, *last_con;
-  gfc_constructor *pred;
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
-  splay_tree spt;
-  splay_tree_node sptn;
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
@@ -527,44 +436,15 @@ gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
 	      gcc_assert (ref->next == NULL);
 	    }
 
-	  /* Find the same element in the existing constructor.  */
-
-	  /* Splay tree containing offset and gfc_constructor.  */
-	  spt = expr->con_by_offset;
-
-	  if (spt == NULL)
-	    {
-	       spt = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
-	       expr->con_by_offset = spt;
-	       con = NULL;
-	    }
-	  else 
-	    con = find_con_by_offset (spt, offset);
-
+	  con = gfc_constructor_lookup (expr->value.constructor,
+					mpz_get_si (offset));
 	  if (con == NULL)
 	    {
-	      splay_tree_key j;
-	      /* Create a new constructor.  */
-	      con = gfc_get_constructor ();
-	      mpz_set (con->n.offset, offset);
-	      j = (splay_tree_key) mpz_get_si (offset);
-	  
+	      con = gfc_constructor_insert_expr (&expr->value.constructor,
+						 NULL, NULL,
+						 mpz_get_si (offset));
 	      if (ref->next == NULL)
 		mpz_set (con->repeat, repeat);
-	      sptn = splay_tree_insert (spt, j, (splay_tree_value) con);
-	      /* Fix up the linked list.  */
-	      sptn = splay_tree_predecessor (spt, j);
-	      if (sptn == NULL)
-		{  /* Insert at the head.  */
-		   con->next = expr->value.constructor;
-		   expr->value.constructor = con;
-		}
-	      else
-		{  /* Insert in the chain.  */
-		   pred = (gfc_constructor*) sptn->value;
-		   con->next = pred->next;
-		   pred->next = con;
-		}
 	    }
 	  else
 	    gcc_assert (ref->next != NULL);
@@ -582,17 +462,16 @@ gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
 	    gcc_assert (expr->expr_type == EXPR_STRUCTURE);
 	  last_ts = &ref->u.c.component->ts;
 
-	  /* Find the same element in the existing constructor.  */
-	  con = expr->value.constructor;
-	  con = find_con_by_component (ref->u.c.component, con);
+  	  /* Find the same element in the existing constructor.  */
+	  con = find_con_by_component (ref->u.c.component,
+				       expr->value.constructor);
 
 	  if (con == NULL)
 	    {
 	      /* Create a new constructor.  */
-	      con = gfc_get_constructor ();
+	      con = gfc_constructor_append_expr (&expr->value.constructor,
+						 NULL, NULL);
 	      con->n.component = ref->u.c.component;
-	      con->next = expr->value.constructor;
-	      expr->value.constructor = con;
 	    }
 
 	  /* Since we're only intending to initialize arrays here,
@@ -709,59 +588,30 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 static void
 formalize_structure_cons (gfc_expr *expr)
 {
-  gfc_constructor *head;
-  gfc_constructor *tail;
+  gfc_constructor_base base = NULL;
   gfc_constructor *cur;
-  gfc_constructor *last;
-  gfc_constructor *c;
   gfc_component *order;
 
-  c = expr->value.constructor;
-
   /* Constructor is already formalized.  */
-  if (!c || c->n.component == NULL)
+  cur = gfc_constructor_first (expr->value.constructor);
+  if (!cur || cur->n.component == NULL)
     return;
 
-  head = tail = NULL;
   for (order = expr->ts.u.derived->components; order; order = order->next)
     {
-      /* Find the next component.  */
-      last = NULL;
-      cur = c;
-      while (cur != NULL && cur->n.component != order)
-	{
-	  last = cur;
-	  cur = cur->next;
-	}
-
-      if (cur == NULL)
-	{
-	  /* Create a new one.  */
-	  cur = gfc_get_constructor ();
-	}
+      cur = find_con_by_component (order, expr->value.constructor);
+      if (cur)
+	gfc_constructor_append_expr (&base, cur->expr, &cur->expr->where);
       else
-	{
-	  /* Remove it from the chain.  */
-	  if (last == NULL)
-	    c = cur->next;
-	  else
-	    last->next = cur->next;
-	  cur->next = NULL;
-
-	  formalize_init_expr (cur->expr);
-	}
-
-      /* Add it to the new constructor.  */
-      if (head == NULL)
-	head = tail = cur;
-      else
-	{
-	  tail->next = cur;
-	  tail = tail->next;
-	}
+	gfc_constructor_append_expr (&base, NULL, NULL);
     }
-  gcc_assert (c == NULL);
-  expr->value.constructor = head;
+
+  /* For all what it's worth, one would expect
+       gfc_constructor_free (expr->value.constructor);
+     here. However, if the constructor is actually free'd,
+     hell breaks loose in the testsuite?!  */
+
+  expr->value.constructor = base;
 }
 
 
@@ -781,13 +631,11 @@ formalize_init_expr (gfc_expr *expr)
   switch (type)
     {
     case EXPR_ARRAY:
-      c = expr->value.constructor;
-      while (c)
-	{
-	  formalize_init_expr (c->expr);
-	  c = c->next;
-	}
-      break;
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c))
+	formalize_init_expr (c->expr);
+
+    break;
 
     case EXPR_STRUCTURE:
       formalize_structure_cons (expr);

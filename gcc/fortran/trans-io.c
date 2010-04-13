@@ -1391,21 +1391,6 @@ gfc_trans_wait (gfc_code * code)
 
 }
 
-static gfc_expr *
-gfc_new_nml_name_expr (const char * name)
-{
-   gfc_expr * nml_name;
-
-   nml_name = gfc_get_expr();
-   nml_name->ref = NULL;
-   nml_name->expr_type = EXPR_CONSTANT;
-   nml_name->ts.kind = gfc_default_character_kind;
-   nml_name->ts.type = BT_CHARACTER;
-   nml_name->value.character.length = strlen(name);
-   nml_name->value.character.string = gfc_char_to_widechar (name);
-
-   return nml_name;
-}
 
 /* nml_full_name builds up the fully qualified name of a
    derived type component.  */
@@ -1776,7 +1761,9 @@ build_dt (tree function, gfc_code * code)
 	  if (dt->format_expr || dt->format_label)
 	    gfc_internal_error ("build_dt: format with namelist");
 
-	  nmlname = gfc_new_nml_name_expr (dt->namelist->name);
+          nmlname = gfc_get_character_expr (gfc_default_character_kind, NULL,
+					    dt->namelist->name,
+					    strlen (dt->namelist->name));
 
 	  mask |= set_string (&block, &post_block, var, IOPARM_dt_namelist_name,
 			      nmlname);

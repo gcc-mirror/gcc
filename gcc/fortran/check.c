@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 #include "intrinsic.h"
+#include "constructor.h"
 
 
 /* Make sure an expression is a scalar.  */
@@ -2266,7 +2267,8 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 
 	  if (mask->expr_type == EXPR_ARRAY)
 	    {
-	      gfc_constructor *mask_ctor = mask->value.constructor;
+	      gfc_constructor *mask_ctor;
+	      mask_ctor = gfc_constructor_first (mask->value.constructor);
 	      while (mask_ctor)
 		{
 		  if (mask_ctor->expr->expr_type != EXPR_CONSTANT)
@@ -2278,7 +2280,7 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 		  if (mask_ctor->expr->value.logical)
 		    mask_true_values++;
 
-		  mask_ctor = mask_ctor->next;
+		  mask_ctor = gfc_constructor_next (mask_ctor);
 		}
 	    }
 	  else if (mask->expr_type == EXPR_CONSTANT && mask->value.logical)
@@ -2508,12 +2510,9 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       int i, extent;
       for (i = 0; i < shape_size; ++i)
 	{
-	  e = gfc_get_array_element (shape, i);
+	  e = gfc_constructor_lookup_expr (shape->value.constructor, i);
 	  if (e->expr_type != EXPR_CONSTANT)
-	    {
-	      gfc_free_expr (e);
-	      continue;
-	    }
+	    continue;
 
 	  gfc_extract_int (e, &extent);
 	  if (extent < 0)
@@ -2523,8 +2522,6 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 			 gfc_current_intrinsic, &e->where, extent);
 	      return FAILURE;
 	    }
-
-	  gfc_free_expr (e);
 	}
     }
 
@@ -2569,12 +2566,9 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 
 	  for (i = 1; i <= order_size; ++i)
 	    {
-	      e = gfc_get_array_element (order, i-1);
+	      e = gfc_constructor_lookup_expr (order->value.constructor, i-1);
 	      if (e->expr_type != EXPR_CONSTANT)
-		{
-		  gfc_free_expr (e);
-		  continue;
-		}
+		continue;
 
 	      gfc_extract_int (e, &dim);
 
@@ -2597,7 +2591,6 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 		}
 
 	      perm[dim-1] = 1;
-	      gfc_free_expr (e);
 	    }
 	}
     }
@@ -2613,9 +2606,10 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	  gfc_constructor *c;
 	  bool test;
 
-	  c = shape->value.constructor;
+	  
 	  mpz_init_set_ui (size, 1);
-	  for (; c; c = c->next)
+	  for (c = gfc_constructor_first (shape->value.constructor);
+	       c; c = gfc_constructor_next (c))
 	    mpz_mul (size, size, c->expr->value.integer);
 
 	  test = mpz_cmp (nelems, size) < 0 && mpz_cmp_ui (size, 0) > 0;
@@ -3224,7 +3218,8 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
       && gfc_array_size (vector, &vector_size) == SUCCESS)
     {
       int mask_true_count = 0;
-      gfc_constructor *mask_ctor = mask->value.constructor;
+      gfc_constructor *mask_ctor;
+      mask_ctor = gfc_constructor_first (mask->value.constructor);
       while (mask_ctor)
 	{
 	  if (mask_ctor->expr->expr_type != EXPR_CONSTANT)
@@ -3236,7 +3231,7 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 	  if (mask_ctor->expr->value.logical)
 	    mask_true_count++;
 
-	  mask_ctor = mask_ctor->next;
+	  mask_ctor = gfc_constructor_next (mask_ctor);
 	}
 
       if (mpz_get_si (vector_size) < mask_true_count)

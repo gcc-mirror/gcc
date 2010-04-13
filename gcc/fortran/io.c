@@ -1,5 +1,6 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1229,14 +1230,9 @@ gfc_match_format (void)
   new_st.loc = start;
   new_st.op = EXEC_NOP;
 
-  e = gfc_get_expr();
-  e->expr_type = EXPR_CONSTANT;
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind;
-  e->where = start;
-  e->value.character.string = format_string
-			    = gfc_get_wide_string (format_length + 1);
-  e->value.character.length = format_length;
+  e = gfc_get_character_expr (gfc_default_character_kind, &start,
+			      NULL, format_length);
+  format_string = e->value.character.string;
   gfc_statement_label->format = e;
 
   mode = MODE_COPY;
@@ -2439,7 +2435,7 @@ default_unit (io_kind k)
   else
     unit = 6;
 
-  return gfc_int_expr (unit);
+  return gfc_get_int_expr (gfc_default_integer_kind, NULL, unit);
 }
 
 
@@ -3655,17 +3651,8 @@ get_io_list:
      that might have a format expression without unit number.  */
   if (!comma_flag && gfc_match_char (',') == MATCH_YES)
     {
-      dt->extra_comma = gfc_get_expr ();
-
-      /* Set the types to something compatible with iokind. This is needed to
-	 get through gfc_free_expr later since iokind really has no Basic Type,
-	 BT, of its own.  */
-      dt->extra_comma->expr_type = EXPR_CONSTANT;
-      dt->extra_comma->ts.type = BT_LOGICAL;
-
       /* Save the iokind and locus for later use in resolution.  */
-      dt->extra_comma->value.iokind = k;
-      dt->extra_comma->where = gfc_current_locus;
+      dt->extra_comma = gfc_get_iokind_expr (&gfc_current_locus, k);
     }
 
   io_code = NULL;
