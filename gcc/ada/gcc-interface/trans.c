@@ -3279,11 +3279,7 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
      handler can catch, with special cases for others and all others cases.
 
      Each exception type is actually identified by a pointer to the exception
-     id, or to a dummy object for "others" and "all others".
-
-     Care should be taken to ensure that the control flow impact of "others"
-     and "all others" is known to GCC. lang_eh_type_covers is doing the trick
-     currently.  */
+     id, or to a dummy object for "others" and "all others".  */
   for (gnat_temp = First (Exception_Choices (gnat_node));
        gnat_temp; gnat_temp = Next (gnat_temp))
     {

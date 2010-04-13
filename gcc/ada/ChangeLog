@@ -1,3 +1,8 @@
+2010-04-13  Duncan Sands  <baldrick@free.fr>
+
+	* gcc-interface/misc.c (gnat_eh_type_covers): Remove.
+	* gcc-interface/trans.c (Exception_Handler_to_gnu_zcx): Update comment.
+
 2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (standard_datatypes): Add ADT_parent_name_id.

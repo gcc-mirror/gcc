@@ -74,7 +74,6 @@ static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
 static const char *gnat_dwarf_name	(tree, int);
 static tree gnat_return_tree		(tree);
-static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
 static void internal_error_function	(const char *, va_list *);
 static tree gnat_type_max_size		(const_tree);
@@ -434,8 +433,6 @@ gnat_init_gcc_eh (void)
      right exception regions.  */
   using_eh_for_cleanups ();
 
-  lang_eh_type_covers = gnat_eh_type_covers;
-
   /* Turn on -fexceptions and -fnon-call-exceptions. The first one triggers
      the generation of the necessary exception runtime tables. The second one
      is useful for two reasons: 1/ we map some asynchronous signals like SEGV
@@ -580,20 +577,6 @@ gnat_return_tree (tree t)
   return t;
 }
 
-/* Return true if type A catches type B. Callback for flow analysis from
-   the exception handling part of the back-end.  */
-
-static int
-gnat_eh_type_covers (tree a, tree b)
-{
-  /* a catches b if they represent the same exception id or if a
-     is an "others".
-
-     ??? integer_zero_node for "others" is hardwired in too many places
-     currently.  */
-  return (a == b || a == integer_zero_node);
-}
-
 /* Get the alias set corresponding to a type or expression.  */
 
 static alias_set_type
