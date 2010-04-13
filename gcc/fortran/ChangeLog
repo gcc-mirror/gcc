@@ -1,3 +1,10 @@
+2010-04-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/31400
+	* gfortranspec.c (lookup_option): Check for -static and return
+	OPTION_static.
+	(lang_specific_driver): Break when OPTION_static is discovered.
+
 2010-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* array.c (extract_element): Restore function from trunk.

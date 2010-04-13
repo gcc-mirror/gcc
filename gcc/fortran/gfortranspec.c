@@ -186,6 +186,8 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
 	opt = OPTION_syntax_only;
       else if (!strcmp (text, "-static-libgfortran"))
 	opt = OPTION_static_libgfortran;
+      else if (!strcmp (text, "-static"))
+	opt = OPTION_static;
       else if (!strcmp (text, "-fversion"))	/* Really --version!! */
 	opt = OPTION_version;
       else if (!strcmp (text, "-Xlinker") || !strcmp (text, "-specs"))
@@ -351,8 +353,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 #ifdef HAVE_LD_STATIC_DYNAMIC
 	  static_linking = 1;
 #endif
-	  /* Fall through, count OPTION_static as an item included in
-	     the rewritten command line. */
+	  break;
 
 	case OPTION_l:
 	  ++n_infiles;
