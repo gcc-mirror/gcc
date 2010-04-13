@@ -1,3 +1,7 @@
+2010-04-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* elf.m4: Add hppa[12]*-*-hpux* to list of non-elf platforms.
+
 2010-03-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	* mh-mingw: Revert accidentally checking r156315.

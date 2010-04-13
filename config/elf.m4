@@ -15,7 +15,7 @@ target_elf=no
 case $target in
   *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
   *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
-  alpha*-dec-osf* | *-interix*)
+  alpha*-dec-osf* | *-interix* | hppa[[12]]*-*-hpux*)
     target_elf=no
     ;;
   *)
