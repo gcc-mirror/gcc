@@ -1,5 +1,24 @@
 2010-04-13  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (callused_id): Remove.
+	(call_stmt_vars): New.
+	(get_call_vi): Likewise.
+	(lookup_call_use_vi): Likewise.
+	(lookup_call_clobber_vi): Likewise.
+	(get_call_use_vi): Likewise.
+	(get_call_clobber_vi): Likewise.
+	(make_transitive_closure_constraints): Likewise.
+	(handle_const_call): Adjust to do per-call call-used handling.
+	(handle_pure_call): Likewise.
+	(find_what_var_points_to): Remove general callused handling.
+	(init_base_vars): Likewise.
+	(init_alias_vars): Initialize call_stmt_vars.
+	(compute_points_to_sets): Process call-used and call-clobbered
+	vars for call statements.
+	(delete_points_to_sets): Free call_stmt_vars.
+
+2010-04-13  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
 	Only add RW dependence for dependence distance zero.
 	Adjust maximal vectorization factor according to dependences.
