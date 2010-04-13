@@ -194,3 +194,21 @@ function var_ref(name, flags)
 		return "&target_flags"
 	return "0"
 }
+
+# Given the option called NAME return a sanitized version of its name.
+function opt_sanitized_name(name)
+{
+	if (name == "finline-limit=" || name == "Wlarger-than=" \
+	    || name == "ftemplate-depth=")
+		name = name "eq"
+	if (name == "gdwarf+")
+		name = "gdwarfplus"
+	gsub ("[^A-Za-z0-9]", "_", name)
+	return name
+}
+
+# Given the option called NAME return the appropriate enum for it.
+function opt_enum(name)
+{
+	return "OPT_" opt_sanitized_name(name)
+}
