@@ -1,3 +1,9 @@
+2010-04-13  Ian Lance Taylor  <iant@google.com>
+
+	* include/backward/hash_map: Don't #include "backward_warning.h"
+	if _GLIBCXX_PERMIT_BACKWARD_HASH is defined.
+	* include/backward/hash_set: Likewise.
+
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.host (os_include_dir): Removed solaris2.7 support.
