@@ -1324,11 +1324,15 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
-      /* Walk the RHS operands.  A formal temporary LHS may use a
-	 COMPONENT_REF RHS.  */
+      /* Walk the RHS operands.  If the LHS is of a non-renamable type or
+         is a register variable, we may use a COMPONENT_REF on the RHS.  */
       if (wi)
-	wi->val_only = !is_gimple_reg (gimple_assign_lhs (stmt))
-                       || !gimple_assign_single_p (stmt);
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  wi->val_only
+	    = (is_gimple_reg_type (TREE_TYPE (lhs)) && !is_gimple_reg (lhs))
+	      || !gimple_assign_single_p (stmt);
+	}
 
       for (i = 1; i < gimple_num_ops (stmt); i++)
 	{

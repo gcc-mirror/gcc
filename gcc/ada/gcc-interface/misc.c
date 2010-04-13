@@ -700,7 +700,7 @@ must_pass_by_ref (tree gnu_type)
      and does not produce compatibility problems with C, since C does
      not have such objects.  */
   return (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE
-	  || (AGGREGATE_TYPE_P (gnu_type) && TYPE_BY_REFERENCE_P (gnu_type))
+	  || TREE_ADDRESSABLE (gnu_type)
 	  || (TYPE_SIZE (gnu_type)
 	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
 }

@@ -1980,7 +1980,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
       if (cmp == 0
 	  && useless_type_conversion_p (orig_type, field_type))
 	{
-	  t = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
+	  t = fold_build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
 
@@ -2004,7 +2004,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
 
       /* If we matched, then set offset to the displacement into
 	 this field.  */
-      new_base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
+      new_base = fold_build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
       SET_EXPR_LOCATION (new_base, loc);
 
       /* Recurse to possibly find the match.  */
@@ -2027,7 +2027,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
 
   /* If we get here, we've got an aggregate field, and a possibly
      nonzero offset into them.  Recurse and hope for a valid match.  */
-  base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
+  base = fold_build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
   SET_EXPR_LOCATION (base, loc);
 
   t = maybe_fold_offset_to_array_ref (loc, base, offset, orig_type,

@@ -1,3 +1,36 @@
+2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (TYPE_BY_REFERENCE_P): Delete.
+	(DECL_CONST_ADDRESS_P): New macro.
+	(SET_DECL_ORIGINAL_FIELD_TO_FIELD): Likewise.
+	(SAME_FIELD_P): Likewise.
+	* gcc-interface/decl.c (constructor_address_p): New static function.
+	(gnat_to_gnu_entity) <object>: Set DECL_CONST_ADDRESS_P according to
+	the return value of above function.
+	(gnat_to_gnu_entity) <E_Record_Type>: Force BLKmode for all types
+	passed by reference.
+	<E_Record_Subtype>: Likewise.
+	Set TREE_ADDRESSABLE on the type if it passed by reference.
+	(make_packable_type): Use SET_DECL_ORIGINAL_FIELD_TO_FIELD.
+	(create_field_decl_from): Likewise.
+	(substitute_in_type): Likewise.
+	(purpose_member_field): Use SAME_FIELD_P.
+	* gcc-interface/misc.c (must_pass_by_ref): Test TREE_ADDRESSABLE.
+	* gcc-interface/trans.c (lvalue_required_p): Add ADDRESS_OF_CONSTANT
+	parameter and adjust recursive calls.
+	<N_Explicit_Dereference>: New case.
+	<N_Object_Declaration>: Return 1 if the object is of a class-wide type.
+	Adjust calls to lvalue_required_p.  Do not return the initializer of a
+	DECL_CONST_ADDRESS_P constant if an lvalue is required for it.
+	(call_to_gnu): Delay issuing error message for a misaligned actual and
+	avoid the associated back-end assertion.  Test TREE_ADDRESSABLE.
+	(gnat_gimplify_expr) <ADDR_EXPR>: Handle non-static constructors.
+	* gcc-interface/utils.c (make_dummy_type): Set TREE_ADDRESSABLE if the
+	type is passed by reference.
+	(convert) <CONSTRUCTOR>: Convert in-place in more cases.
+	* gcc-interface/utils2.c (build_cond_expr): Drop TYPE_BY_REFERENCE_P.
+	(build_simple_component_ref): Use SAME_FIELD_P.
+
 2010-04-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Identifier_to_gnu): Use boolean variable.

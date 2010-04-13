@@ -215,7 +215,7 @@ static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
-static int lvalue_required_p (Node_Id, tree, bool, bool);
+static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
    of configurations.  */
@@ -703,8 +703,9 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
 /* Return a positive value if an lvalue is required for GNAT_NODE.  GNU_TYPE
    is the type that will be used for GNAT_NODE in the translated GNU tree.
    CONSTANT indicates whether the underlying object represented by GNAT_NODE
-   is constant in the Ada sense, ALIASED whether it is aliased (but the latter
-   doesn't affect the outcome if CONSTANT is not true).
+   is constant in the Ada sense.  If it is, ADDRESS_OF_CONSTANT indicates
+   whether its value is the address of a constant and ALIASED whether it is
+   aliased.  If it isn't, ADDRESS_OF_CONSTANT and ALIASED are ignored.
 
    The function climbs up the GNAT tree starting from the node and returns 1
    upon encountering a node that effectively requires an lvalue downstream.
@@ -713,7 +714,7 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
 
 static int
 lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
-		   bool aliased)
+		   bool address_of_constant, bool aliased)
 {
   Node_Id gnat_parent = Parent (gnat_node), gnat_temp;
 
@@ -753,11 +754,13 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	return 0;
 
       aliased |= Has_Aliased_Components (Etype (gnat_node));
-      return lvalue_required_p (gnat_parent, gnu_type, constant, aliased);
+      return lvalue_required_p (gnat_parent, gnu_type, constant,
+				address_of_constant, aliased);
 
     case N_Selected_Component:
       aliased |= Is_Aliased (Entity (Selector_Name (gnat_parent)));
-      return lvalue_required_p (gnat_parent, gnu_type, constant, aliased);
+      return lvalue_required_p (gnat_parent, gnu_type, constant,
+				address_of_constant, aliased);
 
     case N_Object_Renaming_Declaration:
       /* We need to make a real renaming only if the constant object is
@@ -775,8 +778,14 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
     case N_Object_Declaration:
       /* We cannot use a constructor if this is an atomic object because
 	 the actual assignment might end up being done component-wise.  */
-      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
-	     && Is_Atomic (Defining_Entity (gnat_parent));
+      return ((Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
+	       && Is_Atomic (Defining_Entity (gnat_parent)))
+	      /* We don't use a constructor if this is a class-wide object
+		 because the effective type of the object is the equivalent
+		 type of the class-wide subtype and it smashes most of the
+		 data into an array of bytes to which we cannot convert.  */
+	      || Ekind ((Etype (Defining_Entity (gnat_parent))))
+		 == E_Class_Wide_Subtype);
 
     case N_Assignment_Statement:
       /* We cannot use a constructor if the LHS is an atomic object because
@@ -790,7 +799,17 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	 go through the conversion.  */
       return lvalue_required_p (gnat_parent,
 				get_unpadded_type (Etype (gnat_parent)),
-				constant, aliased);
+				constant, address_of_constant, aliased);
+
+   case N_Explicit_Dereference:
+      /* We look through dereferences for address of constant because we need
+	 to handle the special cases listed above.  */
+      if (constant && address_of_constant)
+	return lvalue_required_p (gnat_parent,
+				  get_unpadded_type (Etype (gnat_parent)),
+				  true, false, true);
+
+      /* ... fall through ... */
 
     default:
       return 0;
@@ -895,12 +914,13 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      statement alternative or a record discriminant.  There is no possible
      volatile-ness short-circuit here since Volatile constants must bei
      imported per C.6.  */
-  if (Ekind (gnat_temp) == E_Constant && Is_Scalar_Type (gnat_temp_type)
+  if (Ekind (gnat_temp) == E_Constant
+      && Is_Scalar_Type (gnat_temp_type)
       && !Is_Imported (gnat_temp)
       && Present (Address_Clause (gnat_temp)))
     {
       require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
-					  Is_Aliased (gnat_temp));
+					  false, Is_Aliased (gnat_temp));
       use_constant_initializer = !require_lvalue;
     }
 
@@ -999,15 +1019,18 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     {
       bool constant_only = (TREE_CODE (gnu_result) == CONST_DECL
 			    && !DECL_CONST_CORRESPONDING_VAR (gnu_result));
+      bool address_of_constant = (TREE_CODE (gnu_result) == CONST_DECL
+				  && DECL_CONST_ADDRESS_P (gnu_result));
 
-      /* If there is a (corresponding) variable, we only want to return
-	 the constant value if an lvalue is not required.  Evaluate this
-	 now if we have not already done so.  */
-      if (!constant_only && require_lvalue < 0)
-	require_lvalue = lvalue_required_p (gnat_node, gnu_result_type, true,
-					    Is_Aliased (gnat_temp));
+      /* If there is a (corresponding) variable or this is the address of a
+	 constant, we only want to return the initializer if an lvalue isn't
+	 required.  Evaluate this now if we have not already done so.  */
+      if ((!constant_only || address_of_constant) && require_lvalue < 0)
+	require_lvalue
+	  = lvalue_required_p (gnat_node, gnu_result_type, true,
+			       address_of_constant, Is_Aliased (gnat_temp));
 
-      if (constant_only || !require_lvalue)
+      if ((constant_only && !address_of_constant) || !require_lvalue)
 	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
     }
 
@@ -2538,29 +2561,6 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	{
 	  tree gnu_copy = gnu_name;
 
-	  /* If the type is passed by reference, a copy is not allowed.  */
-	  if (AGGREGATE_TYPE_P (gnu_formal_type)
-	      && TYPE_BY_REFERENCE_P (gnu_formal_type))
-	    post_error
-	      ("misaligned actual cannot be passed by reference", gnat_actual);
-
-	  /* For users of Starlet we issue a warning because the interface
-	     apparently assumes that by-ref parameters outlive the procedure
-	     invocation.  The code still will not work as intended, but we
-	     cannot do much better since low-level parts of the back-end
-	     would allocate temporaries at will because of the misalignment
-	     if we did not do so here.  */
-	  else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
-	    {
-	      post_error
-		("?possible violation of implicit assumption", gnat_actual);
-	      post_error_ne
-		("?made by pragma Import_Valued_Procedure on &", gnat_actual,
-		 Entity (Name (gnat_node)));
-	      post_error_ne ("?because of misalignment of &", gnat_actual,
-			     gnat_formal);
-	    }
-
 	  /* If the actual type of the object is already the nominal type,
 	     we have nothing to do, except if the size is self-referential
 	     in which case we'll remove the unpadding below.  */
@@ -2592,6 +2592,33 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	     used as the object and copied back after the call if needed.  */
 	  gnu_name = build1 (SAVE_EXPR, TREE_TYPE (gnu_name), gnu_name);
 	  TREE_SIDE_EFFECTS (gnu_name) = 1;
+
+	  /* If the type is passed by reference, a copy is not allowed.  */
+	  if (TREE_ADDRESSABLE (gnu_formal_type))
+	    {
+	      post_error ("misaligned actual cannot be passed by reference",
+			  gnat_actual);
+
+	      /* Avoid the back-end assertion on temporary creation.  */
+	      gnu_name = TREE_OPERAND (gnu_name, 0);
+	    }
+
+	  /* For users of Starlet we issue a warning because the interface
+	     apparently assumes that by-ref parameters outlive the procedure
+	     invocation.  The code still will not work as intended, but we
+	     cannot do much better since low-level parts of the back-end
+	     would allocate temporaries at will because of the misalignment
+	     if we did not do so here.  */
+	  else if (Is_Valued_Procedure (Entity (Name (gnat_node))))
+	    {
+	      post_error
+		("?possible violation of implicit assumption", gnat_actual);
+	      post_error_ne
+		("?made by pragma Import_Valued_Procedure on &", gnat_actual,
+		 Entity (Name (gnat_node)));
+	      post_error_ne ("?because of misalignment of &", gnat_actual,
+			     gnat_formal);
+	    }
 
 	  /* Set up to move the copy back to the original if needed.  */
 	  if (Ekind (gnat_formal) != E_In_Parameter)
@@ -5770,21 +5797,41 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
     case ADDR_EXPR:
       op = TREE_OPERAND (expr, 0);
 
-      /* If we are taking the address of a constant CONSTRUCTOR, force it to
-	 be put into static memory.  We know it's going to be readonly given
-	 the semantics we have and it's required to be in static memory when
-	 the reference is in an elaboration procedure.  */
-      if (TREE_CODE (op) == CONSTRUCTOR && TREE_CONSTANT (op))
+      if (TREE_CODE (op) == CONSTRUCTOR)
 	{
-	  tree new_var = create_tmp_var (TREE_TYPE (op), "C");
-	  TREE_ADDRESSABLE (new_var) = 1;
+	  /* If we are taking the address of a constant CONSTRUCTOR, make sure
+	     it is put into static memory.  We know it's going to be read-only
+	     given the semantics we have and it must be in static memory when
+	     the reference is in an elaboration procedure.  */
+	  if (TREE_CONSTANT (op))
+	    {
+	      tree new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
+	      TREE_ADDRESSABLE (new_var) = 1;
+	      gimple_add_tmp_var (new_var);
 
-	  TREE_READONLY (new_var) = 1;
-	  TREE_STATIC (new_var) = 1;
-	  DECL_INITIAL (new_var) = op;
+	      TREE_READONLY (new_var) = 1;
+	      TREE_STATIC (new_var) = 1;
+	      DECL_INITIAL (new_var) = op;
 
-	  TREE_OPERAND (expr, 0) = new_var;
-	  recompute_tree_invariant_for_addr_expr (expr);
+	      TREE_OPERAND (expr, 0) = new_var;
+	      recompute_tree_invariant_for_addr_expr (expr);
+	    }
+
+	  /* Otherwise explicitly create the local temporary.  That's required
+	     if the type is passed by reference.  */
+	  else
+	    {
+	      tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
+	      TREE_ADDRESSABLE (new_var) = 1;
+	      gimple_add_tmp_var (new_var);
+
+	      mod = build2 (INIT_EXPR, TREE_TYPE (new_var), new_var, op);
+	      gimplify_and_add (mod, pre_p);
+
+	      TREE_OPERAND (expr, 0) = new_var;
+	      recompute_tree_invariant_for_addr_expr (expr);
+	    }
+
 	  return GS_ALL_DONE;
 	}
 
