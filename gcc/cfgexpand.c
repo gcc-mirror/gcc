@@ -3764,10 +3764,12 @@ gimple_expand_cfg (void)
     {
       if (cfun->calls_alloca)
 	warning (OPT_Wstack_protector,
-		 "not protecting local variables: variable length buffer");
+		 "stack protector not protecting local variables: "
+                 "variable length buffer");
       if (has_short_buffer && !crtl->stack_protect_guard)
 	warning (OPT_Wstack_protector,
-		 "not protecting function: no buffer at least %d bytes long",
+		 "stack protector not protecting function: "
+                 "all local arrays are less than %d bytes long",
 		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
     }
 
