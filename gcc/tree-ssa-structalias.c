@@ -288,8 +288,8 @@ get_varinfo (unsigned int n)
 
 /* Static IDs for the special variables.  */
 enum { nothing_id = 0, anything_id = 1, readonly_id = 2,
-       escaped_id = 3, nonlocal_id = 4, callused_id = 5,
-       storedanything_id = 6, integer_id = 7 };
+       escaped_id = 3, nonlocal_id = 4,
+       storedanything_id = 5, integer_id = 6 };
 
 struct GTY(()) heapvar_map {
   struct tree_map map;
@@ -378,6 +378,86 @@ new_var_info (tree t, const char *name)
 
   return ret;
 }
+
+
+/* A map mapping call statements to per-stmt variables for uses
+   and clobbers specific to the call.  */
+struct pointer_map_t *call_stmt_vars;
+
+/* Lookup or create the variable for the call statement CALL.  */
+
+static varinfo_t
+get_call_vi (gimple call)
+{
+  void **slot_p;
+  varinfo_t vi, vi2;
+
+  slot_p = pointer_map_insert (call_stmt_vars, call);
+  if (*slot_p)
+    return (varinfo_t) *slot_p;
+
+  vi = new_var_info (NULL_TREE, "CALLUSED");
+  vi->offset = 0;
+  vi->size = 1;
+  vi->fullsize = 2;
+  vi->is_full_var = true;
+
+  vi->next = vi2 = new_var_info (NULL_TREE, "CALLCLOBBERED");
+  vi2->offset = 1;
+  vi2->size = 1;
+  vi2->fullsize = 2;
+  vi2->is_full_var = true;
+
+  *slot_p = (void *) vi;
+  return vi;
+}
+
+/* Lookup the variable for the call statement CALL representing
+   the uses.  Returns NULL if there is nothing special about this call.  */
+
+static varinfo_t
+lookup_call_use_vi (gimple call)
+{
+  void **slot_p;
+
+  slot_p = pointer_map_contains (call_stmt_vars, call);
+  if (slot_p)
+    return (varinfo_t) *slot_p;
+
+  return NULL;
+}
+
+/* Lookup the variable for the call statement CALL representing
+   the clobbers.  Returns NULL if there is nothing special about this call.  */
+
+static varinfo_t
+lookup_call_clobber_vi (gimple call)
+{
+  varinfo_t uses = lookup_call_use_vi (call);
+  if (!uses)
+    return NULL;
+
+  return uses->next;
+}
+
+/* Lookup or create the variable for the call statement CALL representing
+   the uses.  */
+
+static varinfo_t
+get_call_use_vi (gimple call)
+{
+  return get_call_vi (call);
+}
+
+/* Lookup or create the variable for the call statement CALL representing
+   the clobbers.  */
+
+static varinfo_t ATTRIBUTE_UNUSED
+get_call_clobber_vi (gimple call)
+{
+  return get_call_vi (call)->next;
+}
+
 
 typedef enum {SCALAR, DEREF, ADDRESSOF} constraint_expr_type;
 
@@ -3377,6 +3457,32 @@ make_escape_constraint (tree op)
   make_constraint_to (escaped_id, op);
 }
 
+/* Add constraints to that the solution of VI is transitively closed.  */
+
+static void
+make_transitive_closure_constraints (varinfo_t vi)
+{
+  struct constraint_expr lhs, rhs;
+
+  /* VAR = *VAR;  */
+  lhs.type = SCALAR;
+  lhs.var = vi->id;
+  lhs.offset = 0;
+  rhs.type = DEREF;
+  rhs.var = vi->id;
+  rhs.offset = 0;
+  process_constraint (new_constraint (lhs, rhs));
+
+  /* VAR = VAR + UNKNOWN;  */
+  lhs.type = SCALAR;
+  lhs.var = vi->id;
+  lhs.offset = 0;
+  rhs.type = SCALAR;
+  rhs.var = vi->id;
+  rhs.offset = UNKNOWN_OFFSET;
+  process_constraint (new_constraint (lhs, rhs));
+}
+
 /* Create a new artificial heap variable with NAME and make a
    constraint from it to LHS.  Return the created variable.  */
 
@@ -3538,8 +3644,10 @@ handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
      as the static chain is concerned.  */
   if (gimple_call_chain (stmt))
     {
-      make_constraint_to (callused_id, gimple_call_chain (stmt));
-      rhsc.var = callused_id;
+      varinfo_t uses = get_call_use_vi (stmt);
+      make_transitive_closure_constraints (uses);
+      make_constraint_to (uses->id, gimple_call_chain (stmt));
+      rhsc.var = uses->id;
       rhsc.offset = 0;
       rhsc.type = SCALAR;
       VEC_safe_push (ce_s, heap, *results, &rhsc);
@@ -3577,7 +3685,7 @@ handle_pure_call (gimple stmt, VEC(ce_s, heap) **results)
 {
   struct constraint_expr rhsc;
   unsigned i;
-  bool need_callused = false;
+  varinfo_t uses = NULL;
 
   /* Memory reached from pointer arguments is call-used.  */
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
@@ -3586,22 +3694,30 @@ handle_pure_call (gimple stmt, VEC(ce_s, heap) **results)
 
       if (could_have_pointers (arg))
 	{
-	  make_constraint_to (callused_id, arg);
-	  need_callused = true;
+	  if (!uses)
+	    {
+	      uses = get_call_use_vi (stmt);
+	      make_transitive_closure_constraints (uses);
+	    }
+	  make_constraint_to (uses->id, arg);
 	}
     }
 
   /* The static chain is used as well.  */
   if (gimple_call_chain (stmt))
     {
-      make_constraint_to (callused_id, gimple_call_chain (stmt));
-      need_callused = true;
+      if (!uses)
+	{
+	  uses = get_call_use_vi (stmt);
+	  make_transitive_closure_constraints (uses);
+	}
+      make_constraint_to (uses->id, gimple_call_chain (stmt));
     }
 
-  /* Pure functions may return callused and nonlocal memory.  */
-  if (need_callused)
+  /* Pure functions may return call-used and nonlocal memory.  */
+  if (uses)
     {
-      rhsc.var = callused_id;
+      rhsc.var = uses->id;
       rhsc.offset = 0;
       rhsc.type = SCALAR;
       VEC_safe_push (ce_s, heap, *results, &rhsc);
@@ -4004,8 +4120,8 @@ find_func_aliases (gimple origt)
 	  if (!allows_reg && allows_mem)
 	    make_escape_constraint (build_fold_addr_expr (op));
 	  /* Strictly we'd only need the constraint to ESCAPED if
-	     the asm clobbers memory, otherwise using CALLUSED
-	     would be enough.  */
+	     the asm clobbers memory, otherwise using something
+	     along the lines of per-call clobbers/uses would be enough.  */
 	  else if (op && could_have_pointers (op))
 	    make_escape_constraint (op);
 	}
@@ -4811,8 +4927,6 @@ find_what_var_points_to (varinfo_t orig_vi, struct pt_solution *pt)
 	    pt->null = 1;
 	  else if (vi->id == escaped_id)
 	    pt->escaped = 1;
-	  else if (vi->id == callused_id)
-	    gcc_unreachable ();
 	  else if (vi->id == nonlocal_id)
 	    pt->nonlocal = 1;
 	  else if (vi->is_heap_var)
@@ -5138,7 +5252,6 @@ init_base_vars (void)
   varinfo_t var_readonly;
   varinfo_t var_escaped;
   varinfo_t var_nonlocal;
-  varinfo_t var_callused;
   varinfo_t var_storedanything;
   varinfo_t var_integer;
 
@@ -5265,35 +5378,6 @@ init_base_vars (void)
   rhs.offset = 0;
   process_constraint (new_constraint (lhs, rhs));
 
-  /* Create the CALLUSED variable, used to represent the set of call-used
-     memory.  */
-  var_callused = new_var_info (NULL_TREE, "CALLUSED");
-  gcc_assert (var_callused->id == callused_id);
-  var_callused->is_artificial_var = 1;
-  var_callused->offset = 0;
-  var_callused->size = ~0;
-  var_callused->fullsize = ~0;
-  var_callused->is_special_var = 0;
-
-  /* CALLUSED = *CALLUSED, because call-used is may-deref'd at calls, etc.  */
-  lhs.type = SCALAR;
-  lhs.var = callused_id;
-  lhs.offset = 0;
-  rhs.type = DEREF;
-  rhs.var = callused_id;
-  rhs.offset = 0;
-  process_constraint (new_constraint (lhs, rhs));
-
-  /* CALLUSED = CALLUSED + UNKNOWN, because if a sub-field is call-used the
-     whole variable is call-used.  */
-  lhs.type = SCALAR;
-  lhs.var = callused_id;
-  lhs.offset = 0;
-  rhs.type = SCALAR;
-  rhs.var = callused_id;
-  rhs.offset = UNKNOWN_OFFSET;
-  process_constraint (new_constraint (lhs, rhs));
-
   /* Create the STOREDANYTHING variable, used to represent the set of
      variables stored to *ANYTHING.  */
   var_storedanything = new_var_info (NULL_TREE, "STOREDANYTHING");
@@ -5344,6 +5428,7 @@ init_alias_vars (void)
   constraints = VEC_alloc (constraint_t, heap, 8);
   varmap = VEC_alloc (varinfo_t, heap, 8);
   vi_for_tree = pointer_map_create ();
+  call_stmt_vars = pointer_map_create ();
 
   memset (&stats, 0, sizeof (stats));
   shared_bitmap_table = htab_create (511, shared_bitmap_hash,
@@ -5480,7 +5565,6 @@ compute_points_to_sets (void)
   basic_block bb;
   unsigned i;
   varinfo_t vi;
-  struct pt_solution callused;
 
   timevar_push (TV_TREE_PTA);
 
@@ -5513,11 +5597,9 @@ compute_points_to_sets (void)
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
 
-  /* Compute the points-to sets for ESCAPED and CALLUSED used for
-     call-clobber analysis.  */
+  /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
   find_what_var_points_to (get_varinfo (escaped_id),
 			   &cfun->gimple_df->escaped);
-  find_what_var_points_to (get_varinfo (callused_id), &callused);
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -5556,11 +5638,11 @@ compute_points_to_sets (void)
 	  pt = gimple_call_use_set (stmt);
 	  if (gimple_call_flags (stmt) & ECF_CONST)
 	    memset (pt, 0, sizeof (struct pt_solution));
-	  else if (gimple_call_flags (stmt) & ECF_PURE)
+	  else if ((vi = lookup_call_use_vi (stmt)) != NULL)
 	    {
-	      /* For const calls we should now be able to compute the
-		 call-used set per function.  */
-	      *pt = callused;
+	      find_what_var_points_to (vi, pt);
+	      /* Escaped (and thus nonlocal) variables are always
+	         implicitly used by calls.  */
 	      /* ???  ESCAPED can be empty even though NONLOCAL
 		 always escaped.  */
 	      pt->nonlocal = 1;
@@ -5568,6 +5650,8 @@ compute_points_to_sets (void)
 	    }
 	  else
 	    {
+	      /* If there is nothing special about this call then
+		 we have made everything that is used also escape.  */
 	      *pt = cfun->gimple_df->escaped;
 	      pt->nonlocal = 1;
 	    }
@@ -5575,8 +5659,20 @@ compute_points_to_sets (void)
 	  pt = gimple_call_clobber_set (stmt);
 	  if (gimple_call_flags (stmt) & (ECF_CONST|ECF_PURE|ECF_NOVOPS))
 	    memset (pt, 0, sizeof (struct pt_solution));
+	  else if ((vi = lookup_call_clobber_vi (stmt)) != NULL)
+	    {
+	      find_what_var_points_to (vi, pt);
+	      /* Escaped (and thus nonlocal) variables are always
+	         implicitly clobbered by calls.  */
+	      /* ???  ESCAPED can be empty even though NONLOCAL
+		 always escaped.  */
+	      pt->nonlocal = 1;
+	      pt->escaped = 1;
+	    }
 	  else
 	    {
+	      /* If there is nothing special about this call then
+		 we have made everything that is used also escape.  */
 	      *pt = cfun->gimple_df->escaped;
 	      pt->nonlocal = 1;
 	    }
@@ -5600,6 +5696,7 @@ delete_points_to_sets (void)
 	     stats.points_to_sets_created);
 
   pointer_map_destroy (vi_for_tree);
+  pointer_map_destroy (call_stmt_vars);
   bitmap_obstack_release (&pta_obstack);
   VEC_free (constraint_t, heap, constraints);
 
