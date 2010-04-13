@@ -55,5 +55,9 @@ dg-runtest $tests "" $DEFAULT_CXXFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/*.\[cSi\]]] \
 	"" ""
 
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.\[cS\]]] \
+	"" ""
+
+
 # All done.
 dg-finish
