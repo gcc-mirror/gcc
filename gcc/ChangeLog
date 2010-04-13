@@ -1,3 +1,10 @@
+2010-04-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* opt-functions.awk (opt_sanitized_name): New.
+	(opt_enum): New.
+	* optc-gen.awk: Use it
+	* opth-gen.awk: Use it.
+
 2010-04-13  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (replace_uses_with_default_def_ssa_name): New function.
