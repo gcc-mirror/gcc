@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "flags.h"
 #include "gfortran.h"
+#include "constructor.h"
 #include "trans.h"
 #include "trans-stmt.h"
 #include "trans-types.h"
@@ -94,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dependency.h"
 
 static gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
-static bool gfc_get_array_constructor_size (mpz_t *, gfc_constructor *);
+static bool gfc_get_array_constructor_size (mpz_t *, gfc_constructor_base);
 
 /* The contents of this structure aren't actually used, just the address.  */
 static gfc_ss gfc_ss_terminator_var;
@@ -1014,8 +1015,9 @@ gfc_get_array_constructor_element_size (mpz_t * size, gfc_expr * expr)
    of array constructor C.  */
 
 static bool
-gfc_get_array_constructor_size (mpz_t * size, gfc_constructor * c)
+gfc_get_array_constructor_size (mpz_t * size, gfc_constructor_base base)
 {
+  gfc_constructor *c;
   gfc_iterator *i;
   mpz_t val;
   mpz_t len;
@@ -1026,7 +1028,7 @@ gfc_get_array_constructor_size (mpz_t * size, gfc_constructor * c)
   mpz_init (val);
 
   dynamic = false;
-  for (; c; c = c->next)
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
       i = c->iterator;
       if (i && gfc_iterator_has_dynamic_bounds (i))
@@ -1231,7 +1233,7 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
 
 static void
 gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
-				   tree desc, gfc_constructor * c,
+				   tree desc, gfc_constructor_base base,
 				   tree * poffset, tree * offsetvar,
 				   bool dynamic)
 {
@@ -1239,12 +1241,13 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
   stmtblock_t body;
   gfc_se se;
   mpz_t size;
+  gfc_constructor *c;
 
   tree shadow_loopvar = NULL_TREE;
   gfc_saved_var saved_loopvar;
 
   mpz_init (size);
-  for (; c; c = c->next)
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
       /* If this is an iterator or an array, the offset must be a variable.  */
       if ((c->iterator || c->expr->rank > 0) && INTEGER_CST_P (*poffset))
@@ -1289,7 +1292,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  n = 0;
 	  while (p && !(p->iterator || p->expr->expr_type != EXPR_CONSTANT))
 	    {
-	      p = p->next;
+	      p = gfc_constructor_next (p);
 	      n++;
 	    }
 	  if (n < 4)
@@ -1332,7 +1335,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		  list = tree_cons (build_int_cst (gfc_array_index_type,
 						   idx++), se.expr, list);
 		  c = p;
-		  p = p->next;
+		  p = gfc_constructor_next (p);
 		}
 
 	      bound = build_int_cst (NULL_TREE, n - 1);
@@ -1585,13 +1588,14 @@ get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
    Returns TRUE if all elements are character constants.  */
 
 bool
-get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
+get_array_ctor_strlen (stmtblock_t *block, gfc_constructor_base base, tree * len)
 {
+  gfc_constructor *c;
   bool is_const;
-  
+
   is_const = TRUE;
 
-  if (c == NULL)
+  if (gfc_constructor_first (base) == NULL)
     {
       if (len)
 	*len = build_int_cstu (gfc_charlen_type_node, 0);
@@ -1601,7 +1605,8 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
   /* Loop over all constructor elements to find out is_const, but in len we
      want to store the length of the first, not the last, element.  We can
      of course exit the loop as soon as is_const is found to be false.  */
-  for (; c && is_const; c = c->next)
+  for (c = gfc_constructor_first (base);
+       c && is_const; c = gfc_constructor_next (c))
     {
       switch (c->expr->expr_type)
 	{
@@ -1641,17 +1646,18 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
    return zero.  Note, an empty or NULL array constructor returns zero.  */
 
 unsigned HOST_WIDE_INT
-gfc_constant_array_constructor_p (gfc_constructor * c)
+gfc_constant_array_constructor_p (gfc_constructor_base base)
 {
   unsigned HOST_WIDE_INT nelem = 0;
 
+  gfc_constructor *c = gfc_constructor_first (base);
   while (c)
     {
       if (c->iterator
 	  || c->expr->rank > 0
 	  || c->expr->expr_type != EXPR_CONSTANT)
 	return 0;
-      c = c->next;
+      c = gfc_constructor_next (c);
       nelem++;
     }
   return nelem;
@@ -1676,7 +1682,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
      to tree to build an initializer.  */
   nelem = 0;
   list = NULL_TREE;
-  c = expr->value.constructor;
+  c = gfc_constructor_first (expr->value.constructor);
   while (c)
     {
       gfc_init_se (&se, NULL);
@@ -1688,7 +1694,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 				       se.expr);
       list = tree_cons (build_int_cst (gfc_array_index_type, nelem),
 			se.expr, list);
-      c = c->next;
+      c = gfc_constructor_next (c);
       nelem++;
     }
 
@@ -1702,15 +1708,17 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
   as.type = AS_EXPLICIT;
   if (!expr->shape)
     {
-      as.lower[0] = gfc_int_expr (0);
-      as.upper[0] = gfc_int_expr (nelem - 1);
+      as.lower[0] = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+      as.upper[0] = gfc_get_int_expr (gfc_default_integer_kind,
+				      NULL, nelem - 1);
     }
   else
     for (i = 0; i < expr->rank; i++)
       {
 	int tmp = (int) mpz_get_si (expr->shape[i]);
-	as.lower[i] = gfc_int_expr (0);
-	as.upper[i] = gfc_int_expr (tmp - 1);
+        as.lower[i] = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+        as.upper[i] = gfc_get_int_expr (gfc_default_integer_kind,
+					NULL, tmp - 1);
       }
 
   tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
@@ -1807,7 +1815,7 @@ constant_array_constructor_loop_size (gfc_loopinfo * loop)
 static void
 gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
 {
-  gfc_constructor *c;
+  gfc_constructor_base c;
   tree offset;
   tree offsetvar;
   tree desc;
@@ -3557,7 +3565,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
   tree tmp;
   gfc_ss *loopspec[GFC_MAX_DIMENSIONS];
   bool dynamic[GFC_MAX_DIMENSIONS];
-  gfc_constructor *c;
   mpz_t *cshape;
   mpz_t i;
 
@@ -3582,6 +3589,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
 	  if (ss->type == GFC_SS_CONSTRUCTOR)
 	    {
+	      gfc_constructor_base base;
 	      /* An unknown size constructor will always be rank one.
 		 Higher rank constructors will either have known shape,
 		 or still be wrapped in a call to reshape.  */
@@ -3591,8 +3599,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 		 can be determined at compile time.  Prefer not to otherwise,
 		 since the general case involves realloc, and it's better to
 		 avoid that overhead if possible.  */
-	      c = ss->expr->value.constructor;
-	      dynamic[n] = gfc_get_array_constructor_size (&i, c);
+	      base = ss->expr->value.constructor;
+	      dynamic[n] = gfc_get_array_constructor_size (&i, base);
 	      if (!dynamic[n] || !loopspec[n])
 		loopspec[n] = ss;
 	      continue;
@@ -4117,7 +4125,8 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 
     case EXPR_ARRAY:
       /* Create a vector of all the elements.  */
-      for (c = expr->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c))
         {
           if (c->iterator)
             {
@@ -4130,8 +4139,8 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 			       gfc_option.flag_max_array_constructor);
 	      return NULL_TREE;
 	    }
-          if (mpz_cmp_si (c->n.offset, 0) != 0)
-            index = gfc_conv_mpz_to_tree (c->n.offset, gfc_index_integer_kind);
+          if (mpz_cmp_si (c->offset, 0) != 0)
+            index = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
           else
             index = NULL_TREE;
 	  mpz_init (maxval);
@@ -4140,16 +4149,16 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
               tree tmp1, tmp2;
 
               mpz_set (maxval, c->repeat);
-              mpz_add (maxval, c->n.offset, maxval);
+              mpz_add (maxval, c->offset, maxval);
               mpz_sub_ui (maxval, maxval, 1);
               tmp2 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
-              if (mpz_cmp_si (c->n.offset, 0) != 0)
+              if (mpz_cmp_si (c->offset, 0) != 0)
                 {
-                  mpz_add_ui (maxval, c->n.offset, 1);
+                  mpz_add_ui (maxval, c->offset, 1);
                   tmp1 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
                 }
               else
-                tmp1 = gfc_conv_mpz_to_tree (c->n.offset, gfc_index_integer_kind);
+                tmp1 = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
 
               range = fold_build2 (RANGE_EXPR, integer_type_node, tmp1, tmp2);
             }

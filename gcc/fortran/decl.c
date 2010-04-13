@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "flags.h"
-
+#include "constructor.h"
 
 /* Macros to access allocate memory for gfc_data_variable,
    gfc_data_value and gfc_data.  */
@@ -714,7 +714,7 @@ match_char_length (gfc_expr **expr)
       if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
 			  "Old-style character length at %C") == FAILURE)
 	return MATCH_ERROR;
-      *expr = gfc_int_expr (length);
+      *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, length);
       return m;
     }
 
@@ -1339,13 +1339,18 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		  if (init->expr_type == EXPR_CONSTANT)
 		    {
 		      clen = init->value.character.length;
-		      sym->ts.u.cl->length = gfc_int_expr (clen);
+		      sym->ts.u.cl->length
+				= gfc_get_int_expr (gfc_default_integer_kind,
+						    NULL, clen);
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      gfc_expr *p = init->value.constructor->expr;
-		      clen = p->value.character.length;
-		      sym->ts.u.cl->length = gfc_int_expr (clen);
+		      gfc_constructor *c;
+		      c = gfc_constructor_first (init->value.constructor);
+		      clen = c->expr->value.character.length;
+		      sym->ts.u.cl->length
+				= gfc_get_int_expr (gfc_default_integer_kind,
+						    NULL, clen);
 		    }
 		  else if (init->ts.u.cl && init->ts.u.cl->length)
 		    sym->ts.u.cl->length =
@@ -1356,19 +1361,21 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  else if (sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	    {
 	      int len = mpz_get_si (sym->ts.u.cl->length->value.integer);
-	      gfc_constructor * p;
 
 	      if (init->expr_type == EXPR_CONSTANT)
 		gfc_set_constant_character_len (len, init, -1);
 	      else if (init->expr_type == EXPR_ARRAY)
 		{
+		  gfc_constructor *c;
+
 		  /* Build a new charlen to prevent simplification from
 		     deleting the length before it is resolved.  */
 		  init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 		  init->ts.u.cl->length = gfc_copy_expr (sym->ts.u.cl->length);
 
-		  for (p = init->value.constructor; p; p = p->next)
-		    gfc_set_constant_character_len (len, p->expr, -1);
+		  for (c = gfc_constructor_first (init->value.constructor);
+		       c; c = gfc_constructor_next (c))
+		    gfc_set_constant_character_len (len, c->expr, -1);
 		}
 	    }
 	}
@@ -1392,38 +1399,27 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  if (init->ts.is_iso_c)
 	    sym->ts.f90_type = init->ts.f90_type;
 	}
-      
+
       /* Add initializer.  Make sure we keep the ranks sane.  */
       if (sym->attr.dimension && init->rank == 0)
 	{
 	  mpz_t size;
 	  gfc_expr *array;
-	  gfc_constructor *c;
 	  int n;
 	  if (sym->attr.flavor == FL_PARAMETER
 		&& init->expr_type == EXPR_CONSTANT
 		&& spec_size (sym->as, &size) == SUCCESS
 		&& mpz_cmp_si (size, 0) > 0)
 	    {
-	      array = gfc_start_constructor (init->ts.type, init->ts.kind,
-					     &init->where);
-
-	      array->value.constructor = c = NULL;
+	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
+					  &init->where);
 	      for (n = 0; n < (int)mpz_get_si (size); n++)
-		{
-		  if (array->value.constructor == NULL)
-		    {
-		      array->value.constructor = c = gfc_get_constructor ();
-		      c->expr = init;
-		    }
-		  else
-		    {
-		      c->next = gfc_get_constructor ();
-		      c = c->next;
-		      c->expr = gfc_copy_expr (init);
-		    }
-		}
-
+		gfc_constructor_append_expr (&array->value.constructor,
+					     n == 0
+						? init
+						: gfc_copy_expr (init),
+					     &init->where);
+		
 	      array->shape = gfc_get_shape (sym->as->rank);
 	      for (n = 0; n < sym->as->rank; n++)
 		spec_dimen_size (sym->as, n, &array->shape[n]);
@@ -1513,15 +1509,14 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
       else if (mpz_cmp (c->ts.u.cl->length->value.integer,
 			c->initializer->ts.u.cl->length->value.integer))
 	{
-	  bool has_ts;
-	  gfc_constructor *ctor = c->initializer->value.constructor;
-
-	  has_ts = (c->initializer->ts.u.cl
-		    && c->initializer->ts.u.cl->length_from_typespec);
+	  gfc_constructor *ctor;
+	  ctor = gfc_constructor_first (c->initializer->value.constructor);
 
 	  if (ctor)
 	    {
 	      int first_len;
+	      bool has_ts = (c->initializer->ts.u.cl
+			     && c->initializer->ts.u.cl->length_from_typespec);
 
 	      /* Remember the length of the first element for checking
 		 that all elements *in the constructor* have the same
@@ -1530,11 +1525,12 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	      gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
 	      first_len = ctor->expr->value.character.length;
 
-	      for (; ctor; ctor = ctor->next)
+	      for ( ; ctor; ctor = gfc_constructor_next (ctor))
+		if (ctor->expr->expr_type == EXPR_CONSTANT)
 		{
-		  if (ctor->expr->expr_type == EXPR_CONSTANT)
-		    gfc_set_constant_character_len (len, ctor->expr,
-						    has_ts ? -1 : first_len);
+		  gfc_set_constant_character_len (len, ctor->expr,
+						  has_ts ? -1 : first_len);
+		  ctor->expr->ts.u.cl->length = gfc_copy_expr (c->ts.u.cl->length);
 		}
 	    }
 	}
@@ -1586,7 +1582,6 @@ match
 gfc_match_null (gfc_expr **result)
 {
   gfc_symbol *sym;
-  gfc_expr *e;
   match m;
 
   m = gfc_match (" null ( )");
@@ -1608,12 +1603,7 @@ gfc_match_null (gfc_expr **result)
 	  || gfc_add_function (&sym->attr, sym->name, NULL) == FAILURE))
     return MATCH_ERROR;
 
-  e = gfc_get_expr ();
-  e->where = gfc_current_locus;
-  e->expr_type = EXPR_NULL;
-  e->ts.type = BT_UNKNOWN;
-
-  *result = e;
+  *result = gfc_get_null_expr (&gfc_current_locus);
 
   return MATCH_YES;
 }
@@ -2309,7 +2299,7 @@ done:
   cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (seen_length == 0)
-    cl->length = gfc_int_expr (1);
+    cl->length = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
   else
     cl->length = len;
 
@@ -2690,7 +2680,8 @@ gfc_match_implicit (void)
 		{
 		  ts.kind = gfc_default_character_kind;
 		  ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-		  ts.u.cl->length = gfc_int_expr (1);
+		  ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+						      NULL, 1);
 		}
 
 	      /* Record the Successful match.  */
@@ -7147,12 +7138,7 @@ static gfc_expr *
 enum_initializer (gfc_expr *last_initializer, locus where)
 {
   gfc_expr *result;
-
-  result = gfc_get_expr ();
-  result->expr_type = EXPR_CONSTANT;
-  result->ts.type = BT_INTEGER;
-  result->ts.kind = gfc_c_int_kind;
-  result->where = where;
+  result = gfc_get_constant_expr (BT_INTEGER, gfc_c_int_kind, &where);
 
   mpz_init (result->value.integer);
 

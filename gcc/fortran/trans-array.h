@@ -144,7 +144,7 @@ void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);
 void gfc_add_intrinsic_ss_code (gfc_loopinfo *, gfc_ss *);
 
 /* Functions for constant array constructor processing.  */
-unsigned HOST_WIDE_INT gfc_constant_array_constructor_p (gfc_constructor *);
+unsigned HOST_WIDE_INT gfc_constant_array_constructor_p (gfc_constructor_base);
 tree gfc_build_constant_array_constructor (gfc_expr *, tree);
 
 /* Copy a string from src to dest.  */

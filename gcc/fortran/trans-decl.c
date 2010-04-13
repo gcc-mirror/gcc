@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "gfortran.h"
 #include "pointer-set.h"
+#include "constructor.h"
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-array.h"
@@ -3578,7 +3579,8 @@ check_constant_initializer (gfc_expr *expr, gfc_typespec *ts, bool array,
 	return check_constant_initializer (expr, ts, false, false);
       else if (expr->expr_type != EXPR_ARRAY)
 	return false;
-      for (c = expr->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c))
 	{
 	  if (c->iterator)
 	    return false;
@@ -3598,7 +3600,8 @@ check_constant_initializer (gfc_expr *expr, gfc_typespec *ts, bool array,
       if (expr->expr_type != EXPR_STRUCTURE)
 	return false;
       cm = expr->ts.u.derived->components;
-      for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c), cm = cm->next)
 	{
 	  if (!c->expr || cm->attr.allocatable)
 	    continue;

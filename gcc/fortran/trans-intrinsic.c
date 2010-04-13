@@ -4684,7 +4684,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
       gfc_add_component_ref (a, "$hash");
     }
   else if (a->ts.type == BT_DERIVED)
-    a = gfc_int_expr (a->ts.u.derived->hash_value);
+    a = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			  a->ts.u.derived->hash_value);
 
   if (b->ts.type == BT_CLASS)
     {
@@ -4692,7 +4693,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
       gfc_add_component_ref (b, "$hash");
     }
   else if (b->ts.type == BT_DERIVED)
-    b = gfc_int_expr (b->ts.u.derived->hash_value);
+    b = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			  b->ts.u.derived->hash_value);
 
   gfc_conv_expr (&se1, a);
   gfc_conv_expr (&se2, b);

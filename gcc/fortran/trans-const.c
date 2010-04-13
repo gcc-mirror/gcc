@@ -1,6 +1,6 @@
 /* Translation of constants
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -349,14 +349,15 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
           || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR)
         {
           /* Create a new EXPR_CONSTANT expression for our local uses.  */
-          expr = gfc_int_expr (0);
+          expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
         }
     }
 
   if (expr->expr_type != EXPR_CONSTANT)
     {
+      gfc_expr *e = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
       gfc_error ("non-constant initialization expression at %L", &expr->where);
-      se->expr = gfc_conv_constant_to_tree (gfc_int_expr (0));
+      se->expr = gfc_conv_constant_to_tree (e);
       return;
     }
 

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
+#include "constructor.h"
 #include "trans.h"
 #include "trans-const.h"
 #include "trans-types.h"
@@ -278,11 +279,14 @@ flatten_array_ctors_without_strlen (gfc_expr* e)
       /* We've found what we're looking for.  */
       if (e->ts.type == BT_CHARACTER && !e->ts.u.cl->length)
 	{
+	  gfc_constructor *c;
 	  gfc_expr* new_expr;
+
 	  gcc_assert (e->value.constructor);
 
-	  new_expr = e->value.constructor->expr;
-	  e->value.constructor->expr = NULL;
+	  c = gfc_constructor_first (e->value.constructor);
+	  new_expr = c->expr;
+	  c->expr = NULL;
 
 	  flatten_array_ctors_without_strlen (new_expr);
 	  gfc_replace_expr (e, new_expr);
@@ -291,7 +295,8 @@ flatten_array_ctors_without_strlen (gfc_expr* e)
 
       /* Otherwise, fall through to handle constructor elements.  */
     case EXPR_STRUCTURE:
-      for (c = e->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (e->value.constructor);
+	   c; c = gfc_constructor_next (c))
 	flatten_array_ctors_without_strlen (c->expr);
       break;
 
@@ -1432,7 +1437,8 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
 	  gfc_typespec ts;
           gfc_clear_ts (&ts);
 
-	  *expr = gfc_int_expr ((int)(*expr)->value.character.string[0]);
+	  *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+				    (int)(*expr)->value.character.string[0]);
 	  if ((*expr)->ts.kind != gfc_c_int_kind)
 	    {
   	      /* The expr needs to be compatible with a C int.  If the 
@@ -1991,9 +1997,10 @@ gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
 
 static void
 gfc_apply_interface_mapping_to_cons (gfc_interface_mapping * mapping,
-				     gfc_constructor * c)
+				     gfc_constructor_base base)
 {
-  for (; c; c = c->next)
+  gfc_constructor *c;
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
       gfc_apply_interface_mapping_to_expr (mapping, c->expr);
       if (c->iterator)
@@ -2101,7 +2108,9 @@ gfc_map_intrinsic_function (gfc_expr *expr, gfc_interface_mapping *mapping)
 	      return false;
 	    }
 
-	  tmp = gfc_add (gfc_copy_expr (sym->as->upper[d]), gfc_int_expr (1));
+	  tmp = gfc_add (gfc_copy_expr (sym->as->upper[d]),
+					gfc_get_int_expr (gfc_default_integer_kind,
+							  NULL, 1));
 	  tmp = gfc_subtract (tmp, gfc_copy_expr (sym->as->lower[d]));
 	  if (new_expr)
 	    new_expr = gfc_multiply (new_expr, tmp);
@@ -3984,12 +3993,10 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
     {
       gfc_symbol *derived = expr->ts.u.derived;
 
-      expr = gfc_int_expr (0);
-
       /* The derived symbol has already been converted to a (void *).  Use
 	 its kind.  */
+      expr = gfc_get_int_expr (derived->ts.kind, NULL, 0);
       expr->ts.f90_type = derived->ts.f90_type;
-      expr->ts.kind = derived->ts.kind;
 
       gfc_init_se (&se, NULL);
       gfc_conv_constant (&se, expr);
@@ -4389,7 +4396,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr)
 
   gfc_start_block (&block);
   cm = expr->ts.u.derived->components;
-  for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
+  for (c = gfc_constructor_first (expr->value.constructor);
+       c; c = gfc_constructor_next (c), cm = cm->next)
     {
       /* Skip absent members in default initializers.  */
       if (!c->expr)
@@ -4445,7 +4453,8 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 
   cm = expr->ts.u.derived->components;
 
-  for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
+  for (c = gfc_constructor_first (expr->value.constructor);
+       c; c = gfc_constructor_next (c), cm = cm->next)
     {
       /* Skip absent members in default initializers and allocatable
 	 components.  Although the latter have a default initializer
@@ -5619,7 +5628,7 @@ gfc_trans_class_assign (gfc_code *code)
 	  rhs->ts = vtab->ts;
 	}
       else if (code->expr2->expr_type == EXPR_NULL)
-	rhs = gfc_int_expr (0);
+	rhs = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
       else
 	gcc_unreachable ();
 

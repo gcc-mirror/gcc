@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "gfortran.h"
+#include "constructor.h"
 
 /* Keep track of indentation for symbol tree dumps.  */
 static int show_level = 0;
@@ -271,9 +272,10 @@ show_ref (gfc_ref *p)
 /* Display a constructor.  Works recursively for array constructors.  */
 
 static void
-show_constructor (gfc_constructor *c)
+show_constructor (gfc_constructor_base base)
 {
-  for (; c; c = c->next)
+  gfc_constructor *c;
+  for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
       if (c->iterator == NULL)
 	show_expr (c->expr);
@@ -294,7 +296,7 @@ show_constructor (gfc_constructor *c)
 	  fputc (')', dumpfile);
 	}
 
-      if (c->next != NULL)
+      if (gfc_constructor_next (c) != NULL)
 	fputs (" , ", dumpfile);
     }
 }

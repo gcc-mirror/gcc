@@ -1,3 +1,319 @@
+2010-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* array.c (extract_element): Restore function from trunk.
+	(gfc_get_array_element): Restore function from trunk.
+	(gfc_expand_constructor): Restore check against
+	flag_max_array_constructor.
+	* constructor.c (node_copy_and_append): Delete unused.
+	* gfortran.h: Delete comment and extra include.
+	* constructor.h: Bump copyright and clean up TODO comments.
+	* resolve.c: Whitespace.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	* simplify.c (compute_dot_product): Replaced usage of ADVANCE macro
+	with direct access access to elements. Adjusted prototype, fixed all
+	callers.
+	(gfc_simplify_dot_product): Removed duplicate check for zero-sized
+	array.
+	(gfc_simplify_matmul): Removed usage of ADVANCE macro.
+	(gfc_simplify_spread): Removed workaround, directly insert elements
+	at a given array position.
+	(gfc_simplify_transpose): Likewise.
+	(gfc_simplify_pack): Replaced usage of ADVANCE macro with corresponding
+	function calls.
+	(gfc_simplify_unpack): Likewise.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	* simplify.c (only_convert_cmplx_boz): Renamed to ...
+	(convert_boz): ... this and moved to start of file.
+	(gfc_simplify_abs): Whitespace fix.
+	(gfc_simplify_acos): Whitespace fix.
+	(gfc_simplify_acosh): Whitespace fix.
+	(gfc_simplify_aint): Whitespace fix.
+	(gfc_simplify_dint): Whitespace fix.
+	(gfc_simplify_anint): Whitespace fix.
+	(gfc_simplify_and): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_dnint): Whitespace fix.
+	(gfc_simplify_asin): Whitespace fix.
+	(gfc_simplify_asinh): Moved creation of result-expr out of switch.
+	(gfc_simplify_atan): Likewise.
+	(gfc_simplify_atanh): Whitespace fix.
+	(gfc_simplify_atan2): Whitespace fix.
+	(gfc_simplify_bessel_j0): Removed ATTRIBUTE_UNUSED.
+	(gfc_simplify_bessel_j1): Likewise.
+	(gfc_simplify_bessel_jn): Likewise.
+	(gfc_simplify_bessel_y0): Likewise.
+	(gfc_simplify_bessel_y1): Likewise.
+	(gfc_simplify_bessel_yn): Likewise.
+	(gfc_simplify_ceiling): Reorderd statements.
+	(simplify_cmplx): Use convert_boz(), check for constant arguments.
+	Whitespace fix.
+	(gfc_simplify_cmplx): Use correct default kind. Removed check for
+	constant arguments.
+	(gfc_simplify_complex): Replaced if-gate. Removed check for
+	constant arguments.
+	(gfc_simplify_conjg): Whitespace fix.
+	(gfc_simplify_cos): Whitespace fix.
+	(gfc_simplify_cosh): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_dcmplx): Removed check for constant arguments.
+	(gfc_simplify_dble): Use convert_boz() and gfc_convert_constant().
+	(gfc_simplify_digits): Whitespace fix.
+	(gfc_simplify_dim): Whitespace fix.
+	(gfc_simplify_dprod): Reordered statements.
+	(gfc_simplify_erf): Whitespace fix.
+	(gfc_simplify_erfc): Whitespace fix.
+	(gfc_simplify_epsilon): Whitespace fix.
+	(gfc_simplify_exp): Whitespace fix.
+	(gfc_simplify_exponent): Use convert_boz().
+	(gfc_simplify_floor): Reorderd statements.
+	(gfc_simplify_gamma): Whitespace fix.
+	(gfc_simplify_huge): Whitespace fix.
+	(gfc_simplify_iand): Whitespace fix.
+	(gfc_simplify_ieor): Whitespace fix.
+	(simplify_intconv): Use gfc_convert_constant().
+	(gfc_simplify_int): Use simplify_intconv().
+	(gfc_simplify_int2): Reorderd statements.
+	(gfc_simplify_idint): Reorderd statements.
+	(gfc_simplify_ior): Whitespace fix.
+	(gfc_simplify_ishftc): Removed duplicate type check.
+	(gfc_simplify_len): Use range_check() instead of manual range check.
+	(gfc_simplify_lgamma): Removed ATTRIBUTE_UNUSED. Whitespace fix.
+	(gfc_simplify_log): Whitespace fix.
+	(gfc_simplify_log10): Whitespace fix.
+	(gfc_simplify_minval): Whitespace fix.
+	(gfc_simplify_maxval): Whitespace fix.
+	(gfc_simplify_mod): Whitespace fix.
+	(gfc_simplify_modulo): Whitespace fix.
+	(simplify_nint): Reorderd statements.
+	(gfc_simplify_not): Whitespace fix.
+	(gfc_simplify_or): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_radix): Removed unused result-variable. Whitespace fix.
+	(gfc_simplify_range): Removed unused result-variable. Whitespace fix.
+	(gfc_simplify_real): Use convert_boz() and gfc_convert_constant().
+	(gfc_simplify_realpart): Whitespace fix.
+	(gfc_simplify_selected_char_kind): Removed unused result-variable.
+	(gfc_simplify_selected_int_kind): Removed unused result-variable.
+	(gfc_simplify_selected_real_kind): Removed unused result-variable.
+	(gfc_simplify_sign): Whitespace fix.
+	(gfc_simplify_sin): Whitespace fix.
+	(gfc_simplify_sinh): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_sqrt): Avoided goto by inlining check. Whitespace fix.
+	(gfc_simplify_tan): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_tanh): Replaced if-gate by more common switch-over-type.
+	(gfc_simplify_xor): Replaced if-gate by more common switch-over-type.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.h (gfc_start_constructor): Removed.
+	(gfc_get_array_element): Removed.
+	* array.c (gfc_start_constructor): Removed, use gfc_get_array_expr 
+	instead. Fixed all callers.
+	(extract_element): Removed.
+	(gfc_expand_constructor): Temporarily removed check for
+	max-array-constructor. Will be re-introduced later if still required.
+	(gfc_get_array_element): Removed, use gfc_constructor_lookup_expr
+	instead. Fixed all callers.
+	* expr.c (find_array_section): Replaced manual lookup of elements
+	by gfc_constructor_lookup.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+        * gfortran.h (gfc_get_null_expr): New prototype.
+        (gfc_get_operator_expr): New prototype.
+        (gfc_get_character_expr): New prototype.
+        (gfc_get_iokind_expr): New prototype.
+        * expr.c (gfc_get_null_expr): New.
+        (gfc_get_character_expr): New.
+        (gfc_get_iokind_expr): New.
+        (gfc_get_operator_expr): Moved here from matchexp.c (build_node).
+        * matchexp.c (build_node): Renamed and moved to
+        expr.c (gfc_get_operator_expr). Reordered arguments to match 
+        other functions. Fixed all callers.
+        (gfc_get_parentheses): Use specific function to build expr.
+        * array.c (gfc_match_array_constructor): Likewise.
+        * arith.c (eval_intrinsic): Likewise.
+        (gfc_hollerith2int): Likewise.
+        (gfc_hollerith2real): Likewise.
+        (gfc_hollerith2complex): Likewise.
+        (gfc_hollerith2logical): Likewise.
+        * data.c (create_character_intializer): Likewise.
+        * decl.c (gfc_match_null): Likewise.
+        (enum_initializer): Likewise.
+        * io.c (gfc_match_format): Likewise.
+        (match_io): Likewise.
+        * match.c (gfc_match_nullify): Likewise.
+        * primary.c (match_string_constant): Likewise.
+        (match_logical_constant): Likewise.
+        (build_actual_constructor): Likewise.
+        * resolve.c (build_default_init_expr): Likewise.
+        * symbol.c (generate_isocbinding_symbol): Likewise.
+        (gfc_build_class_symbol): Likewise.
+        (gfc_find_derived_vtab): Likewise.
+        * simplify.c (simplify_achar_char): Likewise.
+        (gfc_simplify_adjustl): Likewise.
+        (gfc_simplify_adjustr): Likewise.
+        (gfc_simplify_and): Likewise.
+        (gfc_simplify_bit_size): Likewise.
+        (gfc_simplify_is_iostat_end): Likewise.
+        (gfc_simplify_is_iostat_eor): Likewise.
+        (gfc_simplify_isnan): Likewise.
+        (simplify_bound): Likewise.
+        (gfc_simplify_leadz): Likewise.
+        (gfc_simplify_len_trim): Likewise.
+        (gfc_simplify_logical): Likewise.
+        (gfc_simplify_maxexponent): Likewise.
+        (gfc_simplify_minexponent): Likewise.
+        (gfc_simplify_new_line): Likewise.
+        (gfc_simplify_null): Likewise.
+        (gfc_simplify_or): Likewise.
+        (gfc_simplify_precision): Likewise.
+        (gfc_simplify_repeat): Likewise.
+        (gfc_simplify_scan): Likewise.
+        (gfc_simplify_size): Likewise.
+        (gfc_simplify_trailz): Likewise.
+        (gfc_simplify_trim): Likewise.
+        (gfc_simplify_verify): Likewise.
+        (gfc_simplify_xor): Likewise.
+        * trans-io.c (build_dt): Likewise.
+        (gfc_new_nml_name_expr): Removed.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	* arith.h (gfc_constant_result): Removed prototype.
+	* constructor.h (gfc_build_array_expr): Removed prototype.
+	(gfc_build_structure_constructor_expr): Removed prototype.
+	* gfortran.h (gfc_int_expr): Removed prototype.
+	(gfc_logical_expr): Removed prototype.
+	(gfc_get_array_expr): New prototype.
+	(gfc_get_structure_constructor_expr): New prototype.
+	(gfc_get_constant_expr): New prototype.
+	(gfc_get_int_expr): New prototype.
+	(gfc_get_logical_expr): New prototype.
+	* arith.c (gfc_constant_result): Moved and renamed to
+	expr.c (gfc_get_constant_expr). Fixed all callers.
+	* constructor.c (gfc_build_array_expr): Moved and renamed to
+	expr.c (gfc_get_array_expr). Split gfc_typespec argument to type
+	and kind. Fixed all callers.
+	(gfc_build_structure_constructor_expr): Moved and renamed to
+	expr.c (gfc_get_structure_constructor_expr). Split gfc_typespec argument
+	to type and kind. Fixed all callers.
+	* expr.c (gfc_logical_expr): Renamed to ...
+	(gfc_get_logical_expr): ... this. Added kind argument. Fixed all callers.
+	(gfc_int_expr): Renamed to ...
+	(gfc_get_int_expr): ... this. Added kind and where arguments. Fixed all
+	callers.
+	(gfc_get_constant_expr): New.
+	(gfc_get_array_expr): New.
+	(gfc_get_structure_constructor_expr): New.
+	* simplify.c (int_expr_with_kind): Removed, callers use gfc_get_int_expr
+	instead.
+
+2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	* constructor.h: New.
+	* constructor.c: New.
+	* Make-lang.in: Add new files to F95_PARSER_OBJS.
+	* arith.c (reducy_unary): Use constructor API.
+	(reduce_binary_ac): Likewise.
+	(reduce_binary_ca): Likewise.
+	(reduce_binary_aa): Likewise.
+	* check.c (gfc_check_pack): Likewise.
+	(gfc_check_reshape): Likewise.
+	(gfc_check_unpack): Likewise.
+	* decl.c (add_init_expr_to_sym): Likewise.
+	(build_struct): Likewise.
+	* dependency.c (gfc_check_dependency): Likewise.
+	(contains_forall_index_p): Likewise.
+	* dump-parse-tree.c (show_constructor): Likewise.
+	* expr.c (free_expr0): Likewise.
+	(gfc_copy_expr): Likewise.
+	(gfc_is_constant_expr): Likewise.
+	(simplify_constructor): Likewise.
+	(find_array_element): Likewise.
+	(find_component_ref): Likewise.
+	(find_array_section): Likewise.
+	(find_substring_ref): Likewise.
+	(simplify_const_ref): Likewise.
+	(scalarize_intrinsic_call): Likewise.
+	(check_alloc_comp_init): Likewise.
+	(gfc_default_initializer): Likewise.
+	(gfc_traverse_expr): Likewise.
+	* iresolve.c (check_charlen_present): Likewise.
+	(gfc_resolve_reshape): Likewise.
+	(gfc_resolve_transfer): Likewise.
+	* module.c (mio_constructor): Likewise.
+	* primary.c (build_actual_constructor): Likewise.
+	(gfc_match_structure_constructor): Likewise.
+	* resolve.c (resolve_structure_cons): Likewise.
+	* simplify.c (is_constant_array_expr): Likewise.
+	(init_result_expr): Likewise.
+	(transformational_result): Likewise.
+	(simplify_transformation_to_scalar): Likewise.
+	(simplify_transformation_to_array): Likewise.
+	(gfc_simplify_dot_product): Likewise.
+	(simplify_bound): Likewise.
+	(simplify_matmul): Likewise.
+	(simplify_minval_maxval): Likewise.
+	(gfc_simplify_pack): Likewise.
+	(gfc_simplify_reshape): Likewise.
+	(gfc_simplify_shape): Likewise.
+	(gfc_simplify_spread): Likewise.
+	(gfc_simplify_transpose): Likewise.
+	(gfc_simplify_unpack): Likewise.q
+	(gfc_convert_constant): Likewise.
+	(gfc_convert_char_constant): Likewise.
+	* target-memory.c (size_array): Likewise.
+	(encode_array): Likewise.
+	(encode_derived): Likewise.
+	(interpret_array): Likewise.
+	(gfc_interpret_derived): Likewise.
+	(expr_to_char): Likewise.
+	(gfc_merge_initializers): Likewise.
+	* trans-array.c (gfc_get_array_constructor_size): Likewise.
+	(gfc_trans_array_constructor_value): Likewise.
+	(get_array_ctor_strlen): Likewise.
+	(gfc_constant_array_constructor_p): Likewise.
+	(gfc_build_constant_array_constructor): Likewise.
+	(gfc_trans_array_constructor): Likewise.
+	(gfc_conv_array_initializer): Likewise.
+	* trans-decl.c (check_constant_initializer): Likewise.
+	* trans-expr.c (flatten_array_ctors_without_strlen): Likewise.
+	(gfc_apply_interface_mapping_to_cons): Likewise.
+	(gfc_trans_structure_assign): Likewise.
+	(gfc_conv_structure): Likewise.
+	* array.c (check_duplicate_iterator): Likewise.
+	(match_array_list): Likewise.
+	(match_array_cons_element): Likewise.
+	(gfc_match_array_constructor): Likewise.
+	(check_constructor_type): Likewise.
+	(check_constructor): Likewise.
+	(expand): Likewise.
+	(expand_constructor): Likewise.
+	(extract_element): Likewise.
+	(gfc_expanded_ac): Likewise.
+	(resolve_array_list): Likewise.
+	(gfc_resolve_character_array_constructor): Likewise.
+	(copy_iterator): Renamed to ...
+	(gfc_copy_iterator): ... this.
+	(gfc_append_constructor): Removed.
+	(gfc_insert_constructor): Removed unused function.
+	(gfc_get_constructor): Removed.
+	(gfc_free_constructor): Removed.
+	(qgfc_copy_constructor): Removed.
+	* gfortran.h (struct gfc_expr): Removed member 'con_by_offset'.
+	Removed all references. Replaced constructor list by splay-tree.
+	(struct gfc_constructor): Removed member 'next', moved 'offset' from
+	the inner struct, added member 'base'.
+	(gfc_append_constructor): Removed prototype.
+	(gfc_insert_constructor): Removed prototype.
+	(gfc_get_constructor): Removed prototype.
+	(gfc_free_constructor): Removed prototype.
+	(qgfc_copy_constructor): Removed prototype.
+	(gfc_copy_iterator): New prototype.
+	* trans-array.h (gfc_constant_array_constructor_p): Adjusted prototype.
+
 2010-04-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43591

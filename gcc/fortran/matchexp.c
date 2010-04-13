@@ -1,5 +1,5 @@
 /* Expression parser.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -130,14 +130,10 @@ gfc_get_parentheses (gfc_expr *e)
 {
   gfc_expr *e2;
 
-  e2 = gfc_get_expr();
-  e2->expr_type = EXPR_OP;
+  e2 = gfc_get_operator_expr (&e->where, INTRINSIC_PARENTHESES, e, NULL);
   e2->ts = e->ts;
   e2->rank = e->rank;
-  e2->where = e->where;
-  e2->value.op.op = INTRINSIC_PARENTHESES;
-  e2->value.op.op1 = e;
-  e2->value.op.op2 = NULL;
+
   return e2;
 }
 
@@ -195,26 +191,6 @@ syntax:
 }
 
 
-/* Build an operator expression node.  */
-
-static gfc_expr *
-build_node (gfc_intrinsic_op op, locus *where,
-	    gfc_expr *op1, gfc_expr *op2)
-{
-  gfc_expr *new_expr;
-
-  new_expr = gfc_get_expr ();
-  new_expr->expr_type = EXPR_OP;
-  new_expr->value.op.op = op;
-  new_expr->where = *where;
-
-  new_expr->value.op.op1 = op1;
-  new_expr->value.op.op2 = op2;
-
-  return new_expr;
-}
-
-
 /* Match a level 1 expression.  */
 
 static match
@@ -239,7 +215,7 @@ match_level_1 (gfc_expr **result)
     *result = e;
   else
     {
-      f = build_node (INTRINSIC_USER, &where, e, NULL);
+      f = gfc_get_operator_expr (&where, INTRINSIC_USER, e, NULL);
       f->value.op.uop = uop;
       *result = f;
     }
@@ -915,7 +891,7 @@ gfc_match_expr (gfc_expr **result)
 	  return MATCH_ERROR;
 	}
 
-      all = build_node (INTRINSIC_USER, &where, all, e);
+      all = gfc_get_operator_expr (&where, INTRINSIC_USER, all, e);
       all->value.op.uop = uop;
     }
 
