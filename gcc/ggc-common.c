@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks-def.h"
 #include "plugin.h"
 #include "vec.h"
+#include "timevar.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -501,6 +502,7 @@ gt_pch_save (FILE *f)
 
   gt_pch_save_stringpool ();
 
+  timevar_push (TV_PCH_PTR_REALLOC);
   saving_htab = htab_create (50000, saving_htab_hash, saving_htab_eq, free);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
@@ -532,8 +534,13 @@ gt_pch_save (FILE *f)
 
   state.ptrs = XNEWVEC (struct ptr_data *, state.count);
   state.ptrs_i = 0;
+
   htab_traverse (saving_htab, call_alloc, &state);
+  timevar_pop (TV_PCH_PTR_REALLOC);
+
+  timevar_push (TV_PCH_PTR_SORT);
   qsort (state.ptrs, state.count, sizeof (*state.ptrs), compare_ptr_data);
+  timevar_pop (TV_PCH_PTR_SORT);
 
   /* Write out all the scalar variables.  */
   for (rt = gt_pch_scalar_rtab; *rt; rt++)

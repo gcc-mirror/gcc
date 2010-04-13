@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks.h"
 #include "target.h"
 #include "opts.h"
+#include "timevar.h"
 
 /* This is a list of flag variables that must match exactly, and their
    names for the error message.  The possible values for *flag_var must
@@ -178,6 +179,8 @@ c_common_write_pch (void)
   long written;
   struct c_pch_header h;
 
+  timevar_push (TV_PCH_SAVE);
+
   (*debug_hooks->handle_pch) (1);
 
   cpp_write_pch_deps (parse_in, pch_outfile);
@@ -211,13 +214,18 @@ c_common_write_pch (void)
     fatal_error ("can%'t seek in %s: %m", asm_file_name);
 
   gt_pch_save (pch_outfile);
+
+  timevar_push (TV_PCH_CPP_SAVE);
   cpp_write_pch_state (parse_in, pch_outfile);
+  timevar_pop (TV_PCH_CPP_SAVE);
 
   if (fseek (pch_outfile, 0, SEEK_SET) != 0
       || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
     fatal_error ("can%'t write %s: %m", pch_file);
 
   fclose (pch_outfile);
+
+  timevar_pop (TV_PCH_SAVE);
 }
 
 /* Check the PCH file called NAME, open on FD, to see if it can be
@@ -371,12 +379,14 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   expanded_location saved_loc;
   bool saved_trace_includes;
 
+  timevar_push (TV_PCH_RESTORE);
+
   f = fdopen (fd, "rb");
   if (f == NULL)
     {
       cpp_errno (pfile, CPP_DL_ERROR, "calling fdopen");
       close (fd);
-      return;
+      goto end;
     }
 
   cpp_get_callbacks (parse_in)->valid_pch = NULL;
@@ -385,7 +395,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
     {
       cpp_errno (pfile, CPP_DL_ERROR, "reading");
       fclose (f);
-      return;
+      goto end;
     }
 
   if (!flag_preprocess_only)
@@ -417,15 +427,21 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   saved_loc = expand_location (line_table->highest_line);
   saved_trace_includes = line_table->trace_includes;
 
+  timevar_push (TV_PCH_CPP_RESTORE);
   cpp_prepare_state (pfile, &smd);
+  timevar_pop (TV_PCH_CPP_RESTORE);
 
   gt_pch_restore (f);
 
+  timevar_push (TV_PCH_CPP_RESTORE);
   if (cpp_read_state (pfile, name, f, smd) != 0)
     {
       fclose (f);
-      return;
+      timevar_pop (TV_PCH_CPP_RESTORE);
+      goto end;
     }
+  timevar_pop (TV_PCH_CPP_RESTORE);
+
 
   fclose (f);
 
@@ -437,6 +453,9 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
      been loaded.  */
   if (lang_post_pch_load)
     (*lang_post_pch_load) ();
+
+end:
+  timevar_pop (TV_PCH_RESTORE);
 }
 
 /* Indicate that no more PCH files should be read.  */
