@@ -4027,6 +4027,19 @@ convert (tree type, tree expr)
 					   etype)))
     return build1 (VIEW_CONVERT_EXPR, type, expr);
 
+  /* If we are converting between tagged types, try to upcast properly.  */
+  else if (ecode == RECORD_TYPE && code == RECORD_TYPE
+	   && TYPE_ALIGN_OK (etype) && TYPE_ALIGN_OK (type))
+    {
+      tree child_etype = etype;
+      do {
+	tree field = TYPE_FIELDS (child_etype);
+	if (DECL_NAME (field) == parent_name_id && TREE_TYPE (field) == type)
+	  return build_component_ref (expr, NULL_TREE, field, false);
+	child_etype = TREE_TYPE (field);
+      } while (TREE_CODE (child_etype) == RECORD_TYPE);
+    }
+
   /* In all other cases of related types, make a NOP_EXPR.  */
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
 	   || (code == INTEGER_CST && ecode == INTEGER_CST

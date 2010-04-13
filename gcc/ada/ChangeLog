@@ -1,5 +1,16 @@
 2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (standard_datatypes): Add ADT_parent_name_id.
+	(parent_name_id): New macro.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Use it.
+	* gcc-interface/trans.c (gigi): Initialize it.
+	(lvalue_required_p) <N_Type_Conversion>: New case.
+	<N_Qualified_Expression>: Likewise.
+	<N_Allocator>: Likewise.
+	* gcc-interface/utils.c (convert): Try to properly upcast tagged types.
+
+2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_BY_REFERENCE_P): Delete.
 	(DECL_CONST_ADDRESS_P): New macro.
 	(SET_DECL_ORIGINAL_FIELD_TO_FIELD): Likewise.
