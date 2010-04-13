@@ -51,6 +51,6 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" {xfail vect_no_align } } } */
-/* { dg-final { scan-tree-dump-times "dependence distance >= VF or negative" 1 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "dependence distance negative" 1 "vect"  } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -601,6 +601,9 @@ typedef struct _stmt_vec_info {
    conversion.  */
 #define MAX_INTERM_CVT_STEPS         3
 
+/* The maximum vectorization factor supported by any target (V32QI).  */
+#define MAX_VECTORIZATION_FACTOR 32
+
 /* Avoid GTY(()) on stmt_vec_info.  */
 typedef void *vec_void_p;
 DEF_VEC_P (vec_void_p);
@@ -802,13 +805,14 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (struct data_reference *);
 extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
-extern bool vect_analyze_data_ref_dependences (loop_vec_info, bb_vec_info);
+extern bool vect_analyze_data_ref_dependences (loop_vec_info, bb_vec_info,
+					       int *);
 extern bool vect_enhance_data_refs_alignment (loop_vec_info);
 extern bool vect_analyze_data_refs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_verify_datarefs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
-extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info);
+extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
 extern tree vect_create_data_ref_ptr (gimple, struct loop *, tree, tree *,
                                       gimple *, bool, bool *);
 extern tree bump_vector_ptr (tree, gimple, gimple_stmt_iterator *, gimple, tree);

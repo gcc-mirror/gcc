@@ -1270,6 +1270,8 @@ vect_slp_analyze_bb (basic_block bb)
   slp_instance instance;
   int i, insns = 0;
   gimple_stmt_iterator gsi;
+  int min_vf = 2;
+  int max_vf = MAX_VECTORIZATION_FACTOR;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
@@ -1296,7 +1298,7 @@ vect_slp_analyze_bb (basic_block bb)
   if (!bb_vinfo)
     return NULL;
 
-  if (!vect_analyze_data_refs (NULL, bb_vinfo))
+  if (!vect_analyze_data_refs (NULL, bb_vinfo, &min_vf))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: unhandled data-ref in basic "
@@ -1317,21 +1319,22 @@ vect_slp_analyze_bb (basic_block bb)
       return NULL;
     }
 
+   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf)
+       || min_vf > max_vf)
+     {
+       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	 fprintf (vect_dump, "not vectorized: unhandled data dependence "
+		  "in basic block.\n");
+
+       destroy_bb_vec_info (bb_vinfo);
+       return NULL;
+     }
+
   if (!vect_analyze_data_refs_alignment (NULL, bb_vinfo))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: bad data alignment in basic "
                             "block.\n");
-
-      destroy_bb_vec_info (bb_vinfo);
-      return NULL;
-    }
-
-   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo))
-    {
-     if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-       fprintf (vect_dump, "not vectorized: unhandled data dependence in basic"
-                           " block.\n");
 
       destroy_bb_vec_info (bb_vinfo);
       return NULL;

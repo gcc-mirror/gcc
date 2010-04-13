@@ -1,3 +1,24 @@
+2010-04-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Only add RW dependence for dependence distance zero.
+	Adjust maximal vectorization factor according to dependences.
+	Move alignment handling ...
+	(vect_find_same_alignment_drs): ... here.  New function.
+	(vect_analyze_data_ref_dependences): Adjust.
+	(vect_analyze_data_refs_alignment): Call vect_find_same_alignment_drs.
+	(vect_analyze_data_refs): Adjust minimal vectorization factor
+	according to data references.
+	* tree-vect-loop.c (vect_analyze_loop): Analyze data-ref
+	dependences before determining the vectorization factor.
+	Analyze alignment after determining the vectorization factor.
+	* tree-vect-slp.c ((vect_slp_analyze_bb): Analyze data-ref
+	dependences before alignment.
+	* tree-vectorizer.h (vect_analyze_data_ref_dependences):
+	Adjust prototype.
+	(vect_analyze_data_refs): Likewise.
+	(MAX_VECTORIZATION_FACTOR): New define.
+
 2010-04-13  Duncan Sands  <baldrick@free.fr>
 
 	* except.h (lang_eh_type_covers): Remove.

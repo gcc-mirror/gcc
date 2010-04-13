@@ -1354,6 +1354,8 @@ vect_analyze_loop (struct loop *loop)
 {
   bool ok;
   loop_vec_info loop_vinfo;
+  int max_vf = MAX_VECTORIZATION_FACTOR;
+  int min_vf = 2;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===== analyze_loop_nest =====");
@@ -1378,12 +1380,13 @@ vect_analyze_loop (struct loop *loop)
     }
 
   /* Find all data references in the loop (which correspond to vdefs/vuses)
-     and analyze their evolution in the loop.
+     and analyze their evolution in the loop.  Also adjust the minimal
+     vectorization factor according to the loads and stores.
 
      FORNOW: Handle only simple, array references, which
      alignment can be forced, and aligned pointer-references.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo, NULL);
+  ok = vect_analyze_data_refs (loop_vinfo, NULL, &min_vf);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1410,14 +1413,17 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
-  /* Analyze the alignment of the data-refs in the loop.
-     Fail if a data reference is found that cannot be vectorized.  */
+  /* Analyze data dependences between the data-refs in the loop
+     and adjust the maximum vectorization factor according to
+     the dependences.
+     FORNOW: fail at the first data dependence that we encounter.  */
 
-  ok = vect_analyze_data_refs_alignment (loop_vinfo, NULL);
-  if (!ok)
+  ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL, &max_vf);
+  if (!ok
+      || max_vf < min_vf)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "bad data alignment.");
+	fprintf (vect_dump, "bad data dependence.");
       destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
@@ -1430,15 +1436,22 @@ vect_analyze_loop (struct loop *loop)
       destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
-
-  /* Analyze data dependences between the data-refs in the loop.
-     FORNOW: fail at the first data dependence that we encounter.  */
-
-  ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL);
-  if (!ok)
+  if (max_vf < LOOP_VINFO_VECT_FACTOR (loop_vinfo))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data dependence.");
+      destroy_loop_vec_info (loop_vinfo, true);
+      return NULL;
+    }
+
+  /* Analyze the alignment of the data-refs in the loop.
+     Fail if a data reference is found that cannot be vectorized.  */
+
+  ok = vect_analyze_data_refs_alignment (loop_vinfo, NULL);
+  if (!ok)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "bad data alignment.");
       destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }

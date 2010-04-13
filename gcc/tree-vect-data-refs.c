@@ -487,21 +487,19 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 
    Return TRUE if there (might) exist a dependence between a memory-reference
    DRA and a memory-reference DRB.  When versioning for alias may check a
-   dependence at run-time, return FALSE.  */
+   dependence at run-time, return FALSE.  Adjust *MAX_VF according to
+   the data dependence.  */
 
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo)
+                                  loop_vec_info loop_vinfo, int *max_vf)
 {
   unsigned int i;
   struct loop *loop = NULL;
-  int vectorization_factor = 0;
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
   stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
   stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
-  int dra_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dra))));
-  int drb_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (drb))));
   lambda_vector dist_v;
   unsigned int loop_depth;
 
@@ -513,10 +511,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     }
 
   if (loop_vinfo)
-    {
-      loop = LOOP_VINFO_LOOP (loop_vinfo);
-      vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-    }
+    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if ((DR_IS_READ (dra) && DR_IS_READ (drb) && loop_vinfo) || dra == drb)
     return false;
@@ -595,17 +590,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	fprintf (vect_dump, "dependence distance  = %d.", dist);
 
-      /* Same loop iteration.  */
-      if (dist % vectorization_factor == 0 && dra_size == drb_size)
+      if (dist == 0)
 	{
-	  /* Two references with distance zero have the same alignment.  */
-	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
-	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-	    fprintf (vect_dump, "accesses have the same alignment.");
 	  if (vect_print_dump_info (REPORT_DR_DETAILS))
 	    {
-	      fprintf (vect_dump, "dependence distance modulo vf == 0 between ");
+	      fprintf (vect_dump, "dependence distance == 0 between ");
 	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
 	      fprintf (vect_dump, " and ");
 	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
@@ -621,18 +610,36 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
                 DR_GROUP_READ_WRITE_DEPENDENCE (stmtinfo_b) = true;
 	    }
 
-          continue;
+	  continue;
 	}
 
-      if (abs (dist) >= vectorization_factor
-          || (dist > 0 && DDR_REVERSED_P (ddr)))
+      if (dist > 0 && DDR_REVERSED_P (ddr))
+	{
+	  /* If DDR_REVERSED_P the order of the data-refs in DDR was
+	     reversed (to make distance vector positive), and the actual
+	     distance is negative.  */
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    fprintf (vect_dump, "dependence distance negative.");
+	  continue;
+	}
+
+      if (abs (dist) >= 2
+	  && abs (dist) < *max_vf)
+	{
+	  /* The dependence distance requires reduction of the maximal
+	     vectorization factor.  */
+	  *max_vf = abs (dist);
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    fprintf (vect_dump, "adjusting maximal vectorization factor to %i",
+		     *max_vf);
+	}
+
+      if (abs (dist) >= *max_vf)
 	{
 	  /* Dependence distance does not create dependence, as far as
-	     vectorization is concerned, in this case. If DDR_REVERSED_P the
-	     order of the data-refs in DDR was reversed (to make distance
-	     vector positive), and the actual distance is negative.  */
+	     vectorization is concerned, in this case.  */
 	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    fprintf (vect_dump, "dependence distance >= VF or negative.");
+	    fprintf (vect_dump, "dependence distance >= VF.");
 	  continue;
 	}
 
@@ -654,11 +661,12 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 /* Function vect_analyze_data_ref_dependences.
 
    Examine all the data references in the loop, and make sure there do not
-   exist any data dependences between them.  */
+   exist any data dependences between them.  Set *MAX_VF according to
+   the maximum vectorization factor the data dependences allow.  */
 
 bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
-                                   bb_vec_info bb_vinfo)
+                                   bb_vec_info bb_vinfo, int *max_vf)
 {
   unsigned int i;
   VEC (ddr_p, heap) *ddrs = NULL;
@@ -673,7 +681,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
     ddrs = BB_VINFO_DDRS (bb_vinfo);
 
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
       return false;
 
   return true;
@@ -1410,6 +1418,69 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 }
 
 
+/* Function vect_find_same_alignment_drs.
+
+   Update group and alignment relations according to the chosen
+   vectorization factor.  */
+
+static void
+vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
+			      loop_vec_info loop_vinfo)
+{
+  unsigned int i;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  struct data_reference *dra = DDR_A (ddr);
+  struct data_reference *drb = DDR_B (ddr);
+  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
+  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+  int dra_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dra))));
+  int drb_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (drb))));
+  lambda_vector dist_v;
+  unsigned int loop_depth;
+
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+    return;
+
+  if ((DR_IS_READ (dra) && DR_IS_READ (drb)) || dra == drb)
+    return;
+
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+    return;
+
+  /* Loop-based vectorization and known data dependence.  */
+  if (DDR_NUM_DIST_VECTS (ddr) == 0)
+    return;
+
+  loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
+  for (i = 0; VEC_iterate (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v); i++)
+    {
+      int dist = dist_v[loop_depth];
+
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	fprintf (vect_dump, "dependence distance  = %d.", dist);
+
+      /* Same loop iteration.  */
+      if (dist == 0
+	  || (dist % vectorization_factor == 0 && dra_size == drb_size))
+	{
+	  /* Two references with distance zero have the same alignment.  */
+	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
+	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+	    fprintf (vect_dump, "accesses have the same alignment.");
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "dependence distance modulo vf == 0 between ");
+	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	      fprintf (vect_dump, " and ");
+	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	    }
+	}
+    }
+}
+
+
 /* Function vect_analyze_data_refs_alignment
 
    Analyze the alignment of the data-references in the loop.
@@ -1421,6 +1492,18 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
 {
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs_alignment ===");
+
+  /* Mark groups of data references with same alignment using
+     data dependence information.  */
+  if (loop_vinfo)
+    {
+      VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+      struct data_dependence_relation *ddr;
+      unsigned int i;
+
+      for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+	vect_find_same_alignment_drs (ddr, loop_vinfo);
+    }
 
   if (!vect_compute_data_refs_alignment (loop_vinfo, bb_vinfo))
     {
@@ -1852,7 +1935,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 */
 
 bool
-vect_analyze_data_refs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
+vect_analyze_data_refs (loop_vec_info loop_vinfo,
+			bb_vec_info bb_vinfo,
+			int *min_vf)
 {
   struct loop *loop = NULL;
   basic_block bb = NULL;
@@ -1907,6 +1992,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       gimple stmt;
       stmt_vec_info stmt_info;
       tree base, offset, init;
+      int vf;
 
       if (!dr || !DR_REF (dr))
         {
@@ -2079,6 +2165,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
             }
           return false;
         }
+
+      /* Adjust the minimal vectorization factor according to the
+	 vector type.  */
+      vf = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+      if (vf > *min_vf)
+	*min_vf = vf;
     }
 
   return true;
