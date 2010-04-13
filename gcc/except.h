@@ -294,9 +294,6 @@ extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
    FUNCTION_DECL for `std::terminate'.  */
 extern tree (*lang_protect_cleanup_actions) (void);
 
-/* Return true if type A catches type B.  */
-extern int (*lang_eh_type_covers) (tree a, tree b);
-
 
 /* Just because the user configured --with-sjlj-exceptions=no doesn't
    mean that we can use call frame exceptions.  Detect that the target

@@ -153,9 +153,6 @@ along with GCC; see the file COPYING3.  If not see
    to the given failure handler.  */
 tree (*lang_protect_cleanup_actions) (void);
 
-/* Return true if type A catches type B.  */
-int (*lang_eh_type_covers) (tree a, tree b);
-
 static GTY(()) int call_site_base;
 static GTY ((param_is (union tree_node)))
   htab_t type_to_runtime_map;

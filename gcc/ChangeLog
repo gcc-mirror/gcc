@@ -1,3 +1,8 @@
+2010-04-13  Duncan Sands  <baldrick@free.fr>
+
+	* except.h (lang_eh_type_covers): Remove.
+	* except.c (lang_eh_type_covers): Likewise.
+
 2010-04-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
             Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 	
