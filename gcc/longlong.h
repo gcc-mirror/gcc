@@ -318,6 +318,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif
 
 #if (defined (__i370__) || defined (__s390__) || defined (__mvs__)) && W_TYPE_SIZE == 32
+#if !defined (__zarch__)
 #define smul_ppmm(xh, xl, m0, m1) \
   do {									\
     union {DItype __ll;							\
@@ -339,6 +340,28 @@ UDItype __umulsidi3 (USItype, USItype);
 	     : "0" (__x.__ll), "r" (d));				\
     (q) = __x.__i.__l; (r) = __x.__i.__h;				\
   } while (0)
+#else
+#define smul_ppmm(xh, xl, m0, m1) \
+  do {                                                                  \
+    register SItype r0 __asm__ ("0");                                   \
+    register SItype r1 __asm__ ("1") = m0;                              \
+                                                                        \
+    __asm__ ("mr\t%%r0,%3"                                              \
+             : "=r" (r0), "=r" (r1)                                     \
+             : "r"  (r1),  "r" (m1));                                   \
+    (xh) = r1; (xl) = r0;                                               \
+  } while (0)
+#define sdiv_qrnnd(q, r, n1, n0, d) \
+  do {									\
+    register SItype r0 __asm__ ("0") = n0;                              \
+    register SItype r1 __asm__ ("1") = n1;                              \
+                                                                        \
+    __asm__ ("dr\t%%r0,%3"						\
+	     : "=r" (r0), "=r" (r1)		         		\
+	     : "r" (r0), "r" (r1), "r" (d));				\
+    (q) = r0; (r) = r1;                  				\
+  } while (0)
+#endif /* __zarch__ */
 #endif
 
 #if (defined (__i386__) || defined (__i486__)) && W_TYPE_SIZE == 32

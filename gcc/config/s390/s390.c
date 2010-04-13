@@ -324,7 +324,7 @@ struct GTY(()) machine_function
 #define cfun_frame_layout (cfun->machine->frame_layout)
 #define cfun_save_high_fprs_p (!!cfun_frame_layout.high_fprs)
 #define cfun_gprs_save_area_size ((cfun_frame_layout.last_save_gpr_slot -           \
-  cfun_frame_layout.first_save_gpr_slot + 1) * UNITS_PER_WORD)
+  cfun_frame_layout.first_save_gpr_slot + 1) * UNITS_PER_LONG)
 #define cfun_set_fpr_bit(BITNUM) (cfun->machine->frame_layout.fpr_bitmap |=    \
   (1 << (BITNUM)))
 #define cfun_fpr_bit_p(BITNUM) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
@@ -365,14 +365,25 @@ s390_libgcc_shift_count_mode (void)
   return TARGET_64BIT ? DImode : SImode;
 }
 
+static enum machine_mode
+s390_unwind_word_mode (void)
+{
+  return TARGET_64BIT ? DImode : SImode;
+}
+
 /* Return true if the back end supports mode MODE.  */
 static bool
 s390_scalar_mode_supported_p (enum machine_mode mode)
 {
+  /* In contrast to the default implementation reject TImode constants on 31bit
+     TARGET_ZARCH for ABI compliance.  */
+  if (!TARGET_64BIT && TARGET_ZARCH && mode == TImode)
+    return false;
+
   if (DECIMAL_FLOAT_MODE_P (mode))
     return default_decimal_float_supported_p ();
-  else
-    return default_scalar_mode_supported_p (mode);
+
+  return default_scalar_mode_supported_p (mode);
 }
 
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
@@ -2407,7 +2418,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  {
 	    rtx left = XEXP (x, 0);
 	    rtx right = XEXP (x, 1);
-	    if (TARGET_64BIT)
+	    if (TARGET_ZARCH)
 	      {
 		if (GET_CODE (right) == CONST_INT
 		    && CONST_OK_FOR_K (INTVAL (right)))
@@ -2468,7 +2479,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
 	{
 	  rtx right = XEXP (x, 1);
 	  if (GET_CODE (right) == ZERO_EXTEND) /* 64 by 32 bit division */
-	    if (TARGET_64BIT)
+	    if (TARGET_ZARCH)
 	      *total = s390_cost->dsgfr;
 	    else
 	      *total = s390_cost->dr;
@@ -2960,7 +2971,7 @@ s390_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
       if (MEM_P (x)
 	  && s390_symref_operand_p (XEXP (x, 0), NULL, NULL)
 	  && (mode == QImode || mode == TImode || FLOAT_MODE_P (mode)
-	      || (!TARGET_64BIT && mode == DImode)
+	      || (!TARGET_ZARCH && mode == DImode)
 	      || ((mode == HImode || mode == SImode || mode == DImode)
 		  && (!s390_check_symref_alignment (XEXP (x, 0),
 						    GET_MODE_SIZE (mode))))))
@@ -4033,7 +4044,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 
   else
     {
-      rtx dst_addr, src_addr, count, blocks, temp, dstp1 = NULL_RTX;
+      rtx dst_addr, count, blocks, temp, dstp1 = NULL_RTX;
       rtx loop_start_label = gen_label_rtx ();
       rtx loop_end_label = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
@@ -4044,7 +4055,6 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
         mode = Pmode;
 
       dst_addr = gen_reg_rtx (Pmode);
-      src_addr = gen_reg_rtx (Pmode);
       count = gen_reg_rtx (mode);
       blocks = gen_reg_rtx (mode);
 
@@ -5411,7 +5421,6 @@ s390_first_cycle_multipass_dfa_lookahead (void)
 {
   return 4;
 }
-
 
 /* Annotate every literal pool reference in X by an UNSPEC_LTREF expression.
    Fix up MEMs as required.  */
@@ -6810,9 +6819,9 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
     }
 
   if (TARGET_PACKED_STACK)
-    offset = -2 * UNITS_PER_WORD;
+    offset = -2 * UNITS_PER_LONG;
   else
-    offset = RETURN_REGNUM * UNITS_PER_WORD;
+    offset = RETURN_REGNUM * UNITS_PER_LONG;
 
   addr = plus_constant (frame, offset);
   addr = memory_address (Pmode, addr);
@@ -6831,7 +6840,7 @@ s390_back_chain_rtx (void)
 
   if (TARGET_PACKED_STACK)
     chain = plus_constant (stack_pointer_rtx,
-			   STACK_POINTER_OFFSET - UNITS_PER_WORD);
+			   STACK_POINTER_OFFSET - UNITS_PER_LONG);
   else
     chain = stack_pointer_rtx;
 
@@ -6956,9 +6965,9 @@ s390_frame_area (int *area_bottom, int *area_top)
   if (cfun_frame_layout.first_restore_gpr != -1)
     {
       b = (cfun_frame_layout.gprs_offset
-	   + cfun_frame_layout.first_restore_gpr * UNITS_PER_WORD);
+	   + cfun_frame_layout.first_restore_gpr * UNITS_PER_LONG);
       t = b + (cfun_frame_layout.last_restore_gpr
-	       - cfun_frame_layout.first_restore_gpr + 1) * UNITS_PER_WORD;
+	       - cfun_frame_layout.first_restore_gpr + 1) * UNITS_PER_LONG;
     }
 
   if (TARGET_64BIT && cfun_save_high_fprs_p)
@@ -7153,20 +7162,20 @@ s390_frame_info (void)
   if (!TARGET_PACKED_STACK)
     {
       cfun_frame_layout.backchain_offset = 0;
-      cfun_frame_layout.f0_offset = 16 * UNITS_PER_WORD;
+      cfun_frame_layout.f0_offset = 16 * UNITS_PER_LONG;
       cfun_frame_layout.f4_offset = cfun_frame_layout.f0_offset + 2 * 8;
       cfun_frame_layout.f8_offset = -cfun_frame_layout.high_fprs * 8;
       cfun_frame_layout.gprs_offset = (cfun_frame_layout.first_save_gpr_slot
-				       * UNITS_PER_WORD);
+				       * UNITS_PER_LONG);
     }
   else if (TARGET_BACKCHAIN) /* kernel stack layout */
     {
       cfun_frame_layout.backchain_offset = (STACK_POINTER_OFFSET
-					    - UNITS_PER_WORD);
+					    - UNITS_PER_LONG);
       cfun_frame_layout.gprs_offset
 	= (cfun_frame_layout.backchain_offset
 	   - (STACK_POINTER_REGNUM - cfun_frame_layout.first_save_gpr_slot + 1)
-	   * UNITS_PER_WORD);
+	   * UNITS_PER_LONG);
 
       if (TARGET_64BIT)
 	{
@@ -7221,7 +7230,7 @@ s390_frame_info (void)
   else
     {
       if (TARGET_BACKCHAIN)
-	cfun_frame_layout.frame_size += UNITS_PER_WORD;
+	cfun_frame_layout.frame_size += UNITS_PER_LONG;
 
       /* No alignment trouble here because f8-f15 are only saved under
 	 64 bit.  */
@@ -7340,7 +7349,7 @@ s390_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     case GENERAL_REGS:
       if (REGNO_PAIR_OK (regno, mode))
 	{
-	  if (TARGET_64BIT
+	  if (TARGET_ZARCH
 	      || (mode != TFmode && mode != TCmode && mode != TDmode))
 	    return true;
 	}
@@ -7471,7 +7480,7 @@ s390_initial_elimination_offset (int from, int to)
       index = RETURN_REGNUM - cfun_frame_layout.first_save_gpr_slot;
       gcc_assert (index >= 0);
       offset = cfun_frame_layout.frame_size + cfun_frame_layout.gprs_offset;
-      offset += index * UNITS_PER_WORD;
+      offset += index * UNITS_PER_LONG;
       break;
 
     case BASE_REGNUM:
@@ -7607,7 +7616,7 @@ save_gprs (rtx base, int offset, int first, int last)
       if (start > last)
 	return insn;
 
-      addr = plus_constant (base, offset + (start - first) * UNITS_PER_WORD);
+      addr = plus_constant (base, offset + (start - first) * UNITS_PER_LONG);
       note = gen_store_multiple (gen_rtx_MEM (Pmode, addr),
 				 gen_rtx_REG (Pmode, start),
 				 GEN_INT (last - start + 1));
@@ -7756,7 +7765,7 @@ s390_emit_prologue (void)
     {
       insn = save_gprs (stack_pointer_rtx,
 			cfun_frame_layout.gprs_offset +
-			UNITS_PER_WORD * (cfun_frame_layout.first_save_gpr
+			UNITS_PER_LONG * (cfun_frame_layout.first_save_gpr
 					  - cfun_frame_layout.first_save_gpr_slot),
 			cfun_frame_layout.first_save_gpr,
 			cfun_frame_layout.last_save_gpr);
@@ -8153,7 +8162,7 @@ s390_emit_epilogue (bool sibcall)
 	      addr = plus_constant (frame_pointer,
 				    offset + cfun_frame_layout.gprs_offset
 				    + (i - cfun_frame_layout.first_save_gpr_slot)
-				    * UNITS_PER_WORD);
+				    * UNITS_PER_LONG);
 	      addr = gen_rtx_MEM (Pmode, addr);
 	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (addr, gen_rtx_REG (Pmode, i));
@@ -8182,7 +8191,7 @@ s390_emit_epilogue (bool sibcall)
 				    offset + cfun_frame_layout.gprs_offset
 				    + (RETURN_REGNUM
 				       - cfun_frame_layout.first_save_gpr_slot)
-				    * UNITS_PER_WORD);
+				    * UNITS_PER_LONG);
 	      addr = gen_rtx_MEM (Pmode, addr);
 	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (return_reg, addr);
@@ -8193,7 +8202,7 @@ s390_emit_epilogue (bool sibcall)
 			   offset + cfun_frame_layout.gprs_offset
 			   + (cfun_frame_layout.first_restore_gpr
 			      - cfun_frame_layout.first_save_gpr_slot)
-			   * UNITS_PER_WORD,
+			   * UNITS_PER_LONG,
 			   cfun_frame_layout.first_restore_gpr,
 			   cfun_frame_layout.last_restore_gpr);
       insn = emit_insn (insn);
@@ -8357,7 +8366,7 @@ s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   else if (s390_function_arg_integer (mode, type))
     {
       int size = s390_function_arg_size (mode, type);
-      cum->gprs += ((size + UNITS_PER_WORD-1) / UNITS_PER_WORD);
+      cum->gprs += ((size + UNITS_PER_LONG - 1) / UNITS_PER_LONG);
     }
   else
     gcc_unreachable ();
@@ -8396,12 +8405,25 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   else if (s390_function_arg_integer (mode, type))
     {
       int size = s390_function_arg_size (mode, type);
-      int n_gprs = (size + UNITS_PER_WORD-1) / UNITS_PER_WORD;
+      int n_gprs = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
       if (cum->gprs + n_gprs > GP_ARG_NUM_REG)
 	return 0;
-      else
+      else if (n_gprs == 1 || UNITS_PER_WORD == UNITS_PER_LONG)
 	return gen_rtx_REG (mode, cum->gprs + 2);
+      else if (n_gprs == 2)
+	{
+	  rtvec p = rtvec_alloc (2);
+
+	  RTVEC_ELT (p, 0)
+	    = gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, cum->gprs + 2),
+					 const0_rtx);
+	  RTVEC_ELT (p, 1)
+	    = gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, cum->gprs + 3),
+					 GEN_INT (4));
+
+	  return gen_rtx_PARALLEL (mode, p);
+	}
     }
 
   /* After the real arguments, expand_call calls us once again
@@ -8451,7 +8473,7 @@ s390_promote_function_mode (const_tree type, enum machine_mode mode,
                             int for_return ATTRIBUTE_UNUSED)
 {
   if (INTEGRAL_MODE_P (mode)
-      && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+      && GET_MODE_SIZE (mode) < UNITS_PER_LONG)
     {
       if (POINTER_TYPE_P (type))
 	*punsignedp = POINTERS_EXTEND_UNSIGNED;
@@ -8479,8 +8501,22 @@ s390_function_value (const_tree type, const_tree fn, enum machine_mode mode)
 
   if (TARGET_HARD_FLOAT && SCALAR_FLOAT_MODE_P (mode))
     return gen_rtx_REG (mode, 16);
-  else
+  else if (GET_MODE_SIZE (mode) <= UNITS_PER_LONG
+	   || UNITS_PER_LONG == UNITS_PER_WORD)
     return gen_rtx_REG (mode, 2);
+  else if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_LONG)
+    {
+      rtvec p = rtvec_alloc (2);
+
+      RTVEC_ELT (p, 0)
+	= gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, 2), const0_rtx);
+      RTVEC_ELT (p, 1)
+	= gen_rtx_EXPR_LIST (SImode, gen_rtx_REG (SImode, 3), GEN_INT (4));
+
+      return gen_rtx_PARALLEL (mode, p);
+    }
+
+  gcc_unreachable ();
 }
 
 
@@ -8628,7 +8664,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
     {
       t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
       t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (sav), t,
-	          size_int (-RETURN_REGNUM * UNITS_PER_WORD));
+	          size_int (-RETURN_REGNUM * UNITS_PER_LONG));
 
       t = build2 (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
@@ -8702,9 +8738,9 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       /* kernel stack layout on 31 bit: It is assumed here that no padding
 	 will be added by s390_frame_info because for va_args always an even
 	 number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = 2 * UNITS_PER_WORD;
-      sav_scale = UNITS_PER_WORD;
-      size = UNITS_PER_WORD;
+      sav_ofs = 2 * UNITS_PER_LONG;
+      sav_scale = UNITS_PER_LONG;
+      size = UNITS_PER_LONG;
       max_reg = GP_ARG_NUM_REG - n_reg;
     }
   else if (s390_function_arg_float (TYPE_MODE (type), type))
@@ -8719,7 +8755,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       indirect_p = 0;
       reg = fpr;
       n_reg = 1;
-      sav_ofs = 16 * UNITS_PER_WORD;
+      sav_ofs = 16 * UNITS_PER_LONG;
       sav_scale = 8;
       max_reg = FP_ARG_NUM_REG - n_reg;
     }
@@ -8734,17 +8770,17 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       /* Otherwise into GP registers.  */
       indirect_p = 0;
       reg = gpr;
-      n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+      n_reg = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
       /* kernel stack layout on 31 bit: It is assumed here that no padding
 	 will be added by s390_frame_info because for va_args always an even
 	 number of gprs has to be saved r15-r2 = 14 regs.  */
-      sav_ofs = 2 * UNITS_PER_WORD;
+      sav_ofs = 2 * UNITS_PER_LONG;
 
-      if (size < UNITS_PER_WORD)
-	sav_ofs += UNITS_PER_WORD - size;
+      if (size < UNITS_PER_LONG)
+	sav_ofs += UNITS_PER_LONG - size;
 
-      sav_scale = UNITS_PER_WORD;
+      sav_scale = UNITS_PER_LONG;
       max_reg = GP_ARG_NUM_REG - n_reg;
     }
 
@@ -8776,9 +8812,9 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   /* ... Otherwise out of the overflow area.  */
 
   t = ovf;
-  if (size < UNITS_PER_WORD)
+  if (size < UNITS_PER_LONG)
     t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
-		size_int (UNITS_PER_WORD - size));
+		size_int (UNITS_PER_LONG - size));
 
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
@@ -9002,7 +9038,7 @@ s390_function_profiler (FILE *file, int labelno)
 
   op[0] = gen_rtx_REG (Pmode, RETURN_REGNUM);
   op[1] = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-  op[1] = gen_rtx_MEM (Pmode, plus_constant (op[1], UNITS_PER_WORD));
+  op[1] = gen_rtx_MEM (Pmode, plus_constant (op[1], UNITS_PER_LONG));
 
   op[2] = gen_rtx_REG (Pmode, 1);
   op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
@@ -9408,14 +9444,50 @@ s390_call_saved_register_used (tree call_expr)
 
        s390_function_arg_advance (&cum, mode, type, 0);
 
-       if (parm_rtx && REG_P (parm_rtx))
-	 {
-	   for (reg = 0;
-		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx));
-		reg++)
-	     if (! call_used_regs[reg + REGNO (parm_rtx)])
-	       return true;
+       if (!parm_rtx)
+	 continue;
+
+       if (REG_P (parm_rtx))
+  	 {
+	   int n_regs;
+
+	   /* Only integer registers (r6) are call saved and used for
+	      parameter passing.  */
+	   if (REGNO_REG_CLASS (REGNO (parm_rtx)) == FP_REGS)
+	     continue;
+
+	   n_regs = ((GET_MODE_SIZE (GET_MODE (parm_rtx)) + UNITS_PER_LONG - 1)
+		     / UNITS_PER_LONG);
+
+	   for (reg = 0; reg < n_regs; reg++)
+	     if (!call_used_regs[reg + REGNO (parm_rtx)])
+ 	       return true;
 	 }
+
+       if (GET_CODE (parm_rtx) == PARALLEL)
+	 {
+	   int i;
+	   for (i = 0; i < XVECLEN (parm_rtx, 0); i++)
+	     {
+	       rtx r = XEXP (XVECEXP (parm_rtx, 0, i), 0);
+	       int n_regs;
+
+	       gcc_assert (REG_P (r));
+
+	       /* Only integer registers (r6) are call saved and used
+		  for parameter passing.  */
+	       if (REGNO_REG_CLASS (REGNO (r)) == FP_REGS)
+		 continue;
+
+	       n_regs = ((GET_MODE_SIZE (GET_MODE (r)) + UNITS_PER_LONG - 1)
+			 / UNITS_PER_LONG);
+
+	       for (reg = 0; reg < n_regs; reg++)
+		 if (!call_used_regs[reg + REGNO (r)])
+		   return true;
+	     }
+	 }
+
     }
   return false;
 }
@@ -9661,7 +9733,7 @@ s390_optimize_prologue (void)
 	    {
 	      new_insn 	= save_gprs (base,
 				     off + (cfun_frame_layout.first_save_gpr
-					    - first) * UNITS_PER_WORD,
+					    - first) * UNITS_PER_LONG,
 				     cfun_frame_layout.first_save_gpr,
 				     cfun_frame_layout.last_save_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
@@ -9722,7 +9794,7 @@ s390_optimize_prologue (void)
 	    {
 	      new_insn = restore_gprs (base,
 				       off + (cfun_frame_layout.first_restore_gpr
-					      - first) * UNITS_PER_WORD,
+					      - first) * UNITS_PER_LONG,
 				       cfun_frame_layout.first_restore_gpr,
 				       cfun_frame_layout.last_restore_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
@@ -10319,11 +10391,15 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_FUSED_MADD)
+
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION s390_handle_option
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -10437,6 +10513,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE s390_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT s390_trampoline_init
+
+#undef TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE s390_unwind_word_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
