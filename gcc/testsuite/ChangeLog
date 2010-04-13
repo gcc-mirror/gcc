@@ -1,3 +1,8 @@
+2010-04-13  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43730
+	* gcc.dg/pr43730.c: New test.
+
 2010-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/43560

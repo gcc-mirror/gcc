@@ -1,3 +1,9 @@
+2010-04-13  Michael Matz  <matz@suse.de>
+
+	PR middle-end/43730
+	* builtins.c (expand_builtin_interclass_mathfn): Also create
+	a register if the predicate doesn't match.
+
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/contrib.texi (Contributors, Rainer Orth): Update.
