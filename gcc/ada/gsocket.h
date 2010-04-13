@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2009, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2010, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -179,14 +179,13 @@
 #endif
 
 /*
- * RTEMS has these .h files but not until you have built RTEMS.  When
- * IN_RTS, you only have the .h files in the newlib C library.
- * Because this file is also included from gen-soccon.c which is built
- * to run on RTEMS (not IN_RTS), we must distinguish between IN_RTS
- * and using this file to compile gen-soccon.
+ * RTEMS has these .h files but not until you have built and installed
+ * RTEMS. When building a C/C++ toolset, you also build the newlib C library.
+ * So the build procedure for an RTEMS GNAT toolset requires that
+ * you build a C/C++ toolset, then build and install RTEMS with 
+ * --enable-multilib, and finally build the Ada part of the toolset.
  */
-#if !(defined (VMS) || defined (__MINGW32__) || \
-      (defined(__rtems__) && defined(IN_RTS)))
+#if !(defined (VMS) || defined (__MINGW32__))
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
