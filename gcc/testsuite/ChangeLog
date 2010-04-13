@@ -1,5 +1,10 @@
 2010-04-13  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/43735
+	* gcc.dg/guality/inline-params.c: Remove -fwhopr XPASS.
+
+2010-04-13  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/vect/no-vfa-vect-depend-1.c: Adjust.
 
 2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
