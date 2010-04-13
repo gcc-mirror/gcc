@@ -1,3 +1,21 @@
+2010-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (extendsidi2 splitter): Also check for DX_REG
+	when generating cltd insn.
+
+	(*ashl<mode>3_1): Remove special handling for register operand 2.
+	(*ashlsi3_1_zext): Ditto.
+	(*ashlhi3_1): Ditto.
+	(*ashlhi3_1_lea): Ditto.
+	(*ashlqi3_1): Ditto.
+	(*ashlqi3_1_lea): Ditto.
+	(*<shiftrt_insn><mode>3_1): Ditto.
+	(*<shiftrt_insn>si3_1_zext): Ditto.
+	(*<shiftrt_insn>qi3_1_slp): Ditto.
+	(*<rotate_insn><mode>3_1): Ditto.
+	(*<rotate_insn>si3_1_zext): Ditto.
+	(*<rotate_insn>qi3_1_slp): Ditto.
+
 2010-04-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (callused_id): Remove.
@@ -126,8 +144,7 @@
 	plugin name.
 	(default_plugin_dir_name): Added new function.
 
-	* common.opt (iplugindir): New option to set the plugin
-	directory.
+	* common.opt (iplugindir): New option to set the plugin directory.
 
 2010-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
