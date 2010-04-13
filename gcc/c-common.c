@@ -3806,12 +3806,18 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 					     TYPE_UNSIGNED (sizetype)), intop);
 
   /* Replace the integer argument with a suitable product by the object size.
-     Do this multiplication as signed, then convert to the appropriate
-     type for the pointer operation.  */
-  intop = convert (sizetype,
-		   build_binary_op (loc,
-				    MULT_EXPR, intop,
-				    convert (TREE_TYPE (intop), size_exp), 1));
+     Do this multiplication as signed, then convert to the appropriate type
+     for the pointer operation and disregard an overflow that occured only
+     because of the sign-extension change in the latter conversion.  */
+  {
+    tree t = build_binary_op (loc,
+			      MULT_EXPR, intop,
+			      convert (TREE_TYPE (intop), size_exp), 1);
+    intop = convert (sizetype, t);
+    if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
+      intop = build_int_cst_wide (TREE_TYPE (intop), TREE_INT_CST_LOW (intop),
+				  TREE_INT_CST_HIGH (intop));
+  }
 
   /* Create the sum or difference.  */
   if (resultcode == MINUS_EXPR)

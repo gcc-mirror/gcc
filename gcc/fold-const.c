@@ -2252,23 +2252,7 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
      appropriately sign-extended or truncated.  */
   t = force_fit_type_double (type, TREE_INT_CST_LOW (arg1),
 			     TREE_INT_CST_HIGH (arg1),
-		             /* Don't set the overflow when
-		      		converting from a pointer,  */
-			     !POINTER_TYPE_P (TREE_TYPE (arg1))
-			     /* or to a sizetype with same signedness
-				and the precision is unchanged.
-				???  sizetype is always sign-extended,
-				but its signedness depends on the
-				frontend.  Thus we see spurious overflows
-				here if we do not check this.  */
-			     && !((TYPE_PRECISION (TREE_TYPE (arg1))
-				   == TYPE_PRECISION (type))
-				  && (TYPE_UNSIGNED (TREE_TYPE (arg1))
-				      == TYPE_UNSIGNED (type))
-				  && ((TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
-				       && TYPE_IS_SIZETYPE (TREE_TYPE (arg1)))
-				      || (TREE_CODE (type) == INTEGER_TYPE
-					  && TYPE_IS_SIZETYPE (type)))),
+			     !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			     (TREE_INT_CST_HIGH (arg1) < 0
 		 	      && (TYPE_UNSIGNED (type)
 				  < TYPE_UNSIGNED (TREE_TYPE (arg1))))
@@ -6731,12 +6715,6 @@ fold_binary_op_with_conditional_arg (location_t loc,
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
 
-  /* This transformation is only worthwhile if we don't have to wrap
-     arg in a SAVE_EXPR, and the operation can be simplified on at least
-     one of the branches once its pushed inside the COND_EXPR.  */
-  if (!TREE_CONSTANT (arg))
-    return NULL_TREE;
-
   if (TREE_CODE (cond) == COND_EXPR)
     {
       test = TREE_OPERAND (cond, 0);
@@ -6758,6 +6736,14 @@ fold_binary_op_with_conditional_arg (location_t loc,
       false_value = constant_boolean_node (false, testtype);
     }
 
+  /* This transformation is only worthwhile if we don't have to wrap ARG
+     in a SAVE_EXPR and the operation can be simplified on at least one
+     of the branches once its pushed inside the COND_EXPR.  */
+  if (!TREE_CONSTANT (arg)
+      && (TREE_SIDE_EFFECTS (arg)
+	  || TREE_CONSTANT (true_value) || TREE_CONSTANT (false_value)))
+    return NULL_TREE;
+
   arg = fold_convert_loc (loc, arg_type, arg);
   if (lhs == 0)
     {
@@ -6776,8 +6762,11 @@ fold_binary_op_with_conditional_arg (location_t loc,
 	rhs = fold_build2_loc (loc, code, type, arg, false_value);
     }
 
-  test = fold_build3_loc (loc, COND_EXPR, type, test, lhs, rhs);
-  return fold_convert_loc (loc, type, test);
+  /* Check that we have simplified at least one of the branches.  */
+  if (!TREE_CONSTANT (arg) && !TREE_CONSTANT (lhs) && !TREE_CONSTANT (rhs))
+    return NULL_TREE;
+
+  return fold_build3_loc (loc, COND_EXPR, type, test, lhs, rhs);
 }
 
 
@@ -10628,23 +10617,39 @@ fold_binary_loc (location_t loc,
 	  var1 = split_tree (arg1, code, &con1, &lit1, &minus_lit1,
 			     code == MINUS_EXPR);
 
-	  /* With undefined overflow we can only associate constants
-	     with one variable.  */
-	  if (((POINTER_TYPE_P (type) && POINTER_TYPE_OVERFLOW_UNDEFINED)
-	       || (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_WRAPS (type)))
-	      && var0 && var1)
-	    {
-	      tree tmp0 = var0;
-	      tree tmp1 = var1;
+	  /* Recombine MINUS_EXPR operands by using PLUS_EXPR.  */
+	  if (code == MINUS_EXPR)
+	    code = PLUS_EXPR;
 
-	      if (TREE_CODE (tmp0) == NEGATE_EXPR)
-	        tmp0 = TREE_OPERAND (tmp0, 0);
-	      if (TREE_CODE (tmp1) == NEGATE_EXPR)
-	        tmp1 = TREE_OPERAND (tmp1, 0);
-	      /* The only case we can still associate with two variables
-		 is if they are the same, modulo negation.  */
-	      if (!operand_equal_p (tmp0, tmp1, 0))
-	        ok = false;
+	  /* With undefined overflow we can only associate constants with one
+	     variable, and constants whose association doesn't overflow.  */
+	  if ((POINTER_TYPE_P (type) && POINTER_TYPE_OVERFLOW_UNDEFINED)
+	      || (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_WRAPS (type)))
+	    {
+	      if (var0 && var1)
+		{
+		  tree tmp0 = var0;
+		  tree tmp1 = var1;
+
+		  if (TREE_CODE (tmp0) == NEGATE_EXPR)
+		    tmp0 = TREE_OPERAND (tmp0, 0);
+		  if (TREE_CODE (tmp1) == NEGATE_EXPR)
+		    tmp1 = TREE_OPERAND (tmp1, 0);
+		  /* The only case we can still associate with two variables
+		     is if they are the same, modulo negation.  */
+		  if (!operand_equal_p (tmp0, tmp1, 0))
+		    ok = false;
+		}
+
+	      if (ok && lit0 && lit1)
+		{
+		  tree tmp0 = fold_convert (type, lit0);
+		  tree tmp1 = fold_convert (type, lit1);
+
+		  if (!TREE_OVERFLOW (tmp0) && !TREE_OVERFLOW (tmp1)
+		      && TREE_OVERFLOW (fold_build2 (code, type, tmp0, tmp1)))
+		    ok = false;
+		}
 	    }
 
 	  /* Only do something if we found more than two objects.  Otherwise,
@@ -10655,10 +10660,6 @@ fold_binary_loc (location_t loc,
 		       + (lit0 != 0) + (lit1 != 0)
 		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
 	    {
-	      /* Recombine MINUS_EXPR operands by using PLUS_EXPR.  */
-	      if (code == MINUS_EXPR)
-		code = PLUS_EXPR;
-
 	      var0 = associate_trees (loc, var0, var1, code, type);
 	      con0 = associate_trees (loc, con0, con1, code, type);
 	      lit0 = associate_trees (loc, lit0, lit1, code, type);
@@ -12222,34 +12223,6 @@ fold_binary_loc (location_t loc,
 	  && TREE_INT_CST_HIGH (arg1) == -1)
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
 
-      /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
-         i.e. "X % C" into "X & (C - 1)", if X and C are positive.  */
-      strict_overflow_p = false;
-      if ((code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR)
-	  && (TYPE_UNSIGNED (type)
-	      || tree_expr_nonnegative_warnv_p (op0, &strict_overflow_p)))
-	{
-	  tree c = arg1;
-	  /* Also optimize A % (C << N)  where C is a power of 2,
-	     to A & ((C << N) - 1).  */
-	  if (TREE_CODE (arg1) == LSHIFT_EXPR)
-	    c = TREE_OPERAND (arg1, 0);
-
-	  if (integer_pow2p (c) && tree_int_cst_sgn (c) > 0)
-	    {
-	      tree mask = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg1), arg1,
-				       build_int_cst (TREE_TYPE (arg1), 1));
-	      if (strict_overflow_p)
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when simplifying "
-					"X % (power of two)"),
-				       WARN_STRICT_OVERFLOW_MISC);
-	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
-				  fold_convert_loc (loc, type, arg0),
-				  fold_convert_loc (loc, type, mask));
-	    }
-	}
-
       /* X % -C is the same as X % C.  */
       if (code == TRUNC_MOD_EXPR
 	  && !TYPE_UNSIGNED (type)
@@ -12273,6 +12246,7 @@ fold_binary_loc (location_t loc,
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg1, 0)));
 
+      strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
 					 &strict_overflow_p)))
@@ -12282,6 +12256,34 @@ fold_binary_loc (location_t loc,
 				    "when simplifying modulus"),
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_convert_loc (loc, type, tem);
+	}
+
+      /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
+         i.e. "X % C" into "X & (C - 1)", if X and C are positive.  */
+      if ((code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR)
+	  && (TYPE_UNSIGNED (type)
+	      || tree_expr_nonnegative_warnv_p (op0, &strict_overflow_p)))
+	{
+	  tree c = arg1;
+	  /* Also optimize A % (C << N)  where C is a power of 2,
+	     to A & ((C << N) - 1).  */
+	  if (TREE_CODE (arg1) == LSHIFT_EXPR)
+	    c = TREE_OPERAND (arg1, 0);
+
+	  if (integer_pow2p (c) && tree_int_cst_sgn (c) > 0)
+	    {
+	      tree mask
+		= fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg1), arg1,
+				   build_int_cst (TREE_TYPE (arg1), 1));
+	      if (strict_overflow_p)
+		fold_overflow_warning (("assuming signed overflow does not "
+					"occur when simplifying "
+					"X % (power of two)"),
+				       WARN_STRICT_OVERFLOW_MISC);
+	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
+				      fold_convert_loc (loc, type, arg0),
+				      fold_convert_loc (loc, type, mask));
+	    }
 	}
 
       return NULL_TREE;
@@ -14819,6 +14821,10 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 
     case SAVE_EXPR:
       return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
+
+    case COND_EXPR:
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
+	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom));
 
     case INTEGER_CST:
       if (TREE_CODE (bottom) != INTEGER_CST

@@ -1,3 +1,18 @@
+2010-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/32628
+	* c-common.c (pointer_int_sum): Disregard overflow that occured only
+	because of sign-extension change when converting to sizetype here...
+	* fold-const.c (fold_convert_const_int_from_int): ...and not here.
+
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not restrict
+	the folding to constants.  Remove redundant final conversion.
+	(fold_binary) <associate>: Do not associate if the re-association of
+	constants alone overflows.
+	(fold_binary) <FLOOR_MOD_EXPR>: Move transformation into BIT_AND_EXPR
+	to the end of the list.
+	(multiple_of_p) <COND_EXPR>: New case.
+
 2010-04-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* opt-functions.awk (opt_sanitized_name): New.
