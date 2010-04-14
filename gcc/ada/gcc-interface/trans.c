@@ -49,6 +49,7 @@
 #include "fe.h"
 #include "sinfo.h"
 #include "einfo.h"
+#include "gadaint.h"
 #include "ada-tree.h"
 #include "gigi.h"
 
@@ -75,11 +76,7 @@
 #endif
 #endif
 
-extern char *__gnat_to_canonical_file_spec (char *);
-
-int max_gnat_nodes;
-int number_names;
-int number_files;
+/* Pointers to front-end tables accessed through macros.  */
 struct Node *Nodes_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
@@ -89,13 +86,19 @@ struct String_Entry *Strings_Ptr;
 Char_Code *String_Chars_Ptr;
 struct List_Header *List_Headers_Ptr;
 
-/* Current filename without path.  */
-const char *ref_filename;
+/* Highest number in the front-end node table.  */
+int max_gnat_nodes;
+
+/* Current node being treated, in case abort called.  */
+Node_Id error_gnat_node;
 
 /* True when gigi is being called on an analyzed but unexpanded
    tree, and the only purpose of the call is to properly annotate
    types with representation information.  */
 bool type_annotate_only;
+
+/* Current filename without path.  */
+const char *ref_filename;
 
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
@@ -183,9 +186,6 @@ static GTY(()) tree gnu_program_error_label_stack;
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
-/* Current node being treated, in case abort called.  */
-Node_Id error_gnat_node;
-
 static void init_code_table (void);
 static void Compilation_Unit_to_gnu (Node_Id);
 static void record_code_position (Node_Id);
@@ -226,7 +226,7 @@ static const char *decode_name (const char *) ATTRIBUTE_UNUSED;
    structures and then generates code.  */
 
 void
-gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
+gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
       struct Node *nodes_ptr, Node_Id *next_node_ptr, Node_Id *prev_node_ptr,
       struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
       struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
@@ -242,8 +242,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   int i;
 
   max_gnat_nodes = max_gnat_node;
-  number_names = number_name;
-  number_files = number_file;
+
   Nodes_Ptr = nodes_ptr;
   Next_Node_Ptr = next_node_ptr;
   Prev_Node_Ptr = prev_node_ptr;
@@ -262,7 +261,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
   first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
 
-  for (i = 0; i < number_files; i++)
+  for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
 	 the name table gets reallocated after Gigi returns but before all the
