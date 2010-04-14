@@ -1,3 +1,8 @@
+2010-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36625
+	* g++.dg/ext/attrib38.C: New.
+
 2010-04-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/43739

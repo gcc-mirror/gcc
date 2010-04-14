@@ -1596,7 +1596,9 @@ static tree cp_parser_postfix_open_square_expression
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *, location_t);
 static VEC(tree,gc) *cp_parser_parenthesized_expression_list
-  (cp_parser *, bool, bool, bool, bool *);
+  (cp_parser *, int, bool, bool, bool *);
+/* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
+enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree *, tree *);
 static tree cp_parser_unary_expression
@@ -4806,7 +4808,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		parser->integral_constant_expression_p = false;
 	      }
 	    args = (cp_parser_parenthesized_expression_list
-		    (parser, /*is_attribute_list=*/false,
+		    (parser, non_attr,
 		     /*cast_p=*/false, /*allow_expansion_p=*/true,
 		     /*non_constant_p=*/NULL));
 	    if (is_builtin_constant_p)
@@ -5244,20 +5246,22 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    Returns a vector of trees.  Each element is a representation of an
    assignment-expression.  NULL is returned if the ( and or ) are
    missing.  An empty, but allocated, vector is returned on no
-   expressions.  The parentheses are eaten.  IS_ATTRIBUTE_LIST is true
-   if this is really an attribute list being parsed.  If
+   expressions.  The parentheses are eaten.  IS_ATTRIBUTE_LIST is id_attr
+   if we are parsing an attribute list for an attribute that wants a
+   plain identifier argument, normal_attr for an attribute that wants
+   an expression, or non_attr if we aren't parsing an attribute list.  If
    NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P indicates whether or
    not all of the expressions in the list were constant.  */
 
 static VEC(tree,gc) *
 cp_parser_parenthesized_expression_list (cp_parser* parser,
-					 bool is_attribute_list,
+					 int is_attribute_list,
 					 bool cast_p,
                                          bool allow_expansion_p,
 					 bool *non_constant_p)
 {
   VEC(tree,gc) *expression_list;
-  bool fold_expr_p = is_attribute_list;
+  bool fold_expr_p = is_attribute_list != non_attr;
   tree identifier = NULL_TREE;
   bool saved_greater_than_is_operator_p;
 
@@ -5284,7 +5288,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 
 	/* At the beginning of attribute lists, check to see if the
 	   next token is an identifier.  */
-	if (is_attribute_list
+	if (is_attribute_list == id_attr
 	    && cp_lexer_peek_token (parser->lexer)->type == CPP_NAME)
 	  {
 	    cp_token *token;
@@ -5345,7 +5349,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 
 	/* After the first item, attribute lists look the same as
 	   expression lists.  */
-	is_attribute_list = false;
+	is_attribute_list = non_attr;
 
       get_comma:;
 	/* If the next token isn't a `,', then we are done.  */
@@ -5820,7 +5824,8 @@ cp_parser_new_placement (cp_parser* parser)
 
   /* Parse the expression-list.  */
   expression_list = (cp_parser_parenthesized_expression_list
-		     (parser, false, /*cast_p=*/false, /*allow_expansion_p=*/true,
+		     (parser, non_attr, /*cast_p=*/false,
+		      /*allow_expansion_p=*/true,
 		      /*non_constant_p=*/NULL));
 
   return expression_list;
@@ -6026,7 +6031,8 @@ cp_parser_new_initializer (cp_parser* parser)
     }
   else
     expression_list = (cp_parser_parenthesized_expression_list
-		       (parser, false, /*cast_p=*/false, /*allow_expansion_p=*/true,
+		       (parser, non_attr, /*cast_p=*/false,
+			/*allow_expansion_p=*/true,
 			/*non_constant_p=*/NULL));
 
   return expression_list;
@@ -9967,7 +9973,7 @@ cp_parser_mem_initializer (cp_parser* parser)
   else
     {
       VEC(tree,gc)* vec;
-      vec = cp_parser_parenthesized_expression_list (parser, false,
+      vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
 						     /*non_constant_p=*/NULL);
@@ -15453,7 +15459,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
   else if (token->type == CPP_OPEN_PAREN)
     {
       VEC(tree,gc) *vec;
-      vec = cp_parser_parenthesized_expression_list (parser, false,
+      vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
 						     non_constant_p);
@@ -17768,8 +17774,10 @@ cp_parser_attribute_list (cp_parser* parser)
 	  if (token->type == CPP_OPEN_PAREN)
 	    {
 	      VEC(tree,gc) *vec;
+	      int attr_flag = (attribute_takes_identifier_p (identifier)
+			       ? id_attr : normal_attr);
 	      vec = cp_parser_parenthesized_expression_list
-		    (parser, true, /*cast_p=*/false,
+		    (parser, attr_flag, /*cast_p=*/false,
 		     /*allow_expansion_p=*/false,
 		     /*non_constant_p=*/NULL);
 	      if (vec == NULL)
@@ -18971,7 +18979,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
     }
 
 
-  vec = cp_parser_parenthesized_expression_list (parser, false,
+  vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						 /*cast_p=*/true,
 						 /*allow_expansion_p=*/true,
 						 /*non_constant_p=*/NULL);

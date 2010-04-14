@@ -5809,6 +5809,17 @@ c_init_attributes (void)
 #undef DEF_ATTR_TREE_LIST
 }
 
+/* Returns TRUE iff the attribute indicated by ATTR_ID takes a plain
+   identifier as an argument, so the front end shouldn't look it up.  */
+
+bool
+attribute_takes_identifier_p (tree attr_id)
+{
+  return (is_attribute_p ("mode", attr_id)
+	  || is_attribute_p ("format", attr_id)
+	  || is_attribute_p ("cleanup", attr_id));
+}
+
 /* Attribute handlers common to C front ends.  */
 
 /* Handle a "packed" attribute; arguments as in
