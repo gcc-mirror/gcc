@@ -3051,7 +3051,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
     {
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
       dw2_asm_output_data (1, (cfi->dw_cfi_opc | (r & 0x3f)),
-			   "DW_CFA_offset, column 0x%lx", r);
+			   "DW_CFA_offset, column %#lx", r);
       off = div_data_align (cfi->dw_cfi_oprnd2.dw_cfi_offset);
       dw2_asm_output_data_uleb128 (off, NULL);
     }
@@ -3059,7 +3059,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
     {
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
       dw2_asm_output_data (1, (cfi->dw_cfi_opc | (r & 0x3f)),
-			   "DW_CFA_restore, column 0x%lx", r);
+			   "DW_CFA_restore, column %#lx", r);
     }
   else
     {
@@ -3251,7 +3251,7 @@ output_cfi_directive (dw_cfi_ref cfi)
       break;
 
     case DW_CFA_GNU_args_size:
-      fprintf (asm_out_file, "\t.cfi_escape 0x%x,", DW_CFA_GNU_args_size);
+      fprintf (asm_out_file, "\t.cfi_escape %#x,", DW_CFA_GNU_args_size);
       dw2_asm_output_data_uleb128_raw (cfi->dw_cfi_oprnd1.dw_cfi_offset);
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s args_size "HOST_WIDE_INT_PRINT_DEC,
@@ -3265,7 +3265,7 @@ output_cfi_directive (dw_cfi_ref cfi)
 
     case DW_CFA_def_cfa_expression:
     case DW_CFA_expression:
-      fprintf (asm_out_file, "\t.cfi_escape 0x%x,", cfi->dw_cfi_opc);
+      fprintf (asm_out_file, "\t.cfi_escape %#x,", cfi->dw_cfi_opc);
       output_cfa_loc_raw (cfi);
       fputc ('\n', asm_out_file);
       break;
@@ -3863,7 +3863,7 @@ dwarf2out_do_cfi_startproc (bool second)
       if (enc & DW_EH_PE_indirect)
 	ref = dw2_force_const_mem (ref, true);
 
-      fprintf (asm_out_file, "\t.cfi_personality 0x%x,", enc);
+      fprintf (asm_out_file, "\t.cfi_personality %#x,", enc);
       output_addr_const (asm_out_file, ref);
       fputc ('\n', asm_out_file);
     }
@@ -3881,7 +3881,7 @@ dwarf2out_do_cfi_startproc (bool second)
       if (enc & DW_EH_PE_indirect)
 	ref = dw2_force_const_mem (ref, true);
 
-      fprintf (asm_out_file, "\t.cfi_lsda 0x%x,", enc);
+      fprintf (asm_out_file, "\t.cfi_lsda %#x,", enc);
       output_addr_const (asm_out_file, ref);
       fputc ('\n', asm_out_file);
     }
@@ -5175,7 +5175,7 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
   while (1)
     {
       /* Output the opcode.  */
-      fprintf (asm_out_file, "0x%x", loc->dw_loc_opc);
+      fprintf (asm_out_file, "%#x", loc->dw_loc_opc);
       output_loc_operands_raw (loc);
 
       if (!loc->dw_loc_next)
@@ -5221,7 +5221,7 @@ output_cfa_loc_raw (dw_cfi_ref cfi)
 
   if (cfi->dw_cfi_opc == DW_CFA_expression)
     {
-      fprintf (asm_out_file, "0x%x,", cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
+      fprintf (asm_out_file, "%#x,", cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
       loc = cfi->dw_cfi_oprnd2.dw_cfi_loc;
     }
   else
@@ -10424,7 +10424,7 @@ output_die (dw_die_ref die)
   if (dwarf_version < 4 && die->die_id.die_symbol)
     output_die_symbol (die);
 
-  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (0x%lx) %s)",
+  dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
 			       (unsigned long)die->die_offset,
 			       dwarf_tag_name (die->die_tag));
 
@@ -10656,7 +10656,7 @@ output_die (dw_die_ref die)
 
   /* Add null byte to terminate sibling list.  */
   if (die->die_child != NULL)
-    dw2_asm_output_data (1, 0, "end of children of DIE 0x%lx",
+    dw2_asm_output_data (1, 0, "end of children of DIE %#lx",
 			 (unsigned long) die->die_offset);
 }
 
@@ -11082,7 +11082,7 @@ static void
 output_ranges (void)
 {
   unsigned i;
-  static const char *const start_fmt = "Offset 0x%x";
+  static const char *const start_fmt = "Offset %#x";
   const char *fmt = start_fmt;
 
   for (i = 0; i < ranges_table_in_use; i++)
@@ -11424,7 +11424,7 @@ output_file_names (void)
     dw2_asm_output_nstring (dirs[i].path,
 			    dirs[i].length
 			     - !DWARF2_DIR_SHOULD_END_WITH_SEPARATOR,
-			    "Directory Entry: 0x%x", i + idx_offset);
+			    "Directory Entry: %#x", i + idx_offset);
 
   dw2_asm_output_data (1, 0, "End directory table");
 
@@ -11460,7 +11460,7 @@ output_file_names (void)
 	        files[file_idx].path + dirs[dir_idx].length, ver);
 
       dw2_asm_output_nstring
-	(filebuf, -1, "File Entry: 0x%x", (unsigned) i + 1);
+	(filebuf, -1, "File Entry: %#x", (unsigned) i + 1);
 
       /* Include directory index.  */
       dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
@@ -11478,7 +11478,7 @@ output_file_names (void)
 	 NULL);
 #else
       dw2_asm_output_nstring (files[file_idx].path + dirs[dir_idx].length, -1,
-			      "File Entry: 0x%x", (unsigned) i + 1);
+			      "File Entry: %#x", (unsigned) i + 1);
 
       /* Include directory index.  */
       dw2_asm_output_data_uleb128 (dir_idx + idx_offset, NULL);
@@ -11569,7 +11569,7 @@ output_line_info (void)
 	  break;
 	}
 
-      dw2_asm_output_data (1, n_op_args, "opcode: 0x%x has %d args",
+      dw2_asm_output_data (1, n_op_args, "opcode: %#x has %d args",
 			   opc, n_op_args);
     }
 

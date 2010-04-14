@@ -2137,7 +2137,7 @@ df_ref_debug (df_ref ref, FILE *file)
   fprintf (file, "%c%d ",
 	   DF_REF_REG_DEF_P (ref) ? 'd' : 'u',
 	   DF_REF_ID (ref));
-  fprintf (file, "reg %d bb %d insn %d flag 0x%x type 0x%x ",
+  fprintf (file, "reg %d bb %d insn %d flag %#x type %#x ",
 	   DF_REF_REGNO (ref),
 	   DF_REF_BBNO (ref),
 	   DF_REF_IS_ARTIFICIAL (ref) ? -1 : DF_REF_INSN_UID (ref),

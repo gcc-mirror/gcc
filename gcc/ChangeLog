@@ -1,3 +1,17 @@
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* df-core.c (df_ref_debug): Change format string placeholder
+	from 0x%x to %#x.
+	* dwarf2asm.c (dw2_asm_output_data_raw,
+	dw2_asm_output_data_uleb128_raw, dw2_asm_output_data_uleb128,
+	dw2_asm_output_data_sleb128_raw, dw2_asm_output_data_sleb128): Ditto.
+	* dwarf2out.c (output_cfi, output_cfi_directive,
+	dwarf2out_do_cfi_startproc, output_loc_sequence_raw,
+	output_cfa_loc_raw, output_die, output_ranges, output_file_names):
+	Ditto.
+	* genattrtab.c (write_test_expr, write_attr_valueq): Ditto.
+	* print-rtl.c (print_rtx): Ditto.
+
 2010-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR middle-end/42694

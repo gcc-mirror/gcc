@@ -236,7 +236,7 @@ print_rtx (const_rtx in_rtx)
 	  {
 	    int flags = SYMBOL_REF_FLAGS (in_rtx);
 	    if (flags)
-	      fprintf (outfile, " [flags 0x%x]", flags);
+	      fprintf (outfile, " [flags %#x]", flags);
 	  }
 	else if (i == 2 && GET_CODE (in_rtx) == SYMBOL_REF)
 	  {

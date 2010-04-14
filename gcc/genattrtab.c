@@ -3323,7 +3323,7 @@ write_test_expr (rtx exp, int flags)
 	    }
 	  else
 	    {
-	      printf ("%s((1 << which_alternative) & 0x%x)",
+	      printf ("%s((1 << which_alternative) & %#x)",
 		      XINT (exp, 1) ? "!" : "", set);
 	    }
 	}
@@ -3894,7 +3894,7 @@ write_attr_valueq (struct attr_desc *attr, const char *s)
       printf ("%d", num);
 
       if (num > 9 || num < 0)
-	printf (" /* 0x%x */", num);
+	printf (" /* %#x */", num);
     }
   else
     {
