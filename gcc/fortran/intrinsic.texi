@@ -404,11 +404,12 @@ end program test_abs
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{CABS(A)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab Fortran 77 and later
-@item @code{DABS(A)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab Fortran 77 and later
-@item @code{IABS(A)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab Fortran 77 and later
-@item @code{ZABS(A)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
-@item @code{CDABS(A)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{ABS(A)}   @tab @code{REAL(4) A}    @tab @code{REAL(4)}    @tab Fortran 77 and later
+@item @code{CABS(A)}  @tab @code{COMPLEX(4) A} @tab @code{REAL(4)}    @tab Fortran 77 and later
+@item @code{DABS(A)}  @tab @code{REAL(8) A}    @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item @code{IABS(A)}  @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 @end table
 
@@ -565,8 +566,9 @@ end program test_acos
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item Name            @tab Argument         @tab Return type     @tab Standard
+@item @code{ACOS(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}  @tab Fortran 77 and later
+@item @code{DACOS(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -765,10 +767,11 @@ end program test_aimag
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab GNU extension
-@item @code{IMAG(Z)}  @tab @code{COMPLEX Z} @tab @code{REAL}    @tab GNU extension
-@item @code{IMAGPART(Z)} @tab @code{COMPLEX Z} @tab @code{REAL} @tab GNU extension
+@item Name               @tab Argument            @tab Return type     @tab Standard
+@item @code{AIMAG(Z)}    @tab @code{COMPLEX Z}    @tab @code{REAL}     @tab GNU extension
+@item @code{DIMAG(Z)}    @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}  @tab GNU extension
+@item @code{IMAG(Z)}     @tab @code{COMPLEX Z}    @tab @code{REAL}     @tab GNU extension
+@item @code{IMAGPART(Z)} @tab @code{COMPLEX Z}    @tab @code{REAL}     @tab GNU extension
 @end multitable
 @end table
 
@@ -825,7 +828,8 @@ end program test_aint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name           @tab Argument         @tab Return type      @tab Standard
-@item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab Fortran 77 and later
+@item @code{AINT(A)} @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
+@item @code{DINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -956,26 +960,29 @@ end program test_all
 
 @table @asis
 @item @emph{Description}:
-@code{ALLOCATED(ARRAY)} checks the status of whether @var{X} is allocated.
+@code{ALLOCATED(ARRAY)} and @code{ALLOCATED(SCALAR)} check the allocation
+status of @var{ARRAY} and @var{SCALAR}, respectively.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later.  Note, the @code{SCALAR=} keyword and allocatable
+scalar entities are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = ALLOCATED(ARRAY)}
+@code{RESULT = ALLOCATED(ARRAY)} or @code{RESULT = ALLOCATED(SCALAR)} 
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY}    @tab The argument shall be an @code{ALLOCATABLE} array.
+@item @var{SCALAR}   @tab The argument shall be an @code{ALLOCATABLE} scalar.
 @end multitable
 
 @item @emph{Return value}:
 The return value is a scalar @code{LOGICAL} with the default logical
-kind type parameter.  If @var{ARRAY} is allocated, @code{ALLOCATED(ARRAY)}
-is @code{.TRUE.}; otherwise, it returns @code{.FALSE.} 
+kind type parameter.  If the argument is allocated, then the result is
+@code{.TRUE.}; otherwise, it returns @code{.FALSE.} 
 
 @item @emph{Example}:
 @smallexample
@@ -1092,6 +1099,7 @@ end program test_anint
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument         @tab Return type      @tab Standard
+@item @code{AINT(A)}  @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
 @item @code{DNINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
 @end table
@@ -1207,6 +1215,7 @@ end program test_asin
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ASIN(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
@@ -1393,6 +1402,7 @@ end program test_atan
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ATAN(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
@@ -1452,8 +1462,9 @@ end program test_atan2
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument          @tab Return type    @tab Standard
-@item @code{DATAN2(X, Y)} @tab @code{REAL(8) X}, @code{REAL(8) Y} @tab @code{REAL(8)} @tab Fortran 77 and later
+@item Name                @tab Argument            @tab Return type    @tab Standard
+@item @code{ATAN2(X, Y)}  @tab @code{REAL(4) X, Y} @tab @code{REAL(4)} @tab Fortran 77 and later
+@item @code{DATAN2(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -1603,8 +1614,8 @@ end program test_besj1
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DBESJ1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
+@item Name             @tab Argument          @tab Return type       @tab Standard
+@item @code{DBESJ1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -1804,7 +1815,7 @@ end program test_besyn
 @multitable @columnfractions .20 .20 .20 .25
 @item Name               @tab Argument            @tab Return type     @tab Standard
 @item @code{DBESYN(N,X)} @tab @code{INTEGER N} @tab @code{REAL(8)}  @tab GNU extension
-@item                    @tab @code{REAL(8)    X} @tab                 @tab 
+@item                    @tab @code{REAL(8) X} @tab                 @tab 
 @end multitable
 @end table
 
@@ -2292,6 +2303,12 @@ program test_char
 end program test_char
 @end smallexample
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name           @tab Argument         @tab Return type             @tab Standard
+@item @code{CHAR(I)} @tab @code{INTEGER I} @tab @code{CHARACTER(LEN=1)} @tab F77 and later
+@end multitable
+
 @item @emph{Note}:
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
@@ -2615,8 +2632,9 @@ end program test_conjg
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument             @tab Return type          @tab Standard
-@item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)}    @tab GNU extension
+@item Name             @tab Argument             @tab Return type       @tab Standard
+@item @code{CONJG(Z)}  @tab @code{COMPLEX Z}     @tab @code{COMPLEX}    @tab GNU extension
+@item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 @end table
 
@@ -2667,6 +2685,7 @@ end program test_cos
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{COS(X)}  n@tab @code{REAL(4) X}    @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DCOS(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @item @code{CCOS(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab Fortran 77 and later
 @item @code{ZCOS(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
@@ -2723,6 +2742,7 @@ end program test_cosh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{COSH(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
@@ -3264,9 +3284,10 @@ end program test_dim
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument              @tab Return type       @tab Standard
-@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab Fortran 77 and later
-@item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}    @tab @code{REAL(8)}    @tab Fortran 77 and later
+@item Name             @tab Argument               @tab Return type       @tab Standard
+@item @code{DIM(X,Y)}  @tab @code{REAL(4) X, Y}    @tab @code{REAL(4)}    @tab Fortran 77 and later
+@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X, Y} @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@item @code{DDIM(X,Y)} @tab @code{REAL(8) X, Y}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -3363,8 +3384,14 @@ program test_dprod
     print *, d
 end program test_dprod
 @end smallexample
-@end table
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name              @tab Argument               @tab Return type       @tab Standard
+@item @code{DPROD(X,Y)} @tab @code{REAL(4) X, Y}    @tab @code{REAL(4)}    @tab Fortran 77 and later
+@end multitable
+
+@end table
 
 
 @node DREAL
@@ -3892,6 +3919,7 @@ end program test_exp
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument             @tab Return type         @tab Standard
+@item @code{EXP(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}      @tab Fortran 77 and later
 @item @code{DEXP(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}      @tab Fortran 77 and later
 @item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}   @tab Fortran 77 and later
 @item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
@@ -5701,6 +5729,12 @@ program test_ichar
 end program test_ichar
 @end smallexample
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument             @tab Return type       @tab Standard
+@item @code{ICHAR(C)}  @tab @code{CHARACTER C}   @tab @code{INTEGER(4)}    @tab Fortran 77 and later
+@end multitable
+
 @item @emph{Note}:
 No intrinsic exists to convert between a numeric value and a formatted
 character string representation -- for instance, given the
@@ -5886,6 +5920,12 @@ expression indicating the kind parameter of the result.
 The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                            @tab Argument           @tab Return type       @tab Standard
+@item @code{INDEX(STRING, SUBSTRING)} @tab @code{CHARACTER}   @tab @code{INTEGER(4)} @tab Fortran 77 and later
+@end multitable
+
 @item @emph{See also}:
 @ref{SCAN}, @ref{VERIFY}
 @end table
@@ -5947,13 +5987,13 @@ end program
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument            @tab Return type       @tab Standard
-@item @code{IFIX(A)}   @tab @code{REAL(4) A}    @tab @code{INTEGER}    @tab Fortran 77 and later
-@item @code{IDINT(A)}  @tab @code{REAL(8) A}    @tab @code{INTEGER}    @tab Fortran 77 and later
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{INT(A)}   @tab @code{REAL(4) A}  @tab @code{INTEGER}    @tab Fortran 77 and later
+@item @code{IFIX(A)}  @tab @code{REAL(4) A}  @tab @code{INTEGER}    @tab Fortran 77 and later
+@item @code{IDINT(A)} @tab @code{REAL(8) A}  @tab @code{INTEGER}    @tab Fortran 77 and later
 @end multitable
 
 @end table
-
 
 
 @node INT2
@@ -6700,6 +6740,14 @@ expression indicating the kind parameter of the result.
 The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
 
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name               @tab Argument          @tab Return type       @tab Standard
+@item @code{LEN(STRING)} @tab @code{CHARACTER}  @tab @code{INTEGER}    @tab Fortran 77 and later
+@end multitable
+
+
 @item @emph{See also}:
 @ref{LEN_TRIM}, @ref{ADJUSTL}, @ref{ADJUSTR}
 @end table
@@ -6782,6 +6830,12 @@ Elemental function
 Returns @code{.TRUE.} if @code{STRING_A >= STRING_B}, and @code{.FALSE.}
 otherwise, based on the ASCII ordering.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                           @tab Argument          @tab Return type       @tab Standard
+@item @code{LGE(STRING_A, STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
+@end multitable
+
 @item @emph{See also}:
 @ref{LGT}, @ref{LLE}, @ref{LLT}
 @end table
@@ -6827,6 +6881,12 @@ Elemental function
 @item @emph{Return value}:
 Returns @code{.TRUE.} if @code{STRING_A > STRING_B}, and @code{.FALSE.}
 otherwise, based on the ASCII ordering.
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                           @tab Argument          @tab Return type       @tab Standard
+@item @code{LGT(STRING_A, STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
+@end multitable
 
 @item @emph{See also}:
 @ref{LGE}, @ref{LLE}, @ref{LLT}
@@ -6917,6 +6977,12 @@ Elemental function
 Returns @code{.TRUE.} if @code{STRING_A <= STRING_B}, and @code{.FALSE.}
 otherwise, based on the ASCII ordering.
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                           @tab Argument          @tab Return type       @tab Standard
+@item @code{LLE(STRING_A, STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
+@end multitable
+
 @item @emph{See also}:
 @ref{LGE}, @ref{LGT}, @ref{LLT}
 @end table
@@ -6962,6 +7028,12 @@ Elemental function
 @item @emph{Return value}:
 Returns @code{.TRUE.} if @code{STRING_A < STRING_B}, and @code{.FALSE.}
 otherwise, based on the ASCII ordering.
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name                           @tab Argument          @tab Return type       @tab Standard
+@item @code{LLT(STRING_A, STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
+@end multitable
 
 @item @emph{See also}:
 @ref{LGE}, @ref{LGT}, @ref{LLE}
@@ -7556,12 +7628,12 @@ and has the same type and kind as the first argument.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument            @tab Return type         @tab Standard
-@item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
-@item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab Fortran 77 and later
-@item @code{MAX1(X)}   @tab @code{REAL X}    @tab @code{INT(MAX(X))}  @tab Fortran 77 and later
-@item @code{AMAX1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
-@item @code{DMAX1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
+@item Name             @tab Argument             @tab Return type         @tab Standard
+@item @code{MAX0(A1)}  @tab @code{INTEGER(4) A1} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
+@item @code{AMAX0(A1)} @tab @code{INTEGER(4) A1} @tab @code{REAL(MAX(X))} @tab Fortran 77 and later
+@item @code{MAX1(A1)}  @tab @code{REAL A1}       @tab @code{INT(MAX(X))}  @tab Fortran 77 and later
+@item @code{AMAX1(A1)} @tab @code{REAL(4) A1}    @tab @code{REAL(4)}      @tab Fortran 77 and later
+@item @code{DMAX1(A1)} @tab @code{REAL(8) A1}    @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -7876,12 +7948,12 @@ and has the same type and kind as the first argument.
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument            @tab Return type         @tab Standard
-@item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab Fortran 77 and later
-@item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab Fortran 77 and later
-@item @code{MIN1(X)}   @tab @code{REAL X}    @tab @code{INT(MIN(X))}  @tab Fortran 77 and later
-@item @code{AMIN1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab Fortran 77 and later
-@item @code{DMIN1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab Fortran 77 and later
+@item Name              @tab Argument             @tab Return type        @tab Standard
+@item @code{MIN0(A1)}   @tab @code{INTEGER(4) A1} @tab @code{INTEGER(4)}  @tab Fortran 77 and later
+@item @code{AMIN0(A1)}  @tab @code{INTEGER(4) A1} @tab @code{REAL(4)}     @tab Fortran 77 and later
+@item @code{MIN1(A1)}   @tab @code{REAL A1}       @tab @code{INTEGER(4)}  @tab Fortran 77 and later
+@item @code{AMIN1(A1)}  @tab @code{REAL(4) A1}    @tab @code{REAL(4)}     @tab Fortran 77 and later
+@item @code{DMIN1(A1)}  @tab @code{REAL(8) A1}    @tab @code{REAL(8)}     @tab Fortran 77 and later
 @end multitable
 
 @item @emph{See also}:
@@ -8091,9 +8163,10 @@ end program test_mod
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Arguments      @tab Return type    @tab Standard
-@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab Fortran 95 and later
-@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab Fortran 95 and later
+@item Name             @tab Arguments          @tab Return type    @tab Standard
+@item @code{MOD(A,P)}  @tab @code{INTEGER A,P} @tab @code{INTEGER} @tab Fortran 95 and later
+@item @code{AMOD(A,P)} @tab @code{REAL(4) A,P} @tab @code{REAL(4)} @tab Fortran 95 and later
+@item @code{DMOD(A,P)} @tab @code{REAL(8) A,P} @tab @code{REAL(8)} @tab Fortran 95 and later
 @end multitable
 @end table
 
@@ -8370,9 +8443,10 @@ end program test_nint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .25 .25 .25
-@item Name             @tab Argument         @tab Standard
-@item @code{IDNINT(X)} @tab @code{REAL(8)}   @tab Fortran 95 and later
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument           @tab Return Type     @tab Standard
+@item @code{NINT(A)}   @tab @code{REAL(4) A}   @tab  @code{INTEGER} @tab Fortran 95 and later
+@item @code{IDNINT(A)} @tab @code{REAL(8) A}   @tab  @code{INTEGER} @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -9134,6 +9208,13 @@ program test_real
 end program test_real
 @end smallexample
 
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name           @tab Argument           @tab Return type     @tab Standard
+@item @code{REAL(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
+@end multitable
+
+
 @item @emph{See also}:
 @ref{DBLE}, @ref{DFLOAT}, @ref{FLOAT}
 
@@ -9831,9 +9912,10 @@ end program test_sign
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name              @tab Arguments      @tab Return type    @tab Standard
-@item @code{ISIGN(A,P)} @tab @code{INTEGER(4)} @tab @code{INTEGER(4)} @tab f95, gnu
-@item @code{DSIGN(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
+@item Name              @tab Arguments              @tab Return type       @tab Standard
+@item @code{SIGN(A,B)}  @tab @code{REAL(4) A, B}    @tab @code{REAL(4)}    @tab f77, gnu
+@item @code{ISIGN(A,B)} @tab @code{INTEGER(4) A, B} @tab @code{INTEGER(4)} @tab f77, gnu
+@item @code{DSIGN(A,B)} @tab @code{REAL(8) A, B}    @tab @code{REAL(8)}    @tab f77, gnu
 @end multitable
 @end table
 
@@ -9939,11 +10021,12 @@ end program test_sin
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DSIN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{CSIN(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
-@item @code{ZSIN(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
-@item @code{CDSIN(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@item Name            @tab Argument             @tab Return type       @tab Standard
+@item @code{SIN(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}    @tab f77, gnu
+@item @code{DSIN(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{CSIN(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)} @tab f95, gnu
+@item @code{ZSIN(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab f95, gnu
+@item @code{CDSIN(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab f95, gnu
 @end multitable
 
 @item @emph{See also}:
@@ -9992,6 +10075,7 @@ end program test_sinh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{SINH(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 95 and later
 @item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 
@@ -10305,6 +10389,7 @@ end program test_sqrt
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument             @tab Return type          @tab Standard
+@item @code{SQRT(X)}   @tab @code{REAL(4) X}     @tab @code{REAL(4)}       @tab Fortran 95 and later
 @item @code{DSQRT(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}       @tab Fortran 95 and later
 @item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab Fortran 95 and later
 @item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
@@ -10679,8 +10764,9 @@ end program test_tan
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name            @tab Argument          @tab Return type       @tab Standard
-@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
+@item Name            @tab Argument          @tab Return type     @tab Standard
+@item @code{TAN(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab Fortran 95 and later
+@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab Fortran 95 and later
 @end multitable
 
 @item @emph{See also}:
@@ -10732,6 +10818,7 @@ end program test_tanh
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{TANH(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 95 and later
 @item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 95 and later
 @end multitable
 
