@@ -1,5 +1,11 @@
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*divmod<mode>4): Remove stray "&&" from
+	splitter condition.
+	(*udivmod<mode>4): Ditto.
+
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (maxmin_int): Rename code attribute from
 	maxminiprefix and update all users.
 	(maxmin_float): Ditto from maxminfprefix.
