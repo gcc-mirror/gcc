@@ -168,12 +168,18 @@ extern tree create_concat_name (Entity_Id gnat_entity, const char *suffix);
    the name followed by "___" and the specified suffix.  */
 extern tree concat_name (tree gnu_name, const char *suffix);
 
-/* If true, then gigi is being called on an analyzed but unexpanded tree, and
-   the only purpose of the call is to properly annotate types with
-   representation information.  */
+/* Highest number in the front-end node table.  */
+extern int max_gnat_nodes;
+
+/* Current node being treated, in case abort called.  */
+extern Node_Id error_gnat_node;
+
+/* True when gigi is being called on an analyzed but unexpanded
+   tree, and the only purpose of the call is to properly annotate
+   types with representation information.  */
 extern bool type_annotate_only;
 
-/* Current file name without path */
+/* Current file name without path.  */
 extern const char *ref_filename;
 
 /* This structure must be kept synchronized with Call_Back_End.  */
@@ -184,11 +190,9 @@ struct File_Info_Type
 };
 
 /* This is the main program of the back-end.  It sets up all the table
-   structures and then generates code.
-
-   ??? Needs parameter descriptions  */
-
-extern void gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
+   structures and then generates code.  */
+extern void gigi (Node_Id gnat_root, int max_gnat_node,
+                  int number_name ATTRIBUTE_UNUSED,
                   struct Node *nodes_ptr, Node_Id *next_node_ptr,
                   Node_Id *prev_node_ptr, struct Elist_Header *elists_ptr,
                   struct Elmt_Item *elmts_ptr,
@@ -256,13 +260,6 @@ extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
 /* Return a label to branch to for the exception type in KIND or NULL_TREE
    if none.  */
 extern tree get_exception_label (char kind);
-
-/* Current node being treated, in case gigi_abort or Check_Elaboration_Code
-   called.  */
-extern Node_Id error_gnat_node;
-
-/* Highest number in the front-end node table.  */
-extern int max_gnat_nodes;
 
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;
