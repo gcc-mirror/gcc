@@ -1,3 +1,16 @@
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (maxmin_int): Rename code attribute from
+	maxminiprefix and update all users.
+	(maxmin_float): Ditto from maxminfprefix.
+	(logic): Ditto from logicprefix.
+	(absneg_mnemonic): Ditto from absnegprefix.
+	* config/i386/mmx.md: Update all users of maxminiprefix,
+	maxminfprefix and loficprefix for rename.
+	* config/i386/sse.md: Ditto.
+	* config/i386/sync.md (sync_<code><mode>): Update for
+	logicprefix rename.
+
 2010-04-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 42966
