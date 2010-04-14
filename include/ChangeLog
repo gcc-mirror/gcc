@@ -1,3 +1,7 @@
+2010-04-14  Release Manager
+
+	* GCC 4.5.0 released.
+
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DWARF2_Internal_LineInfo): Add li_max_ops_per_insn
