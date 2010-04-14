@@ -1,3 +1,10 @@
+2010-04-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_9.f90: Update dg-errors.
+	* gfortran.dg/coarray_10.f90: New test.
+	* gfortran.dg/coarray_11.f90: New test.
+
 2010-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43747

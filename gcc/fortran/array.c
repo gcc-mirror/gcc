@@ -210,7 +210,7 @@ coarray:
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
       return MATCH_ERROR;
     }
 
@@ -531,7 +531,7 @@ coarray:
 
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
       goto cleanup;
     }
 
@@ -2223,7 +2223,8 @@ gfc_find_array_ref (gfc_expr *e)
 
   for (ref = e->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY
-	&& (ref->u.ar.type == AR_FULL || ref->u.ar.type == AR_SECTION))
+	&& (ref->u.ar.type == AR_FULL || ref->u.ar.type == AR_SECTION
+	    || (ref->u.ar.type == AR_ELEMENT && ref->u.ar.dimen == 0)))
       break;
 
   if (ref == NULL)

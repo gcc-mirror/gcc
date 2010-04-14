@@ -9,9 +9,10 @@ integer :: a
 integer :: b[*] ! { dg-error "Coarrays disabled" }
 
 error stop "Error"
-sync all ! { dg-error "Coarrays disabled" }
+sync all !  "Coarrays disabled"  (but error above is fatal)
 
-critical ! { dg-error "Coarrays disabled" }
-end critical ! { dg-error "Expecting END PROGRAM statement" }
+critical ! "Coarrays disabled"  (but error above is fatal)
+
+end critical ! "Expecting END PROGRAM statement"  (but error above is fatal)
 
 end

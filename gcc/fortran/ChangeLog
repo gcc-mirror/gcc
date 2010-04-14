@@ -1,3 +1,31 @@
+2010-04-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* array.c (gfc_find_array_ref): Handle codimensions.
+	(gfc_match_array_spec,gfc_match_array_ref): Use gfc_fatal_error.
+	* check.c (is_coarray, dim_corank_check, gfc_check_lcobound,
+	gfc_check_image_index, gfc_check_this_image, gfc_check_ucobound):
+	New functions.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_IMAGE_INDEX,
+	GFC_ISYM_LCOBOUND, GFC_ISYM_THIS_IMAGE,
+	GFC_ISYM_UCOBOUND.
+	* intrinsic.h (add_functions): Add this_image, image_index,
+	lcobound and ucobound intrinsics.
+	* intrinsic.c (gfc_check_lcobound,gfc_check_ucobound,
+	gfc_check_image_index, gfc_check_this_image,
+	gfc_simplify_image_index, gfc_simplify_lcobound,
+	gfc_simplify_this_image, gfc_simplify_ucobound):
+	New function prototypes.
+	* intrinsic.texi (IMAGE_INDEX, LCOBOUND, THIS_IMAGE
+	IMAGE_INDEX): Document new intrinsic functions.
+	* match.c (gfc_match_critical, sync_statement): Make -fcoarray=none
+	error fatal.
+	* simplify.c (simplify_bound_dim): Handle coarrays.
+	(simplify_bound): Update simplify_bound_dim call.
+	(gfc_simplify_num_images): Add -fcoarray=none check.
+	(simplify_cobound, gfc_simplify_lcobound, gfc_simplify_ucobound,
+	gfc_simplify_ucobound, gfc_simplify_ucobound): New functions.
+
 2010-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43747

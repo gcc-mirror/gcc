@@ -2722,13 +2722,14 @@ gfc_simplify_kind (gfc_expr *e)
 
 static gfc_expr *
 simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
-		    gfc_array_spec *as, gfc_ref *ref)
+		    gfc_array_spec *as, gfc_ref *ref, bool coarray)
 {
   gfc_expr *l, *u, *result;
   int k;
 
   /* The last dimension of an assumed-size array is special.  */
-  if (d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
+  if ((!coarray && d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
+      || (coarray && d == as->rank + as->corank))
     {
       if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
 	return gfc_copy_expr (as->lower[d-1]);
@@ -2745,12 +2746,13 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 
 
   /* Then, we need to know the extent of the given dimension.  */
-  if (ref->u.ar.type == AR_FULL)
+  if (coarray || ref->u.ar.type == AR_FULL)
     {
       l = as->lower[d-1];
       u = as->upper[d-1];
 
-      if (l->expr_type != EXPR_CONSTANT || u->expr_type != EXPR_CONSTANT)
+      if (l->expr_type != EXPR_CONSTANT || u == NULL
+	  || u->expr_type != EXPR_CONSTANT)
 	return NULL;
 
       if (mpz_cmp (l->value.integer, u->value.integer) > 0)
@@ -2861,7 +2863,8 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       /* Simplify the bounds for each dimension.  */
       for (d = 0; d < array->rank; d++)
 	{
-	  bounds[d] = simplify_bound_dim (array, kind, d + 1, upper, as, ref);
+	  bounds[d] = simplify_bound_dim (array, kind, d + 1, upper, as, ref,
+					  false);
 	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
 	    {
 	      int j;
@@ -2908,7 +2911,131 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  return &gfc_bad_expr;
 	}
 
-      return simplify_bound_dim (array, kind, d, upper, as, ref);
+      return simplify_bound_dim (array, kind, d, upper, as, ref, false);
+    }
+}
+
+
+static gfc_expr *
+simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
+{
+  gfc_ref *ref;
+  gfc_array_spec *as;
+  int d;
+
+  if (array->expr_type != EXPR_VARIABLE)
+    return NULL;
+
+  /* Follow any component references.  */
+  as = array->symtree->n.sym->as;
+  for (ref = array->ref; ref; ref = ref->next)
+    {
+      switch (ref->type)
+	{
+	case REF_ARRAY:
+	  switch (ref->u.ar.type)
+	    {
+	    case AR_ELEMENT:
+	      as = NULL;
+	      continue;
+
+	    case AR_FULL:
+	      /* We're done because 'as' has already been set in the
+		 previous iteration.  */
+	      if (!ref->next)
+	        goto done;
+
+	    /* Fall through.  */
+
+	    case AR_UNKNOWN:
+	      return NULL;
+
+	    case AR_SECTION:
+	      as = ref->u.ar.as;
+	      goto done;
+	    }
+
+	  gcc_unreachable ();
+
+	case REF_COMPONENT:
+	  as = ref->u.c.component->as;
+	  continue;
+
+	case REF_SUBSTRING:
+	  continue;
+	}
+    }
+
+  gcc_unreachable ();
+
+ done:
+
+  if (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE)
+    return NULL;
+
+  if (dim == NULL)
+    {
+      /* Multi-dimensional cobounds.  */
+      gfc_expr *bounds[GFC_MAX_DIMENSIONS];
+      gfc_expr *e;
+      int k;
+
+      /* Simplify the cobounds for each dimension.  */
+      for (d = 0; d < as->corank; d++)
+	{
+	  bounds[d] = simplify_bound_dim (array, kind, d + 1 + array->rank,
+					  upper, as, ref, true);
+	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
+	    {
+	      int j;
+
+	      for (j = 0; j < d; j++)
+		gfc_free_expr (bounds[j]);
+	      return bounds[d];
+	    }
+	}
+
+      /* Allocate the result expression.  */
+      e = gfc_get_expr ();
+      e->where = array->where;
+      e->expr_type = EXPR_ARRAY;
+      e->ts.type = BT_INTEGER;
+      k = get_kind (BT_INTEGER, kind, upper ? "UCOBOUND" : "LCOBOUND",
+		    gfc_default_integer_kind); 
+      if (k == -1)
+	{
+	  gfc_free_expr (e);
+	  return &gfc_bad_expr;
+	}
+      e->ts.kind = k;
+
+      /* The result is a rank 1 array; its size is the rank of the first
+	 argument to {L,U}COBOUND.  */
+      e->rank = 1;
+      e->shape = gfc_get_shape (1);
+      mpz_init_set_ui (e->shape[0], as->corank);
+
+      /* Create the constructor for this array.  */
+      for (d = 0; d < as->corank; d++)
+	gfc_constructor_append_expr (&e->value.constructor,
+				     bounds[d], &e->where);
+      return e;
+    }
+  else
+    {
+      /* A DIM argument is specified.  */
+      if (dim->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      d = mpz_get_si (dim->value.integer);
+
+      if (d < 1 || d > as->corank)
+	{
+	  gfc_error ("DIM argument at %L is out of bounds", &dim->where);
+	  return &gfc_bad_expr;
+	}
+
+      return simplify_bound_dim (array, kind, d+array->rank, upper, as, ref, true);
     }
 }
 
@@ -2919,6 +3046,21 @@ gfc_simplify_lbound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
   return simplify_bound (array, dim, kind, 0);
 }
 
+
+gfc_expr *
+gfc_simplify_lcobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
+{
+  gfc_expr *e;
+  /* return simplify_cobound (array, dim, kind, 0);*/
+
+  e = simplify_cobound (array, dim, kind, 0);
+  if (e != NULL)
+    return e;
+
+  gfc_error ("Not yet implemented: LCOBOUND for coarray with non-constant "
+	     "cobounds at %L", &array->where);
+  return &gfc_bad_expr;
+}
 
 gfc_expr *
 gfc_simplify_leadz (gfc_expr *e)
@@ -3703,6 +3845,13 @@ gfc_expr *
 gfc_simplify_num_images (void)
 {
   gfc_expr *result;
+
+  if (gfc_option.coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
+      return &gfc_bad_expr;
+    }
+
   /* FIXME: gfc_current_locus is wrong.  */
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
@@ -5174,9 +5323,246 @@ gfc_simplify_trim (gfc_expr *e)
 
 
 gfc_expr *
+gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
+{
+  gfc_expr *result;
+  gfc_ref *ref;
+  gfc_array_spec *as;
+  gfc_constructor *sub_cons;
+  bool first_image;
+  int d;
+
+  if (!is_constant_array_expr (sub))
+    goto not_implemented; /* return NULL;*/
+
+  /* Follow any component references.  */
+  as = coarray->symtree->n.sym->as;
+  for (ref = coarray->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      as = ref->u.ar.as;
+
+  if (as->type == AS_DEFERRED)
+    goto not_implemented; /* return NULL;*/
+
+  /* "valid sequence of cosubscripts" are required; thus, return 0 unless
+     the cosubscript addresses the first image.  */
+
+  sub_cons = gfc_constructor_first (sub->value.constructor);
+  first_image = true;
+
+  for (d = 1; d <= as->corank; d++)
+    {
+      gfc_expr *ca_bound;
+      int cmp;
+
+      if (sub_cons == NULL)
+	{
+	  gfc_error ("Too few elements in expression for SUB= argument at %L",
+		     &sub->where);
+	  return &gfc_bad_expr;
+	}
+
+      ca_bound = simplify_bound_dim (coarray, NULL, d + as->rank, 0, as,
+				     NULL, true);
+      if (ca_bound == NULL)
+	goto not_implemented; /* return NULL */
+
+      if (ca_bound == &gfc_bad_expr)
+	return ca_bound;
+
+      cmp = mpz_cmp (ca_bound->value.integer, sub_cons->expr->value.integer);
+
+      if (cmp == 0)
+	{
+          gfc_free_expr (ca_bound);
+	  sub_cons = gfc_constructor_next (sub_cons);
+	  continue;
+	}
+
+      first_image = false;
+
+      if (cmp > 0)
+	{
+	  gfc_error ("Out of bounds in IMAGE_INDEX at %L for dimension %d, "
+		     "SUB has %ld and COARRAY lower bound is %ld)",
+		     &coarray->where, d,
+		     mpz_get_si (sub_cons->expr->value.integer),
+		     mpz_get_si (ca_bound->value.integer));
+	  gfc_free_expr (ca_bound);
+	  return &gfc_bad_expr;
+	}
+
+      gfc_free_expr (ca_bound);
+
+      /* Check whether upperbound is valid for the multi-images case.  */
+      if (d < as->corank)
+	{
+	  ca_bound = simplify_bound_dim (coarray, NULL, d + as->rank, 1, as,
+					 NULL, true);
+	  if (ca_bound == &gfc_bad_expr)
+	    return ca_bound;
+
+	  if (ca_bound && ca_bound->expr_type == EXPR_CONSTANT
+	      && mpz_cmp (ca_bound->value.integer,
+			  sub_cons->expr->value.integer) < 0)
+	  {
+	    gfc_error ("Out of bounds in IMAGE_INDEX at %L for dimension %d, "
+		       "SUB has %ld and COARRAY upper bound is %ld)",
+		       &coarray->where, d,
+		       mpz_get_si (sub_cons->expr->value.integer),
+		       mpz_get_si (ca_bound->value.integer));
+	    gfc_free_expr (ca_bound);
+	    return &gfc_bad_expr;
+	  }
+
+	  if (ca_bound)
+	    gfc_free_expr (ca_bound);
+	}
+
+      sub_cons = gfc_constructor_next (sub_cons);
+    }
+
+  if (sub_cons != NULL)
+    {
+      gfc_error ("Too many elements in expression for SUB= argument at %L",
+		 &sub->where);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+				  &gfc_current_locus);
+  if (first_image)
+    mpz_set_si (result->value.integer, 1);
+  else
+    mpz_set_si (result->value.integer, 0);
+
+  return result;
+
+not_implemented:
+  gfc_error ("Not yet implemented: IMAGE_INDEX for coarray with non-constant "
+	     "cobounds at %L", &coarray->where);
+  return &gfc_bad_expr;
+}
+
+
+gfc_expr *
+gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim)
+{
+  gfc_ref *ref;
+  gfc_array_spec *as;
+  int d;
+
+  if (coarray == NULL)
+    {
+      gfc_expr *result;
+      /* FIXME: gfc_current_locus is wrong.  */
+      result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+				      &gfc_current_locus);
+      mpz_set_si (result->value.integer, 1);
+      return result;
+    }
+
+  gcc_assert (coarray->expr_type == EXPR_VARIABLE);
+
+  /* Follow any component references.  */
+  as = coarray->symtree->n.sym->as;
+  for (ref = coarray->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      as = ref->u.ar.as;
+
+  if (as->type == AS_DEFERRED)
+    goto not_implemented; /* return NULL;*/
+
+  if (dim == NULL)
+    {
+      /* Multi-dimensional bounds.  */
+      gfc_expr *bounds[GFC_MAX_DIMENSIONS];
+      gfc_expr *e;
+
+      /* Simplify the bounds for each dimension.  */
+      for (d = 0; d < as->corank; d++)
+	{
+	  bounds[d] = simplify_bound_dim (coarray, NULL, d + as->rank + 1, 0,
+					  as, NULL, true);
+	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
+	    {
+	      int j;
+
+	      for (j = 0; j < d; j++)
+		gfc_free_expr (bounds[j]);
+	      if (bounds[d] == NULL)
+		goto not_implemented;
+	      return bounds[d];
+	    }
+	}
+
+      /* Allocate the result expression.  */
+      e = gfc_get_expr ();
+      e->where = coarray->where;
+      e->expr_type = EXPR_ARRAY;
+      e->ts.type = BT_INTEGER;
+      e->ts.kind = gfc_default_integer_kind;
+
+      e->rank = 1;
+      e->shape = gfc_get_shape (1);
+      mpz_init_set_ui (e->shape[0], as->corank);
+
+      /* Create the constructor for this array.  */
+      for (d = 0; d < as->corank; d++)
+        gfc_constructor_append_expr (&e->value.constructor,
+                                     bounds[d], &e->where);
+
+      return e;
+    }
+  else
+    {
+      gfc_expr *e;
+      /* A DIM argument is specified.  */
+      if (dim->expr_type != EXPR_CONSTANT)
+	goto not_implemented; /*return NULL;*/
+
+      d = mpz_get_si (dim->value.integer);
+
+      if (d < 1 || d > as->corank)
+	{
+	  gfc_error ("DIM argument at %L is out of bounds", &dim->where);
+	  return &gfc_bad_expr;
+	}
+
+      /*return simplify_bound_dim (coarray, NULL, d + as->rank, 0, as, NULL, true);*/
+      e = simplify_bound_dim (coarray, NULL, d + as->rank, 0, as, NULL, true);
+      if (e != NULL)
+	return e;
+      else
+	goto not_implemented;
+   }
+
+not_implemented:
+  gfc_error ("Not yet implemented: THIS_IMAGE for coarray with non-constant "
+	     "cobounds at %L", &coarray->where);
+  return &gfc_bad_expr;
+}
+
+
+gfc_expr *
 gfc_simplify_ubound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   return simplify_bound (array, dim, kind, 1);
+}
+
+gfc_expr *
+gfc_simplify_ucobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
+{
+  gfc_expr *e;
+  /* return simplify_cobound (array, dim, kind, 1);*/
+
+  e = simplify_cobound (array, dim, kind, 1);
+  if (e != NULL)
+    return e;
+
+  gfc_error ("Not yet implemented: UCOBOUND for coarray with non-constant "
+	     "cobounds at %L", &array->where);
+  return &gfc_bad_expr;
 }
 
 
