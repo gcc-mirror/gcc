@@ -1,3 +1,16 @@
+2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+	
+	PR target/21803
+	* ifcvt.c (cond_exec_process_if_block): Look for identical sequences
+	at the start and end of the then/else blocks, and omit them from the
+	conversion.
+	* cfgcleanup.c (flow_find_cross_jump): No longer static.  Remove MODE
+	argument; all callers changed.  Pass zero to old_insns_match_p instead.
+	(flow_find_head_matching_sequence): New function.
+	(old_insns_match_p): Check REG_EH_REGION notes for calls.
+	* basic-block.h (flow_find_cross_jump,
+	flow_find_head_matching_sequence): Declare functions.
+
 2010-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36625

@@ -68,7 +68,6 @@ static bool crossjumps_occured;
 static bool try_crossjump_to_edge (int, edge, edge);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
-static int flow_find_cross_jump (int, basic_block, basic_block, rtx *, rtx *);
 static bool old_insns_match_p (int, rtx, rtx);
 
 static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
@@ -972,13 +971,27 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
      be filled that clobbers a parameter expected by the subroutine.
 
      ??? We take the simple route for now and assume that if they're
-     equal, they were constructed identically.  */
+     equal, they were constructed identically.
 
-  if (CALL_P (i1)
-      && (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
+     Also check for identical exception regions.  */
+
+  if (CALL_P (i1))
+    {
+      /* Ensure the same EH region.  */
+      rtx n1 = find_reg_note (i1, REG_EH_REGION, 0);
+      rtx n2 = find_reg_note (i2, REG_EH_REGION, 0);
+
+      if (!n1 && n2)
+	return false;
+
+      if (n1 && (!n2 || XEXP (n1, 0) != XEXP (n2, 0)))
+	return false;
+
+      if (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
 			CALL_INSN_FUNCTION_USAGE (i2))
-	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2)))
-    return false;
+	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2))
+	return false;
+    }
 
 #ifdef STACK_REGS
   /* If cross_jump_death_matters is not 0, the insn's mode
@@ -1017,6 +1030,29 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
   return false;
 }
 
+/* When comparing insns I1 and I2 in flow_find_cross_jump or
+   flow_find_head_matching_sequence, ensure the notes match.  */
+
+static void
+merge_notes (rtx i1, rtx i2)
+{
+  /* If the merged insns have different REG_EQUAL notes, then
+     remove them.  */
+  rtx equiv1 = find_reg_equal_equiv_note (i1);
+  rtx equiv2 = find_reg_equal_equiv_note (i2);
+
+  if (equiv1 && !equiv2)
+    remove_note (i1, equiv1);
+  else if (!equiv1 && equiv2)
+    remove_note (i2, equiv2);
+  else if (equiv1 && equiv2
+	   && !rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))
+    {
+      remove_note (i1, equiv1);
+      remove_note (i2, equiv2);
+    }
+}
+
 /* Look through the insns at the end of BB1 and BB2 and find the longest
    sequence that are equivalent.  Store the first insns for that sequence
    in *F1 and *F2 and return the sequence length.
@@ -1024,9 +1060,8 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
    To simplify callers of this function, if the blocks match exactly,
    store the head of the blocks in *F1 and *F2.  */
 
-static int
-flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
-		      basic_block bb2, rtx *f1, rtx *f2)
+int
+flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2)
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
@@ -1066,7 +1101,7 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
 	break;
 
-      if (!old_insns_match_p (mode, i1, i2))
+      if (!old_insns_match_p (0, i1, i2))
 	break;
 
       merge_memattrs (i1, i2);
@@ -1074,21 +1109,7 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
       /* Don't begin a cross-jump with a NOTE insn.  */
       if (INSN_P (i1))
 	{
-	  /* If the merged insns have different REG_EQUAL notes, then
-	     remove them.  */
-	  rtx equiv1 = find_reg_equal_equiv_note (i1);
-	  rtx equiv2 = find_reg_equal_equiv_note (i2);
-
-	  if (equiv1 && !equiv2)
-	    remove_note (i1, equiv1);
-	  else if (!equiv1 && equiv2)
-	    remove_note (i2, equiv2);
-	  else if (equiv1 && equiv2
-		   && !rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))
-	    {
-	      remove_note (i1, equiv1);
-	      remove_note (i2, equiv2);
-	    }
+	  merge_notes (i1, i2);
 
 	  afterlast1 = last1, afterlast2 = last2;
 	  last1 = i1, last2 = i2;
@@ -1123,6 +1144,97 @@ flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
       if (last2 != BB_HEAD (bb2) && LABEL_P (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
 
+      *f1 = last1;
+      *f2 = last2;
+    }
+
+  return ninsns;
+}
+
+/* Like flow_find_cross_jump, except start looking for a matching sequence from
+   the head of the two blocks.  Do not include jumps at the end.
+   If STOP_AFTER is nonzero, stop after finding that many matching
+   instructions.  */
+
+int
+flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
+				  rtx *f2, int stop_after)
+{
+  rtx i1, i2, last1, last2, beforelast1, beforelast2;
+  int ninsns = 0;
+  edge e;
+  edge_iterator ei;
+  int nehedges1 = 0, nehedges2 = 0;
+
+  FOR_EACH_EDGE (e, ei, bb1->succs)
+    if (e->flags & EDGE_EH)
+      nehedges1++;
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    if (e->flags & EDGE_EH)
+      nehedges2++;
+
+  i1 = BB_HEAD (bb1);
+  i2 = BB_HEAD (bb2);
+  last1 = beforelast1 = last2 = beforelast2 = NULL_RTX;
+
+  while (true)
+    {
+
+      /* Ignore notes.  */
+      while (!NONDEBUG_INSN_P (i1) && i1 != BB_END (bb1))
+	i1 = NEXT_INSN (i1);
+
+      while (!NONDEBUG_INSN_P (i2) && i2 != BB_END (bb2))
+	i2 = NEXT_INSN (i2);
+
+      if (NOTE_P (i1) || NOTE_P (i2)
+	  || JUMP_P (i1) || JUMP_P (i2))
+	break;
+
+      /* A sanity check to make sure we're not merging insns with different
+	 effects on EH.  If only one of them ends a basic block, it shouldn't
+	 have an EH edge; if both end a basic block, there should be the same
+	 number of EH edges.  */
+      if ((i1 == BB_END (bb1) && i2 != BB_END (bb2)
+	   && nehedges1 > 0)
+	  || (i2 == BB_END (bb2) && i1 != BB_END (bb1)
+	      && nehedges2 > 0)
+	  || (i1 == BB_END (bb1) && i2 == BB_END (bb2)
+	      && nehedges1 != nehedges2))
+	break;
+
+      if (!old_insns_match_p (0, i1, i2))
+	break;
+
+      merge_memattrs (i1, i2);
+
+      /* Don't begin a cross-jump with a NOTE insn.  */
+      if (INSN_P (i1))
+	{
+	  merge_notes (i1, i2);
+
+	  beforelast1 = last1, beforelast2 = last2;
+	  last1 = i1, last2 = i2;
+	  ninsns++;
+	}
+
+      if (i1 == BB_END (bb1) || i2 == BB_END (bb2)
+	  || (stop_after > 0 && ninsns == stop_after))
+	break;
+
+      i1 = NEXT_INSN (i1);
+      i2 = NEXT_INSN (i2);
+    }
+
+#ifdef HAVE_cc0
+  /* Don't allow a compare to be shared by cross-jumping unless the insn
+     after the compare is also shared.  */
+  if (ninsns && reg_mentioned_p (cc0_rtx, last1) && sets_cc0_p (last1))
+    last1 = beforelast1, last2 = beforelast2, ninsns--;
+#endif
+
+  if (ninsns)
+    {
       *f1 = last1;
       *f2 = last2;
     }
@@ -1498,7 +1610,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
     return false;
 
   /* ... and part the second.  */
-  nmatch = flow_find_cross_jump (mode, src1, src2, &newpos1, &newpos2);
+  nmatch = flow_find_cross_jump (src1, src2, &newpos1, &newpos2);
 
   /* Don't proceed with the crossjump unless we found a sufficient number
      of matching instructions or the 'from' block was totally matched
