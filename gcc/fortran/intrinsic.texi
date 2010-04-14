@@ -154,6 +154,7 @@ Some basic guidelines for editing this document:
 * @code{INT8}:          INT8,      Convert to 64-bit integer type
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{IMAGE_INDEX}:   IMAGE_INDEX, Cosubscript to image index convertion
 * @code{IS_IOSTAT_END}:  IS_IOSTAT_END, Test for end-of-file value
 * @code{IS_IOSTAT_EOR}:  IS_IOSTAT_EOR, Test for end-of-record value
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
@@ -164,6 +165,7 @@ Some basic guidelines for editing this document:
 * @code{KILL}:          KILL,      Send a signal to a process
 * @code{KIND}:          KIND,      Kind of an entity
 * @code{LBOUND}:        LBOUND,    Lower dimension bounds of an array
+* @code{LCOBOUND}:      LCOBOUND,  Lower codimension bounds of an array
 * @code{LEADZ}:         LEADZ,     Number of leading zero bits of an integer
 * @code{LEN}:           LEN,       Length of a character entity
 * @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
@@ -251,6 +253,7 @@ Some basic guidelines for editing this document:
 * @code{SYSTEM_CLOCK}:  SYSTEM_CLOCK, Time function
 * @code{TAN}:           TAN,       Tangent function
 * @code{TANH}:          TANH,      Hyperbolic tangent function
+* @code{THIS_IMAGE}:    THIS_IMAGE, Cosubscript index of this image
 * @code{TIME}:          TIME,      Time function
 * @code{TIME8}:         TIME8,     Time function (64-bit)
 * @code{TINY}:          TINY,      Smallest positive number of a real kind
@@ -260,6 +263,7 @@ Some basic guidelines for editing this document:
 * @code{TRIM}:          TRIM,      Remove trailing blank characters of a string
 * @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device.
 * @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
+* @code{UCOBOUND}:      UCOBOUND,  Upper codimension bounds of an array
 * @code{UMASK}:         UMASK,     Set the file creation mask
 * @code{UNLINK}:        UNLINK,    Remove a file from the file system
 * @code{UNPACK}:        UNPACK,    Unpack an array of rank one into an array
@@ -6115,6 +6119,50 @@ end program test_irand
 
 
 
+@node IMAGE_INDEX
+@section @code{IMAGE_INDEX} --- Function that converts a cosubscript to an image index
+@fnindex IMAGE_INDEX
+@cindex coarray, IMAGE_INDEX
+@cindex images, cosubscript to image index conversion
+
+@table @asis
+@item @emph{Description}:
+Returns the image index belonging to a cosubscript.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function.
+
+@item @emph{Syntax}:
+@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
+
+@item @emph{Arguments}: None.
+@multitable @columnfractions .15 .70
+@item @var{COARRAY} @tab Coarray of any type.
+@item @var{SUB}     @tab default integer rank-1 array of a size equal to
+the corank of @var{COARRAY}.
+@end multitable
+
+
+@item @emph{Return value}:
+Scalar default integer with the value of the image index which corresponds
+to the cosubscripts. For invalid cosubscripts the result is zero.
+
+@item @emph{Example}:
+@smallexample
+INTEGER :: array[2,-1:4,8,*]
+! Writes  28 (or 0 if there are fewer than 28 images)
+WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
+@end smallexample
+
+@item @emph{See also}:
+@ref{THIS_IMAGE}, @ref{NUM_IMAGES}
+@end table
+
+
+
 @node IS_IOSTAT_END
 @section @code{IS_IOSTAT_END} --- Test for end-of-file value
 @fnindex IS_IOSTAT_END
@@ -6535,7 +6583,46 @@ structure component, or if it has a zero extent along the relevant
 dimension, the lower bound is taken to be 1.
 
 @item @emph{See also}:
-@ref{UBOUND}
+@ref{UBOUND}, @ref{LCOBOUND}
+@end table
+
+
+
+@node LCOBOUND
+@section @code{LCOBOUND} --- Lower codimension bounds of an array
+@fnindex LCOBOUND
+@cindex coarray, lower bound
+
+@table @asis
+@item @emph{Description}:
+Returns the lower bounds of a coarray, or a single lower cobound
+along the @var{DIM} codimension.
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = LCOBOUND(COARRAY [, DIM [, KIND]])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an coarray, of any type.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
+If @var{DIM} is absent, the result is an array of the lower cobounds of
+@var{COARRAY}.  If @var{DIM} is present, the result is a scalar
+corresponding to the lower cobound of the array along that codimension.
+
+@item @emph{See also}:
+@ref{UCOBOUND}, @ref{LBOUND}
 @end table
 
 
@@ -8414,7 +8501,7 @@ END IF
 @end smallexample
 
 @item @emph{See also}:
-@c FIXME: ref{THIS_IMAGE}
+@ref{THIS_IMAGE}, @ref{IMAGE_INDEX}
 @end table
 
 
@@ -10654,6 +10741,64 @@ end program test_tanh
 
 
 
+@node THIS_IMAGE
+@section @code{THIS_IMAGE} --- Function that returns the cosubscript index of this image
+@fnindex THIS_IMAGE
+@cindex coarray, THIS_IMAGE
+@cindex images, index of this image
+
+@table @asis
+@item @emph{Description}:
+Returns the cosubscript for this image.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = THIS_IMAGE()}
+@item @code{RESULT = THIS_IMAGE(COARRAY [, DIM])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{COARRAY} @tab Coarray of any type  (optional; if @var{DIM}
+present, required).
+@item @var{DIM}     @tab default integer scalar (optional). If present,
+@var{DIM} shall be between one and the corank of @var{COARRAY}.
+@end multitable
+
+
+@item @emph{Return value}:
+Default integer. If @var{COARRAY} is not present, it is scalar and its value
+is the index of the invoking image. Otherwise, if @var{DIM} is not present,
+a rank-1 array with corank elements is returned, containing the cosubscripts
+for @var{COARRAY} specifying the invoking image. If @var{DIM} is present,
+a scalar is returned, with the value of the @var{DIM} element of
+@code{THIS_IMAGE(COARRAY)}.
+
+@item @emph{Example}:
+@smallexample
+INTEGER :: value[*]
+INTEGER :: i
+value = THIS_IMAGE()
+SYNC ALL
+IF (THIS_IMAGE() == 1) THEN
+  DO i = 1, NUM_IMAGES()
+    WRITE(*,'(2(a,i0))') 'value[', i, '] is ', value[i]
+  END DO
+END IF
+@end smallexample
+
+@item @emph{See also}:
+@ref{NUM_IMAGES}, @ref{IMAGE_INDEX}
+@end table
+
+
+
 @node TIME
 @section @code{TIME} --- Time function
 @fnindex TIME
@@ -11030,7 +11175,46 @@ dimension, the upper bound is taken to be the number of elements along
 the relevant dimension.
 
 @item @emph{See also}:
-@ref{LBOUND}
+@ref{LBOUND}, @ref{LCOBOUND}
+@end table
+
+
+
+@node UCOBOUND
+@section @code{UCOBOUND} --- Upper codimension bounds of an array
+@fnindex UCOBOUND
+@cindex coarray, upper bound
+
+@table @asis
+@item @emph{Description}:
+Returns the upper cobounds of a coarray, or a single upper cobound
+along the @var{DIM} codimension.
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = UCOBOUND(COARRAY [, DIM [, KIND]])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an coarray, of any type.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
+If @var{DIM} is absent, the result is an array of the lower cobounds of
+@var{COARRAY}.  If @var{DIM} is present, the result is a scalar
+corresponding to the lower cobound of the array along that codimension.
+
+@item @emph{See also}:
+@ref{LCOBOUND}, @ref{LBOUND}
 @end table
 
 
