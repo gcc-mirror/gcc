@@ -1,3 +1,11 @@
+2010-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36625
+	* parser.c (cp_parser_parenthesized_expression_list): Change
+	is_attribute_list parm to int to indicate whether or not to
+	handle initial identifier specially.
+	(cp_parser_attribute_list): Use attribute_takes_identifier_p.
+
 2010-04-13  Jason Merrill  <jason@redhat.com>
 
 	* call.c (type_decays_to): Check MAYBE_CLASS_TYPE_P instead of

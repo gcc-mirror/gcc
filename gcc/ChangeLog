@@ -1,3 +1,9 @@
+2010-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36625
+	* c-common.c (attribute_takes_identifier_p): New fn.
+	* c-common.h: Declare it.
+
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*divmod<mode>4): Remove stray "&&" from
