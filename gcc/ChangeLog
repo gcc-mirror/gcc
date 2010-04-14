@@ -1,3 +1,7 @@
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*ashlqi3_1_slp): New insn pattern.
+
 2010-04-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_mark_inline_edge): Avoid double accounting
@@ -53,11 +57,9 @@
 	* Makefile.in (c-pch.o, ggc-common.o): Depend on timevar.h.
 	* c-pch.c: Include timevar.h.
 	(c_common_write_pch): Use TV_PCH_SAVE and TV_PCH_CPP_SAVE timers.
-	(c_common_read_pch): Use TV_PCH_RESTORE and TV_PCH_CPP_RESTORE
-	timers.
+	(c_common_read_pch): Use TV_PCH_RESTORE and TV_PCH_CPP_RESTORE timers.
 	* ggc-common.c: Include timevar.h.
-	(gt_pch_save): Use TV_PCH_PTR_REALLOC and TV_PCH_PTR_SORT
-	timers.
+	(gt_pch_save): Use TV_PCH_PTR_REALLOC and TV_PCH_PTR_SORT timers.
 	* timevar.def (TV_PCH_SAVE): Define.
 	(TV_PCH_CPP_SAVE): Define.
 	(TV_PCH_PTR_REALLOC): Define.
@@ -141,11 +143,11 @@
 	* except.c (lang_eh_type_covers): Likewise.
 
 2010-04-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-            Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
-	
+	    Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* gcc/config/s390/s390.md: Replace TARGET_64BIT with TARGET_ZARCH.
 	* gcc/config/s390/s390.c: Replace UNTIS_PER_WORD with
-	UNITS_PER_LONG where it is ABI relevant.	
+	UNITS_PER_LONG where it is ABI relevant.
 	(s390_return_addr_rtx): Likewise.
 	(s390_back_chain_rtx): Likewise.
 	(s390_frame_area): Likewise.
@@ -176,7 +178,7 @@
 	(DWARF_CIE_DATA_ALIGNMENT): New macro.
 	(s390_expand_setmem): Remove unused variable src_addr.
 	* gcc/longlong.h: Make smul_ppmm and sdiv_qrnnd inline asms to
-	deal with 64 bit registers.	
+	deal with 64 bit registers.
 	* gcc/config/s390/s390.h: Define __zarch__ predefined macro.
 	Replace UNITS_PER_WORD with UNITS_PER_LONG where it is ABI relevant.
 	(UNITS_PER_LONG): New macro.
