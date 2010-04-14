@@ -1,3 +1,7 @@
+2010-04-14  Release Manager
+
+	* GCC 4.5.0 released.
+
 2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
 
 	* lang.c (java_post_options): Constify variable "dot".
