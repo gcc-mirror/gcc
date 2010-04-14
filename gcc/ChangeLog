@@ -1,5 +1,12 @@
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/alpha/alpha.c (alpha_adjust_cost): Remove set but not
+	used insn_type variable.
+	(function_value): Add ATTRIBUTE_UNUSED to dummy variable declaration
+	to avoid set-but-not-used warning.
+
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
 	* df-core.c (df_ref_debug): Change format string placeholder
 	from 0x%x to %#x.
 	* dwarf2asm.c (dw2_asm_output_data_raw,
