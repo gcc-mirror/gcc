@@ -1,6 +1,6 @@
 -- { dg-do compile }
 
-procedure class_wide is
+procedure Class_Wide1 is
     package P is
        type T is tagged null record;
        procedure P1 (x : T'Class);
