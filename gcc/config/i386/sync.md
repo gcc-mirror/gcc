@@ -236,4 +236,4 @@
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }<logicprefix>{<imodesuffix>}\t{%1, %0|%0, %1}")
+  "lock{%;| }<logic>{<imodesuffix>}\t{%1, %0|%0, %1}")
