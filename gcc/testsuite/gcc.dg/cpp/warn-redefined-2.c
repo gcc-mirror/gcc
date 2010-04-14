@@ -6,7 +6,7 @@
 // { dg-bogus "__TIME__ builtin is not defined" "no-time" { target *-*-* } 5 }
 #endif
 
-#define __TIME__ "X"  // { dg-error "\"__TIME__\" redefined .-Wbuiltin-macro-redefined." }
+#define __TIME__ "X"  // { dg-error "\"__TIME__\" redefined .-Werror=builtin-macro-redefined." }
 
 #define __TIME__ "Y"  // { dg-bogus "-Wbuiltin-macro-redefined" }
                       // { dg-warning "\"__TIME__\" redefined" "not-builtin-1" { target *-*-* } 11 }

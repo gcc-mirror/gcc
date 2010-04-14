@@ -1,3 +1,22 @@
+2010-04-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 42966
+	* gcc.dg/cpp/warn-undef-2.c: Update.
+	* gcc.dg/cpp/warn-traditional-2.c: Update.
+	* gcc.dg/cpp/warn-comments-2.c: Update.
+	* gcc.dg/cpp/warn-variadic-2.c: Update.
+	* gcc.dg/cpp/warn-long-long-2.c: Update.
+	* gcc.dg/cpp/warn-deprecated-2.c: Update.
+	* gcc.dg/cpp/warn-multichar-2.c: Update.
+	* gcc.dg/cpp/warn-normalized-3.c: Update.
+	* gcc.dg/cpp/warn-cxx-compat-2.c: Update.
+	* gcc.dg/cpp/warn-trigraphs-3.c: Update.
+	* gcc.dg/cpp/warn-unused-macros-2.c: Update.
+	* gcc.dg/cpp/warn-trigraphs-4.c: Update.
+	* gcc.dg/cpp/warn-redefined-2.c: Update.
+	* gfortran.dg/warning-directive-2.F90: Update.
+	* c-c++-common/cpp/warning-directive-2.c: Update.
+
 2010-04-14  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/42963

@@ -1,3 +1,9 @@
+2010-04-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 42966
+	* diagnostics.c (diagnostic_report_diagnostic): Mark specially
+	warnings converted to errors.
+
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_adjust_cost): Remove set but not
