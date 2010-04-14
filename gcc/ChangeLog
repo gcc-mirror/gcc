@@ -1,5 +1,10 @@
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*popcountsi2_cmp_zext): Remove mode attribute
+	from insn template.
+
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*ashlqi3_1_slp): New insn pattern.
 
 2010-04-13  Jan Hubicka  <jh@suse.cz>
