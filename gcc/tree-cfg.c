@@ -71,6 +71,12 @@ static const int initial_cfg_capacity = 20;
 
 static struct pointer_map_t *edge_to_cases;
 
+/* If we record edge_to_cases, this bitmap will hold indexes
+   of basic blocks that end in a GIMPLE_SWITCH which we touched
+   due to edge manipulations.  */
+
+static bitmap touched_switch_bbs;
+
 /* CFG statistics.  */
 struct cfg_stats_d
 {
@@ -122,6 +128,7 @@ static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (basic_block, tree);
 static edge find_taken_edge_switch_expr (basic_block, tree);
 static tree find_case_label_for_value (gimple, tree);
+static void group_case_labels_stmt (gimple);
 
 void
 init_empty_tree_cfg_for_function (struct function *fn)
@@ -848,6 +855,7 @@ start_recording_case_labels (void)
 {
   gcc_assert (edge_to_cases == NULL);
   edge_to_cases = pointer_map_create ();
+  touched_switch_bbs = BITMAP_ALLOC (NULL);
 }
 
 /* Return nonzero if we are recording information for case labels.  */
@@ -863,9 +871,22 @@ recording_case_labels_p (void)
 void
 end_recording_case_labels (void)
 {
+  bitmap_iterator bi;
+  unsigned i;
   pointer_map_traverse (edge_to_cases, edge_to_cases_cleanup, NULL);
   pointer_map_destroy (edge_to_cases);
   edge_to_cases = NULL;
+  EXECUTE_IF_SET_IN_BITMAP (touched_switch_bbs, 0, i, bi)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      if (bb)
+	{
+	  gimple stmt = last_stmt (bb);
+	  if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
+	    group_case_labels_stmt (stmt);
+	}
+    }
+  BITMAP_FREE (touched_switch_bbs);
 }
 
 /* If we are inside a {start,end}_recording_cases block, then return
@@ -1278,10 +1299,104 @@ cleanup_dead_labels (void)
   free (label_for_bb);
 }
 
-/* Look for blocks ending in a multiway branch (a SWITCH_EXPR in GIMPLE),
-   and scan the sorted vector of cases.  Combine the ones jumping to the
-   same label.
+/* Scan the sorted vector of cases in STMT (a GIMPLE_SWITCH) and combine
+   the ones jumping to the same label.
    Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
+
+static void
+group_case_labels_stmt (gimple stmt)
+{
+  int old_size = gimple_switch_num_labels (stmt);
+  int i, j, new_size = old_size;
+  tree default_case = NULL_TREE;
+  tree default_label = NULL_TREE;
+  bool has_default;
+
+  /* The default label is always the first case in a switch
+     statement after gimplification if it was not optimized
+     away */
+  if (!CASE_LOW (gimple_switch_default_label (stmt))
+      && !CASE_HIGH (gimple_switch_default_label (stmt)))
+    {
+      default_case = gimple_switch_default_label (stmt);
+      default_label = CASE_LABEL (default_case);
+      has_default = true;
+    }
+  else
+    has_default = false;
+
+  /* Look for possible opportunities to merge cases.  */
+  if (has_default)
+    i = 1;
+  else
+    i = 0;
+  while (i < old_size)
+    {
+      tree base_case, base_label, base_high;
+      base_case = gimple_switch_label (stmt, i);
+
+      gcc_assert (base_case);
+      base_label = CASE_LABEL (base_case);
+
+      /* Discard cases that have the same destination as the
+	 default case.  */
+      if (base_label == default_label)
+	{
+	  gimple_switch_set_label (stmt, i, NULL_TREE);
+	  i++;
+	  new_size--;
+	  continue;
+	}
+
+      base_high = CASE_HIGH (base_case)
+	  ? CASE_HIGH (base_case)
+	  : CASE_LOW (base_case);
+      i++;
+
+      /* Try to merge case labels.  Break out when we reach the end
+	 of the label vector or when we cannot merge the next case
+	 label with the current one.  */
+      while (i < old_size)
+	{
+	  tree merge_case = gimple_switch_label (stmt, i);
+	  tree merge_label = CASE_LABEL (merge_case);
+	  tree t = int_const_binop (PLUS_EXPR, base_high,
+				    integer_one_node, 1);
+
+	  /* Merge the cases if they jump to the same place,
+	     and their ranges are consecutive.  */
+	  if (merge_label == base_label
+	      && tree_int_cst_equal (CASE_LOW (merge_case), t))
+	    {
+	      base_high = CASE_HIGH (merge_case) ?
+		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
+	      CASE_HIGH (base_case) = base_high;
+	      gimple_switch_set_label (stmt, i, NULL_TREE);
+	      new_size--;
+	      i++;
+	    }
+	  else
+	    break;
+	}
+    }
+
+  /* Compress the case labels in the label vector, and adjust the
+     length of the vector.  */
+  for (i = 0, j = 0; i < new_size; i++)
+    {
+      while (! gimple_switch_label (stmt, j))
+	j++;
+      gimple_switch_set_label (stmt, i,
+			       gimple_switch_label (stmt, j++));
+    }
+
+  gcc_assert (new_size <= old_size);
+  gimple_switch_set_num_labels (stmt, new_size);
+}
+
+/* Look for blocks ending in a multiway branch (a GIMPLE_SWITCH),
+   and scan the sorted vector of cases.  Combine the ones jumping to the
+   same label.  */
 
 void
 group_case_labels (void)
@@ -1292,94 +1407,7 @@ group_case_labels (void)
     {
       gimple stmt = last_stmt (bb);
       if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	{
-	  int old_size = gimple_switch_num_labels (stmt);
-	  int i, j, new_size = old_size;
-	  tree default_case = NULL_TREE;
-	  tree default_label = NULL_TREE;
-	  bool has_default;
-
-	  /* The default label is always the first case in a switch
-	     statement after gimplification if it was not optimized
-	     away */
-	  if (!CASE_LOW (gimple_switch_default_label (stmt))
-	      && !CASE_HIGH (gimple_switch_default_label (stmt)))
-	    {
-	      default_case = gimple_switch_default_label (stmt);
-	      default_label = CASE_LABEL (default_case);
-	      has_default = true;
-	    }
-	  else
-	    has_default = false;
-
-	  /* Look for possible opportunities to merge cases.  */
-	  if (has_default)
-	    i = 1;
-	  else
-	    i = 0;
-	  while (i < old_size)
-	    {
-	      tree base_case, base_label, base_high;
-	      base_case = gimple_switch_label (stmt, i);
-
-	      gcc_assert (base_case);
-	      base_label = CASE_LABEL (base_case);
-
-	      /* Discard cases that have the same destination as the
-		 default case.  */
-	      if (base_label == default_label)
-		{
-		  gimple_switch_set_label (stmt, i, NULL_TREE);
-		  i++;
-		  new_size--;
-		  continue;
-		}
-
-	      base_high = CASE_HIGH (base_case)
-			  ? CASE_HIGH (base_case)
-			  : CASE_LOW (base_case);
-	      i++;
-
-	      /* Try to merge case labels.  Break out when we reach the end
-		 of the label vector or when we cannot merge the next case
-		 label with the current one.  */
-	      while (i < old_size)
-		{
-		  tree merge_case = gimple_switch_label (stmt, i);
-	          tree merge_label = CASE_LABEL (merge_case);
-		  tree t = int_const_binop (PLUS_EXPR, base_high,
-					    integer_one_node, 1);
-
-		  /* Merge the cases if they jump to the same place,
-		     and their ranges are consecutive.  */
-		  if (merge_label == base_label
-		      && tree_int_cst_equal (CASE_LOW (merge_case), t))
-		    {
-		      base_high = CASE_HIGH (merge_case) ?
-			CASE_HIGH (merge_case) : CASE_LOW (merge_case);
-		      CASE_HIGH (base_case) = base_high;
-		      gimple_switch_set_label (stmt, i, NULL_TREE);
-		      new_size--;
-		      i++;
-		    }
-		  else
-		    break;
-		}
-	    }
-
-	  /* Compress the case labels in the label vector, and adjust the
-	     length of the vector.  */
-	  for (i = 0, j = 0; i < new_size; i++)
-	    {
-	      while (! gimple_switch_label (stmt, j))
-		j++;
-	      gimple_switch_set_label (stmt, i,
-				       gimple_switch_label (stmt, j++));
-	    }
-
-	  gcc_assert (new_size <= old_size);
-	  gimple_switch_set_num_labels (stmt, new_size);
-	}
+	group_case_labels_stmt (stmt);
     }
 }
 
@@ -4689,6 +4717,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 		TREE_CHAIN (last) = TREE_CHAIN (cases2);
 		TREE_CHAIN (cases2) = first;
 	      }
+	    bitmap_set_bit (touched_switch_bbs, gimple_bb (stmt)->index);
 	  }
 	else
 	  {
