@@ -2923,6 +2923,95 @@ expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
   return result;
 }
 
+/* Fold a builtin function call to pow, powf, or powl into a series of sqrts or
+   cbrts.  Return NULL_RTX if no simplification can be made or expand the tree
+   if we can simplify it.  */
+static rtx
+expand_builtin_pow_root (location_t loc, tree arg0, tree arg1, tree type,
+			 rtx subtarget)
+{
+  if (TREE_CODE (arg1) == REAL_CST
+      && !TREE_OVERFLOW (arg1)
+      && flag_unsafe_math_optimizations)
+    {
+      enum machine_mode mode = TYPE_MODE (type);
+      tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+      tree cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
+      REAL_VALUE_TYPE c = TREE_REAL_CST (arg1);
+      tree op = NULL_TREE;
+
+      if (sqrtfn)
+	{
+	  /* Optimize pow (x, 0.5) into sqrt.  */
+	  if (REAL_VALUES_EQUAL (c, dconsthalf))
+	    op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
+
+	  else
+	    {
+	      REAL_VALUE_TYPE dconst1_4 = dconst1;
+	      REAL_VALUE_TYPE dconst3_4;
+	      SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
+
+	      real_from_integer (&dconst3_4, VOIDmode, 3, 0, 0);
+	      SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
+
+	      /* Optimize pow (x, 0.25) into sqrt (sqrt (x)).  Assume on most
+		 machines that a builtin sqrt instruction is smaller than a
+		 call to pow with 0.25, so do this optimization even if
+		 -Os.  */
+	      if (REAL_VALUES_EQUAL (c, dconst1_4))
+		{
+		  op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
+		  op = build_call_nofold_loc (loc, sqrtfn, 1, op);
+		}
+
+	      /* Optimize pow (x, 0.75) = sqrt (x) * sqrt (sqrt (x)) unless we
+		 are optimizing for space.  */
+	      else if (optimize_insn_for_speed_p ()
+		       && !TREE_SIDE_EFFECTS (arg0)
+		       && REAL_VALUES_EQUAL (c, dconst3_4))
+		{
+		  tree sqrt1 = build_call_expr_loc (loc, sqrtfn, 1, arg0);
+		  tree sqrt2 = builtin_save_expr (sqrt1);
+		  tree sqrt3 = build_call_expr_loc (loc, sqrtfn, 1, sqrt1);
+		  op = fold_build2_loc (loc, MULT_EXPR, type, sqrt2, sqrt3);
+		}
+	    }
+	}
+
+      /* Check whether we can do cbrt insstead of pow (x, 1./3.) and
+	 cbrt/sqrts instead of pow (x, 1./6.).  */
+      if (cbrtfn && ! op
+	  && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)))
+	{
+	  /* First try 1/3.  */
+	  REAL_VALUE_TYPE dconst1_3
+	    = real_value_truncate (mode, dconst_third ());
+
+	  if (REAL_VALUES_EQUAL (c, dconst1_3))
+	    op = build_call_nofold_loc (loc, cbrtfn, 1, arg0);
+
+	      /* Now try 1/6.  */
+	  else if (optimize_insn_for_speed_p ())
+	    {
+	      REAL_VALUE_TYPE dconst1_6 = dconst1_3;
+	      SET_REAL_EXP (&dconst1_6, REAL_EXP (&dconst1_6) - 1);
+
+	      if (REAL_VALUES_EQUAL (c, dconst1_6))
+		{
+		  op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
+		  op = build_call_nofold_loc (loc, cbrtfn, 1, op);
+		}
+	    }
+	}
+
+      if (op)
+	return expand_expr (op, subtarget, mode, EXPAND_NORMAL);
+    }
+
+  return NULL_RTX;
+}
+
 /* Expand a call to the pow built-in mathematical function.  Return NULL_RTX if
    a normal call should be emitted rather than expanding the function
    in-line.  EXP is the expression that is a call to the builtin
@@ -3016,6 +3105,13 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	  return op;
 	}
     }
+
+  /* Check whether we can do a series of sqrt or cbrt's instead of the pow
+     call.  */
+  op = expand_builtin_pow_root (EXPR_LOCATION (exp), arg0, arg1, type,
+				subtarget);
+  if (op)
+    return op;
 
   /* Try if the exponent is a third of an integer.  In this case
      we can expand to x**(n/3) * cbrt(x)**(n%3).  As cbrt (x) is
