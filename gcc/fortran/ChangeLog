@@ -1,3 +1,11 @@
+2010-04-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* fortran/intrinsic.texi: Add the missing specific name of intrinsic
+	procedure where the specific name is identical to the generic name.
+	Fix inconsistent or mismatch in the argument names in intrinsic
+	procedure descriptions.  Add the SCALAR allocatable description to
+	ALLOCATED.
+
 2010-04-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
