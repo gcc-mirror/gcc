@@ -1,3 +1,8 @@
+2010-04-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/43739
+	* gcc.dg/pr43643.c: Use static link on hppa*-*-hpux*.
+
 2010-04-14  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 42966
