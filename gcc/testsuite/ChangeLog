@@ -1,3 +1,8 @@
+2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+
+	PR target/21803
+	* gcc.target/arm/pr42496.c: New test.
+
 2010-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36625

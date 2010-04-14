@@ -385,7 +385,11 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
   rtx false_expr;		/* test for then block insns */
   rtx true_prob_val;		/* probability of else block */
   rtx false_prob_val;		/* probability of then block */
-  int n_insns;
+  rtx then_last_head = NULL_RTX;	/* Last match at the head of THEN */
+  rtx else_last_head = NULL_RTX;	/* Last match at the head of ELSE */
+  rtx then_first_tail = NULL_RTX;	/* First match at the tail of THEN */
+  rtx else_first_tail = NULL_RTX;	/* First match at the tail of ELSE */
+  int then_n_insns, else_n_insns, n_insns;
   enum rtx_code false_code;
 
   /* If test is comprised of && or || elements, and we've failed at handling
@@ -418,15 +422,78 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
      number of insns and see if it is small enough to convert.  */
   then_start = first_active_insn (then_bb);
   then_end = last_active_insn (then_bb, TRUE);
-  n_insns = ce_info->num_then_insns = count_bb_insns (then_bb);
+  then_n_insns = ce_info->num_then_insns = count_bb_insns (then_bb);
+  n_insns = then_n_insns;
   max = MAX_CONDITIONAL_EXECUTE;
 
   if (else_bb)
     {
+      int n_matching;
+
       max *= 2;
       else_start = first_active_insn (else_bb);
       else_end = last_active_insn (else_bb, TRUE);
-      n_insns += ce_info->num_else_insns = count_bb_insns (else_bb);
+      else_n_insns = ce_info->num_else_insns = count_bb_insns (else_bb);
+      n_insns += else_n_insns;
+
+      /* Look for matching sequences at the head and tail of the two blocks,
+	 and limit the range of insns to be converted if possible.  */
+      n_matching = flow_find_cross_jump (then_bb, else_bb,
+					 &then_first_tail, &else_first_tail);
+      if (then_first_tail == BB_HEAD (then_bb))
+	then_start = then_end = NULL_RTX;
+      if (else_first_tail == BB_HEAD (else_bb))
+	else_start = else_end = NULL_RTX;
+
+      if (n_matching > 0)
+	{
+	  if (then_end)
+	    then_end = prev_active_insn (then_first_tail);
+	  if (else_end)
+	    else_end = prev_active_insn (else_first_tail);
+	  n_insns -= 2 * n_matching;
+	}
+
+      if (then_start && else_start)
+	{
+	  int longest_match = MIN (then_n_insns - n_matching,
+				   else_n_insns - n_matching);
+	  n_matching
+	    = flow_find_head_matching_sequence (then_bb, else_bb,
+						&then_last_head,
+						&else_last_head,
+						longest_match);
+
+	  if (n_matching > 0)
+	    {
+	      rtx insn;
+
+	      /* We won't pass the insns in the head sequence to
+		 cond_exec_process_insns, so we need to test them here
+		 to make sure that they don't clobber the condition.  */
+	      for (insn = BB_HEAD (then_bb);
+		   insn != NEXT_INSN (then_last_head);
+		   insn = NEXT_INSN (insn))
+		if (!LABEL_P (insn) && !NOTE_P (insn)
+		    && !DEBUG_INSN_P (insn)
+		    && modified_in_p (test_expr, insn))
+		  return FALSE;
+	    }
+
+	  if (then_last_head == then_end)
+	    then_start = then_end = NULL_RTX;
+	  if (else_last_head == else_end)
+	    else_start = else_end = NULL_RTX;
+
+	  if (n_matching > 0)
+	    {
+	      if (then_start)
+		then_start = next_active_insn (then_last_head);
+	      if (else_start)
+		else_start = next_active_insn (else_last_head);
+	      n_insns -= 2 * n_matching;
+	    }
+	}
     }
 
   if (n_insns > max)
@@ -570,7 +637,21 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
     fprintf (dump_file, "%d insn%s converted to conditional execution.\n",
 	     n_insns, (n_insns == 1) ? " was" : "s were");
 
-  /* Merge the blocks!  */
+  /* Merge the blocks!  If we had matching sequences, make sure to delete one
+     copy at the appropriate location first: delete the copy in the THEN branch
+     for a tail sequence so that the remaining one is executed last for both
+     branches, and delete the copy in the ELSE branch for a head sequence so
+     that the remaining one is executed first for both branches.  */
+  if (then_first_tail)
+    {
+      rtx from = then_first_tail;
+      if (!INSN_P (from))
+	from = next_active_insn (from);
+      delete_insn_chain (from, BB_END (then_bb), false);
+    }
+  if (else_last_head)
+    delete_insn_chain (first_active_insn (else_bb), else_last_head, false);
+
   merge_if_block (ce_info);
   cond_exec_changed_p = TRUE;
   return TRUE;
