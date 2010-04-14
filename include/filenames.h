@@ -5,7 +5,7 @@
    use forward- and back-slash in path names interchangeably, and
    some of them have case-insensitive file names.
 
-   Copyright 2000, 2001, 2007 Free Software Foundation, Inc.
+   Copyright 2000, 2001, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of BFD, the Binary File Descriptor library.
 
@@ -37,16 +37,26 @@ extern "C" {
 #endif
 
 #define IS_DIR_SEPARATOR(c)	((c) == '/' || (c) == '\\')
+
+#define HAS_DRIVE_SPEC(f)	(((f)[0]) && ((f)[1] == ':'))
+
+/* Remove the drive spec from F, assuming HAS_DRIVE_SPEC (f).
+   The result is a pointer to the remainder of F.  */
+#define STRIP_DRIVE_SPEC(f)	((f) + 2)
+
 /* Note that IS_ABSOLUTE_PATH accepts d:foo as well, although it is
    only semi-absolute.  This is because the users of IS_ABSOLUTE_PATH
    want to know whether to prepend the current working directory to
    a file name, which should not be done with a name like d:foo.  */
-#define IS_ABSOLUTE_PATH(f)	(IS_DIR_SEPARATOR((f)[0]) || (((f)[0]) && ((f)[1] == ':')))
+#define IS_ABSOLUTE_PATH(f)	(IS_DIR_SEPARATOR((f)[0]) || HAS_DRIVE_SPEC(f))
 
 #else  /* not DOSish */
 
 #define IS_DIR_SEPARATOR(c)	((c) == '/')
 #define IS_ABSOLUTE_PATH(f)	(IS_DIR_SEPARATOR((f)[0]))
+
+#define HAS_DRIVE_SPEC(f)	(0)
+#define STRIP_DRIVE_SPEC(f)	(f)
 
 #endif /* not DOSish */
 
