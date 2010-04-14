@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -290,6 +290,30 @@ double_int_umod (double_int a, double_int b, unsigned code)
   return double_int_mod (a, b, true, code);
 }
 
+/* Shift A left by COUNT places keeping only PREC bits of result.  Shift
+   right if COUNT is negative.  ARITH true specifies arithmetic shifting;
+   otherwise use logical shift.  */
+
+double_int
+double_int_lshift (double_int a, HOST_WIDE_INT count, unsigned int prec, bool arith)
+{
+  double_int ret;
+  lshift_double (a.low, a.high, count, prec, &ret.low, &ret.high, arith);
+  return ret;
+}
+
+/* Shift A rigth by COUNT places keeping only PREC bits of result.  Shift
+   left if COUNT is negative.  ARITH true specifies arithmetic shifting;
+   otherwise use logical shift.  */
+
+double_int
+double_int_rshift (double_int a, HOST_WIDE_INT count, unsigned int prec, bool arith)
+{
+  double_int ret;
+  rshift_double (a.low, a.high, count, prec, &ret.low, &ret.high, arith);
+  return ret;
+}
+
 /* Constructs tree in type TYPE from with value given by CST.  Signedness of CST
    is assumed to be the same as the signedness of TYPE.  */
 
@@ -312,15 +336,6 @@ double_int_fits_to_tree_p (const_tree type, double_int cst)
 				   TYPE_UNSIGNED (type));
 
   return double_int_equal_p (cst, ext);
-}
-
-/* Returns true if CST is negative.  Of course, CST is considered to
-   be signed.  */
-
-bool
-double_int_negative_p (double_int cst)
-{
-  return cst.high < 0;
 }
 
 /* Returns -1 if A < B, 0 if A == B and 1 if A > B.  Signedness of the

@@ -1839,39 +1839,15 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 static rtx
 mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 {
-  HOST_WIDE_INT masklow, maskhigh;
+  double_int mask;
 
-  if (bitsize == 0)
-    masklow = 0;
-  else if (bitpos < HOST_BITS_PER_WIDE_INT)
-    masklow = (HOST_WIDE_INT) -1 << bitpos;
-  else
-    masklow = 0;
-
-  if (bitpos + bitsize < HOST_BITS_PER_WIDE_INT)
-    masklow &= ((unsigned HOST_WIDE_INT) -1
-		>> (HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
-
-  if (bitpos <= HOST_BITS_PER_WIDE_INT)
-    maskhigh = -1;
-  else
-    maskhigh = (HOST_WIDE_INT) -1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-
-  if (bitsize == 0)
-    maskhigh = 0;
-  else if (bitpos + bitsize > HOST_BITS_PER_WIDE_INT)
-    maskhigh &= ((unsigned HOST_WIDE_INT) -1
-		 >> (2 * HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
-  else
-    maskhigh = 0;
+  mask = double_int_mask (bitsize);
+  mask = double_int_lshift (mask, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
 
   if (complement)
-    {
-      maskhigh = ~maskhigh;
-      masklow = ~masklow;
-    }
+    mask = double_int_not (mask);
 
-  return immed_double_const (masklow, maskhigh, mode);
+  return immed_double_const (mask.low, mask.high, mode);
 }
 
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) rtx with the value
@@ -1880,24 +1856,12 @@ mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 static rtx
 lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
 {
-  unsigned HOST_WIDE_INT v = INTVAL (value);
-  HOST_WIDE_INT low, high;
+  double_int val;
+  
+  val = double_int_zext (uhwi_to_double_int (INTVAL (value)), bitsize);
+  val = double_int_lshift (val, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
 
-  if (bitsize < HOST_BITS_PER_WIDE_INT)
-    v &= ~((HOST_WIDE_INT) -1 << bitsize);
-
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
-    {
-      low = v << bitpos;
-      high = (bitpos > 0 ? (v >> (HOST_BITS_PER_WIDE_INT - bitpos)) : 0);
-    }
-  else
-    {
-      low = 0;
-      high = v << (bitpos - HOST_BITS_PER_WIDE_INT);
-    }
-
-  return immed_double_const (low, high, mode);
+  return immed_double_const (val.low, val.high, mode);
 }
 
 /* Extract a bit field that is split across two words

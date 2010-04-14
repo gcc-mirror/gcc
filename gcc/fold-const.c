@@ -436,7 +436,7 @@ mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 void
 lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	       HOST_WIDE_INT count, unsigned int prec,
-	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, int arith)
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, bool arith)
 {
   unsigned HOST_WIDE_INT signmask;
 
@@ -491,7 +491,7 @@ lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 }
 
 /* Shift the doubleword integer in L1, H1 right by COUNT places
-   keeping only PREC bits of result.  COUNT must be positive.
+   keeping only PREC bits of result.  Shift left if COUNT is negative.
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
@@ -499,7 +499,7 @@ void
 rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	       HOST_WIDE_INT count, unsigned int prec,
 	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
-	       int arith)
+	       bool arith)
 {
   unsigned HOST_WIDE_INT signmask;
 
@@ -881,10 +881,7 @@ div_and_round_double (enum tree_code code, int uns,
 tree
 div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
 {
-  unsigned HOST_WIDE_INT int1l, int2l;
-  HOST_WIDE_INT int1h, int2h;
-  unsigned HOST_WIDE_INT quol, reml;
-  HOST_WIDE_INT quoh, remh;
+  double_int quo, rem;
   int uns;
 
   /* The sign of the division is according to operand two, that
@@ -895,17 +892,14 @@ div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
       && TYPE_IS_SIZETYPE (TREE_TYPE (arg2)))
     uns = false;
 
-  int1l = TREE_INT_CST_LOW (arg1);
-  int1h = TREE_INT_CST_HIGH (arg1);
-  int2l = TREE_INT_CST_LOW (arg2);
-  int2h = TREE_INT_CST_HIGH (arg2);
+  quo = double_int_divmod (tree_to_double_int (arg1),
+			   tree_to_double_int (arg2),
+			   uns, code, &rem);
 
-  div_and_round_double (code, uns, int1l, int1h, int2l, int2h,
-		  	&quol, &quoh, &reml, &remh);
-  if (remh != 0 || reml != 0)
-    return NULL_TREE;
+  if (double_int_zero_p (rem))
+    return build_int_cst_wide (TREE_TYPE (arg1), quo.low, quo.high);
 
-  return build_int_cst_wide (TREE_TYPE (arg1), quol, quoh);
+  return NULL_TREE; 
 }
 
 /* This is nonzero if we should defer warnings about undefined
@@ -2279,7 +2273,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
      C and C++ standards that simply state that the behavior of
      FP-to-integer conversion is unspecified upon overflow.  */
 
-  HOST_WIDE_INT high, low;
+  double_int val;
   REAL_VALUE_TYPE r;
   REAL_VALUE_TYPE x = TREE_REAL_CST (arg1);
 
@@ -2297,8 +2291,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
   if (REAL_VALUE_ISNAN (r))
     {
       overflow = 1;
-      high = 0;
-      low = 0;
+      val = double_int_zero;
     }
 
   /* See if R is less than the lower bound or greater than the
@@ -2311,8 +2304,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
       if (REAL_VALUES_LESS (r, l))
 	{
 	  overflow = 1;
-	  high = TREE_INT_CST_HIGH (lt);
-	  low = TREE_INT_CST_LOW (lt);
+	  val = tree_to_double_int (lt);
 	}
     }
 
@@ -2325,16 +2317,15 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
 	  if (REAL_VALUES_LESS (u, r))
 	    {
 	      overflow = 1;
-	      high = TREE_INT_CST_HIGH (ut);
-	      low = TREE_INT_CST_LOW (ut);
+	      val = tree_to_double_int (ut);
 	    }
 	}
     }
 
   if (! overflow)
-    REAL_VALUE_TO_INT (&low, &high, r);
+    real_to_integer2 ((HOST_WIDE_INT *) &val.low, &val.high, &r);
 
-  t = force_fit_type_double (type, low, high, -1,
+  t = force_fit_type_double (type, val.low, val.high, -1,
 			     overflow | TREE_OVERFLOW (arg1));
   return t;
 }
@@ -2354,39 +2345,32 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
   mode = TREE_FIXED_CST (arg1).mode;
   if (GET_MODE_FBIT (mode) < 2 * HOST_BITS_PER_WIDE_INT)
     {
-      lshift_double (temp.low, temp.high,
-		     - GET_MODE_FBIT (mode), 2 * HOST_BITS_PER_WIDE_INT,
-		     &temp.low, &temp.high, SIGNED_FIXED_POINT_MODE_P (mode));
+      temp = double_int_rshift (temp, GET_MODE_FBIT (mode),
+			        HOST_BITS_PER_DOUBLE_INT,
+			        SIGNED_FIXED_POINT_MODE_P (mode));
 
       /* Left shift temp to temp_trunc by fbit.  */
-      lshift_double (temp.low, temp.high,
-		     GET_MODE_FBIT (mode), 2 * HOST_BITS_PER_WIDE_INT,
-		     &temp_trunc.low, &temp_trunc.high,
-		     SIGNED_FIXED_POINT_MODE_P (mode));
+      temp_trunc = double_int_lshift (temp, GET_MODE_FBIT (mode),
+				      HOST_BITS_PER_DOUBLE_INT,
+				      SIGNED_FIXED_POINT_MODE_P (mode));
     }
   else
     {
-      temp.low = 0;
-      temp.high = 0;
-      temp_trunc.low = 0;
-      temp_trunc.high = 0;
+      temp = double_int_zero;
+      temp_trunc = double_int_zero;
     }
 
   /* If FIXED_CST is negative, we need to round the value toward 0.
      By checking if the fractional bits are not zero to add 1 to temp.  */
-  if (SIGNED_FIXED_POINT_MODE_P (mode) && temp_trunc.high < 0
+  if (SIGNED_FIXED_POINT_MODE_P (mode)
+      && double_int_negative_p (temp_trunc)
       && !double_int_equal_p (TREE_FIXED_CST (arg1).data, temp_trunc))
-    {
-      double_int one;
-      one.low = 1;
-      one.high = 0;
-      temp = double_int_add (temp, one);
-    }
+    temp = double_int_add (temp, double_int_one);
 
   /* Given a fixed-point constant, make new constant with new type,
      appropriately sign-extended or truncated.  */
   t = force_fit_type_double (type, temp.low, temp.high, -1,
-			     (temp.high < 0
+			     (double_int_negative_p (temp)
 		 	      && (TYPE_UNSIGNED (type)
 				  < TYPE_UNSIGNED (TREE_TYPE (arg1))))
 			     | TREE_OVERFLOW (arg1));

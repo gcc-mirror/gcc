@@ -1,3 +1,19 @@
+2010-04-15  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (HOST_BITS_PER_DOUBLE_INT): Define.
+	(double_int_not, double_int_lshift, double_int_rshift): Declare.
+	(double_int_negative_p): Convert to static inline function.
+	* double-int.c (double_int_lshift, double_int_lshift): Add new function.
+	(double_int_negative_p): Remove.
+	* tree.h (lshift_double, rshift_double): 
+	* tree.c (build_low_bits_mask): Clean up, use double_int_* functions.
+	* fold-const.c (fold_convert_const_int_from_real,
+	fold_convert_const_int_from_fixed, div_if_zero_remainder): (Ditto.).
+	(lshift_double): Change type of arith argument to bool.
+	(rshift_double): Change type of arith argument to bool. Correct
+	comment.
+	* expmed.c (mask_rtx, lshift_value): (Ditto.).
+
 2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 	
 	PR target/21803

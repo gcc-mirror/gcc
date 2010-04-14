@@ -4841,10 +4841,10 @@ extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
   mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
 extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, int);
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
 extern void rshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, int);
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
 extern void lrotate_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			    HOST_WIDE_INT, unsigned int,
 			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
