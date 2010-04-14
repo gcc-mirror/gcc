@@ -1332,6 +1332,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   int rank;
   int d;
   int shape_i;
+  int limit;
   long unsigned one = 1;
   bool incr_ctr;
   mpz_t start[GFC_MAX_DIMENSIONS];
@@ -1547,7 +1548,18 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	    }
 	}
 
-      cons = gfc_constructor_lookup (base, mpz_get_ui (ptr));
+      limit = mpz_get_ui (ptr);
+      if (limit >= gfc_option.flag_max_array_constructor)
+        {
+	  gfc_error ("The number of elements in the array constructor "
+		     "at %L requires an increase of the allowed %d "
+		     "upper limit.   See -fmax-array-constructor "
+		     "option", &expr->where,
+		     gfc_option.flag_max_array_constructor);
+	  return FAILURE;
+	}
+
+      cons = gfc_constructor_lookup (base, limit);
       gcc_assert (cons);
       gfc_constructor_append_expr (&expr->value.constructor,
 				   gfc_copy_expr (cons->expr), NULL);
