@@ -4732,7 +4732,7 @@ alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
 static int
 alpha_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
-  enum attr_type insn_type, dep_insn_type;
+  enum attr_type dep_insn_type;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
@@ -4744,7 +4744,6 @@ alpha_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
   if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
     return cost;
 
-  insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
 
   /* Bring in the user-defined memory latency.  */
@@ -5855,7 +5854,7 @@ rtx
 function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		enum machine_mode mode)
 {
-  unsigned int regnum, dummy;
+  unsigned int regnum, dummy ATTRIBUTE_UNUSED;
   enum mode_class mclass;
 
   gcc_assert (!valtype || !alpha_return_in_memory (valtype, func));
