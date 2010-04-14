@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,6 +56,8 @@ typedef struct
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;
 } double_int;
+
+#define HOST_BITS_PER_DOUBLE_INT (2 * HOST_BITS_PER_WIDE_INT)
 
 union tree_node;
 
@@ -127,7 +129,29 @@ double_int double_int_umod (double_int, double_int, unsigned);
 double_int double_int_divmod (double_int, double_int, bool, unsigned, double_int *);
 double_int double_int_sdivmod (double_int, double_int, unsigned, double_int *);
 double_int double_int_udivmod (double_int, double_int, unsigned, double_int *);
-bool double_int_negative_p (double_int);
+
+/* Logical operations.  */
+static inline double_int
+double_int_not (double_int a)
+{
+  a.low = ~a.low;
+  a.high = ~ a.high;
+  return a;
+}
+
+/* Shift operations.  */
+double_int double_int_lshift (double_int, HOST_WIDE_INT, unsigned int, bool);
+double_int double_int_rshift (double_int, HOST_WIDE_INT, unsigned int, bool);
+
+/* Returns true if CST is negative.  Of course, CST is considered to
+   be signed.  */
+
+static inline bool
+double_int_negative_p (double_int cst)
+{
+  return cst.high < 0;
+}
+
 int double_int_cmp (double_int, double_int, bool);
 int double_int_scmp (double_int, double_int);
 int double_int_ucmp (double_int, double_int);
