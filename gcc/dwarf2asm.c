@@ -80,14 +80,14 @@ dw2_asm_output_data_raw (int size, unsigned HOST_WIDE_INT value)
   if (BYTES_BIG_ENDIAN)
     {
       for (i = size - 1; i > 0; --i)
-	fprintf (asm_out_file, "0x%x,", bytes[i]);
-      fprintf (asm_out_file, "0x%x", bytes[0]);
+	fprintf (asm_out_file, "%#x,", bytes[i]);
+      fprintf (asm_out_file, "%#x", bytes[0]);
     }
   else
     {
       for (i = 0; i < size - 1; ++i)
-	fprintf (asm_out_file, "0x%x,", bytes[i]);
-      fprintf (asm_out_file, "0x%x", bytes[i]);
+	fprintf (asm_out_file, "%#x,", bytes[i]);
+      fprintf (asm_out_file, "%#x", bytes[i]);
     }
 }
 
@@ -549,7 +549,7 @@ dw2_asm_output_data_uleb128_raw (unsigned HOST_WIDE_INT value)
 	/* More bytes to follow.  */
 	byte |= 0x80;
 
-      fprintf (asm_out_file, "0x%x", byte);
+      fprintf (asm_out_file, "%#x", byte);
       if (value == 0)
 	break;
       fputc (',', asm_out_file);
@@ -591,7 +591,7 @@ dw2_asm_output_data_uleb128 (unsigned HOST_WIDE_INT value,
 
 	if (byte_op)
 	  {
-	    fprintf (asm_out_file, "0x%x", byte);
+	    fprintf (asm_out_file, "%#x", byte);
 	    if (work != 0)
 	      fputc (',', asm_out_file);
 	  }
@@ -633,7 +633,7 @@ dw2_asm_output_data_sleb128_raw (HOST_WIDE_INT value)
       if (more)
 	byte |= 0x80;
 
-      fprintf (asm_out_file, "0x%x", byte);
+      fprintf (asm_out_file, "%#x", byte);
       if (!more)
 	break;
       fputc (',', asm_out_file);
@@ -678,7 +678,7 @@ dw2_asm_output_data_sleb128 (HOST_WIDE_INT value,
 
 	if (byte_op)
 	  {
-	    fprintf (asm_out_file, "0x%x", byte);
+	    fprintf (asm_out_file, "%#x", byte);
 	    if (more)
 	      fputc (',', asm_out_file);
 	  }
