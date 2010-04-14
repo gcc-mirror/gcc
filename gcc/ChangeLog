@@ -1,3 +1,14 @@
+2010-04-14  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/42963
+	* tree-cfg.c (touched_switch_bbs): New static variable.
+	(group_case_labels_stmt): New function broken out from ...
+	(group_case_labels): ... here, use the above.
+	(start_recording_case_labels): Allocate touched_switch_bbs.
+	(end_recording_case_labels): Deallocate it, call
+	group_case_labels_stmt.
+	(gimple_redirect_edge_and_branch): Remember index of affected BB.
+
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*popcountsi2_cmp_zext): Remove mode attribute
