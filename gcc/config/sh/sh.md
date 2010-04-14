@@ -7050,7 +7050,7 @@ label:
 
 (define_insn_and_split "doloop_end_split"
   [(set (pc)
-	(if_then_else (ne:SI (match_operand:SI 0 "arith_reg_dest" "+r")
+	(if_then_else (ne:SI (match_operand:SI 0 "arith_reg_dest" "")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
