@@ -182,7 +182,7 @@ gfc_constructor_lookup (gfc_constructor_base base, int offset)
   if (node)
     return (gfc_constructor*) node->value;
 
-  /* Check if the previous node as a repeat count big enough to
+  /* Check if the previous node has a repeat count big enough to
      cover the offset looked for.  */
   node = splay_tree_predecessor (base, offset);
   if (!node)

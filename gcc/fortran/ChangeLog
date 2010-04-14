@@ -1,3 +1,9 @@
+2010-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43747
+	* constructor.c: Fix typo in comment.
+	* expr.c (find_array_section): Add check for max array limit.
+
 2010-04-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/31400
