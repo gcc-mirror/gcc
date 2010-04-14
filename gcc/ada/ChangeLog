@@ -1,3 +1,7 @@
+2010-04-14  Release Manager
+
+	* GCC 4.5.0 released.
+
 2010-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (SPARC/Solaris): Use sparcv8plus.
