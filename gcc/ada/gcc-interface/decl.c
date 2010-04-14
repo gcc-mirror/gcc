@@ -4343,9 +4343,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	break;
       }
 
-      /* Simple class_wide types are always viewed as their root_type
-	 by Gigi unless an Equivalent_Type is specified.  */
     case E_Class_Wide_Type:
+      /* Class-wide types are always transformed into their root type.  */
       gnu_decl = gnat_to_gnu_entity (gnat_equiv_type, NULL_TREE, 0);
       maybe_present = true;
       break;

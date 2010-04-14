@@ -6073,92 +6073,85 @@ elaborate_all_entities (Node_Id gnat_node)
     elaborate_all_entities (Library_Unit (gnat_node));
 }
 
-/* Do the processing of N_Freeze_Entity, GNAT_NODE.  */
+/* Do the processing of GNAT_NODE, an N_Freeze_Entity.  */
 
 static void
 process_freeze_entity (Node_Id gnat_node)
 {
-  Entity_Id gnat_entity = Entity (gnat_node);
-  tree gnu_old;
-  tree gnu_new;
-  tree gnu_init
-    = (Nkind (Declaration_Node (gnat_entity)) == N_Object_Declaration
-       && present_gnu_tree (Declaration_Node (gnat_entity)))
-      ? get_gnu_tree (Declaration_Node (gnat_entity)) : NULL_TREE;
+  const Entity_Id gnat_entity = Entity (gnat_node);
+  const Entity_Kind kind = Ekind (gnat_entity);
+  tree gnu_old, gnu_new;
 
-  /* If this is a package, need to generate code for the package.  */
-  if (Ekind (gnat_entity) == E_Package)
+  /* If this is a package, we need to generate code for the package.  */
+  if (kind == E_Package)
     {
       insert_code_for
-  	(Parent (Corresponding_Body
-  		 (Parent (Declaration_Node (gnat_entity)))));
+	(Parent (Corresponding_Body
+		 (Parent (Declaration_Node (gnat_entity)))));
       return;
     }
 
-  /* Check for old definition after the above call.  This Freeze_Node
-     might be for one its Itypes.  */
-  gnu_old
-    = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : 0;
-
-  /* If this entity has an Address representation clause, GNU_OLD is the
-     address, so discard it here.  */
-  if (Present (Address_Clause (gnat_entity)))
-    gnu_old = 0;
-
   /* Don't do anything for class-wide types as they are always transformed
      into their root type.  */
-  if (Ekind (gnat_entity) == E_Class_Wide_Type)
+  if (kind == E_Class_Wide_Type)
     return;
 
+  /* Check for an old definition.  This freeze node might be for an Itype.  */
+  gnu_old
+    = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : NULL_TREE;
+
+  /* If this entity has an address representation clause, GNU_OLD is the
+     address, so discard it here.  */
+  if (Present (Address_Clause (gnat_entity)))
+    gnu_old = NULL_TREE;
+
   /* Don't do anything for subprograms that may have been elaborated before
-     their freeze nodes.  This can happen, for example because of an inner call
-     in an instance body, or a previous compilation of a spec for inlining
-     purposes.  */
+     their freeze nodes.  This can happen, for example, because of an inner
+     call in an instance body or because of previous compilation of a spec
+     for inlining purposes.  */
   if (gnu_old
       && ((TREE_CODE (gnu_old) == FUNCTION_DECL
-	   && (Ekind (gnat_entity) == E_Function
-	       || Ekind (gnat_entity) == E_Procedure))
-	  || (gnu_old
-	      && TREE_CODE (TREE_TYPE (gnu_old)) == FUNCTION_TYPE
-	      && Ekind (gnat_entity) == E_Subprogram_Type)))
+	   && (kind == E_Function || kind == E_Procedure))
+	  || (TREE_CODE (TREE_TYPE (gnu_old)) == FUNCTION_TYPE
+	      && kind == E_Subprogram_Type)))
     return;
 
   /* If we have a non-dummy type old tree, we have nothing to do, except
      aborting if this is the public view of a private type whose full view was
      not delayed, as this node was never delayed as it should have been.  We
      let this happen for concurrent types and their Corresponding_Record_Type,
-     however, because each might legitimately be elaborated before it's own
+     however, because each might legitimately be elaborated before its own
      freeze node, e.g. while processing the other.  */
   if (gnu_old
       && !(TREE_CODE (gnu_old) == TYPE_DECL
 	   && TYPE_IS_DUMMY_P (TREE_TYPE (gnu_old))))
     {
-      gcc_assert ((IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
+      gcc_assert ((IN (kind, Incomplete_Or_Private_Kind)
 		   && Present (Full_View (gnat_entity))
 		   && No (Freeze_Node (Full_View (gnat_entity))))
 		  || Is_Concurrent_Type (gnat_entity)
-		  || (IN (Ekind (gnat_entity), Record_Kind)
+		  || (IN (kind, Record_Kind)
 		      && Is_Concurrent_Record_Type (gnat_entity)));
       return;
     }
 
   /* Reset the saved tree, if any, and elaborate the object or type for real.
-     If there is a full declaration, elaborate it and copy the type to
-     GNAT_ENTITY.  Likewise if this is the record subtype corresponding to
-     a class wide type or subtype.  */
+     If there is a full view, elaborate it and use the result.  And, if this
+     is the root type of a class-wide type, reuse it for the latter.  */
   if (gnu_old)
     {
       save_gnu_tree (gnat_entity, NULL_TREE, false);
-      if (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
-  	  && Present (Full_View (gnat_entity))
-  	  && present_gnu_tree (Full_View (gnat_entity)))
-  	save_gnu_tree (Full_View (gnat_entity), NULL_TREE, false);
-      if (Present (Class_Wide_Type (gnat_entity))
-	  && Class_Wide_Type (gnat_entity) != gnat_entity)
+      if (IN (kind, Incomplete_Or_Private_Kind)
+	  && Present (Full_View (gnat_entity))
+	  && present_gnu_tree (Full_View (gnat_entity)))
+	save_gnu_tree (Full_View (gnat_entity), NULL_TREE, false);
+      if (IN (kind, Type_Kind)
+	  && Present (Class_Wide_Type (gnat_entity))
+	  && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
 	save_gnu_tree (Class_Wide_Type (gnat_entity), NULL_TREE, false);
     }
 
-  if (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
+  if (IN (kind, Incomplete_Or_Private_Kind)
       && Present (Full_View (gnat_entity)))
     {
       gnu_new = gnat_to_gnu_entity (Full_View (gnat_entity), NULL_TREE, 1);
@@ -6174,16 +6167,25 @@ process_freeze_entity (Node_Id gnat_node)
 	Set_RM_Size (gnat_entity, RM_Size (Full_View (gnat_entity)));
 
       /* The above call may have defined this entity (the simplest example
-  	 of this is when we have a private enumeral type since the bounds
-  	 will have the public view.  */
+	 of this is when we have a private enumeral type since the bounds
+	 will have the public view).  */
       if (!present_gnu_tree (gnat_entity))
-  	save_gnu_tree (gnat_entity, gnu_new, false);
-      if (Present (Class_Wide_Type (gnat_entity))
-	  && Class_Wide_Type (gnat_entity) != gnat_entity)
-	save_gnu_tree (Class_Wide_Type (gnat_entity), gnu_new, false);
+	save_gnu_tree (gnat_entity, gnu_new, false);
     }
   else
-    gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, 1);
+    {
+      tree gnu_init
+	= (Nkind (Declaration_Node (gnat_entity)) == N_Object_Declaration
+	   && present_gnu_tree (Declaration_Node (gnat_entity)))
+	  ? get_gnu_tree (Declaration_Node (gnat_entity)) : NULL_TREE;
+
+      gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, 1);
+    }
+
+  if (IN (kind, Type_Kind)
+      && Present (Class_Wide_Type (gnat_entity))
+      && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
+    save_gnu_tree (Class_Wide_Type (gnat_entity), gnu_new, false);
 
   /* If we've made any pointers to the old version of this type, we
      have to update them.  */

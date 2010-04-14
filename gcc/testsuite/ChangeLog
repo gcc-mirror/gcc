@@ -1,3 +1,9 @@
+2010-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/class_wide.adb: Rename into...
+	* gnat.dg/class_wide1.adb: ...this.
+	* gnat.dg/class_wide2.ad[sb]: New test.
+
 2010-04-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
