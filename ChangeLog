@@ -1,3 +1,8 @@
+2010-04-14  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac (alpha*-*-*vms*): Remove ld from noconfigdirs.
+	* configure: Regenerate.
+
 2010-04-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate after change to elf.m4.
