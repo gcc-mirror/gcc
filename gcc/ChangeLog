@@ -1,3 +1,9 @@
+2010-04-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/43742
+	* config/sh/sh.md (doloop_end_split): Remove "+r" constraint
+	in an input-only operand.	
+
 2010-04-15  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (HOST_BITS_PER_DOUBLE_INT): Define.
