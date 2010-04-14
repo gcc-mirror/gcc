@@ -426,11 +426,41 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   ++diagnostic_kind_count (context, diagnostic->kind);
 
   saved_format_spec = diagnostic->message.format_spec;
-  if (context->show_option_requested && diagnostic->option_index)
-    diagnostic->message.format_spec
-      = ACONCAT ((diagnostic->message.format_spec,
-                  " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
+  if (context->show_option_requested)
+    {
+      const char * option_text = NULL;
 
+      if (diagnostic->option_index)
+	{
+	  /* A warning classified as an error.  */
+	  if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
+	      && diagnostic->kind == DK_ERROR)
+	    option_text 
+	      = ACONCAT ((cl_options[OPT_Werror_].opt_text,
+			  /* Skip over "-W".  */
+			  cl_options[diagnostic->option_index].opt_text + 2,
+			  NULL));
+	  /* A warning with option.  */
+	  else
+	    option_text = cl_options[diagnostic->option_index].opt_text;
+	}
+      /* A warning without option classified as an error.  */
+      else if (orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
+	       || diagnostic->kind == DK_WARNING)
+	{
+	  if (context->warning_as_error_requested)
+	    option_text = cl_options[OPT_Werror].opt_text;
+	  else
+	    option_text = _("enabled by default");
+	}
+
+      if (option_text)
+	diagnostic->message.format_spec
+	  = ACONCAT ((diagnostic->message.format_spec,
+		      " ", 
+		      "[", option_text, "]",
+		      NULL));
+    }
   diagnostic->message.locus = &diagnostic->location;
   diagnostic->message.abstract_origin = &diagnostic->abstract_origin;
   diagnostic->abstract_origin = NULL;
