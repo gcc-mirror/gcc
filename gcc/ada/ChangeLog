@@ -1,5 +1,28 @@
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (call_to_gnu): Open a nesting level if this is
+	a statement.  Otherwise, if at top-level, push the processing of the
+	elaboration routine.  In the misaligned case, issue the error messages
+	again on entry and create the temporary explicitly.  Do not issue them
+	for CONSTRUCTORs.
+	For a function call, emit the range check if necessary.
+	In the copy-in copy-out case, create the temporary for the return
+	value explicitly.
+	Do not unnecessarily convert by-ref parameters to the formal's type.
+	Remove obsolete guards in conditions.
+	(gnat_to_gnu) <N_Assignment_Statement>: For a function call, pass the
+	target to call_to_gnu in all cases.
+	(gnat_gimplify_expr) <ADDR_EXPR>: Remove handling of SAVE_EXPR.
+	(addressable_p) <CONSTRUCTOR>: Return false if not static.
+	<COMPOUND_EXPR>: New case.
+	* gcc-interface/utils2.c (build_unary_op) <ADDR_EXPR>: Fold a compound
+	expression if it has unconstrained array type.
+	(gnat_mark_addressable) <COMPOUND_EXPR>: New case.
+	(gnat_stabilize_reference) <COMPOUND_EXPR>: Stabilize operands on an
+	individual basis.
+
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gigi): Do not start statement group.
 	(Compilation_Unit_to_gnu): Set current_function_decl to NULL.
 	Start statement group and push binding level here...
