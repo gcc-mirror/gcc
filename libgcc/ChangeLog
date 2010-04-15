@@ -1,3 +1,7 @@
+2010-04-15  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* config.host <i[34567]86-*-gnu*>: Handle softfp as for Linux.
+
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (alpha*-dec-osf[45]*): Removed alpha*-dec-osf4*,

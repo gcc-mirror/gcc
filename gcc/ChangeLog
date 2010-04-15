@@ -1,3 +1,7 @@
+2010-04-15  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* config.gcc <i[34567]86-*-gnu*>: Handle softfp as for Linux.
+
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (struct variable_info): Add
