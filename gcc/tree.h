@@ -5282,11 +5282,6 @@ struct GTY(()) tree_priority_map {
 
 tree target_for_debug_bind (tree);
 
-/* In tree-ssa-ccp.c */
-extern tree maybe_fold_offset_to_reference (location_t, tree, tree, tree);
-extern tree maybe_fold_offset_to_address (location_t, tree, tree, tree);
-extern tree maybe_fold_stmt_addition (location_t, tree, tree, tree);
-
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);
 extern void copy_mem_ref_info (tree, tree);
