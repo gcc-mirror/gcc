@@ -1,4 +1,22 @@
-2010-04-15  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Set DECL_IGNORED_P on EH functions.
+	(gnat_to_gnu) <N_Op_Eq>: Restore the value of input_location
+	before translating the top-level node.
+	(lvalue_required_p) <N_Function_Call>: Return 1 if !constant.
+	<N_Object_Declaration>: Likewise.
+	<N_Assignment_Statement>: Likewise.
+	<N_Unchecked_Type_Conversion>: Likewise.
+	(call_to_gnu): Remove kludge.
+	(gnat_to_gnu) <N_Return_Statement>: When not optimizing, force labels
+	associated with user returns to be preserved.
+	(gnat_to_gnu): Add special code to deal with boolean rvalues.
+	* gcc-interface/utils2.c (compare_arrays): Set input_location on all
+	comparisons.
+	(build_unary_op) <ADDR_EXPR>: Call build_fold_addr_expr.
+	<INDIRECT_REF>: Call build_fold_indirect_ref.
+
+2010-04-15  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* g-socket.adb: A target can have multiple missing errno's.  This
 	will result in multiple errno's being defined as -1.  Because of this
@@ -74,7 +92,7 @@
 	unless necessary.  Reuse the tree for an associated class-wide type
 	only if processing its root type.
 
-2010-04-13  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-04-13  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* gsocket.h: Run-time can no longer be built without network
 	OS headers available.  Changing RTEMS GNAT build procedure to
