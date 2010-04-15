@@ -775,16 +775,15 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 				    GFC_TYPE_ARRAY_LBOUND (type, dim),
 				    GFC_TYPE_ARRAY_UBOUND (type, dim));
 	  gtype = build_array_type (gtype, rtype);
-	  /* Ensure the bound variables aren't optimized out at -O0.  */
-	  if (!optimize)
-	    {
-	      if (GFC_TYPE_ARRAY_LBOUND (type, dim)
-		  && TREE_CODE (GFC_TYPE_ARRAY_LBOUND (type, dim)) == VAR_DECL)
-		DECL_IGNORED_P (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 0;
-	      if (GFC_TYPE_ARRAY_UBOUND (type, dim)
-		  && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, dim)) == VAR_DECL)
-		DECL_IGNORED_P (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 0;
-	    }
+	  /* Ensure the bound variables aren't optimized out at -O0.
+	     For -O1 and above they often will be optimized out, but
+	     can be tracked by VTA.  */
+	  if (GFC_TYPE_ARRAY_LBOUND (type, dim)
+	      && TREE_CODE (GFC_TYPE_ARRAY_LBOUND (type, dim)) == VAR_DECL)
+	    DECL_IGNORED_P (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 0;
+	  if (GFC_TYPE_ARRAY_UBOUND (type, dim)
+	      && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, dim)) == VAR_DECL)
+	    DECL_IGNORED_P (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 0;
 	}
       TYPE_NAME (type) = type_decl = build_decl (input_location,
 						 TYPE_DECL, NULL, gtype);

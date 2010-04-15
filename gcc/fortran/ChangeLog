@@ -1,6 +1,11 @@
+2010-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_build_qualified_array): Clear DECL_IGNORED_P
+	on VAR_DECL LBOUND and/or UBOUND, even for -O1.
+
 2010-04-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* fortran/intrinsic.texi: Add the missing specific name of intrinsic
+	* intrinsic.texi: Add the missing specific name of intrinsic
 	procedure where the specific name is identical to the generic name.
 	Fix inconsistent or mismatch in the argument names in intrinsic
 	procedure descriptions.  Add the SCALAR allocatable description to
