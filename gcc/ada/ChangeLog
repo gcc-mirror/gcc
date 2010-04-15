@@ -67,6 +67,12 @@
 	unless necessary.  Reuse the tree for an associated class-wide type
 	only if processing its root type.
 
+2010-04-13  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* gsocket.h: Run-time can no longer be built without network
+	OS headers available.  Changing RTEMS GNAT build procedure to
+	reflect this and letting run-time build use network .h files.
+
 2010-04-13  Duncan Sands  <baldrick@free.fr>
 
 	* gcc-interface/misc.c (gnat_eh_type_covers): Remove.
