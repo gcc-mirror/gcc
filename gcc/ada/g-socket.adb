@@ -1750,53 +1750,93 @@ package body GNAT.Sockets is
 
       pragma Warnings (On);
 
-      case Error_Value is
-         when ENOERROR        => return Success;
-         when EACCES          => return Permission_Denied;
-         when EADDRINUSE      => return Address_Already_In_Use;
-         when EADDRNOTAVAIL   => return Cannot_Assign_Requested_Address;
-         when EAFNOSUPPORT    => return
-                                 Address_Family_Not_Supported_By_Protocol;
-         when EALREADY        => return Operation_Already_In_Progress;
-         when EBADF           => return Bad_File_Descriptor;
-         when ECONNABORTED    => return Software_Caused_Connection_Abort;
-         when ECONNREFUSED    => return Connection_Refused;
-         when ECONNRESET      => return Connection_Reset_By_Peer;
-         when EDESTADDRREQ    => return Destination_Address_Required;
-         when EFAULT          => return Bad_Address;
-         when EHOSTDOWN       => return Host_Is_Down;
-         when EHOSTUNREACH    => return No_Route_To_Host;
-         when EINPROGRESS     => return Operation_Now_In_Progress;
-         when EINTR           => return Interrupted_System_Call;
-         when EINVAL          => return Invalid_Argument;
-         when EIO             => return Input_Output_Error;
-         when EISCONN         => return Transport_Endpoint_Already_Connected;
-         when ELOOP           => return Too_Many_Symbolic_Links;
-         when EMFILE          => return Too_Many_Open_Files;
-         when EMSGSIZE        => return Message_Too_Long;
-         when ENAMETOOLONG    => return File_Name_Too_Long;
-         when ENETDOWN        => return Network_Is_Down;
-         when ENETRESET       => return
-                                 Network_Dropped_Connection_Because_Of_Reset;
-         when ENETUNREACH     => return Network_Is_Unreachable;
-         when ENOBUFS         => return No_Buffer_Space_Available;
-         when ENOPROTOOPT     => return Protocol_Not_Available;
-         when ENOTCONN        => return Transport_Endpoint_Not_Connected;
-         when ENOTSOCK        => return Socket_Operation_On_Non_Socket;
-         when EOPNOTSUPP      => return Operation_Not_Supported;
-         when EPFNOSUPPORT    => return Protocol_Family_Not_Supported;
-         when EPIPE           => return Broken_Pipe;
-         when EPROTONOSUPPORT => return Protocol_Not_Supported;
-         when EPROTOTYPE      => return Protocol_Wrong_Type_For_Socket;
-         when ESHUTDOWN       => return
-                                 Cannot_Send_After_Transport_Endpoint_Shutdown;
-         when ESOCKTNOSUPPORT => return Socket_Type_Not_Supported;
-         when ETIMEDOUT       => return Connection_Timed_Out;
-         when ETOOMANYREFS    => return Too_Many_References;
-         when EWOULDBLOCK     => return Resource_Temporarily_Unavailable;
-
-         when others          => return Cannot_Resolve_Error;
-      end case;
+      --  This is not a case statement because if a particular error
+      --  number constant is not defined, s-oscons-tmplt.c defines
+      --  it to -1.  If multiple constants are not defined, they
+      --  would each be -1 and result in a "duplicate value in case" error.
+      if Error_Value = ENOERROR then
+         return Success;
+      elsif Error_Value = EACCES then
+         return Permission_Denied;
+      elsif Error_Value = EADDRINUSE then
+         return Address_Already_In_Use;
+      elsif Error_Value = EADDRNOTAVAIL then
+         return Cannot_Assign_Requested_Address;
+      elsif Error_Value = EAFNOSUPPORT then
+         return Address_Family_Not_Supported_By_Protocol;
+      elsif Error_Value = EALREADY then
+         return Operation_Already_In_Progress;
+      elsif Error_Value = EBADF then
+         return Bad_File_Descriptor;
+      elsif Error_Value = ECONNABORTED then
+         return Software_Caused_Connection_Abort;
+      elsif Error_Value = ECONNREFUSED then
+         return Connection_Refused;
+      elsif Error_Value = ECONNRESET then
+         return Connection_Reset_By_Peer;
+      elsif Error_Value = EDESTADDRREQ then
+         return Destination_Address_Required;
+      elsif Error_Value = EFAULT then
+         return Bad_Address;
+      elsif Error_Value = EHOSTDOWN then
+         return Host_Is_Down;
+      elsif Error_Value = EHOSTUNREACH then
+         return No_Route_To_Host;
+      elsif Error_Value = EINPROGRESS then
+         return Operation_Now_In_Progress;
+      elsif Error_Value = EINTR then
+         return Interrupted_System_Call;
+      elsif Error_Value = EINVAL then
+         return Invalid_Argument;
+      elsif Error_Value = EIO then
+         return Input_Output_Error;
+      elsif Error_Value = EISCONN then
+         return Transport_Endpoint_Already_Connected;
+      elsif Error_Value = ELOOP then
+         return Too_Many_Symbolic_Links;
+      elsif Error_Value = EMFILE then
+         return Too_Many_Open_Files;
+      elsif Error_Value = EMSGSIZE then
+         return Message_Too_Long;
+      elsif Error_Value = ENAMETOOLONG then
+         return File_Name_Too_Long;
+      elsif Error_Value = ENETDOWN then
+         return Network_Is_Down;
+      elsif Error_Value = ENETRESET then
+         return Network_Dropped_Connection_Because_Of_Reset;
+      elsif Error_Value = ENETUNREACH then
+         return Network_Is_Unreachable;
+      elsif Error_Value = ENOBUFS then
+         return No_Buffer_Space_Available;
+      elsif Error_Value = ENOPROTOOPT then
+         return Protocol_Not_Available;
+      elsif Error_Value = ENOTCONN then
+         return Transport_Endpoint_Not_Connected;
+      elsif Error_Value = ENOTSOCK then
+         return Socket_Operation_On_Non_Socket;
+      elsif Error_Value = EOPNOTSUPP then
+         return Operation_Not_Supported;
+      elsif Error_Value = EPFNOSUPPORT then
+         return Protocol_Family_Not_Supported;
+      elsif Error_Value = EPIPE then
+         return Broken_Pipe;
+      elsif Error_Value = EPROTONOSUPPORT then
+         return Protocol_Not_Supported;
+      elsif Error_Value = EPROTOTYPE then
+         return Protocol_Wrong_Type_For_Socket;
+      elsif Error_Value = ESHUTDOWN then
+         return Cannot_Send_After_Transport_Endpoint_Shutdown;
+      elsif Error_Value = ESOCKTNOSUPPORT then
+         return Socket_Type_Not_Supported;
+      elsif Error_Value = ETIMEDOUT then
+         return Connection_Timed_Out;
+      elsif Error_Value = ETOOMANYREFS then
+         return Too_Many_References;
+      elsif Error_Value = EWOULDBLOCK then
+         return Resource_Temporarily_Unavailable;
+      else
+         return Cannot_Resolve_Error;
+      end if;
    end Resolve_Error;
 
    -----------------------
