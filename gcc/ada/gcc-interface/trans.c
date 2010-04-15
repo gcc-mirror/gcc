@@ -2778,7 +2778,12 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
 	  if (!(gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL))
-	    continue;
+	    {
+	      /* Make sure side-effects are evaluated before the call.  */
+	      if (TREE_SIDE_EFFECTS (gnu_name))
+		append_to_statement_list (gnu_name, &gnu_before_list);
+	      continue;
+	    }
 
 	  /* If this is 'Null_Parameter, pass a zero even though we are
 	     dereferencing it.  */
@@ -2849,22 +2854,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
       if (length > 1)
 	{
-	  tree gnu_name;
-
 	  /* The call sequence must contain one and only one call, even though
 	     the function is const or pure.  So force a SAVE_EXPR.  */
 	  gnu_call = build1 (SAVE_EXPR, TREE_TYPE (gnu_call), gnu_call);
 	  TREE_SIDE_EFFECTS (gnu_call) = 1;
 	  gnu_name_list = nreverse (gnu_name_list);
-
-	  /* If any of the names had side-effects, ensure they are all
-	     evaluated before the call.  */
-	  for (gnu_name = gnu_name_list;
-	       gnu_name;
-	       gnu_name = TREE_CHAIN (gnu_name))
-	    if (TREE_SIDE_EFFECTS (TREE_VALUE (gnu_name)))
-	      append_to_statement_list (TREE_VALUE (gnu_name),
-					&gnu_before_list);
 	}
 
       if (Nkind (Name (gnat_node)) == N_Explicit_Dereference)

@@ -1,5 +1,10 @@
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (call_to_gnu): Do not unnecessarily force
+	side-effects of actual parameters before the call.
+
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (validate_size): Reorder, remove obsolete test
 	and warning.
 	(set_rm_size): Reorder and remove obsolete test.
