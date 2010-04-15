@@ -4820,44 +4820,6 @@ extern void fold_undefer_overflow_warnings (bool, const_gimple, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
 
-extern tree force_fit_type_double (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				   int, bool);
-
-extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, const_tree);
-extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 bool);
-#define add_double(l1,h1,l2,h2,lv,hv) \
-  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
-extern int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
-extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 bool);
-#define mul_double(l1,h1,l2,h2,lv,hv) \
-  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
-extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
-extern void rshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
-extern void lrotate_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			    HOST_WIDE_INT, unsigned int,
-			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
-extern void rrotate_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			    HOST_WIDE_INT, unsigned int,
-			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
-
-extern int div_and_round_double (enum tree_code, int, unsigned HOST_WIDE_INT,
-				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,
-				 HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
-				 HOST_WIDE_INT *);
-
 enum operand_equal_flag
 {
   OEP_ONLY_CONST = 1,

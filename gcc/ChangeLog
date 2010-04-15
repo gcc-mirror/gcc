@@ -1,3 +1,16 @@
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (LOWPART, HIGHPART, BASE, encode, decode,
+	fit_double_type, force_fit_type_double, add_double_with_sign,
+	neg_double, mul_double_with_sign, lshift_double, rshift_double,
+	lrotate_double, rrotate_double, div_and_round_double): Move ...
+	* double-int.c: ... here.
+	* tree.h (force_fit_type_double, fit_double_type, add_double_with_sign,
+	add_double, neg_double, mul_double_with_sign, mul_double,
+	lshift_double, rshift_double, lrotate_double, rrotate_double,
+	div_and_round_double): Move prototypes ...
+	* double-int.h: ... here.
+
 2010-04-15  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	PR target/43742
