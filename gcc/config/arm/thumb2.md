@@ -223,9 +223,14 @@
    (set_attr "neg_pool_range" "*,*,*,0,*")]
 )
 
+;; We have two alternatives here for memory loads (and similarly for stores)
+;; to reflect the fact that the permissible constant pool ranges differ
+;; between ldr instructions taking low regs and ldr instructions taking high
+;; regs.  The high register alternatives are not taken into account when
+;; choosing register preferences in order to reflect their expense.
 (define_insn "*thumb2_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
-	(match_operand:SI 1 "general_operand"	   "rk ,I,K,j,mi,rk"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,l ,*hk,m,*m")
+	(match_operand:SI 1 "general_operand"	   "rk ,I,K,j,mi,*mi,l,*hk"))]
   "TARGET_THUMB2 && ! TARGET_IWMMXT
    && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (   register_operand (operands[0], SImode)
@@ -236,11 +241,13 @@
    mvn%?\\t%0, #%B1
    movw%?\\t%0, %1
    ldr%?\\t%0, %1
+   ldr%?\\t%0, %1
+   str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,*,*,*,load1,store1")
+  [(set_attr "type" "*,*,*,*,load1,load1,store1,store1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,*,4096,*")
-   (set_attr "neg_pool_range" "*,*,*,*,0,*")]
+   (set_attr "pool_range" "*,*,*,*,1020,4096,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,0,0,*,*")]
 )
 
 (define_insn "tls_load_dot_plus_four"
