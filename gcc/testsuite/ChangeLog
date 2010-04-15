@@ -1,3 +1,21 @@
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/ipa/ipa-pta-1.c: New testcase.
+	* gcc.dg/ipa/ipa-pta-2.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-3.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-4.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-5.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-6.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-7.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-8.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-9.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-10.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-11.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-12.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-13.c: Likewise.
+	* gcc.dg/torture/ipa-pta-2.c: Likewise.
+	* gcc.dg/torture/ipa-pta-1.c: Adjust.
+
 2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	PR target/21803

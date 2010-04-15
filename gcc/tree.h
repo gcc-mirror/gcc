@@ -2489,6 +2489,15 @@ struct function;
    uses.  */
 #define DEBUG_TEMP_UID(NODE) (-DECL_UID (TREE_CHECK ((NODE), DEBUG_EXPR_DECL)))
 
+/* Every ..._DECL node gets a unique number that stays the same even
+   when the decl is copied by the inliner once it is set.  */
+#define DECL_PT_UID(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.pt_uid == -1u ? (NODE)->decl_minimal.uid : (NODE)->decl_minimal.pt_uid)
+/* Initialize the ..._DECL node pt-uid to the decls uid.  */
+#define SET_DECL_PT_UID(NODE, UID) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.pt_uid = (UID))
+/* Whether the ..._DECL node pt-uid has been initialized and thus needs to
+   be preserved when copyin the decl.  */
+#define DECL_PT_UID_SET_P(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.pt_uid != -1u)
+
 /* These two fields describe where in the source code the declaration
    was.  If the declaration appears in several places (as for a C
    function that is declared first and then defined later), this
@@ -2512,6 +2521,7 @@ struct GTY(()) tree_decl_minimal {
   struct tree_common common;
   location_t locus;
   unsigned int uid;
+  unsigned int pt_uid;
   tree name;
   tree context;
 };
