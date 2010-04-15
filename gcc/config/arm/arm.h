@@ -771,12 +771,11 @@ extern int arm_structure_size_boundary;
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
     }								\
 								\
-  if (TARGET_THUMB && optimize_size)				\
-    {								\
-      /* When optimizing for size, it's better not to use	\
-	 the HI regs, because of the overhead of stacking 	\
-	 them.  */						\
-      /* ??? Is this still true for thumb2?  */			\
+  if (TARGET_THUMB1 && optimize_size)				\
+    {                                                           \
+      /* When optimizing for size on Thumb-1, it's better not	\
+        to use the HI regs, because of the overhead of		\
+        stacking them.  */                                      \
       for (regno = FIRST_HI_REGNUM;				\
 	   regno <= LAST_HI_REGNUM; ++regno)			\
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
