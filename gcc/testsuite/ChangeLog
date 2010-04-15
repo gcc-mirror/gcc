@@ -1,5 +1,10 @@
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43627
+	* gcc.dg/tree-ssa/vrp49.c: New testcase.
+
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
 	PR c++/43611
 	* g++.dg/torture/pr43611.C: New testcase.
 
