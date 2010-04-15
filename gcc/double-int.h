@@ -59,13 +59,11 @@ typedef struct
 
 #define HOST_BITS_PER_DOUBLE_INT (2 * HOST_BITS_PER_WIDE_INT)
 
-union tree_node;
-
 /* Constructors and conversions.  */
 
-union tree_node *double_int_to_tree (union tree_node *, double_int);
-bool double_int_fits_to_tree_p (const union tree_node *, double_int);
-double_int tree_to_double_int (const union tree_node *);
+tree double_int_to_tree (tree, double_int);
+bool double_int_fits_to_tree_p (const_tree, double_int);
+double_int tree_to_double_int (const_tree);
 
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */
@@ -201,6 +199,47 @@ double_int_equal_p (double_int cst1, double_int cst2)
 {
   return cst1.low == cst2.low && cst1.high == cst2.high;
 }
+
+
+/* Legacy interface with decomposed high/low parts.  */
+
+extern tree force_fit_type_double (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				   int, bool);
+extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+			    const_tree);
+extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define add_double(l1,h1,l2,h2,lv,hv) \
+  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+extern int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define mul_double(l1,h1,l2,h2,lv,hv) \
+  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+extern void rshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+extern void lrotate_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			    HOST_WIDE_INT, unsigned int,
+			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern void rrotate_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			    HOST_WIDE_INT, unsigned int,
+			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *);
+
 
 #ifndef GENERATOR_FILE
 /* Conversion to and from GMP integer representations.  */

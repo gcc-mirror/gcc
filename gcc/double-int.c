@@ -23,6 +23,741 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 
+/* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
+   overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
+   and SUM1.  Then this yields nonzero if overflow occurred during the
+   addition.
+
+   Overflow occurs if A and B have the same sign, but A and SUM differ in
+   sign.  Use `^' to test whether signs differ, and `< 0' to isolate the
+   sign.  */
+#define OVERFLOW_SUM_SIGN(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
+
+/* To do constant folding on INTEGER_CST nodes requires two-word arithmetic.
+   We do that by representing the two-word integer in 4 words, with only
+   HOST_BITS_PER_WIDE_INT / 2 bits stored in each word, as a positive
+   number.  The value of the word is LOWPART + HIGHPART * BASE.  */
+
+#define LOWPART(x) \
+  ((x) & (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)) - 1))
+#define HIGHPART(x) \
+  ((unsigned HOST_WIDE_INT) (x) >> HOST_BITS_PER_WIDE_INT / 2)
+#define BASE ((unsigned HOST_WIDE_INT) 1 << HOST_BITS_PER_WIDE_INT / 2)
+
+/* Unpack a two-word integer into 4 words.
+   LOW and HI are the integer, as two `HOST_WIDE_INT' pieces.
+   WORDS points to the array of HOST_WIDE_INTs.  */
+
+static void
+encode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
+{
+  words[0] = LOWPART (low);
+  words[1] = HIGHPART (low);
+  words[2] = LOWPART (hi);
+  words[3] = HIGHPART (hi);
+}
+
+/* Pack an array of 4 words into a two-word integer.
+   WORDS points to the array of words.
+   The integer is stored into *LOW and *HI as two `HOST_WIDE_INT' pieces.  */
+
+static void
+decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
+	HOST_WIDE_INT *hi)
+{
+  *low = words[0] + words[1] * BASE;
+  *hi = words[2] + words[3] * BASE;
+}
+
+/* Force the double-word integer L1, H1 to be within the range of the
+   integer type TYPE.  Stores the properly truncated and sign-extended
+   double-word integer in *LV, *HV.  Returns true if the operation
+   overflows, that is, argument and result are different.  */
+
+int
+fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		 unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, const_tree type)
+{
+  unsigned HOST_WIDE_INT low0 = l1;
+  HOST_WIDE_INT high0 = h1;
+  unsigned int prec = TYPE_PRECISION (type);
+  int sign_extended_type;
+
+  /* Size types *are* sign extended.  */
+  sign_extended_type = (!TYPE_UNSIGNED (type)
+			|| (TREE_CODE (type) == INTEGER_TYPE
+			    && TYPE_IS_SIZETYPE (type)));
+
+  /* First clear all bits that are beyond the type's precision.  */
+  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    h1 &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+  else
+    {
+      h1 = 0;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	l1 &= ~((HOST_WIDE_INT) (-1) << prec);
+    }
+
+  /* Then do sign extension if necessary.  */
+  if (!sign_extended_type)
+    /* No sign extension */;
+  else if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    /* Correct width already.  */;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    {
+      /* Sign extend top half? */
+      if (h1 & ((unsigned HOST_WIDE_INT)1
+		<< (prec - HOST_BITS_PER_WIDE_INT - 1)))
+	h1 |= (HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT);
+    }
+  else if (prec == HOST_BITS_PER_WIDE_INT)
+    {
+      if ((HOST_WIDE_INT)l1 < 0)
+	h1 = -1;
+    }
+  else
+    {
+      /* Sign extend bottom half? */
+      if (l1 & ((unsigned HOST_WIDE_INT)1 << (prec - 1)))
+	{
+	  h1 = -1;
+	  l1 |= (HOST_WIDE_INT)(-1) << prec;
+	}
+    }
+
+  *lv = l1;
+  *hv = h1;
+
+  /* If the value didn't fit, signal overflow.  */
+  return l1 != low0 || h1 != high0;
+}
+
+/* We force the double-int HIGH:LOW to the range of the type TYPE by
+   sign or zero extending it.
+   OVERFLOWABLE indicates if we are interested
+   in overflow of the value, when >0 we are only interested in signed
+   overflow, for <0 we are interested in any overflow.  OVERFLOWED
+   indicates whether overflow has already occurred.  CONST_OVERFLOWED
+   indicates whether constant overflow has already occurred.  We force
+   T's value to be within range of T's type (by setting to 0 or 1 all
+   the bits outside the type's range).  We set TREE_OVERFLOWED if,
+  	OVERFLOWED is nonzero,
+	or OVERFLOWABLE is >0 and signed overflow occurs
+	or OVERFLOWABLE is <0 and any overflow occurs
+   We return a new tree node for the extended double-int.  The node
+   is shared if no overflow flags are set.  */
+
+tree
+force_fit_type_double (tree type, unsigned HOST_WIDE_INT low,
+		       HOST_WIDE_INT high, int overflowable,
+		       bool overflowed)
+{
+  int sign_extended_type;
+  bool overflow;
+
+  /* Size types *are* sign extended.  */
+  sign_extended_type = (!TYPE_UNSIGNED (type)
+			|| (TREE_CODE (type) == INTEGER_TYPE
+			    && TYPE_IS_SIZETYPE (type)));
+
+  overflow = fit_double_type (low, high, &low, &high, type);
+
+  /* If we need to set overflow flags, return a new unshared node.  */
+  if (overflowed || overflow)
+    {
+      if (overflowed
+	  || overflowable < 0
+	  || (overflowable > 0 && sign_extended_type))
+	{
+          tree t = make_node (INTEGER_CST);
+          TREE_INT_CST_LOW (t) = low;
+          TREE_INT_CST_HIGH (t) = high;
+          TREE_TYPE (t) = type;
+	  TREE_OVERFLOW (t) = 1;
+	  return t;
+	}
+    }
+
+  /* Else build a shared node.  */
+  return build_int_cst_wide (type, low, high);
+}
+
+/* Add two doubleword integers with doubleword result.
+   Return nonzero if the operation overflows according to UNSIGNED_P.
+   Each argument is given as two `HOST_WIDE_INT' pieces.
+   One argument is L1 and H1; the other, L2 and H2.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+int
+add_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+		      bool unsigned_p)
+{
+  unsigned HOST_WIDE_INT l;
+  HOST_WIDE_INT h;
+
+  l = l1 + l2;
+  h = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) h1
+		       + (unsigned HOST_WIDE_INT) h2
+		       + (l < l1));
+
+  *lv = l;
+  *hv = h;
+
+  if (unsigned_p)
+    return ((unsigned HOST_WIDE_INT) h < (unsigned HOST_WIDE_INT) h1
+	    || (h == h1
+		&& l < l1));
+  else
+    return OVERFLOW_SUM_SIGN (h1, h2, h);
+}
+
+/* Negate a doubleword integer with doubleword result.
+   Return nonzero if the operation overflows, assuming it's signed.
+   The argument is given as two `HOST_WIDE_INT' pieces in L1 and H1.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+int
+neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+{
+  if (l1 == 0)
+    {
+      *lv = 0;
+      *hv = - h1;
+      return (*hv & h1) < 0;
+    }
+  else
+    {
+      *lv = -l1;
+      *hv = ~h1;
+      return 0;
+    }
+}
+
+/* Multiply two doubleword integers with doubleword result.
+   Return nonzero if the operation overflows according to UNSIGNED_P.
+   Each argument is given as two `HOST_WIDE_INT' pieces.
+   One argument is L1 and H1; the other, L2 and H2.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+int
+mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+		      bool unsigned_p)
+{
+  HOST_WIDE_INT arg1[4];
+  HOST_WIDE_INT arg2[4];
+  HOST_WIDE_INT prod[4 * 2];
+  unsigned HOST_WIDE_INT carry;
+  int i, j, k;
+  unsigned HOST_WIDE_INT toplow, neglow;
+  HOST_WIDE_INT tophigh, neghigh;
+
+  encode (arg1, l1, h1);
+  encode (arg2, l2, h2);
+
+  memset (prod, 0, sizeof prod);
+
+  for (i = 0; i < 4; i++)
+    {
+      carry = 0;
+      for (j = 0; j < 4; j++)
+	{
+	  k = i + j;
+	  /* This product is <= 0xFFFE0001, the sum <= 0xFFFF0000.  */
+	  carry += arg1[i] * arg2[j];
+	  /* Since prod[p] < 0xFFFF, this sum <= 0xFFFFFFFF.  */
+	  carry += prod[k];
+	  prod[k] = LOWPART (carry);
+	  carry = HIGHPART (carry);
+	}
+      prod[i + 4] = carry;
+    }
+
+  decode (prod, lv, hv);
+  decode (prod + 4, &toplow, &tophigh);
+
+  /* Unsigned overflow is immediate.  */
+  if (unsigned_p)
+    return (toplow | tophigh) != 0;
+
+  /* Check for signed overflow by calculating the signed representation of the
+     top half of the result; it should agree with the low half's sign bit.  */
+  if (h1 < 0)
+    {
+      neg_double (l2, h2, &neglow, &neghigh);
+      add_double (neglow, neghigh, toplow, tophigh, &toplow, &tophigh);
+    }
+  if (h2 < 0)
+    {
+      neg_double (l1, h1, &neglow, &neghigh);
+      add_double (neglow, neghigh, toplow, tophigh, &toplow, &tophigh);
+    }
+  return (*hv < 0 ? ~(toplow & tophigh) : toplow | tophigh) != 0;
+}
+
+/* Shift the doubleword integer in L1, H1 left by COUNT places
+   keeping only PREC bits of result.
+   Shift right if COUNT is negative.
+   ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+void
+lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	       HOST_WIDE_INT count, unsigned int prec,
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, bool arith)
+{
+  unsigned HOST_WIDE_INT signmask;
+
+  if (count < 0)
+    {
+      rshift_double (l1, h1, -count, prec, lv, hv, arith);
+      return;
+    }
+
+  if (SHIFT_COUNT_TRUNCATED)
+    count %= prec;
+
+  if (count >= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      *hv = 0;
+      *lv = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv = l1 << (count - HOST_BITS_PER_WIDE_INT);
+      *lv = 0;
+    }
+  else
+    {
+      *hv = (((unsigned HOST_WIDE_INT) h1 << count)
+	     | (l1 >> (HOST_BITS_PER_WIDE_INT - count - 1) >> 1));
+      *lv = l1 << count;
+    }
+
+  /* Sign extend all bits that are beyond the precision.  */
+
+  signmask = -((prec > HOST_BITS_PER_WIDE_INT
+		? ((unsigned HOST_WIDE_INT) *hv
+		   >> (prec - HOST_BITS_PER_WIDE_INT - 1))
+		: (*lv >> (prec - 1))) & 1);
+
+  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+      *hv |= signmask << (prec - HOST_BITS_PER_WIDE_INT);
+    }
+  else
+    {
+      *hv = signmask;
+      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << prec);
+      *lv |= signmask << prec;
+    }
+}
+
+/* Shift the doubleword integer in L1, H1 right by COUNT places
+   keeping only PREC bits of result.  Shift left if COUNT is negative.
+   ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+void
+rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+	       HOST_WIDE_INT count, unsigned int prec,
+	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+	       bool arith)
+{
+  unsigned HOST_WIDE_INT signmask;
+
+  if (count < 0)
+    {
+      lshift_double (l1, h1, -count, prec, lv, hv, arith);
+      return;
+    }
+
+  signmask = (arith
+	      ? -((unsigned HOST_WIDE_INT) h1 >> (HOST_BITS_PER_WIDE_INT - 1))
+	      : 0);
+
+  if (SHIFT_COUNT_TRUNCATED)
+    count %= prec;
+
+  if (count >= 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      /* Shifting by the host word size is undefined according to the
+	 ANSI standard, so we must handle this as a special case.  */
+      *hv = 0;
+      *lv = 0;
+    }
+  else if (count >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv = 0;
+      *lv = (unsigned HOST_WIDE_INT) h1 >> (count - HOST_BITS_PER_WIDE_INT);
+    }
+  else
+    {
+      *hv = (unsigned HOST_WIDE_INT) h1 >> count;
+      *lv = ((l1 >> count)
+	     | ((unsigned HOST_WIDE_INT) h1
+		<< (HOST_BITS_PER_WIDE_INT - count - 1) << 1));
+    }
+
+  /* Zero / sign extend all bits that are beyond the precision.  */
+
+  if (count >= (HOST_WIDE_INT)prec)
+    {
+      *hv = signmask;
+      *lv = signmask;
+    }
+  else if ((prec - count) >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if ((prec - count) >= HOST_BITS_PER_WIDE_INT)
+    {
+      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - count - HOST_BITS_PER_WIDE_INT));
+      *hv |= signmask << (prec - count - HOST_BITS_PER_WIDE_INT);
+    }
+  else
+    {
+      *hv = signmask;
+      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << (prec - count));
+      *lv |= signmask << (prec - count);
+    }
+}
+
+/* Rotate the doubleword integer in L1, H1 left by COUNT places
+   keeping only PREC bits of result.
+   Rotate right if COUNT is negative.
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+void
+lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		HOST_WIDE_INT count, unsigned int prec,
+		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+{
+  unsigned HOST_WIDE_INT s1l, s2l;
+  HOST_WIDE_INT s1h, s2h;
+
+  count %= prec;
+  if (count < 0)
+    count += prec;
+
+  lshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
+  rshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
+  *lv = s1l | s2l;
+  *hv = s1h | s2h;
+}
+
+/* Rotate the doubleword integer in L1, H1 left by COUNT places
+   keeping only PREC bits of result.  COUNT must be positive.
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
+
+void
+rrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		HOST_WIDE_INT count, unsigned int prec,
+		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+{
+  unsigned HOST_WIDE_INT s1l, s2l;
+  HOST_WIDE_INT s1h, s2h;
+
+  count %= prec;
+  if (count < 0)
+    count += prec;
+
+  rshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
+  lshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
+  *lv = s1l | s2l;
+  *hv = s1h | s2h;
+}
+
+/* Divide doubleword integer LNUM, HNUM by doubleword integer LDEN, HDEN
+   for a quotient (stored in *LQUO, *HQUO) and remainder (in *LREM, *HREM).
+   CODE is a tree code for a kind of division, one of
+   TRUNC_DIV_EXPR, FLOOR_DIV_EXPR, CEIL_DIV_EXPR, ROUND_DIV_EXPR
+   or EXACT_DIV_EXPR
+   It controls how the quotient is rounded to an integer.
+   Return nonzero if the operation overflows.
+   UNS nonzero says do unsigned division.  */
+
+int
+div_and_round_double (unsigned code, int uns,
+		      /* num == numerator == dividend */
+		      unsigned HOST_WIDE_INT lnum_orig,
+		      HOST_WIDE_INT hnum_orig,
+		      /* den == denominator == divisor */
+		      unsigned HOST_WIDE_INT lden_orig,
+		      HOST_WIDE_INT hden_orig,
+		      unsigned HOST_WIDE_INT *lquo,
+		      HOST_WIDE_INT *hquo, unsigned HOST_WIDE_INT *lrem,
+		      HOST_WIDE_INT *hrem)
+{
+  int quo_neg = 0;
+  HOST_WIDE_INT num[4 + 1];	/* extra element for scaling.  */
+  HOST_WIDE_INT den[4], quo[4];
+  int i, j;
+  unsigned HOST_WIDE_INT work;
+  unsigned HOST_WIDE_INT carry = 0;
+  unsigned HOST_WIDE_INT lnum = lnum_orig;
+  HOST_WIDE_INT hnum = hnum_orig;
+  unsigned HOST_WIDE_INT lden = lden_orig;
+  HOST_WIDE_INT hden = hden_orig;
+  int overflow = 0;
+
+  if (hden == 0 && lden == 0)
+    overflow = 1, lden = 1;
+
+  /* Calculate quotient sign and convert operands to unsigned.  */
+  if (!uns)
+    {
+      if (hnum < 0)
+	{
+	  quo_neg = ~ quo_neg;
+	  /* (minimum integer) / (-1) is the only overflow case.  */
+	  if (neg_double (lnum, hnum, &lnum, &hnum)
+	      && ((HOST_WIDE_INT) lden & hden) == -1)
+	    overflow = 1;
+	}
+      if (hden < 0)
+	{
+	  quo_neg = ~ quo_neg;
+	  neg_double (lden, hden, &lden, &hden);
+	}
+    }
+
+  if (hnum == 0 && hden == 0)
+    {				/* single precision */
+      *hquo = *hrem = 0;
+      /* This unsigned division rounds toward zero.  */
+      *lquo = lnum / lden;
+      goto finish_up;
+    }
+
+  if (hnum == 0)
+    {				/* trivial case: dividend < divisor */
+      /* hden != 0 already checked.  */
+      *hquo = *lquo = 0;
+      *hrem = hnum;
+      *lrem = lnum;
+      goto finish_up;
+    }
+
+  memset (quo, 0, sizeof quo);
+
+  memset (num, 0, sizeof num);	/* to zero 9th element */
+  memset (den, 0, sizeof den);
+
+  encode (num, lnum, hnum);
+  encode (den, lden, hden);
+
+  /* Special code for when the divisor < BASE.  */
+  if (hden == 0 && lden < (unsigned HOST_WIDE_INT) BASE)
+    {
+      /* hnum != 0 already checked.  */
+      for (i = 4 - 1; i >= 0; i--)
+	{
+	  work = num[i] + carry * BASE;
+	  quo[i] = work / lden;
+	  carry = work % lden;
+	}
+    }
+  else
+    {
+      /* Full double precision division,
+	 with thanks to Don Knuth's "Seminumerical Algorithms".  */
+      int num_hi_sig, den_hi_sig;
+      unsigned HOST_WIDE_INT quo_est, scale;
+
+      /* Find the highest nonzero divisor digit.  */
+      for (i = 4 - 1;; i--)
+	if (den[i] != 0)
+	  {
+	    den_hi_sig = i;
+	    break;
+	  }
+
+      /* Insure that the first digit of the divisor is at least BASE/2.
+	 This is required by the quotient digit estimation algorithm.  */
+
+      scale = BASE / (den[den_hi_sig] + 1);
+      if (scale > 1)
+	{		/* scale divisor and dividend */
+	  carry = 0;
+	  for (i = 0; i <= 4 - 1; i++)
+	    {
+	      work = (num[i] * scale) + carry;
+	      num[i] = LOWPART (work);
+	      carry = HIGHPART (work);
+	    }
+
+	  num[4] = carry;
+	  carry = 0;
+	  for (i = 0; i <= 4 - 1; i++)
+	    {
+	      work = (den[i] * scale) + carry;
+	      den[i] = LOWPART (work);
+	      carry = HIGHPART (work);
+	      if (den[i] != 0) den_hi_sig = i;
+	    }
+	}
+
+      num_hi_sig = 4;
+
+      /* Main loop */
+      for (i = num_hi_sig - den_hi_sig - 1; i >= 0; i--)
+	{
+	  /* Guess the next quotient digit, quo_est, by dividing the first
+	     two remaining dividend digits by the high order quotient digit.
+	     quo_est is never low and is at most 2 high.  */
+	  unsigned HOST_WIDE_INT tmp;
+
+	  num_hi_sig = i + den_hi_sig + 1;
+	  work = num[num_hi_sig] * BASE + num[num_hi_sig - 1];
+	  if (num[num_hi_sig] != den[den_hi_sig])
+	    quo_est = work / den[den_hi_sig];
+	  else
+	    quo_est = BASE - 1;
+
+	  /* Refine quo_est so it's usually correct, and at most one high.  */
+	  tmp = work - quo_est * den[den_hi_sig];
+	  if (tmp < BASE
+	      && (den[den_hi_sig - 1] * quo_est
+		  > (tmp * BASE + num[num_hi_sig - 2])))
+	    quo_est--;
+
+	  /* Try QUO_EST as the quotient digit, by multiplying the
+	     divisor by QUO_EST and subtracting from the remaining dividend.
+	     Keep in mind that QUO_EST is the I - 1st digit.  */
+
+	  carry = 0;
+	  for (j = 0; j <= den_hi_sig; j++)
+	    {
+	      work = quo_est * den[j] + carry;
+	      carry = HIGHPART (work);
+	      work = num[i + j] - LOWPART (work);
+	      num[i + j] = LOWPART (work);
+	      carry += HIGHPART (work) != 0;
+	    }
+
+	  /* If quo_est was high by one, then num[i] went negative and
+	     we need to correct things.  */
+	  if (num[num_hi_sig] < (HOST_WIDE_INT) carry)
+	    {
+	      quo_est--;
+	      carry = 0;		/* add divisor back in */
+	      for (j = 0; j <= den_hi_sig; j++)
+		{
+		  work = num[i + j] + den[j] + carry;
+		  carry = HIGHPART (work);
+		  num[i + j] = LOWPART (work);
+		}
+
+	      num [num_hi_sig] += carry;
+	    }
+
+	  /* Store the quotient digit.  */
+	  quo[i] = quo_est;
+	}
+    }
+
+  decode (quo, lquo, hquo);
+
+ finish_up:
+  /* If result is negative, make it so.  */
+  if (quo_neg)
+    neg_double (*lquo, *hquo, lquo, hquo);
+
+  /* Compute trial remainder:  rem = num - (quo * den)  */
+  mul_double (*lquo, *hquo, lden_orig, hden_orig, lrem, hrem);
+  neg_double (*lrem, *hrem, lrem, hrem);
+  add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);
+
+  switch (code)
+    {
+    case TRUNC_DIV_EXPR:
+    case TRUNC_MOD_EXPR:	/* round toward zero */
+    case EXACT_DIV_EXPR:	/* for this one, it shouldn't matter */
+      return overflow;
+
+    case FLOOR_DIV_EXPR:
+    case FLOOR_MOD_EXPR:	/* round toward negative infinity */
+      if (quo_neg && (*lrem != 0 || *hrem != 0))   /* ratio < 0 && rem != 0 */
+	{
+	  /* quo = quo - 1;  */
+	  add_double (*lquo, *hquo, (HOST_WIDE_INT) -1, (HOST_WIDE_INT)  -1,
+		      lquo, hquo);
+	}
+      else
+	return overflow;
+      break;
+
+    case CEIL_DIV_EXPR:
+    case CEIL_MOD_EXPR:		/* round toward positive infinity */
+      if (!quo_neg && (*lrem != 0 || *hrem != 0))  /* ratio > 0 && rem != 0 */
+	{
+	  add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+		      lquo, hquo);
+	}
+      else
+	return overflow;
+      break;
+
+    case ROUND_DIV_EXPR:
+    case ROUND_MOD_EXPR:	/* round to closest integer */
+      {
+	unsigned HOST_WIDE_INT labs_rem = *lrem;
+	HOST_WIDE_INT habs_rem = *hrem;
+	unsigned HOST_WIDE_INT labs_den = lden, ltwice;
+	HOST_WIDE_INT habs_den = hden, htwice;
+
+	/* Get absolute values.  */
+	if (*hrem < 0)
+	  neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
+	if (hden < 0)
+	  neg_double (lden, hden, &labs_den, &habs_den);
+
+	/* If (2 * abs (lrem) >= abs (lden)), adjust the quotient.  */
+	mul_double ((HOST_WIDE_INT) 2, (HOST_WIDE_INT) 0,
+		    labs_rem, habs_rem, &ltwice, &htwice);
+
+	if (((unsigned HOST_WIDE_INT) habs_den
+	     < (unsigned HOST_WIDE_INT) htwice)
+	    || (((unsigned HOST_WIDE_INT) habs_den
+		 == (unsigned HOST_WIDE_INT) htwice)
+		&& (labs_den <= ltwice)))
+	  {
+	    if (*hquo < 0)
+	      /* quo = quo - 1;  */
+	      add_double (*lquo, *hquo,
+			  (HOST_WIDE_INT) -1, (HOST_WIDE_INT) -1, lquo, hquo);
+	    else
+	      /* quo = quo + 1; */
+	      add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+			  lquo, hquo);
+	  }
+	else
+	  return overflow;
+      }
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compute true remainder:  rem = num - (quo * den)  */
+  mul_double (*lquo, *hquo, lden_orig, hden_orig, lrem, hrem);
+  neg_double (*lrem, *hrem, lrem, hrem);
+  add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);
+  return overflow;
+}
+
+
 /* Returns mask for PREC bits.  */
 
 double_int
@@ -211,7 +946,7 @@ double_int_divmod (double_int a, double_int b, bool uns, unsigned code,
 {
   double_int ret;
 
-  div_and_round_double ((enum tree_code) code, uns, a.low, a.high,
+  div_and_round_double (code, uns, a.low, a.high,
 			b.low, b.high, &ret.low, &ret.high,
 			&mod->low, &mod->high);
   return ret;
