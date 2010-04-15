@@ -9640,7 +9640,7 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
   if (GET_CODE (*p) == PLUS
       && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
       && CONST_INT_P (XEXP (*p, 1))
-      && BASE_REGISTER_RTX_P (XEXP (*p, 0))
+      && MAYBE_BASE_REGISTER_RTX_P (XEXP (*p, 0), true)
       && ! TARGET_SHMEDIA
       && ! (TARGET_SH4 && mode == DFmode)
       && ! (mode == PSImode && type == RELOAD_FOR_INPUT_ADDRESS)
@@ -9674,8 +9674,7 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
       /* Sometimes the normal form does not suit DImode.  We could avoid
 	 that by using smaller ranges, but that would give less optimized
 	 code when SImode is prevalent.  */
-      if (offset_base != 0
-	  && GET_MODE_SIZE (mode) + offset - offset_base <= 64)
+      if (GET_MODE_SIZE (mode) + offset - offset_base <= 64)
 	{
 	  sum = gen_rtx_PLUS (Pmode, XEXP (*p, 0), GEN_INT (offset_base));
 	  *p = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base));
@@ -9689,7 +9688,7 @@ sh_legitimize_reload_address (rtx *p, enum machine_mode mode, int opnum,
 	   && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
 	   && GET_CODE (XEXP (*p, 0)) == PLUS
 	   && CONST_INT_P (XEXP (XEXP (*p, 0), 1))
-	   && BASE_REGISTER_RTX_P (XEXP (XEXP (*p, 0), 0))
+	   && MAYBE_BASE_REGISTER_RTX_P (XEXP (XEXP (*p, 0), 0), true)
 	   && CONST_INT_P (XEXP (*p, 1))
 	   && ! TARGET_SHMEDIA
 	   && ! (TARGET_SH2E && mode == SFmode))
