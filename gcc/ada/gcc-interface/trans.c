@@ -413,6 +413,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
      NULL_TREE, false, true, true, NULL, Empty);
   /* Avoid creating superfluous edges to __builtin_setjmp receivers.  */
   DECL_PURE_P (get_jmpbuf_decl) = 1;
+  DECL_IGNORED_P (get_jmpbuf_decl) = 1;
 
   set_jmpbuf_decl
     = create_subprog_decl
@@ -421,6 +422,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
      build_function_type (void_type_node,
 			  tree_cons (NULL_TREE, jmpbuf_ptr_type, t)),
      NULL_TREE, false, true, true, NULL, Empty);
+  DECL_IGNORED_P (set_jmpbuf_decl) = 1;
 
   /* setjmp returns an integer and has one operand, which is a pointer to
      a jmpbuf.  */
@@ -430,7 +432,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
        build_function_type (integer_type_node,
 			    tree_cons (NULL_TREE,  jmpbuf_ptr_type, t)),
        NULL_TREE, false, true, true, NULL, Empty);
-
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
@@ -442,7 +443,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
        build_function_type (void_type_node,
 			    tree_cons (NULL_TREE,  jmpbuf_ptr_type, t)),
        NULL_TREE, false, true, true, NULL, Empty);
-
   DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
@@ -454,6 +454,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 							   ptr_void_type_node,
 							   t)),
 			   NULL_TREE, false, true, true, NULL, Empty);
+  DECL_IGNORED_P (begin_handler_decl) = 1;
 
   end_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
@@ -462,6 +463,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 							   ptr_void_type_node,
 							   t)),
 			   NULL_TREE, false, true, true, NULL, Empty);
+  DECL_IGNORED_P (end_handler_decl) = 1;
 
   /* If in no exception handlers mode, all raise statements are redirected to
      __gnat_last_chance_handler.  No need to redefine raise_nodefer_decl since
@@ -730,7 +732,10 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
     case N_Parameter_Association:
     case N_Function_Call:
     case N_Procedure_Call_Statement:
-      return (must_pass_by_ref (gnu_type) || default_pass_by_ref (gnu_type));
+      /* If the parameter is by reference, an lvalue is required.  */
+      return (!constant
+	      || must_pass_by_ref (gnu_type)
+	      || default_pass_by_ref (gnu_type));
 
     case N_Indexed_Component:
       /* Only the array expression can require an lvalue.  */
@@ -779,8 +784,9 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
     case N_Object_Declaration:
       /* We cannot use a constructor if this is an atomic object because
 	 the actual assignment might end up being done component-wise.  */
-      return ((Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
-	       && Is_Atomic (Defining_Entity (gnat_parent)))
+      return (!constant
+	      ||(Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
+		 && Is_Atomic (Defining_Entity (gnat_parent)))
 	      /* We don't use a constructor if this is a class-wide object
 		 because the effective type of the object is the equivalent
 		 type of the class-wide subtype and it smashes most of the
@@ -791,7 +797,8 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
     case N_Assignment_Statement:
       /* We cannot use a constructor if the LHS is an atomic object because
 	 the actual assignment might end up being done component-wise.  */
-      return (Name (gnat_parent) == gnat_node
+      return (!constant
+	      || Name (gnat_parent) == gnat_node
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Atomic (Entity (Name (gnat_parent)))));
 
@@ -808,9 +815,10 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       /* ... fall through ... */
 
     case N_Unchecked_Type_Conversion:
-      return lvalue_required_p (gnat_parent,
-				get_unpadded_type (Etype (gnat_parent)),
-				constant, address_of_constant, aliased);
+      return (!constant
+	      || lvalue_required_p (gnat_parent,
+				    get_unpadded_type (Etype (gnat_parent)),
+				    constant, address_of_constant, aliased));
 
     case N_Allocator:
       /* We should only reach here through the N_Qualified_Expression case
@@ -3000,12 +3008,6 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		  gnu_result = convert (TREE_TYPE (gnu_actual), gnu_result);
 	      }
 
-	    /* Undo wrapping of boolean rvalues.  */
-	    if (TREE_CODE (gnu_actual) == NE_EXPR
-		&& TREE_CODE (get_base_type (TREE_TYPE (gnu_actual)))
-		   == BOOLEAN_TYPE
-		&& integer_zerop (TREE_OPERAND (gnu_actual, 1)))
-	      gnu_actual = TREE_OPERAND (gnu_actual, 0);
 	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_actual, gnu_result);
 	    set_expr_location_from_node (gnu_result, gnat_node);
@@ -4351,6 +4353,7 @@ gnat_to_gnu (Node_Id gnat_node)
       {
 	enum tree_code code = gnu_codes[kind];
 	bool ignore_lhs_overflow = false;
+	location_t saved_location = input_location;
 	tree gnu_type;
 
 	gnu_lhs = gnat_to_gnu (Left_Opnd (gnat_node));
@@ -4442,7 +4445,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result = build_binary_op_trapv (code, gnu_type,
 					      gnu_lhs, gnu_rhs, gnat_node);
 	else
-	  gnu_result = build_binary_op (code, gnu_type, gnu_lhs, gnu_rhs);
+	  {
+	    /* Some operations, e.g. comparisons of arrays, generate complex
+	       trees that need to be annotated while they are being built.  */
+	    input_location = saved_location;
+	    gnu_result = build_binary_op (code, gnu_type, gnu_lhs, gnu_rhs);
+	  }
 
 	/* If this is a logical shift with the shift count not verified,
 	   we must return zero if it is too large.  We cannot compensate
@@ -4723,6 +4731,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    gnu_result = build1 (GOTO_EXPR, void_type_node,
 				 TREE_VALUE (gnu_return_label_stack));
+	    /* When not optimizing, make sure the return is preserved.  */
+	    if (!optimize && Comes_From_Source (gnat_node))
+	      DECL_ARTIFICIAL (TREE_VALUE (gnu_return_label_stack)) = 0;
 	    break;
 	  }
 
@@ -5359,6 +5370,23 @@ gnat_to_gnu (Node_Id gnat_node)
   /* If we pushed the processing of the elaboration routine, pop it back.  */
   if (went_into_elab_proc)
     current_function_decl = NULL_TREE;
+
+  /* When not optimizing, turn boolean rvalues B into B != false tests
+     so that the code just below can put the location information of the
+     reference to B on the inequality operator for better debug info.  */
+  if (!optimize
+      && (kind == N_Identifier
+	  || kind == N_Expanded_Name
+	  || kind == N_Explicit_Dereference
+	  || kind == N_Function_Call
+	  || kind == N_Indexed_Component
+	  || kind == N_Selected_Component)
+      && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
+      && !lvalue_required_p (gnat_node, gnu_result_type, false, false, false))
+    gnu_result = build_binary_op (NE_EXPR, gnu_result_type,
+				  convert (gnu_result_type, gnu_result),
+				  convert (gnu_result_type,
+					   boolean_false_node));
 
   /* Set the location information on the result if it is a real expression.
      References can be reused for multiple GNAT nodes and they would get

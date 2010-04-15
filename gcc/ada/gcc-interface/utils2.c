@@ -303,6 +303,9 @@ compare_arrays (tree result_type, tree a1, tree a2)
 
 	  comparison = build_binary_op (LT_EXPR, result_type, ub, lb);
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
+	  if (EXPR_P (comparison))
+	    SET_EXPR_LOCATION (comparison, input_location);
+
 	  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
 
 	  length_zero_p = true;
@@ -317,6 +320,8 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	{
 	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+	  /* Note that we know that UB2 and LB2 are constant and hence
+	     cannot contain a PLACEHOLDER_EXPR.  */
 	  ub2 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
 	  lb2 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
 	  nbt = get_base_type (TREE_TYPE (ub1));
@@ -325,14 +330,15 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	    = build_binary_op (EQ_EXPR, result_type,
 			       build_binary_op (MINUS_EXPR, nbt, ub1, lb1),
 			       build_binary_op (MINUS_EXPR, nbt, ub2, lb2));
-
-	  /* Note that we know that UB2 and LB2 are constant and hence
-	     cannot contain a PLACEHOLDER_EXPR.  */
-
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
+	  if (EXPR_P (comparison))
+	    SET_EXPR_LOCATION (comparison, input_location);
+
 	  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
 
 	  this_a1_is_null = build_binary_op (LT_EXPR, result_type, ub1, lb1);
+	  if (EXPR_P (this_a1_is_null))
+	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
 	  this_a2_is_null = convert (result_type, integer_zero_node);
 	}
 
@@ -344,13 +350,20 @@ compare_arrays (tree result_type, tree a1, tree a2)
 
 	  comparison
 	    = build_binary_op (EQ_EXPR, result_type, length1, length2);
+	  if (EXPR_P (comparison))
+	    SET_EXPR_LOCATION (comparison, input_location);
 
 	  this_a1_is_null
 	    = build_binary_op (LT_EXPR, result_type, length1,
 			       convert (bt, integer_zero_node));
+	  if (EXPR_P (this_a1_is_null))
+	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
+
 	  this_a2_is_null
 	    = build_binary_op (LT_EXPR, result_type, length2,
 			       convert (bt, integer_zero_node));
+	  if (EXPR_P (this_a2_is_null))
+	    SET_EXPR_LOCATION (this_a2_is_null, input_location);
 	}
 
       result = build_binary_op (TRUTH_ANDIF_EXPR, result_type,
@@ -370,6 +383,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
   if (!length_zero_p)
     {
       tree type = find_common_type (TREE_TYPE (a1), TREE_TYPE (a2));
+      tree comparison;
 
       if (type)
 	{
@@ -377,8 +391,12 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  a2 = convert (type, a2);
 	}
 
-      result = build_binary_op (TRUTH_ANDIF_EXPR, result_type, result,
-				fold_build2 (EQ_EXPR, result_type, a1, a2));
+      comparison = fold_build2 (EQ_EXPR, result_type, a1, a2);
+      if (EXPR_P (comparison))
+	SET_EXPR_LOCATION (comparison, input_location);
+
+      result
+	= build_binary_op (TRUTH_ANDIF_EXPR, result_type, result, comparison);
     }
 
   /* The result is also true if both sizes are zero.  */
@@ -1153,21 +1171,17 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      operand = convert (type, operand);
 	    }
 
-	  if (type != error_mark_node)
-	    operation_type = build_pointer_type (type);
-
 	  gnat_mark_addressable (operand);
-	  result = fold_build1 (ADDR_EXPR, operation_type, operand);
+	  result = build_fold_addr_expr (operand);
 	}
 
       TREE_CONSTANT (result) = staticp (operand) || TREE_CONSTANT (operand);
       break;
 
     case INDIRECT_REF:
-      /* If we want to refer to an entire unconstrained array,
-	 make up an expression to do so.  This will never survive to
-	 the backend.  If TYPE is a thin pointer, first convert the
-	 operand to a fat pointer.  */
+      /* If we want to refer to an unconstrained array, use the appropriate
+	 expression to do so.  This will never survive down to the back-end.
+	 But if TYPE is a thin pointer, first convert to a fat pointer.  */
       if (TYPE_IS_THIN_POINTER_P (type)
 	  && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
 	{
@@ -1184,12 +1198,15 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	  TREE_READONLY (result)
 	    = TYPE_READONLY (TYPE_UNCONSTRAINED_ARRAY (type));
 	}
+
+      /* If we are dereferencing an ADDR_EXPR, return its operand.  */
       else if (TREE_CODE (operand) == ADDR_EXPR)
 	result = TREE_OPERAND (operand, 0);
 
+      /* Otherwise, build and fold the indirect reference.  */
       else
 	{
-	  result = fold_build1 (op_code, TREE_TYPE (type), operand);
+	  result = build_fold_indirect_ref (operand);
 	  TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
 	}
 
