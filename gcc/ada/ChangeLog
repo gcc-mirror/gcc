@@ -1,5 +1,18 @@
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gigi): Do not start statement group.
+	(Compilation_Unit_to_gnu): Set current_function_decl to NULL.
+	Start statement group and push binding level here...
+	(gnat_to_gnu) <N_Compilation_Unit>: ...and not here.
+	Do not push fake contexts at top level.  Remove redundant code.
+	(call_to_gnu): Rename a local variable and constify another.
+	* gcc-interface/utils.c (gnat_pushlevel): Fix formatting nits.
+	(set_current_block_context): Set it as the group's block.
+	(gnat_init_decl_processing): Delete unrelated init code.
+	(end_subprog_body): Use NULL_TREE.
+
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (call_to_gnu): Do not unnecessarily force
 	side-effects of actual parameters before the call.
 

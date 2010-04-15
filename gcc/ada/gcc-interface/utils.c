@@ -310,7 +310,7 @@ global_bindings_p (void)
   return ((force_global || !current_function_decl) ? -1 : 0);
 }
 
-/* Enter a new binding level. */
+/* Enter a new binding level.  */
 
 void
 gnat_pushlevel (void)
@@ -342,11 +342,11 @@ gnat_pushlevel (void)
   if (current_binding_level)
     BLOCK_SUPERCONTEXT (newlevel->block) = current_binding_level->block;
 
-  BLOCK_VARS (newlevel->block) = BLOCK_SUBBLOCKS (newlevel->block) = NULL_TREE;
+  BLOCK_VARS (newlevel->block) = NULL_TREE;
+  BLOCK_SUBBLOCKS (newlevel->block) = NULL_TREE;
   TREE_USED (newlevel->block) = 1;
 
-  /* Add this level to the front of the chain (stack) of levels that are
-     active.  */
+  /* Add this level to the front of the chain (stack) of active levels.  */
   newlevel->chain = current_binding_level;
   newlevel->jmpbuf_decl = NULL_TREE;
   current_binding_level = newlevel;
@@ -360,6 +360,7 @@ set_current_block_context (tree fndecl)
 {
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
+  set_block_for_group (current_binding_level->block);
 }
 
 /* Set the jmpbuf_decl for the current binding level to DECL.  */
@@ -378,7 +379,7 @@ get_block_jmpbuf_decl (void)
   return current_binding_level->jmpbuf_decl;
 }
 
-/* Exit a binding level. Set any BLOCK into the current code group.  */
+/* Exit a binding level.  Set any BLOCK into the current code group.  */
 
 void
 gnat_poplevel (void)
@@ -391,7 +392,7 @@ gnat_poplevel (void)
 
   /* If this is a function-level BLOCK don't do anything.  Otherwise, if there
      are no variables free the block and merge its subblocks into those of its
-     parent block. Otherwise, add it to the list of its parent.  */
+     parent block.  Otherwise, add it to the list of its parent.  */
   if (TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL)
     ;
   else if (BLOCK_VARS (block) == NULL_TREE)
@@ -518,12 +519,6 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 void
 gnat_init_decl_processing (void)
 {
-  /* Make the binding_level structure for global names.  */
-  current_function_decl = 0;
-  current_binding_level = 0;
-  free_binding_level = 0;
-  gnat_pushlevel ();
-
   build_common_tree_nodes (true, true);
 
   /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
@@ -1894,6 +1889,7 @@ begin_subprog_body (tree subprog_decl)
   /* Enter a new binding level and show that all the parameters belong to
      this function.  */
   gnat_pushlevel ();
+
   for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
        param_decl = TREE_CHAIN (param_decl))
     DECL_CONTEXT (param_decl) = subprog_decl;
@@ -1915,7 +1911,7 @@ end_subprog_body (tree body)
 
   /* Mark the BLOCK for this level as being for this function and pop the
      level.  Since the vars in it are the parameters, clear them.  */
-  BLOCK_VARS (current_binding_level->block) = 0;
+  BLOCK_VARS (current_binding_level->block) = NULL_TREE;
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
