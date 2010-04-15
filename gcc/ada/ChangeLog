@@ -1,3 +1,10 @@
+2010-04-15  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* g-socket.adb: A target can have multiple missing errno's.  This
+	will result in multiple errno's being defined as -1.  Because of this
+	we can not use a case but must use a series of if's to avoid 
+	a duplicate case error in GNAT.Sockets.Resolve_Error.
+
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (call_to_gnu): Open a nesting level if this is
