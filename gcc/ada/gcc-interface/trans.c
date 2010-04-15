@@ -620,7 +620,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
     gnat_init_gcc_eh ();
 
   /* Now translate the compilation unit proper.  */
-  start_stmt_group ();
   Compilation_Unit_to_gnu (gnat_root);
 
   /* Finally see if we have any elaboration procedures to deal with.  */
@@ -2849,8 +2848,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
     {
       /* List of FIELD_DECLs associated with the PARM_DECLs of the copy
 	 in copy out parameters.  */
-      tree scalar_return_list = TYPE_CI_CO_LIST (gnu_subprog_type);
-      int length = list_length (scalar_return_list);
+      tree gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
+      const int length = list_length (gnu_cico_list);
 
       if (length > 1)
 	{
@@ -2888,8 +2887,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      = length == 1
 		? gnu_call
 		: build_component_ref (gnu_call, NULL_TREE,
-				       TREE_PURPOSE (scalar_return_list),
-				       false);
+				       TREE_PURPOSE (gnu_cico_list), false);
 
 	    /* If the actual is a conversion, get the inner expression, which
 	       will be the real destination, and convert the result to the
@@ -2952,7 +2950,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 					  gnu_actual, gnu_result);
 	    set_expr_location_from_node (gnu_result, gnat_node);
 	    append_to_statement_list (gnu_result, &gnu_before_list);
-	    scalar_return_list = TREE_CHAIN (scalar_return_list);
+	    gnu_cico_list = TREE_CHAIN (gnu_cico_list);
 	    gnu_name_list = TREE_CHAIN (gnu_name_list);
 	  }
     }
@@ -3378,7 +3376,10 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
   allocate_struct_function (gnu_elab_proc_decl, false);
   Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
+  current_function_decl = NULL_TREE;
   set_cfun (NULL);
+  start_stmt_group ();
+  gnat_pushlevel ();
 
   /* For a body, first process the spec if there is one.  */
   if (Nkind (Unit (gnat_node)) == N_Package_Body
@@ -3508,7 +3509,6 @@ gnat_to_gnu (Node_Id gnat_node)
 				     N_Raise_Constraint_Error));
 
   if ((IN (kind, N_Statement_Other_Than_Procedure_Call)
-       && !IN (kind, N_SCIL_Node)
        && kind != N_Null_Statement)
       || kind == N_Procedure_Call_Statement
       || kind == N_Label
@@ -3517,13 +3517,10 @@ gnat_to_gnu (Node_Id gnat_node)
       || (IN (kind, N_Raise_xxx_Error) && Ekind (Etype (gnat_node)) == E_Void))
     {
       /* If this is a statement and we are at top level, it must be part of
-	 the elaboration procedure, so mark us as being in that procedure
-	 and push our context.  */
+	 the elaboration procedure, so mark us as being in that procedure.  */
       if (!current_function_decl)
 	{
 	  current_function_decl = TREE_VALUE (gnu_elab_proc_stack);
-	  start_stmt_group ();
-	  gnat_pushlevel ();
 	  went_into_elab_proc = true;
 	}
 
@@ -4866,12 +4863,7 @@ gnat_to_gnu (Node_Id gnat_node)
     /*********************************************************/
 
     case N_Compilation_Unit:
-
-      /* This is not called for the main unit, which is handled in function
-	 gigi above.  */
-      start_stmt_group ();
-      gnat_pushlevel ();
-
+      /* This is not called for the main unit on which gigi is invoked.  */
       Compilation_Unit_to_gnu (gnat_node);
       gnu_result = alloc_stmt_list ();
       break;
@@ -5298,35 +5290,16 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
       break;
 
-    case N_SCIL_Dispatch_Table_Object_Init:
-    case N_SCIL_Dispatch_Table_Tag_Init:
-    case N_SCIL_Dispatching_Call:
-    case N_SCIL_Membership_Test:
-    case N_SCIL_Tag_Init:
-      /* SCIL nodes require no processing for GCC.  */
-      gnu_result = alloc_stmt_list ();
-      break;
-
-    case N_Raise_Statement:
-    case N_Function_Specification:
-    case N_Procedure_Specification:
-    case N_Op_Concat:
-    case N_Component_Association:
-    case N_Task_Body:
     default:
-      gcc_assert (type_annotate_only);
+      /* SCIL nodes require no processing for GCC.  Other nodes should only
+	 be present when annotating types.  */
+      gcc_assert (IN (kind, N_SCIL_Node) || type_annotate_only);
       gnu_result = alloc_stmt_list ();
     }
 
-  /* If we pushed our level as part of processing the elaboration routine,
-     pop it back now.  */
+  /* If we pushed the processing of the elaboration routine, pop it back.  */
   if (went_into_elab_proc)
-    {
-      add_stmt (gnu_result);
-      gnat_poplevel ();
-      gnu_result = end_stmt_group ();
-      current_function_decl = NULL_TREE;
-    }
+    current_function_decl = NULL_TREE;
 
   /* Set the location information on the result if it is a real expression.
      References can be reused for multiple GNAT nodes and they would get
