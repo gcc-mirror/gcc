@@ -1,3 +1,17 @@
+2010-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*divmod<mode>4): Remove stray "&&" from
+	splitter condition.
+	(*udivmod<mode>4): Ditto.
+
+	2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*popcountsi2_cmp_zext): Remove mode attribute
+	from insn template.
+
 2010-04-15  Thomas Schwinge  <tschwinge@gnu.org>
 
 	Backport from mainline:
@@ -119,7 +133,7 @@
 
 2010-04-02  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* ada/gcc-interface/Make-lang.in, alias.c, attribs.c, auto-inc-dec.c, 
+	* ada/gcc-interface/Make-lang.in, alias.c, attribs.c, auto-inc-dec.c,
 	basic-block.h, bb-reorder.c, calls.c, c-common.c, cgraph.h,
 	collect2.h, config/alpha/alpha.c, config/alpha/alpha.md,
 	config/alpha/predicates.md, config/arm/arm.md,
@@ -190,7 +204,7 @@
 2010-04-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/43469
-	* arm.c (legitimize_tls_address): Adjust call to 
+	* arm.c (legitimize_tls_address): Adjust call to
 	gen_tls_load_dot_plus_four.
 	(arm_note_pic_base): New function.
 	(arm_cannot_copy_insn_p): Use it.
@@ -209,12 +223,12 @@
 
 2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
 
-        * config.gcc (lm32-*-rtems*): Add t-lm32.
+	* config.gcc (lm32-*-rtems*): Add t-lm32.
 
 2010-04-01  Joel Sherrill <joel.sherrill@oarcorp.com>
 
-        * config.gcc: Add lm32-*-rtems*.
-        * config/lm32/rtems.h: New file.
+	* config.gcc: Add lm32-*-rtems*.
+	* config/lm32/rtems.h: New file.
 
 2010-04-01  Dave Korn  <dave.korn.cygwin@gmail.com>
 
