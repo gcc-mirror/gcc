@@ -7516,13 +7516,9 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   Node_Id gnat_error_node;
   tree type_size, size;
 
-  if (kind == VAR_DECL
-      /* If a type needs strict alignment, a component of this type in
-	 a packed record cannot be packed and thus uses the type size.  */
-      || (kind == TYPE_DECL && Strict_Alignment (gnat_object)))
-    type_size = TYPE_SIZE (gnu_type);
-  else
-    type_size = rm_size (gnu_type);
+  /* Return 0 if no size was specified.  */
+  if (uint_size == No_Uint)
+    return NULL_TREE;
 
   /* Find the node to use for errors.  */
   if ((Ekind (gnat_object) == E_Component
@@ -7534,19 +7530,17 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   else
     gnat_error_node = gnat_object;
 
-  /* Return 0 if no size was specified, either because Esize was not Present
-     or the specified size was zero.  */
-  if (No (uint_size) || uint_size == No_Uint)
-    return NULL_TREE;
-
   /* Get the size as a tree.  Issue an error if a size was specified but
      cannot be represented in sizetype.  */
   size = UI_To_gnu (uint_size, bitsizetype);
   if (TREE_OVERFLOW (size))
     {
-      post_error_ne (component_p ? "component size of & is too large"
-		     : "size of & is too large",
-		     gnat_error_node, gnat_object);
+      if (component_p)
+	post_error_ne ("component size of & is too large", gnat_error_node,
+		       gnat_object);
+      else
+	post_error_ne ("size of & is too large", gnat_error_node,
+		       gnat_object);
       return NULL_TREE;
     }
 
@@ -7582,6 +7576,14 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
     size = size_binop (PLUS_EXPR, DECL_SIZE (TYPE_FIELDS (gnu_type)), size);
 
+  if (kind == VAR_DECL
+      /* If a type needs strict alignment, a component of this type in
+	 a packed record cannot be packed and thus uses the type size.  */
+      || (kind == TYPE_DECL && Strict_Alignment (gnat_object)))
+    type_size = TYPE_SIZE (gnu_type);
+  else
+    type_size = rm_size (gnu_type);
+
   /* Modify the size of the type to be that of the maximum size if it has a
      discriminant.  */
   if (type_size && CONTAINS_PLACEHOLDER_P (type_size))
@@ -7591,13 +7593,9 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
      by the smallest integral mode that's valid for pointers.  */
   if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
     {
-      enum machine_mode p_mode;
-
-      for (p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   !targetm.valid_pointer_mode (p_mode);
-	   p_mode = GET_MODE_WIDER_MODE (p_mode))
-	;
-
+      enum machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      while (!targetm.valid_pointer_mode (p_mode))
+	p_mode = GET_MODE_WIDER_MODE (p_mode);
       type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
     }
 
@@ -7612,22 +7610,11 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 	  ("component size for& too small{, minimum allowed is ^}",
 	   gnat_error_node, gnat_object, type_size);
       else
-	post_error_ne_tree ("size for& too small{, minimum allowed is ^}",
-			    gnat_error_node, gnat_object, type_size);
+	post_error_ne_tree
+	  ("size for& too small{, minimum allowed is ^}",
+	   gnat_error_node, gnat_object, type_size);
 
-      if (kind == VAR_DECL && !component_p
-	  && TREE_CODE (rm_size (gnu_type)) == INTEGER_CST
-	  && !tree_int_cst_lt (size, rm_size (gnu_type)))
-	post_error_ne_tree_2
-	  ("\\size of ^ is not a multiple of alignment (^ bits)",
-	   gnat_error_node, gnat_object, rm_size (gnu_type),
-	   TYPE_ALIGN (gnu_type));
-
-      else if (INTEGRAL_TYPE_P (gnu_type))
-	post_error_ne ("\\size would be legal if & were not aliased!",
-		       gnat_error_node, gnat_object);
-
-      return NULL_TREE;
+      size = NULL_TREE;
     }
 
   return size;
@@ -7639,16 +7626,17 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
 static void
 set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 {
+  Node_Id gnat_attr_node;
+  tree old_size, size;
+
+  /* Do nothing if no size was specified.  */
+  if (uint_size == No_Uint)
+    return;
+
   /* Only issue an error if a Value_Size clause was explicitly given.
      Otherwise, we'd be duplicating an error on the Size clause.  */
-  Node_Id gnat_attr_node
+  gnat_attr_node
     = Get_Attribute_Definition_Clause (gnat_entity, Attr_Value_Size);
-  tree old_size = rm_size (gnu_type), size;
-
-  /* Do nothing if no size was specified, either because RM size was not
-     Present or if the specified size was zero.  */
-  if (No (uint_size) || uint_size == No_Uint)
-    return;
 
   /* Get the size as a tree.  Issue an error if a size was specified but
      cannot be represented in sizetype.  */
@@ -7671,6 +7659,8 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 	  && !Has_Size_Clause (gnat_entity)
 	  && !Is_Discrete_Or_Fixed_Point_Type (gnat_entity)))
     return;
+
+  old_size = rm_size (gnu_type);
 
   /* If the old size is self-referential, get the maximum size.  */
   if (CONTAINS_PLACEHOLDER_P (old_size))

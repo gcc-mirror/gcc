@@ -1,3 +1,9 @@
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (validate_size): Reorder, remove obsolete test
+	and warning.
+	(set_rm_size): Reorder and remove obsolete test.
+
 2010-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h: Reorder declarations and tweak comments.
