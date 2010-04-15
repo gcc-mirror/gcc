@@ -1,3 +1,8 @@
+2010-04-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_call_save_register_used): Switch back
+	to HARD_REGNO_NREGS.
+
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (alias_set_subset_of): Handle alias-set zero

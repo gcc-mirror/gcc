@@ -9449,17 +9449,9 @@ s390_call_saved_register_used (tree call_expr)
 
        if (REG_P (parm_rtx))
   	 {
-	   int n_regs;
-
-	   /* Only integer registers (r6) are call saved and used for
-	      parameter passing.  */
-	   if (REGNO_REG_CLASS (REGNO (parm_rtx)) == FP_REGS)
-	     continue;
-
-	   n_regs = ((GET_MODE_SIZE (GET_MODE (parm_rtx)) + UNITS_PER_LONG - 1)
-		     / UNITS_PER_LONG);
-
-	   for (reg = 0; reg < n_regs; reg++)
+	   for (reg = 0;
+		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx));
+		reg++)
 	     if (!call_used_regs[reg + REGNO (parm_rtx)])
  	       return true;
 	 }
@@ -9467,22 +9459,16 @@ s390_call_saved_register_used (tree call_expr)
        if (GET_CODE (parm_rtx) == PARALLEL)
 	 {
 	   int i;
+
 	   for (i = 0; i < XVECLEN (parm_rtx, 0); i++)
 	     {
 	       rtx r = XEXP (XVECEXP (parm_rtx, 0, i), 0);
-	       int n_regs;
 
 	       gcc_assert (REG_P (r));
 
-	       /* Only integer registers (r6) are call saved and used
-		  for parameter passing.  */
-	       if (REGNO_REG_CLASS (REGNO (r)) == FP_REGS)
-		 continue;
-
-	       n_regs = ((GET_MODE_SIZE (GET_MODE (r)) + UNITS_PER_LONG - 1)
-			 / UNITS_PER_LONG);
-
-	       for (reg = 0; reg < n_regs; reg++)
+	       for (reg = 0;
+		    reg < HARD_REGNO_NREGS (REGNO (r), GET_MODE (r));
+		    reg++)
 		 if (!call_used_regs[reg + REGNO (r)])
 		   return true;
 	     }
