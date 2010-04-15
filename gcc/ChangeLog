@@ -1,3 +1,8 @@
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (alias_set_subset_of): Handle alias-set zero
+	child properly.
+
 2010-04-15  Mark Shinwell  <shinwell@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
