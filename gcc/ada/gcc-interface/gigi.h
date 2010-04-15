@@ -85,7 +85,7 @@ extern void mark_visited (tree t);
 
 #define MARK_VISITED(EXP)		\
 do {					\
-  if((EXP) && !TREE_CONSTANT (EXP))	\
+  if((EXP) && !CONSTANT_CLASS_P (EXP))	\
     mark_visited (EXP);			\
 } while (0)
 
@@ -240,9 +240,9 @@ extern void post_error (const char *msg, Node_Id node);
 extern void post_error_ne (const char *msg, Node_Id node, Entity_Id ent);
 
 /* Similar, but NODE is the node at which to post the error, ENT is the node
-   to use for the "&" substitution, and N is the number to use for the ^.  */
+   to use for the "&" substitution, and NUM is the number to use for ^.  */
 extern void post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent,
-                               int n);
+                               int num);
 
 /* Similar to post_error_ne_num, but T is a GCC tree representing the number
    to write.  If the tree represents a constant that fits within a
@@ -252,8 +252,8 @@ extern void post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent,
 extern void post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent,
                                 tree t);
 
-/* Similar to post_error_ne_tree, except that NUM is a second
-   integer to write in the message.  */
+/* Similar to post_error_ne_tree, except that NUM is a second integer to write
+   in the message.  */
 extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
                                   tree t, int num);
 
@@ -621,9 +621,6 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   create_var_decl_1 (var_name, asm_name, type, var_init,		\
 		     const_flag, public_flag, extern_flag,		\
 		     static_flag, false, attr_list, gnat_node)
-
-/* Given a DECL and ATTR_LIST, apply the listed attributes.  */
-extern void process_attributes (tree decl, struct attrib *attr_list);
 
 /* Record DECL as a global renaming pointer.  */
 extern void record_global_renaming_pointer (tree decl);

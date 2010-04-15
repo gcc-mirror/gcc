@@ -2121,7 +2121,8 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 					     convert (long_integer_type_node,
 						      addr64expr),
 					     malloc64low),
-			    build_call_raise (CE_Range_Check_Failed, gnat_actual,
+			    build_call_raise (CE_Range_Check_Failed,
+					      gnat_actual,
 					      N_Raise_Constraint_Error),
 			    NULL_TREE));
         }
@@ -2228,9 +2229,12 @@ gnat_protect_expr (tree exp)
      unshared for gimplification; in order to avoid a complexity explosion
      at that point, we protect any expressions more complex than a simple
      arithmetic expression.  */
-  if (!TREE_SIDE_EFFECTS (exp)
-      && !EXPRESSION_CLASS_P (skip_simple_arithmetic (exp)))
-    return exp;
+  if (!TREE_SIDE_EFFECTS (exp))
+    {
+      tree inner = skip_simple_arithmetic (exp);
+      if (!EXPR_P (inner) || REFERENCE_CLASS_P (inner))
+	return exp;
+    }
 
   /* If this is a conversion, protect what's inside the conversion.  */
   if (code == NON_LVALUE_EXPR

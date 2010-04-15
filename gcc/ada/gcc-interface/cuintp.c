@@ -106,7 +106,8 @@ UI_To_gnu (Uint Input, tree type)
 	 The base integer precision must be superior than 16.  */
 
       if (TREE_CODE (comp_type) != REAL_TYPE
-	  && TYPE_PRECISION (comp_type) < TYPE_PRECISION (long_integer_type_node))
+	  && TYPE_PRECISION (comp_type)
+	     < TYPE_PRECISION (long_integer_type_node))
 	{
 	  comp_type = long_integer_type_node;
 	  gcc_assert (TYPE_PRECISION (comp_type) > 16);

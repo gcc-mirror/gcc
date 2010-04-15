@@ -1,5 +1,44 @@
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/cuintp.c (UI_To_gnu): Fix long line.
+	* gcc-interface/gigi.h (MARK_VISITED): Skip objects of constant class.
+	(process_attributes): Delete.
+	(post_error_ne_num): Change parameter name.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not force debug info
+	with -g3.  Remove a couple of obsolete lines.  Minor tweaks.
+	If type annotating mode, operate on trees to compute the adjustment to
+	the sizes of tagged types.  Fix long line.
+	(cannot_be_superflat_p): Tweak head comment.
+	(annotate_value): Fold local constant.
+	(set_rm_size): Fix long line.
+	* gcc-interface/trans.c (Identifier_to_gnu): Rework comments.
+	(Attribute_to_gnu): Fix long line.
+	<Attr_Size>: Remove useless assertion.
+	Reorder statements.  Use size_binop routine.
+	(Loop_Statement_to_gnu): Use build5 in lieu of build_nt.
+	Create local variables for the label and the test.  Tweak comments.
+	(Subprogram_Body_to_gnu): Reset cfun to NULL.
+	(Compilation_Unit_to_gnu): Use the Sloc of the Unit node.
+	(process_inlined_subprograms): Integrate into...
+	(Compilation_Unit_to_gnu): ...this.
+	(gnat_to_gnu): Fix long line.
+	(post_error_ne_num): Change parameter name.
+	* gcc-interface/utils.c (process_attributes): Static-ify.
+	<ATTR_MACHINE_ATTRIBUTE>: Set input_location before proceeding.
+	(create_type_decl): Add comment.
+	(create_var_decl_1): Process the attributes after adding the VAR_DECL
+	to the current binding level.
+	(create_subprog_decl): Likewise for the FUNCTION_DECL.
+	(end_subprog_body): Do not reset cfun to NULL.
+	(build_vms_descriptor32): Fix long line.
+	(build_vms_descriptor): Likewise.
+	(handle_nonnull_attribute): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	* gcc-interface/utils2.c (fill_vms_descriptor): Fix long line.
+	(gnat_protect_expr): Fix thinko.
+
+2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gigi): Set DECL_IGNORED_P on EH functions.
 	(gnat_to_gnu) <N_Op_Eq>: Restore the value of input_location
 	before translating the top-level node.
