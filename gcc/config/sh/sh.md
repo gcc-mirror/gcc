@@ -7050,22 +7050,21 @@ label:
 
 (define_insn_and_split "doloop_end_split"
   [(set (pc)
-	(if_then_else (ne:SI (match_operand:SI 0 "arith_reg_dest" "")
+	(if_then_else (ne:SI  (match_operand:SI 2 "arith_reg_dest" "0")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_dup 0)
-	(plus (match_dup 0) (const_int -1)))
+   (set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(plus (match_dup 2) (const_int -1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH2"
   "#"
   ""
   [(parallel [(set (reg:SI T_REG)
-		   (eq:SI (match_operand:SI 0 "arith_reg_dest" "+r")
-			  (const_int 1)))
-	      (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))])
+		   (eq:SI (match_dup 2) (const_int 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 2) (const_int -1)))])
    (set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
-			   (label_ref (match_operand 1 "" ""))
+			   (label_ref (match_dup 1))
 			   (pc)))]
 ""
    [(set_attr "type" "cbranch")])
@@ -8308,8 +8307,9 @@ label:
 
 (define_insn "dect"
   [(set (reg:SI T_REG)
-	(eq:SI (match_operand:SI 0 "arith_reg_dest" "+r") (const_int 1)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
+	(eq:SI (match_operand:SI 1 "arith_reg_dest" "0") (const_int 1)))
+   (set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(plus:SI (match_dup 1) (const_int -1)))]
   "TARGET_SH2"
   "dt	%0"
   [(set_attr "type" "arith")])
