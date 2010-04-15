@@ -1025,6 +1025,22 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	  TREE_TYPE (result) = type = build_pointer_type (type);
 	  break;
 
+	case COMPOUND_EXPR:
+	  /* Fold a compound expression if it has unconstrained array type
+	     since the middle-end cannot handle it.  But we don't it in the
+	     general case because it may introduce aliasing issues if the
+	     first operand is an indirect assignment and the second operand
+	     the corresponding address, e.g. for an allocator.  */
+	  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
+	    {
+	      result = build_unary_op (ADDR_EXPR, result_type,
+				       TREE_OPERAND (operand, 1));
+	      result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
+			       TREE_OPERAND (operand, 0), result);
+	      break;
+	    }
+	  goto common;
+
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	case COMPONENT_REF:
@@ -2119,6 +2135,10 @@ gnat_mark_addressable (tree t)
 	t = TREE_OPERAND (t, 0);
 	break;
 
+      case COMPOUND_EXPR:
+	t = TREE_OPERAND (t, 1);
+	break;
+
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (t) = 1;
 	return true;
@@ -2377,8 +2397,15 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       break;
 
     case CALL_EXPR:
-    case COMPOUND_EXPR:
       result = gnat_stabilize_reference_1 (ref, force);
+      break;
+
+    case COMPOUND_EXPR:
+      result = build2 (COMPOUND_EXPR, type,
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+						 success),
+		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
+						   force));
       break;
 
     case CONSTRUCTOR:
