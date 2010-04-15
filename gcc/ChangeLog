@@ -1,3 +1,10 @@
+2010-04-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/43471
+	* config/sh/sh.c (sh_legitimize_reload_address): Use
+	MAYBE_BASE_REGISTER_RTX_P instead of BASE_REGISTER_RTX_P.
+	Remove a unneeded check for offset_base.
+
 2010-04-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
