@@ -1,5 +1,29 @@
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (OBJS-common): Add gimple-fold.o.
+	(gimple-fold.o): New rule.
+	* tree.h (maybe_fold_offset_to_reference,
+	maybe_fold_offset_to_address, maybe_fold_stmt_addition): Move
+	prototypes ...
+	* gimple.h: ... here.
+	* tree-flow.h (fold_stmt, fold_stmt_inplace, get_symbol_constant_value,
+	may_propagate_address_into_dereference): Move prototypes ...
+	* gimple.h: ... here.
+	* tree-ssa-ccp.c (get_symbol_constant_value,
+	may_propagate_address_into_dereference, maybe_fold_offset_to_array_ref,
+	maybe_fold_offset_to_component_ref, maybe_fold_offset_to_reference,
+	maybe_fold_offset_to_address, maybe_fold_stmt_indirect,
+	maybe_fold_stmt_addition, maybe_fold_reference, get_maxval_strlen,
+	ccp_fold_builtin, fold_gimple_assign, fold_gimple_cond,
+	fold_gimple_call, fold_stmt_1, fold_stmt, fold_stmt_inplace,
+	gimplify_and_update_call_from_tree): Move ...
+	* gimple-fold.c: ... here.  New file.
+	(ccp_fold_builtin): Rename to ...
+	(gimple_fold_builtin): ... this.
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Adjust.
+
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
 	* fold-const.c (LOWPART, HIGHPART, BASE, encode, decode,
 	fit_double_type, force_fit_type_double, add_double_with_sign,
 	neg_double, mul_double_with_sign, lshift_double, rshift_double,
