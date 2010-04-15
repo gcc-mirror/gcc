@@ -42,5 +42,5 @@ void test4 (int a4, char b, char c, char d, char e, char f, char g, char h)
   bar (p);
 }
 
-/* { dg-final { scan-ipa-dump "bar.arg0 = { a4 a3 a2 a1 }" "pta" } } */
+/* { dg-final { scan-ipa-dump "bar.arg0 = { test4.arg0 test3.arg0 test2.arg0 test1.arg0 }" "pta" } } */
 /* { dg-final { cleanup-ipa-dump "pta" } } */

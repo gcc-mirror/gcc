@@ -76,6 +76,9 @@ struct GTY(()) gimple_df {
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
 
+  /* True if IPA points-to information was computed for this function.  */
+  unsigned int ipa_pta : 1;
+
   struct ssa_operands ssa_operands;
 };
 
@@ -111,9 +114,10 @@ typedef struct
 ---------------------------------------------------------------------------*/
 
 /* Aliasing information for SSA_NAMEs representing pointer variables.  */
+
 struct GTY(()) ptr_info_def
 {
-  /* The points-to solution, TBAA-pruned if the pointer is dereferenced.  */
+  /* The points-to solution.  */
   struct pt_solution pt;
 };
 

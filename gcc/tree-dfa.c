@@ -269,6 +269,8 @@ dump_variable (FILE *file, tree var)
   ann = var_ann (var);
 
   fprintf (file, ", UID D.%u", (unsigned) DECL_UID (var));
+  if (DECL_PT_UID (var) != DECL_UID (var))
+    fprintf (file, ", PT-UID D.%u", (unsigned) DECL_PT_UID (var));
 
   fprintf (file, ", ");
   print_generic_expr (file, TREE_TYPE (var), dump_flags);

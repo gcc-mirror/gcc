@@ -78,8 +78,9 @@ enum tree_dump_index
 #define TDF_ASMNAME	(1 << 18)	/* display asm names of decls  */
 #define TDF_EH		(1 << 19)	/* display EH region number
 					   holding this gimple statement.  */
-
 #define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
+#define TDF_ALIAS	(1 << 21)	/* display alias information  */
+
 
 /* In tree-dump.c */
 

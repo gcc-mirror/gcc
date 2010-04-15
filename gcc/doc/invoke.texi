@@ -6577,8 +6577,10 @@ With this flag, the program debug info reflects a new structure layout.
 
 @item -fipa-pta
 @opindex fipa-pta
-Perform interprocedural pointer analysis.  This option is experimental
-and does not affect generated code.
+Perform interprocedural pointer analysis and interprocedural modification
+and reference analysis.  This option can cause excessive memory and
+compile-time usage on large compilation units.  It is not enabled by
+default at any optimization level.
 
 @item -fipa-cp
 @opindex fipa-cp

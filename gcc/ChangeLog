@@ -1,5 +1,70 @@
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (struct variable_info): Add
+	is_fn_info flag.
+	(new_var_info): Initialize it.
+	(dump_constraints): Support printing last added constraints.
+	(debug_constraints): Adjust.
+	(dump_constraint_graph): Likewise.
+	(make_heapvar_for): Check for NULL cfun.
+	(get_function_part_constraint): New function.
+	(get_fi_for_callee): Likewise.
+	(find_func_aliases): Properly implement IPA PTA constraints.
+	(process_ipa_clobber): New function.
+	(find_func_clobbers): Likewise.
+	(insert_into_field_list_sorted): Remove.
+	(create_function_info_for): Properly allocate vars for IPA mode.
+	Do not use insert_into_field_list_sorted.
+	(create_variable_info_for): Properly generate constraints for
+	global vars in IPA mode.
+	(dump_solution_for_var): Always dump the solution.
+	(set_uids_in_ptset): Initialize DECL_PT_UID if in ipa-mode.
+	(find_what_var_points_to): Adjust.
+	(pt_solution_set): Change.
+	(pt_solution_ior_into): New function.
+	(pt_solution_empty_p): Export.
+	(pt_solution_includes_global): Adjust.
+	(pt_solution_includes_1): Likewise.
+	(pt_solutions_intersect_1): Likewise.
+	(dump_sa_points_to_info): Check some invariants.
+	(solve_constraints): Move constraint dumping ...
+	(compute_points_to_sets): ... here.
+	(ipa_pta_execute): ... and here.
+	(compute_may_aliases): Do not re-compute points-to info
+	locally if IPA info is available.
+	(ipa_escaped_pt): New global var.
+	(ipa_pta_execute): Properly implement IPA PTA.
+	* tree-into-ssa.c (dump_decl_set): Support dumping
+	decls not in referenced-vars.
+	* tree-flow.h (struct gimple_df): Add ipa_pta flag.
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Adjust.
+	(dump_points_to_solution): Likewise.
+	* tree-dfa.c (dump_variable): Also dump DECL_PT_UID.
+	* tree-inline.c (remap_ssa_name): Copy IPA points-to solution.
+	(remap_gimple_stmt): Reset call clobber/use information if
+	necessary.
+	(copy_decl_to_var): Copy DECL_PT_UID.
+	(copy_result_decl_to_var): Likewise.
+	* tree.c (make_node_stat): Initialize DECL_PT_UID.
+	(copy_node_stat): Copy it.
+	* tree.h (DECL_PT_UID): New macro.
+	(SET_DECL_PT_UID): Likewise.
+	(DECL_PT_UID_SET_P): Likewise.
+	(struct tree_decl_minimal): Add pt_uid member.
+	* tree-ssa-alias.h (struct pt_solution): Add ipa_escaped flag.
+	(pt_solution_empty_p): Declare.
+	(pt_solution_set): Adjust.
+	(ipa_escaped_pt): Declare.
+	* cfgexpand.c (update_alias_info_with_stack_vars): Adjust.
+	* gimple-pretty-print.c (pp_points_to_solution): New function.
+	(dump_gimple_call): Dump call clobber/use information.
+	* tree-dump.c (dump_option_value_in): Add TDF_ALIAS entry.
+	* tree-pass.h (TDF_ALIAS): New dump option.
+	* tree-pretty-print.c (dump_decl_name): Dump DECL_PT_UID if asked to.
+	* doc/invoke.texi (-fipa-pta): Update documentation.
+
+2010-04-15  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (OBJS-common): Add gimple-fold.o.
 	(gimple-fold.o): New rule.
 	* tree.h (maybe_fold_offset_to_reference,
