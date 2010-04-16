@@ -1,3 +1,8 @@
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/wide_boolean.adb: New test.
+	* gnat.dg/wide_boolean_pkg.ad[sb]: New helper.
+
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/ipa/ipa-pta-1.c: New testcase.

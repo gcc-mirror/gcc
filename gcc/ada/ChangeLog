@@ -1,3 +1,14 @@
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (make_type_from_size) <INTEGER_TYPE>: Just copy
+	TYPE_NAME.
+	* gcc-interface/trans.c (smaller_packable_type_p): Rename into...
+	(smaller_form_type_p): ...this.  Change parameter and variable names.
+	(call_to_gnu): Use the nominal type of the parameter to create the
+	temporary if it's a smaller form of the actual type.
+	(addressable_p): Return false if the actual type is integral and its
+	size is greater than that of the expected type.
+
 2010-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/cuintp.c (UI_To_gnu): Fix long line.

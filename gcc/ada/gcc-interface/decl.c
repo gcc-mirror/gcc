@@ -7748,14 +7748,9 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       SET_TYPE_RM_MAX_VALUE (new_type,
 			     convert (TREE_TYPE (new_type),
 				      TYPE_MAX_VALUE (type)));
-      /* Propagate the name to avoid creating a fake subrange type.  */
-      if (TYPE_NAME (type))
-	{
-	  if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-	    TYPE_NAME (new_type) = DECL_NAME (TYPE_NAME (type));
-	  else
-	    TYPE_NAME (new_type) = TYPE_NAME (type);
-	}
+      /* Copy the name to show that it's essentially the same type and
+	 not a subrange type.  */
+      TYPE_NAME (new_type) = TYPE_NAME (type);
       TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
       SET_TYPE_RM_SIZE (new_type, bitsize_int (size));
       return new_type;
