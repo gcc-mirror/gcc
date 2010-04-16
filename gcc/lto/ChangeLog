@@ -1,3 +1,8 @@
+2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lto-elf.c [!HAVE_ELF_GETSHDRSTRNDX] (elf_getshdrstrndx): New
+	function.
+
 2010-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/43276

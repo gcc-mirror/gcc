@@ -361,7 +361,7 @@ Necessary to build link-time optimization (LTO) support.  It can be
 downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
 though it is commonly available in several systems.  The versions in
 IRIX 5 and 6 don't work since they lack @file{gelf.h}.  The version in
-recent releases of Solaris 11 does work, previous ones don't yet.
+Solaris 2 does work.
 
 The @option{--with-libelf} configure option should be used if libelf is
 not installed in your default library search patch.
