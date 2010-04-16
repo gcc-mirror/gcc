@@ -1,9 +1,3 @@
-2010-04-16  Steven G. Kargl  <kargl@gcc.gnu.org>
-
-	PR fortran/30073
-	* trans-array.c (gfc_trans_array_bound_check): Eliminate a redundant
-	block of code.  Set name to the variable associated with the descriptor.
-
 2010-04-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/43539
