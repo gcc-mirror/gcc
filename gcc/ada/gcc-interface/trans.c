@@ -7404,7 +7404,7 @@ decode_name (const char *name)
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
-   "&" substitution.  */
+   '&' substitution.  */
 
 void
 post_error (const char *msg, Node_Id node)
@@ -7418,8 +7418,8 @@ post_error (const char *msg, Node_Id node)
     Error_Msg_N (fp, node);
 }
 
-/* Similar, but NODE is the node at which to post the error and ENT
-   is the node to use for the "&" substitution.  */
+/* Similar to post_error, but NODE is the node at which to post the error and
+   ENT is the node to use for the '&' substitution.  */
 
 void
 post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
@@ -7433,56 +7433,37 @@ post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
     Error_Msg_NE (fp, node, ent);
 }
 
-/* Similar, but NODE is the node at which to post the error, ENT is the node
-   to use for the "&" substitution, and NUM is the number to use for ^.  */
+/* Similar to post_error_ne, but NUM is the number to use for the '^'.  */
 
 void
 post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent, int num)
 {
-  String_Template temp;
-  Fat_Pointer fp;
-
-  temp.Low_Bound = 1, temp.High_Bound = strlen (msg);
-  fp.Array = msg, fp.Bounds = &temp;
   Error_Msg_Uint_1 = UI_From_Int (num);
-
-  if (Present (node))
-    Error_Msg_NE (fp, node, ent);
+  post_error_ne (msg, node, ent);
 }
 
-/* Similar to post_error_ne_num, but T is a GCC tree representing the
-   number to write.  If the tree represents a constant that fits within
-   a host integer, the text inside curly brackets in MSG will be output
-   (presumably including a '^').  Otherwise that text will not be output
-   and the text inside square brackets will be output instead.  */
+/* Similar to post_error_ne, but T is a GCC tree representing the number to
+   write.  If T represents a constant, the text inside curly brackets in
+   MSG will be output (presumably including a '^').  Otherwise it will not
+   be output and the text inside square brackets will be output instead.  */
 
 void
 post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent, tree t)
 {
-  char *newmsg = XALLOCAVEC (char, strlen (msg) + 1);
-  String_Template temp = {1, 0};
-  Fat_Pointer fp;
+  char *new_msg = XALLOCAVEC (char, strlen (msg) + 1);
   char start_yes, end_yes, start_no, end_no;
   const char *p;
   char *q;
 
-  fp.Array = newmsg, fp.Bounds = &temp;
-
-  if (host_integerp (t, 1)
-#if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_INT
-      &&
-      compare_tree_int
-      (t, (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_INT - 1)) - 1)) < 0
-#endif
-      )
+  if (TREE_CODE (t) == INTEGER_CST)
     {
-      Error_Msg_Uint_1 = UI_From_Int (tree_low_cst (t, 1));
+      Error_Msg_Uint_1 = UI_From_gnu (t);
       start_yes = '{', end_yes = '}', start_no = '[', end_no = ']';
     }
   else
     start_yes = '[', end_yes = ']', start_no = '{', end_no = '}';
 
-  for (p = msg, q = newmsg; *p; p++)
+  for (p = msg, q = new_msg; *p; p++)
     {
       if (*p == start_yes)
 	for (p++; *p != end_yes; p++)
@@ -7496,13 +7477,10 @@ post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent, tree t)
 
   *q = 0;
 
-  temp.High_Bound = strlen (newmsg);
-  if (Present (node))
-    Error_Msg_NE (fp, node, ent);
+  post_error_ne (new_msg, node, ent);
 }
 
-/* Similar to post_error_ne_tree, except that NUM is a second integer to write
-   in the message.  */
+/* Similar to post_error_ne_tree, but NUM is a second integer to write.  */
 
 void
 post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent, tree t,
