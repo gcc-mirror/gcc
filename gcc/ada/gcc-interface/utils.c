@@ -3025,7 +3025,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	  /* Test that we really have a SB descriptor, like DEC Ada.  */
 	  t = build3 (COMPONENT_REF, TREE_TYPE (klass), desc, klass, NULL);
 	  u = convert (TREE_TYPE (klass), DECL_INITIAL (klass));
-	  u = build_binary_op (EQ_EXPR, integer_type_node, t, u);
+	  u = build_binary_op (EQ_EXPR, boolean_type_node, t, u);
 	  /* If so, there is already a template in the descriptor and
 	     it is located right after the POINTER field.  The fields are
              64bits so they must be repacked. */
@@ -3063,12 +3063,12 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	  /* Raise CONSTRAINT_ERROR if either more than 1 dimension
 	     or FL_COEFF or FL_BOUNDS not set.  */
 	  u = build_int_cst (TREE_TYPE (aflags), 192);
-	  u = build_binary_op (TRUTH_OR_EXPR, integer_type_node,
-			       build_binary_op (NE_EXPR, integer_type_node,
+	  u = build_binary_op (TRUTH_OR_EXPR, boolean_type_node,
+			       build_binary_op (NE_EXPR, boolean_type_node,
 						dimct,
 						convert (TREE_TYPE (dimct),
 							 size_one_node)),
-			       build_binary_op (NE_EXPR, integer_type_node,
+			       build_binary_op (NE_EXPR, boolean_type_node,
 						build2 (BIT_AND_EXPR,
 							TREE_TYPE (aflags),
 							aflags, u),
@@ -3173,7 +3173,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	  /* Test that we really have a SB descriptor, like DEC Ada.  */
 	  t = build3 (COMPONENT_REF, TREE_TYPE (klass), desc, klass, NULL);
 	  u = convert (TREE_TYPE (klass), DECL_INITIAL (klass));
-	  u = build_binary_op (EQ_EXPR, integer_type_node, t, u);
+	  u = build_binary_op (EQ_EXPR, boolean_type_node, t, u);
 	  /* If so, there is already a template in the descriptor and
 	     it is located right after the POINTER field.  */
 	  t = TREE_CHAIN (pointer);
@@ -3196,12 +3196,12 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	  /* Raise CONSTRAINT_ERROR if either more than 1 dimension
 	     or FL_COEFF or FL_BOUNDS not set.  */
 	  u = build_int_cst (TREE_TYPE (aflags), 192);
-	  u = build_binary_op (TRUTH_OR_EXPR, integer_type_node,
-			       build_binary_op (NE_EXPR, integer_type_node,
+	  u = build_binary_op (TRUTH_OR_EXPR, boolean_type_node,
+			       build_binary_op (NE_EXPR, boolean_type_node,
 						dimct,
 						convert (TREE_TYPE (dimct),
 							 size_one_node)),
-			       build_binary_op (NE_EXPR, integer_type_node,
+			       build_binary_op (NE_EXPR, boolean_type_node,
 						build2 (BIT_AND_EXPR,
 							TREE_TYPE (aflags),
 							aflags, u),
@@ -3263,11 +3263,11 @@ convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
   mbo = build3 (COMPONENT_REF, TREE_TYPE (mbo), desc, mbo, NULL_TREE);
   mbmo = build3 (COMPONENT_REF, TREE_TYPE (mbmo), desc, mbmo, NULL_TREE);
   is64bit
-    = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-		       build_binary_op (EQ_EXPR, integer_type_node,
+    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+		       build_binary_op (EQ_EXPR, boolean_type_node,
 					convert (integer_type_node, mbo),
 					integer_one_node),
-		       build_binary_op (EQ_EXPR, integer_type_node,
+		       build_binary_op (EQ_EXPR, boolean_type_node,
 					convert (integer_type_node, mbmo),
 					integer_minus_one_node));
 

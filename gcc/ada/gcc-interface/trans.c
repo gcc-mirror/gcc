@@ -1212,7 +1212,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  gnu_expr = gnat_protect_expr (gnu_expr);
 	  gnu_expr
 	    = emit_check
-	      (build_binary_op (EQ_EXPR, integer_type_node,
+	      (build_binary_op (EQ_EXPR, boolean_type_node,
 				gnu_expr,
 				attribute == Attr_Pred
 				? TYPE_MIN_VALUE (gnu_result_type)
@@ -1677,7 +1677,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 		gnu_result
 		  = build_cond_expr (comp_type,
 				     build_binary_op (GE_EXPR,
-						      integer_type_node,
+						      boolean_type_node,
 						      hb, lb),
 				     gnu_result,
 				     convert (comp_type, integer_zero_node));
@@ -2259,7 +2259,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	  test_code = NE_EXPR;
 	  gnu_cond_expr
 	    = build3 (COND_EXPR, void_type_node,
-		      build_binary_op (LE_EXPR, integer_type_node,
+		      build_binary_op (LE_EXPR, boolean_type_node,
 				       gnu_low, gnu_high),
 		      NULL_TREE, alloc_stmt_list ());
 	  set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
@@ -2280,7 +2280,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
       /* Set either the top or bottom exit condition.  */
       LOOP_STMT_COND (gnu_loop_stmt)
-	= build_binary_op (test_code, integer_type_node, gnu_loop_var,
+	= build_binary_op (test_code, boolean_type_node, gnu_loop_var,
 			   gnu_last);
 
       /* Set either the top or bottom update statement and give it the source
@@ -2359,7 +2359,7 @@ establish_gnat_vms_condition_handler (void)
       gnat_vms_condition_handler_decl
 	= create_subprog_decl (get_identifier ("__gnat_handle_vms_condition"),
 			       NULL_TREE,
-			       build_function_type_list (integer_type_node,
+			       build_function_type_list (boolean_type_node,
 							 ptr_void_type_node,
 							 ptr_void_type_node,
 							 NULL_TREE),
@@ -3386,7 +3386,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 	  else
 	    this_choice
 	      = build_binary_op
-		(EQ_EXPR, integer_type_node,
+		(EQ_EXPR, boolean_type_node,
 		 convert
 		 (integer_type_node,
 		  build_component_ref
@@ -3413,7 +3413,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 
 	  this_choice
 	    = build_binary_op
-	      (EQ_EXPR, integer_type_node, TREE_VALUE (gnu_except_ptr_stack),
+	      (EQ_EXPR, boolean_type_node, TREE_VALUE (gnu_except_ptr_stack),
 	       convert (TREE_TYPE (TREE_VALUE (gnu_except_ptr_stack)),
 			build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
 
@@ -3430,8 +3430,8 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 
 	      this_choice
 		= build_binary_op
-		  (TRUTH_ORIF_EXPR, integer_type_node,
-		   build_binary_op (EQ_EXPR, integer_type_node, gnu_comp,
+		  (TRUTH_ORIF_EXPR, boolean_type_node,
+		   build_binary_op (EQ_EXPR, boolean_type_node, gnu_comp,
 				    build_int_cst (TREE_TYPE (gnu_comp), 'V')),
 		   this_choice);
 	    }
@@ -3439,7 +3439,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
       else
 	gcc_unreachable ();
 
-      gnu_choice = build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
+      gnu_choice = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
 				    gnu_choice, this_choice);
     }
 
@@ -4166,14 +4166,14 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_expr_type = get_base_type (gnu_index_type);
 
 	    /* Test whether the minimum slice value is too small.  */
-	    gnu_expr_l = build_binary_op (LT_EXPR, integer_type_node,
+	    gnu_expr_l = build_binary_op (LT_EXPR, boolean_type_node,
 					  convert (gnu_expr_type,
 						   gnu_min_expr),
 					  convert (gnu_expr_type,
 						   gnu_base_min_expr));
 
 	    /* Test whether the maximum slice value is too large.  */
-	    gnu_expr_h = build_binary_op (GT_EXPR, integer_type_node,
+	    gnu_expr_h = build_binary_op (GT_EXPR, boolean_type_node,
 					  convert (gnu_expr_type,
 						   gnu_max_expr),
 					  convert (gnu_expr_type,
@@ -4182,7 +4182,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    /* Build a slice index check that returns the low bound,
 	       assuming the slice is not empty.  */
 	    gnu_expr = emit_check
-	      (build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
+	      (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
 				gnu_expr_l, gnu_expr_h),
 	       gnu_min_expr, CE_Index_Check_Failed, gnat_node);
 
@@ -4621,7 +4621,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result
 	    = build_cond_expr
 	      (gnu_type,
-	       build_binary_op (GE_EXPR, integer_type_node,
+	       build_binary_op (GE_EXPR, boolean_type_node,
 				gnu_rhs,
 				convert (TREE_TYPE (gnu_rhs),
 					 TYPE_SIZE (gnu_type))),
@@ -6523,7 +6523,7 @@ build_unary_op_trapv (enum tree_code code, tree gnu_type, tree operand,
 
   operand = gnat_protect_expr (operand);
 
-  return emit_check (build_binary_op (EQ_EXPR, integer_type_node,
+  return emit_check (build_binary_op (EQ_EXPR, boolean_type_node,
 				      operand, TYPE_MIN_VALUE (gnu_type)),
 		     build_unary_op (code, gnu_type, operand),
 		     CE_Overflow_Check_Failed, gnat_node);
@@ -6567,8 +6567,8 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
     }
 
   rhs_lt_zero = tree_expr_nonnegative_p (rhs)
-		? integer_zero_node
-		: build_binary_op (LT_EXPR, integer_type_node, rhs, zero);
+		? boolean_false_node
+		: build_binary_op (LT_EXPR, boolean_type_node, rhs, zero);
 
   /* ??? Should use more efficient check for operand_equal_p (lhs, rhs, 0) */
 
@@ -6604,10 +6604,10 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 					      convert (wide_type, rhs));
 
 	  tree check = build_binary_op
-	    (TRUTH_ORIF_EXPR, integer_type_node,
-	     build_binary_op (LT_EXPR, integer_type_node, wide_result,
+	    (TRUTH_ORIF_EXPR, boolean_type_node,
+	     build_binary_op (LT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_min)),
-	     build_binary_op (GT_EXPR, integer_type_node, wide_result,
+	     build_binary_op (GT_EXPR, boolean_type_node, wide_result,
 			      convert (wide_type, type_max)));
 
 	  tree result = convert (gnu_type, wide_result);
@@ -6630,9 +6630,9 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
 	  /* Overflow when (rhs < 0) ^ (wrapped_expr < lhs)), for addition
 	     or when (rhs < 0) ^ (wrapped_expr > lhs) for subtraction.  */
 	  tree check = build_binary_op
-	    (TRUTH_XOR_EXPR, integer_type_node, rhs_lt_zero,
+	    (TRUTH_XOR_EXPR, boolean_type_node, rhs_lt_zero,
 	     build_binary_op (code == PLUS_EXPR ? LT_EXPR : GT_EXPR,
-			      integer_type_node, wrapped_expr, lhs));
+			      boolean_type_node, wrapped_expr, lhs));
 
 	  return
 	    emit_check (check, result, CE_Overflow_Check_Failed, gnat_node);
@@ -6643,24 +6643,24 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
     {
     case PLUS_EXPR:
       /* When rhs >= 0, overflow when lhs > type_max - rhs.  */
-      check_pos = build_binary_op (GT_EXPR, integer_type_node, lhs,
+      check_pos = build_binary_op (GT_EXPR, boolean_type_node, lhs,
 				   build_binary_op (MINUS_EXPR, gnu_type,
 						    type_max, rhs)),
 
       /* When rhs < 0, overflow when lhs < type_min - rhs.  */
-      check_neg = build_binary_op (LT_EXPR, integer_type_node, lhs,
+      check_neg = build_binary_op (LT_EXPR, boolean_type_node, lhs,
 				   build_binary_op (MINUS_EXPR, gnu_type,
 						    type_min, rhs));
       break;
 
     case MINUS_EXPR:
       /* When rhs >= 0, overflow when lhs < type_min + rhs.  */
-      check_pos = build_binary_op (LT_EXPR, integer_type_node, lhs,
+      check_pos = build_binary_op (LT_EXPR, boolean_type_node, lhs,
 				   build_binary_op (PLUS_EXPR, gnu_type,
 						    type_min, rhs)),
 
       /* When rhs < 0, overflow when lhs > type_max + rhs.  */
-      check_neg = build_binary_op (GT_EXPR, integer_type_node, lhs,
+      check_neg = build_binary_op (GT_EXPR, boolean_type_node, lhs,
 				   build_binary_op (PLUS_EXPR, gnu_type,
 						    type_max, rhs));
       break;
@@ -6678,19 +6678,31 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       tmp1 = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_max, rhs);
       tmp2 = build_binary_op (TRUNC_DIV_EXPR, gnu_type, type_min, rhs);
 
-      check_pos = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-		    build_binary_op (NE_EXPR, integer_type_node, zero, rhs),
-		    build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
-		      build_binary_op (GT_EXPR, integer_type_node, lhs, tmp1),
-		      build_binary_op (LT_EXPR, integer_type_node, lhs, tmp2)));
+      check_pos
+	= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+			   build_binary_op (NE_EXPR, boolean_type_node, zero,
+					    rhs),
+			   build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
+					    build_binary_op (GT_EXPR,
+							     boolean_type_node,
+							     lhs, tmp1),
+					    build_binary_op (LT_EXPR,
+							     boolean_type_node,
+							     lhs, tmp2)));
 
-      check_neg = fold_build3 (COND_EXPR, integer_type_node,
-		    build_binary_op (EQ_EXPR, integer_type_node, rhs,
-				     build_int_cst (gnu_type, -1)),
-		    build_binary_op (EQ_EXPR, integer_type_node, lhs, type_min),
-		    build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
-		      build_binary_op (GT_EXPR, integer_type_node, lhs, tmp2),
-		      build_binary_op (LT_EXPR, integer_type_node, lhs, tmp1)));
+      check_neg
+	= fold_build3 (COND_EXPR, boolean_type_node,
+		       build_binary_op (EQ_EXPR, boolean_type_node, rhs,
+					build_int_cst (gnu_type, -1)),
+		       build_binary_op (EQ_EXPR, boolean_type_node, lhs,
+					type_min),
+		       build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
+					build_binary_op (GT_EXPR,
+							 boolean_type_node,
+							 lhs, tmp2),
+					build_binary_op (LT_EXPR,
+							 boolean_type_node,
+							 lhs, tmp1)));
       break;
 
     default:
@@ -6704,8 +6716,8 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
   if (TREE_CONSTANT (gnu_expr))
     return gnu_expr;
 
-  check = fold_build3 (COND_EXPR, integer_type_node,
-		       rhs_lt_zero,  check_neg, check_pos);
+  check = fold_build3 (COND_EXPR, boolean_type_node, rhs_lt_zero, check_neg,
+		       check_pos);
 
   return emit_check (check, gnu_expr, CE_Overflow_Check_Failed, gnat_node);
 }
@@ -6739,19 +6751,18 @@ emit_range_check (tree gnu_expr, Entity_Id gnat_range_type, Node_Id gnat_node)
   /* Checked expressions must be evaluated only once.  */
   gnu_expr = gnat_protect_expr (gnu_expr);
 
-  /* There's no good type to use here, so we might as well use
-     integer_type_node. Note that the form of the check is
+  /* Note that the form of the check is
 	(not (expr >= lo)) or (not (expr <= hi))
      the reason for this slightly convoluted form is that NaNs
      are not considered to be in range in the float case.  */
   return emit_check
-    (build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
+    (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
 		      invert_truthvalue
-		      (build_binary_op (GE_EXPR, integer_type_node,
+		      (build_binary_op (GE_EXPR, boolean_type_node,
 				       convert (gnu_compare_type, gnu_expr),
 				       convert (gnu_compare_type, gnu_low))),
 		      invert_truthvalue
-		      (build_binary_op (LE_EXPR, integer_type_node,
+		      (build_binary_op (LE_EXPR, boolean_type_node,
 					convert (gnu_compare_type, gnu_expr),
 					convert (gnu_compare_type,
 						 gnu_high)))),
@@ -6788,15 +6799,13 @@ emit_index_check (tree gnu_array_object, tree gnu_expr, tree gnu_low,
   gnu_low = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_low, gnu_array_object);
   gnu_high = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_high, gnu_array_object);
 
-  /* There's no good type to use here, so we might as well use
-     integer_type_node.   */
   return emit_check
-    (build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
-		      build_binary_op (LT_EXPR, integer_type_node,
+    (build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node,
+		      build_binary_op (LT_EXPR, boolean_type_node,
 				       gnu_expr_check,
 				       convert (TREE_TYPE (gnu_expr_check),
 						gnu_low)),
-		      build_binary_op (GT_EXPR, integer_type_node,
+		      build_binary_op (GT_EXPR, boolean_type_node,
 				       gnu_expr_check,
 				       convert (TREE_TYPE (gnu_expr_check),
 						gnu_high))),
@@ -6909,7 +6918,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	     : 1))
 	gnu_cond
 	  = invert_truthvalue
-	    (build_binary_op (GE_EXPR, integer_type_node,
+	    (build_binary_op (GE_EXPR, boolean_type_node,
 			      gnu_input, convert (gnu_in_basetype,
 						  gnu_out_lb)));
 
@@ -6920,9 +6929,9 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 				 TREE_REAL_CST (gnu_in_lb))
 	     : 1))
 	gnu_cond
-	  = build_binary_op (TRUTH_ORIF_EXPR, integer_type_node, gnu_cond,
+	  = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, gnu_cond,
 			     invert_truthvalue
-			     (build_binary_op (LE_EXPR, integer_type_node,
+			     (build_binary_op (LE_EXPR, boolean_type_node,
 					       gnu_input,
 					       convert (gnu_in_basetype,
 							gnu_out_ub))));
@@ -6980,7 +6989,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
       gnu_result = gnat_protect_expr (gnu_result);
       gnu_conv = convert (calc_type, gnu_result);
       gnu_comp
-	= fold_build2 (GE_EXPR, integer_type_node, gnu_result, gnu_zero);
+	= fold_build2 (GE_EXPR, boolean_type_node, gnu_result, gnu_zero);
       gnu_add_pred_half
 	= fold_build2 (PLUS_EXPR, calc_type, gnu_conv, gnu_pred_half);
       gnu_subtract_pred_half

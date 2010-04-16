@@ -1916,7 +1916,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* Compute the size of this dimension.  */
 	    gnu_max
 	      = build3 (COND_EXPR, gnu_index_base_type,
-			build2 (GE_EXPR, integer_type_node, gnu_high, gnu_low),
+			build2 (GE_EXPR, boolean_type_node, gnu_high, gnu_low),
 			gnu_high,
 			build2 (MINUS_EXPR, gnu_index_base_type,
 				gnu_low, fold_convert (gnu_index_base_type,
@@ -2214,7 +2214,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_high
 		      = build_cond_expr (sizetype,
 					 build_binary_op (GE_EXPR,
-							  integer_type_node,
+							  boolean_type_node,
 							  gnu_orig_max,
 							  gnu_orig_min),
 					 gnu_max, gnu_high);
@@ -6335,13 +6335,11 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  low = gnat_to_gnu (Low_Bound (choice));
 	  high = gnat_to_gnu (High_Bound (choice));
 
-	  /* There's no good type to use here, so we might as well use
-	     integer_type_node.  */
 	  this_test
-	    = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-			       build_binary_op (GE_EXPR, integer_type_node,
+	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+			       build_binary_op (GE_EXPR, boolean_type_node,
 						operand, low),
-			       build_binary_op (LE_EXPR, integer_type_node,
+			       build_binary_op (LE_EXPR, boolean_type_node,
 						operand, high));
 
 	  break;
@@ -6352,10 +6350,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  high = gnat_to_gnu (High_Bound (gnat_temp));
 
 	  this_test
-	    = build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-			       build_binary_op (GE_EXPR, integer_type_node,
+	    = build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+			       build_binary_op (GE_EXPR, boolean_type_node,
 						operand, low),
-			       build_binary_op (LE_EXPR, integer_type_node,
+			       build_binary_op (LE_EXPR, boolean_type_node,
 						operand, high));
 	  break;
 
@@ -6373,10 +6371,10 @@ choices_to_gnu (tree operand, Node_Id choices)
 	      high = TYPE_MAX_VALUE (type);
 
 	      this_test
-		= build_binary_op (TRUTH_ANDIF_EXPR, integer_type_node,
-				   build_binary_op (GE_EXPR, integer_type_node,
+		= build_binary_op (TRUTH_ANDIF_EXPR, boolean_type_node,
+				   build_binary_op (GE_EXPR, boolean_type_node,
 						    operand, low),
-				   build_binary_op (LE_EXPR, integer_type_node,
+				   build_binary_op (LE_EXPR, boolean_type_node,
 						    operand, high));
 	      break;
 	    }
@@ -6386,7 +6384,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	case N_Character_Literal:
 	case N_Integer_Literal:
 	  single = gnat_to_gnu (choice);
-	  this_test = build_binary_op (EQ_EXPR, integer_type_node, operand,
+	  this_test = build_binary_op (EQ_EXPR, boolean_type_node, operand,
 				       single);
 	  break;
 
@@ -6398,8 +6396,8 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  gcc_unreachable ();
 	}
 
-      result = build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
-				result, this_test);
+      result = build_binary_op (TRUTH_ORIF_EXPR, boolean_type_node, result,
+				this_test);
     }
 
   return result;

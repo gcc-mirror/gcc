@@ -1,5 +1,36 @@
 2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use boolean_type_node in
+	lieu of integer_type_node for boolean operations.
+	(choices_to_gnu): Likewise.
+	* gcc-interface/trans.c (Attribute_to_gnu): Likewise.
+	(Loop_Statement_to_gnu): Likewise.
+	(establish_gnat_vms_condition_handler): Likewise.
+	(Exception_Handler_to_gnu_sjlj): Likewise.
+	(gnat_to_gnu): Likewise.
+	(build_unary_op_trapv): Likewise.
+	(build_binary_op_trapv): Likewise.
+	(emit_range_check): Likewise.
+	(emit_index_check): Likewise.
+	(convert_with_check): Likewise.
+	* gcc-interface/utils.c (convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+	(convert_vms_descriptor): Likewise.
+	* gcc-interface/utils2.c (nonbinary_modular_operation): Likewise.
+	(compare_arrays): Use boolean instead of integer constants.
+	(build_binary_op) <TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR, TRUTH_AND_EXPR,
+	TRUTH_OR_EXPR, TRUTH_XOR_EXPR>: New case.  Check that the result type
+	is a boolean type.
+	<GE_EXPR, LE_EXPR, GT_EXPR, LT_EXPR>: Remove obsolete assertion.
+	<EQ_EXPR, NE_EXPR>: Check that the result type is a boolean type.
+	<PREINC/PREDECREMENT_EXPR, POSTINC/POSTDECREMENT_EXPR>: Delete.
+	<TRUTH_NOT_EXPR>: Check that the result type is a boolean type.
+	(build_unary_op): Use boolean_type_node in lieu of integer_type_node
+	for boolean operations.
+	(fill_vms_descriptor): Likewise.  Fix formatting nits.
+
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.def (LOOP_STMT): Change to 4-operand nodes.
 	* gcc-interface/ada-tree.h (LOOP_STMT_TOP_COND, LOOP_STMT_BOT_COND):
 	Merge into...
