@@ -207,7 +207,7 @@ static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, bool, Node_Id);
-static bool smaller_packable_type_p (tree, tree);
+static bool smaller_form_type_p (tree, tree);
 static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree extract_values (tree, tree);
@@ -2639,17 +2639,21 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		      (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))
 	    gnu_orig = gnu_name = TREE_OPERAND (gnu_name, 0);
 
-	  /* Otherwise convert to the nominal type of the object if it's
-	     a record type.  There are several cases in which we need to
-	     make the temporary using this type instead of the actual type
-	     of the object if they are distinct, because the expectations
-	     of the callee would otherwise not be met:
+	  /* Otherwise convert to the nominal type of the object if needed.
+	     There are several cases in which we need to make the temporary
+	     using this type instead of the actual type of the object when
+	     they are distinct, because the expectations of the callee would
+	     otherwise not be met:
 	       - if it's a justified modular type,
-	       - if the actual type is a smaller packable version of it.  */
-	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
-		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
-		       || smaller_packable_type_p (TREE_TYPE (gnu_name),
-						   gnu_name_type)))
+	       - if the actual type is a smaller form of it,
+	       - if it's a smaller form of the actual type.  */
+	  else if ((TREE_CODE (gnu_name_type) == RECORD_TYPE
+		    && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
+		        || smaller_form_type_p (TREE_TYPE (gnu_name),
+					        gnu_name_type)))
+		   || (INTEGRAL_TYPE_P (gnu_name_type)
+		       && smaller_form_type_p (gnu_name_type,
+					       TREE_TYPE (gnu_name))))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
 	  /* Create an explicit temporary holding the copy.  This ensures that
@@ -6873,28 +6877,28 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   return convert (gnu_type, gnu_result);
 }
 
-/* Return true if TYPE is a smaller packable version of RECORD_TYPE.  */
+/* Return true if TYPE is a smaller form of ORIG_TYPE.  */
 
 static bool
-smaller_packable_type_p (tree type, tree record_type)
+smaller_form_type_p (tree type, tree orig_type)
 {
-  tree size, rsize;
+  tree size, osize;
 
   /* We're not interested in variants here.  */
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (record_type))
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig_type))
     return false;
 
   /* Like a variant, a packable version keeps the original TYPE_NAME.  */
-  if (TYPE_NAME (type) != TYPE_NAME (record_type))
+  if (TYPE_NAME (type) != TYPE_NAME (orig_type))
     return false;
 
   size = TYPE_SIZE (type);
-  rsize = TYPE_SIZE (record_type);
+  osize = TYPE_SIZE (orig_type);
 
-  if (!(TREE_CODE (size) == INTEGER_CST && TREE_CODE (rsize) == INTEGER_CST))
+  if (!(TREE_CODE (size) == INTEGER_CST && TREE_CODE (osize) == INTEGER_CST))
     return false;
 
-  return tree_int_cst_lt (size, rsize) != 0;
+  return tree_int_cst_lt (size, osize) != 0;
 }
 
 /* Return true if GNU_EXPR can be directly addressed.  This is the case
@@ -6959,13 +6963,21 @@ smaller_packable_type_p (tree type, tree record_type)
 static bool
 addressable_p (tree gnu_expr, tree gnu_type)
 {
-  /* The size of the real type of the object must not be smaller than
-     that of the expected type, otherwise an indirect access in the
-     latter type would be larger than the object.  Only records need
-     to be considered in practice.  */
+  /* For an integral type, the size of the actual type of the object may not
+     be greater than that of the expected type, otherwise an indirect access
+     in the latter type wouldn't correctly set all the bits of the object.  */
+  if (gnu_type
+      && INTEGRAL_TYPE_P (gnu_type)
+      && smaller_form_type_p (gnu_type, TREE_TYPE (gnu_expr)))
+    return false;
+
+  /* The size of the actual type of the object may not be smaller than that
+     of the expected type, otherwise an indirect access in the latter type
+     would be larger than the object.  But only record types need to be
+     considered in practice for this case.  */
   if (gnu_type
       && TREE_CODE (gnu_type) == RECORD_TYPE
-      && smaller_packable_type_p (TREE_TYPE (gnu_expr), gnu_type))
+      && smaller_form_type_p (TREE_TYPE (gnu_expr), gnu_type))
     return false;
 
   switch (TREE_CODE (gnu_expr))
