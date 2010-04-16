@@ -1,3 +1,11 @@
+2010-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*bt<mode>): Macroize insn from *btsi and
+	*btdi_rex64 using SWI48 mode iterator.
+	(*jcc_bt<mode>): Ditto from *jcc_btsi and *jcc_btdi_rex64.
+	(*jcc_bt<mode>_mask): Ditto from *jcc_btsi_mask and
+	*jcc_btdi_mask_rex64.
+
 2010-04-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (tree_to_double_int): Convert to macro.
@@ -303,7 +311,7 @@
 	(logic): Ditto from logicprefix.
 	(absneg_mnemonic): Ditto from absnegprefix.
 	* config/i386/mmx.md: Update all users of maxminiprefix,
-	maxminfprefix and loficprefix for rename.
+	maxminfprefix and logicprefix for rename.
 	* config/i386/sse.md: Ditto.
 	* config/i386/sync.md (sync_<code><mode>): Update for
 	logicprefix rename.
