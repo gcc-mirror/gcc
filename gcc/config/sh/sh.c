@@ -189,6 +189,7 @@ static void pop (int);
 static void push_regs (HARD_REG_SET *, int);
 static int calc_live_regs (HARD_REG_SET *);
 static HOST_WIDE_INT rounded_frame_size (int);
+static bool sh_frame_pointer_required (void);
 static rtx mark_constant_pool_use (rtx);
 static tree sh_handle_interrupt_handler_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_resbank_handler_attribute (tree *, tree,
@@ -503,6 +504,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_DWARF_CALLING_CONVENTION
 #define TARGET_DWARF_CALLING_CONVENTION sh_dwarf_calling_convention
 
+#undef TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED sh_frame_pointer_required
+
 /* Return regmode weight for insn.  */
 #define INSN_REGMODE_WEIGHT(INSN, MODE)  regmode_weight[((MODE) == SImode) ? 0 : 1][INSN_UID (INSN)]
 
@@ -666,7 +670,6 @@ sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
   if (level)
     {
-      flag_omit_frame_pointer = 2;
       if (!size)
 	sh_div_str = "inv:minlat";
     }
@@ -856,16 +859,7 @@ sh_override_options (void)
     if (! VALID_REGISTER_P (ADDREGNAMES_REGNO (regno)))
       sh_additional_register_names[regno][0] = '\0';
 
-  if (flag_omit_frame_pointer == 2)
-   {
-     /* The debugging information is sufficient,
-        but gdb doesn't implement this yet */
-     if (0)
-      flag_omit_frame_pointer
-        = (PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);
-     else
-      flag_omit_frame_pointer = 0;
-   }
+  flag_omit_frame_pointer = (PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);
 
   if ((flag_pic && ! TARGET_PREFERGOT)
       || (TARGET_SHMEDIA && !TARGET_PT_FIXED))
@@ -895,6 +889,24 @@ sh_override_options (void)
 	}
       else if (flag_schedule_insns == 2)
 	flag_schedule_insns = 0;
+    }
+
+    if ((target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS) == 0)
+       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
+
+  /* Unwind info is not correct around the CFG unless either a frame 
+     pointer is present or M_A_O_A is set.  Fixing this requires rewriting 
+     unwind info generation to be aware of the CFG and propagating states 
+     around edges.  */
+  if ((flag_unwind_tables || flag_asynchronous_unwind_tables
+       || flag_exceptions || flag_non_call_exceptions)   
+      && flag_omit_frame_pointer
+      && !(target_flags & MASK_ACCUMULATE_OUTGOING_ARGS))
+    {
+      if (target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
+	warning (0, "unwind tables currently require either a frame pointer "
+		 "or -maccumulate-outgoing-args for correctness");
+      target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
   /* Unwinding with -freorder-blocks-and-partition does not work on this
@@ -6583,6 +6595,9 @@ rounded_frame_size (int pushed)
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
 
+  if (ACCUMULATE_OUTGOING_ARGS)
+    size += crtl->outgoing_args_size;
+
   return ((size + pushed + align - 1) & -align) - pushed;
 }
 
@@ -7431,7 +7446,11 @@ sh_set_return_address (rtx ra, rtx tmp)
     pr_offset = rounded_frame_size (d);
 
   emit_insn (GEN_MOV (tmp, GEN_INT (pr_offset)));
-  emit_insn (GEN_ADD3 (tmp, tmp, hard_frame_pointer_rtx));
+
+  if (frame_pointer_needed)
+    emit_insn (GEN_ADD3 (tmp, tmp, hard_frame_pointer_rtx));
+  else
+    emit_insn (GEN_ADD3 (tmp, tmp, stack_pointer_rtx));
 
   tmp = gen_frame_mem (Pmode, tmp);
   emit_insn (GEN_MOV (tmp, ra));
@@ -10931,6 +10950,20 @@ sh_vector_mode_supported_p (enum machine_mode mode)
 	       || (mode == V2HImode)
 	       || (mode == V4HImode)
 	       || (mode == V2SImode)))
+    return true;
+
+  return false;
+}
+
+bool
+sh_frame_pointer_required (void)
+{
+/* If needed override this in other tm.h files to cope with various OS 
+   lossage requiring a frame pointer.  */
+  if (SUBTARGET_FRAME_POINTER_REQUIRED)
+    return true;
+
+  if (crtl->profile)
     return true;
 
   return false;
