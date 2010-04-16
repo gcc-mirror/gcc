@@ -1,5 +1,25 @@
 2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (gnat_init_decl_processing): Delete.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Constify a few variables.
+	<object>: Do not create the fake PARM_DECL if no debug info is needed.
+	Do not create the corresponding VAR_DECL of a CONST_DECL for debugging
+	purposes if no debug info is needed.
+	Fix formatting.  Reorder and add comments.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Attribute_Reference>: Constify
+	variable and remove obsolete comment.
+	* gcc-interface/utils.c (convert_vms_descriptor64): Tweak comment.
+	(convert_vms_descriptor32): Likewise.
+	(convert): Remove dead code.
+	<UNCONSTRAINED_ARRAY_REF>: Pass the field instead of its name to build
+	the reference to the P_ARRAY pointer.
+	<POINTER_TYPE>: Likewise.
+	(maybe_unconstrained_array) <UNCONSTRAINED_ARRAY_TYPE>: Likewise.
+	(gnat_init_decl_processing): Delete, move contents to...
+	* gcc-interface/misc.c (gnat_init): ...here.
+
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (unchecked_conversion_nop): Handle function
 	calls.  Return true for conversion from a record subtype to its type.
 

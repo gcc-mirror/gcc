@@ -4285,21 +4285,20 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Attribute_Reference:
       {
-	/* The attribute designator (like an enumeration value).  */
-	int attribute = Get_Attribute_Id (Attribute_Name (gnat_node));
+	/* The attribute designator.  */
+	const int attr = Get_Attribute_Id (Attribute_Name (gnat_node));
 
-	/* The Elab_Spec and Elab_Body attributes are special in that
-	   Prefix is a unit, not an object with a GCC equivalent.  Similarly
-	   for Elaborated, since that variable isn't otherwise known.  */
-	if (attribute == Attr_Elab_Body || attribute == Attr_Elab_Spec)
-	  return (create_subprog_decl
-		  (create_concat_name (Entity (Prefix (gnat_node)),
-				       attribute == Attr_Elab_Body
-				       ? "elabb" : "elabs"),
-		   NULL_TREE, void_ftype, NULL_TREE, false, true, true, NULL,
-		   gnat_node));
+	/* The Elab_Spec and Elab_Body attributes are special in that Prefix
+	   is a unit, not an object with a GCC equivalent.  */
+	if (attr == Attr_Elab_Spec || attr == Attr_Elab_Body)
+	  return
+	    create_subprog_decl (create_concat_name
+				 (Entity (Prefix (gnat_node)),
+				  attr == Attr_Elab_Body ? "elabb" : "elabs"),
+				 NULL_TREE, void_ftype, NULL_TREE, false,
+				 true, true, NULL, gnat_node);
 
-	gnu_result = Attribute_to_gnu (gnat_node, &gnu_result_type, attribute);
+	gnu_result = Attribute_to_gnu (gnat_node, &gnu_result_type, attr);
       }
       break;
 
