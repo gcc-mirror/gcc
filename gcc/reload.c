@@ -3631,7 +3631,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		   || modified[j] != RELOAD_WRITE)
 		  && j != i
 		  /* Ignore things like match_operator operands.  */
-		  && *recog_data.constraints[j] != 0
+		  && !recog_data.is_operator[j]
 		  /* Don't count an input operand that is constrained to match
 		     the early clobber operand.  */
 		  && ! (this_alternative_matches[j] == i
