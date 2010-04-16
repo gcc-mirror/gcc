@@ -356,6 +356,17 @@
 	  && OK_FOR_U (op));
 })
 
+;; Return nonzero if OP is indirect register or constant memory
+;; suitable for bit manipulation insns.
+
+(define_predicate "bit_register_indirect_operand"
+  (match_code "mem")
+{
+  return (GET_CODE (op) == MEM
+          && (GET_CODE (XEXP (op, 0)) == REG
+              || GET_CODE (XEXP (op, 0)) == CONST_INT));
+})
+
 ;; Return nonzero if X is a stack pointer.
 
 (define_predicate "stack_pointer_operand"

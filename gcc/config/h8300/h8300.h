@@ -819,15 +819,25 @@ struct cum_arg
   ((STR)[1] == 'U' ? 2					\
    : 0)
 
-/* We don't have any constraint starting with Y yet, but before
-   someone uses it for a one-letter constraint and we're left without
-   any upper-case constraints left, we reserve it for extensions
-   here.  */
-#define OK_FOR_Y(OP, STR)				\
-  (0)
+/* Multi-letter constraints starting with Y are to be used for operands
+   that are constant immediates and have single 1 or 0 in their binary
+   representation.  */
+
+#define OK_FOR_Y2(OP)                                   \
+  ((GET_CODE (OP) == CONST_INT) && (exact_log2 (INTVAL (OP) & 0xff) != -1))
+
+#define OK_FOR_Y0(OP)                                   \
+  ((GET_CODE (OP) == CONST_INT) && (exact_log2 (~INTVAL (OP) & 0xff) != -1))
+
+#define OK_FOR_Y(OP, STR)                               \
+  ((STR)[1] == '2' ? OK_FOR_Y2 (OP)                     \
+   : (STR)[1] == '0' ? OK_FOR_Y0 (OP)	\
+   : 0)
 
 #define CONSTRAINT_LEN_FOR_Y(STR)			\
-  (0)
+  ((STR)[1] == '2' ? 2                                  \
+   : (STR)[1] == '0' ? 2		\
+   : 0)
 
 #define OK_FOR_Z(OP)					\
   (TARGET_H8300SX					\

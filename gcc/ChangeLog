@@ -41,6 +41,13 @@
 
 2010-04-12  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
+	* config/h8300/h8300.c (print_operand) : Modify case 'V' and
+	case 'W' print operands for HI mode.
+	* config/h8300/h8300.h (Y0, Y2) : New constraints.
+	* config/h8300/h8300.md (bclrqi_msx, bclrhi_msx): New patterns
+	(bsetqi_msx, bsethi_msx, bnotqi_msx, bnothi_msx): Likewise.
+	* config/h8300/predicate.md (bit_register_indirect_operand): New.
+
 	* config/h8300/h8300.h (OK_FOR_U): Support 'U' constraint for H8300SX.
 
 	* config/h8300/h8300.md (movqi_h8sx, movhi_h8sx, movsi_h8sx, 
