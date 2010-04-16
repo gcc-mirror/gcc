@@ -1,4 +1,4 @@
-/* Definitions of target machine for GCC, for SPARC running Solaris 2
+/* Definitions of target machine for GCC, for any machine running Solaris 2
    using the GNU linker.
 
    Copyright (C) 2002, 2010 Free Software Foundation, Inc.
