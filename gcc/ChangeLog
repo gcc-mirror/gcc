@@ -1,3 +1,8 @@
+2010-04-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_gimple_phi): Dump alias info.
+	(dump_gimple_stmt): Likewise.
+
 2010-04-16  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
 
 	* recog.h (struct recog_data): New field is_operator.
