@@ -1,5 +1,26 @@
 2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* uintp.adb (UI_From_Dint): Remove useless code.
+	(UI_From_Int): Likewise.
+	* uintp.h: Reorder declarations.
+	(UI_From_gnu): Declare.
+	(UI_Base): Likewise.
+	(Vector_Template): Likewise.
+	(Vector_To_Uint): Likewise.
+	(Uint_0): Remove.
+	(Uint_1): Likewise.
+	* gcc-interface/gigi.h: Tweak comments.
+	* gcc-interface/cuintp.c (UI_From_gnu): New global function.
+	* gcc-interface/decl.c (maybe_pad_type): Do not warn if either size
+	overflows.
+	(annotate_value) <INTEGER_CST>: Call UI_From_gnu.
+	* gcc-interface/trans.c (post_error_ne_num): Call post_error_ne.
+	(post_error_ne_tree): Call UI_From_gnu and post_error_ne.
+	* gcc-interface/utils.c (max_size) <tcc_binary>: Do not special-case
+	TYPE_MAX_VALUE.
+
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (make_type_from_size) <INTEGER_TYPE>: Just copy
 	TYPE_NAME.
 	* gcc-interface/trans.c (smaller_packable_type_p): Rename into...

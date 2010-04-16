@@ -6281,7 +6281,9 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       && !operand_equal_p (size, orig_size, 0)
       && !(TREE_CODE (size) == INTEGER_CST
 	   && TREE_CODE (orig_size) == INTEGER_CST
-	   && tree_int_cst_lt (size, orig_size)))
+	   && (TREE_OVERFLOW (size)
+	       || TREE_OVERFLOW (orig_size)
+	       || tree_int_cst_lt (size, orig_size))))
     {
       Node_Id gnat_error_node = Empty;
 
@@ -7087,7 +7089,7 @@ annotate_value (tree gnu_size)
   TCode tcode;
   Node_Ref_Or_Val ops[3], ret;
   struct tree_int_map **h = NULL;
-  int size, i;
+  int i;
 
   /* See if we've already saved the value for this node.  */
   if (EXPR_P (gnu_size))
@@ -7143,17 +7145,7 @@ annotate_value (tree gnu_size)
 	  return annotate_value (temp);
 	}
 
-      if (!host_integerp (gnu_size, 1))
-	return No_Uint;
-
-      size = tree_low_cst (gnu_size, 1);
-
-      /* This peculiar test is to make sure that the size fits in an int
-	 on machines where HOST_WIDE_INT is not "int".  */
-      if (tree_low_cst (gnu_size, 1) == size)
-	return UI_From_Int (size);
-      else
-	return No_Uint;
+      return UI_From_gnu (gnu_size);
 
     case COMPONENT_REF:
       /* The only case we handle here is a simple discriminant reference.  */

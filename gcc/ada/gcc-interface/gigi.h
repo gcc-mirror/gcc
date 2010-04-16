@@ -232,28 +232,25 @@ extern bool Sloc_to_locus (Source_Ptr Sloc, location_t *locus);
 
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
-   "&" substitution.  */
+   '&' substitution.  */
 extern void post_error (const char *msg, Node_Id node);
 
-/* Similar, but NODE is the node at which to post the error and ENT
-   is the node to use for the "&" substitution.  */
+/* Similar to post_error, but NODE is the node at which to post the error and
+   ENT is the node to use for the '&' substitution.  */
 extern void post_error_ne (const char *msg, Node_Id node, Entity_Id ent);
 
-/* Similar, but NODE is the node at which to post the error, ENT is the node
-   to use for the "&" substitution, and NUM is the number to use for ^.  */
+/* Similar to post_error_ne, but NUM is the number to use for the '^'.  */
 extern void post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent,
                                int num);
 
-/* Similar to post_error_ne_num, but T is a GCC tree representing the number
-   to write.  If the tree represents a constant that fits within a
-   host integer, the text inside curly brackets in MSG will be output
-   (presumably including a '^').  Otherwise that text will not be output
-   and the text inside square brackets will be output instead.  */
+/* Similar to post_error_ne, but T is a GCC tree representing the number to
+   write.  If T represents a constant, the text inside curly brackets in
+   MSG will be output (presumably including a '^').  Otherwise it will not
+   be output and the text inside square brackets will be output instead.  */
 extern void post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent,
                                 tree t);
 
-/* Similar to post_error_ne_tree, except that NUM is a second integer to write
-   in the message.  */
+/* Similar to post_error_ne_tree, but NUM is a second integer to write.  */
 extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
                                   tree t, int num);
 

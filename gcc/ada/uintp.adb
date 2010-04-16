@@ -1703,15 +1703,9 @@ package body Uintp is
 
             V : UI_Vector (1 .. Max_For_Dint);
 
-            Temp_Integer : Dint;
+            Temp_Integer : Dint := Input;
 
          begin
-            for J in V'Range loop
-               V (J) := 0;
-            end loop;
-
-            Temp_Integer := Input;
-
             for J in reverse V'Range loop
                V (J) := Int (abs (Temp_Integer rem Dint (Base)));
                Temp_Integer := Temp_Integer / Dint (Base);
@@ -1752,15 +1746,9 @@ package body Uintp is
 
          V : UI_Vector (1 .. Max_For_Int);
 
-         Temp_Integer : Int;
+         Temp_Integer : Int := Input;
 
       begin
-         for J in V'Range loop
-            V (J) := 0;
-         end loop;
-
-         Temp_Integer := Input;
-
          for J in reverse V'Range loop
             V (J) := abs (Temp_Integer rem Base);
             Temp_Integer := Temp_Integer / Base;

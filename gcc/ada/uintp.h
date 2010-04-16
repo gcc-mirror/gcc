@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 1992-2007, Free Software Foundation, Inc.       *
+ *            Copyright (C) 1992-2010, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,27 +38,42 @@ struct Uint_Entry
 #define UI_Is_In_Int_Range  uintp__ui_is_in_int_range
 extern Boolean UI_Is_In_Int_Range	(Uint);
 
-/* Obtain Char_Code value from Uint input. Value must be in range.  */
+/* Obtain Char_Code value from Uint input.  Value must be in range.  */
 #define UI_To_CC uintp__ui_to_cc
-extern Char_Code UI_To_CC               (Uint);
+extern Char_Code UI_To_CC		(Uint);
 
-/* Obtain Int value from Uint input. This will abort if the result is
-   out of range.  */
+/* Convert a Char_Code into a Uint.  */
+#define UI_From_CC uintp__ui_from_cc
+extern Uint UI_From_CC			(Char_Code);
+
+/* Obtain Int value from Uint input.  Abort if the result is out of range.  */
 #define UI_To_Int uintp__ui_to_int
 extern Int UI_To_Int			(Uint);
+
+/* Similarly, but return a GCC INTEGER_CST.  */
+extern tree UI_To_gnu			(Uint, tree);
 
 /* Convert an Int into a Uint.  */
 #define UI_From_Int uintp__ui_from_int
 extern Uint UI_From_Int			(int);
 
-/* Convert a Char_Code into a Uint.  */
-#define UI_From_CC uintp__ui_from_cc
-extern Uint UI_From_CC                  (Char_Code);
+/* Similarly, but take a GCC INTEGER_CST.  */
+extern Uint UI_From_gnu			(tree);
 
-/* Similarly, but return a GCC INTEGER_CST.  Overflow is tested by the
-   constant-folding used to build the node.  TYPE is the GCC type of the
-   resulting node.  */
-extern tree UI_To_gnu			(Uint, tree);
+/* Uint values are represented as multiple precision integers stored in a
+   multi-digit format using UI_Base as the base.  This value is chosen so
+   that the product UI_Base*UI_Base is within the range of Int values.  */
+#define UI_Base uintp__base
+extern const int UI_Base;
+
+/* Types for the fat pointer of Int vectors and the template it points to.  */
+typedef struct {int Low_Bound, High_Bound; } Vector_Template;
+typedef struct {const int *Array; Vector_Template *Bounds; }
+	__attribute ((aligned (sizeof (char *) * 2))) Int_Vector;
+
+/* Create and return the Uint value from the Int vector.  */
+#define Vector_To_Uint uintp__vector_to_uint
+extern Uint Vector_To_Uint		(Int_Vector, Boolean);
 
 /* Universal integers are represented by the Uint type which is an index into
    the Uints_Ptr table containing Uint_Entry values.  A Uint_Entry contains an
@@ -75,6 +90,3 @@ extern struct Uint_Entry *uintp__uints__table;
 
 #define Udigits_Ptr uintp__udigits__table
 extern int *uintp__udigits__table;
-
-#define Uint_0 (Uint_Direct_Bias + 0)
-#define Uint_1 (Uint_Direct_Bias + 1)
