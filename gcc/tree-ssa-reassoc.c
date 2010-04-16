@@ -172,11 +172,15 @@ static struct
 typedef struct operand_entry
 {
   unsigned int rank;
+  int id;
   tree op;
 } *operand_entry_t;
 
 static alloc_pool operand_entry_pool;
 
+/* This is used to assign a unique ID to each struct operand_entry
+   so that qsort results are identical on different hosts.  */
+static int next_operand_entry_id;
 
 /* Starting rank number for a given basic block, so that we can rank
    operations using unmovable instructions in that BB based on the bb
@@ -328,16 +332,31 @@ sort_by_operand_rank (const void *pa, const void *pb)
      to fold when added/multiplied//whatever are put next to each
      other.  Since all constants have rank 0, order them by type.  */
   if (oeb->rank == 0 &&  oea->rank == 0)
-    return constant_type (oeb->op) - constant_type (oea->op);
+    {
+      if (constant_type (oeb->op) != constant_type (oea->op))
+	return constant_type (oeb->op) - constant_type (oea->op);
+      else
+	/* To make sorting result stable, we use unique IDs to determine
+	   order.  */
+        return oeb->id - oea->id;
+    }
 
   /* Lastly, make sure the versions that are the same go next to each
      other.  We use SSA_NAME_VERSION because it's stable.  */
   if ((oeb->rank - oea->rank == 0)
       && TREE_CODE (oea->op) == SSA_NAME
       && TREE_CODE (oeb->op) == SSA_NAME)
-    return SSA_NAME_VERSION (oeb->op) - SSA_NAME_VERSION (oea->op);
+    {
+      if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
+	return SSA_NAME_VERSION (oeb->op) - SSA_NAME_VERSION (oea->op);
+      else
+	return oeb->id - oea->id;
+    }
 
-  return oeb->rank - oea->rank;
+  if (oeb->rank != oea->rank)
+    return oeb->rank - oea->rank;
+  else
+    return oeb->id - oea->id;
 }
 
 /* Add an operand entry to *OPS for the tree operand OP.  */
@@ -349,6 +368,7 @@ add_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op)
 
   oe->op = op;
   oe->rank = get_rank (op);
+  oe->id = next_operand_entry_id++;
   VEC_safe_push (operand_entry_t, heap, *ops, oe);
 }
 
@@ -740,6 +760,7 @@ static void linearize_expr_tree (VEC(operand_entry_t, heap) **, gimple,
 /* Structure for tracking and counting operands.  */
 typedef struct oecount_s {
   int cnt;
+  int id;
   enum tree_code oecode;
   tree op;
 } oecount;
@@ -777,7 +798,11 @@ oecount_cmp (const void *p1, const void *p2)
 {
   const oecount *c1 = (const oecount *)p1;
   const oecount *c2 = (const oecount *)p2;
-  return c1->cnt - c2->cnt;
+  if (c1->cnt != c2->cnt)
+    return c1->cnt - c2->cnt;
+  else
+    /* If counts are identical, use unique IDs to stabilize qsort.  */
+    return c1->id - c2->id;
 }
 
 /* Walks the linear chain with result *DEF searching for an operation
@@ -959,6 +984,7 @@ undistribute_ops_list (enum tree_code opcode,
   VEC (operand_entry_t, heap) **subops;
   htab_t ctable;
   bool changed = false;
+  int next_oecount_id = 0;
 
   if (length <= 1
       || opcode != PLUS_EXPR)
@@ -1026,6 +1052,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  size_t idx;
 	  c.oecode = oecode;
 	  c.cnt = 1;
+	  c.id = next_oecount_id++;
 	  c.op = oe1->op;
 	  VEC_safe_push (oecount, heap, cvec, &c);
 	  idx = VEC_length (oecount, cvec) + 41;
@@ -2020,6 +2047,7 @@ init_reassoc (void)
 
   operand_entry_pool = create_alloc_pool ("operand entry pool",
 					  sizeof (struct operand_entry), 30);
+  next_operand_entry_id = 0;
 
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
