@@ -4,10 +4,10 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20100204\n"
+"Project-Id-Version: cpplib 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2010-02-09 20:07+0930\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
+"PO-Revision-Date: 2010-04-16 21:28+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,7 @@ msgstr "chưa thi hành iconv nên không thể chuyển đổi từ %s sang %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "ký tự 0x%lx không phải nằm trong bộ ký tự nguồn cơ bản\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "đang chuyển đổi sang bộ ký tự thi hành"
 
@@ -72,7 +72,7 @@ msgstr "tên ký tự chung %.*s chưa hoàn thành"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s không phải là ký tự chung hợp lệ"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "gặp « $ » trong bộ nhận hiện hay con số"
 
@@ -86,7 +86,7 @@ msgstr "ký tự chung %.*s không phải là hợp lệ trong bộ nhận diệ
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "ký tự chung %.*s không phải hợp lệ tại đầu của bộ nhận diện"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "đang chuyển đổi UCN sang bộ ký tự nguồn"
 
@@ -133,19 +133,19 @@ msgstr "không biết dãy thoát « \\%s »"
 msgid "converting escape sequence to execution character set"
 msgstr "đang chuyển đổi dãy thoát sang bộ ký tự thi hành"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "hằng ký tự quá dài cho kiểu nó"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "hằng ký tự đa ký tự"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "hằng ký tự trống"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "lỗi chuyển đổi %s sang %s"
@@ -397,7 +397,7 @@ msgstr "« %s » được khẳng định lại"
 msgid "unterminated #%s"
 msgstr "#%s chưa chấm dứt"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "gặp chú thích chưa được chấm dứt"
 
@@ -703,78 +703,78 @@ msgstr "chữ ba « ??%c » đã được chuyển đổi thành « %c »"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "chữ ba « ??%c » bị bỏ qua nên hãy sư dụng tùy chon « -trigraphs » (chữ ba) để hiệu lực nó"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "gặp « /* » nằm trong chú thích"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "gặp %s nằm trong chỉ thị tiền xử lý"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "(mọi) ký tự rỗng bị bỏ qua"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "« %.*s »  không phải nằm trong NFKC"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "« %.*s » không phải nằm trong NFC"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "đã cố gắng dùng « %s » bị vô hiệu hóa"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "« __VA_ARGS__ » chỉ có thể xuất hiện trong sự mở rộng của vĩ lệnh biến thiên C99"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "dấu nhận diện « %s » là một tên toán tử đặc biệt trong C++"
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr "gặp dấu giới hạn chuỗi thô dài hơn 16 ký tự"
 
-#: lex.c:742
+#: lex.c:774
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "gặp ký tự sai « %c » trong dấu giới hạn chuỗi thô"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 msgid "unterminated raw string"
 msgstr "chuỗi thô chưa chấm dứt"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "(các) ký tự rỗng được giữ lại trong điều nghĩa chữ"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "thiếu ký tự « %c » chấm dứt"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "không cho phép chú thích kiểu C++ nằm trong ISO C90"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(điều này sẽ được thông báo chỉ một lần cho mỗi tập tin nhập)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "gặp chú thích đa dòng"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "gặp hiệu bài không thể chính tả %s"
