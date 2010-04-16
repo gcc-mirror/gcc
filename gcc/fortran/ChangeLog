@@ -1,3 +1,9 @@
+2010-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_build_qualified_array): Ensure
+	ubound.N and lbound.N artificial variable names don't appear
+	in debug info.
+
 2010-04-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30073
