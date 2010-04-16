@@ -1330,13 +1330,24 @@ static void
 dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
 {
   size_t i;
+  tree lhs = gimple_phi_result (phi);
+
+  if (flags & TDF_ALIAS
+      && POINTER_TYPE_P (TREE_TYPE (lhs))
+      && SSA_NAME_PTR_INFO (lhs))
+    {
+      pp_string (buffer, "PT = ");
+      pp_points_to_solution (buffer, &SSA_NAME_PTR_INFO (lhs)->pt);
+      newline_and_indent (buffer, spc);
+      pp_string (buffer, "# ");
+    }
 
   if (flags & TDF_RAW)
       dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
                        gimple_phi_result (phi));
   else
     {
-      dump_generic_node (buffer, gimple_phi_result (phi), spc, flags, false);
+      dump_generic_node (buffer, lhs, spc, flags, false);
       pp_string (buffer, " = PHI <");
     }
   for (i = 0; i < gimple_phi_num_args (phi); i++)
@@ -1603,6 +1614,20 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
   if ((flags & (TDF_VOPS|TDF_MEMSYMS))
       && gimple_has_mem_ops (gs))
     dump_gimple_mem_ops (buffer, gs, spc, flags);
+
+  if ((flags & TDF_ALIAS)
+      && gimple_has_lhs (gs))
+    {
+      tree lhs = gimple_get_lhs (gs);
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && POINTER_TYPE_P (TREE_TYPE (lhs))
+	  && SSA_NAME_PTR_INFO (lhs))
+	{
+	  pp_string (buffer, "# PT = ");
+	  pp_points_to_solution (buffer, &SSA_NAME_PTR_INFO (lhs)->pt);
+	  newline_and_indent (buffer, spc);
+	}
+    }
 
   switch (gimple_code (gs))
     {
