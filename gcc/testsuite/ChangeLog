@@ -1,3 +1,7 @@
+2010-04-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/specs/discr_private.ads: New test.
+
 2010-04-16  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/41514

@@ -3670,7 +3670,8 @@ unchecked_conversion_nop (Node_Id gnat_node)
      could de facto ensure type consistency and this should be preserved.  */
   if (!(Nkind (Parent (gnat_node)) == N_Assignment_Statement
 	&& Name (Parent (gnat_node)) == gnat_node)
-      && !(Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
+      && !((Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
+	    || Nkind (Parent (gnat_node)) == N_Function_Call)
 	   && Name (Parent (gnat_node)) != gnat_node))
     return false;
 
@@ -3688,9 +3689,14 @@ unchecked_conversion_nop (Node_Id gnat_node)
   if (to_type == from_type)
     return true;
 
-  /* For an array type, the conversion to the PAT is a no-op.  */
+  /* For an array subtype, the conversion to the PAT is a no-op.  */
   if (Ekind (from_type) == E_Array_Subtype
       && to_type == Packed_Array_Type (from_type))
+    return true;
+
+  /* For a record subtype, the conversion to the type is a no-op.  */
+  if (Ekind (from_type) == E_Record_Subtype
+      && to_type == Etype (from_type))
     return true;
 
   return false;
