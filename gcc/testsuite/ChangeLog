@@ -1,5 +1,8 @@
 2010-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43641
+	* g++.dg/cpp0x/lambda/lambda-conv4.C: New.
+
 	PR c++/43621
 	* g++.dg/template/error-recovery2.C: New.
 

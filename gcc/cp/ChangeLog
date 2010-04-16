@@ -1,5 +1,9 @@
 2010-04-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43641
+	* semantics.c (maybe_add_lambda_conv_op): Use build_call_a and tweak
+	return value directly.
+
 	PR c++/43621
 	* pt.c (maybe_update_decl_type): Check the return value from
 	push_scope.
