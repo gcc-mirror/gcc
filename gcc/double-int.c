@@ -842,18 +842,6 @@ double_int_sext (double_int cst, unsigned prec)
   return r;
 }
 
-/* Constructs long integer from tree CST.  The extra bits over the precision of
-   the number are filled with sign bit if CST is signed, and with zeros if it
-   is unsigned.  */
-
-double_int
-tree_to_double_int (const_tree cst)
-{
-  /* We do not need to call double_int_restrict here to ensure the semantics as
-     described, as this is the default one for trees.  */
-  return TREE_INT_CST (cst);
-}
-
 /* Returns true if CST fits in unsigned HOST_WIDE_INT.  */
 
 bool
