@@ -20,6 +20,10 @@
 
 2010-04-12  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
+	* config/h8300/h8300.md (movqi_h8sx, movhi_h8sx, movsi_h8sx, 
+	cmphi_h8300hs_znvc, cmpsi, addhi3_h8sx) : Emit instructions in
+	#xx:3 and #xx:4 mode.
+
 	* config/h8300/h8300.md (inverted load with HImode dest): Add
 	support for H8300SX.
 
