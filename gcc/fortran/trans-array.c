@@ -2316,10 +2316,6 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
       && se->loop->ss->loop_chain->expr->symtree)
     name = se->loop->ss->loop_chain->expr->symtree->name;
 
-  if (!name && se->loop && se->loop->ss && se->loop->ss->loop_chain
-      && se->loop->ss->loop_chain->expr->symtree)
-    name = se->loop->ss->loop_chain->expr->symtree->name;
-
   if (!name && se->loop && se->loop->ss && se->loop->ss->expr)
     {
       if (se->loop->ss->expr->expr_type == EXPR_FUNCTION
@@ -2330,6 +2326,9 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
 	    || se->loop->ss->type == GFC_SS_SCALAR)
 	  name = "unnamed constant";
     }
+
+  if (descriptor->base.code != COMPONENT_REF)
+    name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
 
   /* If upper bound is present, include both bounds in the error message.  */
   if (check_upper)
