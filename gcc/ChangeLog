@@ -1,9 +1,16 @@
+2010-04-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40603
+	* config/arm/arm.md (cbranchqi4): New pattern.
+	* config/arm/predicates.md (const0_operand,
+	cbranchqi4_comparison_operator): New predicates.
+
 2010-04-16  Richard Guenther  <rguenther@suse.de>
 
 	* gimple-pretty-print.c (dump_gimple_phi): Dump alias info.
 	(dump_gimple_stmt): Likewise.
 
-2010-04-16  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-16  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* recog.h (struct recog_data): New field is_operator.
 	(struct insn_operand_data): New field is_operator.
@@ -178,7 +185,7 @@
 	div_and_round_double): Move prototypes ...
 	* double-int.h: ... here.
 
-2010-04-15  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/43742
 	* config/sh/sh.md (doloop_end_split, dect): Undo previous patch.  Use
@@ -206,7 +213,7 @@
 	comment.
 	* expmed.c (mask_rtx, lshift_value): (Ditto.).
 
-2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-14  Bernd Schmidt  <bernds@codesourcery.com>
 	
 	PR target/21803
 	* ifcvt.c (cond_exec_process_if_block): Look for identical sequences
@@ -790,7 +797,7 @@
 	(arm_output_addr_const_extra): Output expression for new pattern.
 	* config/arm/arm.md (UNSPEC_SYMBOL_OFFSET): New unspec symbol.
 
-2010-04-10  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-10  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira-costs.c (record_reg_classes): Ignore alternatives that are
 	not enabled.
@@ -820,7 +827,7 @@
 	* ipa-prop.c (ipa_print_node_jump_functions): Likewise.
 
 2010-04-09  Eric Botcazou  <ebotcazou@adacore.com>
-	    Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
 
 	* loop-invariant.c (replace_uses): New static function.
 	(move_invariant_reg): Use it to ensure we can replace the uses.
@@ -2354,7 +2361,7 @@
 	* c-decl.c (grokparms): Set arg_types to NULL_TREE if there was
 	an error.
 
-2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-03-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/42258
 	* ira-lives.c (check_and_make_def_conflict): Ignore conflict for a
