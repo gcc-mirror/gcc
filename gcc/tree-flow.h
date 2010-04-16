@@ -774,7 +774,6 @@ extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
-static inline bool is_call_clobbered (const_tree);
 static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
 static inline bool ref_contains_array_ref (const_tree);

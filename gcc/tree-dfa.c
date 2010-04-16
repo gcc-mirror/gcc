@@ -284,9 +284,6 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
-  if (is_call_clobbered (var))
-    fprintf (file, ", call clobbered");
-
   if (ann && ann->noalias_state == NO_ALIAS)
     fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");
   else if (ann && ann->noalias_state == NO_ALIAS_GLOBAL)

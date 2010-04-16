@@ -291,23 +291,21 @@ struct gimple_opt_pass pass_nrv =
    optimization, where DEST is expected to be the LHS of a modify
    expression where the RHS is a function returning an aggregate.
 
-   We search for a base VAR_DECL and look to see if it is call clobbered.
-   Note that we could do better, for example, by
-   attempting to doing points-to analysis on INDIRECT_REFs.  */
+   DEST is available if it is not clobbered by the call.  */
 
 static bool
-dest_safe_for_nrv_p (tree dest)
+dest_safe_for_nrv_p (gimple call)
 {
-  while (handled_component_p (dest))
-    dest = TREE_OPERAND (dest, 0);
+  tree dest = gimple_call_lhs (call);
 
-  if (! SSA_VAR_P (dest))
+  dest = get_base_address (dest);
+  if (! dest)
     return false;
 
   if (TREE_CODE (dest) == SSA_NAME)
-    dest = SSA_NAME_VAR (dest);
+    return true;
 
-  if (is_call_clobbered (dest))
+  if (call_may_clobber_ref_p (call, dest))
     return false;
 
   return true;
@@ -346,8 +344,8 @@ execute_return_slot_opt (void)
 	     )
 	    {
 	      /* Check if the location being assigned to is
-	         call-clobbered.  */
-	      slot_opt_p = dest_safe_for_nrv_p (gimple_call_lhs (stmt));
+	         clobbered by the call.  */
+	      slot_opt_p = dest_safe_for_nrv_p (stmt);
 	      gimple_call_set_return_slot_opt (stmt, slot_opt_p);
 	    }
 	}

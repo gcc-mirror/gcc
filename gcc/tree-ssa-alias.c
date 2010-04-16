@@ -1339,7 +1339,10 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
   return true;
 }
 
-static bool ATTRIBUTE_UNUSED
+/* If the call in statement CALL may clobber the memory reference REF
+   return true, otherwise return false.  */
+
+bool
 call_may_clobber_ref_p (gimple call, tree ref)
 {
   bool res;

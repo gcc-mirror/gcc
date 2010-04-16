@@ -1,3 +1,18 @@
+2010-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43572
+	* tree-ssa-alias.h (call_may_clobber_ref_p): Declare.
+	* tree-ssa-alias.c (call_may_clobber_ref_p): Export.
+	* tree-flow.h (is_call_clobbered): Remove.
+	* tree-flow-inline.h (is_call_clobbered): Likewise.
+	* tree-dfa.c (dump_variable): Do not dump call clobber state.
+	* tree-nrv.c (dest_safe_for_nrv_p): Use the alias oracle.
+	(execute_return_slot_opt): Adjust.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Remove
+	check for call clobbered vars here.
+	(find_tail_calls): Move tailcall verification to the
+	proper place.
+
 2010-04-16  Diego Novillo  <dnovillo@google.com>
 
 	* doc/invoke.texi: Explain how are unrecognized -Wno- warnings
