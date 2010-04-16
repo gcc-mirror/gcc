@@ -624,15 +624,6 @@ loop_containing_stmt (gimple stmt)
 }
 
 
-/* Return true if VAR is clobbered by function calls.  */
-static inline bool
-is_call_clobbered (const_tree var)
-{
-  return (is_global_var (var)
-	  || (may_be_aliased (var)
-	      && pt_solution_includes (&cfun->gimple_df->escaped, var)));
-}
-
 /*  -----------------------------------------------------------------------  */
 
 /* The following set of routines are used to iterator over various type of

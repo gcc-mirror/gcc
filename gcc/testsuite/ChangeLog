@@ -1,3 +1,8 @@
+2010-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43572
+	* gcc.dg/tree-ssa/tailcall-5.c: New testcase.
+
 2010-04-16  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/specs/discr_private.ads: New test.
