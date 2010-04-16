@@ -326,7 +326,7 @@
 {
   /* We can accept any nonimmediate operand, except that MEM operands must
      be limited to those that use addresses valid for the 'U' constraint.  */
-  if (!nonimmediate_operand (op, mode))
+  if (!nonimmediate_operand (op, mode) && !OK_FOR_U (op))
     return 0;
 
   /* H8SX accepts pretty much anything here.  */
