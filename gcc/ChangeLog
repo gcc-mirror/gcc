@@ -1,3 +1,8 @@
+2010-04-16  Doug Kwan  <dougkwan@google.com>
+
+	* config/i386/i386.md (*jcc_bt<mode>): Fix build breakage by adding
+	missing left parenthesis.
+	
 2010-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*bt<mode>): Macroize insn from *btsi and
