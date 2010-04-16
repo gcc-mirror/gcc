@@ -1,4 +1,11 @@
-2010-04-12  Kaushik Phatak<kaushik.phatak@kpitcummins.com>
+2010-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43762
+	* dwarf2out.c (add_bound_info): Always call loc_list_from_tree
+	with want_address 2 and in case a single element list might be
+	possible, call it again with want_address 0.
+
+2010-04-12  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* config/h8300/predicate.md (bit_operand): Allow immediate values that
 	satisfy 'U' constraint.

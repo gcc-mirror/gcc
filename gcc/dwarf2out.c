@@ -16355,8 +16355,6 @@ lower_bound_default (void)
 static void
 add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree bound)
 {
-  int want_address = 2;
-
   switch (TREE_CODE (bound))
     {
     case ERROR_MARK:
@@ -16419,7 +16417,6 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	    add_AT_die_ref (subrange_die, bound_attr, decl_die);
 	    break;
 	  }
-	want_address = 0;
       }
       /* FALLTHRU */
 
@@ -16431,15 +16428,23 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	dw_die_ref ctx, decl_die;
 	dw_loc_list_ref list;
 
-	list = loc_list_from_tree (bound, want_address);
+	list = loc_list_from_tree (bound, 2);
+	if (list == NULL || single_element_loc_list_p (list))
+	  {
+	    /* If DW_AT_*bound is not a reference nor constant, it is
+	       a DWARF expression rather than location description.
+	       For that loc_list_from_tree (bound, 0) is needed.
+	       If that fails to give a single element list,
+	       fall back to outputting this as a reference anyway.  */
+	    dw_loc_list_ref list2 = loc_list_from_tree (bound, 0);
+	    if (list2 && single_element_loc_list_p (list2))
+	      {
+		add_AT_loc (subrange_die, bound_attr, list2->expr);
+		break;
+	      }
+	  }
 	if (list == NULL)
 	  break;
-
-	if (single_element_loc_list_p (list))
-	  {
-	    add_AT_loc (subrange_die, bound_attr, list->expr);
-	    break;
-	  }
 
 	if (current_function_decl == 0)
 	  ctx = comp_unit_die;
