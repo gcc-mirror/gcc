@@ -7,6 +7,9 @@
 
 2010-04-12  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
+	* config/h8300/h8300.md (inverted load with HImode dest): Add
+	support for H8300SX.
+
 	* config/h8300/predicate.md (bit_operand): Allow immediate values that
 	satisfy 'U' constraint.
 
