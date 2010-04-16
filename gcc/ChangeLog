@@ -1,5 +1,16 @@
 2010-04-16  Doug Kwan  <dougkwan@google.com>
 
+	* tree-ssa-reassoc.c (struct operand_entry): Add new field ID.
+	(next_operand_entry_id): New static variable.
+	(sort_by_operand_rank): Stabilize qsort comparator by using unique IDs.
+	(add_to_ops_vec): Assigned unique ID to operand entry.
+ 	(struct oecount_s): New field ID.
+	(oecount_cmp): Stabilize qsort comparotor by using unique IDs.
+	(undistribute_ops_list): Assign unique IDs to oecounts.
+	(init_reassoc): reset next_operand_entry_id.
+
+2010-04-16  Doug Kwan  <dougkwan@google.com>
+
 	* config/i386/i386.md (*jcc_bt<mode>): Fix build breakage by adding
 	missing left parenthesis.
 	
