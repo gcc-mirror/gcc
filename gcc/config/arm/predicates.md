@@ -94,6 +94,10 @@
   (and (match_code "const_int")
        (match_test "const_ok_for_arm (~INTVAL (op))")))
 
+(define_predicate "const0_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 0")))
+
 ;; Something valid on the RHS of an ARM data-processing instruction
 (define_predicate "arm_rhs_operand"
   (ior (match_operand 0 "s_register_operand")
@@ -202,6 +206,9 @@
        (and (match_test "TARGET_32BIT && TARGET_HARD_FLOAT
 			 && (TARGET_FPA || TARGET_VFP)")
             (match_code "unordered,ordered,unlt,unle,unge,ungt"))))
+
+(define_special_predicate "lt_ge_comparison_operator"
+  (match_code "lt,ge"))
 
 (define_special_predicate "minmax_operator"
   (and (match_code "smin,smax,umin,umax")

@@ -6668,6 +6668,30 @@
     operands[2] = force_reg (SImode, operands[2]);
   ")
 
+;; A pattern to recognize a special situation and optimize for it.
+;; On the thumb, zero-extension from memory is preferrable to sign-extension
+;; due to the available addressing modes.  Hence, convert a signed comparison
+;; with zero into an unsigned comparison with 127 if possible.
+(define_expand "cbranchqi4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "lt_ge_comparison_operator"
+	       [(match_operand:QI 1 "memory_operand" "")
+	        (match_operand:QI 2 "const0_operand" "")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_THUMB1"
+{
+  rtx xops[3];
+  xops[1] = gen_reg_rtx (SImode);
+  emit_insn (gen_zero_extendqisi2 (xops[1], operands[1]));
+  xops[2] = GEN_INT (127);
+  xops[0] = gen_rtx_fmt_ee (GET_CODE (operands[0]) == GE ? LEU : GTU,
+			    VOIDmode, xops[1], xops[2]);
+  xops[3] = operands[3];
+  emit_insn (gen_cbranchsi4 (xops[0], xops[1], xops[2], xops[3]));
+  DONE;
+})
+
 (define_expand "cbranchsf4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"

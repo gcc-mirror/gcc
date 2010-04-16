@@ -1,7 +1,10 @@
-2010-04-16  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-16  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/41514
-	gcc.target/arm/thumb-comparisons.c: New test.
+	* gcc.target/arm/thumb-comparisons.c: New test.
+
+	PR target/40603
+	* gcc.target/arm/thumb-cbranchqi.c: New test.
 
 2010-04-16  Christian Bruel  <christian.bruel@st.com>
 
@@ -30,7 +33,7 @@
 	* gcc.dg/torture/ipa-pta-2.c: Likewise.
 	* gcc.dg/torture/ipa-pta-1.c: Adjust.
 
-2010-04-14  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-04-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/21803
 	* gcc.target/arm/pr42496.c: New test.
@@ -1217,7 +1220,7 @@
 	* gcc.dg/pr43211.c: New test.
 	* gcc.dg/pr18809-1.c: Don't expect an error when calling foo.
 
-2010-03-19  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+2010-03-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/42258
 	* gcc.target/arm/thumb1-mul-moves.c: New test.
