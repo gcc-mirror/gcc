@@ -2860,13 +2860,41 @@ bool
 ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
 		      HARD_REG_SET bad_spill_regs,
 		      HARD_REG_SET *pseudo_forbidden_regs,
-		      HARD_REG_SET *pseudo_previous_regs,  bitmap spilled)
+		      HARD_REG_SET *pseudo_previous_regs,
+		      bitmap spilled)
 {
   int i, m, n, regno;
   bool changed_p;
   ira_allocno_t a, conflict_a;
   HARD_REG_SET forbidden_regs;
   ira_allocno_conflict_iterator aci;
+  bitmap temp = BITMAP_ALLOC (NULL);
+
+  /* Add pseudos which conflict with pseudos already in
+     SPILLED_PSEUDO_REGS to SPILLED_PSEUDO_REGS.  This is preferable
+     to allocating in two steps as some of the conflicts might have
+     a higher priority than the pseudos passed in SPILLED_PSEUDO_REGS.  */
+  for (i = 0; i < num; i++)
+    bitmap_set_bit (temp, spilled_pseudo_regs[i]);
+
+  for (i = 0, n = num; i < n; i++)
+    {
+      int regno = spilled_pseudo_regs[i];
+      bitmap_set_bit (temp, regno);
+
+      a = ira_regno_allocno_map[regno];
+      FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
+	if (ALLOCNO_HARD_REGNO (conflict_a) < 0
+	    && ! ALLOCNO_DONT_REASSIGN_P (conflict_a)
+	    && ! bitmap_bit_p (temp, ALLOCNO_REGNO (conflict_a)))
+	  {
+	    spilled_pseudo_regs[num++] = ALLOCNO_REGNO (conflict_a);
+	    bitmap_set_bit (temp, ALLOCNO_REGNO (conflict_a));
+	    /* ?!? This seems wrong.  */
+	    bitmap_set_bit (consideration_allocno_bitmap,
+			    ALLOCNO_NUM (conflict_a));
+	  }
+    }
 
   if (num > 1)
     qsort (spilled_pseudo_regs, num, sizeof (int), pseudo_reg_compare);
@@ -2885,7 +2913,7 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
       ira_assert (reg_renumber[regno] < 0);
       if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	fprintf (ira_dump_file,
-		 "      Spill %d(a%d), cost=%d", regno, ALLOCNO_NUM (a),
+		 "      Try Assign %d(a%d), cost=%d", regno, ALLOCNO_NUM (a),
 		 ALLOCNO_MEMORY_COST (a)
 		 - ALLOCNO_COVER_CLASS_COST (a));
       allocno_reload_assign (a, forbidden_regs);
@@ -2894,60 +2922,8 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
 	  CLEAR_REGNO_REG_SET (spilled, regno);
 	  changed_p = true;
 	}
-      else
-	spilled_pseudo_regs[m++] = regno;
     }
-  if (m == 0)
-    return changed_p;
-  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-    {
-      fprintf (ira_dump_file, "      Spilled regs");
-      for (i = 0; i < m; i++)
-	fprintf (ira_dump_file, " %d", spilled_pseudo_regs[i]);
-      fprintf (ira_dump_file, "\n");
-    }
-  /* Try to assign hard registers to pseudos conflicting with ones
-     from SPILLED_PSEUDO_REGS.  */
-  for (i = n = 0; i < m; i++)
-    {
-      regno = spilled_pseudo_regs[i];
-      a = ira_regno_allocno_map[regno];
-      FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
-	if (ALLOCNO_HARD_REGNO (conflict_a) < 0
-	    && ! ALLOCNO_DONT_REASSIGN_P (conflict_a)
-	    && ! bitmap_bit_p (consideration_allocno_bitmap,
-			       ALLOCNO_NUM (conflict_a)))
-	  {
-	    sorted_allocnos[n++] = conflict_a;
-	    bitmap_set_bit (consideration_allocno_bitmap,
-			    ALLOCNO_NUM (conflict_a));
-	  }
-    }
-  if (n != 0)
-    {
-      setup_allocno_priorities (sorted_allocnos, n);
-      qsort (sorted_allocnos, n, sizeof (ira_allocno_t),
-	     allocno_priority_compare_func);
-      for (i = 0; i < n; i++)
-	{
-	  a = sorted_allocnos[i];
-	  regno = ALLOCNO_REGNO (a);
-	  COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
-	  IOR_HARD_REG_SET (forbidden_regs, pseudo_forbidden_regs[regno]);
-	  IOR_HARD_REG_SET (forbidden_regs, pseudo_previous_regs[regno]);
-	  if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file,
-		     "        Try assign %d(a%d), cost=%d",
-		     regno, ALLOCNO_NUM (a),
-		     ALLOCNO_MEMORY_COST (a)
-		     - ALLOCNO_COVER_CLASS_COST (a));
-	  if (allocno_reload_assign (a, forbidden_regs))
-	    {
-	      changed_p = true;
-	      bitmap_clear_bit (spilled, regno);
-	    }
-	}
-    }
+  BITMAP_FREE (temp);
   return changed_p;
 }
 

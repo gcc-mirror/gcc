@@ -1,3 +1,8 @@
+2010-04-16  Jeff Law  <law@redhat.com>
+
+	* ira-color.c (ira_reassign_pseudos): Collect and sort all the pseudos
+	needing assignment rather than doing a two-phase assignment.
+
 2010-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43767
