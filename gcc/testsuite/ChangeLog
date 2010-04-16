@@ -1,3 +1,8 @@
+2010-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43621
+	* g++.dg/template/error-recovery2.C: New.
+
 2010-04-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43627

@@ -3720,15 +3720,17 @@ maybe_update_decl_type (tree orig_type, tree scope)
 	 TYPENAME_TYPEs and SCOPE_REFs that were previously dependent.  */
       tree args = current_template_args ();
       tree auto_node = type_uses_auto (type);
+      tree pushed;
       if (auto_node)
 	{
 	  tree auto_vec = make_tree_vec (1);
 	  TREE_VEC_ELT (auto_vec, 0) = auto_node;
 	  args = add_to_template_args (args, auto_vec);
 	}
-      push_scope (scope);
+      pushed = push_scope (scope);
       type = tsubst (type, args, tf_warning_or_error, NULL_TREE);
-      pop_scope (scope);
+      if (pushed)
+	pop_scope (scope);
     }
 
   if (type == error_mark_node)
