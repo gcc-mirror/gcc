@@ -417,10 +417,28 @@ do {						   \
   (STATEMENT_CLASS_P (NODE) && TREE_CODE (NODE) >= STMT_STMT)
 
 #define STMT_STMT_STMT(NODE)     TREE_OPERAND_CHECK_CODE (NODE, STMT_STMT, 0)
-#define LOOP_STMT_TOP_COND(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 0)
-#define LOOP_STMT_BOT_COND(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 1)
-#define LOOP_STMT_UPDATE(NODE)   TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 2)
-#define LOOP_STMT_BODY(NODE)     TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 3)
-#define LOOP_STMT_LABEL(NODE)    TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 4)
+
+#define LOOP_STMT_COND(NODE)     TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 0)
+#define LOOP_STMT_UPDATE(NODE)   TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 1)
+#define LOOP_STMT_BODY(NODE)     TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 2)
+#define LOOP_STMT_LABEL(NODE)    TREE_OPERAND_CHECK_CODE (NODE, LOOP_STMT, 3)
+
+/* A loop statement is conceptually made up of 6 sub-statements:
+
+    loop:
+      TOP_CONDITION
+      TOP_UPDATE
+      BODY
+      BOTTOM_CONDITION
+      BOTTOM_UPDATE
+      GOTO loop
+
+  However, only 4 of them can exist for a given loop, the pair of conditions
+  and the pair of updates being mutually exclusive.  The default setting is
+  TOP_CONDITION and BOTTOM_UPDATE and the following couple of flags are used
+  to toggle the individual settings.  */
+#define LOOP_STMT_BOTTOM_COND_P(NODE) TREE_LANG_FLAG_0 (LOOP_STMT_CHECK (NODE))
+#define LOOP_STMT_TOP_UPDATE_P(NODE)  TREE_LANG_FLAG_1 (LOOP_STMT_CHECK (NODE))
+
 #define EXIT_STMT_COND(NODE)     TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 0)
 #define EXIT_STMT_LABEL(NODE)    TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 1)

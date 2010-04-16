@@ -1,5 +1,21 @@
 2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.def (LOOP_STMT): Change to 4-operand nodes.
+	* gcc-interface/ada-tree.h (LOOP_STMT_TOP_COND, LOOP_STMT_BOT_COND):
+	Merge into...
+	(LOOP_STMT_COND): ...this.
+	(LOOP_STMT_BOTTOM_COND_P): New flag.
+	(LOOP_STMT_TOP_UPDATE_P): Likewise.
+	* gcc-interface/trans.c (can_equal_min_or_max_val_p): New function.
+	(can_equal_min_val_p): New static inline function.
+	(can_equal_max_val_p): Likewise.
+	(Loop_Statement_to_gnu): Use build4 in lieu of build5 and adjust to
+	new LOOP_STMT semantics.  Use two different strategies depending on
+	whether optimization is enabled to translate the loop.
+	(gnat_gimplify_stmt) <LOOP_STMT>: Adjust to new LOOP_STMT semantics.
+
+2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* uintp.adb (UI_From_Dint): Remove useless code.
 	(UI_From_Int): Likewise.
 	* uintp.h: Reorder declarations.
