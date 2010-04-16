@@ -2129,6 +2129,27 @@ if test $in_tree_ld != yes ; then
     ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
     ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
     ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+  else
+    case "${target}" in
+      *-*-solaris2*)
+	#
+	# Solaris 2 ld -V output looks like this for a regular version:
+	#
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
+	#
+	# but test versions add stuff at the end:
+	#
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
+	#
+	ld_ver=`$gcc_cv_ld -V 2>&1`
+	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
+	  ld_vers=`echo $ld_ver | sed -n \
+	    -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
+	  ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
+	  ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
+	fi
+	;;
+    esac
   fi
 fi
 changequote([,])dnl
@@ -2447,7 +2468,7 @@ if test $in_tree_ld = yes ; then
      && test $in_tree_ld_is_elf = yes; then
      comdat_group=yes
   fi
-elif test x"$ld_vers" != x; then
+elif echo "$ld_ver" | grep GNU > /dev/null; then
   comdat_group=yes
   if test 0"$ld_date" -lt 20050308; then
     if test -n "$ld_date"; then
@@ -2460,9 +2481,32 @@ elif test x"$ld_vers" != x; then
     fi
   fi
 else
-  # assume linkers other than GNU ld don't support COMDAT group
-  comdat_group=no
+changequote(,)dnl
+  case "${target}" in
+    *-*-solaris2.1[1-9]*)
+      # Sun ld has COMDAT group support since Solaris 9, but it doesn't
+      # interoperate with GNU as until Solaris 11 build 130, i.e. ld
+      # version 1.688.
+      #
+      # FIXME: Maybe need to refine later when COMDAT group support with
+      # Sun as is implemented.
+      if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 1688; then
+        comdat_group=yes
+      else
+        comdat_group=no
+      fi
+      ;;
+    *)
+      # Assume linkers other than GNU ld don't support COMDAT group.
+      comdat_group=no
+      ;;
+  esac
+changequote([,])dnl
 fi
+# Allow overriding the automatic COMDAT group tests above.
+AC_ARG_ENABLE(comdat,
+  [AS_HELP_STRING([--enable-comdat], [enable COMDAT group support])],
+  [comdat_group="$enable_comdat"])
 if test $comdat_group = no; then
   gcc_cv_as_comdat_group=no
   gcc_cv_as_comdat_group_percent=no

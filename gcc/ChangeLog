@@ -1,3 +1,15 @@
+2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Determine Sun ld version numbers.
+	(comdat_group): Restrict GNU ld version checks to gld.
+	(comdat_group, *-*-solaris2.1[1-9]*): Enable for Sun ld > 1.1688.
+	(enable_comdat): Support --enable-comdat.
+	* configure: Regenerate.
+	* doc/install.texi (Configuration): Document --enable-comdat.
+
 2010-04-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
