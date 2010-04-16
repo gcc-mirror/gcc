@@ -1,3 +1,9 @@
+2010-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* alias.c (memrefs_conflict_p): If x and y are the same VALUE,
+	don't call get_addr on both.  If one expression is a VALUE and
+	the other a REG, check VALUE's locs if the REG isn't among them.
+
 2010-04-16  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.h (sh_frame_pointer_required): New function.
