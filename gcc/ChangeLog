@@ -1,5 +1,13 @@
 2010-04-16  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (struct tree_decl_minimal): Move pt_uid ...
+	(struct tree_decl_common): ... here.
+	(DECL_PT_UID): Adjust.
+	(SET_DECL_PT_UID): Likewise.
+	(DECL_PT_UID_SET_P): Likewise.
+
+2010-04-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43572
 	* tree-ssa-alias.h (call_may_clobber_ref_p): Declare.
 	* tree-ssa-alias.c (call_may_clobber_ref_p): Export.
