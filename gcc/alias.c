@@ -1792,10 +1792,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       if (REG_P (y))
 	{
-	  struct elt_loc_list *l;
-	  for (l = CSELIB_VAL_PTR (x)->locs; l; l = l->next)
-	    if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, y))
-	      break;
+	  struct elt_loc_list *l = NULL;
+	  if (CSELIB_VAL_PTR (x))
+	    for (l = CSELIB_VAL_PTR (x)->locs; l; l = l->next)
+	      if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, y))
+		break;
 	  if (l)
 	    x = y;
 	  else
@@ -1809,10 +1810,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
     {
       if (REG_P (x))
 	{
-	  struct elt_loc_list *l;
-	  for (l = CSELIB_VAL_PTR (y)->locs; l; l = l->next)
-	    if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, x))
-	      break;
+	  struct elt_loc_list *l = NULL;
+	  if (CSELIB_VAL_PTR (y))
+	    for (l = CSELIB_VAL_PTR (y)->locs; l; l = l->next)
+	      if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, x))
+		break;
 	  if (l)
 	    y = x;
 	  else
