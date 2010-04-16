@@ -801,15 +801,12 @@ struct cum_arg
 	   || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\
        && h8300_eightbit_constant_address_p (XEXP (OP, 0)))		\
-   || (GET_CODE (OP) == MEM && TARGET_H8300S				\
+   || (GET_CODE (OP) == MEM && (TARGET_H8300S || TARGET_H8300SX)	\
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
 /* Multi-letter constraints starting with W are to be used for
    operands that require a memory operand, i.e,. that are never used
-   along with register constraints (see EXTRA_MEMORY_CONSTRAINTS).
-   For operands that require a memory operand (or not) but that always
-   accept a register, a multi-letter constraint starting with Y should
-   be used instead.  */
+   along with register constraints (see EXTRA_MEMORY_CONSTRAINTS).  */
 
 #define OK_FOR_WU(OP)					\
   (GET_CODE (OP) == MEM && OK_FOR_U (OP))
