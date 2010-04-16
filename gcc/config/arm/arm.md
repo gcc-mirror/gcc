@@ -6705,7 +6705,7 @@
 				   operands[3])); DONE;"
 )
 
-(define_insn "*cbranchsi4_insn"
+(define_insn "cbranchsi4_insn"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"
 	       [(match_operand:SI 1 "s_register_operand" "l,*h")
@@ -6714,7 +6714,20 @@
 	      (pc)))]
   "TARGET_THUMB1"
   "*
-  output_asm_insn (\"cmp\\t%1, %2\", operands);
+  rtx t = prev_nonnote_insn (insn);
+  if (t != NULL_RTX
+      && INSN_P (t)
+      && INSN_CODE (t) == CODE_FOR_cbranchsi4_insn)
+    {
+      t = XEXP (SET_SRC (PATTERN (t)), 0);
+      if (!rtx_equal_p (XEXP (t, 0), operands[1])
+	  || !rtx_equal_p (XEXP (t, 1), operands[2]))
+	t = NULL_RTX;
+    }
+  else
+    t = NULL_RTX;
+  if (t == NULL_RTX)
+    output_asm_insn (\"cmp\\t%1, %2\", operands);
 
   switch (get_attr_length (insn))
     {
