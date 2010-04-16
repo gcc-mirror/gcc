@@ -1,3 +1,9 @@
+2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for elf_getshdrstrndx or elf_getshstrndx
+	separately.
+	* configure: Regenerate.
+
 2010-04-16  Kevin Williams  <kevin.williams@inria.fr>
 
 	* MAINTAINERS (Write After Approval): Add myself.
