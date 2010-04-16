@@ -1,3 +1,17 @@
+2010-04-16  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.h (sh_frame_pointer_required): New function.
+	* config/sh/sh.h (TARGET_FRAME_POINTER_REQUIRED): New macro.
+	(flag_omit_frame_pointer) Set.
+	(MASK_ACCUMULATE_OUTGOING_ARGS) Define and Set.
+	(rounded_frame_size): Adjust size with outgoing_args_size.
+	(sh_set_return_address): Must return from stack pointer.
+	* gcc/config/sh/sh.h (CAN_DEBUG_WITHOUT_FP): Define.
+	(SUBTARGET_FRAME_POINTER_REQUIRED): Define.
+	(ACCUMULATE_OUTGOING_ARGS): Define.
+	* doc/invoke.texi (maccumulate-outgoing-args): Document for SH.
+	* gcc/config/sh/sh.opt: (maccumulate-outgoing-args): New option.
+
 2010-04-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/43471

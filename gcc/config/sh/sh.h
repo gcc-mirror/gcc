@@ -98,8 +98,15 @@ do { \
 		  ? "__LITTLE_ENDIAN__" : "__BIG_ENDIAN__"); \
 } while (0)
 
-/* We can not debug without a frame pointer.  */
-/* #define CAN_DEBUG_WITHOUT_FP */
+#define CAN_DEBUG_WITHOUT_FP 
+
+/* Value should be nonzero if functions must have frame pointers.
+   Zero means the frame pointer need not be set up (and parms may be accessed
+   via the stack pointer) in functions that seem suitable.  */
+
+#ifndef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED 0
+#endif
 
 #define CONDITIONAL_REGISTER_USAGE do					\
 {									\
@@ -2633,11 +2640,9 @@ extern int current_function_interrupt;
 
 #define SIDI_OFF (TARGET_LITTLE_ENDIAN ? 0 : 4)
 
-/* ??? Define ACCUMULATE_OUTGOING_ARGS?  This is more efficient than pushing
-   and popping arguments.  However, we do have push/pop instructions, and
-   rather limited offsets (4 bits) in load/store instructions, so it isn't
-   clear if this would give better code.  If implemented, should check for
-   compatibility problems.  */
+/* Better to allocate once the maximum space for outgoing args in the
+   prologue rather than duplicate around each call.  */
+#define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
 
 #define SH_DYNAMIC_SHIFT_COST \
   (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)

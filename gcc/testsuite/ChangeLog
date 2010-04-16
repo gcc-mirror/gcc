@@ -1,3 +1,7 @@
+2010-04-16  Christian Bruel  <christian.bruel@st.com>
+
+	* g++.dg/torture/pr36191.C: Enable for SH.
+
 2010-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/wide_boolean.adb: New test.
