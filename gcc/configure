@@ -25217,10 +25217,14 @@ $as_echo_n "checking for exported symbols... " >&6; }
 $as_echo_n "checking for -rdynamic... " >&6; }
     ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
     if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
+      plugin_rdynamic=yes
       pluginlibs="-rdynamic"
     else
+      plugin_rdynamic=no
       enable_plugin=no
     fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $plugin_rdynamic" >&5
+$as_echo "$plugin_rdynamic" >&6; }
   fi
 
   # Check -ldl

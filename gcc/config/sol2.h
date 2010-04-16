@@ -174,11 +174,15 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC \
   "%{h*} %{v:-V} \
    %{b} \
+   %{!shared:%{!static:%{rdynamic: " RDYNAMIC_SPEC "}}} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text}} \
    %{symbolic:-Bsymbolic -G -dy -z text} \
    %(link_arch) \
    %{Qy:} %{!Qn:-Qy}"
+
+/* With Sun ld, -rdynamic is a no-op.  */
+#define RDYNAMIC_SPEC ""
 
 /* The Solaris linker doesn't understand constructor priorities.  (The
    GNU linker does support constructor priorities, so GNU ld

@@ -3,6 +3,17 @@
 	Backport from mainline:
 	2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (plugin -rdynamic test): Log result.
+	* configure: Regenerate.
+	* config/sol2.h (LINK_SPEC): Handle -rdynamic.
+	(RDYNAMIC_SPEC): Define.
+	* config/sol2-gld.h (RDYNAMIC_SPEC): Redefine.
+
+2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/sparc/sol2-gld.h: Remove SPARC reference.  Rename ...
 	* config/sol2-gld.h: ... here.
 	* config.gcc (sparc*-*-solaris2*): Reflect this.

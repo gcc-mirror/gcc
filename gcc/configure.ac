@@ -4434,10 +4434,13 @@ if test x"$enable_plugin" = x"yes"; then
     AC_MSG_CHECKING([for -rdynamic])
     ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
     if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
+      plugin_rdynamic=yes
       pluginlibs="-rdynamic"
     else
+      plugin_rdynamic=no
       enable_plugin=no
     fi
+    AC_MSG_RESULT([$plugin_rdynamic])
   fi
 
   # Check -ldl
