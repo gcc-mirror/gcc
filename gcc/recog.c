@@ -2082,6 +2082,7 @@ extract_insn (rtx insn)
 			       recog_data.operand_loc,
 			       recog_data.constraints,
 			       recog_data.operand_mode, NULL);
+	  memset (recog_data.is_operator, 0, sizeof recog_data.is_operator);
 	  if (noperands > 0)
 	    {
 	      const char *p =  recog_data.constraints[0];
@@ -2111,6 +2112,7 @@ extract_insn (rtx insn)
       for (i = 0; i < noperands; i++)
 	{
 	  recog_data.constraints[i] = insn_data[icode].operand[i].constraint;
+	  recog_data.is_operator[i] = insn_data[icode].operand[i].is_operator;
 	  recog_data.operand_mode[i] = insn_data[icode].operand[i].mode;
 	  /* VOIDmode match_operands gets mode from their real operand.  */
 	  if (recog_data.operand_mode[i] == VOIDmode)

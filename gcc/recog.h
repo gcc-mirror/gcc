@@ -194,6 +194,9 @@ struct recog_data
   /* Gives the constraint string for operand N.  */
   const char *constraints[MAX_RECOG_OPERANDS];
 
+  /* Nonzero if operand N is a match_operator or a match_parallel.  */
+  char is_operator[MAX_RECOG_OPERANDS];
+
   /* Gives the mode of operand N.  */
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
 
@@ -259,6 +262,8 @@ struct insn_operand_data
   ENUM_BITFIELD(machine_mode) const mode : 16;
 
   const char strict_low;
+
+  const char is_operator;
 
   const char eliminable;
 };

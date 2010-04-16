@@ -266,6 +266,8 @@ output_operand_data (void)
 
       printf ("    %d,\n", d->strict_low);
 
+      printf ("    %d,\n", d->constraint == NULL ? 1 : 0);
+
       printf ("    %d\n", d->eliminable);
 
       printf("  },\n");

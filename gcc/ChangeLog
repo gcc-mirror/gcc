@@ -1,3 +1,13 @@
+2010-04-16  Bernd Schmidt  <bernd.schmidt@codesourcery.com>
+
+	* recog.h (struct recog_data): New field is_operator.
+	(struct insn_operand_data): New field is_operator.
+	* recog.c (extract_insn): Set recog_data.is_operator.
+	* genoutput.c (output_operand_data): Emit code to set the
+	is_operator field.
+	* reload.c (find_reloads): Use it rather than testing for an
+	empty constraint string.
+
 2010-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* alias.c (memrefs_conflict_p): If x and y are the same VALUE,
