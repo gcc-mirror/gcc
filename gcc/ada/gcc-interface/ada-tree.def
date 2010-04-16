@@ -61,12 +61,11 @@ DEFTREECODE (ATTR_ADDR_EXPR, "attr_addr_expr", tcc_reference, 1)
    just returning the inner statement.  */
 DEFTREECODE (STMT_STMT, "stmt_stmt", tcc_statement, 1)
 
-/* A loop.  LOOP_STMT_TOP_COND and LOOP_STMT_BOT_COND are the tests to exit a
-   loop at the top and bottom respectively.  LOOP_STMT_UPDATE is the statement
-   to update the loop iterator at the continue point.  LOOP_STMT_BODY are the
-   statements in the body of the loop.  LOOP_STMT_LABEL points to the
-   LABEL_DECL of the end label of the loop.  */
-DEFTREECODE (LOOP_STMT, "loop_stmt", tcc_statement, 5)
+/* A loop.  LOOP_STMT_COND is the test to exit the loop.  LOOP_STMT_UPDATE
+   is the statement to update the loop iteration variable at the continue
+   point.  LOOP_STMT_BODY are the statements in the body of the loop.  And
+   LOOP_STMT_LABEL points to the LABEL_DECL of the end label of the loop.  */
+DEFTREECODE (LOOP_STMT, "loop_stmt", tcc_statement, 4)
 
 /* Conditionally exit a loop.  EXIT_STMT_COND is the condition, which, if
    true, will cause the loop to be exited.  If no condition is specified,

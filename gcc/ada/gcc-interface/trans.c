@@ -2046,6 +2046,46 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   return gnu_result;
 }
 
+/* Return true if VAL (of type TYPE) can equal the minimum value if MAX is
+   false, or the maximum value if MAX is true, of TYPE.  */
+
+static bool
+can_equal_min_or_max_val_p (tree val, tree type, bool max)
+{
+  tree min_or_max_val = (max ? TYPE_MAX_VALUE (type) : TYPE_MIN_VALUE (type));
+
+  if (TREE_CODE (min_or_max_val) != INTEGER_CST)
+    return true;
+
+  if (TREE_CODE (val) == NOP_EXPR)
+    val = (max
+	   ? TYPE_MAX_VALUE (TREE_TYPE (TREE_OPERAND (val, 0)))
+	   : TYPE_MIN_VALUE (TREE_TYPE (TREE_OPERAND (val, 0))));
+
+  if (TREE_CODE (val) != INTEGER_CST)
+    return true;
+
+  return tree_int_cst_equal (val, min_or_max_val) == 1;
+}
+
+/* Return true if VAL (of type TYPE) can equal the minimum value of TYPE.
+   If REVERSE is true, minimum value is taken as maximum value.  */
+
+static inline bool
+can_equal_min_val_p (tree val, tree type, bool reverse)
+{
+  return can_equal_min_or_max_val_p (val, type, reverse);
+}
+
+/* Return true if VAL (of type TYPE) can equal the maximum value of TYPE.
+   If REVERSE is true, maximum value is taken as minimum value.  */
+
+static inline bool
+can_equal_max_val_p (tree val, tree type, bool reverse)
+{
+  return can_equal_min_or_max_val_p (val, type, !reverse);
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
    to a GCC tree, which is returned.  */
 
@@ -2053,8 +2093,8 @@ static tree
 Loop_Statement_to_gnu (Node_Id gnat_node)
 {
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
-  tree gnu_loop_stmt = build5 (LOOP_STMT, void_type_node, NULL_TREE,
-			       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+  tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
+			       NULL_TREE, NULL_TREE, NULL_TREE);
   tree gnu_loop_label = create_artificial_label (input_location);
   tree gnu_loop_var = NULL_TREE, gnu_cond_expr = NULL_TREE;
   tree gnu_result;
@@ -2076,7 +2116,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
   /* For the case "WHILE condition LOOP ..... END LOOP;" it's immediate.  */
   else if (Present (Condition (gnat_iter_scheme)))
-    LOOP_STMT_TOP_COND (gnu_loop_stmt)
+    LOOP_STMT_COND (gnu_loop_stmt)
       = gnat_to_gnu (Condition (gnat_iter_scheme));
 
   /* Otherwise we have an iteration scheme and the condition is given by the
@@ -2090,18 +2130,20 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       tree gnu_low = TYPE_MIN_VALUE (gnu_type);
       tree gnu_high = TYPE_MAX_VALUE (gnu_type);
       tree gnu_base_type = get_base_type (gnu_type);
-      tree gnu_first, gnu_last, gnu_limit, gnu_test;
-      enum tree_code update_code, test_code;
+      tree gnu_one_node = convert (gnu_base_type, integer_one_node);
+      tree gnu_first, gnu_last;
+      enum tree_code update_code, test_code, shift_code;
+      bool reverse = Reverse_Present (gnat_loop_spec), fallback = false;
 
       /* We must disable modulo reduction for the iteration variable, if any,
 	 in order for the loop comparison to be effective.  */
-      if (Reverse_Present (gnat_loop_spec))
+      if (reverse)
 	{
 	  gnu_first = gnu_high;
 	  gnu_last = gnu_low;
 	  update_code = MINUS_NOMOD_EXPR;
 	  test_code = GE_EXPR;
-	  gnu_limit = TYPE_MIN_VALUE (gnu_base_type);
+	  shift_code = PLUS_NOMOD_EXPR;
 	}
       else
 	{
@@ -2109,25 +2151,118 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	  gnu_last = gnu_high;
 	  update_code = PLUS_NOMOD_EXPR;
 	  test_code = LE_EXPR;
-	  gnu_limit = TYPE_MAX_VALUE (gnu_base_type);
+	  shift_code = MINUS_NOMOD_EXPR;
 	}
 
-      /* We know that the iteration variable will not overflow if GNU_LAST is
-	 a constant and is not equal to GNU_LIMIT.  If it might overflow, we
-	 have to turn the limit test into an inequality test and move it to
-	 the end of the loop; as a consequence, we also have to test for an
-	 empty loop before entering it.  */
-      if (TREE_CODE (gnu_last) != INTEGER_CST
-	  || TREE_CODE (gnu_limit) != INTEGER_CST
-	  || tree_int_cst_equal (gnu_last, gnu_limit))
+      /* We use two different strategies to translate the loop, depending on
+	 whether optimization is enabled.
+
+	 If it is, we try to generate the canonical form of loop expected by
+	 the loop optimizer, which is the do-while form:
+
+	     ENTRY_COND
+	   loop:
+	     TOP_UPDATE
+	     BODY
+	     BOTTOM_COND
+	     GOTO loop
+
+	 This makes it possible to bypass loop header copying and to turn the
+	 BOTTOM_COND into an inequality test.  This should catch (almost) all
+	 loops with constant starting point.  If we cannot, we try to generate
+	 the default form, which is:
+
+	   loop:
+	     TOP_COND
+	     BODY
+	     BOTTOM_UPDATE
+	     GOTO loop
+
+	 It will be rotated during loop header copying and an entry test added
+	 to yield the do-while form.  This should catch (almost) all loops with
+	 constant ending point.  If we cannot, we generate the fallback form:
+
+	     ENTRY_COND
+	   loop:
+	     BODY
+	     BOTTOM_COND
+	     BOTTOM_UPDATE
+	     GOTO loop
+
+	 which works in all cases but for which loop header copying will copy
+	 the BOTTOM_COND, thus adding a third conditional branch.
+
+	 If optimization is disabled, loop header copying doesn't come into
+	 play and we try to generate the loop forms with the less conditional
+	 branches directly.  First, the default form, it should catch (almost)
+	 all loops with constant ending point.  Then, if we cannot, we try to
+	 generate the shifted form:
+
+	   loop:
+	     TOP_COND
+	     TOP_UPDATE
+	     BODY
+	     GOTO loop
+
+	 which should catch loops with constant starting point.  Otherwise, if
+	 we cannot, we generate the fallback form.  */
+
+      if (optimize)
 	{
+	  /* We can use the do-while form if GNU_FIRST-1 doesn't overflow.  */
+	  if (!can_equal_min_val_p (gnu_first, gnu_base_type, reverse))
+	    {
+	      gnu_first = build_binary_op (shift_code, gnu_base_type,
+					   gnu_first, gnu_one_node);
+	      LOOP_STMT_TOP_UPDATE_P (gnu_loop_stmt) = 1;
+	      LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
+	    }
+
+	  /* Otherwise, we can use the default form if GNU_LAST+1 doesn't.  */
+	  else if (!can_equal_max_val_p (gnu_last, gnu_base_type, reverse))
+	    ;
+
+	  /* Otherwise, use the fallback form.  */
+	  else
+	    fallback = true;
+	}
+      else
+	{
+	  /* We can use the default form if GNU_LAST+1 doesn't overflow.  */
+	  if (!can_equal_max_val_p (gnu_last, gnu_base_type, reverse))
+	    ;
+
+	  /* Otherwise, we can use the shifted form if neither GNU_FIRST-1 nor
+	     GNU_LAST-1 does.  */
+	  else if (!can_equal_min_val_p (gnu_first, gnu_base_type, reverse)
+		   && !can_equal_min_val_p (gnu_last, gnu_base_type, reverse))
+	    {
+	      gnu_first = build_binary_op (shift_code, gnu_base_type,
+					   gnu_first, gnu_one_node);
+	      gnu_last = build_binary_op (shift_code, gnu_base_type,
+				          gnu_last, gnu_one_node);
+	      LOOP_STMT_TOP_UPDATE_P (gnu_loop_stmt) = 1;
+	    }
+
+	  /* Otherwise, use the fallback form.  */
+	  else
+	    fallback = true;
+	}
+
+      if (fallback)
+	LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt) = 1;
+
+      /* If we use the BOTTOM_COND, we can turn the test into an inequality
+	 test but we have to add an ENTRY_COND to protect the empty loop.  */
+      if (LOOP_STMT_BOTTOM_COND_P (gnu_loop_stmt))
+	{
+	  test_code = NE_EXPR;
 	  gnu_cond_expr
 	    = build3 (COND_EXPR, void_type_node,
 		      build_binary_op (LE_EXPR, integer_type_node,
 				       gnu_low, gnu_high),
 		      NULL_TREE, alloc_stmt_list ());
 	  set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
-	  test_code = NE_EXPR;
 	}
 
       /* Open a new nesting level that will surround the loop to declare the
@@ -2143,23 +2278,17 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
       /* Do all the arithmetics in the base type.  */
       gnu_loop_var = convert (gnu_base_type, gnu_loop_var);
 
-      /* Set either the top or bottom exit condition as appropriate depending
-	 on whether or not we know an overflow cannot occur.  */
-      gnu_test = build_binary_op (test_code, integer_type_node, gnu_loop_var,
-				  gnu_last);
-      if (gnu_cond_expr)
-	LOOP_STMT_BOT_COND (gnu_loop_stmt) = gnu_test;
-      else
-	LOOP_STMT_TOP_COND (gnu_loop_stmt) = gnu_test;
+      /* Set either the top or bottom exit condition.  */
+      LOOP_STMT_COND (gnu_loop_stmt)
+	= build_binary_op (test_code, integer_type_node, gnu_loop_var,
+			   gnu_last);
 
+      /* Set either the top or bottom update statement and give it the source
+	 location of the iteration for better coverage info.  */
       LOOP_STMT_UPDATE (gnu_loop_stmt)
-	= build_binary_op (MODIFY_EXPR, NULL_TREE,
-			   gnu_loop_var,
-			   build_binary_op (update_code,
-					    TREE_TYPE (gnu_loop_var),
-					    gnu_loop_var,
-					    convert (TREE_TYPE (gnu_loop_var),
-						     integer_one_node)));
+	= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_loop_var,
+			   build_binary_op (update_code, gnu_base_type,
+					    gnu_loop_var, gnu_one_node));
       set_expr_location_from_node (LOOP_STMT_UPDATE (gnu_loop_stmt),
 				   gnat_iter_scheme);
     }
@@ -6001,43 +6130,43 @@ gnat_gimplify_stmt (tree *stmt_p)
     case LOOP_STMT:
       {
 	tree gnu_start_label = create_artificial_label (input_location);
+	tree gnu_cond = LOOP_STMT_COND (stmt);
+	tree gnu_update = LOOP_STMT_UPDATE (stmt);
 	tree gnu_end_label = LOOP_STMT_LABEL (stmt);
 	tree t;
+
+	/* Build the condition expression from the test, if any.  */
+	if (gnu_cond)
+	  gnu_cond
+	    = build3 (COND_EXPR, void_type_node, gnu_cond, alloc_stmt_list (),
+		      build1 (GOTO_EXPR, void_type_node, gnu_end_label));
 
 	/* Set to emit the statements of the loop.  */
 	*stmt_p = NULL_TREE;
 
-	/* We first emit the start label and then a conditional jump to
-	   the end label if there's a top condition, then the body of the
-	   loop, then a conditional branch to the end label, then the update,
-	   if any, and finally a jump to the start label and the definition
-	   of the end label.  */
+	/* We first emit the start label and then a conditional jump to the
+	   end label if there's a top condition, then the update if it's at
+	   the top, then the body of the loop, then a conditional jump to
+	   the end label if there's a bottom condition, then the update if
+	   it's at the bottom, and finally a jump to the start label and the
+	   definition of the end label.  */
 	append_to_statement_list (build1 (LABEL_EXPR, void_type_node,
 					  gnu_start_label),
 				  stmt_p);
 
-	if (LOOP_STMT_TOP_COND (stmt))
-	  append_to_statement_list (build3 (COND_EXPR, void_type_node,
-					    LOOP_STMT_TOP_COND (stmt),
-					    alloc_stmt_list (),
-					    build1 (GOTO_EXPR,
-						    void_type_node,
-						    gnu_end_label)),
-				    stmt_p);
+        if (gnu_cond && !LOOP_STMT_BOTTOM_COND_P (stmt))
+	  append_to_statement_list (gnu_cond, stmt_p);
+
+        if (gnu_update && LOOP_STMT_TOP_UPDATE_P (stmt))
+	  append_to_statement_list (gnu_update, stmt_p);
 
 	append_to_statement_list (LOOP_STMT_BODY (stmt), stmt_p);
 
-	if (LOOP_STMT_BOT_COND (stmt))
-	  append_to_statement_list (build3 (COND_EXPR, void_type_node,
-					    LOOP_STMT_BOT_COND (stmt),
-					    alloc_stmt_list (),
-					    build1 (GOTO_EXPR,
-						    void_type_node,
-						    gnu_end_label)),
-				    stmt_p);
+        if (gnu_cond && LOOP_STMT_BOTTOM_COND_P (stmt))
+	  append_to_statement_list (gnu_cond, stmt_p);
 
-	if (LOOP_STMT_UPDATE (stmt))
-	  append_to_statement_list (LOOP_STMT_UPDATE (stmt), stmt_p);
+        if (gnu_update && !LOOP_STMT_TOP_UPDATE_P (stmt))
+	  append_to_statement_list (gnu_update, stmt_p);
 
 	t = build1 (GOTO_EXPR, void_type_node, gnu_start_label);
 	SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (gnu_end_label));
