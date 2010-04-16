@@ -388,9 +388,31 @@ internal_error_function (const char *msgid, va_list *ap)
 static bool
 gnat_init (void)
 {
-  /* Performs whatever initialization steps needed by the language-dependent
-     lexical analyzer.  */
-  gnat_init_decl_processing ();
+  /* Do little here, most of the standard declarations are set up after the
+     front-end has been run.  */
+  build_common_tree_nodes (true, true);
+
+  /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
+     corresponding to the width of Pmode.  In most cases when ptr_mode
+     and Pmode differ, C will use the width of ptr_mode for SIZETYPE.
+     But we get far better code using the width of Pmode.  */
+  size_type_node = gnat_type_for_mode (Pmode, 0);
+  set_sizetype (size_type_node);
+
+  /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
+  boolean_type_node = make_unsigned_type (8);
+  TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+  SET_TYPE_RM_MAX_VALUE (boolean_type_node,
+			 build_int_cst (boolean_type_node, 1));
+  SET_TYPE_RM_SIZE (boolean_type_node, bitsize_int (1));
+
+  build_common_tree_nodes_2 (0);
+  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
+
+  ptr_void_type_node = build_pointer_type (void_type_node);
+
+  /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
+  internal_reference_types ();
 
   /* Add the input filename as the last argument.  */
   if (main_input_filename)
@@ -400,10 +422,8 @@ gnat_init (void)
       gnat_argv[gnat_argc] = NULL;
     }
 
+  /* Register our internal error function.  */
   global_dc->internal_error = &internal_error_function;
-
-  /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
-  internal_reference_types ();
 
   return true;
 }

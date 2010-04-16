@@ -444,7 +444,6 @@ extern tree get_block_jmpbuf_decl (void);
    and uses GNAT_NODE for location information.  */
 extern void gnat_pushdecl (tree decl, Node_Id gnat_node);
 
-extern void gnat_init_decl_processing (void);
 extern void gnat_init_gcc_eh (void);
 extern void gnat_install_builtins (void);
 

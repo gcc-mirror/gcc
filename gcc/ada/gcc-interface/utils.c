@@ -514,34 +514,6 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     }
 }
 
-/* Do little here.  Set up the standard declarations later after the
-   front end has been run.  */
-
-void
-gnat_init_decl_processing (void)
-{
-  build_common_tree_nodes (true, true);
-
-  /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
-     corresponding to the width of Pmode.  In most cases when ptr_mode
-     and Pmode differ, C will use the width of ptr_mode for SIZETYPE.
-     But we get far better code using the width of Pmode.  */
-  size_type_node = gnat_type_for_mode (Pmode, 0);
-  set_sizetype (size_type_node);
-
-  /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
-  boolean_type_node = make_unsigned_type (8);
-  TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-  SET_TYPE_RM_MAX_VALUE (boolean_type_node,
-			 build_int_cst (boolean_type_node, 1));
-  SET_TYPE_RM_SIZE (boolean_type_node, bitsize_int (1));
-
-  build_common_tree_nodes_2 (0);
-  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
-
-  ptr_void_type_node = build_pointer_type (void_type_node);
-}
-
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.  */
 
 void
@@ -3000,7 +2972,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
       tree lfield, ufield;
 
-      /* Convert POINTER to the type of the P_ARRAY field.  */
+      /* Convert POINTER to the pointer-to-array type.  */
       gnu_expr64 = convert (p_array_type, gnu_expr64);
 
       switch (iklass)
@@ -3148,7 +3120,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       /* See the head comment of build_vms_descriptor.  */
       int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
 
-      /* Convert POINTER to the type of the P_ARRAY field.  */
+      /* Convert POINTER to the pointer-to-array type.  */
       gnu_expr32 = convert (p_array_type, gnu_expr32);
 
       switch (iklass)
@@ -3955,10 +3927,12 @@ convert (tree type, tree expr)
     case UNCONSTRAINED_ARRAY_REF:
       /* Convert this to the type of the inner array by getting the address of
 	 the array from the template.  */
+      expr = TREE_OPERAND (expr, 0);
       expr = build_unary_op (INDIRECT_REF, NULL_TREE,
-			     build_component_ref (TREE_OPERAND (expr, 0),
-						  get_identifier ("P_ARRAY"),
-						  NULL_TREE, false));
+			     build_component_ref (expr, NULL_TREE,
+						  TYPE_FIELDS
+						  (TREE_TYPE (expr)),
+						  false));
       etype = TREE_TYPE (expr);
       ecode = TREE_CODE (etype);
       break;
@@ -4033,9 +4007,7 @@ convert (tree type, tree expr)
     }
 
   /* In all other cases of related types, make a NOP_EXPR.  */
-  else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype)
-	   || (code == INTEGER_CST && ecode == INTEGER_CST
-	       && (type == TREE_TYPE (etype) || etype == TREE_TYPE (type))))
+  else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
     return fold_convert (type, expr);
 
   switch (code)
@@ -4114,8 +4086,8 @@ convert (tree type, tree expr)
       /* If converting fat pointer to normal pointer, get the pointer to the
 	 array and then convert it.  */
       else if (TYPE_IS_FAT_POINTER_P (etype))
-	expr = build_component_ref (expr, get_identifier ("P_ARRAY"),
-				    NULL_TREE, false);
+	expr
+	  = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (etype), false);
 
       return fold (convert_to_pointer (type, expr));
 
@@ -4226,7 +4198,7 @@ remove_conversions (tree exp, bool true_address)
 }
 
 /* If EXP's type is an UNCONSTRAINED_ARRAY_TYPE, return an expression that
-   refers to the underlying array.  If its type has TYPE_CONTAINS_TEMPLATE_P,
+   refers to the underlying array.  If it has TYPE_CONTAINS_TEMPLATE_P,
    likewise return an expression pointing to the underlying array.  */
 
 tree
@@ -4240,11 +4212,13 @@ maybe_unconstrained_array (tree exp)
     case UNCONSTRAINED_ARRAY_TYPE:
       if (code == UNCONSTRAINED_ARRAY_REF)
 	{
+	  new_exp = TREE_OPERAND (exp, 0);
 	  new_exp
 	    = build_unary_op (INDIRECT_REF, NULL_TREE,
-			      build_component_ref (TREE_OPERAND (exp, 0),
-						   get_identifier ("P_ARRAY"),
-						   NULL_TREE, false));
+			      build_component_ref (new_exp, NULL_TREE,
+						   TYPE_FIELDS
+						   (TREE_TYPE (new_exp)),
+						   false));
 	  TREE_READONLY (new_exp) = TREE_READONLY (exp);
 	  return new_exp;
 	}
