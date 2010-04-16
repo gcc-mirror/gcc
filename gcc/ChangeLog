@@ -8,6 +8,11 @@
 	* reload.c (find_reloads): Use it rather than testing for an
 	empty constraint string.
 
+	PR target/41514
+	* config/arm/arm.md (cbranchsi4_insn): Renamed from "*cbranchsi4_insn".
+	If the previous insn is a cbranchsi4_insn with the same arguments,
+	omit the compare instruction.
+
 2010-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* alias.c (memrefs_conflict_p): If x and y are the same VALUE,
