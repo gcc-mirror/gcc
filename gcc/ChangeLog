@@ -1,3 +1,8 @@
+2010-04-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (tree_to_double_int): Convert to macro.
+	* double-int.c (tree_to_double_int): Remove.
+
 2010-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43762

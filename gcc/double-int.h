@@ -63,7 +63,10 @@ typedef struct
 
 tree double_int_to_tree (tree, double_int);
 bool double_int_fits_to_tree_p (const_tree, double_int);
-double_int tree_to_double_int (const_tree);
+
+/* Constructs double_int from tree CST.  */
+
+#define tree_to_double_int(cst) (TREE_INT_CST (cst))
 
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */
