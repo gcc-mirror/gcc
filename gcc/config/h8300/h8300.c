@@ -1468,12 +1468,20 @@ print_operand (FILE *file, rtx x, int code)
 	goto def;
       break;
     case 'V':
-      bitint = exact_log2 (INTVAL (x) & 0xff);
+      bitint = (INTVAL (x) & 0xffff);
+      if ((exact_log2 ((bitint >> 8) & 0xff)) == -1)
+	bitint = exact_log2 (bitint & 0xff);
+      else
+        bitint = exact_log2 ((bitint >> 8) & 0xff);	      
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
     case 'W':
-      bitint = exact_log2 ((~INTVAL (x)) & 0xff);
+      bitint = ((~INTVAL (x)) & 0xffff);
+      if ((exact_log2 ((bitint >> 8) & 0xff)) == -1 )
+	bitint = exact_log2 (bitint & 0xff);
+      else
+	bitint = (exact_log2 ((bitint >> 8) & 0xff));      
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
