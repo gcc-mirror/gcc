@@ -148,13 +148,6 @@
 ; patterns that share the same RTL in both ARM and Thumb code.
 (define_attr "is_thumb" "no,yes" (const (symbol_ref "thumb_code")))
 
-; IS_STRONGARM is set to 'yes' when compiling for StrongARM, it affects
-; scheduling decisions for the load unit and the multiplier.
-(define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_tune_strongarm")))
-
-; IS_XSCALE is set to 'yes' when compiling for XScale.
-(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
-
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
 (define_attr "shift" "" (const_int 0))

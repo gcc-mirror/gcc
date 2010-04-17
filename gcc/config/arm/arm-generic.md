@@ -104,14 +104,14 @@
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
 	    (and (eq_attr "type" "load_byte,load1")
-	         (eq_attr "is_xscale" "yes"))))
+	         (eq_attr "tune" "xscale,iwmmxt,iwmmxt2"))))
   "core")
 
 (define_insn_reservation "load_ldsched" 2
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
 	    (and (eq_attr "type" "load_byte,load1")
-	         (eq_attr "is_xscale" "no"))))
+	         (eq_attr "tune" "!xscale,iwmmxt,iwmmxt2"))))
   "core")
 
 (define_insn_reservation "load_or_store" 2
@@ -128,14 +128,16 @@
 (define_insn_reservation "mult_ldsched_strongarm" 3
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "is_strongarm" "yes")
+	    (and (eq_attr "tune"
+		  "strongarm,strongarm110,strongarm1100,strongarm1110")
 	         (eq_attr "type" "mult"))))
   "core*2")
 
 (define_insn_reservation "mult_ldsched" 4
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "is_strongarm" "no")
+	    (and (eq_attr "tune"
+		  "!strongarm,strongarm110,strongarm1100,strongarm1110")
 	         (eq_attr "type" "mult"))))
   "core*4")
 

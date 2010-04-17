@@ -213,4 +213,16 @@ extern const char *arm_mangle_type (const_tree);
 
 extern void arm_order_regs_for_local_alloc (void);
 
+#ifdef RTX_CODE
+/* This needs to be here because we need RTX_CODE and similar.  */
+
+struct tune_params
+{
+  bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
+  int constant_limit;
+};
+
+extern const struct tune_params *current_tune;
+#endif /* RTX_CODE */
+
 #endif /* ! GCC_ARM_PROTOS_H */
