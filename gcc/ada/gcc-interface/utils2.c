@@ -351,14 +351,26 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  if (EXPR_P (comparison))
 	    SET_EXPR_LOCATION (comparison, input_location);
 
-	  this_a1_is_null = build_binary_op (EQ_EXPR, result_type, length1,
-					     size_zero_node);
-	  if (EXPR_P (this_a1_is_null))
+	  /* If the length expression is of the form (cond ? val : 0), assume
+	     that cond is equivalent to (length != 0).  That's guaranteed by
+	     construction of the array types in gnat_to_gnu_entity.  */
+	  if (TREE_CODE (length1) == COND_EXPR
+	      && integer_zerop (TREE_OPERAND (length1, 2)))
+	    this_a1_is_null = invert_truthvalue (TREE_OPERAND (length1, 0));
+	  else
+	    this_a1_is_null = build_binary_op (EQ_EXPR, result_type, length1,
+					       size_zero_node);
+          if (EXPR_P (this_a1_is_null))
 	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
 
-	  this_a2_is_null = build_binary_op (EQ_EXPR, result_type, length2,
-					     size_zero_node);
-	  if (EXPR_P (this_a2_is_null))
+	  /* Likewise for the second array.  */
+	  if (TREE_CODE (length2) == COND_EXPR
+	      && integer_zerop (TREE_OPERAND (length2, 2)))
+	    this_a2_is_null = invert_truthvalue (TREE_OPERAND (length2, 0));
+	  else
+	    this_a2_is_null = build_binary_op (EQ_EXPR, result_type, length2,
+					       size_zero_node);
+          if (EXPR_P (this_a2_is_null))
 	    SET_EXPR_LOCATION (this_a2_is_null, input_location);
 	}
 

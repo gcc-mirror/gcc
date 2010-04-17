@@ -2,7 +2,7 @@
 
 with Interfaces.C; use Interfaces.C;
 
-procedure Sizetype is
+procedure Sizetype1 is
 
    TC_String : String(1..8) := "abcdefgh";
    TC_No_nul : constant char_array := To_C(TC_String, False);
