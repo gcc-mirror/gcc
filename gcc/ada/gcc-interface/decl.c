@@ -1889,55 +1889,59 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    char field_name[16];
 	    tree gnu_index_base_type
 	      = get_unpadded_type (Base_Type (Etype (gnat_index)));
-	    tree gnu_low_field, gnu_high_field, gnu_low, gnu_high, gnu_max;
+	    tree gnu_lb_field, gnu_hb_field, gnu_orig_min, gnu_orig_max;
+	    tree gnu_min, gnu_max, gnu_high;
 
 	    /* Make the FIELD_DECLs for the low and high bounds of this
 	       type and then make extractions of these fields from the
 	       template.  */
 	    sprintf (field_name, "LB%d", index);
-	    gnu_low_field = create_field_decl (get_identifier (field_name),
-					       gnu_index_base_type,
-					       gnu_template_type, 0,
-					       NULL_TREE, NULL_TREE, 0);
+	    gnu_lb_field = create_field_decl (get_identifier (field_name),
+					      gnu_index_base_type,
+					      gnu_template_type, 0,
+					      NULL_TREE, NULL_TREE, 0);
 	    Sloc_to_locus (Sloc (gnat_entity),
-			   &DECL_SOURCE_LOCATION (gnu_low_field));
+			   &DECL_SOURCE_LOCATION (gnu_lb_field));
 
 	    field_name[0] = 'U';
-	    gnu_high_field = create_field_decl (get_identifier (field_name),
-					        gnu_index_base_type,
-					        gnu_template_type, 0,
-					        NULL_TREE, NULL_TREE, 0);
+	    gnu_hb_field = create_field_decl (get_identifier (field_name),
+					      gnu_index_base_type,
+					      gnu_template_type, 0,
+					      NULL_TREE, NULL_TREE, 0);
 	    Sloc_to_locus (Sloc (gnat_entity),
-			   &DECL_SOURCE_LOCATION (gnu_high_field));
+			   &DECL_SOURCE_LOCATION (gnu_hb_field));
 
-	    gnu_temp_fields[index] = chainon (gnu_low_field, gnu_high_field);
+	    gnu_temp_fields[index] = chainon (gnu_lb_field, gnu_hb_field);
 
 	    /* We can't use build_component_ref here since the template type
 	       isn't complete yet.  */
-	    gnu_low = build3 (COMPONENT_REF, gnu_index_base_type,
-			      gnu_template_reference, gnu_low_field,
-			      NULL_TREE);
-	    gnu_high = build3 (COMPONENT_REF, gnu_index_base_type,
-			       gnu_template_reference, gnu_high_field,
-			       NULL_TREE);
-	    TREE_READONLY (gnu_low) = TREE_READONLY (gnu_high) = 1;
+	    gnu_orig_min = build3 (COMPONENT_REF, gnu_index_base_type,
+				   gnu_template_reference, gnu_lb_field,
+				   NULL_TREE);
+	    gnu_orig_max = build3 (COMPONENT_REF, gnu_index_base_type,
+				   gnu_template_reference, gnu_hb_field,
+				   NULL_TREE);
+	    TREE_READONLY (gnu_orig_min) = TREE_READONLY (gnu_orig_max) = 1;
 
-	    /* Compute the size of this dimension.  */
-	    gnu_max
-	      = build3 (COND_EXPR, gnu_index_base_type,
-			build2 (GE_EXPR, boolean_type_node, gnu_high, gnu_low),
-			gnu_high,
-			build2 (MINUS_EXPR, gnu_index_base_type,
-				gnu_low, fold_convert (gnu_index_base_type,
-						       integer_one_node)));
+	    gnu_min = convert (sizetype, gnu_orig_min);
+	    gnu_max = convert (sizetype, gnu_orig_max);
+
+	    /* Compute the size of this dimension.  See the E_Array_Subtype
+	       case below for the rationale.  */
+	    gnu_high
+	      = build3 (COND_EXPR, sizetype,
+			build2 (GE_EXPR, boolean_type_node,
+				gnu_orig_max, gnu_orig_min),
+			gnu_max,
+			size_binop (MINUS_EXPR, gnu_min, size_one_node));
 
 	    /* Make a range type with the new range in the Ada base type.
 	       Then make an index type with the size range in sizetype.  */
 	    gnu_index_types[index]
-	      = create_index_type (convert (sizetype, gnu_low),
-				   convert (sizetype, gnu_max),
+	      = create_index_type (gnu_min, gnu_high,
 				   create_range_type (gnu_index_base_type,
-						      gnu_low, gnu_high),
+						      gnu_orig_min,
+						      gnu_orig_max),
 				   gnat_entity);
 
 	    /* Update the maximum size of the array in elements.  */
@@ -2209,6 +2213,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     size_binop (MINUS_EXPR, gnu_min,
 						 size_one_node));
 
+	      /* Reuse the index type for the range type.  Then make an index
+		 type with the size range in sizetype.  */
 	      gnu_index_types[index]
 		= create_index_type (gnu_min, gnu_high, gnu_index_type,
 				     gnat_entity);
