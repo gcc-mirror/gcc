@@ -356,8 +356,14 @@ enum standard_datatypes
   /* Type declaration node  <==> typedef virtual void *T() */
   ADT_fdesc_type,
 
-  /* Null pointer for above type */
+  /* Null pointer for above type.  */
   ADT_null_fdesc,
+
+  /* Value 1 in signed bitsizetype.  */
+  ADT_sbitsize_one_node,
+
+  /* Value BITS_PER_UNIT in signed bitsizetype.  */
+  ADT_sbitsize_unit_node,
 
   /* Function declaration nodes for run-time functions for allocating memory.
      Ada allocators cause calls to these functions to be generated.  Malloc32
@@ -401,6 +407,8 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define ptr_void_ftype gnat_std_decls[(int) ADT_ptr_void_ftype]
 #define fdesc_type_node gnat_std_decls[(int) ADT_fdesc_type]
 #define null_fdesc_node gnat_std_decls[(int) ADT_null_fdesc]
+#define sbitsize_one_node gnat_std_decls[(int) ADT_sbitsize_one_node]
+#define sbitsize_unit_node gnat_std_decls[(int) ADT_sbitsize_unit_node]
 #define malloc_decl gnat_std_decls[(int) ADT_malloc_decl]
 #define malloc32_decl gnat_std_decls[(int) ADT_malloc32_decl]
 #define free_decl gnat_std_decls[(int) ADT_free_decl]

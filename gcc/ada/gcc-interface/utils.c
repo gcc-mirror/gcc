@@ -4066,9 +4066,8 @@ convert (tree type, tree expr)
 	  tree bit_diff
 	    = size_diffop (bit_position (TYPE_FIELDS (TREE_TYPE (etype))),
 			   bit_position (TYPE_FIELDS (TREE_TYPE (type))));
-	  tree byte_diff = size_binop (CEIL_DIV_EXPR, bit_diff,
-				       sbitsize_int (BITS_PER_UNIT));
-
+	  tree byte_diff
+	    = size_binop (CEIL_DIV_EXPR, bit_diff, sbitsize_unit_node);
 	  expr = build1 (NOP_EXPR, type, expr);
 	  TREE_CONSTANT (expr) = TREE_CONSTANT (TREE_OPERAND (expr, 0));
 	  if (integer_zerop (byte_diff))

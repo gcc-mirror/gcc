@@ -1356,15 +1356,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  {
 	    tree gnu_char_ptr_type = build_pointer_type (char_type_node);
 	    tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
-	    tree gnu_byte_offset
-	      = convert (sizetype,
-			 size_diffop (size_zero_node, gnu_pos));
-	    gnu_byte_offset
-	      = fold_build1 (NEGATE_EXPR, sizetype, gnu_byte_offset);
-
 	    gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
 	    gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,
-				       gnu_ptr, gnu_byte_offset);
+				       gnu_ptr, gnu_pos);
 	  }
 
 	gnu_result = convert (gnu_result_type, gnu_ptr);
@@ -5399,15 +5393,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	    {
 	      tree gnu_char_ptr_type = build_pointer_type (char_type_node);
 	      tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
-	      tree gnu_byte_offset
-		= convert (sizetype,
-			   size_diffop (size_zero_node, gnu_pos));
-	      gnu_byte_offset
-		= fold_build1 (NEGATE_EXPR, sizetype, gnu_byte_offset);
-
 	      gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
 	      gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,
-					 gnu_ptr, gnu_byte_offset);
+					 gnu_ptr, gnu_pos);
 	    }
 
 	  gnu_result

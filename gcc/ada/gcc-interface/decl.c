@@ -2115,11 +2115,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      const int prec_comp
 		= compare_tree_int (TYPE_RM_SIZE (gnu_index_type),
 				    TYPE_PRECISION (sizetype));
-	      const bool subrange_p = (prec_comp < 0)
-				      || (prec_comp == 0
-					  && TYPE_UNSIGNED (gnu_index_type)
-					     == TYPE_UNSIGNED (sizetype));
-	      const bool wider_p = (prec_comp > 0);
+	      const bool subrange_p = (prec_comp < 0
+				       && (TYPE_UNSIGNED (gnu_index_type)
+					   || !TYPE_UNSIGNED (sizetype)))
+ 				      || (prec_comp == 0
+ 					  && TYPE_UNSIGNED (gnu_index_type)
+ 					     == TYPE_UNSIGNED (sizetype));
 	      tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	      tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	      tree gnu_min = convert (sizetype, gnu_orig_min);
@@ -2298,7 +2299,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      && TREE_CODE (TREE_TYPE (gnu_index_type))
 			 != INTEGER_TYPE)
 		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)
-		  || wider_p)
+		  || prec_comp > 0)
 		need_index_type_struct = true;
 	    }
 
@@ -5381,7 +5382,7 @@ cannot_be_superflat_p (Node_Id gnat_range)
 {
   Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
   Node_Id scalar_range;
-  tree gnu_lb, gnu_hb;
+  tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
   /* If the low bound is not constant, try to find an upper bound.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
@@ -5401,19 +5402,23 @@ cannot_be_superflat_p (Node_Id gnat_range)
 	     || Nkind (scalar_range) == N_Range))
     gnat_hb = Low_Bound (scalar_range);
 
-  if (!(Nkind (gnat_lb) == N_Integer_Literal
-	&& Nkind (gnat_hb) == N_Integer_Literal))
+  /* If we have failed to find constant bounds, punt.  */
+  if (Nkind (gnat_lb) != N_Integer_Literal
+      || Nkind (gnat_hb) != N_Integer_Literal)
     return false;
 
-  gnu_lb = UI_To_gnu (Intval (gnat_lb), bitsizetype);
-  gnu_hb = UI_To_gnu (Intval (gnat_hb), bitsizetype);
+  /* We need at least a signed 64-bit type to catch most cases.  */
+  gnu_lb = UI_To_gnu (Intval (gnat_lb), sbitsizetype);
+  gnu_hb = UI_To_gnu (Intval (gnat_hb), sbitsizetype);
+  if (TREE_OVERFLOW (gnu_lb) || TREE_OVERFLOW (gnu_hb))
+    return false;
 
   /* If the low bound is the smallest integer, nothing can be smaller.  */
-  gnu_lb = size_binop (MINUS_EXPR, gnu_lb, bitsize_one_node);
-  if (TREE_OVERFLOW (gnu_lb))
+  gnu_lb_minus_one = size_binop (MINUS_EXPR, gnu_lb, sbitsize_one_node);
+  if (TREE_OVERFLOW (gnu_lb_minus_one))
     return true;
 
-  return (tree_int_cst_lt (gnu_hb, gnu_lb) == 0);
+  return !tree_int_cst_lt (gnu_hb, gnu_lb_minus_one);
 }
 
 /* Return true if GNU_EXPR is (essentially) the address of a CONSTRUCTOR.  */
@@ -5876,7 +5881,6 @@ make_aligning_type (tree type, unsigned int align, tree size,
   /* We will be crafting a record type with one field at a position set to be
      the next multiple of ALIGN past record'address + room bytes.  We use a
      record placeholder to express record'address.  */
-
   tree record_type = make_node (RECORD_TYPE);
   tree record = build0 (PLACEHOLDER_EXPR, record_type);
 
@@ -5896,7 +5900,6 @@ make_aligning_type (tree type, unsigned int align, tree size,
 
      Every length is in sizetype bytes there, except "pos" which has to be
      set as a bit position in the GCC tree for the record.  */
-
   tree room_st = size_int (room);
   tree vblock_addr_st = size_binop (PLUS_EXPR, record_addr_st, room_st);
   tree voffset_st, pos, field;
@@ -5911,13 +5914,11 @@ make_aligning_type (tree type, unsigned int align, tree size,
   /* Compute VOFFSET and then POS.  The next byte position multiple of some
      alignment after some address is obtained by "and"ing the alignment minus
      1 with the two's complement of the address.   */
-
   voffset_st = size_binop (BIT_AND_EXPR,
-			   size_diffop (size_zero_node, vblock_addr_st),
-			   ssize_int ((align / BITS_PER_UNIT) - 1));
+			   fold_build1 (NEGATE_EXPR, sizetype, vblock_addr_st),
+			   size_int ((align / BITS_PER_UNIT) - 1));
 
   /* POS = (ROOM + VOFFSET) * BIT_PER_UNIT, in bitsizetype.  */
-
   pos = size_binop (MULT_EXPR,
 		    convert (bitsizetype,
 			     size_binop (PLUS_EXPR, room_st, voffset_st)),
@@ -5936,7 +5937,6 @@ make_aligning_type (tree type, unsigned int align, tree size,
      consequences on the alignment computation, and create_field_decl would
      make one without this special argument, for instance because of the
      complex position expression.  */
-
   field = create_field_decl (get_identifier ("F"), type, record_type,
                              1, size, pos, -1);
   TYPE_FIELDS (record_type) = field;
@@ -6287,6 +6287,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (Present (gnat_entity)
       && size
       && TREE_CODE (size) != MAX_EXPR
+      && TREE_CODE (size) != COND_EXPR
       && !operand_equal_p (size, orig_size, 0)
       && !(TREE_CODE (size) == INTEGER_CST
 	   && TREE_CODE (orig_size) == INTEGER_CST
@@ -7123,33 +7124,16 @@ annotate_value (tree gnu_size)
       if (TREE_OVERFLOW (gnu_size))
 	return No_Uint;
 
-      /* This may have come from a conversion from some smaller type,
-	 so ensure this is in bitsizetype.  */
+      /* This may come from a conversion from some smaller type, so ensure
+	 this is in bitsizetype.  */
       gnu_size = convert (bitsizetype, gnu_size);
 
-      /* For negative values, use NEGATE_EXPR of the supplied value.  */
+      /* For a negative value, use NEGATE_EXPR of the opposite.  Such values
+	 appear in expressions containing aligning patterns.  */
       if (tree_int_cst_sgn (gnu_size) < 0)
 	{
-	  /* The ridiculous code below is to handle the case of the largest
-	     negative integer.  */
-	  tree negative_size = size_diffop (bitsize_zero_node, gnu_size);
-	  bool adjust = false;
-	  tree temp;
-
-	  if (TREE_OVERFLOW (negative_size))
-	    {
-	      negative_size
-		= size_binop (MINUS_EXPR, bitsize_zero_node,
-			      size_binop (PLUS_EXPR, gnu_size,
-					  bitsize_one_node));
-	      adjust = true;
-	    }
-
-	  temp = build1 (NEGATE_EXPR, bitsizetype, negative_size);
-	  if (adjust)
-	    temp = build2 (MINUS_EXPR, bitsizetype, temp, bitsize_one_node);
-
-	  return annotate_value (temp);
+	  tree op_size = fold_build1 (NEGATE_EXPR, bitsizetype, gnu_size);
+	  return annotate_value (build1 (NEGATE_EXPR, bitsizetype, op_size));
 	}
 
       return UI_From_gnu (gnu_size);
