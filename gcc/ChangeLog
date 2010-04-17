@@ -1,6 +1,26 @@
+2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm-protos.h (tune_params): New structure.
+	* arm.c (current_tune): New variable.
+	(arm_constant_limit): Delete.
+	(struct processors): Add pointer to the tune parameters.
+	(arm_slowmul_tune): New tuning option.
+	(arm_fastmul_tune, arm_xscale_tune, arm_9e_tune): Likewise.
+	(all_cores): Adjust to pick up the tuning model.
+	(arm_constant_limit): New function.
+	(arm_override_options): Select the appropriate tuning model.  Delete
+	initialization of arm_const_limit.
+	(arm_split_constant): Use the new constant-limit model.
+	(arm_rtx_costs): Pick up the current tuning model.
+	* arm.md (is_strongarm, is_xscale): Delete.
+	* arm-generic.md (load_ldsched_x, load_ldsched): Test explicitly
+	for Xscale variant architectures.
+	(mult_ldsched_strongarm, mult_ldsched): Similarly for StrongARM.
+
 2010-04-17  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-	* config/arm/arm.c (arm_gen_constant): Remove unused variable can_shift.
+	* config/arm/arm.c (arm_gen_constant): Remove unused variable
+	can_shift.
 	(arm_rtx_costs_1): Remove unused variable extra_cost.
 	(arm_unwind_emit_set): Use variable offset.
 	(thumb1_output_casesi): Remove unused variable flags.
