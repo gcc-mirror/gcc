@@ -635,8 +635,8 @@ error is used. If the first letter is @samp{n}, @samp{N} or
 
 This environment variable controls where scratch files are
 created.  If this environment variable is missing,
-GNU Fortran searches for the environment variable @env{TMP}.  If
-this is also missing, the default is @file{/tmp}.
+GNU Fortran searches for the environment variable @env{TMP}, then @env{TEMP}.
+If these are missing, the default is @file{/tmp}.
 
 @node GFORTRAN_UNBUFFERED_ALL
 @section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer I/O on all units
