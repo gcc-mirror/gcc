@@ -771,7 +771,6 @@ void gfc_apply_interface_mapping (gfc_interface_mapping *,
 
 
 /* Standard error messages used in all the trans-*.c files.  */
-extern const char gfc_msg_bounds[];
 extern const char gfc_msg_fault[];
 extern const char gfc_msg_wrong_return[];
 

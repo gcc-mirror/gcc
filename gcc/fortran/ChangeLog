@@ -1,3 +1,13 @@
+2010-04-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/31538
+	* fortran/trans-array.c (gfc_conv_ss_startstride): Remove the use of
+	gfc_msg_bounds by using 'Array bound mismatch' directly.
+	(gfc_trans_dummy_array_bias):  Remove the use of gfc_msg_bounds.  Reword
+	error message to include the mismatch in the extent of array bound.
+	* fortran/trans.c: Remove gfc_msg_bounds.  It is only used in one place.
+	* fortran/trans.h: Remove extern definition of gfc_msg_bounds.
+
 2010-04-16  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30073
