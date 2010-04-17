@@ -2522,7 +2522,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   int can_negate = 0;
   int final_invert = 0;
   int can_negate_initial = 0;
-  int can_shift = 0;
   int i;
   int num_bits_set = 0;
   int set_sign_bit_copies = 0;
@@ -2541,7 +2540,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
     {
     case SET:
       can_invert = 1;
-      can_shift = 1;
       can_negate = 1;
       break;
 
@@ -6340,7 +6338,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
   enum rtx_code subcode;
   rtx operand;
   enum rtx_code code = GET_CODE (x);
-  int extra_cost;
   *total = 0;
 
   switch (code)
@@ -6564,7 +6561,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       /* Fall through */
 
     case AND: case XOR: case IOR:
-      extra_cost = 0;
 
       /* Normally the frame registers will be spilt into reg+const during
 	 reload, so it is a bad idea to combine them with other instructions,
@@ -21121,7 +21117,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      offset = INTVAL (XEXP (e1, 1));
 	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%wd\n",
 			   HARD_FRAME_POINTER_REGNUM, reg,
-			   INTVAL (XEXP (e1, 1)));
+			   offset);
 	    }
 	  else if (GET_CODE (e1) == REG)
 	    {
@@ -21411,11 +21407,8 @@ const char *
 thumb1_output_casesi (rtx *operands)
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[0]));
-  addr_diff_vec_flags flags;
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  flags = ADDR_DIFF_VEC_FLAGS (diff_vec);
 
   switch (GET_MODE(diff_vec))
     {

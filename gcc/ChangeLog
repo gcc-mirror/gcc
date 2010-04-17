@@ -1,3 +1,10 @@
+2010-04-17  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_gen_constant): Remove unused variable can_shift.
+	(arm_rtx_costs_1): Remove unused variable extra_cost.
+	(arm_unwind_emit_set): Use variable offset.
+	(thumb1_output_casesi): Remove unused variable flags.
+
 2010-04-16  Jeff Law  <law@redhat.com>
 
 	* ira-color.c (ira_reassign_pseudos): Collect and sort all the pseudos
