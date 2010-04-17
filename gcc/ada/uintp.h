@@ -75,6 +75,10 @@ typedef struct {const int *Array; Vector_Template *Bounds; }
 #define Vector_To_Uint uintp__vector_to_uint
 extern Uint Vector_To_Uint		(Int_Vector, Boolean);
 
+/* Compare integer values for less than.  */
+#define UI_Lt uintp__ui_lt
+extern Boolean UI_Lt			(Uint, Uint);
+
 /* Universal integers are represented by the Uint type which is an index into
    the Uints_Ptr table containing Uint_Entry values.  A Uint_Entry contains an
    index and length for getting the "digits" of the universal integer from the

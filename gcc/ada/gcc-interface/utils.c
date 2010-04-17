@@ -839,11 +839,13 @@ rest_of_record_type_compilation (tree record_type)
 	      align = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
 
 	      /* An offset which is a bitwise AND with a negative power of 2
-		 means an alignment corresponding to this power of 2.  */
+		 means an alignment corresponding to this power of 2.  Note
+		 that, as sizetype is sign-extended but nonetheless unsigned,
+		 we don't directly use tree_int_cst_sgn.  */
 	      offset = remove_conversions (offset, true);
 	      if (TREE_CODE (offset) == BIT_AND_EXPR
 		  && host_integerp (TREE_OPERAND (offset, 1), 0)
-		  && tree_int_cst_sgn (TREE_OPERAND (offset, 1)) < 0)
+		  && TREE_INT_CST_HIGH (TREE_OPERAND (offset, 1)) < 0)
 		{
 		  unsigned int pow
 		    = - tree_low_cst (TREE_OPERAND (offset, 1), 0);
@@ -2174,22 +2176,6 @@ max_size (tree exp, bool max_p)
 	case 2:
 	  if (code == COMPOUND_EXPR)
 	    return max_size (TREE_OPERAND (exp, 1), max_p);
-
-	  /* Calculate "(A ? B : C) - D" as "A ? B - D : C - D" which
-	     may provide a tighter bound on max_size.  */
-	  if (code == MINUS_EXPR
-	      && TREE_CODE (TREE_OPERAND (exp, 0)) == COND_EXPR)
-	    {
-	      tree lhs = fold_build2 (MINUS_EXPR, type,
-				      TREE_OPERAND (TREE_OPERAND (exp, 0), 1),
-				      TREE_OPERAND (exp, 1));
-	      tree rhs = fold_build2 (MINUS_EXPR, type,
-				      TREE_OPERAND (TREE_OPERAND (exp, 0), 2),
-				      TREE_OPERAND (exp, 1));
-	      return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
-				  max_size (lhs, max_p),
-				  max_size (rhs, max_p));
-	    }
 
 	  {
 	    tree lhs = max_size (TREE_OPERAND (exp, 0), max_p);
@@ -4707,7 +4693,7 @@ builtin_type_for_size (int size, bool unsignedp)
 static void
 install_builtin_elementary_types (void)
 {
-  signed_size_type_node = size_type_node;
+  signed_size_type_node = gnat_signed_type (size_type_node);
   pid_type_node = integer_type_node;
   void_list_node = build_void_list_node ();
 

@@ -391,13 +391,16 @@ gnat_init (void)
   /* Do little here, most of the standard declarations are set up after the
      front-end has been run.  Use the same `char' as C, this doesn't really
      matter since we'll use the explicit `unsigned char' for Character.  */
-  build_common_tree_nodes (flag_signed_char, true);
+  build_common_tree_nodes (flag_signed_char, false);
 
-  /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
-     corresponding to the width of Pmode.  In most cases when ptr_mode
-     and Pmode differ, C will use the width of ptr_mode for SIZETYPE.
-     But we get far better code using the width of Pmode.  */
-  size_type_node = gnat_type_for_mode (Pmode, 0);
+  /* In Ada, we use the unsigned type corresponding to the width of Pmode as
+     SIZETYPE.  In most cases when ptr_mode and Pmode differ, C will use the
+     width of ptr_mode for SIZETYPE, but we get better code using the width
+     of Pmode.  Note that, although we manipulate negative offsets for some
+     internal constructs and rely on compile time overflow detection in size
+     computations, using unsigned types for SIZETYPEs is fine since they are
+     treated specially by the middle-end, in particular sign-extended.  */
+  size_type_node = gnat_type_for_mode (Pmode, 1);
   set_sizetype (size_type_node);
   TYPE_NAME (sizetype) = get_identifier ("size_type");
 

@@ -2112,15 +2112,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       gnat_base_index = Next_Index (gnat_base_index))
 	    {
 	      tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
-	      const int prec_comp
-		= compare_tree_int (rm_size (gnu_index_type),
-				    TYPE_PRECISION (sizetype));
-	      const bool subrange_p = (prec_comp < 0
-				       && (TYPE_UNSIGNED (gnu_index_type)
-					   || !TYPE_UNSIGNED (sizetype)))
- 				      || (prec_comp == 0
- 					  && TYPE_UNSIGNED (gnu_index_type)
- 					     == TYPE_UNSIGNED (sizetype));
 	      tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	      tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	      tree gnu_min = convert (sizetype, gnu_orig_min);
@@ -2129,7 +2120,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		= get_unpadded_type (Etype (gnat_base_index));
 	      tree gnu_base_orig_min = TYPE_MIN_VALUE (gnu_base_index_type);
 	      tree gnu_base_orig_max = TYPE_MAX_VALUE (gnu_base_index_type);
-	      tree gnu_high, gnu_low;
+	      tree gnu_high;
 
 	      /* See if the base array type is already flat.  If it is, we
 		 are probably compiling an ACATS test but it will cause the
@@ -2145,8 +2136,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* Similarly, if one of the values overflows in sizetype and the
 		 range is null, use 1..0 for the sizetype bounds.  */
-	      else if (!subrange_p
-		       && TREE_CODE (gnu_min) == INTEGER_CST
+	      else if (TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && (TREE_OVERFLOW (gnu_min) || TREE_OVERFLOW (gnu_max))
 		       && tree_int_cst_lt (gnu_orig_max, gnu_orig_min))
@@ -2159,8 +2149,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* If the minimum and maximum values both overflow in sizetype,
 		 but the difference in the original type does not overflow in
 		 sizetype, ignore the overflow indication.  */
-	      else if (!subrange_p
-		       && TREE_CODE (gnu_min) == INTEGER_CST
+	      else if (TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && TREE_OVERFLOW (gnu_min) && TREE_OVERFLOW (gnu_max)
 		       && !TREE_OVERFLOW
@@ -2179,56 +2168,46 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 deal with the "superflat" case.  There are three ways to do
 		 this.  If we can prove that the array can never be superflat,
 		 we can just use the high bound of the index type.  */
-	      else if (Nkind (gnat_index) == N_Range
-		       && cannot_be_superflat_p (gnat_index))
+	      else if ((Nkind (gnat_index) == N_Range
+		        && cannot_be_superflat_p (gnat_index))
+		       /* Packed Array Types are never superflat.  */
+		       || Is_Packed_Array_Type (gnat_entity))
 		gnu_high = gnu_max;
 
-	      /* Otherwise, if we can prove that the low bound minus one and
-		 the high bound cannot overflow, we can just use the expression
-		 MAX (hb, lb - 1).  Similarly, if we can prove that the high
-		 bound plus one and the low bound cannot overflow, we can use
-		 the high bound as-is and MIN (hb + 1, lb) for the low bound.
-		 Otherwise, we have to fall back to the most general expression
-		 (hb >= lb) ? hb : lb - 1.  Note that the comparison must be
-		 done in the original index type, to avoid any overflow during
-		 the conversion.  */
-	      else
+	      /* Otherwise, if the high bound is constant but the low bound is
+		 not, we use the expression (hb >= lb) ? lb : hb + 1 for the
+		 lower bound.  Note that the comparison must be done in the
+		 original type to avoid any overflow during the conversion.  */
+	      else if (TREE_CODE (gnu_max) == INTEGER_CST
+		       && TREE_CODE (gnu_min) != INTEGER_CST)
 		{
-		  gnu_high = size_binop (MINUS_EXPR, gnu_min, size_one_node);
-		  gnu_low = size_binop (PLUS_EXPR, gnu_max, size_one_node);
-
-		  /* If gnu_high is a constant that has overflowed, the low
-		     bound is the smallest integer so cannot be the maximum.
-		     If gnu_low is a constant that has overflowed, the high
-		     bound is the highest integer so cannot be the minimum.  */
-		  if ((TREE_CODE (gnu_high) == INTEGER_CST
-		       && TREE_OVERFLOW (gnu_high))
-		      || (TREE_CODE (gnu_low) == INTEGER_CST
-			   && TREE_OVERFLOW (gnu_low)))
-		    gnu_high = gnu_max;
-
-		  /* If the index type is a subrange and gnu_high a constant
-		     that hasn't overflowed, we can use the maximum.  */
-		  else if (subrange_p && TREE_CODE (gnu_high) == INTEGER_CST)
-		    gnu_high = size_binop (MAX_EXPR, gnu_max, gnu_high);
-
-		  /* If the index type is a subrange and gnu_low a constant
-		     that hasn't overflowed, we can use the minimum.  */
-		  else if (subrange_p && TREE_CODE (gnu_low) == INTEGER_CST)
-		    {
-		      gnu_high = gnu_max;
-		      gnu_min = size_binop (MIN_EXPR, gnu_min, gnu_low);
-		    }
-
-		  else
-		    gnu_high
-		      = build_cond_expr (sizetype,
-					 build_binary_op (GE_EXPR,
-							  boolean_type_node,
-							  gnu_orig_max,
-							  gnu_orig_min),
-					 gnu_max, gnu_high);
+		  gnu_high = gnu_max;
+		  gnu_min
+		    = build_cond_expr (sizetype,
+				       build_binary_op (GE_EXPR,
+							boolean_type_node,
+							gnu_orig_max,
+							gnu_orig_min),
+				       gnu_min,
+				       size_binop (PLUS_EXPR, gnu_max,
+						   size_one_node));
 		}
+
+	      /* Finally we use (hb >= lb) ? hb : lb - 1 for the upper bound
+		 in all the other cases.  Note that, here as well as above,
+		 the condition used in the comparison must be equivalent to
+		 the condition (length != 0).  This is relied upon in order
+		 to optimize array comparisons in compare_arrays.  */
+	      else
+		gnu_high
+		  = build_cond_expr (sizetype,
+				     build_binary_op (GE_EXPR,
+						      boolean_type_node,
+						      gnu_orig_max,
+						      gnu_orig_min),
+				     gnu_max,
+				     size_binop (MINUS_EXPR, gnu_min,
+						 size_one_node));
 
 	      gnu_index_types[index]
 		= create_index_type (gnu_min, gnu_high, gnu_index_type,
@@ -2299,7 +2278,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      && TREE_CODE (TREE_TYPE (gnu_index_type))
 			 != INTEGER_TYPE)
 		  || TYPE_BIASED_REPRESENTATION_P (gnu_index_type)
-		  || prec_comp > 0)
+		  || compare_tree_int (rm_size (gnu_index_type),
+				       TYPE_PRECISION (sizetype)) > 0)
 		need_index_type_struct = true;
 	    }
 
@@ -7128,9 +7108,11 @@ annotate_value (tree gnu_size)
 	 this is in bitsizetype.  */
       gnu_size = convert (bitsizetype, gnu_size);
 
-      /* For a negative value, use NEGATE_EXPR of the opposite.  Such values
-	 appear in expressions containing aligning patterns.  */
-      if (tree_int_cst_sgn (gnu_size) < 0)
+      /* For a negative value, build NEGATE_EXPR of the opposite.  Such values
+	 appear in expressions containing aligning patterns.  Note that, since
+	 sizetype is sign-extended but nonetheless unsigned, we don't directly
+	 use tree_int_cst_sgn.  */
+      if (TREE_INT_CST_HIGH (gnu_size) < 0)
 	{
 	  tree op_size = fold_build1 (NEGATE_EXPR, bitsizetype, gnu_size);
 	  return annotate_value (build1 (NEGATE_EXPR, bitsizetype, op_size));
@@ -7498,6 +7480,10 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   if (uint_size == No_Uint)
     return NULL_TREE;
 
+  /* Ignore a negative size since that corresponds to our back-annotation.  */
+  if (UI_Lt (uint_size, Uint_0))
+    return NULL_TREE;
+
   /* Find the node to use for errors.  */
   if ((Ekind (gnat_object) == E_Component
        || Ekind (gnat_object) == E_Discriminant)
@@ -7522,9 +7508,8 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
       return NULL_TREE;
     }
 
-  /* Ignore a negative size since that corresponds to our back-annotation.
-     Also ignore a zero size if it is not permitted.  */
-  if (tree_int_cst_sgn (size) < 0 || (integer_zerop (size) && !zero_ok))
+  /* Ignore a zero size if it is not permitted.  */
+  if (!zero_ok && integer_zerop (size))
     return NULL_TREE;
 
   /* The size of objects is always a multiple of a byte.  */
@@ -7611,6 +7596,10 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   if (uint_size == No_Uint)
     return;
 
+  /* Ignore a negative size since that corresponds to our back-annotation.  */
+  if (UI_Lt (uint_size, Uint_0))
+    return;
+
   /* Only issue an error if a Value_Size clause was explicitly given.
      Otherwise, we'd be duplicating an error on the Size clause.  */
   gnat_attr_node
@@ -7627,15 +7616,13 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
       return;
     }
 
-  /* Ignore a negative size since that corresponds to our back-annotation.
-     Also ignore a zero size unless a Value_Size clause exists, or a size
-     clause exists, or this is an integer type, in which case the front-end
-     will have always set it.  */
-  if (tree_int_cst_sgn (size) < 0
-      || (integer_zerop (size)
-	  && No (gnat_attr_node)
-	  && !Has_Size_Clause (gnat_entity)
-	  && !Is_Discrete_Or_Fixed_Point_Type (gnat_entity)))
+  /* Ignore a zero size unless a Value_Size clause exists, or a size clause
+     exists, or this is an integer type, in which case the front-end will
+     have always set it.  */
+  if (No (gnat_attr_node)
+      && integer_zerop (size)
+      && !Has_Size_Clause (gnat_entity)
+      && !Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
     return;
 
   old_size = rm_size (gnu_type);
