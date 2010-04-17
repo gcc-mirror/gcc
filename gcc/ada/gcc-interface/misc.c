@@ -389,8 +389,9 @@ static bool
 gnat_init (void)
 {
   /* Do little here, most of the standard declarations are set up after the
-     front-end has been run.  */
-  build_common_tree_nodes (true, true);
+     front-end has been run.  Use the same `char' as C, this doesn't really
+     matter since we'll use the explicit `unsigned char' for Character.  */
+  build_common_tree_nodes (flag_signed_char, true);
 
   /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
      corresponding to the width of Pmode.  In most cases when ptr_mode
@@ -398,6 +399,7 @@ gnat_init (void)
      But we get far better code using the width of Pmode.  */
   size_type_node = gnat_type_for_mode (Pmode, 0);
   set_sizetype (size_type_node);
+  TYPE_NAME (sizetype) = get_identifier ("size_type");
 
   /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
   boolean_type_node = make_unsigned_type (8);
