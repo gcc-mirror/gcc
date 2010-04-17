@@ -3533,17 +3533,11 @@
 
 (define_expand "negdi2"
  [(parallel
-   [(set (match_operand:DI          0 "s_register_operand" "")
-	  (neg:DI (match_operand:DI 1 "s_register_operand" "")))
+   [(set (match_operand:DI 0 "s_register_operand" "")
+	 (neg:DI (match_operand:DI 1 "s_register_operand" "")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
-  "
-  if (TARGET_THUMB1)
-    {
-      if (GET_CODE (operands[1]) != REG)
-        operands[1] = force_reg (DImode, operands[1]);
-     }
-  "
+  ""
 )
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
@@ -3559,8 +3553,8 @@
 )
 
 (define_insn "*thumb1_negdi2"
-  [(set (match_operand:DI         0 "register_operand" "=&l")
-	(neg:DI (match_operand:DI 1 "register_operand"   "l")))
+  [(set (match_operand:DI 0 "register_operand" "=&l")
+	(neg:DI (match_operand:DI 1 "register_operand" "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB1"
   "mov\\t%R0, #0\;neg\\t%Q0, %Q1\;sbc\\t%R0, %R1"
