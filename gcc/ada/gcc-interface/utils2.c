@@ -260,28 +260,27 @@ compare_arrays (tree result_type, tree a1, tree a2)
     a2 = gnat_protect_expr (a2);
 
   /* Process each dimension separately and compare the lengths.  If any
-     dimension has a size known to be zero, set SIZE_ZERO_P to 1 to
-     suppress the comparison of the data.  */
+     dimension has a length known to be zero, set LENGTH_ZERO_P to true
+     in order to suppress the comparison of the data at the end.  */
   while (TREE_CODE (t1) == ARRAY_TYPE && TREE_CODE (t2) == ARRAY_TYPE)
     {
       tree lb1 = TYPE_MIN_VALUE (TYPE_DOMAIN (t1));
       tree ub1 = TYPE_MAX_VALUE (TYPE_DOMAIN (t1));
       tree lb2 = TYPE_MIN_VALUE (TYPE_DOMAIN (t2));
       tree ub2 = TYPE_MAX_VALUE (TYPE_DOMAIN (t2));
-      tree bt = get_base_type (TREE_TYPE (lb1));
-      tree length1 = fold_build2 (MINUS_EXPR, bt, ub1, lb1);
-      tree length2 = fold_build2 (MINUS_EXPR, bt, ub2, lb2);
+      tree length1 = size_binop (PLUS_EXPR, size_binop (MINUS_EXPR, ub1, lb1),
+				 size_one_node);
+      tree length2 = size_binop (PLUS_EXPR, size_binop (MINUS_EXPR, ub2, lb2),
+				 size_one_node);
       tree comparison, this_a1_is_null, this_a2_is_null;
-      tree nbt, tem;
-      bool btem;
 
       /* If the length of the first array is a constant, swap our operands
-	 unless the length of the second array is the constant zero.
-	 Note that we have set the `length' values to the length - 1.  */
-      if (TREE_CODE (length1) == INTEGER_CST
-	  && !integer_zerop (fold_build2 (PLUS_EXPR, bt, length2,
-					  convert (bt, integer_one_node))))
+	 unless the length of the second array is the constant zero.  */
+      if (TREE_CODE (length1) == INTEGER_CST && !integer_zerop (length2))
 	{
+	  tree tem;
+	  bool btem;
+
 	  tem = a1, a1 = a2, a2 = tem;
 	  tem = t1, t1 = t2, t2 = tem;
 	  tem = lb1, lb1 = lb2, lb2 = tem;
@@ -292,57 +291,56 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  a2_side_effects_p = btem;
 	}
 
-      /* If the length of this dimension in the second array is the constant
-	 zero, we can just go inside the original bounds for the first
-	 array and see if last < first.  */
-      if (integer_zerop (fold_build2 (PLUS_EXPR, bt, length2,
-				      convert (bt, integer_one_node))))
+      /* If the length of the second array is the constant zero, we can just
+	 use the original stored bounds for the first array and see whether
+	 last < first holds.  */
+      if (integer_zerop (length2))
 	{
-	  tree ub = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
-	  tree lb = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+	  length_zero_p = true;
 
-	  comparison = build_binary_op (LT_EXPR, result_type, ub, lb);
+	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
+
+	  comparison = build_binary_op (LT_EXPR, result_type, ub1, lb1);
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
 	  if (EXPR_P (comparison))
 	    SET_EXPR_LOCATION (comparison, input_location);
 
-	  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
-
-	  length_zero_p = true;
 	  this_a1_is_null = comparison;
 	  this_a2_is_null = convert (result_type, boolean_true_node);
 	}
 
-      /* If the length is some other constant value, we know that the
-	 this dimension in the first array cannot be superflat, so we
-	 can just use its length from the actual stored bounds.  */
+      /* Otherwise, if the length is some other constant value, we know that
+	 this dimension in the second array cannot be superflat, so we can
+	 just use its length computed from the actual stored bounds.  */
       else if (TREE_CODE (length2) == INTEGER_CST)
 	{
+	  tree bt;
+
 	  ub1 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 	  lb1 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 	  /* Note that we know that UB2 and LB2 are constant and hence
 	     cannot contain a PLACEHOLDER_EXPR.  */
 	  ub2 = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
 	  lb2 = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t2)));
-	  nbt = get_base_type (TREE_TYPE (ub1));
+	  bt = get_base_type (TREE_TYPE (ub1));
 
 	  comparison
 	    = build_binary_op (EQ_EXPR, result_type,
-			       build_binary_op (MINUS_EXPR, nbt, ub1, lb1),
-			       build_binary_op (MINUS_EXPR, nbt, ub2, lb2));
+			       build_binary_op (MINUS_EXPR, bt, ub1, lb1),
+			       build_binary_op (MINUS_EXPR, bt, ub2, lb2));
 	  comparison = SUBSTITUTE_PLACEHOLDER_IN_EXPR (comparison, a1);
 	  if (EXPR_P (comparison))
 	    SET_EXPR_LOCATION (comparison, input_location);
 
-	  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
-
 	  this_a1_is_null = build_binary_op (LT_EXPR, result_type, ub1, lb1);
 	  if (EXPR_P (this_a1_is_null))
 	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
+
 	  this_a2_is_null = convert (result_type, boolean_false_node);
 	}
 
-      /* Otherwise compare the computed lengths.  */
+      /* Otherwise, compare the computed lengths.  */
       else
 	{
 	  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
@@ -353,24 +351,24 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  if (EXPR_P (comparison))
 	    SET_EXPR_LOCATION (comparison, input_location);
 
-	  this_a1_is_null
-	    = build_binary_op (LT_EXPR, result_type, length1,
-			       convert (bt, integer_zero_node));
+	  this_a1_is_null = build_binary_op (EQ_EXPR, result_type, length1,
+					     size_zero_node);
 	  if (EXPR_P (this_a1_is_null))
 	    SET_EXPR_LOCATION (this_a1_is_null, input_location);
 
-	  this_a2_is_null
-	    = build_binary_op (LT_EXPR, result_type, length2,
-			       convert (bt, integer_zero_node));
+	  this_a2_is_null = build_binary_op (EQ_EXPR, result_type, length2,
+					     size_zero_node);
 	  if (EXPR_P (this_a2_is_null))
 	    SET_EXPR_LOCATION (this_a2_is_null, input_location);
 	}
 
+      /* Append expressions for this dimension to the final expressions.  */
       result = build_binary_op (TRUTH_ANDIF_EXPR, result_type,
 				result, comparison);
 
       a1_is_null = build_binary_op (TRUTH_ORIF_EXPR, result_type,
 				    this_a1_is_null, a1_is_null);
+
       a2_is_null = build_binary_op (TRUTH_ORIF_EXPR, result_type,
 				    this_a2_is_null, a2_is_null);
 
@@ -378,7 +376,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
       t2 = TREE_TYPE (t2);
     }
 
-  /* Unless the size of some bound is known to be zero, compare the
+  /* Unless the length of some dimension is known to be zero, compare the
      data in the array.  */
   if (!length_zero_p)
     {
