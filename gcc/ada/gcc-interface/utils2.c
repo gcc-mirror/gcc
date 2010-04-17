@@ -1080,9 +1080,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	case ARRAY_RANGE_REF:
 	case COMPONENT_REF:
 	case BIT_FIELD_REF:
-	    /* If this is for 'Address, find the address of the prefix and
-	       add the offset to the field.  Otherwise, do this the normal
-	       way.  */
+	    /* If this is for 'Address, find the address of the prefix and add
+	       the offset to the field.  Otherwise, do this the normal way.  */
 	  if (op_code == ATTR_ADDR_EXPR)
 	    {
 	      HOST_WIDE_INT bitsize;
@@ -1108,11 +1107,6 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      /* Compute the offset as a byte offset from INNER.  */
 	      if (!offset)
 		offset = size_zero_node;
-
-	      if (bitpos % BITS_PER_UNIT != 0)
-		post_error
-		  ("taking address of object not aligned on storage unit?",
-		   error_gnat_node);
 
 	      offset = size_binop (PLUS_EXPR, offset,
 				   size_int (bitpos / BITS_PER_UNIT));
