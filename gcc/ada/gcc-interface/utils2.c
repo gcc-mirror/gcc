@@ -1499,12 +1499,13 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
     = (gnat_node != Empty && Sloc (gnat_node) != No_Location)
       ? Get_Logical_Line_Number (Sloc(gnat_node)) : input_line;
 
-  TREE_TYPE (filename)
-    = build_array_type (char_type_node, build_index_type (size_int (len)));
+  TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
+					   build_index_type (size_int (len)));
 
   return
     build_call_2_expr (fndecl,
-		       build1 (ADDR_EXPR, build_pointer_type (char_type_node),
+		       build1 (ADDR_EXPR,
+			       build_pointer_type (unsigned_char_type_node),
 			       filename),
 		       build_int_cst (NULL_TREE, line_number));
 }

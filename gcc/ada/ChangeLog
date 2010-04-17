@@ -1,5 +1,23 @@
 2010-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* back-end.adb (Call_Back_End): Pass Standard_Character to gigi.
+	* gcc-interface/gigi.h (gigi): Add standard_character parameter.
+	(CHAR_TYPE_SIZE, SHORT_TYPE_SIZE, INT_TYPE_SIZE, LONG_TYPE_SIZE, 
+	LONG_LONG_TYPE_SIZE, FLOAT_TYPE_SIZE, DOUBLE_TYPE_SIZE,
+	LONG_DOUBLE_TYPE_SIZE, SIZE_TYPE): Delete.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Call
+	rm_size.
+	* gcc-interface/misc.c (gnat_init): Set signedness of char as per
+	flag_signed_char.  Tag sizetype with "size_type" moniker.
+	* gcc-interface/trans.c (gigi): Add standard_character parameter.
+	Remove useless built-in types.  Equate unsigned_char_type_node to
+	Standard.Character.  Use it instead of char_type_node throughout.
+	(Attribute_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils2.c (build_call_raise): Likewise.
+
+2010-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (enum standard_datatypes): Add new values
 	ADT_sbitsize_one_node and ADT_sbitsize_unit_node.
 	(sbitsize_one_node): New macro.

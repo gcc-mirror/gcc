@@ -230,8 +230,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
       struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
       struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
       struct List_Header *list_headers_ptr, Nat number_file,
-      struct File_Info_Type *file_info_ptr, Entity_Id standard_boolean,
-      Entity_Id standard_integer, Entity_Id standard_long_long_float,
+      struct File_Info_Type *file_info_ptr,
+      Entity_Id standard_boolean, Entity_Id standard_integer,
+      Entity_Id standard_character, Entity_Id standard_long_long_float,
       Entity_Id standard_exception_type, Int gigi_operating_mode)
 {
   Entity_Id gnat_literal;
@@ -317,23 +318,26 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   double_float_alignment = get_target_double_float_alignment ();
   double_scalar_alignment = get_target_double_scalar_alignment ();
 
-  /* Record the builtin types.  Define `integer' and `unsigned char' first so
-     that dbx will output them first.  */
+  /* Record the builtin types.  Define `integer' and `character' first so that
+     dbx will output them first.  */
   record_builtin_type ("integer", integer_type_node);
-  record_builtin_type ("unsigned char", char_type_node);
-  record_builtin_type ("long integer", long_integer_type_node);
-  unsigned_type_node = gnat_type_for_size (INT_TYPE_SIZE, 1);
-  record_builtin_type ("unsigned int", unsigned_type_node);
-  record_builtin_type (SIZE_TYPE, sizetype);
+  record_builtin_type ("character", unsigned_char_type_node);
   record_builtin_type ("boolean", boolean_type_node);
   record_builtin_type ("void", void_type_node);
 
   /* Save the type we made for integer as the type for Standard.Integer.  */
-  save_gnu_tree (Base_Type (standard_integer), TYPE_NAME (integer_type_node),
+  save_gnu_tree (Base_Type (standard_integer),
+		 TYPE_NAME (integer_type_node),
 		 false);
 
-  /* Save the type we made for boolean as the type for Standard.Boolean.  */
-  save_gnu_tree (Base_Type (standard_boolean), TYPE_NAME (boolean_type_node),
+  /* Likewise for character as the type for Standard.Character.  */
+  save_gnu_tree (Base_Type (standard_character),
+		 TYPE_NAME (unsigned_char_type_node),
+		 false);
+
+  /* Likewise for boolean as the type for Standard.Boolean.  */
+  save_gnu_tree (Base_Type (standard_boolean),
+		 TYPE_NAME (boolean_type_node),
 		 false);
   gnat_literal = First_Literal (Base_Type (standard_boolean));
   t = UI_To_gnu (Enumeration_Rep (gnat_literal), boolean_type_node);
@@ -474,7 +478,8 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	  (get_identifier ("__gnat_last_chance_handler"), NULL_TREE,
 	   build_function_type (void_type_node,
 				tree_cons (NULL_TREE,
-					   build_pointer_type (char_type_node),
+					   build_pointer_type
+					   (unsigned_char_type_node),
 					   tree_cons (NULL_TREE,
 						      integer_type_node,
 						      t))),
@@ -496,7 +501,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 	     build_function_type (void_type_node,
 				  tree_cons (NULL_TREE,
 					     build_pointer_type
-					     (char_type_node),
+					     (unsigned_char_type_node),
 					     tree_cons (NULL_TREE,
 							integer_type_node,
 							t))),
@@ -512,9 +517,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 				TYPE_QUAL_VOLATILE);
     }
 
-  /* Set the types that GCC and Gigi use from the front end.  We would
-     like to do this for char_type_node, but it needs to correspond to
-     the C char type.  */
+  /* Set the types that GCC and Gigi use from the front end.  */
   exception_type
     = gnat_to_gnu_entity (Base_Type (standard_exception_type),  NULL_TREE, 0);
   except_type_node = TREE_TYPE (exception_type);
@@ -1354,7 +1357,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	if (TREE_CODE (gnu_obj_type) == RECORD_TYPE
 	    && TYPE_CONTAINS_TEMPLATE_P (gnu_obj_type))
 	  {
-	    tree gnu_char_ptr_type = build_pointer_type (char_type_node);
+	    tree gnu_char_ptr_type
+	      = build_pointer_type (unsigned_char_type_node);
 	    tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
 	    gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
 	    gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,
@@ -5391,7 +5395,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	  if (TREE_CODE (gnu_obj_type) == RECORD_TYPE
 	      && TYPE_CONTAINS_TEMPLATE_P (gnu_obj_type))
 	    {
-	      tree gnu_char_ptr_type = build_pointer_type (char_type_node);
+	      tree gnu_char_ptr_type
+		= build_pointer_type (unsigned_char_type_node);
 	      tree gnu_pos = byte_position (TYPE_FIELDS (gnu_obj_type));
 	      gnu_ptr = convert (gnu_char_ptr_type, gnu_ptr);
 	      gnu_ptr = build_binary_op (POINTER_PLUS_EXPR, gnu_char_ptr_type,

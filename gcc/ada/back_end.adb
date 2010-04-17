@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,7 @@ package body Back_End is
          file_info_ptr                 : Address;
          gigi_standard_boolean         : Entity_Id;
          gigi_standard_integer         : Entity_Id;
+         gigi_standard_character       : Entity_Id;
          gigi_standard_long_long_float : Entity_Id;
          gigi_standard_exception_type  : Entity_Id;
          gigi_operating_mode           : Back_End_Mode_Type);
@@ -115,6 +116,7 @@ package body Back_End is
          file_info_ptr                 => File_Info_Array'Address,
          gigi_standard_boolean         => Standard_Boolean,
          gigi_standard_integer         => Standard_Integer,
+         gigi_standard_character       => Standard_Character,
          gigi_standard_long_long_float => Standard_Long_Long_Float,
          gigi_standard_exception_type  => Standard_Exception_Type,
          gigi_operating_mode           => Mode);

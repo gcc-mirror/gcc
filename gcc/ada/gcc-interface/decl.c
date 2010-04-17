@@ -2113,7 +2113,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
 	      const int prec_comp
-		= compare_tree_int (TYPE_RM_SIZE (gnu_index_type),
+		= compare_tree_int (rm_size (gnu_index_type),
 				    TYPE_PRECISION (sizetype));
 	      const bool subrange_p = (prec_comp < 0
 				       && (TYPE_UNSIGNED (gnu_index_type)
