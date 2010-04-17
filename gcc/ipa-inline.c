@@ -1667,6 +1667,17 @@ cgraph_early_inlining (void)
     }
   else
     {
+      if (lookup_attribute ("flatten",
+			    DECL_ATTRIBUTES (node->decl)) != NULL)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Flattening %s\n", cgraph_node_name (node));
+	  cgraph_flatten (node);
+	  timevar_push (TV_INTEGRATION);
+	  todo |= optimize_inline_calls (current_function_decl);
+	  timevar_pop (TV_INTEGRATION);
+	}
       /* We iterate incremental inlining to get trivial cases of indirect
 	 inlining.  */
       while (iterations < PARAM_VALUE (PARAM_EARLY_INLINER_MAX_ITERATIONS)

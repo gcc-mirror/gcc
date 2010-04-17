@@ -1,3 +1,7 @@
+2010-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_early_inlining): Handle flattening too.
+
 2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (negdi2): Remove redundant code to force values into a
