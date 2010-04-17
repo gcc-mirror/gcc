@@ -1,5 +1,10 @@
 2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.md (negdi2): Remove redundant code to force values into a
+	register.
+
+2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm/bpabi.S: Add EABI alignment attributes to objects.
 	* arm/bpabi-v6m.S: Likewise.
 	* arm/crti.asm: Likewise.
