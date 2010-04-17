@@ -1,5 +1,14 @@
 2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm/bpabi.S: Add EABI alignment attributes to objects.
+	* arm/bpabi-v6m.S: Likewise.
+	* arm/crti.asm: Likewise.
+	* arm/crtn.asm: Likewise.
+	* arm/lib1funcs.asm: Likewise.
+	* arm/libunwind.S: Likewise.
+
+2010-04-17  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm-protos.h (tune_params): New structure.
 	* arm.c (current_tune): New variable.
 	(arm_constant_limit): Delete.
