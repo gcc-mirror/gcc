@@ -1,9 +1,13 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause5.ad[sb]: New test.
+	* gnat.dg/rep_clause5_pkg.ads: New helper.
+
 2010-04-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/31538
 	* gfortran.dg/bounds_check_fail_4.f90: Adjust error message.
 	* gfortran.dg/bounds_check_fail_3.f90: Ditto.
-
 
 2010-04-16  Jason Merrill  <jason@redhat.com>
 
