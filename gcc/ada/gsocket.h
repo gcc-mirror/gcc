@@ -71,7 +71,6 @@
 
 #elif defined (WINNT)
 #define FD_SETSIZE 1024
-#include <windows.h>
 
 #ifdef __MINGW32__
 #include <winsock2.h>
@@ -159,6 +158,8 @@
 #define SHUT_RDWR	SD_BOTH
 
 #endif
+
+#include <windows.h>
 
 #elif defined(VMS)
 #define FD_SETSIZE 4096
