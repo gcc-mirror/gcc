@@ -1,3 +1,7 @@
+2010-04-18  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* gsocket.h: Make sure that winsock2.h is included before windows.h.
+
 2010-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_unary_op) <ATTR_ADDR_EXPR>: Do not
