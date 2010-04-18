@@ -1,3 +1,8 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause5.ad[sb]: New test.
+	* gnat.dg/rep_clause5_pkg.ads: New helper.
+
 2010-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/43560

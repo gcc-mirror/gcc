@@ -1,3 +1,9 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/43769
+	* tree-sra.c (bitfield_overlaps_p): If the length of the element is
+	self-referential, try to compute an upper bound.
+
 2010-04-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
