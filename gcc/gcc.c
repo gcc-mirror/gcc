@@ -7575,7 +7575,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 			  fuse_linker_plugin + strlen (fuse_linker_plugin), 0))
 	{
 	  linker_plugin_file_spec = find_a_file (&exec_prefixes,
-						 "liblto_plugin.so", X_OK,
+						 "liblto_plugin.so", R_OK,
 						 false);
 	  if (!linker_plugin_file_spec)
 	    fatal ("-fuse-linker-plugin, but liblto_plugin.so not found");
