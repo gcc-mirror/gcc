@@ -159,7 +159,7 @@ maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset,
     return NULL_TREE;
 
   /* Use signed size type for intermediate computation on the index.  */
-  idx_type = signed_type_for (size_type_node);
+  idx_type = ssizetype;
 
   /* If OFFSET and ELT_OFFSET are zero, we don't care about the size of the
      element type (so we can use the alignment if it's not constant).

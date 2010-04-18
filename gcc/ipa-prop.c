@@ -1700,7 +1700,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	      if (!useless_type_conversion_p (ptrtype, TREE_TYPE (expr)))
 		expr = fold_convert (ptrtype, expr);
 	      expr = fold_build2 (POINTER_PLUS_EXPR, ptrtype, expr,
-				  build_int_cst (size_type_node,
+				  build_int_cst (sizetype,
 						 adj->offset / BITS_PER_UNIT));
 	      if (!adj->by_ref)
 		expr = fold_build1 (INDIRECT_REF, adj->type, expr);

@@ -3358,7 +3358,7 @@ cxx_init_decl_processing (void)
   tree void_ftype;
   tree void_ftype_ptr;
 
-  build_common_tree_nodes (flag_signed_char, false);
+  build_common_tree_nodes (flag_signed_char);
 
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();

@@ -1,3 +1,8 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-lang.c (lto_init): Remove second argument in call to
+	build_common_tree_nodes.
+
 2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lto-elf.c [!HAVE_ELF_GETSHDRSTRNDX] (elf_getshdrstrndx): New

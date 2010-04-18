@@ -391,7 +391,7 @@ gnat_init (void)
   /* Do little here, most of the standard declarations are set up after the
      front-end has been run.  Use the same `char' as C, this doesn't really
      matter since we'll use the explicit `unsigned char' for Character.  */
-  build_common_tree_nodes (flag_signed_char, false);
+  build_common_tree_nodes (flag_signed_char);
 
   /* In Ada, we use the unsigned type corresponding to the width of Pmode as
      SIZETYPE.  In most cases when ptr_mode and Pmode differ, C will use the
