@@ -2214,37 +2214,35 @@ make_accum_type (int precision, int unsignedp, int satp)
    value to enable integer types to be created.  */
 
 void
-initialize_sizetypes (bool signed_p)
+initialize_sizetypes (void)
 {
   tree t = make_node (INTEGER_TYPE);
   int precision = GET_MODE_BITSIZE (SImode);
 
   SET_TYPE_MODE (t, SImode);
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
-  TYPE_USER_ALIGN (t) = 0;
   TYPE_IS_SIZETYPE (t) = 1;
-  TYPE_UNSIGNED (t) = !signed_p;
+  TYPE_UNSIGNED (t) = 1;
   TYPE_SIZE (t) = build_int_cst (t, precision);
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode));
   TYPE_PRECISION (t) = precision;
 
-  /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE.  */
-  set_min_and_max_values_for_integral_type (t, precision, !signed_p);
+  set_min_and_max_values_for_integral_type (t, precision, true);
 
   sizetype = t;
   bitsizetype = build_distinct_type_copy (t);
 }
 
-/* Make sizetype a version of TYPE, and initialize *sizetype
-   accordingly.  We do this by overwriting the stub sizetype and
-   bitsizetype nodes created by initialize_sizetypes.  This makes sure
-   that (a) anything stubby about them no longer exists, (b) any
-   INTEGER_CSTs created with such a type, remain valid.  */
+/* Make sizetype a version of TYPE, and initialize *sizetype accordingly.
+   We do this by overwriting the stub sizetype and bitsizetype nodes created
+   by initialize_sizetypes.  This makes sure that (a) anything stubby about
+   them no longer exists and (b) any INTEGER_CSTs created with such a type,
+   remain valid.  */
 
 void
 set_sizetype (tree type)
 {
-  tree t;
+  tree t, max;
   int oprecision = TYPE_PRECISION (type);
   /* The *bitsizetype types use a precision that avoids overflows when
      calculating signed sizes / offsets in bits.  However, when
@@ -2257,11 +2255,11 @@ set_sizetype (tree type)
   if (precision > HOST_BITS_PER_WIDE_INT * 2)
     precision = HOST_BITS_PER_WIDE_INT * 2;
 
-  gcc_assert (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
+  /* sizetype must be an unsigned type.  */
+  gcc_assert (TYPE_UNSIGNED (type));
 
   t = build_distinct_type_copy (type);
-  /* We do want to use sizetype's cache, as we will be replacing that
-     type.  */
+  /* We want to use sizetype's cache, as we will be replacing that type.  */
   TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (sizetype);
   TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (sizetype);
   TREE_TYPE (TYPE_CACHED_VALUES (t)) = type;
@@ -2273,10 +2271,17 @@ set_sizetype (tree type)
   TYPE_MAIN_VARIANT (sizetype) = sizetype;
   TYPE_CANONICAL (sizetype) = sizetype;
 
+  /* sizetype is unsigned but we need to fix TYPE_MAX_VALUE so that it is
+     sign-extended in a way consistent with force_fit_type.  */
+  max = TYPE_MAX_VALUE (sizetype);
+  TYPE_MAX_VALUE (sizetype)
+    = build_int_cst_wide_type (sizetype,
+			       TREE_INT_CST_LOW (max),
+			       TREE_INT_CST_HIGH (max));
+
   t = make_node (INTEGER_TYPE);
   TYPE_NAME (t) = get_identifier ("bit_size_type");
-  /* We do want to use bitsizetype's cache, as we will be replacing that
-     type.  */
+  /* We want to use bitsizetype's cache, as we will be replacing that type.  */
   TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (bitsizetype);
   TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (bitsizetype);
   TYPE_PRECISION (t) = precision;
@@ -2288,36 +2293,13 @@ set_sizetype (tree type)
   TYPE_MAIN_VARIANT (bitsizetype) = bitsizetype;
   TYPE_CANONICAL (bitsizetype) = bitsizetype;
 
-  if (TYPE_UNSIGNED (type))
-    {
-      fixup_unsigned_type (bitsizetype);
-      ssizetype = make_signed_type (oprecision);
-      TYPE_IS_SIZETYPE (ssizetype) = 1;
-      sbitsizetype = make_signed_type (precision);
-      TYPE_IS_SIZETYPE (sbitsizetype) = 1;
-    }
-  else
-    {
-      fixup_signed_type (bitsizetype);
-      ssizetype = sizetype;
-      sbitsizetype = bitsizetype;
-    }
+  fixup_unsigned_type (bitsizetype);
 
-  /* If SIZETYPE is unsigned, we need to fix TYPE_MAX_VALUE so that
-     it is sign extended in a way consistent with force_fit_type.  */
-  if (TYPE_UNSIGNED (type))
-    {
-      tree orig_max, new_max;
-
-      orig_max = TYPE_MAX_VALUE (sizetype);
-
-      /* Build a new node with the same values, but a different type.
-	 Sign extend it to ensure consistency.  */
-      new_max = build_int_cst_wide_type (sizetype,
-					 TREE_INT_CST_LOW (orig_max),
-					 TREE_INT_CST_HIGH (orig_max));
-      TYPE_MAX_VALUE (sizetype) = new_max;
-    }
+  /* Create the signed variants of *sizetype.  */
+  ssizetype = make_signed_type (oprecision);
+  TYPE_IS_SIZETYPE (ssizetype) = 1;
+  sbitsizetype = make_signed_type (precision);
+  TYPE_IS_SIZETYPE (sbitsizetype) = 1;
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE

@@ -227,12 +227,9 @@ build_size_arg_loc (location_t loc, tree nb_iter, tree op,
 		    gimple_seq *stmt_list)
 {
   gimple_seq stmts;
-  tree x;
-
-  x = fold_build2_loc (loc, MULT_EXPR, size_type_node,
-		       fold_convert_loc (loc, size_type_node, nb_iter),
-		       fold_convert_loc (loc, size_type_node,
-					 TYPE_SIZE_UNIT (TREE_TYPE (op))));
+  tree x = size_binop_loc (loc, MULT_EXPR,
+  			   fold_convert_loc (loc, sizetype, nb_iter),
+			   TYPE_SIZE_UNIT (TREE_TYPE (op)));
   x = force_gimple_operand (x, &stmts, true, NULL);
   gimple_seq_add_seq (stmt_list, stmts);
 

@@ -1039,7 +1039,7 @@ lto_init (void)
   linemap_add (line_table, LC_RENAME, 0, NULL, 0);
 
   /* Create the basic integer types.  */
-  build_common_tree_nodes (flag_signed_char, /*signed_sizetype=*/false);
+  build_common_tree_nodes (flag_signed_char);
 
   /* Share char_type_node with whatever would be the default for the target.
      char_type_node will be used for internal types such as

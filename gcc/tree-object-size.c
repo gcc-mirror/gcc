@@ -1203,7 +1203,8 @@ compute_object_sizes (void)
 			result = fold_convert (size_type_node,
 					       integer_minus_one_node);
 		      else if (object_size_type < 4)
-			result = size_zero_node;
+			result = fold_convert (size_type_node,
+					       integer_zero_node);
 		    }
 		}
 

@@ -8695,24 +8695,19 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		   && ((code == EQ_EXPR || code == NE_EXPR)
 		       || POINTER_TYPE_OVERFLOW_UNDEFINED))
 	    {
-	      tree signed_size_type_node;
-	      signed_size_type_node = signed_type_for (size_type_node);
-
 	      /* By converting to signed size type we cover middle-end pointer
 	         arithmetic which operates on unsigned pointer types of size
 	         type size and ARRAY_REF offsets which are properly sign or
 	         zero extended from their type in case it is narrower than
 	         size type.  */
 	      if (offset0 == NULL_TREE)
-		offset0 = build_int_cst (signed_size_type_node, 0);
+		offset0 = build_int_cst (ssizetype, 0);
 	      else
-		offset0 = fold_convert_loc (loc, signed_size_type_node,
-					    offset0);
+		offset0 = fold_convert_loc (loc, ssizetype, offset0);
 	      if (offset1 == NULL_TREE)
-		offset1 = build_int_cst (signed_size_type_node, 0);
+		offset1 = build_int_cst (ssizetype, 0);
 	      else
-		offset1 = fold_convert_loc (loc, signed_size_type_node,
-					    offset1);
+		offset1 = fold_convert_loc (loc, ssizetype, offset1);
 
 	      if (code != EQ_EXPR
 		  && code != NE_EXPR

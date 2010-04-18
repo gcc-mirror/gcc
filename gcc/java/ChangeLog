@@ -1,3 +1,8 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (java_init_decl_processing): Remove argument in call to
+	initialize_sizetypes
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* exception.cc (_Jv_Throw): Avoid set but not used warning.

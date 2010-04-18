@@ -579,7 +579,7 @@ java_init_decl_processing (void)
   TREE_TYPE (error_mark_node) = error_mark_node;
 
   /* Create sizetype first - needed for other types. */
-  initialize_sizetypes (false);
+  initialize_sizetypes ();
 
   byte_type_node = make_signed_type (8);
   pushdecl (build_decl (BUILTINS_LOCATION,

@@ -1,3 +1,8 @@
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (cxx_init_decl_processing): Remove second argument in call to
+	build_common_tree_nodes.
+
 2010-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36625
