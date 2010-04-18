@@ -6790,7 +6790,6 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 {
   rtx save_area, mem;
   rtx label;
-  rtx label_ref;
   rtx tmp_reg;
   rtx nsse_reg;
   alias_set_type set;
@@ -6841,35 +6840,9 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 	 SSE saves.  We need some preparation work to get this working.  */
 
       label = gen_label_rtx ();
-      label_ref = gen_rtx_LABEL_REF (Pmode, label);
 
-      /* Compute address to jump to :
-         label - eax*4 + nnamed_sse_arguments*4 Or
-         label - eax*5 + nnamed_sse_arguments*5 for AVX.  */
-      tmp_reg = gen_reg_rtx (Pmode);
       nsse_reg = gen_reg_rtx (Pmode);
       emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, AX_REG)));
-      emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
-			      gen_rtx_MULT (Pmode, nsse_reg,
-					    GEN_INT (4))));
-
-      /* vmovaps is one byte longer than movaps.  */
-      if (TARGET_AVX)
-	emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
-				gen_rtx_PLUS (Pmode, tmp_reg,
-					      nsse_reg)));
-
-      if (cum->sse_regno)
-	emit_move_insn
-	  (nsse_reg,
-	   gen_rtx_CONST (DImode,
-			  gen_rtx_PLUS (DImode,
-					label_ref,
-					GEN_INT (cum->sse_regno
-						 * (TARGET_AVX ? 5 : 4)))));
-      else
-	emit_move_insn (nsse_reg, label_ref);
-      emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
 
       /* Compute address of memory block we save into.  We always use pointer
 	 pointing 127 bytes after first byte to store - this is needed to keep
@@ -6882,11 +6855,12 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
       MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
-      set_mem_align (mem, BITS_PER_WORD);
+      set_mem_align (mem, 64);
 
       /* And finally do the dirty job!  */
       emit_insn (gen_sse_prologue_save (mem, nsse_reg,
-					GEN_INT (cum->sse_regno), label));
+					GEN_INT (cum->sse_regno), label,
+					gen_reg_rtx (Pmode)));
     }
 }
 
@@ -7047,7 +7021,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   int indirect_p = 0;
   tree ptrtype;
   enum machine_mode nat_mode;
-  int arg_boundary;
+  unsigned int arg_boundary;
 
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT || is_va_list_char_pointer (TREE_TYPE (valist)))
@@ -7279,6 +7253,8 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
 		  size_int (-align));
       t = fold_convert (TREE_TYPE (ovf), t);
+      if (crtl->stack_alignment_needed < arg_boundary)
+	crtl->stack_alignment_needed = arg_boundary;
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
   gimplify_assign (addr, t, pre_p);
@@ -20099,10 +20075,26 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
     }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
-     to 16byte boundary.  */
-  if (TARGET_64BIT)
+     to 16byte boundary.  Exact wording is:
+
+     An array uses the same alignment as its elements, except that a local or
+     global array variable of length at least 16 bytes or
+     a C99 variable-length array variable always has alignment of at least 16 bytes.
+
+     This was added to allow use of aligned SSE instructions at arrays.  This
+     rule is meant for static storage (where compiler can not do the analysis
+     by itself).  We follow it for automatic variables only when convenient.
+     We fully control everything in the function compiled and functions from
+     other unit can not rely on the alignment.
+
+     Exclude va_list type.  It is the common case of local array where
+     we can not benefit from the alignment.  */
+  if (TARGET_64BIT && optimize_function_for_speed_p (cfun)
+      && TARGET_SSE)
     {
       if (AGGREGATE_TYPE_P (type)
+	   && (TYPE_MAIN_VARIANT (type)
+	       != TYPE_MAIN_VARIANT (va_list_type_node))
 	   && TYPE_SIZE (type)
 	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 16

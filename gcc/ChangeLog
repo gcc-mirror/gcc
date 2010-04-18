@@ -1,3 +1,15 @@
+2010-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (UNSPEC_SSE_PROLOGUE_SAVE_LOW): New.
+	(sse_prologue_save_insn expander): Use new pattern.
+	(sse_prologue_save_insn1): New pattern and splitter.
+	(sse_prologue_save_insn): Update to deal also with 64bit aligned
+	blocks.
+	* i386.c (setup_incoming_varargs_64): Do not compute jump destination here.
+	(ix86_gimplify_va_arg): Update alignment needed.
+	(ix86_local_alignment): Do not align all local arrays
+	to 128bit.
+
 2010-04-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_early_inlining): Handle flattening too.
