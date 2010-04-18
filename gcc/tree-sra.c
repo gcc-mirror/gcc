@@ -2931,6 +2931,12 @@ bitfield_overlaps_p (tree blen, tree bpos, struct sra_elt *fld,
   else
     gcc_unreachable ();
 
+  if (CONTAINS_PLACEHOLDER_P (flen))
+    flen = size_binop (MULT_EXPR,
+		       fold_convert (bitsizetype,
+				     lang_hooks.types.max_size (fld->type)),
+		       bitsize_unit_node);
+
   gcc_assert (host_integerp (blen, 1)
 	      && host_integerp (bpos, 1)
 	      && host_integerp (flen, 1)
