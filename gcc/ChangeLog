@@ -1,8 +1,12 @@
+2010-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43766
+	* config/i386/i386.c (ix86_decompose_address): Handle ASHIFT addends.
+
 2010-04-19  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43662
-	* reginfo.c (reinit_regs): Set caller_save_initialized_p
-	to false.
+	* reginfo.c (reinit_regs): Set caller_save_initialized_p to false.
 
 2010-04-19 Ira Rosen <irar@il.ibm.com>
 
@@ -82,10 +86,10 @@
 	(sse_prologue_save_insn1): New pattern and splitter.
 	(sse_prologue_save_insn): Update to deal also with 64bit aligned
 	blocks.
-	* i386.c (setup_incoming_varargs_64): Do not compute jump destination here.
+	* i386.c (setup_incoming_varargs_64): Do not compute jump
+	destination here.
 	(ix86_gimplify_va_arg): Update alignment needed.
-	(ix86_local_alignment): Do not align all local arrays
-	to 128bit.
+	(ix86_local_alignment): Do not align all local arrays to 128bit.
 
 2010-04-17  Jan Hubicka  <jh@suse.cz>
 
