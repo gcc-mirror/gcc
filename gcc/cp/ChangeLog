@@ -1,3 +1,10 @@
+2010-04-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43704
+	* typeck.c (structural_comptypes): Test dependent typedefs
+	incompatibility before testing for their main variant based
+	equivalence.
+
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (SCOPED_ENUM_P, UNSCOPED_ENUM_P, SET_SCOPED_ENUM_P): Use
