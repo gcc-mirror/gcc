@@ -1,3 +1,9 @@
+2010-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Update
+	new_stmt.
+	(cgraph_materialize_all_clones): Assert	!need_ssa_update_p.
+
 2010-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43796
