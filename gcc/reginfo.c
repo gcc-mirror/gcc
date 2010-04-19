@@ -667,6 +667,8 @@ void
 reinit_regs (void)
 {
   init_regs ();
+  /* caller_save needs to be re-initialized.  */
+  caller_save_initialized_p = false;
   ira_init ();
 }
 
