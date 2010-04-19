@@ -1034,8 +1034,8 @@ AC_CHECK_FUNCS(elf_getshdrstrndx,,
 int main()
 {
   return elf_getshstrndx (NULL, 0) == 0;
-}]]), AC_DEFINE(HAVE_ELF_GETSHSTRNDX_GABI, 1,
-        [Define if elf_getshstrndx has gABI conformant return values.])])])]
+}]])], AC_DEFINE(HAVE_ELF_GETSHSTRNDX_GABI, 1,
+        [Define if elf_getshstrndx has gABI conformant return values.]))])]
   )
 LIBS="$save_LIBS"
 CPPFLAGS="$save_CPPFLAGS"
