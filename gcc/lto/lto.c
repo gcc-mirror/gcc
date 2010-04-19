@@ -554,6 +554,10 @@ lto_1_to_1_map (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      /* We will get proper partition based on function they are inlined to or
+	 cloned from.  */
+      if (node->global.inlined_to || node->clone_of)
+	continue;
       /* We only need to partition the nodes that we read from the
 	 gimple bytecode files.  */
       file_data = node->local.lto_file_data;
@@ -1881,19 +1885,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Finally merge the cgraph according to the decl merging decisions.  */
   lto_symtab_merge_cgraph_nodes ();
 
-  /* Mark cgraph nodes needed in the merged cgraph
-     This normally happens in whole-program pass, but for
-     ltrans the pass was already run at WPA phase.
-     
-     FIXME:  This is not valid way to do so; nodes can be needed
-     for non-obvious reasons.  We should stream the flags from WPA
-     phase. */
   if (flag_ltrans)
     for (node = cgraph_nodes; node; node = node->next)
       {
-        if (!node->global.inlined_to
-	    && cgraph_decide_is_function_needed (node, node->decl))
-          cgraph_mark_needed_node (node);
 	/* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
 	   summaries computed and needs to apply changes.  At the moment WHOPR only
 	   supports inlining, so we can push it here by hand.  In future we need to stream
@@ -1986,9 +1980,6 @@ do_whole_program_analysis (void)
 {
   char **output_files;
   size_t i;
-  struct cgraph_node *node; 
-
-  lto_1_to_1_map ();
 
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
@@ -1998,26 +1989,20 @@ do_whole_program_analysis (void)
   /* Reading in the cgraph uses different timers, start timing WPA now.  */
   timevar_push (TV_WHOPR_WPA);
 
-  /* FIXME lto. Hack. We should use the IPA passes.  There are a
-     number of issues with this now. 1. There is no convenient way to
-     do this. 2. Some passes may depend on properties that requires
-     the function bodies to compute.  */
   cgraph_function_flags_ready = true;
   bitmap_obstack_initialize (NULL);
   ipa_register_cgraph_hooks ();
+  cgraph_state = CGRAPH_STATE_IPA_SSA;
 
-  /* Reset inlining information before running IPA inliner.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    reset_inline_failed (node);
-
-  /* FIXME lto.  We should not call this function directly. */
-  pass_ipa_inline.pass.execute ();
+  execute_ipa_pass_list (all_regular_ipa_passes);
 
   verify_cgraph ();
   bitmap_obstack_release (NULL);
 
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
+
+  lto_1_to_1_map ();
 
   output_files = lto_wpa_write_files ();
 

@@ -1,3 +1,11 @@
+2010-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (decode_options): Disable whpr incompatible passes.
+	* lto/lto.c (lto_1_to_1_map): Skip clones.
+	(read_cgraph_and_symbols): Do not mark everything as needed.
+	(do_whole_program_analysis): Do map only after optimizing;
+	set proper cgraph_state; use passmanager.
+
 2010-04-19  DJ Delorie  <dj@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Check for mismatched modes in
