@@ -8458,11 +8458,11 @@ else
 int main()
 {
   return elf_getshstrndx (NULL, 0) == 0;
-},
-$as_echo "#define HAVE_ELF_GETSHSTRNDX_GABI 1" >>confdefs.h
-
+}
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_ELF_GETSHSTRNDX_GABI 1" >>confdefs.h
 
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
