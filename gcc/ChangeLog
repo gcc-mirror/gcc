@@ -1,5 +1,24 @@
 2010-04-19  Martin Jambor  <mjambor@suse.cz>
 
+	* gimple.h (create_tmp_reg): Declare.
+	* gimplify.c (create_tmp_reg): New function.
+	(gimplify_return_expr): Use create_tmp_reg.
+	(gimplify_omp_atomic): Likewise.
+	(gimple_regimplify_operands): Likewise.
+	* tree-dfa.c (make_rename_temp): Likewise.
+	* tree-predcom.c (predcom_tmp_var): Likewise.
+	(reassociate_to_the_same_stmt): Likewise.
+	* tree-sra.c (replace_uses_with_default_def_ssa_name): Likewise.
+	(get_replaced_param_substitute): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-ssa-phiopt.c (cond_store_replacement): Likewise.
+	* tree-ssa-pre.c (get_representative_for): Likewise.
+	(create_expression_by_pieces): Likewise.
+	* tree-tailcall.c (adjust_return_value_with_ops): Likewise.
+	(create_tailcall_accumulator): Likewise.
+
+2010-04-19  Martin Jambor  <mjambor@suse.cz>
+
 	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Update
 	new_stmt.
 	(cgraph_materialize_all_clones): Assert	!need_ssa_update_p.

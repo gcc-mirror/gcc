@@ -575,13 +575,10 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
 {
 
   tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
-  tree tmp = create_tmp_var (ret_type, label);
+  tree tmp = create_tmp_reg (ret_type, label);
   gimple stmt;
   tree result;
 
-  if (TREE_CODE (ret_type) == COMPLEX_TYPE
-      || TREE_CODE (ret_type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (tmp) = 1;
   add_referenced_var (tmp);
 
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
@@ -908,12 +905,9 @@ static tree
 create_tailcall_accumulator (const char *label, basic_block bb, tree init)
 {
   tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
-  tree tmp = create_tmp_var (ret_type, label);
+  tree tmp = create_tmp_reg (ret_type, label);
   gimple phi;
 
-  if (TREE_CODE (ret_type) == COMPLEX_TYPE
-      || TREE_CODE (ret_type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (tmp) = 1;
   add_referenced_var (tmp);
   phi = create_phi_node (tmp, bb);
   /* RET_TYPE can be a float when -ffast-maths is enabled.  */

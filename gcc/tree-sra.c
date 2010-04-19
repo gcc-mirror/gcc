@@ -2537,10 +2537,7 @@ replace_uses_with_default_def_ssa_name (tree ssa)
   tree repl, decl = SSA_NAME_VAR (ssa);
   if (TREE_CODE (decl) == PARM_DECL)
     {
-      tree tmp = create_tmp_var (TREE_TYPE (decl), "SR");
-      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-	DECL_GIMPLE_REG_P (tmp) = 1;
+      tree tmp = create_tmp_reg (TREE_TYPE (decl), "SR");
 
       get_var_ann (tmp);
       add_referenced_var (tmp);
@@ -3733,10 +3730,7 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
     {
       char *pretty_name = make_fancy_name (adj->base);
 
-      repl = create_tmp_var (TREE_TYPE (adj->base), "ISR");
-      if (TREE_CODE (TREE_TYPE (repl)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (repl)) == VECTOR_TYPE)
-	DECL_GIMPLE_REG_P (repl) = 1;
+      repl = create_tmp_reg (TREE_TYPE (adj->base), "ISR");
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
 
