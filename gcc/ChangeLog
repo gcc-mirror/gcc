@@ -1,3 +1,9 @@
+2010-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (ENUM_IS_SCOPED): Define.
+	* dwarf2out.c (gen_enumeration_type_die): Add DW_AT_enum_class
+	for ENUM_IS_SCOPED enums.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_comparison): Use ssizetype.
