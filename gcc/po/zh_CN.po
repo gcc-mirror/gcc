@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.5-b20100204\n"
+"Project-Id-Version: gcc 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-04-06 14:11+0000\n"
-"PO-Revision-Date: 2010-03-09 14:42+0800\n"
+"PO-Revision-Date: 2010-04-19 14:57+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Chinese\n"
 "X-Poedit-Country: CHINA\n"
-"X-Poedit-Basepath: C:\\MSYS\\source\\gcc-4.5-20091203\\gcc\n"
+"X-Poedit-Basepath: C:\\MSYS\\source\\gcc-4.5.0\\gcc\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: c-decl.c:4573 c-pretty-print.c:403 c-typeck.c:5590 toplev.c:1652
 #: cp/error.c:581 cp/error.c:854
@@ -641,25 +642,22 @@ msgid "collect2 version %s"
 msgstr "collect2 版本 %s"
 
 #: collect2.c:1823
-#, fuzzy, c-format
+#, c-format
 msgid "%d constructor found\n"
 msgid_plural "%d constructors found\n"
 msgstr[0] "找到 %d 个构造函数\n"
-msgstr[1] "找到 %d 个构造函数\n"
 
 #: collect2.c:1827
-#, fuzzy, c-format
+#, c-format
 msgid "%d destructor found\n"
 msgid_plural "%d destructors found\n"
 msgstr[0] "找到 %d 个析构函数\n"
-msgstr[1] "找到 %d 个析构函数\n"
 
 #: collect2.c:1831
-#, fuzzy, c-format
+#, c-format
 msgid "%d frame table found\n"
 msgid_plural "%d frame tables found\n"
-msgstr[0] "找到了 %d 个框架表\n"
-msgstr[1] "找到了 %d 个框架表\n"
+msgstr[0] "找到 %d 个框架表\n"
 
 #: collect2.c:1985 lto-wrapper.c:175
 #, c-format
@@ -2508,9 +2506,8 @@ msgid "The maximum number of insns of a peeled loop that rolls only once"
 msgstr "被剥离后只卷绕一次的循环包含的最多指令数"
 
 #: params.def:272
-#, fuzzy
 msgid "The maximum depth of a loop nest we completely peel"
-msgstr "一个完全剥离的循环所能有的最大指令数"
+msgstr "一个完全剥离的循环嵌套所能有的最大深度"
 
 #: params.def:278
 msgid "The maximum number of insns of an unswitched loop"
@@ -2805,13 +2802,12 @@ msgid "size of tiles for loop blocking"
 msgstr "循环分块中每小块的大小"
 
 #: params.def:752
-#, fuzzy
 msgid "maximum number of parameters in a SCoP"
-msgstr "参数%qs的最大值是 %u"
+msgstr "一个静态控制部分(ScoP)中参数的最大数量"
 
 #: params.def:759
 msgid "maximum number of basic blocks per function to be analyzed by Graphite"
-msgstr ""
+msgstr "Graphite 可分析的每函数所包含的基本块数量上限"
 
 #: params.def:766
 msgid "Max basic blocks number in loop for loop invariant motion"
@@ -2831,7 +2827,7 @@ msgstr "为循环启用预取时最小的指令/内存操作比"
 
 #: params.def:790
 msgid "Max. size of var tracking hash tables"
-msgstr ""
+msgstr "变量跟踪散列表的最大尺寸"
 
 #: params.def:797
 msgid "The minimum UID to be used for a nondebug insn"
@@ -4058,14 +4054,14 @@ msgid "%s:%d:   instantiated from here"
 msgstr "%s:%d：从此处实例化"
 
 #: cp/error.c:2794
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d:   [ skipping %d instantiation contexts ]\n"
-msgstr "%s:%d:%d：自%qs实例化\n"
+msgstr "%s:%d:%d：[ 跳过 %d 个实例化上下文 ]\n"
 
 #: cp/error.c:2798
 #, c-format
 msgid "%s:%d:   [ skipping %d instantiation contexts ]\n"
-msgstr ""
+msgstr "%s:%d：[ 跳过 %d 个实例化上下文 ]\n"
 
 #: cp/g++spec.c:261 java/jvspec.c:403
 #, c-format
@@ -5314,9 +5310,8 @@ msgid "Allow arbitrary character line width in fixed mode"
 msgstr "在固定模式下允许任意的字符行宽"
 
 #: fortran/lang.opt:249
-#, fuzzy
 msgid "-ffixed-line-length-<n>\tUse n as character line width in fixed mode"
-msgstr "-ffixed-line-length-<n>\t\t在固定模式下以 n 作为字符行宽"
+msgstr "-ffixed-line-length-<n>\t在固定模式下以 n 作为字符行宽"
 
 #: fortran/lang.opt:253
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions"
@@ -5331,9 +5326,8 @@ msgid "Allow arbitrary character line width in free mode"
 msgstr "在自由模式下允许任意的字符行宽"
 
 #: fortran/lang.opt:265
-#, fuzzy
 msgid "-ffree-line-length-<n>\tUse n as character line width in free mode"
-msgstr "-ffree-line-length-<n>\t\t在自由模式下以 n 作为字符行宽"
+msgstr "-ffree-line-length-<n>\t在自由模式下以 n 作为字符行宽"
 
 #: fortran/lang.opt:269
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
@@ -5388,9 +5382,8 @@ msgid "Try to lay out derived types as compactly as possible"
 msgstr "为派生类型使用尽可能紧实的布局"
 
 #: fortran/lang.opt:329
-#, fuzzy
 msgid "Protect parentheses in expressions"
-msgstr "建议%<>>%>表达式周围加上括号"
+msgstr "尊重表达式中的括号"
 
 #: fortran/lang.opt:333
 msgid "Enable range checking during compilation"
@@ -8935,9 +8928,8 @@ msgid "Warn for implicit type conversions that may change a value"
 msgstr "当隐式类型转换可能改变值时给出警告"
 
 #: c.opt:176
-#, fuzzy
 msgid "Warn for converting NULL from/to a non-pointer type"
-msgstr "将 NULL 转换为非指针类型"
+msgstr "将 NULL 转换为非指针类型时给出警告"
 
 #: c.opt:180
 msgid "Warn for implicit type conversions between signed and unsigned integers"
@@ -9480,9 +9472,8 @@ msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgstr "-ftabstop=<N>\t指定报告列号时制表位间的距离"
 
 #: c.opt:798
-#, fuzzy
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
-msgstr "-ftemplate-depth-<N>\t指定模板实例化的最大深度"
+msgstr "-ftemplate-depth=<N>\t指定模板实例化的最大深度"
 
 #: c.opt:805
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
@@ -9889,9 +9880,8 @@ msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
 msgstr "-dumpbase <文件>\t设定内存转储使用的文件基本名"
 
 #: common.opt:258
-#, fuzzy
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps"
-msgstr "-dumpdir <目录>\t\t设定内存转储使用的目录名"
+msgstr "-dumpdir <目录>\t设定内存转储使用的目录名"
 
 #: common.opt:284
 msgid "Align the start of functions"
@@ -12457,9 +12447,9 @@ msgid "%qE undeclared (first use in this function)"
 msgstr "%qE未声明(在此函数内第一次使用)"
 
 #: c-decl.c:2954
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "each undeclared identifier is reported only once for each function it appears in"
-msgstr "(即使在一个函数内多次出现，每个未声明的标识符在其"
+msgstr "每个未声明的标识符在其出现的函数内只报告一次"
 
 #: c-decl.c:3004 cp/decl.c:2446
 #, gcc-internal-format
@@ -15160,9 +15150,9 @@ msgid "function with qualified void return type called"
 msgstr "调用了有限定 void 返回类型的函数"
 
 #: c-typeck.c:2820 c-typeck.c:3047 cp/typeck.c:3315 cp/typeck.c:3429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declared here"
-msgstr "%qD在此声明"
+msgstr "在此声明"
 
 #: c-typeck.c:2855
 #, gcc-internal-format
@@ -16730,7 +16720,7 @@ msgstr "DW_LOC_OP %s 尚未实现"
 #: dwarf2out.c:12859
 #, gcc-internal-format
 msgid "non-delegitimized UNSPEC %d found in variable location"
-msgstr ""
+msgstr "变量位置处发现未被非法化的 UNSPEC %d"
 
 #: emit-rtl.c:2460
 #, gcc-internal-format
@@ -19304,12 +19294,12 @@ msgstr "损坏的值取样：%s 取样总数(%d)与基本块数(%d)不匹配"
 #: var-tracking.c:6051
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without"
-msgstr ""
+msgstr "变量跟踪大小越限，请不带 -fvar-tracking-assignments 重试"
 
 #: var-tracking.c:6055
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded"
-msgstr ""
+msgstr "变量跟踪大小越限"
 
 #: varasm.c:580
 #, gcc-internal-format
@@ -19675,9 +19665,9 @@ msgid "bad value %qs for -mcpu switch"
 msgstr "-mcpu 开关的值%qs错误"
 
 #: config/alpha/alpha.c:391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mtune switch"
-msgstr "-mcpu 开关的值%qs错误"
+msgstr "-mtune 开关的值%qs错误"
 
 #: config/alpha/alpha.c:398
 #, gcc-internal-format
@@ -23355,24 +23345,24 @@ msgid "cannot convert %qE from type %qT to type %qT"
 msgstr "无法将%qE从类型%qT转换到类型%qT"
 
 #: cp/cvt.c:371
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of volatile reference type %q#T from rvalue of type %qT"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "用类型为%2$qT的右值初始化类型为%1$q#T的 volatile 引用"
 
 #: cp/cvt.c:374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to volatile reference type %q#T from rvalue of type %qT"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "将类型为%2$qT的右值转换为%1$qT的 volatile 引用"
 
 #: cp/cvt.c:377
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of non-const reference type %q#T from rvalue of type %qT"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "用类型为%2$qT的右值初始化非常量引用类型%1$q#T"
 
 #: cp/cvt.c:380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to non-const reference type %q#T from rvalue of type %qT"
-msgstr "用类型为%2$qT的右值初始化类型为%1$qT的非常量引用无效"
+msgstr "将类型为%2$qT的右值转换为非常量引用类型%1$q#T"
 
 #: cp/cvt.c:453
 #, gcc-internal-format
@@ -24209,7 +24199,7 @@ msgstr "%q+D声明为友元"
 #: cp/decl.c:6546
 #, gcc-internal-format
 msgid "%q+D declared with an exception specification"
-msgstr "%q+D声明时有异常指定"
+msgstr "%q+D声明时带有异常规范"
 
 #: cp/decl.c:6580
 #, gcc-internal-format
@@ -25527,9 +25517,9 @@ msgid "%qD is already defined in %qT"
 msgstr "%qD已在%qT中定义过"
 
 #: cp/decl2.c:917
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid initializer for member function %qD"
-msgstr "成员%qE的初始值无效"
+msgstr "成员函数%qD的初始值设定无效"
 
 #: cp/decl2.c:923
 #, gcc-internal-format
@@ -25660,7 +25650,7 @@ msgstr "%2$q+#D的第 %1$P 个形参缺少默认实参"
 #: cp/decl2.c:4017
 #, gcc-internal-format
 msgid "converting lambda which uses %<...%> to function pointer"
-msgstr ""
+msgstr "将使用了%<...%>的 Lambda 转换为函数指针"
 
 #: cp/decl2.c:4022 cp/search.c:1892
 #, gcc-internal-format
@@ -26171,7 +26161,7 @@ msgstr "%qD修饰后的名字将在 GCC 的未来版本中有变化"
 #: cp/mangle.c:3071
 #, gcc-internal-format
 msgid "-fabi-version=4 (or =0) avoids this error with a change in vector mangling"
-msgstr ""
+msgstr "-fabi-version=4 (or =0) 可以改变向量修饰来避免这个错误"
 
 #: cp/method.c:396
 #, gcc-internal-format
@@ -26229,9 +26219,9 @@ msgid "function %q+D defaulted on its first declaration must not have an excepti
 msgstr "首次声明时被默认化的函数%q+D不可以指定异常"
 
 #: cp/method.c:1081
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared virtual cannot be defaulted in the class body"
-msgstr "声明为 explicit 的%qD不能在类体内被默认化"
+msgstr "声明为 virtual 的%qD不能在类体内指定默认值"
 
 #: cp/method.c:1130
 #, gcc-internal-format
@@ -26674,14 +26664,14 @@ msgid "typedef-name %qD used as destructor declarator"
 msgstr "typedef 名%qD用于析构函数声明"
 
 #: cp/parser.c:4552 cp/parser.c:6165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in casts"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在类型转换中"
 
 #: cp/parser.c:4615
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in a %<typeid%> expression"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在%<typeid%>表达式中"
 
 #. Warn the user that a compound literal is not
 #. allowed in standard C++.
@@ -26711,9 +26701,9 @@ msgid "try removing the parentheses around the type-id"
 msgstr "请尝试删除类型标识符两边的括号"
 
 #: cp/parser.c:5852
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in a new-type-id"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在 new-type-id 中"
 
 #: cp/parser.c:5976
 #, gcc-internal-format
@@ -26766,9 +26756,9 @@ msgid "%<%T::%D%> names the constructor, not the type"
 msgstr "%<%T::%D%>命名了一个构造函数而非类型"
 
 #: cp/parser.c:8113
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in conditions"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在条件表达式中"
 
 #. Issue a warning about this use of a GNU extension.
 #: cp/parser.c:8462
@@ -26814,9 +26804,9 @@ msgid "templates may not be %<virtual%>"
 msgstr "模板不能是%<virtual%>的"
 
 #: cp/parser.c:9523
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in %<decltype%> expressions"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在%<decltype%>中"
 
 #: cp/parser.c:9778
 #, gcc-internal-format
@@ -26991,9 +26981,9 @@ msgid "invalid use of %<auto%>"
 msgstr "错误地使用了%<auto%>"
 
 #: cp/parser.c:15039
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in parameter types"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在参数类型中"
 
 #: cp/parser.c:15257
 #, gcc-internal-format
@@ -27076,14 +27066,14 @@ msgid "keyword %<typename%> not allowed in this context (the base class is impli
 msgstr "关键字%<typename%>不允许用在此上下文中(基类隐式地是一个类型)"
 
 #: cp/parser.c:17229
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in an exception-specification"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在异常规范中"
 
 #: cp/parser.c:17410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in exception-declarations"
-msgstr "不能在返回类型中定义新类型"
+msgstr "类型不能定义在异常声明中"
 
 #: cp/parser.c:18303
 #, gcc-internal-format
@@ -27442,11 +27432,10 @@ msgid "template argument %qE involves template parameter(s)"
 msgstr "模板实参%qE混杂了模板形参"
 
 #: cp/pt.c:4022
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT of template argument %qE depends on a template parameter"
 msgid_plural "type %qT of template argument %qE depends on template parameters"
 msgstr[0] "模板实参%2$qE的类型%1$qT取决于模板参数"
-msgstr[1] "模板实参%2$qE的类型%1$qT取决于模板参数"
 
 #: cp/pt.c:4129
 #, gcc-internal-format
@@ -27464,29 +27453,29 @@ msgid "parameter pack %qT must be at the end of the template parameter list"
 msgstr "参数包%qT必须出现在模板形参表末尾"
 
 #: cp/pt.c:4190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function template friend re-declaration"
-msgstr "友元模板特例化%qD中不允许出现默认参数"
+msgstr "默认参数不能用在函数模板友元重声明中"
 
 #: cp/pt.c:4193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function template friend declarations"
-msgstr "友元模板特例化%qD中不允许出现默认参数"
+msgstr "默认参数不能用在函数模板友元重声明中"
 
 #: cp/pt.c:4196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function templates without -std=c++0x or -std=gnu++0x"
-msgstr "默认化和被删除的函数只在 -std=c++0x 或 -std=gnu++0x 下可用"
+msgstr "只有指定了 -std=c++0x 或 -std=gnu++0x 时才能在函数模板中使用默认参数"
 
 #: cp/pt.c:4199
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in partial specializations"
-msgstr "部分特例化中未用到模板参数："
+msgstr "默认参数不能用在部分特例化中"
 
 #: cp/pt.c:4202 cp/pt.c:4253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default argument for template parameter for class enclosing %qD"
-msgstr "类型为%qT的形参的默认实参却有类型%qT"
+msgstr "包含%qD的类的模板参数有默认参数"
 
 #: cp/pt.c:4346
 #, gcc-internal-format
@@ -27557,18 +27546,16 @@ msgid "template specifiers not specified in declaration of %qD"
 msgstr "%qD的声明中没有 template 限定"
 
 #: cp/pt.c:4693
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclared with %d template parameter"
 msgid_plural "redeclared with %d template parameters"
-msgstr[0] "重声明为具有%d个模板参数"
-msgstr[1] "重声明为具有%d个模板参数"
+msgstr[0] "重声明为具有 %d 个模板参数"
 
 #: cp/pt.c:4697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+D used %d template parameter"
 msgid_plural "previous declaration %q+D used %d template parameters"
-msgstr[0] "先前的声明%q+D使用了%d个模板参数"
-msgstr[1] "先前的声明%q+D使用了%d个模板参数"
+msgstr[0] "先前的声明%q+D使用了 %d 个模板参数"
 
 #: cp/pt.c:4734
 #, gcc-internal-format
@@ -27782,9 +27769,9 @@ msgid "for template declaration %q+D"
 msgstr "对于模板声明%q+D"
 
 #: cp/pt.c:7060
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth= to increase the maximum) instantiating %qD"
-msgstr "模板实例化深度超过最大值 %d(使用 use -ftemplate-depth-NN 来增大最大值)，在实例化%qD时"
+msgstr "在实例化%2$qD时模板实例化深度超过最大值 %1$d(使用 use -ftemplate-depth= 来增大最大值)"
 
 #: cp/pt.c:8326
 #, gcc-internal-format
@@ -28067,9 +28054,9 @@ msgid "explicit instantiation of %qD but no definition available"
 msgstr "显式实例化%qD时没有可用的定义"
 
 #: cp/pt.c:16910
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth= to increase the maximum)"
-msgstr "模板实例化深度超过了最大值 %d，当实例化%q+D时，可能是由于生成虚函数表所致(使用 -ftemplate-depth-NN 来增大最大值)"
+msgstr "在实例化%2$q+D时模板实例化深度超过了最大值 %1$d，可能是由于生成虚函数表所致(使用 -ftemplate-depth= 来增大最大值)"
 
 #: cp/pt.c:17265
 #, gcc-internal-format
@@ -28082,9 +28069,9 @@ msgid "deducing from brace-enclosed initializer list requires #include <initiali
 msgstr "从花括号中的初始化列表演绎需要 #include <initializer_list>"
 
 #: cp/pt.c:18315
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q#D with %<auto%> type used in its own initializer"
-msgstr "类型为%<io%>的变量 %D 不能被初始化"
+msgstr "变量‘%q#D’在其自身的初始值设定中使用了%<auto%>类型"
 
 #: cp/pt.c:18337
 #, gcc-internal-format
@@ -28796,9 +28783,9 @@ msgid "%qE cannot be used as a function"
 msgstr "%qE不能用作函数"
 
 #: cp/typeck.c:3312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %s %q#D"
-msgstr "给予 %s%q+#D的实参太多"
+msgstr "给予 %s%q+#D的参数太多"
 
 #: cp/typeck.c:3318
 #, gcc-internal-format
@@ -28816,9 +28803,9 @@ msgid "parameter %P has incomplete type %qT"
 msgstr "形参 %P 的类型%qT不完全"
 
 #: cp/typeck.c:3426
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %s %q#D"
-msgstr "给予 %s%q+#D的实参太少"
+msgstr "给予 %s%q+#D的参数太少"
 
 #: cp/typeck.c:3432
 #, gcc-internal-format
@@ -34490,9 +34477,9 @@ msgid "The element in the derived type constructor at %L, for pointer component 
 msgstr "%L处指针组件‘%s’的派生类型构造函数中的元素应该是 POINTER 或 TARGET"
 
 #: fortran/resolve.c:930
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Invalid expression in the derived type constructor for pointer component '%s' at %L in PURE procedure"
-msgstr "%L处指针组件‘%s’的派生类型构造函数中的元素是 %s 但应该是 %s"
+msgstr "%2$L处指针组件‘%1$s’的派生类型构造函数中表达式无效"
 
 #: fortran/resolve.c:1052
 #, gcc-internal-format
@@ -35370,7 +35357,7 @@ msgstr "%2$L处的绑定标号‘%1$s’与 %4$L 处的全局实体‘%3$s’冲
 #: fortran/resolve.c:8496
 #, gcc-internal-format
 msgid "Binding label '%s' in interface body at %L collides with the global entity '%s' at %L"
-msgstr "%2$L处的接口体‘%1$s’中的绑定标记‘%1$s’与%4$L处的全局实体‘%3$s’冲突"
+msgstr "%2$L处的接口体中的绑定标记‘%1$s’与%4$L处的全局实体‘%3$s’冲突"
 
 #: fortran/resolve.c:8509
 #, gcc-internal-format
@@ -35380,7 +35367,7 @@ msgstr "%2$L处的捆绑标号‘%1$s’与 %4$L 处的全局实体‘%3$s’冲
 #: fortran/resolve.c:8587
 #, gcc-internal-format
 msgid "CHARACTER variable at %L has negative length %d, the length has been set to zero"
-msgstr ""
+msgstr "%L处的CHARACTER 变量有负的长度 %d，长度已经被设为零"
 
 #: fortran/resolve.c:8599
 #, gcc-internal-format
@@ -35415,7 +35402,7 @@ msgstr "‘%s’在%L处不能是主机相关的，因为它被在%L处声明的
 #: fortran/resolve.c:8964
 #, gcc-internal-format
 msgid "Fortran 2008: Implied SAVE for module variable '%s' at %L, needed due to the default initialization"
-msgstr ""
+msgstr "Fortran 2008：%2$L处模块变量‘%1$s’隐含使用了 SAVE，因为默认初始化有此需求"
 
 #: fortran/resolve.c:8975
 #, gcc-internal-format
