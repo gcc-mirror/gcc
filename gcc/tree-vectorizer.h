@@ -242,6 +242,9 @@ typedef struct _loop_vec_info {
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
   unsigned slp_unrolling_factor;
+
+  /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
+  VEC (gimple, heap) *reductions;
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -266,6 +269,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_STRIDED_STORES(L)       (L)->strided_stores
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
+#define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
 VEC_length (gimple, (L)->may_misalign_stmts) > 0
@@ -844,7 +848,8 @@ extern void vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
 extern bool vectorizable_live_operation (gimple, gimple_stmt_iterator *,
                                          gimple *);
-extern bool vectorizable_reduction (gimple, gimple_stmt_iterator *, gimple *);
+extern bool vectorizable_reduction (gimple, gimple_stmt_iterator *, gimple *,
+                                    slp_tree);
 extern bool vectorizable_induction (gimple, gimple_stmt_iterator *, gimple *);
 extern int vect_estimate_min_profitable_iters (loop_vec_info);
 extern tree get_initial_def_for_reduction (gimple, tree, tree *);
@@ -862,7 +867,7 @@ extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
 extern void vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (slp_tree, VEC (tree,heap) **,
-                               VEC (tree,heap) **);
+                               VEC (tree,heap) **, int);
 extern LOC find_bb_location (basic_block);
 extern bb_vec_info vect_slp_analyze_bb (basic_block);
 extern void vect_slp_transform_bb (basic_block);

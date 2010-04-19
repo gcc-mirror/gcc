@@ -1134,7 +1134,7 @@ vect_get_vec_defs (tree op0, tree op1, gimple stmt,
 		   slp_tree slp_node)
 {
   if (slp_node)
-    vect_get_slp_defs (slp_node, vec_oprnds0, vec_oprnds1);
+    vect_get_slp_defs (slp_node, vec_oprnds0, vec_oprnds1, -1);
   else
     {
       tree vec_oprnd;
@@ -2519,7 +2519,7 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
     {
       /* Handle uses.  */
       if (slp_node)
-        vect_get_slp_defs (slp_node, &vec_oprnds0, NULL);
+        vect_get_slp_defs (slp_node, &vec_oprnds0, NULL, -1);
       else
         {
           VEC_free (tree, heap, vec_oprnds0);
@@ -2819,7 +2819,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
       if (j == 0)
         {
           if (slp_node)
-              vect_get_slp_defs (slp_node, &vec_oprnds0, &vec_oprnds1);
+              vect_get_slp_defs (slp_node, &vec_oprnds0, &vec_oprnds1, -1);
           else
             {
               vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
@@ -3105,7 +3105,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           if (slp)
             {
 	      /* Get vectorized arguments for SLP_NODE.  */
-              vect_get_slp_defs (slp_node, &vec_oprnds, NULL);
+              vect_get_slp_defs (slp_node, &vec_oprnds, NULL, -1);
 
               vec_oprnd = VEC_index (tree, vec_oprnds, 0);
             }
@@ -4049,7 +4049,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
             || vectorizable_load (stmt, NULL, NULL, NULL, NULL)
             || vectorizable_call (stmt, NULL, NULL)
             || vectorizable_store (stmt, NULL, NULL, NULL)
-            || vectorizable_reduction (stmt, NULL, NULL)
+            || vectorizable_reduction (stmt, NULL, NULL, NULL)
             || vectorizable_condition (stmt, NULL, NULL, NULL, 0));
     else
       {
@@ -4201,8 +4201,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
       break;
 
     case reduc_vec_info_type:
-      gcc_assert (!slp_node);
-      done = vectorizable_reduction (stmt, gsi, &vec_stmt);
+      done = vectorizable_reduction (stmt, gsi, &vec_stmt, slp_node);
       gcc_assert (done);
       break;
 
