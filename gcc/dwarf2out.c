@@ -16335,6 +16335,7 @@ lower_bound_default (void)
       return 1;
     case DW_LANG_UPC:
     case DW_LANG_D:
+    case DW_LANG_Python:
       return dwarf_version >= 4 ? 0 : -1;
     case DW_LANG_Ada95:
     case DW_LANG_Ada83:
