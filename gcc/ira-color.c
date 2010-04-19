@@ -2786,7 +2786,9 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
   int hard_regno;
   enum reg_class cover_class;
   int regno = ALLOCNO_REGNO (a);
+  HARD_REG_SET saved;
 
+  COPY_HARD_REG_SET (saved, ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
   IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), forbidden_regs);
   if (! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
     IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), call_used_reg_set);
@@ -2830,7 +2832,7 @@ allocno_reload_assign (ira_allocno_t a, HARD_REG_SET forbidden_regs)
     }
   else if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "\n");
-
+  COPY_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), saved);
   return reg_renumber[regno] >= 0;
 }
 
