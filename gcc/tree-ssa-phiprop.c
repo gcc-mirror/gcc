@@ -190,11 +190,8 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	{
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
 	  old_arg = TREE_OPERAND (old_arg, 0);
-	  new_var = create_tmp_var (TREE_TYPE (old_arg), NULL);
+	  new_var = create_tmp_reg (TREE_TYPE (old_arg), NULL);
 	  tmp = gimple_build_assign (new_var, unshare_expr (old_arg));
-	  if (TREE_CODE (TREE_TYPE (old_arg)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (old_arg)) == VECTOR_TYPE)
-	    DECL_GIMPLE_REG_P (new_var) = 1;
 	  gcc_assert (is_gimple_reg (new_var));
 	  add_referenced_var (new_var);
 	  new_var = make_ssa_name (new_var, tmp);

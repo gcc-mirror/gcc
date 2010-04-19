@@ -1407,7 +1407,7 @@ get_representative_for (const pre_expr e)
      that we will return.  */
   if (!pretemp || exprtype != TREE_TYPE (pretemp))
     {
-      pretemp = create_tmp_var (exprtype, "pretmp");
+      pretemp = create_tmp_reg (exprtype, "pretmp");
       get_var_ann (pretemp);
     }
 
@@ -3088,16 +3088,12 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
      that we will return.  */
   if (!pretemp || exprtype != TREE_TYPE (pretemp))
     {
-      pretemp = create_tmp_var (exprtype, "pretmp");
+      pretemp = create_tmp_reg (exprtype, "pretmp");
       get_var_ann (pretemp);
     }
 
   temp = pretemp;
   add_referenced_var (temp);
-
-  if (TREE_CODE (exprtype) == COMPLEX_TYPE
-      || TREE_CODE (exprtype) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (temp) = 1;
 
   newstmt = gimple_build_assign (temp, folded);
   name = make_ssa_name (temp, newstmt);
