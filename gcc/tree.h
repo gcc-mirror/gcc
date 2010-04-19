@@ -457,6 +457,9 @@ struct GTY(()) tree_common {
 
        CALL_CANNOT_INLINE_P in
            CALL_EXPR
+ 
+       ENUM_IS_SCOPED in
+	   ENUMERAL_TYPE
 
    public_flag:
 
@@ -1161,6 +1164,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* Used to mark a CALL_EXPR as not suitable for inlining.  */
 #define CALL_CANNOT_INLINE_P(NODE) (CALL_EXPR_CHECK (NODE)->base.static_flag)
+
+/* Used to mark scoped enums.  */
+#define ENUM_IS_SCOPED(NODE) (ENUMERAL_TYPE_CHECK (NODE)->base.static_flag)
 
 /* In an expr node (usually a conversion) this means the node was made
    implicitly and should not lead to any sort of warning.  In a decl node,
