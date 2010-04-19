@@ -1,3 +1,8 @@
+2010-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (lower_bound_default): For DW_LANG_Python return
+	0 for -gdwarf-4.
+
 2010-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-color.c (allocno_reload_assign): Avoid accumulating
