@@ -1,3 +1,12 @@
+2010-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ifcvt.c (noce_try_cmove_arith): Fix long lines.
+	(check_cond_move_block): Likewise.
+	(cond_move_process_if_block): Likewise.
+	(noce_find_if_block): Improve formatting.
+	(find_if_header): Pass 0 to memset and tweak conditions.
+	(cond_exec_find_if_block): Fix long lines and tweak conditions.
+
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (lower_bound_default): For DW_LANG_Python return
