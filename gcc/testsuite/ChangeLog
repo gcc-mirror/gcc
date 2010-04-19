@@ -1,3 +1,8 @@
+2010-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43572
+	* gcc.dg/tree-ssa/tailcall-5.c: New testcase.
+
 2010-04-19 Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43771

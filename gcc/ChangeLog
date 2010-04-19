@@ -1,3 +1,9 @@
+2010-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43572
+	* tree-tailcall.c (find_tail_calls): Verify the tail call
+	properly.
+
 2010-04-19 Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43771

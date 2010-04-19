@@ -375,6 +375,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   tree m, a;
   basic_block abb;
   size_t idx;
+  tree var;
+  referenced_var_iterator rvi;
 
   if (!single_succ_p (bb))
     return;
@@ -460,6 +462,15 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	}
       if (idx == gimple_call_num_args (call) && !param)
 	tail_recursion = true;
+    }
+
+  /* Make sure the tail invocation of this function does not refer
+     to local variables.  */
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    {
+      if (!is_global_var (var)
+	  && ref_maybe_used_by_stmt_p (call, var))
+	return;
     }
 
   /* Now check the statements after the call.  None of them has virtual
