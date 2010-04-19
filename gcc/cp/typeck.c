@@ -1236,6 +1236,12 @@ structural_comptypes (tree t1, tree t2, int strict)
   if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
     return false;
 
+  /* If T1 and T2 are dependent typedefs then check upfront that
+     the template parameters of their typedef DECLs match before
+     going down checking their subtypes.  */
+  if (incompatible_dependent_types_p (t1, t2))
+    return false;
+
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
@@ -1244,11 +1250,6 @@ structural_comptypes (tree t1, tree t2, int strict)
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return true;
 
-  /* If T1 and T2 are dependent typedefs then check upfront that
-     the template parameters of their typedef DECLs match before
-     going down checking their subtypes.  */
-  if (incompatible_dependent_types_p (t1, t2))
-    return false;
 
   /* Compare the types.  Break out if they could be the same.  */
   switch (TREE_CODE (t1))
