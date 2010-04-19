@@ -2618,6 +2618,22 @@ expand_debug_expr (tree exp)
 	return gen_rtx_FIX (mode, op0);
 
     case POINTER_PLUS_EXPR:
+      /* For the rare target where pointers are not the same size as
+	 size_t, we need to check for mis-matched modes and correct
+	 the addend.  */
+      if (op0 && op1
+	  && GET_MODE (op0) != VOIDmode && GET_MODE (op1) != VOIDmode
+	  && GET_MODE (op0) != GET_MODE (op1))
+	{
+	  if (GET_MODE_BITSIZE (GET_MODE (op0)) < GET_MODE_BITSIZE (GET_MODE (op1)))
+	    op1 = gen_rtx_TRUNCATE (GET_MODE (op0), op1);
+	  else
+	    /* We always sign-extend, regardless of the signedness of
+	       the operand, because the operand is always unsigned
+	       here even if the original C expression is signed.  */
+	    op1 = gen_rtx_SIGN_EXTEND (GET_MODE (op0), op1);
+	}
+      /* Fall through.  */
     case PLUS_EXPR:
       return gen_rtx_PLUS (mode, op0, op1);
 

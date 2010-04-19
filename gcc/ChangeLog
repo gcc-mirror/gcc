@@ -1,3 +1,8 @@
+2010-04-19  DJ Delorie  <dj@redhat.com>
+
+	* cfgexpand.c (expand_debug_expr): Check for mismatched modes in
+	POINTER_PLUS_EXPR and fix them.
+
 2010-04-19  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43662
