@@ -1,3 +1,14 @@
+2010-04-19 Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/37027	
+	* lib/target-supports.exp 
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): New.
+	* gcc.dg/vect/pr37027.c: New test.
+	* gcc.dg/vect/slp-reduc-1.c, gcc.dg/vect/slp-reduc-2.c, 
+	gcc.dg/vect/slp-reduc-3.c, gcc.dg/vect/slp-reduc-4.c, 
+	gcc.dg/vect/slp-reduc-5.c, gcc.dg/vect/slp-reduc-6.c, 
+	gcc.dg/vect/vect-complex-6.c: Likewise.	
+
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/debug/dwarf2/enum1.C: New test.

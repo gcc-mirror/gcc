@@ -670,6 +670,8 @@ vect_pattern_recog_1 (
   tree pattern_vectype;
   tree type_in, type_out;
   enum tree_code code;
+  int i;
+  gimple next;
 
   pattern_stmt = (* vect_recog_func) (stmt, &type_in, &type_out);
   if (!pattern_stmt)
@@ -735,7 +737,13 @@ vect_pattern_recog_1 (
   STMT_VINFO_IN_PATTERN_P (stmt_info) = true;
   STMT_VINFO_RELATED_STMT (stmt_info) = pattern_stmt;
 
-  return;
+  /* Patterns cannot be vectorized using SLP, because they change the order of
+     computation.  */
+  for (i = 0; VEC_iterate (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i,
+                           next);
+       i++)
+    if (next == stmt)
+      VEC_ordered_remove (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i); 
 }
 
 

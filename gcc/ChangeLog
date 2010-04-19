@@ -1,3 +1,40 @@
+2010-04-19 Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/37027
+	* tree-vectorizer.h (struct _loop_vec_info): Add new field reductions 
+	and macro to access it.
+	(vectorizable_reduction): Add argument.
+	(vect_get_slp_defs): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Collect reduction
+	statements for possible use in SLP.
+	(new_loop_vec_info): Initialize LOOP_VINFO_REDUCTIONS.
+	(destroy_loop_vec_info): Free LOOP_VINFO_REDUCTIONS.
+	(vect_create_epilog_for_reduction): Handle SLP. Modify documentation,
+	add new argument.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-stmts.c (vect_get_vec_defs): Update call to 
+	vect_get_slp_defs.
+	(vectorizable_type_demotion, vectorizable_type_promotion,
+	vectorizable_store): Likewise.
+	(vect_analyze_stmt): Update call to vectorizable_reduction.
+	(vect_transform_stmt): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Handle reduction.
+	(vect_build_slp_tree): Fix indentation. Check that there are no loads
+	from different interleaving chains in same node.
+	(vect_slp_rearrange_stmts): New function.
+	(vect_supported_load_permutation_p): Allow load permutations for 
+	reductions. Call vect_slp_rearrange_stmts() to rearrange statements
+	inside SLP nodes if necessary.
+	(vect_analyze_slp_instance): Handle reductions.
+	(vect_analyze_slp): Try to build SLP instances originating from groups
+	of reductions.
+	(vect_detect_hybrid_slp_stmts): Skip reduction statements.
+	(vect_get_constant_vectors): Create initial vectors for reductions
+	according to reduction code. Add new argument.
+	(vect_get_slp_defs): Add new argument, pass it to 
+	vect_get_constant_vectors.
+	(vect_schedule_slp_instance): Remove SLP tree root statements.
+
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (ENUM_IS_SCOPED): Define.
