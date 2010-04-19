@@ -1,3 +1,17 @@
+2010-04-19  Eric B. Weddington  <eric.weddington@atmel.com>
+
+	* config/avr/avr-devices.c (avr_mcu_types): Add support for new
+	devices atmega644pa, attiny2313a, attiny24a, attiny261a, attiny4313,
+	attiny44a, attiny861a, atmega16a, atmega168a, atmega164a, atmega165a,
+	atmega169a, atmega169pa, atmega16hva2, atmega324a, atmega324pa,
+	atmega325a, atmega3250a, atmega328, atmega329a, atmega329pa,
+	atmega3290a, atmega48a, atmega644a, atmega645a, atmega645p,
+	atmega6450a, atmega6450p, atmega649a, atmega649p, atmega6490a,
+	atmega6490p, atmega64hve, atmega88a, atmega88pa, attiny461a, attiny84a,
+	m3000. Remove support for devices atmega8m1, atmega8c1, atmega16c1,
+	atmega4hvd, atmega8hvd, attiny327, m3000f, m3000s, m3001b.
+	* config/avr/t-avr.c (MULTILIB_MATCHES): Same.
+
 2010-04-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ifcvt.c (noce_try_cmove_arith): Fix long lines.
