@@ -1,3 +1,9 @@
+2010-04-19 Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43771
+	* tree-vect-analyze.c (vect_supported_load_permutation_p): Check
+	that load permutation doesn't have gaps.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/43769

@@ -3260,6 +3260,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
       SET_BIT (load_index, prev);
     }
 
+  for (j = 0; j < group_size; j++)
+    if (!TEST_BIT (load_index, j))
+      return false;
+
   sbitmap_free (load_index);
 
   if (supported && i == group_size * group_size
