@@ -1,5 +1,12 @@
 2010-04-19  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43796
+	* tree-vrp.c (adjust_range_with_scev): Lookup init and step
+	from SCEV in the lattice.
+	(vrp_visit_phi_node): Dump change.
+
+2010-04-19  Richard Guenther  <rguenther@suse.de>
+
 	* configure.ac: Fix quoting around elf_getshstrndx ABI check.
 	* configure: Re-generated.
 
