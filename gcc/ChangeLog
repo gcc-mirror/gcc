@@ -1,3 +1,8 @@
+2010-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-color.c (allocno_reload_assign): Avoid accumulating
+	reload registers in ALLOCNO_TOTAL_CONFLICT_HARD_REGS.
+
 2010-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	* gimple.h (create_tmp_reg): Declare.
