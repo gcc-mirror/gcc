@@ -1,3 +1,8 @@
+2010-04-19  Jie Zhang  <jie@codesourcery.com>
+
+	PR target/43662
+	* gcc.target/i386/pr43662.c: New test.
+
 2010-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43572

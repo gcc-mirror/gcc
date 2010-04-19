@@ -1,3 +1,9 @@
+2010-04-19  Jie Zhang  <jie@codesourcery.com>
+
+	PR target/43662
+	* reginfo.c (reinit_regs): Set caller_save_initialized_p
+	to false.
+
 2010-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43572
