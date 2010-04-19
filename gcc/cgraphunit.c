@@ -2260,6 +2260,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 
   gsi = gsi_for_stmt (e->call_stmt);
   gsi_replace (&gsi, new_stmt, true);
+  update_stmt (new_stmt);
 
   /* Update EH information too, just in case.  */
   maybe_clean_or_replace_eh_stmt (e->call_stmt, new_stmt);
@@ -2363,6 +2364,7 @@ cgraph_materialize_all_clones (void)
         push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	for (e = node->callees; e; e = e->next_callee)
 	  cgraph_redirect_edge_call_stmt_to_callee (e);
+	gcc_assert (!need_ssa_update_p (cfun));
 	pop_cfun ();
 	current_function_decl = NULL;
 #ifdef ENABLE_CHECKING
