@@ -9357,6 +9357,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   rtx base_reg, index_reg;
   HOST_WIDE_INT scale = 1;
   rtx scale_rtx = NULL_RTX;
+  rtx tmp;
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
@@ -9390,6 +9391,19 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 		return 0;
 	      index = XEXP (op, 0);
 	      scale_rtx = XEXP (op, 1);
+	      break;
+
+	    case ASHIFT:
+	      if (index)
+		return 0;
+	      index = XEXP (op, 0);
+	      tmp = XEXP (op, 1);
+	      if (!CONST_INT_P (tmp))
+		return 0;
+	      scale = INTVAL (tmp);
+	      if ((unsigned HOST_WIDE_INT) scale > 3)
+		return 0;
+	      scale = 1 << scale;
 	      break;
 
 	    case UNSPEC:
@@ -9432,8 +9446,6 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     }
   else if (GET_CODE (addr) == ASHIFT)
     {
-      rtx tmp;
-
       /* We're called for lea too, which implements ashift on occasion.  */
       index = XEXP (addr, 0);
       tmp = XEXP (addr, 1);
