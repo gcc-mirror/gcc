@@ -10,12 +10,13 @@ struct if_
 template<class I1>
 struct iterator_restrict_traits
 {
+    struct iterator_category {};
 };
 
 template<class T>
-class matrix
+struct matrix
 {
- class ci {};
+ struct ci {struct ic {};};
  class i {};
 };
 
