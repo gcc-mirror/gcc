@@ -1529,10 +1529,15 @@ static unsigned int
 compute_inline_parameters (void)
 {
   struct cgraph_node *node = cgraph_node (current_function_decl);
+  HOST_WIDE_INT self_stack_size;
 
   gcc_assert (!node->global.inlined_to);
-  node->local.estimated_self_stack_size = estimated_stack_frame_size ();
-  node->global.estimated_stack_size = node->local.estimated_self_stack_size;
+
+  /* Estimate the stack size for the function.  But not at -O0
+     because estimated_stack_frame_size is a quadratic problem.  */
+  self_stack_size = optimize ? estimated_stack_frame_size () : 0;
+  node->local.estimated_self_stack_size = self_stack_size;
+  node->global.estimated_stack_size = self_stack_size;
   node->global.stack_frame_offset = 0;
   node->local.inlinable = tree_inlinable_function_p (current_function_decl);
   node->local.self_insns = estimate_num_insns (current_function_decl,

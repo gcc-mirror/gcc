@@ -1,5 +1,14 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2008-12-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/38584
+	* ipa-inline.c (compute_inline_parameters): When not optimizing,
+	don't compute the inline parameters, just set them to 0 instead.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2010-03-01  Richard Guenther  <rguenther@suse.de>
 
