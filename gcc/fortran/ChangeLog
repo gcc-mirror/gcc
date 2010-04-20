@@ -1,3 +1,7 @@
+2010-04-20  Harald Anlauf  <anlauf@gmx.de>
+
+	* intrinsic.c (sort_actual): Remove 'is' in error message.
+
 2010-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/43339
