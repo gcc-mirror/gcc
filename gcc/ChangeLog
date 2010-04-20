@@ -1,3 +1,10 @@
+2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (build_complex_cproj, fold_builtin_cproj): New.
+	(fold_builtin_1): Fold builtin cproj.
+	* builtins.def (BUILT_IN_CPROJ, BUILT_IN_CPROJF, BUILT_IN_CPROJL):
+	Use ATTR_CONST_NOTHROW_LIST.
+
 2010-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ffs<mode>2): Macroize expander from ffs_cmove

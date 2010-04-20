@@ -7042,6 +7042,50 @@ fold_builtin_cabs (location_t loc, tree arg, tree type, tree fndecl)
   return NULL_TREE;
 }
 
+/* Build a complex (inf +- 0i) for the result of cproj.  TYPE is the
+   complex tree type of the result.  If NEG is true, the imaginary
+   zero is negative.  */
+
+static tree
+build_complex_cproj (tree type, bool neg)
+{
+  REAL_VALUE_TYPE rinf, rzero = dconst0;
+  
+  real_inf (&rinf);
+  rzero.sign = neg;
+  return build_complex (type, build_real (TREE_TYPE (type), rinf),
+			build_real (TREE_TYPE (type), rzero));
+}
+
+/* Fold call to builtin cproj, cprojf or cprojl with argument ARG.  TYPE is the
+   return type.  Return NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_cproj (location_t loc, tree arg, tree type)
+{
+  if (!validate_arg (arg, COMPLEX_TYPE)
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
+    return NULL_TREE;
+
+  /* If there are no infinities, return arg.  */
+  if (! HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (type))))
+    return non_lvalue_loc (loc, arg);
+
+  /* Calculate the result when the argument is a constant.  */
+  if (TREE_CODE (arg) == COMPLEX_CST)
+    {
+      const REAL_VALUE_TYPE *real = TREE_REAL_CST_PTR (TREE_REALPART (arg));
+      const REAL_VALUE_TYPE *imag = TREE_REAL_CST_PTR (TREE_IMAGPART (arg));
+      
+      if (real_isinf (real) || real_isinf (imag))
+	return build_complex_cproj (type, imag->sign);
+      else
+	return arg;
+    }
+
+  return NULL_TREE;
+}
+
 /* Fold a builtin function call to sqrt, sqrtf, or sqrtl with argument ARG.
    Return NULL_TREE if no simplification can be made.  */
 
@@ -9798,6 +9842,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_CCOSH):
       return fold_builtin_ccos(loc, arg0, type, fndecl, /*hyper=*/ true);
+
+    CASE_FLT_FN (BUILT_IN_CPROJ):
+      return fold_builtin_cproj(loc, arg0, type);
 
     CASE_FLT_FN (BUILT_IN_CSIN):
       if (validate_arg (arg0, COMPLEX_TYPE)
