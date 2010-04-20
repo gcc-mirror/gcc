@@ -416,7 +416,7 @@ while (0)
   /* Branch registers.  */				\
   0, 0, 0, 0, 0, 0, 0, 0,				\
   /*FP CCV UNAT PFS LC EC */				\
-     1,  1,   1,  1, 0, 1				\
+     1,  1,   1,  1, 1, 1				\
  }
 
 /* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered
@@ -451,7 +451,7 @@ while (0)
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
   /*FP CCV UNAT PFS LC EC */				\
-     1,  1,   1,  1, 0, 1				\
+     1,  1,   1,  1, 1, 1				\
 }
 
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical

@@ -1,5 +1,9 @@
 2010-04-19  James E. Wilson  <wilson@codesourcery.com>
 
+	PR rtl-optimization/43520
+	* config/ia64/ia64.h (FIXED_REGISTERS, CALL_USED_REGISTERS): Make
+	ar.lc fixed and call-used.
+
 	* config/ia64/ia64.c (TARGET_INVALID_WITHIN_DOLOOP): Define.
 
 2010-04-19  Jan Hubicka  <jh@suse.cz>
