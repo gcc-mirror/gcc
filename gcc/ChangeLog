@@ -1,6 +1,15 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2009-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38957
+	* c-typeck.c (c_finish_return): Handle POINTER_PLUS_EXPR the same way
+	as PLUS_EXPR.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2008-12-08  Jakub Jelinek  <jakub@redhat.com>
 	PR c/35443
 	* c-pretty-print.c (pp_c_expression): Handle BIND_EXPR.

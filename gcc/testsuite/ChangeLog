@@ -1,6 +1,14 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2009-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/38957
+	* gcc.dg/pr38957.c: New test.
+ 
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2008-12-08  Jakub Jelinek  <jakub@redhat.com>
 	PR c/35443
 	* gcc.dg/pr35443.c: New test.

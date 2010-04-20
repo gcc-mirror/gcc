@@ -7136,6 +7136,7 @@ c_finish_return (tree retval)
 	    {
 	    case NOP_EXPR:   case NON_LVALUE_EXPR:  case CONVERT_EXPR:
 	    case PLUS_EXPR:
+	    case POINTER_PLUS_EXPR:
 	      inner = TREE_OPERAND (inner, 0);
 	      continue;
 
