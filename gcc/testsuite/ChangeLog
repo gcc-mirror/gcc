@@ -1,5 +1,17 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+	PR c/35443
+	* gcc.dg/pr35443.c: New test.
+
+	2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35742
+	* gcc.dg/pr35742.c: New test.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/43438
 	* gcc.c-torture/execute/pr43438.c: New testcase.
 

@@ -1,5 +1,18 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2008-12-08  Jakub Jelinek  <jakub@redhat.com>
+	PR c/35443
+	* c-pretty-print.c (pp_c_expression): Handle BIND_EXPR.
+
+	2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/35742
+	* c-pretty-print.c (pp_c_expression): Handle GOTO_EXPR like
+	BIND_EXPR.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/43438
 	* combine.c (make_extraction): Properly zero-/sign-extend an
 	extraction of the low part of a CONST_INT.
