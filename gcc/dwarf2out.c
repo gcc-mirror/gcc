@@ -8245,6 +8245,7 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
       if ((at->dw_attr == DW_AT_type
 	   && (tag == DW_TAG_pointer_type
 	       || tag == DW_TAG_reference_type
+	       || tag == DW_TAG_rvalue_reference_type
 	       || tag == DW_TAG_ptr_to_member_type))
 	  || (at->dw_attr == DW_AT_friend
 	      && tag == DW_TAG_friend))
@@ -8959,6 +8960,7 @@ is_type_die (dw_die_ref die)
     case DW_TAG_enumeration_type:
     case DW_TAG_pointer_type:
     case DW_TAG_reference_type:
+    case DW_TAG_rvalue_reference_type:
     case DW_TAG_string_type:
     case DW_TAG_structure_type:
     case DW_TAG_subroutine_type:
@@ -8996,6 +8998,7 @@ is_comdat_die (dw_die_ref c)
 
   if (c->die_tag == DW_TAG_pointer_type
       || c->die_tag == DW_TAG_reference_type
+      || c->die_tag == DW_TAG_rvalue_reference_type
       || c->die_tag == DW_TAG_const_type
       || c->die_tag == DW_TAG_volatile_type)
     {
@@ -9244,6 +9247,7 @@ should_move_die_to_comdat (dw_die_ref die)
     case DW_TAG_interface_type:
     case DW_TAG_pointer_type:
     case DW_TAG_reference_type:
+    case DW_TAG_rvalue_reference_type:
     case DW_TAG_string_type:
     case DW_TAG_subroutine_type:
     case DW_TAG_ptr_to_member_type:
@@ -12192,7 +12196,11 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
     }
   else if (code == REFERENCE_TYPE)
     {
-      mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die, type);
+      if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+	mod_type_die = new_die (DW_TAG_rvalue_reference_type, comp_unit_die,
+				type);
+      else
+	mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die, type);
       add_AT_unsigned (mod_type_die, DW_AT_byte_size,
 		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
       item_type = TREE_TYPE (type);
@@ -18634,8 +18642,12 @@ gen_pointer_type_die (tree type, dw_die_ref context_die)
 static void
 gen_reference_type_die (tree type, dw_die_ref context_die)
 {
-  dw_die_ref ref_die
-    = new_die (DW_TAG_reference_type, scope_die_for (type, context_die), type);
+  dw_die_ref ref_die, scope_die = scope_die_for (type, context_die);
+
+  if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
+    ref_die = new_die (DW_TAG_rvalue_reference_type, scope_die, type);
+  else
+    ref_die = new_die (DW_TAG_reference_type, scope_die, type);
 
   equate_type_number_to_die (type, ref_die);
   add_type_attribute (ref_die, TREE_TYPE (type), 0, 0, context_die);
@@ -20907,6 +20919,7 @@ prune_unused_types_walk (dw_die_ref die)
     case DW_TAG_packed_type:
     case DW_TAG_pointer_type:
     case DW_TAG_reference_type:
+    case DW_TAG_rvalue_reference_type:
     case DW_TAG_volatile_type:
     case DW_TAG_typedef:
     case DW_TAG_array_type:

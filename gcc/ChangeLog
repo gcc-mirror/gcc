@@ -1,3 +1,13 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (TYPE_REF_IS_RVALUE): Define.
+	* dwarf2out.c (attr_checksum_ordered, is_type_die, is_comdat_die,
+	should_move_die_to_comdat, prune_unused_types_walk): Handle
+	DW_TAG_rvalue_reference_type like DW_TAG_reference_type.
+	(modified_type_die, gen_reference_type_die): Emit
+	DW_TAG_rvalue_reference_type instead of DW_TAG_reference_type
+	if TYPE_REF_IS_RVALUE and -gdwarf-4.
+
 2010-04-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/43635

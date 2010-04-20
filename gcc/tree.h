@@ -504,6 +504,9 @@ struct GTY(()) tree_common {
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
 
+       TYPE_REF_IS_RVALUE in
+	   REFERENCE_TYPE
+
    protected_flag:
 
        TREE_PROTECTED in
@@ -1346,6 +1349,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_PRIVATE(NODE) ((NODE)->base.private_flag)
 /* Used in classes in C++. */
 #define TREE_PROTECTED(NODE) ((NODE)->base.protected_flag)
+
+/* True if reference type NODE is a C++ rvalue reference.  */
+#define TYPE_REF_IS_RVALUE(NODE) \
+  (REFERENCE_TYPE_CHECK (NODE)->base.private_flag)
 
 /* Nonzero in a _DECL if the use of the name is defined as a
    deprecated feature by __attribute__((deprecated)).  */
