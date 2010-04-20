@@ -1,3 +1,8 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43337
+	* gfortran.dg/gomp/pr43337.f90: New test.
+
 2010-04-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/43635
