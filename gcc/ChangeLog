@@ -1,3 +1,7 @@
+2010-04-19  James E. Wilson  <wilson@codesourcery.com>
+
+	* config/ia64/ia64.c (TARGET_INVALID_WITHIN_DOLOOP): Define.
+
 2010-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (decode_options): Disable whpr incompatible passes.

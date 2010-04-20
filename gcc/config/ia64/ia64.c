@@ -537,6 +537,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT ia64_trampoline_init
 
+#undef TARGET_INVALID_WITHIN_DOLOOP
+#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_null
+
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE ia64_override_options_after_change
 
