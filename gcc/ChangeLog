@@ -1,3 +1,8 @@
+2010-04-20  Xinliang David Li  <davidxl@gcc.gnu.org>
+
+	PR middle-end/41952
+	* fold-const.c (fold_comparison): New folding rule. 
+
 2010-04-20  Anatoly Sokolov  <aesok@post.ru
 
 	* double-int.h (double_int_setbit): Declare.
