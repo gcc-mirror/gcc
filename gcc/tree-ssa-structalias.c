@@ -3403,7 +3403,19 @@ do_structure_copy (tree lhsop, tree rhsop)
   if (lhsp->type == DEREF
       || (lhsp->type == ADDRESSOF && lhsp->var == anything_id)
       || rhsp->type == DEREF)
-    process_all_all_constraints (lhsc, rhsc);
+    {
+      if (lhsp->type == DEREF)
+	{
+	  gcc_assert (VEC_length (ce_s, lhsc) == 1);
+	  lhsp->offset = UNKNOWN_OFFSET;
+	}
+      if (rhsp->type == DEREF)
+	{
+	  gcc_assert (VEC_length (ce_s, rhsc) == 1);
+	  rhsp->offset = UNKNOWN_OFFSET;
+	}
+      process_all_all_constraints (lhsc, rhsc);
+    }
   else if (lhsp->type == SCALAR
 	   && (rhsp->type == SCALAR
 	       || rhsp->type == ADDRESSOF))
@@ -5910,13 +5922,7 @@ dump_sa_points_to_info (FILE *outfile)
     {
       varinfo_t vi = get_varinfo (i);
       if (!vi->may_have_pointers)
-	{
-	  gcc_assert (find (i) == i
-		      || !(vi = get_varinfo (find (i)))->may_have_pointers);
-	  /* ???  See create_variable_info_for.
-	     gcc_assert (bitmap_empty_p (vi->solution));  */
-	  continue;
-	}
+	continue;
       dump_solution_for_var (outfile, i);
     }
 }
@@ -5955,6 +5961,8 @@ init_base_vars (void)
   var_nothing->size = ~0;
   var_nothing->fullsize = ~0;
   var_nothing->is_special_var = 1;
+  var_nothing->may_have_pointers = 0;
+  var_nothing->is_global_var = 0;
 
   /* Create the ANYTHING variable, used to represent that a variable
      points to some unknown piece of memory.  */
