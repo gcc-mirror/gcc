@@ -6552,7 +6552,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	return new;
 
       if (GET_CODE (new) == CONST_INT)
-	return gen_int_mode (INTVAL (new), mode);
+	return simplify_unary_operation (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
+					 mode, new, tmode);
 
       /* If we know that no extraneous bits are set, and that the high
 	 bit is not set, convert the extraction to the cheaper of
