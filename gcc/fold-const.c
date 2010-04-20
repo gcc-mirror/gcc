@@ -8643,9 +8643,33 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  offset1 = TREE_OPERAND (arg1, 1);
 	}
 
+      /* A local variable can never be pointed to by
+         the default SSA name of an incoming parameter.  */
+      if ((TREE_CODE (arg0) == ADDR_EXPR
+           && indirect_base0
+           && TREE_CODE (base0) == VAR_DECL
+           && auto_var_in_fn_p (base0, current_function_decl)
+           && !indirect_base1
+           && TREE_CODE (base1) == SSA_NAME
+           && TREE_CODE (SSA_NAME_VAR (base1)) == PARM_DECL
+           && SSA_NAME_IS_DEFAULT_DEF (base1))
+          || (TREE_CODE (arg1) == ADDR_EXPR
+              && indirect_base1
+              && TREE_CODE (base1) == VAR_DECL
+              && auto_var_in_fn_p (base1, current_function_decl)
+              && !indirect_base0
+              && TREE_CODE (base0) == SSA_NAME
+              && TREE_CODE (SSA_NAME_VAR (base0)) == PARM_DECL
+              && SSA_NAME_IS_DEFAULT_DEF (base0)))
+        {
+          if (code == NE_EXPR)
+            return constant_boolean_node (1, type);
+          else if (code == EQ_EXPR)
+            return constant_boolean_node (0, type);
+        }
       /* If we have equivalent bases we might be able to simplify.  */
-      if (indirect_base0 == indirect_base1
-	  && operand_equal_p (base0, base1, 0))
+      else if (indirect_base0 == indirect_base1
+               && operand_equal_p (base0, base1, 0))
 	{
 	  /* We can fold this expression to a constant if the non-constant
 	     offset parts are equal.  */
