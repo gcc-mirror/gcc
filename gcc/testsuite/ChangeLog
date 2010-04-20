@@ -1,3 +1,8 @@
+2010-04-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/43635
+	* gcc.c-torture/compile/pr43635.c: New testcase.
+
 2010-04-19  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43662

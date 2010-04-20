@@ -1,3 +1,9 @@
+2010-04-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/43635
+	* config/s390/s390.c (s390_emit_call): Turn direct into indirect
+	calls for -fpic -m31 if they have been sibcall optimized.
+
 2010-04-19  DJ Delorie  <dj@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Check for mismatched modes in
