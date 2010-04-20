@@ -1706,7 +1706,8 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	     the set.  Use ESCAPED as representative instead.  */
 	  else if (v->id == escaped_id)
 	    flag |= bitmap_set_bit (sol, escaped_id);
-	  else if (add_graph_edge (graph, lhs, t))
+	  else if (v->may_have_pointers
+		   && add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 
 	  /* If the variable is not exactly at the requested offset
@@ -2884,6 +2885,16 @@ process_constraint (constraint_t t)
 
   /* ADDRESSOF on the lhs is invalid.  */
   gcc_assert (lhs.type != ADDRESSOF);
+
+  /* We shouldn't add constraints from things that cannot have pointers.
+     It's not completely trivial to avoid in the callers, so do it here.  */
+  if (rhs.type != ADDRESSOF
+      && !get_varinfo (rhs.var)->may_have_pointers)
+    return;
+
+  /* Likewise adding to the solution of a non-pointer var isn't useful.  */
+  if (!get_varinfo (lhs.var)->may_have_pointers)
+    return;
 
   /* This can happen in our IR with things like n->a = *p */
   if (rhs.type == DEREF && lhs.type == DEREF && rhs.var != anything_id)
