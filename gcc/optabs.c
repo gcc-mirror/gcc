@@ -2928,7 +2928,7 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
   const struct real_format *fmt;
   int bitpos, word, nwords, i;
   enum machine_mode imode;
-  HOST_WIDE_INT hi, lo;
+  double_int mask;
   rtx temp, insns;
 
   /* The format has to have a simple sign bit.  */
@@ -2964,18 +2964,9 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
       nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
-    {
-      hi = 0;
-      lo = (HOST_WIDE_INT) 1 << bitpos;
-    }
-  else
-    {
-      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-      lo = 0;
-    }
+  mask = double_int_setbit (double_int_zero, bitpos);
   if (code == ABS)
-    lo = ~lo, hi = ~hi;
+    mask = double_int_not (mask);
 
   if (target == 0 || target == op0)
     target = gen_reg_rtx (mode);
@@ -2993,7 +2984,7 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
 	    {
 	      temp = expand_binop (imode, code == ABS ? and_optab : xor_optab,
 				   op0_piece,
-				   immed_double_const (lo, hi, imode),
+				   immed_double_int_const (mask, imode),
 				   targ_piece, 1, OPTAB_LIB_WIDEN);
 	      if (temp != targ_piece)
 		emit_move_insn (targ_piece, temp);
@@ -3011,7 +3002,7 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
     {
       temp = expand_binop (imode, code == ABS ? and_optab : xor_optab,
 			   gen_lowpart (imode, op0),
-			   immed_double_const (lo, hi, imode),
+			   immed_double_int_const (mask, imode),
 		           gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
       target = lowpart_subreg_maybe_copy (mode, temp, imode);
 
@@ -3562,7 +3553,7 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
     }
   else
     {
-      HOST_WIDE_INT hi, lo;
+      double_int mask;
 
       if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	{
@@ -3584,20 +3575,10 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  op1 = operand_subword_force (op1, word, mode);
 	}
 
-      if (bitpos < HOST_BITS_PER_WIDE_INT)
-	{
-	  hi = 0;
-	  lo = (HOST_WIDE_INT) 1 << bitpos;
-	}
-      else
-	{
-	  hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-	  lo = 0;
-	}
+      mask = double_int_setbit (double_int_zero, bitpos);
 
-      sign = gen_reg_rtx (imode);
       sign = expand_binop (imode, and_optab, op1,
-			   immed_double_const (lo, hi, imode),
+			   immed_double_int_const (mask, imode),
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 
@@ -3641,7 +3622,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		     int bitpos, bool op0_is_abs)
 {
   enum machine_mode imode;
-  HOST_WIDE_INT hi, lo;
+  double_int mask;
   int word, nwords, i;
   rtx temp, insns;
 
@@ -3665,16 +3646,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
-    {
-      hi = 0;
-      lo = (HOST_WIDE_INT) 1 << bitpos;
-    }
-  else
-    {
-      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-      lo = 0;
-    }
+  mask = double_int_setbit (double_int_zero, bitpos);
 
   if (target == 0 || target == op0 || target == op1)
     target = gen_reg_rtx (mode);
@@ -3691,13 +3663,15 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  if (i == word)
 	    {
 	      if (!op0_is_abs)
-		op0_piece = expand_binop (imode, and_optab, op0_piece,
-					  immed_double_const (~lo, ~hi, imode),
-					  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+		op0_piece
+		  = expand_binop (imode, and_optab, op0_piece,
+				  immed_double_int_const (double_int_not (mask),
+							  imode),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
 	      op1 = expand_binop (imode, and_optab,
 				  operand_subword_force (op1, i, mode),
-				  immed_double_const (lo, hi, imode),
+				  immed_double_int_const (mask, imode),
 				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
 	      temp = expand_binop (imode, ior_optab, op0_piece, op1,
@@ -3717,13 +3691,14 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   else
     {
       op1 = expand_binop (imode, and_optab, gen_lowpart (imode, op1),
-		          immed_double_const (lo, hi, imode),
+		          immed_double_int_const (mask, imode),
 		          NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
       op0 = gen_lowpart (imode, op0);
       if (!op0_is_abs)
 	op0 = expand_binop (imode, and_optab, op0,
-			    immed_double_const (~lo, ~hi, imode),
+			    immed_double_int_const (double_int_not (mask),
+						    imode),
 			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
       temp = expand_binop (imode, ior_optab, op0, op1,

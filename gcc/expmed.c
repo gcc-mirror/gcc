@@ -1847,7 +1847,7 @@ mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
   if (complement)
     mask = double_int_not (mask);
 
-  return immed_double_const (mask.low, mask.high, mode);
+  return immed_double_int_const (mask, mode);
 }
 
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) rtx with the value
@@ -1861,7 +1861,7 @@ lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
   val = double_int_zext (uhwi_to_double_int (INTVAL (value)), bitsize);
   val = double_int_lshift (val, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
 
-  return immed_double_const (val.low, val.high, mode);
+  return immed_double_int_const (val, mode);
 }
 
 /* Extract a bit field that is split across two words
