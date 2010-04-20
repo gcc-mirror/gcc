@@ -1695,7 +1695,6 @@ ipa_write_summaries (void)
   if (!flag_generate_lto || errorcount || sorrycount)
     return;
 
-  lto_new_extern_inline_states ();
   set = cgraph_node_set_new ();
 
   /* Create the callgraph set in the same order used in
@@ -1726,7 +1725,6 @@ ipa_write_summaries (void)
     }
 
   ipa_write_summaries_1 (set);
-  lto_delete_extern_inline_states ();
 
   free (order);
   ggc_free (set);

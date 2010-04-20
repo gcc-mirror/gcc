@@ -770,10 +770,6 @@ extern void lto_push_out_decl_state (struct lto_out_decl_state *);
 extern struct lto_out_decl_state *lto_pop_out_decl_state (void);
 extern void lto_record_function_out_decl_state (tree,
 						struct lto_out_decl_state *);
-extern void lto_new_extern_inline_states (void);
-extern void lto_delete_extern_inline_states (void);
-extern void lto_force_functions_extern_inline (bitmap decls);
-extern bool lto_forced_extern_inline_p (tree fn_decl);
 
 
 /* In lto-streamer.c.  */

@@ -1,3 +1,9 @@
+2010-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_add_inline_clones): Do not track inlined_decls.
+	(lto_add_all_inlinees): Likewise.
+	(lto_wpa_write_files): Likewise.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-lang.c (lto_init): Remove second argument in call to

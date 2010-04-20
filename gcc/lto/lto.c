@@ -593,22 +593,19 @@ finish:
 
 static void
 lto_add_inline_clones (cgraph_node_set set, struct cgraph_node *node,
-		       bitmap original_decls, bitmap inlined_decls)
+		       bitmap original_decls)
 {
    struct cgraph_node *callee;
    struct cgraph_edge *edge;
 
    cgraph_node_set_add (set, node);
 
-   if (!bitmap_bit_p (original_decls, DECL_UID (node->decl)))
-     bitmap_set_bit (inlined_decls, DECL_UID (node->decl));
-
    /* Check to see if NODE has any inlined callee.  */
    for (edge = node->callees; edge != NULL; edge = edge->next_callee)
      {
 	callee = edge->callee;
 	if (callee->global.inlined_to != NULL)
-	  lto_add_inline_clones (set, callee, original_decls, inlined_decls);
+	  lto_add_inline_clones (set, callee, original_decls);
      }
 }
 
@@ -616,14 +613,13 @@ lto_add_inline_clones (cgraph_node_set set, struct cgraph_node *node,
    information in the callgraph.  Returns a bitmap of decls that have
    been inlined into SET indexed by UID.  */
 
-static bitmap
+static void
 lto_add_all_inlinees (cgraph_node_set set)
 {
   cgraph_node_set_iterator csi;
   struct cgraph_node *node;
   bitmap original_nodes = lto_bitmap_alloc ();
   bitmap original_decls = lto_bitmap_alloc ();
-  bitmap inlined_decls = lto_bitmap_alloc ();
   bool changed;
 
   /* We are going to iterate SET while adding to it, mark all original
@@ -663,19 +659,17 @@ lto_add_all_inlinees (cgraph_node_set set)
     }
   while (changed);
 
-  /* Transitively add to SET all the inline clones for every node that
-     has been inlined.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
-    {
-      node = csi_node (csi);
-      if (bitmap_bit_p (original_nodes, node->uid))
-	lto_add_inline_clones (set, node, original_decls, inlined_decls);
-    }
+ /* Transitively add to SET all the inline clones for every node that
+    has been inlined.  */
+ for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+   {
+     node = csi_node (csi);
+     if (bitmap_bit_p (original_nodes, node->uid))
+      lto_add_inline_clones (set, node, original_decls);
+   }
 
   lto_bitmap_free (original_nodes);
   lto_bitmap_free (original_decls);
-
-  return inlined_decls;
 }
 
 /* Owing to inlining, we may need to promote a file-scope variable
@@ -1004,8 +998,6 @@ lto_wpa_write_files (void)
   unsigned i, n_sets, last_out_file_ix, num_out_files;
   lto_file *file;
   cgraph_node_set set;
-  bitmap decls;
-  VEC(bitmap,heap) *inlined_decls = NULL;
 
   timevar_push (TV_WHOPR_WPA);
 
@@ -1015,8 +1007,7 @@ lto_wpa_write_files (void)
      compiled by LTRANS.  */
   for (i = 0; VEC_iterate (cgraph_node_set, lto_cgraph_node_sets, i, set); i++)
     {
-      decls = lto_add_all_inlinees (set);
-      VEC_safe_push (bitmap, heap, inlined_decls, decls);
+      lto_add_all_inlinees (set);
       lto_stats.num_output_cgraph_nodes += VEC_length (cgraph_node_ptr,
 						       set->nodes);
     }
@@ -1053,13 +1044,8 @@ lto_wpa_write_files (void)
 	    fatal_error ("lto_elf_file_open() failed");
 
 	  lto_set_current_out_file (file);
-	  lto_new_extern_inline_states ();
-
-	  decls = VEC_index (bitmap, inlined_decls, i);
-	  lto_force_functions_extern_inline (decls);
 
 	  ipa_write_summaries_of_cgraph_node_set (set);
-	  lto_delete_extern_inline_states ();
 
 	  lto_set_current_out_file (NULL);
 	  lto_elf_file_close (file);
@@ -1071,10 +1057,6 @@ lto_wpa_write_files (void)
   lto_stats.num_output_files += n_sets;
 
   output_files[last_out_file_ix] = NULL;
-
-  for (i = 0; VEC_iterate (bitmap, inlined_decls, i, decls); i++)
-    lto_bitmap_free (decls);
-  VEC_free (bitmap, heap, inlined_decls);
 
   timevar_pop (TV_WHOPR_WPA_IO);
 
