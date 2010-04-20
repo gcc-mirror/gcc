@@ -1,3 +1,18 @@
+2010-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ffs<mode>2): Macroize expander from ffs_cmove
+	and ffsdi2 using SWI48 mode iterator.  Expand SImode insn through
+	ffsi2_no_cmove for !TARGET_CMOVE.
+	(ffssi2_no_cmove): Rename from *ffs_no_cmove.  Make public.
+	(ffssi2): Remove expander.
+	(*ffs<mode>_1): Macroize insn from *ffs{si,di} using SWI48
+	mode iterator.
+	(ctz<mode>2): Ditto from ctz{si,di}2.
+	(clz<mode>2): Macroize expander from ctz{hi,si,di}2 using SWI248
+	mode iterator.
+	(clz<mode>2_abm): Macroize insn from clz{hi,si,di}2_abm using SWI248
+	mode iterator.
+
 2010-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (AT_linkage_name): Define.
@@ -10,7 +25,7 @@
 2010-04-20  Xinliang David Li  <davidxl@gcc.gnu.org>
 
 	PR middle-end/41952
-	* fold-const.c (fold_comparison): New folding rule. 
+	* fold-const.c (fold_comparison): New folding rule.
 
 2010-04-20  Anatoly Sokolov  <aesok@post.ru>
 
@@ -33,13 +48,13 @@
 
 	* cgraph.c (cgraph_remove_node): Kill bodies in other partitoin.
 	(dump_cgraph_node): Dump new flags.
-	* cgraph.h (struct cgraph_node): Add flags reachable_from_other_partition
-	and in_other_partition.
-	(cgraph_can_remove_if_no_direct_calls_p): Functions used by other partition
-	can not be removed.
-	* cgraphunit.c (cgraph_mark_functions_to_output): Functions used by the other
-	partition must be output; silence sanity checking on leaking functions
-	bodies from other paritition.
+	* cgraph.h (struct cgraph_node): Add flags
+	reachable_from_other_partition and in_other_partition.
+	(cgraph_can_remove_if_no_direct_calls_p): Functions used by
+	other partition can not be removed.
+	* cgraphunit.c (cgraph_mark_functions_to_output): Functions used by
+	the other partition must be output; silence sanity checking on
+	leaking functions bodies from other paritition.
 	* lto-cgraph.c (reachable_from_other_partition_p): New function.
 	(lto_output_node): Output new flags; do not sanity check that inline
 	clones are output; drop lto_forced_extern_inline_p code; do not mock
@@ -65,8 +80,7 @@
 
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (do_structure_copy): Properly handle
-	DEREF.
+	* tree-ssa-structalias.c (do_structure_copy): Properly handle DEREF.
 	(dump_sa_points_to_info): Remove asserts.
 	(init_base_vars): nothing_id isn't an escape point nor does it
 	have pointers.
@@ -133,8 +147,8 @@
 
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
-	* dwarf2out.c (lower_bound_default): For DW_LANG_Python return
-	0 for -gdwarf-4.
+	* dwarf2out.c (lower_bound_default): For DW_LANG_Python return 0
+	for -gdwarf-4.
 
 	PR middle-end/43337
 	* tree-nested.c (convert_nonlocal_omp_clauses): OMP_CLAUSE_PRIVATE
@@ -201,7 +215,7 @@
 2010-04-19 Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/37027
-	* tree-vectorizer.h (struct _loop_vec_info): Add new field reductions 
+	* tree-vectorizer.h (struct _loop_vec_info): Add new field reductions
 	and macro to access it.
 	(vectorizable_reduction): Add argument.
 	(vect_get_slp_defs): Likewise.
@@ -212,7 +226,7 @@
 	(vect_create_epilog_for_reduction): Handle SLP. Modify documentation,
 	add new argument.
 	(vectorizable_reduction): Likewise.
-	* tree-vect-stmts.c (vect_get_vec_defs): Update call to 
+	* tree-vect-stmts.c (vect_get_vec_defs): Update call to
 	vect_get_slp_defs.
 	(vectorizable_type_demotion, vectorizable_type_promotion,
 	vectorizable_store): Likewise.
@@ -222,7 +236,7 @@
 	(vect_build_slp_tree): Fix indentation. Check that there are no loads
 	from different interleaving chains in same node.
 	(vect_slp_rearrange_stmts): New function.
-	(vect_supported_load_permutation_p): Allow load permutations for 
+	(vect_supported_load_permutation_p): Allow load permutations for
 	reductions. Call vect_slp_rearrange_stmts() to rearrange statements
 	inside SLP nodes if necessary.
 	(vect_analyze_slp_instance): Handle reductions.
@@ -231,7 +245,7 @@
 	(vect_detect_hybrid_slp_stmts): Skip reduction statements.
 	(vect_get_constant_vectors): Create initial vectors for reductions
 	according to reduction code. Add new argument.
-	(vect_get_slp_defs): Add new argument, pass it to 
+	(vect_get_slp_defs): Add new argument, pass it to
 	vect_get_constant_vectors.
 	(vect_schedule_slp_instance): Remove SLP tree root statements.
 
@@ -263,7 +277,7 @@
 
 	* gcc.c (main): Search for liblto_plugin.so with mode R_OK.
 
-2010-04-18 Ira Rosen <irar@il.ibm.com> 
+2010-04-18 Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43771
 	* tree-vect-slp.c (vect_supported_load_permutation_p): Check that
@@ -352,7 +366,7 @@
 
 	* config/i386/i386.md (*jcc_bt<mode>): Fix build breakage by adding
 	missing left parenthesis.
-	
+
 2010-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*bt<mode>): Macroize insn from *btsi and
@@ -384,7 +398,7 @@
 
 	* config/h8300/h8300.h (OK_FOR_U): Support 'U' constraint for H8300SX.
 
-	* config/h8300/h8300.md (movqi_h8sx, movhi_h8sx, movsi_h8sx, 
+	* config/h8300/h8300.md (movqi_h8sx, movhi_h8sx, movsi_h8sx,
 	cmphi_h8300hs_znvc, cmpsi, addhi3_h8sx) : Emit instructions in
 	#xx:3 and #xx:4 mode.
 
@@ -396,8 +410,7 @@
 
 2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* configure.ac: Check for elf_getshdrstrndx or elf_getshstrndx
-	flavor.
+	* configure.ac: Check for elf_getshdrstrndx or elf_getshstrndx flavor.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* doc/install.texi (Prerequisites): Document that Solaris 2 libelf
@@ -428,8 +441,7 @@
 
 2010-04-16  Diego Novillo  <dnovillo@google.com>
 
-	* doc/invoke.texi: Explain how are unrecognized -Wno- warnings
-	handled.
+	* doc/invoke.texi: Explain how are unrecognized -Wno- warnings handled.
 
 2010-04-16  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -559,8 +571,7 @@
 	(dump_points_to_solution): Likewise.
 	* tree-dfa.c (dump_variable): Also dump DECL_PT_UID.
 	* tree-inline.c (remap_ssa_name): Copy IPA points-to solution.
-	(remap_gimple_stmt): Reset call clobber/use information if
-	necessary.
+	(remap_gimple_stmt): Reset call clobber/use information if necessary.
 	(copy_decl_to_var): Copy DECL_PT_UID.
 	(copy_result_decl_to_var): Likewise.
 	* tree.c (make_node_stat): Initialize DECL_PT_UID.
@@ -628,7 +639,7 @@
 
 	PR target/43742
 	* config/sh/sh.md (doloop_end_split): Remove "+r" constraint
-	in an input-only operand.	
+	in an input-only operand.
 
 2010-04-15  Anatoly Sokolov  <aesok@post.ru>
 
@@ -637,7 +648,7 @@
 	(double_int_negative_p): Convert to static inline function.
 	* double-int.c (double_int_lshift, double_int_lshift): Add new function.
 	(double_int_negative_p): Remove.
-	* tree.h (lshift_double, rshift_double): 
+	* tree.h (lshift_double, rshift_double):
 	* tree.c (build_low_bits_mask): Clean up, use double_int_* functions.
 	* fold-const.c (fold_convert_const_int_from_real,
 	fold_convert_const_int_from_fixed, div_if_zero_remainder): (Ditto.).
@@ -647,7 +658,7 @@
 	* expmed.c (mask_rtx, lshift_value): (Ditto.).
 
 2010-04-14  Bernd Schmidt  <bernds@codesourcery.com>
-	
+
 	PR target/21803
 	* ifcvt.c (cond_exec_process_if_block): Look for identical sequences
 	at the start and end of the then/else blocks, and omit them from the
