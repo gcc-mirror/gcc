@@ -1,3 +1,9 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/43339
+	* openmp.c (gfc_resolve_do_iterator): Only make iteration vars for
+	sequential loops private in the innermost containing task region.
+
 2010-04-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/43539
