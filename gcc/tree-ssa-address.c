@@ -192,14 +192,12 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
   struct mem_addr_template *templ;
 
   if (addr->step && !integer_onep (addr->step))
-    st = immed_double_const (TREE_INT_CST_LOW (addr->step),
-			     TREE_INT_CST_HIGH (addr->step), address_mode);
+    st = immed_double_int_const (tree_to_double_int (addr->step), address_mode);
   else
     st = NULL_RTX;
 
   if (addr->offset && !integer_zerop (addr->offset))
-    off = immed_double_const (TREE_INT_CST_LOW (addr->offset),
-			      TREE_INT_CST_HIGH (addr->offset), address_mode);
+    off = immed_double_int_const (tree_to_double_int (addr->offset), address_mode);
   else
     off = NULL_RTX;
 

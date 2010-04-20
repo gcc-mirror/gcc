@@ -774,18 +774,13 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
       && GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT
       && CONST_INT_P (x) && INTVAL (x) < 0)
     {
-      HOST_WIDE_INT val = INTVAL (x);
+      double_int val = uhwi_to_double_int (INTVAL (x));
 
-      if (oldmode != VOIDmode
-	  && HOST_BITS_PER_WIDE_INT > GET_MODE_BITSIZE (oldmode))
-	{
-	  int width = GET_MODE_BITSIZE (oldmode);
+      /* We need to zero extend VAL.  */
+      if (oldmode != VOIDmode)
+	val = double_int_zext (val, GET_MODE_BITSIZE (oldmode));
 
-	  /* We need to zero extend VAL.  */
-	  val &= ((HOST_WIDE_INT) 1 << width) - 1;
-	}
-
-      return immed_double_const (val, (HOST_WIDE_INT) 0, mode);
+      return immed_double_int_const (val, mode);
     }
 
   /* We can do this with a gen_lowpart if both desired and current modes
@@ -9686,15 +9681,8 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
     }
   else if (TYPE_UNSIGNED (type))
     {
-      rtx mask;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	mask = immed_double_const (((unsigned HOST_WIDE_INT) 1 << prec) - 1, 0,
-				   GET_MODE (exp));
-      else
-	mask = immed_double_const ((unsigned HOST_WIDE_INT) -1,
-				   ((unsigned HOST_WIDE_INT) 1
-				    << (prec - HOST_BITS_PER_WIDE_INT)) - 1,
-				   GET_MODE (exp));
+      rtx mask = immed_double_int_const (double_int_mask (prec),
+					 GET_MODE (exp));
       return expand_and (GET_MODE (exp), exp, mask, target);
     }
   else
@@ -10280,9 +10268,8 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) = immed_double_const (TREE_INT_CST_LOW (elt),
-					       TREE_INT_CST_HIGH (elt),
-					       inner);
+	RTVEC_ELT (v, i) = immed_double_int_const (tree_to_double_int (elt),
+						   inner);
     }
 
   /* Initialize remaining elements to 0.  */

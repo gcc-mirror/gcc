@@ -1013,6 +1013,18 @@ double_int_umod (double_int a, double_int b, unsigned code)
   return double_int_mod (a, b, true, code);
 }
 
+/* Set BITPOS bit in A.  */
+double_int
+double_int_setbit (double_int a, unsigned bitpos)
+{
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
+    a.low |= (unsigned HOST_WIDE_INT) 1 << bitpos;
+  else
+    a.high |= (HOST_WIDE_INT) 1 <<  (bitpos - HOST_BITS_PER_WIDE_INT);
+ 
+  return a;
+}
+
 /* Shift A left by COUNT places keeping only PREC bits of result.  Shift
    right if COUNT is negative.  ARITH true specifies arithmetic shifting;
    otherwise use logical shift.  */

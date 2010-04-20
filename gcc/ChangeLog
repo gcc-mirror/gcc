@@ -1,3 +1,20 @@
+2010-04-20  Anatoly Sokolov  <aesok@post.ru
+
+	* double-int.h (double_int_setbit): Declare.
+	* double-int.c (double_int_setbit): New function.
+	* rtl.h (immed_double_int_const): Declare.
+	* emit-rtl.c (immed_double_int_const): New function.
+	* builtins.c (expand_builtin_signbit): Clean up, use double_int_*
+	and immed_double_int_const functions.
+	* optabs.c (expand_absneg_bit, expand_copysign_absneg,
+	expand_copysign_bit):  (Ditto.).
+	* simplify-rtx.c (simplify_binary_operation_1): (Ditto.).
+	* tree-ssa-address.c (addr_for_mem_ref): (Ditto.).
+	* dojump.c (prefer_and_bit_test): (Ditto.).
+	* expr.c (convert_modes, reduce_to_bit_field_precision,
+	const_vector_from_tree): (Ditto.).
+	* expmed.c (mask_rtx, lshift_value): (Ditto.).
+
 2010-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Kill bodies in other partitoin.
