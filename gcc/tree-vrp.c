@@ -3153,7 +3153,7 @@ static void
 adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 			gimple stmt, tree var)
 {
-  tree init, step, chrec, tmin, tmax, min, max, type;
+  tree init, step, chrec, tmin, tmax, min, max, type, tem;
   enum ev_direction dir;
 
   /* TODO.  Don't adjust anti-ranges.  An anti-range may provide
@@ -3174,7 +3174,13 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     return;
 
   init = initial_condition_in_loop_num (chrec, loop->num);
+  tem = op_with_constant_singleton_value_range (init);
+  if (tem)
+    init = tem;
   step = evolution_part_in_loop_num (chrec, loop->num);
+  tem = op_with_constant_singleton_value_range (step);
+  if (tem)
+    step = tem;
 
   /* If STEP is symbolic, we can't know whether INIT will be the
      minimum or maximum value in the range.  Also, unless INIT is
@@ -6412,7 +6418,18 @@ vrp_visit_phi_node (gimple phi)
   /* If the new range is different than the previous value, keep
      iterating.  */
   if (update_value_range (lhs, &vr_result))
-    return SSA_PROP_INTERESTING;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Found new range for ");
+	  print_generic_expr (dump_file, lhs, 0);
+	  fprintf (dump_file, ": ");
+	  dump_value_range (dump_file, &vr_result);
+	  fprintf (dump_file, "\n\n");
+	}
+
+      return SSA_PROP_INTERESTING;
+    }
 
   /* Nothing changed, don't add outgoing edges.  */
   return SSA_PROP_NOT_INTERESTING;
