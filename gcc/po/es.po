@@ -1,4 +1,4 @@
-# Mensajes en español para gcc-4.5-b20100204
+# Mensajes en español para gcc-4.5.0
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
@@ -7,15 +7,16 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.5-b20100204\n"
+"Project-Id-Version: gcc 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-04-06 14:11+0000\n"
-"PO-Revision-Date: 2010-02-05 15:29-0600\n"
+"PO-Revision-Date: 2010-04-16 11:29-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: c-decl.c:4573 c-pretty-print.c:403 c-typeck.c:5590 toplev.c:1652
 #: cp/error.c:581 cp/error.c:854
@@ -640,25 +641,25 @@ msgid "collect2 version %s"
 msgstr "collect2 versión %s"
 
 #: collect2.c:1823
-#, fuzzy, c-format
+#, c-format
 msgid "%d constructor found\n"
 msgid_plural "%d constructors found\n"
-msgstr[0] "se encuentra(n) %d constructor(es)\n"
-msgstr[1] "se encuentra(n) %d constructor(es)\n"
+msgstr[0] "se encontró %d constructor\n"
+msgstr[1] "se encontraron %d constructores\n"
 
 #: collect2.c:1827
-#, fuzzy, c-format
+#, c-format
 msgid "%d destructor found\n"
 msgid_plural "%d destructors found\n"
-msgstr[0] "se encuentra(n) %d  destructor(es)\n"
-msgstr[1] "se encuentra(n) %d  destructor(es)\n"
+msgstr[0] "se encontró %d  destructor\n"
+msgstr[1] "se encontraron %d  destructores\n"
 
 #: collect2.c:1831
-#, fuzzy, c-format
+#, c-format
 msgid "%d frame table found\n"
 msgid_plural "%d frame tables found\n"
-msgstr[0] "se encuentra(n) %d marcos de tabla(s)\n"
-msgstr[1] "se encuentra(n) %d marcos de tabla(s)\n"
+msgstr[0] "se encontró %d tabla de marco\n"
+msgstr[1] "se encontraron %d tablas de marco\n"
 
 #: collect2.c:1985 lto-wrapper.c:175
 #, c-format
@@ -2520,9 +2521,8 @@ msgid "The maximum number of insns of a peeled loop that rolls only once"
 msgstr "El número máximo de insns en un ciclo pelado que se enrolla solamente una vez"
 
 #: params.def:272
-#, fuzzy
 msgid "The maximum depth of a loop nest we completely peel"
-msgstr "El número máximo de insns en un ciclo completamente pelado"
+msgstr "La profundidad máxima de un ciclo anidado que nosotros pelamos completamente"
 
 #: params.def:278
 msgid "The maximum number of insns of an unswitched loop"
@@ -2819,13 +2819,12 @@ msgid "size of tiles for loop blocking"
 msgstr "Tamaño de bloques para el bloqueo de ciclo"
 
 #: params.def:752
-#, fuzzy
 msgid "maximum number of parameters in a SCoP"
-msgstr "el valor máximo del parámetro %qs es %u"
+msgstr "número máximo de parámetros en un SCoP"
 
 #: params.def:759
 msgid "maximum number of basic blocks per function to be analyzed by Graphite"
-msgstr ""
+msgstr "número máximo de bloques básicos por función para analizar con Graphite"
 
 #: params.def:766
 msgid "Max basic blocks number in loop for loop invariant motion"
@@ -2845,7 +2844,7 @@ msgstr "Tasa mínima de insns a ops de mem para activar la precarga en un ciclo"
 
 #: params.def:790
 msgid "Max. size of var tracking hash tables"
-msgstr ""
+msgstr "Tamaño máximo de las tablas de dispersión de rastreo de variables"
 
 #: params.def:797
 msgid "The minimum UID to be used for a nondebug insn"
@@ -4072,14 +4071,14 @@ msgid "%s:%d:   instantiated from here"
 msgstr "%s:%d:   instanciado desde aquí"
 
 #: cp/error.c:2794
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d:%d:   [ skipping %d instantiation contexts ]\n"
-msgstr "%s:%d:%d:   instanciado desde %qs\n"
+msgstr "%s:%d:%d:   [ se saltan %d contextos de instanciación ]\n"
 
 #: cp/error.c:2798
 #, c-format
 msgid "%s:%d:   [ skipping %d instantiation contexts ]\n"
-msgstr ""
+msgstr "%s:%d:   [ se saltan %d contextos de instanciación ]\n"
 
 #: cp/g++spec.c:261 java/jvspec.c:403
 #, c-format
@@ -5329,9 +5328,8 @@ msgid "Allow arbitrary character line width in fixed mode"
 msgstr "Permite ancho de línea de carácter arbitrario en formato fijo"
 
 #: fortran/lang.opt:249
-#, fuzzy
 msgid "-ffixed-line-length-<n>\tUse n as character line width in fixed mode"
-msgstr "-ffixed-line-length-<n>\t\tUsa n como ancho de línea de carácter en modo fijo"
+msgstr "-ffixed-line-length-<n>\tUsa n como ancho de línea de carácter en modo fijo"
 
 #: fortran/lang.opt:253
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions"
@@ -5346,9 +5344,8 @@ msgid "Allow arbitrary character line width in free mode"
 msgstr "Permite ancho de línea de carácter arbitrario en formato libre"
 
 #: fortran/lang.opt:265
-#, fuzzy
 msgid "-ffree-line-length-<n>\tUse n as character line width in free mode"
-msgstr "-ffree-line-length-<n>\t\tUsa n como ancho de línea de carácter en modo libre"
+msgstr "-ffree-line-length-<n>\tUsa n como ancho de línea de carácter en modo libre"
 
 #: fortran/lang.opt:269
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
@@ -5403,9 +5400,8 @@ msgid "Try to lay out derived types as compactly as possible"
 msgstr "Trata de acomodar los tipos derivados tan compactos como sea posible"
 
 #: fortran/lang.opt:329
-#, fuzzy
 msgid "Protect parentheses in expressions"
-msgstr "se sugieren paréntesis alrededor de la expresión %<>>%>"
+msgstr "Protege paréntesis en las expresiones"
 
 #: fortran/lang.opt:333
 msgid "Enable range checking during compilation"
@@ -8958,9 +8954,8 @@ msgid "Warn for implicit type conversions that may change a value"
 msgstr "Avisa cuando hay conversiones de tipo implícitas que pueden cambiar un valor"
 
 #: c.opt:176
-#, fuzzy
 msgid "Warn for converting NULL from/to a non-pointer type"
-msgstr "se convierte NULL a un tipo que no es puntero"
+msgstr "Avisa cuando se convierte NULL de/a un tipo que no es puntero"
 
 #: c.opt:180
 msgid "Warn for implicit type conversions between signed and unsigned integers"
@@ -9503,9 +9498,8 @@ msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgstr "-ftabstop=<número>\tDistancia entre topes de tabulador para reportes en columnas"
 
 #: c.opt:798
-#, fuzzy
 msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
-msgstr "-ftemplate-depth-<número>\tEspecifica la profundidad máxima de instanciación de plantillas"
+msgstr "-ftemplate-depth-<número>\tEspecifica la profundidad máxima de instanciación de plantilla"
 
 #: c.opt:805
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
@@ -9912,9 +9906,8 @@ msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
 msgstr "-dumpbase <fichero>\tEstablece el nombre base de fichero a usar para los volcados"
 
 #: common.opt:258
-#, fuzzy
 msgid "-dumpdir <dir>\tSet the directory name to be used for dumps"
-msgstr "-dumpdir <dir>\t\tEstablece el nombre del directorio a usar para los volcados"
+msgstr "-dumpdir <dir>\tEstablece el nombre del directorio a usar para los volcados"
 
 #: common.opt:284
 msgid "Align the start of functions"
@@ -12487,9 +12480,9 @@ msgid "%qE undeclared (first use in this function)"
 msgstr "%qE no se declaró aquí (primer uso en esta función)"
 
 #: c-decl.c:2954
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "each undeclared identifier is reported only once for each function it appears in"
-msgstr "(Cada identificador sin declarar es reportado sólo una vez para cada función en el que aparece.)"
+msgstr "cada identificador sin declarar se reporta sólo una vez para cada función en el que aparece"
 
 #: c-decl.c:3004 cp/decl.c:2446
 #, gcc-internal-format
@@ -15190,9 +15183,9 @@ msgid "function with qualified void return type called"
 msgstr "se llamó a una función con tipo de devolución void calificado"
 
 #: c-typeck.c:2820 c-typeck.c:3047 cp/typeck.c:3315 cp/typeck.c:3429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declared here"
-msgstr "%qD se declara aquí"
+msgstr "se declara aquí"
 
 #: c-typeck.c:2855
 #, gcc-internal-format
@@ -16760,7 +16753,7 @@ msgstr "DW_LOC_OP %s no está implementado"
 #: dwarf2out.c:12859
 #, gcc-internal-format
 msgid "non-delegitimized UNSPEC %d found in variable location"
-msgstr ""
+msgstr "se encontró UNSPEC %d que no está delegitimado la ubicación de variable"
 
 #: emit-rtl.c:2460
 #, gcc-internal-format
@@ -19334,12 +19327,12 @@ msgstr "Valor de perfil corrupto: %s la cuenta general del perfilador (%d) no co
 #: var-tracking.c:6051
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without"
-msgstr ""
+msgstr "se excedió el límite de tamaño de rastreo de variable con -fvar-track-assignments, reintente sin esa opción"
 
 #: var-tracking.c:6055
 #, gcc-internal-format
 msgid "variable tracking size limit exceeded"
-msgstr ""
+msgstr "se excedió el límite de tamaño de rastreo de variable"
 
 #: varasm.c:580
 #, gcc-internal-format
@@ -19705,9 +19698,9 @@ msgid "bad value %qs for -mcpu switch"
 msgstr "valor %qs erróneo para el interruptor -mcpu"
 
 #: config/alpha/alpha.c:391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mtune switch"
-msgstr "valor erróneo (%s) para la opción -mtune="
+msgstr "valor erróneo %qs para la opción -mtune"
 
 #: config/alpha/alpha.c:398
 #, gcc-internal-format
@@ -23387,24 +23380,24 @@ msgid "cannot convert %qE from type %qT to type %qT"
 msgstr "no se puede convertir %qE desde el tipo %qT al tipo %qT"
 
 #: cp/cvt.c:371
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of volatile reference type %q#T from rvalue of type %qT"
-msgstr "inicialización inválida de una referencia que no es constante de tipo %qT desde un r-valor de tipo %qT"
+msgstr "inicialización de un tipo de referencia volatile %q#T desde un r-valor de tipo %qT"
 
 #: cp/cvt.c:374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to volatile reference type %q#T from rvalue of type %qT"
-msgstr "inicialización inválida de una referencia que no es constante de tipo %qT desde un r-valor de tipo %qT"
+msgstr "inicialización a un tipo de referencia volatile %q#T desde un r-valor de tipo %qT"
 
 #: cp/cvt.c:377
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of non-const reference type %q#T from rvalue of type %qT"
-msgstr "inicialización inválida de una referencia que no es constante de tipo %qT desde un r-valor de tipo %qT"
+msgstr "inicialización de un tipo de referencia que no es constante %q#T desde un r-valor de tipo %qT"
 
 #: cp/cvt.c:380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to non-const reference type %q#T from rvalue of type %qT"
-msgstr "inicialización inválida de una referencia que no es constante de tipo %qT desde un r-valor de tipo %qT"
+msgstr "inicialización a un tipo de referencia que no es constante %q#T desde un r-valor de tipo %qT"
 
 #: cp/cvt.c:453
 #, gcc-internal-format
@@ -25565,9 +25558,9 @@ msgid "%qD is already defined in %qT"
 msgstr "%qD ya está definido en %qT"
 
 #: cp/decl2.c:917
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid initializer for member function %qD"
-msgstr "valor inicial inválido para el miembro %qE"
+msgstr "inicializador inválido para la función miembro %qD"
 
 #: cp/decl2.c:923
 #, gcc-internal-format
@@ -25698,7 +25691,7 @@ msgstr "falta el argumento por defecto para el parámetro %P de %q+#D"
 #: cp/decl2.c:4017
 #, gcc-internal-format
 msgid "converting lambda which uses %<...%> to function pointer"
-msgstr ""
+msgstr "se convierte lambda la cual usa %<...%> a un puntero de función"
 
 #: cp/decl2.c:4022 cp/search.c:1892
 #, gcc-internal-format
@@ -26209,7 +26202,7 @@ msgstr "el nombre revuelto de %qD cambiará en una versión futura de GCC"
 #: cp/mangle.c:3071
 #, gcc-internal-format
 msgid "-fabi-version=4 (or =0) avoids this error with a change in vector mangling"
-msgstr ""
+msgstr "-fabi-version=4 (o =0) evita este error con un cambio en el manejo de vectores"
 
 #: cp/method.c:396
 #, gcc-internal-format
@@ -26267,9 +26260,9 @@ msgid "function %q+D defaulted on its first declaration must not have an excepti
 msgstr "la función %q+D definida por defecto en su primera declaración no puede tener una especificación-de-excepción"
 
 #: cp/method.c:1081
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared virtual cannot be defaulted in the class body"
-msgstr "%qD declarada explícitamente no se puede definir por defecto en el cuerpo de clase"
+msgstr "%qD declarada virtual no se puede definir por defecto en el cuerpo de clase"
 
 #: cp/method.c:1130
 #, gcc-internal-format
@@ -26712,14 +26705,14 @@ msgid "typedef-name %qD used as destructor declarator"
 msgstr "se usa el nombre-de-definición-de-tipo %qD como un declarador de destructor"
 
 #: cp/parser.c:4552 cp/parser.c:6165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in casts"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "los tipos no se pueden definir en conversiones"
 
 #: cp/parser.c:4615
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in a %<typeid%> expression"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en una expresión %<typeid%>"
 
 #. Warn the user that a compound literal is not
 #. allowed in standard C++.
@@ -26749,9 +26742,9 @@ msgid "try removing the parentheses around the type-id"
 msgstr "intente borrar los paréntesis alrededor del id-de-tipo"
 
 #: cp/parser.c:5852
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in a new-type-id"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en un id-tipo-nuevo"
 
 #: cp/parser.c:5976
 #, gcc-internal-format
@@ -26804,9 +26797,9 @@ msgid "%<%T::%D%> names the constructor, not the type"
 msgstr "%<%T::%D%> nombra el constructor, no el tipo"
 
 #: cp/parser.c:8113
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in conditions"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en condiciones"
 
 #. Issue a warning about this use of a GNU extension.
 #: cp/parser.c:8462
@@ -26852,9 +26845,9 @@ msgid "templates may not be %<virtual%>"
 msgstr "las plantillas no pueden ser %<virtual%>"
 
 #: cp/parser.c:9523
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in %<decltype%> expressions"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en expresiones %<decltype%>"
 
 #: cp/parser.c:9778
 #, gcc-internal-format
@@ -27029,9 +27022,9 @@ msgid "invalid use of %<auto%>"
 msgstr "uso inválido de %<auto%>"
 
 #: cp/parser.c:15039
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in parameter types"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en tipos de parámetro"
 
 #: cp/parser.c:15257
 #, gcc-internal-format
@@ -27114,14 +27107,14 @@ msgid "keyword %<typename%> not allowed in this context (the base class is impli
 msgstr "no se permite la palabra clave %<typename%> en este contexto (la clase base es implícitamente un tipo)"
 
 #: cp/parser.c:17229
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in an exception-specification"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en una especificación de excepción"
 
 #: cp/parser.c:17410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "types may not be defined in exception-declarations"
-msgstr "no se pueden definir tipos nuevos en un tipo de devolución"
+msgstr "no se pueden definir tipos en declaraciones de excepción"
 
 #: cp/parser.c:18303
 #, gcc-internal-format
@@ -27480,11 +27473,11 @@ msgid "template argument %qE involves template parameter(s)"
 msgstr "el argumento de plantilla %qE involucra a el(los) parámetro(s) de plantilla"
 
 #: cp/pt.c:4022
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT of template argument %qE depends on a template parameter"
 msgid_plural "type %qT of template argument %qE depends on template parameters"
-msgstr[0] "el tipo %qT del argumento de plantilla %qE depende de el(los) parámetro(s) de plantilla"
-msgstr[1] "el tipo %qT del argumento de plantilla %qE depende de el(los) parámetro(s) de plantilla"
+msgstr[0] "el tipo %qT del argumento de plantilla %qE depende de un parámetro de plantilla"
+msgstr[1] "el tipo %qT del argumento de plantilla %qE depende de parámetros de plantilla"
 
 #: cp/pt.c:4129
 #, gcc-internal-format
@@ -27502,29 +27495,29 @@ msgid "parameter pack %qT must be at the end of the template parameter list"
 msgstr "el parámetro de paquete %qT debe estar al final de la lista de parámetros de plantilla"
 
 #: cp/pt.c:4190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function template friend re-declaration"
-msgstr "no se permiten los argumentos por defecto en la declaración de la especialización friend de la plantilla %qD"
+msgstr "no se pueden usar los argumentos de plantilla por defecto en la re-declaración friend de la plantilla de función"
 
 #: cp/pt.c:4193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function template friend declarations"
-msgstr "no se permiten los argumentos por defecto en la declaración de la especialización friend de la plantilla %qD"
+msgstr "no se pueden usar los argumentos de plantilla por defecto en las declaraciones friend de la plantilla de función"
 
 #: cp/pt.c:4196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in function templates without -std=c++0x or -std=gnu++0x"
-msgstr "las funciones por defecto y borradas sólo están disponibles con -std=c++0x o -std=gnu++0x"
+msgstr "los argumentos de plantilla por defecto no se pueden usar en las plantillas de función sin -std=c++0x o -std=gnu++0x"
 
 #: cp/pt.c:4199
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default template arguments may not be used in partial specializations"
-msgstr "no se usan los parámetros de plantilla en la especialización parcial:"
+msgstr "no se pueden usar los argumentos de plantilla por defecto en las especializaciones parciales"
 
 #: cp/pt.c:4202 cp/pt.c:4253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default argument for template parameter for class enclosing %qD"
-msgstr "el argumento por defecto para el parámetro del tipo %qT tiene el tipo %qT"
+msgstr "argumento por defecto para el parámetro de plantilla para la clase incluyente %qD"
 
 #: cp/pt.c:4346
 #, gcc-internal-format
@@ -27595,18 +27588,18 @@ msgid "template specifiers not specified in declaration of %qD"
 msgstr "no se especificaron los especificadores de plantilla en la declaración de %qD"
 
 #: cp/pt.c:4693
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclared with %d template parameter"
 msgid_plural "redeclared with %d template parameters"
-msgstr[0] "se redeclaró con %d parámetro(s) de plantilla"
-msgstr[1] "se redeclaró con %d parámetro(s) de plantilla"
+msgstr[0] "se redeclaró con %d parámetro de plantilla"
+msgstr[1] "se redeclaró con %d parámetros de plantilla"
 
 #: cp/pt.c:4697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+D used %d template parameter"
 msgid_plural "previous declaration %q+D used %d template parameters"
-msgstr[0] "la declaración previa de %q+#D usó %d parámetro(s) de plantilla"
-msgstr[1] "la declaración previa de %q+#D usó %d parámetro(s) de plantilla"
+msgstr[0] "la declaración previa de %q+#D usó %d parámetro de plantilla"
+msgstr[1] "la declaración previa de %q+#D usó %d parámetros de plantilla"
 
 #: cp/pt.c:4734
 #, gcc-internal-format
@@ -27820,9 +27813,9 @@ msgid "for template declaration %q+D"
 msgstr "para la declaración de plantilla %q+D"
 
 #: cp/pt.c:7060
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth= to increase the maximum) instantiating %qD"
-msgstr "la profundidad de instanciación de la plantilla excede el máximo de %d (use -ftemplate-depth-NN para incrementar el máximo) al instanciar %qD"
+msgstr "la profundidad de instanciación de la plantilla excede el máximo de %d (use -ftemplate-depth= para incrementar el máximo) al instanciar %qD"
 
 #: cp/pt.c:8326
 #, gcc-internal-format
@@ -28105,9 +28098,9 @@ msgid "explicit instantiation of %qD but no definition available"
 msgstr "instanciación explícita de %qD pero no hay una definición disponible"
 
 #: cp/pt.c:16910
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth= to increase the maximum)"
-msgstr "la profundidad de instanciación de la plantilla excede el máximo de %d al instanciar %q+D, posiblemente de la generación de tabla virtual (use -ftemplate-depth-NN para incrementar el máximo)"
+msgstr "la profundidad de instanciación de la plantilla excede el máximo de %d al instanciar %q+D, posiblemente de la generación de tabla virtual (use -ftemplate-depth= para incrementar el máximo)"
 
 #: cp/pt.c:17265
 #, gcc-internal-format
@@ -28120,9 +28113,9 @@ msgid "deducing from brace-enclosed initializer list requires #include <initiali
 msgstr "la deducción de una lista inicializadora encerrada entre llaves requiere #include <initializer_list>"
 
 #: cp/pt.c:18315
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q#D with %<auto%> type used in its own initializer"
-msgstr "la variable %D de tipo %<io%> no debe ser inicializada"
+msgstr "se usó la variable %q#D con tipo %<auto%> en su propio inicializador"
 
 #: cp/pt.c:18337
 #, gcc-internal-format
@@ -28834,9 +28827,9 @@ msgid "%qE cannot be used as a function"
 msgstr "no se puede usar %qE como una función"
 
 #: cp/typeck.c:3312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %s %q#D"
-msgstr "demasiados argumentos para %s %q+#D"
+msgstr "demasiados argumentos para %s %q#D"
 
 #: cp/typeck.c:3318
 #, gcc-internal-format
@@ -28854,9 +28847,9 @@ msgid "parameter %P has incomplete type %qT"
 msgstr "el parámetro %P tiene el tipo incompleto %qT"
 
 #: cp/typeck.c:3426
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %s %q#D"
-msgstr "faltan argumentos para %s %q+#D"
+msgstr "faltan argumentos para %s %q#D"
 
 #: cp/typeck.c:3432
 #, gcc-internal-format
@@ -34537,9 +34530,9 @@ msgid "The element in the derived type constructor at %L, for pointer component 
 msgstr "El elemento en el constructor de tipo derivado en %L, para el componente puntero '%s', debe ser un POINTER o un TARGET"
 
 #: fortran/resolve.c:930
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Invalid expression in the derived type constructor for pointer component '%s' at %L in PURE procedure"
-msgstr "El elemento en el constructor de tipo derivado en %L, para el componente puntero '%s', es %s pero debería ser %s"
+msgstr "Expresión inválida en el constructor de tipo derivado para el componente puntero '%s' en %L en el procedimiento PURE"
 
 #: fortran/resolve.c:1052
 #, gcc-internal-format
@@ -35427,7 +35420,7 @@ msgstr "La etiqueta enlazante '%s' en %L colisiona con la entidad global '%s' en
 #: fortran/resolve.c:8587
 #, gcc-internal-format
 msgid "CHARACTER variable at %L has negative length %d, the length has been set to zero"
-msgstr ""
+msgstr "La variable CHARACTER en %L tiene longitud negativa %d, la longitud se estableció a cero"
 
 #: fortran/resolve.c:8599
 #, gcc-internal-format
@@ -35462,7 +35455,7 @@ msgstr "El tipo '%s' no se puede asociar al anfitrión en %L porque está bloquead
 #: fortran/resolve.c:8964
 #, gcc-internal-format
 msgid "Fortran 2008: Implied SAVE for module variable '%s' at %L, needed due to the default initialization"
-msgstr ""
+msgstr "Fortran 2008: SAVE implícito para la variable de módulo '%s' en %L, se necesita por la inicialización por defecto"
 
 #: fortran/resolve.c:8975
 #, gcc-internal-format
