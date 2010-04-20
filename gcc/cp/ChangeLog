@@ -1,3 +1,11 @@
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/35335
+	* error.c (dump_expr): Handle EXPR_STMT like BIND_EXPR.
+
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21008, DR 515
