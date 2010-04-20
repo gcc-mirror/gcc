@@ -1,3 +1,11 @@
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (do_structure_copy): Properly handle
+	DEREF.
+	(dump_sa_points_to_info): Remove asserts.
+	(init_base_vars): nothing_id isn't an escape point nor does it
+	have pointers.
+
 2010-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (TYPE_REF_IS_RVALUE): Define.
