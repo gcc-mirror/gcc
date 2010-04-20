@@ -1,3 +1,7 @@
+2010-04-20  Nick Clifton  <nickc@redhat.com>
+
+	* sha1.h: Update copyright notice to use GPLv3.
+
 2010-04-14  Doug Evans  <dje@google.com>
 
 	* filenames.h (HAS_DRIVE_SPEC, STRIP_DRIVE_SPEC): New macros.
