@@ -1,5 +1,9 @@
 2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/torture/builtin-cproj-1.c: Test more cases.
+
+2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* gcc.dg/torture/builtin-cproj-1.c: New.
 	* gcc.dg/torture/builtin-cproj-2.c: New.
 
