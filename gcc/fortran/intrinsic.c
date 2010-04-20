@@ -3105,7 +3105,7 @@ keywords:
 
       if (f->actual != NULL)
 	{
-	  gfc_error ("Argument '%s' is appears twice in call to '%s' at %L",
+	  gfc_error ("Argument '%s' appears twice in call to '%s' at %L",
 		     f->name, name, where);
 	  return FAILURE;
 	}
