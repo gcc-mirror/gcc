@@ -1,3 +1,9 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43337
+	* tree-nested.c (convert_nonlocal_omp_clauses): OMP_CLAUSE_PRIVATE
+	with non-local decl doesn't need chain.
+
 2010-04-19  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/43662
