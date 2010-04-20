@@ -1,9 +1,18 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (AT_linkage_name): Define.
+	(clone_as_declaration): Handle DW_AT_linkage_name.
+	(add_name_and_src_coords_attributes): Use AT_linkage_name instead
+	of DW_AT_MIPS_linkage_name.
+	(move_linkage_attr): Likewise.
+	(dwarf2out_finish): Likewise.
+
 2010-04-20  Xinliang David Li  <davidxl@gcc.gnu.org>
 
 	PR middle-end/41952
 	* fold-const.c (fold_comparison): New folding rule. 
 
-2010-04-20  Anatoly Sokolov  <aesok@post.ru
+2010-04-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (double_int_setbit): Declare.
 	* double-int.c (double_int_setbit): New function.

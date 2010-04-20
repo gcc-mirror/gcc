@@ -5710,8 +5710,7 @@ static GTY(()) comdat_type_node *comdat_type_list;
 static GTY(()) limbo_die_node *limbo_die_list;
 
 /* A list of DIEs for which we may have to generate
-   DW_AT_MIPS_linkage_name once their DECL_ASSEMBLER_NAMEs are
-   set.  */
+   DW_AT_{,MIPS_}linkage_name once their DECL_ASSEMBLER_NAMEs are set.  */
 static GTY(()) limbo_die_node *deferred_asm_name;
 
 /* Filenames referenced by this compilation unit.  */
@@ -6272,6 +6271,12 @@ static void gen_remaining_tmpl_value_param_die_attribute (void);
 #ifndef DEBUG_MACINFO_SECTION_LABEL
 #define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
 #endif
+
+/* Mangled name attribute to use.  This used to be a vendor extension
+   until DWARF 4 standardized it.  */
+#define AT_linkage_name \
+  (dwarf_version >= 4 ? DW_AT_linkage_name : DW_AT_MIPS_linkage_name)
+
 
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
@@ -9331,6 +9336,7 @@ clone_as_declaration (dw_die_ref die)
         case DW_AT_name:
         case DW_AT_type:
         case DW_AT_virtuality:
+        case DW_AT_linkage_name:
         case DW_AT_MIPS_linkage_name:
           add_dwarf_attr (clone, a);
           break;
@@ -16769,7 +16775,7 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 	      deferred_asm_name = asm_name;
 	    }
 	  else if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-	    add_AT_string (die, DW_AT_MIPS_linkage_name,
+	    add_AT_string (die, AT_linkage_name,
 			   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 	}
     }
@@ -21139,7 +21145,7 @@ htab_ct_eq (const void *of1, const void *of2)
                     DWARF_TYPE_SIGNATURE_SIZE));
 }
 
-/* Move a DW_AT_MIPS_linkage_name attribute just added to dw_die_ref
+/* Move a DW_AT_{,MIPS_}linkage_name attribute just added to dw_die_ref
    to the location it would have been added, should we know its
    DECL_ASSEMBLER_NAME when we added other attributes.  This will
    probably improve compactness of debug info, removing equivalent
@@ -21152,7 +21158,7 @@ move_linkage_attr (dw_die_ref die)
   unsigned ix = VEC_length (dw_attr_node, die->die_attr);
   dw_attr_node linkage = *VEC_index (dw_attr_node, die->die_attr, ix - 1);
 
-  gcc_assert (linkage.dw_attr == DW_AT_MIPS_linkage_name);
+  gcc_assert (linkage.dw_attr == AT_linkage_name);
 
   while (--ix > 0)
     {
@@ -21386,7 +21392,7 @@ dwarf2out_finish (const char *filename)
       tree decl = node->created_for;
       if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
 	{
-	  add_AT_string (node->die, DW_AT_MIPS_linkage_name,
+	  add_AT_string (node->die, AT_linkage_name,
 			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 	  move_linkage_attr (node->die);
 	}
