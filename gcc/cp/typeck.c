@@ -1142,6 +1142,7 @@ static bool
 incompatible_dependent_types_p (tree t1, tree t2)
 {
   tree tparms1 = NULL_TREE, tparms2 = NULL_TREE;
+  bool t1_typedef_variant_p, t2_typedef_variant_p;
 
   if (!uses_template_parms (t1) || !uses_template_parms (t2))
     return false;
@@ -1154,9 +1155,21 @@ incompatible_dependent_types_p (tree t1, tree t2)
 	return true;
     }
 
+  t1_typedef_variant_p = typedef_variant_p (t1);
+  t2_typedef_variant_p = typedef_variant_p (t2);
+
   /* Either T1 or T2 must be a typedef.  */
-  if (!typedef_variant_p (t1) && !typedef_variant_p (t2))
+  if (!t1_typedef_variant_p && !t2_typedef_variant_p)
     return false;
+
+  if (!t1_typedef_variant_p || !t2_typedef_variant_p)
+    /* Either T1 or T2 is not a typedef so we cannot compare the
+       the template parms of the typedefs of T1 and T2.
+       At this point, if the main variant type of T1 and T2 are equal
+       it means the two types can't be incompatible, from the perspective
+       of this function.  */
+    if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+      return false;
 
   /* So if we reach this point, it means either T1 or T2 is a typedef variant.
      Let's compare their template parameters.  */
@@ -1223,6 +1236,12 @@ structural_comptypes (tree t1, tree t2, int strict)
   if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
     return false;
 
+  /* If T1 and T2 are dependent typedefs then check upfront that
+     the template parameters of their typedef DECLs match before
+     going down checking their subtypes.  */
+  if (incompatible_dependent_types_p (t1, t2))
+    return false;
+
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
      qualifiers (just above).  */
@@ -1231,11 +1250,6 @@ structural_comptypes (tree t1, tree t2, int strict)
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return true;
 
-  /* If T1 and T2 are dependent typedefs then check upfront that
-     the template parameters of their typedef DECLs match before
-     going down checking their subtypes.  */
-  if (incompatible_dependent_types_p (t1, t2))
-    return false;
 
   /* Compare the types.  Break out if they could be the same.  */
   switch (TREE_CODE (t1))

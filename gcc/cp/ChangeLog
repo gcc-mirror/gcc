@@ -1,3 +1,13 @@
+2010-04-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43704
+	* typeck.c (structural_comptypes): Test dependent typedefs
+	incompatibility before testing for their main variant based
+	equivalence.
+	(incompatible_dependent_types_p): If one of the
+	compared types if not a typedef then honour their main variant
+	equivalence.
+
 2010-04-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43641
