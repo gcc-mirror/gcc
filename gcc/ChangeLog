@@ -1,5 +1,11 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (do_sd_constraint): Add edges only
+	from vars that can have pointers.
+	(process_constraint): Dump useless constraints.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (do_structure_copy): Properly handle
 	DEREF.
 	(dump_sa_points_to_info): Remove asserts.
