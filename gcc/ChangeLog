@@ -1,5 +1,11 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43783
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Drop
+	constant ARRAY_REF operands two and three if possible.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43796
 	* tree-vrp.c (adjust_range_with_scev): Lookup init and step
 	from SCEV in the lattice.

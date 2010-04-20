@@ -2817,22 +2817,37 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  return NULL_TREE;
 	if (genop2)
 	  {
-	    op2expr = get_or_alloc_expr_for (genop2);
-	    genop2 = find_or_generate_expression (block, op2expr, stmts,
-						  domstmt);
-	    if (!genop2)
-	      return NULL_TREE;
+	    /* Drop zero minimum index.  */
+	    if (tree_int_cst_equal (genop2, integer_zero_node))
+	      genop2 = NULL_TREE;
+	    else
+	      {
+		op2expr = get_or_alloc_expr_for (genop2);
+		genop2 = find_or_generate_expression (block, op2expr, stmts,
+						      domstmt);
+		if (!genop2)
+		  return NULL_TREE;
+	      }
 	  }
 	if (genop3)
 	  {
 	    tree elmt_type = TREE_TYPE (TREE_TYPE (genop0));
-	    genop3 = size_binop (EXACT_DIV_EXPR, genop3,
-				 size_int (TYPE_ALIGN_UNIT (elmt_type)));
-	    op3expr = get_or_alloc_expr_for (genop3);
-	    genop3 = find_or_generate_expression (block, op3expr, stmts,
-						  domstmt);
-	    if (!genop3)
-	      return NULL_TREE;
+	    /* We can't always put a size in units of the element alignment
+	       here as the element alignment may be not visible.  See
+	       PR43783.  Simply drop the element size for constant
+	       sizes.  */
+	    if (tree_int_cst_equal (genop3, TYPE_SIZE_UNIT (elmt_type)))
+	      genop3 = NULL_TREE;
+	    else
+	      {
+		genop3 = size_binop (EXACT_DIV_EXPR, genop3,
+				     size_int (TYPE_ALIGN_UNIT (elmt_type)));
+		op3expr = get_or_alloc_expr_for (genop3);
+		genop3 = find_or_generate_expression (block, op3expr, stmts,
+						      domstmt);
+		if (!genop3)
+		  return NULL_TREE;
+	      }
 	  }
 	return build4 (currop->opcode, currop->type, genop0, genop1,
 		       genop2, genop3);
