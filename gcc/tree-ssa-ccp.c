@@ -588,7 +588,7 @@ likely_value (tree stmt)
     }
   else if (TREE_CODE (stmt) == CALL_EXPR)
     {
-      unsigned i;
+      int i;
       for (i = 0; i < call_expr_nargs (stmt); ++i)
 	if (is_gimple_min_invariant (CALL_EXPR_ARG (stmt, i)))
 	  has_constant_operand = true;
@@ -2478,7 +2478,7 @@ ccp_fold_builtin (tree stmt, tree fn)
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_STRLEN:
-      if (val[0])
+      if (val[0] && nargs == 1)
 	{
 	  tree new_val = fold_convert (TREE_TYPE (fn), val[0]);
 
@@ -2509,24 +2509,26 @@ ccp_fold_builtin (tree stmt, tree fn)
       break;
 
     case BUILT_IN_FPUTS:
-      result = fold_builtin_fputs (CALL_EXPR_ARG (fn, 0),
-				   CALL_EXPR_ARG (fn, 1),
-				   TREE_CODE (stmt) != GIMPLE_MODIFY_STMT, 0,
-				   val[0]);
+      if (nargs == 2)
+	result = fold_builtin_fputs (CALL_EXPR_ARG (fn, 0),
+				     CALL_EXPR_ARG (fn, 1),
+				     TREE_CODE (stmt) != GIMPLE_MODIFY_STMT, 0,
+				     val[0]);
       break;
 
     case BUILT_IN_FPUTS_UNLOCKED:
-      result = fold_builtin_fputs (CALL_EXPR_ARG (fn, 0),
-				   CALL_EXPR_ARG (fn, 1),
-				   TREE_CODE (stmt) != GIMPLE_MODIFY_STMT, 1,
-				   val[0]);
+      if (nargs == 2)
+	result = fold_builtin_fputs (CALL_EXPR_ARG (fn, 0),
+				     CALL_EXPR_ARG (fn, 1),
+				     TREE_CODE (stmt) != GIMPLE_MODIFY_STMT, 1,
+				     val[0]);
       break;
 
     case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMPCPY_CHK:
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET_CHK:
-      if (val[2] && is_gimple_val (val[2]))
+      if (val[2] && is_gimple_val (val[2]) && nargs == 4)
 	result = fold_builtin_memory_chk (callee,
 					  CALL_EXPR_ARG (fn, 0),
 					  CALL_EXPR_ARG (fn, 1),
@@ -2538,7 +2540,7 @@ ccp_fold_builtin (tree stmt, tree fn)
 
     case BUILT_IN_STRCPY_CHK:
     case BUILT_IN_STPCPY_CHK:
-      if (val[1] && is_gimple_val (val[1]))
+      if (val[1] && is_gimple_val (val[1]) && nargs == 3)
 	result = fold_builtin_stxcpy_chk (callee,
 					  CALL_EXPR_ARG (fn, 0),
 					  CALL_EXPR_ARG (fn, 1),
@@ -2548,7 +2550,7 @@ ccp_fold_builtin (tree stmt, tree fn)
       break;
 
     case BUILT_IN_STRNCPY_CHK:
-      if (val[2] && is_gimple_val (val[2]))
+      if (val[2] && is_gimple_val (val[2]) && nargs == 4)
 	result = fold_builtin_strncpy_chk (CALL_EXPR_ARG (fn, 0),
 					   CALL_EXPR_ARG (fn, 1),
 					   CALL_EXPR_ARG (fn, 2),
@@ -2734,7 +2736,10 @@ optimize_stack_restore (basic_block bb, tree call, block_stmt_iterator i)
 	continue;
 
       callee = get_callee_fndecl (call);
-      if (!callee || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+      if (!callee
+	  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+	  /* All regular builtins are ok, just obviously not alloca.  */
+	  || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA)
 	return NULL_TREE;
 
       if (DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE)

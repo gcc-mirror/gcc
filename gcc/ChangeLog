@@ -1,5 +1,20 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline:
+	2010-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43220
+	* tree-ssa-ccp.c (optimize_stack_restore): Do not optimize
+	BUILT_IN_STACK_{SAVE,RESTORE} around alloca.
+
+	2008-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38360
+	* tree-ssa-ccp.c (ccp_fold_builtin): Bail out if the builtin doesn't
+	have the right number of arguments.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2009-01-24  Jakub Jelinek  <jakub@redhat.com>
 
