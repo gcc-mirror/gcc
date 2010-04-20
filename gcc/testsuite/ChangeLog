@@ -1,3 +1,8 @@
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* gcc.c-torture/execute/pr43629.c: New testcase.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/rep_clause5.ad[sb]: New test.

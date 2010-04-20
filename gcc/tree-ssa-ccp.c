@@ -569,6 +569,34 @@ likely_value (tree stmt)
 	has_constant_operand = true;
     }
 
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+    {
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+      if (REFERENCE_CLASS_P (rhs))
+	{
+	  if (is_gimple_min_invariant (TREE_OPERAND (rhs, 0)))
+	    has_constant_operand = true;
+	}
+      else if (EXPR_P (rhs))
+	{
+	  unsigned i;
+	  for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (rhs)); ++i)
+	    if (TREE_OPERAND (rhs, i)
+		&& is_gimple_min_invariant (TREE_OPERAND (rhs, i)))
+	      has_constant_operand = true;
+	}
+    }
+  else if (TREE_CODE (stmt) == CALL_EXPR)
+    {
+      unsigned i;
+      for (i = 0; i < call_expr_nargs (stmt); ++i)
+	if (is_gimple_min_invariant (CALL_EXPR_ARG (stmt, i)))
+	  has_constant_operand = true;
+    }
+
+  if (has_constant_operand)
+    all_undefined_operands = false;
+
   /* If the operation combines operands like COMPLEX_EXPR make sure to
      not mark the result UNDEFINED if only one part of the result is
      undefined.  */

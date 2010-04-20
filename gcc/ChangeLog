@@ -1,3 +1,10 @@
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43629
+	* tree-ssa-ccp.c (likely_value): Scan for literal constants
+	as well.  Reset all_undefined_operands if we have seen a
+	constant value.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/43769
