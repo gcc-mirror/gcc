@@ -1,3 +1,8 @@
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/43569
+	* sections.c (gomp_sections_init): Initialize ws->mode.
+
 2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS): Remove set but

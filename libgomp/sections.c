@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -34,9 +34,25 @@ gomp_sections_init (struct gomp_work_share *ws, unsigned count)
 {
   ws->sched = GFS_DYNAMIC;
   ws->chunk_size = 1;
-  ws->end = count + 1;
+  ws->end = count + 1L;
   ws->incr = 1;
   ws->next = 1;
+#ifdef HAVE_SYNC_BUILTINS
+  /* Prepare things to make each iteration faster.  */
+  if (sizeof (long) > sizeof (unsigned))
+    ws->mode = 1;
+  else
+    {
+      struct gomp_thread *thr = gomp_thread ();
+      struct gomp_team *team = thr->ts.team;
+      long nthreads = team ? team->nthreads : 1;
+
+      ws->mode = ((nthreads | ws->end)
+		  < 1UL << (sizeof (long) * __CHAR_BIT__ / 2 - 1));
+    }
+#else
+  ws->mode = 0;
+#endif
 }
 
 /* This routine is called when first encountering a sections construct
