@@ -44,7 +44,80 @@ extern void link_error(int);
     link_error(__LINE__); \
 } while (0)
 
-void foo (void)
+/* Test that cproj(X + I*INF) -> (ZERO + INF), where ZERO is +-0i.
+   NEG is either blank or a minus sign when ZERO is negative.  */
+#define TEST_IMAG_INF(NEG,ZERO) do { \
+  if (CPROJF(f+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJF(f+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+  if (CPROJ(d+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJ(d+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+  if (CPROJL(ld+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJL(ld+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+} while (0)
+
+/* Like TEST_IMAG_INF, but check that side effects are honored.  */
+#define TEST_IMAG_INF_SIDE_EFFECT(NEG,ZERO) do { \
+  int side = 4; \
+  if (CPROJF(++side+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJF(++side+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+  if (CPROJ(++side+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJ(++side+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+  if (CPROJL(++side+I*NEG INF) != ZERO+INF \
+      || CKSGN_I (CPROJL(++side+I*NEG INF), ZERO+INF)) \
+    link_error(__LINE__); \
+  if (side != 10) \
+    link_error(__LINE__); \
+} while (0)
+
+/* Test that cproj(INF, POSITIVE) -> INF+0i.  NEG is either blank or a
+   minus sign to test negative INF.  */
+#define TEST_REAL_INF(NEG) do { \
+  __real cf = NEG INF; \
+  __imag cf = (x ? 4 : 5); \
+  if (CPROJF(cf) != INF \
+      || CKSGN_I (CPROJF(cf), INF)) \
+    link_error(__LINE__); \
+  __real cd = NEG INF; \
+  __imag cd = (x ? 4 : 5); \
+  if (CPROJ(cd) != INF \
+      || CKSGN_I (CPROJ(cd), INF)) \
+    link_error(__LINE__); \
+  __real cld = NEG INF; \
+  __imag cld = (x ? 4 : 5); \
+  if (CPROJL(cld) != INF \
+      || CKSGN_I (CPROJL(cld), INF)) \
+    link_error(__LINE__); \
+} while (0)
+
+/* Like TEST_REAL_INF, but check that side effects are honored.  */
+#define TEST_REAL_INF_SIDE_EFFECT(NEG) do { \
+  int side = -9; \
+  __real cf = NEG INF; \
+  __imag cf = (x ? 4 : 5); \
+  if (CPROJF((++side,cf)) != INF \
+      || CKSGN_I (CPROJF((++side,cf)), INF)) \
+    link_error(__LINE__); \
+  __real cd = NEG INF; \
+  __imag cd = (x ? 4 : 5); \
+  if (CPROJ((++side,cd)) != INF \
+      || CKSGN_I (CPROJ((++side,cd)), INF)) \
+    link_error(__LINE__); \
+  __real cld = NEG INF; \
+  __imag cld = (x ? 4 : 5); \
+  if (CPROJL((++side,cld)) != INF \
+      || CKSGN_I (CPROJL((++side,cld)), INF)) \
+    link_error(__LINE__); \
+  if (side != -3) \
+    link_error(__LINE__); \
+} while (0)
+
+void foo (_Complex long double cld, _Complex double cd, _Complex float cf,
+	  long double ld, double d, float f, int x)
 {
   TEST_CST_INF (INF+0I, 0);
   TEST_CST_INF (INF-0I, -0.FI);
@@ -78,6 +151,20 @@ void foo (void)
   TEST_CST (22-3I);
   TEST_CST (-22+3I);
   TEST_CST (-22-3I);
+
+  TEST_IMAG_INF (,0.FI);
+  TEST_IMAG_INF (-,-0.FI);
+
+#ifdef __OPTIMIZE__
+  TEST_REAL_INF( );
+  TEST_REAL_INF(-);
+  
+  TEST_IMAG_INF_SIDE_EFFECT (,0.FI);
+  TEST_IMAG_INF_SIDE_EFFECT (-,-0.FI);
+
+  TEST_REAL_INF_SIDE_EFFECT( );
+  TEST_REAL_INF_SIDE_EFFECT(-);
+#endif
 
   return;
 }

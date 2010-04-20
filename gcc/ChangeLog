@@ -1,5 +1,9 @@
 2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (fold_builtin_cproj): Fold more cases.
+
+2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtins.c (build_complex_cproj, fold_builtin_cproj): New.
 	(fold_builtin_1): Fold builtin cproj.
 	* builtins.def (BUILT_IN_CPROJ, BUILT_IN_CPROJF, BUILT_IN_CPROJL):
