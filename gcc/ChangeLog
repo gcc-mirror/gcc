@@ -1,3 +1,31 @@
+2010-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Kill bodies in other partitoin.
+	(dump_cgraph_node): Dump new flags.
+	* cgraph.h (struct cgraph_node): Add flags reachable_from_other_partition
+	and in_other_partition.
+	(cgraph_can_remove_if_no_direct_calls_p): Functions used by other partition
+	can not be removed.
+	* cgraphunit.c (cgraph_mark_functions_to_output): Functions used by the other
+	partition must be output; silence sanity checking on leaking functions
+	bodies from other paritition.
+	* lto-cgraph.c (reachable_from_other_partition_p): New function.
+	(lto_output_node): Output new flags; do not sanity check that inline
+	clones are output; drop lto_forced_extern_inline_p code; do not mock
+	visibility flags at partition boundaries.
+	(add_node_to): New function.
+	(output_cgraph): Use it to sort functions so masters appear before
+	clones.
+	(input_overwrite_node): Input new flags.
+	* passes.c (ipa_write_summaries): Do not call
+	lto_new_extern_inline_states.
+	* lto-section-out.c (forced_extern_inline, lto_new_extern_inline_states,
+	lto_delete_extern_inline_states, lto_force_functions_extern_inline,
+	lto_forced_extern_inline_p): Kill.
+	* lto-streamer.h (lto_new_extern_inline_states,
+	* lto_delete_extern_inline_states, lto_force_functions_extern_inline,
+	lto_forced_extern_inline_p): Kill.
+
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (do_sd_constraint): Add edges only

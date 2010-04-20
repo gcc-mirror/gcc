@@ -1467,7 +1467,8 @@ cgraph_remove_node (struct cgraph_node *node)
       struct cgraph_node *n = (struct cgraph_node *) *slot;
       if (!n->clones && !n->clone_of && !n->global.inlined_to
 	  && (cgraph_global_info_ready
-	      && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl))))
+	      && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl)
+		  || n->in_other_partition)))
 	kill_body = true;
     }
   if (assembler_name_hash)
@@ -1639,6 +1640,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (cgraph_function_flags_ready)
     fprintf (f, " availability:%s",
 	     cgraph_availability_names [cgraph_function_body_availability (node)]);
+  if (node->analyzed)
+    fprintf (f, " analyzed");
+  if (node->in_other_partition)
+    fprintf (f, " in_other_partition");
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
@@ -1666,6 +1671,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " address_taken");
   else if (node->reachable)
     fprintf (f, " reachable");
+  else if (node->reachable_from_other_partition)
+    fprintf (f, " reachable_from_other_partition");
   if (gimple_has_body_p (node->decl))
     fprintf (f, " body");
   if (node->process)

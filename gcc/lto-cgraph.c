@@ -164,6 +164,23 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bitpack_delete (bp);
 }
 
+/* Return true when node is reachable from other partition.  */
+
+static bool
+reachable_from_other_partition_p (struct cgraph_node *node, cgraph_node_set set)
+{
+  struct cgraph_edge *e;
+  if (node->needed)
+    return true;
+  if (!node->analyzed)
+    return false;
+  if (node->global.inlined_to)
+    return false;
+  for (e = node->callers; e; e = e->next_caller)
+    if (!cgraph_node_in_set_p (e->caller, set))
+      return true;
+  return false;
+}
 
 /* Output the cgraph NODE to OB.  ENCODER is used to find the
    reference number of NODE->inlined_to.  SET is the set of nodes we
@@ -183,6 +200,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   unsigned local, externally_visible, inlinable, analyzed;
   bool boundary_p, wrote_decl_p;
   intptr_t ref;
+  bool in_other_partition = false;
 
   boundary_p = !cgraph_node_in_set_p (node, set);
   wrote_decl_p = bitmap_bit_p (written_decls, DECL_UID (node->decl));
@@ -228,18 +246,16 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
      local static nodes to prevent clashes with other local statics.  */
   if (boundary_p)
     {
-      /* Inline clones can not be part of boundary.  */
-      gcc_assert (!node->global.inlined_to);
-      local = 0;
-      externally_visible = 1;
-      inlinable = 0;
+      /* Inline clones can not be part of boundary.  
+         gcc_assert (!node->global.inlined_to);  
+
+	 FIXME: At the moment they can be, when partition contains an inline
+	 clone that is clone of inline clone from outside partition.  We can
+	 reshape the clone tree and make other tree to be the root, but it
+	 needs a bit extra work and will be promplty done by cgraph_remove_node
+	 after reading back.  */
+      in_other_partition = 1;
       analyzed = 0;
-    }
-  else if (lto_forced_extern_inline_p (node->decl))
-    {
-      local = 1;
-      externally_visible = 0;
-      inlinable = 1;
     }
 
   lto_output_uleb128_stream (ob->main_stream, wrote_decl_p);
@@ -263,8 +279,10 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (bp, node->address_taken, 1);
   bp_pack_value (bp, node->abstract_and_needed, 1);
   bp_pack_value (bp, node->reachable, 1);
+  bp_pack_value (bp, analyzed && reachable_from_other_partition_p (node, set), 1);
   bp_pack_value (bp, node->lowered, 1);
   bp_pack_value (bp, analyzed, 1);
+  bp_pack_value (bp, in_other_partition, 1);
   bp_pack_value (bp, node->process, 1);
   bp_pack_value (bp, node->alias, 1);
   bp_pack_value (bp, node->finalized_by_frontend, 1);
@@ -371,6 +389,15 @@ output_profile_summary (struct lto_simple_output_block *ob)
     lto_output_uleb128_stream (ob->main_stream, 0);
 }
 
+/* Add NODE into encoder as well as nodes it is cloned from.
+   Do it in a way so clones appear first.  */
+static void
+add_node_to (lto_cgraph_encoder_t encoder, struct cgraph_node *node)
+{
+  if (node->clone_of)
+    add_node_to (encoder, node->clone_of);
+  lto_cgraph_encoder_encode (encoder, node);
+}
 
 /* Output the part of the cgraph in SET.  */
 
@@ -404,7 +431,7 @@ output_cgraph (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      lto_cgraph_encoder_encode (encoder, node);
+      add_node_to (encoder, node);
     }
 
   /* Go over all the nodes again to include callees that are not in
@@ -419,7 +446,7 @@ output_cgraph (cgraph_node_set set)
 	    {
 	      /* We should have moved all the inlines.  */
 	      gcc_assert (!callee->global.inlined_to);
-	      lto_cgraph_encoder_encode (encoder, callee);
+	      add_node_to (encoder, callee);
 	      /* Also with each included function include all other functions
 		 in the same comdat group.  */
 	      if (callee->same_comdat_group)
@@ -429,7 +456,7 @@ output_cgraph (cgraph_node_set set)
 		       next != callee;
 		       next = next->same_comdat_group)
 		    if (!cgraph_node_in_set_p (next, set))
-		      lto_cgraph_encoder_encode (encoder, next);
+		      add_node_to (encoder, next);
 		}
 	    }
 	}
@@ -442,11 +469,13 @@ output_cgraph (cgraph_node_set set)
 	       next != node;
 	       next = next->same_comdat_group)
 	    if (!cgraph_node_in_set_p (next, set))
-	      lto_cgraph_encoder_encode (encoder, next);
+	      add_node_to (encoder, next);
 	}
     }
 
-  /* Write out the nodes.  */
+  /* Write out the nodes.  We must first output a node and then its clones,
+     otherwise at a time reading back the node there would be nothing to clone
+     from.  */
   n_nodes = lto_cgraph_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
     {
@@ -530,8 +559,10 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->address_taken = bp_unpack_value (bp, 1);
   node->abstract_and_needed = bp_unpack_value (bp, 1);
   node->reachable = bp_unpack_value (bp, 1);
+  node->reachable_from_other_partition = bp_unpack_value (bp, 1);
   node->lowered = bp_unpack_value (bp, 1);
   node->analyzed = bp_unpack_value (bp, 1);
+  node->in_other_partition = bp_unpack_value (bp, 1);
   node->process = bp_unpack_value (bp, 1);
   node->alias = bp_unpack_value (bp, 1);
   node->finalized_by_frontend = bp_unpack_value (bp, 1);

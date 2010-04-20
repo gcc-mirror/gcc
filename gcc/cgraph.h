@@ -249,11 +249,15 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
      cgraph_remove_unreachable_nodes cgraph still can contain unreachable
      nodes when they are needed for virtual clone instantiation.  */
   unsigned reachable : 1;
+  /* Set when function is reachable by call from other LTRANS partition.  */
+  unsigned reachable_from_other_partition : 1;
   /* Set once the function is lowered (i.e. its CFG is built).  */
   unsigned lowered : 1;
   /* Set once the function has been instantiated and its callee
      lists created.  */
   unsigned analyzed : 1;
+  /* Set when function is available in the other LTO partition.  */
+  unsigned in_other_partition : 1;
   /* Set when function is scheduled to be processed by local passes.  */
   unsigned process : 1;
   /* Set for aliases once they got through assemble_alias.  */
@@ -723,7 +727,7 @@ cgraph_only_called_directly_p (struct cgraph_node *node)
 static inline bool
 cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 {
-  return (!node->needed
+  return (!node->needed && !node->reachable_from_other_partition
   	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
 }
 
