@@ -1,5 +1,10 @@
 2010-04-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39417
+	* g++.dg/torture/pr39417.C: New testcase.
+
+2010-04-20  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/ipa/ipa-pta-14.c: New testcase.
 
 2010-04-20  Jakub Jelinek  <jakub@redhat.com>
