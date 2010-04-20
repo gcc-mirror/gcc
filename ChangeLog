@@ -1,3 +1,8 @@
+2010-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (BUILD_CONFIG): Redirect output to /dev/null.
+	* configure: Regenerate.
+
 2010-04-17  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* configure.ac (*-*-rtems*): Add target-libiberty to $skipdirs.
