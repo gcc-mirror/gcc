@@ -1,5 +1,12 @@
 2010-04-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/43706
+	* config/linux/affinity.c (gomp_init_affinity): Decrease
+	gomp_available_cpus if affinity mask confines the process to fewer
+	CPUs.
+	* config/linux/proc.c (get_num_procs): If gomp_cpu_affinity is
+	non-NULL, just return gomp_available_cpus.
+
 	PR libgomp/43569
 	* sections.c (gomp_sections_init): Initialize ws->mode.
 
