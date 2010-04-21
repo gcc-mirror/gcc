@@ -20520,6 +20520,39 @@ arm*linux*eabi)
     ;;
 esac
 
+# Check for --no-merge-exidx-entries, an ARM-specific linker option.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --no-merge-exidx-entries" >&5
+$as_echo_n "checking for --no-merge-exidx-entries... " >&6; }
+if test "${libgcj_cv_exidx+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  saved_ldflags="$LDFLAGS"
+   LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
+   if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int main(void){ return 0;}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "libgcj_cv_exidx=yes"
+else
+  eval "libgcj_cv_exidx=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   LDFLAGS="${saved_ldflags}"
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcj_cv_exidx" >&5
+$as_echo "$libgcj_cv_exidx" >&6; }
+if test "${libgcj_cv_exidx}" = "yes"; then
+  SYSTEMSPEC="${SYSTEMSPEC} --no-merge-exidx-entries"
+  extra_ldflags="${extra_ldflags} -Wl,--no-merge-exidx-entries"
+fi
+
+
 
 
 
