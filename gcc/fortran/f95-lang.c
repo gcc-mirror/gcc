@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
@@ -608,6 +608,7 @@ gfc_define_builtin (const char *name,
 			       library_name, NULL_TREE);
   if (const_p)
     TREE_READONLY (decl) = 1;
+  TREE_NOTHROW (decl) = 1;
 
   built_in_decls[code] = decl;
   implicit_built_in_decls[code] = decl;
