@@ -324,7 +324,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   lto_output_sleb128_stream (ob->main_stream,
 			     node->global.estimated_growth);
   lto_output_uleb128_stream (ob->main_stream, node->global.inlined);
-  if (node->same_comdat_group)
+  if (node->same_comdat_group && !boundary_p)
     {
       ref = lto_cgraph_encoder_lookup (encoder, node->same_comdat_group);
       gcc_assert (ref != LCC_NOT_FOUND);
@@ -447,29 +447,7 @@ output_cgraph (cgraph_node_set set)
 	      /* We should have moved all the inlines.  */
 	      gcc_assert (!callee->global.inlined_to);
 	      add_node_to (encoder, callee);
-	      /* Also with each included function include all other functions
-		 in the same comdat group.  */
-	      if (callee->same_comdat_group)
-		{
-		  struct cgraph_node *next;
-		  for (next = callee->same_comdat_group;
-		       next != callee;
-		       next = next->same_comdat_group)
-		    if (!cgraph_node_in_set_p (next, set))
-		      add_node_to (encoder, next);
-		}
 	    }
-	}
-      /* Also with each included function include all other functions
-	 in the same comdat group.  */
-      if (node->same_comdat_group)
-	{
-	  struct cgraph_node *next;
-	  for (next = node->same_comdat_group;
-	       next != node;
-	       next = next->same_comdat_group)
-	    if (!cgraph_node_in_set_p (next, set))
-	      add_node_to (encoder, next);
 	}
     }
 
