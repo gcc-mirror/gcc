@@ -1,5 +1,13 @@
 2010-04-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (add_var_loc_to_decl): Add LABEL argument.  Drop
+	last chain entry if it starts with the still current label.
+	(add_location_or_const_value_attribute): Check that
+	loc_list->first->next is NULL instead of comparing ->first with
+	->last.
+	(dwarf2out_var_location): Pass last_label resp. last_postcall_label
+	to add_var_loc_to_decl.
+
 	* dwarf2out.c (output_call_frame_info): For dw_cie_version
 	>= 4 add also address size and segment size fields into CIE
 	header.
