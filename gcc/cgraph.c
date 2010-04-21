@@ -1629,6 +1629,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   fprintf (f, "%s/%i(%i)", cgraph_node_name (node), node->uid,
 	   node->pid);
   dump_addr (f, " @", (void *)node);
+  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
+    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
   if (node->global.inlined_to)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),
