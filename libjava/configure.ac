@@ -888,6 +888,21 @@ arm*linux*eabi)
     LIBGCJTESTSPEC="-L`${PWDCMD-pwd}`/.libs -L`${PWDCMD-pwd}`/../libstdc++-v3/src/.libs -rpath `${PWDCMD-pwd}`/.libs:`${PWDCMD-pwd}`/../libstdc++-v3/src/.libs -lstdc++"
     ;;
 esac
+
+# Check for --no-merge-exidx-entries, an ARM-specific linker option.
+AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
+  [saved_ldflags="$LDFLAGS"
+   LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
+   AC_LINK_IFELSE([int main(void){ return 0;} ],
+		      [eval "libgcj_cv_exidx=yes"],
+		      [eval "libgcj_cv_exidx=no"])
+   LDFLAGS="${saved_ldflags}"]
+)
+if test "${libgcj_cv_exidx}" = "yes"; then
+  SYSTEMSPEC="${SYSTEMSPEC} --no-merge-exidx-entries"
+  extra_ldflags="${extra_ldflags} -Wl,--no-merge-exidx-entries"
+fi   
+
 AC_SUBST(extra_ldflags_libjava)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
