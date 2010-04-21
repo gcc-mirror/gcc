@@ -760,7 +760,8 @@ globalize_cross_file_statics (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     }
   else if (TREE_CODE (t) == FUNCTION_DECL && !TREE_PUBLIC (t))
     {
-      if (!cgraph_node_in_set_p (cgraph_node (t), context->set))
+      if (!cgraph_node_in_set_p (cgraph_node (t), context->set)
+	  || cgraph_node (t)->address_taken)
 	{
 	  /* This file-scope static function is reachable from a set
 	     which does not contain the function DECL.  Make it global

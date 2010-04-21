@@ -1,3 +1,8 @@
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (globalize_cross_file_statics): When function has address taken,
+	it needs to be public.
+
 2010-04-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_add_inline_clones): Do not track inlined_decls.

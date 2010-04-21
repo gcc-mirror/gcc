@@ -230,6 +230,12 @@ varpool_reset_queue (void)
 bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
+  /* We do not track variable references at all and thus have no idea if the
+     variable was referenced in some other partition or not.  
+     FIXME: We really need address taken edges in callgraph and varpool to
+     drive WPA and decide whether other partition might reference it or not.  */
+  if (flag_ltrans)
+    return true;
   /* If the user told us it is used, then it must be so.  */
   if ((node->externally_visible && !DECL_COMDAT (decl))
       || node->force_output)

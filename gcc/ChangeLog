@@ -1,5 +1,10 @@
 2010-04-21  Jan Hubicka  <jh@suse.cz>
 
+	* varpool.c (decide_is_variable_needed): Variable is always needed
+	during ltrans.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
 	* opts.c (decode_options): Enable pure-const pass for whopr.
 
 2010-04-21  Jan Hubicka  <jh@suse.cz>
