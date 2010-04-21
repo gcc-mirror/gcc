@@ -5748,8 +5748,12 @@ struct GTY ((chain_next ("%h.next"))) var_loc_node {
 struct GTY (()) var_loc_list_def {
   struct var_loc_node * GTY (()) first;
 
-  /* Do not mark the last element of the chained list because
-     it is marked through the chain.  */
+  /* Pointer to the last but one or last element of the
+     chained list.  If the list is empty, both first and
+     last are NULL, if the list contains just one node
+     or the last node certainly is not redundant, it points
+     to the last node, otherwise points to the last but one.
+     Do not mark it for GC because it is marked through the chain.  */
   struct var_loc_node * GTY ((skip ("%h"))) last;
 
   /* DECL_UID of the variable decl.  */
@@ -5991,7 +5995,7 @@ static hashval_t decl_loc_table_hash (const void *);
 static int decl_loc_table_eq (const void *, const void *);
 static var_loc_list *lookup_decl_loc (const_tree);
 static void equate_decl_number_to_die (tree, dw_die_ref);
-static struct var_loc_node *add_var_loc_to_decl (tree, rtx);
+static struct var_loc_node *add_var_loc_to_decl (tree, rtx, const char *);
 static void print_spaces (FILE *);
 static void print_die (dw_die_ref, FILE *);
 static void print_dwarf_line_table (FILE *);
@@ -7755,7 +7759,7 @@ equate_decl_number_to_die (tree decl, dw_die_ref decl_die)
 /* Add a variable location node to the linked list for DECL.  */
 
 static struct var_loc_node *
-add_var_loc_to_decl (tree decl, rtx loc_note)
+add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 {
   unsigned int decl_id = DECL_UID (decl);
   var_loc_list *temp;
@@ -7774,23 +7778,62 @@ add_var_loc_to_decl (tree decl, rtx loc_note)
 
   if (temp->last)
     {
+      struct var_loc_node *last = temp->last, *unused = NULL;
+      if (last->next)
+	{
+	  last = last->next;
+	  gcc_assert (last->next == NULL);
+	}
+      /* TEMP->LAST here is either pointer to the last but one or
+	 last element in the chained list, LAST is pointer to the
+	 last element.  */
+      /* If the last note doesn't cover any instructions, remove it.  */
+      if (label && strcmp (last->label, label) == 0)
+	{
+	  if (temp->last != last)
+	    {
+	      temp->last->next = NULL;
+	      unused = last;
+	      last = temp->last;
+	      gcc_assert (strcmp (last->label, label) != 0);
+	    }
+	  else
+	    {
+	      gcc_assert (temp->first == temp->last);
+	      memset (temp->last, '\0', sizeof (*temp->last));
+	      return temp->last;
+	    }
+	}
       /* If the current location is the same as the end of the list,
 	 and either both or neither of the locations is uninitialized,
 	 we have nothing to do.  */
-      if ((!rtx_equal_p (NOTE_VAR_LOCATION_LOC (temp->last->var_loc_note),
+      if ((!rtx_equal_p (NOTE_VAR_LOCATION_LOC (last->var_loc_note),
 			 NOTE_VAR_LOCATION_LOC (loc_note)))
-	  || ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
+	  || ((NOTE_VAR_LOCATION_STATUS (last->var_loc_note)
 	       != NOTE_VAR_LOCATION_STATUS (loc_note))
-	      && ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
+	      && ((NOTE_VAR_LOCATION_STATUS (last->var_loc_note)
 		   == VAR_INIT_STATUS_UNINITIALIZED)
 		  || (NOTE_VAR_LOCATION_STATUS (loc_note)
 		      == VAR_INIT_STATUS_UNINITIALIZED))))
 	{
-	  /* Add LOC to the end of list and update LAST.  */
-	  loc = GGC_CNEW (struct var_loc_node);
-	  temp->last->next = loc;
-	  temp->last = loc;
+	  /* Add LOC to the end of list and update LAST.  If the last
+	     element of the list has been removed above, reuse its
+	     memory for the new node, otherwise allocate a new one.  */
+	  if (unused)
+	    {
+	      loc = unused;
+	      memset (loc, '\0', sizeof (*loc));
+	    }
+	  else
+	    loc = GGC_CNEW (struct var_loc_node);
+	  last->next = loc;
+	  /* Ensure TEMP->LAST will point either to the new last but one
+	     element of the chain, or to the last element in it.  */
+	  if (last != temp->last)
+	    temp->last = last;
 	}
+      else if (unused)
+	ggc_free (unused);
     }
   else
     {
@@ -15925,7 +15968,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
   loc_list = lookup_decl_loc (decl);
   if (loc_list
       && loc_list->first
-      && loc_list->first == loc_list->last
+      && loc_list->first->next == NULL
       && NOTE_VAR_LOCATION (loc_list->first->var_loc_note)
       && NOTE_VAR_LOCATION_LOC (loc_list->first->var_loc_note))
     {
@@ -20384,22 +20427,33 @@ dwarf2out_var_location (rtx loc_note)
   if (next_real == NULL_RTX)
     return;
 
+  /* If there were any real insns between note we processed last time
+     and this note (or if it is the first note), clear
+     last_{,postcall_}label so that they are not reused this time.  */
+  if (last_var_location_insn == NULL_RTX
+      || last_var_location_insn != next_real
+      || last_in_cold_section_p != in_cold_section_p)
+    {
+      last_label = NULL;
+      last_postcall_label = NULL;
+    }
+
   decl = NOTE_VAR_LOCATION_DECL (loc_note);
-  newloc = add_var_loc_to_decl (decl, loc_note);
+  newloc = add_var_loc_to_decl (decl, loc_note,
+				NOTE_DURING_CALL_P (loc_note)
+				? last_postcall_label : last_label);
   if (newloc == NULL)
     return;
 
   /* If there were no real insns between note we processed last time
-     and this note, use the label we emitted last time.  */
-  if (last_var_location_insn == NULL_RTX
-      || last_var_location_insn != next_real
-      || last_in_cold_section_p != in_cold_section_p)
+     and this note, use the label we emitted last time.  Otherwise
+     create a new label and emit it.  */
+  if (last_label == NULL)
     {
       ASM_GENERATE_INTERNAL_LABEL (loclabel, "LVL", loclabel_num);
       ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LVL", loclabel_num);
       loclabel_num++;
       last_label = ggc_strdup (loclabel);
-      last_postcall_label = NULL;
     }
   newloc->var_loc_note = loc_note;
   newloc->next = NULL;
