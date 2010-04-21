@@ -1,9 +1,121 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Part XI.  Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="spine.html" title="The GNU C++ Library" /><link rel="prev" href="bk01pt10ch23s02.html" title="C99" /><link rel="next" href="iostream_objects.html" title="Chapter 24. Iostream Objects" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Part XI. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 13.  Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="numerics_and_c.html" title="Interacting with C" /><link rel="next" href="streambufs.html" title="Stream Buffers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 13. 
   Input and Output
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt10ch23s02.html">Prev</a> </td><th width="60%" align="center">The GNU C++ Library</th><td width="20%" align="right"> <a accesskey="n" href="iostream_objects.html">Next</a></td></tr></table><hr /></div><div class="part" title="Part XI.  Input and Output"><div class="titlepage"><div><div><h1 class="title"><a id="manual.io"></a>Part XI. 
+</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="numerics_and_c.html">Prev</a> </td><th width="60%" align="center">Part II. 
+  Standard Contents
+</th><td width="20%" align="right"> <a accesskey="n" href="streambufs.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 13.  Input and Output"><div class="titlepage"><div><div><h2 class="title"><a id="std.io"></a>Chapter 13. 
   Input and Output
-  <a id="id592157" class="indexterm"></a>
-</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="iostream_objects.html">24. Iostream Objects</a></span></dt><dt><span class="chapter"><a href="streambufs.html">25. Stream Buffers</a></span></dt><dd><dl><dt><span class="sect1"><a href="streambufs.html#io.streambuf.derived">Derived streambuf Classes</a></span></dt><dt><span class="sect1"><a href="bk01pt11ch25s02.html">Buffering</a></span></dt></dl></dd><dt><span class="chapter"><a href="stringstreams.html">26. Memory Based Streams</a></span></dt><dd><dl><dt><span class="sect1"><a href="stringstreams.html#manual.io.memstreams.compat">Compatibility With strstream</a></span></dt></dl></dd><dt><span class="chapter"><a href="fstreams.html">27. File Based Streams</a></span></dt><dd><dl><dt><span class="sect1"><a href="fstreams.html#manual.io.filestreams.copying_a_file">Copying a File</a></span></dt><dt><span class="sect1"><a href="bk01pt11ch27s02.html">Binary Input and Output</a></span></dt></dl></dd><dt><span class="chapter"><a href="io_and_c.html">28. Interacting with C</a></span></dt><dd><dl><dt><span class="sect1"><a href="io_and_c.html#manual.io.c.FILE">Using FILE* and file descriptors</a></span></dt><dt><span class="sect1"><a href="bk01pt11ch28s02.html">Performance</a></span></dt></dl></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt10ch23s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spine.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="iostream_objects.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">C99 </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 24. Iostream Objects</td></tr></table></div></body></html>
+  <a id="id497027" class="indexterm"></a>
+</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="io.html#std.io.objects">Iostream Objects</a></span></dt><dt><span class="sect1"><a href="streambufs.html">Stream Buffers</a></span></dt><dd><dl><dt><span class="sect2"><a href="streambufs.html#io.streambuf.derived">Derived streambuf Classes</a></span></dt><dt><span class="sect2"><a href="streambufs.html#io.streambuf.buffering">Buffering</a></span></dt></dl></dd><dt><span class="sect1"><a href="stringstreams.html">Memory Based Streams</a></span></dt><dd><dl><dt><span class="sect2"><a href="stringstreams.html#std.io.memstreams.compat">Compatibility With strstream</a></span></dt></dl></dd><dt><span class="sect1"><a href="fstreams.html">File Based Streams</a></span></dt><dd><dl><dt><span class="sect2"><a href="fstreams.html#std.io.filestreams.copying_a_file">Copying a File</a></span></dt><dt><span class="sect2"><a href="fstreams.html#std.io.filestreams.binary">Binary Input and Output</a></span></dt></dl></dd><dt><span class="sect1"><a href="io_and_c.html">Interacting with C</a></span></dt><dd><dl><dt><span class="sect2"><a href="io_and_c.html#std.io.c.FILE">Using FILE* and file descriptors</a></span></dt><dt><span class="sect2"><a href="io_and_c.html#std.io.c.sync">Performance</a></span></dt></dl></dd></dl></div><div class="sect1" title="Iostream Objects"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.io.objects"></a>Iostream Objects</h2></div></div></div><p>To minimize the time you have to wait on the compiler, it's good to
+      only include the headers you really need.  Many people simply include
+      &lt;iostream&gt; when they don't need to -- and that can <span class="emphasis"><em>penalize
+      your runtime as well.</em></span>  Here are some tips on which header to use
+      for which situations, starting with the simplest.
+   </p><p><span class="emphasis"><em>&lt;iosfwd&gt;</em></span> should be included whenever you simply
+      need the <span class="emphasis"><em>name</em></span> of an I/O-related class, such as
+      "ofstream" or "basic_streambuf".  Like the name
+      implies, these are forward declarations.  (A word to all you fellow
+      old school programmers:  trying to forward declare classes like
+      "class istream;" won't work.  Look in the iosfwd header if
+      you'd like to know why.)  For example,
+   </p><pre class="programlisting">
+    #include &lt;iosfwd&gt;
+
+    class MyClass
+    {
+	....
+	std::ifstream&amp;   input_file;
+    };
+
+    extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
+   </pre><p><span class="emphasis"><em>&lt;ios&gt;</em></span> declares the base classes for the entire
+      I/O stream hierarchy, std::ios_base and std::basic_ios&lt;charT&gt;, the
+      counting types std::streamoff and std::streamsize, the file
+      positioning type std::fpos, and the various manipulators like
+      std::hex, std::fixed, std::noshowbase, and so forth.
+   </p><p>The ios_base class is what holds the format flags, the state flags,
+      and the functions which change them (setf(), width(), precision(),
+      etc).  You can also store extra data and register callback functions
+      through ios_base, but that has been historically underused.  Anything
+      which doesn't depend on the type of characters stored is consolidated
+      here.
+   </p><p>The template class basic_ios is the highest template class in the
+      hierarchy; it is the first one depending on the character type, and
+      holds all general state associated with that type:  the pointer to the
+      polymorphic stream buffer, the facet information, etc.
+   </p><p><span class="emphasis"><em>&lt;streambuf&gt;</em></span> declares the template class
+      basic_streambuf, and two standard instantiations, streambuf and
+      wstreambuf.  If you need to work with the vastly useful and capable
+      stream buffer classes, e.g., to create a new form of storage
+      transport, this header is the one to include.
+   </p><p><span class="emphasis"><em>&lt;istream&gt;</em></span>/<span class="emphasis"><em>&lt;ostream&gt;</em></span> are
+      the headers to include when you are using the &gt;&gt;/&lt;&lt;
+      interface, or any of the other abstract stream formatting functions.
+      For example,
+   </p><pre class="programlisting">
+    #include &lt;istream&gt;
+
+    std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, MyClass&amp; c)
+    {
+       return os &lt;&lt; c.data1() &lt;&lt; c.data2();
+    }
+   </pre><p>The std::istream and std::ostream classes are the abstract parents of
+      the various concrete implementations.  If you are only using the
+      interfaces, then you only need to use the appropriate interface header.
+   </p><p><span class="emphasis"><em>&lt;iomanip&gt;</em></span> provides "extractors and inserters
+      that alter information maintained by class ios_base and its derived
+      classes," such as std::setprecision and std::setw.  If you need
+      to write expressions like <code class="code">os &lt;&lt; setw(3);</code> or
+      <code class="code">is &gt;&gt; setbase(8);</code>, you must include &lt;iomanip&gt;.
+   </p><p><span class="emphasis"><em>&lt;sstream&gt;</em></span>/<span class="emphasis"><em>&lt;fstream&gt;</em></span>
+      declare the six stringstream and fstream classes.  As they are the
+      standard concrete descendants of istream and ostream, you will already
+      know about them.
+   </p><p>Finally, <span class="emphasis"><em>&lt;iostream&gt;</em></span> provides the eight standard
+      global objects (cin, cout, etc).  To do this correctly, this header
+      also provides the contents of the &lt;istream&gt; and &lt;ostream&gt;
+      headers, but nothing else.  The contents of this header look like
+   </p><pre class="programlisting">
+    #include &lt;ostream&gt;
+    #include &lt;istream&gt;
+
+    namespace std
+    {
+	extern istream cin;
+	extern ostream cout;
+	....
+
+	// this is explained below
+	<span class="emphasis"><em>static ios_base::Init __foo;</em></span>    // not its real name
+    }
+   </pre><p>Now, the runtime penalty mentioned previously:  the global objects
+      must be initialized before any of your own code uses them; this is
+      guaranteed by the standard.  Like any other global object, they must
+      be initialized once and only once.  This is typically done with a
+      construct like the one above, and the nested class ios_base::Init is
+      specified in the standard for just this reason.
+   </p><p>How does it work?  Because the header is included before any of your
+      code, the <span class="emphasis"><em>__foo</em></span> object is constructed before any of
+      your objects.  (Global objects are built in the order in which they
+      are declared, and destroyed in reverse order.)  The first time the
+      constructor runs, the eight stream objects are set up.
+   </p><p>The <code class="code">static</code> keyword means that each object file compiled
+      from a source file containing &lt;iostream&gt; will have its own
+      private copy of <span class="emphasis"><em>__foo</em></span>.  There is no specified order
+      of construction across object files (it's one of those pesky NP
+      problems that make life so interesting), so one copy in each object
+      file means that the stream objects are guaranteed to be set up before
+      any of your code which uses them could run, thereby meeting the
+      requirements of the standard.
+   </p><p>The penalty, of course, is that after the first copy of
+      <span class="emphasis"><em>__foo</em></span> is constructed, all the others are just wasted
+      processor time.  The time spent is merely for an increment-and-test
+      inside a function call, but over several dozen or hundreds of object
+      files, that time can add up.  (It's not in a tight loop, either.)
+   </p><p>The lesson?  Only include &lt;iostream&gt; when you need to use one of
+      the standard objects in that source file; you'll pay less startup
+      time.  Only include the header files you need to in general; your
+      compile times will go down when there's less parsing work to do.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="numerics_and_c.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="streambufs.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Interacting with C </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Stream Buffers</td></tr></table></div></body></html>

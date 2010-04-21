@@ -60,7 +60,7 @@
       these names as operators have been fixed.]<br />
 <br />
       The full set of __* identifiers (combined from gcc/cp/lex.c and<br />
-      gcc/cplus-dem.c) that are either old or new, but are definitely <br />
+      gcc/cplus-dem.c) that are either old or new, but are definitely<br />
       recognized by the demangler, is:<br />
 <br />
       __aa<br />
@@ -225,8 +225,8 @@
       -NOT-<br />
       char *p = "flop";  // wrong<br />
       char &amp;c = *p;      // wrong<br />
-      <br />
-      Reason: In C++, definitions are mixed with executable code. Here,       <br />
+<br />
+      Reason: In C++, definitions are mixed with executable code. Here,<br />
       p is being initialized, not *p. This is near-universal<br />
       practice among C++ programmers; it is normal for C hackers<br />
       to switch spontaneously as they gain experience.<br />
@@ -235,9 +235,9 @@
       operator==(type)<br />
       -NOT-<br />
       operator == (type)  // wrong<br />
-      <br />
+<br />
       Reason: The == is part of the function name. Separating<br />
-      it makes the declaration look like an expression. <br />
+      it makes the declaration look like an expression.<br />
 <br />
       03. Function names and parentheses<br />
       void mangle()<br />
@@ -246,22 +246,22 @@
 <br />
       Reason: no space before parentheses (except after a control-flow<br />
       keyword) is near-universal practice for C++. It identifies the<br />
-      parentheses as the function-call operator or declarator, as <br />
+      parentheses as the function-call operator or declarator, as<br />
       opposed to an expression or other overloaded use of parentheses.<br />
 <br />
       04. Template function indentation<br />
       template&lt;typename T&gt;<br />
-      void <br />
+      void<br />
       template_function(args)<br />
       { }<br />
       -NOT-<br />
       template&lt;class T&gt;<br />
       void template_function(args) {};<br />
-      <br />
+<br />
       Reason: In class definitions, without indentation whitespace is<br />
       needed both above and below the declaration to distinguish<br />
       it visually from other members. (Also, re: "typename"<br />
-      rather than "class".)  T often could be int, which is <br />
+      rather than "class".)  T often could be int, which is<br />
       not a class. ("class", here, is an anachronism.)<br />
 <br />
       05. Template class indentation<br />
@@ -299,7 +299,7 @@
       07. Member initialization lists<br />
       All one line, separate from class name.<br />
 <br />
-      gribble::gribble() <br />
+      gribble::gribble()<br />
       : _M_private_data(0), _M_more_stuff(0), _M_helper(0);<br />
       { }<br />
       -NOT-<br />
@@ -307,18 +307,18 @@
       { }<br />
 <br />
       08. Try/Catch blocks<br />
-      try <br />
+      try<br />
       {<br />
       //<br />
-      }   <br />
+      }<br />
       catch (...)<br />
       {<br />
       //<br />
-      }   <br />
+      }<br />
       -NOT-<br />
       try {<br />
-      // <br />
-      } catch(...) { <br />
+      //<br />
+      } catch(...) {<br />
       //<br />
       }<br />
 <br />
@@ -326,7 +326,7 @@
       Keywords such as extern, static, export, explicit, inline, etc<br />
       go on the line above the function name. Thus<br />
 <br />
-      virtual int   <br />
+      virtual int<br />
       foo()<br />
       -NOT-<br />
       virtual int foo()<br />
@@ -369,7 +369,7 @@
 <br />
       -NOT-<br />
       public:<br />
-      <br />
+<br />
       int foo;<br />
 <br />
       13. Spacing WRT return statements.<br />
@@ -428,17 +428,17 @@
 <br />
       Name patterns:<br />
 <br />
-      For nonstandard names appearing in Standard headers, we are constrained <br />
+      For nonstandard names appearing in Standard headers, we are constrained<br />
       to use names that begin with underscores. This is called "uglification".<br />
       The convention is:<br />
 <br />
       Local and argument names:  __[a-z].*<br />
 <br />
-      Examples:  __count  __ix  __s1  <br />
+      Examples:  __count  __ix  __s1<br />
 <br />
       Type names and template formal-argument names: _[A-Z][^_].*<br />
 <br />
-      Examples:  _Helper  _CharT  _N <br />
+      Examples:  _Helper  _CharT  _N<br />
 <br />
       Member data and function names: _M_.*<br />
 <br />
@@ -448,7 +448,7 @@
 <br />
       Examples: _S_max_elements  _S_default_value<br />
 <br />
-      Don't use names in the same scope that differ only in the prefix, <br />
+      Don't use names in the same scope that differ only in the prefix,<br />
       e.g. _S_top and _M_top. See BADNAMES for a list of forbidden names.<br />
       (The most tempting of these seem to be and "_T" and "__sz".)<br />
 <br />
@@ -458,7 +458,7 @@
       --------------------------<br />
 <br />
       [BY EXAMPLE]<br />
-      <br />
+<br />
       #ifndef  _HEADER_<br />
       #define  _HEADER_ 1<br />
 <br />
@@ -471,37 +471,37 @@
 <br />
       gribble(const gribble&amp;);<br />
 <br />
-      explicit <br />
+      explicit<br />
       gribble(int __howmany);<br />
 <br />
-      gribble&amp; <br />
+      gribble&amp;<br />
       operator=(const gribble&amp;);<br />
 <br />
-      virtual <br />
+      virtual<br />
       ~gribble() throw ();<br />
 <br />
       // Start with a capital letter, end with a period.<br />
-      inline void  <br />
+      inline void<br />
       public_member(const char* __arg) const;<br />
 <br />
       // In-class function definitions should be restricted to one-liners.<br />
-      int <br />
+      int<br />
       one_line() { return 0 }<br />
 <br />
-      int <br />
-      two_lines(const char* arg) <br />
+      int<br />
+      two_lines(const char* arg)<br />
       { return strchr(arg, 'a'); }<br />
 <br />
-      inline int <br />
+      inline int<br />
       three_lines();  // inline, but defined below.<br />
 <br />
       // Note indentation.<br />
       template&lt;typename _Formal_argument&gt;<br />
-      void <br />
+      void<br />
       public_template() const throw();<br />
 <br />
       template&lt;typename _Iterator&gt;<br />
-      void <br />
+      void<br />
       other_template();<br />
 <br />
       private:<br />
@@ -512,13 +512,13 @@
       _Helper* _M_helper;<br />
       int _M_private_function();<br />
 <br />
-      enum _Enum <br />
-      { <br />
-      _S_one, <br />
-      _S_two <br />
+      enum _Enum<br />
+      {<br />
+      _S_one,<br />
+      _S_two<br />
       };<br />
 <br />
-      static void <br />
+      static void<br />
       _S_initialize_library();<br />
       };<br />
 <br />
@@ -548,20 +548,20 @@
       #endif /* _HEADER_ */<br />
 <br />
 <br />
-      namespace std <br />
+      namespace std<br />
       {<br />
       template&lt;typename T&gt;  // notice: "typename", not "class", no space<br />
-      long_return_value_type&lt;with_many, args&gt;  <br />
+      long_return_value_type&lt;with_many, args&gt;<br />
       function_name(char* pointer,               // "char *pointer" is wrong.<br />
-      char* argument, <br />
+      char* argument,<br />
       const Reference&amp; ref)<br />
       {<br />
       // int a_local;  /* wrong; see below. */<br />
-      if (test) <br />
-      { <br />
-      nested code <br />
+      if (test)<br />
+      {<br />
+      nested code<br />
       }<br />
-      <br />
+<br />
       int a_local = 0;  // declare variable at first use.<br />
 <br />
       //  char a, b, *p;   /* wrong */<br />
@@ -574,12 +574,12 @@
       // ...<br />
       }<br />
       }<br />
-      <br />
+<br />
       gribble::gribble()<br />
       : _M_private_data(0), _M_more_stuff(0), _M_helper(0);<br />
       { }<br />
 <br />
-      inline int <br />
+      inline int<br />
       gribble::three_lines()<br />
       {<br />
       // doesn't fit in one line.<br />

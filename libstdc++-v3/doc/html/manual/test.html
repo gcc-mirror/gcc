@@ -278,7 +278,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       please email the main libstdc++ mailing list if you see
       something odd or have questions.
    </p></div><div class="sect3" title="Permutations"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.permutations"></a>Permutations</h4></div></div></div><p>
-      To run the libstdc++ test suite under the <a class="link" href="debug_mode.html" title="Chapter 30. Debug Mode">debug mode</a>, edit
+      To run the libstdc++ test suite under the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>, edit
       <code class="filename">libstdc++-v3/scripts/testsuite_flags</code> to add the
       compile-time flag <code class="constant">-D_GLIBCXX_DEBUG</code> to the
       result printed by the <code class="literal">--build-cxx</code>
@@ -289,7 +289,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       release mode: any deviation indicates an error in either the
       library or the test suite.
     </p><p>
-      The <a class="link" href="parallel_mode.html" title="Chapter 31. Parallel Mode">parallel
+      The <a class="link" href="parallel_mode.html" title="Chapter 18. Parallel Mode">parallel
       mode</a> can be tested in much the same manner, substituting
       <code class="constant">-D_GLIBCXX_PARALLEL</code> for
       <code class="constant">-D_GLIBCXX_DEBUG</code> in the previous paragraph.
@@ -493,7 +493,7 @@ only default variables.
        reporting functions including:
        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>time_counter</p></li><li class="listitem"><p>resource_counter</p></li><li class="listitem"><p>report_performance</p></li></ul></div></li></ul></div></div></div><div class="sect2" title="Special Topics"><div class="titlepage"><div><div><h3 class="title"><a id="test.special"></a>Special Topics</h3></div></div></div><div class="sect3" title="Qualifying Exception Safety Guarantees"><div class="titlepage"><div><div><h4 class="title"><a id="test.exception.safety"></a>
   Qualifying Exception Safety Guarantees
-  <a id="id650235" class="indexterm"></a>
+  <a id="id496748" class="indexterm"></a>
 </h4></div></div></div><div class="sect4" title="Overview"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.overview"></a>Overview</h5></div></div></div><p>
 	 Testing is composed of running a particular test sequence,
 	 and looking at what happens to the surrounding code when
@@ -508,7 +508,7 @@ only default variables.
 	 consistency/coherency of the test subject in the event of a
 	 thrown exception.
        </p><p>
-	 Random code paths can be constructed using the the basic test
+	 Random code paths can be constructed using the basic test
 	 sequences and instrumentation as above, only combined in a
 	 random or pseudo-random way.
        </p><p> To compute the code paths that throw, test instruments
@@ -543,7 +543,7 @@ only default variables.
 	 Which has several tests for container member functions,
 Includes control and test container objects. Configuration includes
 random seed, iterations, number of distinct values, and the
-probability that and exception will be thrown. Assumes instantiating
+probability that an exception will be thrown. Assumes instantiating
 container uses an extension
 allocator, <code class="classname">__gnu_cxx::throw_allocator_random</code>,
 as the allocator type.

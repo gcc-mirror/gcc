@@ -1,9 +1,130 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Part VIII.  Iterators</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="spine.html" title="The GNU C++ Library" /><link rel="prev" href="bitset.html" title="bitset" /><link rel="next" href="bk01pt08ch19.html" title="Chapter 19. Predefined" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Part VIII. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 10.  Iterators</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents" /><link rel="prev" href="containers_and_c.html" title="Interacting with C" /><link rel="next" href="algorithms.html" title="Chapter 11.  Algorithms" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 10. 
   Iterators
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bitset.html">Prev</a> </td><th width="60%" align="center">The GNU C++ Library</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt08ch19.html">Next</a></td></tr></table><hr /></div><div class="part" title="Part VIII.  Iterators"><div class="titlepage"><div><div><h1 class="title"><a id="manual.iterators"></a>Part VIII. 
+</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="containers_and_c.html">Prev</a> </td><th width="60%" align="center">Part II. 
+  Standard Contents
+</th><td width="20%" align="right"> <a accesskey="n" href="algorithms.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 10.  Iterators"><div class="titlepage"><div><div><h2 class="title"><a id="std.iterators"></a>Chapter 10. 
   Iterators
-  <a id="id678897" class="indexterm"></a>
-</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="chapter"><a href="bk01pt08ch19.html">19. Predefined</a></span></dt><dd><dl><dt><span class="sect1"><a href="bk01pt08ch19.html#iterators.predefined.vs_pointers">Iterators vs. Pointers</a></span></dt><dt><span class="sect1"><a href="bk01pt08ch19s02.html">One Past the End</a></span></dt></dl></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bitset.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spine.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt08ch19.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">bitset </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 19. Predefined</td></tr></table></div></body></html>
+  <a id="id424800" class="indexterm"></a>
+</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="iterators.html#std.iterators.predefined">Predefined</a></span></dt><dd><dl><dt><span class="sect2"><a href="iterators.html#iterators.predefined.vs_pointers">Iterators vs. Pointers</a></span></dt><dt><span class="sect2"><a href="iterators.html#iterators.predefined.end">One Past the End</a></span></dt></dl></dd></dl></div><div class="sect1" title="Predefined"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.iterators.predefined"></a>Predefined</h2></div></div></div><div class="sect2" title="Iterators vs. Pointers"><div class="titlepage"><div><div><h3 class="title"><a id="iterators.predefined.vs_pointers"></a>Iterators vs. Pointers</h3></div></div></div><p>
+     The following
+FAQ <a class="link" href="../faq.html#faq.iterator_as_pod" title="7.1.">entry</a> points out that
+iterators are not implemented as pointers.  They are a generalization
+of pointers, but they are implemented in libstdc++ as separate
+classes.
+   </p><p>
+     Keeping that simple fact in mind as you design your code will
+      prevent a whole lot of difficult-to-understand bugs.
+   </p><p>
+     You can think of it the other way 'round, even.  Since iterators
+     are a generalization, that means
+     that <span class="emphasis"><em>pointers</em></span> are
+      <span class="emphasis"><em>iterators</em></span>, and that pointers can be used
+     whenever an iterator would be.  All those functions in the
+     Algorithms sect1 of the Standard will work just as well on plain
+     arrays and their pointers.
+   </p><p>
+     That doesn't mean that when you pass in a pointer, it gets
+      wrapped into some special delegating iterator-to-pointer class
+      with a layer of overhead.  (If you think that's the case
+      anywhere, you don't understand templates to begin with...)  Oh,
+      no; if you pass in a pointer, then the compiler will instantiate
+      that template using T* as a type, and good old high-speed
+      pointer arithmetic as its operations, so the resulting code will
+      be doing exactly the same things as it would be doing if you had
+      hand-coded it yourself (for the 273rd time).
+   </p><p>
+     How much overhead <span class="emphasis"><em>is</em></span> there when using an
+      iterator class?  Very little.  Most of the layering classes
+      contain nothing but typedefs, and typedefs are
+      "meta-information" that simply tell the compiler some
+      nicknames; they don't create code.  That information gets passed
+      down through inheritance, so while the compiler has to do work
+      looking up all the names, your runtime code does not.  (This has
+      been a prime concern from the beginning.)
+   </p></div><div class="sect2" title="One Past the End"><div class="titlepage"><div><div><h3 class="title"><a id="iterators.predefined.end"></a>One Past the End</h3></div></div></div><p>This starts off sounding complicated, but is actually very easy,
+      especially towards the end.  Trust me.
+   </p><p>Beginners usually have a little trouble understand the whole
+      'past-the-end' thing, until they remember their early algebra classes
+      (see, they <span class="emphasis"><em>told</em></span> you that stuff would come in handy!) and
+      the concept of half-open ranges.
+   </p><p>First, some history, and a reminder of some of the funkier rules in
+      C and C++ for builtin arrays.  The following rules have always been
+      true for both languages:
+   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>You can point anywhere in the array, <span class="emphasis"><em>or to the first element
+	  past the end of the array</em></span>.  A pointer that points to one
+	  past the end of the array is guaranteed to be as unique as a
+	  pointer to somewhere inside the array, so that you can compare
+	  such pointers safely.
+	</p></li><li class="listitem"><p>You can only dereference a pointer that points into an array.
+	  If your array pointer points outside the array -- even to just
+	  one past the end -- and you dereference it, Bad Things happen.
+	</p></li><li class="listitem"><p>Strictly speaking, simply pointing anywhere else invokes
+	  undefined behavior.  Most programs won't puke until such a
+	  pointer is actually dereferenced, but the standards leave that
+	  up to the platform.
+	</p></li></ol></div><p>The reason this past-the-end addressing was allowed is to make it
+      easy to write a loop to go over an entire array, e.g.,
+      while (*d++ = *s++);.
+   </p><p>So, when you think of two pointers delimiting an array, don't think
+      of them as indexing 0 through n-1.  Think of them as <span class="emphasis"><em>boundary
+      markers</em></span>:
+   </p><pre class="programlisting">
+
+   beginning            end
+     |                   |
+     |                   |               This is bad.  Always having to
+     |                   |               remember to add or subtract one.
+     |                   |               Off-by-one bugs very common here.
+     V                   V
+	array of N elements
+     |---|---|--...--|---|---|
+     | 0 | 1 |  ...  |N-2|N-1|
+     |---|---|--...--|---|---|
+
+     ^                       ^
+     |                       |
+     |                       |           This is good.  This is safe.  This
+     |                       |           is guaranteed to work.  Just don't
+     |                       |           dereference 'end'.
+   beginning                end
+
+   </pre><p>See?  Everything between the boundary markers is chapter of the array.
+      Simple.
+   </p><p>Now think back to your junior-high school algebra course, when you
+      were learning how to draw graphs.  Remember that a graph terminating
+      with a solid dot meant, "Everything up through this point,"
+      and a graph terminating with an open dot meant, "Everything up
+      to, but not including, this point," respectively called closed
+      and open ranges?  Remember how closed ranges were written with
+      brackets, <span class="emphasis"><em>[a,b]</em></span>, and open ranges were written with parentheses,
+      <span class="emphasis"><em>(a,b)</em></span>?
+   </p><p>The boundary markers for arrays describe a <span class="emphasis"><em>half-open range</em></span>,
+      starting with (and including) the first element, and ending with (but
+      not including) the last element:  <span class="emphasis"><em>[beginning,end)</em></span>.  See, I
+      told you it would be simple in the end.
+   </p><p>Iterators, and everything working with iterators, follows this same
+      time-honored tradition.  A container's <code class="code">begin()</code> method returns
+      an iterator referring to the first element, and its <code class="code">end()</code>
+      method returns a past-the-end iterator, which is guaranteed to be
+      unique and comparable against any other iterator pointing into the
+      middle of the container.
+   </p><p>Container constructors, container methods, and algorithms, all take
+      pairs of iterators describing a range of values on which to operate.
+      All of these ranges are half-open ranges, so you pass the beginning
+      iterator as the starting parameter, and the one-past-the-end iterator
+      as the finishing parameter.
+   </p><p>This generalizes very well.  You can operate on sub-ranges quite
+      easily this way; functions accepting a <span class="emphasis"><em>[first,last)</em></span> range
+      don't know or care whether they are the boundaries of an entire {array,
+      sequence, container, whatever}, or whether they only enclose a few
+      elements from the center.  This approach also makes zero-length
+      sequences very simple to recognize:  if the two endpoints compare
+      equal, then the {array, sequence, container, whatever} is empty.
+   </p><p>Just don't dereference <code class="code">end()</code>.
+   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="containers_and_c.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="algorithms.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Interacting with C </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 11. 
+  Algorithms
+  
+</td></tr></table></div></body></html>
