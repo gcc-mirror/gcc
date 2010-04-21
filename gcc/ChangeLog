@@ -1,5 +1,9 @@
 2010-04-21  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-prop.c (ipa_edge_removal_hook): Check for bounds.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
 	* varpool.c (decide_is_variable_needed): Variable is always needed
 	during ltrans.
 
