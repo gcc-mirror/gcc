@@ -271,9 +271,10 @@ struct ipa_opt_pass_d pass_ipa_lto_wpa_fixup =
   TODO_dump_func                        /* todo_flags_finish */
  },
  NULL,		                        /* generate_summary */
- lto_output_wpa_fixup,			/* write_summary */
- lto_input_wpa_fixup,			/* read_summary */
- NULL,					/* function_read_summary */
+ NULL,					/* write_summary */
+ NULL,					/* read_summary */
+ lto_output_wpa_fixup,			/* write_optimization_summary */
+ lto_input_wpa_fixup,			/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */

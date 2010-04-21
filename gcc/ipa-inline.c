@@ -2135,7 +2135,8 @@ struct ipa_opt_pass_d pass_ipa_inline =
  inline_generate_summary,		/* generate_summary */
  inline_write_summary,			/* write_summary */
  inline_read_summary,			/* read_summary */
- NULL,					/* function_read_summary */
+ NULL,					/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
  lto_ipa_fixup_call_notes,		/* stmt_fixup */
  0,					/* TODOs */
  inline_transform,			/* function_transform */
