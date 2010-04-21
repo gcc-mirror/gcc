@@ -1,3 +1,14 @@
+2010-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (bswap<mode>2): Macroize expander from
+	bswap{si,di}2 using SWI48 mode iterator.
+	(*bswap<mode>2_movbe): Macroize insn from *bswap{si,di}_movbe using
+	SWI48 mode iterator.  Set type attribute of bswap insn to bitmanip,
+	set modrm attribute of bswap insn to 0 and remove length attribute.
+	(*bswap<mode>2_1): Macroize insn from *bswap{si,di}_1 using SWI48 mode
+	iterator.  Set type attribute to bitmanip, set modrm attribute to 0,
+	set mode attribute to <MODE> and remove length attribute.
+
 2010-04-20  James E. Wilson  <wilson@codesourcery.com>
 
 	PR rtl-optimization/43520
