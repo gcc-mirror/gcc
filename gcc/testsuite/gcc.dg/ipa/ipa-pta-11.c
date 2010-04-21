@@ -29,5 +29,5 @@ int main()
 /* It isn't clear if the escape if l is strictly necessary, if it were
    we should have i, r and s in ESCAPED as well.  */
 
-/* { dg-final { scan-ipa-dump "ESCAPED = { ESCAPED NONLOCAL l k }" "pta" } } */
+/* { dg-final { scan-ipa-dump "ESCAPED = { l k }" "pta" } } */
 /* { dg-final { cleanup-ipa-dump "pta" } } */
