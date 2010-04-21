@@ -1260,6 +1260,10 @@ ipa_edge_removal_hook (struct cgraph_edge *cs, void *data ATTRIBUTE_UNUSED)
 static void
 ipa_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
+  /* During IPA-CP updating we can be called on not-yet analyze clones.  */
+  if (VEC_length (ipa_node_params_t, ipa_node_params_vector)
+      <= (unsigned)node->uid)
+    return;
   ipa_free_node_params_substructures (IPA_NODE_REF (node));
 }
 
