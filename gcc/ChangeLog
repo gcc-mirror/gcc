@@ -1,3 +1,19 @@
+2010-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_call_frame_info): For dw_cie_version
+	>= 4 add also address size and segment size fields into CIE
+	header.
+
+	* unwind-dw2.c (extract_cie_info): Handle CIE version 4, as
+	long as address size is the same as sizeof (void *) and
+	segment size is 0.
+	* unwind-dw2-fde.c (get_cie_encoding): Likewise.  If
+	address size or segment size is unexpected, return DW_EH_PE_omit.
+	(classify_object_over_fdes): If get_cie_encoding returned
+	DW_EH_PE_omit, return -1.
+	(init_object): If classify_object_over_fdes returned -1,
+	pretend there were no FDEs at all.
+
 2010-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (bswap<mode>2): Macroize expander from

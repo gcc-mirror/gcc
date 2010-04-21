@@ -1,6 +1,6 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
 /* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008,
-   2009  Free Software Foundation, Inc.
+   2009, 2010  Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GCC.
@@ -265,10 +265,18 @@ get_cie_encoding (const struct dwarf_cie *cie)
   _sleb128_t stmp;
 
   aug = cie->augmentation;
+  p = aug + strlen ((const char *)aug) + 1; /* Skip the augmentation string.  */
+  if (__builtin_expect (cie->version >= 4, 0))
+    {
+      if (p[0] != sizeof (void *) || p[1] != 0)
+	return DW_EH_PE_omit;		/* We are not prepared to handle unexpected
+					   address sizes or segment selectors.  */
+      p += 2;				/* Skip address size and segment size.  */
+    }
+
   if (aug[0] != 'z')
     return DW_EH_PE_absptr;
 
-  p = aug + strlen ((const char *)aug) + 1; /* Skip the augmentation string.  */
   p = read_uleb128 (p, &utmp);		/* Skip code alignment.  */
   p = read_sleb128 (p, &stmp);		/* Skip data alignment.  */
   if (cie->version == 1)		/* Skip return address column.  */
@@ -614,6 +622,8 @@ classify_object_over_fdes (struct object *ob, const fde *this_fde)
 	{
 	  last_cie = this_cie;
 	  encoding = get_cie_encoding (this_cie);
+	  if (encoding == DW_EH_PE_omit)
+	    return -1;
 	  base = base_from_object (encoding, ob);
 	  if (ob->s.b.encoding == DW_EH_PE_omit)
 	    ob->s.b.encoding = encoding;
@@ -723,10 +733,26 @@ init_object (struct object* ob)
 	{
 	  fde **p = ob->u.array;
 	  for (count = 0; *p; ++p)
-	    count += classify_object_over_fdes (ob, *p);
+	    {
+	      size_t cur_count = classify_object_over_fdes (ob, *p);
+	      if (cur_count == (size_t) -1)
+		goto unhandled_fdes;
+	      count += cur_count;
+	    }
 	}
       else
-	count = classify_object_over_fdes (ob, ob->u.single);
+	{
+	  count = classify_object_over_fdes (ob, ob->u.single);
+	  if (count == (size_t) -1)
+	    {
+	      static const fde terminator;
+	    unhandled_fdes:
+	      ob->s.i = 0;
+	      ob->s.b.encoding = DW_EH_PE_omit;
+	      ob->u.single = &terminator;
+	      return;
+	    }
+	}
 
       /* The count field we have in the main struct object is somewhat
 	 limited, but should suffice for virtually all cases.  If the
