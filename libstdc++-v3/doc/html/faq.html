@@ -4,7 +4,7 @@
       2008
      
       <a class="ulink" href="http://www.fsf.org" target="_top">FSF</a>
-    </p></div></div><hr /></div><div class="qandaset" title="Frequently Asked Questions"><a id="id571249"></a><dl><dt>1.  <a href="faq.html#faq.info">General Information</a></dt><dd><dl><dt>1.1. <a href="faq.html#faq.what">
+    </p></div></div><hr /></div><div class="qandaset" title="Frequently Asked Questions"><a id="id621954"></a><dl><dt>1.  <a href="faq.html#faq.info">General Information</a></dt><dd><dl><dt>1.1. <a href="faq.html#faq.what">
       What is libstdc++?
     </a></dt><dt>1.2. <a href="faq.html#faq.why">
       Why should I use libstdc++?
@@ -315,12 +315,15 @@
     and <span class="command"><strong>ldconfig</strong></span> for more information. The dynamic
     linker has different names on different platforms but the man page
     is usually called something such as <code class="filename">ld.so/rtld/dld.so</code>.
+    </p><p>
+    Using LD_LIBRARY_PATH is not always the best solution, <a class="link" href="manual/using_dynamic_or_shared.html#manual.intro.using.linkage.dynamic" title="Finding Dynamic or Shared Libraries">Finding Dynamic or Shared
+    Libraries</a> in the manual gives some alternatives.
     </p></td></tr><tr class="question" title="3.5."><td align="left" valign="top"><a id="faq.what_is_libsupcxx"></a><a id="q-what_is_libsupcxx"></a><p><b>3.5.</b></p></td><td align="left" valign="top"><p>
       What's libsupc++?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-what_is_libsupcxx"></a></td><td align="left" valign="top"><p>
       If the only functions from <code class="filename">libstdc++.a</code>
       which you need are language support functions (those listed in
-      <a class="link" href="manual/support.html" title="Part II.  Support">clause 18</a> of the
+      <a class="link" href="manual/support.html" title="Chapter 4.  Support">clause 18</a> of the
       standard, e.g., <code class="function">new</code> and
       <code class="function">delete</code>), then try linking against
       <code class="filename">libsupc++.a</code>, which is a subset of
@@ -647,8 +650,9 @@
     typo, or wrong visibility, or you just plain forgot, etc).
     </p><p>
     More information, including how to optionally enable/disable the
-    checks, is available
-    <a class="link" href="manual/bk01pt03ch08.html" title="Chapter 8. Concept Checking">here</a>.
+    checks, is available in the
+    <a class="link" href="manual/bk01pt02ch05s02.html" title="Concept Checking">Diagnostics</a>.
+    chapter of the manual.
     </p></td></tr><tr class="question" title="6.6."><td align="left" valign="top"><a id="faq.dlopen_crash"></a><a id="q-dlopen_crash"></a><p><b>6.6.</b></p></td><td align="left" valign="top"><p>
       Program crashes when using library code in a
       dynamically-loaded library
@@ -685,7 +689,7 @@
       list::size() is O(n)!
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-list_size_on"></a></td><td align="left" valign="top"><p>
     See
-    the <a class="link" href="manual/containers.html" title="Part VII.  Containers">Containers</a>
+    the <a class="link" href="manual/containers.html" title="Chapter 9.  Containers">Containers</a>
     chapter.
     </p></td></tr><tr class="question" title="6.9."><td align="left" valign="top"><a id="faq.easy_to_fix"></a><a id="q-easy_to_fix"></a><p><b>6.9.</b></p></td><td align="left" valign="top"><p>
       Aw, that's easy to fix!
@@ -869,6 +873,6 @@
     </p></div><p>
     The copy will take O(n) time and the swap is constant time.
     </p><p>
-    See <a class="link" href="manual/bk01pt05ch13s05.html" title="Shrink to Fit">Shrink-to-fit
+    See <a class="link" href="manual/strings.html#strings.string.shrink" title="Shrink to Fit">Shrink-to-fit
     strings</a> for a similar solution for strings.
     </p></td></tr></tbody></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk03.html">Up</a></td><td width="40%" align="right"> </td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="spine.html">Home</a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

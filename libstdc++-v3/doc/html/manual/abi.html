@@ -8,12 +8,12 @@
   C++ applications often dependent on specific language support
   routines, say for throwing exceptions, or catching exceptions, and
   perhaps also dependent on features in the C++ Standard Library.
-</p><p> 
+</p><p>
   The C++ Standard Library has many include files, types defined in
   those include files, specific named functions, and other
   behavior. The text of these behaviors, as written in source include
   files, is called the Application Programing Interface, or API.
-</p><p> 
+</p><p>
   Furthermore, C++ source that is compiled into object files is
   transformed by the compiler: it arranges objects with specific
   alignment and in a particular layout, mangling names according to a
@@ -32,7 +32,7 @@
   <code class="code">-fno-exceptions</code>, but include others: see the complete
   list in the GCC manual under the heading <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code%20Gen%20Options" target="_top">Options
   for Code Generation Conventions</a>.
-</p><p> 
+</p><p>
   The configure options used when building a specific libstdc++
   version may also impact the resulting library ABI. The available
   configure options, and their impact on the library ABI, are
@@ -240,11 +240,11 @@ int main()
 %g++ hello.cc -o hello.out
 
 %ldd hello.out
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %nm hello.out
 </pre><p>
@@ -273,7 +273,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of being passing instances of this
 class in registers, the compiler will be forced to use memory. See <a class="ulink" href="http://www.codesourcery.com/cxx-abi/abi.html#calls" target="_top"> this part</a>
- of the C++ ABI documentation for further details. 
+ of the C++ ABI documentation for further details.
  </p></li></ol></div></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
      Separation of interface and implementation
    </p><p>
@@ -298,7 +298,7 @@ class in registers, the compiler will be forced to use memory. See <a class="uli
        char</code> and <code class="code"> wchar_t</code> instantiations, and
        includes <code class="code"> basic_string</code>, the locale facets, and the
        types in <code class="code"> iostreams</code>.
-     </p></dd></dl></div><p> 
+     </p></dd></dl></div><p>
    In addition, these techniques have the additional benefit that they
    reduce binary size, which can increase runtime performance.
  </p></li><li class="listitem"><p>
@@ -329,7 +329,7 @@ standard includes.</p></li></ol></div></div><div class="sect2" title="Testing"><
     </p><p>
       Testing the C++ compiler ABI can be done various ways.
     </p><p>
-      One.  Intel ABI checker. 
+      One.  Intel ABI checker.
     </p><p>
 Two.
 The second is yet unreleased, but has been announced on the gcc
@@ -344,16 +344,16 @@ discussed on the gcc mailing lists.
 </p><p>
 Testing the C++ library ABI can also be done various ways.
 </p><p>
-One. 
-(Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways, 
+One.
+(Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways,
 one with a new compiler and an old library, and the other with an old
 compiler and a new library, and look for testsuite regressions)
 </p><p>
 Details on how to set this kind of test up can be found here:
 http://gcc.gnu.org/ml/gcc/2002-08/msg00142.html
 </p><p>
-Two.  
-Use the 'make check-abi' rule in the libstdc++ Makefile. 
+Two.
+Use the 'make check-abi' rule in the libstdc++ Makefile.
 </p><p>
 This is a proactive check the library ABI. Currently, exported symbol
 names that are either weak or defined are checked against a last known
@@ -372,7 +372,7 @@ machinery.
 </p><p>
 This dataset is insufficient, yet a start. Also needed is a
 comprehensive check for all user-visible types part of the standard
-library for sizeof() and alignof() changes. 
+library for sizeof() and alignof() changes.
 </p><p>
 Verifying compatible layouts of objects is not even attempted.  It
 should be possible to use sizeof, alignof, and offsetof to compute
@@ -403,7 +403,7 @@ exceptions, locale, etc.
 
 %$bld/H-x86-gcc-3.4.0/bin/g++ -c a.cc
 
-%ar cru libone.a a.o 
+%ar cru libone.a a.o
 </pre><p> And, libtwo is constructed as follows: </p><pre class="programlisting">
 %$bld/H-x86-gcc-3.3.3/bin/g++ -fPIC -DPIC -c b.cc
 
@@ -413,24 +413,24 @@ exceptions, locale, etc.
 
 %$bld/H-x86-gcc-3.3.3/bin/g++ -c b.cc
 
-%ar cru libtwo.a b.o 
+%ar cru libtwo.a b.o
 </pre><p> ...with the resulting libraries looking like </p><pre class="screen">
 <code class="computeroutput">
 %ldd libone.so.1.0.0
-        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40016000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400fa000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x40125000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40016000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400fa000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x40125000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %ldd libtwo.so.1.0.0
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x40027000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400e1000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x4010c000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x40027000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400e1000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x4010c000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 </code>
-</pre><p> 
+</pre><p>
   Then, the "C" compiler is used to compile a source file that uses
   functions from each library.
 </p><pre class="programlisting">
@@ -440,18 +440,18 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 </p><pre class="screen">
 <code class="computeroutput">
 %ldd a.out
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
-        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40015000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+	libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40015000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 </code>
 </pre><p>
   This resulting binary, when executed, will be able to safely use
   code from both liba, and the dependent libstdc++.so.6, and libb,
   with the dependent libstdc++.so.5.
-</p></div></div><div class="sect2" title="Outstanding Issues"><div class="titlepage"><div><div><h3 class="title"><a id="abi.issues"></a>Outstanding Issues</h3></div></div></div><p> 
+</p></div></div><div class="sect2" title="Outstanding Issues"><div class="titlepage"><div><div><h3 class="title"><a id="abi.issues"></a>Outstanding Issues</h3></div></div></div><p>
   Some features in the C++ language make versioning especially
   difficult. In particular, compiler generated constructs such as
   implicit instantiations for templates, typeinfo information, and
@@ -464,60 +464,71 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <a class="ulink" href="http://gcc.gnu.org/PR24660" target="_top">24660: versioning weak symbols in libstdc++</a>
 </p><p>
 <a class="ulink" href="http://gcc.gnu.org/PR19664" target="_top">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="ABIcheck, a vague idea of checking ABI compatibility"><a id="id725008"></a><p><span class="title"><i>
-      ABIcheck, a vague idea of checking ABI compatibility
-    </i>. </span><span class="biblioid">
+</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id422104"></a><p><span class="biblioid">
       <a class="ulink" href="http://abicheck.sourceforge.net/" target="_top">
+	<em class="citetitle">
+	  ABIcheck, a vague idea of checking ABI compatibility
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="C++ ABI Reference"><a id="id725026"></a><p><span class="title"><i>
-      C++ ABI Reference
-    </i>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id422124"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.codesourcery.com/public/cxx-abi/" target="_top">
+	<em class="citetitle">
+	  C++ ABI Reference
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Intel® Compilers for Linux* -Compatibility with the GNU Compilers"><a id="id725043"></a><p><span class="title"><i>
-      Intel® Compilers for Linux* -Compatibility with the GNU Compilers
-    </i>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id422144"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" target="_top">
+	<em class="citetitle">
+	  Intel Compilers for Linux Compatibility with the GNU Compilers
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)"><a id="id725060"></a><p><span class="title"><i>
-      Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
-    </i>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id422164"></a><p><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/817-1984" target="_top">
+	<em class="citetitle">
+	  Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)"><a id="id725077"></a><p><span class="title"><i>
-      Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
-    </i>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id493165"></a><p><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-5266" target="_top">
+	<em class="citetitle">
+	  Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="How to Write Shared Libraries"><a id="id725094"></a><p><span class="title"><i>
-      How to Write Shared Libraries
-    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id493184"></a><p><span class="biblioid">
       <a class="ulink" href="http://people.redhat.com/drepper/dsohowto.pdf" target="_top">
+	<em class="citetitle">
+	  How to Write Shared Libraries
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="C++ ABI for the ARM Architecture"><a id="id725122"></a><p><span class="title"><i>
-      C++ ABI for the ARM Architecture
-    </i>. </span><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry"><a id="id493215"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
+	<em class="citetitle">
+	  C++ ABI for the ARM Architecture
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Dynamic Shared Objects: Survey and Issues"><a id="id651420"></a><p><span class="title"><i>
-      Dynamic Shared Objects: Survey and Issues
-    </i>. </span><span class="subtitle">
-      ISO C++ J16/06-0046
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id493234"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
+	<em class="citetitle">
+	  Dynamic Shared Objects: Survey and Issues
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Versioning With Namespaces"><a id="id651453"></a><p><span class="title"><i>
-      Versioning With Namespaces
-    </i>. </span><span class="subtitle">
-      ISO C++ J16/06-0083
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
+    . </span><span class="subtitle">
+      ISO C++ J16/06-0046
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id493269"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" target="_top">
+	<em class="citetitle">
+	  Versioning With Namespaces
+	</em>
       </a>
-    . </span></p></div><div class="biblioentry" title="Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems"><a id="id651486"></a><p><span class="title"><i>
-      Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems
-    </i>. </span><span class="subtitle">
-SYRCoSE 2009
-    . </span><span class="author"><span class="firstname">Pavel</span> <span class="surname">Shved</span>. </span><span class="author"><span class="firstname">Denis</span> <span class="surname">Silakov</span>. </span><span class="biblioid">
+    . </span><span class="subtitle">
+      ISO C++ J16/06-0083
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id493304"></a><p><span class="biblioid">
       <a class="ulink" href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf" target="_top">
+	<em class="citetitle">
+	  Binary Compatibility of Shared Libraries Implemented in C++
+	  on GNU/Linux Systems
+	</em>
       </a>
-    . </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Test </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> API Evolution and Deprecation History</td></tr></table></div></body></html>
+    . </span><span class="subtitle">
+      SYRCoSE 2009
+    . </span><span class="author"><span class="firstname">Pavel</span> <span class="surname">Shved</span>. </span><span class="author"><span class="firstname">Denis</span> <span class="surname">Silakov</span>. </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Test </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> API Evolution and Deprecation History</td></tr></table></div></body></html>

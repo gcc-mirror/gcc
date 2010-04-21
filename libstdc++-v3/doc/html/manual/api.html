@@ -30,8 +30,8 @@ Removal of <code class="filename">ext/tree</code>, moved to <code class="filenam
   </p><p>Symbol versioning introduced for shared library.</p><p>Removal of include <code class="filename">backward/strstream.h</code>.</p><p>Allocator changes. Change <code class="code">__malloc_alloc</code> to <code class="code">malloc_allocator</code> and <code class="code">__new_alloc</code> to <code class="code">new_allocator</code>. </p><p> For GCC releases from 2.95 through the 3.1 series, defining
    <code class="literal">__USE_MALLOC</code> on the gcc command line would change the
    default allocation strategy to instead use <code class="code"> malloc</code> and
-   <code class="function">free</code>. (This same functionality is now spelled <code class="literal">_GLIBCXX_FORCE_NEW</code>, see 
-   <a class="link" href="using_macros.html" title="Macros">this page</a> 
+   <code class="function">free</code>. (This same functionality is now spelled <code class="literal">_GLIBCXX_FORCE_NEW</code>, see
+   <a class="link" href="using_macros.html" title="Macros">this page</a>
    for details.
    </p><p>Error handling in iostreams cleaned up, made consistent. </p></div><div class="sect2" title="3.3"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_330"></a><code class="constant">3.3</code></h3></div></div></div><p>
   </p></div><div class="sect2" title="3.4"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_340"></a><code class="constant">3.4</code></h3></div></div></div><p>
@@ -75,11 +75,11 @@ _Alloc_traits</code> have been removed.
    <span class="type">__alloc</span> to select an underlying allocator that
    satisfied memory allocation requests. The selection of this
    underlying allocator was not user-configurable.
-   </p><div class="table"><a id="id653273"></a><p class="title"><b>Table B.1. Extension Allocators</b></p><div class="table-contents"><table summary="Extension Allocators" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Allocator (3.4)</th><th align="left">Header (3.4)</th><th align="left">Allocator (3.[0-3])</th><th align="left">Header (3.[0-3])</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::new_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/new_allocator.h</code></td><td align="left"><code class="classname">std::__new_alloc</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::malloc_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/malloc_allocator.h</code></td><td align="left"><code class="classname">std::__malloc_alloc_template&lt;int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::debug_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/debug_allocator.h</code></td><td align="left"><code class="classname">std::debug_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__pool_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/pool_allocator.h</code></td><td align="left"><code class="classname">std::__default_alloc_template&lt;bool,int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__mt_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/mt_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left"><code class="classname">__gnu_cxx::bitmap_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/bitmap_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><p> Releases after gcc-3.4 have continued to add to the collection
+   </p><div class="table"><a id="id433329"></a><p class="title"><b>Table B.1. Extension Allocators</b></p><div class="table-contents"><table summary="Extension Allocators" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Allocator (3.4)</th><th align="left">Header (3.4)</th><th align="left">Allocator (3.[0-3])</th><th align="left">Header (3.[0-3])</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::new_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/new_allocator.h</code></td><td align="left"><code class="classname">std::__new_alloc</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::malloc_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/malloc_allocator.h</code></td><td align="left"><code class="classname">std::__malloc_alloc_template&lt;int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::debug_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/debug_allocator.h</code></td><td align="left"><code class="classname">std::debug_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__pool_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/pool_allocator.h</code></td><td align="left"><code class="classname">std::__default_alloc_template&lt;bool,int&gt;</code></td><td align="left"><code class="filename">memory</code></td></tr><tr><td align="left"><code class="classname">__gnu_cxx::__mt_alloc&lt;T&gt;</code></td><td align="left"><code class="filename">ext/mt_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left"><code class="classname">__gnu_cxx::bitmap_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/bitmap_allocator.h</code></td><td align="left"> </td><td align="left"> </td></tr></tbody></table></div></div><br class="table-break" /><p> Releases after gcc-3.4 have continued to add to the collection
    of available allocators. All of these new allocators are
    standard-style. The following table includes details, along with
    the first released version of GCC that included the extension allocator.
-   </p><div class="table"><a id="id594438"></a><p class="title"><b>Table B.2. Extension Allocators Continued</b></p><div class="table-contents"><table summary="Extension Allocators Continued" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Allocator</th><th align="left">Include</th><th align="left">Version</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::array_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/array_allocator.h</code></td><td align="left">4.0.0</td></tr><tr><td align="left"><code class="classname">__gnu_cxx::throw_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/throw_allocator.h</code></td><td align="left">4.2.0</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   </p><div class="table"><a id="id432659"></a><p class="title"><b>Table B.2. Extension Allocators Continued</b></p><div class="table-contents"><table summary="Extension Allocators Continued" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Allocator</th><th align="left">Include</th><th align="left">Version</th></tr></thead><tbody><tr><td align="left"><code class="classname">__gnu_cxx::array_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/array_allocator.h</code></td><td align="left">4.0.0</td></tr><tr><td align="left"><code class="classname">__gnu_cxx::throw_allocator&lt;T&gt;</code></td><td align="left"><code class="filename">ext/throw_allocator.h</code></td><td align="left">4.2.0</td></tr></tbody></table></div></div><br class="table-break" /><p>
 Debug mode first appears.
 </p><p>
 Precompiled header support <acronym class="acronym">PCH</acronym> support.
@@ -143,13 +143,13 @@ Debug mode for <code class="filename">unordered_map</code> and <code class="file
 </p><p>
 Parallel mode first appears.
 </p><p>Variadic template implementations of items in <code class="filename">tuple</code> and
-    <code class="filename">functional</code>. 
+    <code class="filename">functional</code>.
 </p><p>Default <code class="code">what</code> implementations give more elaborate
     exception strings for <code class="code">bad_cast</code>,
     <code class="code">bad_typeid</code>, <code class="code">bad_exception</code>, and
     <code class="code">bad_alloc</code>.
 </p><p>
-PCH binary files no longer installed. Instead, the source files are installed. 
+PCH binary files no longer installed. Instead, the source files are installed.
 </p><p>
 Namespace pb_ds moved to __gnu_pb_ds.
 </p></div><div class="sect2" title="4.4"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_440"></a><code class="constant">4.4</code></h3></div></div></div><p>
@@ -227,7 +227,7 @@ C++0X features.
   </p></li></ul></div><p>
 Profile mode first appears.
 </p><p>
-Support for decimal floating-point arithmetic, including <code class="classname">decimal32</code>, <code class="classname">decimal64</code>, and <code class="classname">decimal128</code>. 
+Support for decimal floating-point arithmetic, including <code class="classname">decimal32</code>, <code class="classname">decimal64</code>, and <code class="classname">decimal128</code>.
 </p><p>
 Python pretty-printers are added for use with appropriately-advanced versions of <span class="command"><strong>gdb</strong></span>.
 </p><p>

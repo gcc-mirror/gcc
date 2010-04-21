@@ -23,7 +23,7 @@
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
    <a class="ulink" href="http://gcc.gnu.org/install/" target="_top">the GCC install page</a>.
-   In particular, list of prerequisite software needed to build the library 
+   In particular, list of prerequisite software needed to build the library
    <a class="ulink" href="http://gcc.gnu.org/install/prerequisites.html" target="_top">
    starts with those requirements.</a> The same pages also list
    the tools you will need if you wish to modify the source.
@@ -40,7 +40,11 @@
       The configure process will automatically detect and use these
       features if the underlying support is present.
    </p><p>
-   Finally, a few system-specific requirements: 
+     To generate the API documentation from the sources you will need
+     Doxygen, see <a class="link" href="documentation_style.html" title="Documentation Style">Documentation
+     Style</a> in the appendix for full details.
+   </p><p>
+   Finally, a few system-specific requirements:
    </p><div class="variablelist"><dl><dt><span class="term">linux</span></dt><dd><p>
 	  If gcc 3.1.0 or later on is being used on linux, an attempt
 	  will be made to use "C" library functionality necessary for
@@ -90,12 +94,12 @@ zh_TW               BIG5
       </p><p>
 	To install support for locales, do only one of the following:
       </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>install all locales</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>with RedHat Linux:
-	      </p><p> <code class="code"> export LC_ALL=C </code> 
-	      </p><p> <code class="code"> rpm -e glibc-common --nodeps </code> 
-	      </p><p> 
+	      </p><p> <code class="code"> export LC_ALL=C </code>
+	      </p><p> <code class="code"> rpm -e glibc-common --nodeps </code>
+	      </p><p>
 		<code class="code"> rpm -i --define "_install_langs all"
-		 glibc-common-2.2.5-34.i386.rpm 
-		</code> 
+		 glibc-common-2.2.5-34.i386.rpm
+		</code>
 	      </p></li><li class="listitem"><p>
 	       Instructions for other operating systems solicited.
 	     </p></li></ul></div></li><li class="listitem"><p>install just the necessary locales</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>with Debian Linux:</p><p> Add the above list, as shown, to the file

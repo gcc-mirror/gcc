@@ -1176,21 +1176,41 @@ A quick read of the relevant part of the GCC
 	<itemizedlist>
 	  <listitem>
 	    <para>
-	      GNU ld (default on Linux):<literal>-Wl,--rpath,<filename class="directory">destdir</filename>/lib</literal>
+	      GNU ld (default on Linux):
+              <literal>-Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
 	    </para>
 	  </listitem>
 	  <listitem>
 	    <para>
-	      IRIX ld:<literal>
-	      -Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
+	      IRIX ld:
+              <literal>-Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
 	    </para>
 	  </listitem>
 	  <listitem>
 	  <para>
-	  Solaris ld:<literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
+	    Solaris ld:
+            <literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
 	  </para>
 	  </listitem>
 	</itemizedlist>
+      </listitem>
+      <listitem>
+	<para>
+	  Some linkers allow you to specify the path to the library by
+	  setting <literal>LD_RUN_PATH</literal> in your environment
+	  when linking.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  On some platforms the system administrator can configure the
+	  dynamic linker to always look for libraries in
+	  <filename class="directory">destdir/lib</filename>, for example
+	  by using the <command>ldconfig</command> utility on Linux
+	  or the <command>crle</command> utility on Solaris. This is a
+	  system-wide change which can make the system unusable so if you
+	  are unsure then use one of the other methods described above.
+	</para>
       </listitem>
     </itemizedlist>
     <para>

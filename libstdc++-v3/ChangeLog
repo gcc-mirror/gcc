@@ -1,3 +1,12 @@
+2010-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Link to manual.
+	* doc/xml/manual/using.xml: Expand dynamic libraries section.
+	* doc/xml/manual/strings.xml: Mention shrink_to_fit() member.
+	* doc/xml/manual/prerequisites.xml: Link to doxygen requirements.
+	* doc/xml/manual/appendix_contributing.xml: Update Bash version.
+	* doc/html/*: Regenerate.
+
 2010-04-13  Ian Lance Taylor  <iant@google.com>
 
 	* include/backward/hash_map: Don't #include "backward_warning.h"

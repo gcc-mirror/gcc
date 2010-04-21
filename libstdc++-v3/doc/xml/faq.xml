@@ -387,6 +387,11 @@
     linker has different names on different platforms but the man page
     is usually called something such as <filename>ld.so/rtld/dld.so</filename>.
     </para>
+    <para>
+    Using LD_LIBRARY_PATH is not always the best solution, <link
+    linkend="manual.intro.using.linkage.dynamic">Finding Dynamic or Shared
+    Libraries</link> in the manual gives some alternatives.
+    </para>
   </answer>
 </qandaentry>
 
@@ -895,8 +900,9 @@
     </para>
     <para>
     More information, including how to optionally enable/disable the
-    checks, is available
-    <link linkend="std.diagnostics.concept_checking">here</link>.
+    checks, is available in the
+    <link linkend="std.diagnostics.concept_checking">Diagnostics</link>.
+    chapter of the manual.
     </para> 
   </answer>
 </qandaentry>
