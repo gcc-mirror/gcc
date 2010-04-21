@@ -1046,7 +1046,7 @@ lto_wpa_write_files (void)
 
 	  lto_set_current_out_file (file);
 
-	  ipa_write_summaries_of_cgraph_node_set (set);
+	  ipa_write_optimization_summaries (set);
 
 	  lto_set_current_out_file (NULL);
 	  lto_elf_file_close (file);
@@ -1822,10 +1822,18 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       gcc_assert (num_objects == nfiles);
     }
 
+  if (!quiet_flag)
+    fprintf (stderr, "Reading object files:");
+
   /* Read all of the object files specified on the command line.  */
   for (i = 0, last_file_ix = 0; i < nfiles; ++i)
     {
       struct lto_file_decl_data *file_data = NULL;
+      if (!quiet_flag)
+	{
+	  fprintf (stderr, " %s", fnames[i]);
+	  fflush (stderr);
+	}
 
       current_lto_file = lto_elf_file_open (fnames[i], false);
       if (!current_lto_file)
@@ -1852,8 +1860,14 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Each pass will set the appropriate timer.  */
   timevar_pop (TV_IPA_LTO_DECL_IO);
 
+  if (!quiet_flag)
+    fprintf (stderr, "\nReading the callgraph\n");
+
   /* Read the callgraph.  */
   input_cgraph ();
+
+  if (!quiet_flag)
+    fprintf (stderr, "Merging declarations\n");
 
   /* Merge global decls.  */
   lto_symtab_merge_decls ();
@@ -1862,8 +1876,14 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   lto_fixup_decls (all_file_decl_data);
   free_gimple_type_tables ();
 
+  if (!quiet_flag)
+    fprintf (stderr, "Reading summaries\n");
+
   /* Read the IPA summary data.  */
-  ipa_read_summaries ();
+  if (flag_ltrans)
+    ipa_read_optimization_summaries ();
+  else
+    ipa_read_summaries ();
 
   /* Finally merge the cgraph according to the decl merging decisions.  */
   lto_symtab_merge_cgraph_nodes ();
@@ -1909,6 +1929,11 @@ materialize_cgraph (void)
   unsigned i;
   timevar_id_t lto_timer;
 
+  if (!quiet_flag)
+    fprintf (stderr,
+	     flag_wpa ? "Materializing decls:" : "Reading function bodies:");
+
+
   /* Now that we have input the cgraph, we need to clear all of the aux
      nodes and read the functions if we are not running in WPA mode.  */
   timevar_push (TV_IPA_LTO_GIMPLE_IO);
@@ -1927,6 +1952,7 @@ materialize_cgraph (void)
       if (node->local.lto_file_data
           && !DECL_IS_BUILTIN (node->decl))
 	{
+	  announce_function (node->decl);
 	  lto_materialize_function (node);
 	  lto_stats.num_input_cgraph_nodes++;
 	}
@@ -1950,6 +1976,8 @@ materialize_cgraph (void)
 
   /* Fix up any calls to DECLs that have become not exception throwing.  */
   lto_fixup_nothrow_decls ();
+  if (!quiet_flag)
+    fprintf (stderr, "\n");
 
   timevar_pop (lto_timer);
 }
@@ -1987,7 +2015,14 @@ do_whole_program_analysis (void)
 
   lto_1_to_1_map ();
 
+  if (!quiet_flag)
+    {
+      fprintf (stderr, "\nStreaming out");
+      fflush (stderr);
+    }
   output_files = lto_wpa_write_files ();
+  if (!quiet_flag)
+    fprintf (stderr, "\n");
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)

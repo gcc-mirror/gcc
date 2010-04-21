@@ -1095,7 +1095,8 @@ struct ipa_opt_pass_d pass_ipa_pure_const =
  generate_summary,		        /* generate_summary */
  pure_const_write_summary,		/* write_summary */
  pure_const_read_summary,		/* read_summary */
- NULL,					/* function_read_summary */
+ NULL,					/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */

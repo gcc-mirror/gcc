@@ -271,6 +271,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      node->analyzed = false;
 		      node->local.inlinable = false;
 		    }
+		  else
+		    gcc_assert (!clone->in_other_partition);
 		  cgraph_node_remove_callees (node);
 		  if (node->prev_sibling_clone)
 		    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
@@ -574,7 +576,8 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
  NULL,					/* generate_summary */
  NULL,					/* write_summary */
  NULL,					/* read_summary */
- NULL,					/* function_read_summary */
+ NULL,					/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,					/* function_transform */

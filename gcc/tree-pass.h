@@ -182,11 +182,15 @@ struct ipa_opt_pass_d
   /* This hook is used to serialize IPA summaries on disk.  */
   void (*write_summary) (struct cgraph_node_set_def *);
 
-  /* For most ipa passes, the information can only be deserialized in
-     one chunk.  However, function bodies are read function at a time
-     as needed so both calls are necessary.  */
+  /* This hook is used to deserialize IPA summaries from disk.  */
   void (*read_summary) (void);
-  void (*function_read_summary) (struct cgraph_node *);
+
+  /* This hook is used to serialize IPA optimization summaries on disk.  */
+  void (*write_optimization_summary) (struct cgraph_node_set_def *);
+
+  /* This hook is used to deserialize IPA summaries from disk.  */
+  void (*read_optimization_summary) (void);
+
   /* Hook to convert gimple stmt uids into true gimple statements.  The second
      parameter is an array of statements indexed by their uid. */
   void (*stmt_fixup) (struct cgraph_node *, gimple *);
@@ -601,9 +605,9 @@ extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
-extern void ipa_write_summaries_of_cgraph_node_set (
-	      struct cgraph_node_set_def *);
+extern void ipa_write_optimization_summaries (struct cgraph_node_set_def *);
 extern void ipa_read_summaries (void);
+extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (struct opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
 extern void register_pass (struct register_pass_info *);
