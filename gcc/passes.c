@@ -814,7 +814,6 @@ init_optimization_passes (void)
 
   p = &all_lto_gen_passes;
   NEXT_PASS (pass_ipa_lto_gimple_out);
-  NEXT_PASS (pass_ipa_lto_wpa_fixup);
   NEXT_PASS (pass_ipa_lto_finish_out);  /* This must be the last LTO pass.  */
   *p = NULL;
 
@@ -1487,10 +1486,20 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
 void
 execute_all_ipa_transforms (void)
 {
+  enum cgraph_state old_state = cgraph_state;
   struct cgraph_node *node;
   if (!cfun)
     return;
   node = cgraph_node (current_function_decl);
+
+  /* Statement verification skip verification of nothorw when
+     state is IPA_SSA because we do not modify function bodies
+     after setting the flag on function.  Instead we leave it
+     to fixup_cfg to do such a transformation.  We need to temporarily
+     change the cgraph state so statement verifier before
+     transform do not fire.  */
+  cgraph_state = CGRAPH_STATE_IPA_SSA;
+
   if (node->ipa_transforms_to_apply)
     {
       unsigned int i;
@@ -1504,6 +1513,7 @@ execute_all_ipa_transforms (void)
       VEC_free (ipa_opt_pass, heap, node->ipa_transforms_to_apply);
       node->ipa_transforms_to_apply = NULL;
     }
+  cgraph_state = old_state;
 }
 
 /* Execute PASS. */

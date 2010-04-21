@@ -1258,7 +1258,6 @@ OBJS-common = \
 	lto-symtab.o \
 	lto-opts.o \
 	lto-streamer.o \
-	lto-wpa-fixup.o \
 	lto-compress.o \
 	mcf.o \
 	mode-switching.o \
@@ -2251,10 +2250,6 @@ lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
 lto-streamer.o: lto-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
    $(TM_H) $(TREE_H) $(GIMPLE_H) $(BITMAP_H) $(LTO_STREAMER_H) $(FLAGS_H) \
    $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(LTO_SYMTAB_H) $(TOPLEV_H)
-lto-wpa-fixup.o: lto-wpa-fixup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
-   $(TM_H) $(TOPLEV_H) $(TREE_H) $(EXPR_H) $(FLAGS_H) $(CGRAPH_H) \
-   $(FUNCTION_H) $(DIAGNOSTIC_H) $(BITMAP_H) $(TIMEVAR_H) \
-   $(TREE_FLOW_H) $(TREE_PASS_H) $(LTO_STREAMER_H)
 langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(TOPLEV_H) $(TREE_INLINE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) \
    langhooks.h $(TARGET_H) $(LANGHOOKS_DEF_H) $(FLAGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
