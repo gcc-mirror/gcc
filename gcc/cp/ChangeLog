@@ -1,3 +1,12 @@
+2010-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9335
+	* init.c (constant_value_1): Treat error_mark_node as a constant
+	if DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P is set.
+	* cvt.c (ocp_convert): Handle getting error_mark_node from
+	integral_constant_value.
+	* decl.c (compute_array_index_type): Likewise.
+
 2010-04-20  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43800
