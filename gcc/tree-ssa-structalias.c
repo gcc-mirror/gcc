@@ -1746,6 +1746,7 @@ do_ds_constraint (constraint_t c, bitmap delta)
   unsigned int j;
   bitmap_iterator bi;
   HOST_WIDE_INT loff = c->lhs.offset;
+  bool escaped_p = false;
 
   /* Our IL does not allow this.  */
   gcc_assert (c->rhs.offset == 0);
@@ -1792,22 +1793,6 @@ do_ds_constraint (constraint_t c, bitmap delta)
       unsigned int t;
       HOST_WIDE_INT fieldoffset = v->offset + loff;
 
-      /* If v is a global variable then this is an escape point.  */
-      if (v->is_global_var)
-	{
-	  t = find (escaped_id);
-	  if (add_graph_edge (graph, t, rhs)
-	      && bitmap_ior_into (get_varinfo (t)->solution, sol)
-	      && !TEST_BIT (changed, t))
-	    {
-	      SET_BIT (changed, t);
-	      changed_count++;
-	    }
-	}
-
-      if (v->is_special_var)
-	continue;
-
       if (v->is_full_var)
 	fieldoffset = v->offset;
       else if (loff != 0)
@@ -1820,6 +1805,25 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	{
 	  if (v->may_have_pointers)
 	    {
+	      /* If v is a global variable then this is an escape point.  */
+	      if (v->is_global_var
+		  && !escaped_p)
+		{
+		  t = find (escaped_id);
+		  if (add_graph_edge (graph, t, rhs)
+		      && bitmap_ior_into (get_varinfo (t)->solution, sol)
+		      && !TEST_BIT (changed, t))
+		    {
+		      SET_BIT (changed, t);
+		      changed_count++;
+		    }
+		  /* Enough to let rhs escape once.  */
+		  escaped_p = true;
+		}
+
+	      if (v->is_special_var)
+		break;
+
 	      t = find (v->id);
 	      if (add_graph_edge (graph, t, rhs)
 		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
