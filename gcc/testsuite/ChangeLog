@@ -1,3 +1,12 @@
+2010-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9335
+	* g++.dg/template/recurse2.C: New.
+	* g++.dg/parse/crash36.C: Adjust.
+	* g++.dg/other/fold1.C: Adjust.
+	* g++.dg/init/member1.C: Adjust.
+	* lib/prune.exp: Prune "skipping N instantiation contexts".
+
 2010-04-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-cproj-1.c: Test more cases.

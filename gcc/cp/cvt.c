@@ -610,6 +610,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
     }
 
   e = integral_constant_value (e);
+  if (error_operand_p (e))
+    return error_mark_node;
 
   if (MAYBE_CLASS_TYPE_P (type) && (convtype & CONV_FORCE_TEMP))
     /* We need a new temporary; don't take this shortcut.  */;

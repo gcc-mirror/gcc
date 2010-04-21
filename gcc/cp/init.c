@@ -1658,7 +1658,14 @@ constant_value_1 (tree decl, bool integral_p)
 	  init = DECL_INITIAL (decl);
 	}
       if (init == error_mark_node)
-	return decl;
+	{
+	  if (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	    /* Treat the error as a constant to avoid cascading errors on
+	       excessively recursive template instantiation (c++/9335).  */
+	    return init;
+	  else
+	    return decl;
+	}
       /* Initializers in templates are generally expanded during
 	 instantiation, so before that for const int i(2)
 	 INIT is a TREE_LIST with the actual initializer as
