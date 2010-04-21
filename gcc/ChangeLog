@@ -1,3 +1,11 @@
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (dump_cgraph_node): Dump also assembler name.
+	* ipa-inline.c (cgraph_decide_inlining_of_small_functions): Do not ice
+	at WPA dumping.
+	(cgraph_decide_inlining): Do not expect callee to be removed in all
+	cases.
+
 2010-04-21  Eric B. Weddington  <eric.weddington@atmel.com>
 
 	* config/avr/avr-devices.c (avr_mcu_types): Add missing comma.
