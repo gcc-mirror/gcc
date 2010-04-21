@@ -1433,10 +1433,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  break;
 
 	case OMP_CLAUSE_COPYPRIVATE:
-	  if (ctx->outer)
-	    scan_omp_op (&OMP_CLAUSE_DECL (c), ctx->outer);
-	  /* FALLTHRU */
-
 	case OMP_CLAUSE_COPYIN:
 	  decl = OMP_CLAUSE_DECL (c);
 	  by_ref = use_pointer_for_field (decl, NULL);
@@ -2702,7 +2698,7 @@ lower_copyprivate_clauses (tree clauses, gimple_seq *slist, gimple_seq *rlist,
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     {
-      tree var, ref, x;
+      tree var, new_var, ref, x;
       bool by_ref;
       location_t clause_loc = OMP_CLAUSE_LOCATION (c);
 
@@ -2713,17 +2709,29 @@ lower_copyprivate_clauses (tree clauses, gimple_seq *slist, gimple_seq *rlist,
       by_ref = use_pointer_for_field (var, NULL);
 
       ref = build_sender_ref (var, ctx);
-      x = lookup_decl_in_outer_ctx (var, ctx);
-      x = by_ref ? build_fold_addr_expr_loc (clause_loc, x) : x;
+      x = new_var = lookup_decl_in_outer_ctx (var, ctx);
+      if (by_ref)
+	{
+	  x = build_fold_addr_expr_loc (clause_loc, new_var);
+	  x = fold_convert_loc (clause_loc, TREE_TYPE (ref), x);
+	}
       gimplify_assign (ref, x, slist);
 
-      ref = build_receiver_ref (var, by_ref, ctx);
+      ref = build_receiver_ref (var, false, ctx);
+      if (by_ref)
+	{
+	  ref = fold_convert_loc (clause_loc,
+				  build_pointer_type (TREE_TYPE (new_var)),
+				  ref);
+	  ref = build_fold_indirect_ref_loc (clause_loc, ref);
+	}
       if (is_reference (var))
 	{
+	  ref = fold_convert_loc (clause_loc, TREE_TYPE (new_var), ref);
 	  ref = build_fold_indirect_ref_loc (clause_loc, ref);
-	  var = build_fold_indirect_ref_loc (clause_loc, var);
+	  new_var = build_fold_indirect_ref_loc (clause_loc, new_var);
 	}
-      x = lang_hooks.decls.omp_clause_assign_op (c, var, ref);
+      x = lang_hooks.decls.omp_clause_assign_op (c, new_var, ref);
       gimplify_and_add (x, rlist);
     }
 }
