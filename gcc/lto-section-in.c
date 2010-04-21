@@ -55,7 +55,6 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "ipa_pure_const",
   "ipa_reference",
   "symtab",
-  "wpa_fixup",
   "opts"
 };
 

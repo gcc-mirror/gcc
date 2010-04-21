@@ -1561,28 +1561,6 @@ lto_fixup_tree (tree *tp, int *walk_subtrees, void *data)
 
       if (t != prevailing)
 	{
-	  if (TREE_CODE (t) == FUNCTION_DECL
-	      && TREE_NOTHROW (prevailing) != TREE_NOTHROW (t))
-	    {
-	      /* If the prevailing definition does not throw but the
-		 declaration (T) was considered throwing, then we
-		 simply add PREVAILING to the list of throwing
-		 functions.  However, if the opposite is true, then
-		 the call to PREVAILING was generated assuming that
-		 the function didn't throw, which means that CFG
-		 cleanup may have removed surrounding try/catch
-		 regions.
-
-		 Note that we currently accept these cases even when
-		 they occur within a single file.  It's certainly a
-		 user error, but we silently allow the compiler to
-		 remove surrounding try/catch regions.  Perhaps we
-		 could emit a warning here, instead of silently
-		 accepting the conflicting declaration.  */
-	      if (TREE_NOTHROW (prevailing))
-		lto_mark_nothrow_fndecl (prevailing);
-	    }
-
 	   /* Also replace t with prevailing defintion.  We don't want to
 	      insert the other defintion in the seen set as we want to
 	      replace all instances of it.  */
@@ -1974,8 +1952,6 @@ materialize_cgraph (void)
   for (i = 0; VEC_iterate (tree, lto_global_var_decls, i, decl); i++)
     rest_of_decl_compilation (decl, 1, 0);
 
-  /* Fix up any calls to DECLs that have become not exception throwing.  */
-  lto_fixup_nothrow_decls ();
   if (!quiet_flag)
     fprintf (stderr, "\n");
 

@@ -1,5 +1,10 @@
 2010-04-21  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (lto_fixup_tree): Do not call wpa fixup.
+	(materialize_cgraph): Likewise.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (lto_wpa_write_files): Update.
 	(read_cgraph_and_symbols): Be more verbose.
 	(materialize_cgraph): Likewise.

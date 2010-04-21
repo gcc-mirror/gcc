@@ -1,5 +1,15 @@
 2010-04-21  Jan Hubicka  <jh@suse.cz>
 
+	* timevar.def (TV_WHOPR_WPA_FIXUP): Remove.
+	* lto-section-in.c (lto_section_name): Remove wpa_fixup.
+	* lto-wpa-fixup.c: Remove.
+	* Makefile.in (lto-wpa-fixup.o): Remove.
+	* passes.c (init_optimization_passes): Remove pass_ipa_lto_wpa_fixup.
+	(execute_all_ipa_transforms): Set cgraph_state to CGRAPH_STATE_IPA_SSA.
+	* lto-streamer.c (lto_get_section_name): Remove wpa_fixup section.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
 	* tree-pass.h (ipa_opt_pass_d): Rename function_read_summary;
 	add write_optimization_summary, read_optimization_summary.
 	(ipa_write_summaries_of_cgraph_node_set): Remove.
