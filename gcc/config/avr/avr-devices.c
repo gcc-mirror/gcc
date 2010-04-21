@@ -67,7 +67,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "attiny13",             ARCH_AVR25, "__AVR_ATtiny13__",         1, 0x0060, "tn13" },
   { "attiny13a",            ARCH_AVR25, "__AVR_ATtiny13A__",        1, 0x0060, "tn13a" },
   { "attiny2313",           ARCH_AVR25, "__AVR_ATtiny2313__",       1, 0x0060, "tn2313" },
-  { "attiny2313a",          ARCH_AVR25, "__AVR_ATtiny2313A__"       1, 0x0060, "tn2313a" },
+  { "attiny2313a",          ARCH_AVR25, "__AVR_ATtiny2313A__",      1, 0x0060, "tn2313a" },
   { "attiny24",             ARCH_AVR25, "__AVR_ATtiny24__",         1, 0x0060, "tn24" },
   { "attiny24a",            ARCH_AVR25, "__AVR_ATtiny24A__"         1, 0x0060, "tn24a" },
   { "attiny4313",           ARCH_AVR25, "__AVR_ATtiny4313__"        1, 0x0060, "tn4313" },
