@@ -1,3 +1,12 @@
+2010-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43570
+	* omp-low.c (scan_sharing_clauses): Don't scan_omp_op
+	OMP_CLAUSE_DECL for OMP_CLAUSE_COPYPRIVATE.
+	(lower_copyprivate_clauses): Use private var in outer
+	context instead of original var.  Make sure the types
+	are correct for VLAs.
+
 2010-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/43337
