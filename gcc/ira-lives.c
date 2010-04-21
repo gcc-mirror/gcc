@@ -805,6 +805,9 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 			? GENERAL_REGS
 			: REG_CLASS_FROM_CONSTRAINT (c, p));
 		  if (cl != NO_REGS
+		      /* There is no register pressure problem if all of the
+			 regs in this class are fixed.  */
+		      && ira_available_class_regs[cl] != 0
 		      && (ira_available_class_regs[cl]
 			  <= ira_reg_class_nregs[cl][mode]))
 		    IOR_HARD_REG_SET (*set, reg_class_contents[cl]);
