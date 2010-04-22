@@ -3994,7 +3994,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 that any registers modified are dead at the branch site.  */
 
       rtx insn, cond, prev;
-      bitmap merge_set, test_live, test_set;
+      bitmap merge_set, merge_set_noclobber, test_live, test_set;
       unsigned i, fail = 0;
       bitmap_iterator bi;
 
@@ -4030,11 +4030,14 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       /* Collect:
 	   MERGE_SET = set of registers set in MERGE_BB
+	   MERGE_SET_NOCLOBBER = like MERGE_SET, but only includes registers
+	     that are really set, not just clobbered.
 	   TEST_LIVE = set of registers live at EARLIEST
-	   TEST_SET  = set of registers set between EARLIEST and the
-		       end of the block.  */
+	   TEST_SET = set of registers set between EARLIEST and the
+	     end of the block.  */
 
       merge_set = BITMAP_ALLOC (&reg_obstack);
+      merge_set_noclobber = BITMAP_ALLOC (&reg_obstack);
       test_live = BITMAP_ALLOC (&reg_obstack);
       test_set = BITMAP_ALLOC (&reg_obstack);
 
@@ -4051,13 +4054,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	{
 	  if (NONDEBUG_INSN_P (insn))
 	    {
-	      unsigned int uid = INSN_UID (insn);
-	      df_ref *def_rec;
-	      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-		{
-		  df_ref def = *def_rec;
-		  bitmap_set_bit (merge_set, DF_REF_REGNO (def));
-		}
+	      df_simulate_find_defs (insn, merge_set);
+	      df_simulate_find_noclobber_defs (insn, merge_set_noclobber);
 	    }
 	}
 
@@ -4065,7 +4063,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 hard registers before reload.  */
       if (SMALL_REGISTER_CLASSES && ! reload_completed)
 	{
-          EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
+          EXECUTE_IF_SET_IN_BITMAP (merge_set_noclobber, 0, i, bi)
 	    {
 	      if (i < FIRST_PSEUDO_REGISTER
 		  && ! fixed_regs[i]
@@ -4085,7 +4083,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	{
 	  if (INSN_P (insn))
 	    {
-	      df_simulate_find_defs (insn, test_set);
+	      df_simulate_find_noclobber_defs (insn, test_set);
 	      df_simulate_one_insn_backwards (test_bb, insn, test_live);
 	    }
 	  prev = PREV_INSN (insn);
@@ -4094,16 +4092,19 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	}
 
       /* We can perform the transformation if
-	   MERGE_SET & (TEST_SET | TEST_LIVE)
+	   MERGE_SET_NOCLOBBER & TEST_SET
+	 and
+	   MERGE_SET & TEST_LIVE)
 	 and
 	   TEST_SET & DF_LIVE_IN (merge_bb)
 	 are empty.  */
 
-      if (bitmap_intersect_p (test_set, merge_set)
+      if (bitmap_intersect_p (test_set, merge_set_noclobber)
 	  || bitmap_intersect_p (test_live, merge_set)
 	  || bitmap_intersect_p (test_set, df_get_live_in (merge_bb)))
 	fail = 1;
 
+      BITMAP_FREE (merge_set_noclobber);
       BITMAP_FREE (merge_set);
       BITMAP_FREE (test_live);
       BITMAP_FREE (test_set);
