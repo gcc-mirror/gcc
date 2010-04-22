@@ -2176,6 +2176,7 @@ analyze_subscript_affine_affine (tree chrec_a,
   unsigned nb_vars_a, nb_vars_b, dim;
   HOST_WIDE_INT init_a, init_b, gamma, gcd_alpha_beta;
   lambda_matrix A, U, S;
+  struct obstack scratch_obstack;
 
   if (eq_evolutions_p (chrec_a, chrec_b))
     {
@@ -2203,10 +2204,12 @@ analyze_subscript_affine_affine (tree chrec_a,
   nb_vars_a = nb_vars_in_chrec (chrec_a);
   nb_vars_b = nb_vars_in_chrec (chrec_b);
 
+  gcc_obstack_init (&scratch_obstack);
+
   dim = nb_vars_a + nb_vars_b;
-  U = lambda_matrix_new (dim, dim);
-  A = lambda_matrix_new (dim, 1);
-  S = lambda_matrix_new (dim, 1);
+  U = lambda_matrix_new (dim, dim, &scratch_obstack);
+  A = lambda_matrix_new (dim, 1, &scratch_obstack);
+  S = lambda_matrix_new (dim, 1, &scratch_obstack);
 
   init_a = int_cst_value (initialize_matrix_A (A, chrec_a, 0, 1));
   init_b = int_cst_value (initialize_matrix_A (A, chrec_b, nb_vars_a, -1));
@@ -2420,6 +2423,7 @@ analyze_subscript_affine_affine (tree chrec_a,
     }
 
 end_analyze_subs_aa:
+  obstack_free (&scratch_obstack, NULL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  (overlaps_a = ");

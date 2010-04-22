@@ -31,12 +31,14 @@ along with GCC; see the file COPYING3.  If not see
 /* Allocate a new transformation matrix.  */
 
 lambda_trans_matrix
-lambda_trans_matrix_new (int colsize, int rowsize)
+lambda_trans_matrix_new (int colsize, int rowsize,
+			 struct obstack * lambda_obstack)
 {
   lambda_trans_matrix ret;
 
-  ret = GGC_NEW (struct lambda_trans_matrix_s);
-  LTM_MATRIX (ret) = lambda_matrix_new (rowsize, colsize);
+  ret = (lambda_trans_matrix)
+    obstack_alloc (lambda_obstack, sizeof (struct lambda_trans_matrix_s));
+  LTM_MATRIX (ret) = lambda_matrix_new (rowsize, colsize, lambda_obstack);
   LTM_ROWSIZE (ret) = rowsize;
   LTM_COLSIZE (ret) = colsize;
   LTM_DENOMINATOR (ret) = 1;
@@ -57,14 +59,16 @@ lambda_trans_matrix_id_p (lambda_trans_matrix mat)
 /* Compute the inverse of the transformation matrix MAT.  */
 
 lambda_trans_matrix
-lambda_trans_matrix_inverse (lambda_trans_matrix mat)
+lambda_trans_matrix_inverse (lambda_trans_matrix mat,
+			     struct obstack * lambda_obstack)
 {
   lambda_trans_matrix inverse;
   int determinant;
 
-  inverse = lambda_trans_matrix_new (LTM_ROWSIZE (mat), LTM_COLSIZE (mat));
+  inverse = lambda_trans_matrix_new (LTM_ROWSIZE (mat), LTM_COLSIZE (mat),
+				     lambda_obstack);
   determinant = lambda_matrix_inverse (LTM_MATRIX (mat), LTM_MATRIX (inverse),
-				       LTM_ROWSIZE (mat));
+				       LTM_ROWSIZE (mat), lambda_obstack);
   LTM_DENOMINATOR (inverse) = determinant;
   return inverse;
 }
