@@ -1561,7 +1561,7 @@ xstormy16_asm_output_aligned_common (FILE *stream,
 				     int align,
 				     int global)
 {
-  rtx mem = DECL_RTL (decl);
+  rtx mem = decl == NULL_TREE ? NULL_RTX : DECL_RTL (decl);
   rtx symbol;
 
   if (mem != NULL_RTX
