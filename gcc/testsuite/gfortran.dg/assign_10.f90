@@ -19,10 +19,10 @@
   if (any(p8 .ne. q8)) call abort ()
 end
 ! Whichever is the default length for array indices will yield
-! parm 9 times, because a temporary is not necessary.  The other
-! cases will all yield a temporary, so that atmp appears 27 times.
+! parm 18 times, because a temporary is not necessary.  The other
+! cases will all yield a temporary, so that atmp appears 18 times.
 ! Note that it is the kind conversion that generates the temp.
 !
-! { dg-final { scan-tree-dump-times "parm" 9 "original" } }
-! { dg-final { scan-tree-dump-times "atmp" 27 "original" } }
+! { dg-final { scan-tree-dump-times "parm" 18 "original" } }
+! { dg-final { scan-tree-dump-times "atmp" 18 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
