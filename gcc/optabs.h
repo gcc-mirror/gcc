@@ -771,6 +771,9 @@ extern void expand_fix (rtx, rtx, int);
 /* Generate code for float to integral conversion.  */
 extern bool expand_sfix_optab (rtx, rtx, convert_optab);
 
+/* Generate code for a widening multiply.  */
+extern rtx expand_widening_mult (enum machine_mode, rtx, rtx, rtx, int, optab);
+
 /* Return tree if target supports vector operations for COND_EXPR.  */
 bool expand_vec_cond_expr_p (tree, enum machine_mode);
 
