@@ -1,4 +1,8 @@
-2010-04-22 Ira Rosen <irar@il.ibm.com>
+2010-04-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/x-aix: Override LDFLAGS for all COMPILERS.
+
+2010-04-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43842
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Handle 
