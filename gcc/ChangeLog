@@ -1,3 +1,7 @@
+2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* optabs.h (expand_widening_mult): Declare.
+
 2010-04-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43845
@@ -55,7 +59,6 @@
 2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR middle-end/29274
-	* optabs.h (expand_widening_mult): Declare.
 	* tree-pass.h (pass_optimize_widening_mul): Declare.
 	* tree-ssa-math-opts.c (execute_optimize_widening_mul,
 	gate_optimize_widening_mul): New static functions.
