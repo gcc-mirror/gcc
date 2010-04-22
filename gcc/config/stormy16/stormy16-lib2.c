@@ -318,13 +318,13 @@ __ffshi2 (UHWtype u)
 word_type
 __ucmpsi2 (USItype a, USItype b)
 {
-  word_type hi_a = (a << 16);
-  word_type hi_b = (b << 16);
+  word_type hi_a = (a >> 16);
+  word_type hi_b = (b >> 16);
 
   if (hi_a == hi_b)
     {
-      word_type low_a = (a & 0xff);
-      word_type low_b = (b & 0xff);
+      word_type low_a = (a & 0xffff);
+      word_type low_b = (b & 0xffff);
 
       return low_a < low_b ? 0 : (low_a > low_b ? 2 : 1);
     }

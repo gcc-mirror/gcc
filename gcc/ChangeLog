@@ -1,3 +1,7 @@
+2010-04-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16-lib2.c (__ucmpsi2): Fix thinko.
+
 2010-04-22  Alexander Monakov  <amonakov@ispras.ru>
 
 	* tree-ssa-reassoc.c (eliminate_plus_minus_pair): Handle BIT_NOT_EXPR
