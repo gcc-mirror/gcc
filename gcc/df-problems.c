@@ -3745,9 +3745,22 @@ df_simulate_find_defs (rtx insn, bitmap defs)
   for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
     {
       df_ref def = *def_rec;
-      /* If the def is to only part of the reg, it does
-	 not kill the other defs that reach here.  */
-      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+      bitmap_set_bit (defs, DF_REF_REGNO (def));
+    }
+}
+
+/* Find the set of real DEFs, which are not clobbers, for INSN.  */
+
+void
+df_simulate_find_noclobber_defs (rtx insn, bitmap defs)
+{
+  df_ref *def_rec;
+  unsigned int uid = INSN_UID (insn);
+
+  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER)))
 	bitmap_set_bit (defs, DF_REF_REGNO (def));
     }
 }
@@ -3939,7 +3952,7 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
      while here the scan is performed forwards!  So, first assume that the
      def is live, and if this is not true REG_UNUSED notes will rectify the
      situation.  */
-  df_simulate_find_defs (insn, live);
+  df_simulate_find_noclobber_defs (insn, live);
 
   /* Clear all of the registers that go dead.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

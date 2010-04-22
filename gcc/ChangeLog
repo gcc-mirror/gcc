@@ -1,3 +1,14 @@
+2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs and
+	df_simulate_find_noclobber_defs as appropriate.  Keep track of an
+	extra set merge_set_noclobber, and use it to relax the final test
+	slightly.
+	* df.h (df_simulate_find_noclobber_defs): Declare.
+	* df-problems.c (df_simulate_find_defs): Don't ignore partial or
+	conditional defs.
+	(df_simulate_find_noclobber_defs): New function.
+
 2010-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Use {} around multi-line preparation statements.
