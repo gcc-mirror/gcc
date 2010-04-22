@@ -1,3 +1,22 @@
+2010-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* c-tree.h (push_init_level, pop_init_level, set_init_index)
+	(process_init_element): New argument of type struct obstack *.
+
+	* c-typeck.c (push_init_level, pop_init_level, set_designator)
+	(set_init_index, set_init_label, set_nonincremental_init)
+	(set_nonincremental_init_from_string, find_init_member)
+	(output_init_element, output_pending_init_elements)
+	(process_init_element): New argument braced_init_obstack.  Pass it
+	down.
+	(push_range_stack, add_pending_init): New argument
+	braced_init_obstack.  Use obstack allocation.
+
+	* c-parser.c (c_parser_initelt, c_parser_initval): New argument
+	braced_init_obstack.  Pass it down.
+	(c_parser_braced_init): New variables ret, braced_init_obstack.
+	Initialize obstack, pass it down and finally free it.
+
 2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR middle-end/29274

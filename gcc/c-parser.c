@@ -906,8 +906,9 @@ static tree c_parser_attributes (c_parser *);
 static struct c_type_name *c_parser_type_name (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool);
-static void c_parser_initelt (c_parser *);
-static void c_parser_initval (c_parser *, struct c_expr *);
+static void c_parser_initelt (c_parser *, struct obstack *);
+static void c_parser_initval (c_parser *, struct c_expr *,
+			      struct obstack *);
 static tree c_parser_compound_statement (c_parser *);
 static void c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *);
@@ -3088,11 +3089,14 @@ c_parser_initializer (c_parser *parser)
 static struct c_expr
 c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
 {
+  struct c_expr ret;
+  struct obstack braced_init_obstack;
   location_t brace_loc = c_parser_peek_token (parser)->location;
+  gcc_obstack_init (&braced_init_obstack);
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   c_parser_consume_token (parser);
   if (nested_p)
-    push_init_level (0);
+    push_init_level (0, &braced_init_obstack);
   else
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -3105,7 +3109,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
 	 comma.  */
       while (true)
 	{
-	  c_parser_initelt (parser);
+	  c_parser_initelt (parser, &braced_init_obstack);
 	  if (parser->error)
 	    break;
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
@@ -3118,22 +3122,24 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
     }
   if (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
     {
-      struct c_expr ret;
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, "expected %<}%>");
-      pop_init_level (0);
+      pop_init_level (0, &braced_init_obstack);
+      obstack_free (&braced_init_obstack, NULL);
       return ret;
     }
   c_parser_consume_token (parser);
-  return pop_init_level (0);
+  ret = pop_init_level (0, &braced_init_obstack);
+  obstack_free (&braced_init_obstack, NULL);
+  return ret;
 }
 
 /* Parse a nested initializer, including designators.  */
 
 static void
-c_parser_initelt (c_parser *parser)
+c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 {
   /* Parse any designator or designator list.  A single array
      designator may have the subsequent "=" omitted in GNU C, but a
@@ -3142,7 +3148,8 @@ c_parser_initelt (c_parser *parser)
       && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
     {
       /* Old-style structure member designator.  */
-      set_init_label (c_parser_peek_token (parser)->value);
+      set_init_label (c_parser_peek_token (parser)->value,
+		      braced_init_obstack);
       /* Use the colon as the error location.  */
       pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_pedantic,
 	       "obsolete use of designated initializer with %<:%>");
@@ -3170,7 +3177,8 @@ c_parser_initelt (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is (parser, CPP_NAME))
 		{
-		  set_init_label (c_parser_peek_token (parser)->value);
+		  set_init_label (c_parser_peek_token (parser)->value,
+				  braced_init_obstack);
 		  c_parser_consume_token (parser);
 		}
 	      else
@@ -3181,7 +3189,7 @@ c_parser_initelt (c_parser *parser)
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected identifier");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init, false);
+		  process_init_element (init, false, braced_init_obstack);
 		  return;
 		}
 	    }
@@ -3262,7 +3270,7 @@ c_parser_initelt (c_parser *parser)
 		  /* Now parse and process the remainder of the
 		     initializer, starting with this message
 		     expression as a primary-expression.  */
-		  c_parser_initval (parser, &mexpr);
+		  c_parser_initval (parser, &mexpr, braced_init_obstack);
 		  return;
 		}
 	      c_parser_consume_token (parser);
@@ -3281,7 +3289,7 @@ c_parser_initelt (c_parser *parser)
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		{
 		  c_parser_consume_token (parser);
-		  set_init_index (first, second);
+		  set_init_index (first, second, braced_init_obstack);
 		  if (second)
 		    pedwarn (ellipsis_loc, OPT_pedantic,
 			     "ISO C forbids specifying range of elements to initialize");
@@ -3313,13 +3321,13 @@ c_parser_initelt (c_parser *parser)
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected %<=%>");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init, false);
+		  process_init_element (init, false, braced_init_obstack);
 		  return;
 		}
 	    }
 	}
     }
-  c_parser_initval (parser, NULL);
+  c_parser_initval (parser, NULL, braced_init_obstack);
 }
 
 /* Parse a nested initializer; as c_parser_initializer but parses
@@ -3329,7 +3337,8 @@ c_parser_initelt (c_parser *parser)
    initializer.  */
 
 static void
-c_parser_initval (c_parser *parser, struct c_expr *after)
+c_parser_initval (c_parser *parser, struct c_expr *after,
+		  struct obstack * braced_init_obstack)
 {
   struct c_expr init;
   gcc_assert (!after || c_dialect_objc ());
@@ -3344,7 +3353,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after)
 	  && TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR)
 	init = default_function_array_read_conversion (loc, init);
     }
-  process_init_element (init, false);
+  process_init_element (init, false, braced_init_obstack);
 }
 
 /* Parse a compound statement (possibly a function body) (C90 6.6.2,
