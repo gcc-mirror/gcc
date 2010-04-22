@@ -1,3 +1,8 @@
+2010-04-22 Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43482
+	* gcc.dg/vect/pr43842.c: New test.
+
 2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.target/i386/wmul-1.c: Add dg-require-effective-target ilp32.

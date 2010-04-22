@@ -1213,7 +1213,7 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     }
 
   /* Find SLP sequences starting from groups of reductions.  */
-  if (loop_vinfo &&  VEC_length (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo))
+  if (loop_vinfo && VEC_length (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo)) > 1
       && vect_analyze_slp_instance (loop_vinfo, bb_vinfo, 
                                     VEC_index (gimple, reductions, 0)))
     ok = true;

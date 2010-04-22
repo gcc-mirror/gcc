@@ -2961,7 +2961,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
   VEC (tree, heap) *scalar_results = NULL;
-  int group_size = 1, k, ratio;
+  unsigned int group_size = 1, k, ratio;
   VEC (tree, heap) *vec_initial_defs = NULL;
   VEC (gimple, heap) *phis;
 
@@ -3439,7 +3439,8 @@ vect_finalize_reduction:
           v_out2 = reduce <v_out1>
           s_out3 = extract_field <v_out2, 0>
           s_out4 = adjust_result <s_out3>
-          use <s_out4>  */
+          use <s_out4>  
+          use <s_out4> */
 
   /* In SLP we may have several statements in NEW_PHIS and REDUCTION_PHIS (in 
      case that GROUP_SIZE is greater than vectorization factor). Therefore, we
@@ -3447,8 +3448,13 @@ vect_finalize_reduction:
      (GROUP_SIZE / number of new vector stmts) scalar results correspond to
      the first vector stmt, etc.  
      (RATIO is equal to (GROUP_SIZE / number of new vector stmts)).  */ 
-  ratio = group_size / VEC_length (gimple, new_phis);
-  gcc_assert (!(group_size % VEC_length (gimple, new_phis)));
+  if (group_size > VEC_length (gimple, new_phis))
+    {
+      ratio = group_size / VEC_length (gimple, new_phis);
+      gcc_assert (!(group_size % VEC_length (gimple, new_phis)));
+    }
+  else
+    ratio = 1;
 
   for (k = 0; k < group_size; k++)
     {
