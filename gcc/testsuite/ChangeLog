@@ -1,3 +1,8 @@
+2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.target/i386/wmul-1.c: Add dg-require-effective-target ilp32.
+	* gcc.target/i386/wmul-2.c: Likewise.
+
 2010-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-cproj-3.c: Rename and move ...
