@@ -1,3 +1,46 @@
+2010-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* tree-parloops.c (loop_parallel_p): New argument
+	parloop_obstack.  Pass it down.
+	(parallelize_loops): New variable parloop_obstack.  Initialize it,
+	pass it down, free it.
+
+	* tree-loop-linear.c (linear_transform_loops): Pass down
+	lambda_obstack.
+
+	* tree-data-ref.h (lambda_compute_access_matrices): New argument
+	of type struct obstack *.
+
+	* tree-data-ref.c (analyze_subscript_affine_affine): New variable
+	scratch_obstack.  Initialize it, pass down, free it.
+
+	* lambda.h (lambda_loop_new): Remove.
+	(lambda_matrix_new, lambda_matrix_inverse)
+	(lambda_trans_matrix_new, lambda_trans_matrix_inverse): New
+	argument of type struct obstack *.
+
+	* lambda-trans.c (lambda_trans_matrix_new): New argument
+	lambda_obstack.  Pass it down, use obstack allocation for ret.
+	(lambda_trans_matrix_inverse): New argument lambda_obstack.  Pass
+	it down.
+
+	* lambda-mat.c (lambda_matrix_get_column)
+	(lambda_matrix_project_to_null): Remove.
+	(lambda_matrix_new): New argument lambda_obstack.  Use obstack
+	allocation for mat.
+	(lambda_matrix_inverse_hard, lambda_matrix_inverse): New argument
+	lambda_obstack.
+
+	* lambda-code.c (lambda_loop_new): New function.
+	(lambda_lattice_new, compute_nest_using_fourier_motzkin)
+	(lambda_compute_auxillary_space, lambda_compute_target_space)
+	(lambda_loopnest_transform, gcc_loop_to_lambda_loop)
+	(lambda_loopnest_to_gcc_loopnest): Pass down lambda_obstack.
+	(build_access_matrix): New argument lambda_obstack.  Use obstack
+	allocation for am.
+	(lambda_compute_step_signs, lambda_compute_access_matrices): New
+	argument lambda_obstack.  Pass it down.
+
 2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* optabs.h (expand_widening_mult): Declare.

@@ -248,7 +248,7 @@ name_to_copy_elt_hash (const void *aa)
    in parallel).  */
 
 static bool
-loop_parallel_p (struct loop *loop)
+loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 {
   VEC (ddr_p, heap) * dependence_relations;
   VEC (data_reference_p, heap) *datarefs;
@@ -273,7 +273,7 @@ loop_parallel_p (struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_data_dependence_relations (dump_file, dependence_relations);
 
-  trans = lambda_trans_matrix_new (1, 1);
+  trans = lambda_trans_matrix_new (1, 1, parloop_obstack);
   LTM_MATRIX (trans)[0][0] = -1;
 
   if (lambda_transform_legal_p (trans, 1, dependence_relations))
@@ -1884,15 +1884,17 @@ parallelize_loops (void)
   struct tree_niter_desc niter_desc;
   loop_iterator li;
   htab_t reduction_list;
+  struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
   LOC loop_loc;
-  
+
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (parallelized_function_p (cfun->decl))
     return false;
   if (cfun->has_nonlocal_label)
     return false;
 
+  gcc_obstack_init (&parloop_obstack);
   reduction_list = htab_create (10, reduction_info_hash,
 				     reduction_info_eq, free);
   init_stmt_vec_info_vec ();
@@ -1950,7 +1952,8 @@ parallelize_loops (void)
       if (!try_create_reduction_list (loop, reduction_list))
 	continue;
 
-      if (!flag_loop_parallelize_all && !loop_parallel_p (loop))
+      if (!flag_loop_parallelize_all
+	  && !loop_parallel_p (loop, &parloop_obstack))
 	continue;
 
       changed = true;
@@ -1975,6 +1978,7 @@ parallelize_loops (void)
 
   free_stmt_vec_info_vec ();
   htab_delete (reduction_list);
+  obstack_free (&parloop_obstack, NULL);
 
   /* Parallelization will cause new function calls to be inserted through
      which local variables will escape.  Reset the points-to solution
