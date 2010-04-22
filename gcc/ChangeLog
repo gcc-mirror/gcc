@@ -1,3 +1,7 @@
+2010-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Use {} around multi-line preparation statements.
+
 2010-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* c-tree.h (push_init_level, pop_init_level, set_init_index)
@@ -129,14 +133,12 @@
 	* dwarf2out.c (add_var_loc_to_decl): Add LABEL argument.  Drop
 	last chain entry if it starts with the still current label.
 	(add_location_or_const_value_attribute): Check that
-	loc_list->first->next is NULL instead of comparing ->first with
-	->last.
+	loc_list->first->next is NULL instead of comparing ->first with ->last.
 	(dwarf2out_var_location): Pass last_label resp. last_postcall_label
 	to add_var_loc_to_decl.
 
 	* dwarf2out.c (output_call_frame_info): For dw_cie_version
-	>= 4 add also address size and segment size fields into CIE
-	header.
+	>= 4 add also address size and segment size fields into CIE header.
 
 	* unwind-dw2.c (extract_cie_info): Handle CIE version 4, as
 	long as address size is the same as sizeof (void *) and
