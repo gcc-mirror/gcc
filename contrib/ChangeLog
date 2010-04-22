@@ -1,3 +1,7 @@
+2010-04-22  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gcc_update: Sets the locale to C.
+
 2010-04-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* gennews (files): Add files for GCC 4.5.
