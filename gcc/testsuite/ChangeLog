@@ -1,4 +1,8 @@
-2010-04-22 Ira Rosen <irar@il.ibm.com>
+2010-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/graphite/interchange-0.c: Fix dg-final directive.
+
+2010-04-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43842
 	* gcc.dg/vect/pr43842.c: New test.
@@ -145,16 +149,16 @@
 	PR c++/43704
 	* g++.dg/template/typedef32.C: New test.
 
-2010-04-19 Ira Rosen <irar@il.ibm.com>
+2010-04-19  Ira Rosen  <irar@il.ibm.com>
 
-	PR tree-optimization/37027	
-	* lib/target-supports.exp 
+	PR tree-optimization/37027
+	* lib/target-supports.exp
 	(check_effective_target_vect_widen_sum_hi_to_si_pattern): New.
 	* gcc.dg/vect/pr37027.c: New test.
-	* gcc.dg/vect/slp-reduc-1.c, gcc.dg/vect/slp-reduc-2.c, 
-	gcc.dg/vect/slp-reduc-3.c, gcc.dg/vect/slp-reduc-4.c, 
-	gcc.dg/vect/slp-reduc-5.c, gcc.dg/vect/slp-reduc-6.c, 
-	gcc.dg/vect/vect-complex-6.c: Likewise.	
+	* gcc.dg/vect/slp-reduc-1.c, gcc.dg/vect/slp-reduc-2.c,
+	gcc.dg/vect/slp-reduc-3.c, gcc.dg/vect/slp-reduc-4.c,
+	gcc.dg/vect/slp-reduc-5.c, gcc.dg/vect/slp-reduc-6.c,
+	gcc.dg/vect/vect-complex-6.c: Likewise.
 
 2010-04-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -165,7 +169,7 @@
 	* gnat.dg/rep_clause5.ad[sb]: New test.
 	* gnat.dg/rep_clause5_pkg.ads: New helper.
 
-2010-04-18 Ira Rosen <irar@il.ibm.com>
+2010-04-18  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43771
 	* g++.dg/vect/pr43771.cc: New test.
@@ -2296,7 +2300,7 @@
 
 	* g++.dg/cpp0x/initlist-opt.C: Declare max_val inline.
 
-2010-02-16  Ira Rosen <irar@il.ibm.com>
+2010-02-16  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43074
 	* gcc.dg/vect/fast-math-pr43074.c: New test.
