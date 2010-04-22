@@ -1,3 +1,11 @@
+2010-04-22  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/partition.h (__parallel_partition):
+        Improve scalability by:
+        -introducing new variables __leftold, __rightold, __dist, thus
+        -getting rid of omp lock by using atomic operations
+        -getting rid of two omp barriers
+
 2010-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/faq.xml: Link to manual.

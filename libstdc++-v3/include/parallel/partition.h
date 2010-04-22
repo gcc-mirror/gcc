@@ -66,27 +66,26 @@ namespace __gnu_parallel
 
       const _Settings& __s = _Settings::get();
 
-      // Shared.
-      _GLIBCXX_VOLATILE _DifferenceType __left = 0, __right = __n - 1;
-      _GLIBCXX_VOLATILE _DifferenceType __leftover_left, __leftover_right;
-      _GLIBCXX_VOLATILE _DifferenceType __leftnew, __rightnew;
+      // shared
+      _GLIBCXX_VOLATILE _DifferenceType __left = 0, __right = __n - 1,
+                                        __dist = __n,
+                                        __leftover_left, __leftover_right,
+                                        __leftnew, __rightnew;
 
-      bool* __reserved_left = NULL, * __reserved_right = NULL;
+      // just 0 or 1, but int to allow atomic operations
+      int* __reserved_left = NULL, * __reserved_right = NULL;
 
       _DifferenceType __chunk_size = __s.partition_chunk_size;
 
-      omp_lock_t __result_lock;
-      omp_init_lock(&__result_lock);
-
       //at least two chunks per thread
-      if (__right - __left + 1 >= 2 * __num_threads * __chunk_size)
+      if (__dist >= 2 * __num_threads * __chunk_size)
 #       pragma omp parallel num_threads(__num_threads)
 	{
 #         pragma omp single
 	  {
 	    __num_threads = omp_get_num_threads();
-	    __reserved_left = new bool[__num_threads];
-	    __reserved_right = new bool[__num_threads];
+	    __reserved_left = new int[__num_threads];
+	    __reserved_right = new int[__num_threads];
 
 	    if (__s.partition_chunk_share > 0.0)
 	      __chunk_size = std::max<_DifferenceType>
@@ -96,17 +95,16 @@ namespace __gnu_parallel
 	      __chunk_size = __s.partition_chunk_size;
 	  }
 
-	  while (__right - __left + 1 >= 2 * __num_threads * __chunk_size)
+	  while (__dist >= 2 * __num_threads * __chunk_size)
 	    {
 #             pragma omp single
 	      {
-		_DifferenceType __num_chunks = ((__right - __left + 1) 
-						/ __chunk_size);
+		_DifferenceType __num_chunks = __dist / __chunk_size;
 
 		for (_ThreadIndex __r = 0; __r < __num_threads; ++__r)
 		  {
-		    __reserved_left[__r] = false;
-		    __reserved_right[__r] = false;
+		    __reserved_left [__r] = 0; // false
+		    __reserved_right[__r] = 0; // false
 		  }
 		__leftover_left = 0;
 		__leftover_right = 0;
@@ -115,11 +113,13 @@ namespace __gnu_parallel
 	      // Private.
 	      _DifferenceType __thread_left, __thread_left_border,
 		              __thread_right, __thread_right_border;
-	      __thread_left = __left + 1;
 
+	      __thread_left = __left + 1;
 	      // Just to satisfy the condition below.
 	      __thread_left_border = __thread_left - 1;
+
 	      __thread_right = __n - 1;
+             // Just to satisfy the condition below.
 	      __thread_right_border = __thread_right + 1;
 
 	      bool __iam_finished = false;
@@ -127,34 +127,41 @@ namespace __gnu_parallel
 		{
 		  if (__thread_left > __thread_left_border)
 		    {
-		      omp_set_lock(&__result_lock);
-		      if (__left + (__chunk_size - 1) > __right)
-			__iam_finished = true;
-		      else
-			{
-			  __thread_left = __left;
-			  __thread_left_border = __left + (__chunk_size - 1);
-			  __left += __chunk_size;
-			}
-		      omp_unset_lock(&__result_lock);
+                      _DifferenceType __former_dist =
+                              __fetch_and_add(&__dist, -__chunk_size);
+                      if (__former_dist < __chunk_size)
+                        {
+                          __fetch_and_add(&__dist, __chunk_size);
+                          __iam_finished = true;
+                          break;
+                        }
+                      else
+                        {
+                          __thread_left =
+                                  __fetch_and_add(&__left, __chunk_size);
+                          __thread_left_border =
+                                  __thread_left + (__chunk_size - 1);
+                        }
 		    }
 
 		  if (__thread_right < __thread_right_border)
 		    {
-		      omp_set_lock(&__result_lock);
-		      if (__left > __right - (__chunk_size - 1))
-			__iam_finished = true;
-		      else
-			{
-			  __thread_right = __right;
-			  __thread_right_border = __right - (__chunk_size - 1);
-			  __right -= __chunk_size;
-			}
-		      omp_unset_lock(&__result_lock);
+                      _DifferenceType __former_dist =
+                              __fetch_and_add(&__dist, -__chunk_size);
+                      if (__former_dist < __chunk_size)
+                        {
+                          __fetch_and_add(&__dist, __chunk_size);
+                          __iam_finished = true;
+                          break;
+                        }
+                      else
+                        {
+                          __thread_right =
+                                  __fetch_and_add(&__right, -__chunk_size);
+                          __thread_right_border =
+                                  __thread_right - (__chunk_size - 1);
+                        }
 		    }
-
-		  if (__iam_finished)
-		    break;
 
 		  // Swap as usual.
 		  while (__thread_left < __thread_right)
@@ -188,13 +195,11 @@ namespace __gnu_parallel
 
 #             pragma omp barrier
 
-#             pragma omp single
-	      {
-		__leftnew = __left - __leftover_left * __chunk_size;
-		__rightnew = __right + __leftover_right * __chunk_size;
-	      }
-
-#             pragma omp barrier
+              _DifferenceType
+                    __leftold = __left,
+                    __leftnew = __left - __leftover_left * __chunk_size,
+                    __rightold = __right,
+                    __rightnew = __right + __leftover_right * __chunk_size;
 
 	      // <=> __thread_left_border + (__chunk_size - 1) >= __leftnew
 	      if (__thread_left <= __thread_left_border
@@ -202,7 +207,7 @@ namespace __gnu_parallel
 		{
 		  // Chunk already in place, reserve spot.
 		__reserved_left[(__left - (__thread_left_border + 1))
-				/ __chunk_size] = true;
+				/ __chunk_size] = 1;
 		}
 
 	      // <=> __thread_right_border - (__chunk_size - 1) <= __rightnew
@@ -211,7 +216,7 @@ namespace __gnu_parallel
 		{
 		  // Chunk already in place, reserve spot.
 		  __reserved_right[((__thread_right_border - 1) - __right)
-				   / __chunk_size] = true;
+				   / __chunk_size] = 1;
 		}
 
 #             pragma omp barrier
@@ -221,15 +226,13 @@ namespace __gnu_parallel
 		{
 		  // Find spot and swap.
 		  _DifferenceType __swapstart = -1;
-		  omp_set_lock(&__result_lock);
-		  for (_DifferenceType __r = 0; __r < __leftover_left; ++__r)
-		    if (!__reserved_left[__r])
-		      {
-			__reserved_left[__r] = true;
-			__swapstart = __left - (__r + 1) * __chunk_size;
-			break;
-		      }
-		  omp_unset_lock(&__result_lock);
+                  for (int __r = 0; __r < __leftover_left; ++__r)
+                    if (__reserved_left[__r] == 0
+                        && __compare_and_swap(&(__reserved_left[__r]), 0, 1))
+                      {
+                        __swapstart = __leftold - (__r + 1) * __chunk_size;
+                        break;
+                      }
 
 #if _GLIBCXX_ASSERTIONS
 		  _GLIBCXX_PARALLEL_ASSERT(__swapstart != -1);
@@ -246,15 +249,13 @@ namespace __gnu_parallel
 		{
 		  // Find spot and swap
 		  _DifferenceType __swapstart = -1;
-		  omp_set_lock(&__result_lock);
-		  for (_DifferenceType __r = 0; __r < __leftover_right; ++__r)
-		    if (!__reserved_right[__r])
-		      {
-			__reserved_right[__r] = true;
-			__swapstart = __right + __r * __chunk_size + 1;
-			break;
-		      }
-		  omp_unset_lock(&__result_lock);
+                  for (int __r = 0; __r < __leftover_right; ++__r)
+                    if (__reserved_right[__r] == 0
+                        && __compare_and_swap(&(__reserved_right[__r]), 0, 1))
+                      {
+                        __swapstart = __rightold + __r * __chunk_size + 1;
+                        break;
+                      }
 
 #if _GLIBCXX_ASSERTIONS
 		  _GLIBCXX_PARALLEL_ASSERT(__swapstart != -1);
@@ -270,18 +271,15 @@ namespace __gnu_parallel
 #             pragma omp single
 	      {
 		for (_DifferenceType __r = 0; __r < __leftover_left; ++__r)
-		  _GLIBCXX_PARALLEL_ASSERT(__reserved_left[__r]);
+		  _GLIBCXX_PARALLEL_ASSERT(__reserved_left[__r] == 1);
 		for (_DifferenceType __r = 0; __r < __leftover_right; ++__r)
-		  _GLIBCXX_PARALLEL_ASSERT(__reserved_right[__r]);
+		  _GLIBCXX_PARALLEL_ASSERT(__reserved_right[__r] == 1);
 	      }
-
-#             pragma omp barrier
 #endif
-
-#             pragma omp barrier
 
 	      __left = __leftnew;
 	      __right = __rightnew;
+              __dist = __right - __left + 1;
 	    }
 
 #           pragma omp flush(__left, __right)
@@ -312,8 +310,6 @@ namespace __gnu_parallel
 	// right are >= piv
 	delete[] __reserved_left;
 	delete[] __reserved_right;
-
-	omp_destroy_lock(&__result_lock);
 
 	// Element "between" __final_left and __final_right might not have
 	// been regarded yet
