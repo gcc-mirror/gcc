@@ -5,10 +5,10 @@
 2010-04-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43842
-	* tree-vect-loop.c (vect_create_epilog_for_reduction): Handle 
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Handle
 	loop unrolling in update of exit phis. Fix comment.
 	* tree-vect-slp.c (vect_analyze_slp): Check that there are at
-	least two reduction statements in the loop before starting SLP 
+	least two reduction statements in the loop before starting SLP
 	analysis.
 
 2010-04-22  Nick Clifton  <nickc@redhat.com>
@@ -76,8 +76,7 @@
 2010-04-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c
-	(xstormy16_asm_output_aligned_common): Handle a NULL decl
-	parameter.
+	(xstormy16_asm_output_aligned_common): Handle a NULL decl parameter.
 	* config/stormy16/stormy16.h: Tidy up formatting.
 	(DONT_USE_BUILTIN_SETJMP): Remove definition.
 	* config/stormy16/stormy16.c (cbranchsi4): Delete pattern.
@@ -490,7 +489,7 @@
 	PR target/43662
 	* reginfo.c (reinit_regs): Set caller_save_initialized_p to false.
 
-2010-04-19 Ira Rosen <irar@il.ibm.com>
+2010-04-19  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/37027
 	* tree-vectorizer.h (struct _loop_vec_info): Add new field reductions
@@ -555,7 +554,7 @@
 
 	* gcc.c (main): Search for liblto_plugin.so with mode R_OK.
 
-2010-04-18 Ira Rosen <irar@il.ibm.com>
+2010-04-18  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43771
 	* tree-vect-slp.c (vect_supported_load_permutation_p): Check that
@@ -4768,7 +4767,7 @@
 	statements ...
 	(vrp_visit_phi_node): ... but only for loop PHI nodes.
 
-2010-02-16  Ira Rosen <irar@il.ibm.com>
+2010-02-16  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43074
 	* tree-vectorizer.h (VECTORIZABLE_CYCLE_DEF): New.
