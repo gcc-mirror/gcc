@@ -1,3 +1,8 @@
+2010-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43845
+	* gcc.c-torture/compile/pr43845.c: New testcase.
+
 2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR middle-end/29274
