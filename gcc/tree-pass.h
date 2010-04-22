@@ -411,6 +411,7 @@ extern struct gimple_opt_pass pass_late_warn_uninitialized;
 extern struct gimple_opt_pass pass_cse_reciprocals;
 extern struct gimple_opt_pass pass_cse_sincos;
 extern struct gimple_opt_pass pass_optimize_bswap;
+extern struct gimple_opt_pass pass_optimize_widening_mul;
 extern struct gimple_opt_pass pass_warn_function_return;
 extern struct gimple_opt_pass pass_warn_function_noreturn;
 extern struct gimple_opt_pass pass_cselim;

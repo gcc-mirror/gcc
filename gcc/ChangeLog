@@ -1,3 +1,22 @@
+2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/29274
+	* optabs.h (expand_widening_mult): Declare.
+	* tree-pass.h (pass_optimize_widening_mul): Declare.
+	* tree-ssa-math-opts.c (execute_optimize_widening_mul,
+	gate_optimize_widening_mul): New static functions.
+	(pass_optimize_widening_mul): New.
+	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: New
+	case.
+	<case MULT_EXPR>: Remove support for widening multiplies.
+	* tree.def (WIDEN_MULT_EXPR): Tweak comment.
+	* cfgexpand.c (expand_debug_expr) <case WIDEN_MULT_EXPR>: Use
+	simplify_gen_unary rather than directly building extensions.
+	* tree-cfg.c (verify_gimple_assign_binary): Add tests for
+	WIDEN_MULT_EXPR.
+	* expmed.c (expand_widening_mult): New function.
+	* passes.c (init_optimization_passes): Add pass_optimize_widening_mul.
+
 2010-04-21  Jan Hubicka  <jh@suse.cz>
 
 	* timevar.def (TV_WHOPR_WPA_FIXUP): Remove.

@@ -3023,14 +3023,15 @@ expand_debug_expr (tree exp)
       if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
+	  enum machine_mode inner_mode = GET_MODE (op0);
 	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	    op0 = gen_rtx_ZERO_EXTEND (mode, op0);
+	    op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
 	  else
-	    op0 = gen_rtx_SIGN_EXTEND (mode, op0);
+	    op0 = simplify_gen_unary (SIGN_EXTEND, mode, op0, inner_mode);
 	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1))))
-	    op1 = gen_rtx_ZERO_EXTEND (mode, op1);
+	    op1 = simplify_gen_unary (ZERO_EXTEND, mode, op1, inner_mode);
 	  else
-	    op1 = gen_rtx_SIGN_EXTEND (mode, op1);
+	    op1 = simplify_gen_unary (SIGN_EXTEND, mode, op1, inner_mode);
 	  return gen_rtx_MULT (mode, op0, op1);
 	}
       return NULL;

@@ -943,6 +943,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_fold_builtins);
+      NEXT_PASS (pass_optimize_widening_mul);
       NEXT_PASS (pass_tail_calls);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);

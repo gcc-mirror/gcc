@@ -1260,3 +1260,137 @@ struct gimple_opt_pass pass_optimize_bswap =
   0                                     /* todo_flags_finish */
  }
 };
+
+/* Find integer multiplications where the operands are extended from
+   smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
+   where appropriate.  */
+
+static unsigned int
+execute_optimize_widening_mul (void)
+{
+  bool changed = false;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        {
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
+	  tree type, type1 = NULL, type2 = NULL;
+	  tree rhs1, rhs2, rhs1_convop = NULL, rhs2_convop = NULL;
+	  enum tree_code rhs1_code, rhs2_code;
+
+	  if (!is_gimple_assign (stmt)
+	      || gimple_assign_rhs_code (stmt) != MULT_EXPR)
+	    continue;
+
+	  type = TREE_TYPE (gimple_assign_lhs (stmt));
+
+	  if (TREE_CODE (type) != INTEGER_TYPE)
+	    continue;
+
+	  rhs1 = gimple_assign_rhs1 (stmt);
+	  rhs2 = gimple_assign_rhs2 (stmt);
+
+	  if (TREE_CODE (rhs1) == SSA_NAME)
+	    {
+	      rhs1_stmt = SSA_NAME_DEF_STMT (rhs1);
+	      if (!is_gimple_assign (rhs1_stmt))
+		continue;
+	      rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
+	      if (!CONVERT_EXPR_CODE_P (rhs1_code))
+		continue;
+	      rhs1_convop = gimple_assign_rhs1 (rhs1_stmt);
+	      type1 = TREE_TYPE (rhs1_convop);
+	      if (TYPE_PRECISION (type1) * 2 != TYPE_PRECISION (type))
+		continue;
+	    }
+	  else if (TREE_CODE (rhs1) != INTEGER_CST)
+	    continue;
+
+	  if (TREE_CODE (rhs2) == SSA_NAME)
+	    {
+	      rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
+	      if (!is_gimple_assign (rhs2_stmt))
+		continue;
+	      rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
+	      if (!CONVERT_EXPR_CODE_P (rhs2_code))
+		continue;
+	      rhs2_convop = gimple_assign_rhs1 (rhs2_stmt);
+	      type2 = TREE_TYPE (rhs2_convop);
+	      if (TYPE_PRECISION (type2) * 2 != TYPE_PRECISION (type))
+		continue;
+	    }
+	  else if (TREE_CODE (rhs2) != INTEGER_CST)
+	    continue;
+
+	  if (rhs1_stmt == NULL && rhs2_stmt == NULL)
+	    continue;
+
+	  /* Verify that the machine can perform a widening multiply in this
+	     mode/signedness combination, otherwise this transformation is
+	     likely to pessimize code.  */
+	  if ((rhs1_stmt == NULL || TYPE_UNSIGNED (type1))
+	      && (rhs2_stmt == NULL || TYPE_UNSIGNED (type2))
+	      && (optab_handler (umul_widen_optab, TYPE_MODE (type))
+		  ->insn_code == CODE_FOR_nothing))
+	    continue;
+	  else if ((rhs1_stmt == NULL || !TYPE_UNSIGNED (type1))
+		   && (rhs2_stmt == NULL || !TYPE_UNSIGNED (type2))
+		   && (optab_handler (smul_widen_optab, TYPE_MODE (type))
+		       ->insn_code == CODE_FOR_nothing))
+	    continue;
+	  else if (rhs1_stmt != NULL && rhs2_stmt != 0
+		   && (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
+		   && (optab_handler (usmul_widen_optab, TYPE_MODE (type))
+		       ->insn_code == CODE_FOR_nothing))
+	    continue;
+
+	  if ((rhs1_stmt == NULL && !int_fits_type_p (rhs1, type2))
+	      || (rhs2_stmt == NULL && !int_fits_type_p (rhs2, type1)))
+	    continue;
+
+	  if (rhs1_stmt == NULL)
+	    gimple_assign_set_rhs1 (stmt, fold_convert (type2, rhs1));
+	  else
+	    gimple_assign_set_rhs1 (stmt, rhs1_convop);
+	  if (rhs2_stmt == NULL)
+	    gimple_assign_set_rhs2 (stmt, fold_convert (type1, rhs2));
+	  else
+	    gimple_assign_set_rhs2 (stmt, rhs2_convop);
+	  gimple_assign_set_rhs_code (stmt, WIDEN_MULT_EXPR);
+	  update_stmt (stmt);
+	  changed = true;
+	}
+    }
+  return (changed ? TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+	  | TODO_verify_stmts : 0);
+}
+
+static bool
+gate_optimize_widening_mul (void)
+{
+  return flag_expensive_optimizations && optimize;
+}
+
+struct gimple_opt_pass pass_optimize_widening_mul =
+{
+ {
+  GIMPLE_PASS,
+  "widening_mul",			/* name */
+  gate_optimize_widening_mul,		/* gate */
+  execute_optimize_widening_mul,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_NONE,				/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0                                     /* todo_flags_finish */
+ }
+};
