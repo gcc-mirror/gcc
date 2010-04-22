@@ -1,3 +1,8 @@
+2010-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-cproj-3.c: Rename and move ...
+	* gcc.dg/cproj-fails-with-broken-glibc.c: ... to here.
+
 2010-04-22  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gfortran.dg/reassoc_6.f: New testcase.
