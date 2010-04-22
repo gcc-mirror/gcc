@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2004, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -32,7 +32,8 @@ LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/stormy16/stormy16-lib2-parityhi2.c \
 	$(srcdir)/config/stormy16/stormy16-lib2-clzhi2.c \
 	$(srcdir)/config/stormy16/stormy16-lib2-ctzhi2.c \
-	$(srcdir)/config/stormy16/stormy16-lib2-ffshi2.c
+	$(srcdir)/config/stormy16/stormy16-lib2-ffshi2.c \
+	$(srcdir)/config/stormy16/stormy16-lib2-ucmpsi2.c
 
 # Floating point emulation libraries.
 FPBIT = fp-bit.c
