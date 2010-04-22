@@ -489,11 +489,11 @@ eliminate_duplicate_pair (enum tree_code opcode,
 
 static VEC(tree, heap) *plus_negates;
 
-/* If OPCODE is PLUS_EXPR, CURR->OP is really a negate expression,
-   look in OPS for a corresponding positive operation to cancel it
-   out.  If we find one, remove the other from OPS, replace
-   OPS[CURRINDEX] with 0, and return true.  Otherwise, return
-   false. */
+/* If OPCODE is PLUS_EXPR, CURR->OP is a negate expression or a bitwise not
+   expression, look in OPS for a corresponding positive operation to cancel
+   it out.  If we find one, remove the other from OPS, replace
+   OPS[CURRINDEX] with 0 or -1, respectively, and return true.  Otherwise,
+   return false. */
 
 static bool
 eliminate_plus_minus_pair (enum tree_code opcode,
@@ -502,6 +502,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 			   operand_entry_t curr)
 {
   tree negateop;
+  tree notop;
   unsigned int i;
   operand_entry_t oe;
 
@@ -509,7 +510,8 @@ eliminate_plus_minus_pair (enum tree_code opcode,
     return false;
 
   negateop = get_unary_op (curr->op, NEGATE_EXPR);
-  if (negateop == NULL_TREE)
+  notop = get_unary_op (curr->op, BIT_NOT_EXPR);
+  if (negateop == NULL_TREE && notop == NULL_TREE)
     return false;
 
   /* Any non-negated version will have a rank that is one less than
@@ -541,11 +543,32 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 
 	  return true;
 	}
+      else if (oe->op == notop)
+	{
+	  tree op_type = TREE_TYPE (oe->op);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Equivalence: ");
+	      print_generic_expr (dump_file, notop, 0);
+	      fprintf (dump_file, " + ~");
+	      print_generic_expr (dump_file, oe->op, 0);
+	      fprintf (dump_file, " -> -1\n");
+	    }
+
+	  VEC_ordered_remove (operand_entry_t, *ops, i);
+	  add_to_ops_vec (ops, build_int_cst_type (op_type, -1));
+	  VEC_ordered_remove (operand_entry_t, *ops, currindex);
+	  reassociate_stats.ops_eliminated ++;
+
+	  return true;
+	}
     }
 
   /* CURR->OP is a negate expr in a plus expr: save it for later
      inspection in repropagate_negates().  */
-  VEC_safe_push (tree, heap, plus_negates, curr->op);
+  if (negateop != NULL_TREE)
+    VEC_safe_push (tree, heap, plus_negates, curr->op);
 
   return false;
 }
