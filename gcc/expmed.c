@@ -3217,6 +3217,55 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   gcc_assert (op0);
   return op0;
 }
+
+/* Perform a widening multiplication and return an rtx for the result.
+   MODE is mode of value; OP0 and OP1 are what to multiply (rtx's);
+   TARGET is a suggestion for where to store the result (an rtx).
+   THIS_OPTAB is the optab we should use, it must be either umul_widen_optab
+   or smul_widen_optab.
+
+   We check specially for a constant integer as OP1, comparing the
+   cost of a widening multiply against the cost of a sequence of shifts
+   and adds.  */
+
+rtx
+expand_widening_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+		      int unsignedp, optab this_optab)
+{
+  bool speed = optimize_insn_for_speed_p ();
+
+  if (CONST_INT_P (op1)
+      && (INTVAL (op1) >= 0
+	  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT))
+    {
+      HOST_WIDE_INT coeff = INTVAL (op1);
+      int max_cost;
+      enum mult_variant variant;
+      struct algorithm algorithm;
+
+      /* Special case powers of two.  */
+      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+	{
+	  op0 = convert_to_mode (mode, op0, this_optab == umul_widen_optab);
+	  return expand_shift (LSHIFT_EXPR, mode, op0,
+			       build_int_cst (NULL_TREE, floor_log2 (coeff)),
+			       target, unsignedp);
+	}
+
+      /* Exclude cost of op0 from max_cost to match the cost
+	 calculation of the synth_mult.  */
+      max_cost = mul_widen_cost[speed][mode];
+      if (choose_mult_variant (mode, coeff, &algorithm, &variant,
+			       max_cost))
+	{
+	  op0 = convert_to_mode (mode, op0, this_optab == umul_widen_optab);
+	  return expand_mult_const (mode, op0, coeff, target,
+				    &algorithm, variant);
+	}
+    }
+  return expand_binop (mode, this_optab, op0, op1, target,
+		       unsignedp, OPTAB_LIB_WIDEN);
+}
 
 /* Return the smallest n such that 2**n >= X.  */
 

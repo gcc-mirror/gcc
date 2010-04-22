@@ -7212,7 +7212,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   optab this_optab;
   rtx subtarget, original_target;
   int ignore;
-  tree subexp0, subexp1;
   bool reduce_bit_field;
   gimple subexp0_def, subexp1_def;
   tree top0, top1;
@@ -7667,6 +7666,88 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
       goto binop2;
 
+    case WIDEN_MULT_EXPR:
+      /* If first operand is constant, swap them.
+	 Thus the following special case checks need only
+	 check the second operand.  */
+      if (TREE_CODE (treeop0) == INTEGER_CST)
+	{
+	  tree t1 = treeop0;
+	  treeop0 = treeop1;
+	  treeop1 = t1;
+	}
+
+      /* First, check if we have a multiplication of one signed and one
+	 unsigned operand.  */
+      if (TREE_CODE (treeop1) != INTEGER_CST
+	  && (TYPE_UNSIGNED (TREE_TYPE (treeop0))
+	      != TYPE_UNSIGNED (TREE_TYPE (treeop1))))
+	{
+	  enum machine_mode innermode = TYPE_MODE (TREE_TYPE (treeop0));
+	  this_optab = usmul_widen_optab;
+	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
+	    {
+	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
+		{
+		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
+		    expand_operands (treeop0, treeop1, subtarget, &op0, &op1,
+				     EXPAND_NORMAL);
+		  else
+		    expand_operands (treeop0, treeop1, subtarget, &op1, &op0,
+				     EXPAND_NORMAL);
+		  goto binop3;
+		}
+	    }
+	}
+      /* Check for a multiplication with matching signedness.  */
+      else if ((TREE_CODE (treeop1) == INTEGER_CST
+		&& int_fits_type_p (treeop1, TREE_TYPE (treeop0)))
+	       || (TYPE_UNSIGNED (TREE_TYPE (treeop1))
+		   == TYPE_UNSIGNED (TREE_TYPE (treeop0))))
+	{
+	  tree op0type = TREE_TYPE (treeop0);
+	  enum machine_mode innermode = TYPE_MODE (op0type);
+	  bool zextend_p = TYPE_UNSIGNED (op0type);
+	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
+	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
+
+	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
+	    {
+	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
+		{
+		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
+				   EXPAND_NORMAL);
+		  temp = expand_widening_mult (mode, op0, op1, target,
+					       unsignedp, this_optab);
+		  return REDUCE_BIT_FIELD (temp);
+		}
+	      if (optab_handler (other_optab, mode)->insn_code != CODE_FOR_nothing
+		  && innermode == word_mode)
+		{
+		  rtx htem, hipart;
+		  op0 = expand_normal (treeop0);
+		  if (TREE_CODE (treeop1) == INTEGER_CST)
+		    op1 = convert_modes (innermode, mode,
+					 expand_normal (treeop1), unsignedp);
+		  else
+		    op1 = expand_normal (treeop1);
+		  temp = expand_binop (mode, other_optab, op0, op1, target,
+				       unsignedp, OPTAB_LIB_WIDEN);
+		  hipart = gen_highpart (innermode, temp);
+		  htem = expand_mult_highpart_adjust (innermode, hipart,
+						      op0, op1, hipart,
+						      zextend_p);
+		  if (htem != hipart)
+		    emit_move_insn (hipart, htem);
+		  return REDUCE_BIT_FIELD (temp);
+		}
+	    }
+	}
+      treeop0 = fold_build1 (CONVERT_EXPR, type, treeop0);
+      treeop1 = fold_build1 (CONVERT_EXPR, type, treeop1);
+      expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+      return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
+
     case MULT_EXPR:
       /* If this is a fixed-point operation, then we cannot use the code
 	 below because "expand_mult" doesn't support sat/no-sat fixed-point
@@ -7708,112 +7789,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
 
-      /* Check for multiplying things that have been extended
-	 from a narrower type.  If this machine supports multiplying
-	 in that narrower type with a result in the desired type,
-	 do it that way, and avoid the explicit type-conversion.  */
-
-      subexp0 = treeop0;
-      subexp1 = treeop1;
-      subexp0_def = get_def_for_expr (subexp0, NOP_EXPR);
-      subexp1_def = get_def_for_expr (subexp1, NOP_EXPR);
-      top0 = top1 = NULL_TREE;
-
-      /* First, check if we have a multiplication of one signed and one
-	 unsigned operand.  */
-      if (subexp0_def
-	  && (top0 = gimple_assign_rhs1 (subexp0_def))
-	  && subexp1_def
-	  && (top1 = gimple_assign_rhs1 (subexp1_def))
-	  && TREE_CODE (type) == INTEGER_TYPE
-	  && (TYPE_PRECISION (TREE_TYPE (top0))
-	      < TYPE_PRECISION (TREE_TYPE (subexp0)))
-	  && (TYPE_PRECISION (TREE_TYPE (top0))
-	      == TYPE_PRECISION (TREE_TYPE (top1)))
-	  && (TYPE_UNSIGNED (TREE_TYPE (top0))
-	      != TYPE_UNSIGNED (TREE_TYPE (top1))))
-	{
-	  enum machine_mode innermode
-	    = TYPE_MODE (TREE_TYPE (top0));
-	  this_optab = usmul_widen_optab;
-	  if (mode == GET_MODE_WIDER_MODE (innermode))
-	    {
-	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
-		{
-		  if (TYPE_UNSIGNED (TREE_TYPE (top0)))
-		    expand_operands (top0, top1, NULL_RTX, &op0, &op1,
-				     EXPAND_NORMAL);
-		  else
-		    expand_operands (top0, top1, NULL_RTX, &op1, &op0,
-				     EXPAND_NORMAL);
-
-		  goto binop3;
-		}
-	    }
-	}
-      /* Check for a multiplication with matching signedness.  If
-	 valid, TOP0 and TOP1 were set in the previous if
-	 condition.  */
-      else if (top0
-	  && TREE_CODE (type) == INTEGER_TYPE
-	  && (TYPE_PRECISION (TREE_TYPE (top0))
-	      < TYPE_PRECISION (TREE_TYPE (subexp0)))
-	  && ((TREE_CODE (subexp1) == INTEGER_CST
-	       && int_fits_type_p (subexp1, TREE_TYPE (top0))
-	       /* Don't use a widening multiply if a shift will do.  */
-	       && ((GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (subexp1)))
-		    > HOST_BITS_PER_WIDE_INT)
-		   || exact_log2 (TREE_INT_CST_LOW (subexp1)) < 0))
-	      ||
-	      (top1
-	       && (TYPE_PRECISION (TREE_TYPE (top1))
-		   == TYPE_PRECISION (TREE_TYPE (top0))
-	       /* If both operands are extended, they must either both
-		  be zero-extended or both be sign-extended.  */
-	       && (TYPE_UNSIGNED (TREE_TYPE (top1))
-		   == TYPE_UNSIGNED (TREE_TYPE (top0)))))))
-	{
-	  tree op0type = TREE_TYPE (top0);
-	  enum machine_mode innermode = TYPE_MODE (op0type);
-	  bool zextend_p = TYPE_UNSIGNED (op0type);
-	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
-	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
-
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
-	    {
-	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
-		{
-		  if (TREE_CODE (subexp1) == INTEGER_CST)
-		    expand_operands (top0, subexp1, NULL_RTX, &op0, &op1,
-				     EXPAND_NORMAL);
-		  else
-		    expand_operands (top0, top1, NULL_RTX, &op0, &op1,
-				     EXPAND_NORMAL);
-		  goto binop3;
-		}
-	      else if (optab_handler (other_optab, mode)->insn_code != CODE_FOR_nothing
-		       && innermode == word_mode)
-		{
-		  rtx htem, hipart;
-		  op0 = expand_normal (top0);
-		  if (TREE_CODE (subexp1) == INTEGER_CST)
-		    op1 = convert_modes (innermode, mode,
-					 expand_normal (subexp1), unsignedp);
-		  else
-		    op1 = expand_normal (top1);
-		  temp = expand_binop (mode, other_optab, op0, op1, target,
-				       unsignedp, OPTAB_LIB_WIDEN);
-		  hipart = gen_highpart (innermode, temp);
-		  htem = expand_mult_highpart_adjust (innermode, hipart,
-						      op0, op1, hipart,
-						      zextend_p);
-		  if (htem != hipart)
-		    emit_move_insn (hipart, htem);
-		  return REDUCE_BIT_FIELD (temp);
-		}
-	    }
-	}
-      expand_operands (subexp0, subexp1, subtarget, &op0, &op1, EXPAND_NORMAL);
+      expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
     case TRUNC_DIV_EXPR:
