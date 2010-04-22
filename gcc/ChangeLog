@@ -1,3 +1,12 @@
+2010-04-22 Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43482
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Handle 
+	loop unrolling in update of exit phis. Fix comment.
+	* tree-vect-slp.c (vect_analyze_slp): Check that there are at
+	least two reduction statements in the loop before starting SLP 
+	analysis.
+
 2010-04-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16-lib2.c (__ucmpsi2): Fix thinko.
