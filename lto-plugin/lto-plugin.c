@@ -140,7 +140,7 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry, uint32_t *slot)
       LDPV_HIDDEN
     };
 
-  entry->name = strdup (p);
+  entry->name = xstrdup (p);
   while (*p)
     p++;
   p++;
@@ -155,7 +155,7 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry, uint32_t *slot)
   if (strlen (entry->comdat_key) == 0)
     entry->comdat_key = NULL;
   else
-    entry->comdat_key = strdup (entry->comdat_key);
+    entry->comdat_key = xstrdup (entry->comdat_key);
 
   t = *p;
   check (t <= 4, LDPL_FATAL, "invalid symbol kind found");
@@ -233,9 +233,9 @@ translate (Elf_Data *symtab, struct plugin_symtab *out)
   while (data < end)
     {
       n++;
-      syms = realloc (syms, n * sizeof (struct ld_plugin_symbol));
+      syms = xrealloc (syms, n * sizeof (struct ld_plugin_symbol));
       check (syms, LDPL_FATAL, "could not allocate memory");
-      slots = realloc (slots, n * sizeof (uint32_t));
+      slots = xrealloc (slots, n * sizeof (uint32_t));
       check (slots, LDPL_FATAL, "could not allocate memory");
       data = parse_table_entry (data, &syms[n - 1], &slots[n - 1]);
     }
@@ -343,22 +343,29 @@ write_resolution (void)
 static void
 add_output_files (FILE *f)
 {
-  char fname[1000]; /* FIXME: Remove this restriction. */
-
   for (;;)
     {
+      const unsigned piece = 32;
+      char *buf, *s = xmalloc (piece);
       size_t len;
-      char *s = fgets (fname, sizeof (fname), f);
-      if (!s)
-	break;
 
+      buf = s;
+cont:
+      if (!fgets (buf, piece, f))
+	break;
       len = strlen (s);
-      check (s[len - 1] == '\n', LDPL_FATAL, "file name too long");
+      if (s[len - 1] != '\n')
+	{
+	  s = xrealloc (s, len + piece);
+	  buf = s + len;
+	  goto cont;
+	}
       s[len - 1] = '\0';
 
       num_output_files++;
-      output_files = realloc (output_files, num_output_files * sizeof (char *));
-      output_files[num_output_files - 1] = strdup (s);
+      output_files
+	= xrealloc (output_files, num_output_files * sizeof (char *));
+      output_files[num_output_files - 1] = s;
       add_input_file (output_files[num_output_files - 1]);
     }
 }
@@ -472,7 +479,7 @@ all_symbols_read_handler (void)
       return LDPS_OK;
     }
 
-  lto_argv = (char **) calloc (sizeof (char *), num_lto_args);
+  lto_argv = (char **) xcalloc (sizeof (char *), num_lto_args);
   lto_arg_ptr = (const char **) lto_argv;
   assert (lto_wrapper_argv);
 
@@ -591,7 +598,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
     }
   else
     {
-      lto_file.name = strdup (file->name);
+      lto_file.name = xstrdup (file->name);
       elf = elf_begin (file->fd, ELF_C_READ, NULL);
     }
   lto_file.handle = file->handle;
@@ -614,8 +621,8 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   *claimed = 1;
   num_claimed_files++;
   claimed_files =
-    realloc (claimed_files,
-	     num_claimed_files * sizeof (struct plugin_file_info));
+    xrealloc (claimed_files,
+	      num_claimed_files * sizeof (struct plugin_file_info));
   claimed_files[num_claimed_files - 1] = lto_file;
 
   goto cleanup;
@@ -642,18 +649,18 @@ process_option (const char *option)
   else if (!strncmp (option, "-pass-through=", strlen("-pass-through=")))
     {
       num_pass_through_items++;
-      pass_through_items = realloc (pass_through_items,
-                                    num_pass_through_items * sizeof (char *));
+      pass_through_items = xrealloc (pass_through_items,
+				     num_pass_through_items * sizeof (char *));
       pass_through_items[num_pass_through_items - 1] =
-          strdup (option + strlen ("-pass-through="));
+          xstrdup (option + strlen ("-pass-through="));
     }
   else
     {
       int size;
       lto_wrapper_num_args += 1;
       size = lto_wrapper_num_args * sizeof (char *);
-      lto_wrapper_argv = (char **) realloc (lto_wrapper_argv, size);
-      lto_wrapper_argv[lto_wrapper_num_args - 1] = strdup(option);
+      lto_wrapper_argv = (char **) xrealloc (lto_wrapper_argv, size);
+      lto_wrapper_argv[lto_wrapper_num_args - 1] = xstrdup(option);
     }
 }
 
