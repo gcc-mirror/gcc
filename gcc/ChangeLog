@@ -1,3 +1,12 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43845
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Properly
+	lookup the CALL_EXPR function and arguments.
+
 2010-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/43570
