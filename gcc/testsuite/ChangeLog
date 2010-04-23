@@ -1,3 +1,9 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43455
+	* gcc.dg/lto/20100423-1_0.c: New testcase.
+	* gcc.dg/lto/20100423-1_1.c: Likewise.
+
 2010-04-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43846

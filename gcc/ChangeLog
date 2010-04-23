@@ -1,3 +1,9 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43455
+	* tree-inline.c (tree_can_inline_p): Also check compatibility
+	of return types.
+
 2010-04-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43846
