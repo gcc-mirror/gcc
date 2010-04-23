@@ -1694,6 +1694,7 @@ general_init (const char *argv0)
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;
+  global_dc->show_option_requested = flag_diagnostics_show_option;
 
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV

@@ -1766,7 +1766,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fdiagnostics_show_option:
-      global_dc->show_option_requested = true;
+      global_dc->show_option_requested = value;
       break;
 
     case OPT_fdump_:

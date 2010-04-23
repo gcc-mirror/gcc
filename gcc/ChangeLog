@@ -1,3 +1,11 @@
+2010-04-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* toplev.c (general_init): Set default for
+	fdiagnostics-show-option.
+	* opts.c (common_handle_option): Allow disabling it.
+	* common.opt (fdiagnostics-show-option): Add Var. Enabled by
+	default.
+	
 2010-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Only use conversion
