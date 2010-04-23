@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-mudflap.h"
 #include "tree-flow.h"
 #include "function.h"
-#include "ggc.h"
 #include "tree-flow.h"
 #include "diagnostic.h"
 #include "except.h"

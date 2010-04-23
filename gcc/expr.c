@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "typeclass.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "langhooks.h"
 #include "intl.h"
 #include "tm_p.h"
