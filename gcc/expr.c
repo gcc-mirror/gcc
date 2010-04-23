@@ -9323,9 +9323,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    op0 = force_reg (GET_MODE (op0), op0);
 	  op0 = gen_lowpart (mode, op0);
 	}
-      /* If both modes are integral, then we can convert from one to the
-	 other.  */
-      else if (SCALAR_INT_MODE_P (GET_MODE (op0)) && SCALAR_INT_MODE_P (mode))
+      /* If both types are integral, convert from one mode to the other.  */
+      else if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (treeop0)))
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* As a last resort, spill op0 to memory, and reload it in a

@@ -1,3 +1,7 @@
+2010-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_convert5.adb: New test.
+
 2010-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41734

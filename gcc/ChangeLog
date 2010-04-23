@@ -1,3 +1,8 @@
+2010-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Only use conversion
+	between modes if both types are integral.
+
 2010-04-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43572
