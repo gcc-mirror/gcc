@@ -1,3 +1,9 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42653
+	* tree.c (free_lang_data_in_decl): Do not reset DECL_CONTEXT
+	of FUNCTION_DECLs.
+
 2010-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* sese.h (create_if_region_on_edge): Remove.

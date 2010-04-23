@@ -1,3 +1,8 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42653
+	* g++.dg/lto/20100423-1_0.C: New testcase.
+
 2010-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/graphite/interchange-0.c: Fix dg-final directive.
