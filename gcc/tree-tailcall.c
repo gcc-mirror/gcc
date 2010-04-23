@@ -468,7 +468,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
      to local variables.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      if (!is_global_var (var)
+      if (TREE_CODE (var) != PARM_DECL
+	  && auto_var_in_fn_p (var, cfun->decl)
 	  && ref_maybe_used_by_stmt_p (call, var))
 	return;
     }

@@ -1,5 +1,10 @@
 2010-04-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43572
+	* tree-tailcall.c (find_tail_calls): Allow PARM_DECL uses.
+
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2010-04-22  Richard Guenther  <rguenther@suse.de>
 
