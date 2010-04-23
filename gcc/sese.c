@@ -1508,7 +1508,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 
 /* Creates an IFSESE with CONDITION on edge ENTRY.  */
 
-ifsese
+static ifsese
 create_if_region_on_edge (edge entry, tree condition)
 {
   edge e;

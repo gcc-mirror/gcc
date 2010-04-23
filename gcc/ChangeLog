@@ -1,3 +1,16 @@
+2010-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* sese.h (create_if_region_on_edge): Remove.
+
+	* sese.c (create_if_region_on_edge): Make static.
+
+	* tree-inline.c: Do not include ggc.h.
+
+	* expr.c: Do not include ggc.h.
+
+	* Makefile.in (tree-inline.o, expr.o): Remove $(GGC_H) from
+	dependencies.
+
 2010-04-22  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/43744
