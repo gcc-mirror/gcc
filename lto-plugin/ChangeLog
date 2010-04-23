@@ -1,3 +1,13 @@
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41550
+	* lto-plugin.c (parse_table_entry): Use xstrdup and xrealloc.
+	(translate): Likewise.
+	(all_symbols_read_handler): Likewise.
+	(claim_file_handler): Likewise.
+	(process_option): Likewise.
+	(add_output_files): Likewise.  Remove filename length limit.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
