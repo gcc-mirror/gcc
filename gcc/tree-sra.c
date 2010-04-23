@@ -4133,6 +4133,9 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
+  if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+    return false;
+
   return true;
 }
 

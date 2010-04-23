@@ -1,3 +1,8 @@
+2010-04-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/43835
+	* gcc.c-torture/execute/pr43835.c: New test.
+
 2010-04-23  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
