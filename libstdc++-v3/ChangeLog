@@ -1,3 +1,11 @@
+2010-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr (unique_ptr::pointer): Use deleter's
+	pointer type if it exists.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+
 2010-04-22  Johannes Singler  <singler@kit.edu>
 
         * include/parallel/partition.h (__parallel_partition):

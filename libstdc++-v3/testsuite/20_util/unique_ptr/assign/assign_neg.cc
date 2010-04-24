@@ -49,13 +49,13 @@ test03()
   std::unique_ptr<int[2]> p2 = p1;
 }
 
-// { dg-error "deleted function" "" { target *-*-* } 342 }
+// { dg-error "deleted function" "" { target *-*-* } 357 }
 // { dg-error "used here" "" { target *-*-* } 42 }
 // { dg-error "no matching" "" { target *-*-* } 48 }
-// { dg-warning "candidates are" "" { target *-*-* } 115 }
-// { dg-warning "note" "" { target *-*-* } 108 }
-// { dg-warning "note" "" { target *-*-* } 103 }
-// { dg-warning "note" "" { target *-*-* } 98 }
-// { dg-warning "note" "" { target *-*-* } 92 }
-// { dg-error "deleted function" "" { target *-*-* } 207 }
+// { dg-warning "candidates are" "" { target *-*-* } 130 }
+// { dg-warning "note" "" { target *-*-* } 123 }
+// { dg-warning "note" "" { target *-*-* } 118 }
+// { dg-warning "note" "" { target *-*-* } 113 }
+// { dg-warning "note" "" { target *-*-* } 107 }
+// { dg-error "deleted function" "" { target *-*-* } 222 }
 // { dg-error "used here" "" { target *-*-* } 49 }
