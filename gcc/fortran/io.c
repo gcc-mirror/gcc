@@ -1771,8 +1771,6 @@ gfc_match_open (void)
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&open->unit);
-      if (m == MATCH_NO)
-	goto syntax;
       if (m == MATCH_ERROR)
 	goto cleanup;
     }
@@ -1819,6 +1817,11 @@ gfc_match_open (void)
 		     "or STATUS='scratch' at %C");
 	  goto cleanup;
 	}
+    }
+  else if (!open->unit)
+    {
+      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
+      goto cleanup;
     }
 
   /* Checks on the ACCESS specifier.  */
