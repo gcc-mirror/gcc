@@ -1,3 +1,8 @@
+2010-04-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/43844
+	* io/unix.c (tempfile): Correct logic for mktemp case.
+
 2010-04-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39997
