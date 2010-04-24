@@ -1,3 +1,11 @@
+2010-04-23  Pedro Alves  <pedro@codesourcery.com>
+
+	* lbasename.c (lbasename): Split into ...
+	(unix_lbasename, dos_basename): ... these.
+	(lbasename): ... and reimplement on top of them.
+	* Makefile.in (lbasename.o): Add dependency on
+	$(INCDIR)/filenames.h.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* regex.c (byte_re_match_2_internal): Avoid set but not used
