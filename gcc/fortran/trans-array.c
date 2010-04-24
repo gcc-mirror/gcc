@@ -2327,7 +2327,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
 	  name = "unnamed constant";
     }
 
-  if (descriptor->base.code != COMPONENT_REF)
+  if (TREE_CODE (descriptor) == VAR_DECL)
     name = IDENTIFIER_POINTER (DECL_NAME (descriptor));
 
   /* If upper bound is present, include both bounds in the error message.  */

@@ -1,3 +1,10 @@
+2010-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/30073
+	PR fortran/43793
+	* trans-array.c (gfc_trans_array_bound_check): Use TREE_CODE instead
+	of mucking with a tree directly.
+
 2010-04-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43227
