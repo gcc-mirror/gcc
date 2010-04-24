@@ -889,25 +889,26 @@ tempfile (st_parameter_open *opp)
 
   template = get_mem (strlen (tempdir) + 20);
 
-  sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
-
 #ifdef HAVE_MKSTEMP
+  sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
 
   fd = mkstemp (template);
 
 #else /* HAVE_MKSTEMP */
-
-  if (mktemp (template))
-    do
+  fd = -1;
+  do
+    {
+      sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
+      if (!mktemp (template))
+	break;
 #if defined(HAVE_CRLF) && defined(O_BINARY)
       fd = open (template, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
 		 S_IREAD | S_IWRITE);
 #else
       fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
 #endif
-    while (!(fd == -1 && errno == EEXIST) && mktemp (template));
-  else
-    fd = -1;
+    }
+  while (fd == -1 && errno == EEXIST);
 
 #endif /* HAVE_MKSTEMP */
 
