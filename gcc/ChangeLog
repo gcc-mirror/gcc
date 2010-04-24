@@ -1,3 +1,7 @@
+2010-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Add Dodji Seketeli.
+
 2010-04-24  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR tree-optimization/41442
