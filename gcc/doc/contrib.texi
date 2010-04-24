@@ -821,6 +821,9 @@ Andreas Schwab for his work on the m68k port.
 Lars Segerlund for work on GNU Fortran.
 
 @item
+Dodji Seketeli for numerous C++ bug fixes and debug info improvements.
+
+@item
 Joel Sherrill for his direction via the steering committee, RTEMS
 contributions and RTEMS testing.
 
