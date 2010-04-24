@@ -3447,7 +3447,8 @@ gfc_create_module_variable (gfc_symbol * sym)
       tree length;
 
       length = sym->ts.u.cl->backend_decl;
-      if (!INTEGER_CST_P (length))
+      gcc_assert (length || sym->attr.proc_pointer);
+      if (length && !INTEGER_CST_P (length))
         {
           pushdecl (length);
           rest_of_decl_compilation (length, 1, 0);

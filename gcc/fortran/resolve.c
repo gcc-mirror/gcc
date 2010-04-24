@@ -10302,7 +10302,9 @@ ensure_not_abstract_walker (gfc_symbol* sub, gfc_symtree* st)
     {
       gfc_symtree* overriding;
       overriding = gfc_find_typebound_proc (sub, NULL, st->name, true, NULL);
-      gcc_assert (overriding && overriding->n.tb);
+      if (!overriding)
+	return FAILURE;
+      gcc_assert (overriding->n.tb);
       if (overriding->n.tb->deferred)
 	{
 	  gfc_error ("Derived-type '%s' declared at %L must be ABSTRACT because"
@@ -10431,8 +10433,12 @@ resolve_fl_derived (gfc_symbol *sym)
 	      /* Copy char length.  */
 	      if (ifc->ts.type == BT_CHARACTER && ifc->ts.u.cl)
 		{
-		  c->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
-		  gfc_expr_replace_comp (c->ts.u.cl->length, c);
+		  gfc_charlen *cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
+		  gfc_expr_replace_comp (cl->length, c);
+		  if (cl->length && !cl->resolved
+		        && gfc_resolve_expr (cl->length) == FAILURE)
+		    return FAILURE;
+		  c->ts.u.cl = cl;
 		}
 	    }
 	  else if (c->ts.interface->name[0] != '\0')
@@ -10945,6 +10951,9 @@ resolve_symbol (gfc_symbol *sym)
 	    {
 	      sym->ts.u.cl = gfc_new_charlen (sym->ns, ifc->ts.u.cl);
 	      gfc_expr_replace_symbols (sym->ts.u.cl->length, sym);
+	      if (sym->ts.u.cl->length && !sym->ts.u.cl->resolved
+		    && gfc_resolve_expr (sym->ts.u.cl->length) == FAILURE)
+		return;
 	    }
 	}
       else if (sym->ts.interface->name[0] != '\0')
