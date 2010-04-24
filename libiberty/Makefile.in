@@ -724,7 +724,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 
 ./lbasename.o: $(srcdir)/lbasename.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/filenames.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h
+	$(INCDIR)/safe-ctype.h $(INCDIR)/filenames.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lbasename.c -o pic/$@; \
 	else true; fi

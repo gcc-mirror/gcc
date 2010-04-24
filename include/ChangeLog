@@ -1,3 +1,21 @@
+2010-04-23  Pedro Alves  <pedro@codesourcery.com>
+
+	* filenames.h (IS_DIR_SEPARATOR_1): Rename from IS_DIR_SEPARATOR,
+	always define it independently of host, add `dos_based' parameter,
+	and handle it.
+	(HAS_DRIVE_SPEC_1): Rename from HAS_DRIVE_SPEC, always define it
+	independently of host, add `dos_based' parameter, and handle it.
+	(IS_ABSOLUTE_PATH_1): Rename from IS_ABSOLUTE_PATH, always define
+	it independently of host, add `dos_based' parameter, and handle
+	it.
+	(IS_DOS_DIR_SEPARATOR, IS_DOS_ABSOLUTE_PATH)
+	(IS_UNIX_DIR_SEPARATOR, IS_UNIX_ABSOLUTE_PATH)
+	(HAS_DOS_DRIVE_SPEC): New.
+	(HAS_DRIVE_SPEC): Reimplement on top of HAS_DRIVE_SPEC_1.
+	(IS_DIR_SEPARATOR): Reimplement on top of IS_DIR_SEPARATOR_1.
+	(IS_ABSOLUTE_PATH): Reimplement on top of IS_ABSOLUTE_PATH_1.
+	* libiberty.h (dos_lbasename, unix_lbasename): Declare.
+
 2010-04-20  Nick Clifton  <nickc@redhat.com>
 
 	* sha1.h: Update copyright notice to use GPLv3.
