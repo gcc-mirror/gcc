@@ -83,10 +83,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
       typedef _Tp* unique_ptr::*             __unspecified_pointer_type;
 
+      // use SFINAE to determine whether _Del::pointer exists
+      class _Pointer
+      {
+	template<typename _Up>
+	  static typename _Up::pointer __test(typename _Up::pointer*);
+
+	template<typename _Up>
+	  static _Tp* __test(...);
+
+	typedef typename remove_reference<_Tp_Deleter>::type _Del;
+
+      public:
+	typedef decltype( __test<_Del>(0) ) type;
+      };
+
     public:
-      typedef _Tp*               pointer;
-      typedef _Tp                element_type;      
-      typedef _Tp_Deleter        deleter_type;
+      typedef typename _Pointer::type	pointer;
+      typedef _Tp                       element_type;
+      typedef _Tp_Deleter               deleter_type;
 
       // Constructors.
       unique_ptr()
