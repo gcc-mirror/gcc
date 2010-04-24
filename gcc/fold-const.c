@@ -4997,6 +4997,76 @@ unextend (tree c, int p, int unsignedp, tree mask)
 		       const_binop (BIT_XOR_EXPR, c, temp, 0));
 }
 
+/* For an expression that has the form
+     (A && B) || ~B
+   or
+     (A || B) && ~B,
+   we can drop one of the inner expressions and simplify to
+     A || ~B
+   or
+     A && ~B
+   LOC is the location of the resulting expression.  OP is the inner 
+   logical operation; the left-hand side in the examples above, while CMPOP
+   is the right-hand side.  RHS_ONLY is used to prevent us from accidentally
+   removing a condition that guards another, as in
+     (A != NULL && A->...) || A == NULL
+   which we must not transform.  If RHS_ONLY is true, only eliminate the
+   right-most operand of the inner logical operation.  */
+
+static tree
+merge_truthop_with_opposite_arm (location_t loc, tree op, tree cmpop,
+				 bool rhs_only)
+{
+  tree type = TREE_TYPE (cmpop);
+  enum tree_code code = TREE_CODE (cmpop);
+  enum tree_code truthop_code = TREE_CODE (op);
+  tree lhs = TREE_OPERAND (op, 0);
+  tree rhs = TREE_OPERAND (op, 1);
+  tree orig_lhs = lhs, orig_rhs = rhs;
+  enum tree_code rhs_code = TREE_CODE (rhs);
+  enum tree_code lhs_code = TREE_CODE (lhs);
+  enum tree_code inv_code;
+
+  if (TREE_SIDE_EFFECTS (op) || TREE_SIDE_EFFECTS (cmpop))
+    return NULL_TREE;
+
+  if (TREE_CODE_CLASS (code) != tcc_comparison)
+    return NULL_TREE;
+
+  if (rhs_code == truthop_code)
+    {
+      tree newrhs = merge_truthop_with_opposite_arm (loc, rhs, cmpop, rhs_only);
+      if (newrhs != NULL_TREE)
+	{
+	  rhs = newrhs;
+	  rhs_code = TREE_CODE (rhs);
+	}
+    }
+  if (lhs_code == truthop_code && !rhs_only)
+    {
+      tree newlhs = merge_truthop_with_opposite_arm (loc, lhs, cmpop, false);
+      if (newlhs != NULL_TREE)
+	{
+	  lhs = newlhs;
+	  lhs_code = TREE_CODE (lhs);
+	}
+    }
+
+  inv_code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (type)));
+  if (inv_code == rhs_code
+      && operand_equal_p (TREE_OPERAND (rhs, 0), TREE_OPERAND (cmpop, 0), 0)
+      && operand_equal_p (TREE_OPERAND (rhs, 1), TREE_OPERAND (cmpop, 1), 0))
+    return lhs;
+  if (!rhs_only && inv_code == lhs_code
+      && operand_equal_p (TREE_OPERAND (lhs, 0), TREE_OPERAND (cmpop, 0), 0)
+      && operand_equal_p (TREE_OPERAND (lhs, 1), TREE_OPERAND (cmpop, 1), 0))
+    return rhs;
+  if (rhs != orig_rhs || lhs != orig_lhs)
+    return fold_build2_loc (loc, truthop_code, TREE_TYPE (cmpop),
+			    lhs, rhs);
+  return NULL_TREE;
+}
+
 /* Find ways of folding logical expressions of LHS and RHS:
    Try to merge two comparisons to the same innermost item.
    Look for range tests like "ch >= '0' && ch <= '9'".
@@ -11832,6 +11902,22 @@ fold_binary_loc (location_t loc,
       /* See if we can build a range comparison.  */
       if (0 != (tem = fold_range_test (loc, code, type, op0, op1)))
 	return tem;
+
+      if ((code == TRUTH_ANDIF_EXPR && TREE_CODE (arg0) == TRUTH_ORIF_EXPR)
+	  || (code == TRUTH_ORIF_EXPR && TREE_CODE (arg0) == TRUTH_ANDIF_EXPR))
+	{
+	  tem = merge_truthop_with_opposite_arm (loc, arg0, arg1, true);
+	  if (tem)
+	    return fold_build2_loc (loc, code, type, tem, arg1);
+	}
+
+      if ((code == TRUTH_ANDIF_EXPR && TREE_CODE (arg1) == TRUTH_ORIF_EXPR)
+	  || (code == TRUTH_ORIF_EXPR && TREE_CODE (arg1) == TRUTH_ANDIF_EXPR))
+	{
+	  tem = merge_truthop_with_opposite_arm (loc, arg1, arg0, false);
+	  if (tem)
+	    return fold_build2_loc (loc, code, type, arg0, tem);
+	}
 
       /* Check for the possibility of merging component references.  If our
 	 lhs is another similar operation, try to merge its rhs with our
