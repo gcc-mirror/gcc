@@ -1,3 +1,8 @@
+2010-04-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43832
+	* gfortran.dg/open_nounit.f90: New test.
+
 2010-04-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43841
