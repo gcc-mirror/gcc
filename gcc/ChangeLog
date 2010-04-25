@@ -1,3 +1,15 @@
+2010-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gmon-sol2.c (_mcleanup): Change format string
+	placeholder from 0x%x to %#x.
+	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/i386-interix.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/att.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/sysv4.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/i386.c (ix86_target_string): Ditto.
+	(output_pic_addr_const): Ditto.
+	(print_operand): Ditto.
+
 2010-04-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (find_split_point): Add third argument.  Use it
@@ -16,12 +28,10 @@
 
 2010-04-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* toplev.c (general_init): Set default for
-	fdiagnostics-show-option.
+	* toplev.c (general_init): Set default for fdiagnostics-show-option.
 	* opts.c (common_handle_option): Allow disabling it.
-	* common.opt (fdiagnostics-show-option): Add Var. Enabled by
-	default.
-	
+	* common.opt (fdiagnostics-show-option): Add Var. Enabled by default.
+
 2010-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Only use conversion
@@ -208,8 +218,7 @@
 	* tree-ssa-math-opts.c (execute_optimize_widening_mul,
 	gate_optimize_widening_mul): New static functions.
 	(pass_optimize_widening_mul): New.
-	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: New
-	case.
+	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: New case.
 	<case MULT_EXPR>: Remove support for widening multiplies.
 	* tree.def (WIDEN_MULT_EXPR): Tweak comment.
 	* cfgexpand.c (expand_debug_expr) <case WIDEN_MULT_EXPR>: Use

@@ -223,7 +223,7 @@ _mcleanup (void)
 	return;
     }
 #   ifdef DEBUG
-	fprintf( stderr , "[mcleanup] sbuf 0x%x ssiz %d\n" , sbuf , ssiz );
+	fprintf( stderr , "[mcleanup] sbuf %#x ssiz %d\n" , sbuf , ssiz );
 #   endif /* DEBUG */
 
     write( fd , sbuf , ssiz );
