@@ -1,3 +1,9 @@
+2010-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR fortran/40539
+        * gcc/fortran/gfortran.texi: Add section about representation of
+        LOGICAL variables.
+
 2010-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30073
