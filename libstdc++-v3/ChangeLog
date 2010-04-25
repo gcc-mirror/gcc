@@ -1,3 +1,8 @@
+2010-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update Threads status.
+	* doc/html/manual/status.html: Regenerate.
+
 2010-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/unique_ptr (unique_ptr::pointer): Use deleter's
