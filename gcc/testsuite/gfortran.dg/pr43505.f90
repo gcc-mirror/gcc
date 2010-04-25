@@ -39,5 +39,6 @@
       end subroutine
 
     END PROGRAM TEST
+! { dg-final { cleanup-modules "main1" } }
 
 

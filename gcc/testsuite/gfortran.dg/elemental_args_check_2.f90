@@ -17,3 +17,4 @@ CONTAINS
    END INTERFACE
  END SUBROUTINE S1
 END MODULE M1
+! { dg-final { cleanup-modules "m1" } }

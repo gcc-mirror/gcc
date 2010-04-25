@@ -30,3 +30,4 @@ module hsl_ma41_m
       end subroutine prininfo
 
 end module hsl_ma41_m
+! { dg-final { cleanup-modules "hsl_ma41_m" } }
