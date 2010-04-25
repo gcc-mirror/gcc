@@ -1,4 +1,10 @@
 2010-04-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+   * gfortran.dg/default_format_denormal_2.f90: Remove XFAIL for FreeBSD.
+   * gfortran.dg/default_format_denormal_1.f90: ditto
+   * gfortran.dg/default_format_2.f90: ditto
+
+2010-04-25  Steven G. Kargl  <kargl@gcc.gnu.org>
  
 	 *gfortran.dg/pr43505.f90: Clean up .mod file.
 	 *gfortran.dg/host_assoc_blockdata_1.f90: ditto
