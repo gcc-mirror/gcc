@@ -4563,10 +4563,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result
 	    = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_rhs);
 
-	  /* If the type being assigned is an array type and the two sides
-	     are not completely disjoint, play safe and use memmove.  */
+	  /* If the type being assigned is an array type and the two sides are
+	     not completely disjoint, play safe and use memmove.  But don't do
+	     it for a bit-packed array as it might not be byte-aligned.  */
 	  if (TREE_CODE (gnu_result) == MODIFY_EXPR
 	      && Is_Array_Type (Etype (Name (gnat_node)))
+	      && !Is_Bit_Packed_Array (Etype (Name (gnat_node)))
 	      && !(Forwards_OK (gnat_node) && Backwards_OK (gnat_node)))
 	    {
 	      tree to, from, size, to_ptr, from_ptr, t;
