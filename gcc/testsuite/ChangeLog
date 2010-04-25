@@ -1,3 +1,9 @@
+2010-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-float-1.c: Also test that C1X macros are not defined.
+	* gcc.dg/c99-float-1.c: Also test that C1X macros are not defined.
+	* gcc.dg/c1x-float-1.c: New test.
+
 2010-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr43766.c: Scan "lea\[lq\]?\[ \t\]" instead

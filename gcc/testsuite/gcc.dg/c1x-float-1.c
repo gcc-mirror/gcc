@@ -1,10 +1,10 @@
-/* Test for <float.h> C90 macros.  */
-/* Origin: Joseph Myers <jsm28@cam.ac.uk> */
+/* Test for <float.h> C1X macros.  */
+/* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do preprocess } */
-/* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
+/* { dg-options "-std=c1x -pedantic-errors" } */
 
-/* This test checks that the C90 macros (but not the C99 or C1X ones)
-   are defined; it does not check the correctness of their values.  */
+/* This test checks that the C1X macros are defined;
+   it does not check the correctness of their values.  */
 
 #include <float.h>
 
@@ -124,46 +124,46 @@
 #error "LDBL_MIN undefined"
 #endif
 
-#ifdef FLT_EVAL_METHOD
-#error "FLT_EVAL_METHOD defined"
+#ifndef FLT_EVAL_METHOD
+#error "FLT_EVAL_METHOD undefined"
 #endif
 
-#ifdef DECIMAL_DIG
-#error "DECIMAL_DIG defined"
+#ifndef DECIMAL_DIG
+#error "DECIMAL_DIG undefined"
 #endif
 
-#ifdef FLT_DECIMAL_DIG
-#error "FLT_DECIMAL_DIG defined"
+#ifndef FLT_DECIMAL_DIG
+#error "FLT_DECIMAL_DIG undefined"
 #endif
 
-#ifdef DBL_DECIMAL_DIG
-#error "DBL_DECIMAL_DIG defined"
+#ifndef DBL_DECIMAL_DIG
+#error "DBL_DECIMAL_DIG undefined"
 #endif
 
-#ifdef LDBL_DECIMAL_DIG
-#error "LDBL_DECIMAL_DIG defined"
+#ifndef LDBL_DECIMAL_DIG
+#error "LDBL_DECIMAL_DIG undefined"
 #endif
 
-#ifdef FLT_HAS_SUBNORM
-#error "FLT_HAS_SUBNORM defined"
+#ifndef FLT_HAS_SUBNORM
+#error "FLT_HAS_SUBNORM undefined"
 #endif
 
-#ifdef DBL_HAS_SUBNORM
-#error "DBL_HAS_SUBNORM defined"
+#ifndef DBL_HAS_SUBNORM
+#error "DBL_HAS_SUBNORM undefined"
 #endif
 
-#ifdef LDBL_HAS_SUBNORM
-#error "LDBL_HAS_SUBNORM defined"
+#ifndef LDBL_HAS_SUBNORM
+#error "LDBL_HAS_SUBNORM undefined"
 #endif
 
-#ifdef FLT_TRUE_MIN
-#error "FLT_TRUE_MIN defined"
+#ifndef FLT_TRUE_MIN
+#error "FLT_TRUE_MIN undefined"
 #endif
 
-#ifdef DBL_TRUE_MIN
-#error "DBL_TRUE_MIN defined"
+#ifndef DBL_TRUE_MIN
+#error "DBL_TRUE_MIN undefined"
 #endif
 
-#ifdef LDBL_TRUE_MIN
-#error "LDBL_TRUE_MIN defined"
+#ifndef LDBL_TRUE_MIN
+#error "LDBL_TRUE_MIN undefined"
 #endif

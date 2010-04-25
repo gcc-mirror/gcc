@@ -4936,8 +4936,10 @@ into their callers with the option @option{-finline-functions}.
 GCC implements three different semantics of declaring a function
 inline.  One is available with @option{-std=gnu89} or
 @option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
-on all inline declarations, another when @option{-std=c99} or
-@option{-std=gnu99} (without @option{-fgnu89-inline}), and the third
+on all inline declarations, another when
+@option{-std=c99}, @option{-std=c1x},
+@option{-std=gnu99} or @option{-std=gnu1x}
+(without @option{-fgnu89-inline}), and the third
 is used when compiling C++.
 
 To declare a function inline, use the @code{inline} keyword in its
@@ -5868,10 +5870,12 @@ a general-purpose header file that should be usable by all programs,
 including ISO C programs.  The keywords @code{asm}, @code{typeof} and
 @code{inline} are not available in programs compiled with
 @option{-ansi} or @option{-std} (although @code{inline} can be used in a
-program compiled with @option{-std=c99}).  The ISO C99 keyword
+program compiled with @option{-std=c99} or @option{-std=c1x}).  The
+ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent
-@option{-std=iso9899:1999}) is used.
+@option{-std=iso9899:1999}), or an option for a later standard
+version, is used.
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}
@@ -6857,8 +6861,8 @@ be emitted.
 
 @opindex ansi
 @opindex std
-Outside strict ISO C mode (@option{-ansi}, @option{-std=c90} or
-@option{-std=c99}), the functions
+Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
+@option{-std=c99} or @option{-std=c1x}), the functions
 @code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
 @code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
