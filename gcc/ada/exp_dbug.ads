@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -853,16 +853,17 @@ package Exp_Dbug is
       --  The size of the objects typed as x should be obtained from the
       --  structure of x (and x___XVE, if applicable) as for ordinary types
       --  unless there is a variable named x___XVZ, which, if present, will
-      --  hold the size (in bytes) of x.
+      --  hold the size (in bytes) of x; in this latter case, the size of the
+      --  x___XVS type will not be a constant but a reference to x___XVZ.
 
       --  The type x will either be a subtype of y (see also Subtypes of
-      --  Variant Records, below) or will contain no fields at all. The layout,
-      --  types, and positions of these fields will be accurate, if present.
-      --  (Currently, however, the GDB debugger makes no use of x except to
-      --  determine its size).
+      --  Variant Records, below) or will contain a single field of type y,
+      --  or no fields at all. The layout, types, and positions of these
+      --  fields will be accurate, if present. (Currently, however, the GDB
+      --  debugger makes no use of x except to determine its size).
 
-      --  Among other uses, XVS types are sometimes used to encode
-      --  unconstrained types. For example, given
+      --  Among other uses, XVS types are used to encode unconstrained types.
+      --  For example, given:
       --
       --     subtype Int is INTEGER range 0..10;
       --     type T1 (N: Int := 0) is record
@@ -873,13 +874,14 @@ package Exp_Dbug is
       --  the element type for AT1 might have a type defined as if it had
       --  been written:
       --
-      --     type at1___PAD is record null; end record;
+      --     type at1___PAD is record F : T1; end record;
       --     for at1___PAD'Size use 16 * 8;
       --
-      --  and there would also be
+      --  and there would also be:
       --
-      --     type at1___PAD___XVS is record t1: Integer; end record;
+      --     type at1___PAD___XVS is record t1: reft1; end record;
       --     type t1 is ...
+      --     type reft1 is <reference to t1>
       --
       --  Had the subtype Int been dynamic:
       --
