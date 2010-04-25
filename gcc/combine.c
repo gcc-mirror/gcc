@@ -391,7 +391,7 @@ static int contains_muldiv (rtx);
 static rtx try_combine (rtx, rtx, rtx, int *);
 static void undo_all (void);
 static void undo_commit (void);
-static rtx *find_split_point (rtx *, rtx);
+static rtx *find_split_point (rtx *, rtx, bool);
 static rtx subst (rtx, rtx, rtx, int, int);
 static rtx combine_simplify_rtx (rtx, enum machine_mode, int);
 static rtx simplify_if_then_else (rtx);
@@ -3267,7 +3267,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       /* If we can split it and use I2DEST, go ahead and see if that
 	 helps things be recognized.  Verify that none of the registers
 	 are set between I2 and I3.  */
-      if (insn_code_number < 0 && (split = find_split_point (&newpat, i3)) != 0
+      if (insn_code_number < 0
+          && (split = find_split_point (&newpat, i3, false)) != 0
 #ifdef HAVE_cc0
 	  && REG_P (i2dest)
 #endif
@@ -4144,7 +4145,7 @@ undo_commit (void)
    two insns.  */
 
 static rtx *
-find_split_point (rtx *loc, rtx insn)
+find_split_point (rtx *loc, rtx insn, bool set_src)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -4164,7 +4165,7 @@ find_split_point (rtx *loc, rtx insn)
       if (MEM_P (SUBREG_REG (x)))
 	return loc;
 #endif
-      return find_split_point (&SUBREG_REG (x), insn);
+      return find_split_point (&SUBREG_REG (x), insn, false);
 
     case MEM:
 #ifdef HAVE_lo_sum
@@ -4281,12 +4282,12 @@ find_split_point (rtx *loc, rtx insn)
 #endif
 
       /* See if we can split SET_SRC as it stands.  */
-      split = find_split_point (&SET_SRC (x), insn);
+      split = find_split_point (&SET_SRC (x), insn, true);
       if (split && split != &SET_SRC (x))
 	return split;
 
       /* See if we can split SET_DEST as it stands.  */
-      split = find_split_point (&SET_DEST (x), insn);
+      split = find_split_point (&SET_DEST (x), insn, false);
       if (split && split != &SET_DEST (x))
 	return split;
 
@@ -4330,7 +4331,7 @@ find_split_point (rtx *loc, rtx insn)
 
 	  SUBST (SET_DEST (x), dest);
 
-	  split = find_split_point (&SET_SRC (x), insn);
+	  split = find_split_point (&SET_SRC (x), insn, true);
 	  if (split && split != &SET_SRC (x))
 	    return split;
 	}
@@ -4366,7 +4367,7 @@ find_split_point (rtx *loc, rtx insn)
 	      if (extraction != 0)
 		{
 		  SUBST (SET_SRC (x), extraction);
-		  return find_split_point (loc, insn);
+		  return find_split_point (loc, insn, false);
 		}
 	    }
 	  break;
@@ -4388,7 +4389,7 @@ find_split_point (rtx *loc, rtx insn)
 						    XEXP (SET_SRC (x), 0),
 						    GEN_INT (pos))));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4447,7 +4448,7 @@ find_split_point (rtx *loc, rtx insn)
 				   GEN_INT (pos)),
 				  GEN_INT (((HOST_WIDE_INT) 1 << len) - 1)));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4462,7 +4463,7 @@ find_split_point (rtx *loc, rtx insn)
 					       - len - pos)),
 		      GEN_INT (GET_MODE_BITSIZE (mode) - len)));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4502,7 +4503,7 @@ find_split_point (rtx *loc, rtx insn)
 					      GET_MODE (x),
 					      XEXP (XEXP (x, 0), 0),
 					      XEXP (XEXP (x, 1), 0))));
-	  return find_split_point (loc, insn);
+	  return find_split_point (loc, insn, set_src);
 	}
 
       /* Many RISC machines have a large set of logical insns.  If the
@@ -4516,6 +4517,14 @@ find_split_point (rtx *loc, rtx insn)
 	}
       break;
 
+    case PLUS:
+    case MINUS:
+      /* Split at a multiply-accumulate instruction.  However if this is
+         the SET_SRC, we likely do not have such an instruction and it's
+         worthless to try this split.  */
+      if (!set_src && GET_CODE (XEXP (x, 0)) == MULT)
+        return loc;
+
     default:
       break;
     }
@@ -4525,7 +4534,7 @@ find_split_point (rtx *loc, rtx insn)
     {
     case RTX_BITFIELD_OPS:		/* This is ZERO_EXTRACT and SIGN_EXTRACT.  */
     case RTX_TERNARY:
-      split = find_split_point (&XEXP (x, 2), insn);
+      split = find_split_point (&XEXP (x, 2), insn, false);
       if (split)
 	return split;
       /* ... fall through ...  */
@@ -4533,7 +4542,7 @@ find_split_point (rtx *loc, rtx insn)
     case RTX_COMM_ARITH:
     case RTX_COMPARE:
     case RTX_COMM_COMPARE:
-      split = find_split_point (&XEXP (x, 1), insn);
+      split = find_split_point (&XEXP (x, 1), insn, false);
       if (split)
 	return split;
       /* ... fall through ...  */
@@ -4543,7 +4552,7 @@ find_split_point (rtx *loc, rtx insn)
       if (GET_CODE (x) != AND && GET_CODE (XEXP (x, 0)) == AND)
 	return &XEXP (x, 0);
 
-      split = find_split_point (&XEXP (x, 0), insn);
+      split = find_split_point (&XEXP (x, 0), insn, false);
       if (split)
 	return split;
       return loc;

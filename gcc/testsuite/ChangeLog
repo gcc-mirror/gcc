@@ -1,8 +1,12 @@
+2010-04-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.target/arm/mla-1.c: New test.
+
 2010-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30073
 	PR fortran/43793
-	gfortran.dg/pr43793.f90: New test.
+	* gfortran.dg/pr43793.f90: New test.
 
 2010-04-24  Bernd Schmidt  <bernds@codesourcery.com>
 

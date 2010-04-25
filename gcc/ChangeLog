@@ -1,3 +1,9 @@
+2010-04-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* combine.c (find_split_point): Add third argument.  Use it
+	to find nested multiply-accumulate instructions.  Adjust calls.
+	(try_combine): Adjust call to find_split_point.
+
 2010-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Add Dodji Seketeli.
