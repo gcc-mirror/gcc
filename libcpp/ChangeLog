@@ -1,3 +1,10 @@
+2010-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC1X and CLK_STDC1X.
+	* init.c (lang_defaults): Add entries for new language variants.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 201000L for C1X
+	variants.
+
 2010-04-09  Manuel López-Ibáñez <manu@gcc.gnu.org>
 
 	PR cpp/43195

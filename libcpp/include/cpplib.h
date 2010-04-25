@@ -155,7 +155,8 @@ enum cpp_ttype
 #undef TK
 
 /* C language kind, used when calling cpp_create_reader.  */
-enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC1X,
+	     CLK_STDC89, CLK_STDC94, CLK_STDC99, CLK_STDC1X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX0X, CLK_CXX0X, CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */

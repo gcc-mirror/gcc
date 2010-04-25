@@ -105,6 +105,7 @@ builtin_define_float_constants (const char *name_prefix,
   char name[64], buf[128];
   int dig, min_10_exp, max_10_exp;
   int decimal_dig;
+  int type_decimal_dig;
 
   fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
   gcc_assert (fmt->b != 10);
@@ -198,8 +199,20 @@ builtin_define_float_constants (const char *name_prefix,
     if (decimal_dig < d_decimal_dig)
       decimal_dig++;
   }
+  /* Similar, for this type rather than long double.  */
+  {
+    double type_d_decimal_dig = 1 + fmt->p * log10_b;
+    type_decimal_dig = type_d_decimal_dig;
+    if (type_decimal_dig < type_d_decimal_dig)
+      type_decimal_dig++;
+  }
   if (type == long_double_type_node)
     builtin_define_with_int_value ("__DECIMAL_DIG__", decimal_dig);
+  else
+    {
+      sprintf (name, "__%s_DECIMAL_DIG__", name_prefix);
+      builtin_define_with_int_value (name, type_decimal_dig);
+    }
 
   /* Since, for the supported formats, B is always a power of 2, we
      construct the following numbers directly as a hexadecimal

@@ -84,9 +84,11 @@ static const struct lang_flags lang_defaults[] =
 { /*              c99 c++ xnum xid std  //   digr ulit */
   /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0 },
   /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
+  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
   /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0 },
   /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0 },
   /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
+  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
   /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0 },
   /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0 },
   /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1 },
@@ -457,6 +459,9 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC1X
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC1X)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 201000L");
   else if (CPP_OPTION (pfile, c99))
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
 

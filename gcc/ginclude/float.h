@@ -157,6 +157,45 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* C99 */
 
+#if defined (__STDC_VERSION__) && __STDC_VERSION__ > 199901L
+/* Versions of DECIMAL_DIG for each floating-point type.  */
+#undef FLT_DECIMAL_DIG
+#undef DBL_DECIMAL_DIG
+#undef LDBL_DECIMAL_DIG
+#define FLT_DECIMAL_DIG		__FLT_DECIMAL_DIG__
+#define DBL_DECIMAL_DIG		__DBL_DECIMAL_DIG__
+#define LDBL_DECIMAL_DIG	__DECIMAL_DIG__
+
+/* Whether types support subnormal numbers.  */
+#undef FLT_HAS_SUBNORM
+#undef DBL_HAS_SUBNORM
+#undef LDBL_HAS_SUBNORM
+#define FLT_HAS_SUBNORM		__FLT_HAS_DENORM__
+#define DBL_HAS_SUBNORM		__DBL_HAS_DENORM__
+#define LDBL_HAS_SUBNORM	__LDBL_HAS_DENORM__
+
+/* Minimum positive values, including subnormals.  */
+#undef FLT_TRUE_MIN
+#undef DBL_TRUE_MIN
+#undef LDBL_TRUE_MIN
+#if __FLT_HAS_DENORM__
+#define FLT_TRUE_MIN	__FLT_DENORM_MIN__
+#else
+#define FLT_TRUE_MIN	__FLT_MIN__
+#endif
+#if __DBL_HAS_DENORM__
+#define DBL_TRUE_MIN	__DBL_DENORM_MIN__
+#else
+#define DBL_TRUE_MIN	__DBL_MIN__
+#endif
+#if __LDBL_HAS_DENORM__
+#define LDBL_TRUE_MIN	__LDBL_DENORM_MIN__
+#else
+#define LDBL_TRUE_MIN	__LDBL_MIN__
+#endif
+
+#endif /* C1X */
+
 #ifdef __STDC_WANT_DEC_FP__
 /* Draft Technical Report 24732, extension for decimal floating-point
    arithmetic: Characteristic of decimal floating types <float.h>.  */

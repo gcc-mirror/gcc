@@ -1,3 +1,25 @@
+2010-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_isoc1x): New.
+	(flag_isoc99): Update comment.
+	* c-common.h (flag_isoc1x): New.
+	(flag_isoc99): Update comment.
+	* c-cppbuiltin.c (builtin_define_float_constants): Also define
+	__<type>_DECIMAL_DIG__.
+	* c-opts.c (set_std_c1x): New.
+	(c_common_handle_option): Handle -std=c1x and -std=gnu1x.
+	(set_std_c89, set_std_c99): Also set flag_isoc1x to 0.
+	* c.opt (-std=c1x, -std=gnu1x): New options.
+	* doc/cpp.texi: Mention -std=c1x.
+	* doc/cppopts.texi (-std=c1x, -std=gnu1x): Document.
+	* doc/extend.texi: Mention -std=c1x and -std=gnu1x.
+	* doc/invoke.texi (-std=c1x, -std=gnu1x): Document.
+	* doc/standards.texi: Mention C1X.
+	* ginclude/float.h (FLT_DECIMAL_DIG, DBL_DECIMAL_DIG,
+	LDBL_DECIMAL_DIG, FLT_HAS_SUBNORM, DBL_HAS_SUBNORM,
+	LDBL_HAS_SUBNORM, FLT_TRUE_MIN, DBL_TRUE_MIN, LDBL_TRUE_MIN):
+	Define for C1X.
+
 2010-04-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/gmon-sol2.c (_mcleanup): Change format string
