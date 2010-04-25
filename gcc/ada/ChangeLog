@@ -1,3 +1,8 @@
+2010-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Do not
+	use memmove if the array type is bit-packed.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init): Remove second argument in call to
