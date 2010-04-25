@@ -2289,11 +2289,10 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.3.1</entry>
       <entry>Class <code>thread</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing futures</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>30.3.2</entry>
@@ -2376,7 +2375,7 @@ particular release.
     <row>
       <entry>30.4.5.1</entry>
       <entry><code>once_flag</code></entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry>Missing constexpr</entry>
     </row>
     <row>
@@ -2398,10 +2397,9 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.5.2</entry>
       <entry>Class <code>condition_variable_any</code></entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
@@ -2411,60 +2409,65 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.1</entry>
       <entry>Overview</entry>
-      <entry>N</entry>
+      <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.2</entry>
       <entry>Error handling</entry>
-      <entry>N</entry>
-      <entry></entry>
+      <entry>Y</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.3</entry>
       <entry>Class <code>future_error</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.4</entry>
-      <entry>Class template <code>unique_future</code></entry>
-      <entry>N</entry>
+      <entry>Associated asynchronous state</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.5</entry>
-      <entry>Class template <code>shared_future</code></entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>30.6.6</entry>
       <entry>Class template <code>promise</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
+      <entry>Missing <code>allocator_arg_t</code></entry>
+    </row>
+    <row>
+      <entry>30.6.6</entry>
+      <entry>Class template <code>future</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.7</entry>
-      <entry>Allocator templates</entry>
-      <entry>N</entry>
+      <entry>Class template <code>shared_future</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>30.6.8</entry>
-      <entry>Class template <code>packaged_task</code></entry>
+      <entry>Class template <code>atomic_future</code></entry>
       <entry>N</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>30.6.9</entry>
+      <entry>Function template <code>async</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>30.6.10</entry>
+      <entry>Class template <code>packaged_task</code></entry>
+      <entry>Y</entry>
+      <entry>Missing <code>allocator_arg_t</code></entry>
     </row>
     <row>
       <entry>
