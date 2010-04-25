@@ -67,3 +67,5 @@ contains
       end subroutine mutual_ind_quad_cir_coil
 
 end module mqc_m
+! { dg-final { cleanup-modules "mqc_m" } }
+

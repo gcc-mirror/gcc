@@ -30,3 +30,4 @@ CONTAINS
     END IF
   END SUBROUTINE QSORT
 END SUBROUTINE READIN
+! { dg-final { cleanup-modules "vimage vcimage" } }

@@ -12,3 +12,4 @@ CONTAINS
     END IF
   END SUBROUTINE CALERF
 END MODULE erf_fn
+! { dg-final { cleanup-modules "erf_fn" } }
