@@ -2512,7 +2512,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   if (isa && add_nl_p)
     {
       opts[num++][0] = isa_other;
-      sprintf (isa_other, "(other isa: 0x%x)", isa);
+      sprintf (isa_other, "(other isa: %#x)", isa);
     }
 
   /* Add flag options.  */
@@ -2528,7 +2528,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   if (flags && add_nl_p)
     {
       opts[num++][0] = target_other;
-      sprintf (target_other, "(other flags: 0x%x)", isa);
+      sprintf (target_other, "(other flags: %#x)", isa);
     }
 
   /* Add -fpmath= option.  */
@@ -10841,7 +10841,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	{
 	  /* We can use %d if the number is <32 bits and positive.  */
 	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file, "0x%lx%08lx",
+	    fprintf (file, "%#lx%08lx",
 		     (unsigned long) CONST_DOUBLE_HIGH (x),
 		     (unsigned long) CONST_DOUBLE_LOW (x));
 	  else
@@ -12005,7 +12005,7 @@ print_operand (FILE *file, rtx x, int code)
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('$', file);
-      fprintf (file, "0x%08lx", (long unsigned int) l);
+      fprintf (file, "%#08lx", (long unsigned int) l);
     }
 
   /* These float cases don't actually occur as immediate operands.  */

@@ -212,7 +212,7 @@ along with GCC; see the file COPYING3.  If not see
 		fputs (ASM_BYTE, (FILE));				\
 	      else							\
 		fputc (',', (FILE));					\
-	      fprintf ((FILE), "0x%02x", *_ascii_bytes);		\
+	      fprintf ((FILE), "%#02x", *_ascii_bytes);			\
 	      bytes_in_chunk += 5;					\
 	    }								\
 	}								\
