@@ -7,4 +7,4 @@ void p (int *a, int i)
   __builtin_prefetch (&a[i]);
 }
 
-/* { dg-final { scan-assembler-not "lea\[ \t\]" } } */
+/* { dg-final { scan-assembler-not "lea\[lq\]?\[ \t\]" } } */
