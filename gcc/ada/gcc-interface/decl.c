@@ -3258,9 +3258,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  if (definition
 		      && TREE_CODE (gnu_size_unit) != INTEGER_CST
 		      && !CONTAINS_PLACEHOLDER_P (gnu_size_unit))
-		    create_var_decl (create_concat_name (gnat_entity, "XVZ"),
-				     NULL_TREE, sizetype, gnu_size_unit, false,
-				     false, false, false, NULL, gnat_entity);
+		    TYPE_SIZE_UNIT (gnu_subtype_marker)
+		      = create_var_decl (create_concat_name (gnat_entity,
+							     "XVZ"),
+					 NULL_TREE, sizetype, gnu_size_unit,
+					 false, false, false, false, NULL,
+					 gnat_entity);
 		}
 
 	      /* Now we can finalize it.  */
@@ -6253,9 +6256,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       add_parallel_type (TYPE_STUB_DECL (record), marker);
 
       if (definition && size && TREE_CODE (size) != INTEGER_CST)
-	create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
-			 TYPE_SIZE_UNIT (record), false, false, false,
-			 false, NULL, gnat_entity);
+	TYPE_SIZE_UNIT (marker)
+	  = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
+			     TYPE_SIZE_UNIT (record), false, false, false,
+			     false, NULL, gnat_entity);
     }
 
   rest_of_record_type_compilation (record);
