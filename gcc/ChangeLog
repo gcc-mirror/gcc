@@ -1,4 +1,4 @@
-2010-04-21  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR 43715
 	* gcc/configure.ac: Use "$gcc_cv_nm -g" on darwin
