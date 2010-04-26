@@ -1,3 +1,11 @@
+2010-04-21  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 43715
+	* gcc/configure.ac: Use "$gcc_cv_nm -g" on darwin
+	instead of "$gcc_cv_objdump -T".
+	Use "-undefined dynamic_lookup" on darwin.
+	* gcc/configure: Regenerate.
+
 2010-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/43893
