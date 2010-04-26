@@ -170,11 +170,9 @@ bool in_cold_section_p;
 static GTY(()) section *unnamed_sections;
 
 /* Return a nonzero value if DECL has a section attribute.  */
-#ifndef IN_NAMED_SECTION
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
    && DECL_SECTION_NAME (DECL) != NULL_TREE)
-#endif
 
 /* Hash table of named sections.  */
 static GTY((param_is (section))) htab_t section_htab;
