@@ -16,8 +16,8 @@
 
 <para>
 This table is based on the table of contents of ISO/IEC
-Doc No: N3000=09-0190 Date: 2009-11-09
-Working Draft, Standard for Programming Language C++
+JTC1 SC22 WG21 Doc No: N3092 Date: 2010-03-26
+Final Committee Draft, Standard for Programming Language C++
 </para>
 
 <para>
@@ -61,6 +61,7 @@ particular release.
   </thead>
 
   <tbody>
+
     <row>
       <entry>
 	<emphasis>18</emphasis>
@@ -151,13 +152,6 @@ particular release.
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>18.4.2</entry>
-      <entry>The header <code>&lt;stdint.h&gt;</code></entry>
-      <entry>Partial</entry>
-      <entry>May use configure-generated stdint.h via GCC_HEADER_STDINT</entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.5</entry>
       <entry>Start and termination</entry>
       <entry>Partial</entry>
@@ -182,20 +176,13 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>18.7.2</entry>
-      <entry>Class type_index</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>18.7.3</entry>
       <entry>Class bad_cast</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>18.7.4</entry>
+      <entry>18.7.3</entry>
       <entry>Class bad_typeid</entry>
       <entry>Y</entry>
       <entry></entry>
@@ -214,7 +201,7 @@ particular release.
     </row>
     <row>
       <entry>18.8.2</entry>
-      <entry>Violation exception-specifications</entry>
+      <entry>Violating exception-specifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -232,13 +219,13 @@ particular release.
     </row>
     <row>
       <entry>18.8.5</entry>
-      <entry>Propagation</entry>
+      <entry>Exception Propagation</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>18.8.6</entry>
-      <entry>Class <code>nested_exception</code></entry>
+      <entry><code>nested_exception</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -263,7 +250,7 @@ particular release.
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>18.9.3</entry>
-      <entry>Initializer list concept maps</entry>
+      <entry>Initializer list range access</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
@@ -318,18 +305,16 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.5.2</entry>
       <entry>Class <code>error_code</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing concept ErrorCodeEnum</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>19.5.3</entry>
       <entry>Class <code>error_condition</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing concept ErrorConditionEnum</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>19.5.4</entry>
@@ -352,17 +337,15 @@ particular release.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.1</entry>
       <entry>General</entry>
-      <entry>Partial</entry>
-      <entry>Missing all concepts</entry>
+      <entry></entry>
+      <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.2</entry>
-      <entry>Concepts</entry>
-      <entry>N</entry>
+      <entry>Requirements</entry>
+      <entry></entry>
       <entry></entry>
     </row>
     <row>
@@ -379,489 +362,453 @@ particular release.
     </row>
     <row>
       <entry>20.3.2</entry>
-      <entry><code>forward</code> and <code>move</code> helpers</entry>
+      <entry>Swap</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.3.3</entry>
-      <entry><code>pair</code></entry>
+      <entry><code>forward</code> and <code>move</code> helpers</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.3.4</entry>
-      <entry>tuple-like access to <code>pair</code></entry>
+      <entry>Function template <code>declval</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.3.5</entry>
+      <entry>Pairs</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.3.5.1</entry>
+      <entry>In general</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>20.3.5.2</entry>
+      <entry>Class template <code>pair</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
+    </row>
+    <row>
+      <entry>20.3.5.3</entry>
+      <entry>Tuple-like access to <code>pair</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.3.5</entry>
-      <entry>Range concept maps for <code>pair</code></entry>
+      <entry>20.3.5.4</entry>
+      <entry><code>pair</code> range access</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.6</entry>
-      <entry>Class template <code>bitset</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing constexpr</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>20.3.5.5</entry>
+      <entry>Piecewise construction</entry>
+      <entry>N</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>20.4</entry>
-      <entry>Compile-time rational arithmetic</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.1</entry>
-      <entry>Class template <code>ratio</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.2</entry>
-      <entry>Arithmetic on <code>ratio</code> types</entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.3</entry>
-      <entry>Comparison of <code>ratio</code> types</entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.4</entry>
-      <entry>SI types</entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5</entry>
       <entry>Tuples</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.5.1</entry>
-      <entry>General</entry>
-      <entry>Y</entry>
+      <entry>20.4.1</entry>
+      <entry>In general</entry>
+      <entry></entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>20.5.2</entry>
+      <entry>20.4.2</entry>
       <entry>Class template <code>tuple</code></entry>
       <entry>Partial</entry>
-      <entry>Missing range concept maps</entry>
+      <entry>Missing constexpr and range access</entry>
+    </row>
+    <row>
+      <entry>20.5</entry>
+      <entry>Class template <code>bitset</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>20.6</entry>
-      <entry>Metaprogramming and type traits</entry>
+      <entry>Compile-time rational arithmetic</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.1</entry>
-      <entry>Requirements</entry>
+      <entry>Class template <code>ratio</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.2</entry>
-      <entry>Header <code>&lt;type_traits&gt;</code> synopsis</entry>
-      <entry></entry>
+      <entry>Arithmetic on <code>ratio</code> types</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.3</entry>
-      <entry>Helper classes</entry>
+      <entry>Comparison of <code>ratio</code> types</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.4</entry>
-      <entry>Unary Type Traits</entry>
+      <entry>SI types for <code>ratio</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7</entry>
+      <entry>Metaprogramming and type traits</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.4.1</entry>
+      <entry>20.7.1</entry>
+      <entry>Requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.2</entry>
+      <entry>Header <code>&lt;type_traits&gt;</code> synopsis</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.3</entry>
+      <entry>Helper classes</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.4</entry>
+      <entry>Unary Type Traits</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.4.1</entry>
       <entry>Primary type categories</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.4.2</entry>
+      <entry>20.7.4.2</entry>
       <entry>Composite type traits</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>20.6.4.3</entry>
+      <entry>20.7.4.3</entry>
       <entry>Type properties</entry>
       <entry>Partial</entry>
       <entry>Missing is_system_layout</entry>
     </row>
     <row>
-      <entry>20.6.5</entry>
+      <entry>20.7.5</entry>
       <entry>Relationships between types</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.6</entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>20.7.6</entry>
       <entry>Transformations between types</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing underlying_type</entry>
     </row>
     <row>
-      <entry>20.6.6.1</entry>
+      <entry>20.7.6.1</entry>
       <entry>Const-volatile modifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.6.2</entry>
+      <entry>20.7.6.2</entry>
       <entry>Reference modifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.6.3</entry>
+      <entry>20.7.6.3</entry>
       <entry>Sign modifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.6.4</entry>
+      <entry>20.7.6.4</entry>
       <entry>Array modifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.6.6.5</entry>
+      <entry>20.7.6.5</entry>
       <entry>Pointer modifications</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>20.6.7</entry>
+      <entry>20.7.6.6</entry>
       <entry>Other transformations</entry>
-      <entry>Partial</entry>
-      <entry>Missing decay</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
-      <entry>20.7</entry>
+      <entry>20.8</entry>
       <entry>Function objects</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.1</entry>
+      <entry>20.8.1</entry>
       <entry>Definitions</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.3</entry>
+      <entry>20.8.2</entry>
+      <entry>Requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.3</entry>
       <entry>Base</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.4</entry>
-      <entry>Function object return types</entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.7.5</entry>
+      <entry>20.8.4</entry>
       <entry>Class template <code>reference_wrapper</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.7.6</entry>
-      <entry>Identity operation</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.7.7</entry>
+      <entry>20.8.5</entry>
       <entry>Arithmetic operation</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.8</entry>
+      <entry>20.8.6</entry>
       <entry>Comparisons</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.9</entry>
+      <entry>20.8.7</entry>
       <entry>Logical operations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.10</entry>
+      <entry>20.8.8</entry>
       <entry>Bitwise operations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.11</entry>
+      <entry>20.8.9</entry>
       <entry>Negators</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.12</entry>
-      <entry>Template <code>function</code> and function template <code>bind</code></entry>
+      <entry>20.8.10</entry>
+      <entry>Function template <code>bind</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.13</entry>
+      <entry>20.8.11</entry>
       <entry>Adaptors for pointers to functions</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.14</entry>
+      <entry>20.8.12</entry>
       <entry>Adaptors for pointers to members</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.15</entry>
+      <entry>20.8.13</entry>
       <entry>Function template <code>mem_fn</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.16</entry>
+      <entry>20.8.14</entry>
       <entry>Polymorphic function wrappers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.16.1</entry>
+      <entry>20.8.14.1</entry>
       <entry>Class <code>bad_function_call</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.16.2</entry>
+      <entry>20.8.14.2</entry>
       <entry>Class template <code>function</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.7.17</entry>
+      <entry>20.8.15</entry>
       <entry>Class template <code>hash</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.7.18</entry>
-      <entry>Class template <code>reference_closure</code></entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8</entry>
+      <entry>20.9</entry>
       <entry>Memory</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.01</entry>
+      <entry>20.9.1</entry>
       <entry>Allocator argument tag</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.02</entry>
-      <entry>Allocators</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8.02.1</entry>
-      <entry>General</entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.02.2</entry>
-      <entry>Allocator concept</entry>
+      <entry>20.9.2</entry>
+      <entry><code>uses_allocator</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.02.3</entry>
-      <entry>Support for legacy allocators</entry>
+      <entry>20.9.3</entry>
+      <entry>Pointer traits</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.02.4</entry>
-      <entry>Allocator and Legacy Allocator members</entry>
+      <entry>20.9.4</entry>
+      <entry>Allocator traits</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.03</entry>
-      <entry>Allocator-related element concepts</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.04</entry>
-      <entry>Allocator propagation traits</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.05</entry>
-      <entry>Allocator propagation map</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8.06</entry>
+      <entry>20.9.5</entry>
       <entry>The default allocator</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.07</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>20.9.6</entry>
       <entry>Scoped allocator adaptor</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.07.1</entry>
-      <entry><code>scoped_allocator_adaptor_base</code></entry>
+      <entry>20.9.6.1</entry>
+      <entry>Scoped allocator adaptor member types</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.07.2</entry>
-      <entry><code>scoped_allocator_adaptor constructors</code></entry>
+      <entry>20.9.6.2</entry>
+      <entry>Scoped allocator adaptor constructors</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.07.3</entry>
-      <entry><code>scoped_allocator_adaptor2</code></entry>
+      <entry>20.9.6.3</entry>
+      <entry>Scoped allocator adaptor members</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.07.3</entry>
-      <entry>scoped_allocator_adaptor members</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.07.4</entry>
-      <entry><code>scoped_allocator_adaptor globals</code></entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8.08</entry>
+      <entry>20.9.7</entry>
       <entry>Raw storage iterator</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.09</entry>
+      <entry>20.9.8</entry>
       <entry>Temporary buffers</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.10</entry>
-      <entry><code>construct_element</code></entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8.11</entry>
+      <entry>20.9.9</entry>
       <entry>Specialized algorithms</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.11.1</entry>
+      <entry>20.9.9.1</entry>
       <entry><code>addressof</code></entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.11.2</entry>
+      <entry>20.9.9.2</entry>
       <entry><code>uninitialized_copy</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.11.3</entry>
+      <entry>20.9.9.3</entry>
       <entry><code>uninitialized_fill</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.11.4</entry>
+      <entry>20.9.9.4</entry>
       <entry><code>uninitialized_fill_n</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.12</entry>
+      <entry>20.9.10</entry>
       <entry>Class template <code>unique_ptr</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.13</entry>
+      <entry>20.9.11</entry>
       <entry>Smart pointers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.13.1</entry>
+      <entry>20.9.11.1</entry>
       <entry>Class <code>bad_weak_ptr</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.13.2</entry>
+      <entry>20.9.11.2</entry>
       <entry>Class template <code>shared_ptr</code></entry>
       <entry>Y</entry>
       <entry>
@@ -872,126 +819,133 @@ particular release.
       </entry>
     </row>
     <row>
-      <entry>20.8.13.3</entry>
+      <entry>20.9.11.3</entry>
       <entry>Class template <code>weak_ptr</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.13.4</entry>
-      <entry>Class template <code>owner_less</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.8.13.5</entry>
+      <entry>20.9.11.4</entry>
       <entry>Class template <code>emable_shared_from_this</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>20.8.13.6</entry>
+      <entry>20.9.11.5</entry>
       <entry><code>shared_ptr</code> atomic access</entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
+      <entry>20.9.11.6</entry>
+      <entry>Hash support</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>20.8.13.7</entry>
+      <entry>20.9.12</entry>
       <entry>Pointer safety</entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>20.8.14</entry>
+      <entry>20.9.13</entry>
       <entry>Align</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.8.15</entry>
+      <entry>20.9.16</entry>
       <entry>C library</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9</entry>
+      <entry>20.10</entry>
       <entry>Time utilities</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.1</entry>
+      <entry>20.10.1</entry>
       <entry>Clock requirements</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.2</entry>
+      <entry>20.10.2</entry>
       <entry>Time-related traits</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.2.1</entry>
+      <entry>20.10.2.1</entry>
       <entry><code>treat_as_floating_point</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.2.2</entry>
+      <entry>20.10.2.2</entry>
       <entry><code>duration_values</code></entry>
       <entry>Partial</entry>
       <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>20.9.2.3</entry>
+      <entry>20.10.2.3</entry>
       <entry>Specializations of <code>common_type</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.3</entry>
+      <entry>20.10.3</entry>
       <entry>Class template <code>duration</code></entry>
       <entry>Partial</entry>
       <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>20.9.4</entry>
+      <entry>20.10.4</entry>
       <entry>Class template <code>time_point</code></entry>
       <entry>Partial</entry>
       <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>20.9.5</entry>
+      <entry>20.10.5</entry>
       <entry>Clocks</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.5.1</entry>
+      <entry>20.10.5.1</entry>
       <entry>Class <code>system_clock</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.5.2</entry>
+      <entry>20.10.5.2</entry>
       <entry>Class <code>monotonic_clock</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.9.5.3</entry>
+      <entry>20.10.5.3</entry>
       <entry>Class <code>high_resolution_clock</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.10</entry>
+      <entry>20.11</entry>
       <entry>Date and time functions</entry>
       <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>20.12</entry>
+      <entry>Class <code>type_index</code></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
@@ -1022,7 +976,7 @@ particular release.
     </row>
     <row>
       <entry>21.2.2</entry>
-      <entry>traits typedef</entry>
+      <entry>traits typedefs</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -1076,6 +1030,12 @@ particular release.
     </row>
     <row>
       <entry>21.6</entry>
+      <entry>Hash support</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.7</entry>
       <entry>Null-terminated sequence utilities</entry>
       <entry>Y</entry>
       <entry>C library dependency</entry>
@@ -1138,39 +1098,39 @@ particular release.
     </row>
     <row>
       <entry>22.3.3.2.1</entry>
-      <entry>Character</entry>
+      <entry>Character conversions</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>22.3.3.2.2</entry>
-      <entry>String</entry>
+      <entry><code>string</code> conversions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>22.3.3.2.3</entry>
-      <entry>Buffer</entry>
+      <entry>Buffer conversions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4</entry>
-      <entry>Standard locale categories</entry>
+      <entry>Standard <code>locale</code> categories</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.1</entry>
-      <entry><code>ctype</code></entry>
+      <entry>The <code>ctype</code> category</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.2</entry>
-      <entry>Numeric</entry>
+      <entry>The numeric category</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1188,79 +1148,79 @@ particular release.
     </row>
     <row>
       <entry>22.4.3</entry>
-      <entry><code>num_punct</code></entry>
+      <entry>The numeric punctuation facet</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.4</entry>
-      <entry><code>collate</code></entry>
+      <entry>The collate category</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.5</entry>
-      <entry>Time</entry>
+      <entry>The time category</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.5.1</entry>
-      <entry><code>time_get</code></entry>
+      <entry>Class template <code>time_get</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.5.2</entry>
-      <entry><code>time_get_byname</code></entry>
+      <entry>Class template <code>time_get_byname</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.5.3</entry>
-      <entry><code>time_put</code></entry>
+      <entry>Class template <code>time_put</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.5.3</entry>
-      <entry><code>time_put_byname</code></entry>
+      <entry>Class template <code>time_put_byname</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.6</entry>
-      <entry>Monetary</entry>
+      <entry>The monetary category</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.6.1</entry>
-      <entry><code>money_get</code></entry>
+      <entry>Class template <code>money_get</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.6.2</entry>
-      <entry><code>money_put</code></entry>
+      <entry>Class template <code>money_put</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.6.3</entry>
-      <entry><code>money_punct</code></entry>
+      <entry>Class template <code>money_punct</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.6.4</entry>
-      <entry><code>money_punct_byname</code></entry>
+      <entry>Class template <code>money_punct_byname</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>22.4.7</entry>
-      <entry><code>messages</code></entry>
+      <entry>The message retrieval category</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -1292,11 +1252,10 @@ particular release.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.1</entry>
       <entry>General</entry>
-      <entry>Partial</entry>
-      <entry>Missing concepts</entry>
+      <entry></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>23.2</entry>
@@ -1305,15 +1264,32 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.1</entry>
-      <entry>General requirements</entry>
-      <entry>Partial</entry>
-      <entry>Missing construct_element</entry>
+      <entry>General container requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>23.2.2</entry>
       <entry>Data races</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.2.3</entry>
+      <entry>Sequence containers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.2.4</entry>
+      <entry>Associative containers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.2.5</entry>
+      <entry>Unordered associative containers</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -1349,7 +1325,7 @@ particular release.
     </row>
     <row>
       <entry>23.3.5</entry>
-      <entry>Adaptors</entry>
+      <entry>Container adaptors</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1452,35 +1428,32 @@ particular release.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>24.1</entry>
       <entry>General</entry>
-      <entry>Partial</entry>
-      <entry>Missing concepts</entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>24.2</entry>
-      <entry>Iterator concepts</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
+      <entry>24.2</entry>
+      <entry>Iterator requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
       <entry>24.3</entry>
       <entry>Header <code>&lt;iterator&gt;</code> synopsis</entry>
-      <entry>Partial</entry>
-      <entry>Missing concepts</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>24.4</entry>
-      <entry>Iterator operations</entry>
+      <entry>Iterator primitives</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>24.5</entry>
-      <entry>Predefined iterators and Iterator adaptors</entry>
+      <entry>Iterator adaptors</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1533,27 +1506,10 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <entry>24.7</entry>
-      <entry>Insert iterators</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>24.7.1</entry>
-      <entry>Class template <code>back_insert_iterator</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>24.7.3</entry>
-      <entry>Class template <code>front_insert_iterator</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>24.7.5</entry>
-      <entry>Class template <code>insert_iterator</code></entry>
-      <entry>Y</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>24.6.5</entry>
+      <entry>range access</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
@@ -1565,38 +1521,31 @@ particular release.
       </entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>25.1</entry>
       <entry>General</entry>
-      <entry>Partial</entry>
-      <entry>Missing concepts</entry>
-    </row>
-    <row>
-      <entry>25.2</entry>
-      <entry>Header <code>&lt;algorithm&gt;</code> synopsis</entry>
-      <entry>Y</entry>
+      <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>25.3</entry>
+      <entry>25.2</entry>
       <entry>Non-modifying sequence operations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>25.4</entry>
+      <entry>25.3</entry>
       <entry>Mutating sequence operations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>25.5</entry>
+      <entry>25.4</entry>
       <entry>Sorting and related operations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>25.6</entry>
+      <entry>25.5</entry>
       <entry>C library algorithms</entry>
       <entry>Y</entry>
       <entry></entry>
@@ -1640,22 +1589,20 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.5.1</entry>
-      <entry>Header <code>&lt;random&gt;</code> synopsis</entry>
-      <entry>Partial</entry>
-      <entry>Missing concepts</entry>
+      <entry>Requirements</entry>
+      <entry></entry>
+      <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>26.5.2</entry>
-      <entry>Concepts and related requirements</entry>
-      <entry>N</entry>
+      <entry>Header <code>&lt;random&gt;</code> synopsis</entry>
+      <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>26.5.3</entry>
-      <entry>Random number engines</entry>
+      <entry>Random number engine class templates</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1679,7 +1626,7 @@ particular release.
     </row>
     <row>
       <entry>26.5.4</entry>
-      <entry>Random number engine adaptors</entry>
+      <entry>Random number engine adaptor class templates</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1727,13 +1674,13 @@ particular release.
     </row>
     <row>
       <entry>26.5.7.2</entry>
-      <entry>Function template generate_canonical</entry>
+      <entry>Function template <code>generate_canonical</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>26.5.8</entry>
-      <entry>Random number distributions</entry>
+      <entry>Random number distribution class templates</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -1925,7 +1872,7 @@ particular release.
     </row>
     <row>
       <entry>26.6.6</entry>
-      <entry>Class <code>gslice</code></entry>
+      <entry>The <code>gslice</code> class</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -1945,6 +1892,13 @@ particular release.
       <entry>26.6.9</entry>
       <entry>Class template <code>indirect_array</code></entry>
       <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>26.6.10</entry>
+      <entry><code>valarray</code> range access</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
@@ -1994,7 +1948,7 @@ particular release.
 	<emphasis>27</emphasis>
       </entry>
       <entry namest="c2" nameend="c4" align="left">
-	<emphasis>Input/output</emphasis>
+	<emphasis>Input/output library</emphasis>
       </entry>
     </row>
     <row>
@@ -2005,19 +1959,19 @@ particular release.
     </row>
     <row>
       <entry>27.2</entry>
-      <entry>Requirements</entry>
+      <entry>Iostreams requirements</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>27.2.1</entry>
-      <entry>Imbue limitations</entry>
+      <entry>Imbue Limitations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>27.2.2</entry>
-      <entry>Positioning type limitations</entry>
+      <entry>Positioning Type Limitations</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
@@ -2092,96 +2046,89 @@ particular release.
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.01</entry>
+      <entry>28.1</entry>
       <entry>General</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.02</entry>
+      <entry>28.2</entry>
       <entry>Definitions</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.03</entry>
+      <entry>28.3</entry>
       <entry>Requirements</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.04</entry>
-      <entry>Regular expressions summary</entry>
-      <entry>N</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.05</entry>
+      <entry>28.4</entry>
       <entry>Header <code>&lt;regex&gt;</code> synopsis</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.06</entry>
+      <entry>28.5</entry>
       <entry>Namespace <code>std::regex_constants</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.07</entry>
+      <entry>28.6</entry>
       <entry>Class <code>regex_error</code></entry>
       <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>28.08</entry>
+      <entry>28.7</entry>
       <entry>Class template <code>regex_traits</code></entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>28.09</entry>
+      <entry>28.8</entry>
       <entry>Class template <code>basic_regex</code></entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>28.10</entry>
+      <entry>28.9</entry>
       <entry>Class template <code>sub_match</code></entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>28.11</entry>
+      <entry>28.10</entry>
       <entry>Class template <code>match_results</code></entry>
       <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.12</entry>
+      <entry>28.11</entry>
       <entry>Regular expression algorithms</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.13</entry>
+      <entry>28.12</entry>
       <entry>Regular expression Iterators</entry>
       <entry>N</entry>
       <entry></entry>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
-      <entry>28.14</entry>
+      <entry>28.13</entry>
       <entry>Modified ECMAScript regular expression grammar</entry>
       <entry>N</entry>
       <entry></entry>
@@ -2433,9 +2380,10 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.5</entry>
       <entry>Class template <code>promise</code></entry>
-      <entry>Y</entry>
+      <entry>Partial</entry>
       <entry>Missing <code>allocator_arg_t</code></entry>
     </row>
     <row>
@@ -2464,9 +2412,10 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.10</entry>
       <entry>Class template <code>packaged_task</code></entry>
-      <entry>Y</entry>
+      <entry>Partial</entry>
       <entry>Missing <code>allocator_arg_t</code></entry>
     </row>
     <row>
@@ -2479,7 +2428,7 @@ particular release.
     </row>
     <row>
       <entry>D.1</entry>
-      <entry>Increment operator with bool operand</entry>
+      <entry>Increment operator with <code>bool</code> operand</entry>
       <entry></entry>
       <entry></entry>
     </row>
@@ -2497,43 +2446,43 @@ particular release.
     </row>
     <row>
       <entry>D.4</entry>
-      <entry>Implicit conversion from const strings</entry>
+      <entry><code>register</code> keyword</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.5</entry>
-      <entry>C standard library headers</entry>
+      <entry>Dynamic exception specifications</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.6</entry>
-      <entry>Old iostreams members</entry>
+      <entry>C standard library headers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.7</entry>
-      <entry>char* streams</entry>
+      <entry>Old iostreams members</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.8</entry>
-      <entry>Binders</entry>
+      <entry>char* streams</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.9</entry>
-      <entry><code>auto_ptr</code></entry>
+      <entry>Binders</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.10</entry>
-      <entry>Iterator primitives</entry>
+      <entry><code>auto_ptr</code></entry>
       <entry></entry>
       <entry></entry>
     </row>
