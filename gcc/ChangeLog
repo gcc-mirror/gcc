@@ -1,3 +1,9 @@
+2010-04-26  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* df-problems.c (df_simulate_initialize_forwards): Set, don't clear,
+	bits for artificial defs at the top of the block.
+	* fwprop.c (single_def_use_enter_block): Don't call it.
+
 2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR 43715

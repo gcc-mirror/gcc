@@ -3913,13 +3913,9 @@ df_simulate_finalize_backwards (basic_block bb, bitmap live)
    the block, starting with the first one.
    ----------------------------------------------------------------------------*/
 
-/* Apply the artificial uses and defs at the top of BB in a forwards
-   direction.  ??? This is wrong; defs mark the point where a pseudo
-   becomes live when scanning forwards (unless a def is unused).  Since
-   there are no REG_UNUSED notes for artificial defs, passes that
-   require artificial defs probably should not call this function
-   unless (as is the case for fwprop) they are correct when liveness
-   bitmaps are *under*estimated.  */
+/* Initialize the LIVE bitmap, which should be copied from DF_LIVE_IN or
+   DF_LR_IN for basic block BB, for forward scanning by marking artificial
+   defs live.  */
 
 void
 df_simulate_initialize_forwards (basic_block bb, bitmap live)
@@ -3931,7 +3927,7 @@ df_simulate_initialize_forwards (basic_block bb, bitmap live)
     {
       df_ref def = *def_rec;
       if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	bitmap_clear_bit (live, DF_REF_REGNO (def));
+	bitmap_set_bit (live, DF_REF_REGNO (def));
     }
 }
 
