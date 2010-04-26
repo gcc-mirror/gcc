@@ -2027,7 +2027,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 				 VEC(cgraph_edge_p,heap) *redirect_callers)
  {
    struct cgraph_node *new_version;
-   struct cgraph_edge *e, *new_e;
+   struct cgraph_edge *e;
    struct cgraph_edge *next_callee;
    unsigned i;
 
@@ -2046,10 +2046,10 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
       also cloned.  */
    for (e = old_version->callees;e; e=e->next_callee)
      {
-       new_e = cgraph_clone_edge (e, new_version, e->call_stmt,
-				  e->lto_stmt_uid, 0, e->frequency,
-				  e->loop_nest, true);
-       new_e->count = e->count;
+       cgraph_clone_edge (e, new_version, e->call_stmt,
+			  e->lto_stmt_uid, REG_BR_PROB_BASE,
+			  CGRAPH_FREQ_BASE,
+			  e->loop_nest, true);
      }
    /* Fix recursive calls.
       If OLD_VERSION has a recursive call after the

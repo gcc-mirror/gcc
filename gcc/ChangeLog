@@ -1,3 +1,7 @@
+2010-04-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Fix profile updating.
+
 2010-04-26  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43080
