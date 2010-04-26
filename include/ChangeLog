@@ -1,3 +1,7 @@
+2010-04-26  Pedro Alves  <pedro@codesourcery.com>
+
+	* filenames.h (PATH_SEPARATOR): Delete.
+
 2010-04-23  Pedro Alves  <pedro@codesourcery.com>
 
 	* filenames.h (IS_DIR_SEPARATOR_1): Rename from IS_DIR_SEPARATOR,
