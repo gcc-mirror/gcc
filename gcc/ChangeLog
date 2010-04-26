@@ -1,3 +1,14 @@
+2010-04-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cfgloop.h (struct loop): Move can_be_parallel field up.
+	* ipa-prop.h (struct ip_node_params): Move bitfields up.
+	* tree-ssa-loop-ivopts.c (struct version_info): Move inv_id field
+	down.
+	(struct iv_cand): Convert pos field into a bitfield.
+	* tree-vectorizer.h (struct _loop_vec_info): Move loop_line_number
+	field up.
+	(struct _stmt_vec_info): Shuffle fields for better packing.
+
 2010-04-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (IN_NAMED_SECTION): Remove guard.

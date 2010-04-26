@@ -181,6 +181,15 @@ struct ipa_node_params
      this function's parameters would not be analyzed by the different
      stages of IPA CP.  */
   int param_count;
+  /* Whether this function is called with variable number of actual
+     arguments.  */
+  unsigned called_with_var_arguments : 1;
+  /* Whether the modification analysis has already been performed. */
+  unsigned modification_analysis_done : 1;
+  /* Whether the param uses analysis has already been performed.  */
+  unsigned uses_analysis_done : 1;
+  /* Whether the function is enqueued in an ipa_func_list.  */
+  unsigned node_enqueued : 1;
   /* Pointer to an array of structures describing individual formal
      parameters.  */
   struct ipa_param_descriptor *params;
@@ -195,16 +204,6 @@ struct ipa_node_params
      the profiling information of the original function and the versioned
      one.  */
   gcov_type count_scale;
-
-  /* Whether this function is called with variable number of actual
-     arguments.  */
-  unsigned called_with_var_arguments : 1;
-  /* Whether the modification analysis has already been performed. */
-  unsigned modification_analysis_done : 1;
-  /* Whether the param uses analysis has already been performed.  */
-  unsigned uses_analysis_done : 1;
-  /* Whether the function is enqueued in an ipa_func_list.  */
-  unsigned node_enqueued : 1;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that

@@ -198,6 +198,9 @@ typedef struct _loop_vec_info {
   /* Unrolling factor  */
   int vectorization_factor;
 
+  /* The loop location in the source.  */
+  LOC loop_line_number;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct data_reference *unaligned_dr;
 
@@ -227,9 +230,6 @@ typedef struct _loop_vec_info {
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
   VEC(gimple,heap) *may_misalign_stmts;
-
-  /* The loop location in the source.  */
-  LOC loop_line_number;
 
   /* All interleaving chains of stores in the loop, represented by the first
      stmt in the chain.  */
@@ -398,20 +398,22 @@ typedef struct _stmt_vec_info {
 
   enum stmt_vec_info_type type;
 
+  /* Indicates whether this stmts is part of a computation whose result is
+     used outside the loop.  */
+  bool live;
+
+  /* Stmt is part of some pattern (computation idiom)  */
+  bool in_pattern_p;
+
+  /* For loads only, if there is a store with the same location, this field is
+     TRUE.  */
+  bool read_write_dep;
+
   /* The stmt to which this info struct refers to.  */
   gimple stmt;
 
   /* The loop_vec_info with respect to which STMT is vectorized.  */
   loop_vec_info loop_vinfo;
-
-  /* Not all stmts in the loop need to be vectorized. e.g, the increment
-     of the loop induction variable and computation of array indexes. relevant
-     indicates whether the stmt needs to be vectorized.  */
-  enum vect_relevant relevant;
-
-  /* Indicates whether this stmts is part of a computation whose result is
-     used outside the loop.  */
-  bool live;
 
   /* The vector type to be used for the LHS of this statement.  */
   tree vectype;
@@ -436,9 +438,6 @@ typedef struct _stmt_vec_info {
   tree dr_step;
   tree dr_aligned_to;
 
-  /* Stmt is part of some pattern (computation idiom)  */
-  bool in_pattern_p;
-
   /* Used for various bookkeeping purposes, generally holding a pointer to
      some other stmt S that is in some way "related" to this stmt.
      Current use of this field is:
@@ -457,11 +456,17 @@ typedef struct _stmt_vec_info {
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
 
+  /*  Whether the stmt is SLPed, loop-based vectorized, or both.  */
+  enum slp_vect_type slp_type;
+
   /* Interleaving info.  */
   /* First data-ref in the interleaving group.  */
   gimple first_dr;
   /* Pointer to the next data-ref in the group.  */
   gimple next_dr;
+  /* In case that two or more stmts share data-ref, this is the pointer to the
+     previously detected stmt with the same dr.  */
+  gimple same_dr_stmt;
   /* The size of the interleaving group.  */
   unsigned int size;
   /* For stores, number of stores from this group seen. We vectorize the last
@@ -470,12 +475,11 @@ typedef struct _stmt_vec_info {
   /* For loads only, the gap from the previous load. For consecutive loads, GAP
      is 1.  */
   unsigned int gap;
-  /* In case that two or more stmts share data-ref, this is the pointer to the
-     previously detected stmt with the same dr.  */
-  gimple same_dr_stmt;
-  /* For loads only, if there is a store with the same location, this field is
-     TRUE.  */
-  bool read_write_dep;
+
+  /* Not all stmts in the loop need to be vectorized. e.g, the increment
+     of the loop induction variable and computation of array indexes. relevant
+     indicates whether the stmt needs to be vectorized.  */
+  enum vect_relevant relevant;
 
   /* Vectorization costs associated with statement.  */
   struct
@@ -483,9 +487,6 @@ typedef struct _stmt_vec_info {
     int outside_of_loop;     /* Statements generated outside loop.  */
     int inside_of_loop;      /* Statements generated inside loop.  */
   } cost;
-
-  /*  Whether the stmt is SLPed, loop-based vectorized, or both.  */
-  enum slp_vect_type slp_type;
 
   /* The bb_vec_info with respect to which STMT is vectorized.  */
   bb_vec_info bb_vinfo;

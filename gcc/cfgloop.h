@@ -148,6 +148,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
   bool any_upper_bound;
   bool any_estimate;
 
+  /* True if the loop can be parallel.  */
+  bool can_be_parallel;
+
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
   enum loop_estimation estimate_state;
@@ -157,9 +160,6 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
-
-  /* True if the loop can be parallel.  */
-  bool can_be_parallel;
 
   /* The single induction variable of the loop when the loop is in
      normal form.  */

@@ -120,8 +120,8 @@ struct version_info
   struct iv *iv;	/* Induction variable description.  */
   bool has_nonlin_use;	/* For a loop-level invariant, whether it is used in
 			   an expression that is not an induction variable.  */
-  unsigned inv_id;	/* Id of an invariant.  */
   bool preserve_biv;	/* For the original biv, whether to preserve it.  */
+  unsigned inv_id;	/* Id of an invariant.  */
 };
 
 /* Types of uses.  */
@@ -192,7 +192,7 @@ struct iv_cand
   unsigned id;		/* The number of the candidate.  */
   bool important;	/* Whether this is an "important" candidate, i.e. such
 			   that it should be considered by all uses.  */
-  enum iv_position pos;	/* Where it is computed.  */
+  ENUM_BITFIELD(iv_position) pos : 8;	/* Where it is computed.  */
   gimple incremented_at;/* For original biv, the statement where it is
 			   incremented.  */
   tree var_before;	/* The variable used for it before increment.  */
