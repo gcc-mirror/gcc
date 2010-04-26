@@ -489,6 +489,10 @@ typedef struct _stmt_vec_info {
 
   /* The bb_vec_info with respect to which STMT is vectorized.  */
   bb_vec_info bb_vinfo;
+
+  /* Is this statement vectorizable or should it be skipped in (partial)
+     vectorization.  */
+  bool vectorizable;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -500,6 +504,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_LIVE_P(S)               (S)->live
 #define STMT_VINFO_VECTYPE(S)              (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
+#define STMT_VINFO_VECTORIZABLE(S)         (S)->vectorizable
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address

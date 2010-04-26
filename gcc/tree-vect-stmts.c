@@ -3031,12 +3031,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	}
 
       if (slp)
-	strided_store = false;
-
-      /* VEC_NUM is the number of vect stmts to be created for this group.  */
-      if (slp)
-	vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+        {
+          strided_store = false;
+          /* VEC_NUM is the number of vect stmts to be created for this 
+             group.  */
+          vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+          first_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0); 
+          first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
+        } 
       else
+        /* VEC_NUM is the number of vect stmts to be created for this 
+           group.  */
 	vec_num = group_size;
     }
   else
@@ -4327,6 +4332,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   STMT_VINFO_LIVE_P (res) = false;
   STMT_VINFO_VECTYPE (res) = NULL;
   STMT_VINFO_VEC_STMT (res) = NULL;
+  STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_IN_PATTERN_P (res) = false;
   STMT_VINFO_RELATED_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;

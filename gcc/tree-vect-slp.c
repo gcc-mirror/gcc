@@ -344,6 +344,19 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 	}
 
+      /* Fail to vectorize statements marked as unvectorizable.  */
+      if (!STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
+        {
+          if (vect_print_dump_info (REPORT_SLP))
+            {
+              fprintf (vect_dump,
+                       "Build SLP failed: unvectorizable statement ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+
+          return false;
+        }
+
       lhs = gimple_get_lhs (stmt);
       if (lhs == NULL_TREE)
 	{
