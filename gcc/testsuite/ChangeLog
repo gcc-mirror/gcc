@@ -1,3 +1,7 @@
+2010-04-26  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/bb-slp-23.c: New test.
+
 2010-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c90-float-1.c: Also test that C1X macros are not defined.

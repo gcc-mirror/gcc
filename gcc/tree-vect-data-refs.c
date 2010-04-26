@@ -503,6 +503,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   lambda_vector dist_v;
   unsigned int loop_depth;
 
+  /* Don't bother to analyze statements marked as unvectorizable.  */
+  if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
+      || !STMT_VINFO_VECTORIZABLE (stmtinfo_b))
+    return false;
+
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     {
       /* Independent data accesses.  */
@@ -546,7 +551,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
         }
 
-      return true;
+      /* Mark the statements as unvectorizable.  */
+      STMT_VINFO_VECTORIZABLE (stmtinfo_a) = false;
+      STMT_VINFO_VECTORIZABLE (stmtinfo_b) = false;
+
+      return false;
     }
 
   /* Versioning for alias is not yet supported for basic block SLP, and
@@ -851,8 +860,18 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo,
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    if (!vect_compute_data_ref_alignment (dr))
-      return false;
+    if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr)))
+        && !vect_compute_data_ref_alignment (dr))
+      {
+        if (bb_vinfo)
+          {
+            /* Mark unsupported statement as unvectorizable.  */
+            STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
+            continue;
+          }
+        else
+          return false;
+      }
 
   return true;
 }
@@ -939,9 +958,11 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       gimple stmt = DR_STMT (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
-      /* For interleaving, only the alignment of the first access matters.  */
-      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
-          && DR_GROUP_FIRST_DR (stmt_info) != stmt)
+      /* For interleaving, only the alignment of the first access matters. 
+         Skip statements marked as not vectorizable.  */
+      if ((STMT_VINFO_STRIDED_ACCESS (stmt_info)
+           && DR_GROUP_FIRST_DR (stmt_info) != stmt)
+          || !STMT_VINFO_VECTORIZABLE (stmt_info))
         continue;
 
       supportable_dr_alignment = vect_supportable_dr_alignment (dr);
@@ -955,6 +976,8 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
               else
                 fprintf (vect_dump,
                          "not vectorized: unsupported unaligned store.");
+
+              print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
             }
           return false;
         }
@@ -1564,8 +1587,20 @@ vect_analyze_group_access (struct data_reference *dr)
 	    }
 	  return true;
 	}
+
       if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "not consecutive access");
+        {
+ 	  fprintf (vect_dump, "not consecutive access ");
+          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+        }
+
+      if (bb_vinfo)
+        {
+          /* Mark the statement as unvectorizable.  */
+          STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
+          return true;
+        }
+    
       return false;
     }
 
@@ -1836,11 +1871,20 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    if (!vect_analyze_data_ref_access (dr))
+    if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) 
+        && !vect_analyze_data_ref_access (dr))
       {
 	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	  fprintf (vect_dump, "not vectorized: complicated access pattern.");
-	return false;
+
+        if (bb_vinfo)
+          {
+            /* Mark the statement as not vectorizable.  */
+            STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
+            continue;
+          }
+        else
+          return false;
       }
 
   return true;
@@ -2013,7 +2057,15 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               fprintf (vect_dump, "not vectorized: data ref analysis failed ");
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
             }
-          return false;
+
+          if (bb_vinfo)
+            {
+              /* Mark the statement as not vectorizable.  */
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              continue;
+            }
+          else
+            return false;
         }
 
       if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
@@ -2021,7 +2073,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             fprintf (vect_dump, "not vectorized: base addr of dr is a "
                      "constant");
-          return false;
+          if (bb_vinfo)
+            {
+              /* Mark the statement as not vectorizable.  */
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              continue;
+            }
+          else
+            return false;
         }
 
       base = unshare_expr (DR_BASE_ADDRESS (dr));
@@ -2163,7 +2222,15 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
               fprintf (vect_dump, " scalar_type: ");
               print_generic_expr (vect_dump, scalar_type, TDF_DETAILS);
             }
-          return false;
+
+          if (bb_vinfo)
+            {
+              /* Mark the statement as not vectorizable.  */
+              STMT_VINFO_VECTORIZABLE (stmt_info) = false;
+              continue;
+            }
+          else
+            return false;
         }
 
       /* Adjust the minimal vectorization factor according to the

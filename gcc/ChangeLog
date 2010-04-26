@@ -1,3 +1,26 @@
+2010-04-26  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Add new field to 
+	determine if the statement is vectorizable, and a macro to 
+	access it.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): 
+	Skip statements that can't be vectorized. If the analysis 
+	fails, mark the statement as unvectorizable if vectorizing 
+	basic block.
+	(vect_compute_data_refs_alignment): Likewise.
+	(vect_verify_datarefs_alignment): Skip statements marked as 
+	unvectorizable. Add print.
+	(vect_analyze_group_access): Skip statements that can't be 
+	vectorized. If the analysis fails, mark the statement as 
+	unvectorizable if vectorizing basic block.
+	(vect_analyze_data_ref_accesses, vect_analyze_data_refs): 
+	Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Fix the number of 
+	generated stmts for SLP.
+	(new_stmt_vec_info): Initialize the new field.
+	* tree-vect-slp.c (vect_build_slp_tree): Fail to vectorize 
+	statements marked as unvectorizable.
+
 2010-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (flag_isoc1x): New.
