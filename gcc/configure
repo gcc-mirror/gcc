@@ -25276,17 +25276,25 @@ fi
 pluginlibs=
 if test x"$enable_plugin" = x"yes"; then
 
+  case "${host}" in
+    *-*-darwin*)
+      export_sym_check="$gcc_cv_nm -g"
+    ;;
+    *)
+      export_sym_check="$gcc_cv_objdump -T"
+    ;;
+  esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exported symbols" >&5
 $as_echo_n "checking for exported symbols... " >&6; }
   echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
   ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest > /dev/null 2>&1
-  if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
+  if $export_sym_check conftest | grep foobar > /dev/null; then
     : # No need to use a flag
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
 $as_echo_n "checking for -rdynamic... " >&6; }
     ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
-    if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
+    if $export_sym_check conftest | grep foobar > /dev/null; then
       plugin_rdynamic=yes
       pluginlibs="-rdynamic"
     else
@@ -25362,7 +25370,14 @@ fi
 
   # Check that we can build shared objects with -fPIC -shared
   saved_LDFLAGS="$LDFLAGS"
-  LDFLAGS="$LDFLAGS -fPIC -shared"
+  case "${host}" in
+    *-*-darwin*)
+      LDFLAGS="$LDFLAGS -fPIC -shared -undefined dynamic_lookup"
+    ;;
+    *)
+      LDFLAGS="$LDFLAGS -fPIC -shared"
+    ;;
+  esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -fPIC -shared" >&5
 $as_echo_n "checking for -fPIC -shared... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
