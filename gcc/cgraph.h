@@ -175,6 +175,21 @@ struct GTY(()) cgraph_clone_info
   bitmap combined_args_to_skip;
 };
 
+enum node_frequency {
+  /* This function most likely won't be executed at all.
+     (set only when profile feedback is available or via function attribute). */
+  NODE_FREQUENCY_UNLIKELY_EXECUTED,
+  /* For functions that are known to be executed once (i.e. constructors, destructors
+     and main function.  */
+  NODE_FREQUENCY_EXECUTED_ONCE,
+  /* The default value.  */
+  NODE_FREQUENCY_NORMAL,
+  /* Optimize this function hard
+     (set only when profile feedback is available or via function attribute). */
+  NODE_FREQUENCY_HOT
+};
+
+
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
@@ -267,6 +282,9 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   /* Set for alias and thunk nodes, same_body points to the node they are alias
      of and they are linked through the next/previous pointers.  */
   unsigned same_body_alias : 1;
+  /* How commonly executed the node is.  Initialized during branch
+     probabilities pass.  */
+  ENUM_BITFIELD (node_frequency) frequency : 2;
 };
 
 typedef struct cgraph_node *cgraph_node_ptr;

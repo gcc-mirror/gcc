@@ -113,15 +113,19 @@ static const struct predictor_info predictor_info[]= {
 static inline bool
 maybe_hot_frequency_p (int freq)
 {
+  struct cgraph_node *node = cgraph_node (current_function_decl);
   if (!profile_info || !flag_branch_probabilities)
     {
-      if (cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+      if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
         return false;
-      if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
+      if (node->frequency == NODE_FREQUENCY_HOT)
         return true;
     }
   if (profile_status == PROFILE_ABSENT)
     return true;
+  if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+      && freq <= (ENTRY_BLOCK_PTR->frequency * 2 / 3))
+    return false;
   if (freq < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return false;
   return true;
@@ -161,11 +165,16 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
       && (edge->count
 	  <= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
-  if (lookup_attribute ("cold", DECL_ATTRIBUTES (edge->callee->decl))
-      || lookup_attribute ("cold", DECL_ATTRIBUTES (edge->caller->decl)))
+  if (edge->caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
+      || edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return false;
-  if (lookup_attribute ("hot", DECL_ATTRIBUTES (edge->caller->decl)))
+  if (optimize_size)
+    return false;
+  if (edge->caller->frequency == NODE_FREQUENCY_HOT)
     return true;
+  if (edge->caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+      && edge->frequency < CGRAPH_FREQ_BASE * 3 / 2)
+    return false;
   if (flag_guess_branch_prob
       && edge->frequency <= (CGRAPH_FREQ_BASE
       			     / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
@@ -191,7 +200,7 @@ probably_never_executed_bb_p (const_basic_block bb)
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
   if ((!profile_info || !flag_branch_probabilities)
-      && cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+      && cgraph_node (current_function_decl)->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return true;
   return false;
 }
@@ -202,8 +211,9 @@ bool
 optimize_function_for_size_p (struct function *fun)
 {
   return (optimize_size
-	  || (fun && (fun->function_frequency
-		      == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)));
+	  || (fun && fun->decl
+	      && (cgraph_node (fun->decl)->frequency
+		  == NODE_FREQUENCY_UNLIKELY_EXECUTED)));
 }
 
 /* Return true when current function should always be optimized for speed.  */
@@ -2148,27 +2158,36 @@ void
 compute_function_frequency (void)
 {
   basic_block bb;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
 
   if (!profile_info || !flag_branch_probabilities)
     {
+      int flags = flags_from_decl_or_type (current_function_decl);
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
 	  != NULL)
-        cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
+        node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
 	       != NULL)
-        cfun->function_frequency = FUNCTION_FREQUENCY_HOT;
+        node->frequency = NODE_FREQUENCY_HOT;
+      else if (flags & ECF_NORETURN)
+        node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+      else if (MAIN_NAME_P (DECL_NAME (current_function_decl)))
+        node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+      else if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
+	       || DECL_STATIC_DESTRUCTOR (current_function_decl))
+        node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
       return;
     }
-  cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
+  node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
   FOR_EACH_BB (bb)
     {
       if (maybe_hot_bb_p (bb))
 	{
-	  cfun->function_frequency = FUNCTION_FREQUENCY_HOT;
+	  node->frequency = NODE_FREQUENCY_HOT;
 	  return;
 	}
       if (!probably_never_executed_bb_p (bb))
-	cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
+	node->frequency = NODE_FREQUENCY_NORMAL;
     }
 }
 
@@ -2176,6 +2195,7 @@ compute_function_frequency (void)
 static void
 choose_function_section (void)
 {
+  struct cgraph_node *node = cgraph_node (current_function_decl);
   if (DECL_SECTION_NAME (current_function_decl)
       || !targetm.have_named_sections
       /* Theoretically we can split the gnu.linkonce text section too,
@@ -2191,10 +2211,10 @@ choose_function_section (void)
   if (flag_reorder_blocks_and_partition)
     return;
 
-  if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
+  if (node->frequency == NODE_FREQUENCY_HOT)
     DECL_SECTION_NAME (current_function_decl) =
       build_string (strlen (HOT_TEXT_SECTION_NAME), HOT_TEXT_SECTION_NAME);
-  if (cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     DECL_SECTION_NAME (current_function_decl) =
       build_string (strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME),
 		    UNLIKELY_EXECUTED_TEXT_SECTION_NAME);

@@ -176,17 +176,6 @@ typedef struct ipa_opt_pass_d *ipa_opt_pass;
 DEF_VEC_P(ipa_opt_pass);
 DEF_VEC_ALLOC_P(ipa_opt_pass,heap);
 
-enum function_frequency {
-  /* This function most likely won't be executed at all.
-     (set only when profile feedback is available or via function attribute). */
-  FUNCTION_FREQUENCY_UNLIKELY_EXECUTED,
-  /* The default value.  */
-  FUNCTION_FREQUENCY_NORMAL,
-  /* Optimize this function hard
-     (set only when profile feedback is available or via function attribute). */
-  FUNCTION_FREQUENCY_HOT
-};
-
 struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
   struct rtx_constant_pool *pool;
@@ -537,10 +526,6 @@ struct GTY(()) function {
   /* Number of units of floating point registers that need saving in stdarg
      function.  */
   unsigned int va_list_fpr_size : 8;
-
-  /* How commonly executed the function is.  Initialized during branch
-     probabilities pass.  */
-  ENUM_BITFIELD (function_frequency) function_frequency : 2;
 
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;

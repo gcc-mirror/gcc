@@ -1361,14 +1361,17 @@ pass_init_dump_file (struct opt_pass *pass)
       if (dump_file && current_function_decl)
 	{
 	  const char *dname, *aname;
+	  struct cgraph_node *node = cgraph_node (current_function_decl);
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
 	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
-	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     node->frequency == NODE_FREQUENCY_HOT
 	     ? " (hot)"
-	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
 	     ? " (unlikely executed)"
+	     : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+	     ? " (executed once)"
 	     : "");
 	}
       return initializing_dump;

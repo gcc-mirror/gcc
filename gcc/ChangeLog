@@ -1,3 +1,31 @@
+2010-04-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_node): Set node frequency to normal.
+	(cgraph_clone_node): Copy function frequency.
+	* cgraph.h (node_frequency): New enum
+	(struct cgraph_node): Add.
+	* final.c (rest_of_clean_state): Update.
+	* lto-cgraph.c (lto_output_node): Output node frequency.
+	(input_overwrite_node): Input node frequency.
+	* tre-ssa-loop-ivopts (computation_cost): Update.
+	* lto-streamer-out.c (output_function): Do not output function frequency.
+	* predict.c (maybe_hot_frequency_p): Update and handle functions executed once.
+	(cgraph_maybe_hot_edge_p): Likewise; use cgraph frequency instead of
+	attribute lookup.
+	(probably_never_executed_bb_p, optimize_function_for_size_p): Update.
+	(compute_function_frequency): Set noreturn functions to be executed once.
+	(choose_function_section): Update.
+	* lto-streamer-in.c (input_function): Do not input function frequency.
+	* function.c (allocate_struct_function): Do not initialize function frequency.
+	* function.h (function_frequency): Remove.
+	(struct function): Remove function frequency.
+	* ipa-profile.c (CGRAPH_NODE_FREQUENCY): Remove.
+	(try_update): Update.
+	* tree-inline.c (initialize_cfun): Do not update function frequency.
+	* passes.c (pass_init_dump_file): Update.
+	* i386.c (ix86_compute_frame_layout): Update.
+	(ix86_pad_returns): Update.
+
 2010-04-26  Jie Zhang  <jie@codesourcery.com>
 
 	PR tree-optimization/43833
