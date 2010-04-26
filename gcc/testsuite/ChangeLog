@@ -36,46 +36,46 @@
 
 	* gfortran.dg/default_format_denormal_2.f90: Remove XFAIL for
 	FreeBSD.
-	* gfortran.dg/default_format_denormal_1.f90: ditto
-	* gfortran.dg/default_format_2.f90: ditto
+	* gfortran.dg/default_format_denormal_1.f90: Ditto.
+	* gfortran.dg/default_format_2.f90: Ditto.
 
 2010-04-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/pr43505.f90: Clean up .mod file.
-	* gfortran.dg/host_assoc_blockdata_1.f90: ditto
-	* gfortran.dg/pr41347.f90: ditto
-	* gfortran.dg/internal_pack_4.f90: ditto
-	* gfortran.dg/proc_decl_23.f90: ditto
-	* gfortran.dg/recursive_check_3.f90: ditto
-	* gfortran.dg/intent_out_3.f90: ditto
-	* gfortran.dg/assignment_2.f90: ditto
-	* gfortran.dg/pr41928.f90: ditto
-	* gfortran.dg/pr42166.f90: ditto
-	* gfortran.dg/private_type_12.f90: ditto
-	* gfortran.dg/graphite/pr42185.f90: ditto
-	* gfortran.dg/graphite/pr42186.f90: ditto
-	* gfortran.dg/graphite/pr40982.f90: ditto
-	* gfortran.dg/graphite/id-2.f90: ditto
-	* gfortran.dg/graphite/id-4.f90: ditto
-	* gfortran.dg/graphite/pr42050.f90: ditto
-	* gfortran.dg/graphite/id-18.f90: ditto
-	* gfortran.dg/graphite/pr42393-1.f90: ditto
-	* gfortran.dg/graphite/pr41924.f90: ditto
-	* gfortran.dg/graphite/pr42393.f90: ditto
-	* gfortran.dg/graphite/pr37980.f90: ditto
-	* gfortran.dg/graphite/pr38953.f90: ditto
-	* gfortran.dg/graphite/pr42180.f90: ditto
-	* gfortran.dg/graphite/pr42181.f90: ditto
-	* gfortran.dg/where_operator_assign_4.f90: ditto
-	* gfortran.dg/select_type_4.f90: ditto
-	* gfortran.dg/redefined_intrinsic_assignment.f90: ditto
-	* gfortran.dg/host_assoc_blockdata_2.f90: ditto
-	* gfortran.dg/lto/pr40725_0.f03: ditto
-	* gfortran.dg/elemental_args_check_2.f90: ditto
-	* gfortran.dg/whole_file_11.f90: ditto
-	* gfortran.dg/private_type_11.f90: ditto
-	* gfortran.dg/vect/vect-gems.f90: ditto
-	* gfortran.dg/vect/fast-math-real8-pr40801.f90: ditto
+	* gfortran.dg/host_assoc_blockdata_1.f90: Ditto.
+	* gfortran.dg/pr41347.f90: Ditto.
+	* gfortran.dg/internal_pack_4.f90: Ditto.
+	* gfortran.dg/proc_decl_23.f90: Ditto.
+	* gfortran.dg/recursive_check_3.f90: Ditto.
+	* gfortran.dg/intent_out_3.f90: Ditto.
+	* gfortran.dg/assignment_2.f90: Ditto.
+	* gfortran.dg/pr41928.f90: Ditto.
+	* gfortran.dg/pr42166.f90: Ditto.
+	* gfortran.dg/private_type_12.f90: Ditto.
+	* gfortran.dg/graphite/pr42185.f90: Ditto.
+	* gfortran.dg/graphite/pr42186.f90: Ditto.
+	* gfortran.dg/graphite/pr40982.f90: Ditto.
+	* gfortran.dg/graphite/id-2.f90: Ditto.
+	* gfortran.dg/graphite/id-4.f90: Ditto.
+	* gfortran.dg/graphite/pr42050.f90: Ditto.
+	* gfortran.dg/graphite/id-18.f90: Ditto.
+	* gfortran.dg/graphite/pr42393-1.f90: Ditto.
+	* gfortran.dg/graphite/pr41924.f90: Ditto.
+	* gfortran.dg/graphite/pr42393.f90: Ditto.
+	* gfortran.dg/graphite/pr37980.f90: Ditto.
+	* gfortran.dg/graphite/pr38953.f90: Ditto.
+	* gfortran.dg/graphite/pr42180.f90: Ditto.
+	* gfortran.dg/graphite/pr42181.f90: Ditto.
+	* gfortran.dg/where_operator_assign_4.f90: Ditto.
+	* gfortran.dg/select_type_4.f90: Ditto.
+	* gfortran.dg/redefined_intrinsic_assignment.f90: Ditto.
+	* gfortran.dg/host_assoc_blockdata_2.f90: Ditto.
+	* gfortran.dg/lto/pr40725_0.f03: Ditto.
+	* gfortran.dg/elemental_args_check_2.f90: Ditto.
+	* gfortran.dg/whole_file_11.f90: Ditto.
+	* gfortran.dg/private_type_11.f90: Ditto.
+	* gfortran.dg/vect/vect-gems.f90: Ditto.
+	* gfortran.dg/vect/fast-math-real8-pr40801.f90: Ditto.
 
 2010-04-25  H.J. Lu  <hongjiu.lu@intel.com>
 
