@@ -1,3 +1,7 @@
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/lto/20100426_0.c: New testcase.
+
 2010-04-26  Jie Zhang  <jie@codesourcery.com>
 
 	PR tree-optimization/43833
