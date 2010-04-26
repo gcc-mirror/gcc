@@ -160,6 +160,9 @@ enum c_typespec_kind {
 struct c_typespec {
   /* What kind of type specifier this is.  */
   enum c_typespec_kind kind;
+  /* Whether the expression has operands suitable for use in constant
+     expressions.  */
+  bool expr_const_operands;
   /* The specifier itself.  */
   tree spec;
   /* An expression to be evaluated before the type specifier, in the
@@ -171,9 +174,6 @@ struct c_typespec {
      expression itself (as opposed to the array sizes) forms no part
      of the type and so needs to be recorded separately.  */
   tree expr;
-  /* Whether the expression has operands suitable for use in constant
-     expressions.  */
-  bool expr_const_operands;
 };
 
 /* A storage class specifier.  */
@@ -220,11 +220,11 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
-  /* Any type specifier keyword used such as "int", not reflecting
-     modifiers such as "short", or cts_none if none.  */
-  enum c_typespec_keyword typespec_word;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
+  /* Any type specifier keyword used such as "int", not reflecting
+     modifiers such as "short", or cts_none if none.  */
+  ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   BOOL_BITFIELD expr_const_operands : 1;
@@ -252,7 +252,7 @@ struct c_declspecs {
   BOOL_BITFIELD deprecated_p : 1;
   /* Whether the type defaulted to "int" because there were no type
      specifiers.  */
-  BOOL_BITFIELD default_int_p;
+  BOOL_BITFIELD default_int_p : 1;
   /* Whether "long" was specified.  */
   BOOL_BITFIELD long_p : 1;
   /* Whether "long" was specified more than once.  */
@@ -319,9 +319,9 @@ struct c_arg_info {
 struct c_declarator {
   /* The kind of declarator.  */
   enum c_declarator_kind kind;
+  location_t id_loc; /* Currently only set for cdk_id, cdk_array. */
   /* Except for cdk_id, the contained declarator.  For cdk_id, NULL.  */
   struct c_declarator *declarator;
-  location_t id_loc; /* Currently only set for cdk_id, cdk_array. */
   union {
     /* For identifiers, an IDENTIFIER_NODE or NULL_TREE if an abstract
        declarator.  */

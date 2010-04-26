@@ -156,10 +156,10 @@ typedef struct GTY (()) c_token {
   /* If this token is a CPP_PRAGMA, this indicates the pragma that
      was seen.  Otherwise it is PRAGMA_NONE.  */
   ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
-  /* The value associated with this token, if any.  */
-  tree value;
   /* The location at which this token was found.  */
   location_t location;
+  /* The value associated with this token, if any.  */
+  tree value;
 } c_token;
 
 /* A parser structure recording information about the state and
