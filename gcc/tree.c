@@ -4258,7 +4258,12 @@ free_lang_data_in_type (tree type)
       TYPE_LANG_SLOT_1 (type) = NULL_TREE;
     }
 
-  TYPE_CONTEXT (type) = NULL_TREE;
+  if (debug_info_level < DINFO_LEVEL_TERSE
+      || (TYPE_CONTEXT (type)
+	  && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_DECL
+	  && TREE_CODE (TYPE_CONTEXT (type)) != NAMESPACE_DECL))
+    TYPE_CONTEXT (type) = NULL_TREE;
+
   if (debug_info_level < DINFO_LEVEL_TERSE)
     TYPE_STUB_DECL (type) = NULL_TREE;
 }

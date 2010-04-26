@@ -1,3 +1,8 @@
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42425
+	* g++.dg/lto/20100423-2_0.C: New testcase.
+
 2010-04-26  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/bb-slp-23.c: New test.

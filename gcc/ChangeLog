@@ -1,3 +1,10 @@
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42425
+	* tree.c (free_lang_data_in_type): Do not free TYPE_CONTEXT
+	if emitting debug information and it is either a function
+	or a namespace decl.
+
 2010-04-26  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Add new field to 
