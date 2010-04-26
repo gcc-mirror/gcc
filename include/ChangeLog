@@ -3,6 +3,7 @@
 	* filenames.h (IS_DIR_SEPARATOR_1): Rename from IS_DIR_SEPARATOR,
 	always define it independently of host, add `dos_based' parameter,
 	and handle it.
+	(PATH_SEPARATOR): Define.
 	(HAS_DRIVE_SPEC_1): Rename from HAS_DRIVE_SPEC, always define it
 	independently of host, add `dos_based' parameter, and handle it.
 	(IS_ABSOLUTE_PATH_1): Rename from IS_ABSOLUTE_PATH, always define
@@ -98,7 +99,7 @@
 
 	* plugin-api.h: Fix compile.
 
-2008-10-03  Rafael Espindola  <espindola@google.com>
+2009-10-03  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h: New.
 	* lto-symtab.h: New.
@@ -186,7 +187,7 @@
 
 	* ansidecl.h: Add extern "C" when compiling with C++.  Treat C++
 	the way we treat an ISO C compiler.  Don't define inline as a
-	macdro when compiling with C++.
+	macro when compiling with C++.
 	* dyn-string.h: Add header guard DYN_STRING_H.  Add extern "C"
 	when compiling with C++.
 	* fibheap.h: Add extern "C" when compiling with C++.
