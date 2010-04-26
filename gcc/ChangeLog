@@ -1,5 +1,11 @@
 2010-04-26  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/43080
+	* gimple.c (gimple_decl_printable_name): Deal gracefully
+	with a NULL DECL_NAME.
+
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/42425
 	* tree.c (free_lang_data_in_type): Do not free TYPE_CONTEXT
 	if emitting debug information and it is either a function
