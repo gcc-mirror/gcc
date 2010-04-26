@@ -1,3 +1,12 @@
+2010-04-26  Jie Zhang  <jie@codesourcery.com>
+
+	PR tree-optimization/43833
+	* tree-vrp.c (range_int_cst_p): New.
+	(range_int_cst_singleton_p): New.
+	(extract_range_from_binary_expr): Optimize BIT_AND_EXPR case
+	when both operands are constants.  Use range_int_cst_p in
+	BIT_IOR_EXPR case.
+
 2010-04-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/43835

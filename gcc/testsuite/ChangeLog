@@ -1,3 +1,8 @@
+2010-04-26  Jie Zhang  <jie@codesourcery.com>
+
+	PR tree-optimization/43833
+	gcc.dg/Warray-bounds-8.c: New test case.
+
 2010-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack15.ad[sb]: New test.
