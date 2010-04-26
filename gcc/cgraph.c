@@ -453,6 +453,7 @@ cgraph_create_node (void)
     cgraph_nodes->previous = node;
   node->previous = NULL;
   node->global.estimated_growth = INT_MIN;
+  node->frequency = NODE_FREQUENCY_NORMAL;
   cgraph_nodes = node;
   cgraph_n_nodes++;
   return node;
@@ -1899,6 +1900,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
   new_node->global = n->global;
   new_node->rtl = n->rtl;
   new_node->count = count;
+  new_node->frequency = n->frequency;
   new_node->clone = n->clone;
   new_node->clone.tree_map = 0;
   if (n->count)

@@ -2738,9 +2738,10 @@ computation_cost (tree expr, bool speed)
   unsigned cost;
   /* Avoid using hard regs in ways which may be unsupported.  */
   int regno = LAST_VIRTUAL_REGISTER + 1;
-  enum function_frequency real_frequency = cfun->function_frequency;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+  enum node_frequency real_frequency = node->frequency;
 
-  cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
+  node->frequency = NODE_FREQUENCY_NORMAL;
   crtl->maybe_hot_insn_p = speed;
   walk_tree (&expr, prepare_decl_rtl, &regno, NULL);
   start_sequence ();
@@ -2748,7 +2749,7 @@ computation_cost (tree expr, bool speed)
   seq = get_insns ();
   end_sequence ();
   default_rtl_profile ();
-  cfun->function_frequency = real_frequency;
+  node->frequency = real_frequency;
 
   cost = seq_cost (seq, speed);
   if (MEM_P (rslt))
