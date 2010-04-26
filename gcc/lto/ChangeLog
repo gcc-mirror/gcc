@@ -1,3 +1,7 @@
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_type): Deal with non-type TYPE_CONTEXT.
+
 2010-04-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* lto.h (lto_elf_file_open): Rename prototype from this ...
