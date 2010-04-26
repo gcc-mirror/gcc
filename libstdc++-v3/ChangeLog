@@ -1,3 +1,8 @@
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update to match n3092.
+	* doc/html/*: Regenerate.
+
 2010-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Update Threads status.
