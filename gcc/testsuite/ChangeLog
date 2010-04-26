@@ -1,3 +1,9 @@
+2010-04-21  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 43715
+	* testsuite/lib/plugin-support.exp: Use "-undefined
+	dynamic_lookup" on darwin.
+
 2010-04-26  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/lto/20100426_0.c: New testcase.
