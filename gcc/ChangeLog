@@ -1,5 +1,13 @@
 2010-04-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* varasm.c (IN_NAMED_SECTION): Remove guard.
+	* config/arm/unknown-elf.h (IN_NAMED_SECTION): Rename to...
+	(IN_NAMED_SECTION_P): ...this.
+	(ASM_OUTPUT_ALIGNED_BSS): Adjust for above renaming.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Likewise.
+
+2010-04-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gimplify.c (gimplify_cond_expr): Use THEN_ and ELSE_ local variables.
 	Use VOID_TYPE_P for all void type tests.  Adjust TYPE variable instead
 	of shadowing it.  Fix comments.
