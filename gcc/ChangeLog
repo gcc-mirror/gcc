@@ -1,3 +1,9 @@
+2010-04-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_cond_expr): Use THEN_ and ELSE_ local variables.
+	Use VOID_TYPE_P for all void type tests.  Adjust TYPE variable instead
+	of shadowing it.  Fix comments.
+
 2010-04-26  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_node): Set node frequency to normal.
@@ -8,15 +14,19 @@
 	* lto-cgraph.c (lto_output_node): Output node frequency.
 	(input_overwrite_node): Input node frequency.
 	* tre-ssa-loop-ivopts (computation_cost): Update.
-	* lto-streamer-out.c (output_function): Do not output function frequency.
-	* predict.c (maybe_hot_frequency_p): Update and handle functions executed once.
+	* lto-streamer-out.c (output_function): Do not output function
+	frequency.
+	* predict.c (maybe_hot_frequency_p): Update and handle functions
+	executed once.
 	(cgraph_maybe_hot_edge_p): Likewise; use cgraph frequency instead of
 	attribute lookup.
 	(probably_never_executed_bb_p, optimize_function_for_size_p): Update.
-	(compute_function_frequency): Set noreturn functions to be executed once.
+	(compute_function_frequency): Set noreturn functions to be executed
+	once.
 	(choose_function_section): Update.
 	* lto-streamer-in.c (input_function): Do not input function frequency.
-	* function.c (allocate_struct_function): Do not initialize function frequency.
+	* function.c (allocate_struct_function): Do not initialize function
+	frequency.
 	* function.h (function_frequency): Remove.
 	(struct function): Remove function frequency.
 	* ipa-profile.c (CGRAPH_NODE_FREQUENCY): Remove.
