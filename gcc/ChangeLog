@@ -1,3 +1,8 @@
+2010-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43893
+	* c-omp.c (c_finish_omp_for): Handle also EQ_EXPR.
+
 2010-04-26  Jie Zhang  <jie@codesourcery.com>
 
 	PR tree-optimization/43833
