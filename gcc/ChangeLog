@@ -1,3 +1,10 @@
+2010-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_propagate_frequency): New function.
+	* cgraph.h (cgraph_propagate_frequency): Declare.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Call
+	cgraph_propagate_frequency.
+
 2010-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.c (_Unwind_DebugHook): Add used and noclone attributes.
