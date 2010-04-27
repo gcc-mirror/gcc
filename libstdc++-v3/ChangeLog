@@ -1,3 +1,8 @@
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update quick_exit status.
+	* doc/html/*: Regenerate.
+
 2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
 
 	* testsuite/util/testsuite_error.h: Add empty default constructor
