@@ -1,3 +1,9 @@
+2010-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (def_cfa_1): After DW_CFA_def_cfa_expression
+	force using DW_CFA_def_cfa instead of DW_CFA_def_cfa_register
+	or DW_CFA_def_cfa_offset{,_sf}.
+
 2010-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h: Fix truncated long macros.
