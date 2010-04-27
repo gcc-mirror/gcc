@@ -1,3 +1,9 @@
+2010-04-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Jan Hubicka <hubicka@ucw.cz>
+
+	* gcc.dg/pure-2.c: New testcase.
+	* gcc.dg/const-1.c: New testcase.
+
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-ice1.C: New.
