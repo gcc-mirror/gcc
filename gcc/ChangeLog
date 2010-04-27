@@ -1,3 +1,27 @@
+2010-04-27  Kai Tietz  <kai.tietz@onevision.com>
+
+	Back-merged from trnnk.
+	* collect2.c (TARGET_64BIT): Redefine to target's default.
+	* tlink.c: Likewise.
+	* config/i386/cygming.h (USER_LABEL_PREFIX): Define
+	dependent to TARGET_64BIT and USE_MINGW64_LEADING_UNDERSCORES.
+	* config/i386/i386.h (CRT_CALL_STATIC_FUNCTION): Use
+	for underscoring __USER_LABEL_PREFIX__.
+	* config/i386/mingw-w64.h (SUB_LINK_ENTRY): New macro.
+	(SUB_LINK_ENTRY32): New.
+	(SUB_LINK_ENTRY64): New.
+	(LINK_SPEC): Replace entry point spec by
+	SUB_LINK_ENTRY.
+	* config/i386/mingw32 (SUB_LINK_ENTRY32): New.
+	(SUB_LINK_ENTRY64): New.
+	(SUB_LINK_ENTRY): New.
+	(LINK_SPEC): Use SUB_LINK_ENTRY instead of hard-coded entry-point.
+	(DWARF2_UNWIND_INFO): Error out for use of dw2 unwind when
+	x64 target is choosen.
+	* config.in (USE_MINGW64_LEADING_UNDERSCORES): New.
+	* configure: Regenerated.
+	* configure.ac (leading-mingw64-underscores): Option added.
+
 2010-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (def_cfa_1): After DW_CFA_def_cfa_expression

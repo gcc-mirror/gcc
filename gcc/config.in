@@ -1661,6 +1661,12 @@
 #endif
 
 
+/* Define if we should use leading underscore on 64 bit mingw targets */
+#ifndef USED_FOR_TARGET
+#undef USE_MINGW64_LEADING_UNDERSCORES
+#endif
+
+
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # undef _ALL_SOURCE
