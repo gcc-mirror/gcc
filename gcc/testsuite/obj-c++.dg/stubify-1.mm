@@ -1,8 +1,10 @@
 /* All calls must be properly stubified.  Complain about any "call
    _objc_msgSend<end-of-line>" without the $stub suffix.  */
 
-/* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-options "-Os -mdynamic-no-pic -fno-exceptions" } */
+/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-Os -mdynamic-no-pic -fno-exceptions -mmacosx-version-min=10.4" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;

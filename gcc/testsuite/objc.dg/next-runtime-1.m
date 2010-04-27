@@ -15,4 +15,5 @@
 - (void)boo { }
 @end
 
-/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.long\t6\n" } } */
+/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.long\t6\n" { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.quad\t6\n" { target { *-*-darwin* && {  lp64 } } } } } */

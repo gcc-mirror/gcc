@@ -1,9 +1,10 @@
-/* All calls must be properly stubified.  */
+/* All calls must be properly stubified, m32 only.  */
 /* Testcase extracted from TextEdit:Document.m.  */
 
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-do compile { target powerpc*-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
-/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump" } */
+/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;

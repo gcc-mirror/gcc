@@ -4,6 +4,7 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-require-effective-target ilp32 } */
 
 #include "../objc-obj-c++-shared/Object1.h"
 
