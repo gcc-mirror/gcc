@@ -4947,6 +4947,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
         }
       return expr;
     case ck_ambig:
+      if (!(complain & tf_error))
+	return error_mark_node;
       /* Call build_user_type_conversion again for the error.  */
       return build_user_type_conversion
 	(totype, convs->u.expr, LOOKUP_NORMAL);

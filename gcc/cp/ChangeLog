@@ -1,6 +1,10 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41468
+	* call.c (convert_like_real) [ck_ambig]: Just return error_mark_node
+	if we don't want errors.
+
+	PR c++/41468
 	* class.c (convert_to_base): Add complain parameter.  Pass
 	ba_quiet to lookup_base if we don't want errors.
 	(build_vfield_ref): Pass complain to convert_to_base.
