@@ -285,6 +285,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       + inline_summary (e->callee)->estimated_self_stack_size;
   if (e->callee->global.inlined_to->global.estimated_stack_size < peak)
     e->callee->global.inlined_to->global.estimated_stack_size = peak;
+  cgraph_propagate_frequency (e->callee);
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = e->next_callee)

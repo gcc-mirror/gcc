@@ -2307,4 +2307,67 @@ cgraph_set_looping_const_or_pure_flag (struct cgraph_node *node,
     DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping_const_or_pure;
 }
 
+/* See if the frequency of NODE can be updated based on frequencies of its
+   callers.  */
+bool
+cgraph_propagate_frequency (struct cgraph_node *node)
+{
+  bool maybe_unlikely_executed = true, maybe_executed_once = true;
+  struct cgraph_edge *edge;
+  if (node->needed || node->local.externally_visible)
+    return false;
+  gcc_assert (node->analyzed);
+  if (node->frequency == NODE_FREQUENCY_HOT)
+    return false;
+  if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    return false;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
+  for (edge = node->callers;
+       edge && (maybe_unlikely_executed || maybe_executed_once);
+       edge = edge->next_caller)
+    {
+      if (!edge->frequency)
+	continue;
+      switch (edge->caller->frequency)
+        {
+	case NODE_FREQUENCY_UNLIKELY_EXECUTED:
+	  break;
+	case NODE_FREQUENCY_EXECUTED_ONCE:
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Called by %s that is executed once\n", cgraph_node_name (node));
+	  maybe_unlikely_executed = false;
+	  if (edge->loop_nest)
+	    {
+	      maybe_executed_once = false;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "  Called in loop\n");
+	    }
+	  break;
+	case NODE_FREQUENCY_HOT:
+	case NODE_FREQUENCY_NORMAL:
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Called by %s that is normal or hot\n", cgraph_node_name (node));
+	  maybe_unlikely_executed = false;
+	  maybe_executed_once = false;
+	  break;
+	}
+    }
+   if (maybe_unlikely_executed)
+     {
+       node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+       if (dump_file)
+         fprintf (dump_file, "Node %s promoted to unlikely executed.\n", cgraph_node_name (node));
+       return true;
+     }
+   if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
+     {
+       node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+       if (dump_file)
+         fprintf (dump_file, "Node %s promoted to executed once.\n", cgraph_node_name (node));
+       return true;
+     }
+   return false;
+}
+
 #include "gt-cgraph.h"
