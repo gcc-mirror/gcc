@@ -57,9 +57,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  extern "C" void abort(void) throw () _GLIBC_NORETURN;
+  extern "C" void abort(void) throw () _GLIBCXX_NORETURN;
   extern "C" int atexit(void (*)()) throw ();
-  extern "C" void exit(int) throw () _GLIBC_NORETURN;
+  extern "C" void exit(int) throw () _GLIBCXX_NORETURN;
 
 _GLIBCXX_END_NAMESPACE
 
