@@ -212,23 +212,17 @@ common fields are placed in @code{gimple_statement_with_ops_base} which
 is then inherited from the other two tuples.
 
 
-@multitable {@code{addresses_taken}}	{56 + 8 * @code{num_ops} bytes}
+@multitable {@code{def_ops}}	{48 + 8 * @code{num_ops} bytes}
 @item	@code{gsbase}		@tab 256	
-@item	@code{addresses_taken}	@tab 64	
 @item	@code{def_ops}		@tab 64	
 @item	@code{use_ops}		@tab 64	
 @item	@code{op}		@tab @code{num_ops} * 64	
-@item	Total size		@tab 56 + 8 * @code{num_ops} bytes
+@item	Total size		@tab 48 + 8 * @code{num_ops} bytes
 @end multitable
 
 @itemize @bullet
 @item @code{gsbase}
 Inherited from @code{struct gimple_statement_base}.
-
-@item @code{addresses_taken}
-Bitmap holding the UIDs of all the @code{VAR_DECL}s whose addresses are
-taken by this statement. For example, a statement of the form
-@code{p = &b} will have the UID for symbol @code{b} in this set.
 
 @item @code{def_ops}
 Array of pointers into the operand array indicating all the slots that
@@ -254,18 +248,17 @@ vector (@code{gimple_statement_with_memory_ops_base} and
 @code{gimple_statement_with_memory_ops}).
 
 
-@multitable {@code{addresses_taken}}	{88 + 8 * @code{num_ops} bytes}
-@item Field				@tab Size (bits)
-@item @code{gsbase}			@tab 256
-@item @code{addresses_taken}		@tab 64
-@item @code{def_ops}			@tab 64
-@item @code{use_ops}			@tab 64
-@item @code{vdef_ops}			@tab 64
-@item @code{vuse_ops}			@tab 64
-@item @code{stores}			@tab 64	
-@item @code{loads}			@tab 64	
-@item @code{op}				@tab @code{num_ops} * 64	
-@item Total size			@tab 88 + 8 * @code{num_ops} bytes
+@multitable {@code{vdef_ops}}	{80 + 8 * @code{num_ops} bytes}
+@item Field			@tab Size (bits)
+@item @code{gsbase}		@tab 256
+@item @code{def_ops}		@tab 64
+@item @code{use_ops}		@tab 64
+@item @code{vdef_ops}		@tab 64
+@item @code{vuse_ops}		@tab 64
+@item @code{stores}		@tab 64	
+@item @code{loads}		@tab 64	
+@item @code{op}			@tab @code{num_ops} * 64	
+@item Total size		@tab 80 + 8 * @code{num_ops} bytes
 @end multitable
 
 @itemize @bullet

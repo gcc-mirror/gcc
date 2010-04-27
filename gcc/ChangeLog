@@ -1,3 +1,9 @@
+2010-04-27  Jie Zhang  <jie@codesourcery.com>
+
+	* doc/gimple.texi (gimple_statement_with_ops): Remove
+	addresses_taken field.
+	(gimple_statement_with_memory_ops): Likewise.
+
 2010-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (eni_inlining_weights): Remove.
