@@ -1,5 +1,9 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43875
+	* semantics.c (lambda_return_type): Complain about
+	braced-init-list.
+
 	* parser.c (cp_parser_lambda_expression): Complain about lambda in
 	unevaluated context.
 	* pt.c (iterative_hash_template_arg): Don't crash on lambda.

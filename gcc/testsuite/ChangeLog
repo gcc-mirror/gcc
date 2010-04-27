@@ -1,5 +1,8 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43875
+	* g++.dg/cpp0x/lambda/lambda-deduce2.C: New.
+
 	* g++.dg/cpp0x/lambda/lambda-uneval.C: New.
 
 2010-04-26  H.J. Lu  <hongjiu.lu@intel.com>

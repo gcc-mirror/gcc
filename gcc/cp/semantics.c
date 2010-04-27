@@ -5516,6 +5516,11 @@ tree
 lambda_return_type (tree expr)
 {
   tree type;
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+    {
+      warning (0, "cannot deduce lambda return type from a braced-init-list");
+      return void_type_node;
+    }
   if (type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
