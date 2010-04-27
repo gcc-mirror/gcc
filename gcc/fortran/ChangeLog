@@ -1,5 +1,11 @@
 2010-04-27  Tobias Burnus  <burnus@net-b.de>
 
+	* gfc-internals.texi: Update copyright year.
+	* gfortran.texi: Ditto.
+	* invoke.texi: Ditto.
+
+2010-04-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/18918
 	* resolve.c (resolve_allocate_expr): Allow array coarrays.
 	* trans-types.h (gfc_get_array_type_bounds): Update prototype.

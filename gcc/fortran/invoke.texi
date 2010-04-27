@@ -5,7 +5,7 @@
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009
+Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
