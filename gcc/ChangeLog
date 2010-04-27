@@ -1,5 +1,14 @@
 2010-04-27  Richard Guenther  <rguenther@suse.de>
 
+	PR c++/40561
+	Backport from mainline
+	2008-12-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38564
+	* fold-const.c (fold_comparison): Use the correct result type.
+
+2010-04-27  Richard Guenther  <rguenther@suse.de>
+
  	Backport from mainline:
  	2010-03-19  Michael Matz  <matz@suse.de>
  
