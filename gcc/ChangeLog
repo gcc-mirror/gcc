@@ -1,3 +1,7 @@
+2010-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h: Fix truncated long macros.
+
 2010-04-27  Kai Tietz  <kai.tietz@onevision.com>
 
 	* collect2.c (TARGET_64BIT): Redefine to target's default.
@@ -27,8 +31,8 @@
 	* opts.c (decode_options): Enable ipa-profile at -O1.
 	* timevar.def (TV_IPA_PROFILE): Define.
 	* common.opt (fipa-profile): Add.
-	* cgraph.c (cgraph_clone_node): Set local flag and clear vtable method flag
-	for clones.
+	* cgraph.c (cgraph_clone_node): Set local flag and clear vtable method
+	flag for clones.
 	(cgraph_propagate_frequency): Handle only local ones.
 	* tree-pass.h (pass_ipa_profile): Declare.
 	* ipa-profile.c (gate_profile): Use flag_ipa_profile.
