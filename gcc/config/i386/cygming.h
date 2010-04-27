@@ -39,6 +39,11 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEFAULT_ABI
 #define DEFAULT_ABI (TARGET_64BIT ? MS_ABI : SYSV_ABI)
 
+#if ! defined (USE_MINGW64_LEADING_UNDERSCORES)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX (TARGET_64BIT ? "" : "_")
+#endif
+
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)				\
   (TARGET_64BIT ? dbx64_register_map[n]			\
