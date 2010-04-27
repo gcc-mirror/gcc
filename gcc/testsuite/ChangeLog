@@ -1,3 +1,9 @@
+2010-04-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_7.f90: Modified and removed obsolete tests.
+	* gfortran.dg/coarray_12.f90: New.
+
 2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/32207

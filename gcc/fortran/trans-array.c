@@ -725,7 +725,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* Initialize the descriptor.  */
   type =
-    gfc_get_array_type_bounds (eltype, info->dimen, loop->from, loop->to, 1,
+    gfc_get_array_type_bounds (eltype, info->dimen, 0, loop->from, loop->to, 1,
 			       GFC_ARRAY_UNKNOWN, true);
   desc = gfc_create_var (type, "atmp");
   GFC_DECL_PACKED_ARRAY (desc) = 1;
@@ -3819,7 +3819,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 /*GCC ARRAYS*/
 
 static tree
-gfc_array_init_size (tree descriptor, int rank, tree * poffset,
+gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     gfc_expr ** lower, gfc_expr ** upper,
 		     stmtblock_t * pblock)
 {
@@ -3917,6 +3917,43 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
       stride = gfc_evaluate_now (stride, pblock);
     }
 
+  for (n = rank; n < rank + corank; n++)
+    {
+      ubound = upper[n];
+
+      /* Set lower bound.  */
+      gfc_init_se (&se, NULL);
+      if (lower == NULL || lower[n] == NULL)
+	{
+	  gcc_assert (n == rank + corank - 1);
+	  se.expr = gfc_index_one_node;
+	}
+      else
+	{
+          if (ubound || n == rank + corank - 1)
+            {
+	      gfc_conv_expr_type (&se, lower[n], gfc_array_index_type);
+	      gfc_add_block_to_block (pblock, &se.pre);
+            }
+          else
+            {
+              se.expr = gfc_index_one_node;
+              ubound = lower[n];
+            }
+	}
+      gfc_conv_descriptor_lbound_set (pblock, descriptor, gfc_rank_cst[n],
+				      se.expr);
+
+      if (n < rank + corank - 1)
+	{
+	  gfc_init_se (&se, NULL);
+	  gcc_assert (ubound);
+	  gfc_conv_expr_type (&se, ubound, gfc_array_index_type);
+	  gfc_add_block_to_block (pblock, &se.pre);
+	  gfc_conv_descriptor_ubound_set (pblock, descriptor, gfc_rank_cst[n], se.expr);
+	}
+    }
+
   /* The stride is the number of elements in the array, so multiply by the
      size of an element to get the total size.  */
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
@@ -3965,7 +4002,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   gfc_expr **lower;
   gfc_expr **upper;
   gfc_ref *ref, *prev_ref = NULL;
-  bool allocatable_array;
+  bool allocatable_array, coarray;
 
   ref = expr->ref;
 
@@ -3981,29 +4018,40 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   if (ref == NULL || ref->type != REF_ARRAY)
     return false;
 
-  /* Return if this is a scalar coarray.  */
-  if (!prev_ref && !expr->symtree->n.sym->attr.dimension)
+  if (!prev_ref)
     {
-      gcc_assert (expr->symtree->n.sym->attr.codimension);
-      return false;
+      allocatable_array = expr->symtree->n.sym->attr.allocatable;
+      coarray = expr->symtree->n.sym->attr.codimension;
     }
-  else if (prev_ref && !prev_ref->u.c.component->attr.dimension)
+  else
     {
-      gcc_assert (prev_ref->u.c.component->attr.codimension);
-      return false;
+      allocatable_array = prev_ref->u.c.component->attr.allocatable;
+      coarray = prev_ref->u.c.component->attr.codimension;
     }
 
-  if (!prev_ref)
-    allocatable_array = expr->symtree->n.sym->attr.allocatable;
-  else
-    allocatable_array = prev_ref->u.c.component->attr.allocatable;
+  /* Return if this is a scalar coarray.  */
+  if ((!prev_ref && !expr->symtree->n.sym->attr.dimension)
+      || (prev_ref && !prev_ref->u.c.component->attr.dimension))
+    {
+      gcc_assert (coarray);
+      return false;
+    }
 
   /* Figure out the size of the array.  */
   switch (ref->u.ar.type)
     {
     case AR_ELEMENT:
-      lower = NULL;
-      upper = ref->u.ar.start;
+      if (!coarray)
+	{
+	  lower = NULL;
+	  upper = ref->u.ar.start;
+	  break;
+	}
+      /* Fall through.  */
+
+    case AR_SECTION:
+      lower = ref->u.ar.start;
+      upper = ref->u.ar.end;
       break;
 
     case AR_FULL:
@@ -4013,18 +4061,14 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
       upper = ref->u.ar.as->upper;
       break;
 
-    case AR_SECTION:
-      lower = ref->u.ar.start;
-      upper = ref->u.ar.end;
-      break;
-
     default:
       gcc_unreachable ();
       break;
     }
 
-  size = gfc_array_init_size (se->expr, ref->u.ar.as->rank, &offset,
-			      lower, upper, &se->pre);
+  size = gfc_array_init_size (se->expr, ref->u.ar.as->rank,
+			      ref->u.ar.as->corank, &offset, lower, upper,
+			      &se->pre);
 
   /* Allocate memory to store the data.  */
   pointer = gfc_conv_descriptor_data_get (se->expr);
@@ -5299,7 +5343,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	{
 	  /* Otherwise make a new one.  */
 	  parmtype = gfc_get_element_type (TREE_TYPE (desc));
-	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen,
+	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen, 0,
 						loop.from, loop.to, 0,
 						GFC_ARRAY_UNKNOWN, false);
 	  parm = gfc_create_var (parmtype, "parm");
