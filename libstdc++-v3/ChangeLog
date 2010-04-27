@@ -1,5 +1,10 @@
 2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/43865
+	* include/c_global/cstdlib (abort, exit): _GLIBCXX_NORETURN typo.
+
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/status_cxx200x.xml: Update quick_exit status.
 	* doc/html/*: Regenerate.
 
