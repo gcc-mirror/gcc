@@ -1,3 +1,8 @@
+2010-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41468
+	* g++.dg/template/sfinae17.C: New.
+
 2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
 
 	* g++.dg/init/pr42844.C: New.
