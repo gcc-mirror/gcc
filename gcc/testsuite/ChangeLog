@@ -1,3 +1,11 @@
+2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+
+	* g++.dg/init/pr42844.C: New.
+	* g++.dg/cpp0x/pr42844-2.C: New.
+	* g++.dg/cpp0x/defaulted2.C: Adjust.
+	* g++.dg/tree-ssa/pr27549.C: Likewise.
+	* g++.old-deja/g++.mike/dyncast8.C: Likewise.
+
 2010-04-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
