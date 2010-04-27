@@ -1,5 +1,9 @@
 2010-04-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (def_cfa_1): After DW_CFA_def_cfa_expression
+	force using DW_CFA_def_cfa instead of DW_CFA_def_cfa_register
+	or DW_CFA_def_cfa_offset{,_sf}.
+
 	* unwind-dw2.c (_Unwind_DebugHook): Add used and noclone attributes.
 
 2010-04-27  Hans-Peter Nilsson  <hp@bitrange.com>
