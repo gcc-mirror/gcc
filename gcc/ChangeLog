@@ -1,3 +1,9 @@
+2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	PR c/32207
+	* c-typeck.c (build_binary_op): Move forward check for comparison
+	pointer with null pointer constant and adjust the diagnostic message.
+
 2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776

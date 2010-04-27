@@ -1,3 +1,12 @@
+2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/32207
+	* gcc.dg/pr32207.c: New test.
+	* gcc.dg/misc-column.c: Adjust expected warning.
+	* gcc.dg/Walways-true-1.c: Likewise.
+	* gcc.dg/Walways-true-2.c: Likewise.
+	* gcc.dg/warn-addr-cmp.c: Likewise.
+
 2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776

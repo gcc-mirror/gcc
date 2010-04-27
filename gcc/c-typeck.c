@@ -9503,6 +9503,46 @@ build_binary_op (location_t location, enum tree_code code,
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == FIXED_POINT_TYPE || code1 == COMPLEX_TYPE))
 	short_compare = 1;
+      else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
+	{
+	  if (TREE_CODE (op0) == ADDR_EXPR
+	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
+	    {
+	      if (code == EQ_EXPR)
+		warning_at (location,
+			    OPT_Waddress,
+			    "the comparison will always evaluate as %<false%> "
+			    "for the address of %qD will never be NULL",
+			    TREE_OPERAND (op0, 0));
+	      else
+		warning_at (location,
+			    OPT_Waddress,
+			    "the comparison will always evaluate as %<true%> "
+			    "for the address of %qD will never be NULL",
+			    TREE_OPERAND (op0, 0));
+	    }
+	  result_type = type0;
+	}
+      else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
+	{
+	  if (TREE_CODE (op1) == ADDR_EXPR
+	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
+	    {
+	      if (code == EQ_EXPR)
+		warning_at (location,
+			    OPT_Waddress, 
+			    "the comparison will always evaluate as %<false%> "
+			    "for the address of %qD will never be NULL",
+			    TREE_OPERAND (op1, 0));
+	      else
+		warning_at (location,
+			    OPT_Waddress,
+			    "the comparison will always evaluate as %<true%> "
+			    "for the address of %qD will never be NULL",
+			    TREE_OPERAND (op1, 0));
+	    }
+	  result_type = type1;
+	}
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
 	  tree tt0 = TREE_TYPE (type0);
@@ -9516,10 +9556,6 @@ build_binary_op (location_t location, enum tree_code code,
 	     and both must be object or both incomplete.  */
 	  if (comp_target_types (location, type0, type1))
 	    result_type = common_pointer_type (type0, type1);
-	  else if (null_pointer_constant_p (orig_op0))
-	    result_type = type1;
-	  else if (null_pointer_constant_p (orig_op1))
-	    result_type = type0;
 	  else if (!addr_space_superset (as0, as1, &as_common))
 	    {
 	      error_at (location, "comparison of pointers to "
@@ -9550,24 +9586,6 @@ build_binary_op (location_t location, enum tree_code code,
 	      result_type = build_pointer_type
 			      (build_qualified_type (void_type_node, qual));
 	    }
-	}
-      else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
-	{
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
-	    warning_at (location,
-			OPT_Waddress, "the address of %qD will never be NULL",
-			TREE_OPERAND (op0, 0));
-	  result_type = type0;
-	}
-      else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
-	{
-	  if (TREE_CODE (op1) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
-	    warning_at (location,
-			OPT_Waddress, "the address of %qD will never be NULL",
-			TREE_OPERAND (op1, 0));
-	  result_type = type1;
 	}
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
