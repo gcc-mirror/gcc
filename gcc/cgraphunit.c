@@ -714,6 +714,32 @@ verify_cgraph_node (struct cgraph_node *node)
       error ("double linked list of clones corrupted");
       error_found = true;
     }
+  if (node->same_comdat_group)
+    {
+      struct cgraph_node *n = node->same_comdat_group;
+
+      if (!DECL_ONE_ONLY (node->decl))
+	{
+	  error ("non-DECL_ONE_ONLY node in a same_comdat_group list");
+	  error_found = true;
+	}
+      if (n == node)
+	{
+	  error ("node is alone in a comdat group");
+	  error_found = true;
+	}
+      do
+	{
+	  if (!n->same_comdat_group)
+	    {
+	      error ("same_comdat_group is not a circular list");
+	      error_found = true;
+	      break;
+	    }
+	  n = n->same_comdat_group;
+	}
+      while (n != node);
+    }
 
   if (node->analyzed && gimple_has_body_p (node->decl)
       && !TREE_ASM_WRITTEN (node->decl)
