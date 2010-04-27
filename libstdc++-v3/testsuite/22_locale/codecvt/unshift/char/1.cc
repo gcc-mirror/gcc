@@ -35,7 +35,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   const char* 		c_lit = "black pearl jasmine tea";
   const char* 	        from_next;
-  int 			size = 23;
+  int 			size = std::strlen(c_lit);
   char* 		c_arr = new char[size];
   char*                 c_ref = new char[size];
   char*			to_next;
@@ -68,10 +68,10 @@ void test01()
   VERIFY( to_next == c_arr );
 
   // unshift
-  strcpy(c_arr, c_lit);
+  memcpy(c_arr, c_lit, size);
   result r3 = cvt->unshift(state, c_arr, c_arr + size, to_next);
   VERIFY( r3 == codecvt_base::noconv );
-  VERIFY( !strcmp(c_arr, c_lit) ); 
+  VERIFY( !memcmp(c_arr, c_lit, size) );
   VERIFY( to_next == c_arr );
 
   delete [] c_arr;

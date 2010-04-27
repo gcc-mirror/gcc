@@ -1,3 +1,9 @@
+2010-04-27  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/22_locale/codecvt/unshift/char/1.c (test01): Clarify size
+	definition.  Use memcpy and memcmp to avoid access beyond allocated
+	memory.
+
 2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Update to match n3092.
