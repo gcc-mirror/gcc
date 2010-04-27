@@ -5,5 +5,5 @@
 extern void z();
 
 void f() { if ( z ) z(); } /* { dg-warning "always evaluate as" } */
-void g() { if ( z != 0 ) z(); } /* { dg-warning "the comparison will always evaluate to 'true'" } */
-void h() { if ( z != (void*)0 ) z(); } /* { dg-warning "the comparison will always evaluate to 'true'" } */
+void g() { if ( z != 0 ) z(); } /* { dg-warning "the comparison will always evaluate as 'true'" } */
+void h() { if ( z != (void*)0 ) z(); } /* { dg-warning "the comparison will always evaluate as 'true'" } */
