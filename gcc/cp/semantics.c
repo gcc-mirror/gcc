@@ -1662,15 +1662,11 @@ finish_qualified_id_expr (tree qualifying_class,
     }
   else if (BASELINK_P (expr) && !processing_template_decl)
     {
-      tree fns;
       tree ob;
 
       /* See if any of the functions are non-static members.  */
-      fns = BASELINK_FUNCTIONS (expr);
-      if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-	fns = TREE_OPERAND (fns, 0);
       /* If so, the expression may be relative to 'this'.  */
-      if (!shared_member_p (fns)
+      if (!shared_member_p (expr)
 	  && (ob = maybe_dummy_object (qualifying_class, NULL),
 	      !is_dummy_object (ob)))
 	expr = (build_class_member_access_expr
@@ -3124,10 +3120,7 @@ finish_id_expression (tree id_expression,
 	{
 	  tree first_fn;
 
-	  first_fn = decl;
-	  if (TREE_CODE (first_fn) == TEMPLATE_ID_EXPR)
-	    first_fn = TREE_OPERAND (first_fn, 0);
-	  first_fn = get_first_fn (first_fn);
+	  first_fn = get_first_fn (decl);
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 

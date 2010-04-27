@@ -1,4 +1,10 @@
-2010-04-27  Jason Merrill  <jason@redhat.com>
+2010-04-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (get_fns): Split out from get_first_fn.
+	* cp-tree.h: Declare it.
+	* search.c (shared_member_p): Use it.
+	* semantics.c (finish_qualified_id_expr): Simplify.
+	(finish_id_expression): Simplify.
 
 	* semantics.c (finish_non_static_data_member): Call maybe_dummy_object
 	whenever object is NULL_TREE.  Don't do 'this' capture here.

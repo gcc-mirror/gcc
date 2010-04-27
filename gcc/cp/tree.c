@@ -1352,7 +1352,7 @@ really_overloaded_fn (tree x)
 }
 
 tree
-get_first_fn (tree from)
+get_fns (tree from)
 {
   gcc_assert (is_overloaded_fn (from));
   /* A baselink is also considered an overloaded function.  */
@@ -1363,7 +1363,13 @@ get_first_fn (tree from)
     from = BASELINK_FUNCTIONS (from);
   if (TREE_CODE (from) == TEMPLATE_ID_EXPR)
     from = TREE_OPERAND (from, 0);
-  return OVL_CURRENT (from);
+  return from;
+}
+
+tree
+get_first_fn (tree from)
+{
+  return OVL_CURRENT (get_fns (from));
 }
 
 /* Return a new OVL node, concatenating it with the old one.  */

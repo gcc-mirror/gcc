@@ -973,6 +973,7 @@ shared_member_p (tree t)
     return 1;
   if (is_overloaded_fn (t))
     {
+      t = get_fns (t);
       for (; t; t = OVL_NEXT (t))
 	{
 	  tree fn = OVL_CURRENT (t);
