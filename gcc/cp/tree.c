@@ -934,7 +934,12 @@ cp_build_qualified_type_real (tree type,
 tree
 cv_unqualified (tree type)
 {
-  int quals = TYPE_QUALS (type);
+  int quals;
+
+  if (type == error_mark_node)
+    return type;
+
+  quals = TYPE_QUALS (type);
   quals &= ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
   return cp_build_qualified_type (type, quals);
 }

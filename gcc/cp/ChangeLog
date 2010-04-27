@@ -1,5 +1,8 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43790
+	* tree.c (cv_unqualified): Handle error_mark_node.
+
 	PR c++/41468
 	* call.c (convert_like_real) [ck_ambig]: Just return error_mark_node
 	if we don't want errors.
