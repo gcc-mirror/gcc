@@ -1,3 +1,9 @@
+2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* lib/lto.exp (lto_prune_vis_warns): New function.
+	(lto-link-and-maybe-run): Call it.
+
 2010-04-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/43904

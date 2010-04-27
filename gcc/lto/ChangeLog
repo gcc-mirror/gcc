@@ -1,3 +1,13 @@
+2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* Make-lang.in (LTO_OBJS): Use LTO_BINARY_READER instead of
+	hardcoding 'lto-elf.o'.
+	($(LTO_EXE)): Use LTO_USE_LIBELF instead of hardcoding '-lelf'.
+
+	* lto-coff.h: New file.
+	* lto-coff.c: Likewise.
+
 2010-04-26  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_fixup_type): Deal with non-type TYPE_CONTEXT.
