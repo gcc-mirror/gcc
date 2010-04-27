@@ -1,5 +1,11 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_non_static_data_member): Call maybe_dummy_object
+	whenever object is NULL_TREE.  Don't do 'this' capture here.
+	(finish_qualified_id_expr): Pass NULL_TREE.
+	(finish_id_expression): Likewise.
+	(lambda_expr_this_capture): Likewise.
+
 	* semantics.c (finish_qualified_id_expr): Use maybe_dummy_object
 	rather than checking current_class_ref directly.
 	(finish_call_expr): Likewise.

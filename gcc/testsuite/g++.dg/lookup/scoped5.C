@@ -9,11 +9,11 @@ class A {
 public:
   class B {
   public:
-    int a;			// { dg-error "object missing" }
+    int a;
   };
 };
 
 class C {
 public:
-  void f(void) { sizeof(A::B::a); } // { dg-error "this location" }
+  void f(void) { sizeof(A::B::a); }
 };

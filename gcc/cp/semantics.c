@@ -1424,17 +1424,18 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 {
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
-  if (!object && cp_unevaluated_operand != 0)
+  if (!object)
     {
-      /* DR 613: Can use non-static data members without an associated
-         object in sizeof/decltype/alignof.  */
       tree scope = qualifying_scope;
       if (scope == NULL_TREE)
 	scope = context_for_name_lookup (decl);
       object = maybe_dummy_object (scope, NULL);
     }
 
-  if (!object)
+  /* DR 613: Can use non-static data members without an associated
+     object in sizeof/decltype/alignof.  */
+  if (is_dummy_object (object) && cp_unevaluated_operand == 0
+      && (!processing_template_decl || !current_class_ref))
     {
       if (current_function_decl
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
@@ -1445,19 +1446,6 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
       return error_mark_node;
     }
-
-  /* If decl is a non-capture field and object has a lambda type,
-     then we have a reference to a member of 'this' from a
-     lambda inside a non-static member function, and we must get to decl
-     through the 'this' capture.  If decl is not a member of that object,
-     either, then its access will still fail later.  */
-  if (LAMBDA_TYPE_P (TREE_TYPE (object))
-      && !LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
-    object = cp_build_indirect_ref (lambda_expr_this_capture
-				    (CLASSTYPE_LAMBDA_EXPR
-				     (TREE_TYPE (object))),
-                                    RO_NULL,
-                                    /*complain=*/tf_warning_or_error);
 
   if (current_class_ptr)
     TREE_USED (current_class_ptr) = 1;
@@ -1494,21 +1482,6 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
   else
     {
       tree access_type = TREE_TYPE (object);
-      tree lookup_context = context_for_name_lookup (decl);
-
-      while (!DERIVED_FROM_P (lookup_context, access_type))
-	{
-	  access_type = TYPE_CONTEXT (access_type);
-	  while (access_type && DECL_P (access_type))
-	    access_type = DECL_CONTEXT (access_type);
-
-	  if (!access_type)
-	    {
-	      error ("object missing in reference to %q+D", decl);
-	      error ("from this location");
-	      return error_mark_node;
-	    }
-	}
 
       perform_or_defer_access_check (TYPE_BINFO (access_type), decl,
 				     decl);
@@ -1683,7 +1656,7 @@ finish_qualified_id_expr (tree qualifying_class,
   else if (TREE_CODE (expr) == FIELD_DECL)
     {
       push_deferring_access_checks (dk_no_check);
-      expr = finish_non_static_data_member (expr, current_class_ref,
+      expr = finish_non_static_data_member (expr, NULL_TREE,
 					    qualifying_class);
       pop_deferring_access_checks ();
     }
@@ -3062,7 +3035,7 @@ finish_id_expression (tree id_expression,
 		 already.  Turn off checking to avoid duplicate errors.  */
 	      push_deferring_access_checks (dk_no_check);
 	      decl = finish_non_static_data_member
-		       (decl, current_class_ref,
+		       (decl, NULL_TREE,
 			/*qualifying_scope=*/NULL_TREE);
 	      pop_deferring_access_checks ();
 	      return decl;
@@ -3143,7 +3116,7 @@ finish_id_expression (tree id_expression,
 	     Access checking has been performed during name lookup
 	     already.  Turn off checking to avoid duplicate errors.  */
 	  push_deferring_access_checks (dk_no_check);
-	  decl = finish_non_static_data_member (decl, current_class_ref,
+	  decl = finish_non_static_data_member (decl, NULL_TREE,
 						/*qualifying_scope=*/NULL_TREE);
 	  pop_deferring_access_checks ();
 	}
@@ -5844,7 +5817,7 @@ lambda_expr_this_capture (tree lambda)
       gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref)) == TREE_TYPE (lambda));
 
       result = finish_non_static_data_member (this_capture,
-                                              current_class_ref,
+                                              NULL_TREE,
                                               /*qualifying_scope=*/NULL_TREE);
 
       /* If 'this' is captured, each use of 'this' is transformed into an
