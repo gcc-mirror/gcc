@@ -1,3 +1,8 @@
+2010-04-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40657
+	* gcc.target/arm/thumb-stackframe.c: New test.
+
 2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
 	
 	* gcc.dg/pr32207.c: Fix typo in expected warning messages.

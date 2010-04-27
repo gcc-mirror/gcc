@@ -1,3 +1,10 @@
+2010-04-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40657
+	* config/arm/arm.c (thumb1_extra_regs_pushed): New function.
+	(thumb1_expand_prologue, thumb1_output_function_prologue): Call it
+	here to determine which regs to push and how much stack to reserve.
+
 2010-04-27  Jie Zhang  <jie@codesourcery.com>
 
 	* doc/gimple.texi (gimple_statement_with_ops): Remove
