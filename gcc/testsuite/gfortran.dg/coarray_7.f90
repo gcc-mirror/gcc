@@ -91,7 +91,6 @@ type(t), allocatable :: b(:)[:], C[:]
 allocate(b(1)) ! { dg-error "Coarray specification" }
 allocate(a[3]%a(5)) ! { dg-error "Coindexed allocatable" }
 allocate(c[*]) ! { dg-error "Sorry" }
-allocate(b(3)[5:*]) ! { dg-error "Sorry" }
 allocate(a%a(5)) ! OK
 end subroutine alloc
 
@@ -148,32 +147,14 @@ end subroutine test4
 
 subroutine allocateTest()
   implicit none
-  real, allocatable,dimension(:,:), codimension[:,:] :: a,b,c
+  real, allocatable, codimension[:,:] :: a,b,c
   integer :: n, q
   n = 1
   q = 1
-  allocate(a(n,n)[q,*]) ! { dg-error "Sorry" }
-  allocate(b(n,n)[q,*]) ! { dg-error "Sorry" }
-  allocate(c(n,n)[q,*]) ! { dg-error "Sorry" }
+  allocate(a[q,*]) ! { dg-error "Sorry" }
+  allocate(b[q,*]) ! { dg-error "Sorry" }
+  allocate(c[q,*]) ! { dg-error "Sorry" }
 end subroutine allocateTest
-
-
-subroutine testAlloc3
-implicit none
-integer, allocatable :: a(:,:,:)[:,:]
-integer, allocatable, dimension(:),codimension[:] :: b(:,:,:)[:,:]
-integer, allocatable, dimension(:,:),codimension[:,:,:] :: c
-integer, allocatable, dimension(:,:),codimension[:,:,:] :: d[:,:]
-integer, allocatable, dimension(:,:,:),codimension[:,:,:] :: e(:,:)
-integer, allocatable, dimension(:,:,:),codimension[:,:,:] :: f(:,:)[:,:]
-
-allocate(a(1,2,3)[4,*]) ! { dg-error "Sorry" }
-allocate(b(1,2,3)[4,*]) ! { dg-error "Sorry" }
-allocate(c(1,2)[3,4,*]) ! { dg-error "Sorry" }
-allocate(d(1,2)[3,*])   ! { dg-error "Sorry" }
-allocate(e(1,2)[3,4,*]) ! { dg-error "Sorry" }
-allocate(f(1,2)[3,*]) ! { dg-error "Sorry" }
-end subroutine testAlloc3
 
 
 subroutine testAlloc4()

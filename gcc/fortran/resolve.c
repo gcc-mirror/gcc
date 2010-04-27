@@ -6561,9 +6561,9 @@ check_symbols:
       goto failure;
     }
 
-  if (codimension)
+  if (codimension && ar->as->rank == 0)
     {
-      gfc_error ("Sorry, allocatable coarrays are no yet supported coarray "
+      gfc_error ("Sorry, allocatable scalar coarrays are not yet supported "
 		 "at %L", &e->where);
       goto failure;
     }

@@ -2822,7 +2822,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 
       /* Make a new descriptor.  */
       parmtype = gfc_get_element_type (TREE_TYPE (desc));
-      parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen,
+      parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen, 0,
                                             loop.from, loop.to, 1,
 					    GFC_ARRAY_UNKNOWN, true);
 

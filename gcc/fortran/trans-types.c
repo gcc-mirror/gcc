@@ -1222,8 +1222,8 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 
   if (as->type == AS_ASSUMED_SHAPE)
     akind = GFC_ARRAY_ASSUMED_SHAPE;
-  return gfc_get_array_type_bounds (type, as->rank, lbound, ubound, 0, akind,
-				    restricted);
+  return gfc_get_array_type_bounds (type, as->rank, as->corank, lbound,
+				    ubound, 0, akind, restricted);
 }
 
 /* Returns the struct descriptor_dimension type.  */
@@ -1538,20 +1538,21 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 /* Return or create the base type for an array descriptor.  */
 
 static tree
-gfc_get_array_descriptor_base (int dimen, bool restricted)
+gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 {
   tree fat_type, fieldlist, decl, arraytype;
-  char name[16 + GFC_RANK_DIGITS + 1];
+  char name[16 + 2*GFC_RANK_DIGITS + 1 + 1];
   int idx = 2 * (dimen - 1) + restricted;
 
-  gcc_assert (dimen >= 1 && dimen <= GFC_MAX_DIMENSIONS);
+  gcc_assert (dimen >= 1 && codimen + dimen <= GFC_MAX_DIMENSIONS);
   if (gfc_array_descriptor_base[idx])
     return gfc_array_descriptor_base[idx];
 
   /* Build the type node.  */
   fat_type = make_node (RECORD_TYPE);
 
-  sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT, dimen);
+  sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT "_"
+	   GFC_RANK_PRINTF_FORMAT, dimen, codimen);
   TYPE_NAME (fat_type) = get_identifier (name);
 
   /* Add the data member as the first element of the descriptor.  */
@@ -1583,7 +1584,7 @@ gfc_get_array_descriptor_base (int dimen, bool restricted)
     build_array_type (gfc_get_desc_dim_type (),
 		      build_range_type (gfc_array_index_type,
 					gfc_index_zero_node,
-					gfc_rank_cst[dimen - 1]));
+					gfc_rank_cst[codimen + dimen - 1]));
 
   decl = build_decl (input_location,
 		     FIELD_DECL, get_identifier ("dim"), arraytype);
@@ -1604,20 +1605,20 @@ gfc_get_array_descriptor_base (int dimen, bool restricted)
 /* Build an array (descriptor) type with given bounds.  */
 
 tree
-gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
+gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
 			   tree * ubound, int packed,
 			   enum gfc_array_kind akind, bool restricted)
 {
-  char name[8 + GFC_RANK_DIGITS + GFC_MAX_SYMBOL_LEN];
+  char name[8 + 2*GFC_RANK_DIGITS + 1 + GFC_MAX_SYMBOL_LEN];
   tree fat_type, base_type, arraytype, lower, upper, stride, tmp, rtype;
   const char *type_name;
   int n;
 
-  base_type = gfc_get_array_descriptor_base (dimen, restricted);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, restricted);
   fat_type = build_distinct_type_copy (base_type);
   /* Make sure that nontarget and target array type have the same canonical
      type (and same stub decl for debug info).  */
-  base_type = gfc_get_array_descriptor_base (dimen, false);
+  base_type = gfc_get_array_descriptor_base (dimen, codimen, false);
   TYPE_CANONICAL (fat_type) = base_type;
   TYPE_STUB_DECL (fat_type) = TYPE_STUB_DECL (base_type);
 
@@ -1628,7 +1629,8 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
     type_name = IDENTIFIER_POINTER (tmp);
   else
     type_name = "unknown";
-  sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_%.*s", dimen,
+  sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_"
+	   GFC_RANK_PRINTF_FORMAT "_%.*s", dimen, codimen,
 	   GFC_MAX_SYMBOL_LEN, type_name);
   TYPE_NAME (fat_type) = get_identifier (name);
 
