@@ -1,3 +1,11 @@
+2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	* gcc.dg/pr32207.c: Fix typo in expected warning messages.
+	* gcc.dg/misc-column.c: Likewise.
+	* gcc.dg/Walways-true-1.c: Likewise.
+	* gcc.dg/Walways-true-2.c: Likewise.
+	* gcc.dg/warn-addr-cmp.c: Likewise.
+
 2010-04-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
