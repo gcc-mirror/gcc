@@ -7081,6 +7081,10 @@ cp_parser_lambda_expression (cp_parser* parser)
   LAMBDA_EXPR_LOCATION (lambda_expr)
     = cp_lexer_peek_token (parser->lexer)->location;
 
+  if (cp_unevaluated_operand)
+    error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
+	      "lambda-expression in unevaluated context");
+
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
   push_deferring_access_checks (dk_no_deferred);

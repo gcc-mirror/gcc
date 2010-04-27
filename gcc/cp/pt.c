@@ -1563,6 +1563,12 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       val = iterative_hash_template_arg (TREE_TYPE (arg), val);
       return iterative_hash_template_arg (TYPE_DOMAIN (arg), val);
 
+    case LAMBDA_EXPR:
+      /* A lambda can't appear in a template arg, but don't crash on
+	 erroneous input.  */
+      gcc_assert (errorcount > 0);
+      return val;
+
     default:
       switch (tclass)
 	{

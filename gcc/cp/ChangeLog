@@ -1,3 +1,9 @@
+2010-04-27  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_lambda_expression): Complain about lambda in
+	unevaluated context.
+	* pt.c (iterative_hash_template_arg): Don't crash on lambda.
+
 2010-04-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43704

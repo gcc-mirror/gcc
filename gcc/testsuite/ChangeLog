@@ -1,3 +1,7 @@
+2010-04-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-uneval.C: New.
+
 2010-04-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
