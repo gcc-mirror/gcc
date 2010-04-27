@@ -5863,6 +5863,32 @@ lambda_expr_this_capture (tree lambda)
   return result;
 }
 
+/* Returns the method basetype of the innermost non-lambda function, or
+   NULL_TREE if none.  */
+
+tree
+nonlambda_method_basetype (void)
+{
+  tree fn, type;
+  if (!current_class_ref)
+    return NULL_TREE;
+
+  type = current_class_type;
+  if (!LAMBDA_TYPE_P (type))
+    return type;
+
+  /* Find the nearest enclosing non-lambda function.  */
+  fn = TYPE_NAME (type);
+  do
+    fn = decl_function_context (fn);
+  while (fn && LAMBDA_FUNCTION_P (fn));
+
+  if (!fn || !DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+    return NULL_TREE;
+
+  return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
+}
+
 /* If the closure TYPE has a static op(), also add a conversion to function
    pointer.  */
 

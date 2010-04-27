@@ -1,5 +1,11 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43856
+	* name-lookup.c (qualify_lookup): Disqualify lambda op().
+	* semantics.c (nonlambda_method_basetype): New.
+	* cp-tree.h: Declare them.
+	* tree.c (maybe_dummy_object): Handle implicit 'this' capture.
+
 	PR c++/43875
 	* semantics.c (lambda_return_type): Complain about
 	braced-init-list.

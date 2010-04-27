@@ -5204,6 +5204,7 @@ extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree);
+extern tree nonlambda_method_basetype		(void);
 extern void maybe_add_lambda_conv_op            (tree);
 
 /* in tree.c */
