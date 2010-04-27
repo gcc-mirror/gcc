@@ -1,5 +1,7 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (baselink_for_fns): Correct BASELINK_BINFO.
+
 	PR c++/43875
 	* semantics.c (lambda_return_type): Complain about
 	braced-init-list.
