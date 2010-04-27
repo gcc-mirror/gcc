@@ -858,6 +858,7 @@ decode_options (unsigned int argc, const char **argv)
   flag_if_conversion2 = opt1;
   flag_ipa_pure_const = opt1;
   flag_ipa_reference = opt1;
+  flag_ipa_profile = opt1;
   flag_merge_constants = opt1;
   flag_split_wide_types = opt1;
   flag_tree_ccp = opt1;

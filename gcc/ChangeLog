@@ -1,3 +1,20 @@
+2010-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (-fipa-profile): Document.
+	* opts.c (decode_options): Enable ipa-profile at -O1.
+	* timevar.def (TV_IPA_PROFILE): Define.
+	* common.opt (fipa-profile): Add.
+	* cgraph.c (cgraph_clone_node): Set local flag and clear vtable method flag
+	for clones.
+	(cgraph_propagate_frequency): Handle only local ones.
+	* tree-pass.h (pass_ipa_profile): Declare.
+	* ipa-profile.c (gate_profile): Use flag_ipa_profile.
+	(pass_ipa_profile): Use TV_IPA_PROFILE.
+	* ipa.c (ipa_profile): New function.
+	(gate_ipa_profile): Likewise.
+	(pass_ipa_profile): New global variable.
+	* passes.c (pass_ipa_profile): New.
+
 2010-04-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/arm/arm.c (arm_expand_builtin): Remove redundant declaration.

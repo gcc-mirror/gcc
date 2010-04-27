@@ -693,13 +693,17 @@ fipa-cp-clone
 Common Report Var(flag_ipa_cp_clone) Optimization
 Perform cloning to make Interprocedural constant propagation stronger
 
-fipa-pure-const
-Common Report Var(flag_ipa_pure_const) Init(0) Optimization
-Discover pure and const functions
+fipa-profile
+Common Report Var(flag_ipa_profile) Init(0) Optimization
+Perform interprocedural profile propagation
 
 fipa-pta
 Common Report Var(flag_ipa_pta) Init(0) Optimization
 Perform interprocedural points-to analysis
+
+fipa-pure-const
+Common Report Var(flag_ipa_pure_const) Init(0) Optimization
+Discover pure and const functions
 
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
