@@ -1,3 +1,11 @@
+2010-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/43904
+	* gcc.dg/tree-ssa/tailcall-6.c: New.
+
 2010-04-26  Jie Zhang  <jie@codesourcery.com>
 
 	PR tree-optimization/43833
