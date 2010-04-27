@@ -2293,11 +2293,11 @@ maybe_dummy_object (tree type, tree* binfop)
 {
   tree decl, context;
   tree binfo;
+  tree current = current_nonlambda_class_type ();
 
-  if (current_class_type
-      && (binfo = lookup_base (current_class_type, type,
-			       ba_unique | ba_quiet, NULL)))
-    context = current_class_type;
+  if (current
+      && (binfo = lookup_base (current, type, ba_any, NULL)))
+    context = current;
   else
     {
       /* Reference from a nested class member function.  */
@@ -2315,6 +2315,13 @@ maybe_dummy_object (tree type, tree* binfop)
       && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref)),
 		      current_class_type))
     decl = current_class_ref;
+  else if (current != current_class_type
+	   && context == nonlambda_method_basetype ())
+    /* In a lambda, need to go through 'this' capture.  */
+    decl = (cp_build_indirect_ref
+	    ((lambda_expr_this_capture
+	      (CLASSTYPE_LAMBDA_EXPR (current_class_type))),
+	     RO_NULL, tf_warning_or_error));
   else
     decl = build_dummy_object (context);
 
