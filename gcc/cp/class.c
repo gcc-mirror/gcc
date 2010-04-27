@@ -5971,6 +5971,34 @@ currently_open_derived_class (tree t)
   return NULL_TREE;
 }
 
+/* Returns the innermost class type which is not a lambda closure type.  */
+
+tree
+current_nonlambda_class_type (void)
+{
+  int i;
+
+  /* We start looking from 1 because entry 0 is from global scope,
+     and has no type.  */
+  for (i = current_class_depth; i > 0; --i)
+    {
+      tree c;
+      if (i == current_class_depth)
+	c = current_class_type;
+      else
+	{
+	  if (current_class_stack[i].hidden)
+	    break;
+	  c = current_class_stack[i].type;
+	}
+      if (!c)
+	continue;
+      if (!LAMBDA_TYPE_P (c))
+	return c;
+    }
+  return NULL_TREE;
+}
+
 /* When entering a class scope, all enclosing class scopes' names with
    static meaning (static variables, static functions, types and
    enumerators) have to be visible.  This recursive function calls

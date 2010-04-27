@@ -1,5 +1,12 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43856
+	* name-lookup.c (qualify_lookup): Disqualify lambda op().
+	* class.c (current_nonlambda_class_type): New fn.
+	* semantics.c (nonlambda_method_basetype): New.
+	* cp-tree.h: Declare them.
+	* tree.c (maybe_dummy_object): Handle implicit 'this' capture.
+
 	* semantics.c (baselink_for_fns): Correct BASELINK_BINFO.
 
 	PR c++/43875
