@@ -333,7 +333,7 @@
 ;; The %2-is-%1-case is there just to make sure things don't fail.  Could
 ;; presumably happen with optimizations off; no evidence.
 (define_insn "*divdi3_nonknuth"
-  [(set (match_operand:DI 0 "register_operand" "=&r,r")
+  [(set (match_operand:DI 0 "register_operand" "=&r,&r")
 	(div:DI (match_operand:DI 1 "register_operand" "r,r")
 		(match_operand:DI 2 "register_operand" "1,r")))
    (clobber (match_scratch:DI 3 "=1,1"))
@@ -359,7 +359,7 @@ DIVU %0,%1,%2\;NEGU %1,0,%0\;CSN %0,$255,%1")
 ;; The %2-is-%1-case is there just to make sure things don't fail.  Could
 ;; presumably happen with optimizations off; no evidence.
 (define_insn "*moddi3_nonknuth"
-  [(set (match_operand:DI 0 "register_operand" "=&r,r")
+  [(set (match_operand:DI 0 "register_operand" "=&r,&r")
 	(mod:DI (match_operand:DI 1 "register_operand" "r,r")
 		(match_operand:DI 2 "register_operand" "1,r")))
    (clobber (match_scratch:DI 3 "=1,1"))
