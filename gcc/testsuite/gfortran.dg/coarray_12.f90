@@ -46,9 +46,9 @@ end subroutine testAlloc5
 
 
 ! { dg-final { scan-tree-dump-times "a.dim.0..lbound = 1;"     1 "original" } }
-! { dg-final { scan-tree-dump-times "a.dim.0..ubound = .* nn;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "a.dim.0..ubound = .*nn;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "a.dim.1..lbound = 1;"     1 "original" } }
-! { dg-final { scan-tree-dump-times "a.dim.1..ubound = .* mm;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "a.dim.1..ubound = .*mm;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "a.dim.2..lbound = 1;"     1 "original" } }
 ! { dg-final { scan-tree-dump-times "a.dim.2..ubound"          0 "original" } }
 
