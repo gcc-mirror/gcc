@@ -1473,7 +1473,8 @@ uw_init_context_1 (struct _Unwind_Context *context,
   context->ra = __builtin_extract_return_addr (outer_ra);
 }
 
-static void _Unwind_DebugHook (void *, void *) __attribute__ ((__noinline__));
+static void _Unwind_DebugHook (void *, void *)
+  __attribute__ ((__noinline__, __used__, __noclone__));
 
 /* This function is called during unwinding.  It is intended as a hook
    for a debugger to intercept exceptions.  CFA is the CFA of the

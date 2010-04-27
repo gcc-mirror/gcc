@@ -1,3 +1,7 @@
+2010-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (_Unwind_DebugHook): Add used and noclone attributes.
+
 2010-04-27  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/43889
