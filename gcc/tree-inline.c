@@ -101,10 +101,6 @@ along with GCC; see the file COPYING3.  If not see
      calls?  */
 
 
-/* Weights that estimate_num_insns uses for heuristics in inlining.  */
-
-eni_weights eni_inlining_weights;
-
 /* Weights that estimate_num_insns uses to estimate the size of the
    produced code.  */
 
@@ -3268,21 +3264,92 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	if (decl && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	  switch (DECL_FUNCTION_CODE (decl))
 	    {
+	    /* Builtins that expand to constants.  */
 	    case BUILT_IN_CONSTANT_P:
-	      return 0;
 	    case BUILT_IN_EXPECT:
-	      return 0;
-
-	    /* Prefetch instruction is not expensive.  */
-	    case BUILT_IN_PREFETCH:
-	      cost = weights->target_builtin_call_cost;
-	      break;
-
+	    case BUILT_IN_OBJECT_SIZE:
+	    case BUILT_IN_UNREACHABLE:
+	    /* Simple register moves or loads from stack.  */
+	    case BUILT_IN_RETURN_ADDRESS:
+	    case BUILT_IN_EXTRACT_RETURN_ADDR:
+	    case BUILT_IN_FROB_RETURN_ADDR:
+	    case BUILT_IN_RETURN:
+	    case BUILT_IN_AGGREGATE_INCOMING_ADDRESS:
+	    case BUILT_IN_FRAME_ADDRESS:
+	    case BUILT_IN_VA_END:
+	    case BUILT_IN_STACK_SAVE:
+	    case BUILT_IN_STACK_RESTORE:
 	    /* Exception state returns or moves registers around.  */
 	    case BUILT_IN_EH_FILTER:
 	    case BUILT_IN_EH_POINTER:
 	    case BUILT_IN_EH_COPY_VALUES:
 	      return 0;
+
+	    /* builtins that are not expensive (that is they are most probably
+	       expanded inline into resonably simple code).  */
+	    case BUILT_IN_ABS:
+	    case BUILT_IN_ALLOCA:
+	    case BUILT_IN_BSWAP32:
+	    case BUILT_IN_BSWAP64:
+	    case BUILT_IN_CLZ:
+	    case BUILT_IN_CLZIMAX:
+	    case BUILT_IN_CLZL:
+	    case BUILT_IN_CLZLL:
+	    case BUILT_IN_CTZ:
+	    case BUILT_IN_CTZIMAX:
+	    case BUILT_IN_CTZL:
+	    case BUILT_IN_CTZLL:
+	    case BUILT_IN_FFS:
+	    case BUILT_IN_FFSIMAX:
+	    case BUILT_IN_FFSL:
+	    case BUILT_IN_FFSLL:
+	    case BUILT_IN_IMAXABS:
+	    case BUILT_IN_FINITE:
+	    case BUILT_IN_FINITEF:
+	    case BUILT_IN_FINITEL:
+	    case BUILT_IN_FINITED32:
+	    case BUILT_IN_FINITED64:
+	    case BUILT_IN_FINITED128:
+	    case BUILT_IN_FPCLASSIFY:
+	    case BUILT_IN_ISFINITE:
+	    case BUILT_IN_ISINF_SIGN:
+	    case BUILT_IN_ISINF:
+	    case BUILT_IN_ISINFF:
+	    case BUILT_IN_ISINFL:
+	    case BUILT_IN_ISINFD32:
+	    case BUILT_IN_ISINFD64:
+	    case BUILT_IN_ISINFD128:
+	    case BUILT_IN_ISNAN:
+	    case BUILT_IN_ISNANF:
+	    case BUILT_IN_ISNANL:
+	    case BUILT_IN_ISNAND32:
+	    case BUILT_IN_ISNAND64:
+	    case BUILT_IN_ISNAND128:
+	    case BUILT_IN_ISNORMAL:
+	    case BUILT_IN_ISGREATER:
+	    case BUILT_IN_ISGREATEREQUAL:
+	    case BUILT_IN_ISLESS:
+	    case BUILT_IN_ISLESSEQUAL:
+	    case BUILT_IN_ISLESSGREATER:
+	    case BUILT_IN_ISUNORDERED:
+	    case BUILT_IN_VA_ARG_PACK:
+	    case BUILT_IN_VA_ARG_PACK_LEN:
+	    case BUILT_IN_VA_COPY:
+	    case BUILT_IN_TRAP:
+	    case BUILT_IN_SAVEREGS:
+	    case BUILT_IN_POPCOUNTL:
+	    case BUILT_IN_POPCOUNTLL:
+	    case BUILT_IN_POPCOUNTIMAX:
+	    case BUILT_IN_POPCOUNT:
+	    case BUILT_IN_PARITYL:
+	    case BUILT_IN_PARITYLL:
+	    case BUILT_IN_PARITYIMAX:
+	    case BUILT_IN_PARITY:
+	    case BUILT_IN_LABS:
+	    case BUILT_IN_LLABS:
+	    case BUILT_IN_PREFETCH:
+	      cost = weights->target_builtin_call_cost;
+	      break;
 
 	    default:
 	      break;
