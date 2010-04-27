@@ -19402,6 +19402,51 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
     }
 }
 
+/* Given the stack offsets and register mask in OFFSETS, decide
+   how many additional registers to push instead of subtracting
+   a constant from SP.  */
+static int
+thumb1_extra_regs_pushed (arm_stack_offsets *offsets)
+{
+  HOST_WIDE_INT amount = offsets->outgoing_args - offsets->saved_regs;
+  unsigned long live_regs_mask = offsets->saved_regs_mask;
+  /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
+  unsigned long l_mask = live_regs_mask & 0x40ff;
+  /* Then count how many other high registers will need to be pushed.  */
+  unsigned long high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
+  int n_free;
+
+  /* If the stack frame size is 512 exactly, we can save one load
+     instruction, which should make this a win even when optimizing
+     for speed.  */
+  if (!optimize_size && amount != 512)
+    return 0;
+
+  /* Can't do this if there are high registers to push, or if we
+     are not going to do a push at all.  */
+  if (high_regs_pushed != 0 || l_mask == 0)
+    return 0;
+
+  /* Don't do this if thumb1_expand_prologue wants to emit instructions
+     between the push and the stack frame allocation.  */
+  if ((flag_pic && arm_pic_register != INVALID_REGNUM)
+      || (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0))
+    return 0;
+
+  for (n_free = 0; n_free < 8 && !(live_regs_mask & 1); live_regs_mask >>= 1)
+    n_free++;
+
+  if (n_free == 0)
+    return 0;
+  gcc_assert (amount / 4 * 4 == amount);
+
+  if (amount >= 512 && (amount - n_free * 4) < 512)
+    return (amount - 508) / 4;
+  if (amount <= n_free * 4)
+    return amount / 4;
+  return 0;
+}
+
 /* Generate the rest of a function's prologue.  */
 void
 thumb1_expand_prologue (void)
@@ -19438,6 +19483,7 @@ thumb1_expand_prologue (void)
 		    stack_pointer_rtx);
 
   amount = offsets->outgoing_args - offsets->saved_regs;
+  amount -= 4 * thumb1_extra_regs_pushed (offsets);
   if (amount)
     {
       if (amount < 512)
@@ -19742,7 +19788,11 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      register.  */
   else if ((l_mask & 0xff) != 0
 	   || (high_regs_pushed == 0 && l_mask))
-    thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
+    {
+      unsigned long mask = l_mask;
+      mask |= (1 << thumb1_extra_regs_pushed (offsets)) - 1;
+      thumb_pushpop (f, mask, 1, &cfa_offset, mask);
+    }
 
   if (high_regs_pushed)
     {
