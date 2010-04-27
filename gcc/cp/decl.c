@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -4692,7 +4692,7 @@ maybe_commonize_var (tree decl)
 static void
 check_for_uninitialized_const_var (tree decl)
 {
-  tree type = TREE_TYPE (decl);
+  tree type = strip_array_types (TREE_TYPE (decl));
 
   if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
       && DECL_INITIAL (decl) == NULL)
@@ -4704,11 +4704,28 @@ check_for_uninitialized_const_var (tree decl)
   else if (TREE_CODE (decl) == VAR_DECL
       && TREE_CODE (type) != REFERENCE_TYPE
       && CP_TYPE_CONST_P (type)
-      && !TYPE_NEEDS_CONSTRUCTING (type)
+      && (!TYPE_NEEDS_CONSTRUCTING (type)
+	  || !type_has_user_provided_default_constructor (type))
       && !DECL_INITIAL (decl))
-    error ("uninitialized const %qD", decl);
-}
+    {
+      permerror (DECL_SOURCE_LOCATION (decl),
+		 "uninitialized const %qD", decl);
 
+      if (CLASS_TYPE_P (type)
+	  && !type_has_user_provided_default_constructor (type))
+	{
+	  tree defaulted_ctor;
+
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		  "%q#T has no user-provided default constructor", type);
+	  defaulted_ctor = in_class_defaulted_default_constructor (type);
+	  if (defaulted_ctor)
+	    inform (DECL_SOURCE_LOCATION (defaulted_ctor),
+		    "constructor is not user-provided because it is "
+		    "explicitly defaulted in the class body");
+	}
+    }
+}
 
 /* Structure holding the current initializer being processed by reshape_init.
    CUR is a pointer to the current element being processed, END is a pointer
@@ -5261,7 +5278,10 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
   else if (DECL_EXTERNAL (decl))
     ;
   else if (TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
-    return build_aggr_init_full_exprs (decl, init, flags);
+    {
+      check_for_uninitialized_const_var (decl);
+      return build_aggr_init_full_exprs (decl, init, flags);
+    }
   else if (MAYBE_CLASS_TYPE_P (type))
     {
       tree core_type = strip_array_types (type);

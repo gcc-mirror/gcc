@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -4175,6 +4175,34 @@ type_has_user_nondefault_constructor (tree t)
     }
 
   return false;
+}
+
+/* Returns the defaulted constructor if T has one. Otherwise, returns
+   NULL_TREE.  */
+
+tree
+in_class_defaulted_default_constructor (tree t)
+{
+  tree fns, args;
+
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return NULL_TREE;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+
+      if (DECL_DEFAULTED_IN_CLASS_P (fn))
+	{
+	  args = FUNCTION_FIRST_USER_PARMTYPE (fn);
+	  while (args && TREE_PURPOSE (args))
+	    args = TREE_CHAIN (args);
+	  if (!args || args == void_list_node)
+	    return fn;
+	}
+    }
+
+  return NULL_TREE;
 }
 
 /* Returns true iff FN is a user-provided function, i.e. user-declared

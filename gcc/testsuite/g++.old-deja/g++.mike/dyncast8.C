@@ -7,7 +7,11 @@ public:
   virtual ~Base() { }
 };
 
-class Derived : public Base { };
+class Derived : public Base
+{
+public:
+    Derived() {}
+};
 
 int main()
 {

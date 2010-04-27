@@ -1,3 +1,13 @@
+2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/42844
+	* decl.c (check_for_uninitialized_const_var): Handle classes that need
+	constructing, too.
+	(check_initializer): Call it for classes that need constructing, too.
+	* class.c (in_class_defaulted_default_constructor): New.
+	* cp-tree.h: Declare it.
+
 2010-04-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9335
