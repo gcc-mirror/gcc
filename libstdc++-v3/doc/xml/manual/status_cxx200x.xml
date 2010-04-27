@@ -155,7 +155,7 @@ particular release.
       <entry>18.5</entry>
       <entry>Start and termination</entry>
       <entry>Partial</entry>
-      <entry>Missing quick_exit, at_quick_exit</entry>
+      <entry>C library dependency for quick_exit, at_quick_exit</entry>
     </row>
     <row>
       <entry>18.6</entry>
