@@ -1,5 +1,9 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43875
+	* semantics.c (lambda_return_type): Complain about
+	braced-init-list.
+
 	PR c++/43790
 	* tree.c (cv_unqualified): Handle error_mark_node.
 
