@@ -1,3 +1,8 @@
+2010-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (eni_inlining_weights): Remove.
+	(estimate_num_insns): Special case more builtins.
+
 2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
 	
 	PR c/32207
