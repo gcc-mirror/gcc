@@ -803,6 +803,7 @@ init_optimization_passes (void)
 
   p = &all_regular_ipa_passes;
   NEXT_PASS (pass_ipa_whole_program_visibility);
+  NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_reference);

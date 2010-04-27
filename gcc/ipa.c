@@ -762,3 +762,83 @@ debug_cgraph_node_set (cgraph_node_set set)
   dump_cgraph_node_set (stderr, set);
 }
 
+/* Simple ipa profile pass propagating frequencies across the callgraph.  */
+
+static unsigned int
+ipa_profile (void)
+{
+  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_edge *e;
+  int order_pos;
+  bool something_changed = false;
+  int i;
+
+  order_pos = cgraph_postorder (order);
+  for (i = order_pos - 1; i >= 0; i--)
+    {
+      if (order[i]->local.local && cgraph_propagate_frequency (order[i]))
+	{
+	  for (e = order[i]->callees; e; e = e->next_callee)
+	    if (e->callee->local.local && !e->callee->aux)
+	      {
+	        something_changed = true;
+	        e->callee->aux = (void *)1;
+	      }
+	}
+      order[i]->aux = NULL;
+    }
+
+  while (something_changed)
+    {
+      something_changed = false;
+      for (i = order_pos - 1; i >= 0; i--)
+	{
+	  if (order[i]->aux && cgraph_propagate_frequency (order[i]))
+	    {
+	      for (e = order[i]->callees; e; e = e->next_callee)
+		if (e->callee->local.local && !e->callee->aux)
+		  {
+		    something_changed = true;
+		    e->callee->aux = (void *)1;
+		  }
+	    }
+	  order[i]->aux = NULL;
+	}
+    }
+  free (order);
+  return 0;
+}
+
+static bool
+gate_ipa_profile (void)
+{
+  return flag_ipa_profile;
+}
+
+struct ipa_opt_pass_d pass_ipa_profile =
+{
+ {
+  IPA_PASS,
+  "ipa-profile",			/* name */
+  gate_ipa_profile,			/* gate */
+  ipa_profile,			        /* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_IPA_PROFILE,		        /* tv_id */
+  0,	                                /* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0                                     /* todo_flags_finish */
+ },
+ NULL,				        /* generate_summary */
+ NULL,					/* write_summary */
+ NULL,					/* read_summary */
+ NULL,					/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
+ NULL,					/* stmt_fixup */
+ 0,					/* TODOs */
+ NULL,			                /* function_transform */
+ NULL					/* variable_transform */
+};
