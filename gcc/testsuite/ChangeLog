@@ -1,5 +1,7 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/lambda/lambda-ice1.C: New.
+
 	PR c++/41468
 	* g++.dg/template/sfinae17.C: New.
 	* g++.dg/template/sfinae18.C: New.
