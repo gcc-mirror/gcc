@@ -49,12 +49,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "flags.h"
 #include "timevar.h"
+#include "toplev.h"
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "target.h"
 #include "lto-streamer.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "intl.h"
+#include "opts.h"
 
 static struct pointer_set_t *visited_nodes;
 
@@ -106,6 +109,71 @@ static struct cgraph_node_hook_list *function_insertion_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
 
+/* Try to guess if function body will always be visible to compiler
+   when compiling the call and whether compiler will be able
+   to propagate the information by itself.  */
+
+static bool
+function_always_visible_to_compiler_p (tree decl)
+{
+  return (!TREE_PUBLIC (decl) || DECL_DECLARED_INLINE_P (decl));
+}
+
+/* Emit suggestion about attribute ATTRIB_NAME for DECL.  KNOWN_FINITE
+   is true if the function is known to be finite.  The diagnostic is
+   controlled by OPTION.  WARNED_ABOUT is a pointer_set unique for
+   OPTION, this function may initialize it and it is always returned
+   by the function.  */
+
+static struct pointer_set_t *
+suggest_attribute (int option, tree decl, bool known_finite,
+		   struct pointer_set_t *warned_about,
+		   const char * attrib_name)
+{
+  if (!option_enabled (option))
+    return warned_about;
+  if (TREE_THIS_VOLATILE (decl)
+      || (known_finite && function_always_visible_to_compiler_p (decl)))
+    return warned_about;
+
+  if (!warned_about)
+    warned_about = pointer_set_create (); 
+  if (pointer_set_contains (warned_about, decl))
+    return warned_about;
+  pointer_set_insert (warned_about, decl);
+  warning_at (DECL_SOURCE_LOCATION (decl),
+	      option,
+	      known_finite
+	      ? _("function might be candidate for attribute %<%s%>")
+	      : _("function might be candidate for attribute %<%s%>"
+		  " if it is known to return normally"), attrib_name);
+  return warned_about;
+}
+
+/* Emit suggestion about __attribute_((pure)) for DECL.  KNOWN_FINITE
+   is true if the function is known to be finite.  */
+
+static void
+warn_function_pure (tree decl, bool known_finite)
+{
+  static struct pointer_set_t *warned_about;
+
+  warned_about 
+    = suggest_attribute (OPT_Wsuggest_attribute_pure, decl,
+			 known_finite, warned_about, "pure");
+}
+
+/* Emit suggestion about __attribute_((const)) for DECL.  KNOWN_FINITE
+   is true if the function is known to be finite.  */
+
+static void
+warn_function_const (tree decl, bool known_finite)
+{
+  static struct pointer_set_t *warned_about;
+  warned_about 
+    = suggest_attribute (OPT_Wsuggest_attribute_const, decl,
+			 known_finite, warned_about, "const");
+}
 /* Init the function state.  */
 
 static void
@@ -325,7 +393,11 @@ check_call (funct_state local, gimple call, bool ipa)
 
   /* When not in IPA mode, we can still handle self recursion.  */
   if (!ipa && callee_t == current_function_decl)
-    local->looping = true;
+    {
+      if (dump_file)
+        fprintf (dump_file, "    Recursive call can loop.\n");
+      local->looping = true;
+    }
   /* Either calle is unknown or we are doing local analysis.
      Look to see if there are any bits available for the callee (such as by
      declaration or because it is builtin) and process solely on the basis of
@@ -353,12 +425,20 @@ check_call (funct_state local, gimple call, bool ipa)
       if (flags & ECF_CONST)
 	{
           if (callee_t && DECL_LOOPING_CONST_OR_PURE_P (callee_t))
-            local->looping = true;
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "    calls looping pure.\n");
+              local->looping = true;
+	    }
 	 }
       else if (flags & ECF_PURE)
 	{
           if (callee_t && DECL_LOOPING_CONST_OR_PURE_P (callee_t))
-            local->looping = true;
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "    calls looping const.\n");
+              local->looping = true;
+	    }
 	  if (dump_file)
 	    fprintf (dump_file, "    pure function call in not const\n");
 	  if (local->pure_const_state == IPA_CONST)
@@ -604,7 +684,8 @@ add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
      since all we would be interested in are the addressof
      operations.  */
   visited_nodes = pointer_set_create ();
-  set_function_state (node, analyze_function (node, true));
+  if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE)
+    set_function_state (node, analyze_function (node, true));
   pointer_set_destroy (visited_nodes);
   visited_nodes = NULL;
 }
@@ -938,19 +1019,27 @@ propagate (void)
 	  switch (this_state)
 	    {
 	    case IPA_CONST:
-	      if (!TREE_READONLY (w->decl) && dump_file)
-		fprintf (dump_file, "Function found to be %sconst: %s\n",
-			 this_looping ? "looping " : "",
-			 cgraph_node_name (w));
+	      if (!TREE_READONLY (w->decl))
+		{
+		  warn_function_const (w->decl, !this_looping);
+		  if (dump_file)
+		    fprintf (dump_file, "Function found to be %sconst: %s\n",
+			     this_looping ? "looping " : "",
+			     cgraph_node_name (w));
+		}
 	      cgraph_set_readonly_flag (w, true);
 	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
 	      break;
 
 	    case IPA_PURE:
-	      if (!DECL_PURE_P (w->decl) && dump_file)
-		fprintf (dump_file, "Function found to be %spure: %s\n",
-			 this_looping ? "looping " : "",
-			 cgraph_node_name (w));
+	      if (!DECL_PURE_P (w->decl))
+		{
+		  warn_function_pure (w->decl, !this_looping);
+		  if (dump_file)
+		    fprintf (dump_file, "Function found to be %spure: %s\n",
+			     this_looping ? "looping " : "",
+			     cgraph_node_name (w));
+		}
 	      cgraph_set_pure_flag (w, true);
 	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
 	      break;
@@ -1103,6 +1192,29 @@ struct ipa_opt_pass_d pass_ipa_pure_const =
  NULL					/* variable_transform */
 };
 
+/* Return true if function should be skipped for local pure const analysis.  */
+
+static bool
+skip_function_for_local_pure_const (struct cgraph_node *node)
+{
+  /* Because we do not schedule pass_fixup_cfg over whole program after early optimizations
+     we must not promote functions that are called by already processed functions.  */
+
+  if (function_called_by_processed_nodes_p ())
+    {
+      if (dump_file)
+        fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
+      return true;
+    }
+  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Function is not available or overwrittable; not analyzing.\n");
+      return true;
+    }
+  return false;
+}
+
 /* Simple local pass for pure const discovery reusing the analysis from
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
@@ -1112,25 +1224,15 @@ local_pure_const (void)
 {
   bool changed = false;
   funct_state l;
+  bool skip;
   struct cgraph_node *node;
 
-  /* Because we do not schedule pass_fixup_cfg over whole program after early optimizations
-     we must not promote functions that are called by already processed functions.  */
-
-  if (function_called_by_processed_nodes_p ())
-    {
-      if (dump_file)
-        fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
-      return 0;
-    }
   node = cgraph_node (current_function_decl);
-  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
-    {
-      if (dump_file)
-        fprintf (dump_file, "Function has wrong visibility; ignoring\n");
-      return 0;
-    }
-
+  skip = skip_function_for_local_pure_const (node);
+  if (!warn_suggest_attribute_const
+      && !warn_suggest_attribute_pure
+      && skip)
+    return 0;
   l = analyze_function (node, false);
 
   switch (l->pure_const_state)
@@ -1138,9 +1240,13 @@ local_pure_const (void)
     case IPA_CONST:
       if (!TREE_READONLY (current_function_decl))
 	{
-	  cgraph_set_readonly_flag (node, true);
-	  cgraph_set_looping_const_or_pure_flag (node, l->looping);
-	  changed = true;
+	  warn_function_const (current_function_decl, !l->looping);
+	  if (!skip)
+	    {
+	      cgraph_set_readonly_flag (node, true);
+	      cgraph_set_looping_const_or_pure_flag (node, l->looping);
+	      changed = true;
+	    }
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be %sconst: %s\n",
 		     l->looping ? "looping " : "",
@@ -1150,8 +1256,11 @@ local_pure_const (void)
       else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
 	       && !l->looping)
 	{
-	  cgraph_set_looping_const_or_pure_flag (node, false);
-	  changed = true;
+	  if (!skip)
+	    {
+	      cgraph_set_looping_const_or_pure_flag (node, false);
+	      changed = true;
+	    }
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be non-looping: %s\n",
 		     lang_hooks.decl_printable_name (current_function_decl,
@@ -1160,11 +1269,15 @@ local_pure_const (void)
       break;
 
     case IPA_PURE:
-      if (!TREE_READONLY (current_function_decl))
+      if (!DECL_PURE_P (current_function_decl))
 	{
-	  cgraph_set_pure_flag (node, true);
-	  cgraph_set_looping_const_or_pure_flag (node, l->looping);
-	  changed = true;
+	  if (!skip)
+	    {
+	      cgraph_set_pure_flag (node, true);
+	      cgraph_set_looping_const_or_pure_flag (node, l->looping);
+	      changed = true;
+	    }
+	  warn_function_pure (current_function_decl, !l->looping);
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be %spure: %s\n",
 		     l->looping ? "looping " : "",
@@ -1174,8 +1287,11 @@ local_pure_const (void)
       else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
 	       && !l->looping)
 	{
-	  cgraph_set_looping_const_or_pure_flag (node, false);
-	  changed = true;
+	  if (!skip)
+	    {
+	      cgraph_set_looping_const_or_pure_flag (node, false);
+	      changed = true;
+	    }
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be non-looping: %s\n",
 		     lang_hooks.decl_printable_name (current_function_decl,

@@ -1,3 +1,21 @@
+2010-04-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Jan Hubicka <hubicka@ucw.cz>
+
+	* doc/invoke.texi (-Wsuggest-attribute=const,
+	-Wsuggest-attribute=pure): Document.
+	* ipa-pure-const.c: Include toplev.h, intl.h and opts.h.
+	(function_always_visible_to_compiler_p,
+	suggest_attribute, warn_function_pure, warn_function_const):
+	New functions.
+	(check_call): Improve debug info.
+	(analyze_function): Do not check availability.
+	(add_new_function): Check availability.
+	(propagate): Output warnings.
+	(skip_function_for_local_pure_const): New function.
+	(local_pure_const): Use it; output warnings.
+	* common.opt (Wsuggest-attribute=const,
+	Wsuggest-attribute=pure): New.
+
 2010-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (def_cfa_1): After DW_CFA_def_cfa_expression

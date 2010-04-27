@@ -257,6 +257,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
+-Wsuggest-attribute=@r{[}const@r{|}pure@r{]} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas @gol
@@ -3621,11 +3622,36 @@ comparisons, so this warning level will give a very large number of
 false positives.
 @end table
 
+@item -Wsuggest-attribute=@r{[}const@r{|}pure@r{]}
+@opindex Wsuggest-attribute=
+@opindex Wno-suggest-attribute=
+Warn for cases where adding an attribute may be beneficial. The
+attributes currently supported are listed below.
+
+@table @gcctabopt
+@item -Wsuggest-attribute=pure
+@itemx -Wsuggest-attribute=const
+@opindex Wsuggest-attribute=pure
+@opindex Wno-suggest-attribute=pure
+@opindex Wsuggest-attribute=const
+@opindex Wno-suggest-attribute=const
+
+Warn about functions which might be candidates for attributes
+@code{pure} or @code{const}.  The compiler only warns for functions
+visible in other compilation units or if it cannot prove that the
+function returns normally. A function returns normally if it doesn't
+contain an infinite loop nor returns abnormally by throwing, calling
+@code{abort()} or trapping.  This analysis requires option
+@option{-fipa-pure-const}, which is enabled by default at @option{-O}
+and higher.  Higher optimization levels improve the accuracy of the
+analysis.
+@end table
+
 @item -Warray-bounds
 @opindex Wno-array-bounds
 @opindex Warray-bounds
 This option is only active when @option{-ftree-vrp} is active
-(default for -O2 and above). It warns about subscripts to arrays
+(default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
 @item -Wno-div-by-zero
