@@ -7,7 +7,7 @@
 
 struct A
 {
-    int i;			// { dg-error "object missing" }
+    int i;			// { dg-error "non-static" }
 };
 
 template <int> struct B

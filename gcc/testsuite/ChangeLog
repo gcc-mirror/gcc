@@ -1,5 +1,10 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/lookup/scoped5.C: Adjust.
+	* g++.dg/lookup/scoped8.C: Adjust.
+	* g++.dg/template/dependent-expr5.C: Adjust.
+	* g++.old-deja/g++.brendan/nest1.C: Adjust.
+
 	PR c++/43856
 	* g++.dg/cpp0x/lambda/lambda-this2.C: New.
 
