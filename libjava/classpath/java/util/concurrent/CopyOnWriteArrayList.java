@@ -452,7 +452,12 @@ public class CopyOnWriteArrayList<E>
   public synchronized boolean remove(Object element)
   {
     E[] snapshot = this.data;
-    E[] newData = (E[]) new Object[snapshot.length - 1];
+    int len = snapshot.length;
+
+    if (len == 0)
+      return false;
+
+    E[] newData = (E[]) new Object[len - 1];
     
     // search the element to remove while filling the backup array
     // this way we can run this method in O(n)
