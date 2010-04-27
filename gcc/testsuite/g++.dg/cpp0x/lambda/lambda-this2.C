@@ -10,6 +10,7 @@ struct S1 {
     [=]() {
       i;
       g();
+      S1::g();
       operator()(42);
     };
   }

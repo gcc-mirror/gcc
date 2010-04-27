@@ -1,5 +1,9 @@
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_qualified_id_expr): Use maybe_dummy_object
+	rather than checking current_class_ref directly.
+	(finish_call_expr): Likewise.
+
 	PR c++/43856
 	* name-lookup.c (qualify_lookup): Disqualify lambda op().
 	* class.c (current_nonlambda_class_type): New fn.

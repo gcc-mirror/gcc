@@ -1690,6 +1690,7 @@ finish_qualified_id_expr (tree qualifying_class,
   else if (BASELINK_P (expr) && !processing_template_decl)
     {
       tree fns;
+      tree ob;
 
       /* See if any of the functions are non-static members.  */
       fns = BASELINK_FUNCTIONS (expr);
@@ -1697,10 +1698,10 @@ finish_qualified_id_expr (tree qualifying_class,
 	fns = TREE_OPERAND (fns, 0);
       /* If so, the expression may be relative to 'this'.  */
       if (!shared_member_p (fns)
-	  && current_class_ref
-	  && DERIVED_FROM_P (qualifying_class, TREE_TYPE (current_class_ref)))
+	  && (ob = maybe_dummy_object (qualifying_class, NULL),
+	      !is_dummy_object (ob)))
 	expr = (build_class_member_access_expr
-		(maybe_dummy_object (qualifying_class, NULL),
+		(ob,
 		 expr,
 		 BASELINK_ACCESS_BINFO (expr),
 		 /*preserve_reference=*/false,
@@ -2002,31 +2003,18 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	   . operator.... [Otherwise] a contrived object of type T
 	   becomes the implied object argument.
 
-	This paragraph is unclear about this situation:
+	In this situation:
 
 	  struct A { void f(); };
 	  struct B : public A {};
 	  struct C : public A { void g() { B::f(); }};
 
-	In particular, for `B::f', this paragraph does not make clear
-	whether "the class of that member function" refers to `A' or
-	to `B'.  We believe it refers to `B'.  */
-      if (current_class_type
-	  && DERIVED_FROM_P (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
-			     current_class_type)
-	  && current_class_ref)
-	object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
-				     NULL);
-      else
-	{
-	  tree representative_fn;
+	"the class of that member function" refers to `A'.  But 11.2
+	[class.access.base] says that we need to convert 'this' to B* as
+	part of the access, so we pass 'B' to maybe_dummy_object.  */
 
-	  representative_fn = BASELINK_FUNCTIONS (fn);
-	  if (TREE_CODE (representative_fn) == TEMPLATE_ID_EXPR)
-	    representative_fn = TREE_OPERAND (representative_fn, 0);
-	  representative_fn = get_first_fn (representative_fn);
-	  object = build_dummy_object (DECL_CONTEXT (representative_fn));
-	}
+      object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
+				   NULL);
 
       if (processing_template_decl)
 	{
