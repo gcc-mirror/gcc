@@ -5019,7 +5019,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  /* Build an expression for `*((base*) &expr)'.  */
 	  expr = cp_build_unary_op (ADDR_EXPR, expr, 0, complain);
 	  expr = convert_to_base (expr, build_pointer_type (totype),
-				  !c_cast_p, /*nonnull=*/true);
+				  !c_cast_p, /*nonnull=*/true, complain);
 	  expr = cp_build_indirect_ref (expr, RO_IMPLICIT_CONVERSION, complain);
 	  return expr;
 	}
@@ -5142,7 +5142,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     case ck_ptr:
       if (convs->base_p)
 	expr = convert_to_base (expr, totype, !c_cast_p,
-				/*nonnull=*/false);
+				/*nonnull=*/false, complain);
       return build_nop (totype, expr);
 
     case ck_pmem:
@@ -7584,7 +7584,7 @@ perform_direct_initialization_if_possible (tree type,
     expr = convert_like_real (conv, expr, NULL_TREE, 0, 0,
 			      /*issue_conversion_warnings=*/false,
 			      c_cast_p,
-			      tf_warning_or_error);
+			      complain);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -7810,7 +7810,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 		expr = convert_to_base (expr,
 					build_pointer_type (base_conv_type),
 					/*check_access=*/true,
-					/*nonnull=*/true);
+					/*nonnull=*/true, complain);
 	      expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	    }
 	  else

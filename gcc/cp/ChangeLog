@@ -1,3 +1,15 @@
+2010-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41468
+	* class.c (convert_to_base): Add complain parameter.  Pass
+	ba_quiet to lookup_base if we don't want errors.
+	(build_vfield_ref): Pass complain to convert_to_base.
+	* call.c (convert_like_real): Likewise.
+	(initialize_reference): Likewise.
+	(perform_direct_initialization_if_possible): Pass complain to
+	convert_like_real.
+	* cp-tree.h: Adjust.
+
 2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

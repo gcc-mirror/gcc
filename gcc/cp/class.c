@@ -506,10 +506,12 @@ build_simple_base_path (tree expr, tree binfo)
    assumed to be non-NULL.  */
 
 tree
-convert_to_base (tree object, tree type, bool check_access, bool nonnull)
+convert_to_base (tree object, tree type, bool check_access, bool nonnull,
+		 tsubst_flags_t complain)
 {
   tree binfo;
   tree object_type;
+  base_access access;
 
   if (TYPE_PTR_P (TREE_TYPE (object)))
     {
@@ -519,8 +521,11 @@ convert_to_base (tree object, tree type, bool check_access, bool nonnull)
   else
     object_type = TREE_TYPE (object);
 
+  access = check_access ? ba_check : ba_unique;
+  if (!(complain & tf_error))
+    access |= ba_quiet;
   binfo = lookup_base (object_type, type,
-		       check_access ? ba_check : ba_unique,
+		       access,
 		       NULL);
   if (!binfo || binfo == error_mark_node)
     return error_mark_node;
@@ -575,7 +580,7 @@ build_vfield_ref (tree datum, tree type)
   /* First, convert to the requested type.  */
   if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (datum), type))
     datum = convert_to_base (datum, type, /*check_access=*/false,
-			     /*nonnull=*/true);
+			     /*nonnull=*/true, tf_warning_or_error);
 
   /* Second, the requested type may not be the owner of its own vptr.
      If not, convert to the base class that owns it.  We cannot use
