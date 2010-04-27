@@ -47,6 +47,22 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#undef SUB_LINK_ENTRY32
+#undef SUB_LINK_ENTRY64
+#define SUB_LINK_ENTRY32 "-e _DllMainCRTStartup@12"
+#if defined(USE_MINGW64_LEADING_UNDERSCORES)
+#define SUB_LINK_ENTRY64 "-e _DllMainCRTStartup"
+#else
+#define SUB_LINK_ENTRY64 "-e DllMainCRTStartup"
+#endif
+
+#undef SUB_LINK_ENTRY
+#if TARGET_64BIT_DEFAULT
+#define SUB_LINK_ENTRY SUB_LINK_ENTRY64
+#else
+#define SUB_LINK_ENTRY SUB_LINK_ENTRY32
+#endif
+
 /* Override the standard choice of /usr/include as the default prefix
    to try when searching for header files.  */
 #undef STANDARD_INCLUDE_DIR
@@ -66,6 +82,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */
 #if DWARF2_UNWIND_INFO
+/* DW2-unwind is just available for 32-bit mode.  */
+#if TARGET_64BIT_DEFAULT
+#error DW2 unwind is not available for 64-bit.
+#endif
 #define SHARED_LIBGCC_UNDEFS_SPEC \
  "%{shared-libgcc: -u ___register_frame_info -u ___deregister_frame_info}"
 #else
@@ -81,7 +101,7 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
-  %{shared|mdll: -e _DllMainCRTStartup@12 --enable-auto-image-base} \
+  %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
   %(shared_libgcc_undefs)"
 
 /* Include in the mingw32 libraries with libgcc */
