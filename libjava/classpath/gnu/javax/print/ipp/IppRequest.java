@@ -434,6 +434,8 @@ public class IppRequest
       PrinterURI printerUri = (PrinterURI) attributes.get(PrinterURI.class);
       JobUri jobUri = (JobUri) attributes.get(JobUri.class);
       JobId jobId = (JobId) attributes.get(JobId.class);
+      RequestedAttributes reqAttrs 
+	= (RequestedAttributes)attributes.get(RequestedAttributes.class);
       if (printerUri != null && jobId == null && jobUri == null)
         {
           write(printerUri);
@@ -467,6 +469,12 @@ public class IppRequest
           logger.log(Component.IPP, "Attribute: Name: <" + jobUri.getCategory()
             .getName() + "> Value: <" + jobUri.toString() + ">");
         }
+      else if (reqAttrs != null)
+	{
+	  write(reqAttrs);
+	  attributes.remove(RequestedAttributes.class);
+	  logger.log(Component.IPP, "RequestedAttributes: <" + reqAttrs + ">");
+	}
       else
         {
           throw new IppException("Unknown target operation attribute combination.");

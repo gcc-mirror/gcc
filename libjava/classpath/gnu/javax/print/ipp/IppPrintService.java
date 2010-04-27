@@ -356,8 +356,17 @@ public class IppPrintService implements PrintService
                 // should not happen, all fields are public
               }
           }
+
+	if (this.getClass()
+	    .isAssignableFrom(gnu.javax.print.CupsPrintService.class))
+	  {
+// 	    CUPS always provides filters to convert from Postscript.
+//  	    This logic looks odd, but it's what OpenJDK does.
+	    flavors.add(DocFlavor.SERVICE_FORMATTED.PAGEABLE);
+	    flavors.add(DocFlavor.SERVICE_FORMATTED.PRINTABLE);
+	  }
       }
-    
+
     // printer uris
     Set uris = getPrinterAttributeSet(PrinterUriSupported.class);
     printerUris = new ArrayList(uris.size());
