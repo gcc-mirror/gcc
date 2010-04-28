@@ -1,3 +1,8 @@
+2010-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/elf.h (ASM_DECLARE_OBJECT_NAME): Use gnu_unique_object
+	type if available.
+
 2010-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/22224
@@ -144,8 +149,7 @@
 	* config/i386/mingw-w64.h (SUB_LINK_ENTRY): New macro.
 	(SUB_LINK_ENTRY32): New.
 	(SUB_LINK_ENTRY64): New.
-	(LINK_SPEC): Replace entry point spec by
-	SUB_LINK_ENTRY.
+	(LINK_SPEC): Replace entry point spec by SUB_LINK_ENTRY.
 	* config/i386/mingw32 (SUB_LINK_ENTRY32): New.
 	(SUB_LINK_ENTRY64): New.
 	(SUB_LINK_ENTRY): New.
@@ -225,7 +229,7 @@
 	(estimate_num_insns): Special case more builtins.
 
 2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
-	
+
 	PR c/32207
 	* c-typeck.c (build_binary_op): Move forward check for comparison
 	pointer with null pointer constant and adjust the diagnostic message.
@@ -375,25 +379,22 @@
 
 2010-04-26  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vectorizer.h (struct _stmt_vec_info): Add new field to 
-	determine if the statement is vectorizable, and a macro to 
-	access it.
-	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): 
-	Skip statements that can't be vectorized. If the analysis 
-	fails, mark the statement as unvectorizable if vectorizing 
-	basic block.
+	* tree-vectorizer.h (struct _stmt_vec_info): Add new field to
+	determine if the statement is vectorizable, and a macro to access it.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Skip statements that can't be vectorized. If the analysis fails,
+	mark the statement as unvectorizable if vectorizing basic block.
 	(vect_compute_data_refs_alignment): Likewise.
-	(vect_verify_datarefs_alignment): Skip statements marked as 
+	(vect_verify_datarefs_alignment): Skip statements marked as
 	unvectorizable. Add print.
-	(vect_analyze_group_access): Skip statements that can't be 
-	vectorized. If the analysis fails, mark the statement as 
+	(vect_analyze_group_access): Skip statements that can't be
+	vectorized. If the analysis fails, mark the statement as
 	unvectorizable if vectorizing basic block.
-	(vect_analyze_data_ref_accesses, vect_analyze_data_refs): 
-	Likewise.
-	* tree-vect-stmts.c (vectorizable_store): Fix the number of 
+	(vect_analyze_data_ref_accesses, vect_analyze_data_refs): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Fix the number of
 	generated stmts for SLP.
 	(new_stmt_vec_info): Initialize the new field.
-	* tree-vect-slp.c (vect_build_slp_tree): Fail to vectorize 
+	* tree-vect-slp.c (vect_build_slp_tree): Fail to vectorize
 	statements marked as unvectorizable.
 
 2010-04-25  Joseph Myers  <joseph@codesourcery.com>
