@@ -1,3 +1,10 @@
+2010-04-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/9335
+        * error.c (print_instantiation_partial_context_line): Handle
+	recursive instantiation.
+        (print_instantiation_partial_context): Likewise.
+
 2010-04-27  Jason Merrill  <jason@redhat.com>
 
 	* init.c (perform_member_init): Check CLASS_TYPE_P.
