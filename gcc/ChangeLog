@@ -1,3 +1,49 @@
+2010-04-28  Xinliang David Li  <davidxl@google.com>
+
+	PR c/42643
+	* tree-ssa-uninit.c (can_skip_redundant_opnd): New function.
+	(compute_uninit_opnds_pos): New function.
+	(is_non_loop_exit_postdominating): New function.
+	(compute_control_dep_chain): New function.
+	(find_pdom): New function.
+	(convert_control_dep_chain_into_preds): New function.
+	(find_predicates): New function.
+	(find_control_equiv_block): New function.
+	(collect_phi_def_edges): New function.
+	(find_def_preds): New function.
+	(find_dom): New function.
+	(dump_predicates): New function.
+	(get_cmp_code): New function.
+	(is_value_included_in): New function.
+	(find_matching_predicate_in_rest_chains): New function.
+	(use_pred_not_overlap_with_undef_path_pred): New function.
+	(is_use_properly_guarded): New function.
+	(normalize_cond_1): New function.
+	(is_and_or_or): New function.
+	(normalize_cond): New function.
+	(is_gcond_subset_of): New function.
+	(is_subset_of_any): New function.
+	(is_or_set_subset_of): New function.
+	(is_and_set_subset_of): New function.
+	(is_norm_cond_subset_of): New function.
+	(is_pred_expr_subset_of): New function.
+	(is_pred_chain_subset_of): New function.
+	(is_included_in): New function.
+	(is_superset_of): New function.
+	(find_uninit_use): New function.
+	(warn_uninitialized_phi): New function.
+	(compute_possibly_undefined_names): New function.
+	(ssa_undefined_value_p): New function.
+	(execute_late_warn_uninitialized): New function.
+	* tree-ssa.c (ssa_undefined_value_p): Removed.
+	(warn_uninit): Changed to extern.
+	(warn_uninitialized_phi): Removed.
+	(warn_uninitialized_vars): Changed to extern.
+	(execute_late_warn_uninitialized): Removed
+	* tree-flow.h: Add new prototypes.
+	* timevar.def: Add new time variable.
+	* Makefile.in: Add new build file.
+
 2010-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/elf.h (ASM_DECLARE_OBJECT_NAME): Use gnu_unique_object

@@ -575,6 +575,8 @@ extern void flush_pending_stmts (edge);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
 extern bool ssa_undefined_value_p (tree);
+extern void warn_uninit (tree, const char *, void *);
+extern unsigned int warn_uninitialized_vars (bool);
 extern void execute_update_addresses_taken (bool);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
