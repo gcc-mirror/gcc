@@ -518,9 +518,11 @@ perform_member_init (tree member, tree init)
 		       member, type);
 
 	  core_type = strip_array_types (type);
-	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
-	      || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
-	    diagnose_uninitialized_cst_or_ref_member (core_type, /*using_new=*/false);
+	  if (CLASS_TYPE_P (core_type)
+	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
+		  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type)))
+	    diagnose_uninitialized_cst_or_ref_member (core_type,
+						      /*using_new=*/false);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work
