@@ -1,3 +1,11 @@
+2010-04-28  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc.dg/plugin/plugin.exp: Run the plugindir tests.
+	* gcc.dg/plugindir1.c: Move to gcc.dg/plugin/plugindir1.c.
+	* gcc.dg/plugindir2.c: Move to gcc.dg/plugin/plugindir2.c.
+	* gcc.dg/plugindir3.c: Move to gcc.dg/plugin/plugindir3.c.
+	* gcc.dg/plugindir4.c: Move to gcc.dg/plugin/plugindir4.c.
+
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/const-uniq-1.c: New test.
