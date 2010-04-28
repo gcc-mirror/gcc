@@ -1,17 +1,17 @@
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Uniquization of constants at the Tree level
-	* tree.h (DECL_IN_CONSTANT_POOL): New macro
+	* tree.h (DECL_IN_CONSTANT_POOL): New macro.
 	(tree_decl_with_vis): Add in_constant_pool bit, move shadowed_for_var_p
 	bit to the end.
 	(tree_output_constant_def): Declare.
-	* gimplify.c (gimplify_init_constructor): When using block copy,
+	* gimplify.c (gimplify_init_constructor): When using block copy, first
 	uniquize the constant constructor on the RHS.
-	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Deal
-	with DECL_IN_CONSTANT_POOL flag.
+	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Deal with
+	DECL_IN_CONSTANT_POOL flag.
 	* lto-streamer-out.c (pack_ts_decl_with_vis_value_fields): Likewise.
-	* varasm.c (make_decl_rtl): Deal with variables belonging to the
-	global constant pool.
+	* varasm.c (make_decl_rtl): Deal with variables belonging to the global
+	constant pool.
 	(assemble_variable): Deal with symbols belonging to the tree constant
 	pool.
 	(get_constant_section): Add ALIGN parameter and simplify.
@@ -20,8 +20,8 @@
 	(output_constant_def_contents): Use the alignment of the VAR_DECL.
 	(tree_output_constant_def): New global function.
 	(mark_constant): Use the expression of the VAR_DECL.
-	(place_block_symbol): Use the alignment of the VAR_DECL and the size
-	of its expression.
+	(place_block_symbol): Use the alignment of the VAR_DECL and the size of
+	its expression.
 	(output_object_block): Likewise and assemble the expression.
 
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
