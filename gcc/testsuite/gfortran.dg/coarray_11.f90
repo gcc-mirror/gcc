@@ -2,6 +2,7 @@
 ! { dg-options "-fcoarray=single -fdump-tree-original" }
 !
 ! PR fortran/18918
+! PR fortran/43919 for boundsTest()
 !
 ! Coarray intrinsics
 !
@@ -51,6 +52,13 @@ if (any(ucobound(a) /= [9, 4,  5, 0])) call not_existing()
 if (lcobound(a,dim=3,kind=8) /= -3_8)  call not_existing()
 if (ucobound(a,dim=1,kind=2) /=  9_2)  call not_existing()
 end subroutine andanother
+
+subroutine boundsTest()
+  implicit none
+  integer :: a[*] = 7
+  if (any (lcobound(a) /= [1])) call not_existing()
+  if (any (ucobound(a) /= [1])) call not_existing()
+end subroutine boundsTest
 
 ! { dg-final { scan-tree-dump-times "not_existing" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

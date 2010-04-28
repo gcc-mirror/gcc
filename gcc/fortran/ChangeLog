@@ -1,3 +1,9 @@
+2010-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/43919
+	* simplify.c (simplify_cobound): Handle scalar coarrays.
+
 2010-04-27  Tobias Burnus  <burnus@net-b.de>
 
 	* gfc-internals.texi: Update copyright year.
