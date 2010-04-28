@@ -1322,6 +1322,8 @@ cgraph_decide_inlining (void)
   cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   if (in_lto_p && flag_indirect_inlining)
     ipa_update_after_lto_read ();
+  if (flag_indirect_inlining)
+    ipa_create_all_structures_for_iinln ();
 
   max_count = 0;
   max_benefit = 0;
@@ -1442,7 +1444,7 @@ cgraph_decide_inlining (void)
 
   /* Free ipa-prop structures if they are no longer needed.  */
   if (flag_indirect_inlining)
-    free_all_ipa_structures_after_iinln ();
+    ipa_free_all_structures_after_iinln ();
 
   if (dump_file)
     fprintf (dump_file,
@@ -2138,7 +2140,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
  inline_read_summary,			/* read_summary */
  NULL,					/* write_optimization_summary */
  NULL,					/* read_optimization_summary */
- lto_ipa_fixup_call_notes,		/* stmt_fixup */
+ NULL,					/* stmt_fixup */
  0,					/* TODOs */
  inline_transform,			/* function_transform */
  NULL,					/* variable_transform */

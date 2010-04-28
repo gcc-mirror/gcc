@@ -139,15 +139,21 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   intptr_t ref;
   struct bitpack_d *bp;
 
-  lto_output_uleb128_stream (ob->main_stream, LTO_cgraph_edge);
+  if (edge->indirect_unknown_callee)
+    lto_output_uleb128_stream (ob->main_stream, LTO_cgraph_indirect_edge);
+  else
+    lto_output_uleb128_stream (ob->main_stream, LTO_cgraph_edge);
 
   ref = lto_cgraph_encoder_lookup (encoder, edge->caller);
   gcc_assert (ref != LCC_NOT_FOUND);
   lto_output_sleb128_stream (ob->main_stream, ref);
 
-  ref = lto_cgraph_encoder_lookup (encoder, edge->callee);
-  gcc_assert (ref != LCC_NOT_FOUND);
-  lto_output_sleb128_stream (ob->main_stream, ref);
+  if (!edge->indirect_unknown_callee)
+    {
+      ref = lto_cgraph_encoder_lookup (encoder, edge->callee);
+      gcc_assert (ref != LCC_NOT_FOUND);
+      lto_output_sleb128_stream (ob->main_stream, ref);
+    }
 
   lto_output_sleb128_stream (ob->main_stream, edge->count);
 
@@ -157,7 +163,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (bp, edge->inline_failed, HOST_BITS_PER_INT);
   bp_pack_value (bp, edge->frequency, HOST_BITS_PER_INT);
   bp_pack_value (bp, edge->loop_nest, 30);
-  bp_pack_value (bp, edge->indirect_call, 1);
+  bp_pack_value (bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (bp, edge->call_stmt_cannot_inline_p, 1);
   bp_pack_value (bp, edge->can_throw_external, 1);
   lto_output_bitpack (ob->main_stream, bp);
@@ -400,6 +406,25 @@ add_node_to (lto_cgraph_encoder_t encoder, struct cgraph_node *node)
   lto_cgraph_encoder_encode (encoder, node);
 }
 
+/* Output all callees or indirect outgoing edges.  EDGE must be the first such
+   edge.  */
+
+static void
+output_outgoing_cgraph_edges (struct cgraph_edge *edge,
+			      struct lto_simple_output_block *ob,
+			      lto_cgraph_encoder_t encoder)
+{
+  if (!edge)
+    return;
+
+  /* Output edges in backward direction, so the reconstructed callgraph match
+     and it is easy to associate call sites in the IPA pass summaries.  */
+  while (edge->next_callee)
+    edge = edge->next_callee;
+  for (; edge; edge = edge->prev_callee)
+    lto_output_edge (ob, edge, encoder);
+}
+
 /* Output the part of the cgraph in SET.  */
 
 void
@@ -468,16 +493,8 @@ output_cgraph (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->callees)
-        {
-	  /* Output edges in backward direction, so the reconstructed callgraph
-	     match and it is easy to associate call sites in the IPA pass summaries.  */
-	  edge = node->callees;
-	  while (edge->next_callee)
-	    edge = edge->next_callee;
-	  for (; edge; edge = edge->prev_callee)
-	    lto_output_edge (ob, edge, encoder);
-	}
+      output_outgoing_cgraph_edges (node->callees, ob, encoder);
+      output_outgoing_cgraph_edges (node->indirect_calls, ob, encoder);
     }
 
   lto_output_uleb128_stream (ob->main_stream, 0);
@@ -496,7 +513,6 @@ output_cgraph (cgraph_node_set set)
 
   lto_destroy_simple_output_block (ob);
 }
-
 
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
    STACK_SIZE, SELF_TIME and SELF_SIZE.  This is called either to initialize
@@ -668,11 +684,14 @@ input_node (struct lto_file_decl_data *file_data,
 }
 
 
-/* Read an edge from IB.  NODES points to a vector of previously read
-   nodes for decoding caller and callee of the edge to be read.  */
+/* Read an edge from IB.  NODES points to a vector of previously read nodes for
+   decoding caller and callee of the edge to be read.  If INDIRECT is true, the
+   edge being read is indirect (in the sense that it has
+   indirect_unknown_callee set).  */
 
 static void
-input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
+input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
+	    bool indirect)
 {
   struct cgraph_node *caller, *callee;
   struct cgraph_edge *edge;
@@ -688,9 +707,14 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
   if (caller == NULL || caller->decl == NULL_TREE)
     internal_error ("bytecode stream: no caller found while reading edge");
 
-  callee = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
-  if (callee == NULL || callee->decl == NULL_TREE)
-    internal_error ("bytecode stream: no callee found while reading edge");
+  if (!indirect)
+    {
+      callee = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
+      if (callee == NULL || callee->decl == NULL_TREE)
+	internal_error ("bytecode stream: no callee found while reading edge");
+    }
+  else
+    callee = NULL;
 
   count = (gcov_type) lto_input_sleb128 (ib);
 
@@ -708,10 +732,14 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
       || caller_resolution == LDPR_PREEMPTED_IR)
     return;
 
-  edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
+  if (indirect)
+    edge = cgraph_create_indirect_edge (caller, NULL, count, freq, nest);
+  else
+    edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
+
+  edge->indirect_inlining_edge = bp_unpack_value (bp, 1);
   edge->lto_stmt_uid = stmt_id;
   edge->inline_failed = inline_failed;
-  edge->indirect_call = bp_unpack_value (bp, 1);
   edge->call_stmt_cannot_inline_p = bp_unpack_value (bp, 1);
   edge->can_throw_external = bp_unpack_value (bp, 1);
   bitpack_delete (bp);
@@ -734,7 +762,9 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   while (tag)
     {
       if (tag == LTO_cgraph_edge)
-        input_edge (ib, nodes);
+        input_edge (ib, nodes, false);
+      else if (tag == LTO_cgraph_indirect_edge)
+        input_edge (ib, nodes, true);
       else
 	{
 	  node = input_node (file_data, ib, tag);

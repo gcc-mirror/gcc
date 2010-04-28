@@ -607,6 +607,24 @@ verify_cgraph_node (struct cgraph_node *node)
       error ("Inline clone is needed");
       error_found = true;
     }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    {
+      if (e->aux)
+	{
+	  error ("aux field set for indirect edge from %s",
+		 identifier_to_locale (cgraph_node_name (e->caller)));
+	  error_found = true;
+	}
+      if (!e->indirect_unknown_callee
+	  || !e->indirect_info)
+	{
+	  error ("An indirect edge from %s is not marked as indirect or has "
+		 "associated indirect_info, the corresponding statement is: ",
+		 identifier_to_locale (cgraph_node_name (e->caller)));
+	  debug_gimple_stmt (e->call_stmt);
+	  error_found = true;
+	}
+    }
   for (e = node->callers; e; e = e->next_caller)
     {
       if (e->count < 0)
@@ -759,10 +777,10 @@ verify_cgraph_node (struct cgraph_node *node)
                  gsi_next (&gsi))
 	      {
 		gimple stmt = gsi_stmt (gsi);
-		tree decl;
-		if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
+		if (is_gimple_call (stmt))
 		  {
 		    struct cgraph_edge *e = cgraph_edge (node, stmt);
+		    tree decl = gimple_call_fndecl (stmt);
 		    if (e)
 		      {
 			if (e->aux)
@@ -771,25 +789,38 @@ verify_cgraph_node (struct cgraph_node *node)
 			    debug_gimple_stmt (stmt);
 			    error_found = true;
 			  }
-			if (e->callee->same_body_alias)
+			if (!e->indirect_unknown_callee)
 			  {
-			    error ("edge points to same body alias:");
-			    debug_tree (e->callee->decl);
-			    error_found = true;
+			    if (e->callee->same_body_alias)
+			      {
+				error ("edge points to same body alias:");
+				debug_tree (e->callee->decl);
+				error_found = true;
+			      }
+			    else if (!node->global.inlined_to
+				     && !e->callee->global.inlined_to
+				     && decl
+				     && !clone_of_p (cgraph_node (decl),
+						     e->callee))
+			      {
+				error ("edge points to wrong declaration:");
+				debug_tree (e->callee->decl);
+				fprintf (stderr," Instead of:");
+				debug_tree (decl);
+				error_found = true;
+			      }
 			  }
-			else if (!node->global.inlined_to
-				 && !e->callee->global.inlined_to
-				 && !clone_of_p (cgraph_node (decl), e->callee))
+			else if (decl)
 			  {
-			    error ("edge points to wrong declaration:");
-			    debug_tree (e->callee->decl);
-			    fprintf (stderr," Instead of:");
-			    debug_tree (decl);
+			    error ("an indirect edge with unknown callee "
+				   "corresponding to a call_stmt with "
+				   "a known declaration:");
 			    error_found = true;
+			    debug_gimple_stmt (e->call_stmt);
 			  }
 			e->aux = (void *)1;
 		      }
-		    else
+		    else if (decl)
 		      {
 			error ("missing callgraph edge for call stmt:");
 			debug_gimple_stmt (stmt);
@@ -805,11 +836,22 @@ verify_cgraph_node (struct cgraph_node *node)
 
       for (e = node->callees; e; e = e->next_callee)
 	{
-	  if (!e->aux && !e->indirect_call)
+	  if (!e->aux)
 	    {
 	      error ("edge %s->%s has no corresponding call_stmt",
 		     identifier_to_locale (cgraph_node_name (e->caller)),
 		     identifier_to_locale (cgraph_node_name (e->callee)));
+	      debug_gimple_stmt (e->call_stmt);
+	      error_found = true;
+	    }
+	  e->aux = 0;
+	}
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	{
+	  if (!e->aux)
+	    {
+	      error ("an indirect edge from %s has no corresponding call_stmt",
+		     identifier_to_locale (cgraph_node_name (e->caller)));
 	      debug_gimple_stmt (e->call_stmt);
 	      error_found = true;
 	    }

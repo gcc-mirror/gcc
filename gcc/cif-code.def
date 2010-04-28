@@ -84,3 +84,7 @@ DEFCIFCODE(MISMATCHED_ARGUMENTS, N_("mismatched arguments"))
 /* Call was originally indirect.  */
 DEFCIFCODE(ORIGINALLY_INDIRECT_CALL,
 	   N_("originally indirect function call not considered for inlining"))
+
+/* Ths edge represents an indirect edge with a yet-undetermined callee .  */
+DEFCIFCODE(INDIRECT_UNKNOWN_CALL,
+	   N_("indirect function call with a yet undetermined callee"))
