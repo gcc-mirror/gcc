@@ -1,3 +1,13 @@
+2010-04-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43846
+	* tree-sra.c (struct access): New flag grp_assignment_read.
+	(build_accesses_from_assign): Set grp_assignment_read.
+	(sort_and_splice_var_accesses): Propagate grp_assignment_read.
+	(enum mark_read_status): New type.
+	(analyze_access_subtree): Propagate grp_assignment_read, create
+	accesses also if both direct_read and root->grp_assignment_read.
+
 2010-04-27  Kai Tietz  <kai.tietz@onevision.com>
 
 	Back-merged from trnnk.

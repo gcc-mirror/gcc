@@ -182,6 +182,10 @@ struct access
      access tree.  */
   unsigned grp_read : 1;
 
+  /* Does this group contain a read access that comes from an assignment
+     statement?  This flag is propagated down the access tree.  */
+  unsigned grp_assignment_read : 1;
+
   /* Other passes of the analysis use this bit to make function
      analyze_access_subtree create scalar replacements for this group if
      possible.  */
@@ -1031,9 +1035,13 @@ build_accesses_from_assign (gimple *stmt_ptr,
   racc = build_access_from_expr_1 (rhs_ptr, stmt, false);
   lacc = build_access_from_expr_1 (lhs_ptr, stmt, true);
 
-  if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
-      && racc && !is_gimple_reg_type (racc->type))
-    bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+  if (racc)
+    {
+      racc->grp_assignment_read = 1;
+      if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
+	  && !is_gimple_reg_type (racc->type))
+	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+    }
 
   if (lacc && racc
       && (sra_mode == SRA_MODE_EARLY_INTRA || sra_mode == SRA_MODE_INTRA)
@@ -1578,6 +1586,7 @@ sort_and_splice_var_accesses (tree var)
       struct access *access = VEC_index (access_p, access_vec, i);
       bool grp_write = access->write;
       bool grp_read = !access->write;
+      bool grp_assignment_read = access->grp_assignment_read;
       bool multiple_reads = false;
       bool total_scalarization = access->total_scalarization;
       bool grp_partial_lhs = access->grp_partial_lhs;
@@ -1611,6 +1620,7 @@ sort_and_splice_var_accesses (tree var)
 	      else
 		grp_read = true;
 	    }
+	  grp_assignment_read |= ac2->grp_assignment_read;
 	  grp_partial_lhs |= ac2->grp_partial_lhs;
 	  unscalarizable_region |= ac2->grp_unscalarizable_region;
 	  total_scalarization |= ac2->total_scalarization;
@@ -1629,6 +1639,7 @@ sort_and_splice_var_accesses (tree var)
       access->group_representative = access;
       access->grp_write = grp_write;
       access->grp_read = grp_read;
+      access->grp_assignment_read = grp_assignment_read;
       access->grp_hint = multiple_reads || total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
@@ -1763,14 +1774,17 @@ expr_with_var_bounded_array_refs_p (tree expr)
   return false;
 }
 
+enum mark_read_status { SRA_MR_NOT_READ, SRA_MR_READ, SRA_MR_ASSIGN_READ};
+
 /* Analyze the subtree of accesses rooted in ROOT, scheduling replacements when
-   both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  Also set
-   all sorts of access flags appropriately along the way, notably always ser
-   grp_read when MARK_READ is true and grp_write when MARK_WRITE is true.  */
+   both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  Also set all
+   sorts of access flags appropriately along the way, notably always set
+   grp_read and grp_assign_read according to MARK_READ and grp_write when
+   MARK_WRITE is true.  */
 
 static bool
 analyze_access_subtree (struct access *root, bool allow_replacements,
-			bool mark_read, bool mark_write)
+			enum mark_read_status mark_read, bool mark_write)
 {
   struct access *child;
   HOST_WIDE_INT limit = root->offset + root->size;
@@ -1779,10 +1793,17 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
   bool hole = false, sth_created = false;
   bool direct_read = root->grp_read;
 
-  if (mark_read)
-    root->grp_read = true;
+  if (mark_read == SRA_MR_ASSIGN_READ)
+    {
+      root->grp_read = 1;
+      root->grp_assignment_read = 1;
+    }
+  if (mark_read == SRA_MR_READ)
+    root->grp_read = 1;
+  else if (root->grp_assignment_read)
+    mark_read = SRA_MR_ASSIGN_READ;
   else if (root->grp_read)
-    mark_read = true;
+    mark_read = SRA_MR_READ;
 
   if (mark_write)
     root->grp_write = true;
@@ -1811,7 +1832,7 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
 
   if (allow_replacements && scalar && !root->first_child
       && (root->grp_hint
-	  || (direct_read && root->grp_write))
+	  || (root->grp_write && (direct_read || root->grp_assignment_read)))
       /* We must not ICE later on when trying to build an access to the
 	 original data within the aggregate even when it is impossible to do in
 	 a defined way like in the PR 42703 testcase.  Therefore we check
@@ -1856,7 +1877,7 @@ analyze_access_trees (struct access *access)
 
   while (access)
     {
-      if (analyze_access_subtree (access, true, false, false))
+      if (analyze_access_subtree (access, true, SRA_MR_NOT_READ, false))
 	ret = true;
       access = access->next_grp;
     }
