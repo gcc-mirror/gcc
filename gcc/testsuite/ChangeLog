@@ -1,3 +1,8 @@
+2010-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/43880
+	* g++.dg/torture/pr43880.C: New testcase.
+
 2010-04-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/9335
