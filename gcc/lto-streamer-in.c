@@ -1768,8 +1768,8 @@ unpack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
   SET_TYPE_MODE (expr, mode);
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_NEEDS_CONSTRUCTING(expr) = (unsigned) bp_unpack_value (bp, 1);
-  if (TREE_CODE (expr) == UNION_TYPE || TREE_CODE (expr) == RECORD_TYPE)
+  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -2161,9 +2161,10 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
     TYPE_VALUES (expr) = lto_input_tree (ib, data_in);
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_DOMAIN (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == RECORD_TYPE || TREE_CODE (expr) == UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_FIELDS (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == FUNCTION_TYPE || TREE_CODE (expr) == METHOD_TYPE)
+  else if (TREE_CODE (expr) == FUNCTION_TYPE
+	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = lto_input_tree (ib, data_in);
   else if (TREE_CODE (expr) == VECTOR_TYPE)
     TYPE_DEBUG_REPRESENTATION_TYPE (expr) = lto_input_tree (ib, data_in);

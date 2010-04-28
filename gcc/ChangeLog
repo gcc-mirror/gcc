@@ -1,5 +1,13 @@
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* lto-streamer-in.c (unpack_ts_type_value_fields): Replace test for
+	record or union type with RECORD_OR_UNION_TYPE_P predicate.
+	(lto_input_ts_type_tree_pointers): Likewise.
+	* lto-streamer-out.c (pack_ts_type_value_fields): Likewise.
+	(lto_output_ts_type_tree_pointers): Likewise.
+
+2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lto-streamer.c [LTO_STREAMER_DEBUG] (tree_htab, tree_hash_entry,
 	hash_tree, eq_tree): New tree hash table.
 	(lto_streamer_init) [LTO_STREAMER_DEBUG]: Initialize it.
