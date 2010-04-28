@@ -2733,31 +2733,45 @@ print_instantiation_full_context (diagnostic_context *context)
 
 static void
 print_instantiation_partial_context_line (diagnostic_context *context,
-					  const struct tinst_level *t, location_t loc)
+					  const struct tinst_level *t,
+					  location_t loc, bool recursive_p)
 {
   expanded_location xloc;
   xloc = expand_location (loc);
 
-  if (t != NULL) {
-    const char *str;
-    str = decl_as_string_translate (t->decl,
-				    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
-    if (flag_show_column)
-      pp_verbatim (context->printer,
-		   _("%s:%d:%d:   instantiated from %qs\n"),
-		   xloc.file, xloc.line, xloc.column, str);
-    else
-      pp_verbatim (context->printer,
-		   _("%s:%d:   instantiated from %qs\n"),
-		   xloc.file, xloc.line, str);
-  } else {
-    if (flag_show_column)
-      pp_verbatim (context->printer, _("%s:%d:%d:   instantiated from here"),
-		   xloc.file, xloc.line, xloc.column);
-    else
-      pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
-		   xloc.file, xloc.line);
-  }
+  if (t != NULL) 
+    {
+      const char *str;
+      str = decl_as_string_translate (t->decl,
+				      TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
+      if (flag_show_column)
+	pp_verbatim (context->printer,
+		     recursive_p
+		     ? _("%s:%d:%d:   recursively instantiated from %qs\n")
+		     : _("%s:%d:%d:   instantiated from %qs\n"),
+		     xloc.file, xloc.line, xloc.column, str);
+      else
+	pp_verbatim (context->printer,
+		     recursive_p
+		     ? _("%s:%d:   recursively instantiated from %qs\n")
+		     : _("%s:%d:   recursively instantiated from %qs\n"),
+		     xloc.file, xloc.line, str);
+    }
+  else
+    {
+      if (flag_show_column)
+	pp_verbatim (context->printer, 
+		     recursive_p
+		     ? _("%s:%d:%d:   recursively instantiated from here")
+		     : _("%s:%d:%d:   instantiated from here"),
+		     xloc.file, xloc.line, xloc.column);
+      else
+	pp_verbatim (context->printer,
+		     recursive_p
+		     ? _("%s:%d:   recursively instantiated from here")
+		     : _("%s:%d:   instantiated from here"),
+		     xloc.file, xloc.line);
+    }
 }
 
 /* Same as print_instantiation_full_context but less verbose.  */
@@ -2769,9 +2783,14 @@ print_instantiation_partial_context (diagnostic_context *context,
   struct tinst_level *t;
   int n_total = 0;
   int n;
+  location_t prev_loc = loc;
 
   for (t = t0; t != NULL; t = t->next)
-    n_total++;
+    if (prev_loc != t->locus)
+      {
+	prev_loc = t->locus;
+	n_total++;
+      }
 
   t = t0;
 
@@ -2781,11 +2800,13 @@ print_instantiation_partial_context (diagnostic_context *context,
       for (n = 0; n < 5; n++)
 	{
 	  gcc_assert (t != NULL);
-	  print_instantiation_partial_context_line (context, t, loc);
+	  if (loc != t->locus)
+	    print_instantiation_partial_context_line (context, t, loc,
+						      /*recursive_p=*/false);
 	  loc = t->locus;
 	  t = t->next;
 	}
-      if (skip > 1) 
+      if (t != NULL && skip > 1)
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
@@ -2799,18 +2820,26 @@ print_instantiation_partial_context (diagnostic_context *context,
 			 xloc.file, xloc.line, skip);
 	  
 	  do {
-	      loc = t->locus;
-	      t = t->next;
-	  } while (--skip > 0);
+	    loc = t->locus;
+	    t = t->next;
+	  } while (t != NULL && --skip > 0);
 	}
     }
   
-  for (; t != NULL; t = t->next)
+  while (t != NULL)
     {
-      print_instantiation_partial_context_line (context, t, loc);
+      while (t->next != NULL && t->locus == t->next->locus)
+	{
+	  loc = t->locus;
+	  t = t->next;
+	}
+      print_instantiation_partial_context_line (context, t, loc,
+						t->locus == loc);
       loc = t->locus;
+      t = t->next;
     }
-  print_instantiation_partial_context_line (context, NULL, loc);
+  print_instantiation_partial_context_line (context, NULL, loc,
+					    /*recursive_p=*/false);
   pp_base_newline (context->printer);
 }
 
