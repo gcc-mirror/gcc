@@ -1,3 +1,8 @@
+2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/const-uniq-1.c: New test.
+	* gcc.dg/lto/const-uniq_[01].c: Likewise.
+
 2010-04-28  Xinliang David Li  <davidxl@google.com>
 
 	* gcc.dg/uninit-pred-2_b.c: New test.

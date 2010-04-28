@@ -1,3 +1,8 @@
+2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Uniquize
+	constant constructors before taking their address.
+
 2010-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_dbug.ads: Fix outdated description.  Mention link between XVS
