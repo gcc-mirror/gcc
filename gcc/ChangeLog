@@ -1,3 +1,8 @@
+2010-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/22224
+	* config/alpha/osf.h (ASM_OUTPUT_LOCAL): Redefine.
+
 2010-04-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43846

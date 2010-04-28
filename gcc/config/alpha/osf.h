@@ -213,6 +213,14 @@ __enable_execute_stack (void *addr)					\
    ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4) \
    : DW_EH_PE_aligned)
 
+/* The Tru64 UNIX assembler warns on .lcomm with SIZE 0, so use 1 in that
+   case.  */
+#undef ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+( fputs ("\t.lcomm ", (FILE)),				\
+  assemble_name ((FILE), (NAME)),			\
+  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE) ? (SIZE) : 1))
+
 /* This is how we tell the assembler that a symbol is weak.  */
 
 #define ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, VALUE)	\
