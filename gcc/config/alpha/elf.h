@@ -272,20 +272,36 @@ do {									\
 
 /* Write the extra assembler code needed to declare an object properly.  */
 
+#ifdef HAVE_GAS_GNU_UNIQUE_OBJECT
+#define USE_GNU_UNIQUE_OBJECT 1
+#else
+#define USE_GNU_UNIQUE_OBJECT 0
+#endif
+
 #undef  ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
-  do {								\
-    HOST_WIDE_INT size;						\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
-    size_directive_output = 0;					\
-    if (!flag_inhibit_size_directive				\
-	&& DECL_SIZE (DECL)					\
-	&& (size = int_size_in_bytes (TREE_TYPE (DECL))) > 0)	\
-      {								\
-	size_directive_output = 1;				\
-        ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
-      }								\
-    ASM_OUTPUT_LABEL(FILE, NAME);				\
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
+  do {									\
+    HOST_WIDE_INT size;							\
+    									\
+    /* For template static data member instantiations or		\
+       inline fn local statics, use gnu_unique_object so that		\
+       they will be combined even under RTLD_LOCAL.  */			\
+    if (USE_GNU_UNIQUE_OBJECT						\
+	&& !DECL_ARTIFICIAL (DECL) && DECL_ONE_ONLY (DECL))		\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "gnu_unique_object");	\
+    else								\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
+    									\
+    size_directive_output = 0;						\
+    if (!flag_inhibit_size_directive					\
+	&& (DECL) && DECL_SIZE (DECL))					\
+      {									\
+	size_directive_output = 1;					\
+	size = int_size_in_bytes (TREE_TYPE (DECL));			\
+	ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
+      }									\
+    									\
+    ASM_OUTPUT_LABEL (FILE, NAME);					\
   } while (0)
 
 /* Output the size directive for a decl in rest_of_decl_compilation
