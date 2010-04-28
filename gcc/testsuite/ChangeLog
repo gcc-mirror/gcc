@@ -1,3 +1,9 @@
+2010-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/43919
+	* gfortran.dg/coarray_11.f90: Add scalar-coarrays test case.
+
 2010-04-28  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc.dg/plugin/plugin.exp: Run the plugindir tests.
