@@ -1,3 +1,39 @@
+2010-04-28  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.dg/uninit-pred-2_b.c: New test.
+	* gcc.dg/uninit-pred-4_b.c: New test.
+	* gcc.dg/uninit-pred-3_d.c: New test.
+	* gcc.dg/uninit-pred-6_b.c: New test.
+	* gcc.dg/uninit-pred-8_b.c: New test.
+	* gcc.dg/uninit-pred-3_a.c: New test.
+	* gcc.dg/uninit-pred-2_c.c: New test.
+	* gcc.dg/uninit-pred-5_a.c: New test.
+	* gcc.dg/uninit-pred-3_e.c: New test.
+	* gcc.dg/uninit-pred-7_a.c: New test.
+	* gcc.dg/uninit-pred-6_c.c: New test.
+	* gcc.dg/uninit-pred-9_a.c: New test.
+	* gcc.dg/uninit-pred-8_c.c: New test.
+	* gcc.dg/uninit-pred-3_b.c: New test.
+	* gcc.dg/uninit-pred-5_b.c: New test.
+	* gcc.dg/uninit-pred-7_b.c: New test.
+	* gcc.dg/uninit-pred-6_d.c: New test.
+	* gcc.dg/uninit-pred-9_b.c: New test.
+	* gcc.dg/uninit-pred-2_a.c: New test.
+	* gcc.dg/uninit-pred-4_a.c: New test.
+	* gcc.dg/uninit-pred-3_c.c: New test.
+	* gcc.dg/uninit-pred-6_a.c: New test.
+	* gcc.dg/uninit-pred-8_a.c: New test.
+	* gcc.dg/uninit-pred-7_c.c: New test.
+	* gcc.dg/uninit-pred-6_e.c: New test.
+	* g++.dg/uninit-pred-loop-1_b.cc: New test.
+	* g++.dg/uninit-pred-1_a.C: New test.
+	* g++.dg/uninit-pred-1_b.C: New test.
+	* g++.dg/uninit-pred-2_a.C: New test.
+	* g++.dg/uninit-pred-2_b.C: New test.
+	* g++.dg/uninit-pred-loop-1_a.cc: New test.
+	* g++.dg/uninit-pred-loop-1_c.cc: New test.
+	* g++.dg/uninit-pred-loop_1.cc: New test.
+
 2010-04-28  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/lto/20091209-1_0.c: New testcase.
