@@ -275,6 +275,9 @@ struct variable_info
   /* True if this field may contain pointers.  */
   unsigned int may_have_pointers : 1;
 
+  /* True if this field has only restrict qualified pointers.  */
+  unsigned int only_restrict_pointers : 1;
+
   /* True if this represents a global variable.  */
   unsigned int is_global_var : 1;
 
@@ -412,6 +415,7 @@ new_var_info (tree t, const char *name)
   ret->is_heap_var = false;
   ret->is_restrict_var = false;
   ret->may_have_pointers = true;
+  ret->only_restrict_pointers = false;
   ret->is_global_var = (t == NULL_TREE);
   ret->is_fn_info = false;
   if (t && DECL_P (t))
@@ -419,6 +423,8 @@ new_var_info (tree t, const char *name)
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;
+
+  stats.total_vars++;
 
   VEC_safe_push (varinfo_t, heap, varmap, ret);
 
@@ -3641,7 +3647,10 @@ get_function_part_constraint (varinfo_t fi, unsigned part)
   else if (TREE_CODE (fi->decl) == FUNCTION_DECL)
     {
       varinfo_t ai = first_vi_for_offset (fi, part);
-      c.var = ai ? ai->id : anything_id;
+      if (ai)
+	c.var = ai->id;
+      else
+	c.var = anything_id;
       c.offset = 0;
       c.type = SCALAR;
     }
@@ -4723,19 +4732,6 @@ first_or_preceding_vi_for_offset (varinfo_t start,
 }
 
 
-/* Insert the varinfo FIELD into the field list for BASE, at the front
-   of the list.  */
-
-static void
-insert_into_field_list (varinfo_t base, varinfo_t field)
-{
-  varinfo_t prev = base;
-  varinfo_t curr = base->next;
-
-  field->next = curr;
-  prev->next = field;
-}
-
 /* This structure is used during pushing fields onto the fieldstack
    to track the offset of the field, since bitpos_of_field gives it
    relative to its immediate containing type, and we want it relative
@@ -4821,37 +4817,37 @@ var_can_have_subvars (const_tree v)
 
    OFFSET is used to keep track of the offset in this entire
    structure, rather than just the immediately containing structure.
-   Returns the number of fields pushed.  */
+   Returns false if the caller is supposed to handle the field we
+   recursed for.  */
 
-static int
+static bool
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 			     HOST_WIDE_INT offset)
 {
   tree field;
-  int count = 0;
+  bool empty_p = true;
 
   if (TREE_CODE (type) != RECORD_TYPE)
-    return 0;
+    return false;
 
   /* If the vector of fields is growing too big, bail out early.
      Callers check for VEC_length <= MAX_FIELDS_FOR_FIELD_SENSITIVE, make
      sure this fails.  */
   if (VEC_length (fieldoff_s, *fieldstack) > MAX_FIELDS_FOR_FIELD_SENSITIVE)
-    return 0;
+    return false;
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
       {
 	bool push = false;
-	int pushed = 0;
 	HOST_WIDE_INT foff = bitpos_of_field (field);
 
 	if (!var_can_have_subvars (field)
 	    || TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
 	    || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  push = true;
-	else if (!(pushed = push_fields_onto_fieldstack
-		   (TREE_TYPE (field), fieldstack, offset + foff))
+	else if (!push_fields_onto_fieldstack
+		    (TREE_TYPE (field), fieldstack, offset + foff)
 		 && (DECL_SIZE (field)
 		     && !integer_zerop (DECL_SIZE (field))))
 	  /* Empty structures may have actual size, like in C++.  So
@@ -4874,12 +4870,11 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    /* If adjacent fields do not contain pointers merge them.  */
 	    if (pair
 		&& !pair->may_have_pointers
-		&& !could_have_pointers (field)
 		&& !pair->has_unknown_size
 		&& !has_unknown_size
-		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
+		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff
+		&& !could_have_pointers (field))
 	      {
-		pair = VEC_last (fieldoff_s, *fieldstack);
 		pair->size += TREE_INT_CST_LOW (DECL_SIZE (field));
 	      }
 	    else
@@ -4896,14 +4891,13 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 		  = (!has_unknown_size
 		     && POINTER_TYPE_P (TREE_TYPE (field))
 		     && TYPE_RESTRICT (TREE_TYPE (field)));
-		count++;
 	      }
 	  }
-	else
-	  count += pushed;
+
+	empty_p = false;
       }
 
-  return count;
+  return !empty_p;
 }
 
 /* Count the number of arguments DECL has, and set IS_VARARGS to true
@@ -4955,8 +4949,6 @@ create_function_info_for (tree decl, const char *name)
     vi->fullsize = ~0;
   insert_vi_for_tree (vi->decl, vi);
 
-  stats.total_vars++;
-
   prev_vi = vi;
 
   /* Create a variable for things the function clobbers and one for
@@ -4979,7 +4971,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < clobbervi->offset);
       prev_vi->next = clobbervi;
       prev_vi = clobbervi;
-      stats.total_vars++;
 
       asprintf (&tempname, "%s.use", name);
       newname = ggc_strdup (tempname);
@@ -4994,7 +4985,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < usevi->offset);
       prev_vi->next = usevi;
       prev_vi = usevi;
-      stats.total_vars++;
     }
 
   /* And one for the static chain.  */
@@ -5017,7 +5007,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < chainvi->offset);
       prev_vi->next = chainvi;
       prev_vi = chainvi;
-      stats.total_vars++;
       insert_vi_for_tree (fn->static_chain_decl, chainvi);
     }
 
@@ -5047,7 +5036,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < resultvi->offset);
       prev_vi->next = resultvi;
       prev_vi = resultvi;
-      stats.total_vars++;
       if (DECL_RESULT (decl))
 	insert_vi_for_tree (DECL_RESULT (decl), resultvi);
     }
@@ -5078,7 +5066,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi;
       prev_vi = argvi;
-      stats.total_vars++;
       if (arg)
 	{
 	  insert_vi_for_tree (arg, argvi);
@@ -5111,7 +5098,6 @@ create_function_info_for (tree decl, const char *name)
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi;
       prev_vi = argvi;
-      stats.total_vars++;
     }
 
   return vi->id;
@@ -5141,48 +5127,135 @@ check_for_overlaps (VEC (fieldoff_s,heap) *fieldstack)
    This will also create any varinfo structures necessary for fields
    of DECL.  */
 
-static unsigned int
-create_variable_info_for (tree decl, const char *name)
+static varinfo_t
+create_variable_info_for_1 (tree decl, const char *name)
 {
-  varinfo_t vi;
+  varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
   tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decl_type);
   VEC (fieldoff_s,heap) *fieldstack = NULL;
+  fieldoff_s *fo;
+  unsigned int i;
 
-  if (var_can_have_subvars (decl) && use_field_sensitive)
-    push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
-
-  /* If the variable doesn't have subvars, we may end up needing to
-     sort the field list and create fake variables for all the
-     fields.  */
-  vi = new_var_info (decl, name);
-  vi->offset = 0;
-  vi->may_have_pointers = could_have_pointers (decl);
   if (!declsize
       || !host_integerp (declsize, 1))
     {
-      vi->is_unknown_size_var = true;
-      vi->fullsize = ~0;
+      vi = new_var_info (decl, name);
+      vi->offset = 0;
       vi->size = ~0;
+      vi->fullsize = ~0;
+      vi->is_unknown_size_var = true;
+      vi->is_full_var = true;
+      vi->may_have_pointers = could_have_pointers (decl);
+      return vi;
     }
-  else
+
+  /* Collect field information.  */
+  if (use_field_sensitive
+      && var_can_have_subvars (decl)
+      /* ???  Force us to not use subfields for global initializers
+	 in IPA mode.  Else we'd have to parse arbitrary initializers.  */
+      && !(in_ipa_mode
+	   && is_global_var (decl)
+	   && DECL_INITIAL (decl)))
     {
+      fieldoff_s *fo = NULL;
+      bool notokay = false;
+      unsigned int i;
+
+      push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
+
+      for (i = 0; !notokay && VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
+	if (fo->has_unknown_size
+	    || fo->offset < 0)
+	  {
+	    notokay = true;
+	    break;
+	  }
+
+      /* We can't sort them if we have a field with a variable sized type,
+	 which will make notokay = true.  In that case, we are going to return
+	 without creating varinfos for the fields anyway, so sorting them is a
+	 waste to boot.  */
+      if (!notokay)
+	{
+	  sort_fieldstack (fieldstack);
+	  /* Due to some C++ FE issues, like PR 22488, we might end up
+	     what appear to be overlapping fields even though they,
+	     in reality, do not overlap.  Until the C++ FE is fixed,
+	     we will simply disable field-sensitivity for these cases.  */
+	  notokay = check_for_overlaps (fieldstack);
+	}
+
+      if (notokay)
+	VEC_free (fieldoff_s, heap, fieldstack);
+    }
+
+  /* If we didn't end up collecting sub-variables create a full
+     variable for the decl.  */
+  if (VEC_length (fieldoff_s, fieldstack) <= 1
+      || VEC_length (fieldoff_s, fieldstack) > MAX_FIELDS_FOR_FIELD_SENSITIVE)
+    {
+      vi = new_var_info (decl, name);
+      vi->offset = 0;
+      vi->may_have_pointers = could_have_pointers (decl);
       vi->fullsize = TREE_INT_CST_LOW (declsize);
       vi->size = vi->fullsize;
+      vi->is_full_var = true;
+      VEC_free (fieldoff_s, heap, fieldstack);
+      return vi;
     }
 
-  insert_vi_for_tree (vi->decl, vi);
-
-  /* ???  The setting of vi->may_have_pointers is too conservative here
-     and may get refined below.  Thus we have superfluous constraints
-     here sometimes which triggers the commented assert in
-     dump_sa_points_to_info.  */
-  if (vi->is_global_var
-      && vi->may_have_pointers)
+  vi = new_var_info (decl, name);
+  vi->fullsize = TREE_INT_CST_LOW (declsize);
+  for (i = 0, newvi = vi;
+       VEC_iterate (fieldoff_s, fieldstack, i, fo);
+       ++i, newvi = newvi->next)
     {
+      const char *newname = "NULL";
+      char *tempname;
+
+      if (dump_file)
+	{
+	  asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC
+		    "+" HOST_WIDE_INT_PRINT_DEC, name, fo->offset, fo->size);
+	  newname = ggc_strdup (tempname);
+	  free (tempname);
+	}
+      newvi->name = newname;
+      newvi->offset = fo->offset;
+      newvi->size = fo->size;
+      newvi->fullsize = vi->fullsize;
+      newvi->may_have_pointers = fo->may_have_pointers;
+      newvi->only_restrict_pointers = fo->only_restrict_pointers;
+      if (i + 1 < VEC_length (fieldoff_s, fieldstack))
+	newvi->next = new_var_info (decl, name);
+    }
+
+  VEC_free (fieldoff_s, heap, fieldstack);
+
+  return vi;
+}
+
+static unsigned int
+create_variable_info_for (tree decl, const char *name)
+{
+  varinfo_t vi = create_variable_info_for_1 (decl, name);
+  unsigned int id = vi->id;
+
+  insert_vi_for_tree (decl, vi);
+
+  /* Create initial constraints for globals.  */
+  for (; vi; vi = vi->next)
+    {
+      if (!vi->may_have_pointers
+	  || !vi->is_global_var)
+	continue;
+
       /* Mark global restrict qualified pointers.  */
-      if (POINTER_TYPE_P (TREE_TYPE (decl))
-	  && TYPE_RESTRICT (TREE_TYPE (decl)))
+      if ((POINTER_TYPE_P (TREE_TYPE (decl))
+	   && TYPE_RESTRICT (TREE_TYPE (decl)))
+	  || vi->only_restrict_pointers)
 	make_constraint_from_restrict (vi, "GLOBAL_RESTRICT");
 
       /* For escaped variables initialize them from nonlocal.  */
@@ -5194,12 +5267,12 @@ create_variable_info_for (tree decl, const char *name)
 	 IPA mode generate constraints for it.  In non-IPA mode
 	 the initializer from nonlocal is all we need.  */
       if (in_ipa_mode
-	  && DECL_INITIAL (vi->decl))
+	  && DECL_INITIAL (decl))
 	{
 	  VEC (ce_s, heap) *rhsc = NULL;
 	  struct constraint_expr lhs, *rhsp;
 	  unsigned i;
-	  get_constraint_for (DECL_INITIAL (vi->decl), &rhsc);
+	  get_constraint_for (DECL_INITIAL (decl), &rhsc);
 	  lhs.var = vi->id;
 	  lhs.offset = 0;
 	  lhs.type = SCALAR;
@@ -5216,110 +5289,10 @@ create_variable_info_for (tree decl, const char *name)
 		process_constraint (new_constraint (lhs, *rhsp));
 	    }
 	  VEC_free (ce_s, heap, rhsc);
-	  /* ???  Force us to not use subfields.  Else we'd have to parse
-	     arbitrary initializers.  */
-	  VEC_free (fieldoff_s, heap, fieldstack);
 	}
     }
 
-  stats.total_vars++;
-  if (use_field_sensitive
-      && !vi->is_unknown_size_var
-      && var_can_have_subvars (decl)
-      && VEC_length (fieldoff_s, fieldstack) > 1
-      && VEC_length (fieldoff_s, fieldstack) <= MAX_FIELDS_FOR_FIELD_SENSITIVE)
-    {
-      fieldoff_s *fo = NULL;
-      bool notokay = false;
-      unsigned int i;
-
-      for (i = 0; !notokay && VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
-	{
-	  if (fo->has_unknown_size
-	      || fo->offset < 0)
-	    {
-	      notokay = true;
-	      break;
-	    }
-	}
-
-      /* We can't sort them if we have a field with a variable sized type,
-	 which will make notokay = true.  In that case, we are going to return
-	 without creating varinfos for the fields anyway, so sorting them is a
-	 waste to boot.  */
-      if (!notokay)
-	{
-	  sort_fieldstack (fieldstack);
-	  /* Due to some C++ FE issues, like PR 22488, we might end up
-	     what appear to be overlapping fields even though they,
-	     in reality, do not overlap.  Until the C++ FE is fixed,
-	     we will simply disable field-sensitivity for these cases.  */
-	  notokay = check_for_overlaps (fieldstack);
-	}
-
-
-      if (VEC_length (fieldoff_s, fieldstack) != 0)
-	fo = VEC_index (fieldoff_s, fieldstack, 0);
-
-      if (fo == NULL || notokay)
-	{
-	  vi->is_unknown_size_var = 1;
-	  vi->fullsize = ~0;
-	  vi->size = ~0;
-	  vi->is_full_var = true;
-	  VEC_free (fieldoff_s, heap, fieldstack);
-	  return vi->id;
-	}
-
-      vi->size = fo->size;
-      vi->offset = fo->offset;
-      vi->may_have_pointers = fo->may_have_pointers;
-      if (vi->is_global_var
-	  && vi->may_have_pointers)
-	{
-	  if (fo->only_restrict_pointers)
-	    make_constraint_from_restrict (vi, "GLOBAL_RESTRICT");
-	}
-      for (i = VEC_length (fieldoff_s, fieldstack) - 1;
-	   i >= 1 && VEC_iterate (fieldoff_s, fieldstack, i, fo);
-	   i--)
-	{
-	  varinfo_t newvi;
-	  const char *newname = "NULL";
-	  char *tempname;
-
-	  if (dump_file)
-	    {
-	      asprintf (&tempname, "%s." HOST_WIDE_INT_PRINT_DEC
-			"+" HOST_WIDE_INT_PRINT_DEC,
-			vi->name, fo->offset, fo->size);
-	      newname = ggc_strdup (tempname);
-	      free (tempname);
-	    }
-	  newvi = new_var_info (decl, newname);
-	  newvi->offset = fo->offset;
-	  newvi->size = fo->size;
-	  newvi->fullsize = vi->fullsize;
-	  newvi->may_have_pointers = fo->may_have_pointers;
-	  insert_into_field_list (vi, newvi);
-	  if ((newvi->is_global_var || TREE_CODE (decl) == PARM_DECL)
-	      && newvi->may_have_pointers)
-	    {
-	       if (fo->only_restrict_pointers)
-		 make_constraint_from_restrict (newvi, "GLOBAL_RESTRICT");
-	       if (newvi->is_global_var && !in_ipa_mode)
-		 make_copy_constraint (newvi, nonlocal_id);
-	    }
-
-	  stats.total_vars++;
-	}
-    }
-  else
-    vi->is_full_var = true;
-
-  VEC_free (fieldoff_s, heap, fieldstack);
-
-  return vi->id;
+  return id;
 }
 
 /* Print out the points-to solution for VAR to FILE.  */
@@ -5405,8 +5378,12 @@ intra_create_variable_infos (void)
 	}
 
       for (p = get_vi_for_tree (t); p; p = p->next)
-	if (p->may_have_pointers)
-	  make_constraint_from (p, nonlocal_id);
+	{
+	  if (p->may_have_pointers)
+	    make_constraint_from (p, nonlocal_id);
+	  if (p->only_restrict_pointers)
+	    make_constraint_from_restrict (p, "PARM_RESTRICT");
+	}
       if (POINTER_TYPE_P (TREE_TYPE (t))
 	  && TYPE_RESTRICT (TREE_TYPE (t)))
 	make_constraint_from_restrict (get_vi_for_tree (t), "PARM_RESTRICT");
