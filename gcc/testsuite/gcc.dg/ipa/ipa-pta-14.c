@@ -21,8 +21,8 @@ int main()
   void *p;
   a.p = (void *)&c;
   p = foo(&a, &a);
-  /* { dg-final { scan-ipa-dump "foo.result = { NULL a c }" "pta" { xfail *-*-* } } } */
-  /* { dg-final { scan-ipa-dump "foo.result = { NULL a a\[^ \]* c }" "pta" } } */
+  /* { dg-final { scan-ipa-dump "foo.result = { NULL a\[^ \]* c\[^ \]* }" "pta" { xfail *-*-* } } } */
+  /* { dg-final { scan-ipa-dump "foo.result = { NULL a\[^ \]* a\[^ \]* c\[^ \]* }" "pta" } } */
   ((struct X *)p)->p = (void *)0;
   if (a.p != (void *)0)
     abort ();

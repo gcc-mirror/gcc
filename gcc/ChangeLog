@@ -1,5 +1,22 @@
 2010-04-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43879
+	PR tree-optimization/43909
+	* tree-ssa-structalias.c (struct variable_info): Add
+	only_restrict_pointers flag.
+	(new_var_info): Initialize it.  Increment stats.total_vars here.
+	(create_function_info_for): Do not increment stats.total_vars
+	here.
+	(get_function_part_constraint): Fix build with C++.
+	(insert_into_field_list): Remove.
+	(push_fields_onto_fieldstack): Properly merge fields.
+	(create_variable_info_for): Split and simplify.
+	(create_variable_info_for_1): New piece.
+	(intra_create_variable_infos): Properly make restrict constraints
+	from parameters.
+
+2010-04-28  Richard Guenther  <rguenther@suse.de>
+
 	PR c++/43880
 	* tree-inline.c (copy_bind_expr): Also copy bind expr vars
 	value-exprs.
