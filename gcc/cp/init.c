@@ -506,6 +506,7 @@ perform_member_init (tree member, tree init)
     {
       if (init == NULL_TREE)
 	{
+	  tree core_type;
 	  /* member traversal: note it leaves init NULL */
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
@@ -515,6 +516,11 @@ perform_member_init (tree member, tree init)
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
+
+	  core_type = strip_array_types (type);
+	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
+	      || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
+	    diagnose_uninitialized_cst_or_ref_member (core_type, /*using_new=*/false);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work

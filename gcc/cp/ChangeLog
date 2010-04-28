@@ -1,3 +1,9 @@
+2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+
+	PR c++/29043
+	* init.c (perform_member_init): check for uninitialized const or
+	reference members, including array types.
+
 2010-04-24  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (get_fns): Split out from get_first_fn.
