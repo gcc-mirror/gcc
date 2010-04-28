@@ -1,3 +1,82 @@
+2010-04-28  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (struct cgraph_node): New field indirect_calls.
+	(struct cgraph_indirect_call_info): New type.
+	(struct cgraph_edge): Removed field indirect_call. New fields
+	indirect_info, indirect_inlining_edge and indirect_unknown_callee.
+	(cgraph_create_indirect_edge): Declare.
+	(cgraph_make_edge_direct): Likewise.
+	(enum LTO_cgraph_tags): New item LTO_cgraph_indirect_edge.
+	* ipa-prop.h (struct ipa_param_call_note): Removed.
+	(struct ipa_node_params): Removed field param_calls.
+	(ipa_create_all_structures_for_iinln): Declare.
+	* cgraph.c: Described indirect edges and uids in initial comment.
+	(cgraph_add_edge_to_call_site_hash): New function.
+	(cgraph_edge): Search also among the indirect edges, use
+	cgraph_add_edge_to_call_site_hash to add edges to the call site hash.
+	(cgraph_set_call_stmt): Possibly turn an indirect edge into a direct
+	one, use cgraph_add_edge_to_call_site_hash to add edges to the call
+	site hash.
+	(initialize_inline_failed): Assign a reason to indirect edges.
+	(cgraph_create_edge_1): New function.
+	(cgraph_create_edge): Moved some functionality to
+	cgraph_create_edge_1.
+	(cgraph_create_indirect_edge): New function.
+	(cgraph_edge_remove_callee): Add an assert checking for
+	non-indirectness.
+	(cgraph_edge_remove_caller): Special-case indirect edges.
+	(cgraph_remove_edge): Likewise.
+	(cgraph_set_edge_callee): New function.
+	(cgraph_redirect_edge_callee): Use cgraph_set_edge_callee.
+	(cgraph_make_edge_direct): New function.
+	(cgraph_update_edges_for_call_stmt_node): Do nothing only when also
+	the declaration of the call statement matches.
+	(cgraph_node_remove_callees): Special-case indirect edges.
+	(cgraph_clone_edge): Likewise.
+	(cgraph_clone_node): Clone also the indirect edges.
+	(dump_cgraph_node): Dump indirect_inlining_edge flag instead of
+	indirect_call, dump count of indirect_calls edges.
+	* ipa-prop.c (iinlining_processed_edges): New variable.
+	(ipa_note_param_call): Create indirect edges instead of
+	creating notes.  New parameter node.
+	(ipa_analyze_call_uses): New parameter node, pass it on to
+	ipa_note_param_call.
+	(ipa_analyze_stmt_uses): Likewise.
+	(ipa_analyze_params_uses): Pass node to ipa_analyze_stmt_uses.
+	(print_edge_addition_message): Work on edges rather than on notes.
+	(update_call_notes_after_inlining): Likewise, renamed to
+	update_indirect_edges_after_inlining.
+	(ipa_create_all_structures_for_iinln): New function.
+	(ipa_free_node_params_substructures): Do not free notes.
+	(ipa_edge_duplication_hook): Propagate bits within
+	iinlining_processed_edges bitmap.
+	(ipa_node_duplication_hook): Do not duplicate notes.
+	(free_all_ipa_structures_after_ipa_cp): Renamed to
+	ipa_free_all_structures_after_ipa_cp.
+	(free_all_ipa_structures_after_iinln): Renamed to
+	ipa_free_all_structures_after_iinln.g
+	(ipa_write_param_call_note): Removed.
+	(ipa_read_param_call_note): Removed.
+	(ipa_write_indirect_edge_info): New function.
+	(ipa_read_indirect_edge_info): Likewise.
+	(ipa_write_node_info): Do not stream notes, do stream information
+	in indirect edges.
+	(ipa_read_node_info): Likewise.
+	(lto_ipa_fixup_call_notes): Removed.
+	* ipa-cp.c (pass_ipa_cp): Set stmt_fixup to NULL.
+	* ipa-inline.c (pass_ipa_inline): Likewise.
+	* cgraphunit.c (verify_cgraph_node): Check also indirect edges.
+	* cif-code.def (INDIRECT_UNKNOWN_CALL): New reason.
+	* tree-inline.c (copy_bb): Removed an unnecessary double check for
+	is_gimple_call.
+	* tree-inline.c (get_indirect_callee_fndecl): Do not consider indirect
+	edges.
+	* lto-cgraph.c (output_outgoing_cgraph_edges): New function.
+	(output_cgraph): Stream also indirect edges.
+	(lto_output_edge): Added capability to stream indirect edges.
+	(input_edge): Likewise.
+	(input_cgraph_1): Likewise.
+
 2010-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879

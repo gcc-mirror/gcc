@@ -1248,6 +1248,8 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts)
   struct cgraph_edge *cedge;
   for (cedge = node->callees; cedge; cedge = cedge->next_callee)
     cedge->call_stmt = stmts[cedge->lto_stmt_uid];
+  for (cedge = node->indirect_calls; cedge; cedge = cedge->next_callee)
+    cedge->call_stmt = stmts[cedge->lto_stmt_uid];
 }
 
 /* Fixup call_stmt pointers in NODE and all clones.  */

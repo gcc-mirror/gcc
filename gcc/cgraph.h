@@ -199,6 +199,9 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   struct cgraph_edge *callers;
   struct cgraph_node *next;
   struct cgraph_node *previous;
+  /* List of edges representing indirect calls with a yet undetermined
+     callee.  */
+  struct cgraph_edge *indirect_calls;
   /* For nested functions points to function the node is nested in.  */
   struct cgraph_node *origin;
   /* Points to first nested function, if any.  */
@@ -333,6 +336,14 @@ typedef enum {
   CIF_N_REASONS
 } cgraph_inline_failed_t;
 
+/* Structure containing additional information about an indirect call.  */
+
+struct GTY(()) cgraph_indirect_call_info
+{
+  /* Index of the parameter that is called.  */
+  int param_index;
+};
+
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
@@ -343,6 +354,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   struct cgraph_edge *prev_callee;
   struct cgraph_edge *next_callee;
   gimple call_stmt;
+  /* Additional information about an indirect call.  Not cleared when an edge
+     becomes direct.  */
+  struct cgraph_indirect_call_info *indirect_info;
   PTR GTY ((skip (""))) aux;
   /* When equal to CIF_OK, inline this call.  Otherwise, points to the
      explanation why function was not inlined.  */
@@ -358,8 +372,12 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   int uid;
   /* Depth of loop nest, 1 means no loop nest.  */
   unsigned short int loop_nest;
-  /* Whether this edge describes a call that was originally indirect.  */
-  unsigned int indirect_call : 1;
+  /* Whether this edge was made direct by indirect inlining.  */
+  unsigned int indirect_inlining_edge : 1;
+  /* Whether this edge describes an indirect call with an undetermined
+     callee.  */
+  unsigned int indirect_unknown_callee : 1;
+  /* Whether this edge is still a dangling  */
   /* True if the corresponding CALL stmt cannot be inlined.  */
   unsigned int call_stmt_cannot_inline_p : 1;
   /* Can this call throw externally?  */
@@ -461,7 +479,8 @@ void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
 					gimple, gcov_type, int, int);
-
+struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple,
+						 gcov_type, int, int);
 struct cgraph_node * cgraph_get_node (tree);
 struct cgraph_node *cgraph_node (tree);
 bool cgraph_same_body_alias (tree, tree);
@@ -487,6 +506,7 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type, int,
 					int, bool, VEC(cgraph_edge_p,heap) *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
+void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);
 
@@ -657,6 +677,7 @@ enum LTO_cgraph_tags
   LTO_cgraph_overwritable_node,
   LTO_cgraph_unavail_node,
   LTO_cgraph_edge,
+  LTO_cgraph_indirect_edge,
   LTO_cgraph_last_tag
 };
 

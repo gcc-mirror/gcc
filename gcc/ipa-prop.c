@@ -41,6 +41,10 @@ VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
 /* Vector where the parameter infos are actually stored. */
 VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
+/* Bitmap with all UIDs of call graph edges that have been already processed
+   by indirect inlining.  */
+static bitmap iinlining_processed_edges;
+
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
@@ -745,39 +749,31 @@ ipa_is_ssa_with_stmt_def (tree t)
     return false;
 }
 
-/* Creates a new note describing a call to a parameter number FORMAL_ID and
-   attaches it to the linked list of INFO.  It also sets the called flag of the
-   parameter.  STMT is the corresponding call statement.  */
+/* Create a new indirect call graph edge describing a call to a parameter
+   number FORMAL_ID and and set the called flag of the parameter.  NODE is the
+   caller.  STMT is the corresponding call statement.  */
 
 static void
-ipa_note_param_call (struct ipa_node_params *info, int formal_id,
-		     gimple stmt)
+ipa_note_param_call (struct cgraph_node *node, int formal_id, gimple stmt)
 {
-  struct ipa_param_call_note *note;
+  struct cgraph_edge *cs;
   basic_block bb = gimple_bb (stmt);
+  int freq;
 
-  note = XCNEW (struct ipa_param_call_note);
-  note->formal_id = formal_id;
-  note->stmt = stmt;
-  note->lto_stmt_uid = gimple_uid (stmt);
-  note->count = bb->count;
-  note->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
-  note->loop_nest = bb->loop_depth;
-
-  note->next = info->param_calls;
-  info->param_calls = note;
-
-  return;
+  freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
+  cs = cgraph_create_indirect_edge (node, stmt, bb->count, freq,
+				    bb->loop_depth);
+  cs->indirect_info->param_index = formal_id;
 }
 
-/* Analyze the CALL and examine uses of formal parameters of the caller
+/* Analyze the CALL and examine uses of formal parameters of the caller NODE
    (described by INFO).  Currently it checks whether the call calls a pointer
    that is a formal parameter and if so, the parameter is marked with the
-   called flag and a note describing the call is created.  This is very simple
-   for ordinary pointers represented in SSA but not-so-nice when it comes to
-   member pointers.  The ugly part of this function does nothing more than
-   tries to match the pattern of such a call.  An example of such a pattern is
-   the gimple dump below, the call is on the last line:
+   called flag and an indirect call graph edge describing the call is created.
+   This is very simple for ordinary pointers represented in SSA but not-so-nice
+   when it comes to member pointers.  The ugly part of this function does
+   nothing more than trying to match the pattern of such a call.  An example of
+   such a pattern is the gimple dump below, the call is on the last line:
 
      <bb 2>:
        f$__delta_5 = f.__delta;
@@ -817,7 +813,8 @@ ipa_note_param_call (struct ipa_node_params *info, int formal_id,
 */
 
 static void
-ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
+ipa_analyze_call_uses (struct cgraph_node *node, struct ipa_node_params *info,
+		       gimple call)
 {
   tree target = gimple_call_fn (call);
   gimple def;
@@ -838,7 +835,7 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
       /* assuming TREE_CODE (var) == PARM_DECL */
       index = ipa_get_param_decl_index (info, var);
       if (index >= 0)
-	ipa_note_param_call (info, index, call);
+	ipa_note_param_call (node, index, call);
       return;
     }
 
@@ -935,20 +932,21 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
 
   index = ipa_get_param_decl_index (info, rec);
   if (index >= 0 && !ipa_is_param_modified (info, index))
-    ipa_note_param_call (info, index, call);
+    ipa_note_param_call (node, index, call);
 
   return;
 }
 
-/* Analyze the statement STMT with respect to formal parameters (described in
-   INFO) and their uses.  Currently it only checks whether formal parameters
-   are called.  */
+/* Analyze the call statement STMT with respect to formal parameters (described
+   in INFO) of caller given by NODE.  Currently it only checks whether formal
+   parameters are called.  */
 
 static void
-ipa_analyze_stmt_uses (struct ipa_node_params *info, gimple stmt)
+ipa_analyze_stmt_uses (struct cgraph_node *node, struct ipa_node_params *info,
+		       gimple stmt)
 {
   if (is_gimple_call (stmt))
-    ipa_analyze_call_uses (info, stmt);
+    ipa_analyze_call_uses (node, info, stmt);
 }
 
 /* Scan the function body of NODE and inspect the uses of formal parameters.
@@ -973,7 +971,7 @@ ipa_analyze_params_uses (struct cgraph_node *node)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
-	  ipa_analyze_stmt_uses (info, stmt);
+	  ipa_analyze_stmt_uses (node, info, stmt);
 	}
     }
 
@@ -1029,9 +1027,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
    by JFUNC.  NODE is the node where the call is.  */
 
 static void
-print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
-			     struct ipa_jump_func *jfunc,
-			     struct cgraph_node *node)
+print_edge_addition_message (FILE *f, struct cgraph_edge *e,
+			     struct ipa_jump_func *jfunc)
 {
   fprintf (f, "ipa-prop: Discovered an indirect call to a known target (");
   if (jfunc->type == IPA_JF_CONST_MEMBER_PTR)
@@ -1042,8 +1039,8 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
   else
     print_node_brief(f, "", jfunc->value.constant, 0);
 
-  fprintf (f, ") in %s: ", cgraph_node_name (node));
-  print_gimple_stmt (f, nt->stmt, 2, TDF_SLIM);
+  fprintf (f, ") in %s: ", cgraph_node_name (e->caller));
+  print_gimple_stmt (f, e->call_stmt, 2, TDF_SLIM);
 }
 
 /* Update the param called notes associated with NODE when CS is being inlined,
@@ -1053,41 +1050,47 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
    unless NEW_EDGES is NULL.  Return true iff a new edge(s) were created.  */
 
 static bool
-update_call_notes_after_inlining (struct cgraph_edge *cs,
-				  struct cgraph_node *node,
-				  VEC (cgraph_edge_p, heap) **new_edges)
+update_indirect_edges_after_inlining (struct cgraph_edge *cs,
+				      struct cgraph_node *node,
+				      VEC (cgraph_edge_p, heap) **new_edges)
 {
-  struct ipa_node_params *info = IPA_NODE_REF (node);
   struct ipa_edge_args *top = IPA_EDGE_REF (cs);
-  struct ipa_param_call_note *nt;
+  struct cgraph_edge *ie, *next_ie;
   bool res = false;
 
-  for (nt = info->param_calls; nt; nt = nt->next)
+  ipa_check_create_edge_args ();
+
+  for (ie = node->indirect_calls; ie; ie = next_ie)
     {
+      struct cgraph_indirect_call_info *ici = ie->indirect_info;
       struct ipa_jump_func *jfunc;
 
-      if (nt->processed)
+      next_ie = ie->next_callee;
+      if (bitmap_bit_p (iinlining_processed_edges, ie->uid))
 	continue;
 
+      /* If we ever use indirect edges for anything other than indirect
+	 inlining, we will need to skip those with negative param_indices. */
+      gcc_assert (ici->param_index >= 0);
+
       /* We must check range due to calls with variable number of arguments:  */
-      if (nt->formal_id >= ipa_get_cs_argument_count (top))
+      if (ici->param_index >= ipa_get_cs_argument_count (top))
 	{
-	  nt->processed = true;
+	  bitmap_set_bit (iinlining_processed_edges, ie->uid);
 	  continue;
 	}
 
-      jfunc = ipa_get_ith_jump_func (top, nt->formal_id);
+      jfunc = ipa_get_ith_jump_func (top, ici->param_index);
       if (jfunc->type == IPA_JF_PASS_THROUGH
 	  && jfunc->value.pass_through.operation == NOP_EXPR)
-	nt->formal_id = jfunc->value.pass_through.formal_id;
+	ici->param_index = jfunc->value.pass_through.formal_id;
       else if (jfunc->type == IPA_JF_CONST
 	       || jfunc->type == IPA_JF_CONST_MEMBER_PTR)
 	{
 	  struct cgraph_node *callee;
-	  struct cgraph_edge *new_indirect_edge;
 	  tree decl;
 
-	  nt->processed = true;
+	  bitmap_set_bit (iinlining_processed_edges, ie->uid);
 	  if (jfunc->type == IPA_JF_CONST_MEMBER_PTR)
 	    decl = jfunc->value.member_cst.pfn;
 	  else
@@ -1105,32 +1108,29 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 
 	  res = true;
 	  if (dump_file)
-	    print_edge_addition_message (dump_file, nt, jfunc, node);
+	    print_edge_addition_message (dump_file, ie, jfunc);
 
-	  new_indirect_edge = cgraph_create_edge (node, callee, nt->stmt,
-						  nt->count, nt->frequency,
-						  nt->loop_nest);
-	  new_indirect_edge->lto_stmt_uid = nt->lto_stmt_uid;
-	  new_indirect_edge->indirect_call = 1;
-	  ipa_check_create_edge_args ();
+	  cgraph_make_edge_direct (ie, callee);
+	  ie->indirect_inlining_edge = 1;
 	  if (new_edges)
-	    VEC_safe_push (cgraph_edge_p, heap, *new_edges, new_indirect_edge);
+	    VEC_safe_push (cgraph_edge_p, heap, *new_edges, ie);
 	  top = IPA_EDGE_REF (cs);
 	}
       else
 	{
-	  /* Ancestor jum functions and pass theoughs with operations should
+	  /* Ancestor jump functions and pass theoughs with operations should
 	     not be used on parameters that then get called.  */
 	  gcc_assert (jfunc->type == IPA_JF_UNKNOWN);
-	  nt->processed = true;
+	  bitmap_set_bit (iinlining_processed_edges, ie->uid);
 	}
     }
+
   return res;
 }
 
 /* Recursively traverse subtree of NODE (including node) made of inlined
    cgraph_edges when CS has been inlined and invoke
-   update_call_notes_after_inlining on all nodes and
+   update_indirect_edges_after_inlining on all nodes and
    update_jump_functions_after_inlining on all non-inlined edges that lead out
    of this subtree.  Newly discovered indirect edges will be added to
    *NEW_EDGES, unless NEW_EDGES is NULL.  Return true iff a new edge(s) were
@@ -1144,7 +1144,7 @@ propagate_info_to_inlined_callees (struct cgraph_edge *cs,
   struct cgraph_edge *e;
   bool res;
 
-  res = update_call_notes_after_inlining (cs, node, new_edges);
+  res = update_indirect_edges_after_inlining (cs, node, new_edges);
 
   for (e = node->callees; e; e = e->next_callee)
     if (!e->inline_failed)
@@ -1215,13 +1215,6 @@ ipa_free_node_params_substructures (struct ipa_node_params *info)
 {
   if (info->params)
     free (info->params);
-
-  while (info->param_calls)
-    {
-      struct ipa_param_call_note *note = info->param_calls;
-      info->param_calls = note->next;
-      free (note);
-    }
 
   memset (info, 0, sizeof (*info));
 }
@@ -1317,6 +1310,10 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
   new_args->jump_functions = (struct ipa_jump_func *)
     duplicate_ggc_array (old_args->jump_functions,
 		         sizeof (struct ipa_jump_func) * arg_count);
+
+  if (iinlining_processed_edges
+      && bitmap_bit_p (iinlining_processed_edges, src->uid))
+    bitmap_set_bit (iinlining_processed_edges, dst->uid);
 }
 
 /* Hook that is called by cgraph.c when a node is duplicated.  */
@@ -1326,7 +1323,6 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			   __attribute__((unused)) void *data)
 {
   struct ipa_node_params *old_info, *new_info;
-  struct ipa_param_call_note *note;
   int param_count;
 
   ipa_check_create_node_params ();
@@ -1340,17 +1336,6 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 		     sizeof (struct ipa_param_descriptor) * param_count);
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
   new_info->count_scale = old_info->count_scale;
-
-  for (note = old_info->param_calls; note; note = note->next)
-    {
-      struct ipa_param_call_note *nn;
-
-      nn = (struct ipa_param_call_note *)
-	xcalloc (1, sizeof (struct ipa_param_call_note));
-      memcpy (nn, note, sizeof (struct ipa_param_call_note));
-      nn->next = new_info->param_calls;
-      new_info->param_calls = nn;
-    }
 }
 
 /* Register our cgraph hooks if they are not already there.  */
@@ -1387,11 +1372,19 @@ ipa_unregister_cgraph_hooks (void)
   node_duplication_hook_holder = NULL;
 }
 
+/* Allocate all necessary data strucutures necessary for indirect inlining.  */
+
+void
+ipa_create_all_structures_for_iinln (void)
+{
+  iinlining_processed_edges = BITMAP_ALLOC (NULL);
+}
+
 /* Free all ipa_node_params and all ipa_edge_args structures if they are no
    longer needed after ipa-cp.  */
 
 void
-free_all_ipa_structures_after_ipa_cp (void)
+ipa_free_all_structures_after_ipa_cp (void)
 {
   if (!flag_indirect_inlining)
     {
@@ -1405,8 +1398,10 @@ free_all_ipa_structures_after_ipa_cp (void)
    longer needed after indirect inlining.  */
 
 void
-free_all_ipa_structures_after_iinln (void)
+ipa_free_all_structures_after_iinln (void)
 {
+  BITMAP_FREE (iinlining_processed_edges);
+
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
@@ -1974,39 +1969,30 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
 }
 
-/* Stream out a parameter call note.  */
+/* Stream out parts of cgraph_indirect_call_info corresponding to CS that are
+   relevant to indirect inlining to OB.  */
 
 static void
-ipa_write_param_call_note (struct output_block *ob,
-			   struct ipa_param_call_note *note)
+ipa_write_indirect_edge_info (struct output_block *ob,
+			      struct cgraph_edge *cs)
 {
-  gcc_assert (!note->processed);
-  lto_output_uleb128_stream (ob->main_stream, gimple_uid (note->stmt));
-  lto_output_sleb128_stream (ob->main_stream, note->formal_id);
-  lto_output_sleb128_stream (ob->main_stream, note->count);
-  lto_output_sleb128_stream (ob->main_stream, note->frequency);
-  lto_output_sleb128_stream (ob->main_stream, note->loop_nest);
+  struct cgraph_indirect_call_info *ii = cs->indirect_info;
+
+  lto_output_sleb128_stream (ob->main_stream, ii->param_index);
 }
 
-/* Read in a parameter call note.  */
+/* Read in parts of cgraph_indirect_call_info corresponding to CS that are
+   relevant to indirect inlining from IB.  */
 
 static void
-ipa_read_param_call_note (struct lto_input_block *ib,
-			  struct ipa_node_params *info)
-
+ipa_read_indirect_edge_info (struct lto_input_block *ib,
+			     struct data_in *data_in ATTRIBUTE_UNUSED,
+			     struct cgraph_edge *cs)
 {
-  struct ipa_param_call_note *note = XCNEW (struct ipa_param_call_note);
+  struct cgraph_indirect_call_info *ii = cs->indirect_info;
 
-  note->lto_stmt_uid = (unsigned int) lto_input_uleb128 (ib);
-  note->formal_id = (int) lto_input_sleb128 (ib);
-  note->count = (gcov_type) lto_input_sleb128 (ib);
-  note->frequency = (int) lto_input_sleb128 (ib);
-  note->loop_nest = (int) lto_input_sleb128 (ib);
-
-  note->next = info->param_calls;
-  info->param_calls = note;
+  ii->param_index = (int) lto_input_sleb128 (ib);
 }
-
 
 /* Stream out NODE info to OB.  */
 
@@ -2019,8 +2005,6 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   int j;
   struct cgraph_edge *e;
   struct bitpack_d *bp;
-  int note_count = 0;
-  struct ipa_param_call_note *note;
 
   encoder = ob->decl_state->cgraph_node_encoder;
   node_ref = lto_cgraph_encoder_encode (encoder, node);
@@ -2046,12 +2030,8 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
       for (j = 0; j < ipa_get_cs_argument_count (args); j++)
 	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
     }
-
-  for (note = info->param_calls; note; note = note->next)
-    note_count++;
-  lto_output_uleb128_stream (ob->main_stream, note_count);
-  for (note = info->param_calls; note; note = note->next)
-    ipa_write_param_call_note (ob, note);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    ipa_write_indirect_edge_info (ob, e);
 }
 
 /* Srtream in NODE info from IB.  */
@@ -2064,7 +2044,6 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   int k;
   struct cgraph_edge *e;
   struct bitpack_d *bp;
-  int i, note_count;
 
   ipa_initialize_node_params (node);
 
@@ -2094,10 +2073,8 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
       for (k = 0; k < ipa_get_cs_argument_count (args); k++)
 	ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
     }
-
-  note_count = lto_input_uleb128 (ib);
-  for (i = 0; i < note_count; i++)
-    ipa_read_param_call_note (ib, info);
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    ipa_read_indirect_edge_info (ib, data_in, e);
 }
 
 /* Write jump functions for nodes in SET.  */
@@ -2221,30 +2198,4 @@ ipa_update_after_lto_read (void)
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
 	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
 	}
-}
-
-/* Walk param call notes of NODE and set their call statements given the uid
-   stored in each note and STMTS which is an array of statements indexed by the
-   uid.  */
-
-void
-lto_ipa_fixup_call_notes (struct cgraph_node *node, gimple *stmts)
-{
-  struct ipa_node_params *info;
-  struct ipa_param_call_note *note;
-
-  ipa_check_create_node_params ();
-  info = IPA_NODE_REF (node);
-  note = info->param_calls;
-  /* If there are no notes or they have already been fixed up (the same fixup
-     is called for both inlining and ipa-cp), there's nothing to do. */
-  if (!note || note->stmt)
-    return;
-
-  do
-    {
-      note->stmt = stmts[note->lto_stmt_uid];
-      note = note->next;
-    }
-  while (note);
 }
