@@ -1354,6 +1354,14 @@ make_decl_rtl (tree decl)
       return;
     }
 
+  /* If this variable belongs to the global constant pool, retrieve the
+     pre-computed RTL or recompute it in LTO mode.  */
+  if (TREE_CODE (decl) == VAR_DECL && DECL_IN_CONSTANT_POOL (decl))
+    {
+      SET_DECL_RTL (decl, output_constant_def (DECL_INITIAL (decl), 1));
+      return;
+    }
+
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
   if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
@@ -2198,8 +2206,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (flag_syntax_only)
     return;
 
-  app_disable ();
-
   if (! dont_output_data
       && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
@@ -2210,6 +2216,19 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   gcc_assert (MEM_P (decl_rtl));
   gcc_assert (GET_CODE (XEXP (decl_rtl, 0)) == SYMBOL_REF);
   symbol = XEXP (decl_rtl, 0);
+
+  /* If this symbol belongs to the tree constant pool, output the constant
+     if it hasn't already been written.  */
+  if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+    {
+      tree decl = SYMBOL_REF_DECL (symbol);
+      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
+	output_constant_def_contents (symbol);
+      return;
+    }
+
+  app_disable ();
+
   name = XSTR (symbol, 0);
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     notice_global_symbol (decl);
@@ -2790,7 +2809,6 @@ decode_addr_const (tree exp, struct addr_const *value)
     {
       if (TREE_CODE (target) == COMPONENT_REF
 	  && host_integerp (byte_position (TREE_OPERAND (target, 1)), 0))
-
 	{
 	  offset += int_byte_position (TREE_OPERAND (target, 1));
 	  target = TREE_OPERAND (target, 0);
@@ -2847,7 +2865,6 @@ decode_addr_const (tree exp, struct addr_const *value)
 static GTY((param_is (struct constant_descriptor_tree)))
      htab_t const_desc_htab;
 
-static struct constant_descriptor_tree * build_constant_desc (tree);
 static void maybe_output_constant_def_contents (struct constant_descriptor_tree *, int);
 
 /* Constant pool accessor function.  */
@@ -3236,31 +3253,14 @@ copy_constant (tree exp)
     }
 }
 
-/* Return the alignment of constant EXP in bits.  */
-
-static unsigned int
-get_constant_alignment (tree exp)
-{
-  unsigned int align;
-
-  align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
-  align = CONSTANT_ALIGNMENT (exp, align);
-#endif
-  return align;
-}
-
 /* Return the section into which constant EXP should be placed.  */
 
 static section *
-get_constant_section (tree exp)
+get_constant_section (tree exp, unsigned int align)
 {
-  if (IN_NAMED_SECTION (exp))
-    return get_named_section (exp, NULL, compute_reloc_for_constant (exp));
-  else
-    return targetm.asm_out.select_section (exp,
-					   compute_reloc_for_constant (exp),
-					   get_constant_alignment (exp));
+  return targetm.asm_out.select_section (exp,
+					 compute_reloc_for_constant (exp),
+					 align);
 }
 
 /* Return the size of constant EXP in bytes.  */
@@ -3286,11 +3286,11 @@ get_constant_size (tree exp)
 static struct constant_descriptor_tree *
 build_constant_desc (tree exp)
 {
-  rtx symbol;
-  rtx rtl;
+  struct constant_descriptor_tree *desc;
+  rtx symbol, rtl;
   char label[256];
   int labelno;
-  struct constant_descriptor_tree *desc;
+  tree decl;
 
   desc = GGC_NEW (struct constant_descriptor_tree);
   desc->value = copy_constant (exp);
@@ -3303,17 +3303,41 @@ build_constant_desc (tree exp)
   labelno = const_labelno++;
   ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
 
-  /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
+  /* Construct the VAR_DECL associated with the constant.  */
+  decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, get_identifier (label),
+		     TREE_TYPE (exp));
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  TREE_ADDRESSABLE (decl) = 1;
+  /* We don't set the RTL yet as this would cause varpool to assume that the
+     variable is referenced.  Moreover, it would just be dropped in LTO mode.
+     Instead we set the flag that will be recognized in make_decl_rtl.  */
+  DECL_IN_CONSTANT_POOL (decl) = 1;
+  DECL_INITIAL (decl) = desc->value;
+  /* ??? CONSTANT_ALIGNMENT hasn't been updated for vector types on most
+     architectures so use DATA_ALIGNMENT as well, except for strings.  */
+  if (TREE_CODE (exp) == STRING_CST)
+    {
+#ifdef CONSTANT_ALIGNMENT
+      DECL_ALIGN (decl) = CONSTANT_ALIGNMENT (exp, DECL_ALIGN (decl));
+#endif
+    }
+  else
+    align_variable (decl, 0);
+
+  /* Now construct the SYMBOL_REF and the MEM.  */
   if (use_object_blocks_p ())
     {
-      section *sect = get_constant_section (exp);
+      section *sect = get_constant_section (exp, DECL_ALIGN (decl));
       symbol = create_block_symbol (ggc_strdup (label),
 				    get_block_for_section (sect), -1);
     }
   else
     symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LOCAL;
-  SET_SYMBOL_REF_DECL (symbol, desc->value);
+  SET_SYMBOL_REF_DECL (symbol, decl);
   TREE_CONSTANT_POOL_ADDRESS_P (symbol) = 1;
 
   rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
@@ -3330,7 +3354,6 @@ build_constant_desc (tree exp)
      ASM_OUTPUT_LABELREF will have to know how to strip this
      information.  This call might invalidate our local variable
      SYMBOL; we can't use it afterward.  */
-
   targetm.encode_section_info (exp, rtl, true);
 
   desc->rtl = rtl;
@@ -3437,7 +3460,8 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
 static void
 output_constant_def_contents (rtx symbol)
 {
-  tree exp = SYMBOL_REF_DECL (symbol);
+  tree decl = SYMBOL_REF_DECL (symbol);
+  tree exp = DECL_INITIAL (decl);
   unsigned int align;
 
   /* Make sure any other constants whose addresses appear in EXP
@@ -3454,8 +3478,8 @@ output_constant_def_contents (rtx symbol)
     place_block_symbol (symbol);
   else
     {
-      switch_to_section (get_constant_section (exp));
-      align = get_constant_alignment (exp);
+      align = DECL_ALIGN (decl);
+      switch_to_section (get_constant_section (exp, align));
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_constant_contents (exp, XSTR (symbol, 0), align);
@@ -3479,6 +3503,37 @@ lookup_constant_def (tree exp)
     htab_find_with_hash (const_desc_htab, &key, key.hash);
 
   return (desc ? desc->rtl : NULL_RTX);
+}
+
+/* Return a tree representing a reference to constant data in memory
+   for the constant expression EXP.
+
+   This is the counterpart of output_constant_def at the Tree level.  */
+
+tree
+tree_output_constant_def (tree exp)
+{
+  struct constant_descriptor_tree *desc, key;
+  void **loc;
+  tree decl;
+
+  /* Look up EXP in the table of constant descriptors.  If we didn't find
+     it, create a new one.  */
+  key.value = exp;
+  key.hash = const_hash_1 (exp);
+  loc = htab_find_slot_with_hash (const_desc_htab, &key, key.hash, INSERT);
+
+  desc = (struct constant_descriptor_tree *) *loc;
+  if (desc == 0)
+    {
+      desc = build_constant_desc (exp);
+      desc->hash = key.hash;
+      *loc = desc;
+    }
+
+  decl = SYMBOL_REF_DECL (XEXP (desc->rtl, 0));
+  varpool_finalize_decl (decl);
+  return decl;
 }
 
 /* Used in the hash tables to avoid outputting the same constant
@@ -3949,8 +4004,8 @@ mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
     }
   else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
     {
-      tree exp = SYMBOL_REF_DECL (x);
-      if (!TREE_ASM_WRITTEN (exp))
+      tree decl = SYMBOL_REF_DECL (x);
+      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
 	{
 	  n_deferred_constants--;
 	  output_constant_def_contents (x);
@@ -6912,8 +6967,8 @@ place_block_symbol (rtx symbol)
   else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
     {
       decl = SYMBOL_REF_DECL (symbol);
-      alignment = get_constant_alignment (decl);
-      size = get_constant_size (decl);
+      alignment = DECL_ALIGN (decl);
+      size = get_constant_size (DECL_INITIAL (decl));
     }
   else
     {
@@ -7059,9 +7114,9 @@ output_object_block (struct object_block *block)
       else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
 	{
 	  decl = SYMBOL_REF_DECL (symbol);
-	  assemble_constant_contents (decl, XSTR (symbol, 0),
-				      get_constant_alignment (decl));
-	  offset += get_constant_size (decl);
+	  assemble_constant_contents (DECL_INITIAL (decl), XSTR (symbol, 0),
+				      DECL_ALIGN (decl));
+	  offset += get_constant_size (DECL_INITIAL (decl));
 	}
       else
 	{

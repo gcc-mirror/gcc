@@ -2963,6 +2963,11 @@ struct GTY(()) tree_parm_decl {
 #define DECL_IN_TEXT_SECTION(NODE) \
   (VAR_DECL_CHECK (NODE)->decl_with_vis.in_text_section)
 
+/* In a VAR_DECL that's static,
+   nonzero if it belongs to the global constant pool.  */
+#define DECL_IN_CONSTANT_POOL(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_with_vis.in_constant_pool)
+
 /* Nonzero for a given ..._DECL node means that this node should be
    put in .common, if possible.  If a DECL_INITIAL is given, and it
    is not error_mark_node, then the decl cannot be put in .common.  */
@@ -3102,9 +3107,8 @@ struct GTY(()) tree_decl_with_vis {
  unsigned thread_local : 1;
  unsigned common_flag : 1;
  unsigned in_text_section : 1;
+ unsigned in_constant_pool : 1;
  unsigned dllimport_flag : 1;
- /* Used by C++.  Might become a generic decl flag.  */
- unsigned shadowed_for_var_p : 1;
  /* Don't belong to VAR_DECL exclusively.  */
  unsigned weak_flag : 1;
 
@@ -3117,7 +3121,9 @@ struct GTY(()) tree_decl_with_vis {
 
  /* Belong to FUNCTION_DECL exclusively.  */
  unsigned init_priority_p : 1;
- /* 15 unused bits. */
+ /* Used by C++ only.  Might become a generic decl flag.  */
+ unsigned shadowed_for_var_p : 1;
+ /* 14 unused bits. */
 };
 
 extern tree decl_debug_expr_lookup (tree);
@@ -5184,6 +5190,7 @@ extern void internal_reference_types (void);
 extern unsigned int update_alignment_for_field (record_layout_info, tree,
                                                 unsigned int);
 /* varasm.c */
+extern tree tree_output_constant_def (tree);
 extern void make_decl_rtl (tree);
 extern rtx make_decl_rtl_for_debug (tree);
 extern void make_decl_one_only (tree, tree);

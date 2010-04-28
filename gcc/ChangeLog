@@ -1,5 +1,31 @@
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	Uniquization of constants at the Tree level
+	* tree.h (DECL_IN_CONSTANT_POOL): New macro
+	(tree_decl_with_vis): Add in_constant_pool bit, move shadowed_for_var_p
+	bit to the end.
+	(tree_output_constant_def): Declare.
+	* gimplify.c (gimplify_init_constructor): When using block copy,
+	uniquize the constant constructor on the RHS.
+	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Deal
+	with DECL_IN_CONSTANT_POOL flag.
+	* lto-streamer-out.c (pack_ts_decl_with_vis_value_fields): Likewise.
+	* varasm.c (make_decl_rtl): Deal with variables belonging to the
+	global constant pool.
+	(assemble_variable): Deal with symbols belonging to the tree constant
+	pool.
+	(get_constant_section): Add ALIGN parameter and simplify.
+	(build_constant_desc): Build a VAR_DECL and attach it to the symbol.
+	(assemble_constant_contents): Use the expression of the VAR_DECL.
+	(output_constant_def_contents): Use the alignment of the VAR_DECL.
+	(tree_output_constant_def): New global function.
+	(mark_constant): Use the expression of the VAR_DECL.
+	(place_block_symbol): Use the alignment of the VAR_DECL and the size
+	of its expression.
+	(output_object_block): Likewise and assemble the expression.
+
+2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lto-streamer.c [LTO_STREAMER_DEBUG] (tree_htab, tree_hash_entry,
 	hash_tree, eq_tree): New tree hash table.
 	(lto_streamer_init) [LTO_STREAMER_DEBUG]: Initialize it.

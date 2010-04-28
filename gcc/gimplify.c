@@ -3758,25 +3758,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		&& num_nonzero_elements > 1
 		&& !can_move_by_pieces (size, align))
 	      {
-		tree new_tree;
-
 		if (notify_temp_creation)
 		  return GS_ERROR;
 
-		new_tree = create_tmp_var_raw (type, "C");
-
-		gimple_add_tmp_var (new_tree);
-		TREE_STATIC (new_tree) = 1;
-		TREE_READONLY (new_tree) = 1;
-		DECL_INITIAL (new_tree) = ctor;
-		if (align > DECL_ALIGN (new_tree))
-		  {
-		    DECL_ALIGN (new_tree) = align;
-		    DECL_USER_ALIGN (new_tree) = 1;
-		  }
-	        walk_tree (&DECL_INITIAL (new_tree), force_labels_r, NULL, NULL);
-
-		TREE_OPERAND (*expr_p, 1) = new_tree;
+	        walk_tree (&ctor, force_labels_r, NULL, NULL);
+		TREE_OPERAND (*expr_p, 1) = tree_output_constant_def (ctor);
 
 		/* This is no longer an assignment of a CONSTRUCTOR, but
 		   we still may have processing to do on the LHS.  So

@@ -468,6 +468,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, DECL_HARD_REGISTER (expr), 1);
       bp_pack_value (bp, DECL_IN_TEXT_SECTION (expr), 1);
+      bp_pack_value (bp, DECL_IN_CONSTANT_POOL (expr), 1);
       bp_pack_value (bp, DECL_TLS_MODEL (expr),  3);
     }
 
