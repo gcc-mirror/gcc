@@ -788,6 +788,31 @@ lto_streamer_cache_delete (struct lto_streamer_cache_d *c)
 }
 
 
+#ifdef LTO_STREAMER_DEBUG
+static htab_t tree_htab;
+
+struct tree_hash_entry
+{
+  tree key;
+  intptr_t value;
+};
+
+static hashval_t
+hash_tree (const void *p)
+{
+  const struct tree_hash_entry *e = (const struct tree_hash_entry *) p;
+  return htab_hash_pointer (e->key);
+}
+
+static int
+eq_tree (const void *p1, const void *p2)
+{
+  const struct tree_hash_entry *e1 = (const struct tree_hash_entry *) p1;
+  const struct tree_hash_entry *e2 = (const struct tree_hash_entry *) p2;
+  return (e1->key == e2->key);
+}
+#endif
+
 /* Initialization common to the LTO reader and writer.  */
 
 void
@@ -798,6 +823,10 @@ lto_streamer_init (void)
      new TS_* astructure is added, the streamer should be updated to
      handle it.  */
   check_handled_ts_structures ();
+
+#ifdef LTO_STREAMER_DEBUG
+  tree_htab = htab_create (31, hash_tree, eq_tree, NULL);
+#endif
 }
 
 
@@ -826,10 +855,16 @@ gate_lto_out (void)
 void
 lto_orig_address_map (tree t, intptr_t orig_t)
 {
-  /* FIXME lto.  Using the annotation field is quite hacky as it relies
-     on the GC not running while T is being rematerialized.  It would
-     be cleaner to use a hash table here.  */
-  t->base.ann = (union tree_ann_d *) orig_t;
+  struct tree_hash_entry ent;
+  struct tree_hash_entry **slot;
+
+  ent.key = t;
+  ent.value = orig_t;
+  slot
+    = (struct tree_hash_entry **) htab_find_slot (tree_htab, &ent, INSERT);
+  gcc_assert (!*slot);
+  *slot = XNEW (struct tree_hash_entry);
+  **slot = ent;
 }
 
 
@@ -839,7 +874,13 @@ lto_orig_address_map (tree t, intptr_t orig_t)
 intptr_t
 lto_orig_address_get (tree t)
 {
-  return (intptr_t) t->base.ann;
+  struct tree_hash_entry ent;
+  struct tree_hash_entry **slot;
+
+  ent.key = t;
+  slot
+    = (struct tree_hash_entry **) htab_find_slot (tree_htab, &ent, NO_INSERT);
+  return (slot ? (*slot)->value : 0);
 }
 
 
@@ -848,7 +889,15 @@ lto_orig_address_get (tree t)
 void
 lto_orig_address_remove (tree t)
 {
-  t->base.ann = NULL;
+  struct tree_hash_entry ent;
+  struct tree_hash_entry **slot;
+
+  ent.key = t;
+  slot
+    = (struct tree_hash_entry **) htab_find_slot (tree_htab, &ent, NO_INSERT);
+  gcc_assert (slot);
+  free (*slot);
+  htab_clear_slot (tree_htab, (PTR *)slot);
 }
 #endif
 
