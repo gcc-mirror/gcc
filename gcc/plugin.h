@@ -44,7 +44,8 @@ extern void finalize_plugins (void);
    GCC_DATA - event-specific data provided by the compiler  */
 
 static inline int
-invoke_plugin_callbacks (int event, void *gcc_data)
+invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
+			 void *gcc_data ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_PLUGIN
   /* True iff at least one plugin has been added.  */
