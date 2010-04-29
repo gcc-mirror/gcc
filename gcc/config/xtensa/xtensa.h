@@ -286,7 +286,7 @@ extern unsigned xtensa_current_frame_size;
    incoming argument in a2 is live throughout the function and
    local-alloc decides to use a2, then the incoming argument must
    either be spilled or copied to another register.  To get around
-   this, we define ORDER_REGS_FOR_LOCAL_ALLOC to redefine
+   this, we define ADJUST_REG_ALLOC_ORDER to redefine
    reg_alloc_order for leaf functions such that lowest numbered
    registers are used first with the exception that the incoming
    argument registers are not used until after other register choices
@@ -300,7 +300,7 @@ extern unsigned xtensa_current_frame_size;
   35, \
 }
 
-#define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
 
 /* For Xtensa, the only point of this is to prevent GCC from otherwise
    giving preference to call-used registers.  To minimize window

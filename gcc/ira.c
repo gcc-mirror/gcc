@@ -431,9 +431,6 @@ setup_class_hard_regs (void)
   HARD_REG_SET processed_hard_reg_set;
 
   ira_assert (SHRT_MAX >= FIRST_PSEUDO_REGISTER);
-  /* We could call ORDER_REGS_FOR_LOCAL_ALLOC here (it is usually
-     putting hard callee-used hard registers first).  But our
-     heuristics work better.  */
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     {
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
@@ -490,6 +487,9 @@ setup_available_class_regs (void)
 static void
 setup_alloc_regs (bool use_hard_frame_p)
 {
+#ifdef ADJUST_REG_ALLOC_ORDER
+  ADJUST_REG_ALLOC_ORDER;
+#endif
   COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_reg_set);
   if (! use_hard_frame_p)
     SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);

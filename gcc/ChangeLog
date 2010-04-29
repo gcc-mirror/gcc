@@ -1,3 +1,15 @@
+2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/42895
+	* doc/tm.texi (ADJUST_REG_ALLOC_ORDER): Renamed from
+	ORDER_REGS_FOR_LOCAL_ALLOC.  All instances of this macro changed.
+	(HONOR_REG_ALLOC_ORDER): Describe new macro.
+	* ira.c (setup_alloc_regs): Use ADJUST_REG_ALLOC_ORDER if defined.
+	* ira-color.c (assign_hard_reg): Take prologue/epilogue costs into
+	account only if HONOR_REG_ALLOC_ORDER is not defined.
+	* config/arm/arm.h (HONOR_REG_ALLOC_ORDER): Define.
+	* system.h (ORDER_REGS_FOR_LOCAL_ALLOC): Poison.
+	
 2010-04-29  Jon Grant <04@jguk.org>
 	
 	* collect2.c (vflag): Change type from int to bool.

@@ -2092,7 +2092,7 @@ machines, define @code{REG_ALLOC_ORDER} to be an initializer that lists
 the highest numbered allocable register first.
 @end defmac
 
-@defmac ORDER_REGS_FOR_LOCAL_ALLOC
+@defmac ADJUST_REG_ALLOC_ORDER
 A C statement (sans semicolon) to choose the order in which to allocate
 hard registers for pseudo-registers local to a basic block.
 
@@ -2104,6 +2104,15 @@ The macro body should not assume anything about the contents of
 @code{reg_alloc_order} before execution of the macro.
 
 On most machines, it is not necessary to define this macro.
+@end defmac
+
+@defmac HONOR_REG_ALLOC_ORDER
+Normally, IRA tries to estimate the costs for saving a register in the
+prologue and restoring it in the epilogue.  This discourages it from
+using call-saved registers.  If a machine wants to ensure that IRA
+allocates registers in the order given by REG_ALLOC_ORDER even if some
+call-saved registers appear earlier than call-used ones, this macro
+should be defined.
 @end defmac
 
 @defmac IRA_HARD_REGNO_ADD_COST_MULTIPLIER (@var{regno})

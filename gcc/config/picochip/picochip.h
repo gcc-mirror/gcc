@@ -261,7 +261,7 @@ extern enum picochip_dfa_type picochip_schedule_type;
 /* We can dynamically change the REG_ALLOC_ORDER using the following hook.
    It would be desirable to change it for leaf functions so we can put
    r12 at the end of this list.*/
-#define ORDER_REGS_FOR_LOCAL_ALLOC picochip_order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER picochip_order_regs_for_local_alloc ()
 
 /* How Values Fit in Registers  */
 
