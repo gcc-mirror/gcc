@@ -382,6 +382,7 @@ cgraph_process_new_functions (void)
   tree fndecl;
   struct cgraph_node *node;
 
+  varpool_analyze_pending_decls ();
   /*  Note that this queue may grow as its being processed, as the new
       functions may generate new ones.  */
   while (cgraph_new_nodes)
@@ -437,6 +438,7 @@ cgraph_process_new_functions (void)
 	  break;
 	}
       cgraph_call_function_insertion_hooks (node);
+      varpool_analyze_pending_decls ();
     }
   return output;
 }

@@ -160,6 +160,9 @@ lto_get_section_name (int section_type, const char *name)
     case LTO_section_cgraph:
       return concat (LTO_SECTION_NAME_PREFIX, ".cgraph", NULL);
 
+    case LTO_section_varpool:
+      return concat (LTO_SECTION_NAME_PREFIX, ".vars", NULL);
+
     case LTO_section_jump_functions:
       return concat (LTO_SECTION_NAME_PREFIX, ".jmpfuncs", NULL);
 

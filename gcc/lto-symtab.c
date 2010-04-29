@@ -44,6 +44,9 @@ struct GTY(()) lto_symtab_entry_def
   /* The cgraph node if decl is a function decl.  Filled in during the
      merging process.  */
   struct cgraph_node *node;
+  /* The varpool node if decl is a variable decl.  Filled in during the
+     merging process.  */
+  struct varpool_node *vnode;
   /* LTO file-data and symbol resolution for this decl.  */
   struct lto_file_decl_data * GTY((skip (""))) file_data;
   enum ld_plugin_symbol_resolution resolution;
@@ -244,6 +247,26 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   cgraph_remove_node (node);
 }
 
+/* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
+   all edges and removing the old node.  */
+
+static void
+lto_varpool_replace_node (struct varpool_node *vnode,
+			  struct varpool_node *prevailing_node)
+{
+  /* Merge node flags.  */
+  if (vnode->needed)
+    {
+      gcc_assert (prevailing_node->analyzed);
+      varpool_mark_needed_node (prevailing_node);
+    }
+  gcc_assert (!vnode->finalized || prevailing_node->finalized);
+  gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+
+  /* Finally remove the replaced node.  */
+  varpool_remove_node (vnode);
+}
+
 /* Merge two variable or function symbol table entries PREVAILING and ENTRY.
    Return false if the symbols are not fully compatible and a diagnostic
    should be emitted.  */
@@ -406,6 +429,8 @@ lto_symtab_resolve_symbols (void **slot)
     {
       if (TREE_CODE (e->decl) == FUNCTION_DECL)
 	e->node = cgraph_get_node (e->decl);
+      else if (TREE_CODE (e->decl) == VAR_DECL)
+	e->vnode = varpool_get_node (e->decl);
     }
 
   e = (lto_symtab_entry_t) *slot;
@@ -559,6 +584,10 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	while (!prevailing->node
 	       && prevailing->next)
 	  prevailing = prevailing->next;
+      if (TREE_CODE (prevailing->decl) == VAR_DECL)
+	while (!prevailing->vnode
+	       && prevailing->next)
+	  prevailing = prevailing->next;
       /* We do not stream varpool nodes, so the first decl has to
 	 be good enough for now.
 	 ???  For QOI choose a variable with readonly initializer
@@ -625,7 +654,8 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   lto_symtab_merge_decls_2 (slot);
 
   /* Drop all but the prevailing decl from the symtab.  */
-  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL)
+  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL
+      && TREE_CODE (prevailing->decl) != VAR_DECL)
     prevailing->next = NULL;
 
   return 1;
@@ -650,8 +680,6 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   if (!prevailing->next)
     return 1;
 
-  gcc_assert (TREE_CODE (prevailing->decl) == FUNCTION_DECL);
-
   /* Replace the cgraph node of each entry with the prevailing one.  */
   for (e = prevailing->next; e; e = e->next)
     {
@@ -672,6 +700,8 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	    }
 	  lto_cgraph_replace_node (e->node, prevailing->node);
 	}
+      if (e->vnode != NULL)
+	lto_varpool_replace_node (e->vnode, prevailing->vnode);
     }
 
   /* Drop all but the prevailing decl from the symtab.  */

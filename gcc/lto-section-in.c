@@ -52,6 +52,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "function_body",
   "static_initializer",
   "cgraph",
+  "varpool",
+  "jump_funcs"
   "ipa_pure_const",
   "ipa_reference",
   "symtab",

@@ -1,3 +1,14 @@
+2010-04-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_varpool_node_sets): New.
+	(lto_1_to_1_map): Partition varpool too.
+	(globalize_context_t, globalize_cross_file_statics,
+	lto_scan_statics_in_ref_table, lto_scan_statics_in_cgraph_node,
+	lto_scan_statics_in_remaining_global_vars): Remove.
+	(lto_promote_cross_file_statics): Rewrite.
+	(get_filename_for_set): Take vset argument.
+	(lto_wpa_write_files): Pass around vsets.
+
 2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776

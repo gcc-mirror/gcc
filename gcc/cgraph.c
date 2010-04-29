@@ -1877,6 +1877,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 		       (int)n->thunk.virtual_offset_p);
 	      fprintf (f, ")");
 	    }
+	  if (DECL_ASSEMBLER_NAME_SET_P (n->decl))
+	    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
 	}
       fprintf (f, "\n");
     }
