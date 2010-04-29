@@ -1,7 +1,6 @@
 2010-04-28  Mike Stump  <mikestump@comcast.net>
 
-	* config/i386/darwin.h (CC1_SPEC): Ignore -mdynamic-no-pic for
-	now.
+	* config/i386/darwin.h (CC1_SPEC): Ignore -mdynamic-no-pic for now.
 
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -947,9 +946,9 @@
 	(input_overwrite_node): Input new flags.
 	* passes.c (ipa_write_summaries): Do not call
 	lto_new_extern_inline_states.
-	* lto-section-out.c (forced_extern_inline, lto_new_extern_inline_states,
-	lto_delete_extern_inline_states, lto_force_functions_extern_inline,
-	lto_forced_extern_inline_p): Kill.
+	* lto-section-out.c (forced_extern_inline,
+	lto_new_extern_inline_states lto_delete_extern_inline_states,
+	lto_force_functions_extern_inline, lto_forced_extern_inline_p): Kill.
 	* lto-streamer.h (lto_new_extern_inline_states,
 	* lto_delete_extern_inline_states, lto_force_functions_extern_inline,
 	lto_forced_extern_inline_p): Kill.
@@ -1527,7 +1526,7 @@
 	* double-int.h (HOST_BITS_PER_DOUBLE_INT): Define.
 	(double_int_not, double_int_lshift, double_int_rshift): Declare.
 	(double_int_negative_p): Convert to static inline function.
-	* double-int.c (double_int_lshift, double_int_lshift): Add new function.
+	* double-int.c (double_int_lshift, double_int_lshift): New functions.
 	(double_int_negative_p): Remove.
 	* tree.h (lshift_double, rshift_double):
 	* tree.c (build_low_bits_mask): Clean up, use double_int_* functions.
@@ -5414,7 +5413,8 @@
 	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Likewise.
 	(TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK): Likewise.
 
-	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_CONVERSION): Fix argument types.
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_CONVERSION): Fix argument
+	types.
 
 	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION):
 	Fix argument types.
