@@ -586,6 +586,7 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 	continue;
       cost = costs[i];
       full_cost = full_costs[i];
+#ifndef HONOR_REG_ALLOC_ORDER
       if (! allocated_hardreg_p[hard_regno]
 	  && ira_hard_reg_not_in_set_p (hard_regno, mode, call_used_reg_set))
 	/* We need to save/restore the hard register in
@@ -598,6 +599,7 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 	  cost += add_cost;
 	  full_cost += add_cost;
 	}
+#endif
       if (min_cost > cost)
 	min_cost = cost;
       if (min_full_cost > full_cost)
