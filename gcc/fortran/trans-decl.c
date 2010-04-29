@@ -1070,6 +1070,15 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   else
     byref = 0;
 
+  /* Make sure that the vtab for the declared type is completed.  */
+  if (sym->ts.type == BT_CLASS)
+    {
+      gfc_component *c = gfc_find_component (sym->ts.u.derived,
+					     "$data", true, true);
+      if (!c->ts.u.derived->backend_decl)
+	gfc_find_derived_vtab (c->ts.u.derived, true);
+    }
+
   if ((sym->attr.dummy && ! sym->attr.function) || (sym->attr.result && byref))
     {
       /* Return via extra parameter.  */

@@ -2110,6 +2110,22 @@ endType:
 	  || c->attr.access == ACCESS_PRIVATE
 	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.private_comp))
 	sym->attr.private_comp = 1;
+
+     /* Fix up incomplete CLASS components.  */
+     if (c->ts.type == BT_CLASS)
+	{
+	  gfc_component *data;
+	  gfc_component *vptr;
+	  gfc_symbol *vtab;
+	  data = gfc_find_component (c->ts.u.derived, "$data", true, true);
+	  vptr = gfc_find_component (c->ts.u.derived, "$vptr", true, true);
+	  if (vptr->ts.u.derived == NULL)
+	    {
+	      vtab = gfc_find_derived_vtab (data->ts.u.derived, false);
+	      gcc_assert (vtab);
+	      vptr->ts.u.derived = vtab->ts.u.derived;
+	    }
+	}
     }
 
   if (!seen_component)

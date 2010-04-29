@@ -1674,7 +1674,7 @@ typedef enum
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
-  AB_COARRAY_COMP
+  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB
 }
 ab_attribute;
 
@@ -1720,6 +1720,8 @@ static const mstring attr_bits[] =
     minit ("IS_CLASS", AB_IS_CLASS),
     minit ("PROCEDURE", AB_PROCEDURE),
     minit ("PROC_POINTER", AB_PROC_POINTER),
+    minit ("VTYPE", AB_VTYPE),
+    minit ("VTAB", AB_VTAB),
     minit (NULL, -1)
 };
 
@@ -1880,6 +1882,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PROCEDURE, attr_bits);
       if (attr->proc_pointer)
 	MIO_NAME (ab_attribute) (AB_PROC_POINTER, attr_bits);
+      if (attr->vtype)
+	MIO_NAME (ab_attribute) (AB_VTYPE, attr_bits);
+      if (attr->vtab)
+	MIO_NAME (ab_attribute) (AB_VTAB, attr_bits);
 
       mio_rparen ();
 
@@ -2015,6 +2021,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_PROC_POINTER:
 	      attr->proc_pointer = 1;
+	      break;
+	    case AB_VTYPE:
+	      attr->vtype = 1;
+	      break;
+	    case AB_VTAB:
+	      attr->vtab = 1;
 	      break;
 	    }
 	}
@@ -4199,6 +4211,9 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
 
   rsym = info->u.rsym.sym;
   if (st_sym == rsym)
+    return false;
+
+  if (st_sym->attr.vtab || st_sym->attr.vtype)
     return false;
 
   /* If the existing symbol is generic from a different module and
