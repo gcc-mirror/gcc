@@ -4280,7 +4280,7 @@ select_type_set_tmp (gfc_typespec *ts)
   if (ts->type == BT_CLASS)
     {
       gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
-			      &tmp->n.sym->as);
+			      &tmp->n.sym->as, false);
       tmp->n.sym->attr.class_ok = 1;
     }
 

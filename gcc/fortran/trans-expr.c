@@ -1532,140 +1532,10 @@ get_proc_ptr_comp (gfc_expr *e)
 }
 
 
-/* Select a class typebound procedure at runtime.  */
-static void
-select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
-		   tree declared, gfc_expr *expr)
-{
-  tree end_label;
-  tree label;
-  tree tmp;
-  tree hash;
-  stmtblock_t body;
-  gfc_class_esym_list *next_elist, *tmp_elist;
-  gfc_se tmpse;
-
-  /* Convert the hash expression.  */
-  gfc_init_se (&tmpse, NULL);
-  gfc_conv_expr (&tmpse, elist->hash_value);
-  gfc_add_block_to_block (&se->pre, &tmpse.pre);
-  hash = gfc_evaluate_now (tmpse.expr, &se->pre);
-  gfc_add_block_to_block (&se->post, &tmpse.post);
-
-  /* Fix the function type to be that of the declared type method.  */
-  declared = gfc_create_var (TREE_TYPE (declared), "method");
-
-  end_label = gfc_build_label_decl (NULL_TREE);
-
-  gfc_init_block (&body);
-
-  /* Go through the list of extensions.  */
-  for (; elist; elist = next_elist)
-    {
-      /* This case has already been added.  */
-      if (elist->derived == NULL)
-	goto free_elist;
-
-      /* Skip abstract base types.  */
-      if (elist->derived->attr.abstract)
-       goto free_elist;
-
-      /* Run through the chain picking up all the cases that call the
-	 same procedure.  */
-      tmp_elist = elist;
-      for (; elist; elist = elist->next)
-	{
-	  tree cval;
-
-	  if (elist->esym != tmp_elist->esym)
-	    continue;
-
-	  cval = build_int_cst (TREE_TYPE (hash),
-				elist->derived->hash_value);
-	  /* Build a label for the hash value.  */
-	  label = gfc_build_label_decl (NULL_TREE);
-	  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
-			     cval, NULL_TREE, label);
-	  gfc_add_expr_to_block (&body, tmp);
-
-	  /* Null the reference the derived type so that this case is
-	     not used again.  */
-	  elist->derived = NULL;
-	}
-
-      elist = tmp_elist;
-
-      /* Get a pointer to the procedure,  */
-      tmp = gfc_get_symbol_decl (elist->esym);
-      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
-	{
-	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
-	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-	}
-
-      /* Assign the pointer to the appropriate procedure.  */
-      gfc_add_modify (&body, declared,
-		      fold_convert (TREE_TYPE (declared), tmp));
-
-      /* Break to the end of the construct.  */
-      tmp = build1_v (GOTO_EXPR, end_label);
-      gfc_add_expr_to_block (&body, tmp);
-
-      /* Free the elists as we go; freeing them in gfc_free_expr causes
-	 segfaults because it occurs too early and too often.  */
-    free_elist:
-      next_elist = elist->next;
-      if (elist->hash_value)
-	gfc_free_expr (elist->hash_value);
-      gfc_free (elist);
-      elist = NULL;
-    }
-
-  /* Default is an error.  */
-  label = gfc_build_label_decl (NULL_TREE);
-  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
-		     NULL_TREE, NULL_TREE, label);
-  gfc_add_expr_to_block (&body, tmp);
-  tmp = gfc_trans_runtime_error (true, &expr->where,
-		"internal error: bad hash value in dynamic dispatch");
-  gfc_add_expr_to_block (&body, tmp);
-
-  /* Write the switch expression.  */
-  tmp = gfc_finish_block (&body);
-  tmp = build3_v (SWITCH_EXPR, hash, tmp, NULL_TREE);
-  gfc_add_expr_to_block (&se->pre, tmp);
-
-  tmp = build1_v (LABEL_EXPR, end_label);
-  gfc_add_expr_to_block (&se->pre, tmp);
-
-  se->expr = declared;
-  return;
-}
-
-
 static void
 conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 {
   tree tmp;
-
-  if (expr && expr->symtree
-	&& expr->value.function.class_esym)
-    {
-      if (!sym->backend_decl)
-	sym->backend_decl = gfc_get_extern_function_decl (sym);
-
-      tmp = sym->backend_decl;
-
-      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
-	{
-	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
-	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-	}
-
-      select_class_proc (se, expr->value.function.class_esym,
-			 tmp, expr);
-      return;
-    }
 
   if (gfc_is_proc_ptr_comp (expr, NULL))
     tmp = get_proc_ptr_comp (expr);
@@ -2614,8 +2484,9 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 
   /* Remember the vtab corresponds to the derived type
     not to the class declared type.  */
-  vtab = gfc_find_derived_vtab (e->ts.u.derived);
+  vtab = gfc_find_derived_vtab (e->ts.u.derived, true);
   gcc_assert (vtab);
+  gfc_trans_assign_vtab_procs (&parmse->pre, e->ts.u.derived, vtab);
   tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
   gfc_add_modify (&parmse->pre, ctree,
 		  fold_convert (TREE_TYPE (ctree), tmp));
@@ -4463,7 +4334,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       if (!c->expr || cm->attr.allocatable)
         continue;
 
-      if (cm->ts.type == BT_CLASS)
+      if (cm->ts.type == BT_CLASS && !cm->attr.proc_pointer)
 	{
 	  gfc_component *data;
 	  data = gfc_find_component (cm->ts.u.derived, "$data", true, true);
@@ -4484,10 +4355,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       else if (cm->initializer && cm->initializer->expr_type != EXPR_NULL
 	       && strcmp (cm->name, "$extends") == 0)
 	{
+	  tree vtab;
 	  gfc_symbol *vtabs;
 	  vtabs = cm->initializer->symtree->n.sym;
-	  val = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtabs));
-	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
+	  vtab = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtabs));
+	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, vtab);
 	}
       else
 	{
@@ -5579,6 +5451,103 @@ gfc_trans_assign (gfc_code * code)
 }
 
 
+/* Generate code to assign typebound procedures to a derived vtab.  */
+void gfc_trans_assign_vtab_procs (stmtblock_t *block, gfc_symbol *dt,
+				  gfc_symbol *vtab)
+{
+  gfc_component *cmp;
+  tree vtb;
+  tree ctree;
+  tree proc;
+  tree cond = NULL_TREE;
+  stmtblock_t body;
+  bool seen_extends;
+
+  /* Point to the first procedure pointer.  */
+  cmp = gfc_find_component (vtab->ts.u.derived, "$extends", true, true);
+
+  seen_extends = (cmp != NULL);
+
+  vtb = gfc_get_symbol_decl (vtab);
+
+  if (seen_extends)
+    {
+      cmp = cmp->next;
+      if (!cmp)
+	return;
+      ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
+		           vtb, cmp->backend_decl, NULL_TREE);
+      cond = fold_build2 (EQ_EXPR, boolean_type_node, ctree,
+			   build_int_cst (TREE_TYPE (ctree), 0));
+    }
+  else
+    {
+      cmp = vtab->ts.u.derived->components; 
+    }
+
+  gfc_init_block (&body);
+  for (; cmp; cmp = cmp->next)
+    {
+      gfc_symbol *target = NULL;
+      
+      /* Generic procedure - build its vtab.  */
+      if (cmp->ts.type == BT_DERIVED && !cmp->tb)
+	{
+	  gfc_symbol *vt = cmp->ts.interface;
+
+	  if (vt == NULL)
+	    {
+	      /* Use association loses the interface.  Obtain the vtab
+		 by name instead.  */
+	      char name[2 * GFC_MAX_SYMBOL_LEN + 8];
+	      sprintf (name, "vtab$%s$%s", vtab->ts.u.derived->name,
+		       cmp->name);
+	      gfc_find_symbol (name, vtab->ns, 0, &vt);
+	      if (vt == NULL)
+		continue;
+	    }
+
+	  gfc_trans_assign_vtab_procs (&body, dt, vt);
+	  ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
+			       vtb, cmp->backend_decl, NULL_TREE);
+	  proc = gfc_get_symbol_decl (vt);
+	  proc = gfc_build_addr_expr (TREE_TYPE (ctree), proc);
+	  gfc_add_modify (&body, ctree, proc);
+	  continue;
+	}
+
+      /* This is required when typebound generic procedures are called
+	 with derived type targets.  The specific procedures do not get
+	 added to the vtype, which remains "empty".  */
+      if (cmp->tb && cmp->tb->u.specific && cmp->tb->u.specific->n.sym)
+	target = cmp->tb->u.specific->n.sym;
+      else
+	{
+	  gfc_symtree *st;
+	  st = gfc_find_typebound_proc (dt, NULL, cmp->name, false, NULL);
+	  if (st->n.tb && st->n.tb->u.specific)
+	    target = st->n.tb->u.specific->n.sym;
+	}
+
+      if (!target)
+	continue;
+
+      ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
+			   vtb, cmp->backend_decl, NULL_TREE);
+      proc = gfc_get_symbol_decl (target);
+      proc = gfc_build_addr_expr (TREE_TYPE (ctree), proc);
+      gfc_add_modify (&body, ctree, proc);
+    }
+
+  proc = gfc_finish_block (&body);
+
+  if (seen_extends)
+    proc = build3_v (COND_EXPR, cond, proc, build_empty_stmt (input_location));
+
+  gfc_add_expr_to_block (block, proc);
+}
+
+
 /* Translate an assignment to a CLASS object
    (pointer or ordinary assignment).  */
 
@@ -5620,9 +5589,9 @@ gfc_trans_class_assign (gfc_code *code)
 	{
 	  gfc_symbol *vtab;
 	  gfc_symtree *st;
-	  vtab = gfc_find_derived_vtab (code->expr2->ts.u.derived);
+	  vtab = gfc_find_derived_vtab (code->expr2->ts.u.derived, true);
 	  gcc_assert (vtab);
-
+	  gfc_trans_assign_vtab_procs (&block, code->expr2->ts.u.derived, vtab);
 	  rhs = gfc_get_expr ();
 	  rhs->expr_type = EXPR_VARIABLE;
 	  gfc_find_sym_tree (vtab->name, NULL, 1, &st);

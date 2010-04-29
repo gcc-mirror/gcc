@@ -832,7 +832,7 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
     gfc_add_component_ref (a, "$vptr");
   else if (a->ts.type == BT_DERIVED)
     {
-      vtab = gfc_find_derived_vtab (a->ts.u.derived);
+      vtab = gfc_find_derived_vtab (a->ts.u.derived, false);
       /* Clear the old expr.  */
       gfc_free_ref_list (a->ref);
       memset (a, '\0', sizeof (gfc_expr));
@@ -848,7 +848,7 @@ gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
     gfc_add_component_ref (mo, "$vptr");
   else if (mo->ts.type == BT_DERIVED)
     {
-      vtab = gfc_find_derived_vtab (mo->ts.u.derived);
+      vtab = gfc_find_derived_vtab (mo->ts.u.derived, false);
       /* Clear the old expr.  */
       gfc_free_ref_list (mo->ref);
       memset (mo, '\0', sizeof (gfc_expr));
