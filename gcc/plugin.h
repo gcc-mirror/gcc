@@ -1,5 +1,5 @@
 /* Header file for internal GCC plugin mechanism.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,7 @@ struct attribute_spec;
 
 extern void add_new_plugin (const char *);
 extern void parse_plugin_arg_opt (const char *);
-extern int invoke_plugin_callbacks (int, void *);
+extern int invoke_plugin_callbacks_full (int, void *);
 extern void initialize_plugins (void);
 extern bool plugins_active_p (void);
 extern void dump_active_plugins (FILE *);
@@ -34,6 +34,28 @@ extern void debug_active_plugins (void);
 extern void print_plugins_versions (FILE *file, const char *indent);
 extern void print_plugins_help (FILE *file, const char *indent);
 extern void finalize_plugins (void);
+
+/* Called from inside GCC.  Invoke all plugin callbacks registered with
+   the specified event.
+   Return PLUGEVT_SUCCESS if at least one callback was called,
+   PLUGEVT_NO_CALLBACK if there was no callback.
+
+   EVENT    - the event identifier
+   GCC_DATA - event-specific data provided by the compiler  */
+
+static inline int
+invoke_plugin_callbacks (int event, void *gcc_data)
+{
+#ifdef ENABLE_PLUGIN
+  /* True iff at least one plugin has been added.  */
+  extern bool flag_plugin_added;
+
+  if (flag_plugin_added)
+    return invoke_plugin_callbacks_full (event, gcc_data);
+#endif
+
+  return PLUGEVT_NO_CALLBACK;
+}
 
 /* In attribs.c.  */
 

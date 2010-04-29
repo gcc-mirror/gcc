@@ -86,6 +86,8 @@ struct callback_info
 static struct callback_info *plugin_callbacks_init[PLUGIN_EVENT_FIRST_DYNAMIC];
 static struct callback_info **plugin_callbacks = plugin_callbacks_init;
 
+/* For invoke_plugin_callbacks(), see plugin.h.  */
+bool flag_plugin_added = false;
 
 #ifdef ENABLE_PLUGIN
 /* Each plugin should define an initialization function with exactly
@@ -136,6 +138,8 @@ add_new_plugin (const char* plugin_name)
   char *base_name;
   bool name_is_short;
   const char *pc;
+
+  flag_plugin_added = true;
 
   /* Replace short names by their full path when relevant.  */
   name_is_short  = !IS_ABSOLUTE_PATH (plugin_name);
@@ -483,16 +487,11 @@ unregister_callback (const char *plugin_name, int event)
   return PLUGEVT_NO_CALLBACK;
 }
 
-/* Called from inside GCC.  Invoke all plug-in callbacks registered with
-   the specified event.
-   Return PLUGEVT_SUCCESS if at least one callback was called,
-   PLUGEVT_NO_CALLBACK if there was no callback.
-
-   EVENT    - the event identifier
-   GCC_DATA - event-specific data provided by the compiler  */
+/* Invoke all plugin callbacks registered with the specified event,
+   called from invoke_plugin_callbacks().  */
 
 int
-invoke_plugin_callbacks (int event, void *gcc_data)
+invoke_plugin_callbacks_full (int event, void *gcc_data)
 {
   int retval = PLUGEVT_SUCCESS;
 
