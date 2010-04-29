@@ -4083,7 +4083,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	{
 	  if (INSN_P (insn))
 	    {
-	      df_simulate_find_noclobber_defs (insn, test_set);
+	      df_simulate_find_defs (insn, test_set);
 	      df_simulate_one_insn_backwards (test_bb, insn, test_live);
 	    }
 	  prev = PREV_INSN (insn);
