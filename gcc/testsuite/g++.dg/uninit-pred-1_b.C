@@ -41,7 +41,7 @@ __attribute__ ((always_inline))  int GetC (int *c)  {
    
   void P (int64 t)
     {
-      int cc; /* { dg-excess-errors "note: 'cc' was declared here" } */
+      int cc; /* { dg-message "note: 'cc' was declared here" } */
       if (GetC (&cc) <= 0 ) /* return flag checked wrongly */
         return;
       
