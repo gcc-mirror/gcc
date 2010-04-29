@@ -378,6 +378,45 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     lto_output_uleb128_stream (ob->main_stream, 0);
 }
 
+/* Output the varpool NODE to OB. 
+   If NODE is not in SET, then NODE is a boundary.  */
+
+static void
+lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node *node,
+		         varpool_node_set set)
+{
+  bool boundary_p = !varpool_node_in_set_p (node, set) && node->analyzed;
+  struct bitpack_d *bp;
+  struct varpool_node *alias;
+  int count = 0;
+
+  lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->decl);
+  bp = bitpack_create ();
+  bp_pack_value (bp, node->externally_visible, 1);
+  bp_pack_value (bp, node->force_output, 1);
+  bp_pack_value (bp, node->finalized, 1);
+  gcc_assert (node->finalized || !node->analyzed);
+  gcc_assert (node->needed);
+  gcc_assert (!node->alias);
+  /* FIXME: We have no idea how we move references around.  For moment assume that
+     everything is used externally.  */
+  bp_pack_value (bp, flag_wpa, 1);  /* used_from_other_parition.  */
+  bp_pack_value (bp, boundary_p, 1);  /* in_other_partition.  */
+  /* Also emit any extra name aliases.  */
+  for (alias = node->extra_name; alias; alias = alias->next)
+    count++;
+  bp_pack_value (bp, count != 0, 1);
+  lto_output_bitpack (ob->main_stream, bp);
+  bitpack_delete (bp);
+
+  if (count)
+    {
+      lto_output_uleb128_stream (ob->main_stream, count);
+      for (alias = node->extra_name; alias; alias = alias->next)
+	lto_output_var_decl_index (ob->decl_state, ob->main_stream, alias->decl);
+    }
+}
+
 /* Stream out profile_summary to OB.  */
 
 static void
@@ -564,6 +603,32 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
 }
 
+/* Output the part of the cgraph in SET.  */
+
+void
+output_varpool (varpool_node_set set)
+{
+  struct varpool_node *node;
+  struct lto_simple_output_block *ob;
+  int len = 0;
+
+  ob = lto_create_simple_output_block (LTO_section_varpool);
+
+  for (node = varpool_nodes; node; node = node->next)
+    if (node->needed && node->analyzed)
+      len++;
+
+  lto_output_uleb128_stream (ob->main_stream, len);
+
+  /* Write out the nodes.  We must first output a node and then its clones,
+     otherwise at a time reading back the node there would be nothing to clone
+     from.  */
+  for (node = varpool_nodes; node; node = node->next)
+    if (node->needed && node->analyzed)
+      lto_output_varpool_node (ob, node, set);
+
+  lto_destroy_simple_output_block (ob);
+}
 
 /* Read a node from input_block IB.  TAG is the node's tag just read.
    Return the node read or overwriten.  */
@@ -678,6 +743,48 @@ input_node (struct lto_file_decl_data *file_data,
 	  		    virtual_value,
 			    (type & 4) ? size_int (virtual_value) : NULL_TREE,
 			    real_alias);
+	}
+    }
+  return node;
+}
+
+/* Read a node from input_block IB.  TAG is the node's tag just read.
+   Return the node read or overwriten.  */
+
+static struct varpool_node *
+input_varpool_node (struct lto_file_decl_data *file_data,
+		    struct lto_input_block *ib)
+{
+  int decl_index;
+  tree var_decl;
+  struct varpool_node *node;
+  struct bitpack_d *bp;
+  bool aliases_p;
+  int count;
+
+  decl_index = lto_input_uleb128 (ib);
+  var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
+  node = varpool_node (var_decl);
+
+  bp = lto_input_bitpack (ib);
+  node->externally_visible = bp_unpack_value (bp, 1);
+  node->force_output = bp_unpack_value (bp, 1);
+  node->finalized = bp_unpack_value (bp, 1);
+  node->analyzed = 1; 
+  node->used_from_other_partition = bp_unpack_value (bp, 1);
+  node->in_other_partition = bp_unpack_value (bp, 1);
+  aliases_p = bp_unpack_value (bp, 1);
+  if (node->finalized)
+    varpool_mark_needed_node (node);
+  bitpack_delete (bp);
+  if (aliases_p)
+    {
+      count = lto_input_uleb128 (ib);
+      for (; count > 0; count --)
+	{
+	  tree decl = lto_file_decl_data_get_var_decl (file_data,
+						       lto_input_uleb128 (ib));
+	  varpool_extra_name_alias (decl, var_decl);
 	}
     }
   return node;
@@ -812,6 +919,22 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   VEC_free (cgraph_node_ptr, heap, nodes);
 }
 
+/* Read a varpool from IB using the info in FILE_DATA.  */
+
+static void
+input_varpool_1 (struct lto_file_decl_data *file_data,
+		struct lto_input_block *ib)
+{
+  unsigned HOST_WIDE_INT len;
+
+  len = lto_input_uleb128 (ib);
+  while (len)
+    {
+      input_varpool_node (file_data, ib);
+      len--;
+    }
+}
+
 static struct gcov_ctr_summary lto_gcov_summary;
 
 /* Input profile_info from IB.  */
@@ -865,6 +988,12 @@ input_cgraph (void)
       file_data->cgraph_node_encoder = lto_cgraph_encoder_new ();
       input_cgraph_1 (file_data, ib);
       lto_destroy_simple_input_block (file_data, LTO_section_cgraph,
+				      ib, data, len);
+
+      ib = lto_create_simple_input_block (file_data, LTO_section_varpool,
+					  &data, &len);
+      input_varpool_1 (file_data, ib);
+      lto_destroy_simple_input_block (file_data, LTO_section_varpool,
 				      ib, data, len);
 
       /* Assume that every file read needs to be processed by LTRANS.  */

@@ -2097,7 +2097,8 @@ inline_read_summary (void)
    active, we don't need to write them twice.  */
 
 static void
-inline_write_summary (cgraph_node_set set)
+inline_write_summary (cgraph_node_set set,
+		      varpool_node_set vset ATTRIBUTE_UNUSED)
 {
   if (flag_indirect_inlining && !flag_ipa_cp)
     ipa_prop_write_jump_functions (set);

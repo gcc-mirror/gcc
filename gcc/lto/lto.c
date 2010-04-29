@@ -523,6 +523,7 @@ free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 
 /* Vector of all cgraph node sets. */
 static GTY (()) VEC(cgraph_node_set, gc) *lto_cgraph_node_sets;
+static GTY (()) VEC(varpool_node_set, gc) *lto_varpool_node_sets;
 
 
 /* Group cgrah nodes by input files.  This is used mainly for testing
@@ -532,31 +533,30 @@ static void
 lto_1_to_1_map (void)
 {
   struct cgraph_node *node;
+  struct varpool_node *vnode;
   struct lto_file_decl_data *file_data;
   struct pointer_map_t *pmap;
+  struct pointer_map_t *vpmap;
   cgraph_node_set set;
+  varpool_node_set vset;
   void **slot;
 
   timevar_push (TV_WHOPR_WPA);
 
   lto_cgraph_node_sets = VEC_alloc (cgraph_node_set, gc, 1);
-
-  /* If the cgraph is empty, create one cgraph node set so that there is still
-     an output file for any variables that need to be exported in a DSO.  */
-  if (!cgraph_nodes)
-    {
-      set = cgraph_node_set_new ();
-      VEC_safe_push (cgraph_node_set, gc, lto_cgraph_node_sets, set);
-      goto finish;
-    }
+  lto_varpool_node_sets = VEC_alloc (varpool_node_set, gc, 1);
 
   pmap = pointer_map_create ();
+  vpmap = pointer_map_create ();
 
   for (node = cgraph_nodes; node; node = node->next)
     {
       /* We will get proper partition based on function they are inlined to or
 	 cloned from.  */
       if (node->global.inlined_to || node->clone_of)
+	continue;
+      /* Nodes without a body do not need partitioning.  */
+      if (!node->analyzed || node->same_body_alias)
 	continue;
       /* We only need to partition the nodes that we read from the
 	 gimple bytecode files.  */
@@ -573,14 +573,50 @@ lto_1_to_1_map (void)
 	  slot = pointer_map_insert (pmap, file_data);
 	  *slot = set;
 	  VEC_safe_push (cgraph_node_set, gc, lto_cgraph_node_sets, set);
+	  vset = varpool_node_set_new ();
+	  slot = pointer_map_insert (vpmap, file_data);
+	  *slot = vset;
+	  VEC_safe_push (varpool_node_set, gc, lto_varpool_node_sets, vset);
 	}
 
       cgraph_node_set_add (set, node);
     }
 
-  pointer_map_destroy (pmap);
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    {
+      if (vnode->alias)
+	continue;
+      slot = pointer_map_contains (vpmap, file_data);
+      if (slot)
+	vset = (varpool_node_set) *slot;
+      else
+	{
+	  set = cgraph_node_set_new ();
+	  slot = pointer_map_insert (pmap, file_data);
+	  *slot = set;
+	  VEC_safe_push (cgraph_node_set, gc, lto_cgraph_node_sets, set);
+	  vset = varpool_node_set_new ();
+	  slot = pointer_map_insert (vpmap, file_data);
+	  *slot = vset;
+	  VEC_safe_push (varpool_node_set, gc, lto_varpool_node_sets, vset);
+	}
 
-finish:
+      varpool_node_set_add (vset, vnode);
+    }
+
+  /* If the cgraph is empty, create one cgraph node set so that there is still
+     an output file for any variables that need to be exported in a DSO.  */
+  if (!lto_cgraph_node_sets)
+    {
+      set = cgraph_node_set_new ();
+      VEC_safe_push (cgraph_node_set, gc, lto_cgraph_node_sets, set);
+      vset = varpool_node_set_new ();
+      VEC_safe_push (varpool_node_set, gc, lto_varpool_node_sets, vset);
+    }
+
+  pointer_map_destroy (pmap);
+  pointer_map_destroy (vpmap);
+
   timevar_pop (TV_WHOPR_WPA);
 
   lto_stats.num_cgraph_partitions += VEC_length (cgraph_node_set, 
@@ -672,174 +708,6 @@ lto_add_all_inlinees (cgraph_node_set set)
   lto_bitmap_free (original_decls);
 }
 
-/* Owing to inlining, we may need to promote a file-scope variable
-   to a global variable.  Consider this case:
-
-   a.c:
-   static int var;
-
-   void
-   foo (void)
-   {
-     var++;
-   }
-
-   b.c:
-
-   extern void foo (void);
-
-   void
-   bar (void)
-   {
-     foo ();
-   }
-
-   If WPA inlines FOO inside BAR, then the static variable VAR needs to
-   be promoted to global because BAR and VAR may be in different LTRANS
-   files. */
-
-/* This struct keeps track of states used in globalization.  */
-
-typedef struct
-{
-  /* Current cgraph node set.  */  
-  cgraph_node_set set;
-
-  /* Function DECLs of cgraph nodes seen.  */
-  bitmap seen_node_decls;
-
-  /* Use in walk_tree to avoid multiple visits of a node.  */
-  struct pointer_set_t *visited;
-
-  /* static vars in this set.  */
-  bitmap static_vars_in_set;
-
-  /* static vars in all previous set.  */
-  bitmap all_static_vars;
-
-  /* all vars in all previous set.  */
-  bitmap all_vars;
-} globalize_context_t;
-
-/* Callback for walk_tree.  Examine the tree pointer to by TP and see if
-   if its a file-scope static variable of function that need to be turned
-   into a global.  */
-
-static tree
-globalize_cross_file_statics (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-			      void *data)
-{
-  globalize_context_t *context = (globalize_context_t *) data;
-  tree t = *tp;
-
-  if (t == NULL_TREE)
-    return NULL;
-
-  /* The logic for globalization of VAR_DECLs and FUNCTION_DECLs are
-     different.  For functions, we can simply look at the cgraph node sets
-     to tell if there are references to static functions outside the set.
-     The cgraph node sets do not keep track of vars, we need to traverse
-     the trees to determine what vars need to be globalized.  */
-  if (TREE_CODE (t) == VAR_DECL)
-    {
-      if (!TREE_PUBLIC (t))
-	{
-	  /* This file-scope static variable is reachable from more
-	     that one set.  Make it global but with hidden visibility
-	     so that we do not export it in dynamic linking.  */
-	  if (bitmap_bit_p (context->all_static_vars, DECL_UID (t)))
-	    {
-	      TREE_PUBLIC (t) = 1;
-	      DECL_VISIBILITY (t) = VISIBILITY_HIDDEN;
-	    }
-	  bitmap_set_bit (context->static_vars_in_set, DECL_UID (t));
-	}
-      bitmap_set_bit (context->all_vars, DECL_UID (t));
-      walk_tree (&DECL_INITIAL (t), globalize_cross_file_statics, context,
-		 context->visited);
-    }
-  else if (TREE_CODE (t) == FUNCTION_DECL && !TREE_PUBLIC (t))
-    {
-      if (!cgraph_node_in_set_p (cgraph_node (t), context->set)
-	  || cgraph_node (t)->address_taken)
-	{
-	  /* This file-scope static function is reachable from a set
-	     which does not contain the function DECL.  Make it global
-	     but with hidden visibility.  */
-	  TREE_PUBLIC (t) = 1;
-	  DECL_VISIBILITY (t) = VISIBILITY_HIDDEN;
-	}
-    }
-
-  return NULL; 
-}
-
-/* Helper of lto_scan_statics_in_cgraph_node below.  Scan TABLE for
-   static decls that may be used in more than one LTRANS file.
-   CONTEXT is a globalize_context_t for storing scanning states.  */
-
-static void
-lto_scan_statics_in_ref_table (struct lto_tree_ref_table *table,
-			       globalize_context_t *context)
-{
-  unsigned i;
-
-  for (i = 0; i < table->size; i++)
-    walk_tree (&table->trees[i], globalize_cross_file_statics, context,
-	       context->visited);
-}
-
-/* Promote file-scope decl reachable from NODE if necessary to global.
-   CONTEXT is a globalize_context_t storing scanning states.  */
-
-static void
-lto_scan_statics_in_cgraph_node (struct cgraph_node *node,
-				 globalize_context_t *context)
-{
-  struct lto_in_decl_state *state;
-  
-  /* Do nothing if NODE has no function body.  */
-  if (!node->analyzed)
-    return;
-  
-  /* Return if the DECL of nodes has been visited before.  */
-  if (bitmap_bit_p (context->seen_node_decls, DECL_UID (node->decl)))
-    return;
-
-  bitmap_set_bit (context->seen_node_decls, DECL_UID (node->decl));
-
-  state = lto_get_function_in_decl_state (node->local.lto_file_data,
-					  node->decl);
-  gcc_assert (state);
-
-  lto_scan_statics_in_ref_table (&state->streams[LTO_DECL_STREAM_VAR_DECL],
-				 context);
-  lto_scan_statics_in_ref_table (&state->streams[LTO_DECL_STREAM_FN_DECL],
-				 context);
-}
-
-/* Scan all global variables that we have not yet seen so far.  CONTEXT
-   is a globalize_context_t storing scanning states.  */
-
-static void
-lto_scan_statics_in_remaining_global_vars (globalize_context_t *context)
-{
-  tree var, var_context;
-  struct varpool_node *vnode;
-
-  FOR_EACH_STATIC_VARIABLE (vnode)
-    {
-      var = vnode->decl;
-      var_context = DECL_CONTEXT (var);
-      if (TREE_STATIC (var)
-	  && TREE_PUBLIC (var)
-          && (!var_context || TREE_CODE (var_context) != FUNCTION_DECL)
-          && !bitmap_bit_p (context->all_vars, DECL_UID (var)))
-	walk_tree (&var, globalize_cross_file_statics, context,
-		   context->visited);
-    }
-}
-
 /* Find out all static decls that need to be promoted to global because
    of cross file sharing.  This function must be run in the WPA mode after
    all inlinees are added.  */
@@ -847,39 +715,61 @@ lto_scan_statics_in_remaining_global_vars (globalize_context_t *context)
 static void
 lto_promote_cross_file_statics (void)
 {
+  struct varpool_node *vnode;
   unsigned i, n_sets;
   cgraph_node_set set;
   cgraph_node_set_iterator csi;
-  globalize_context_t context;
 
-  memset (&context, 0, sizeof (context));
-  context.all_vars = lto_bitmap_alloc ();
-  context.all_static_vars = lto_bitmap_alloc ();
+  gcc_assert (flag_wpa);
 
+  /* At moment we make no attempt to figure out who is refering the variables,
+     so all must become global.  */
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (!vnode->externally_visible && vnode->analyzed)
+       {
+	  TREE_PUBLIC (vnode->decl) = 1;
+	  DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
+       }
   n_sets = VEC_length (cgraph_node_set, lto_cgraph_node_sets);
   for (i = 0; i < n_sets; i++)
     {
       set = VEC_index (cgraph_node_set, lto_cgraph_node_sets, i);
-      context.set = set;
-      context.visited = pointer_set_create ();
-      context.static_vars_in_set = lto_bitmap_alloc ();
-      context.seen_node_decls = lto_bitmap_alloc ();
 
+      /* If node has either address taken (and we have no clue from where)
+	 or it is called from other partition, it needs to be globalized.  */
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
-	lto_scan_statics_in_cgraph_node (csi_node (csi), &context);
+	{
+	  struct cgraph_node *node = csi_node (csi);
+	  bool globalize = node->address_taken || node->local.vtable_method;
+	  struct cgraph_edge *e;
+	  if (node->local.externally_visible)
+	    continue;
+	  for (e = node->callers; e && !globalize; e = e->next_caller)
+	    {
+	      struct cgraph_node *caller = e->caller;
+	      if (caller->global.inlined_to)
+		caller = caller->global.inlined_to;
+	      if (!cgraph_node_in_set_p (caller, set))
+		globalize = true;
+	    }
+	  if (globalize)
+	     {
+		TREE_PUBLIC (node->decl) = 1;
+		DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
+		if (node->same_body)
+		  {
+		    struct cgraph_node *alias;
+		    for (alias = node->same_body;
+			 alias; alias = alias->next)
+		      {
+			TREE_PUBLIC (alias->decl) = 1;
+			DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
+		      }
+		  }
+	     }
+	}
 
-      if (i == n_sets - 1)
-        lto_scan_statics_in_remaining_global_vars (&context);
-
-      bitmap_ior_into (context.all_static_vars, context.static_vars_in_set);
-
-      pointer_set_destroy (context.visited);
-      lto_bitmap_free (context.static_vars_in_set);
-      lto_bitmap_free (context.seen_node_decls);
     }
-
-  lto_bitmap_free (context.all_vars);
-  lto_bitmap_free (context.all_static_vars);
 }
 
 
@@ -999,6 +889,7 @@ lto_wpa_write_files (void)
   unsigned i, n_sets, last_out_file_ix, num_out_files;
   lto_file *file;
   cgraph_node_set set;
+  varpool_node_set vset;
 
   timevar_push (TV_WHOPR_WPA);
 
@@ -1034,6 +925,7 @@ lto_wpa_write_files (void)
       char *temp_filename;
 
       set = VEC_index (cgraph_node_set, lto_cgraph_node_sets, i);
+      vset = VEC_index (varpool_node_set, lto_varpool_node_sets, i);
       temp_filename = get_filename_for_set (set);
       output_files[i] = temp_filename;
 
@@ -1046,7 +938,7 @@ lto_wpa_write_files (void)
 
 	  lto_set_current_out_file (file);
 
-	  ipa_write_optimization_summaries (set);
+	  ipa_write_optimization_summaries (set, vset);
 
 	  lto_set_current_out_file (NULL);
 	  lto_obj_file_close (file);

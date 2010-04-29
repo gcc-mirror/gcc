@@ -771,7 +771,8 @@ generate_summary (void)
 /* Serialize the ipa info for lto.  */
 
 static void
-pure_const_write_summary (cgraph_node_set set)
+pure_const_write_summary (cgraph_node_set set,
+			  varpool_node_set vset ATTRIBUTE_UNUSED)
 {
   struct cgraph_node *node;
   struct lto_simple_output_block *ob

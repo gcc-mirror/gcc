@@ -1040,7 +1040,8 @@ write_node_summary_p (struct cgraph_node *node)
 /* Serialize the ipa info for lto.  */
 
 static void
-ipa_reference_write_summary (cgraph_node_set set)
+ipa_reference_write_summary (cgraph_node_set set,
+			     varpool_node_set vset ATTRIBUTE_UNUSED)
 {
   struct cgraph_node *node;
   struct lto_simple_output_block *ob

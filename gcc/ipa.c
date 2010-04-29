@@ -762,6 +762,164 @@ debug_cgraph_node_set (cgraph_node_set set)
   dump_cgraph_node_set (stderr, set);
 }
 
+/* Hash a varpool node set element.  */
+
+static hashval_t
+hash_varpool_node_set_element (const void *p)
+{
+  const_varpool_node_set_element element = (const_varpool_node_set_element) p;
+  return htab_hash_pointer (element->node);
+}
+
+/* Compare two varpool node set elements.  */
+
+static int
+eq_varpool_node_set_element (const void *p1, const void *p2)
+{
+  const_varpool_node_set_element e1 = (const_varpool_node_set_element) p1;
+  const_varpool_node_set_element e2 = (const_varpool_node_set_element) p2;
+
+  return e1->node == e2->node;
+}
+
+/* Create a new varpool node set.  */
+
+varpool_node_set
+varpool_node_set_new (void)
+{
+  varpool_node_set new_node_set;
+
+  new_node_set = GGC_NEW (struct varpool_node_set_def);
+  new_node_set->hashtab = htab_create_ggc (10,
+					   hash_varpool_node_set_element,
+					   eq_varpool_node_set_element,
+					   NULL);
+  new_node_set->nodes = NULL;
+  return new_node_set;
+}
+
+/* Add varpool_node NODE to varpool_node_set SET.  */
+
+void
+varpool_node_set_add (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot;
+  varpool_node_set_element element;
+  struct varpool_node_set_element_def dummy;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, INSERT);
+
+  if (*slot != HTAB_EMPTY_ENTRY)
+    {
+      element = (varpool_node_set_element) *slot;
+      gcc_assert (node == element->node
+		  && (VEC_index (varpool_node_ptr, set->nodes, element->index)
+		      == node));
+      return;
+    }
+
+  /* Insert node into hash table.  */
+  element =
+    (varpool_node_set_element) GGC_NEW (struct varpool_node_set_element_def);
+  element->node = node;
+  element->index = VEC_length (varpool_node_ptr, set->nodes);
+  *slot = element;
+
+  /* Insert into node vector.  */
+  VEC_safe_push (varpool_node_ptr, gc, set->nodes, node);
+}
+
+/* Remove varpool_node NODE from varpool_node_set SET.  */
+
+void
+varpool_node_set_remove (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot, **last_slot;
+  varpool_node_set_element element, last_element;
+  struct varpool_node *last_node;
+  struct varpool_node_set_element_def dummy;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+  if (slot == NULL)
+    return;
+
+  element = (varpool_node_set_element) *slot;
+  gcc_assert (VEC_index (varpool_node_ptr, set->nodes, element->index)
+	      == node);
+
+  /* Remove from vector. We do this by swapping node with the last element
+     of the vector.  */
+  last_node = VEC_pop (varpool_node_ptr, set->nodes);
+  if (last_node != node)
+    {
+      dummy.node = last_node;
+      last_slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+      last_element = (varpool_node_set_element) *last_slot;
+      gcc_assert (last_element);
+
+      /* Move the last element to the original spot of NODE.  */
+      last_element->index = element->index;
+      VEC_replace (varpool_node_ptr, set->nodes, last_element->index,
+		   last_node);
+    }
+
+  /* Remove element from hash table.  */
+  htab_clear_slot (set->hashtab, slot);
+  ggc_free (element);
+}
+
+/* Find NODE in SET and return an iterator to it if found.  A null iterator
+   is returned if NODE is not in SET.  */
+
+varpool_node_set_iterator
+varpool_node_set_find (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot;
+  struct varpool_node_set_element_def dummy;
+  varpool_node_set_element element;
+  varpool_node_set_iterator vsi;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+  if (slot == NULL)
+    vsi.index = (unsigned) ~0;
+  else
+    {
+      element = (varpool_node_set_element) *slot;
+      gcc_assert (VEC_index (varpool_node_ptr, set->nodes, element->index)
+		  == node);
+      vsi.index = element->index;
+    }
+  vsi.set = set;
+
+  return vsi;
+}
+
+/* Dump content of SET to file F.  */
+
+void
+dump_varpool_node_set (FILE *f, varpool_node_set set)
+{
+  varpool_node_set_iterator iter;
+
+  for (iter = vsi_start (set); !vsi_end_p (iter); vsi_next (&iter))
+    {
+      struct varpool_node *node = vsi_node (iter);
+      dump_varpool_node (f, node);
+    }
+}
+
+/* Dump content of SET to stderr.  */
+
+void
+debug_varpool_node_set (varpool_node_set set)
+{
+  dump_varpool_node_set (stderr, set);
+}
+
+
 /* Simple ipa profile pass propagating frequencies across the callgraph.  */
 
 static unsigned int

@@ -168,6 +168,7 @@ struct rtl_opt_pass
 struct varpool_node;
 struct cgraph_node;
 struct cgraph_node_set_def;
+struct varpool_node_set_def;
 
 /* Description of IPA pass with generate summary, write, execute, read and
    transform stages.  */
@@ -180,13 +181,15 @@ struct ipa_opt_pass_d
   void (*generate_summary) (void);
 
   /* This hook is used to serialize IPA summaries on disk.  */
-  void (*write_summary) (struct cgraph_node_set_def *);
+  void (*write_summary) (struct cgraph_node_set_def *,
+			 struct varpool_node_set_def *);
 
   /* This hook is used to deserialize IPA summaries from disk.  */
   void (*read_summary) (void);
 
   /* This hook is used to serialize IPA optimization summaries on disk.  */
-  void (*write_optimization_summary) (struct cgraph_node_set_def *);
+  void (*write_optimization_summary) (struct cgraph_node_set_def *,
+				      struct varpool_node_set_def *);
 
   /* This hook is used to deserialize IPA summaries from disk.  */
   void (*read_optimization_summary) (void);
@@ -607,7 +610,8 @@ extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
-extern void ipa_write_optimization_summaries (struct cgraph_node_set_def *);
+extern void ipa_write_optimization_summaries (struct cgraph_node_set_def *,
+					      struct varpool_node_set_def *);
 extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (struct opt_pass *);

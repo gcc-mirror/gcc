@@ -1,3 +1,72 @@
+2010-04-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_entry_def) Add vnode.
+	(lto_varpool_replace_node): New.
+	(lto_symtab_resolve_symbols): Resolve varpool nodes.
+	(lto_symtab_merge_decls_1): Prefer decls with varpool node.
+	(lto_symtab_merge_cgraph_nodes_1): Merge varpools.
+	* cgraph.h (varpool_node_ptr): New type.
+	(varpool_node_ptr): New vector.
+	(varpool_node_set_def): New structure.
+	(varpool_node_set): New type.
+	(varpool_node_set): New vector.
+	(varpool_node_set_element_def): New structure.
+	(varpool_node_set_element, const_varpool_node_set_element): New types.
+	(varpool_node_set_iterator): New type.
+	(varpool_node): Add prev pointers, add used_from_other_partition,
+	in_other_partition.
+	(varpool_node_set_new, varpool_node_set_find, varpool_node_set_add,
+	varpool_node_set_remove, dump_varpool_node_set, debug_varpool_node_set,
+	varpool_get_node, varpool_remove_node): Declare.
+	(vsi_end_p, vsi_next, vsi_node, vsi_start, varpool_node_in_set_p,
+	varpool_node_set_size): New inlines.
+	* cgraph.c (dump_cgraph_node): Dump asm names of aliases.
+	* tree-pass.h (varpool_node_set_def): Forward declare.
+	(ipa_opt_pass_d): Summary writting takes vnode sets too.
+	(ipa_write_optimization_summaries): Update prototype.
+	* ipa-cp.c (ipcp_write_summary): Update.
+	* ipa-reference.c (ipa_reference_write_summary): Update.
+	* lto-cgraph.c (lto_output_varpool_node): New static function.
+	(output_varpool): New function.
+	(input_varpool_node): New static function.
+	(input_varpool_1): New function.
+	(input_cgraph): Input varpool.
+	* ipa-pure-const.c (pure_const_write_summary): Update.
+	* lto-streamer-out.c (lto_output): Update, output varpool too.
+	(write_global_stream): Kill WPA hack.
+	(produce_asm_for_decls): Update.
+	(output_alias_pair_p): Handle variables.
+	(output_unreferenced_globals): Output only needed partition of varpool.
+	* ipa-inline.c (inline_write_summary): Update.
+	* lto-streamer-in.c (lto_input_tree_ref, lto_input_tree): Do not build cgraph.
+	* lto-section-in.c (lto_section_name): Add varpool and jump funcs.
+	* ipa.c (hash_varpool_node_set_element, eq_varpool_node_set_element,
+	varpool_node_set_new, varpool_node_set_add,
+	varpool_node_set_remove, varpool_node_set_find, dump_varpool_node_set,
+	debug_varpool_node_set): New functions.
+	* passes.c (rest_of_decl_compilation): when in LTO do not finalize.
+	(execute_one_pass): Process new decls too.
+	(ipa_write_summaries_2): Pass around vsets.
+	(ipa_write_summaries_1): Likewise.
+	(ipa_write_summaries): Build vset; be more selective about cgraph nodes
+	to add.
+	(ipa_write_optimization_summaries_1): Pass around vsets.
+	(ipa_write_optimization_summaries): Likewise.
+	* varpool.c (varpool_get_node): New.
+	(varpool_node): Update doubly linked lists.
+	(varpool_remove_node): New.
+	(dump_varpool_node): More dumping.
+	(varpool_enqueue_needed_node): Update doubly linked lists.
+	(decide_is_variable_needed): Kill ltrans hack.
+	(varpool_finalize_decl): Kill lto hack.
+	(varpool_assemble_decl): Skip decls in other partitions.
+	(varpool_assemble_pending_decls): Update doubly linkes lists.
+	(varpool_empty_needed_queue): Likewise.
+	(varpool_extra_name_alias): Likewise.
+	* lto-streamer.c (lto_get_section_name): Add vars section.
+	* lto-streamer.h (lto_section_type): Update.
+	(output_varpool, input_varpool): Declare.
+
 2010-04-28  Mike Stump  <mikestump@comcast.net>
 
 	* config/i386/darwin.h (CC1_SPEC): Ignore -mdynamic-no-pic for now.

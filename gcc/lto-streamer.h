@@ -217,9 +217,6 @@ enum LTO_tags
   /* Special for global streamer. Reference to previously-streamed node.  */
   LTO_tree_pickle_reference,
 
-  /* A decl which exists only to provide an extra symbol for another var.  */
-  LTO_var_decl_alias,
-
   /* References to indexable tree nodes.  These objects are stored in
      tables that are written separately from the function bodies that
      reference them.  This way they can be instantiated even when the
@@ -259,11 +256,11 @@ enum lto_section_type
   LTO_section_function_body,
   LTO_section_static_initializer,
   LTO_section_cgraph,
+  LTO_section_varpool,
   LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
   LTO_section_symtab,
-  LTO_section_wpa_fixup,
   LTO_section_opts,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
@@ -834,6 +831,8 @@ int lto_cgraph_encoder_encode (lto_cgraph_encoder_t, struct cgraph_node *);
 void lto_cgraph_encoder_delete (lto_cgraph_encoder_t encoder);
 void output_cgraph (cgraph_node_set);
 void input_cgraph (void);
+void output_varpool (varpool_node_set);
+void input_varpool (void);
 
 
 /* In lto-symtab.c.  */
