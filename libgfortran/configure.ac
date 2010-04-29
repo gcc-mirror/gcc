@@ -62,7 +62,7 @@ target_alias=${target_alias-$host_alias}
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is required.
-AM_INIT_AUTOMAKE([1.9.6 no-define foreign -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.6 no-define foreign no-dist -Wall -Wno-portability])
 
 AM_MAINTAINER_MODE
 AM_ENABLE_MULTILIB(, ..)

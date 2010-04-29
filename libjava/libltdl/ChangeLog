@@ -1,3 +1,9 @@
+2010-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist option.
+	* Makefile.in: Regenerated.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.
