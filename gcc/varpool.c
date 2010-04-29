@@ -399,8 +399,8 @@ bool
 varpool_analyze_pending_decls (void)
 {
   bool changed = false;
-  timevar_push (TV_CGRAPH);
 
+  timevar_push (TV_VARPOOL);
   while (varpool_first_unanalyzed_node)
     {
       tree decl = varpool_first_unanalyzed_node->decl;
@@ -424,7 +424,7 @@ varpool_analyze_pending_decls (void)
 	record_references_in_initializer (decl, analyzed);
       changed = true;
     }
-  timevar_pop (TV_CGRAPH);
+  timevar_pop (TV_VARPOOL);
   return changed;
 }
 
@@ -518,6 +518,7 @@ varpool_assemble_pending_decls (void)
   if (errorcount || sorrycount)
     return false;
 
+  timevar_push (TV_VAROUT);
   /* EH might mark decls as needed during expansion.  This should be safe since
      we don't create references to new function, but it should not be used
      elsewhere.  */
@@ -539,6 +540,7 @@ varpool_assemble_pending_decls (void)
   /* varpool_nodes_queue is now empty, clear the pointer to the last element
      in the queue.  */
   varpool_last_needed_node = NULL;
+  timevar_pop (TV_VAROUT);
   return changed;
 }
 

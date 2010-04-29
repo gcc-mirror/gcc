@@ -467,10 +467,10 @@ struct lto_cgraph_encoder_d
 typedef struct lto_cgraph_encoder_d *lto_cgraph_encoder_t;
 
 /* Mapping from indices to trees.  */
-struct lto_tree_ref_table
+struct GTY(()) lto_tree_ref_table
 {
   /* Array of referenced trees . */
-  tree *trees;
+  tree * GTY((length ("%h.size"))) trees;
 
   /* Size of array. */
   unsigned int size;
@@ -496,7 +496,7 @@ struct lto_tree_ref_encoder
 
 
 /* Structure to hold states of input scope.  */
-struct lto_in_decl_state
+struct GTY(()) lto_in_decl_state
 {
   /* Array of lto_in_decl_buffers to store type and decls streams. */
   struct lto_tree_ref_table streams[LTO_N_DECL_STREAMS];
@@ -534,7 +534,7 @@ DEF_VEC_ALLOC_P(lto_out_decl_state_ptr, heap);
    by lto.  This structure contains the tables that are needed by the
    serialized functions and ipa passes to connect themselves to the
    global types and decls as they are reconstituted.  */
-struct lto_file_decl_data
+struct GTY(()) lto_file_decl_data
 {
   /* Decl state currently used. */
   struct lto_in_decl_state *current_decl_state;
@@ -544,22 +544,22 @@ struct lto_file_decl_data
   struct lto_in_decl_state *global_decl_state;
 
   /* Table of cgraph nodes present in this file.  */
-  lto_cgraph_encoder_t cgraph_node_encoder;
+  lto_cgraph_encoder_t GTY((skip)) cgraph_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
-  htab_t function_decl_states;
+  htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
 
   /* The .o file that these offsets relate to.  */
-  const char *file_name;
+  const char *GTY((skip)) file_name;
 
   /* Nonzero if this file should be recompiled with LTRANS.  */
   unsigned needs_ltrans_p : 1;
 
   /* Hash table maps lto-related section names to location in file.  */
-  htab_t section_hash_table;
+  htab_t GTY((skip)) section_hash_table;
 
   /* Hash new name of renamed global declaration to its original name.  */
-  htab_t renaming_hash_table;
+  htab_t GTY((skip)) renaming_hash_table;
 };
 
 struct lto_char_ptr_base

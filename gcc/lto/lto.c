@@ -170,7 +170,7 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     {
       uint32_t size = *data++;
-      tree *decls = (tree *) xcalloc (size, sizeof (tree));
+      tree *decls = GGC_NEWVEC (tree, size);
 
       for (j = 0; j < size; j++)
 	{
@@ -235,7 +235,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   /* Read in per-function decl states and enter them in hash table.  */
   decl_data->function_decl_states =
-    htab_create (37, lto_hash_in_decl_state, lto_eq_in_decl_state, free);
+    htab_create_ggc (37, lto_hash_in_decl_state, lto_eq_in_decl_state, NULL);
 
   for (i = 1; i < num_decl_states; i++)
     {
@@ -376,7 +376,7 @@ lto_file_read (lto_file *file, FILE *resolution_file)
   
   resolutions = lto_resolution_read (resolution_file, file);
 
-  file_data = XCNEW (struct lto_file_decl_data);
+  file_data = GGC_NEW (struct lto_file_decl_data);
   file_data->file_name = file->filename;
   file_data->section_hash_table = lto_obj_build_section_table (file);
   file_data->renaming_hash_table = lto_create_renaming_table ();
@@ -935,6 +935,9 @@ lto_wpa_write_files (void)
 	  file = lto_obj_file_open (temp_filename, true);
 	  if (!file)
 	    fatal_error ("lto_obj_file_open() failed");
+
+	  if (!quiet_flag)
+	    fprintf (stderr, " %s", temp_filename);
 
 	  lto_set_current_out_file (file);
 
@@ -1657,6 +1660,7 @@ lto_read_all_file_options (void)
   lto_reissue_options ();
 }
 
+static GTY((length ("lto_stats.num_input_files + 1"))) struct lto_file_decl_data **all_file_decl_data;
 
 /* Read all the symbols from the input files FNAMES.  NFILES is the
    number of files requested in the command line.  Instantiate a
@@ -1667,7 +1671,6 @@ static void
 read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 {
   unsigned int i, last_file_ix;
-  struct lto_file_decl_data **all_file_decl_data;
   FILE *resolution;
   struct cgraph_node *node;
 
@@ -1676,7 +1679,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_push (TV_IPA_LTO_DECL_IO);
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
-  all_file_decl_data = XNEWVEC (struct lto_file_decl_data *, nfiles + 1);
+  all_file_decl_data = GGC_CNEWVEC (struct lto_file_decl_data *, nfiles + 1);
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
 
   /* Read the resolution file.  */
@@ -1723,6 +1726,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       lto_obj_file_close (current_lto_file);
       current_lto_file = NULL;
+      ggc_collect ();
     }
 
   if (resolution_file_name)
@@ -1733,24 +1737,30 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
 
-  /* Each pass will set the appropriate timer.  */
   timevar_pop (TV_IPA_LTO_DECL_IO);
 
   if (!quiet_flag)
     fprintf (stderr, "\nReading the callgraph\n");
 
+  timevar_push (TV_IPA_LTO_CGRAPH_IO);
   /* Read the callgraph.  */
   input_cgraph ();
+  timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)
     fprintf (stderr, "Merging declarations\n");
 
+  timevar_push (TV_IPA_LTO_DECL_MERGE);
   /* Merge global decls.  */
   lto_symtab_merge_decls ();
 
   /* Fixup all decls and types and free the type hash tables.  */
   lto_fixup_decls (all_file_decl_data);
   free_gimple_type_tables ();
+  ggc_collect ();
+
+  timevar_pop (TV_IPA_LTO_DECL_MERGE);
+  /* Each pass will set the appropriate timer.  */
 
   if (!quiet_flag)
     fprintf (stderr, "Reading summaries\n");
@@ -1762,7 +1772,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     ipa_read_summaries ();
 
   /* Finally merge the cgraph according to the decl merging decisions.  */
+  timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
   lto_symtab_merge_cgraph_nodes ();
+  ggc_collect ();
 
   if (flag_ltrans)
     for (node = cgraph_nodes; node; node = node->next)
@@ -1776,8 +1788,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 			 node->ipa_transforms_to_apply,
 			 (ipa_opt_pass)&pass_ipa_inline);
       }
+  timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 
-  timevar_push (TV_IPA_LTO_DECL_IO);
+  timevar_push (TV_IPA_LTO_DECL_INIT_IO);
 
   /* FIXME lto. This loop needs to be changed to use the pass manager to
      call the ipa passes directly.  */
@@ -1791,7 +1804,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Indicate that the cgraph is built and ready.  */
   cgraph_function_flags_ready = true;
 
-  timevar_pop (TV_IPA_LTO_DECL_IO);
+  timevar_pop (TV_IPA_LTO_DECL_INIT_IO);
+  ggc_free (all_file_decl_data);
+  all_file_decl_data = NULL;
 }
 
 
@@ -1874,6 +1889,12 @@ do_whole_program_analysis (void)
   /* Reading in the cgraph uses different timers, start timing WPA now.  */
   timevar_push (TV_WHOPR_WPA);
 
+  if (pre_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption before IPA\n");
+      dump_memory_report (false);
+    }
+
   cgraph_function_flags_ready = true;
   bitmap_obstack_initialize (NULL);
   ipa_register_cgraph_hooks ();
@@ -1895,8 +1916,15 @@ do_whole_program_analysis (void)
       fflush (stderr);
     }
   output_files = lto_wpa_write_files ();
+  ggc_collect ();
   if (!quiet_flag)
     fprintf (stderr, "\n");
+
+  if (post_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption after IPA\n");
+      dump_memory_report (false);
+    }
 
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)

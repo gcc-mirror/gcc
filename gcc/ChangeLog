@@ -1,3 +1,17 @@
+2010-04-29  Jan HUbicka  <jh@suse.cz>
+
+	* gengtype.c (open_base_files): Add lto-streamer.h
+	* cgraph.h (cgraph_local_info): lto_file_data is now in GGC.
+	(pass_ipa_cp): GGC collect.
+	* toplev. (compile_file): Do not output symbols.
+	* ipa-inline.c (pass_ipa_inline): Add ggc collect.
+	* timevar.def (TV_VARPOOL, TV_IPA_LTO_DECL_INIT_IO,
+	TV_IPA_LTO_DECL_MERGE, TV_IPA_LTO_CGRAPH_MERGE, TV_VAROUT): New.
+	* lto-section-in.c: Include ggc.h
+	(lto_new_in_decl_state): Alloc in GGC.
+	(lto_delete_in_decl_state): Likewise.
+	* ipa.c (pass_ipa_function_visibility, pass_ipa_whole_program): Collect.
+
 2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/42895
