@@ -87,7 +87,7 @@ struct GTY(()) cgraph_thunk_info {
 
 struct GTY(()) cgraph_local_info {
   /* File stream where this node is being written to.  */
-  struct lto_file_decl_data * GTY ((skip)) lto_file_data;
+  struct lto_file_decl_data * lto_file_data;
 
   struct inline_summary inline_summary;
 
