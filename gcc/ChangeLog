@@ -1,3 +1,14 @@
+2010-04-29  Jon Grant <04@jguk.org>
+	
+	* collect2.c (vflag): Change type from int to bool.
+	(debug): Likewise.
+	(helpflag): New global bool.
+	(main): Set vflag and debug with boolean, not integer truth
+	values.  Accept new "--help" option and output usage text if
+	found.
+	* collect2.h (vflag): Update prototype.
+	(debug): Likewise.
+	
 2010-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/43935

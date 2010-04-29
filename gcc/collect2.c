@@ -178,7 +178,7 @@ struct head
   int number;
 };
 
-int vflag;				/* true if -v */
+bool vflag;				/* true if -v or --version */ 
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
 static const char *demangle_flag;
@@ -197,7 +197,8 @@ enum lto_mode_d {
 /* Current LTO mode.  */
 static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 
-int debug;				/* true if -debug */
+bool debug;				/* true if -debug */
+bool helpflag;			/* true if --help */
 
 static int shared_obj;			/* true if -shared */
 
@@ -1243,7 +1244,7 @@ main (int argc, char **argv)
     for (i = 1; argv[i] != NULL; i ++)
       {
 	if (! strcmp (argv[i], "-debug"))
-	  debug = 1;
+	  debug = true;
         else if (! strcmp (argv[i], "-flto") && ! use_plugin)
 	  {
 	    use_verbose = true;
@@ -1473,7 +1474,7 @@ main (int argc, char **argv)
       if (use_verbose && *q == '-' && q[1] == 'v' && q[2] == 0)
 	{
 	  /* Turn on trace in collect2 if needed.  */
-	  vflag = 1;
+	  vflag = true;
 	}
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
@@ -1603,7 +1604,7 @@ main (int argc, char **argv)
 
 	    case 'v':
 	      if (arg[2] == '\0')
-		vflag = 1;
+		vflag = true;
 	      break;
 
 	    case '-':
@@ -1634,6 +1635,10 @@ main (int argc, char **argv)
 		}
 	      else if (strncmp (arg, "--sysroot=", 10) == 0)
 		target_system_root = arg + 10;
+	      else if (strncmp (arg, "--version", 9) == 0)
+		vflag = true;
+	      else if (strncmp (arg, "--help", 9) == 0)
+		helpflag = true;
 	      break;
 	    }
 	}
@@ -1733,6 +1738,20 @@ main (int argc, char **argv)
       TARGET_VERSION;
 #endif
       fprintf (stderr, "\n");
+    }
+
+  if (helpflag)
+    {
+      fprintf (stderr, "Usage: collect2 [options]\n");
+      fprintf (stderr, " Wrap linker and generate constructor code if needed.\n");
+      fprintf (stderr, " Options:\n");
+      fprintf (stderr, "  -debug          Enable debug output\n");
+      fprintf (stderr, "  --help          Display this information\n");
+      fprintf (stderr, "  -v, --version   Display this program's version number\n");
+      fprintf (stderr, "Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      fprintf (stderr, "Report bugs: %s\n", bug_report_url);
+
+      collect_exit (0);
     }
 
   if (debug)
