@@ -35,6 +35,8 @@ extern void print_plugins_versions (FILE *file, const char *indent);
 extern void print_plugins_help (FILE *file, const char *indent);
 extern void finalize_plugins (void);
 
+extern bool flag_plugin_added;
+
 /* Called from inside GCC.  Invoke all plugin callbacks registered with
    the specified event.
    Return PLUGEVT_SUCCESS if at least one callback was called,
@@ -49,8 +51,6 @@ invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
 {
 #ifdef ENABLE_PLUGIN
   /* True iff at least one plugin has been added.  */
-  extern bool flag_plugin_added;
-
   if (flag_plugin_added)
     return invoke_plugin_callbacks_full (event, gcc_data);
 #endif
