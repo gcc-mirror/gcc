@@ -11,7 +11,7 @@
 	
 2010-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
-	PR bootstrap/43935
+	PR bootstrap/43936
 	* plugin.h (flag_plugin_added): Moved out of
 	invoke_plugin_callbacks.
 
