@@ -1,3 +1,11 @@
+2010-04-29  Brian Hackett   <bhackett1024@gmail.com>
+
+	* plugin.h (invoke_plugin_callbacks): New inline function.
+	* plugin.c (flag_plugin_added): New global flag.
+	(add_new_plugin): Initialize above flag.
+	(invoke_plugin_callbacks): Rename to ...
+	(invoke_plugin_callbacks_full): ... this.
+
 2010-04-28  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_symtab_entry_def) Add vnode.
