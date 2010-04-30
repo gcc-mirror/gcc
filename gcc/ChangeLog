@@ -1,3 +1,9 @@
+2010-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check the alignment of
+	the variable part of the offset as well.  Use highest_pow2_factor for
+	all alignment checks.
+
 2010-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/43893
