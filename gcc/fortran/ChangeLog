@@ -1,3 +1,10 @@
+2010-04-30  Tobias Burnus  Mburnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/43931
+	*  trans-types.c (gfc_get_array_descriptor_base): Fix index
+	calculation for array descriptor types.
+
 2010-04-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43896

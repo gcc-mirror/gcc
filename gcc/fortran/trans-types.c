@@ -1542,7 +1542,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 {
   tree fat_type, fieldlist, decl, arraytype;
   char name[16 + 2*GFC_RANK_DIGITS + 1 + 1];
-  int idx = 2 * (dimen - 1) + restricted;
+  int idx = 2 * (codimen + dimen - 1) + restricted;
 
   gcc_assert (dimen >= 1 && codimen + dimen <= GFC_MAX_DIMENSIONS);
   if (gfc_array_descriptor_base[idx])
@@ -1551,8 +1551,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   /* Build the type node.  */
   fat_type = make_node (RECORD_TYPE);
 
-  sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT "_"
-	   GFC_RANK_PRINTF_FORMAT, dimen, codimen);
+  sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT, dimen + codimen);
   TYPE_NAME (fat_type) = get_identifier (name);
 
   /* Add the data member as the first element of the descriptor.  */
@@ -1629,8 +1628,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
     type_name = IDENTIFIER_POINTER (tmp);
   else
     type_name = "unknown";
-  sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_"
-	   GFC_RANK_PRINTF_FORMAT "_%.*s", dimen, codimen,
+  sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_%.*s", dimen + codimen,
 	   GFC_MAX_SYMBOL_LEN, type_name);
   TYPE_NAME (fat_type) = get_identifier (name);
 

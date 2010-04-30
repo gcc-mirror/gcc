@@ -1,3 +1,9 @@
+2010-04-30  Tobias Burnus  Mburnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/43931
+	* gfortran.dg/coarray_13.f90: New test.
+
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43946
