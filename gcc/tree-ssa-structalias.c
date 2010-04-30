@@ -3285,8 +3285,10 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
       && ((TREE_CODE (t) == INTEGER_CST
 	   && integer_zerop (t))
 	  /* The only valid CONSTRUCTORs in gimple with pointer typed
-	     elements are zero-initializer.  */
-	  || TREE_CODE (t) == CONSTRUCTOR))
+	     elements are zero-initializer.  But in IPA mode we also
+	     process global initializers, so verify at least.  */
+	  || (TREE_CODE (t) == CONSTRUCTOR
+	      && CONSTRUCTOR_NELTS (t) == 0)))
     {
       temp.var = nothing_id;
       temp.type = ADDRESSOF;

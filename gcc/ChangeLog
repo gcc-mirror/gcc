@@ -1,5 +1,11 @@
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43879
+	* tree-ssa-structalias.c (get_constraint_for_1): Properly
+	handle non-zero initializers.
+
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
 	* builtins.c (fold_builtin_1): Delete free (0).
 
 2010-04-29  Jan HUbicka  <jh@suse.cz>

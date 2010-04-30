@@ -1,5 +1,10 @@
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43879
+	* gcc.dg/torture/pr43879_1.c: New testcase.
+
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/builtin-free.c: New testcase.
 
 2010-04-29  Fabien Chêne  <fabien.chene@gmail.com>
