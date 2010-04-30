@@ -1,5 +1,10 @@
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (get_constraint_for_1): Generate
+	constraints for CONSTRUCTOR.
+
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/43946
 	* passes.c (init_optimization_passes): Move pass_ipa_free_lang_data
 	first after all lowering passes.

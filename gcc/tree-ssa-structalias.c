@@ -3351,6 +3351,26 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 	      get_constraint_for_ssa_var (t, results, address_p);
 	      return;
 	    }
+	  case CONSTRUCTOR:
+	    {
+	      unsigned int i;
+	      tree val;
+	      VEC (ce_s, heap) *tmp = NULL;
+	      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, val)
+		{
+		  struct constraint_expr *rhsp;
+		  unsigned j;
+		  get_constraint_for_1 (val, &tmp, address_p);
+		  for (j = 0; VEC_iterate (ce_s, tmp, j, rhsp); ++j)
+		    VEC_safe_push (ce_s, heap, *results, rhsp);
+		  VEC_truncate (ce_s, tmp, 0);
+		}
+	      VEC_free (ce_s, heap, tmp);
+	      /* We do not know whether the constructor was complete,
+	         so technically we have to add &NOTHING or &ANYTHING
+		 like we do for an empty constructor as well.  */
+	      return;
+	    }
 	  default:;
 	  }
 	break;
