@@ -1,3 +1,11 @@
+2010-04-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/43844
+	* io/unix.c (raw_truncate): Explicit cast from integer-scalar
+	to pointer.
+	(empfile): Use for mingw GetTempPath and avoid double slash
+	for path.
+
 2010-04-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/43844
