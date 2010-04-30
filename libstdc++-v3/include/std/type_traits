@@ -405,6 +405,35 @@ namespace std
       typedef typename __decay_selector<__remove_type>::__type type;
     };
 
+  template<typename _Tp>
+    class reference_wrapper;
+
+  // Helper which adds a reference to a type when given a reference_wrapper
+  template<typename _Tp>
+    struct __strip_reference_wrapper
+    {
+      typedef _Tp __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __decay_and_strip
+    {
+      typedef typename __strip_reference_wrapper<
+	typename decay<_Tp>::type>::__type __type;
+    };
+
 
   // Utility for constructing identically cv-qualified types.
   template<typename _Unqualified, bool _IsConst, bool _IsVol>
