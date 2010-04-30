@@ -406,11 +406,7 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 
   /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
-    return (DECL_SIZE (e->decl) != NULL_TREE
-	    /* The C++ frontend retains TREE_STATIC on the declaration
-	       of foo_ in struct Foo { static Foo *foo_; }; but it is
-	       not a definition.  g++.dg/lto/20090315_0.C.  */
-	    && !DECL_EXTERNAL (e->decl));
+    return (e->vnode && e->vnode->finalized);
 
   gcc_unreachable ();
 }
@@ -586,17 +582,6 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	  prevailing = prevailing->next;
       if (TREE_CODE (prevailing->decl) == VAR_DECL)
 	while (!prevailing->vnode
-	       && prevailing->next)
-	  prevailing = prevailing->next;
-      /* We do not stream varpool nodes, so the first decl has to
-	 be good enough for now.
-	 ???  For QOI choose a variable with readonly initializer
-	 if there is one.  This matches C++
-	 struct Foo { static const int i = 1; }; without a real
-	 definition.  */
-      if (TREE_CODE (prevailing->decl) == VAR_DECL)
-	while (!(TREE_READONLY (prevailing->decl)
-		 && DECL_INITIAL (prevailing->decl))
 	       && prevailing->next)
 	  prevailing = prevailing->next;
     }
