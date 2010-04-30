@@ -1,3 +1,10 @@
+2010-04-30  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/43779
+	* typeck.c (warn_args_num): New function.
+	(convert_arguments): Use warn_args_num to print the diagnostic
+	messages. 
+
 2010-04-29  Fabien Chêne  <fabien.chene@gmail.com>
 
 	PR c++/43890
