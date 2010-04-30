@@ -48,7 +48,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "debug.h"
 #include "tree.h"
 #include "ggc.h"
-#include "varray.h"
+#include "vec.h"
 
 static GTY(()) tree anonymous_types;
 
@@ -58,7 +58,7 @@ static GTY(()) int unnamed_struct_number;
 
 /* Declarations whose debug info was deferred till end of compilation.  */
 
-static GTY(()) varray_type deferred_global_decls;
+static GTY(()) VEC(tree,gc) *deferred_global_decls;
 
 /* The C front end may call sdbout_symbol before sdbout_init runs.
    We save all such decls in this list and output them when we get
@@ -1464,7 +1464,7 @@ sdbout_global_decl (tree decl)
       if (!DECL_INITIAL (decl) || !TREE_PUBLIC (decl))
 	sdbout_symbol (decl, 0);
       else
-	VARRAY_PUSH_TREE (deferred_global_decls, decl);
+	VEC_safe_push (tree, gc, deferred_global_decls, decl);
 
       /* Output COFF information for non-global file-scope initialized
 	 variables.  */
@@ -1480,9 +1480,10 @@ static void
 sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
 {
   size_t i;
+  tree decl;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_global_decls); i++)
-    sdbout_symbol (VARRAY_TREE (deferred_global_decls, i), 0);
+  for (i = 0; VEC_iterate (tree, deferred_global_decls, i, decl); i++)
+    sdbout_symbol (decl, 0);
 }
 
 /* Describe the beginning of an internal block within a function.
@@ -1689,7 +1690,7 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
   current_file->name = input_file_name;
 #endif
 
-  VARRAY_TREE_INIT (deferred_global_decls, 12, "deferred_global_decls");
+  deferred_global_decls = VEC_alloc (tree, gc, 12);
 
   /* Emit debug information which was queued by sdbout_symbol before
      we got here.  */

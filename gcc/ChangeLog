@@ -1,3 +1,16 @@
+2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sdbout.c: Include vec.h, do not include varray.h.
+	(deferred_global_decls, sdbout_global_decl,
+	sdbout_finish, sdbout_init): Use VEC instead of VARRAY.
+	* toplev.c: Do not include varray.h.
+	(dump_memory_report): Do not dump VARRAY statistics.
+	* gengtype.c (open_base_file): Ignore varray.h.
+	* Makefile.in: Update for abovementioned changes.
+	Remove all traces of varray.c and varray.h.
+	* varray.c: Remove file.
+	* varray.h: Remove file.
+
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (lto_output_varpool_node): Always output constant pool
