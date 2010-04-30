@@ -96,6 +96,10 @@ bool picochip_rtx_costs (rtx x, int code, int outer_code, int* total, bool speed
 bool picochip_return_in_memory(const_tree type,
                               const_tree fntype ATTRIBUTE_UNUSED);
 bool picochip_legitimate_address_p (enum machine_mode, rtx, bool);
+rtx picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+                             enum machine_mode mode);
+int picochip_legitimize_reload_address (rtx *x, enum machine_mode mode,
+                                        int opnum, int type, int ind_levels);
 
 rtx picochip_struct_value_rtx(tree fntype ATTRIBUTE_UNUSED, int incoming ATTRIBUTE_UNUSED);
 rtx picochip_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
@@ -278,6 +282,9 @@ static char picochip_get_vliw_alu_id (void);
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P picochip_legitimate_address_p
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS picochip_legitimize_address
 
 /* Loading and storing QImode values to and from memory
    usually requires a scratch register. */
@@ -1268,9 +1275,13 @@ picochip_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
       {
 	rtx base = XEXP (x, 0);
 	rtx offset = XEXP (x, 1);
+        if (strict && !REGNO_OK_FOR_BASE_P (REGNO(base)))
+        {
+          valid = 0;
+          break;
+        }
 
 	valid = (REG == GET_CODE (base) &&
-		 REGNO_OK_FOR_BASE_P (REGNO(base)) &&
 		 picochip_legitimate_address_register (base, strict) &&
 		 CONST_INT == GET_CODE (offset) &&
 		 picochip_const_ok_for_base (mode, REGNO (base),
@@ -1309,6 +1320,144 @@ picochip_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
   return valid;
 
+}
+
+/* For all memory operations, picochip allows a uconst4 offset value. It
+   is hence beneficial to turn an
+   addr = <reg + long_const>
+   ld/st addr
+
+   into
+
+   X = reg + long_const & FFF0
+   diff = long_const - (long_const & FFF0)
+   ld/st <X + diff>
+
+   X can be reused in subsequent memory operations.
+   */
+rtx
+picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+                             enum machine_mode mode)
+{
+  if (!optimize)
+    return x;
+
+  unsigned mask_val;
+  // Depending on mode, the offsets allowed are either 16/32/64.
+  switch (mode)
+    {
+      case QImode:
+        mask_val = 0xFFF0;
+        break;
+      case HImode:
+        mask_val = 0xFFE0;
+        break;
+      case SImode:
+        mask_val = 0xFFC0;
+        break;
+      default:
+        return x;
+    }
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      int offset = INTVAL (XEXP (x, 1));
+      // Ignore cases with negative offsets.
+      if (offset < 0)
+        return x;
+      int high_val = offset & mask_val;
+      int low_val = offset - high_val;
+      if (high_val != 0)
+        {
+          rtx temp_reg = force_reg (Pmode, gen_rtx_PLUS (Pmode, XEXP (x, 0), GEN_INT(high_val)));
+          x = gen_rtx_PLUS (Pmode, temp_reg, GEN_INT(low_val));
+          return x;
+        }
+    }
+  return x;
+}
+
+/* For all memory operations, picochip allows a uconst4 offset value. It
+   is hence beneficial to turn an
+   addr = <reg + long_const>
+   ld/st addr
+
+   into
+
+   X = reg + long_const & FFF0
+   diff = long_const - (long_const & FFF0)
+   ld/st <X + diff>
+
+   X can be reused in subsequent memory operations.
+   */
+int
+picochip_legitimize_reload_address (rtx *x,
+                                    enum machine_mode mode,
+                                    int opnum, int type,
+                                    int ind_levels ATTRIBUTE_UNUSED)
+{
+  if (picochip_symbol_offset(*x))
+    {
+      *x = gen_rtx_CONST(mode, *x);
+      return 0;
+    }
+  if (!optimize)
+    return 0;
+
+  /* We should recognise addresses that we created.*/
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (*x, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (*x, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (*x, 1)) == CONST_INT)
+    {
+      push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
+                   BASE_REG_CLASS, GET_MODE (*x), VOIDmode, 0, 0,
+                   opnum, (enum reload_type)type);
+      return 1;
+    }
+
+  unsigned mask_val;
+  // Depending on mode, the offsets allowed are either 16/32/64.
+  switch (mode)
+    {
+      case QImode:
+        mask_val = 0xFFF0;
+        break;
+      case HImode:
+        mask_val = 0xFFE0;
+        break;
+      case SImode:
+        mask_val = 0xFFC0;
+        break;
+      default:
+        return 0;
+    }
+
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 0)) == REG
+      && GET_CODE (XEXP (*x, 1)) == CONST_INT)
+    {
+      int offset = INTVAL (XEXP (*x, 1));
+      // Ignore cases with negative offsets.
+      if (offset < 0)
+        return 0;
+      int high_val = offset & mask_val;
+      int low_val = offset - high_val;
+      if (high_val != 0)
+        {
+          rtx temp_reg = gen_rtx_PLUS (Pmode, XEXP (*x, 0), GEN_INT(high_val));
+          *x = gen_rtx_PLUS (Pmode, temp_reg, GEN_INT(low_val));
+          push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
+                       BASE_REG_CLASS, GET_MODE (*x), VOIDmode, 0, 0,
+                       opnum, (enum reload_type)type);
+          return 1;
+        }
+    }
+
+  return 0;
 }
 
 /* Detect an rtx which matches (plus (symbol_ref) (const_int)). */
@@ -4395,11 +4544,11 @@ picochip_check_conditional_copy (rtx * operands)
      handled using logical operations (e.g., SIreg != 0 when low ||
      high). Need to find test cases to provoke this though (fixunssfdi
      in libgcc does, but is complicated). */
-  if (GET_MODE (branch_op_0) != HImode ||
-       !(register_operand (branch_op_0, GET_MODE (branch_op_0))))
+  if (register_operand(branch_op_0, GET_MODE(branch_op_0)) &&
+      GET_MODE(branch_op_0) != HImode)
     return 0;
-  if (GET_MODE (branch_op_1) != HImode ||
-       !(picochip_comparison_operand (branch_op_1, GET_MODE (branch_op_1))))
+  if (register_operand(branch_op_1, GET_MODE(branch_op_1)) &&
+      GET_MODE(branch_op_1) != HImode)
     return 0;
 
   return 1;

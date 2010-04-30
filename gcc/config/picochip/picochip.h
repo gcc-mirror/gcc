@@ -495,7 +495,10 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
    correct code is generated. */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	     \
-if (picochip_symbol_offset(X)) { X = gen_rtx_CONST(MODE, X); }
+do {                                                                         \
+  if (picochip_legitimize_reload_address(&X,MODE,OPNUM,TYPE,IND_LEVELS))     \
+    goto WIN;                                                                \
+  } while(0);                                                                \
 
 /* Nonzero if the constant rtx X is a legitimate general operand.  X
    satisfies CONSTANT_P.  */
