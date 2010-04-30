@@ -1,3 +1,18 @@
+2010-04-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (picochip_legitimize_address): Define.
+	Use this function to do machine-specific conversion.
+	(picochip_legitimize_reload_address): Likewise.
+	(picochip_legitimate_address_p): Check valid base register only if
+	strict.
+	(picochip_check_conditional_copy): Check for modw only if opnd is
+	register.
+	* config/picochip/picochip.h (LEGITIMIZE_RELOAD_ADDRESS): Use this
+	to call the function in c.
+	* config/picochip/picochip-protos.h
+	(picochip_legitimize_reload_address): Define.
+	* config/picochip/picochip.md (supported_compare1): Define.
+
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_local_info): Remove for_functions_valid.
