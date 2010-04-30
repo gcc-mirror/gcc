@@ -1,3 +1,8 @@
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree-profile.c (tree_init_ic_make_global_vars): Mark new decls as
+	needed.
+
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for_1): Generate

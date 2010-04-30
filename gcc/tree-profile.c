@@ -83,6 +83,7 @@ tree_init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
   varpool_finalize_decl (ic_void_ptr_var);
+  varpool_mark_needed_node (varpool_node (ic_void_ptr_var));
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var
@@ -94,6 +95,7 @@ tree_init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   varpool_finalize_decl (ic_gcov_type_ptr_var);
+  varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }
 
 static void
