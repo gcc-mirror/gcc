@@ -1,3 +1,8 @@
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43946
+	* gcc.dg/lto/20100430-1_0.c: New testcase.
+
 2010-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43942

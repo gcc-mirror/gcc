@@ -1,3 +1,9 @@
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43946
+	* passes.c (init_optimization_passes): Move pass_ipa_free_lang_data
+	first after all lowering passes.
+
 2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* toplev.c: Include varray.h for statistics dumping.
