@@ -1,3 +1,9 @@
+2010-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43893
+	* testsuite/libgomp.c/pr43893.c: New test.
+	* testsuite/libgomp.c++/pr43893.C: New test.
+
 2010-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620

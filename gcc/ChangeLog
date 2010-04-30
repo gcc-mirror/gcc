@@ -1,3 +1,8 @@
+2010-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43893
+	* c-omp.c (c_finish_omp_for): Handle also EQ_EXPR.
+
 2010-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.4.5.
