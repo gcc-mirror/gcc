@@ -61,6 +61,7 @@ static void casts_away_constness_r (tree *, tree *);
 static bool casts_away_constness (tree, tree);
 static void maybe_warn_about_returning_address_of_local (tree);
 static tree lookup_destructor (tree, tree, tree);
+static void warn_args_num (location_t, tree, bool);
 static int convert_arguments (tree, VEC(tree,gc) **, tree, int,
                               tsubst_flags_t);
 
@@ -3286,6 +3287,44 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
   return ret;
 }
 
+/* Subroutine of convert_arguments.
+   Warn about wrong number of args are genereted. */
+
+static void
+warn_args_num (location_t loc, tree fndecl, bool too_many_p)
+{
+  if (fndecl)
+    {
+      if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
+	{
+	  if (DECL_NAME (fndecl) == NULL_TREE
+	      || IDENTIFIER_HAS_TYPE_VALUE (DECL_NAME (fndecl)))
+	    error_at (loc,
+		      too_many_p
+		      ? G_("too many arguments to constructor %q#D")
+		      : G_("too few arguments to constructor %q#D"),
+		      fndecl);
+	  else
+	    error_at (loc,
+		      too_many_p
+		      ? G_("too many arguments to member function %q#D")
+		      : G_("too few arguments to member function %q#D"),
+		      fndecl);
+	}
+      else
+	error_at (loc,
+		  too_many_p
+		  ? G_("too many arguments to function %q#D")
+		  : G_("too few arguments to function %q#D"),
+		  fndecl);
+      inform (DECL_SOURCE_LOCATION (fndecl),
+	      "declared here");
+    }
+  else
+    error_at (loc, too_many_p ? G_("too many arguments to function")
+		      	      : G_("too few arguments to function"));
+}
+
 /* Convert the actual parameter expressions in the list VALUES to the
    types in the list TYPELIST.  The converted expressions are stored
    back in the VALUES vector.
@@ -3307,25 +3346,10 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 		   int flags, tsubst_flags_t complain)
 {
   tree typetail;
-  const char *called_thing = 0;
   unsigned int i;
 
   /* Argument passing is always copy-initialization.  */
   flags |= LOOKUP_ONLYCONVERTING;
-
-  if (fndecl)
-    {
-      if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
-	{
-	  if (DECL_NAME (fndecl) == NULL_TREE
-	      || IDENTIFIER_HAS_TYPE_VALUE (DECL_NAME (fndecl)))
-	    called_thing = "constructor";
-	  else
-	    called_thing = "member function";
-	}
-      else
-	called_thing = "function";
-    }
 
   for (i = 0, typetail = typelist;
        i < VEC_length (tree, *values);
@@ -3341,15 +3365,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	{
           if (complain & tf_error)
             {
-              if (fndecl)
-                {
-                  error_at (input_location, "too many arguments to %s %q#D", 
-			    called_thing, fndecl);
-		  inform (DECL_SOURCE_LOCATION (fndecl),
-			  "declared here");
-                }
-              else
-                error ("too many arguments to function");
+	      warn_args_num (input_location, fndecl, /*too_many_p=*/true);
               return i;
             }
           else
@@ -3454,17 +3470,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
       else
 	{
           if (complain & tf_error)
-            {
-              if (fndecl)
-                {
-                  error_at (input_location, "too few arguments to %s %q#D", 
-			    called_thing, fndecl);
-		  inform (DECL_SOURCE_LOCATION (fndecl),
-			  "declared here");
-                }
-              else
-                error ("too few arguments to function");
-            }
+	    warn_args_num (input_location, fndecl, /*too_many_p=*/false);
 	  return -1;
 	}
     }
