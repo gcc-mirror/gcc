@@ -1,3 +1,8 @@
+2010-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43942
+	* tree.c (auto_var_in_fn_p): Return false for DECL_EXTERNAL vars.
+
 2010-04-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_legitimize_address): Define.

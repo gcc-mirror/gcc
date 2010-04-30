@@ -1,3 +1,8 @@
+2010-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43942
+	* c-c++-common/pr43942.c: New test.
+
 2009-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.dg/lto/20091216-1_0.c: Adjust test case to avoid
