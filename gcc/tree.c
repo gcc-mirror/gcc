@@ -7919,7 +7919,8 @@ bool
 auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
-	  && (((TREE_CODE (var) == VAR_DECL || TREE_CODE (var) == PARM_DECL)
+	  && ((((TREE_CODE (var) == VAR_DECL && ! DECL_EXTERNAL (var))
+		|| TREE_CODE (var) == PARM_DECL)
 	       && ! TREE_STATIC (var))
 	      || TREE_CODE (var) == LABEL_DECL
 	      || TREE_CODE (var) == RESULT_DECL));
