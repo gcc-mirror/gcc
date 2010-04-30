@@ -374,10 +374,21 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   gcc_assert (node->finalized || !node->analyzed);
   gcc_assert (node->needed);
   gcc_assert (!node->alias);
-  /* FIXME: We have no idea how we move references around.  For moment assume that
-     everything is used externally.  */
-  bp_pack_value (bp, flag_wpa, 1);  /* used_from_other_parition.  */
-  bp_pack_value (bp, boundary_p, 1);  /* in_other_partition.  */
+  /* Constant pool initializers can be de-unified into individual ltrans units.
+     FIXME: Alternatively at -Os we may want to avoid generating for them the local
+     labels and share them across LTRANS partitions.  */
+  if (DECL_IN_CONSTANT_POOL (node->decl))
+    {
+      bp_pack_value (bp, 0, 1);  /* used_from_other_parition.  */
+      bp_pack_value (bp, 0, 1);  /* in_other_partition.  */
+    }
+  else
+    {
+      /* FIXME: We have no idea how we move references around.  For moment assume that
+	 everything is used externally.  */
+      bp_pack_value (bp, flag_wpa, 1);  /* used_from_other_parition.  */
+      bp_pack_value (bp, boundary_p, 1);  /* in_other_partition.  */
+    }
   /* Also emit any extra name aliases.  */
   for (alias = node->extra_name; alias; alias = alias->next)
     count++;

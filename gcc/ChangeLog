@@ -1,5 +1,10 @@
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (lto_output_varpool_node): Always output constant pool
+	references.
+
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
 	* tree-profile.c (tree_init_ic_make_global_vars): Mark new decls as
 	needed.
 
