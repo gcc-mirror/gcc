@@ -310,10 +310,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
 
   gcc_assert (e->inline_failed);
   e->inline_failed = CIF_OK;
-
-  if (!e->callee->global.inlined)
-    DECL_POSSIBLY_INLINED (e->callee->decl) = true;
-  e->callee->global.inlined = true;
+  DECL_POSSIBLY_INLINED (e->callee->decl) = true;
 
   cgraph_clone_inlined_nodes (e, true, update_original);
 

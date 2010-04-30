@@ -1,3 +1,22 @@
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_local_info): Remove for_functions_valid.
+	(cgraph_global_info): Remove inlined.
+	(LTO_cgraph_tag_names): Remove.
+	(LTO_cgraph_tags, LCC_NOT_FOUND): Move to ...
+	* lto-cgraph.c (LTO_cgraph_tags, LCC_NOT_FOUND): ... here;
+	simplify cgraph tags and document.
+	(lto_output_node): Use only LTO_cgraph_unavail_node and
+	LTO_cgraph_analyzed_node; Do not save analzed, reachable,
+	for_functions_valid, global info, process and output
+	flags.
+	(input_overwrite_node): Initialize estimated stack size and
+	estimated growth.
+	Do not read flags we no longer store.
+	(input_node): Likewise do not read info no longer stored.
+	* ipa-inline.c (cgraph_mark_inline_edge): Do not set global.inlined
+	flag.
+
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879
@@ -8,7 +27,7 @@
 
 	* builtins.c (fold_builtin_1): Delete free (0).
 
-2010-04-29  Jan HUbicka  <jh@suse.cz>
+2010-04-29  Jan Hubicka  <jh@suse.cz>
 
 	* gengtype.c (open_base_files): Add lto-streamer.h
 	* cgraph.h (cgraph_local_info): lto_file_data is now in GGC.

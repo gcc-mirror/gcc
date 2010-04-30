@@ -111,10 +111,6 @@ struct GTY(()) cgraph_local_info {
      redefined now.  */
   unsigned redefined_extern_inline : 1;
 
-  /* True if statics_read_for_function and
-     statics_written_for_function contain valid data.  */
-  unsigned for_functions_valid : 1;
-
   /* True if the function is going to be emitted in some other translation
      unit, referenced from vtable.  */
   unsigned vtable_method : 1;
@@ -139,9 +135,6 @@ struct GTY(()) cgraph_global_info {
 
   /* Estimated growth after inlining.  INT_MIN if not computed.  */
   int estimated_growth;
-
-  /* Set iff the function has been inlined at least once.  */
-  bool inlined;
 };
 
 /* Information about the function that is propagated by the RTL backend.
@@ -720,24 +713,6 @@ unsigned int compute_inline_parameters (struct cgraph_node *);
 
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
-
-/* lto-cgraph.c */
-
-enum LTO_cgraph_tags
-{
-  /* Must leave 0 for the stopper.  */
-  LTO_cgraph_avail_node = 1,
-  LTO_cgraph_overwritable_node,
-  LTO_cgraph_unavail_node,
-  LTO_cgraph_edge,
-  LTO_cgraph_indirect_edge,
-  LTO_cgraph_last_tag
-};
-
-extern const char * LTO_cgraph_tag_names[LTO_cgraph_last_tag];
-
-#define LCC_NOT_FOUND	(-1)
-
 
 /* Return true if iterator CSI points to nothing.  */
 static inline bool
