@@ -1,3 +1,9 @@
+2010-04-29  Fabien Chêne  <fabien.chene@gmail.com>
+
+	PR c++/43890
+	* init.c (diagnose_uninitialized_cst_or_ref_member): check for
+	user-provided constructor while recursing.
+
 2010-04-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42274

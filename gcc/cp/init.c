@@ -1779,6 +1779,9 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 {
   tree field;
 
+  if (type_has_user_provided_constructor (type))
+    return;
+
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
       tree field_type;
@@ -1791,8 +1794,8 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
       if (TREE_CODE (field_type) == REFERENCE_TYPE)
 	{
 	  if (using_new)
-	    error ("uninitialized reference member in %q#T using %<new%>",
-		   origin);
+	    error ("uninitialized reference member in %q#T "
+		   "using %<new%> without new-initializer", origin);
 	  else
 	    error ("uninitialized reference member in %q#T", origin);
 	  inform (DECL_SOURCE_LOCATION (field),
@@ -1802,8 +1805,8 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
       if (CP_TYPE_CONST_P (field_type))
 	{
 	  if (using_new)
-	    error ("uninitialized const member in %q#T using %<new%>",
-		   origin);
+	    error ("uninitialized const member in %q#T "
+		   "using %<new%> without new-initializer", origin);
 	  else
 	    error ("uninitialized const member in %q#T", origin);
 	  inform (DECL_SOURCE_LOCATION (field),
@@ -1908,13 +1911,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
 
-  if (*init == NULL && !type_has_user_provided_constructor (elt_type))
+  if (*init == NULL)
     {
-      bool uninitialized_error = false;
+      bool maybe_uninitialized_error = false;
       /* A program that calls for default-initialization [...] of an
 	 entity of reference type is ill-formed. */
       if (CLASSTYPE_REF_FIELDS_NEED_INIT (elt_type))
-	uninitialized_error = true;
+	maybe_uninitialized_error = true;
 
       /* A new-expression that creates an object of type T initializes
 	 that object as follows:
@@ -1929,9 +1932,9 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	   const-qualified type, the program is ill-formed; */
 
       if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (elt_type))
-	uninitialized_error = true;
+	maybe_uninitialized_error = true;
 
-      if (uninitialized_error)
+      if (maybe_uninitialized_error)
 	{
 	  if (complain & tf_error)
 	    diagnose_uninitialized_cst_or_ref_member (elt_type,
