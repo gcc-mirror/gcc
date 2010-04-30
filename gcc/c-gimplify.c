@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "varray.h"
 #include "c-tree.h"
 #include "c-common.h"
 #include "gimple.h"

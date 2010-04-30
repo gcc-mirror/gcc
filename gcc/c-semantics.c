@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "function.h"
 #include "splay-tree.h"
-#include "varray.h"
 #include "c-common.h"
 #include "except.h"
 /* In order for the format checking to accept the C frontend

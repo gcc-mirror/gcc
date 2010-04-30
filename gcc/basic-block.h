@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "bitmap.h"
 #include "sbitmap.h"
-#include "varray.h"
 #include "partition.h"
 #include "hard-reg-set.h"
 #include "predict.h"

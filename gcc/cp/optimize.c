@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "integrate.h"
 #include "toplev.h"
-#include "varray.h"
 #include "params.h"
 #include "hashtab.h"
 #include "target.h"

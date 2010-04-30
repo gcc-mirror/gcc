@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tree.h"
 #include "diagnostic.h"
-#include "varray.h"
 #include "tree-pass.h"
 #include "omega.h"
 

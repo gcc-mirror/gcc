@@ -38,7 +38,6 @@
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
-#include "varray.h"
 #include "vec.h"
 #include "value-prof.h"
 #include "gimple.h"

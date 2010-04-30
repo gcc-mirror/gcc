@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "debug.h"
 #include "target.h"
-#include "varray.h"
 
 #include "objc-act.h"
 #include "objcp-decl.h"

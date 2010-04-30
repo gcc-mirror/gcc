@@ -88,7 +88,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "timevar.h"
-#include "varray.h"
 #include "rtl.h"
 #include "basic-block.h"
 #include "diagnostic.h"
