@@ -2940,6 +2940,12 @@ type_could_have_pointers (tree type)
   if (TREE_CODE (type) == ARRAY_TYPE)
     return type_could_have_pointers (TREE_TYPE (type));
 
+  /* A function or method can consume pointers.
+     ???  We could be more precise here.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE
+      || TREE_CODE (type) == METHOD_TYPE)
+    return true;
+
   return AGGREGATE_TYPE_P (type);
 }
 
