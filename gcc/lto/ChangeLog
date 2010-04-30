@@ -1,5 +1,11 @@
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (get_filename_for_set): Look for cgraph node and if none found, use
+	default name.
+	(lto_wpa_write_files): Write any non-empty partition.
+
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c: Do not attempt to make constant pool references global.
 
 2010-04-28  Jan Hubicka  <jh@suse.cz>

@@ -817,57 +817,50 @@ get_filename_for_set (cgraph_node_set set)
   char *fname = NULL;
   static const size_t max_fname_len = 100;
 
-  if (cgraph_node_set_needs_ltrans_p (set))
+  /* Create a new temporary file to store SET.  To facilitate
+     debugging, use file names from SET as part of the new
+     temporary file name.  */
+  cgraph_node_set_iterator si;
+  struct pointer_set_t *pset = pointer_set_create ();
+  for (si = csi_start (set); !csi_end_p (si); csi_next (&si))
     {
-      /* Create a new temporary file to store SET.  To facilitate
-	 debugging, use file names from SET as part of the new
-	 temporary file name.  */
-      cgraph_node_set_iterator si;
-      struct pointer_set_t *pset = pointer_set_create ();
-      for (si = csi_start (set); !csi_end_p (si); csi_next (&si))
+      struct cgraph_node *n = csi_node (si);
+      const char *node_fname;
+      char *f;
+
+      /* Don't use the same file name more than once.  */
+      if (pointer_set_insert (pset, n->local.lto_file_data))
+	continue;
+
+      /* The first file name found in SET determines the output
+	 directory.  For the remaining files, we use their
+	 base names.  */
+      node_fname = n->local.lto_file_data->file_name;
+      if (fname == NULL)
 	{
-	  struct cgraph_node *n = csi_node (si);
-	  const char *node_fname;
-	  char *f;
-
-	  /* Don't use the same file name more than once.  */
-	  if (pointer_set_insert (pset, n->local.lto_file_data))
-	    continue;
-
-	  /* The first file name found in SET determines the output
-	     directory.  For the remaining files, we use their
-	     base names.  */
-	  node_fname = n->local.lto_file_data->file_name;
-	  if (fname == NULL)
-	    {
-	      fname = strip_extension (node_fname);
-	      continue;
-	    }
-
-	  f = strip_extension (lbasename (node_fname));
-
-	  /* If the new name causes an excessively long file name,
-	     make the last component "___" to indicate overflow.  */
-	  if (strlen (fname) + strlen (f) > max_fname_len - 3)
-	    {
-	      fname = reconcat (fname, fname, "___", NULL);
-	      break;
-	    }
-	  else
-	    {
-	      fname = reconcat (fname, fname, "_", f, NULL);
-	      free (f);
-	    }
+	  fname = strip_extension (node_fname);
+	  continue;
 	}
 
-      pointer_set_destroy (pset);
+      f = strip_extension (lbasename (node_fname));
 
-      /* Add the extension .wpa.o to indicate that this file has been
-	 produced by WPA.  */
-      fname = reconcat (fname, fname, ".wpa.o", NULL);
-      gcc_assert (fname);
+      /* If the new name causes an excessively long file name,
+	 make the last component "___" to indicate overflow.  */
+      if (strlen (fname) + strlen (f) > max_fname_len - 3)
+	{
+	  fname = reconcat (fname, fname, "___", NULL);
+	  break;
+	}
+      else
+	{
+	  fname = reconcat (fname, fname, "_", f, NULL);
+	  free (f);
+	}
     }
-  else
+
+  pointer_set_destroy (pset);
+
+  if (!fname)
     {
       /* Since SET does not need to be processed by LTRANS, use
 	 the original file name and mark it with a '*' prefix so that
@@ -875,6 +868,13 @@ get_filename_for_set (cgraph_node_set set)
       cgraph_node_set_iterator si = csi_start (set);
       struct cgraph_node *first = csi_node (si);
       fname = prefix_name_with_star (first->local.lto_file_data->file_name);
+    }
+  else
+    {
+      /* Add the extension .wpa.o to indicate that this file has been
+	 produced by WPA.  */
+      fname = reconcat (fname, fname, ".wpa.o", NULL);
+      gcc_assert (fname);
     }
 
   return fname;
@@ -933,7 +933,7 @@ lto_wpa_write_files (void)
       temp_filename = get_filename_for_set (set);
       output_files[i] = temp_filename;
 
-      if (cgraph_node_set_needs_ltrans_p (set))
+      if (cgraph_node_set_nonempty_p (set) || varpool_node_set_nonempty_p (vset))
 	{
 	  /* Write all the nodes in SET to TEMP_FILENAME.  */
 	  file = lto_obj_file_open (temp_filename, true);

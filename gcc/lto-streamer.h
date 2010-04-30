@@ -552,9 +552,6 @@ struct GTY(()) lto_file_decl_data
   /* The .o file that these offsets relate to.  */
   const char *GTY((skip)) file_name;
 
-  /* Nonzero if this file should be recompiled with LTRANS.  */
-  unsigned needs_ltrans_p : 1;
-
   /* Hash table maps lto-related section names to location in file.  */
   htab_t GTY((skip)) section_hash_table;
 
@@ -921,38 +918,6 @@ lto_tag_to_tree_code (enum LTO_tags tag)
   gcc_assert (lto_tag_is_tree_code_p (tag));
   return (enum tree_code) ((unsigned) tag - 1);
 }
-
-
-/* Return true if FILE needs to be compiled with LTRANS.  */
-static inline bool
-lto_file_needs_ltrans_p (struct lto_file_decl_data *file)
-{
-  return file->needs_ltrans_p != 0;
-}
-
-
-/* Mark FILE to be compiled with LTRANS.  */
-static inline void
-lto_mark_file_for_ltrans (struct lto_file_decl_data *file)
-{
-  file->needs_ltrans_p = 1;
-}
-
-
-/* Return true if any files in node set SET need to be compiled
-   with LTRANS.  */
-static inline bool
-cgraph_node_set_needs_ltrans_p (cgraph_node_set set)
-{
-  cgraph_node_set_iterator csi;
-
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
-    if (lto_file_needs_ltrans_p (csi_node (csi)->local.lto_file_data))
-      return true;
-
-  return false;
-}
-
 
 /* Initialize an lto_out_decl_buffer ENCODER.  */
 static inline void

@@ -962,10 +962,6 @@ input_cgraph (void)
       input_varpool_1 (file_data, ib);
       lto_destroy_simple_input_block (file_data, LTO_section_varpool,
 				      ib, data, len);
-
-      /* Assume that every file read needs to be processed by LTRANS.  */
-      if (flag_wpa)
-	lto_mark_file_for_ltrans (file_data);
     }
 
   /* Clear out the aux field that was used to store enough state to
