@@ -1,3 +1,9 @@
+2010-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43868
+	* cxx-pretty-print.c (pp_cxx_decl_specifier_seq): Move pmf handling...
+	(pp_cxx_type_specifier_seq): ...here.
+
 2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* optimize.c, parser.c, mangle.c, cp-tree.h: Do not include varray.h.

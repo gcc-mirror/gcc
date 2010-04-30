@@ -1,3 +1,8 @@
+2010-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43868
+	* g++.dg/template/ptrmem21.C: New.
+
 2010-04-30  Tobias Burnus  Mburnus@net-b.de>
 
 	PR fortran/18918
