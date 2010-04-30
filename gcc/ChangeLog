@@ -1,11 +1,19 @@
+2010-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43879
+	* tree-ssa-structalias.c (type_could_have_pointers): Functions
+	can have pointers.
+
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
-	* lto-symtab.c (lto_symtab_resolve_can_prevail_p): Chose var with varpool.
+	* lto-symtab.c (lto_symtab_resolve_can_prevail_p): Chose var with
+	varpool.
 	(lto_symtab_merge_decls_1): Remove logic looking for an initializer.
 
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
-	* cgraph.h (cgraph_node_set_nonempty_p, varpool_node_set_nonempty_p): New.
+	* cgraph.h (cgraph_node_set_nonempty_p, varpool_node_set_nonempty_p):
+	New.
 	* lto-cgraph.c (input_cgraph): Remove call to lto_mark_file_for_ltrans.
 	* lto-streamer.h (lto_file_decl_data): Remove needs_ltrans_p.
 	(lto_file_needs_ltrans_p, lto_mark_file_for_ltrans,
