@@ -1,3 +1,7 @@
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Do not attempt to make constant pool references global.
+
 2010-04-28  Jan Hubicka  <jh@suse.cz>
 
 	* lto/lto.c (lto_read_in_decl_state): Use GGC.

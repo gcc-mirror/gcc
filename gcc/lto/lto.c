@@ -723,9 +723,13 @@ lto_promote_cross_file_statics (void)
   gcc_assert (flag_wpa);
 
   /* At moment we make no attempt to figure out who is refering the variables,
-     so all must become global.  */
+     so all must become global.  
+
+     Constant pool references use internal labels and thus can not be made global.
+     It is sensible to keep those ltrans local to allow better optimization.  */
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (!vnode->externally_visible && vnode->analyzed)
+    if (!vnode->externally_visible && vnode->analyzed
+	&& !DECL_IN_CONSTANT_POOL (vnode->decl))
        {
 	  TREE_PUBLIC (vnode->decl) = 1;
 	  DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
