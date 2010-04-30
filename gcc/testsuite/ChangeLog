@@ -1,3 +1,8 @@
+2009-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/lto/20091216-1_0.c: Adjust test case to avoid
+	conflict with darwin crt1.o 'start' symbol.
+
 2010-04-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879

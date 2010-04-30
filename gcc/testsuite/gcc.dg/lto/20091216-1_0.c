@@ -1,6 +1,6 @@
 /* { dg-lto-do run } */
 
-asm (".globl start; start: nop");
+asm (".globl start_; start_: nop");
 
 int
 main ()
