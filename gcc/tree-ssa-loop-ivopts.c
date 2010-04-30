@@ -1537,16 +1537,18 @@ may_be_unaligned_p (tree ref, tree step)
 
   if (mode != BLKmode)
     {
-      double_int mul;
-      tree al = build_int_cst (TREE_TYPE (step),
-			       GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT);
+      unsigned mode_align = GET_MODE_ALIGNMENT (mode);
 
-      if (base_align < GET_MODE_ALIGNMENT (mode)
-	  || bitpos % GET_MODE_ALIGNMENT (mode) != 0
-	  || bitpos % BITS_PER_UNIT != 0)
+      if (base_align < mode_align
+	  || (bitpos % mode_align) != 0
+	  || (bitpos % BITS_PER_UNIT) != 0)
 	return true;
 
-      if (!constant_multiple_of (step, al, &mul))
+      if (toffset
+	  && (highest_pow2_factor (toffset) * BITS_PER_UNIT) < mode_align)
+	return true;
+
+      if ((highest_pow2_factor (step) * BITS_PER_UNIT) < mode_align)
 	return true;
     }
 
