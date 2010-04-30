@@ -1275,6 +1275,17 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
       pp_cxx_right_paren (pp);
       break;
 
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	{
+	  tree pfm = TYPE_PTRMEMFUNC_FN_TYPE (t);
+	  pp_cxx_decl_specifier_seq (pp, TREE_TYPE (TREE_TYPE (pfm)));
+	  pp_cxx_whitespace (pp);
+	  pp_cxx_ptr_operator (pp, t);
+	  break;
+	}
+      /* else fall through */
+
     default:
       if (!(TREE_CODE (t) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (t)))
 	pp_c_specifier_qualifier_list (pp_c_base (pp), t);
