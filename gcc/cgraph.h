@@ -827,6 +827,20 @@ struct GTY(()) constant_descriptor_tree {
   hashval_t hash;
 };
 
+/* Return true if set is nonempty.  */
+static inline bool
+cgraph_node_set_nonempty_p (cgraph_node_set set)
+{
+  return VEC_length (cgraph_node_ptr, set->nodes);
+}
+
+/* Return true if set is nonempty.  */
+static inline bool
+varpool_node_set_nonempty_p (varpool_node_set set)
+{
+  return VEC_length (varpool_node_ptr, set->nodes);
+}
+
 /* Return true when function NODE is only called directly.
    i.e. it is not externally visible, address was not taken and
    it is not used in any other non-standard way.  */

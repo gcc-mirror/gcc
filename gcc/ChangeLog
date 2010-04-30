@@ -1,3 +1,11 @@
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_node_set_nonempty_p, varpool_node_set_nonempty_p): New.
+	* lto-cgraph.c (input_cgraph): Remove call to lto_mark_file_for_ltrans.
+	* lto-streamer.h (lto_file_decl_data): Remove needs_ltrans_p.
+	(lto_file_needs_ltrans_p, lto_mark_file_for_ltrans,
+	cgraph_node_set_needs_ltrans_p): Remove.
+
 2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sdbout.c: Include vec.h, do not include varray.h.
