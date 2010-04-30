@@ -1974,8 +1974,6 @@ struct GTY(()) tree_omp_clause {
 };
 
 
-struct varray_head_tag;
-
 /* In a BLOCK node.  */
 #define BLOCK_VARS(NODE) (BLOCK_CHECK (NODE)->block.vars)
 #define BLOCK_NONLOCALIZED_VARS(NODE) \

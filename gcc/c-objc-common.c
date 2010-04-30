@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "diagnostic.h"
 #include "tree-inline.h"
-#include "varray.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tree-mudflap.h"

@@ -1,3 +1,18 @@
+2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* toplev.c: Include varray.h for statistics dumping.
+	* tree.h: Do not declare varray_head_tag.
+	* tree-into-ssa.c, tree-ssa-uninit.c, tree-phinodes.c, omega.c,
+	regs.h, lto-cgraph.c, tree-ssa-loop-ivopts.c, tree-nomudflap.c,
+	c-objc-common.c, lto-streamer-out.c, tree-ssa-propagate.c,
+	gimple-low.c, c-semantics.c, dwarf2out.c, lto-streamer-in.c,
+	lto-section-in.c, alias.c, tree-if-conv.c, gimplify.c, ggc-zone.c,
+	tree-ssa.c, tree-ssa-loop-prefetch.c, integrate.h, c-gimplify.c,
+	c-common.c, c-common.h, reg-stack.c, basic-block.h,
+	tree-ssa-structalias.c, lto-section-out.c, tree-ssanames.c: Do not
+	include varray.h.
+	* Makefile.in: Update for abovementioned changes.
+
 2010-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43942

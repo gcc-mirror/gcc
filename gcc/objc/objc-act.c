@@ -67,7 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "varray.h"
 #include "debug.h"
 #include "target.h"
 #include "diagnostic.h"

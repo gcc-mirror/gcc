@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "rtl.h"
 #include "ggc.h"
-#include "varray.h"
 #include "expr.h"
 #include "c-common.h"
 #include "tm_p.h"

@@ -850,7 +850,6 @@ extern tree c_alignof_expr (location_t, tree);
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (location_t, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
-struct varray_head_tag;
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
 extern bool strict_aliasing_warning (tree, tree, tree);

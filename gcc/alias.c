@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "target.h"
 #include "cgraph.h"
-#include "varray.h"
 #include "tree-pass.h"
 #include "ipa-type-escape.h"
 #include "df.h"

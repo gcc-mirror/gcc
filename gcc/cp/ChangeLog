@@ -1,3 +1,8 @@
+2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* optimize.c, parser.c,mangle.c, cp-tree.h: DO not include varray.h.
+	* Make-lang.in: Don't include varray.h dependency in CXX_TREE_H.
+
 2010-04-30  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/43779

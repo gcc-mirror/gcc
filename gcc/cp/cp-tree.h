@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "splay-tree.h"
 #include "vec.h"
-#include "varray.h"
 #include "c-common.h"
 #include "name-lookup.h"
 

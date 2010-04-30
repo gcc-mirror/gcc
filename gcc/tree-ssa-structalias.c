@@ -35,7 +35,6 @@
 #include "tree.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
-#include "varray.h"
 #include "diagnostic.h"
 #include "toplev.h"
 #include "gimple.h"

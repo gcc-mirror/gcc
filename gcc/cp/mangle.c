@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "varray.h"
 #include "flags.h"
 #include "target.h"
 #include "cgraph.h"

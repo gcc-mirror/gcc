@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_REGS_H
 #define GCC_REGS_H
 
-#include "varray.h"
 #include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
