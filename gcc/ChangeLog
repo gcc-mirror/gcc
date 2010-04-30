@@ -1,3 +1,8 @@
+2010-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check the alignment of
+	the variable part of the offset as well.
+
 2010-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/40561

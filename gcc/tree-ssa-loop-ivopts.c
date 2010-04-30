@@ -1418,11 +1418,19 @@ may_be_unaligned_p (tree ref)
   base_type = TREE_TYPE (base);
   base_align = TYPE_ALIGN (base_type);
 
-  if (mode != BLKmode
-      && (base_align < GET_MODE_ALIGNMENT (mode)
-	  || bitpos % GET_MODE_ALIGNMENT (mode) != 0
-	  || bitpos % BITS_PER_UNIT != 0))
-    return true;
+  if (mode != BLKmode)
+    {
+      unsigned mode_align = GET_MODE_ALIGNMENT (mode);
+
+      if (base_align < mode_align
+	  || (bitpos % mode_align) != 0
+	  || (bitpos % BITS_PER_UNIT) != 0)
+	return true;
+
+      if (toffset
+	  && (highest_pow2_factor (toffset) * BITS_PER_UNIT) < mode_align)
+	return true;
+    }
 
   return false;
 }

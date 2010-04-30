@@ -1,3 +1,7 @@
+2010-04-30  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c-torture/execute/20100430-1.c: New test.
+
 2010-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/40561
