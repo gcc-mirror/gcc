@@ -1,3 +1,12 @@
+2010-05-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* rtl.h (CONST_DOUBLE_P): Define.
+	(rtx_to_double_int): Declare.
+	* emit-rtl.c (rtx_to_double_int): New function.
+	* dwarf2out.c (insert_double): New function.
+	(loc_descriptor, add_const_value_attribute): Clean up, use
+	rtx_to_double_int and insert_double functions.
+
 2010-05-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (Inline): Add missing return keyword to examples.
