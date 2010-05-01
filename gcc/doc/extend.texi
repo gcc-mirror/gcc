@@ -2616,7 +2616,7 @@ an inlined PLT.
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on
 ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
-command line switch and @code{#pragma long_calls} settings.  The
+command-line switch and @code{#pragma long_calls} settings.  The
 @code{long_call} attribute indicates that the function might be far
 away from the call site and require a different (more expensive)
 calling sequence.   The @code{short_call} attribute always places
@@ -4166,7 +4166,7 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @cindex @code{tls_model} attribute
 The @code{tls_model} attribute sets thread-local storage model
 (@pxref{Thread-Local}) of a particular @code{__thread} variable,
-overriding @option{-ftls-model=} command line switch on a per-variable
+overriding @option{-ftls-model=} command-line switch on a per-variable
 basis.
 The @var{tls_model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
@@ -4949,7 +4949,7 @@ declaration, like this:
 static inline int
 inc (int *a)
 @{
-  (*a)++;
+  return (*a)++;
 @}
 @end smallexample
 
@@ -4967,7 +4967,7 @@ extern int inc (int *a);
 inline int
 inc (int *a)
 @{
-  (*a)++;
+  return (*a)++;
 @}
 @end smallexample
 
@@ -12240,7 +12240,7 @@ subsequent functions.
 @table @code
 @item memregs @var{number}
 @cindex pragma, memregs
-Overrides the command line option @code{-memregs=} for the current
+Overrides the command-line option @code{-memregs=} for the current
 file.  Use with care!  This pragma must be before any function in the
 file, and mixing different memregs values in different objects may
 make them incompatible.  This pragma is useful when a
@@ -12484,7 +12484,7 @@ to be a small power of two and specifies the new alignment in bytes.
 @enumerate
 @item @code{#pragma pack(@var{n})} simply sets the new alignment.
 @item @code{#pragma pack()} sets the alignment to the one that was in
-effect when compilation started (see also command line option
+effect when compilation started (see also command-line option
 @option{-fpack-struct[=<n>]} @pxref{Code Gen Options}).
 @item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
 setting on an internal stack and then optionally sets the new alignment.
@@ -12553,7 +12553,7 @@ are controllable and which option controls them.
 @var{kind} is @samp{error} to treat this diagnostic as an error,
 @samp{warning} to treat it like a warning (even if @option{-Werror} is
 in effect), or @samp{ignored} if the diagnostic is to be ignored.
-@var{option} is a double quoted string which matches the command line
+@var{option} is a double quoted string which matches the command-line
 option.
 
 @example
@@ -12562,14 +12562,14 @@ option.
 #pragma GCC diagnostic ignored "-Wformat"
 @end example
 
-Note that these pragmas override any command line options.  Also,
+Note that these pragmas override any command-line options.  Also,
 while it is syntactically valid to put these pragmas anywhere in your
 sources, the only supported location for them is before any data or
 functions are defined.  Doing otherwise may result in unpredictable
 results depending on how the optimizer manages your sources.  If the
 same option is listed multiple times, the last one specified is the
 one that is in effect.  This pragma is not intended to be a general
-purpose replacement for command line options, but for implementing
+purpose replacement for command-line options, but for implementing
 strict control over project policies.
 
 @end table
