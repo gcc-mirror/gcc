@@ -1,3 +1,8 @@
+2010-05-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43949
+	* g++.dg/warn/Warray-bounds-5.C: New testcase.
+
 2010-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/43951

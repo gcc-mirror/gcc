@@ -1,3 +1,10 @@
+2010-05-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43949
+	* tree-vrp.c (ssa_name_nonnegative_p): Return true for unsigned
+	types.
+	(extract_range_from_binary_expr): Handle *_MOD_EXPR.
+
 2010-05-01  Anatoly Sokolov  <aesok@post.ru>
 
 	* rtl.h (CONST_DOUBLE_P): Define.

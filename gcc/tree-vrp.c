@@ -1364,6 +1364,10 @@ ssa_name_nonnegative_p (const_tree t)
 {
   value_range_t *vr = get_value_range (t);
 
+  if (INTEGRAL_TYPE_P (t)
+      && TYPE_UNSIGNED (t))
+    return true;
+
   if (!vr)
     return false;
 
@@ -2079,6 +2083,10 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != CEIL_DIV_EXPR
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
+      && code != TRUNC_MOD_EXPR
+      && code != FLOOR_MOD_EXPR
+      && code != CEIL_MOD_EXPR
+      && code != ROUND_MOD_EXPR
       && code != RSHIFT_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
@@ -2147,6 +2155,10 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != CEIL_DIV_EXPR
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
+      && code != TRUNC_MOD_EXPR
+      && code != FLOOR_MOD_EXPR
+      && code != CEIL_MOD_EXPR
+      && code != ROUND_MOD_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2496,6 +2508,28 @@ extract_range_from_binary_expr (value_range_t *vr,
 		}
 	    }
 	}
+    }
+  else if (code == TRUNC_MOD_EXPR
+	   || code == FLOOR_MOD_EXPR
+	   || code == CEIL_MOD_EXPR
+	   || code == ROUND_MOD_EXPR)
+    {
+      bool sop = false;
+      if (vr0.type == VR_ANTI_RANGE
+	  || vr1.type != VR_RANGE
+	  || symbolic_range_p (&vr1)
+	  || range_includes_zero_p (&vr1))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+      type = VR_RANGE;
+      max = int_const_binop (MINUS_EXPR, vr1.max, integer_one_node, 0);
+      if (vrp_expr_computes_nonnegative (op0, &sop)
+	  && vrp_expr_computes_nonnegative (op1, &sop) && !sop)
+	min = build_int_cst (TREE_TYPE (vr1.max), 0);
+      else
+	min = fold_unary (NEGATE_EXPR, TREE_TYPE (max), max);
     }
   else if (code == MINUS_EXPR)
     {
