@@ -1,3 +1,9 @@
+2010-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/43951
+	* init.c (build_new_1): Revert the accidental checkin in
+	revision 158918.
+
 2010-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43868
