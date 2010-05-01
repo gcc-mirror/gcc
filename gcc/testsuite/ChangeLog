@@ -1,3 +1,8 @@
+2010-05-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/43951
+	* g++.dg/init/new28.C: New.
+
 2010-04-30  Iain Sandoe <iains@gcc.gnu.org>
 
 	PR objc++/32052

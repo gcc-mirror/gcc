@@ -1911,13 +1911,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
 
-  if (*init == NULL)
+  if (*init == NULL && !type_has_user_provided_constructor (elt_type))
     {
-      bool maybe_uninitialized_error = false;
+      bool uninitialized_error = false;
       /* A program that calls for default-initialization [...] of an
 	 entity of reference type is ill-formed. */
       if (CLASSTYPE_REF_FIELDS_NEED_INIT (elt_type))
-	maybe_uninitialized_error = true;
+	uninitialized_error = true;
 
       /* A new-expression that creates an object of type T initializes
 	 that object as follows:
@@ -1932,9 +1932,9 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	   const-qualified type, the program is ill-formed; */
 
       if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (elt_type))
-	maybe_uninitialized_error = true;
+	uninitialized_error = true;
 
-      if (maybe_uninitialized_error)
+      if (uninitialized_error)
 	{
 	  if (complain & tf_error)
 	    diagnose_uninitialized_cst_or_ref_member (elt_type,
