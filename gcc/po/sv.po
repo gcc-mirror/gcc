@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-04-06 14:11+0000\n"
-"PO-Revision-Date: 2010-04-26 18:16+0200\n"
+"PO-Revision-Date: 2010-05-01 17:06+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -27511,7 +27511,7 @@ msgstr "standardmallargument får inte användas i vänomdeklaration av funktionsma
 #: cp/pt.c:4193
 #, gcc-internal-format
 msgid "default template arguments may not be used in function template friend declarations"
-msgstr "standardmallargument får inte användas i vändeklarationer funktionsmallar"
+msgstr "standardmallargument får inte användas i vändeklarerade funktionsmallar"
 
 #: cp/pt.c:4196
 #, gcc-internal-format
@@ -27521,7 +27521,7 @@ msgstr "standarmallargument får inte användas i funktionsmallar utan -std=c++0x 
 #: cp/pt.c:4199
 #, gcc-internal-format
 msgid "default template arguments may not be used in partial specializations"
-msgstr "standardmallargument får inte används inte i partiella specialiseringar"
+msgstr "standardmallargument får inte användas i partiella specialiseringar"
 
 #: cp/pt.c:4202 cp/pt.c:4253
 #, gcc-internal-format
@@ -28124,7 +28124,7 @@ msgstr "härledning från klammeromgiven initierarlista kräver #include <initializ
 #: cp/pt.c:18315
 #, gcc-internal-format
 msgid "variable %q#D with %<auto%> type used in its own initializer"
-msgstr "variabeln %q#D av med %<auto%>-typ använd i sin egen initierare"
+msgstr "variabeln %q#D med %<auto%>-typ använd i sin egen initierare"
 
 #: cp/pt.c:18337
 #, gcc-internal-format
@@ -37608,7 +37608,7 @@ msgstr "skickar argument %d till %qE från distinkt Objective-C-typ"
 #: objc/objc-act.c:1378
 #, gcc-internal-format
 msgid "statically allocated instance of Objective-C class %qE"
-msgstr "statiskt allokerade instans av Objective-C-klass %qE"
+msgstr "statiskt allokerad instans av Objective-C-klass %qE"
 
 #: objc/objc-act.c:1455
 #, gcc-internal-format
