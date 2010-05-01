@@ -375,6 +375,10 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
 
+/* Predicate yielding true iff X is an rtx for a double-int
+   or floating point constant.  */
+#define CONST_DOUBLE_P(X) (GET_CODE (X) == CONST_DOUBLE)
+
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 
@@ -1627,6 +1631,7 @@ extern void start_sequence (void);
 extern void push_to_sequence (rtx);
 extern void push_to_sequence2 (rtx, rtx);
 extern void end_sequence (void);
+extern double_int rtx_to_double_int (const_rtx);
 extern rtx immed_double_int_const (double_int, enum machine_mode);
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
