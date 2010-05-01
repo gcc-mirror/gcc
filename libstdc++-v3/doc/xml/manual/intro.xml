@@ -878,7 +878,7 @@ requirements of the license of GCC.
       <emphasis>Twice.</emphasis>
    </para>
 
-<para>Then type:<command>make</command>, and congratulations, you're
+<para>Then type: <command>make</command>, and congratulations, you've
 started to build.
 </para>
 
