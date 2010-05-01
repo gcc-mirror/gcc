@@ -1,3 +1,11 @@
+2010-05-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Fix anachronisms.
+	* doc/xml/manual/intro.xml (Make): Tweak grammar and whitespace.
+	* doc/xml/manual/support.xml (NULL): Use inline <code> element
+	instead of <programlisting> block.
+	* doc/html/*: Regenerate.
+
 2010-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_pair.h (piecewise_construct_t,
@@ -41,7 +49,7 @@
 
 2010-04-27  Alexander Monakov  <amonakov@ispras.ru>
 
-	* testsuite/22_locale/codecvt/unshift/char/1.c (test01): Clarify size
+	* testsuite/22_locale/codecvt/unshift/char/1.cc (test01): Clarify size
 	definition.  Use memcpy and memcmp to avoid access beyond allocated
 	memory.
 

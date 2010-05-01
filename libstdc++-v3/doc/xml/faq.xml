@@ -638,9 +638,8 @@
   <answer id="a-linux_glibc">
       <para>When running on GNU/Linux, libstdc++ 3.2.1 (shared library version
          5.0.1) and later uses localization and formatting code from the system
-         C library (glibc) version 2.2.5.  That version of glibc is over a
-         year old and contains necessary bugfixes.  Many GNU/Linux distros make
-         glibc version 2.3.x available now.
+         C library (glibc) version 2.2.5 which contains necessary bugfixes.
+         Most GNU/Linux distros make more recent versions available now.
       </para>
       <para>The guideline is simple:  the more recent the C++ library, the
          more recent the C library.  (This is also documented in the main
@@ -718,7 +717,7 @@
     For those people who are not part of the ISO Library Group
     (i.e., nearly all of us needing to read this page in the first
     place), a public list of the library defects is occasionally
-    published <ulink url="http://anubis.dkuug.dk/jtc1/sc22/wg21/">here</ulink>.
+    published <ulink url="http://www.open-std.org/jtc1/sc22/wg21/">here</ulink>.
     Some of these issues have resulted in code changes in libstdc++.
     </para> 
     <para>
