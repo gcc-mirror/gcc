@@ -46,7 +46,7 @@ do								\
     { if (i%10 == 0) { if (i!=0) putc ('\n', (FILE));		\
 		       fputs (ASM_BYTE, (FILE)); }		\
       else putc (',', (FILE));					\
-      fprintf ((FILE), "%#x", ((PTR)[i++] & 0377)) ;}		\
+      fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}		\
       putc ('\n', (FILE));					\
 } while (0)
 

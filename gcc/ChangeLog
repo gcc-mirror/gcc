@@ -1,8 +1,14 @@
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcov-iov.c (main): Change format string placeholder
+	from %#08x to 0x%08x.
+	* genchecksum.c (dosum): Change format string placeholder
+	from %#02x to 0x%02x.
+
 2010-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879
-	* tree-tailcall.c (find_tail_calls): Clobbers also prevent
-	tail calls.
+	* tree-tailcall.c (find_tail_calls): Clobbers also prevent tail calls.
 
 2010-05-02  Bruno Haible  <bruno@clisp.org>
 
@@ -14,7 +20,13 @@
 	* hwint.h (HOST_WIDE_INT_PRINT_DOUBLE_HEX): Change format string
 	placeholder from 0x%x to %#x.
 	(HOST_WIDEST_INT_PRINT_DOUBLE_HEX): Ditto.
+	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/i386-interix.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/att.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/sysv4.h (ASM_OUTPUT_ASCII): Ditto.
+	* config/i386/i386.c (ix86_target_string): Ditto.
 	* config/i386/i386.c (output_pic_addr_const): Ditto.
+	(print_operand): Ditto.
 
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -30,8 +42,6 @@
 	(HOST_WIDE_INT_PRINT_HEX): Ditto.
 	(HOST_WIDEST_INT_PRINT_HEX): Ditto.
 	(HOST_WIDEST_INT_PRINT_DOUBLE_HEX): Ditto.
-	* gcov-dump.c (tag_function): Ditto.
-	(tag_summary): Ditto.
 
 2010-05-01  Anatoly Sokolov  <aesok@post.ru>
 

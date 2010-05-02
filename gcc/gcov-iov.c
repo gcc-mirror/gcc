@@ -64,7 +64,7 @@ main (int argc, char **argv)
   printf ("   from `%s (%lu %lu) and %s (%c)'.  */\n",
 	  argv[1], major, minor, argv[2], phase);
   printf ("\n");
-  printf ("#define GCOV_VERSION ((gcov_unsigned_t)%#08x)  /* %.4s */\n",
+  printf ("#define GCOV_VERSION ((gcov_unsigned_t)0x%08x)  /* %.4s */\n",
 	  version, v);
 
   return 0;
