@@ -2076,14 +2076,14 @@ likely_spilled_retval_p (rtx insn)
   unsigned regno, nregs;
   /* We assume here that no machine mode needs more than
      32 hard registers when the value overlaps with a register
-     for which FUNCTION_VALUE_REGNO_P is true.  */
+     for which TARGET_FUNCTION_VALUE_REGNO_P is true.  */
   unsigned mask;
   struct likely_spilled_retval_info info;
 
   if (!NONJUMP_INSN_P (use) || GET_CODE (PATTERN (use)) != USE || insn == use)
     return 0;
   reg = XEXP (PATTERN (use), 0);
-  if (!REG_P (reg) || !FUNCTION_VALUE_REGNO_P (REGNO (reg)))
+  if (!REG_P (reg) || !targetm.calls.function_value_regno_p (REGNO (reg)))
     return 0;
   regno = REGNO (reg);
   nregs = hard_regno_nregs[regno][GET_MODE (reg)];

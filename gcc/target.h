@@ -968,6 +968,10 @@ struct gcc_target
        calling the function FN_NAME.  */
     rtx (*libcall_value) (enum machine_mode, const_rtx);
 
+    /* Return true if REGNO is a possible register number for
+       a function value as seen by the caller.  */
+    bool (*function_value_regno_p) (const unsigned int);
+
     /* Return an rtx for the argument pointer incoming to the
        current function.  */
     rtx (*internal_arg_pointer) (void);

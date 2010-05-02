@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "target.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -262,7 +263,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		      case USE:
 			/* Skip __builtin_apply pattern.  */
 			if (GET_CODE (XEXP (return_copy_pat, 0)) == REG
-			    && (FUNCTION_VALUE_REGNO_P
+			    && (targetm.calls.function_value_regno_p
 				(REGNO (XEXP (return_copy_pat, 0)))))
 			  {
 			    maybe_builtin_apply = 1;
@@ -359,7 +360,8 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			&& copy_start + copy_num <= ret_end)
 		      nregs -= copy_num;
 		    else if (!maybe_builtin_apply
-			     || !FUNCTION_VALUE_REGNO_P (copy_start))
+			     || !targetm.calls.function_value_regno_p
+				 (copy_start))
 		      break;
 		    last_insn = return_copy;
 		  }

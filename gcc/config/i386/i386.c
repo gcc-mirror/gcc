@@ -1880,6 +1880,7 @@ static bool ext_80387_constants_init = 0;
 
 static struct machine_function * ix86_init_machine_status (void);
 static rtx ix86_function_value (const_tree, const_tree, bool);
+static bool ix86_function_value_regno_p (const unsigned int);
 static rtx ix86_static_chain (const_tree, bool);
 static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
@@ -6331,8 +6332,8 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 
 /* Return true if N is a possible register number of function value.  */
 
-bool
-ix86_function_value_regno_p (int regno)
+static bool
+ix86_function_value_regno_p (const unsigned int regno)
 {
   switch (regno)
     {
@@ -30655,6 +30656,9 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE ix86_function_value
+
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P ix86_function_value_regno_p
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload

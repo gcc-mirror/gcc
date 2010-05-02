@@ -136,7 +136,6 @@ extern int ix86_attr_length_vex_default (rtx, int, int);
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 
 extern rtx ix86_libcall_value (enum machine_mode);
-extern bool ix86_function_value_regno_p (int);
 extern bool ix86_function_arg_regno_p (int);
 extern int ix86_function_arg_boundary (enum machine_mode, tree);
 extern bool ix86_sol10_return_in_memory (const_tree,const_tree);

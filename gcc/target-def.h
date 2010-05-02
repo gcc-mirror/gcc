@@ -661,6 +661,7 @@
 
 #define TARGET_FUNCTION_VALUE default_function_value
 #define TARGET_LIBCALL_VALUE default_libcall_value
+#define TARGET_FUNCTION_VALUE_REGNO_P default_function_value_regno_p
 #define TARGET_INTERNAL_ARG_POINTER default_internal_arg_pointer
 #define TARGET_UPDATE_STACK_BOUNDARY NULL
 #define TARGET_GET_DRAP_RTX NULL
@@ -687,6 +688,7 @@
    TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN,			\
    TARGET_FUNCTION_VALUE,					\
    TARGET_LIBCALL_VALUE,					\
+   TARGET_FUNCTION_VALUE_REGNO_P,				\
    TARGET_INTERNAL_ARG_POINTER,					\
    TARGET_UPDATE_STACK_BOUNDARY,				\
    TARGET_GET_DRAP_RTX,						\

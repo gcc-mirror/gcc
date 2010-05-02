@@ -619,6 +619,18 @@ default_libcall_value (enum machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* The default hook for TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+bool
+default_function_value_regno_p (const unsigned int regno ATTRIBUTE_UNUSED)
+{
+#ifdef FUNCTION_VALUE_REGNO_P
+  return FUNCTION_VALUE_REGNO_P (regno);
+#else
+  gcc_unreachable ();
+#endif
+}
+
 rtx
 default_internal_arg_pointer (void)
 {
