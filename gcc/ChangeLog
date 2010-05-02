@@ -1,5 +1,6 @@
 2010-05-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR target/43888
 	* config/i386/winnt.c (i386_pe_binds_local_p): Handle weak decls.
 
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
