@@ -1,3 +1,7 @@
+2010-05-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/winnt.c (i386_pe_binds_local_p): Handle weak decls.
+
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_target_string): Output 'flags', not 'isa',

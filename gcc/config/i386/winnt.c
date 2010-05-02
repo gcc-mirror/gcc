@@ -321,6 +321,11 @@ i386_pe_binds_local_p (const_tree exp)
       && DECL_DLLIMPORT_P (exp))
     return false;
 
+  /* Or a weak one, now that they are supported.  */
+  if ((TREE_CODE (exp) == VAR_DECL || TREE_CODE (exp) == FUNCTION_DECL)
+      && DECL_WEAK (exp))
+    return false;
+
   return true;
 }
 
