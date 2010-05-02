@@ -1,3 +1,7 @@
+2010-05-02  Bruno Haible  <bruno@clisp.org>
+
+	* doc/extend.texi (Function Attributes): Fix a typo.
+
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
