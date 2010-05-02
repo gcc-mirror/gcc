@@ -1,3 +1,14 @@
+2010-05-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-04-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43921
+	* config/i386/i386.c (get_some_local_dynamic_name): Replace
+	INSN_P with NONDEBUG_INSN_P.
+	(distance_non_agu_define): Likewise.
+	(distance_agu_use): Likewise.
+
 2010-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check the alignment of
