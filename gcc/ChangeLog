@@ -1,3 +1,20 @@
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_DATA1): Change format string
+	placeholder from 0x%x to %#x.
+	(ASM_OUTPUT_DEBUG_DATA1): Ditto.
+	(ASM_OUTPUT_DEBUG_DATA4): Ditto.
+	(ASM_OUTPUT_DEBUG_DATA): Ditto.
+	(ASM_OUTPUT_DEBUG_ADDR_DATA): Ditto.
+	(ASM_OUTPUT_DEBUG_DATA8): Ditto.
+	* optc-gen.awk: Ditto.
+	* hwint.h (HOST_WIDE_INT_PRINT_DOUBLE_HEX): Ditto.
+	(HOST_WIDE_INT_PRINT_HEX): Ditto.
+	(HOST_WIDEST_INT_PRINT_HEX): Ditto.
+	(HOST_WIDEST_INT_PRINT_DOUBLE_HEX): Ditto.
+	* gcov-dump.c (tag_function): Ditto.
+	(tag_summary): Ditto.
+
 2010-05-01  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct calls): Add function_value_regno_p field.
@@ -148,11 +165,9 @@
 	simplify cgraph tags and document.
 	(lto_output_node): Use only LTO_cgraph_unavail_node and
 	LTO_cgraph_analyzed_node; Do not save analzed, reachable,
-	for_functions_valid, global info, process and output
-	flags.
+	for_functions_valid, global info, process and output flags.
 	(input_overwrite_node): Initialize estimated stack size and
-	estimated growth.
-	Do not read flags we no longer store.
+	estimated growth.  Do not read flags we no longer store.
 	(input_node): Likewise do not read info no longer stored.
 	* ipa-inline.c (cgraph_mark_inline_edge): Do not set global.inlined
 	flag.
@@ -179,7 +194,8 @@
 	* lto-section-in.c: Include ggc.h
 	(lto_new_in_decl_state): Alloc in GGC.
 	(lto_delete_in_decl_state): Likewise.
-	* ipa.c (pass_ipa_function_visibility, pass_ipa_whole_program): Collect.
+	* ipa.c (pass_ipa_function_visibility, pass_ipa_whole_program):
+	Collect.
 
 2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -192,23 +208,21 @@
 	account only if HONOR_REG_ALLOC_ORDER is not defined.
 	* config/arm/arm.h (HONOR_REG_ALLOC_ORDER): Define.
 	* system.h (ORDER_REGS_FOR_LOCAL_ALLOC): Poison.
-	
-2010-04-29  Jon Grant <04@jguk.org>
-	
+
+2010-04-29  Jon Grant  <04@jguk.org>
+
 	* collect2.c (vflag): Change type from int to bool.
 	(debug): Likewise.
 	(helpflag): New global bool.
-	(main): Set vflag and debug with boolean, not integer truth
-	values.  Accept new "--help" option and output usage text if
-	found.
+	(main): Set vflag and debug with boolean, not integer truth values.
+	Accept new "--help" option and output usage text if found.
 	* collect2.h (vflag): Update prototype.
 	(debug): Likewise.
-	
+
 2010-04-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/43936
-	* plugin.h (flag_plugin_added): Moved out of
-	invoke_plugin_callbacks.
+	* plugin.h (flag_plugin_added): Moved out of invoke_plugin_callbacks.
 
 2010-04-29  Richard Guenther  <rguenther@suse.de>
 
@@ -231,7 +245,7 @@
 	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs to compute
 	test_set.
 
-2010-04-29  Brian Hackett   <bhackett1024@gmail.com>
+2010-04-29  Brian Hackett  <bhackett1024@gmail.com>
 
 	* plugin.h (invoke_plugin_callbacks): New inline function.
 	* plugin.c (flag_plugin_added): New global flag.
@@ -279,7 +293,8 @@
 	(output_alias_pair_p): Handle variables.
 	(output_unreferenced_globals): Output only needed partition of varpool.
 	* ipa-inline.c (inline_write_summary): Update.
-	* lto-streamer-in.c (lto_input_tree_ref, lto_input_tree): Do not build cgraph.
+	* lto-streamer-in.c (lto_input_tree_ref, lto_input_tree): Do not build
+	cgraph.
 	* lto-section-in.c (lto_section_name): Add varpool and jump funcs.
 	* ipa.c (hash_varpool_node_set_element, eq_varpool_node_set_element,
 	varpool_node_set_new, varpool_node_set_add,
@@ -511,8 +526,7 @@
 2010-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/43880
-	* tree-inline.c (copy_bind_expr): Also copy bind expr vars
-	value-exprs.
+	* tree-inline.c (copy_bind_expr): Also copy bind expr vars value-exprs.
 
 2010-04-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Jan Hubicka <hubicka@ucw.cz>

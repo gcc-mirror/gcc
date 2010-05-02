@@ -267,7 +267,7 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
   unsigned long pos = gcov_position ();
 
   printf (" ident=%u", gcov_read_unsigned ());
-  printf (", checksum=0x%08x", gcov_read_unsigned ());
+  printf (", checksum=%#08x", gcov_read_unsigned ());
 
   if (gcov_position () - pos < length)
     {
@@ -418,7 +418,7 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
   unsigned ix;
 
   gcov_read_summary (&summary);
-  printf (" checksum=0x%08x", summary.checksum);
+  printf (" checksum=%#08x", summary.checksum);
 
   for (ix = 0; ix != GCOV_COUNTERS_SUMMABLE; ix++)
     {
