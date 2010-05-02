@@ -1,3 +1,9 @@
+2010-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43879
+	* tree-tailcall.c (find_tail_calls): Clobbers also prevent
+	tail calls.
+
 2010-05-02  Bruno Haible  <bruno@clisp.org>
 
 	* doc/extend.texi (Function Attributes): Fix a typo.
