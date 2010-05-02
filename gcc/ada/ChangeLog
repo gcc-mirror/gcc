@@ -1,3 +1,7 @@
+2010-05-02  Giuseppe Scrivano <gscrivano@gnu.org>
+
+	* gnathtml.pl: Use 755 as mask for new directories.
+
 2010-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Uniquize

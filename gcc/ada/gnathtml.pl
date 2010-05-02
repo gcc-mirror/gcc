@@ -1090,9 +1090,9 @@ EOF
 
 local ($index_file) = 0;
 
-mkdir ($output_dir, 0777)          if (! -d $output_dir);
-mkdir ($output_dir."/files", 0777) if (! -d $output_dir."/files");
-mkdir ($output_dir."/funcs", 0777) if (! -d $output_dir."/funcs");
+mkdir ($output_dir, 0755)          if (! -d $output_dir);
+mkdir ($output_dir."/files", 0755) if (! -d $output_dir."/files");
+mkdir ($output_dir."/funcs", 0755) if (! -d $output_dir."/funcs");
 
 &parse_prj_file ($prjfile) if ($prjfile);
 
