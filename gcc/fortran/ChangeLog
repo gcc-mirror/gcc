@@ -1,4 +1,16 @@
-2010-04-30  Tobias Burnus  Mburnus@net-b.de>
+2010-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* intrinsic.c (add_functions): Fix GFC_STD and add gfc_resolve_ calls
+	for lcobound, ucobound, image_index and this_image.
+	* intrinsic.h (gfc_resolve_lcobound, gfc_resolve_this_image,
+	gfc_resolve_image_index, gfc_resolve_ucobound): New prototypes.
+	* iresolve.c (gfc_resolve_lcobound, gfc_resolve_this_image,
+	gfc_resolve_image_index, gfc_resolve_ucobound, resolve_bound): New
+	functions.
+	(gfc_resolve_lbound, gfc_resolve_ubound): Use resolve_bound.
+
+2010-04-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
 	PR fortran/43931

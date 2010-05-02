@@ -1786,7 +1786,7 @@ add_functions (void)
   make_generic ("ierrno", GFC_ISYM_IERRNO, GFC_STD_GNU);
 
   add_sym_2 ("image_index", GFC_ISYM_IMAGE_INDEX, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_image_index, gfc_simplify_image_index, NULL,
+	     gfc_check_image_index, gfc_simplify_image_index, gfc_resolve_image_index,
 	     ca, BT_REAL, dr, REQUIRED, sub, BT_INTEGER, ii, REQUIRED);
 
   /* The resolution function for INDEX is called gfc_resolve_index_func
@@ -1925,12 +1925,12 @@ add_functions (void)
   make_generic ("lbound", GFC_ISYM_LBOUND, GFC_STD_F95);
 
   add_sym_3 ("lcobound", GFC_ISYM_LCOBOUND, CLASS_INQUIRY, ACTUAL_NO,
-	     BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_lcobound, gfc_simplify_lcobound, NULL,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_lcobound, gfc_simplify_lcobound, gfc_resolve_lcobound,
 	     ca, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	     kind, BT_INTEGER, di, OPTIONAL);
 
-  make_generic ("lcobound", GFC_ISYM_LCOBOUND, GFC_STD_F95);
+  make_generic ("lcobound", GFC_ISYM_LCOBOUND, GFC_STD_F2008);
 
   add_sym_1 ("leadz", GFC_ISYM_LEADZ, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
@@ -2540,7 +2540,7 @@ add_functions (void)
   make_generic ("tanh", GFC_ISYM_TANH, GFC_STD_F77);
 
   add_sym_2 ("this_image", GFC_ISYM_THIS_IMAGE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_this_image, gfc_simplify_this_image, NULL,
+	     gfc_check_this_image, gfc_simplify_this_image, gfc_resolve_this_image,
 	     ca, BT_REAL, dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL);
 
   add_sym_0 ("time", GFC_ISYM_TIME, NO_CLASS, ACTUAL_NO, BT_INTEGER, di, GFC_STD_GNU, 
@@ -2600,12 +2600,12 @@ add_functions (void)
   make_generic ("ubound", GFC_ISYM_UBOUND, GFC_STD_F95);
 
   add_sym_3 ("ucobound", GFC_ISYM_UCOBOUND, CLASS_INQUIRY, ACTUAL_NO,
-            BT_INTEGER, di, GFC_STD_F95,
-            gfc_check_ucobound, gfc_simplify_ucobound, NULL,
+            BT_INTEGER, di, GFC_STD_F2008,
+            gfc_check_ucobound, gfc_simplify_ucobound, gfc_resolve_ucobound,
             ca, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
             kind, BT_INTEGER, di, OPTIONAL);
 
-  make_generic ("ucobound", GFC_ISYM_UCOBOUND, GFC_STD_F95);
+  make_generic ("ucobound", GFC_ISYM_UCOBOUND, GFC_STD_F2008);
 
   /* g77 compatibility for UMASK.  */
   add_sym_1 ("umask", GFC_ISYM_UMASK, NO_CLASS, ACTUAL_NO, BT_INTEGER, di,
