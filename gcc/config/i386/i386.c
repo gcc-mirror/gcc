@@ -10843,7 +10843,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	{
 	  /* We can use %d if the number is <32 bits and positive.  */
 	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file, "%#lx%08lx",
+	    fprintf (file, "0x%lx%08lx",
 		     (unsigned long) CONST_DOUBLE_HIGH (x),
 		     (unsigned long) CONST_DOUBLE_LOW (x));
 	  else

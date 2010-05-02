@@ -1,5 +1,13 @@
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	Revert:
+	* hwint.h (HOST_WIDE_INT_PRINT_DOUBLE_HEX): Change format string
+	placeholder from 0x%x to %#x.
+	(HOST_WIDEST_INT_PRINT_DOUBLE_HEX): Ditto.
+	* config/i386/i386.c (output_pic_addr_const): Ditto.
+
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	* vmsdbgout.c (ASM_OUTPUT_DEBUG_DATA1): Change format string
 	placeholder from 0x%x to %#x.
 	(ASM_OUTPUT_DEBUG_DATA1): Ditto.
