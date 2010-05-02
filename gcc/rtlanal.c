@@ -3474,7 +3474,7 @@ keep_with_call_p (const_rtx insn)
 	  && general_operand (SET_SRC (set), VOIDmode))
 	return true;
       if (REG_P (SET_SRC (set))
-	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
+	  && targetm.calls.function_value_regno_p (REGNO (SET_SRC (set)))
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 	return true;

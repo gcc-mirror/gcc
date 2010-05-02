@@ -1,3 +1,25 @@
+2010-05-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct calls): Add function_value_regno_p field.
+	* target-def.h (TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(TARGET_INITIALIZER): Use TARGET_FUNCTION_VALUE_REGNO_P.
+	* targhooks.c (default_function_value_regno_p): New function.
+	* targhooks.h (default_function_value_regno_p): Declare function.
+	* rtlanal.c (keep_with_call_p): Use function_value_regno_p hook.
+	* builtins.c. (apply_result_size): (Ditto.).
+	* combine.c. (likely_spilled_retval_p): (Ditto.).
+	* mode-switching.c. Include 'target.h'.
+	(create_pre_exit): Use function_value_regno_p hook.
+	* Makefile.in (mode-switching.o): Add dependency on TARGET_H.
+	* doc/tm.texi (FUNCTION_VALUE_REGNO_P,
+	TARGET_FUNCTION_VALUE_REGNO_P): Revise documentation.
+
+	* config/i386/i386.h (TARGET_FUNCTION_VALUE_REGNO_P): Remove macro.
+	* config/i386/i386.c (TARGET_FUNCTION_VALUE_REGNO_P): Define macro.
+	(ix86_function_value_regno_p): Declare as static, change argument
+	type to const unsigned int.
+	* config/i386/i386-protos.h (ix86_function_value_regno_p): Remove.
+
 2010-05-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43949

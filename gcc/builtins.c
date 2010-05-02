@@ -1322,7 +1322,7 @@ apply_result_size (void)
       size = 0;
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (FUNCTION_VALUE_REGNO_P (regno))
+	if (targetm.calls.function_value_regno_p (regno))
 	  {
 	    mode = reg_raw_mode[regno];
 

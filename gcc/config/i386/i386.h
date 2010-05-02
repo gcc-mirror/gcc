@@ -1554,8 +1554,6 @@ enum reg_class
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) \
   ix86_return_pops_args ((FUNDECL), (FUNTYPE), (SIZE))
 
-#define FUNCTION_VALUE_REGNO_P(N) ix86_function_value_regno_p (N)
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
