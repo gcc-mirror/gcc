@@ -1,3 +1,8 @@
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/43963
+	* g++.dg/debug/dwarf2/icf.C: Update scan regexp for Vtable slot 0.
+
 2010-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879
