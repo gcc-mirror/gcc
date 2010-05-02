@@ -82,17 +82,17 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
      must be tweaked accordingly.  */
 # if HOST_BITS_PER_WIDE_INT == 64
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-     "%#" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x"
+     "0x%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x"
 # else
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-     "%#" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x"
+     "0x%" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x"
 # endif
 #else
 # define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "LL"
   /* We can assume that 'long long' is at least 64 bits.  */
 # define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-    "%#" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
+    "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
 #endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
 
 #define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
@@ -131,7 +131,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%" HOST_LONG_LONG_FORMAT "u"
 # define HOST_WIDEST_INT_PRINT_HEX	      "%#" HOST_LONG_LONG_FORMAT "x"
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     \
-    "%#" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
+    "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
 #endif
 
 /* Define HOST_WIDEST_FAST_INT to the widest integer type supported
