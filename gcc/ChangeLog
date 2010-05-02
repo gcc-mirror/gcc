@@ -1,3 +1,8 @@
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_target_string): Output 'flags', not 'isa',
+	when processing flag options.
+
 2010-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Check the alignment of
