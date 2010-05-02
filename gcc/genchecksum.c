@@ -60,7 +60,7 @@ dosum (const char *file)
   puts ("#include \"system.h\"");
   fputs ("EXPORTED_CONST unsigned char executable_checksum[16] = { ", stdout);
   for (i = 0; i < 16; i++)
-    printf ("%#02x%s", result[i], i == 15 ? " };\n" : ", ");
+    printf ("0x%02x%s", result[i], i == 15 ? " };\n" : ", ");
 }
 
 int
