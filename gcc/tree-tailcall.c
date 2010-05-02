@@ -460,7 +460,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
     {
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
-	  && ref_maybe_used_by_stmt_p (call, var))
+	  && (ref_maybe_used_by_stmt_p (call, var)
+	      || call_may_clobber_ref_p (call, var)))
 	return;
     }
 
