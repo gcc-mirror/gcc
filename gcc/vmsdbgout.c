@@ -351,34 +351,34 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef ASM_OUTPUT_DEBUG_DATA1
 #define ASM_OUTPUT_DEBUG_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned char) VALUE)
+  fprintf ((FILE), "\t%s\t%#x", ASM_BYTE_OP, (unsigned char) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA2
 #define ASM_OUTPUT_DEBUG_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, \
+  fprintf ((FILE), "\t%s\t%#x", UNALIGNED_SHORT_ASM_OP, \
 	   (unsigned short) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA4
 #define ASM_OUTPUT_DEBUG_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_INT_ASM_OP, (unsigned long) VALUE)
+  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_INT_ASM_OP, (unsigned long) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA
 #define ASM_OUTPUT_DEBUG_DATA(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_OFFSET_ASM_OP(VALUE), VALUE)
+  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_OFFSET_ASM_OP(VALUE), VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_ADDR_DATA
 #define ASM_OUTPUT_DEBUG_ADDR_DATA(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_PTR_ASM_OP, \
+  fprintf ((FILE), "\t%s\t%#lx", UNALIGNED_PTR_ASM_OP, \
 	   (unsigned long) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DATA8
 #define ASM_OUTPUT_DEBUG_DATA8(FILE,VALUE) \
-  fprintf ((FILE), "\t%s\t0x%llx", UNALIGNED_DOUBLE_INT_ASM_OP, \
+  fprintf ((FILE), "\t%s\t%#llx", UNALIGNED_DOUBLE_INT_ASM_OP, \
                                  (unsigned long long) VALUE)
 #endif
 

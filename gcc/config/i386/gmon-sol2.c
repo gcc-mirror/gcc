@@ -236,7 +236,7 @@ _mcleanup (void)
 	for (toindex=froms[fromindex]; toindex!=0; toindex=tos[toindex].link) {
 #	    ifdef DEBUG
 		fprintf( stderr ,
-			"[mcleanup] frompc 0x%x selfpc 0x%x count %d\n" ,
+			"[mcleanup] frompc %#x selfpc %#x count %d\n" ,
 			frompc , tos[toindex].selfpc , tos[toindex].count );
 #	    endif /* DEBUG */
 	    rawarc.raw_frompc = (unsigned long) frompc;
