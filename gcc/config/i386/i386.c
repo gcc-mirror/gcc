@@ -2529,7 +2529,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   if (flags && add_nl_p)
     {
       opts[num++][0] = target_other;
-      sprintf (target_other, "(other flags: %#x)", isa);
+      sprintf (target_other, "(other flags: %#x)", flags);
     }
 
   /* Add -fpmath= option.  */

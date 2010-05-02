@@ -1,5 +1,10 @@
 2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_target_string): Output 'flags', not 'isa',
+	when processing flag options.
+
+2010-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcov-iov.c (main): Change format string placeholder
 	from %#08x to 0x%08x.
 	* genchecksum.c (dosum): Change format string placeholder
