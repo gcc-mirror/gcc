@@ -3286,16 +3286,18 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
      in that case *NULL does not fail, so it _should_ alias *anything.
      It is not worth adding a new option or renaming the existing one,
      since this case is relatively obscure.  */
-  if (flag_delete_null_pointer_checks
-      && ((TREE_CODE (t) == INTEGER_CST
-	   && integer_zerop (t))
-	  /* The only valid CONSTRUCTORs in gimple with pointer typed
-	     elements are zero-initializer.  But in IPA mode we also
-	     process global initializers, so verify at least.  */
-	  || (TREE_CODE (t) == CONSTRUCTOR
-	      && CONSTRUCTOR_NELTS (t) == 0)))
+  if ((TREE_CODE (t) == INTEGER_CST
+       && integer_zerop (t))
+      /* The only valid CONSTRUCTORs in gimple with pointer typed
+	 elements are zero-initializer.  But in IPA mode we also
+	 process global initializers, so verify at least.  */
+      || (TREE_CODE (t) == CONSTRUCTOR
+	  && CONSTRUCTOR_NELTS (t) == 0))
     {
-      temp.var = nothing_id;
+      if (flag_delete_null_pointer_checks)
+	temp.var = nothing_id;
+      else
+	temp.var = anything_id;
       temp.type = ADDRESSOF;
       temp.offset = 0;
       VEC_safe_push (ce_s, heap, *results, &temp);
