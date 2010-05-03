@@ -762,6 +762,12 @@ struct gcc_target
      for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
+  /* True for MODE if the target expects that registers in this mode will
+     be allocated to registers in a small register class.  The compiler is
+     allowed to use registers explicitly used in the rtl as spill registers
+     but it should prevent extending the lifetime of these registers.  */
+  bool (* small_register_classes_for_mode_p) (enum machine_mode mode);
+
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be
      scanned.  In either case, *TOTAL contains the cost result.  */

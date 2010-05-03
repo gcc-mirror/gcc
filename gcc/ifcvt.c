@@ -2405,8 +2405,8 @@ noce_process_if_block (struct noce_if_info *if_info)
      the lifetime of hard registers on small register class machines.  */
   orig_x = x;
   if (!REG_P (x)
-      || (SMALL_REGISTER_CLASSES
-	  && REGNO (x) < FIRST_PSEUDO_REGISTER))
+      || (HARD_REGISTER_P (x)
+	  && targetm.small_register_classes_for_mode_p (GET_MODE (x))))
     {
       if (GET_MODE (x) == BLKmode)
 	return FALSE;
@@ -2605,7 +2605,8 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
       dest = SET_DEST (set);
       src = SET_SRC (set);
       if (!REG_P (dest)
-	  || (SMALL_REGISTER_CLASSES && HARD_REGISTER_P (dest)))
+	  || (HARD_REGISTER_P (dest)
+	      && targetm.small_register_classes_for_mode_p (GET_MODE (dest))))
 	return FALSE;
 
       if (!CONSTANT_P (src) && !register_operand (src, VOIDmode))
@@ -4061,7 +4062,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       /* For small register class machines, don't lengthen lifetimes of
 	 hard registers before reload.  */
-      if (SMALL_REGISTER_CLASSES && ! reload_completed)
+      if (! reload_completed
+	  && targetm.small_register_classes_for_mode_p (VOIDmode))
 	{
           EXECUTE_IF_SET_IN_BITMAP (merge_set_noclobber, 0, i, bi)
 	    {

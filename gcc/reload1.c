@@ -4281,7 +4281,7 @@ reload_as_needed (int live_known)
 	      /* Merge any reloads that we didn't combine for fear of
 		 increasing the number of spill registers needed but now
 		 discover can be safely merged.  */
-	      if (SMALL_REGISTER_CLASSES)
+	      if (targetm.small_register_classes_for_mode_p (VOIDmode))
 		merge_assigned_reloads (insn);
 
 	      /* Generate the insns to reload operands into or out of
@@ -6667,10 +6667,11 @@ deallocate_reload_reg (int r)
   reload_spill_index[r] = -1;
 }
 
-/* If SMALL_REGISTER_CLASSES is nonzero, we may not have merged two
-   reloads of the same item for fear that we might not have enough reload
-   registers. However, normally they will get the same reload register
-   and hence actually need not be loaded twice.
+/* If the small_register_classes_for_mode_p target hook returns true for
+   some machine modes, we may not have merged two reloads of the same item
+   for fear that we might not have enough reload registers.  However,
+   normally they will get the same reload register and hence actually need
+   not be loaded twice.
 
    Here we check for the most common case of this phenomenon: when we have
    a number of reloads for the same object, each of which were allocated

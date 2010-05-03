@@ -37,10 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #define REGMODE_NATURAL_SIZE(MODE)	UNITS_PER_WORD
 #endif
 
-#ifndef SMALL_REGISTER_CLASSES
-#define SMALL_REGISTER_CLASSES 0
-#endif
-
 /* Maximum register number used in this function, plus one.  */
 
 extern int max_regno;

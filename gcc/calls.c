@@ -175,7 +175,8 @@ prepare_call_address (tree fndecl, rtx funexp, rtx static_chain_value,
   if (GET_CODE (funexp) != SYMBOL_REF)
     /* If we are using registers for parameters, force the
        function address into a register now.  */
-    funexp = ((SMALL_REGISTER_CLASSES && reg_parm_seen)
+    funexp = ((reg_parm_seen
+	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
 	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
 	      : memory_address (FUNCTION_MODE, funexp));
   else if (! sibcallp)
@@ -711,7 +712,8 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 		 && args[i].mode != BLKmode
 		 && rtx_cost (args[i].value, SET, optimize_insn_for_speed_p ())
 		    > COSTS_N_INSNS (1)
-		 && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
+		 && ((*reg_parm_seen
+		      && targetm.small_register_classes_for_mode_p (args[i].mode))
 		     || optimize))
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }

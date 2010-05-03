@@ -145,6 +145,7 @@ extern int sh_attr_renesas_p (const_tree);
 extern int sh_cfun_attr_renesas_p (void);
 extern bool sh_cannot_change_mode_class
 	      (enum machine_mode, enum machine_mode, enum reg_class);
+extern bool sh_small_register_classes_for_mode_p (enum machine_mode);
 extern void sh_mark_label (rtx, int);
 extern int sh_register_move_cost
   (enum machine_mode mode, enum reg_class, enum reg_class);
