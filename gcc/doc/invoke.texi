@@ -1982,6 +1982,15 @@ unambiguous base classes.
 Emit statistics about front-end processing at the end of the compilation.
 This information is generally only useful to the G++ development team.
 
+@item -fstrict-enums
+@opindex fstrict-enums
+Allow the compiler to optimize using the assumption that a value of
+enumeration type can only be one of the values of the enumeration (as
+defined in the C++ standard; basically, a value which can be
+represented in the minimum number of bits needed to represent all the
+enumerators).  This assumption may not be valid if the program uses a
+cast to convert an arbitrary integer value to the enumeration type.
+
 @item -ftemplate-depth=@var{n}
 @opindex ftemplate-depth
 Set the maximum instantiation depth for template classes to @var{n}.

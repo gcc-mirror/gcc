@@ -1,3 +1,10 @@
+2010-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43680
+	* g++.dg/opt/enum2.C: New.
+	* g++.dg/warn/pr33738.C: Use -fstrict-enums.
+	* g++.dg/warn/Wswitch-1.C: Adjust message.
+
 2010-05-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cdce3.C: Skip on alpha*-dec-osf5*.

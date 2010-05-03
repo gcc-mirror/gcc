@@ -783,6 +783,10 @@ fstats
 C++ ObjC++
 Display statistics accumulated during compilation
 
+fstrict-enums
+C++ ObjC++ Optimization Var(flag_strict_enums)
+Assume that values of enumeration type are always within the minimum range of that type
+
 fstrict-prototype
 C++ ObjC++
 

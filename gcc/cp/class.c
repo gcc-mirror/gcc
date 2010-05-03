@@ -2786,14 +2786,8 @@ check_bitfield_decl (tree field)
 	       && TREE_CODE (type) != BOOLEAN_TYPE)
 	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       && (0 > compare_tree_int (w,
-					 tree_int_cst_min_precision
-					 (TYPE_MIN_VALUE (type),
-					  TYPE_UNSIGNED (type)))
-		   ||  0 > compare_tree_int (w,
-					     tree_int_cst_min_precision
-					     (TYPE_MAX_VALUE (type),
-					      TYPE_UNSIGNED (type)))))
+	       && (0 > (compare_tree_int
+			(w, TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type))))))
 	warning (0, "%q+D is too small to hold all values of %q#T", field, type);
     }
 

@@ -1,3 +1,8 @@
+2010-04-26  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (-fstrict-enums): New.
+	* doc/invoke.texi (C++ Dialect Options): Document -fstrict-enums.
+
 2010-05-03  David Ung <davidu@mips.com>
 	    James E. Wilson  <wilson@codesourcery.com>
 
