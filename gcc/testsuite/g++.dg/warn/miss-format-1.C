@@ -23,7 +23,7 @@ bar (const char *fmt, ...)
 {
   va_list ap;
   va_start (ap, fmt);
-  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" { xfail *-*-solaris2.[7-8] *-*-vxworks* } } */
+  vscanf (fmt, ap); /* { dg-warning "candidate" "scanf attribute warning" { xfail *-*-solaris2.[7-8] *-*-vxworks* alpha*-dec-osf5* } } */
   va_end (ap);
 }
 

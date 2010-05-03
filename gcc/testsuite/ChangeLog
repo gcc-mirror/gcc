@@ -1,5 +1,19 @@
 2010-05-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* g++.dg/cdce3.C: Skip on alpha*-dec-osf5*.
+	* g++.dg/ext/label13.C: Fix typo.
+	* g++.dg/warn/miss-format-1.C (bar): xfail dg-warning on
+	alpha*-dec-osf5*.
+	* gcc.c-torture/compile/limits-declparen.c: xfail on
+	alpha*-dec-osf5* with -g.
+	* gcc.c-torture/compile/limits-pointer.c: Likewise.
+	* gcc.dg/c99-tgmath-1.c: Skip on alpha*-dec-osf5*.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+
+2010-05-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* ada/acats/run_acats (which): New function.
 	(host_gnatchop, host_gnatmake): Use it.
 

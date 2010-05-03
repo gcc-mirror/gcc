@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target c99_runtime } */
+/* { dg-skip-if "exp2* missing despite C99 runtime" { alpha*-dec-osf5* }} */
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -DGNU_EXTENSION -DLARGE_LONG_DOUBLE -lm" { target { pow10 && large_long_double } } } */
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DLARGE_LONG_DOUBLE -lm" { target { {! pow10 } && large_long_double } } } */
 /* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -DGNU_EXTENSION -lm" { target { pow10 && {! large_long_double } } } } */
