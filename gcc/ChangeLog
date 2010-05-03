@@ -1,3 +1,13 @@
+2010-05-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (tree_to_double_int): Remove macro.
+	(double_int_to_tree, double_int_fits_to_tree_p): Move prototypes ...
+	* tree.h (double_int_to_tree, double_int_fits_to_tree_p): ... here.
+	(tree_to_double_int): New function.
+	* double-int.c (double_int_to_tree, double_int_fits_to_tree_p):
+	Move ...
+	* tree.c (double_int_to_tree, double_int_fits_to_tree_p): ... here.
+
 2010-05-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43971
