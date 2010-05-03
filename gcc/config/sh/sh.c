@@ -865,7 +865,7 @@ sh_override_options (void)
       || (TARGET_SHMEDIA && !TARGET_PT_FIXED))
     flag_no_function_cse = 1;
 
-  if (SMALL_REGISTER_CLASSES)
+  if (targetm.small_register_classes_for_mode_p (VOIDmode))		\
     {
       /* Never run scheduling before reload, since that can
 	 break global alloc, and generates slower code anyway due
@@ -9311,7 +9311,7 @@ get_free_reg (HARD_REG_SET regs_live)
   if (! TEST_HARD_REG_BIT (regs_live, 1))
     return gen_rtx_REG (Pmode, 1);
 
-  /* Hard reg 1 is live; since this is a SMALL_REGISTER_CLASSES target,
+  /* Hard reg 1 is live; since this is a small register classes target,
      there shouldn't be anything but a jump before the function end.  */
   gcc_assert (!TEST_HARD_REG_BIT (regs_live, 7));
   return gen_rtx_REG (Pmode, 7);
@@ -11252,6 +11252,14 @@ sh_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
   return 0;
 }
 
+/* Return true if registers in machine mode MODE will likely be
+   allocated to registers in small register classes.  */
+
+static bool
+sh_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (! TARGET_SHMEDIA);
+}
 
 /* If ADDRESS refers to a CODE_LABEL, add NUSES to the number of times
    that label is used.  */

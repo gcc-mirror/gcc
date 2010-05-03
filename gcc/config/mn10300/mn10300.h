@@ -237,7 +237,7 @@ extern enum processor_type mn10300_processor;
 
 /* 4 data, and effectively 3 address registers is small as far as I'm
    concerned.  */
-#define SMALL_REGISTER_CLASSES 1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

@@ -333,7 +333,7 @@ enum reg_class {
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) preferred_reload_class(X,CLASS)
 
-#define SMALL_REGISTER_CLASSES 1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define CLASS_LIKELY_SPILLED_P(c) class_likely_spilled_p(c)
 

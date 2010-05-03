@@ -1267,11 +1267,12 @@ enum reg_class
    instead of BASE_REGS.  */
 #define MODE_BASE_REG_REG_CLASS(MODE) BASE_REG_CLASS
 
-/* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
+/* When this hook returns true for MODE, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
    but prevents the compiler from extending the lifetime of these
    registers.  */
-#define SMALL_REGISTER_CLASSES   TARGET_THUMB1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  arm_small_register_classes_for_mode_p 
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.

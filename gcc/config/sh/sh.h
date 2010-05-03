@@ -1209,11 +1209,12 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   FPUL_REGS, LIM_REG_CLASSES						     \
 }
 
-/* When defined, the compiler allows registers explicitly used in the
-   rtl to be used as spill registers but prevents the compiler from
-   extending the lifetime of these registers.  */
-
-#define SMALL_REGISTER_CLASSES (! TARGET_SHMEDIA)
+/* When this hook returns true for MODE, the compiler allows
+   registers explicitly used in the rtl to be used as spill registers
+   but prevents the compiler from extending the lifetime of these
+   registers.  */
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  sh_small_register_classes_for_mode_p
 
 /* The order in which register should be allocated.  */
 /* Sometimes FP0_REGS becomes the preferred class of a floating point pseudo,

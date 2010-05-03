@@ -1,3 +1,69 @@
+2010-05-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi (defmac SMALL_REGISTER_CLASSES): Remove.
+	(TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P): Add documentation,
+	based on the above, for new target hook.
+
+	* hooks.c (hook_bool_mode_true): New generic hook.
+	* hooks.h (hook_bool_mode_true): Add prototype.
+
+	* target.h (struct gcc_target): Add small_register_classes_for_mode_p
+	target hook.
+	* target-def.h (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P): New default
+	target hook, set to hook_bool_mode_false.
+	* regs.h: Remove default definition of SMALL_REGISTER_CLASSES.
+	* reload.c (push_secondary_reload): Replace SMALL_REGISTER_CLASSES
+	with targetm.small_register_classes_for_mode_p.
+	(find_reusable_reload): Likewise.
+	(combine_reloads): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	* cse.c (approx_reg_cost_1, hash_rtx_cb): Likewise.
+	* ifcvt.c (noce_process_if_block, check_cond_move_block,
+	dead_or_predicable): Likewise.
+	* regmove.c (optimize_reg_copy_1): Likewise.
+	* calls.c (prepare_call_address): Likewise.
+	(precompute_register_parameters): Likewise.
+
+	* config/sh/sh.h: Replace SMALL_REGISTER_CLASSES with new target
+	hook definition.
+	* config/sh/sh.c (sh_small_register_classes_for_mode_p): Add
+	implementation of the hook that considers all register classes
+	small except for SH64.
+	(sh_override_options): Use the new hook.
+	* config/sh/sh-protos.h (sh_small_register_classes_for_mode_p):
+	Add prototype.
+
+	* config/arm/arm.h: Replace SMALL_REGISTER_CLASSES with new target
+	hook definition.
+	* config/arm/arm.c (arm_small_register_classes_for_mode_p): Add
+	implementation of the hook that considers all register classes
+	small for THUMB1.
+	* config/arm/arm-protos.h (arm_small_register_classes_for_mode_p):
+	Add prototype.
+
+	* config/mips/mips.h: Replace SMALL_REGISTER_CLASSES with new target
+	hook definition.
+	* config/mips/mips.c (mips_small_register_classes_for_mode_p): Add
+	implementation of the hook that considers all register classes
+	small for MIPS16.
+	* config/mips/mips-protos.h (mips_small_register_classes_for_mode_p):
+	Add prototype.
+
+	* config/i386/i386.h: Replace SMALL_REGISTER_CLASSES with new target
+	hook definition.
+	* config/m32c/m32c.h: Likewise.
+	* config/pdp11/pdp11.h: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+	* config/m68hc11/m68hc11.h: Likewise.
+	* config/mn10300/mn10300.h: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/bfin/bfin.h: Likewise.
+
+	* config/iq2000/iq2000.h: Remove SMALL_REGISTER_CLASSES definition.
+	* config/rx/rx.h: Remove SMALL_REGISTER_CLASSES definition.
+
 2010-05-03  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (tree_to_double_int): Remove macro.

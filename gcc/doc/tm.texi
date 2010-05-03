@@ -2868,25 +2868,6 @@ Do not define this macro if you do not define
 is @code{BITS_PER_WORD} bits wide is correct for your machine.
 @end defmac
 
-@defmac SMALL_REGISTER_CLASSES
-On some machines, it is risky to let hard registers live across arbitrary
-insns.  Typically, these machines have instructions that require values
-to be in specific registers (like an accumulator), and reload will fail
-if the required hard register is used for another purpose across such an
-insn.
-
-Define @code{SMALL_REGISTER_CLASSES} to be an expression with a nonzero
-value on these machines.  When this macro has a nonzero value, the
-compiler will try to minimize the lifetime of hard registers.
-
-It is always safe to define this macro with a nonzero value, but if you
-unnecessarily define it, you will reduce the amount of optimizations
-that can be performed in some cases.  If you do not define this macro
-with a nonzero value when it is required, the compiler will run out of
-spill registers and print a fatal error message.  For most machines, you
-should not define this macro at all.
-@end defmac
-
 @defmac CLASS_LIKELY_SPILLED_P (@var{class})
 A C expression whose value is nonzero if pseudos that have been assigned
 to registers of class @var{class} would likely be spilled because
@@ -4358,6 +4339,38 @@ code in @file{optabs.c}.
 Define this to return nonzero if the port is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (enum machine_mode @var{mode})
+Define this to return nonzero for machine modes for which the port has
+small register classes.  If this target hook returns nonzero for a given
+@var{mode}, the compiler will try to minimize the lifetime of registers
+in @var{mode}.  The hook may be called with @code{VOIDmode} as argument.
+In this case, the hook is expected to return nonzero if it returns nonzero
+for any mode.
+
+On some machines, it is risky to let hard registers live across arbitrary
+insns.  Typically, these machines have instructions that require values
+to be in specific registers (like an accumulator), and reload will fail
+if the required hard register is used for another purpose across such an
+insn.
+
+Passes before reload do not know which hard registers will be used
+in an instruction, but the machine modes of the registers set or used in
+the instruction are already known.  And for some machines, register
+classes are small for, say, integer registers but not for floating point
+registers.  For example, the AMD x86-64 architecture requires specific
+registers for the legacy x86 integer instructions, but there are many
+SSE registers for floating point operations.  On such targets, a good
+strategy may be to return nonzero from this hook for @code{INTEGRAL_MODE_P}
+machine modes but zero for the SSE register classes.
+
+The default version of this hook retuns false for any mode.  It is always
+safe to redefine this hook to return with a nonzero value.  But if you
+unnecessarily define it, you will reduce the amount of optimizations
+that can be performed in some cases.  If you do not define this hook
+to return a nonzero value when it is required, the compiler will run out
+of spill registers and print a fatal error message.
 @end deftypefn
 
 @node Scalar Return

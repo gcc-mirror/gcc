@@ -10718,6 +10718,15 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
   return reg_classes_intersect_p (FP_REGS, rclass);
 }
 
+/* Implement target hook small_register_classes_for_mode_p.  */
+
+static bool
+mips_small_register_classes_for_mode_p (enum machine_mode mode
+					ATTRIBUTE_UNUSED)
+{
+  return TARGET_MIPS16;
+}
+
 /* Return true if moves in mode MODE can use the FPU's mov.fmt instruction.  */
 
 static bool

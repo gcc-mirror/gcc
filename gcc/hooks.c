@@ -70,6 +70,13 @@ hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes (enum machine_mode) and returns true.  */
+bool
+hook_bool_mode_true (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
 bool
 hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,

@@ -421,7 +421,7 @@ enum reg_class
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,X) m32c_secondary_reload_class (CLASS, MODE, X)
 
-#define SMALL_REGISTER_CLASSES 1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define CLASS_LIKELY_SPILLED_P(C) m32c_class_likely_spilled_p (C)
 

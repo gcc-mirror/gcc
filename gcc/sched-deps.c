@@ -3056,8 +3056,8 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
      This insn must be a simple move of a hard reg to a pseudo or
      vice-versa.
 
-     We must avoid moving these insns for correctness on
-     SMALL_REGISTER_CLASS machines, and for special registers like
+     We must avoid moving these insns for correctness on targets
+     with small register classes, and for special registers like
      PIC_OFFSET_TABLE_REGNUM.  For simplicity, extend this to all
      hard regs for all targets.  */
 

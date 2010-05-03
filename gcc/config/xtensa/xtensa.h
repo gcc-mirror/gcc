@@ -477,10 +477,10 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 #define BASE_REG_CLASS AR_REGS
 #define INDEX_REG_CLASS NO_REGS
 
-/* SMALL_REGISTER_CLASSES is required for Xtensa, because all of the
-   16 AR registers may be explicitly used in the RTL, as either
-   incoming or outgoing arguments.  */
-#define SMALL_REGISTER_CLASSES 1
+/* The small_register_classes_for_mode_p hook must always return true for
+   Xtrnase, because all of the 16 AR registers may be explicitly used in
+   the RTL, as either incoming or outgoing arguments.  */
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)				\
   xtensa_preferred_reload_class (X, CLASS, 0)

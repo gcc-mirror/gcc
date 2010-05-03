@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "target.h"
 #include "output.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -239,7 +240,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 
   /* We don't want to mess with hard regs if register classes are small.  */
   if (sregno == dregno
-      || (SMALL_REGISTER_CLASSES
+      || (targetm.small_register_classes_for_mode_p (GET_MODE (src))
 	  && (sregno < FIRST_PSEUDO_REGISTER
 	      || dregno < FIRST_PSEUDO_REGISTER))
       /* We don't see all updates to SP if they are in an auto-inc memory

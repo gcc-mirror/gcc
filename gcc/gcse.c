@@ -3479,10 +3479,10 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
 	   && (!single_succ_p (bb)
 	       || single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     {
-      /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
-	 we search backward and place the instructions before the first
-	 parameter is loaded.  Do this for everyone for consistency and a
-	 presumption that we'll get better code elsewhere as well.
+      /* Keeping in mind targets with small register classes and parameters
+         in registers, we search backward and place the instructions before
+	 the first parameter is loaded.  Do this for everyone for consistency
+	 and a presumption that we'll get better code elsewhere as well.
 
 	 It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
