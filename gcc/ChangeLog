@@ -1,3 +1,9 @@
+2010-05-03  David Ung <davidu@mips.com>
+	    James E. Wilson  <wilson@codesourcery.com>
+
+	* config/mip/mips.c (mips_output_division): When GENERATE_DIVIDE_TRAPS,
+	emit the trap instruction before the divide for TUNE_74K.
+
 2010-05-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/tm.texi (defmac SMALL_REGISTER_CLASSES): Remove.
