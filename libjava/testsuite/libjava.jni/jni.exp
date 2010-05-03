@@ -251,7 +251,11 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
 }
 
 proc gcj_jni_get_cxxflags_invocation {} {
+  global libiconv
   global LIBJAVA
+  if {$libiconv == ""} {
+      set libiconv "-liconv"
+  }
   if [info exists LIBJAVA] {
       set libjava $LIBJAVA;
   } else {
@@ -267,7 +271,7 @@ proc gcj_jni_get_cxxflags_invocation {} {
   # to just make the linker find libgcc using -L options.
   # Similar logic applies to libgcj.
   if { [istarget "*-*-darwin*"] } {
-    lappend cxxflags -shared-libgcc -lgcj -liconv
+    eval lappend cxxflags "-shared-libgcc -lgcj $libiconv"
   }
 
   if { [istarget "*-*-solaris*"] } {
