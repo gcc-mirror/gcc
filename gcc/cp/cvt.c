@@ -682,7 +682,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	     the original value is within the range of the enumeration
 	     values. Otherwise, the resulting enumeration value is
 	     unspecified.  */
-	  if (TREE_CODE (expr) == INTEGER_CST && !int_fits_type_p (expr, type))
+	  if (TREE_CODE (expr) == INTEGER_CST
+	      && !int_fits_type_p (expr, ENUM_UNDERLYING_TYPE (type)))
 	    warning (OPT_Wconversion, 
 		     "the result of the conversion is unspecified because "
 		     "%qE is outside the range of type %qT",
@@ -1311,6 +1312,8 @@ type_promotes_to (tree type)
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
       tree totype = c_common_type_for_size (precision, 0);
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	type = ENUM_UNDERLYING_TYPE (type);
       if (TYPE_UNSIGNED (type)
 	  && ! int_fits_type_p (TYPE_MAX_VALUE (type), totype))
 	type = c_common_type_for_size (precision, 1);

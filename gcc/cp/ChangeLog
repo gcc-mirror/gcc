@@ -1,3 +1,13 @@
+2010-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42810
+	PR c++/43680
+	* decl.c (finish_enum): Use the TYPE_MIN_VALUE and TYPE_MAX_VALUE
+	from the selected underlying type unless -fstrict-enums.  Set
+	ENUM_UNDERLYING_TYPE to	have the restricted range.
+	* cvt.c (type_promotes_to): Use ENUM_UNDERLYING_TYPE.
+	* class.c (check_bitfield_decl): Likewise.
+
 2010-05-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/43951
