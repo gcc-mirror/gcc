@@ -3,6 +3,7 @@
 /* { dg-do preprocess { target c99_runtime } } */
 /* { dg-options "-std=iso9899:1999" } */
 /* { dg-add-options c99_runtime } */
+/* { dg-skip-if "<complex.h> missing" { alpha*-dec-osf5* } } */
 
 /* Test that tgmath defines the macros it's supposed to. */
 #include <tgmath.h>
