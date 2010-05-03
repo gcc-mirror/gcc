@@ -1082,6 +1082,30 @@ build_int_cst_wide_type (tree type,
   return build_int_cst_wide (type, low, high);
 }
 
+/* Constructs tree in type TYPE from with value given by CST.  Signedness
+   of CST is assumed to be the same as the signedness of TYPE.  */
+
+tree
+double_int_to_tree (tree type, double_int cst)
+{
+  cst = double_int_ext (cst, TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+
+  return build_int_cst_wide (type, cst.low, cst.high);
+}
+
+/* Returns true if CST fits into range of TYPE.  Signedness of CST is assumed
+   to be the same as the signedness of TYPE.  */
+
+bool
+double_int_fits_to_tree_p (const_tree type, double_int cst)
+{
+  double_int ext = double_int_ext (cst,
+				   TYPE_PRECISION (type),
+				   TYPE_UNSIGNED (type));
+
+  return double_int_equal_p (cst, ext);
+}
+
 /* These are the hash table functions for the hash table of INTEGER_CST
    nodes of a sizetype.  */
 
