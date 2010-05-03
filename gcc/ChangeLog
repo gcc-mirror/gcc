@@ -1,3 +1,9 @@
+2010-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43972
+	* config/i386/i386.c (ix86_delegitimize_address): Make sure the
+	result mode matches original rtl mode.
+
 2010-05-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/43888
