@@ -2759,10 +2759,14 @@ lookup_vi_for_tree (tree t)
 static const char *
 alias_get_name (tree decl)
 {
-  const char *res = get_name (decl);
+  const char *res;
   char *temp;
   int num_printed = 0;
 
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    res = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  else
+    res= get_name (decl);
   if (res != NULL)
     return res;
 
@@ -4956,7 +4960,7 @@ count_num_arguments (tree decl, bool *is_varargs)
 /* Creation function node for DECL, using NAME, and return the index
    of the variable we've created for the function.  */
 
-static unsigned int
+static varinfo_t
 create_function_info_for (tree decl, const char *name)
 {
   struct function *fn = DECL_STRUCT_FUNCTION (decl);
@@ -5129,7 +5133,7 @@ create_function_info_for (tree decl, const char *name)
       prev_vi = argvi;
     }
 
-  return vi->id;
+  return vi;
 }
 
 
@@ -6565,6 +6569,9 @@ ipa_pta_execute (void)
   /* Build the constraints.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
+      struct cgraph_node *alias;
+      varinfo_t vi;
+
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
@@ -6572,13 +6579,26 @@ ipa_pta_execute (void)
 	  || node->clone_of)
 	continue;
 
-      create_function_info_for (node->decl,
-				cgraph_node_name (node));
+      vi = create_function_info_for (node->decl,
+				     alias_get_name (node->decl));
+
+      /* Associate the varinfo node with all aliases.  */
+      for (alias = node->same_body; alias; alias = alias->next)
+	insert_vi_for_tree (alias->decl, vi);
     }
 
   /* Create constraints for global variables and their initializers.  */
   for (var = varpool_nodes; var; var = var->next)
-    get_vi_for_tree (var->decl);
+    {
+      struct varpool_node *alias;
+      varinfo_t vi;
+
+      vi = get_vi_for_tree (var->decl);
+
+      /* Associate the varinfo node with all aliases.  */
+      for (alias = var->extra_name; alias; alias = alias->next)
+	insert_vi_for_tree (alias->decl, vi);
+    }
 
   if (dump_file)
     {
@@ -6601,9 +6621,14 @@ ipa_pta_execute (void)
 	continue;
 
       if (dump_file)
-	fprintf (dump_file,
-		 "Generating constraints for %s\n",
-		 cgraph_node_name (node));
+	{
+	  fprintf (dump_file,
+		   "Generating constraints for %s", cgraph_node_name (node));
+	  if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
+	    fprintf (dump_file, " (%s)",
+		     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+	  fprintf (dump_file, "\n");
+	}
 
       func = DECL_STRUCT_FUNCTION (node->decl);
       old_func_decl = current_function_decl;
