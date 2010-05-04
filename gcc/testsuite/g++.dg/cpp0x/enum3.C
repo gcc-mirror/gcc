@@ -14,4 +14,14 @@ int main()
   E e = E::elem;
   if (!f (e == E::elem))
     return 1;
+  if (!f (e <= E::elem))
+    return 1;
+  if (!f (e >= E::elem))
+    return 1;
+  if (f (e < E::elem))
+    return 1;
+  if (f (e > E::elem))
+    return 1;
+  if (f (e != E::elem))
+    return 1;
 }
