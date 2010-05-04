@@ -1,3 +1,8 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43799
+	* gcc.target/i386/pr43799.c: New.
+
 2010-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto1.adb: New test.

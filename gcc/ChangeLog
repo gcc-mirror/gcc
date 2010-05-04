@@ -1,3 +1,11 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/43799
+	* config/i386/i386.md (sse_prologue_save): Add clobber CC
+	register.
+	(*sse_prologue_save_insn1): Likewise.
+	(SSE prologue save splitter): Likewise.
+
 2010-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (free_lang_data_in_one_sizepos): New inline function.
