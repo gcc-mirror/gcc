@@ -2474,6 +2474,8 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 				     "expected %<]%>");
 	  return NULL;
 	}
+      if (dimen)
+	mark_exp_read (dimen);
       declarator = build_array_declarator (brace_loc, dimen, quals_attrs,
 					   static_seen, star_seen);
       if (declarator == NULL)
