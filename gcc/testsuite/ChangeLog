@@ -1,3 +1,11 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/43671
+	* gcc.target/i386/pr43671.c: New.
+
 2010-05-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* ada/acats/run_acats (which): New function.
