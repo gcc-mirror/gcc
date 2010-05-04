@@ -1,3 +1,13 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/43671
+	* alias.c (true_dependence): Handle the same VALUE in x and mem.
+	(canon_true_dependence): Likewise.
+	(write_dependence_p): Likewise.
+
 2010-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43972
