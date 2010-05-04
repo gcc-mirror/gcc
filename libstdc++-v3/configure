@@ -3018,6 +3018,7 @@ fi
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  no-dependencies:  turns off auto dependency generation (just for now)
+#  no-dist:  we don't want 'dist' and related rules.
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is now required.
 am__api_version='1.11'
@@ -11441,7 +11442,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11444 "configure"
+#line 11445 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11547,7 +11548,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11550 "configure"
+#line 11551 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14887,7 +14888,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14890 "configure"
+#line 14891 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15255,7 +15256,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15258 "configure"
+#line 15259 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15292,7 +15293,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15295 "configure"
+#line 15296 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15329,7 +15330,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15332 "configure"
+#line 15333 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15367,7 +15368,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15370 "configure"
+#line 15371 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15443,7 +15444,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15446 "configure"
+#line 15447 "configure"
 int main()
 {
   _Decimal32 d1;

@@ -1,3 +1,10 @@
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2010-04-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/43844
