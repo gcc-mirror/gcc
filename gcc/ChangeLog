@@ -1,5 +1,18 @@
 2010-05-04  Jan Hubicka  <jh@suse.cz>
 
+	* Makefile.in (cgraphbuild.o): Add dependency on ipa-utils.h
+	* cgraphbuild.c: Include ipa-utils.h
+	(record_reference_ctx): New struct.
+	(record_reference): Simplify to work on initializers; not statements.
+	(mark_address, mark_load, mark_store): New.
+	(build_cgraph_edges): Simplify using walk_stmt_load_store_addr_ops;
+	walk PHI nodes too.
+	(record_references_in_initializer): Update use of record_reference.
+	(rebuild_cgraph_edges): Simplify using walk_stmt_load_store_addr_ops;
+	walk PHI nodes too.
+
+2010-05-04  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_cgraph_replace_node): Do not remove edges;
 	node will be removed anyway.
 	(lto_varpool_replace_node): Allow also unanalyzed nodes;
