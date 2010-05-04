@@ -1,3 +1,11 @@
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/43893

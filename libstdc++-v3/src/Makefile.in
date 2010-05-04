@@ -35,8 +35,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/fragment.am
+DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
+	$(srcdir)/Makefile.am
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
@@ -85,27 +85,6 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
-	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
-	compatibility-c++0x.cc compatibility-debug_list.cc \
-	compatibility-list.cc complex_io.cc ctype.cc debug.cc \
-	functexcept.cc globals_io.cc hash_c++0x.cc hash_tr1.cc \
-	hashtable_c++0x.cc hashtable_tr1.cc ios.cc ios_failure.cc \
-	ios_init.cc ios_locale.cc limits.cc list.cc debug_list.cc \
-	locale.cc locale_init.cc locale_facets.cc localename.cc \
-	math_stubs_float.cc math_stubs_long_double.cc stdexcept.cc \
-	strstream.cc system_error.cc tree.cc allocator-inst.cc \
-	concept-inst.cc fstream-inst.cc ext-inst.cc ios-inst.cc \
-	iostream-inst.cc istream-inst.cc istream.cc locale-inst.cc \
-	misc-inst.cc ostream-inst.cc sstream-inst.cc streambuf-inst.cc \
-	streambuf.cc string-inst.cc valarray-inst.cc wlocale-inst.cc \
-	wstring-inst.cc mutex.cc condition_variable.cc chrono.cc \
-	thread.cc future.cc atomicity.cc codecvt_members.cc \
-	collate_members.cc ctype_members.cc messages_members.cc \
-	monetary_members.cc numeric_members.cc time_members.cc \
-	basic_file.cc c++locale.cc compatibility-ldbl.cc \
-	parallel_list.cc parallel_settings.cc \
-	compatibility-parallel_list.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
@@ -140,10 +119,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 SOURCES = $(libstdc___la_SOURCES)
-DIST_SOURCES = $(am__libstdc___la_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -648,37 +625,6 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-
-distdir: $(DISTFILES)
-	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	list='$(DISTFILES)'; \
-	  dist_files=`for file in $$list; do echo $$file; done | \
-	  sed -e "s|^$$srcdirstrip/||;t" \
-	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
-	case $$dist_files in \
-	  */*) $(MKDIR_P) `echo "$$dist_files" | \
-			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
-			   sort -u` ;; \
-	esac; \
-	for file in $$dist_files; do \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  if test -d $$d/$$file; then \
-	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
-	    if test -d "$(distdir)/$$file"; then \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
-	  else \
-	    test -f "$(distdir)/$$file" \
-	    || cp -p $$d/$$file "$(distdir)/$$file" \
-	    || exit 1; \
-	  fi; \
-	done
 check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) all-local
@@ -785,12 +731,12 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PHONY: CTAGS GTAGS all all-am all-local check check-am clean \
 	clean-generic clean-libtool clean-toolexeclibLTLIBRARIES ctags \
 	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
+	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-data-local install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \

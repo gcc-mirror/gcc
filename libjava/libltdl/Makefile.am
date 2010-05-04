@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = no-dependencies foreign
+AUTOMAKE_OPTIONS = no-dependencies foreign no-dist
 
 ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 
