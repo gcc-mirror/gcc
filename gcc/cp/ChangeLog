@@ -215,6 +215,7 @@
 	* typeck.c (cxx_sizeof_expr): Likewise.
 	(strip_array_domain): New.
 
+	PR c++/43145
 	* name-lookup.c (current_decl_namespace): Non-static.
 	(pop_nested_namespace): Sanity check.
 	* cp-tree.h: Declare current_decl_namespace.

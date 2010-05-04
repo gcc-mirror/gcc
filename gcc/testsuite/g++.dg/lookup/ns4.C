@@ -1,3 +1,4 @@
+// PR c++/43145
 // { dg-do link }
 
 namespace N {
