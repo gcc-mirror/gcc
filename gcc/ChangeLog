@@ -1,3 +1,12 @@
+2010-05-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43879
+	* tree-ssa-structalias.c (alias_get_name): Use
+	DECL_ASSEMBLER_NAME if available.
+	(create_function_info_for): Return the varinfo node.
+	(ipa_pta_execute): Associate same-body aliases and extra names
+	with their origin nodes varinfo.  Dump DECL_ASSEMBLER_NAME.
+
 2010-05-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_small_register_classes_for_mode_p): Remove

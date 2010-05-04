@@ -1,3 +1,9 @@
+2010-05-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43879
+	* g++.dg/torture/pr43879-1_0.C: New testcase.
+	* g++.dg/torture/pr43879-1_1.C: Likewise.
+
 2010-05-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43953
