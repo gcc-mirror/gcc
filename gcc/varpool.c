@@ -157,14 +157,25 @@ varpool_remove_node (struct varpool_node *node)
   gcc_assert (*slot == node);
   htab_clear_slot (varpool_hash, slot);
   gcc_assert (!varpool_assembled_nodes_queue);
+  if (!node->alias)
+    while (node->extra_name)
+      varpool_remove_node (node->extra_name);
   if (node->next)
     node->next->prev = node->prev;
   if (node->prev)
     node->prev->next = node->next;
-  else if (node->next)
+  else
     {
-      gcc_assert (varpool_nodes == node);
-      varpool_nodes = node->next;
+      if (node->alias)
+	{
+          gcc_assert (node->extra_name->extra_name == node);
+	  node->extra_name->extra_name = node->next;
+	}
+      else
+	{
+          gcc_assert (varpool_nodes == node);
+          varpool_nodes = node->next;
+	}
     }
   if (varpool_first_unanalyzed_node == node)
     varpool_first_unanalyzed_node = node->next_needed;
@@ -182,7 +193,9 @@ varpool_remove_node (struct varpool_node *node)
       gcc_assert (varpool_nodes_queue == node);
       varpool_nodes_queue = node->next_needed;
     }
-  node->decl = NULL;
+  if (DECL_INITIAL (node->decl))
+    DECL_INITIAL (node->decl) = error_mark_node;
+  ggc_free (node);
 }
 
 /* Dump given cgraph node.  */
