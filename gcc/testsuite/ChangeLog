@@ -1,3 +1,10 @@
+2010-05-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/cdce3.C: Add a space.  Updated.
+
 2010-05-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cdce3.C: Skip on alpha*-dec-osf5*.
