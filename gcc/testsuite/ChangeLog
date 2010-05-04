@@ -1,3 +1,11 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/43508
+	* gcc.target/i386/pr43508.c: New.
+
 2010-05-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43953
