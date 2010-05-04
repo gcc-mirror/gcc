@@ -1,3 +1,31 @@
+2010-05-04  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (build_access_from_expr_1): The first parameter type
+	changed to simple tree.
+	(build_access_from_expr): Likewise, gsi parameter was eliminated.
+	(scan_assign_result): Renamed to assignment_mod_result, enum elements
+	renamed as well.
+	(build_accesses_from_assign): Removed all parameters except for a
+	simple gimple statement.  Now returns a simple bool.
+	(scan_function): All non-analysis parts moved to separate functions
+	sra_modify_function_body and ipa_sra_modify_function_body.  Removed all
+	parameters and updated both callers.
+	(sra_modify_expr): Removed parameter data.
+	(sra_modify_function_body): New function.
+	(perform_intra_sra): Call sra_modify_function_body to modify the
+	function body.
+	(replace_removed_params_ssa_names): Parameter data changed into
+	adjustments vector.
+	(sra_ipa_modify_expr): Likewise.  Also removed unused parameter gsi and
+	changed the parameter dont_convert to convert with the opposite
+	meaning.
+	(sra_ipa_modify_assign): Parameter data changed into adjustments
+	vector, return value changed to bool.
+	(ipa_sra_modify_function_body): New function.
+	(sra_ipa_reset_debug_stmts): Updated a comment.
+	(modify_function): Use ipa_sra_modify_function_body to modify function
+	body.
+
 2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/43671
