@@ -1,3 +1,8 @@
+2010-05-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38064
+	* g++.dg/cpp0x/enum3.C: Extend.
+
 2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

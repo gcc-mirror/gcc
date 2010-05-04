@@ -4148,8 +4148,10 @@ cp_build_binary_op (location_t location,
 	}
 
       build_type = boolean_type_node;
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == ENUMERAL_TYPE)
+	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	       || code1 == ENUMERAL_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	result_type = composite_pointer_type (type0, type1, op0, op1,
