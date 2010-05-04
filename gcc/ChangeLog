@@ -1,3 +1,9 @@
+2010-05-04  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR bootstrap/43964
+	* ira-color.c (assign_hard_reg): Declare rclass and add_cost
+	only if HONOR_REG_ALLOC_ORDER is not defined.
+
 2010-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43949

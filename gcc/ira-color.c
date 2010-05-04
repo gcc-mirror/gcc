@@ -441,14 +441,18 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 {
   HARD_REG_SET conflicting_regs;
   int i, j, k, hard_regno, best_hard_regno, class_size;
-  int cost, mem_cost, min_cost, full_cost, min_full_cost, add_cost;
+  int cost, mem_cost, min_cost, full_cost, min_full_cost;
   int *a_costs;
   int *conflict_costs;
-  enum reg_class cover_class, rclass, conflict_cover_class;
+  enum reg_class cover_class, conflict_cover_class;
   enum machine_mode mode;
   ira_allocno_t a, conflict_allocno;
   ira_allocno_conflict_iterator aci;
   static int costs[FIRST_PSEUDO_REGISTER], full_costs[FIRST_PSEUDO_REGISTER];
+#ifndef HONOR_REG_ALLOC_ORDER
+  enum reg_class rclass;
+  int add_cost;
+#endif
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
