@@ -2755,12 +2755,13 @@ Warn if feedback profiles do not match when using the
 If a source file was changed between @option{-fprofile-gen} and
 @option{-fprofile-use}, the files with the profile feedback can fail
 to match the source file and GCC can not use the profile feedback
-information.  By default, GCC emits an error message in this case.
-The option @option{-Wcoverage-mismatch} emits a warning instead of an
-error.  GCC does not use appropriate feedback profiles, so using this
-option can result in poorly optimized code.  This option is useful
-only in the case of very minor changes such as bug fixes to an
-existing code-base.
+information.  By default, this warning is enabled and is treated as an
+error.  @option{-Wno-coverage-mismatch} can be used to disable the
+warning or @option{-Wno-error=coverage-mismatch} can be used to
+disable the error.  Disable the error for this warning can result in
+poorly optimized code, so disabling the error is useful only in the
+case of very minor changes such as bug fixes to an existing code-base.
+Completely disabling the warning is not recommended.
 
 @end table
 

@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "cgraph.h"
 #include "tree-pass.h"
+#include "diagnostic.h"
+#include "intl.h"
 
 #include "gcov-io.c"
 
@@ -357,34 +359,33 @@ get_coverage_counts (unsigned counter, unsigned expected,
       || entry->summary.num != expected)
     {
       static int warned = 0;
+      bool warning_printed = false;
       tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
-      if (warn_coverage_mismatch)
-	warning (OPT_Wcoverage_mismatch, "coverage mismatch for function "
-		 "%qE while reading counter %qs", id, ctr_names[counter]);
-      else
-	error ("coverage mismatch for function %qE while reading counter %qs",
-	       id, ctr_names[counter]);
-
-      if (!inhibit_warnings)
+      warning_printed = 
+	warning_at (input_location, OPT_Wcoverage_mismatch, 
+		    "coverage mismatch for function "
+		    "%qE while reading counter %qs", id, ctr_names[counter]);
+      if (warning_printed)
 	{
 	  if (entry->checksum != checksum)
-	    inform (input_location, "checksum is %x instead of %x", entry->checksum, checksum);
+	    inform (input_location, "checksum is %x instead of %x",
+		    entry->checksum, checksum);
 	  else
 	    inform (input_location, "number of counters is %d instead of %d",
 		    entry->summary.num, expected);
-	}
-
-      if (warn_coverage_mismatch
-	  && !inhibit_warnings
-	  && !warned++)
-	{
-	  inform (input_location, "coverage mismatch ignored due to -Wcoverage-mismatch");
-	  inform (input_location, flag_guess_branch_prob
-		  ? "execution counts estimated"
-		  : "execution counts assumed to be zero");
-	  if (!flag_guess_branch_prob)
-	    inform (input_location, "this can result in poorly optimized code");
+	  
+	  if (!(errorcount || sorrycount)
+	      && !warned++)
+	    {
+	      inform (input_location, "coverage mismatch ignored");
+	      inform (input_location, flag_guess_branch_prob
+		      ? G_("execution counts estimated")
+		      : G_("execution counts assumed to be zero"));
+	      if (!flag_guess_branch_prob)
+		inform (input_location,
+			"this can result in poorly optimized code");
+	    }
 	}
 
       return NULL;
