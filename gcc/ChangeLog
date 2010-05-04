@@ -1,3 +1,9 @@
+2010-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43981
+	* c-parser.c (c_parser_direct_declarator_inner): Call mark_exp_read
+	on dimen.
+
 2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43799
