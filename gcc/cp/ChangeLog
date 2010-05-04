@@ -1,3 +1,9 @@
+2010-05-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/43953
+	* pt.c (most_specialized_class): Pretend we are processing
+	a template decl during the call to coerce_template_parms.
+
 2010-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43868
