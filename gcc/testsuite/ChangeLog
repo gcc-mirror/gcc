@@ -1,3 +1,8 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/43671
+	* gcc.target/i386/pr43671.c: New.
+
 2010-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43705

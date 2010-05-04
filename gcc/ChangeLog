@@ -1,3 +1,10 @@
+2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/43671
+	* alias.c (true_dependence): Handle the same VALUE in x and mem.
+	(canon_true_dependence): Likewise.
+	(write_dependence_p): Likewise.
+
 2010-05-04  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cgraphbuild.o): Add dependency on ipa-utils.h
