@@ -1,3 +1,13 @@
+2010-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (free_lang_data_in_one_sizepos): New inline function.
+	(free_lang_data_in_type): Call it on TYPE_{MIN|MAX}_VALUE of numerical
+	types.  Call it on TYPE_SIZE and TYPE_SIZE_UNIT of all types.
+	(free_lang_data_in_decl): Call it on DECL_SIZE and DECL_SIZE_UNIT of
+	all decls.  Call it on DECL_FIELD_OFFSET of fields.
+	(find_decls_types_r): Follow DECL_VALUE_EXPR.
+	(iterative_hash_expr) <PLACEHOLDER_EXPR>: New case.
+
 2010-05-04  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_access_from_expr_1): The first parameter type
