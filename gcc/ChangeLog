@@ -1,3 +1,8 @@
+2010-05-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_small_register_classes_for_mode_p): Remove
+	static.
+
 2010-05-04  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR bootstrap/43964
