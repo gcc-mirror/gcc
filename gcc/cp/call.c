@@ -6219,7 +6219,7 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
     *fn_p = NULL_TREE;
 
   if (error_operand_p (instance)
-      || error_operand_p (fns))
+      || !fns || error_operand_p (fns))
     return error_mark_node;
 
   if (!BASELINK_P (fns))

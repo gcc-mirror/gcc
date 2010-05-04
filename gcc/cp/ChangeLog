@@ -1,3 +1,9 @@
+2010-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43705
+	* call.c (build_new_method_call): Return error_mark_node if fns is
+	NULL_TREE.
+
 2010-05-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/43953
