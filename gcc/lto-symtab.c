@@ -215,15 +215,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       cgraph_redirect_edge_callee (e, prevailing_node);
     }
 
-  /* There are not supposed to be any outgoing edges from a node we
-     replace.  Still this can happen for multiple instances of weak
-     functions.  */
-  for (e = node->callees; e; e = next)
-    {
-      next = e->next_callee;
-      cgraph_remove_edge (e);
-    }
-
   if (node->same_body)
     {
       struct cgraph_node *alias;
@@ -257,8 +248,27 @@ lto_varpool_replace_node (struct varpool_node *vnode,
   /* Merge node flags.  */
   if (vnode->needed)
     {
-      gcc_assert (prevailing_node->analyzed);
+      gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
       varpool_mark_needed_node (prevailing_node);
+    }
+  /* Relink aliases.  */
+  if (vnode->extra_name && !vnode->alias)
+    {
+      struct varpool_node *alias, *last;
+      for (alias = vnode->extra_name;
+	   alias; alias = alias->next)
+	{
+	  last = alias;
+	  alias->extra_name = prevailing_node;
+	}
+
+      if (prevailing_node->extra_name)
+	{
+	  last->next = prevailing_node->extra_name;
+	  prevailing_node->extra_name->prev = last;
+	}
+      prevailing_node->extra_name = vnode->extra_name;
+      vnode->extra_name = NULL;
     }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);

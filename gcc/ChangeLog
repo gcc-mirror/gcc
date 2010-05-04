@@ -1,3 +1,13 @@
+2010-05-04  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Do not remove edges;
+	node will be removed anyway.
+	(lto_varpool_replace_node): Allow also unanalyzed nodes;
+	relink aliases of node into prevailing node.
+	* varpool.c (varpool_remove_node): Remove aliases properly;
+	when removing node, remove all its aliases too; remove DECL_INITIAL
+	of removed node; ggc_free the varpool node.
+
 2010-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43879
