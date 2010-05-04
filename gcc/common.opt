@@ -249,8 +249,8 @@ Common Var(warn_unused_variable) Init(-1) Warning
 Warn when a variable is unused
 
 Wcoverage-mismatch
-Common RejectNegative Var(warn_coverage_mismatch) Warning
-Warn instead of error in case profiles in -fprofile-use do not match
+Common Var(warn_coverage_mismatch) Init(1) Warning
+Warn in case profiles in -fprofile-use do not match
 
 aux-info
 Common Separate

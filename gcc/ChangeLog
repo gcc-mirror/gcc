@@ -1,3 +1,15 @@
+2010-05-04  Neil Vachharajani <nvachhar@google.com>
+
+	* doc/invoke.texi (-Wcoverage-mismatch): Updated documentation as
+	per new semantics.
+	* opts.c (decode_options): Enable -Werror=coverage-mismatch.
+	* coverage.c (get_coverage_counts): Always emit a warning.  Adjust
+	conditions for printing notes.
+	* common.opt (-Wcoverage-mismatch): Allow negative, default to
+	true, update documentation.
+	* Makefile.in (coverage.o): Add dependence on DIAGNOSTIC_H and intl.h.
+	* testsuite/gcc.dg/tree-prof/wcoverage-mismatch.c: Adjusted.
+
 2010-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/43981

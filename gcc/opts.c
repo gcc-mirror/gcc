@@ -946,6 +946,9 @@ decode_options (unsigned int argc, const char **argv)
   else
     set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);
 
+  /* Enable -Werror=coverage-mismatch by default */
+  enable_warning_as_error("coverage-mismatch", 1, lang_mask);
+
   if (first_time_p)
     {
       /* Initialize whether `char' is signed.  */
