@@ -651,6 +651,7 @@ static void
 copy_bind_expr (tree *tp, int *walk_subtrees, copy_body_data *id)
 {
   tree block = BIND_EXPR_BLOCK (*tp);
+  tree t;
   /* Copy (and replace) the statement.  */
   copy_tree_r (tp, walk_subtrees, NULL);
   if (block)
@@ -660,9 +661,21 @@ copy_bind_expr (tree *tp, int *walk_subtrees, copy_body_data *id)
     }
 
   if (BIND_EXPR_VARS (*tp))
-    /* This will remap a lot of the same decls again, but this should be
-       harmless.  */
-    BIND_EXPR_VARS (*tp) = remap_decls (BIND_EXPR_VARS (*tp), NULL, id);
+    {
+      /* This will remap a lot of the same decls again, but this should be
+	 harmless.  */
+      BIND_EXPR_VARS (*tp) = remap_decls (BIND_EXPR_VARS (*tp), NULL, id);
+ 
+      /* Also copy value-expressions.  */
+      for (t = BIND_EXPR_VARS (*tp); t; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == VAR_DECL
+	    && DECL_HAS_VALUE_EXPR_P (t))
+	  {
+	    tree tem = DECL_VALUE_EXPR (t);
+	    walk_tree (&tem, copy_tree_body_r, id, NULL);
+	    SET_DECL_VALUE_EXPR (t, tem);
+	  }
+    }
 }
 
 
