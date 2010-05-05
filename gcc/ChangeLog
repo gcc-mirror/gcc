@@ -1,3 +1,8 @@
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Correctly
+	handle aliases.
+
 2010-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_return_expr): Gimplify the size expressions of
