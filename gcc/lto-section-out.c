@@ -543,6 +543,7 @@ lto_new_out_decl_state (void)
     }
 
   state->cgraph_node_encoder = lto_cgraph_encoder_new ();
+  state->varpool_node_encoder = lto_varpool_encoder_new ();
 
   return state;
 }

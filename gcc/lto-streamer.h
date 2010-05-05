@@ -466,6 +466,20 @@ struct lto_cgraph_encoder_d
 
 typedef struct lto_cgraph_encoder_d *lto_cgraph_encoder_t;
 
+/* Encoder data structure used to stream callgraph nodes.  */
+struct lto_varpool_encoder_d
+{
+  /* Map nodes to reference number. */
+  struct pointer_map_t *map;
+
+  /* Map reference number to node. */
+  VEC(varpool_node_ptr,heap) *nodes;
+
+  /* Map of nodes where we want to output initializer.  */
+  struct pointer_set_t *initializer;
+};
+typedef struct lto_varpool_encoder_d *lto_varpool_encoder_t;
+
 /* Mapping from indices to trees.  */
 struct GTY(()) lto_tree_ref_table
 {
@@ -520,6 +534,9 @@ struct lto_out_decl_state
   /* Encoder for cgraph nodes.  */
   lto_cgraph_encoder_t cgraph_node_encoder;
 
+  /* Encoder for varpool nodes.  */
+  lto_varpool_encoder_t varpool_node_encoder;
+
   /* If this out-decl state belongs to a function, fn_decl points to that
      function.  Otherwise, it is NULL. */
   tree fn_decl;
@@ -545,6 +562,9 @@ struct GTY(()) lto_file_decl_data
 
   /* Table of cgraph nodes present in this file.  */
   lto_cgraph_encoder_t GTY((skip)) cgraph_node_encoder;
+
+  /* Table of varpool nodes present in this file.  */
+  lto_varpool_encoder_t GTY((skip)) varpool_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
   htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
@@ -825,11 +845,16 @@ struct cgraph_node *lto_cgraph_encoder_deref (lto_cgraph_encoder_t, int);
 int lto_cgraph_encoder_lookup (lto_cgraph_encoder_t, struct cgraph_node *);
 lto_cgraph_encoder_t lto_cgraph_encoder_new (void);
 int lto_cgraph_encoder_encode (lto_cgraph_encoder_t, struct cgraph_node *);
-void lto_cgraph_encoder_delete (lto_cgraph_encoder_t encoder);
-void output_cgraph (cgraph_node_set);
+void lto_cgraph_encoder_delete (lto_cgraph_encoder_t);
+struct varpool_node *lto_varpool_encoder_deref (lto_varpool_encoder_t, int);
+int lto_varpool_encoder_lookup (lto_varpool_encoder_t, struct varpool_node *);
+lto_varpool_encoder_t lto_varpool_encoder_new (void);
+int lto_varpool_encoder_encode (lto_varpool_encoder_t, struct varpool_node *);
+void lto_varpool_encoder_delete (lto_varpool_encoder_t);
+bool lto_varpool_encoder_encode_initializer_p (lto_varpool_encoder_t,
+					       struct varpool_node *);
+void output_cgraph (cgraph_node_set, varpool_node_set);
 void input_cgraph (void);
-void output_varpool (varpool_node_set);
-void input_varpool (void);
 
 
 /* In lto-symtab.c.  */

@@ -1,5 +1,33 @@
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (output_varpool): Forward declare; work on encoder.
+	(lto_varpool_encoder_new, lto_varpool_encoder_delete, lto_varpool_encoder_encode
+	lto_varpool_encoder_lookup, lto_varpool_encoder_deref, lto_varpool_encoder_size,
+	lto_varpool_encoder_encode_initializer_p,
+	lto_set_varpool_encoder_encode_initializer): New functions.
+	(lto_output_cgraph): Take vset parameter too; compute varpool encoder;
+	call output_varpool.
+	(input_varpool_node): Do not always set analyzed.
+	(input_cgraph_1): Return vector of cgraph nodes.
+	(input_varpool_1): Return vector of varpools.
+	(input_cgraph): Free the vectors.
+	* lto-streamer-out.c (lto_output_ts_decl_common_tree_pointers):
+	output only initializers needed.
+	(lto_output): Only call output_cgraph.
+	(produce_asm_for_decls): Call lto_varpool_encoder_delete.
+	* lto-section-out.c (lto_new_out_decl_state): Initialize
+	state->varpool_node_encoder.
+	* lto-streamer.h (lto_varpool_encoder_d): New.
+	(lto_out_decl_state, lto_file_decl_data): Add varpool_node_encoder.	
+	(lto_cgraph_encoder_delete, output_cgraph): Update prototype.
+	(lto_varpool_encoder_deref, lto_varpool_encoder_lookup,
+	lto_varpool_encoder_encode, lto_varpool_encoder_delete,
+	lto_varpool_encoder_encode_initializer_p, lto_varpool_encoder_new):
+	Declare.
+	(output_varpool, input_varpool): Remove declarations.
+
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_symtab_resolve_can_prevail_p): Alias of variable
 	with body can prevail.
 

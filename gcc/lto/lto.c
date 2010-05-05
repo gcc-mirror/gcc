@@ -584,7 +584,7 @@ lto_1_to_1_map (void)
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
-      if (vnode->alias)
+      if (vnode->alias || !vnode->needed)
 	continue;
       slot = pointer_map_contains (vpmap, file_data);
       if (slot)
