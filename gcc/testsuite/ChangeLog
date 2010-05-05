@@ -1,3 +1,8 @@
+2010-05-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43696
+	* gfortran.dg/class_17.f03: New.
+
 2010-05-04  Mike Stump  <mikestump@comcast.net>
 
 	PR objc/35165

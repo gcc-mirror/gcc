@@ -1,3 +1,10 @@
+2010-05-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43696
+	* resolve.c (resolve_fl_derived): Some fixes for class variables.
+	* symbol.c (gfc_build_class_symbol): Add separate class container for
+	class pointers.
+
 2010-05-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/43592
