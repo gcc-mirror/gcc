@@ -9742,13 +9742,6 @@ Put functions, data, and readonly data in @var{text-section},
 by default.  This can be overridden with the @code{section} attribute.
 @xref{Variable Attributes}.
 
-@item -mfix-cortex-m3-ldrd
-@opindex mfix-cortex-m3-ldrd
-Some Cortex-M3 cores can cause data corruption when @code{ldrd} instructions
-with overlapping destination and base registers are used.  This option avoids
-generating these instructions.  This option is enabled by default when
-@option{-mcpu=cortex-m3} is specified.
-
 @end table
 
 @node ARM Options
@@ -10094,6 +10087,13 @@ Only generate absolute relocations on word sized values (i.e. R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
 is specified.
+
+@item -mfix-cortex-m3-ldrd
+@opindex mfix-cortex-m3-ldrd
+Some Cortex-M3 cores can cause data corruption when @code{ldrd} instructions
+with overlapping destination and base registers are used.  This option avoids
+generating these instructions.  This option is enabled by default when
+@option{-mcpu=cortex-m3} is specified.
 
 @end table
 
