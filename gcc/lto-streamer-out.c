@@ -844,7 +844,23 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, DECL_SIZE_UNIT (expr), ref_p);
 
   if (TREE_CODE (expr) != FUNCTION_DECL)
-    lto_output_tree_or_ref (ob, DECL_INITIAL (expr), ref_p);
+    {
+      tree initial = DECL_INITIAL (expr);
+      if (TREE_CODE (expr) == VAR_DECL
+	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
+	  && initial)
+	{
+	  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
+	  struct varpool_node *vnode = varpool_get_node (expr);
+	  if (!vnode)
+	    initial = error_mark_node;
+	  else if (!lto_varpool_encoder_encode_initializer_p (varpool_encoder,
+							      vnode))
+	    initial = NULL;
+	}
+    
+      lto_output_tree_or_ref (ob, initial, ref_p);
+    }
 
   lto_output_tree_or_ref (ob, DECL_ATTRIBUTES (expr), ref_p);
   lto_output_tree_or_ref (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
@@ -2102,8 +2118,7 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
      be done now to make sure that all the statements in every function
      have been renumbered so that edges can be associated with call
      statements using the statement UIDs.  */
-  output_cgraph (set);
-  output_varpool (vset);
+  output_cgraph (set, vset);
 
   lto_bitmap_free (output);
 }
@@ -2507,6 +2522,7 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 
   /* Deallocate memory and clean up.  */
   lto_cgraph_encoder_delete (ob->decl_state->cgraph_node_encoder);
+  lto_varpool_encoder_delete (ob->decl_state->varpool_node_encoder);
   VEC_free (lto_out_decl_state_ptr, heap, lto_function_decl_states);
   lto_function_decl_states = NULL;
   destroy_output_block (ob);
