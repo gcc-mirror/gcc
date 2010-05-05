@@ -1266,7 +1266,6 @@ typedef struct
 
   mpz_t *offset;
   gfc_component *component;
-  mpz_t *repeat;
 
   gfc_try (*expand_work_function) (gfc_expr *);
 }
@@ -1501,7 +1500,6 @@ expand_constructor (gfc_constructor_base base)
 	  return FAILURE;
 	}
       current_expand.offset = &c->offset;
-      current_expand.repeat = &c->repeat;
       current_expand.component = c->n.component;
       if (current_expand.expand_work_function (e) == FAILURE)
 	return FAILURE;

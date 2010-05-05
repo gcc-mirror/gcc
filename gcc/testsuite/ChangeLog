@@ -1,3 +1,8 @@
+2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/24978
+	* gfortran.dg/data_invalid.f90: New.
+
 2010-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto2.adb: New test.
