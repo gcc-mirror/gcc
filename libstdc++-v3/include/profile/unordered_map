@@ -196,7 +196,7 @@ namespace __profile
         insert(_InputIter __first, _InputIter __last)
         {
 	  size_type __old_size = _Base::bucket_count(); 
-	  _Base::insert(__first.base(), __last.base());
+	  _Base::insert(__first, __last);
 	  _M_profile_resize(__old_size, _Base::bucket_count()); 
 	}
 
@@ -430,7 +430,7 @@ namespace __profile
         insert(_InputIter __first, _InputIter __last)
         {
 	  size_type __old_size = _Base::bucket_count(); 
-	  _Base::insert(__first.base(), __last.base());
+	  _Base::insert(__first, __last);
 	  _M_profile_resize(__old_size, _Base::bucket_count()); 
 	}
 
