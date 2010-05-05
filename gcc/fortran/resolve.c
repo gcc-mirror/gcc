@@ -10794,7 +10794,7 @@ resolve_fl_derived (gfc_symbol *sym)
       
       /* If this type is an extension, see if this component has the same name
 	 as an inherited type-bound procedure.  */
-      if (super_type
+      if (super_type && !sym->attr.is_class
 	  && gfc_find_typebound_proc (super_type, NULL, c->name, true, NULL))
 	{
 	  gfc_error ("Component '%s' of '%s' at %L has the same name as an"
@@ -10841,9 +10841,19 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
 
-      if (c->ts.type == BT_DERIVED && c->attr.pointer
+      if (!sym->attr.is_class && c->ts.type == BT_DERIVED && c->attr.pointer
 	  && c->ts.u.derived->components == NULL
 	  && !c->ts.u.derived->attr.zero_comp)
+	{
+	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
+		     "that has not been declared", c->name, sym->name,
+		     &c->loc);
+	  return FAILURE;
+	}
+
+      if (c->ts.type == BT_CLASS && c->ts.u.derived->components->attr.pointer
+	  && c->ts.u.derived->components->ts.u.derived->components == NULL
+	  && !c->ts.u.derived->components->ts.u.derived->attr.zero_comp)
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,

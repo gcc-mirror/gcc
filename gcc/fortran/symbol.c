@@ -4720,6 +4720,8 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     sprintf (name, ".class.%s.%d.a", ts->u.derived->name, (*as)->rank);
   else if ((*as) && (*as)->rank)
     sprintf (name, ".class.%s.%d", ts->u.derived->name, (*as)->rank);
+  else if (attr->pointer)
+    sprintf (name, ".class.%s.p", ts->u.derived->name);
   else if (attr->allocatable)
     sprintf (name, ".class.%s.a", ts->u.derived->name);
   else
