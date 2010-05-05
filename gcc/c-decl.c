@@ -7990,9 +7990,12 @@ store_parm_decls (void)
      thus won't naturally see the SAVE_EXPR containing the increment.  All
      other pending sizes would be handled by gimplify_parameters.  */
   {
+    VEC(tree,gc) *pending_sizes = get_pending_sizes ();
     tree t;
-    for (t = nreverse (get_pending_sizes ()); t ; t = TREE_CHAIN (t))
-      add_stmt (TREE_VALUE (t));
+    int i;
+
+    for (i = 0; VEC_iterate (tree, pending_sizes, i, t); i++)
+      add_stmt (t);
   }
 
   /* Even though we're inside a function body, we still don't want to
