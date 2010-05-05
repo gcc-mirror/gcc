@@ -4397,6 +4397,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
   int hi_limit;
   rtx orig = from;
   rtx last_got = NULL_RTX;
+  rtx last_symoff = NULL_RTX;
 
   /* For HImode: range is 510, add 4 because pc counts from address of
      second instruction after this one, subtract 2 for the jump instruction
@@ -4538,6 +4539,16 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	{
 	  switch (untangle_mova (&num_mova, &mova, from))
 	    {
+	      case 1:
+		if (flag_pic)
+		  {
+		    rtx src = SET_SRC (PATTERN (from));
+		    if (GET_CODE (src) == CONST
+			&& GET_CODE (XEXP (src, 0)) == UNSPEC
+			&& XINT (XEXP (src, 0), 1) == UNSPEC_SYMOFF)
+		      last_symoff = from;
+		  }
+		break;
 	      case 0:	return find_barrier (0, 0, mova);
 	      case 2:
 		{
@@ -4640,6 +4651,12 @@ find_barrier (int num_mova, rtx mova, rtx from)
       /* We didn't find a barrier in time to dump our stuff,
 	 so we'll make one.  */
       rtx label = gen_label_rtx ();
+
+      /* Don't emit a constant table in the middle of insns for
+	 casesi_worker_2.  This is a bit overkill but is enough
+	 because casesi_worker_2 wouldn't appear so frequently.  */
+      if (last_symoff)
+	from = last_symoff;
 
       /* If we exceeded the range, then we must back up over the last
 	 instruction we looked at.  Otherwise, we just need to undo the
