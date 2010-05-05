@@ -416,7 +416,13 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 
   /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
-    return (e->vnode && e->vnode->finalized);
+    {
+      if (!e->vnode)
+	return false;
+      if (e->vnode->finalized)
+	return true;
+      return e->vnode->alias && e->vnode->extra_name->finalized;
+    }
 
   gcc_unreachable ();
 }
@@ -590,10 +596,22 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	while (!prevailing->node
 	       && prevailing->next)
 	  prevailing = prevailing->next;
+      /* For variables chose with a priority variant with vnode
+	 attached (i.e. from unit where external declaration of
+	 variable is actually used).
+	 When there are multiple variants, chose one with size.
+	 This is needed for C++ typeinfos, for example in
+	 lto/20081204-1 there are typeifos in both units, just
+	 one of them do have size.  */
       if (TREE_CODE (prevailing->decl) == VAR_DECL)
-	while (!prevailing->vnode
-	       && prevailing->next)
-	  prevailing = prevailing->next;
+	{
+	  for (e = prevailing->next; e; e = e->next)
+	    if ((!prevailing->vnode && e->vnode)
+		|| ((prevailing->vnode != NULL) == (e->vnode != NULL)
+		    && !COMPLETE_TYPE_P (TREE_TYPE (prevailing->decl))
+		    && COMPLETE_TYPE_P (TREE_TYPE (e->decl))))
+	      prevailing = e;
+	}
     }
 
   /* Move it first in the list.  */
