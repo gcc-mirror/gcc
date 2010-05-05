@@ -7261,4 +7261,31 @@ default_elf_asm_output_external (FILE *file ATTRIBUTE_UNUSED,
     maybe_assemble_visibility (decl);
 }
 
+/* Create a DEBUG_EXPR_DECL / DEBUG_EXPR pair from RTL expression
+   EXP.  */
+rtx
+make_debug_expr_from_rtl (const_rtx exp)
+{
+  tree ddecl = make_node (DEBUG_EXPR_DECL), type;
+  enum machine_mode mode = GET_MODE (exp);
+  rtx dval;
+
+  DECL_ARTIFICIAL (ddecl) = 1;
+  if (REG_P (exp) && REG_EXPR (exp))
+    type = TREE_TYPE (REG_EXPR (exp));
+  else if (MEM_P (exp) && MEM_EXPR (exp))
+    type = TREE_TYPE (MEM_EXPR (exp));
+  else
+    type = NULL_TREE;
+  if (type && TYPE_MODE (type) == mode)
+    TREE_TYPE (ddecl) = type;
+  else
+    TREE_TYPE (ddecl) = lang_hooks.types.type_for_mode (mode, 1);
+  DECL_MODE (ddecl) = mode;
+  dval = gen_rtx_DEBUG_EXPR (mode);
+  DEBUG_EXPR_TREE_DECL (dval) = ddecl;
+  SET_DECL_RTL (ddecl, dval);
+  return dval;
+}
+
 #include "gt-varasm.h"

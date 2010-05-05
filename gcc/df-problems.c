@@ -3403,6 +3403,138 @@ df_create_unused_note (rtx insn, rtx old, df_ref def,
   return old;
 }
 
+/* Node of a linked list of uses of dead REGs in debug insns.  */
+struct dead_debug_use
+{
+  df_ref use;
+  struct dead_debug_use *next;
+};
+
+/* Linked list of the above, with a bitmap of the REGs in the
+   list.  */
+struct dead_debug
+{
+  struct dead_debug_use *head;
+  bitmap used;
+};
+
+/* Initialize DEBUG to an empty list, and clear USED, if given.  */
+static inline void
+dead_debug_init (struct dead_debug *debug, bitmap used)
+{
+  debug->head = NULL;
+  debug->used = used;
+  if (used)
+    bitmap_clear (used);
+}
+
+/* Reset all debug insns with pending uses.  Release the bitmap in it,
+   unless it is USED.  USED must be the same bitmap passed to
+   dead_debug_init.  */
+static inline void
+dead_debug_finish (struct dead_debug *debug, bitmap used)
+{
+  struct dead_debug_use *head;
+  rtx insn = NULL;
+
+  if (debug->used != used)
+    BITMAP_FREE (debug->used);
+
+  while ((head = debug->head))
+    {
+      insn = DF_REF_INSN (head->use);
+      if (!head->next || DF_REF_INSN (head->next->use) != insn)
+	{
+	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	  df_insn_rescan_debug_internal (insn);
+	}
+      debug->head = head->next;
+      XDELETE (head);
+    }
+}
+
+/* Add USE to DEBUG.  It must be a dead reference to UREGNO in a debug
+   insn.  Create a bitmap for DEBUG as needed.  */
+static inline void
+dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
+{
+  struct dead_debug_use *newddu = XNEW (struct dead_debug_use);
+
+  newddu->use = use;
+  newddu->next = debug->head;
+  debug->head = newddu;
+
+  if (!debug->used)
+    debug->used = BITMAP_ALLOC (NULL);
+
+  bitmap_set_bit (debug->used, uregno);
+}
+
+/* If UREGNO is referenced by any entry in DEBUG, emit a debug insn
+   before INSN that binds the REG to a debug temp, and replace all
+   uses of UREGNO in DEBUG with uses of the debug temp.  INSN must be
+   the insn where UREGNO dies.  */
+static inline void
+dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
+			  rtx insn)
+{
+  struct dead_debug_use **tailp = &debug->head;
+  struct dead_debug_use *cur;
+  struct dead_debug_use *uses = NULL;
+  struct dead_debug_use **usesp = &uses;
+  rtx reg = NULL;
+  rtx dval;
+  rtx bind;
+
+  if (!debug->used || !bitmap_clear_bit (debug->used, uregno))
+    return;
+
+  /* Move all uses of uregno from debug->head to uses, setting mode to
+     the widest referenced mode.  */
+  while ((cur = *tailp))
+    {
+      if (DF_REF_REGNO (cur->use) == uregno)
+	{
+	  *usesp = cur;
+	  usesp = &cur->next;
+	  *tailp = cur->next;
+	  cur->next = NULL;
+	  if (!reg
+	      || (GET_MODE_BITSIZE (GET_MODE (reg))
+		  < GET_MODE_BITSIZE (GET_MODE (DF_REF_REAL_REG (cur->use)))))
+	    reg = DF_REF_REAL_REG (cur->use);
+	}
+      else
+	tailp = &(*tailp)->next;
+    }
+
+  gcc_assert (reg);
+
+  /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
+  dval = make_debug_expr_from_rtl (reg);
+
+  /* Emit a debug bind insn before the insn in which reg dies.  */
+  bind = gen_rtx_VAR_LOCATION (GET_MODE (reg),
+			       DEBUG_EXPR_TREE_DECL (dval), reg,
+			       VAR_INIT_STATUS_INITIALIZED);
+
+  bind = emit_debug_insn_before (bind, insn);
+  df_insn_rescan (bind);
+
+  /* Adjust all uses.  */
+  while ((cur = uses))
+    {
+      if (GET_MODE (DF_REF_REAL_REG (cur->use)) == GET_MODE (reg))
+	*DF_REF_REAL_LOC (cur->use) = dval;
+      else
+	*DF_REF_REAL_LOC (cur->use)
+	  = gen_lowpart_SUBREG (GET_MODE (DF_REF_REAL_REG (cur->use)), dval);
+      /* ??? Should we simplify subreg of subreg?  */
+      df_insn_rescan (DF_REF_INSN (cur->use));
+      uses = cur->next;
+      XDELETE (cur);
+    }
+}
 
 /* Recompute the REG_DEAD and REG_UNUSED notes and compute register
    info: lifetime, bb, and number of defs and uses for basic block
@@ -3416,6 +3548,9 @@ df_note_bb_compute (unsigned int bb_index,
   rtx insn;
   df_ref *def_rec;
   df_ref *use_rec;
+  struct dead_debug debug;
+
+  dead_debug_init (&debug, NULL);
 
   bitmap_copy (live, df_get_live_out (bb));
   bitmap_clear (artificial_uses);
@@ -3592,9 +3727,12 @@ df_note_bb_compute (unsigned int bb_index,
 	    {
 	      if (debug_insn)
 		{
-		  debug_insn = -1;
+		  if (debug_insn > 0)
+		    dead_debug_add (&debug, use, uregno);
 		  break;
 		}
+	      else
+		dead_debug_insert_before (&debug, uregno, insn);
 
 	      if ( (!(DF_REF_FLAGS (use) & DF_REF_MW_HARDREG))
 		   && (!bitmap_bit_p (do_not_gen, uregno))
@@ -3636,6 +3774,8 @@ df_note_bb_compute (unsigned int bb_index,
 	  df_insn_rescan_debug_internal (insn);
 	}
     }
+
+  dead_debug_finish (&debug, NULL);
 }
 
 
