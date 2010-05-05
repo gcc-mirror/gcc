@@ -1228,9 +1228,22 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
      hard_function_value generates a PARALLEL, we'll die during normal
      expansion of structure assignments; there's special code in expand_return
      to handle this case that does not exist in expand_expr.  */
-  if (!result_decl
-      || aggregate_value_p (result_decl, TREE_TYPE (current_function_decl)))
-    result = result_decl;
+  if (!result_decl)
+    result = NULL_TREE;
+  else if (aggregate_value_p (result_decl, TREE_TYPE (current_function_decl)))
+    {
+      if (TREE_CODE (DECL_SIZE (result_decl)) != INTEGER_CST)
+	{
+	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (result_decl)))
+	    gimplify_type_sizes (TREE_TYPE (result_decl), pre_p);
+	  /* Note that we don't use gimplify_vla_decl because the RESULT_DECL
+	     should be effectively allocated by the caller, i.e. all calls to
+	     this function must be subject to the Return Slot Optimization.  */
+	  gimplify_one_sizepos (&DECL_SIZE (result_decl), pre_p);
+	  gimplify_one_sizepos (&DECL_SIZE_UNIT (result_decl), pre_p);
+	}
+      result = result_decl;
+    }
   else if (gimplify_ctxp->return_temp)
     result = gimplify_ctxp->return_temp;
   else
