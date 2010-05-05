@@ -6665,10 +6665,12 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     }
   else if (is_type)
     {
+      if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	/* OK, modify the type in place.  */;
       /* If we have a TYPE_DECL, then copy the type, so that we
 	 don't accidentally modify a builtin type.  See pushdecl.  */
-      if (decl && TREE_TYPE (decl) != error_mark_node
-	  && DECL_ORIGINAL_TYPE (decl) == NULL_TREE)
+      else if (decl && TREE_TYPE (decl) != error_mark_node
+	       && DECL_ORIGINAL_TYPE (decl) == NULL_TREE)
 	{
 	  tree tt = TREE_TYPE (decl);
 	  *type = build_variant_type_copy (*type);
@@ -6677,7 +6679,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	  TREE_USED (*type) = TREE_USED (decl);
 	  TREE_TYPE (decl) = *type;
 	}
-      else if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+      else
 	*type = build_variant_type_copy (*type);
 
       TYPE_ALIGN (*type) = (1U << i) * BITS_PER_UNIT;
