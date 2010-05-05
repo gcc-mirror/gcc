@@ -1,3 +1,9 @@
+2010-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (var_debug_decl): Save DECL_DEBUG_EXPR value
+	in a temporary instead of invoking the macro multiple times.
+	(track_expr_p): Likewise.
+
 2010-05-04  Neil Vachharajani <nvachhar@google.com>
 
 	* doc/invoke.texi (-Wcoverage-mismatch): Updated documentation as
