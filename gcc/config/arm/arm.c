@@ -9073,21 +9073,105 @@ adjacent_mem_locations (rtx a, rtx b)
   return 0;
 }
 
+/* Return true iff it would be profitable to turn a sequence of NOPS loads
+   or stores (depending on IS_STORE) into a load-multiple or store-multiple
+   instruction.  ADD_OFFSET is nonzero if the base address register needs
+   to be modified with an add instruction before we can use it.  */
+
+static bool
+multiple_operation_profitable_p (bool is_store ATTRIBUTE_UNUSED,
+				 int nops, HOST_WIDE_INT add_offset)
+ {
+  /* For ARM8,9 & StrongARM, 2 ldr instructions are faster than an ldm
+     if the offset isn't small enough.  The reason 2 ldrs are faster
+     is because these ARMs are able to do more than one cache access
+     in a single cycle.  The ARM9 and StrongARM have Harvard caches,
+     whilst the ARM8 has a double bandwidth cache.  This means that
+     these cores can do both an instruction fetch and a data fetch in
+     a single cycle, so the trick of calculating the address into a
+     scratch register (one of the result regs) and then doing a load
+     multiple actually becomes slower (and no smaller in code size).
+     That is the transformation
+
+ 	ldr	rd1, [rbase + offset]
+ 	ldr	rd2, [rbase + offset + 4]
+
+     to
+
+ 	add	rd1, rbase, offset
+ 	ldmia	rd1, {rd1, rd2}
+
+     produces worse code -- '3 cycles + any stalls on rd2' instead of
+     '2 cycles + any stalls on rd2'.  On ARMs with only one cache
+     access per cycle, the first sequence could never complete in less
+     than 6 cycles, whereas the ldm sequence would only take 5 and
+     would make better use of sequential accesses if not hitting the
+     cache.
+
+     We cheat here and test 'arm_ld_sched' which we currently know to
+     only be true for the ARM8, ARM9 and StrongARM.  If this ever
+     changes, then the test below needs to be reworked.  */
+  if (nops == 2 && arm_ld_sched && add_offset != 0)
+    return false;
+
+  return true;
+}
+
+/* Subroutine of load_multiple_sequence and store_multiple_sequence.
+   Given an array of UNSORTED_OFFSETS, of which there are NOPS, compute
+   an array ORDER which describes the sequence to use when accessing the
+   offsets that produces an ascending order.  In this sequence, each
+   offset must be larger by exactly 4 than the previous one.  ORDER[0]
+   must have been filled in with the lowest offset by the caller.
+   If UNSORTED_REGS is nonnull, it is an array of register numbers that
+   we use to verify that ORDER produces an ascending order of registers.
+   Return true if it was possible to construct such an order, false if
+   not.  */
+
+static bool
+compute_offset_order (int nops, HOST_WIDE_INT *unsorted_offsets, int *order,
+		      int *unsorted_regs)
+{
+  int i;
+  for (i = 1; i < nops; i++)
+    {
+      int j;
+
+      order[i] = order[i - 1];
+      for (j = 0; j < nops; j++)
+	if (unsorted_offsets[j] == unsorted_offsets[order[i - 1]] + 4)
+	  {
+	    /* We must find exactly one offset that is higher than the
+	       previous one by 4.  */
+	    if (order[i] != order[i - 1])
+	      return false;
+	    order[i] = j;
+	  }
+      if (order[i] == order[i - 1])
+	return false;
+      /* The register numbers must be ascending.  */
+      if (unsorted_regs != NULL
+	  && unsorted_regs[order[i]] <= unsorted_regs[order[i - 1]])
+	return false;
+    }
+  return true;
+}
+
 int
 load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 			HOST_WIDE_INT *load_offset)
 {
-  int unsorted_regs[4];
-  HOST_WIDE_INT unsorted_offsets[4];
-  int order[4];
+  int unsorted_regs[MAX_LDM_STM_OPS];
+  HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
+  int order[MAX_LDM_STM_OPS];
   int base_reg = -1;
-  int i;
+  int i, ldm_case;
 
-  /* Can only handle 2, 3, or 4 insns at present,
-     though could be easily extended if required.  */
-  gcc_assert (nops >= 2 && nops <= 4);
+  /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
+     easily extended if required.  */
+  gcc_assert (nops >= 2 && nops <= MAX_LDM_STM_OPS);
 
-  memset (order, 0, 4 * sizeof (int));
+  memset (order, 0, MAX_LDM_STM_OPS * sizeof (int));
 
   /* Loop over the operands and check that the memory references are
      suitable (i.e. immediate offsets from the same base register).  At
@@ -9123,25 +9207,16 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 		  == CONST_INT)))
 	{
 	  if (i == 0)
-	    {
-	      base_reg = REGNO (reg);
-	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      order[0] = 0;
-	    }
+	    base_reg = REGNO (reg);
 	  else
 	    {
 	      if (base_reg != (int) REGNO (reg))
 		/* Not addressed from the same base register.  */
 		return 0;
-
-	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      if (unsorted_regs[i] < unsorted_regs[order[0]])
-		order[0] = i;
 	    }
+	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+			      ? REGNO (operands[i])
+			      : REGNO (SUBREG_REG (operands[i])));
 
 	  /* If it isn't an integer register, or if it overwrites the
 	     base register but isn't the last insn in the list, then
@@ -9151,6 +9226,8 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	    return 0;
 
 	  unsorted_offsets[i] = INTVAL (offset);
+	  if (i == 0 || unsorted_offsets[i] < unsorted_offsets[order[0]])
+	    order[0] = i;
 	}
       else
 	/* Not a suitable memory address.  */
@@ -9159,30 +9236,11 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 
   /* All the useful information has now been extracted from the
      operands into unsorted_regs and unsorted_offsets; additionally,
-     order[0] has been set to the lowest numbered register in the
-     list.  Sort the registers into order, and check that the memory
-     offsets are ascending and adjacent.  */
-
-  for (i = 1; i < nops; i++)
-    {
-      int j;
-
-      order[i] = order[i - 1];
-      for (j = 0; j < nops; j++)
-	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
-	    && (order[i] == order[i - 1]
-		|| unsorted_regs[j] < unsorted_regs[order[i]]))
-	  order[i] = j;
-
-      /* Have we found a suitable register? if not, one must be used more
-	 than once.  */
-      if (order[i] == order[i - 1])
-	return 0;
-
-      /* Is the memory address adjacent and ascending? */
-      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
-	return 0;
-    }
+     order[0] has been set to the lowest offset in the list.  Sort
+     the offsets into order, verifying that they are adjacent, and
+     check that the register numbers are ascending.  */
+  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+    return 0;
 
   if (base)
     {
@@ -9195,59 +9253,31 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     }
 
   if (unsorted_offsets[order[0]] == 0)
-    return 1; /* ldmia */
-
-  if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
-    return 2; /* ldmib */
-
-  if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
-    return 3; /* ldmda */
-
-  if (unsorted_offsets[order[nops - 1]] == -4)
-    return 4; /* ldmdb */
-
-  /* For ARM8,9 & StrongARM, 2 ldr instructions are faster than an ldm
-     if the offset isn't small enough.  The reason 2 ldrs are faster
-     is because these ARMs are able to do more than one cache access
-     in a single cycle.  The ARM9 and StrongARM have Harvard caches,
-     whilst the ARM8 has a double bandwidth cache.  This means that
-     these cores can do both an instruction fetch and a data fetch in
-     a single cycle, so the trick of calculating the address into a
-     scratch register (one of the result regs) and then doing a load
-     multiple actually becomes slower (and no smaller in code size).
-     That is the transformation
-
- 	ldr	rd1, [rbase + offset]
- 	ldr	rd2, [rbase + offset + 4]
-
-     to
-
- 	add	rd1, rbase, offset
- 	ldmia	rd1, {rd1, rd2}
-
-     produces worse code -- '3 cycles + any stalls on rd2' instead of
-     '2 cycles + any stalls on rd2'.  On ARMs with only one cache
-     access per cycle, the first sequence could never complete in less
-     than 6 cycles, whereas the ldm sequence would only take 5 and
-     would make better use of sequential accesses if not hitting the
-     cache.
-
-     We cheat here and test 'arm_ld_sched' which we currently know to
-     only be true for the ARM8, ARM9 and StrongARM.  If this ever
-     changes, then the test below needs to be reworked.  */
-  if (nops == 2 && arm_ld_sched)
+    ldm_case = 1; /* ldmia */
+  else if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
+    ldm_case = 2; /* ldmib */
+  else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
+    ldm_case = 3; /* ldmda */
+  else if (unsorted_offsets[order[nops - 1]] == -4)
+    ldm_case = 4; /* ldmdb */
+  else if (const_ok_for_arm (unsorted_offsets[order[0]])
+	   || const_ok_for_arm (-unsorted_offsets[order[0]]))
+    ldm_case = 5;
+  else
     return 0;
 
-  /* Can't do it without setting up the offset, only do this if it takes
-     no more than one insn.  */
-  return (const_ok_for_arm (unsorted_offsets[order[0]])
-	  || const_ok_for_arm (-unsorted_offsets[order[0]])) ? 5 : 0;
+  if (!multiple_operation_profitable_p (false, nops,
+					ldm_case == 5
+					? unsorted_offsets[order[0]] : 0))
+    return 0;
+
+  return ldm_case;
 }
 
 const char *
 emit_ldm_seq (rtx *operands, int nops)
 {
-  int regs[4];
+  int regs[MAX_LDM_STM_OPS];
   int base_reg;
   HOST_WIDE_INT offset;
   char buf[100];
@@ -9306,17 +9336,17 @@ int
 store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 			 HOST_WIDE_INT * load_offset)
 {
-  int unsorted_regs[4];
-  HOST_WIDE_INT unsorted_offsets[4];
-  int order[4];
+  int unsorted_regs[MAX_LDM_STM_OPS];
+  HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
+  int order[MAX_LDM_STM_OPS];
   int base_reg = -1;
-  int i;
+  int i, stm_case;
 
-  /* Can only handle 2, 3, or 4 insns at present, though could be easily
-     extended if required.  */
-  gcc_assert (nops >= 2 && nops <= 4);
+  /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
+     easily extended if required.  */
+  gcc_assert (nops >= 2 && nops <= MAX_LDM_STM_OPS);
 
-  memset (order, 0, 4 * sizeof (int));
+  memset (order, 0, MAX_LDM_STM_OPS * sizeof (int));
 
   /* Loop over the operands and check that the memory references are
      suitable (i.e. immediate offsets from the same base register).  At
@@ -9351,32 +9381,22 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	      && (GET_CODE (offset = XEXP (XEXP (operands[nops + i], 0), 1))
 		  == CONST_INT)))
 	{
+	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+			      ? REGNO (operands[i])
+			      : REGNO (SUBREG_REG (operands[i])));
 	  if (i == 0)
-	    {
-	      base_reg = REGNO (reg);
-	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      order[0] = 0;
-	    }
-	  else
-	    {
-	      if (base_reg != (int) REGNO (reg))
-		/* Not addressed from the same base register.  */
-		return 0;
-
-	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      if (unsorted_regs[i] < unsorted_regs[order[0]])
-		order[0] = i;
-	    }
+	    base_reg = REGNO (reg);
+	  else if (base_reg != (int) REGNO (reg))
+	    /* Not addressed from the same base register.  */
+	    return 0;
 
 	  /* If it isn't an integer register, then we can't do this.  */
 	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14)
 	    return 0;
 
 	  unsorted_offsets[i] = INTVAL (offset);
+	  if (i == 0 || unsorted_offsets[i] < unsorted_offsets[order[0]])
+	    order[0] = i;
 	}
       else
 	/* Not a suitable memory address.  */
@@ -9385,30 +9405,11 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 
   /* All the useful information has now been extracted from the
      operands into unsorted_regs and unsorted_offsets; additionally,
-     order[0] has been set to the lowest numbered register in the
-     list.  Sort the registers into order, and check that the memory
-     offsets are ascending and adjacent.  */
-
-  for (i = 1; i < nops; i++)
-    {
-      int j;
-
-      order[i] = order[i - 1];
-      for (j = 0; j < nops; j++)
-	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
-	    && (order[i] == order[i - 1]
-		|| unsorted_regs[j] < unsorted_regs[order[i]]))
-	  order[i] = j;
-
-      /* Have we found a suitable register? if not, one must be used more
-	 than once.  */
-      if (order[i] == order[i - 1])
-	return 0;
-
-      /* Is the memory address adjacent and ascending? */
-      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
-	return 0;
-    }
+     order[0] has been set to the lowest offset in the list.  Sort
+     the offsets into order, verifying that they are adjacent, and
+     check that the register numbers are ascending.  */
+  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+    return 0;
 
   if (base)
     {
@@ -9421,24 +9422,26 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     }
 
   if (unsorted_offsets[order[0]] == 0)
-    return 1; /* stmia */
+    stm_case = 1; /* stmia */
+  else if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
+    stm_case = 2; /* stmib */
+  else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
+    stm_case = 3; /* stmda */
+  else if (unsorted_offsets[order[nops - 1]] == -4)
+    stm_case = 4; /* stmdb */
+  else
+    return 0;
 
-  if (unsorted_offsets[order[0]] == 4)
-    return 2; /* stmib */
+  if (!multiple_operation_profitable_p (false, nops, 0))
+    return 0;
 
-  if (unsorted_offsets[order[nops - 1]] == 0)
-    return 3; /* stmda */
-
-  if (unsorted_offsets[order[nops - 1]] == -4)
-    return 4; /* stmdb */
-
-  return 0;
+  return stm_case;
 }
 
 const char *
 emit_stm_seq (rtx *operands, int nops)
 {
-  int regs[4];
+  int regs[MAX_LDM_STM_OPS];
   int base_reg;
   HOST_WIDE_INT offset;
   char buf[100];

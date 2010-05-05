@@ -2769,4 +2769,8 @@ enum arm_builtins
 #define NEED_INDICATE_EXEC_STACK	0
 #endif
 
+/* The maximum number of parallel loads or stores we support in an ldm/stm
+   instruction.  */
+#define MAX_LDM_STM_OPS 4
+
 #endif /* ! GCC_ARM_H */
