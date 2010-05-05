@@ -1,5 +1,9 @@
 2010-05-05  Jason Merrill  <jason@redhat.com>
 
+	PR debug/43370
+	* c-common.c (handle_aligned_attribute): Respect
+	ATTR_FLAG_TYPE_IN_PLACE.
+
 	PR testsuite/43758
 	* target.h (struct gcc_target): Add attribute_takes_identifier_p.
 	* target_def.h (TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P): Define.
