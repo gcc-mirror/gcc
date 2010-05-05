@@ -1,3 +1,9 @@
+2010-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43950
+	* dwarf2out.c (gen_compile_unit_die): Add DW_AT_identifier_case
+	DW_ID_down_case for Fortran compilation units.
+
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (lto_output_varpool_node, input_varpool_node): Correctly

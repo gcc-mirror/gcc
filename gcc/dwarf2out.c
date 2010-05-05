@@ -18747,6 +18747,20 @@ gen_compile_unit_die (const char *filename)
     }
 
   add_AT_unsigned (die, DW_AT_language, language);
+
+  switch (language)
+    {
+    case DW_LANG_Fortran77:
+    case DW_LANG_Fortran90:
+    case DW_LANG_Fortran95:
+      /* Fortran has case insensitive identifiers and the front-end
+	 lowercases everything.  */
+      add_AT_unsigned (die, DW_AT_identifier_case, DW_ID_down_case);
+      break;
+    default:
+      /* The default DW_ID_case_sensitive doesn't need to be specified.  */
+      break;
+    }
   return die;
 }
 
