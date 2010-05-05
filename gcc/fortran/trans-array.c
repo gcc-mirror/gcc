@@ -4133,11 +4133,10 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 {
   gfc_constructor *c;
   tree tmp;
-  mpz_t maxval;
   gfc_se se;
   HOST_WIDE_INT hi;
   unsigned HOST_WIDE_INT lo;
-  tree index, range;
+  tree index;
   VEC(constructor_elt,gc) *v = NULL;
 
   switch (expr->expr_type)
@@ -4190,42 +4189,13 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
             index = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
           else
             index = NULL_TREE;
-	  mpz_init (maxval);
-          if (mpz_cmp_si (c->repeat, 0) != 0)
-            {
-              tree tmp1, tmp2;
-
-              mpz_set (maxval, c->repeat);
-              mpz_add (maxval, c->offset, maxval);
-              mpz_sub_ui (maxval, maxval, 1);
-              tmp2 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
-              if (mpz_cmp_si (c->offset, 0) != 0)
-                {
-                  mpz_add_ui (maxval, c->offset, 1);
-                  tmp1 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
-                }
-              else
-                tmp1 = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
-
-              range = fold_build2 (RANGE_EXPR, integer_type_node, tmp1, tmp2);
-            }
-          else
-            range = NULL;
-	  mpz_clear (maxval);
 
           gfc_init_se (&se, NULL);
 	  switch (c->expr->expr_type)
 	    {
 	    case EXPR_CONSTANT:
 	      gfc_conv_constant (&se, c->expr);
-              if (range == NULL_TREE)
-		CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
-              else
-                {
-                  if (index != NULL_TREE)
-		    CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
-		  CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
-                }
+	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
 
 	    case EXPR_STRUCTURE:
@@ -4239,14 +4209,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 		 for one reason or another, assuming that if they are
 		 standard defying the frontend will catch them.  */
 	      gfc_conv_expr (&se, c->expr);
-	      if (range == NULL_TREE)
-		CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
-	      else
-		{
-		  if (index != NULL_TREE)
-		  CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
-		  CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
-		}
+	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
 	    }
         }
