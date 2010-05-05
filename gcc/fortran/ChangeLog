@@ -1,8 +1,13 @@
+2010-05-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/43592
+	* fortran/parse.c (parse_interface): Do not dereference a NULL pointer.
+
 2010-04-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR fortran/40539
-        * gcc/fortran/gfortran.texi: Add section about representation of
-        LOGICAL variables.
+	PR fortran/40539
+	* gcc/fortran/gfortran.texi: Add section about representation of
+	LOGICAL variables.
 
 2010-04-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -2235,9 +2235,9 @@ loop:
     {
       if (current_state == COMP_NONE)
 	{
-	  if (new_state == COMP_FUNCTION)
+	  if (new_state == COMP_FUNCTION && sym)
 	    gfc_add_function (&sym->attr, sym->name, NULL);
-	  else if (new_state == COMP_SUBROUTINE)
+	  else if (new_state == COMP_SUBROUTINE && sym)
 	    gfc_add_subroutine (&sym->attr, sym->name, NULL);
 
 	  current_state = new_state;
