@@ -1,3 +1,12 @@
+2010-05-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-04-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/43744
+	* config/sh/sh.c (find_barrier): Don't emit a constant pool
+	in the middle of insns for casesi_worker_2.
+
 2010-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR debug/43370
