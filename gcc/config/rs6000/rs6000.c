@@ -897,6 +897,7 @@ static bool no_global_regs_above (int, bool);
 static void rs6000_assemble_visibility (tree, int);
 #endif
 static int rs6000_ra_ever_killed (void);
+static bool rs6000_attribute_takes_identifier_p (const_tree);
 static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
 static bool rs6000_ms_bitfield_layout_p (const_tree);
@@ -1279,6 +1280,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_ATTRIBUTE_TABLE rs6000_attribute_table
 #undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES rs6000_set_default_type_attributes
+#undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
+#define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P rs6000_attribute_takes_identifier_p
 
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP DOUBLE_INT_ASM_OP
@@ -23320,6 +23323,15 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 }
 
 
+/* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain
+   identifier as an argument, so the front end shouldn't look it up.  */
+
+static bool
+rs6000_attribute_takes_identifier_p (const_tree attr_id)
+{
+  return is_attribute_p ("altivec", attr_id);
+}
+
 /* Handle the "altivec" attribute.  The attribute may have
    arguments as follows:
 

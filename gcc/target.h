@@ -549,6 +549,10 @@ struct gcc_target
      Ignored if NULL.  */
   const struct attribute_spec *attribute_table;
 
+  /* Return true iff attribute NAME expects a plain identifier as its first
+     argument.  */
+  bool (*attribute_takes_identifier_p) (const_tree name);
+
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
      one if they are compatible and two if they are nearly compatible
      (which causes a warning to be generated).  */
