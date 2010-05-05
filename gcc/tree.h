@@ -4424,9 +4424,9 @@ extern tree size_diffop_loc (location_t, tree, tree);
 extern tree round_up_loc (location_t, tree, int);
 #define round_down(T,N) round_down_loc (UNKNOWN_LOCATION, T, N)
 extern tree round_down_loc (location_t, tree, int);
-extern tree get_pending_sizes (void);
+extern VEC(tree,gc) *get_pending_sizes (void);
 extern void put_pending_size (tree);
-extern void put_pending_sizes (tree);
+extern void put_pending_sizes (VEC(tree,gc) *);
 extern void finalize_size_functions (void);
 
 /* Type for sizes of data-type.  */

@@ -69,7 +69,7 @@ extern void debug_rli (record_layout_info);
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
-static GTY(()) tree pending_sizes;
+static GTY(()) VEC(tree,gc) *pending_sizes;
 
 /* Show that REFERENCE_TYPES are internal and should use address_mode.
    Called only by front end.  */
@@ -80,12 +80,12 @@ internal_reference_types (void)
   reference_types_internal = 1;
 }
 
-/* Get a list of all the objects put on the pending sizes list.  */
+/* Get a VEC of all the objects put on the pending sizes list.  */
 
-tree
+VEC(tree,gc) *
 get_pending_sizes (void)
 {
-  tree chain = pending_sizes;
+  VEC(tree,gc) *chain = pending_sizes;
 
   pending_sizes = 0;
   return chain;
@@ -101,14 +101,14 @@ put_pending_size (tree expr)
   expr = skip_simple_arithmetic (expr);
 
   if (TREE_CODE (expr) == SAVE_EXPR)
-    pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
+    VEC_safe_push (tree, gc, pending_sizes, expr);
 }
 
 /* Put a chain of objects into the pending sizes list, which must be
    empty.  */
 
 void
-put_pending_sizes (tree chain)
+put_pending_sizes (VEC(tree,gc) *chain)
 {
   gcc_assert (!pending_sizes);
   pending_sizes = chain;

@@ -1,3 +1,14 @@
+2010-05-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* stor-layout.c (pending_sizes): Change the type to
+	VEC(tree,gc) *.
+	(get_pending_sizes, put_pending_size, put_pending_sizes):
+	Update the uses of pending_sizes.
+	* c-decl.c (store_parm_decls): Likewise.
+	* c-tree.h (struct c_arg_info): Likewise.
+	* tree.h: Update the prototype for get_pending_sizes and
+	put_pending_sizes.
+
 2010-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR debug/43370
