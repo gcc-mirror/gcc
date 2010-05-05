@@ -3,6 +3,10 @@
 	PR fortran/43696
 	* gfortran.dg/class_17.f03: New.
 
+2010-05-04  Neil Vachharajani <nvachhar@google.com>
+
+	* gcc.dg/tree-prof/wcoverage-mismatch.c: Adjusted.
+
 2010-05-04  Mike Stump  <mikestump@comcast.net>
 
 	PR objc/35165

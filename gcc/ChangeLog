@@ -14,7 +14,6 @@
 	* common.opt (-Wcoverage-mismatch): Allow negative, default to
 	true, update documentation.
 	* Makefile.in (coverage.o): Add dependence on DIAGNOSTIC_H and intl.h.
-	* testsuite/gcc.dg/tree-prof/wcoverage-mismatch.c: Adjusted.
 
 2010-05-04  Jakub Jelinek  <jakub@redhat.com>
 
