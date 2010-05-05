@@ -5816,11 +5816,14 @@ c_init_attributes (void)
    identifier as an argument, so the front end shouldn't look it up.  */
 
 bool
-attribute_takes_identifier_p (tree attr_id)
+attribute_takes_identifier_p (const_tree attr_id)
 {
-  return (is_attribute_p ("mode", attr_id)
-	  || is_attribute_p ("format", attr_id)
-	  || is_attribute_p ("cleanup", attr_id));
+  if (is_attribute_p ("mode", attr_id)
+      || is_attribute_p ("format", attr_id)
+      || is_attribute_p ("cleanup", attr_id))
+    return true;
+  else
+    return targetm.attribute_takes_identifier_p (attr_id);
 }
 
 /* Attribute handlers common to C front ends.  */

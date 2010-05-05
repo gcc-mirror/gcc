@@ -9525,6 +9525,14 @@ entities to which these attributes are applied and the arguments they
 take.
 @end deftypevr
 
+@deftypefn {Target Hook} bool TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P (const_tree @var{name})
+If defined, this target hook is a function which returns true if the
+machine-specific attribute named @var{name} expects an identifier
+given as its first argument to be passed on as a plain identifier, not
+subjected to name lookup.  If this is not defined, the default is
+false for all machine-specific attributes.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_COMP_TYPE_ATTRIBUTES (const_tree @var{type1}, const_tree @var{type2})
 If defined, this target hook is a function which returns zero if the attributes on
 @var{type1} and @var{type2} are incompatible, one if they are compatible,

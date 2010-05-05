@@ -1,3 +1,14 @@
+2010-05-05  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/43758
+	* target.h (struct gcc_target): Add attribute_takes_identifier_p.
+	* target_def.h (TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P): Define.
+	(TARGET_INITIALIZER): Use it.
+	* c-common.c (attribute_takes_identifier_p): Call it.
+	* c-common.h: Update prototype.
+	* config/rs6000/rs6000.c (rs6000_attribute_takes_identifier_p): New.
+	(TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P): Define.
+
 2010-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43950
