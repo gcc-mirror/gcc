@@ -1,3 +1,8 @@
+2010-05-04  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/35165
+	* encode-8.mm: Restore running of testcase, skip for gnu-runtime.
+
 2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43668
