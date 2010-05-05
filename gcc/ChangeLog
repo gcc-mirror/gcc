@@ -1,3 +1,16 @@
+2010-05-05  Alexandre Oliva  <aoliva@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43478
+	* df-problems.c (struct dead_debug_use, struct dead_debug): New.
+	(dead_debug_init, dead_debug_finish): New functions.
+	(dead_debug_add, dead_debug_insert_before): Likewise.
+	(df_note_bb_compute): Initialize a dead_debug object, add dead
+	debug uses to it, insert debug bind insns before death insns,
+	reset debug insns that refer to pending uses at the end.
+	* rtl.h (make_debug_expr_from_rtl): New prototype.
+	* varasm.c (make_debug_expr_from_rtl): New function.
+
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_varpool): Forward declare; work on encoder.
