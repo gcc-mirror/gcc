@@ -1,3 +1,8 @@
+2010-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_return_expr): Gimplify the size expressions of
+	a variable-sized RESULT_DECL.
+
 2010-05-05  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* doc/invoke.texi (-mfix-cortex-m3-ldrd): Move from ARC section to ARM.
