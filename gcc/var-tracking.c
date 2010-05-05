@@ -1573,9 +1573,12 @@ static inline tree
 var_debug_decl (tree decl)
 {
   if (decl && DECL_P (decl)
-      && DECL_DEBUG_EXPR_IS_FROM (decl) && DECL_DEBUG_EXPR (decl)
-      && DECL_P (DECL_DEBUG_EXPR (decl)))
-    decl = DECL_DEBUG_EXPR (decl);
+      && DECL_DEBUG_EXPR_IS_FROM (decl))
+    {
+      tree debugdecl = DECL_DEBUG_EXPR (decl);
+      if (debugdecl && DECL_P (debugdecl))
+	decl = debugdecl;
+    }
 
   return decl;
 }
@@ -4497,12 +4500,14 @@ track_expr_p (tree expr, bool need_rtl)
      don't need to track this expression if the ultimate declaration is
      ignored.  */
   realdecl = expr;
-  if (DECL_DEBUG_EXPR_IS_FROM (realdecl) && DECL_DEBUG_EXPR (realdecl))
+  if (DECL_DEBUG_EXPR_IS_FROM (realdecl))
     {
       realdecl = DECL_DEBUG_EXPR (realdecl);
+      if (realdecl == NULL_TREE)
+	realdecl = expr;
       /* ??? We don't yet know how to emit DW_OP_piece for variable
 	 that has been SRA'ed.  */
-      if (!DECL_P (realdecl))
+      else if (!DECL_P (realdecl))
 	return 0;
     }
 
