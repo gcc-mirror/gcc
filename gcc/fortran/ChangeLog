@@ -1,5 +1,10 @@
 2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
 
+        * resolve.c (traverse_data_list): Rephrase error message for
+        non-constant bounds in data-implied-do.
+
+2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/24978
 	* gfortran.h: Removed repeat count from constructor, removed
 	all usages.
