@@ -1,3 +1,13 @@
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_resolve_can_prevail_p): Alias of variable
+	with body can prevail.
+
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_decls_1): Prefer declarations with
+	size.
+
 2010-05-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* Makefile.in (build/gengtype.o): Add $(HASHTAB_H) to
