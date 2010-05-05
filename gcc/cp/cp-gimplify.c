@@ -569,6 +569,26 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    && !useless_type_conversion_p (TREE_TYPE (op1), TREE_TYPE (op0)))
 	  TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					      TREE_TYPE (op0), op1);
+
+	else if ((rhs_predicate_for (op0)) (op1)
+		 && !(TREE_CODE (op1) == CALL_EXPR
+		      && CALL_EXPR_RETURN_SLOT_OPT (op1))
+		 && is_really_empty_class (TREE_TYPE (op0)))
+	  {
+	    /* Remove any copies of empty classes.  We check that the RHS
+	       has a simple form so that TARGET_EXPRs and CONSTRUCTORs get
+	       reduced properly, and we leave the return slot optimization
+	       alone because it isn't a copy.
+
+	       Also drop volatile variables on the RHS to avoid infinite
+	       recursion from gimplify_expr trying to load the value.  */
+	    if (!TREE_SIDE_EFFECTS (op1)
+		|| (DECL_P (op1) && TREE_THIS_VOLATILE (op1)))
+	      *expr_p = op0;
+	    else
+	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
+				op0, op1);
+	  }
       }
       ret = GS_OK;
       break;
