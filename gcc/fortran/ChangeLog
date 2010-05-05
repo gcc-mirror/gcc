@@ -1,7 +1,13 @@
+2010-05-0  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43985
+	* trans-types.c (gfc_sym_type): Mark Cray pointees as
+	GFC_POINTER_TYPE_P.
+
 2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
 
-        * resolve.c (traverse_data_list): Rephrase error message for
-        non-constant bounds in data-implied-do.
+	* resolve.c (traverse_data_list): Rephrase error message for
+	non-constant bounds in data-implied-do.
 
 2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
 
