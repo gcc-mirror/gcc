@@ -1,3 +1,7 @@
+2010-05-05  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* doc/invoke.texi (-mfix-cortex-m3-ldrd): Move from ARC section to ARM.
+
 2010-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43787
