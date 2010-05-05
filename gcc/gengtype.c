@@ -23,6 +23,7 @@
 #include "gengtype.h"
 #include "errors.h"	/* for fatal */
 #include "double-int.h"
+#include "hashtab.h"
 
 /* Data types, macros, etc. used only in this file.  */
 
@@ -73,6 +74,10 @@ enum gc_used_enum
   {
     GC_UNUSED = 0,
     GC_USED,
+    /* Used for structures whose definitions we haven't seen so far when
+       we encounter a pointer to it that is annotated with ``maybe_undef''.
+       If after reading in everything we don't have source file
+       information for it, we assume that it never has been defined. */
     GC_MAYBE_POINTED_TO,
     GC_POINTED_TO
   };
@@ -178,7 +183,7 @@ static void close_output_files (void);
 /* Report an error at POS, printing MSG.  */
 
 void
-error_at_line (struct fileloc *pos, const char *msg, ...)
+error_at_line (const struct fileloc *pos, const char *msg, ...)
 {
   va_list ap;
 
@@ -568,6 +573,7 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
   p->name = s;
   p->type = t;
   p->line = *pos;
+  p->opt = NULL;
   typedefs = p;
 }
 
@@ -1682,7 +1688,7 @@ get_file_gtfilename (const char *f)
      : xasprintf ("gt-%s", basename));
 
   /* Then replace all non alphanumerics characters by '-' and change the
-     extenstion to ".h".  We expect the input filename extension was at least
+     extension to ".h".  We expect the input filename extension was at least
      one character long.  */
 
   char *s = result;
@@ -1897,7 +1903,7 @@ static void write_types (outf_p output_header,
 static void write_types_local_process_field
      (type_p f, const struct walk_type_data *d);
 static void write_local_func_for_structure
-     (type_p orig_s, type_p s, type_p * param);
+     (const_type_p orig_s, type_p s, type_p * param);
 static void write_local (outf_p output_header,
                          type_p structures,
 			 type_p param_structs);
@@ -1925,7 +1931,7 @@ struct walk_type_data
   const char *prev_val[4];
   int indent;
   int counter;
-  struct fileloc *line;
+  const struct fileloc *line;
   lang_bitmap bitmap;
   type_p *param;
   int used_length;
@@ -2534,6 +2540,24 @@ output_type_enum (outf_p of, type_p s)
     oprintf (of, ", gt_types_enum_last");
 }
 
+/* Return an output file that is suitable for definitions which can
+   reference struct S */
+
+static outf_p
+get_output_file_for_structure (const_type_p s, type_p *param)
+{
+  const char * fn = s->u.s.line.file;
+  int i;
+
+  /* This is a hack, and not the good kind either.  */
+  for (i = NUM_PARAM - 1; i >= 0; i--)
+    if (param && param[i] && param[i]->kind == TYPE_POINTER
+	&& UNION_OR_STRUCT_P (param[i]->u.p))
+      fn = param[i]->u.p->u.s.line.file;
+
+  return get_output_file_with_visibility (fn);
+}
+
 /* For S, a structure that's part of ORIG_S, and using parameters
    PARAM, write out a routine that:
    - Takes a parameter, a void * but actually of type *S
@@ -2546,8 +2570,6 @@ static void
 write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 			  const struct write_types_data *wtd)
 {
-  const char *fn = s->u.s.line.file;
-  int i;
   const char *chain_next = NULL;
   const char *chain_prev = NULL;
   const char *chain_circular = NULL;
@@ -2555,14 +2577,8 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   options_p opt;
   struct walk_type_data d;
 
-  /* This is a hack, and not the good kind either.  */
-  for (i = NUM_PARAM - 1; i >= 0; i--)
-    if (param && param[i] && param[i]->kind == TYPE_POINTER
-	&& UNION_OR_STRUCT_P (param[i]->u.p))
-      fn = param[i]->u.p->u.s.line.file;
-
   memset (&d, 0, sizeof (d));
-  d.of = get_output_file_with_visibility (fn);
+  d.of = get_output_file_for_structure (s, param);
 
   for (opt = s->u.s.opt; opt; opt = opt->next)
     if (strcmp (opt->name, "chain_next") == 0)
@@ -2885,20 +2901,12 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
 */
 
 static void
-write_local_func_for_structure (type_p orig_s, type_p s, type_p *param)
+write_local_func_for_structure (const_type_p orig_s, type_p s, type_p *param)
 {
-  const char *fn = s->u.s.line.file;
-  int i;
   struct walk_type_data d;
 
-  /* This is a hack, and not the good kind either.  */
-  for (i = NUM_PARAM - 1; i >= 0; i--)
-    if (param && param[i] && param[i]->kind == TYPE_POINTER
-	&& UNION_OR_STRUCT_P (param[i]->u.p))
-      fn = param[i]->u.p->u.s.line.file;
-
   memset (&d, 0, sizeof (d));
-  d.of = get_output_file_with_visibility (fn);
+  d.of = get_output_file_for_structure (s, param);
   d.process_field = write_types_local_process_field;
   d.opt = s->u.s.opt;
   d.line = &s->u.s.line;
@@ -3689,6 +3697,245 @@ note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
   do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
 }
 
+static void dump_pair (int indent, pair_p p);
+static void dump_type (int indent, type_p p);
+static void dump_type_list (int indent, type_p p);
+
+#define INDENT 2
+
+/* Dumps the value of typekind KIND.  */
+
+static void
+dump_typekind (int indent, enum typekind kind)
+{
+  printf ("%*ckind = ", indent, ' ');
+  switch (kind)
+    {
+    case TYPE_SCALAR: printf ("TYPE_SCALAR"); break;
+    case TYPE_STRING: printf ("TYPE_STRING"); break;
+    case TYPE_STRUCT: printf ("TYPE_STRUCT"); break;
+    case TYPE_UNION:  printf ("TYPE_UNION"); break;
+    case TYPE_POINTER: printf ("TYPE_POINTER"); break;
+    case TYPE_ARRAY: printf ("TYPE_ARRAY"); break;
+    case TYPE_LANG_STRUCT: printf ("TYPE_LANG_STRUCT"); break;
+    case TYPE_PARAM_STRUCT: printf ("TYPE_PARAM_STRUCT"); break;
+    default: gcc_unreachable ();
+    }
+  printf ("\n");
+}
+
+/* Dumps the value of GC_USED flag.  */
+
+static void
+dump_gc_used (int indent, enum gc_used_enum gc_used)
+{
+  printf ("%*cgc_used = ", indent, ' ');
+  switch (gc_used)
+    {
+    case GC_UNUSED: printf ("GC_UNUSED"); break;
+    case GC_USED: printf ("GC_USED"); break;
+    case GC_MAYBE_POINTED_TO: printf ("GC_MAYBE_POINTED_TO"); break;
+    case GC_POINTED_TO: printf ("GC_POINTED_TO"); break;
+    default: gcc_unreachable ();
+    }
+  printf ("\n");
+}
+
+/* Dumps the type options OPT.  */
+
+static void
+dump_options (int indent, options_p opt)
+{
+  options_p o;
+  printf ("%*coptions = ", indent, ' ');
+  o = opt;
+  while (o)
+    {
+       printf ("%s:%s ", o->name, o->info);
+       o = o->next;
+    }
+  printf ("\n");
+}
+
+/* Dumps the source file location in LINE.  */
+
+static void
+dump_fileloc (int indent, struct fileloc line)
+{
+  printf ("%*cfileloc: file = %s, line = %d\n", indent, ' ', line.file,
+	  line.line);
+}
+
+/* Recursively dumps the struct, union, or a language-specific
+   struct T.  */
+
+static void
+dump_type_u_s (int indent, type_p t)
+{
+  pair_p fields;
+
+  gcc_assert (t->kind == TYPE_STRUCT || t->kind == TYPE_UNION
+	      || t->kind == TYPE_LANG_STRUCT);
+  printf ("%*cu.s.tag = %s\n", indent, ' ', t->u.s.tag);
+  dump_fileloc (indent, t->u.s.line);
+  printf ("%*cu.s.fields =\n", indent, ' ');
+  fields = t->u.s.fields;
+  while (fields)
+    {
+       dump_pair (indent + INDENT, fields);
+       fields = fields->next;
+    }
+  printf ("%*cend of fields of type %p\n", indent, ' ', (void *) t);
+  dump_options (indent, t->u.s.opt);
+  printf ("%*cu.s.bitmap = %X\n", indent, ' ', t->u.s.bitmap);
+  if (t->kind == TYPE_LANG_STRUCT)
+    {
+      printf ("%*cu.s.lang_struct:\n", indent, ' ');
+      dump_type_list (indent + INDENT, t->u.s.lang_struct);
+    }
+}
+
+/* Recursively dumps the array T.  */
+
+static void
+dump_type_u_a (int indent, type_p t)
+{
+  gcc_assert (t->kind == TYPE_ARRAY);
+  printf ("%*clen = %s, u.a.p:\n", indent, ' ', t->u.a.len);
+  dump_type_list (indent + INDENT, t->u.a.p);
+}
+
+/* Recursively dumps the parameterized struct T.  */
+
+static void
+dump_type_u_param_struct (int indent, type_p t)
+{
+  int i;
+  gcc_assert (t->kind == TYPE_PARAM_STRUCT);
+  printf ("%*cu.param_struct.stru:\n", indent, ' ');
+  dump_type_list (indent, t->u.param_struct.stru);
+  dump_fileloc (indent, t->u.param_struct.line);
+  for (i = 0; i < NUM_PARAM; i++)
+    {
+      if (t->u.param_struct.param[i] == NULL)
+	continue;
+      printf ("%*cu.param_struct.param[%d]:\n", indent, ' ', i);
+      dump_type (indent + INDENT, t->u.param_struct.param[i]);
+    }
+}
+
+/* Recursively dumps the type list T.  */
+
+static void
+dump_type_list (int indent, type_p t)
+{
+  type_p p = t;
+  while (p)
+    {
+      dump_type (indent, p);
+      p = p->next;
+    }
+}
+
+static htab_t seen_types;
+
+/* Recursively dumps the type T if it was not dumped previously.  */
+
+static void
+dump_type (int indent, type_p t)
+{
+  PTR *slot;
+
+  printf ("%*cType at %p: ", indent, ' ', (void *)t);
+  slot = htab_find_slot (seen_types, t, INSERT);
+  if (*slot != NULL)
+    {
+      printf ("already seen.\n");
+      return;
+    }
+  *slot = t;
+  printf ("\n");
+
+  dump_typekind (indent, t->kind);
+  printf ("%*cpointer_to = %p\n", indent + INDENT, ' ',
+	  (void *)t->pointer_to);
+  dump_gc_used (indent + INDENT, t->gc_used);
+  switch (t->kind)
+    {
+    case TYPE_SCALAR:
+      printf ("%*cscalar_is_char = %s\n", indent + INDENT, ' ',
+	      t->u.scalar_is_char ? "true" : "false");
+      break;
+    case TYPE_STRING:
+      break;
+    case TYPE_STRUCT:
+    case TYPE_UNION:
+    case TYPE_LANG_STRUCT:
+      dump_type_u_s (indent + INDENT, t);
+      break;
+    case TYPE_POINTER:
+      printf ("%*cp:\n", indent + INDENT, ' ');
+      dump_type (indent + INDENT, t->u.p);
+      break;
+    case TYPE_ARRAY:
+      dump_type_u_a (indent + INDENT, t);
+      break;
+    case TYPE_PARAM_STRUCT:
+      dump_type_u_param_struct (indent + INDENT, t);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  printf ("%*cEnd of type at %p\n", indent, ' ', (void *)t);
+}
+
+/* Dumps the pair P.  */
+
+static void
+dump_pair (int indent, pair_p p)
+{
+  printf ("%*cpair: name = %s\n", indent, ' ', p->name);
+  dump_type (indent, p->type);
+  dump_fileloc (indent, p->line);
+  dump_options (indent, p->opt);
+  printf ("%*cEnd of pair %s\n", indent, ' ', p->name);
+}
+
+/* Dumps the list of pairs PP.  */
+
+static void
+dump_pair_list (const char * name, pair_p pp)
+{
+  pair_p p;
+  printf ("%s:\n", name);
+  for (p = pp; p != NULL; p = p->next)
+    dump_pair (0, p);
+  printf ("End of %s\n\n", name);
+}
+
+/* Dumps the STRUCTURES.  */
+
+static void
+dump_structures (const char * name, type_p structures)
+{
+  printf ("%s:\n", name);
+  dump_type_list (0, structures);
+  printf ("End of %s\n\n", name);
+}
+
+/* Dumps the internal structures of gengtype.  */
+
+static void
+dump_everything (void)
+{
+  seen_types = htab_create (100, htab_hash_pointer, htab_eq_pointer, NULL);
+  dump_pair_list ("typedefs", typedefs);
+  dump_structures ("structures", structures);
+  dump_structures ("param_structs", param_structs);
+  dump_pair_list ("variables", variables);
+  htab_delete (seen_types);
+}
+
 
 int
 main (int argc, char **argv)
@@ -3696,10 +3943,18 @@ main (int argc, char **argv)
   size_t i;
   static struct fileloc pos = { this_file, 0 };
   char* inputlist = 0;
+  int do_dump = 0;
   outf_p output_header;
   char* plugin_output_filename = NULL;
   /* fatal uses this */
   progname = "gengtype";
+
+  if (argc >= 2 && !strcmp (argv[1], "-d"))
+    {
+      do_dump = 1;
+      argv = &argv[1];
+      argc--;
+    }
 
   if (argc >= 6 && !strcmp (argv[1], "-P"))
     {
@@ -3725,7 +3980,7 @@ main (int argc, char **argv)
       inputlist = argv[2];
     }
   else
-    fatal ("usage: gengtype [-P pluginout.h] srcdir input-list "
+    fatal ("usage: gengtype [-d] [-P pluginout.h] srcdir input-list "
            "[file1 file2 ... fileN]");
 
   srcdir_len = strlen (srcdir);
@@ -3772,6 +4027,9 @@ main (int argc, char **argv)
   write_roots (variables, plugin_files == NULL);
   write_rtx_next ();
   close_output_files ();
+
+  if (do_dump)
+    dump_everything ();
 
   if (plugin_files)
   {

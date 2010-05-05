@@ -39,7 +39,7 @@ extern struct fileloc lexer_line;
 
 /* Print an error message.  */
 extern void error_at_line
-  (struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
+  (const struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
 /* Like asprintf, but calls fatal() on out of memory.  */
 extern char *xasprintf(const char *, ...) ATTRIBUTE_PRINTF_1;

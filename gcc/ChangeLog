@@ -1,3 +1,29 @@
+2010-05-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* Makefile.in (build/gengtype.o): Add $(HASHTAB_H) to
+	dependencies.
+
+	* gengtype.h (erro_at_line): Constify pos argument.
+
+	* gengtype.c: Include hashtab.h.
+	(enum gc_used): Document GC_MAYBE_POINTED_TO.
+	(error_at_line): Constify pos argument.
+	(do_typedef): Initialize p->opt field.
+	(get_file_gtfilename): Fix comment typo.
+	(struct walk_type_data): Constify line field.
+	(get_output_file_for_structure): New function.
+	(write_local_func_for_structure): Constify orig_s argument.
+	Use get_output_file_for_structure.
+	(write_func_for_structure): Use get_output_file_for_structure.
+	(INDENT): New define.
+	(dump_pair, dump_type, dump_type_list, dump_typekind)
+	(dump_gc_used, dump_options, dump_fileloc, dump_type_u_s)
+	(dump_type_u_a, dump_type_u_param_struct, dump_everything): New
+	functions.
+	(seen_types): New variable.
+	(main): New variable do_dump.  Process "-d" command line option.
+	Call dump_everything if dump requested.
+
 2010-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (var_debug_decl): Save DECL_DEBUG_EXPR value
