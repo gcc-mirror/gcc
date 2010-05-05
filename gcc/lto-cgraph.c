@@ -472,9 +472,10 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp_pack_value (bp, node->externally_visible, 1);
   bp_pack_value (bp, node->force_output, 1);
   bp_pack_value (bp, node->finalized, 1);
+  bp_pack_value (bp, node->alias, 1);
+  gcc_assert (!node->alias || !node->extra_name);
   gcc_assert (node->finalized || !node->analyzed);
   gcc_assert (node->needed);
-  gcc_assert (!node->alias);
   /* Constant pool initializers can be de-unified into individual ltrans units.
      FIXME: Alternatively at -Os we may want to avoid generating for them the local
      labels and share them across LTRANS partitions.  */
@@ -867,6 +868,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->externally_visible = bp_unpack_value (bp, 1);
   node->force_output = bp_unpack_value (bp, 1);
   node->finalized = bp_unpack_value (bp, 1);
+  node->alias = bp_unpack_value (bp, 1);
   node->analyzed = node->finalized; 
   node->used_from_other_partition = bp_unpack_value (bp, 1);
   node->in_other_partition = bp_unpack_value (bp, 1);
