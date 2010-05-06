@@ -1,3 +1,10 @@
+2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44014
+	* include/bits/stringfwd.h: Add doxygen comments and new group.
+	* include/bits/basic_string.h: Add to new doxygen group.
+	* doc/doxygen/user.cfg.in (ALIASES): Link to correct group.
+
 2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
