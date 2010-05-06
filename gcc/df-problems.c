@@ -3501,8 +3501,8 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
 	  cur->next = NULL;
 	  if (!reg
 	      || (GET_MODE_BITSIZE (GET_MODE (reg))
-		  < GET_MODE_BITSIZE (GET_MODE (DF_REF_REAL_REG (cur->use)))))
-	    reg = DF_REF_REAL_REG (cur->use);
+		  < GET_MODE_BITSIZE (GET_MODE (*DF_REF_REAL_LOC (cur->use)))))
+	    reg = *DF_REF_REAL_LOC (cur->use);
 	}
       else
 	tailp = &(*tailp)->next;
@@ -3524,11 +3524,11 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
   /* Adjust all uses.  */
   while ((cur = uses))
     {
-      if (GET_MODE (DF_REF_REAL_REG (cur->use)) == GET_MODE (reg))
+      if (GET_MODE (*DF_REF_REAL_LOC (cur->use)) == GET_MODE (reg))
 	*DF_REF_REAL_LOC (cur->use) = dval;
       else
 	*DF_REF_REAL_LOC (cur->use)
-	  = gen_lowpart_SUBREG (GET_MODE (DF_REF_REAL_REG (cur->use)), dval);
+	  = gen_lowpart_SUBREG (GET_MODE (*DF_REF_REAL_LOC (cur->use)), dval);
       /* ??? Should we simplify subreg of subreg?  */
       df_insn_rescan (DF_REF_INSN (cur->use));
       uses = cur->next;
