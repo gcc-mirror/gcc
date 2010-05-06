@@ -30,5 +30,5 @@ main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "ESCAPED = { i }" "alias" } } */
+/* { dg-final { scan-tree-dump "ESCAPED = { ESCAPED NONLOCAL i }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

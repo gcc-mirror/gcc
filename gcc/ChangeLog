@@ -1,3 +1,14 @@
+2010-05-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43987
+	* tree-ssa-structalias.c (could_have_pointers): For possibly
+	address-taken variables force pointers to be recorded.
+	(create_variable_info_for_1): Likewise.
+	(push_fields_onto_fieldstack): Pass in wheter all fields
+	must have pointers.
+	(find_func_aliases): Query types instead of vars whether
+	they contain pointers where appropriate.
+
 2010-05-06  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (record_reference_ctx): Add varpool_node.
