@@ -3368,6 +3368,11 @@ cp_parser_primary_expression (cp_parser *parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  return null_node;
 
+	  /* The `nullptr' literal.  */
+	case RID_NULLPTR:
+	  cp_lexer_consume_token (parser->lexer);
+	  return nullptr_node;
+
 	  /* Recognize the `this' keyword.  */
 	case RID_THIS:
 	  cp_lexer_consume_token (parser->lexer);

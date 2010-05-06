@@ -3993,6 +3993,9 @@ cp_build_binary_op (location_t location,
 	    }
 	  result_type = type1;
 	}
+      else if (null_ptr_cst_p (op0) && null_ptr_cst_p (op1))
+	/* One of the operands must be of nullptr_t type.  */
+        result_type = TREE_TYPE (nullptr_node);
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
@@ -4192,12 +4195,13 @@ cp_build_binary_op (location_t location,
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	result_type = composite_pointer_type (type0, type1, op0, op1,
 					      CPO_COMPARISON, complain);
-      else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
-	       && integer_zerop (op1))
+      else if (code0 == POINTER_TYPE && null_ptr_cst_p (op1))
 	result_type = type0;
-      else if (code1 == POINTER_TYPE && TREE_CODE (op0) == INTEGER_CST
-	       && integer_zerop (op0))
+      else if (code1 == POINTER_TYPE && null_ptr_cst_p (op0))
 	result_type = type1;
+      else if (null_ptr_cst_p (op0) && null_ptr_cst_p (op1))
+	/* One of the operands must be of nullptr_t type.  */
+        result_type = TREE_TYPE (nullptr_node);
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
@@ -6020,8 +6024,11 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 
   /* [expr.reinterpret.cast]
      A pointer can be converted to any integral type large enough to
-     hold it.  */
-  if (CP_INTEGRAL_TYPE_P (type) && TYPE_PTR_P (intype))
+     hold it. ... A value of type std::nullptr_t can be converted to
+     an integral type; the conversion has the same meaning and
+     validity as a conversion of (void*)0 to the integral type.  */
+  if (CP_INTEGRAL_TYPE_P (type)
+      && (TYPE_PTR_P (intype) || TREE_CODE (intype) == NULLPTR_TYPE))
     {
       if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
         {
@@ -6031,6 +6038,8 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
           else
             return error_mark_node;
         }
+      if (TREE_CODE (intype) == NULLPTR_TYPE)
+        return build_int_cst (type, 0);
     }
   /* [expr.reinterpret.cast]
      A value of integral or enumeration type can be explicitly

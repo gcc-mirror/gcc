@@ -1,3 +1,13 @@
+2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
+	    Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_common_reswords): Add nullptr.
+	* c-common.h: Add RID_NULLPTR.  Reorganize C++0x rids.
+	* dwarf2out.c (is_base_type): Handle NULLPTR_TYPE.
+	(gen_type_die_with_usage): Likewise.
+	* dbxout.c (dbxout_type): Likewise.
+	* sdbout.c (plain_type_1): Likewise.
+
 2010-05-06  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_expr): Set GS_ALL_DONE when appropriate.

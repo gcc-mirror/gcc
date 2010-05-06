@@ -3077,7 +3077,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		 it is invalid to pass a non-present argument on, even
 		 though there is no technical reason for this in gfortran.
 		 See Fortran 2003, Section 12.4.1.6 item (7)+(8).  */
-	      tree present, nullptr, type;
+	      tree present, null_ptr, type;
 
 	      if (attr->allocatable
 		  && (fsym == NULL || !fsym->attr.allocatable))
@@ -3101,10 +3101,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      present = fold_build2 (EQ_EXPR, boolean_type_node, present,
 				     fold_convert (type, null_pointer_node));
 	      type = TREE_TYPE (parmse.expr);
-	      nullptr = fold_build2 (EQ_EXPR, boolean_type_node, parmse.expr,
-				     fold_convert (type, null_pointer_node));
+	      null_ptr = fold_build2 (EQ_EXPR, boolean_type_node, parmse.expr,
+				      fold_convert (type, null_pointer_node));
 	      cond = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node,
-				  present, nullptr);
+				  present, null_ptr);
 	    }
           else
 	    {
