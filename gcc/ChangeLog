@@ -1,3 +1,17 @@
+2010-05-06  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43984
+	* tree-ssa-pre.c (inserted_phi_names): Remove.
+	(inserted_exprs): Change to bitmap.
+	(create_expression_by_pieces): Set bits, don't append to vector.
+	(insert_into_preds_of_block): Don't handle inserted_phi_names.
+	(eliminate): Don't look at inserted_phi_names, remove deleted
+	insns from inserted_exprs.
+	(remove_dead_inserted_code): Adjust to use bitmaps instead of
+	vectors.
+	(init_pre, fini_pre): Allocate and free bitmaps.
+	(execute_pre): Insert insns on edges before elimination.
+
 2010-05-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* tree.c (initializer_zerop): Handle STRING_CST.

@@ -2608,8 +2608,7 @@ can_PRE_operation (tree op)
 /* Inserted expressions are placed onto this worklist, which is used
    for performing quick dead code elimination of insertions we made
    that didn't turn out to be necessary.   */
-static VEC(gimple,heap) *inserted_exprs;
-static bitmap inserted_phi_names;
+static bitmap inserted_exprs;
 
 /* Pool allocated fake store expressions are placed onto this
    worklist, which, after performing dead code elimination, is walked
@@ -3083,9 +3082,9 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	  tree forcedname = gimple_get_lhs (stmt);
 	  pre_expr nameexpr;
 
-	  VEC_safe_push (gimple, heap, inserted_exprs, stmt);
 	  if (TREE_CODE (forcedname) == SSA_NAME)
 	    {
+	      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (forcedname));
 	      VN_INFO_GET (forcedname)->valnum = forcedname;
 	      VN_INFO (forcedname)->value_id = get_next_value_id ();
 	      nameexpr = get_or_alloc_expr_for_name (forcedname);
@@ -3116,7 +3115,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   gimple_set_plf (newstmt, NECESSARY, false);
 
   gimple_seq_add_stmt (stmts, newstmt);
-  VEC_safe_push (gimple, heap, inserted_exprs, newstmt);
+  bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
 
   /* All the symbols in NEWEXPR should be put into SSA form.  */
   mark_symbols_for_renaming (newstmt);
@@ -3299,7 +3298,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 			  for (; !gsi_end_p (gsi); gsi_next (&gsi))
 			    {
 			      gimple stmt = gsi_stmt (gsi);
-			      VEC_safe_push (gimple, heap, inserted_exprs, stmt);
+			      tree lhs = gimple_get_lhs (stmt);
+			      if (TREE_CODE (lhs) == SSA_NAME)
+				bitmap_set_bit (inserted_exprs,
+						SSA_NAME_VERSION (lhs));
 			      gimple_set_plf (stmt, NECESSARY, false);
 			    }
 			  gsi_insert_seq_on_edge (pred, stmts);
@@ -3338,7 +3340,9 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 		  for (; !gsi_end_p (gsi); gsi_next (&gsi))
 		    {
 		      gimple stmt = gsi_stmt (gsi);
-		      VEC_safe_push (gimple, heap, inserted_exprs, stmt);
+		      tree lhs = gimple_get_lhs (stmt);
+		      if (TREE_CODE (lhs) == SSA_NAME)
+			bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 		      gimple_set_plf (stmt, NECESSARY, false);
 		    }
 		  gsi_insert_seq_on_edge (pred, stmts);
@@ -3374,9 +3378,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   gimple_set_plf (phi, NECESSARY, false);
   VN_INFO_GET (gimple_phi_result (phi))->valnum = gimple_phi_result (phi);
   VN_INFO (gimple_phi_result (phi))->value_id = val;
-  VEC_safe_push (gimple, heap, inserted_exprs, phi);
-  bitmap_set_bit (inserted_phi_names,
-		  SSA_NAME_VERSION (gimple_phi_result (phi)));
+  bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (gimple_phi_result (phi)));
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
       pre_expr ae = avail[pred->src->index];
@@ -4309,8 +4311,7 @@ eliminate (void)
 	     replacing the PHI with a single copy if possible.
 	     Do not touch inserted, single-argument or virtual PHIs.  */
 	  if (gimple_phi_num_args (phi) == 1
-	      || !is_gimple_reg (res)
-	      || bitmap_bit_p (inserted_phi_names, SSA_NAME_VERSION (res)))
+	      || !is_gimple_reg (res))
 	    {
 	      gsi_next (&gsi);
 	      continue;
@@ -4350,14 +4351,16 @@ eliminate (void)
 	    sprime = fold_convert (TREE_TYPE (res), sprime);
 	  stmt = gimple_build_assign (res, sprime);
 	  SSA_NAME_DEF_STMT (res) = stmt;
-	  if (TREE_CODE (sprime) == SSA_NAME)
-	    gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
-			    NECESSARY, true);
+
 	  gsi2 = gsi_after_labels (b);
 	  gsi_insert_before (&gsi2, stmt, GSI_NEW_STMT);
 	  /* Queue the copy for eventual removal.  */
 	  VEC_safe_push (gimple, heap, to_remove, stmt);
-	  pre_stats.eliminations++;
+	  /* If we inserted this PHI node ourself, it's not an elimination.  */
+	  if (bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (res)))
+	    pre_stats.phis--;
+	  else
+	    pre_stats.eliminations++;
 	}
     }
 
@@ -4389,6 +4392,8 @@ eliminate (void)
 	  gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
+	  if (TREE_CODE (lhs) == SSA_NAME)
+	    bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 	  release_defs (stmt);
 	}
     }
@@ -4434,19 +4439,23 @@ mark_operand_necessary (tree op)
 static void
 remove_dead_inserted_code (void)
 {
-  VEC(gimple,heap) *worklist = NULL;
-  int i;
+  bitmap worklist;
+  unsigned i;
+  bitmap_iterator bi;
   gimple t;
 
-  worklist = VEC_alloc (gimple, heap, VEC_length (gimple, inserted_exprs));
-  for (i = 0; VEC_iterate (gimple, inserted_exprs, i, t); i++)
+  worklist = BITMAP_ALLOC (NULL);
+  EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
     {
+      t = SSA_NAME_DEF_STMT (ssa_name (i));
       if (gimple_plf (t, NECESSARY))
-	VEC_quick_push (gimple, worklist, t);
+	bitmap_set_bit (worklist, i);
     }
-  while (VEC_length (gimple, worklist) > 0)
+  while (!bitmap_empty_p (worklist))
     {
-      t = VEC_pop (gimple, worklist);
+      i = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, i);
+      t = SSA_NAME_DEF_STMT (ssa_name (i));
 
       /* PHI nodes are somewhat special in that each PHI alternative has
 	 data and control dependencies.  All the statements feeding the
@@ -4455,7 +4464,6 @@ remove_dead_inserted_code (void)
 	{
 	  unsigned k;
 
-	  VEC_reserve (gimple, heap, worklist, gimple_phi_num_args (t));
 	  for (k = 0; k < gimple_phi_num_args (t); k++)
 	    {
 	      tree arg = PHI_ARG_DEF (t, k);
@@ -4463,7 +4471,7 @@ remove_dead_inserted_code (void)
 		{
 		  gimple n = mark_operand_necessary (arg);
 		  if (n)
-		    VEC_quick_push (gimple, worklist, n);
+		    bitmap_set_bit (worklist, SSA_NAME_VERSION (arg));
 		}
 	    }
 	}
@@ -4484,13 +4492,14 @@ remove_dead_inserted_code (void)
 	    {
 	      gimple n = mark_operand_necessary (use);
 	      if (n)
-		VEC_safe_push (gimple, heap, worklist, n);
+		bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
 	    }
 	}
     }
 
-  for (i = 0; VEC_iterate (gimple, inserted_exprs, i, t); i++)
+  EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
     {
+      t = SSA_NAME_DEF_STMT (ssa_name (i));
       if (!gimple_plf (t, NECESSARY))
 	{
 	  gimple_stmt_iterator gsi;
@@ -4511,7 +4520,7 @@ remove_dead_inserted_code (void)
 	    }
 	}
     }
-  VEC_free (gimple, heap, worklist);
+  BITMAP_FREE (worklist);
 }
 
 /* Compute a reverse post-order in *POST_ORDER.  If INCLUDE_ENTRY_EXIT is
@@ -4604,7 +4613,7 @@ init_pre (bool do_fre)
 
   in_fre = do_fre;
 
-  inserted_exprs = NULL;
+  inserted_exprs = BITMAP_ALLOC (NULL);
   need_creation = NULL;
   pretemp = NULL_TREE;
   storetemp = NULL_TREE;
@@ -4624,7 +4633,6 @@ init_pre (bool do_fre)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
-  inserted_phi_names = BITMAP_ALLOC (&grand_bitmap_obstack);
   phi_translate_table = htab_create (5110, expr_pred_trans_hash,
 				     expr_pred_trans_eq, free);
   expression_to_id = htab_create (num_ssa_names * 3,
@@ -4655,7 +4663,7 @@ fini_pre (bool do_fre)
 
   free (postorder);
   VEC_free (bitmap_set_t, heap, value_expressions);
-  VEC_free (gimple, heap, inserted_exprs);
+  BITMAP_FREE (inserted_exprs);
   VEC_free (gimple, heap, need_creation);
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
@@ -4740,6 +4748,12 @@ execute_pre (bool do_fre)
       insert ();
     }
 
+  /* Make sure to remove fake edges before committing our inserts.
+     This makes sure we don't end up with extra critical edges that
+     we would need to split.  */
+  remove_fake_exit_edges ();
+  gsi_commit_edge_inserts ();
+
   /* Remove all the redundant expressions.  */
   todo |= eliminate ();
 
@@ -4748,12 +4762,6 @@ execute_pre (bool do_fre)
   statistics_counter_event (cfun, "New PHIs", pre_stats.phis);
   statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
   statistics_counter_event (cfun, "Constified", pre_stats.constified);
-
-  /* Make sure to remove fake edges before committing our inserts.
-     This makes sure we don't end up with extra critical edges that
-     we would need to split.  */
-  remove_fake_exit_edges ();
-  gsi_commit_edge_inserts ();
 
   clear_expression_ids ();
   free_scc_vn ();
