@@ -369,6 +369,7 @@ initialize_handler_parm (tree decl, tree exp)
   /* Make sure we mark the catch param as used, otherwise we'll get a
      warning about an unused ((anonymous)).  */
   TREE_USED (decl) = 1;
+  DECL_READ_P (decl) = 1;
 
   /* Figure out the type that the initializer is.  Pointers are returned
      adjusted by value from __cxa_begin_catch.  Others are returned by

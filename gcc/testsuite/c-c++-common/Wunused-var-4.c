@@ -14,9 +14,9 @@ f2 (void)
   struct S { int i; } a;
   int b[1];
   a.i = 1;
-  a.i;				/* { dg-warning "with no effect" } */
+  a.i;				/* { dg-warning "no effect" } */
   b[0] = 1;
-  b[0];				/* { dg-warning "with no effect" } */
+  b[0];				/* { dg-warning "no effect" } */
 }
 
 void

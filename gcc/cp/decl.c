@@ -498,6 +498,10 @@ poplevel_named_label_1 (void **slot, void *data)
   return 1;
 }
 
+/* Saved errorcount to avoid -Wunused-but-set-{parameter,variable} warnings
+   when errors were reported, except for -Werror-unused-but-set-*.  */
+static int unused_but_set_errorcount;
+
 /* Exit a binding level.
    Pop the level off, and restore the state of the identifier-decl mappings
    that were in effect when this level was entered.
@@ -589,14 +593,28 @@ poplevel (int keep, int reverse, int functionbody)
     = current_binding_level->kind == sk_for && flag_new_for_scope == 1;
 
   /* Before we remove the declarations first check for unused variables.  */
-  if (warn_unused_variable
+  if ((warn_unused_variable || warn_unused_but_set_variable)
       && !processing_template_decl)
     for (decl = getdecls (); decl; decl = TREE_CHAIN (decl))
       if (TREE_CODE (decl) == VAR_DECL
-	  && ! TREE_USED (decl)
+	  && (! TREE_USED (decl) || !DECL_READ_P (decl))
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
-	warning (OPT_Wunused_variable, "unused variable %q+D", decl);
+	{
+	  if (! TREE_USED (decl))
+	    warning (OPT_Wunused_variable, "unused variable %q+D", decl);
+	  else if (DECL_CONTEXT (decl) == current_function_decl
+		   && TREE_TYPE (decl) != error_mark_node
+		   && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+		   && errorcount == unused_but_set_errorcount
+		   && (!CLASS_TYPE_P (TREE_TYPE (decl))
+		       || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	    {
+	      warning (OPT_Wunused_but_set_variable,
+		       "variable %q+D set but not used", decl); 
+	      unused_but_set_errorcount = errorcount;
+	    }
+	}
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
@@ -2096,6 +2114,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+  if (TREE_CODE (newdecl) == VAR_DECL)
+    {
+      if (DECL_READ_P (olddecl))
+	DECL_READ_P (newdecl) = 1;
+      else if (DECL_READ_P (newdecl))
+	DECL_READ_P (olddecl) = 1;
+    }
   if (DECL_PRESERVE_P (olddecl))
     DECL_PRESERVE_P (newdecl) = 1;
   else if (DECL_PRESERVE_P (newdecl))
@@ -6181,6 +6206,7 @@ start_cleanup_fn (void)
       parmdecl = cp_build_parm_decl (NULL_TREE, ptr_type_node);
       DECL_CONTEXT (parmdecl) = fndecl;
       TREE_USED (parmdecl) = 1;
+      DECL_READ_P (parmdecl) = 1;
       DECL_ARGUMENTS (fndecl) = parmdecl;
     }
 
@@ -12595,6 +12621,33 @@ finish_function (int flags)
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
   cfun->function_end_locus = input_location;
+
+  /* Complain about parameters that are only set, but never otherwise used.  */
+  if (warn_unused_but_set_parameter
+      && !processing_template_decl
+      && errorcount == unused_but_set_errorcount
+      && !DECL_CLONED_FUNCTION_P (fndecl))
+    {
+      tree decl;
+
+      for (decl = DECL_ARGUMENTS (fndecl);
+	   decl;
+	   decl = TREE_CHAIN (decl))
+	if (TREE_USED (decl)
+	    && TREE_CODE (decl) == PARM_DECL
+	    && !DECL_READ_P (decl)
+	    && DECL_NAME (decl)
+	    && !DECL_ARTIFICIAL (decl)
+	    && !TREE_NO_WARNING (decl)
+	    && !DECL_IN_SYSTEM_HEADER (decl)
+	    && TREE_TYPE (decl) != error_mark_node
+	    && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
+	        || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	  warning (OPT_Wunused_but_set_parameter,
+		   "parameter %q+D set but not used", decl);
+      unused_but_set_errorcount = errorcount;
+    }
 
   /* Genericize before inlining.  */
   if (!processing_template_decl)

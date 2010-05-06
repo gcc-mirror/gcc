@@ -4930,6 +4930,7 @@ convert_nontype_argument (tree type, tree expr)
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
+  expr = mark_rvalue_use (expr);
 
   /* HACK: Due to double coercion, we can get a
      NOP_EXPR<REFERENCE_TYPE>(ADDR_EXPR<POINTER_TYPE> (arg)) here,

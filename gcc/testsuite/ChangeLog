@@ -1,3 +1,40 @@
+2010-04-22  Jakub Jelinek <jakub@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	PR c/18624
+	* g++.dg/warn/Wunused-7.C: Add dg-warning.
+	* g++.dg/template/sfinae16.C: Likewise.
+	* gcc.dg/Wunused-var-1.c: Moved to...
+	* c-c++-common/Wunused-var-1.c: ...here. New test.
+	* gcc.dg/Wunused-var-2.c: Moved to...
+	* c-c++-common/Wunused-var-2.c: ...here. New test.
+	* gcc.dg/Wunused-var-3.c: Moved to...
+	* c-c++-common/Wunused-var-3.c: ...here. New test.
+	* gcc.dg/Wunused-var-4.c: Moved to...
+	* gcc.dg/Wunused-var-1.c: ... here.
+	* gcc.dg/Wunused-var-5.c: Moved to...
+	* c-c++-common/Wunused-var-4.c: ...here. New test.
+	* gcc.dg/Wunused-var-7.c: Moved to...
+	* c-c++-common/Wunused-var-5.c: ...here. New test.
+	* gcc.dg/Wunused-var-6.c: Moved to...
+	* gcc.dg/Wunused-var-2.c: ... here.
+	* c-c++-common/Wunused-var-1.c: New test.
+	* c-c++-common/Wunused-var-2.c: New test.
+	* c-c++-common/Wunused-var-3.c: New test.
+	* c-c++-common/Wunused-var-4.c: New test.
+	* c-c++-common/Wunused-var-5.c: New test.
+	* g++.dg/warn/Wunused-var-1.C: New test.
+	* g++.dg/warn/Wunused-var-2.C: New test.
+	* g++.dg/warn/Wunused-var-3.C: New test.
+	* g++.dg/warn/Wunused-var-4.C: New test.
+	* g++.dg/warn/Wunused-var-5.C: New test.
+	* g++.dg/warn/Wunused-var-6.C: New test.
+	* g++.dg/warn/Wunused-var-7.C: New test.
+	* g++.dg/warn/Wunused-var-8.C: New test.
+	* g++.dg/warn/Wunused-parm-1.C: New test.
+	* g++.dg/warn/Wunused-parm-2.C: New test.
+	* g++.dg/warn/Wunused-parm-3.C: New test.
+
 2010-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43985

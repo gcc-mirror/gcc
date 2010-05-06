@@ -318,7 +318,7 @@ typeid_ok_p (void)
 tree
 build_typeid (tree exp)
 {
-  tree cond = NULL_TREE;
+  tree cond = NULL_TREE, initial_expr = exp;
   int nonnull = 0;
 
   if (exp == error_mark_node || !typeid_ok_p ())
@@ -333,6 +333,9 @@ build_typeid (tree exp)
       && ! resolves_to_fixed_type_p (exp, &nonnull)
       && ! nonnull)
     {
+      /* So we need to look into the vtable of the type of exp.
+         This is an lvalue use of expr then.  */
+      exp = mark_lvalue_use (exp);
       exp = stabilize_reference (exp);
       cond = cp_convert (boolean_type_node, TREE_OPERAND (exp, 0));
     }
@@ -348,6 +351,8 @@ build_typeid (tree exp)
 
       exp = build3 (COND_EXPR, TREE_TYPE (exp), cond, exp, bad);
     }
+  else
+    mark_type_use (initial_expr);
 
   return exp;
 }
@@ -546,6 +551,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
       /* If T is a pointer type, v shall be an rvalue of a pointer to
 	 complete class type, and the result is an rvalue of type T.  */
 
+      expr = mark_rvalue_use (expr);
+
       if (TREE_CODE (exprtype) != POINTER_TYPE)
 	{
 	  errstr = _("source is not a pointer");
@@ -564,6 +571,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     }
   else
     {
+      expr = mark_lvalue_use (expr);
+
       exprtype = build_reference_type (exprtype);
 
       /* T is a reference type, v shall be an lvalue of a complete class
