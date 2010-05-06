@@ -1,3 +1,9 @@
+2010-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/43994
+	* df-problems.c (dead_debug_insert_before): Use *DF_REF_REAL_LOC
+	instead of DF_REF_REAL_REG.
+
 2010-05-06  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/43888
