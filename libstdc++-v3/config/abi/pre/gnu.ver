@@ -1307,9 +1307,18 @@ CXXABI_1.3.3 {
 
 CXXABI_1.3.4 {
 
-    # typeinfo for decimal floating point types and decltype(nullptr)
-    _ZTID[fden];
-    _ZTIPD[fden];
-    _ZTIPKD[fden];
+    # typeinfo for decimal floating point types
+    _ZTID[fde];
+    _ZTIPD[fde];
+    _ZTIPKD[fde];
 
 } CXXABI_1.3.3;
+
+CXXABI_1.3.5 {
+
+    # typeinfo for decltype(nullptr)
+    _ZTIDn;
+    _ZTIPDn;
+    _ZTIPKDn;
+
+} CXXABI_1.3.4;
