@@ -184,13 +184,13 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
   Value niter, strip_stride;
   bool res;
 
-  value_init (strip_stride);
-  value_init (niter);
-  value_set_si (strip_stride, stride);
+  mpz_init (strip_stride);
+  mpz_init (niter);
+  mpz_set_si (strip_stride, stride);
   pbb_number_of_iterations_at_time (pbb, psct_dynamic_dim (pbb, depth), niter);
-  res = value_gt (niter, strip_stride);
-  value_clear (strip_stride);
-  value_clear (niter);
+  res = (mpz_cmp (niter, strip_stride) > 0);
+  mpz_clear (strip_stride);
+  mpz_clear (niter);
 
   return res;
 }

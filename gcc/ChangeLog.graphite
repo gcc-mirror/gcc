@@ -1,3 +1,47 @@
+2010-04-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-blocking.c (pbb_strip_mine_profitable_p): Resolve 
+	CLooG's value_* macros to their respective mpz_* counterparts.
+	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Same.
+	(graphite_create_new_loop_guard): Same.
+	* graphite-interchange.c (build_linearized_memory_access): Same.
+	(pdr_stride_in_loop): Same.
+	(memory_strides_in_loop_1): Same.
+	(1st_interchange_profitable_p): Same.
+	* graphite-poly.c (extend_scattering): Same.
+	(psct_scattering_dim_for_loop_depth): Same.
+	(pbb_number_of_iterations): Same.
+	(pbb_number_of_iterations_at_time): Same.
+	* graphite-poly.h (new_1st_loop): Same.
+	* graphite-ppl.c (cloog_matrix_to_ppl_constraint): Same.
+	(oppose_constraint): Same.
+	(insert_constraint_into_matrix): Same.
+	(ppl_set_inhomogeneous_gmp): Same.
+	(ppl_set_coef_gmp): Same.
+	(ppl_strip_loop): Same.
+	(ppl_lexico_compare_linear_expressions): Same.
+	(ppl_max_for_le_pointset): Same.
+	(ppl_min_for_le_pointset): Same.
+	(ppl_build_realtion): Same.
+	* graphite-ppl.h (gmp_cst_to_tree): Same.
+	(ppl_set_inhomogeneous): Same.
+	(ppl_set_inhomogeneous_tree): Same.
+	(ppl_set_coef): Same.
+	(ppl_set_coef_tree): Same.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Same.
+	(build_scop_scattering): Same.
+	(add_value_to_dim): Same.
+	(scan_tree_for_params_right_scev): Same.
+	(scan_tree_for_params_int): Same.
+	(scan_tree_for_params): Same.
+	(find_params_in_bb): Same.
+	(find_scop_parameters): Same.
+	(add_upper_bounds_from_estimated_nit): Same.
+	(build_loop_iteration_domains): Same.
+	(create_linear_expr_from_tree): Same.
+	(add_condition_to_domain): Same.
+	(pdr_add_memory_accesses): Same.
+
 2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43519
