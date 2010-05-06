@@ -1304,6 +1304,18 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
      the same size as the output vector type.  */
   if (!vectype_in)
     vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+  if (vec_stmt)
+    gcc_assert (vectype_in);
+  if (!vectype_in)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no vectype for scalar type ");
+          print_generic_expr (vect_dump, rhs_type, TDF_SLIM);
+        }
+
+      return false;
+    }
 
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
@@ -1606,6 +1618,18 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
      the same size as the output vector type.  */
   if (!vectype_in)
     vectype_in = get_same_sized_vectype (rhs_type, vectype_out);
+  if (vec_stmt)
+    gcc_assert (vectype_in);
+  if (!vectype_in)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no vectype for scalar type ");
+          print_generic_expr (vect_dump, rhs_type, TDF_SLIM);
+        }
+
+      return false;
+    }
 
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
@@ -1986,7 +2010,18 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
      the same size as the output vector type.  */
   if (!vectype)
     vectype = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
-  gcc_assert (vectype);
+  if (vec_stmt)
+    gcc_assert (vectype);
+  if (!vectype)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no vectype for scalar type ");
+          print_generic_expr (vect_dump, TREE_TYPE (op0), TDF_SLIM);
+        }
+
+      return false;
+    }
 
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype);
@@ -2449,8 +2484,18 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
      same size as the output vector type if possible.  */
   if (!vectype_in)
     vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+  if (vec_stmt)
+    gcc_assert (vectype_in);
   if (!vectype_in)
-    return false;
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no vectype for scalar type ");
+          print_generic_expr (vect_dump, TREE_TYPE (op0), TDF_SLIM);
+        }
+
+      return false;
+    }
 
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
@@ -2718,8 +2763,18 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
      the same size as the output vector type.  */
   if (!vectype_in)
     vectype_in = get_same_sized_vectype (TREE_TYPE (op0), vectype_out);
+  if (vec_stmt)
+    gcc_assert (vectype_in);
   if (!vectype_in)
-    return false;
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "no vectype for scalar type ");
+          print_generic_expr (vect_dump, TREE_TYPE (op0), TDF_SLIM);
+        }
+
+      return false;
+    }
 
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
