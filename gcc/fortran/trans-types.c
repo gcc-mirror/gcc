@@ -1793,6 +1793,9 @@ gfc_sym_type (gfc_symbol * sym)
 						restricted);
 	      byref = 0;
 	    }
+
+	  if (sym->attr.cray_pointee)
+	    GFC_POINTER_TYPE_P (type) = 1;
         }
       else
 	{
@@ -1808,7 +1811,7 @@ gfc_sym_type (gfc_symbol * sym)
     {
       if (sym->attr.allocatable || sym->attr.pointer)
 	type = gfc_build_pointer_type (sym, type);
-      if (sym->attr.pointer)
+      if (sym->attr.pointer || sym->attr.cray_pointee)
 	GFC_POINTER_TYPE_P (type) = 1;
     }
 

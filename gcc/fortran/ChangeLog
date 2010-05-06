@@ -1,3 +1,9 @@
+2010-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43985
+	* trans-types.c (gfc_sym_type): Mark Cray pointees as
+	GFC_POINTER_TYPE_P.
+
 2010-05-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/43592
