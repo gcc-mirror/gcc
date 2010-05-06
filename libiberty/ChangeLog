@@ -1,3 +1,10 @@
+2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
+	    Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_builtin_types): Add nullptr.
+	(cplus_demangle_type): Handle nullptr.
+	* testsuite/demangle-expected: Test it.
+
 2010-04-23  Pedro Alves  <pedro@codesourcery.com>
 
 	* lbasename.c (lbasename): Split into ...

@@ -1,3 +1,31 @@
+2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nullptr01.C: New.
+	* g++.dg/cpp0x/nullptr02.C: New.
+	* g++.dg/cpp0x/nullptr03.C: New.
+	* g++.dg/cpp0x/nullptr04.C: New.
+	* g++.dg/cpp0x/nullptr05.C: New.
+	* g++.dg/cpp0x/nullptr06.C: New.
+	* g++.dg/cpp0x/nullptr07.C: New.
+	* g++.dg/cpp0x/nullptr08.C: New.
+	* g++.dg/cpp0x/nullptr09.C: New.
+	* g++.dg/cpp0x/nullptr10.C: New.
+	* g++.dg/cpp0x/nullptr11.C: New.
+	* g++.dg/cpp0x/nullptr12.C: New.
+	* g++.dg/cpp0x/nullptr13.C: New.
+	* g++.dg/cpp0x/nullptr14.C: New.
+	* g++.dg/cpp0x/nullptr15.C: New.
+	* g++.dg/cpp0x/nullptr16.C: New.
+	* g++.dg/cpp0x/nullptr17.C: New.
+	* g++.dg/cpp0x/nullptr18.C: New.
+	* g++.dg/cpp0x/nullptr19.C: New.
+	* g++.dg/cpp0x/nullptr20.C: New.
+	* g++.dg/cpp0x/nullptr21.C: New.
+	* g++.dg/cpp0x/nullptr22.C: New.
+	* g++.dg/debug/nullptr01.C: New.
+	* gcc.dg/Wcxx-compat-2.c: Test nullptr and constexpr.
+
 2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/40406

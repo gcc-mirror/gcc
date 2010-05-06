@@ -1,3 +1,7 @@
+2010-05-06  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu.ver: Add typeinfo for decltype(nullptr).
+
 2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/basic_string.h: Escape class names in doxygen docs.

@@ -1,3 +1,27 @@
+2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
+	    Jason Merrill  <jason@redhat.com>
+
+	Add support for C++0x nullptr.
+	* cp-tree.def: Add NULLPTR_TYPE.
+	* cp-tree.h: Add nullptr_node.
+	(cp_tree_index): Add CPTI_NULLPTR.
+	(SCALAR_TYPE_P): Add NULLPTR_TYPE.
+	* call.c (null_ptr_cst_p): Handle nullptr.
+	(standard_conversion): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+	* mangle.c (write_type): Likewise.
+	* name-lookup.c (arg_assoc_type): Likewise.
+	* parser.c (cp_parser_primary_expression): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+	(build_reinterpret_cast_1): Likewise.
+	* error.c (dump_type): Likewise.
+	(dump_type_prefix, dump_type_suffix): Likewise.
+	* decl.c (cxx_init_decl_processing): Likewise.
+	* cxx-pretty-print.c (pp_cxx_constant): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	* rtti.c (typeinfo_in_lib_p, emit_support_tinfos): Put
+	nullptr_t tinfo in libsupc++.
+
 2010-05-06  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (simplify_aggr_init_expr): Use INIT_EXPR.

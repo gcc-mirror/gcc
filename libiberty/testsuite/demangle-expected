@@ -3938,6 +3938,9 @@ decltype ((operator+)({parm#1}, {parm#1})) f<A>(A)
 --format=gnu-v3
 _Z1hI1AEDTcldtfp_miEET_
 decltype (({parm#1}.(operator-))()) h<A>(A)
+--format=gnu-v3
+_Z1fDn
+f(decltype(nullptr))
 #
 # Ada (GNAT) tests.
 #

@@ -1987,6 +1987,8 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 29 */ { NL ("half"),	NL ("half"),		D_PRINT_FLOAT },
   /* 30 */ { NL ("char16_t"),	NL ("char16_t"),	D_PRINT_DEFAULT },
   /* 31 */ { NL ("char32_t"),	NL ("char32_t"),	D_PRINT_DEFAULT },
+  /* 32 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
+	     D_PRINT_DEFAULT },
 };
 
 CP_STATIC_IF_GLIBCPP_V3
@@ -2219,6 +2221,12 @@ cplus_demangle_type (struct d_info *di)
 
 	case 'v':
 	  ret = d_vector_type (di);
+	  break;
+
+        case 'n':
+          /* decltype(nullptr) */
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[32]);
+	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
 
 	default:

@@ -147,7 +147,7 @@ struct d_info
 extern const struct demangle_operator_info cplus_demangle_operators[];
 #endif
 
-#define D_BUILTIN_TYPE_COUNT (32)
+#define D_BUILTIN_TYPE_COUNT (33)
 
 CP_STATIC_IF_GLIBCPP_V3
 const struct demangle_builtin_type_info
