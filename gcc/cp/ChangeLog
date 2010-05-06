@@ -1,3 +1,28 @@
+2010-04-22  Jakub Jelinek <jakub@redhat.com>
+	    Dodji Seketeli <dodji@redhat.com>
+
+	PR c/18624
+	* cp-tree.h (mark_exp_read, rvalue_use, lvalue_use, type_use):
+	Declare ...
+	* expr.c (mark_exp_read, rvalue_use, lvalue_use, type_use): ... new fns.
+	* typeck.c (cxx_sizeof_expr, cxx_alignof_expr): Call type_use.
+	(decay_conversion, perform_integral_promotions): Call rvalue_use.
+	(cp_build_unary_op): Call lvalue_use.
+	* decl.c (unused_but_set_errorcount): New variable.
+	(poplevel): Issue -Wunused-but-set-variable diagnostics.
+	(duplicate_decls): Merge DECL_READ_P flags.
+	(start_cleanup_fn): Set DECL_READ_P flag.
+	(finish_function): Issue -Wunused-but-set-parameter diagnostics.
+	* tree.c (rvalue): Call rvalue_use.
+	* pt.c (convert_nontype_argument): Likewise.
+	* semantics.c (finish_expr_stmt, finish_asm_stmt, finish_typeof,
+	finish_decltype_type): Likewise.
+	* call.c (convert_like_real) <ck_identity, ck_user>: Call rvalue use.
+	(build_x_va_arg, build_new_method_call, build_over_call): Call lvalue_use
+	or rvalue_use depending on the expr.
+	* init.c (build_new, build_delete): Likewise.
+	* rtti.c (build_typeid, build_dynamic_cast_1): Likewise.
+
 2010-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43787

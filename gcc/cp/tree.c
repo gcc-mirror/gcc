@@ -551,6 +551,8 @@ rvalue (tree expr)
   if (error_operand_p (expr))
     return expr;
 
+  expr = mark_rvalue_use (expr);
+
   /* [basic.lval]
 
      Non-class rvalues always have cv-unqualified types.  */

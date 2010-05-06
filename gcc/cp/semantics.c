@@ -610,6 +610,13 @@ finish_expr_stmt (tree expr)
 	{
 	  if (warn_sequence_point)
 	    verify_sequence_points (expr);
+	  if (TREE_CODE (expr) != MODIFY_EXPR)
+	    /* Expr is not being 'used' here, otherwise we whould have
+	       called mark_{rl}value_use use here, which would have in turn
+	       called mark_exp_read. Rather, we call mark_exp_read directly
+	       to avoid some warnings when
+	        -Wunused-but-set-{variable,parameter} is in effect.  */
+	    mark_exp_read (expr);
 	  expr = convert_to_void (expr, "statement", tf_warning_or_error);
 	}
       else if (!type_dependent_expression_p (expr))
@@ -1237,6 +1244,8 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	     removed, then the output operand had a type of the proper width;
 	     otherwise we'll get an error.  Gross, but ...  */
 	  STRIP_NOPS (operand);
+
+	  operand = mark_lvalue_use (operand);
 
 	  if (!lvalue_or_else (operand, lv_asm, tf_warning_or_error))
 	    operand = error_mark_node;
@@ -3182,6 +3191,8 @@ finish_typeof (tree expr)
       return type;
     }
 
+  expr = mark_type_use (expr);
+
   type = unlowered_expr_type (expr);
 
   if (!type || type == unknown_type_node)
@@ -4859,6 +4870,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
         case PARM_DECL:
         case RESULT_DECL:
         case TEMPLATE_PARM_INDEX:
+	  expr = mark_type_use (expr);
           type = TREE_TYPE (expr);
           break;
 
@@ -4867,6 +4879,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
           break;
 
         case COMPONENT_REF:
+	  mark_type_use (expr);
           type = is_bitfield_expr_with_lowered_type (expr);
           if (!type)
             type = TREE_TYPE (TREE_OPERAND (expr, 1));

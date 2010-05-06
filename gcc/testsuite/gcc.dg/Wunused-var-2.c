@@ -4,17 +4,16 @@
 int
 f1 (void)
 {
-  int c = ({
-    int a;
-    a = 1;
-    a; });
-  return c;
-}
-
-void
-f2 (void)
-{
-  int f;
-  f = 0;
-  __asm__ __volatile__ ("" : "+r" (f));
+  int a;
+  int b;
+  int c;
+  int d;
+  int e;
+  a = 1;
+  b = 2;
+  c = 3;
+  d = 4;
+  e = 5;
+  return sizeof (a) + ((__typeof (b)) 1) + __alignof__ (c)
+         + __builtin_choose_expr (1, d, e);
 }

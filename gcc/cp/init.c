@@ -2465,6 +2465,7 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
           else
             return error_mark_node;
         }
+      nelts = mark_rvalue_use (nelts);
       nelts = cp_save_expr (cp_convert (sizetype, nelts));
     }
 
@@ -3119,6 +3120,8 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
     return error_mark_node;
 
   type = TYPE_MAIN_VARIANT (type);
+
+  addr = mark_rvalue_use (addr);
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {

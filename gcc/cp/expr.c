@@ -82,3 +82,71 @@ cplus_expand_constant (tree cst)
 
   return cst;
 }
+
+/* Called whenever an expression is used
+   in a rvalue context.  */
+
+tree
+mark_rvalue_use (tree expr)
+{
+  mark_exp_read (expr);
+  return expr;
+}
+
+/* Called whenever an expression is used
+   in a lvalue context.  */
+
+tree
+mark_lvalue_use (tree expr)
+{
+  mark_exp_read (expr);
+  return expr;
+}
+
+/* Called whenever an expression is used in a type use context.  */
+
+tree
+mark_type_use (tree expr)
+{
+  mark_exp_read (expr);
+  return expr;
+}
+
+/* Mark EXP as read, not just set, for set but not used -Wunused
+   warning purposes.  */
+
+void
+mark_exp_read (tree exp)
+{
+  if (exp == NULL)
+    return;
+
+  switch (TREE_CODE (exp))
+    {
+    case VAR_DECL:
+    case PARM_DECL:
+      DECL_READ_P (exp) = 1;
+      break;
+    case ARRAY_REF:
+    case COMPONENT_REF:
+    case MODIFY_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    CASE_CONVERT:
+    case ADDR_EXPR:
+      mark_exp_read (TREE_OPERAND (exp, 0));
+      break;
+    case COMPOUND_EXPR:
+      mark_exp_read (TREE_OPERAND (exp, 1));
+      break;
+    case COND_EXPR:
+      if (TREE_OPERAND (exp, 1))
+	mark_exp_read (TREE_OPERAND (exp, 1));
+      if (TREE_OPERAND (exp, 2))
+	mark_exp_read (TREE_OPERAND (exp, 2));
+      break;
+    default:
+      break;
+    }
+}
+
