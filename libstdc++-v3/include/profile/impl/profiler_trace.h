@@ -53,10 +53,10 @@
 #define _GLIBCXX_IMPL_UNORDERED_MAP std::tr1::unordered_map
 #endif
 
-#include <algorithm>
 #include <fstream>
 #include <string>
 #include <utility>
+#include <bits/stl_heap.h> // for std::make_heap, std::sort_heap
 
 #if (defined _GLIBCXX_PROFILE_THREADS) && !(defined _GLIBCXX_HAVE_TLS)
 #error You do not seem to have TLS support, which is required by the profile \
@@ -98,29 +98,20 @@ struct __warning_data
   __stack_t __context;
   const char* __warning_id;
   const char* __warning_message;
-  __warning_data();
+
+  __warning_data()
+  : __magnitude(0.0), __context(NULL), __warning_id(NULL),
+    __warning_message(NULL) { }
+
   __warning_data(float __m, __stack_t __c, const char* __id, 
-                 const char* __msg);
-  bool operator>(const struct __warning_data& other) const;
+                 const char* __msg)
+  : __magnitude(__m), __context(__c), __warning_id(__id),
+    __warning_message(__msg) { }
+
+  bool
+  operator>(const struct __warning_data& __other) const
+  { return __magnitude > __other.__magnitude; }
 };
-
-inline __warning_data::__warning_data()
-    : __magnitude(0.0), __context(NULL), __warning_id(NULL),
-      __warning_message(NULL)
-{
-}
-
-inline __warning_data::__warning_data(float __m, __stack_t __c, 
-                                      const char* __id, const char* __msg)
-    : __magnitude(__m), __context(__c), __warning_id(__id),
-      __warning_message(__msg)
-{
-}
-
-inline bool __warning_data::operator>(const struct __warning_data& other) const
-{
-  return __magnitude > other.__magnitude;
-}
 
 typedef std::_GLIBCXX_STD_PR::vector<__warning_data> __warning_vector_t;
 
@@ -433,23 +424,6 @@ inline int __log_magnitude(float f)
   return sign * result;
 }
 
-struct __warn
-{
-  FILE* __file;
-  __warn(FILE* __f) { __file = __f; }
-  void operator() (const __warning_data& __info)
-  {
-    fprintf(__file,  __info.__warning_id);
-    fprintf(__file, ": improvement = %d", __log_magnitude(__info.__magnitude));
-    fprintf(__file, ": call stack = ");
-    __gnu_profile::__write(__file, __info.__context);
-    fprintf(__file, ": advice = %s\n", __info.__warning_message);
-    free(
-        const_cast<void*>(
-            reinterpret_cast<const void*>(__info.__warning_message)));
-  }
-};
-
 inline FILE* __open_output_file(const char* extension)
 {
   // The path is made of _S_trace_file_name + "." + extension.
@@ -496,12 +470,27 @@ inline void __report(void)
   size_t __cutoff = __min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
                           __warnings.size());
 
-  std::sort(__warnings.begin(), __warnings.end(),
-            std::greater<__warning_vector_t::value_type>());
+  std::make_heap(__warnings.begin(), __warnings.end(),
+		 std::greater<__warning_vector_t::value_type>());
+  std::sort_heap(__warnings.begin(), __warnings.end(),
+		 std::greater<__warning_vector_t::value_type>());
   __warnings.resize(__cutoff);
 
   FILE* __warn_file = __open_output_file("txt");
-  std::for_each(__warnings.begin(), __warnings.end(), __warn(__warn_file));
+
+  for (__warning_vector_t::iterator __it = __warnings.begin();
+       __it != __warnings.end(); ++__it)
+    {
+      fprintf(__warn_file,  __it->__warning_id);
+      fprintf(__warn_file, ": improvement = %d",
+	      __log_magnitude(__it->__magnitude));
+      fprintf(__warn_file, ": call stack = ");
+      __gnu_profile::__write(__warn_file, __it->__context);
+      fprintf(__warn_file, ": advice = %s\n", __it->__warning_message);
+      free(const_cast<void*>(reinterpret_cast<const void*>
+			     (__it->__warning_message)));
+    }
+
   fclose(__warn_file);
 
   __unlock(_GLIBCXX_PROFILE_DATA(__global_lock));
@@ -537,58 +526,55 @@ inline void __read_cost_factors()
 
   std::ifstream __conf_file(__conf_file_name.c_str());
 
-  if (__conf_file.is_open()) {
-    std::string __line;
+  if (__conf_file.is_open())
+    {
+      std::string __line;
 
-    while (getline(__conf_file, __line)) {
-      std::string::size_type __i = __line.find_first_not_of(" \t\n\v");
+      while (getline(__conf_file, __line))
+	{
+	  std::string::size_type __i = __line.find_first_not_of(" \t\n\v");
 
-      if (__line.length() <= 0 || __line[__i] == '#') {
-        // Skip empty lines or comments.
-        continue;
-      }
+	  if (__line.length() <= 0 || __line[__i] == '#') {
+	    // Skip empty lines or comments.
+	    continue;
+	  }
 
-      // Trim.
-      __line.erase(std::remove(__line.begin(), __line.end(), ' '), 
-                   __line.end());
-      std::string::size_type __pos = __line.find("=");
-      std::string __factor_name = __line.substr(0, __pos);
-      std::string::size_type __end = __line.find_first_of(";\n");
-      std::string __factor_value = __line.substr(__pos + 1, __end - __pos);
+	  // Trim.
+	  if (__line.begin() != __line.end())
+	    {
+	      // A simple remove operation.
+	      std::string::iterator __first = __line.begin();
+	      std::string::iterator __result = __first;
+	      ++__first;
+	      for(; __first != __line.end(); ++__first)
+		if(!(*__first == ' '))
+		  {
+		    *__result = *__first;
+		    ++__result;
+		  }
+	      __line.erase(__result, __line.end());
+	    }
+	  std::string::size_type __pos = __line.find("=");
+	  std::string __factor_name = __line.substr(0, __pos);
+	  std::string::size_type __end = __line.find_first_of(";\n");
+	  std::string __factor_value = __line.substr(__pos + 1, __end - __pos);
 
-      setenv(__factor_name.c_str(), __factor_value.c_str(), 0);
+	  setenv(__factor_name.c_str(), __factor_value.c_str(), 0);
+	}
     }
-  } 
 }
-
-struct __cost_factor_writer
-{
-  FILE* __file;
-  __cost_factor_writer(FILE* __f) : __file(__f) {}
-  void operator() (const __cost_factor* __factor)
-  {
-    fprintf(__file, "%s = %f\n", __factor->__env_var, __factor->__value);
-  }
-};
 
 inline void __write_cost_factors()
 {
   FILE* __file = __open_output_file("conf.out");
-  std::for_each(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin(),
-                _GLIBCXX_PROFILE_DATA(__cost_factors)->end(),
-                __cost_factor_writer(__file));
+
+  for (__decltype(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin()) __it
+	 = _GLIBCXX_PROFILE_DATA(__cost_factors)->begin();
+       __it != _GLIBCXX_PROFILE_DATA(__cost_factors)->end(); ++__it)
+    fprintf(__file, "%s = %f\n", (*__it)->__env_var, (*__it)->__value);
+
   fclose(__file);
 }
-
-struct __cost_factor_setter
-{
-  void operator() (__cost_factor* __factor)
-  {
-    char* __env_cost_factor;
-    if (__env_cost_factor = getenv(__factor->__env_var))
-      __factor->__value = atof(__env_cost_factor);
-  }
-};
 
 inline void __set_cost_factors()
 {
@@ -621,9 +607,12 @@ inline void __set_cost_factors()
       &_GLIBCXX_PROFILE_DATA(__umap_find_cost_factor));
   _GLIBCXX_PROFILE_DATA(__cost_factors)->push_back(
       &_GLIBCXX_PROFILE_DATA(__umap_iterate_cost_factor));
-  std::for_each(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin(),
-                _GLIBCXX_PROFILE_DATA(__cost_factors)->end(),
-                __cost_factor_setter());
+
+  for (__decltype(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin()) __it
+	 = _GLIBCXX_PROFILE_DATA(__cost_factors)->begin();
+       __it != _GLIBCXX_PROFILE_DATA(__cost_factors)->end(); ++__it)
+    if (char* __env_cost_factor = getenv((*__it)->__env_var))
+      (*__it)->__value = atof(__env_cost_factor);
 }
 
 inline void __profcxx_init_unconditional()

@@ -1,3 +1,29 @@
+2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
+	for profile-mode too.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+
+2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/unordered_map (unordered_map<>::insert(_InputIter,
+	_InputIter), unordered_multimap<>::insert(_InputIter, _InputIter)):
+	Fix typo, don't call base() on __first and __last.
+
+2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Fix profile-mode vs -std=c++0x
+	* include/profile/impl/profiler_trace.h: Do not include the
+	whole <algorithm>, include <bits/stl_heap.h> (additionally
+	to <bits/stl_algobase.h>).
+	(__write_cost_factors): Replace std::for_each with open-coding.
+	(__set_cost_factors): Likewise.
+	(__report): Likewise; use std::make_heap / std::sort_heap
+	instead of std::sort.
+	(__report_cost_factors): Replace std::remove with open-coding.
+	(__warn, __cost_factor_writer, __cost_factor_setter): Remove.
+
 2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/43865

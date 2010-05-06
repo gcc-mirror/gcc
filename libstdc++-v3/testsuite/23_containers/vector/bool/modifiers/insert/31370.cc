@@ -1,4 +1,4 @@
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,10 +23,12 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-#ifndef _GLIBCXX_DEBUG
-  using std::_S_word_bit;
-#else
+#ifdef _GLIBCXX_DEBUG
   using std::_GLIBCXX_STD_D::_S_word_bit;
+#elif defined(_GLIBCXX_PROFILE)
+  using std::_GLIBCXX_STD_PR::_S_word_bit;
+#else
+  using std::_S_word_bit;
 #endif
 
 inline void
