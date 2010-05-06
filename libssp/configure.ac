@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR(ssp.c)
 AC_CANONICAL_SYSTEM
 ACX_NONCANONICAL_TARGET
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([no-dist])
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,

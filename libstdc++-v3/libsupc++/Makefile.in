@@ -38,8 +38,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = $(glibcxxinstall_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/fragment.am
+DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
+	$(srcdir)/Makefile.am $(glibcxxinstall_HEADERS)
 subdir = libsupc++
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
@@ -72,18 +72,6 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libsupc___la_LIBADD =
-am__libsupc___la_SOURCES_DIST = array_type_info.cc atexit_arm.cc \
-	bad_cast.cc bad_typeid.cc class_type_info.cc del_op.cc \
-	del_opnt.cc del_opv.cc del_opvnt.cc dyncast.cc eh_alloc.cc \
-	eh_arm.cc eh_aux_runtime.cc eh_call.cc eh_catch.cc \
-	eh_exception.cc eh_globals.cc eh_personality.cc \
-	eh_term_handler.cc eh_terminate.cc eh_throw.cc eh_type.cc \
-	eh_unex_handler.cc enum_type_info.cc function_type_info.cc \
-	fundamental_type_info.cc guard.cc new_handler.cc new_op.cc \
-	new_opnt.cc new_opv.cc new_opvnt.cc pbase_type_info.cc \
-	pmem_type_info.cc pointer_type_info.cc pure.cc \
-	si_class_type_info.cc tinfo.cc tinfo2.cc vec.cc \
-	vmi_class_type_info.cc vterminate.cc cp-demangle.c
 am__objects_1 = array_type_info.lo atexit_arm.lo bad_cast.lo \
 	bad_typeid.lo class_type_info.lo del_op.lo del_opnt.lo \
 	del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo eh_arm.lo \
@@ -100,18 +88,6 @@ am__objects_1 = array_type_info.lo atexit_arm.lo bad_cast.lo \
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
 libsupc__convenience_la_LIBADD =
-am__libsupc__convenience_la_SOURCES_DIST = array_type_info.cc \
-	atexit_arm.cc bad_cast.cc bad_typeid.cc class_type_info.cc \
-	del_op.cc del_opnt.cc del_opv.cc del_opvnt.cc dyncast.cc \
-	eh_alloc.cc eh_arm.cc eh_aux_runtime.cc eh_call.cc eh_catch.cc \
-	eh_exception.cc eh_globals.cc eh_personality.cc \
-	eh_term_handler.cc eh_terminate.cc eh_throw.cc eh_type.cc \
-	eh_unex_handler.cc enum_type_info.cc function_type_info.cc \
-	fundamental_type_info.cc guard.cc new_handler.cc new_op.cc \
-	new_opnt.cc new_opv.cc new_opvnt.cc pbase_type_info.cc \
-	pmem_type_info.cc pointer_type_info.cc pure.cc \
-	si_class_type_info.cc tinfo.cc tinfo2.cc vec.cc \
-	vmi_class_type_info.cc vterminate.cc cp-demangle.c
 am_libsupc__convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libsupc__convenience_la_OBJECTS =  \
 	$(am_libsupc__convenience_la_OBJECTS)
@@ -127,13 +103,10 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 SOURCES = $(libsupc___la_SOURCES) $(libsupc__convenience_la_SOURCES)
-DIST_SOURCES = $(am__libsupc___la_SOURCES_DIST) \
-	$(am__libsupc__convenience_la_SOURCES_DIST)
 glibcxxinstallHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(glibcxxinstall_HEADERS)
 ETAGS = etags
 CTAGS = ctags
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
 ACLOCAL = @ACLOCAL@
 ALLOCATOR_H = @ALLOCATOR_H@
@@ -628,35 +601,6 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-
-distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/..
-	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
-	list='$(DISTFILES)'; for file in $$list; do \
-	  case $$file in \
-	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
-	    $(top_srcdir)/*) file=`echo "$$file" | sed "s|^$$topsrcdirstrip/|$(top_builddir)/|"`;; \
-	  esac; \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
-	  if test "$$dir" != "$$file" && test "$$dir" != "."; then \
-	    dir="/$$dir"; \
-	    $(mkdir_p) "$(distdir)$$dir"; \
-	  else \
-	    dir=''; \
-	  fi; \
-	  if test -d $$d/$$file; then \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -pR $(srcdir)/$$file $(distdir)$$dir || exit 1; \
-	    fi; \
-	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
-	  else \
-	    test -f $(distdir)/$$file \
-	    || cp -p $$d/$$file $(distdir)/$$file \
-	    || exit 1; \
-	  fi; \
-	done
 check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
@@ -741,9 +685,9 @@ uninstall-am: uninstall-glibcxxinstallHEADERS uninstall-info-am \
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-noinstLTLIBRARIES \
 	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-exec install-exec-am \
+	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
+	html html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am \
 	install-glibcxxinstallHEADERS install-info install-info-am \
 	install-man install-strip install-toolexeclibLTLIBRARIES \
 	installcheck installcheck-am installdirs maintainer-clean \

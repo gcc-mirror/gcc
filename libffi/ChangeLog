@@ -1,3 +1,11 @@
+2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-09-23  Matthias Klose  <doko@ubuntu.com>
 
 	PR libffi/40242, PR libffi/41443

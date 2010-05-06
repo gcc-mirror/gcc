@@ -1,3 +1,9 @@
+2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist.
+	* Makefile.in: Regenerate.
+
 2009-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* acinclude.m4: Regenerated to pick:

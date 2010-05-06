@@ -1,3 +1,10 @@
+2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2010-02-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42901

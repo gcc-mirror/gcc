@@ -1,3 +1,11 @@
+2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-03-15  David S. Miller  <davem@davemloft.net>
 
 	* testsuite/libmudflap.c/pass54-frag.c: Add explicit return from

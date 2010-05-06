@@ -47,13 +47,13 @@ target_triplet = @target@
 @CREATE_WRAPPERS_TRUE@	gtnameserv$(EXEEXT) gorbd$(EXEEXT) \
 @CREATE_WRAPPERS_TRUE@	grmid$(EXEEXT) grmic$(EXEEXT)
 subdir = tools
-DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/gappletviewer.in $(srcdir)/gjar.in \
-	$(srcdir)/gjarsigner.in $(srcdir)/gjavah.in \
-	$(srcdir)/gkeytool.in $(srcdir)/gnative2ascii.in \
-	$(srcdir)/gorbd.in $(srcdir)/grmic.in $(srcdir)/grmid.in \
-	$(srcdir)/grmiregistry.in $(srcdir)/gserialver.in \
-	$(srcdir)/gtnameserv.in
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(srcdir)/gappletviewer.in $(srcdir)/gjarsigner.in \
+	$(srcdir)/gkeytool.in $(srcdir)/gjar.in \
+	$(srcdir)/gnative2ascii.in $(srcdir)/gserialver.in \
+	$(srcdir)/grmiregistry.in $(srcdir)/gtnameserv.in \
+	$(srcdir)/gorbd.in $(srcdir)/grmid.in $(srcdir)/grmic.in \
+	$(srcdir)/gjavah.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
@@ -81,58 +81,46 @@ CONFIG_CLEAN_FILES = gappletviewer gjarsigner gkeytool gjar \
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__gappletviewer_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gappletviewer_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gappletviewer-toolwrapper.$(OBJEXT)
 gappletviewer_OBJECTS = $(am_gappletviewer_OBJECTS)
 gappletviewer_LDADD = $(LDADD)
-am__gjar_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjar_OBJECTS = gjar-toolwrapper.$(OBJEXT)
 gjar_OBJECTS = $(am_gjar_OBJECTS)
 gjar_LDADD = $(LDADD)
-am__gjarsigner_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjarsigner_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gjarsigner-toolwrapper.$(OBJEXT)
 gjarsigner_OBJECTS = $(am_gjarsigner_OBJECTS)
 gjarsigner_LDADD = $(LDADD)
-am__gjavah_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gjavah_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gjavah-toolwrapper.$(OBJEXT)
 gjavah_OBJECTS = $(am_gjavah_OBJECTS)
 gjavah_LDADD = $(LDADD)
-am__gkeytool_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gkeytool_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gkeytool-toolwrapper.$(OBJEXT)
 gkeytool_OBJECTS = $(am_gkeytool_OBJECTS)
 gkeytool_LDADD = $(LDADD)
-am__gnative2ascii_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gnative2ascii_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gnative2ascii-toolwrapper.$(OBJEXT)
 gnative2ascii_OBJECTS = $(am_gnative2ascii_OBJECTS)
 gnative2ascii_LDADD = $(LDADD)
-am__gorbd_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gorbd_OBJECTS = gorbd-toolwrapper.$(OBJEXT)
 gorbd_OBJECTS = $(am_gorbd_OBJECTS)
 gorbd_LDADD = $(LDADD)
-am__grmic_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmic_OBJECTS = grmic-toolwrapper.$(OBJEXT)
 grmic_OBJECTS = $(am_grmic_OBJECTS)
 grmic_LDADD = $(LDADD)
-am__grmid_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmid_OBJECTS = grmid-toolwrapper.$(OBJEXT)
 grmid_OBJECTS = $(am_grmid_OBJECTS)
 grmid_LDADD = $(LDADD)
-am__grmiregistry_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_grmiregistry_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	grmiregistry-toolwrapper.$(OBJEXT)
 grmiregistry_OBJECTS = $(am_grmiregistry_OBJECTS)
 grmiregistry_LDADD = $(LDADD)
-am__gserialver_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gserialver_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gserialver-toolwrapper.$(OBJEXT)
 gserialver_OBJECTS = $(am_gserialver_OBJECTS)
 gserialver_LDADD = $(LDADD)
-am__gtnameserv_SOURCES_DIST = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@am_gtnameserv_OBJECTS =  \
 @CREATE_WRAPPERS_TRUE@	gtnameserv-toolwrapper.$(OBJEXT)
 gtnameserv_OBJECTS = $(am_gtnameserv_OBJECTS)
@@ -155,17 +143,9 @@ SOURCES = $(gappletviewer_SOURCES) $(gjar_SOURCES) \
 	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
 	$(grmid_SOURCES) $(grmiregistry_SOURCES) $(gserialver_SOURCES) \
 	$(gtnameserv_SOURCES)
-DIST_SOURCES = $(am__gappletviewer_SOURCES_DIST) \
-	$(am__gjar_SOURCES_DIST) $(am__gjarsigner_SOURCES_DIST) \
-	$(am__gjavah_SOURCES_DIST) $(am__gkeytool_SOURCES_DIST) \
-	$(am__gnative2ascii_SOURCES_DIST) $(am__gorbd_SOURCES_DIST) \
-	$(am__grmic_SOURCES_DIST) $(am__grmid_SOURCES_DIST) \
-	$(am__grmiregistry_SOURCES_DIST) \
-	$(am__gserialver_SOURCES_DIST) $(am__gtnameserv_SOURCES_DIST)
 DATA = $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -960,37 +940,6 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-
-distdir: $(DISTFILES)
-	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
-	list='$(DISTFILES)'; for file in $$list; do \
-	  case $$file in \
-	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
-	    $(top_srcdir)/*) file=`echo "$$file" | sed "s|^$$topsrcdirstrip/|$(top_builddir)/|"`;; \
-	  esac; \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
-	  if test "$$dir" != "$$file" && test "$$dir" != "."; then \
-	    dir="/$$dir"; \
-	    $(mkdir_p) "$(distdir)$$dir"; \
-	  else \
-	    dir=''; \
-	  fi; \
-	  if test -d $$d/$$file; then \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -pR $(srcdir)/$$file $(distdir)$$dir || exit 1; \
-	    fi; \
-	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
-	  else \
-	    test -f $(distdir)/$$file \
-	    || cp -p $$d/$$file $(distdir)/$$file \
-	    || exit 1; \
-	  fi; \
-	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
@@ -1078,18 +1027,18 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool clean-local ctags dist-hook \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-binSCRIPTS install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am \
-	installcheck-binPROGRAMS installcheck-binSCRIPTS installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-info-am
+	clean-generic clean-libtool clean-local ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-binPROGRAMS install-binSCRIPTS install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installcheck-binPROGRAMS \
+	installcheck-binSCRIPTS installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-info-am
 
 @FOUND_ECJ_FALSE@@FOUND_GCJ_FALSE@@FOUND_JAVAC_FALSE@error dunno how to setup the JCOMPILER and compile
 

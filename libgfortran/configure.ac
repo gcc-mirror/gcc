@@ -60,9 +60,10 @@ target_alias=${target_alias-$host_alias}
 #              we can do about that; they come from AC_INIT).
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
+#  no-dist:  we don't want 'dist' and related rules.
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is required.
-AM_INIT_AUTOMAKE([1.9.6 no-define foreign -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.6 no-define foreign no-dist -Wall -Wno-portability])
 
 AM_MAINTAINER_MODE
 AM_ENABLE_MULTILIB(, ..)

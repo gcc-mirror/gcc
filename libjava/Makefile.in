@@ -64,15 +64,16 @@ target_triplet = @target@
 @USING_WIN32_THREADS_TRUE@am__append_13 = win32-threads.cc
 @USING_NO_THREADS_TRUE@am__append_14 = no-threads.cc
 @ANONVERSCRIPT_TRUE@am__append_15 = $(srcdir)/libgcj.ver
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
-	$(srcdir)/../config.guess $(srcdir)/../config.sub \
-	$(srcdir)/../depcomp $(srcdir)/../install-sh \
-	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
-	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/libgcj-test.spec.in \
-	$(srcdir)/libgcj.pc.in $(srcdir)/libgcj.spec.in \
-	$(srcdir)/sources.am $(top_srcdir)/configure \
-	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
+DIST_COMMON = $(srcdir)/sources.am $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub NEWS README ChangeLog THANKS \
+	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(top_srcdir)/configure $(am__configure_deps) \
+	$(srcdir)/../mkinstalldirs $(srcdir)/libgcj.pc.in \
+	$(srcdir)/libgcj.spec.in $(srcdir)/libgcj-test.spec.in \
+	$(top_srcdir)/scripts/jar.in $(srcdir)/../compile \
+	$(srcdir)/../compile $(srcdir)/../compile $(srcdir)/../depcomp \
+	$(srcdir)/../ltmain.sh $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
 @NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_16 = libgcj_bc.la
@@ -295,72 +296,6 @@ am__DEPENDENCIES_3 = gnu-CORBA.lo gnu-java-awt-dnd-peer-gtk.lo \
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__DEPENDENCIES_5 =
-am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
-	stacktrace.cc link.cc defineclass.cc verify.cc jvmti.cc \
-	interpret.cc gnu/classpath/jdwp/natVMFrame.cc \
-	gnu/classpath/jdwp/natVMMethod.cc \
-	gnu/classpath/jdwp/natVMVirtualMachine.cc \
-	gnu/classpath/natConfiguration.cc \
-	gnu/classpath/natSystemProperties.cc \
-	gnu/classpath/natVMStackWalker.cc gnu/gcj/natCore.cc \
-	gnu/gcj/convert/JIS0208_to_Unicode.cc \
-	gnu/gcj/convert/JIS0212_to_Unicode.cc \
-	gnu/gcj/convert/Unicode_to_JIS.cc gnu/gcj/convert/natIconv.cc \
-	gnu/gcj/convert/natInput_EUCJIS.cc \
-	gnu/gcj/convert/natInput_SJIS.cc \
-	gnu/gcj/convert/natOutput_EUCJIS.cc \
-	gnu/gcj/convert/natOutput_SJIS.cc \
-	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
-	gnu/gcj/jvmti/natBreakpoint.cc \
-	gnu/gcj/jvmti/natNormalBreakpoint.cc \
-	gnu/gcj/runtime/natFinalizerThread.cc \
-	gnu/gcj/runtime/natSharedLibLoader.cc \
-	gnu/gcj/runtime/natSystemClassLoader.cc \
-	gnu/gcj/runtime/natStringBuffer.cc gnu/gcj/util/natDebug.cc \
-	gnu/gcj/util/natGCInfo.cc gnu/java/lang/natMainThread.cc \
-	gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc \
-	gnu/java/lang/management/natVMCompilationMXBeanImpl.cc \
-	gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.cc \
-	gnu/java/lang/management/natVMMemoryMXBeanImpl.cc \
-	gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.cc \
-	gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc \
-	gnu/java/lang/management/natVMOperatingSystemMXBeanImpl.cc \
-	gnu/java/lang/management/natVMRuntimeMXBeanImpl.cc \
-	gnu/java/lang/management/natVMThreadMXBeanImpl.cc \
-	gnu/java/net/natPlainDatagramSocketImpl.cc \
-	gnu/java/net/natPlainSocketImpl.cc \
-	gnu/java/net/protocol/core/natCoreInputStream.cc \
-	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
-	gnu/java/nio/natNIOServerSocket.cc \
-	gnu/java/nio/natVMChannel.cc \
-	gnu/java/nio/channels/natFileChannelImpl.cc java/io/natFile.cc \
-	java/io/natVMObjectInputStream.cc \
-	java/io/natVMObjectStreamClass.cc java/lang/natCharacter.cc \
-	java/lang/natClass.cc java/lang/natClassLoader.cc \
-	java/lang/natConcreteProcess.cc java/lang/natVMDouble.cc \
-	java/lang/natVMFloat.cc java/lang/natMath.cc \
-	java/lang/natObject.cc java/lang/natRuntime.cc \
-	java/lang/natString.cc java/lang/natStringBuffer.cc \
-	java/lang/natStringBuilder.cc java/lang/natSystem.cc \
-	java/lang/natThread.cc java/lang/natThreadLocal.cc \
-	java/lang/natVMClassLoader.cc java/lang/natVMProcess.cc \
-	java/lang/natVMThrowable.cc java/lang/ref/natReference.cc \
-	java/lang/reflect/natArray.cc \
-	java/lang/reflect/natConstructor.cc \
-	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
-	java/lang/reflect/natVMProxy.cc java/net/natVMInetAddress.cc \
-	java/net/natVMNetworkInterface.cc \
-	java/net/natVMURLConnection.cc \
-	java/nio/channels/natVMChannels.cc \
-	java/nio/natVMDirectByteBufferImpl.cc \
-	java/security/natVMAccessController.cc \
-	java/security/natVMAccessControlState.cc \
-	java/text/natCollator.cc java/util/natVMTimeZone.cc \
-	java/util/concurrent/atomic/natAtomicLong.cc \
-	java/util/logging/natLogger.cc java/util/zip/natDeflater.cc \
-	java/util/zip/natInflater.cc sun/misc/natUnsafe.cc boehm.cc \
-	nogc.cc posix.cc win32.cc darwin.cc posix-threads.cc \
-	win32-threads.cc no-threads.cc
 @INTERPRETER_TRUE@am__objects_2 = jvmti.lo interpret.lo
 @INTERPRETER_TRUE@am__objects_3 = gnu/classpath/jdwp/natVMFrame.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/natVMMethod.lo \
@@ -459,8 +394,6 @@ am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
 am_gcjh_OBJECTS =
 gcjh_OBJECTS = $(am_gcjh_OBJECTS)
-am__gen_from_JIS_SOURCES_DIST = gnu/gcj/convert/gen-from-JIS.c \
-	gnu/gcj/convert/make-trie.c
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am_gen_from_JIS_OBJECTS = gnu/gcj/convert/gen-from-JIS.$(OBJEXT) \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gnu/gcj/convert/make-trie.$(OBJEXT)
 gen_from_JIS_OBJECTS = $(am_gen_from_JIS_OBJECTS)
@@ -526,18 +459,6 @@ SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_tools_la_SOURCES) \
 	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
 	$(grmid_SOURCES) $(grmiregistry_SOURCES) $(gserialver_SOURCES) \
 	$(gtnameserv_SOURCES) $(jv_convert_SOURCES)
-DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(libgcj_tools_la_SOURCES) $(am__libgcj_la_SOURCES_DIST) \
-	$(EXTRA_libgcj_la_SOURCES) $(libgcj_bc_la_SOURCES) \
-	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) $(ecjx_SOURCES) \
-	$(gappletviewer_SOURCES) $(gc_analyze_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
-	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
-	$(gjar_SOURCES) $(gjarsigner_SOURCES) $(gjavah_SOURCES) \
-	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
-	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
-	$(gserialver_SOURCES) $(gtnameserv_SOURCES) \
-	$(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -551,17 +472,6 @@ DATA = $(dbexec_DATA) $(jar_DATA) $(toolexecmainlib_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = @DIRLTDL@ gcj include classpath testsuite
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-distdir = $(PACKAGE)-$(VERSION)
-top_distdir = $(distdir)
-am__remove_distdir = \
-  { test ! -d $(distdir) \
-    || { find $(distdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
-         && rm -fr $(distdir); }; }
-DIST_ARCHIVES = $(distdir).tar.gz
-GZIP_ENV = --best
-distuninstallcheck_listfiles = find . -type f -print
-distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
@@ -730,7 +640,6 @@ USING_WIN32_THREADS_TRUE = @USING_WIN32_THREADS_TRUE@
 VERSION = @VERSION@
 XLIB_AWT_FALSE = @XLIB_AWT_FALSE@
 XLIB_AWT_TRUE = @XLIB_AWT_TRUE@
-XMKMF = @XMKMF@
 X_AWT_FALSE = @X_AWT_FALSE@
 X_AWT_TRUE = @X_AWT_TRUE@
 X_CFLAGS = @X_CFLAGS@
@@ -742,9 +651,14 @@ ZIP = @ZIP@
 ZLIBS = @ZLIBS@
 ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
+ac_ct_AR = @ac_ct_AR@
+ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_ct_LD = @ac_ct_LD@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -765,10 +679,7 @@ build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 datadir = @datadir@
-datarootdir = @datarootdir@
 dbexecdir = @dbexecdir@
-docdir = @docdir@
-dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
@@ -783,14 +694,12 @@ host_exeext = @host_exeext@
 host_os = @host_os@
 host_subdir = @host_subdir@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libstdcxx_incdir = @libstdcxx_incdir@
-localedir = @localedir@
 localstatedir = @localstatedir@
 lt_ECHO = @lt_ECHO@
 mandir = @mandir@
@@ -798,10 +707,8 @@ mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
@@ -9779,149 +9686,6 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
-
-distdir: $(DISTFILES)
-	$(am__remove_distdir)
-	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/libltdl $(distdir)/scripts
-	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
-	list='$(DISTFILES)'; for file in $$list; do \
-	  case $$file in \
-	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
-	    $(top_srcdir)/*) file=`echo "$$file" | sed "s|^$$topsrcdirstrip/|$(top_builddir)/|"`;; \
-	  esac; \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
-	  if test "$$dir" != "$$file" && test "$$dir" != "."; then \
-	    dir="/$$dir"; \
-	    $(mkdir_p) "$(distdir)$$dir"; \
-	  else \
-	    dir=''; \
-	  fi; \
-	  if test -d $$d/$$file; then \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -pR $(srcdir)/$$file $(distdir)$$dir || exit 1; \
-	    fi; \
-	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
-	  else \
-	    test -f $(distdir)/$$file \
-	    || cp -p $$d/$$file $(distdir)/$$file \
-	    || exit 1; \
-	  fi; \
-	done
-	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
-	  if test "$$subdir" = .; then :; else \
-	    test -d "$(distdir)/$$subdir" \
-	    || $(mkdir_p) "$(distdir)/$$subdir" \
-	    || exit 1; \
-	    distdir=`$(am__cd) $(distdir) && pwd`; \
-	    top_distdir=`$(am__cd) $(top_distdir) && pwd`; \
-	    (cd $$subdir && \
-	      $(MAKE) $(AM_MAKEFLAGS) \
-	        top_distdir="$$top_distdir" \
-	        distdir="$$distdir/$$subdir" \
-	        distdir) \
-	      || exit 1; \
-	  fi; \
-	done
-	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
-	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
-	|| chmod -R a+r $(distdir)
-dist-gzip: distdir
-	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
-	$(am__remove_distdir)
-
-dist-bzip2: distdir
-	tardir=$(distdir) && $(am__tar) | bzip2 -9 -c >$(distdir).tar.bz2
-	$(am__remove_distdir)
-
-dist-tarZ: distdir
-	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z
-	$(am__remove_distdir)
-
-dist-shar: distdir
-	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
-	$(am__remove_distdir)
-
-dist-zip: distdir
-	-rm -f $(distdir).zip
-	zip -rq $(distdir).zip $(distdir)
-	$(am__remove_distdir)
-
-dist dist-all: distdir
-	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
-	$(am__remove_distdir)
-
-# This target untars the dist file and tries a VPATH configuration.  Then
-# it guarantees that the distribution is self-contained by making another
-# tarfile.
-distcheck: dist
-	case '$(DIST_ARCHIVES)' in \
-	*.tar.gz*) \
-	  GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(am__untar) ;;\
-	*.tar.bz2*) \
-	  bunzip2 -c $(distdir).tar.bz2 | $(am__untar) ;;\
-	*.tar.Z*) \
-	  uncompress -c $(distdir).tar.Z | $(am__untar) ;;\
-	*.shar.gz*) \
-	  GZIP=$(GZIP_ENV) gunzip -c $(distdir).shar.gz | unshar ;;\
-	*.zip*) \
-	  unzip $(distdir).zip ;;\
-	esac
-	chmod -R a-w $(distdir); chmod a+w $(distdir)
-	mkdir $(distdir)/_build
-	mkdir $(distdir)/_inst
-	chmod a-w $(distdir)
-	dc_install_base=`$(am__cd) $(distdir)/_inst && pwd | sed -e 's,^[^:\\/]:[\\/],/,'` \
-	  && dc_destdir="$${TMPDIR-/tmp}/am-dc-$$$$/" \
-	  && cd $(distdir)/_build \
-	  && ../configure --srcdir=.. --prefix="$$dc_install_base" \
-	    $(DISTCHECK_CONFIGURE_FLAGS) \
-	  && $(MAKE) $(AM_MAKEFLAGS) \
-	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
-	  && $(MAKE) $(AM_MAKEFLAGS) check \
-	  && $(MAKE) $(AM_MAKEFLAGS) install \
-	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
-	  && $(MAKE) $(AM_MAKEFLAGS) uninstall \
-	  && $(MAKE) $(AM_MAKEFLAGS) distuninstallcheck_dir="$$dc_install_base" \
-	        distuninstallcheck \
-	  && chmod -R a-w "$$dc_install_base" \
-	  && ({ \
-	       (cd ../.. && umask 077 && mkdir "$$dc_destdir") \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" install \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" uninstall \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" \
-	            distuninstallcheck_dir="$$dc_destdir" distuninstallcheck; \
-	      } || { rm -rf "$$dc_destdir"; exit 1; }) \
-	  && rm -rf "$$dc_destdir" \
-	  && $(MAKE) $(AM_MAKEFLAGS) dist \
-	  && rm -rf $(DIST_ARCHIVES) \
-	  && $(MAKE) $(AM_MAKEFLAGS) distcleancheck
-	$(am__remove_distdir)
-	@(echo "$(distdir) archives ready for distribution: "; \
-	  list='$(DIST_ARCHIVES)'; for i in $$list; do echo $$i; done) | \
-	  sed -e '1{h;s/./=/g;p;x;}' -e '$${p;x;}'
-distuninstallcheck:
-	@cd $(distuninstallcheck_dir) \
-	&& test `$(distuninstallcheck_listfiles) | wc -l` -le 1 \
-	   || { echo "ERROR: files left after uninstall:" ; \
-	        if test -n "$(DESTDIR)"; then \
-	          echo "  (check DESTDIR support)"; \
-	        fi ; \
-	        $(distuninstallcheck_listfiles) ; \
-	        exit 1; } >&2
-distcleancheck: distclean
-	@if test '$(srcdir)' = . ; then \
-	  echo "ERROR: distcleancheck can only run from a VPATH build" ; \
-	  exit 1 ; \
-	fi
-	@test `$(distcleancheck_listfiles) | wc -l` -eq 0 \
-	  || { echo "ERROR: files left in build directory after distclean:" ; \
-	       $(distcleancheck_listfiles) ; \
-	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) all-multi \
@@ -10089,18 +9853,16 @@ uninstall-info: uninstall-info-recursive
 	am--refresh check check-am clean clean-binPROGRAMS \
 	clean-dbexecLTLIBRARIES clean-generic clean-libexecsubPROGRAMS \
 	clean-libtool clean-multi clean-noinstPROGRAMS clean-recursive \
-	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
-	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-local distclean-multi \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-binSCRIPTS \
-	install-data install-data-am install-data-local \
-	install-dbexecDATA install-dbexecLTLIBRARIES install-exec \
-	install-exec-am install-exec-hook install-info install-info-am \
-	install-jarDATA install-libexecsubPROGRAMS install-man \
-	install-multi install-strip install-toolexeclibLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES ctags ctags-recursive distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-local distclean-multi distclean-recursive \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-binPROGRAMS install-binSCRIPTS install-data \
+	install-data-am install-data-local install-dbexecDATA \
+	install-dbexecLTLIBRARIES install-exec install-exec-am \
+	install-exec-hook install-info install-info-am install-jarDATA \
+	install-libexecsubPROGRAMS install-man install-multi \
+	install-strip install-toolexeclibLTLIBRARIES \
 	install-toolexecmainlibDATA installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic maintainer-clean-multi \
