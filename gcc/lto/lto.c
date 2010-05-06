@@ -718,36 +718,30 @@ lto_promote_cross_file_statics (void)
   struct varpool_node *vnode;
   unsigned i, n_sets;
   cgraph_node_set set;
+  varpool_node_set vset;
   cgraph_node_set_iterator csi;
+  varpool_node_set_iterator vsi;
 
   gcc_assert (flag_wpa);
 
-  /* At moment we make no attempt to figure out who is refering the variables,
-     so all must become global.  
-
-     Constant pool references use internal labels and thus can not be made global.
-     It is sensible to keep those ltrans local to allow better optimization.  */
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (!vnode->externally_visible && vnode->analyzed
-	&& !DECL_IN_CONSTANT_POOL (vnode->decl))
-       {
-	  TREE_PUBLIC (vnode->decl) = 1;
-	  DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
-       }
   n_sets = VEC_length (cgraph_node_set, lto_cgraph_node_sets);
   for (i = 0; i < n_sets; i++)
     {
       set = VEC_index (cgraph_node_set, lto_cgraph_node_sets, i);
+      vset = VEC_index (varpool_node_set, lto_varpool_node_sets, i);
 
       /* If node has either address taken (and we have no clue from where)
 	 or it is called from other partition, it needs to be globalized.  */
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
 	{
 	  struct cgraph_node *node = csi_node (csi);
-	  bool globalize = node->address_taken || node->local.vtable_method;
+	  bool globalize = node->local.vtable_method;
 	  struct cgraph_edge *e;
 	  if (node->local.externally_visible)
 	    continue;
+	  if (!globalize
+	      && referenced_from_other_partition_p (&node->ref_list, set, vset))
+	    globalize = true;
 	  for (e = node->callers; e && !globalize; e = e->next_caller)
 	    {
 	      struct cgraph_node *caller = e->caller;
@@ -758,6 +752,7 @@ lto_promote_cross_file_statics (void)
 	    }
 	  if (globalize)
 	     {
+		gcc_assert (flag_wpa);
 		TREE_PUBLIC (node->decl) = 1;
 		DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
 		if (node->same_body)
@@ -771,6 +766,21 @@ lto_promote_cross_file_statics (void)
 		      }
 		  }
 	     }
+	}
+      for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
+	{
+	  vnode = vsi_node (vsi);
+	  /* Constant pool references use internal labels and thus can not
+	     be made global.  It is sensible to keep those ltrans local to
+	     allow better optimization.  */
+	  if (!DECL_IN_CONSTANT_POOL (vnode->decl)
+	      && !vnode->externally_visible && vnode->analyzed
+	      && referenced_from_other_partition_p (&vnode->ref_list, set, vset))
+	    {
+	      gcc_assert (flag_wpa);
+	      TREE_PUBLIC (vnode->decl) = 1;
+	      DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
+	    }
 	}
 
     }
@@ -1457,7 +1467,7 @@ lto_fixup_tree (tree *tp, int *walk_subtrees, void *data)
 
   t = *tp;
   *walk_subtrees = 0;
-  if (pointer_set_contains (fixup_data->seen, t))
+  if (!t || pointer_set_contains (fixup_data->seen, t))
     return NULL;
 
   if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)

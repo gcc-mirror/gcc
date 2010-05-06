@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 struct record_reference_ctx
 {
   bool only_vars;
+  struct varpool_node *varpool_node;
 };
 
 /* Walk tree and record all calls and references to functions/variables.
@@ -63,15 +64,26 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
       /* Record dereferences to the functions.  This makes the
 	 functions reachable unconditionally.  */
       decl = get_base_var (*tp);
-      if (TREE_CODE (decl) == FUNCTION_DECL && !ctx->only_vars)
-	cgraph_mark_address_taken_node (cgraph_node (decl));
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  if (!ctx->only_vars)
+	  cgraph_mark_address_taken_node (cgraph_node (decl));
+	  ipa_record_reference (NULL, ctx->varpool_node,
+			        cgraph_node (decl), NULL,
+			        IPA_REF_ADDR, NULL);
+	}
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
-	  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
+	  struct varpool_node *vnode = varpool_node (decl);
 	  if (lang_hooks.callgraph.analyze_expr)
 	    lang_hooks.callgraph.analyze_expr (&decl, walk_subtrees);
-	  varpool_mark_needed_node (varpool_node (decl));
+	  varpool_mark_needed_node (vnode);
+	  if (vnode->alias && vnode->extra_name)
+	    vnode = vnode->extra_name;
+	  ipa_record_reference (NULL, ctx->varpool_node,
+				NULL, vnode,
+				IPA_REF_ADDR, NULL);
 	}
       *walk_subtrees = 0;
       break;
@@ -148,6 +160,9 @@ mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
     {
       struct cgraph_node *node = cgraph_node (addr);
       cgraph_mark_address_taken_node (node);
+      ipa_record_reference ((struct cgraph_node *)data, NULL,
+			    node, NULL,
+			    IPA_REF_ADDR, stmt);
     }
   else
     {
@@ -161,6 +176,11 @@ mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
 	  if (lang_hooks.callgraph.analyze_expr)
 	    lang_hooks.callgraph.analyze_expr (&addr, &walk_subtrees);
 	  varpool_mark_needed_node (vnode);
+	  if (vnode->alias && vnode->extra_name)
+	    vnode = vnode->extra_name;
+	  ipa_record_reference ((struct cgraph_node *)data, NULL,
+				NULL, vnode,
+				IPA_REF_ADDR, stmt);
 	}
     }
 
@@ -183,6 +203,11 @@ mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t,
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
       varpool_mark_needed_node (vnode);
+      if (vnode->alias && vnode->extra_name)
+	vnode = vnode->extra_name;
+      ipa_record_reference ((struct cgraph_node *)data, NULL,
+			    NULL, vnode,
+			    IPA_REF_LOAD, stmt);
     }
   return false;
 }
@@ -203,6 +228,11 @@ mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t,
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
       varpool_mark_needed_node (vnode);
+      if (vnode->alias && vnode->extra_name)
+	vnode = vnode->extra_name;
+      ipa_record_reference ((struct cgraph_node *)data, NULL,
+			    NULL, vnode,
+			    IPA_REF_STORE, NULL);
      }
   return false;
 }
@@ -299,8 +329,10 @@ void
 record_references_in_initializer (tree decl, bool only_vars)
 {
   struct pointer_set_t *visited_nodes = pointer_set_create ();
-  struct record_reference_ctx ctx = {false};
+  struct varpool_node *node = varpool_node (decl);
+  struct record_reference_ctx ctx = {false, NULL};
 
+  ctx.varpool_node = node;
   ctx.only_vars = only_vars;
   walk_tree (&DECL_INITIAL (decl), record_reference,
              &ctx, visited_nodes);
@@ -318,6 +350,7 @@ rebuild_cgraph_edges (void)
   gimple_stmt_iterator gsi;
 
   cgraph_node_remove_callees (node);
+  ipa_remove_all_references (&node->ref_list);
 
   node->count = ENTRY_BLOCK_PTR->count;
 

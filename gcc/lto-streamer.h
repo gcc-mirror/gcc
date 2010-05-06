@@ -257,6 +257,7 @@ enum lto_section_type
   LTO_section_static_initializer,
   LTO_section_cgraph,
   LTO_section_varpool,
+  LTO_section_refs,
   LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
@@ -855,6 +856,9 @@ bool lto_varpool_encoder_encode_initializer_p (lto_varpool_encoder_t,
 					       struct varpool_node *);
 void output_cgraph (cgraph_node_set, varpool_node_set);
 void input_cgraph (void);
+bool referenced_from_other_partition_p (struct ipa_ref_list *,
+				        cgraph_node_set,
+				        varpool_node_set vset);
 
 
 /* In lto-symtab.c.  */
