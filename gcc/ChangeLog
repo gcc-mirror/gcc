@@ -1,3 +1,12 @@
+2010-05-05  Andrew Pinski  <andrew.pinski@caviumnetworks.com>
+
+	* config/mips/mips.h (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
+	Delete.
+	* config/mips/mips.c (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
+	New define.
+	* config/mips/mips-protos.h
+	(mips_small_register_classes_for_mode_p): Delete prototype.
+
 2010-05-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/arm/arm.h (MAX_LDM_STM_OPS): New macro.

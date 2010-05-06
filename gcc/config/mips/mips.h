@@ -2006,13 +2006,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS NO_REGS
 
-/* When this hook returns true for MODE, the compiler allows
-   registers explicitly used in the rtl to be used as spill registers
-   but prevents the compiler from extending the lifetime of these
-   registers.  */
-#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
-  mips_small_register_classes_for_mode_p
-
 /* We generally want to put call-clobbered registers ahead of
    call-saved ones.  (IRA expects this.)  */
 
