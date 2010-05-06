@@ -83,8 +83,8 @@ extend_scattering (poly_bb_p pbb, int max_scattering)
   Value one;
 
   nb_added_dims = max_scattering - pbb_nb_scattering_transform (pbb);
-  value_init (one);
-  value_set_si (one, 1);
+  mpz_init (one);
+  mpz_set_si (one, 1);
   ppl_new_Coefficient (&coef);
   ppl_assign_Coefficient_from_mpz_t (coef, one);
 
@@ -113,7 +113,7 @@ extend_scattering (poly_bb_p pbb, int max_scattering)
     }
 
   ppl_delete_Coefficient (coef);
-  value_clear (one);
+  mpz_clear (one);
 }
 
 /* All scattering matrices in SCOP will have the same number of scattering
@@ -1001,7 +1001,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
   Value val;
   graphite_dim_t i;
 
-  value_init (val);
+  mpz_init (val);
   ppl_new_Coefficient (&coef);
   ppl_Polyhedron_get_constraints (ph, &pcs);
   ppl_new_Constraint_System_const_iterator (&cit);
@@ -1017,7 +1017,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
       ppl_Linear_Expression_coefficient (expr, iter, coef);
       ppl_Coefficient_to_mpz_t (coef, val);
 
-      if (value_zero_p (val))
+      if (mpz_sgn (val))
 	{
 	  ppl_delete_Linear_Expression (expr);
 	  continue;
@@ -1032,7 +1032,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
 
 	  if (value_notzero_p (val))
 	    {
-	      value_clear (val);
+	      mpz_clear (val);
 	      ppl_delete_Linear_Expression (expr);
 	      ppl_delete_Coefficient (coef);
 	      ppl_delete_Constraint_System_const_iterator (cit);
@@ -1060,7 +1060,7 @@ pbb_number_of_iterations (poly_bb_p pbb,
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PBB_DOMAIN (pbb), &dim);
   ppl_new_Linear_Expression_with_dimension (&le, dim);
   ppl_set_coef (le, pbb_iterator_dim (pbb, loop_depth), 1);
-  value_set_si (niter, -1);
+  mpz_set_si (niter, -1);
   ppl_max_for_le_pointset (PBB_DOMAIN (pbb), le, niter);
   ppl_delete_Linear_Expression (le);
 }
@@ -1106,7 +1106,7 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (sctr, &dim);
   ppl_new_Linear_Expression_with_dimension (&le, dim);
   ppl_set_coef (le, time_depth, 1);
-  value_set_si (niter, -1);
+  mpz_set_si (niter, -1);
   ppl_max_for_le_pointset (sctr, le, niter);
 
   ppl_delete_Linear_Expression (le);

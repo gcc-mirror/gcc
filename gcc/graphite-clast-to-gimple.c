@@ -311,7 +311,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 
 	if (t->var)
 	  {
-	    if (value_one_p (t->val))
+	    if (mpz_cmp_si (t->val, 1) == 0)
 	      {
 		tree name = clast_name_to_gcc (t->var, region, newivs,
 					       newivs_index, params_index);
@@ -323,7 +323,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 		return name;
 	      }
 
-	    else if (value_mone_p (t->val))
+	    else if (mpz_cmp_si (t->val, -1) == 0)
 	      {
 		tree name = clast_name_to_gcc (t->var, region, newivs,
 					       newivs_index, params_index);
@@ -1036,11 +1036,11 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
      However lb < ub + 1 is false, as expected.  */
   tree one;
   Value gmp_one;
-
-  value_init (gmp_one);
-  value_set_si (gmp_one, 1);
+  
+  mpz_init (gmp_one);
+  mpz_set_si (gmp_one, 1);
   one = gmp_cst_to_tree (type, gmp_one);
-  value_clear (gmp_one);
+  mpz_clear (gmp_one);
 
   ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR : PLUS_EXPR,
 			type, ub, one);

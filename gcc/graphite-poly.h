@@ -681,8 +681,8 @@ new_lst_loop (VEC (lst_p, heap) *seq)
   LST_LOOP_P (lst) = true;
   LST_SEQ (lst) = seq;
   LST_LOOP_FATHER (lst) = NULL;
-  value_init (LST_LOOP_MEMORY_STRIDES (lst));
-  value_set_si (LST_LOOP_MEMORY_STRIDES (lst), -1);
+  mpz_init (LST_LOOP_MEMORY_STRIDES (lst));
+  mpz_set_si (LST_LOOP_MEMORY_STRIDES (lst), -1);
 
   for (i = 0; VEC_iterate (lst_p, seq, i, l); i++)
     LST_LOOP_FATHER (l) = lst;
@@ -719,7 +719,7 @@ free_lst (lst_p lst)
       for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
 	free_lst (l);
 
-      value_clear (LST_LOOP_MEMORY_STRIDES (lst));
+      mpz_clear (LST_LOOP_MEMORY_STRIDES (lst));
       VEC_free (lst_p, heap, LST_SEQ (lst));
     }
 

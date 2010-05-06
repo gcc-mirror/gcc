@@ -71,10 +71,10 @@ gmp_cst_to_tree (tree type, Value val)
   Value tmp;
   double_int di;
 
-  value_init (tmp);
-  value_assign (tmp, val);
+  mpz_init (tmp);
+  mpz_set (tmp, val);
   di = mpz_get_double_int (t, tmp, true);
-  value_clear (tmp);
+  mpz_clear (tmp);
 
   return double_int_to_tree (t, di);
 }
@@ -85,10 +85,10 @@ static inline void
 ppl_set_inhomogeneous (ppl_Linear_Expression_t e, int x)
 {
   Value v;
-  value_init (v);
-  value_set_si (v, x);
+  mpz_init (v);
+  mpz_set_si (v, x);
   ppl_set_inhomogeneous_gmp (e, v);
-  value_clear (v);
+  mpz_clear (v);
 }
 
 /* Set the inhomogeneous term of E to the tree X.  */
@@ -97,10 +97,10 @@ static inline void
 ppl_set_inhomogeneous_tree (ppl_Linear_Expression_t e, tree x)
 {
   Value v;
-  value_init (v);
+  mpz_init (v);
   tree_int_to_gmp (x, v);
   ppl_set_inhomogeneous_gmp (e, v);
-  value_clear (v);
+  mpz_clear (v);
 }
 
 /* Set E[I] to integer X.  */
@@ -109,10 +109,10 @@ static inline void
 ppl_set_coef (ppl_Linear_Expression_t e, ppl_dimension_type i, int x)
 {
   Value v;
-  value_init (v);
-  value_set_si (v, x);
+  mpz_init (v);
+  mpz_set_si (v, x);
   ppl_set_coef_gmp (e, i, v);
-  value_clear (v);
+  mpz_clear (v);
 }
 
 /* Set E[I] to tree X.  */
@@ -121,10 +121,10 @@ static inline void
 ppl_set_coef_tree (ppl_Linear_Expression_t e, ppl_dimension_type i, tree x)
 {
   Value v;
-  value_init (v);
+  mpz_init (v);
   tree_int_to_gmp (x, v);
   ppl_set_coef_gmp (e, i, v);
-  value_clear (v);
+  mpz_clear (v);
 }
 
 /* Sets RES to the max of V1 and V2.  */
@@ -132,9 +132,9 @@ ppl_set_coef_tree (ppl_Linear_Expression_t e, ppl_dimension_type i, tree x)
 static inline void
 value_max (Value res, Value v1, Value v2)
 {
-  if (value_compare (v1, v2) < 0)
-    value_assign (res, v2);
-  value_assign (res, v1);
+  if (mpz_cmp (v1, v2) < 0)
+    mpz_set (res, v2);
+  mpz_set (res, v1);
 }
 
 /* Builds a new identity map for dimension DIM.  */
