@@ -1,3 +1,9 @@
+2010-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host: Removed irix[1-6], irix[1-5].*, irix6.[0-4]*
+	support.
+	* config/os/irix/irix5.2: Removed.
+
 2010-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
