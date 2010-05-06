@@ -1914,9 +1914,10 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 {
   tree *p;
   VEC(tree,heap) *stack;
-  enum gimplify_status ret = GS_OK, tret;
+  enum gimplify_status ret = GS_ALL_DONE, tret;
   int i;
   location_t loc = EXPR_LOCATION (*expr_p);
+  tree expr = *expr_p;
 
   /* Create a stack of the subexpressions so later we can walk them in
      order from inner to outer.  */
@@ -2070,10 +2071,11 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if ((fallback & fb_rvalue) && TREE_CODE (*expr_p) == COMPONENT_REF)
     {
       canonicalize_component_ref (expr_p);
-      ret = MIN (ret, GS_OK);
     }
 
   VEC_free (tree, heap, stack);
+
+  gcc_assert (*expr_p == expr || ret != GS_ALL_DONE);
 
   return ret;
 }
@@ -6567,7 +6569,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       else if (ret != GS_UNHANDLED)
 	break;
 
-      ret = GS_OK;
+      /* Make sure that all the cases set 'ret' appropriately.  */
+      ret = GS_UNHANDLED;
       switch (TREE_CODE (*expr_p))
 	{
 	  /* First deal with the special cases.  */
@@ -6601,6 +6604,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    {
 	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
 	      mark_addressable (*expr_p);
+	      ret = GS_OK;
 	    }
 	  break;
 
@@ -6615,6 +6619,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    {
 	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
 	      mark_addressable (*expr_p);
+	      ret = GS_OK;
 	    }
 	  break;
 
@@ -6633,10 +6638,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case INIT_EXPR:
 	  ret = gimplify_modify_expr (expr_p, pre_p, post_p,
 				      fallback != fb_none);
-	  /* Don't let the end of loop logic change GS_OK to GS_ALL_DONE;
-	     gimplify_modify_expr_rhs might have changed the RHS.  */
-	  if (ret == GS_OK && *expr_p)
-	    continue;
 	  break;
 
 	case TRUTH_ANDIF_EXPR:
@@ -6680,6 +6681,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      /* Just strip a conversion to void (or in void context) and
 		 try again.  */
 	      *expr_p = TREE_OPERAND (*expr_p, 0);
+	      ret = GS_OK;
 	      break;
 	    }
 
@@ -6700,7 +6702,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case INDIRECT_REF:
 	  *expr_p = fold_indirect_ref_loc (input_location, *expr_p);
 	  if (*expr_p != save_expr)
-	    break;
+	    {
+	      ret = GS_OK;
+	      break;
+	    }
 	  /* else fall through.  */
 	case ALIGN_INDIRECT_REF:
 	case MISALIGNED_INDIRECT_REF:
@@ -6727,7 +6732,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  if (fallback & fb_lvalue)
 	    ret = GS_ALL_DONE;
 	  else
-	    *expr_p = DECL_INITIAL (*expr_p);
+	    {
+	      *expr_p = DECL_INITIAL (*expr_p);
+	      ret = GS_OK;
+	    }
 	  break;
 
 	case DECL_EXPR:
@@ -6762,6 +6770,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    }
 	  gimplify_seq_add_stmt (pre_p,
 			  gimple_build_goto (GOTO_DESTINATION (*expr_p)));
+	  ret = GS_ALL_DONE;
 	  break;
 
 	case PREDICT_EXPR:
@@ -6804,7 +6813,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  append_to_statement_list (ce->value, &temp);
 
 	      *expr_p = temp;
-	      ret = GS_OK;
+	      ret = temp ? GS_OK : GS_ALL_DONE;
 	    }
 	  /* C99 code may assign to an array in a constructed
 	     structure or union, and this has undefined behavior only
@@ -6814,6 +6823,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    {
 	      *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
 	      mark_addressable (*expr_p);
+	      ret = GS_OK;
 	    }
 	  else
 	    ret = GS_ALL_DONE;
@@ -6961,6 +6971,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			   gimple_test_f, fallback);
 	    gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, post_p,
 			   is_gimple_val, fb_rvalue);
+	    ret = GS_ALL_DONE;
 	  }
 	  break;
 
@@ -7048,6 +7059,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		   TREE_TYPE (*expr_p))))
 	    {
 	      *expr_p = tmp;
+	      ret = GS_OK;
 	      break;
 	    }
 	  /* Convert (void *)&a + 4 into (void *)&a[1].  */
@@ -7063,6 +7075,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 					    0)))))
 	     {
                *expr_p = fold_convert (TREE_TYPE (*expr_p), tmp);
+	       ret = GS_OK;
 	       break;
 	     }
           /* FALLTHRU */
@@ -7132,9 +7145,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 	}
 
-      /* If we replaced *expr_p, gimplify again.  */
-      if (ret == GS_OK && (*expr_p == NULL || *expr_p == save_expr))
-	ret = GS_ALL_DONE;
+      gcc_assert (*expr_p || ret != GS_OK);
     }
   while (ret == GS_OK);
 

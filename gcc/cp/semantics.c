@@ -3280,7 +3280,7 @@ simplify_aggr_init_expr (tree *tp)
 	 expand_call{,_inline}.  */
       cxx_mark_addressable (slot);
       CALL_EXPR_RETURN_SLOT_OPT (call_expr) = true;
-      call_expr = build2 (MODIFY_EXPR, TREE_TYPE (call_expr), slot, call_expr);
+      call_expr = build2 (INIT_EXPR, TREE_TYPE (call_expr), slot, call_expr);
     }
   else if (style == pcc)
     {
