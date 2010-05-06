@@ -48,13 +48,42 @@ libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
 
+test_ldadd = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+
 check_PROGRAMS = gctest
 gctest_SOURCES = tests/test.c
-gctest_LDADD = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = $(test_ldadd)
 gctest_LDFLAGS = -shared-libgcc
 gctest_LINK = $(LINK) $(gctest_LDFLAGS)
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 TESTS = gctest
+
+TESTS += leaktest$(EXEEXT)
+check_PROGRAMS += leaktest
+leaktest_SOURCES = tests/leak_test.c
+leaktest_LDADD = $(test_ldadd)
+leaktest_LDFLAGS = -shared-libgcc
+leaktest_LINK = $(LINK) $(leaktest_LDFLAGS)
+
+TESTS += middletest$(EXEEXT)
+check_PROGRAMS += middletest
+middletest_SOURCES = tests/middle.c
+middletest_LDADD = $(test_ldadd)
+middletest_LDFLAGS = -shared-libgcc
+middletest_LINK = $(LINK) $(middletest_LDFLAGS)
+
+TESTS += staticrootstest$(EXEEXT)
+check_PROGRAMS += staticrootstest
+staticrootstest_SOURCES = tests/staticrootstest.c
+staticrootstest_LDADD = $(test_ldadd) libstaticrootslib.la
+staticrootstest_LDFLAGS = -shared-libgcc
+staticrootstest_LINK = $(LINK) $(staticrootstest_LDFLAGS)
+check_LTLIBRARIES = libstaticrootslib.la
+libstaticrootslib_la_SOURCES = tests/staticrootslib.c
+libstaticrootslib_la_LIBADD = libgcjgc_convenience.la
+libstaticrootslib_la_LDFLAGS = -version-info 1:2:0 -no-undefined \
+				-rpath /nowhere -shared-libgcc
+libstaticrootslib_la_DEPENDENCIES = libgcjgc_convenience.la
 
 ## FIXME: we shouldn't have to do this, but automake forces us to.
 .s.lo:

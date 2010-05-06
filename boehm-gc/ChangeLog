@@ -1,3 +1,31 @@
+2010-05-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/42811
+	* tests/staticrootstest.c: New test source file.
+	* tests/staticrootslib.c: New test library source file.
+	* Makefile.am (test_ldadd): New variable.
+	(gctest_LDADD): Use it.
+	(TESTS): Add leaktest, middletest and staticrootstest.
+	(check_PROGRAMS): Likewise.
+	(leaktest_SOURCES): New libtool variable definition.
+	(leaktest_LDADD): Likewise.
+	(leaktest_LDFLAGS): Likewise.
+	(leaktest_LINK): Likewise.
+	(middletest_SOURCES): Likewise.
+	(middletest_LDADD): Likewise.
+	(middletest_LDFLAGS): Likewise.
+	(middletest_LINK): Likewise.
+	(staticrootstest_SOURCES): Likewise.
+	(staticrootstest_LDADD): Likewise.
+	(staticrootstest_LDFLAGS): Likewise.
+	(staticrootstest_LINK): Likewise.
+	(check_LTLIBRARIES): Likewise.
+	(libstaticrootslib_la_SOURCES): Likewise.
+	(libstaticrootslib_la_LIBADD): Likewise.
+	(libstaticrootslib_la_LDFLAGS): Likewise.
+	(libstaticrootslib_la_DEPENDENCIES): Likewise.
+	* Makefile.in: Regenerate.
+
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
