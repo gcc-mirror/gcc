@@ -1,3 +1,13 @@
+2010-05-06  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/43901
+	* tree-vect-stmts.c (vectorizable_call): Assert that vector
+	type is not NULL if it's transformation phase, and return
+	FALSE if it's analysis.
+	(vectorizable_conversion, vectorizable_operation, 
+	vectorizable_type_demotion, vectorizable_type_promotion):
+	Likewise.
+
 2010-05-05  Andrew Pinski  <andrew.pinski@caviumnetworks.com>
 
 	* config/mips/mips.h (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
