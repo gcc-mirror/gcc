@@ -1,6 +1,7 @@
 // String support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,6 +45,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Alloc>
     class allocator;
 
+  /**
+   *  @defgroup strings Strings
+   *
+   *  @{
+  */
+
   template<class _CharT>
     struct char_traits;
 
@@ -53,12 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<> struct char_traits<char>;
 
-  typedef basic_string<char>    string;
+  typedef basic_string<char>    string;   ///< A string of @c char
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct char_traits<wchar_t>;
 
-  typedef basic_string<wchar_t> wstring;
+  typedef basic_string<wchar_t> wstring;   ///< A string of @c wchar_t
 #endif
 
 #if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
@@ -67,10 +74,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<> struct char_traits<char16_t>;
   template<> struct char_traits<char32_t>;
 
-  typedef basic_string<char16_t> u16string;
-  typedef basic_string<char32_t> u32string;
+  typedef basic_string<char16_t> u16string; ///< A string of @c char16_t
+  typedef basic_string<char32_t> u32string; ///< A string of @c char32_t
 
 #endif
+  /** @}  */
 
 _GLIBCXX_END_NAMESPACE
 
