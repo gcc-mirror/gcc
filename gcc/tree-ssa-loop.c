@@ -109,8 +109,7 @@ tree_ssa_loop_im (void)
   if (number_of_loops () <= 1)
     return 0;
 
-  tree_ssa_lim ();
-  return 0;
+  return tree_ssa_lim ();
 }
 
 static bool
