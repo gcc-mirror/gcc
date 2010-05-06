@@ -1,5 +1,8 @@
 2010-05-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/Wunused-var-8.c: Move to...
+	* c-c++-common/Wunused-var-6.c: ... here.  New test.
+
 	PR bootstrap/43994
 	* df-problems.c (dead_debug_insert_before): Use *DF_REF_REAL_LOC
 	instead of DF_REF_REAL_REG.
