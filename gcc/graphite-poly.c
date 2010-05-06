@@ -80,7 +80,7 @@ extend_scattering (poly_bb_p pbb, int max_scattering)
   ppl_dimension_type nb_old_dims, nb_new_dims;
   int nb_added_dims, i;
   ppl_Coefficient_t coef;
-  Value one;
+  mpz_t one;
 
   nb_added_dims = max_scattering - pbb_nb_scattering_transform (pbb);
   mpz_init (one);
@@ -998,7 +998,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
   ppl_dimension_type iter = psct_iterator_dim (pbb, loop_depth);
   ppl_Linear_Expression_t expr;
   ppl_Coefficient_t coef;
-  Value val;
+  mpz_t val;
   graphite_dim_t i;
 
   mpz_init (val);
@@ -1052,7 +1052,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
 void
 pbb_number_of_iterations (poly_bb_p pbb,
 			  graphite_dim_t loop_depth,
-			  Value niter)
+			  mpz_t niter)
 {
   ppl_Linear_Expression_t le;
   ppl_dimension_type dim;
@@ -1071,7 +1071,7 @@ pbb_number_of_iterations (poly_bb_p pbb,
 void
 pbb_number_of_iterations_at_time (poly_bb_p pbb,
 				  graphite_dim_t time_depth,
-				  Value niter)
+				  mpz_t niter)
 {
   ppl_Pointset_Powerset_C_Polyhedron_t ext_domain, sctr;
   ppl_Linear_Expression_t le;

@@ -44,19 +44,19 @@ void ppl_read_polyhedron_matrix (ppl_Polyhedron_t *, FILE *);
 void ppl_insert_dimensions (ppl_Polyhedron_t, int, int);
 void ppl_insert_dimensions_pointset (ppl_Pointset_Powerset_C_Polyhedron_t, int,
 				     int);
-void ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t, Value);
-void ppl_set_coef_gmp (ppl_Linear_Expression_t, ppl_dimension_type, Value);
+void ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t, mpz_t);
+void ppl_set_coef_gmp (ppl_Linear_Expression_t, ppl_dimension_type, mpz_t);
 void ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t,
-                              ppl_Linear_Expression_t, Value);
+                              ppl_Linear_Expression_t, mpz_t);
 void ppl_min_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t,
-			      ppl_Linear_Expression_t, Value);
+			      ppl_Linear_Expression_t, mpz_t);
 ppl_Constraint_t ppl_build_relation (int, int, int, int,
 				     enum ppl_enum_Constraint_Type);
 
 /* Assigns to RES the value of the INTEGER_CST T.  */
 
 static inline void
-tree_int_to_gmp (tree t, Value res)
+tree_int_to_gmp (tree t, mpz_t res)
 {
   double_int di = tree_to_double_int (t);
   mpz_set_double_int (res, di, TYPE_UNSIGNED (TREE_TYPE (t)));
@@ -65,10 +65,10 @@ tree_int_to_gmp (tree t, Value res)
 /* Converts a GMP constant VAL to a tree and returns it.  */
 
 static inline tree
-gmp_cst_to_tree (tree type, Value val)
+gmp_cst_to_tree (tree type, mpz_t val)
 {
   tree t = type ? type : integer_type_node;
-  Value tmp;
+  mpz_t tmp;
   double_int di;
 
   mpz_init (tmp);
@@ -84,7 +84,7 @@ gmp_cst_to_tree (tree type, Value val)
 static inline void
 ppl_set_inhomogeneous (ppl_Linear_Expression_t e, int x)
 {
-  Value v;
+  mpz_t v;
   mpz_init (v);
   mpz_set_si (v, x);
   ppl_set_inhomogeneous_gmp (e, v);
@@ -96,7 +96,7 @@ ppl_set_inhomogeneous (ppl_Linear_Expression_t e, int x)
 static inline void
 ppl_set_inhomogeneous_tree (ppl_Linear_Expression_t e, tree x)
 {
-  Value v;
+  mpz_t v;
   mpz_init (v);
   tree_int_to_gmp (x, v);
   ppl_set_inhomogeneous_gmp (e, v);
@@ -108,7 +108,7 @@ ppl_set_inhomogeneous_tree (ppl_Linear_Expression_t e, tree x)
 static inline void
 ppl_set_coef (ppl_Linear_Expression_t e, ppl_dimension_type i, int x)
 {
-  Value v;
+  mpz_t v;
   mpz_init (v);
   mpz_set_si (v, x);
   ppl_set_coef_gmp (e, i, v);
@@ -120,7 +120,7 @@ ppl_set_coef (ppl_Linear_Expression_t e, ppl_dimension_type i, int x)
 static inline void
 ppl_set_coef_tree (ppl_Linear_Expression_t e, ppl_dimension_type i, tree x)
 {
-  Value v;
+  mpz_t v;
   mpz_init (v);
   tree_int_to_gmp (x, v);
   ppl_set_coef_gmp (e, i, v);
@@ -130,7 +130,7 @@ ppl_set_coef_tree (ppl_Linear_Expression_t e, ppl_dimension_type i, tree x)
 /* Sets RES to the max of V1 and V2.  */
 
 static inline void
-value_max (Value res, Value v1, Value v2)
+value_max (mpz_t res, mpz_t v1, mpz_t v2)
 {
   if (mpz_cmp (v1, v2) < 0)
     mpz_set (res, v2);

@@ -276,9 +276,9 @@ new_Cloog_Domain_from_ppl_Pointset_Powerset (
 /* Set the inhomogeneous term of E to X.  */
 
 void
-ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t e, Value x)
+ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t e, mpz_t x)
 {
-  Value v0, v1;
+  mpz_t v0, v1;
   ppl_Coefficient_t c;
 
   mpz_init (v0);
@@ -301,9 +301,9 @@ ppl_set_inhomogeneous_gmp (ppl_Linear_Expression_t e, Value x)
 /* Set E[I] to X.  */
 
 void
-ppl_set_coef_gmp (ppl_Linear_Expression_t e, ppl_dimension_type i, Value x)
+ppl_set_coef_gmp (ppl_Linear_Expression_t e, ppl_dimension_type i, mpz_t x)
 {
-  Value v0, v1;
+  mpz_t v0, v1;
   ppl_Coefficient_t c;
 
   mpz_init (v0);
@@ -422,7 +422,7 @@ ppl_strip_loop (ppl_Polyhedron_t ph, ppl_dimension_type loop, int stride)
   ppl_dimension_type dim;
   ppl_Polyhedron_t res;
   ppl_Coefficient_t c;
-  Value val;
+  mpz_t val;
 
   mpz_init (val);
   ppl_new_Coefficient (&c);
@@ -516,7 +516,7 @@ ppl_lexico_compare_linear_expressions (ppl_Linear_Expression_t a,
   ppl_dimension_type i;
   ppl_Coefficient_t c;
   int res;
-  Value va, vb;
+  mpz_t va, vb;
 
   ppl_Linear_Expression_space_dimension (a, &length1);
   ppl_Linear_Expression_space_dimension (b, &length2);
@@ -648,10 +648,10 @@ ppl_read_polyhedron_matrix (ppl_Polyhedron_t *ph, FILE *file)
 
 void
 ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
-                         ppl_Linear_Expression_t le, Value res)
+                         ppl_Linear_Expression_t le, mpz_t res)
 {
   ppl_Coefficient_t num, denom;
-  Value dv, nv;
+  mpz_t dv, nv;
   int maximum, err;
 
   mpz_init (nv);
@@ -679,10 +679,10 @@ ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
 
 void
 ppl_min_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
-			 ppl_Linear_Expression_t le, Value res)
+			 ppl_Linear_Expression_t le, mpz_t res)
 {
   ppl_Coefficient_t num, denom;
-  Value dv, nv;
+  mpz_t dv, nv;
   int minimum, err;
 
   mpz_init (nv);
@@ -715,7 +715,7 @@ ppl_build_relation (int dim, int pos1, int pos2, int c,
   ppl_Linear_Expression_t expr;
   ppl_Constraint_t cstr;
   ppl_Coefficient_t coef;
-  Value v, v_op, v_c;
+  mpz_t v, v_op, v_c;
 
   mpz_init (v);
   mpz_init (v_op);
