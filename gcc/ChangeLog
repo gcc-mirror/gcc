@@ -1,3 +1,9 @@
+2010-05-06  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/43791
+	* ipa-inline.c (update_caller_keys): Remove bogus
+	disregard_inline_limits check.
+
 2010-05-06  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43984
