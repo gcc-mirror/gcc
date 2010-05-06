@@ -1,3 +1,7 @@
+2010-05-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/uclinux.h (LIB_SPEC): Bring in sync with config/linux.h.
+
 2010-05-06  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/43791

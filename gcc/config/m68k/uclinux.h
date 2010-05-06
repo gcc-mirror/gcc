@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    profiling, or libg.a.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
-"%{mid-shared-library:%{!static-libc:-R libc.gdb%s}} -lc"
+"%{mid-shared-library:%{!static-libc:-R libc.gdb%s}} %{pthread:-lpthread} -lc"
 
 /* Default to using -elf2flt with no options.  */
 #undef LINK_SPEC
