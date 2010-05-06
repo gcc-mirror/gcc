@@ -4291,7 +4291,10 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	  if (TREE_CODE (TREE_OPERAND (*from_p, 0)) == CALL_EXPR)
 	    {
 	      *from_p = TREE_OPERAND (*from_p, 0);
-	      ret = GS_OK;
+	      /* We don't change ret in this case because the
+		 WITH_SIZE_EXPR might have been added in
+		 gimplify_modify_expr, so returning GS_OK would lead to an
+		 infinite loop.  */
 	      changed = true;
 	    }
 	  break;
@@ -6628,16 +6631,12 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case MODIFY_EXPR:
 	case INIT_EXPR:
-	  {
-	    tree from = TREE_OPERAND (*expr_p, 1);
-	    ret = gimplify_modify_expr (expr_p, pre_p, post_p,
-					fallback != fb_none);
-	    /* Don't let the end of loop logic change GS_OK into GS_ALL_DONE
-	       if the RHS has changed.  */
-	    if (ret == GS_OK && *expr_p == save_expr
-		&& TREE_OPERAND (*expr_p, 1) != from)
-	      continue;
-	  }
+	  ret = gimplify_modify_expr (expr_p, pre_p, post_p,
+				      fallback != fb_none);
+	  /* Don't let the end of loop logic change GS_OK to GS_ALL_DONE;
+	     gimplify_modify_expr_rhs might have changed the RHS.  */
+	  if (ret == GS_OK && *expr_p)
+	    continue;
 	  break;
 
 	case TRUTH_ANDIF_EXPR:

@@ -1,3 +1,10 @@
+2010-05-06  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs): Don't return GS_OK for
+	stripping WITH_SIZE_EXPR.
+	(gimplify_expr) [MODIFY_EXPR]: Trust GS_OK even if the rhs didn't
+	change.
+
 2010-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Removed mips-sgi-irix5*, mips-sgi-irix6.[0-4]* from
