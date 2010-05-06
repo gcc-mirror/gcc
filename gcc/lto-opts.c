@@ -383,7 +383,7 @@ lto_reissue_options (void)
       const struct cl_option *option = &cl_options[o->code];
 
       if (option->flag_var)
-	set_option (option, o->value, o->arg);
+	set_option (o->code, o->value, o->arg, 0 /*DK_UNSPECIFIED*/);
 
       if (o->type == CL_TARGET)
 	targetm.handle_option (o->code, o->arg, o->value);

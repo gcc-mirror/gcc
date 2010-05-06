@@ -1,3 +1,8 @@
+2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40989
+	* lang.c (java_handle_option): Add argument kind.
+
 2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (java_init_decl_processing): Remove argument in call to

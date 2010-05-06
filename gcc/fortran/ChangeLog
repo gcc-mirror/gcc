@@ -1,4 +1,10 @@
-2010-05-0  Tobias Burnus  <burnus@net-b.de>
+2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40989
+	* options.c (gfc_handle_option): Add argument kind.
+	* gfortran.h (gfc_handle_option): Update declaration.
+
+2010-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43985
 	* trans-types.c (gfc_sym_type): Mark Cray pointees as

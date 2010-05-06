@@ -372,13 +372,11 @@ const char **in_fnames;
 unsigned num_in_fnames;
 
 static int common_handle_option (size_t scode, const char *arg, int value,
-				 unsigned int lang_mask);
+				 unsigned int lang_mask, int kind);
 static void handle_param (const char *);
-static unsigned int handle_option (const char **argv, unsigned int lang_mask);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
-static void handle_options (unsigned int, const char **, unsigned int);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
 
@@ -485,10 +483,51 @@ void print_ignored_options (void)
   input_location = saved_loc;
 }
 
+
+/* Handle option OPT_INDEX, and argument ARG, for the language
+   indicated by LANG_MASK.  VALUE is true, unless no- form of an -f or
+   -W option was given.  KIND is the diagnostic_t if this is a
+   diagnostics option, DK_UNSPECIFIED otherwise.  Returns false if the
+   switch was invalid.  */
+bool
+handle_option (int opt_index, int value, const char *arg,
+		unsigned int lang_mask, int kind)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+
+  if (option->flag_var)
+    set_option (opt_index, value, arg, kind);
+  
+  if (option->flags & lang_mask)
+    {
+      if (lang_hooks.handle_option (opt_index, arg, value, kind) == 0)
+	return false;
+      else
+	lto_register_user_option (opt_index, arg, value, lang_mask);
+    }
+
+  if (option->flags & CL_COMMON)
+    {
+      if (common_handle_option (opt_index, arg, value, lang_mask, kind) == 0)
+	return false;
+      else
+	lto_register_user_option (opt_index, arg, value, CL_COMMON);
+    }
+
+  if (option->flags & CL_TARGET)
+    {
+      if (!targetm.handle_option (opt_index, arg, value))
+	return false;
+      else
+	lto_register_user_option (opt_index, arg, value, CL_TARGET);
+    }
+  return true;
+}
+
 /* Handle the switch beginning at ARGV for the language indicated by
    LANG_MASK.  Returns the number of switches consumed.  */
 static unsigned int
-handle_option (const char **argv, unsigned int lang_mask)
+read_cmdline_option (const char **argv, unsigned int lang_mask)
 {
   size_t opt_index;
   const char *opt, *arg = 0;
@@ -609,32 +648,8 @@ handle_option (const char **argv, unsigned int lang_mask)
 	}
     }
 
-  if (option->flag_var)
-    set_option (option, value, arg);
-
-  if (option->flags & lang_mask)
-    {
-      if (lang_hooks.handle_option (opt_index, arg, value) == 0)
-	result = 0;
-      else
-	lto_register_user_option (opt_index, arg, value, lang_mask);
-    }
-
-  if (result && (option->flags & CL_COMMON))
-    {
-      if (common_handle_option (opt_index, arg, value, lang_mask) == 0)
-	result = 0;
-      else
-	lto_register_user_option (opt_index, arg, value, CL_COMMON);
-    }
-
-  if (result && (option->flags & CL_TARGET))
-    {
-      if (!targetm.handle_option (opt_index, arg, value))
-	result = 0;
-      else
-	lto_register_user_option (opt_index, arg, value, CL_TARGET);
-    }
+  if (!handle_option (opt_index, value, arg, lang_mask, DK_UNSPECIFIED))
+    result = 0;
 
  done:
   if (dup)
@@ -735,7 +750,7 @@ flag_instrument_functions_exclude_p (tree fndecl)
    contains has a single bit set representing the current
    language.  */
 static void
-handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
+read_cmdline_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 {
   unsigned int n, i;
 
@@ -757,7 +772,7 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 	  continue;
 	}
 
-      n = handle_option (argv + i, lang_mask);
+      n = read_cmdline_option (argv + i, lang_mask);
 
       if (!n)
 	{
@@ -973,7 +988,7 @@ decode_options (unsigned int argc, const char **argv)
   OPTIMIZATION_OPTIONS (optimize, optimize_size);
 #endif
 
-  handle_options (argc, argv, lang_mask);
+  read_cmdline_options (argc, argv, lang_mask);
 
   if (dump_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
     {
@@ -1467,7 +1482,7 @@ print_specific_help (unsigned int include_flags,
 
 static int
 common_handle_option (size_t scode, const char *arg, int value,
-		      unsigned int lang_mask)
+		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED)
 {
   static bool verbose = false;
   enum opt_code code = (enum opt_code) scode;
@@ -2376,8 +2391,10 @@ get_option_state (int option, struct cl_option_state *state)
 /* Set *OPTION according to VALUE and ARG.  */
 
 void
-set_option (const struct cl_option *option, int value, const char *arg)
+set_option (int opt_index, int value, const char *arg, int kind)
 {
+  const struct cl_option *option = &cl_options[opt_index];
+
   if (!option->flag_var)
     return;
 
@@ -2407,6 +2424,9 @@ set_option (const struct cl_option *option, int value, const char *arg)
 	*(const char **) option->flag_var = arg;
 	break;
     }
+
+  if ((diagnostic_t)kind != DK_UNSPECIFIED)
+    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t)kind);
 }
 
 
@@ -2450,8 +2470,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
 	  const struct cl_option * const option = cl_options + option_index;
 
 	  /* -Werror=foo implies -Wfoo.  */
-	  if (option->var_type == CLVC_BOOLEAN && option->flag_var)
-	    *(int *) option->flag_var = 1;
+	  if (option->var_type == CLVC_BOOLEAN)
+	    handle_option (option_index, value, arg, lang_mask, (int)kind);
 
 	  if (warning_as_error_callback)
 	    warning_as_error_callback (option_index);

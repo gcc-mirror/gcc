@@ -52,7 +52,7 @@ static void java_finish (void);
 static unsigned int java_init_options (unsigned int, const char **);
 static bool java_post_options (const char **);
 
-static int java_handle_option (size_t scode, const char *arg, int value);
+static int java_handle_option (size_t scode, const char *arg, int value, int kind);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree, int);
 static void java_print_error_function (diagnostic_context *, const char *,
@@ -175,7 +175,8 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
  * return 0, but do not complain if the option is not recognized.
  */
 static int
-java_handle_option (size_t scode, const char *arg, int value)
+java_handle_option (size_t scode, const char *arg, int value,
+		    int kind ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;
 

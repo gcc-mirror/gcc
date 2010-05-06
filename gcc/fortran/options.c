@@ -532,7 +532,8 @@ gfc_handle_runtime_check_option (const char *arg)
    recognized and handled.  */
 
 int
-gfc_handle_option (size_t scode, const char *arg, int value)
+gfc_handle_option (size_t scode, const char *arg, int value,
+		   int kind ATTRIBUTE_UNUSED)
 {
   int result = 1;
   enum opt_code code = (enum opt_code) scode;

@@ -2310,7 +2310,7 @@ int get_c_kind (const char *, CInteropKind_t *);
 
 /* options.c */
 unsigned int gfc_init_options (unsigned int, const char **);
-int gfc_handle_option (size_t, const char *, int);
+int gfc_handle_option (size_t, const char *, int, int);
 bool gfc_post_options (const char **);
 
 /* f95-lang.c */

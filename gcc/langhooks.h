@@ -283,7 +283,7 @@ struct lang_hooks
 
      Return 1 if the switch is valid, 0 if invalid, and -1 if it's
      valid and should not be treated as language-independent too.  */
-  int (*handle_option) (size_t code, const char *arg, int value);
+  int (*handle_option) (size_t code, const char *arg, int value, int kind);
 
   /* Return false to use the default complaint about a missing
      argument, otherwise output a complaint and return true.  */

@@ -103,8 +103,9 @@ extern void prune_options (int *argcp, char ***argvp);
 extern void decode_options (unsigned int argc, const char **argv);
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
-extern void set_option (const struct cl_option *, int, const char *);
-
+extern void set_option (int opt_index, int value, const char *arg, int);
+bool handle_option (int opt_index, int value, const char *arg,
+		    unsigned int lang_mask, int kind);
 extern void register_warning_as_error_callback (void (*callback) (int));
 extern void enable_warning_as_error (const char *arg, int value,
 				     unsigned int lang_mask);

@@ -263,14 +263,15 @@ C ObjC C++ ObjC++ Var(warn_init_self) Warning
 Warn about variables which are initialized to themselves
 
 Wimplicit
-C ObjC C++ ObjC++ Warning
+C ObjC Var(warn_implicit) Init(-1) Warning
+Warn about implicit declarations
 
 Wimplicit-function-declaration
 C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning
 Warn about implicit function declarations
 
 Wimplicit-int
-C ObjC Var(warn_implicit_int) Warning
+C ObjC Var(warn_implicit_int) Init(-1) Warning
 Warn when a declaration does not specify a type
 
 Wimport

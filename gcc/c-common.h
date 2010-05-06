@@ -750,10 +750,6 @@ extern int flag_threadsafe_statics;
 
 extern int flag_pretty_templates;
 
-/* Nonzero means warn about implicit declarations.  */
-
-extern int warn_implicit;
-
 /* Warn about using __null (as NULL in C++) as sentinel.  For code compiled
    with GCC this doesn't matter as __null is guaranteed to have the right
    size.  */
@@ -827,7 +823,7 @@ extern void set_Wformat (int);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
 extern bool attribute_takes_identifier_p (const_tree);
-extern int c_common_handle_option (size_t code, const char *arg, int value);
+extern int c_common_handle_option (size_t code, const char *arg, int value, int kind);
 extern bool c_common_missing_argument (const char *opt, size_t code);
 extern tree c_common_type_for_mode (enum machine_mode, int);
 extern tree c_common_type_for_size (unsigned int, int);
