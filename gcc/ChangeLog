@@ -1,5 +1,11 @@
 2010-05-06  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43571
+	* domwalk.c (walk_dominator_tree): Walk the dominator
+	sons in more optimal order.
+
+2010-05-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43934
 	* tree-ssa-loop-im.c (movement_possibility): Handle PHI nodes.
 	(stmt_cost): Likewise.
