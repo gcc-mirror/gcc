@@ -1,5 +1,10 @@
 2010-05-06  Jason Merrill  <jason@redhat.com>
 
+	* gimplify.c (gimplify_expr): Set GS_ALL_DONE when appropriate.
+	Don't change GS_OK to GS_ALL_DONE.  Make sure that all cases set
+	ret appropriately.
+	(gimplify_compound_lval): Return GS_ALL_DONE as appropriate.
+
 	* gimplify.c (gimplify_modify_expr_rhs): Don't return GS_OK for
 	stripping WITH_SIZE_EXPR.
 	(gimplify_expr) [MODIFY_EXPR]: Trust GS_OK even if the rhs didn't
