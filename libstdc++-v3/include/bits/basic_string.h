@@ -79,13 +79,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This approach has the enormous advantage that a string object
    *  requires only one allocation.  All the ugliness is confined
-   *  within a single pair of inline functions, which each compile to
+   *  within a single %pair of inline functions, which each compile to
    *  a single @a add instruction: _Rep::_M_data(), and
    *  string::_M_rep(); and the allocation function which gets a
    *  block of raw bytes and with room enough and constructs a _Rep
    *  object at the front.
    *
-   *  The reason you want _M_data pointing to the character array and
+   *  The reason you want _M_data pointing to the character %array and
    *  not the _Rep is so that the debugger can see the string
    *  contents. (Probably we should add a non-inline member to get
    *  the _Rep for the debugger to use, so users can check the actual
@@ -458,8 +458,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   size_type __n, const _Alloc& __a);
 
       /**
-       *  @brief  Construct string initialized by a character array.
-       *  @param  s  Source character array.
+       *  @brief  Construct string initialized by a character %array.
+       *  @param  s  Source character %array.
        *  @param  n  Number of characters to copy.
        *  @param  a  Allocator to use (default is default allocator).
        *
@@ -501,7 +501,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       /**
-       *  @brief  Construct string from an initializer list.
+       *  @brief  Construct string from an initializer %list.
        *  @param  l  std::initializer_list of characters.
        *  @param  a  Allocator to use (default is default allocator).
        */
@@ -571,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       /**
-       *  @brief  Set value to string constructed from initializer list.
+       *  @brief  Set value to string constructed from initializer %list.
        *  @param  l  std::initializer_list.
        */
       basic_string&
@@ -720,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This function will %resize the %string to the specified
        *  number of characters.  If the number is smaller than the
        *  %string's current size the %string is truncated, otherwise
-       *  the %string is extended and new elements are set to @a c.
+       *  the %string is extended and new elements are %set to @a c.
        */
       void
       resize(size_type __n, _CharT __c);
@@ -1697,7 +1697,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @throw  std::out_of_range  If pos > size().
        *
        *  Copies up to @a n characters starting at @a pos into the C string @a
-       *  s.  If @a pos is greater than size(), out_of_range is thrown.
+       *  s.  If @a pos is %greater than size(), out_of_range is thrown.
       */
       size_type
       copy(_CharT* __s, size_type __n, size_type __pos = 0) const;
@@ -2225,10 +2225,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       /**
-       *  @brief  Compare substring against a character array.
+       *  @brief  Compare substring against a character %array.
        *  @param pos1  Index of first character of substring.
        *  @param n1  Number of characters in substring.
-       *  @param s  character array to compare against.
+       *  @param s  character %array to compare against.
        *  @param n2  Number of characters of s.
        *  @return  Integer < 0, 0, or > 0.
        *

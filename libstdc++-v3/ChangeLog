@@ -1,5 +1,9 @@
 2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/basic_string.h: Escape class names in doxygen docs.
+
+2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/44014
 	* include/bits/stringfwd.h: Add doxygen comments and new group.
 	* include/bits/basic_string.h: Add to new doxygen group.
