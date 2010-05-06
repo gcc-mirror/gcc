@@ -1,5 +1,6 @@
 2010-05-06  Mike Stump  <mikestump@comcast.net>
 
+	PR objc/35165
 	* obj-c++.dg/cxx-ivars-2.mm: Restore running of testcase.
 
 2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
