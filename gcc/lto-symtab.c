@@ -214,6 +214,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       next = e->next_caller;
       cgraph_redirect_edge_callee (e, prevailing_node);
     }
+  /* Redirect incomming references.  */
+  ipa_clone_refering (prevailing_node, NULL, &node->ref_list);
 
   if (node->same_body)
     {
@@ -272,6 +274,12 @@ lto_varpool_replace_node (struct varpool_node *vnode,
     }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+
+  /* When replacing by an alias, the references goes to the original
+     variable.  */
+  if (prevailing_node->alias && prevailing_node->extra_name)
+    prevailing_node = prevailing_node->extra_name;
+  ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
 
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);

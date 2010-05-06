@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "gcov-io.h"
 
-static void output_varpool (varpool_node_set);
+static void output_varpool (cgraph_node_set, varpool_node_set);
 
 /* Cgraph streaming is organized as set of record whose type
    is indicated by a tag.  */
@@ -286,6 +286,30 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bitpack_delete (bp);
 }
 
+/* Return if LIST contain references from other partitions.  */
+bool
+referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set set,
+				   varpool_node_set vset)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+    {
+      if (ref->refering_type == IPA_REF_CGRAPH)
+	{
+	  if (!cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	    return true;
+	}
+      else
+	{
+	  if (!varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+				      vset))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Return true when node is reachable from other partition.  */
 
 static bool
@@ -460,9 +484,9 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
 static void
 lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node *node,
-		         varpool_node_set set)
+		         cgraph_node_set set, varpool_node_set vset)
 {
-  bool boundary_p = !varpool_node_in_set_p (node, set) && node->analyzed;
+  bool boundary_p = !varpool_node_in_set_p (node, vset) && node->analyzed;
   struct bitpack_d *bp;
   struct varpool_node *alias;
   int count = 0;
@@ -486,9 +510,9 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
     }
   else
     {
-      /* FIXME: We have no idea how we move references around.  For moment assume that
-	 everything is used externally.  */
-      bp_pack_value (bp, flag_wpa, 1);  /* used_from_other_parition.  */
+      bp_pack_value (bp, node->analyzed
+		     && referenced_from_other_partition_p (&node->ref_list,
+							   set, vset), 1);
       bp_pack_value (bp, boundary_p, 1);  /* in_other_partition.  */
     }
   /* Also emit any extra name aliases.  */
@@ -503,6 +527,34 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
       lto_output_uleb128_stream (ob->main_stream, count);
       for (alias = node->extra_name; alias; alias = alias->next)
 	lto_output_var_decl_index (ob->decl_state, ob->main_stream, alias->decl);
+    }
+}
+
+/* Output the varpool NODE to OB. 
+   If NODE is not in SET, then NODE is a boundary.  */
+
+static void
+lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
+		lto_cgraph_encoder_t encoder,
+		lto_varpool_encoder_t varpool_encoder)
+{
+  struct bitpack_d *bp = bitpack_create ();
+  bp_pack_value (bp, ref->refered_type, 1);
+  bp_pack_value (bp, ref->use, 2);
+  lto_output_bitpack (ob->main_stream, bp);
+  bitpack_delete (bp);
+  if (ref->refered_type == IPA_REF_CGRAPH)
+    {
+      int nref = lto_cgraph_encoder_lookup (encoder, ipa_ref_node (ref));
+      gcc_assert (nref != LCC_NOT_FOUND);
+      lto_output_sleb128_stream (ob->main_stream, nref);
+    }
+  else
+    {
+      int nref = lto_varpool_encoder_lookup (varpool_encoder,
+				             ipa_ref_varpool_node (ref));
+      gcc_assert (nref != LCC_NOT_FOUND);
+      lto_output_sleb128_stream (ob->main_stream, nref);
     }
 }
 
@@ -534,6 +586,25 @@ add_node_to (lto_cgraph_encoder_t encoder, struct cgraph_node *node)
   lto_cgraph_encoder_encode (encoder, node);
 }
 
+/* Add all references in LIST to encoders.  */
+
+static void
+add_references (lto_cgraph_encoder_t encoder,
+		lto_varpool_encoder_t varpool_encoder,
+		struct ipa_ref_list *list)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+    if (ref->refered_type == IPA_REF_CGRAPH)
+      add_node_to (encoder, ipa_ref_node (ref));
+    else
+      {
+	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
+        lto_varpool_encoder_encode (varpool_encoder, vnode);
+      }
+}
+
 /* Output all callees or indirect outgoing edges.  EDGE must be the first such
    edge.  */
 
@@ -552,6 +623,61 @@ output_outgoing_cgraph_edges (struct cgraph_edge *edge,
   for (; edge; edge = edge->prev_callee)
     lto_output_edge (ob, edge, encoder);
 }
+
+/* Output the part of the cgraph in SET.  */
+
+static void
+output_refs (cgraph_node_set set, varpool_node_set vset,
+	     lto_cgraph_encoder_t encoder,
+	     lto_varpool_encoder_t varpool_encoder)
+{
+  cgraph_node_set_iterator csi;
+  varpool_node_set_iterator vsi;
+  struct lto_simple_output_block *ob;
+  int count;
+  struct ipa_ref *ref;
+  int i;
+
+  ob = lto_create_simple_output_block (LTO_section_refs);
+
+  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+    {
+      struct cgraph_node *node = csi_node (csi);
+
+      count = ipa_ref_list_nreferences (&node->ref_list);
+      if (count)
+	{
+	  lto_output_uleb128_stream (ob->main_stream, count);
+	  lto_output_uleb128_stream (ob->main_stream,
+				     lto_cgraph_encoder_lookup (encoder, node));
+	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	    lto_output_ref (ob, ref, encoder, varpool_encoder);
+	}
+    }
+
+  lto_output_uleb128_stream (ob->main_stream, 0);
+
+  for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
+    {
+      struct varpool_node *node = vsi_node (vsi);
+
+      count = ipa_ref_list_nreferences (&node->ref_list);
+      if (count)
+	{
+	  lto_output_uleb128_stream (ob->main_stream, count);
+	  lto_output_uleb128_stream (ob->main_stream,
+				     lto_varpool_encoder_lookup (varpool_encoder,
+								 node));
+	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	    lto_output_ref (ob, ref, encoder, varpool_encoder);
+	}
+    }
+
+  lto_output_uleb128_stream (ob->main_stream, 0);
+
+  lto_destroy_simple_output_block (ob);
+}
+
 
 /* Output the part of the cgraph in SET.  */
 
@@ -591,6 +717,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
     {
       node = csi_node (csi);
       add_node_to (encoder, node);
+      add_references (encoder, varpool_encoder, &node->ref_list);
     }
   for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
     {
@@ -598,9 +725,10 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
       gcc_assert (!vnode->alias);
       lto_varpool_encoder_encode (varpool_encoder, vnode);
       lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
+      add_references (encoder, varpool_encoder, &vnode->ref_list);
     }
-  /* FIXME: We do not track references, so for now we need to include all possibly
-     used variables in the encoder set.  */
+  /* FIXME: We can not currenlty remove any varpool nodes or we get ICE merging
+     binfos.  */
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     if (vnode->needed)
       lto_varpool_encoder_encode (varpool_encoder, vnode);
@@ -617,6 +745,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
 	      ||  TREE_READONLY (vnode->decl)))
 	{
 	  lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
+	  add_references (encoder, varpool_encoder, &vnode->ref_list);
 	}
     }
 
@@ -672,7 +801,8 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   lto_output_uleb128_stream (ob->main_stream, 0);
 
   lto_destroy_simple_output_block (ob);
-  output_varpool (vset);
+  output_varpool (set, vset);
+  output_refs (set, vset, encoder, varpool_encoder);
 }
 
 /* Overwrite the information in NODE based on FILE_DATA, TAG, FLAGS,
@@ -727,7 +857,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 /* Output the part of the cgraph in SET.  */
 
 static void
-output_varpool (varpool_node_set vset)
+output_varpool (cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_simple_output_block *ob = lto_create_simple_output_block (LTO_section_varpool);
   lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
@@ -741,7 +871,7 @@ output_varpool (varpool_node_set vset)
   for (i = 0; i < len; i++)
     {
       lto_output_varpool_node (ob, lto_varpool_encoder_deref (varpool_encoder, i),
-			       vset);
+			       set, vset);
     }
 
   lto_destroy_simple_output_block (ob);
@@ -889,6 +1019,33 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   return node;
 }
 
+/* Read a node from input_block IB.  TAG is the node's tag just read.
+   Return the node read or overwriten.  */
+
+static void
+input_ref (struct lto_input_block *ib,
+	   struct cgraph_node *refering_node,
+	   struct varpool_node *refering_varpool_node,
+	   VEC(cgraph_node_ptr, heap) *nodes,
+	   VEC(varpool_node_ptr, heap) *varpool_nodes)
+{
+  struct cgraph_node *node = NULL;
+  struct varpool_node *varpool_node = NULL;
+  struct bitpack_d *bp;
+  enum ipa_ref_type type;
+  enum ipa_ref_use use;
+
+  bp = lto_input_bitpack (ib);
+  type = (enum ipa_ref_type) bp_unpack_value (bp, 1);
+  use = (enum ipa_ref_use) bp_unpack_value (bp, 2);
+  bitpack_delete (bp);
+  if (type == IPA_REF_CGRAPH)
+    node = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
+  else
+    varpool_node = VEC_index (varpool_node_ptr, varpool_nodes, lto_input_sleb128 (ib));
+  ipa_record_reference (refering_node, refering_varpool_node,
+		        node, varpool_node, use, NULL);
+}
 
 /* Read an edge from IB.  NODES points to a vector of previously read nodes for
    decoding caller and callee of the edge to be read.  If INDIRECT is true, the
@@ -1036,6 +1193,44 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
   return varpool;
 }
 
+/* Input ipa_refs.  */
+
+static void
+input_refs (struct lto_input_block *ib,
+	    VEC(cgraph_node_ptr, heap) *nodes,
+	    VEC(varpool_node_ptr, heap) *varpool)
+{
+  int count;
+  int idx;
+  while (true)
+    {
+      struct cgraph_node *node;
+      count = lto_input_uleb128 (ib);
+      if (!count)
+	break;
+      idx = lto_input_uleb128 (ib);
+      node = VEC_index (cgraph_node_ptr, nodes, idx);
+      while (count)
+	{
+	  input_ref (ib, node, NULL, nodes, varpool);
+	  count--;
+	}
+    }
+  while (true)
+    {
+      struct varpool_node *node;
+      count = lto_input_uleb128 (ib);
+      if (!count)
+	break;
+      node = VEC_index (varpool_node_ptr, varpool, lto_input_uleb128 (ib));
+      while (count)
+	{
+	  input_ref (ib, NULL, node, nodes, varpool);
+	  count--;
+	}
+    }
+}
+	    
 
 static struct gcov_ctr_summary lto_gcov_summary;
 
@@ -1100,6 +1295,11 @@ input_cgraph (void)
       lto_destroy_simple_input_block (file_data, LTO_section_varpool,
 				      ib, data, len);
 
+      ib = lto_create_simple_input_block (file_data, LTO_section_refs,
+					  &data, &len);
+      input_refs (ib, nodes, varpool);
+      lto_destroy_simple_input_block (file_data, LTO_section_refs,
+				      ib, data, len);
       VEC_free (cgraph_node_ptr, heap, nodes);
       VEC_free (varpool_node_ptr, heap, varpool);
     }

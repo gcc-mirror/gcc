@@ -463,6 +463,7 @@ cgraph_create_node (void)
   node->previous = NULL;
   node->global.estimated_growth = INT_MIN;
   node->frequency = NODE_FREQUENCY_NORMAL;
+  ipa_empty_ref_list (&node->ref_list);
   cgraph_nodes = node;
   cgraph_n_nodes++;
   return node;
@@ -1412,6 +1413,8 @@ cgraph_remove_node (struct cgraph_node *node)
   cgraph_call_node_removal_hooks (node);
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
+  ipa_remove_all_references (&node->ref_list);
+  ipa_remove_all_refering (&node->ref_list);
   VEC_free (ipa_opt_pass, heap,
             node->ipa_transforms_to_apply);
 
@@ -1853,6 +1856,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf(f, "(can throw external) ");
     }
   fprintf (f, "\n");
+  fprintf (f, "  References: ");
+  ipa_dump_references (f, &node->ref_list);
+  fprintf (f, "  Refering this function: ");
+  ipa_dump_refering (f, &node->ref_list);
 
   for (edge = node->indirect_calls; edge; edge = edge->next_callee)
     indirect_calls_count++;
@@ -2081,6 +2088,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
   for (e = n->indirect_calls; e; e = e->next_callee)
     cgraph_clone_edge (e, new_node, e->call_stmt, e->lto_stmt_uid,
 		       count_scale, freq, loop_nest, update_original);
+  ipa_clone_references (new_node, NULL, &n->ref_list);
 
   new_node->next_sibling_clone = n->clones;
   if (n->clones)

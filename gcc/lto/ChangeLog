@@ -1,5 +1,9 @@
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (lto_promote_cross_file_statics): Compute boundary based on refs.
+
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (lto_1_to_1_map): Partition only needed nodes.
 
 2010-04-30  Jan Hubicka  <jh@suse.cz>

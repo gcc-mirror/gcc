@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CGRAPH_H
 #include "tree.h"
 #include "basic-block.h"
+#include "ipa-ref.h"
 
 enum availability
 {
@@ -224,6 +225,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
      per-function in order to allow IPA passes to introduce new functions.  */
   VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
 
+  struct ipa_ref_list ref_list;
   struct cgraph_local_info local;
   struct cgraph_global_info global;
   struct cgraph_rtl_info rtl;
@@ -427,7 +429,7 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-struct GTY((chain_next ("%h.next"))) varpool_node {
+struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   tree decl;
   /* Pointer to the next function in varpool_nodes.  */
   struct varpool_node *next, *prev;
@@ -436,6 +438,7 @@ struct GTY((chain_next ("%h.next"))) varpool_node {
   /* For normal nodes a pointer to the first extra name alias.  For alias
      nodes a pointer to the normal node.  */
   struct varpool_node *extra_name;
+  struct ipa_ref_list ref_list;
   /* Ordering of all cgraph nodes.  */
   int order;
 
@@ -863,5 +866,7 @@ cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 
 /* Constant pool accessor function.  */
 htab_t constant_pool_htab (void);
+
+#include "ipa-ref-inline.h"
 
 #endif  /* GCC_CGRAPH_H  */

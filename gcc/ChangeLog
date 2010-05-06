@@ -1,3 +1,44 @@
+2010-05-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (record_reference_ctx): Add varpool_node.
+	(record_reference, mark_address, mark_load, mark_store): Record
+	references.
+	(record_references_in_initializer): Update call of record_references.
+	(rebuild_cgraph_edges): Remove all references before rebuiding.
+	* cgraph.c (cgraph_create_node): Clear ref list.
+	(cgraph_remove_node): Remove references.
+	(dump_cgraph_node): Dump references.
+	(cgraph_clone_node): Clone references.
+	* cgraph.h: Include ipa-ref.h and ipa-ref-inline.h
+	(struct cgraph_node, varpool_node): Add ref_lst.
+	* ipa-ref.c: New file.
+	* ipa-ref.h: New file.
+	* ipa-ref-inline.h: New file.
+	* lto-cgraph.c (output_varpool): Take cgrag node set argument.
+	(referenced_from_other_partition_p): New function.
+	(lto_output_varpool_node): Take set arugment; call
+	referenced_from_other_partition.
+	(lto_output_ref): New.
+	(add_references): New.
+	(output_refs): New.
+	(output_cgraph): Compute boundary based on references;
+	output refs.
+	(output_varpool): Accept cgraph_node_set argument.
+	(input_ref): New.
+	(input_refs): New.
+	(input_cgraph): Call input_refs.
+	* lto-section-in.c (lto_section_name): Add refs.
+	* Makefile.in: (cgraph.h): Include ipa-ref.h and ipa-ref-inline.h
+	(ipa-ref.o): New file.
+	* varpool.c (varpool_node): Clear ipa ref list.
+	(varpool_remove_node): Remove references.
+	(dump_varpool_node): Dump references.
+	(varpool_assemble_decl): Only compile finalized ones.
+	(varpool_extra_name_alias): Initialize ref list.
+	* lto-streamer.c (lto-get_section_name): Add .refs section.
+	* lto-streamer.h (lto_section_type): Add LTO_section_refs.
+	(referenced_from_other_partition_p): Declared.
+
 2010-05-06  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43901
