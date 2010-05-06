@@ -291,7 +291,6 @@ extern rtx mips_function_value (const_tree, const_tree, enum machine_mode);
 
 extern bool mips_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
-extern bool mips_small_register_classes_for_mode_p (enum machine_mode);
 extern bool mips_dangerous_for_la25_p (rtx);
 extern bool mips_modes_tieable_p (enum machine_mode, enum machine_mode);
 extern enum reg_class mips_preferred_reload_class (rtx, enum reg_class);
