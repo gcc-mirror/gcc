@@ -1,3 +1,18 @@
+2010-05-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43934
+	* gcc.dg/tree-ssa/ssa-lim-9.c: New testcase.
+
+2010-05-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43987
+	* gcc.c-torture/execute/pr43987.c: New testcase.
+	* gcc.dg/torture/pta-escape-1.c: Adjust.
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+	* gcc.dg/ipa/ipa-pta-11.c: Likewise.
+
 2010-04-22  Jakub Jelinek <jakub@redhat.com>
 	    Dodji Seketeli  <dodji@redhat.com>
 

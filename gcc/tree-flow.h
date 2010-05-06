@@ -685,7 +685,7 @@ basic_block *blocks_in_phiopt_order (void);
 
 /* In tree-ssa-loop*.c  */
 
-void tree_ssa_lim (void);
+unsigned int tree_ssa_lim (void);
 unsigned int tree_ssa_unswitch_loops (void);
 unsigned int canonicalize_induction_variables (void);
 unsigned int tree_unroll_loops_completely (bool, bool);

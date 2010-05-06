@@ -359,6 +359,12 @@ movement_possibility (gimple stmt)
       return MOVE_POSSIBLE;
     }
 
+  if (gimple_code (stmt) == GIMPLE_PHI
+      && gimple_phi_num_args (stmt) <= 2
+      && is_gimple_reg (gimple_phi_result (stmt))
+      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (stmt)))
+    return MOVE_POSSIBLE;
+
   if (gimple_get_lhs (stmt) == NULL_TREE)
     return MOVE_IMPOSSIBLE;
 
@@ -513,7 +519,8 @@ stmt_cost (gimple stmt)
   unsigned cost = 1;
 
   /* Always try to create possibilities for unswitching.  */
-  if (gimple_code (stmt) == GIMPLE_COND)
+  if (gimple_code (stmt) == GIMPLE_COND
+      || gimple_code (stmt) == GIMPLE_PHI)
     return LIM_EXPENSIVE;
 
   /* Hoisting memory references out should almost surely be a win.  */
@@ -651,6 +658,63 @@ mem_ref_in_stmt (gimple stmt)
   return ref;
 }
 
+/* From a controlling predicate in DOM determine the arguments from
+   the PHI node PHI that are chosen if the predicate evaluates to
+   true and false and store them to *TRUE_ARG_P and *FALSE_ARG_P if
+   they are non-NULL.  Returns true if the arguments can be determined,
+   else return false.  */
+
+static bool
+extract_true_false_args_from_phi (basic_block dom, gimple phi,
+				  tree *true_arg_p, tree *false_arg_p)
+{
+  basic_block bb = gimple_bb (phi);
+  edge true_edge, false_edge, tem;
+  tree arg0 = NULL_TREE, arg1 = NULL_TREE;
+
+  /* We have to verify that one edge into the PHI node is dominated
+     by the true edge of the predicate block and the other edge
+     dominated by the false edge.  This ensures that the PHI argument
+     we are going to take is completely determined by the path we
+     take from the predicate block.  */
+  extract_true_false_edges_from_block (dom, &true_edge, &false_edge);
+  tem = EDGE_PRED (bb, 0);
+  if (tem == true_edge
+      || tem->src == true_edge->dest
+      || dominated_by_p (CDI_DOMINATORS,
+			 tem->src, true_edge->dest))
+    arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
+  else if (tem == false_edge
+	   || tem->src == false_edge->dest
+	   || dominated_by_p (CDI_DOMINATORS,
+			      tem->src, false_edge->dest))
+    arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
+  else
+    return false;
+  tem = EDGE_PRED (bb, 1);
+  if (tem == true_edge
+      || tem->src == true_edge->dest
+      || dominated_by_p (CDI_DOMINATORS,
+			 tem->src, true_edge->dest))
+    arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
+  else if (tem == false_edge
+	   || tem->src == false_edge->dest
+	   || dominated_by_p (CDI_DOMINATORS,
+			      tem->src, false_edge->dest))
+    arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
+  else
+    return false;
+  if (!arg0 || !arg1)
+    return false;
+
+  if (true_arg_p)
+    *true_arg_p = arg0;
+  if (false_arg_p)
+    *false_arg_p = arg1;
+
+  return true;
+}
+
 /* Determine the outermost loop to that it is possible to hoist a statement
    STMT and store it to LIM_DATA (STMT)->max_loop.  To do this we determine
    the outermost loop in that the value computed by STMT is invariant.
@@ -677,9 +741,81 @@ determine_max_movement (gimple stmt, bool must_preserve_exec)
     level = superloop_at_depth (loop, 1);
   lim_data->max_loop = level;
 
-  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
-    if (!add_dependency (val, lim_data, loop, true))
-      return false;
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      use_operand_p use_p;
+      unsigned min_cost = UINT_MAX;
+      unsigned total_cost = 0;
+      struct lim_aux_data *def_data;
+
+      /* We will end up promoting dependencies to be unconditionally
+	 evaluated.  For this reason the PHI cost (and thus the
+	 cost we remove from the loop by doing the invariant motion)
+	 is that of the cheapest PHI argument dependency chain.  */
+      FOR_EACH_PHI_ARG (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  val = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (val) != SSA_NAME)
+	    continue;
+	  if (!add_dependency (val, lim_data, loop, false))
+	    return false;
+	  def_data = get_lim_data (SSA_NAME_DEF_STMT (val));
+	  if (def_data)
+	    {
+	      min_cost = MIN (min_cost, def_data->cost);
+	      total_cost += def_data->cost;
+	    }
+	}
+
+      lim_data->cost += min_cost;
+
+      if (gimple_phi_num_args (stmt) > 1)
+	{
+	  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
+	  gimple cond;
+	  if (gsi_end_p (gsi_last_bb (dom)))
+	    return false;
+	  cond = gsi_stmt (gsi_last_bb (dom));
+	  if (gimple_code (cond) != GIMPLE_COND)
+	    return false;
+	  /* Verify that this is an extended form of a diamond and
+	     the PHI arguments are completely controlled by the
+	     predicate in DOM.  */
+	  if (!extract_true_false_args_from_phi (dom, stmt, NULL, NULL))
+	    return false;
+
+	  /* Fold in dependencies and cost of the condition.  */
+	  FOR_EACH_SSA_TREE_OPERAND (val, cond, iter, SSA_OP_USE)
+	    {
+	      if (!add_dependency (val, lim_data, loop, false))
+		return false;
+	      def_data = get_lim_data (SSA_NAME_DEF_STMT (val));
+	      if (def_data)
+		total_cost += def_data->cost;
+	    }
+
+	  /* We want to avoid unconditionally executing very expensive
+	     operations.  As costs for our dependencies cannot be
+	     negative just claim we are not invariand for this case.
+	     We also are not sure whether the control-flow inside the
+	     loop will vanish.  */
+	  if (total_cost - min_cost >= 2 * LIM_EXPENSIVE
+	      && !(min_cost != 0
+		   && total_cost / min_cost <= 2))
+	    return false;
+
+	  /* Assume that the control-flow in the loop will vanish.
+	     ???  We should verify this and not artificially increase
+	     the cost if that is not the case.  */
+	  lim_data->cost += stmt_cost (stmt);
+	}
+
+      return true;
+    }
+  else
+    FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
+      if (!add_dependency (val, lim_data, loop, true))
+	return false;
 
   if (gimple_vuse (stmt))
     {
@@ -920,6 +1056,43 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
     fprintf (dump_file, "Basic block %d (loop %d -- depth %d):\n\n",
 	     bb->index, bb->loop_father->num, loop_depth (bb->loop_father));
 
+  /* Look at PHI nodes, but only if there is at most two.
+     ???  We could relax this further by post-processing the inserted
+     code and transforming adjacent cond-exprs with the same predicate
+     to control flow again.  */
+  bsi = gsi_start_phis (bb);
+  if (!gsi_end_p (bsi)
+      && ((gsi_next (&bsi), gsi_end_p (bsi))
+	  || (gsi_next (&bsi), gsi_end_p (bsi))))
+    for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+      {
+	stmt = gsi_stmt (bsi);
+
+	pos = movement_possibility (stmt);
+	if (pos == MOVE_IMPOSSIBLE)
+	  continue;
+
+	lim_data = init_lim_data (stmt);
+	lim_data->always_executed_in = outermost;
+
+	if (!determine_max_movement (stmt, false))
+	  {
+	    lim_data->max_loop = NULL;
+	    continue;
+	  }
+
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    print_gimple_stmt (dump_file, stmt, 2, 0);
+	    fprintf (dump_file, "  invariant up to level %d, cost %d.\n\n",
+		     loop_depth (lim_data->max_loop),
+		     lim_data->cost);
+	  }
+
+	if (lim_data->cost >= LIM_EXPENSIVE)
+	  set_profitable_level (stmt);
+      }
+
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
       stmt = gsi_stmt (bsi);
@@ -1021,7 +1194,7 @@ determine_invariantness (void)
    for walk_dominator_tree.  */
 
 static void
-move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
+move_computations_stmt (struct dom_walk_data *dw_data,
 			basic_block bb)
 {
   struct loop *level;
@@ -1032,6 +1205,67 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 
   if (!loop_outer (bb->loop_father))
     return;
+
+  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); )
+    {
+      gimple new_stmt;
+      stmt = gsi_stmt (bsi);
+
+      lim_data = get_lim_data (stmt);
+      if (lim_data == NULL)
+	{
+	  gsi_next (&bsi);
+	  continue;
+	}
+
+      cost = lim_data->cost;
+      level = lim_data->tgt_loop;
+      clear_lim_data (stmt);
+
+      if (!level)
+	{
+	  gsi_next (&bsi);
+	  continue;
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Moving PHI node\n");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "(cost %u) out of loop %d.\n\n",
+		   cost, level->num);
+	}
+
+      if (gimple_phi_num_args (stmt) == 1)
+	{
+	  tree arg = PHI_ARG_DEF (stmt, 0);
+	  new_stmt = gimple_build_assign_with_ops (TREE_CODE (arg),
+						   gimple_phi_result (stmt),
+						   arg, NULL_TREE);
+	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
+	}
+      else
+	{
+	  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
+	  gimple cond = gsi_stmt (gsi_last_bb (dom));
+	  tree arg0 = NULL_TREE, arg1 = NULL_TREE, t;
+	  /* Get the PHI arguments corresponding to the true and false
+	     edges of COND.  */
+	  extract_true_false_args_from_phi (dom, stmt, &arg0, &arg1);
+	  gcc_assert (arg0 && arg1);
+	  t = build2 (gimple_cond_code (cond), boolean_type_node,
+		      gimple_cond_lhs (cond), gimple_cond_rhs (cond));
+	  t = build3 (COND_EXPR, TREE_TYPE (gimple_phi_result (stmt)),
+		      t, arg0, arg1);
+	  new_stmt = gimple_build_assign_with_ops (COND_EXPR,
+						   gimple_phi_result (stmt),
+						   t, NULL_TREE);
+	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
+	  *((unsigned int *)(dw_data->global_data)) |= TODO_cleanup_cfg;
+	}
+      gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
+      remove_phi_node (&bsi, false);
+    }
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); )
     {
@@ -1076,12 +1310,14 @@ move_computations_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 /* Hoist the statements out of the loops prescribed by data stored in
    LIM_DATA structures associated with each statement.*/
 
-static void
+static unsigned int
 move_computations (void)
 {
   struct dom_walk_data walk_data;
+  unsigned int todo = 0;
 
   memset (&walk_data, 0, sizeof (struct dom_walk_data));
+  walk_data.global_data = &todo;
   walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.before_dom_children = move_computations_stmt;
 
@@ -1092,6 +1328,8 @@ move_computations (void)
   gsi_commit_edge_inserts ();
   if (need_ssa_update_p (cfun))
     rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+
+  return todo;
 }
 
 /* Checks whether the statement defining variable *INDEX can be hoisted
@@ -2328,9 +2566,11 @@ tree_ssa_lim_finalize (void)
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
    i.e. those that are likely to be win regardless of the register pressure.  */
 
-void
+unsigned int
 tree_ssa_lim (void)
 {
+  unsigned int todo;
+
   tree_ssa_lim_initialize ();
 
   /* Gathers information about memory accesses in the loops.  */
@@ -2345,7 +2585,9 @@ tree_ssa_lim (void)
   store_motion ();
 
   /* Move the expressions that are expensive enough.  */
-  move_computations ();
+  todo = move_computations ();
 
   tree_ssa_lim_finalize ();
+
+  return todo;
 }

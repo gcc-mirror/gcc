@@ -1,5 +1,22 @@
 2010-05-06  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43934
+	* tree-ssa-loop-im.c (movement_possibility): Handle PHI nodes.
+	(stmt_cost): Likewise.
+	(extract_true_false_args_from_phi): New helper.
+	(determine_max_movement): For PHI nodes verify we can hoist them
+	and compute their cost.
+	(determine_invariantness_stmt): Handle PHI nodes.
+	(move_computations_stmt): Likewise.  Hoist PHI nodes in
+	if-converted form using COND_EXPRs.
+	(move_computations): Return TODO_cleanup_cfg if we hoisted PHI
+	nodes.
+	(tree_ssa_lim): Likewise.
+	* tree-flow.h (tree_ssa_lim): Adjust prototype.
+	* tree-ssa-loop.c (tree_ssa_loop_im): Return todo.
+
+2010-05-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43987
 	* tree-ssa-structalias.c (could_have_pointers): For possibly
 	address-taken variables force pointers to be recorded.
