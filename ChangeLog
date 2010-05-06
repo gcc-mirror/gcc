@@ -1,3 +1,8 @@
+2010-05-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Allow all the versions greater than 0.10 of PPL.
+	* configure: Regenerated.
+
 2010-04-27  Roland McGrath  <roland@redhat.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
