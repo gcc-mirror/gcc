@@ -1,3 +1,7 @@
+2010-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc-interface/Makefile.in: Removed mips-sgi-irix5* support.
+
 2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 40989

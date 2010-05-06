@@ -1,5 +1,5 @@
 # Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005,
-# 2006 Free Software Foundation, Inc.
+# 2006, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -17,10 +17,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS=mabi=n32/mabi=32/mabi=64
-MULTILIB_DIRNAMES=n32 32 64
+MULTILIB_OPTIONS=mabi=n32/mabi=64
+MULTILIB_DIRNAMES=n32 64
 MULTILIB_MATCHES=
-MULTILIB_OSDIRNAMES=../lib32 ../lib ../lib64
+MULTILIB_OSDIRNAMES=../lib32 ../lib64
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

@@ -208,18 +208,16 @@ xm_file=
 md_file=
 
 # Obsolete configurations.
-case ${target} in
-   mips-sgi-irix5*			\
- | mips-sgi-irix6.[0-4]*		\
- )
-    if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
-      echo "*** Specify --enable-obsolete to build it anyway." >&2
-      echo "*** Support will be REMOVED in the next major release of GCC," >&2
-      echo "*** unless a maintainer comes forward." >&2
-      exit 1
-    fi;;
-esac
+#case ${target} in
+# )
+#    if test "x$enable_obsolete" != xyes; then
+#      echo "*** Configuration ${target} is obsolete." >&2
+#      echo "*** Specify --enable-obsolete to build it anyway." >&2
+#      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+#      echo "*** unless a maintainer comes forward." >&2
+#      exit 1
+#    fi;;
+#esac
 
 # Unsupported targets list.  Do not put an entry in this list unless
 # it would otherwise be caught by a more permissive pattern.  The list
@@ -1668,32 +1666,13 @@ mep-*-*)
 	fi
 	use_gcc_stdint=wrap
 	;;
-mips-sgi-irix[56]*)
-	tm_file="elfos.h ${tm_file} mips/iris.h"
-	tmake_file="mips/t-iris mips/t-slibgcc-irix"
+mips-sgi-irix6.5*)
+	tm_file="elfos.h ${tm_file} mips/iris6.h"
+	tmake_file="mips/t-iris mips/t-iris6 mips/t-slibgcc-irix"
 	target_cpu_default="MASK_ABICALLS"
-	case ${target} in
-	*-*-irix5*)
-		tm_file="${tm_file} mips/iris5.h"
-		use_gcc_stdint=provide
-		;;
-
-	*-*-irix6*)
-		tm_file="${tm_file} mips/iris6.h"
-		tmake_file="${tmake_file} mips/t-iris6"
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-		case ${target} in
-		*-*-irix6.[0-4]*)
-			use_gcc_stdint=provide
-			;;
-		*-*-irix6.5*)
-			# Only IRIX Development Foundation 1.3 for IRIX 6.5
-			# provides stdint.h.
-			use_gcc_stdint=wrap
-			;;
-		esac
-		;;
-	esac
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
+	# Only IRIX Development Foundation 1.3 for IRIX 6.5 provides stdint.h.
+	use_gcc_stdint=wrap
 	if test "x$stabs" = xyes
 	then
 		tm_file="${tm_file} dbx.h mips/dbxmdebug.h"

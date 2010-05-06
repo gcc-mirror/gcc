@@ -359,8 +359,8 @@ Necessary to build libgcj, the GCJ runtime.
 
 Necessary to build link-time optimization (LTO) support.  It can be
 downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
-though it is commonly available in several systems.  The versions in
-IRIX 5 and 6 don't work since they lack @file{gelf.h}.  The version in
+though it is commonly available in several systems.  The version in
+IRIX 6.5 doesn't work since it lacks @file{gelf.h}.  The version in
 Solaris 2 does work.
 
 The @option{--with-libelf} configure option should be used if libelf is
@@ -3823,60 +3823,22 @@ made after Nov. 9, 2006) should be free from both of these problems.
 @end html
 @heading @anchor{mips-sgi-irix5}mips-sgi-irix5
 
-Support for IRIX 5 has been obsoleted in GCC 4.5, but can still be
-enabled by configuring with @option{--enable-obsolete}.  Support will be
-removed in GCC 4.6.
-
-In order to compile GCC on an SGI running IRIX 5, the @samp{compiler_dev.hdr}
-subsystem must be installed from the IDO CD-ROM supplied by SGI@.
-It is also available for download from
-@uref{http://freeware.sgi.com/ido.html}.
-
-If you use the MIPS C compiler to bootstrap, it may be necessary
-to increase its table size for switch statements with the
-@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
-optimization option, you also need to use @option{-Olimit 3000}.
-@c FIXME: verify.
-
-GCC must be configured to use GNU @command{as}.  The latest version, from GNU
-binutils 2.20.1, is known to work.
-
-To enable debugging under IRIX 5, you must use GNU binutils 2.15 or
-later, and use the @option{--with-gnu-ld} @command{configure} option
-when configuring GCC@.
-You need to use GNU @command{ar} and @command{nm},
-also distributed with GNU binutils.
-@c FIXME: which parts of this are still true?
-
-Configuring GCC with @command{/bin/sh} is @emph{extremely} slow and may
-even hang.  This problem can be avoided by running @command{configure}
-like this:
-
-@smallexample
-   % CONFIG_SHELL=/usr/local/bin/bash
-   % export CONFIG_SHELL
-   % $CONFIG_SHELL @var{srcdir}/configure [@var{options}]
-@end smallexample
-
-@noindent
-@command{/bin/ksh} doesn't work properly either.
+Support for IRIX 5 has been removed in GCC 4.6.
 
 @html
 <hr />
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
 
-Support for IRIX 6 releases before 6.5 has been obsoleted in GCC 4.5,
-but can still be enabled by configuring with @option{--enable-obsolete}.
-Support will be removed in GCC 4.6, which will also disable support for
+Support for IRIX 6 releases before 6.5 has been removed in GCC 4.6, as
+well as support for
 the O32 ABI.  It is @emph{strongly} recommended to upgrade to at least
 IRIX 6.5.18.  This release introduced full ISO C99 support, though for
 the N32 and N64 ABIs only.
 
-To build and use GCC on IRIX 6, you need the IRIX Development Foundation
+To build and use GCC on IRIX 6.5, you need the IRIX Development Foundation
 (IDF) and IRIX Development Libraries (IDL).  They are included with the
-IRIX 6.5 media and can be downloaded from
-@uref{http://freeware.sgi.com/idf_idl.html} for older IRIX 6 releases.
+IRIX 6.5 media.
 
 If you are using SGI's MIPSpro @command{cc} as your bootstrap compiler, you must
 ensure that the N32 ABI is in use.  To test this, compile a simple C
@@ -3933,11 +3895,11 @@ MIPSpro C 7.4 may cause bootstrap failures, due to a bug when inlining
 @code{memcmp}.  Either add @code{-U__INLINE_INTRINSICS} to the @env{CC}
 environment variable as a workaround or upgrade to MIPSpro C 7.4.1m.
 
-GCC on IRIX 6 is usually built to support the N32, O32 and N64 ABIs.  If
+GCC on IRIX 6.5 is usually built to support the N32 and N64 ABIs.  If
 you build GCC on a system that doesn't have the N64 libraries installed
 or cannot run 64-bit binaries,
 you need to configure with @option{--disable-multilib} so GCC doesn't
-try to use them.  This will disable building the O32 libraries, too.
+try to use them.
 Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 

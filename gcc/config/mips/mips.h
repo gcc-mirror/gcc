@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
@@ -228,7 +228,7 @@ enum mips_code_readable_setting {
 #define TARGET_GPWORD				\
   (TARGET_ABICALLS				\
    && !TARGET_ABSOLUTE_ABICALLS			\
-   && !(mips_abi == ABI_64 && TARGET_IRIX))
+   && !(mips_abi == ABI_64 && TARGET_IRIX6))
 
 /* True if the output must have a writable .eh_frame.
    See ASM_PREFERRED_EH_DATA_FORMAT for details.  */
@@ -369,7 +369,6 @@ enum mips_code_readable_setting {
 #define TARGET_SYNC_AFTER_SC (!TARGET_OCTEON)
 
 /* IRIX specific stuff.  */
-#define TARGET_IRIX	   0
 #define TARGET_IRIX6	   0
 
 /* Define preprocessor macros for the -march and -mtune options.
@@ -396,7 +395,7 @@ enum mips_code_readable_setting {
   do									\
     {									\
       /* Everyone but IRIX defines this to mips.  */            	\
-      if (!TARGET_IRIX)                                         	\
+      if (!TARGET_IRIX6)                                         	\
 	builtin_assert ("machine=mips");                        	\
 									\
       builtin_assert ("cpu=mips");					\
@@ -416,7 +415,7 @@ enum mips_code_readable_setting {
       if (TARGET_64BIT)							\
 	builtin_define ("__mips64");					\
 									\
-      if (!TARGET_IRIX)							\
+      if (!TARGET_IRIX6)						\
 	{								\
 	  /* Treat _R3000 and _R4000 like register-size			\
 	     defines, which is how they've historically			\

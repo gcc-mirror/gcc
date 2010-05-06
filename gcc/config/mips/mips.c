@@ -5449,7 +5449,7 @@ mips_build_builtin_va_list (void)
       layout_type (record);
       return record;
     }
-  else if (TARGET_IRIX && TARGET_IRIX6)
+  else if (TARGET_IRIX6)
     /* On IRIX 6, this type is 'char *'.  */
     return build_pointer_type (char_type_node);
   else
@@ -7864,19 +7864,6 @@ mips_output_external (FILE *file, tree decl, const char *name)
 	  fprintf (file, ", " HOST_WIDE_INT_PRINT_DEC "\n",
 		   int_size_in_bytes (TREE_TYPE (decl)));
 	}
-      else if (TARGET_IRIX
-	       && mips_abi == ABI_32
-	       && TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* In IRIX 5 or IRIX 6 for the O32 ABI, we must output a
-	     `.global name .text' directive for every used but
-	     undefined function.  If we don't, the linker may perform
-	     an optimization (skipping over the insns that set $gp)
-	     when it is unsafe.  */
-	  fputs ("\t.globl ", file);
-	  assemble_name (file, name);
-	  fputs (" .text\n", file);
-	}
     }
 }
 
@@ -8166,7 +8153,7 @@ mips_file_start (void)
   /* Generate a special section to describe the ABI switches used to
      produce the resultant binary.  This is unnecessary on IRIX and
      causes unwanted warnings from the native linker.  */
-  if (!TARGET_IRIX)
+  if (!TARGET_IRIX6)
     {
       /* Record the ABI itself.  Modern versions of binutils encode
 	 this information in the ELF header flags, but GDB needs the
@@ -9810,10 +9797,6 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   mips_start_function_definition (fnname, TARGET_MIPS16);
-
-  /* Stop mips_file_end from treating this function as external.  */
-  if (TARGET_IRIX && mips_abi == ABI_32)
-    TREE_ASM_WRITTEN (DECL_NAME (cfun->decl)) = 1;
 
   /* Output MIPS-specific frame information.  */
   if (!flag_inhibit_size_directive)

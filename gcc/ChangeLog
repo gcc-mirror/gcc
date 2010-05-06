@@ -1,3 +1,39 @@
+2010-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Removed mips-sgi-irix5*, mips-sgi-irix6.[0-4]* from
+	list of obsolete configurations.
+	Disabled check for obsolete configurations.
+	(mips-sgi-irix[56]*): Restrict to mips-sgi-irix6.5*.
+	Removed support for previous versions.
+	* config/mips/iris.h: Removed.
+	* config/mips/iris5.h: Removed.
+	* config/mips/iris6.h: Merged old iris.h contents.
+	(TARGET_IRIX): Removed.
+	(DRIVER_SELF_SPECS): Removed mabi=32.
+	(IDENT_ASM_OP): Removed undef.
+	(STARTFILE_SPEC): Removed mabi=32.
+	(ENDFILE_SPEC): Likewise.
+	(IRIX_SUBTARGET_LINK_SPEC): Likewise.
+	(MACHINE_TYPE): Update for IRIX 6.5.
+	* config/mips/mips.c (mips_build_builtin_va_list): Replaced
+	TARGET_IRIX by TARGET_IRIX6.
+	(mips_file_start): Likewise.
+	(mips_output_external): Remove IRIX 5/6 O32 support.
+	(mips_output_function_prologue): Likewise.
+	* config/mips/mips.h (TARGET_GPWORD): Replaced TARGET_IRIX by
+	TARGET_IRIX6.
+	(TARGET_CPU_CPP_BUILTINS): Likewise.
+	(TARGET_IRIX): Removed.
+	* config/mips/t-iris6 (MULTILIB_OPTIONS): Removed mabi=32.
+	(MULTILIB_DIRNAMES): Removed 32.
+	(MULTILIB_OSDIRNAMES): Removed ../lib.
+	* doc/install.texi (Prerequisites): Don't reference IRIX before
+	6.5.
+	(Specific, mips-sgi-irix5): Document removal.
+	(Specific, mips-sgi-irix6): Document IRIX 6.[0-4] and O32 ABI
+	removal.
+	Remove references to older IRIX 6 releases and the O32 ABI.
+
 2010-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/Wunused-var-8.c: Move to...
