@@ -106,7 +106,6 @@ static size_t deferred_count;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
-static void set_Wimplicit (int);
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_cxx0x (int);
@@ -134,6 +133,10 @@ static struct deferred_opt
   enum opt_code code;
   const char *arg;
 } *deferred_opts;
+
+
+static const unsigned int 
+c_family_lang_mask = (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX);
 
 /* Complain that switch CODE expects an argument but none was
    provided.  OPT was the command-line option.  Return FALSE to get
@@ -349,7 +352,8 @@ c_common_init_options (unsigned int argc, const char **argv)
    invalid, a negative number to prevent language-independent
    processing in toplev.c (a hack necessary for the short-term).  */
 int
-c_common_handle_option (size_t scode, const char *arg, int value)
+c_common_handle_option (size_t scode, const char *arg, int value,
+			int kind)
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
@@ -362,7 +366,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
   switch (code)
     {
     default:
-      if (cl_options[code].flags & (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX))
+      if (cl_options[code].flags & c_family_lang_mask)
 	{
 	  if ((option->flags & CL_TARGET)
 	      && ! targetcm.handle_c_option (scode, arg, value))
@@ -471,7 +475,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_Wall:
       warn_unused = value;
       set_Wformat (value);
-      set_Wimplicit (value);
+      handle_option (OPT_Wimplicit, value, NULL, c_family_lang_mask, kind);
       warn_char_subscripts = value;
       warn_missing_braces = value;
       warn_parentheses = value;
@@ -569,7 +573,13 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Wimplicit:
-      set_Wimplicit (value);
+      gcc_assert (value == 0 || value == 1);
+      if (warn_implicit_int == -1)
+	handle_option (OPT_Wimplicit_int, value, NULL,
+		       c_family_lang_mask, kind);
+      if (warn_implicit_function_declaration == -1)
+	handle_option (OPT_Wimplicit_function_declaration, value, NULL,
+		       c_family_lang_mask, kind);
       break;
 
     case OPT_Wimport:
@@ -1246,6 +1256,12 @@ c_common_post_options (const char **pfilename)
 	       "-Wformat-security ignored without -Wformat");
     }
 
+  if (warn_implicit == -1)
+    warn_implicit = 0;
+      
+  if (warn_implicit_int == -1)
+    warn_implicit_int = 0;
+
   /* -Wimplicit-function-declaration is enabled by default for C99.  */
   if (warn_implicit_function_declaration == -1)
     warn_implicit_function_declaration = flag_isoc99;
@@ -1764,15 +1780,6 @@ set_std_cxx0x (int iso)
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
   cxx_dialect = cxx0x;
-}
-
-/* Handle setting implicit to ON.  */
-static void
-set_Wimplicit (int on)
-{
-  warn_implicit = on;
-  warn_implicit_int = on;
-  warn_implicit_function_declaration = on;
 }
 
 /* Args to -d specify what to dump.  Silently ignore

@@ -2901,8 +2901,8 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wc++0x-compat  @gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/Objc; this is on by default in C++)} @gol
--Wimplicit-int  @gol
--Wimplicit-function-declaration  @gol
+-Wimplicit-int @r{(C and Objective-C only)} @gol
+-Wimplicit-function-declaration @r{(C and Objective-C only)} @gol
 -Wcomment  @gol
 -Wformat   @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
@@ -3145,7 +3145,7 @@ enabled by default and it is made into an error by
 @option{-pedantic-errors}. This warning is also enabled by
 @option{-Wall}.
 
-@item -Wimplicit
+@item -Wimplicit @r{(C and Objective-C only)}
 @opindex Wimplicit
 @opindex Wno-implicit
 Same as @option{-Wimplicit-int} and @option{-Wimplicit-function-declaration}.

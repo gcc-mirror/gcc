@@ -427,10 +427,6 @@ int flag_threadsafe_statics = 1;
 
 int flag_pretty_templates = 1;
 
-/* Nonzero means warn about implicit declarations.  */
-
-int warn_implicit = 1;
-
 /* Maximum template instantiation depth.  This limit exists to limit the
    time it takes to notice infinite template instantiations; the default
    value of 1024 is likely to be in the next C++ standard.  */

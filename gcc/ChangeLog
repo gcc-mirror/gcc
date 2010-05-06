@@ -1,3 +1,31 @@
+2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40989
+	* doc/invoke.texi (Wimplicit): Document as C only.
+	* opts.c (common_handle_option): Add argument kind.
+	(handle_option): Rename as read_cmdline_option. Factor out code to...
+	(handle_option): ... here. New.
+	(handle_options): Rename as read_cmdline_options.
+	(decode_options): Update call.
+	(set_option): Use option index instead of option pointer. Classify
+	diagnostics correctly.
+	(enable_warning_as_error): Call handle_option.
+	* opts.h (set_option): Update declaration.
+	(handle_option): Declare.
+	* langhooks.h (struct lang_hooks): Add argument kind to
+	handle_option.
+	* c.opt (Wimplicit,Wimplicit-int): Initialize to -1.
+	* c-opts.c (set_Wimplicit): Delete.
+	(c_family_lang_mask): New static constant.
+	(c_common_handle_option): Add argument kind. Use handle_option
+	instead of set_Wimplicit.
+	(c_common_post_options): warn_implicit and warn_implicit_int
+	are disabled by default.
+	* c-common.c (warn_implicit): Do not define here.
+	* c-common.h (warn_implicit): Do not declare here.
+	(c_common_handle_option): Update declaration.
+	* lto-opts.c (lto_reissue_options): Update call to set_option.
+
 2010-05-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43571

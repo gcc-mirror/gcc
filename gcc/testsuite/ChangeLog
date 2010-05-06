@@ -1,3 +1,8 @@
+2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40989
+	* gcc.dg/pr40989.c: New.
+
 2010-05-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43934
