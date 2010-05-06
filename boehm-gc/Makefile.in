@@ -35,8 +35,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = gctest$(EXEEXT)
-TESTS = gctest$(EXEEXT)
+check_PROGRAMS = gctest$(EXEEXT) leaktest$(EXEEXT) middletest$(EXEEXT) \
+	staticrootstest$(EXEEXT)
+TESTS = gctest$(EXEEXT) leaktest$(EXEEXT) middletest$(EXEEXT) \
+	staticrootstest$(EXEEXT)
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -81,10 +83,26 @@ am_libgcjgc_convenience_la_OBJECTS = $(am__objects_2)
 libgcjgc_convenience_la_OBJECTS =  \
 	$(am_libgcjgc_convenience_la_OBJECTS)
 am__dirstamp = $(am__leading_dot)dirstamp
+am_libstaticrootslib_la_OBJECTS = tests/staticrootslib.lo
+libstaticrootslib_la_OBJECTS = $(am_libstaticrootslib_la_OBJECTS)
+libstaticrootslib_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libstaticrootslib_la_LDFLAGS) $(LDFLAGS) -o $@
 am_gctest_OBJECTS = tests/test.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
-gctest_DEPENDENCIES = libgcjgc.la $(am__DEPENDENCIES_1) \
+am__DEPENDENCIES_2 = libgcjgc.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
+gctest_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_leaktest_OBJECTS = tests/leak_test.$(OBJEXT)
+leaktest_OBJECTS = $(am_leaktest_OBJECTS)
+leaktest_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_middletest_OBJECTS = tests/middle.$(OBJEXT)
+middletest_OBJECTS = $(am_middletest_OBJECTS)
+middletest_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_staticrootstest_OBJECTS = tests/staticrootstest.$(OBJEXT)
+staticrootstest_OBJECTS = $(am_staticrootstest_OBJECTS)
+staticrootstest_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	libstaticrootslib.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp =
 am__depfiles_maybe =
@@ -95,7 +113,9 @@ CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
 LTCCASCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
 SOURCES = $(libgcjgc_la_SOURCES) $(libgcjgc_convenience_la_SOURCES) \
-	$(gctest_SOURCES)
+	$(libstaticrootslib_la_SOURCES) $(gctest_SOURCES) \
+	$(leaktest_SOURCES) $(middletest_SOURCES) \
+	$(staticrootstest_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -289,11 +309,31 @@ libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
+test_ldadd = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 gctest_SOURCES = tests/test.c
-gctest_LDADD = libgcjgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = $(test_ldadd)
 gctest_LDFLAGS = -shared-libgcc
 gctest_LINK = $(LINK) $(gctest_LDFLAGS)
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
+leaktest_SOURCES = tests/leak_test.c
+leaktest_LDADD = $(test_ldadd)
+leaktest_LDFLAGS = -shared-libgcc
+leaktest_LINK = $(LINK) $(leaktest_LDFLAGS)
+middletest_SOURCES = tests/middle.c
+middletest_LDADD = $(test_ldadd)
+middletest_LDFLAGS = -shared-libgcc
+middletest_LINK = $(LINK) $(middletest_LDFLAGS)
+staticrootstest_SOURCES = tests/staticrootstest.c
+staticrootstest_LDADD = $(test_ldadd) libstaticrootslib.la
+staticrootstest_LDFLAGS = -shared-libgcc
+staticrootstest_LINK = $(LINK) $(staticrootstest_LDFLAGS)
+check_LTLIBRARIES = libstaticrootslib.la
+libstaticrootslib_la_SOURCES = tests/staticrootslib.c
+libstaticrootslib_la_LIBADD = libgcjgc_convenience.la
+libstaticrootslib_la_LDFLAGS = -version-info 1:2:0 -no-undefined \
+				-rpath /nowhere -shared-libgcc
+
+libstaticrootslib_la_DEPENDENCIES = libgcjgc_convenience.la
 LTCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
 	$(CC) $(DEFS) $(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
@@ -387,6 +427,15 @@ $(am__aclocal_m4_deps):
 threads.mk: $(top_builddir)/config.status $(srcdir)/threads.mk.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
+clean-checkLTLIBRARIES:
+	-test -z "$(check_LTLIBRARIES)" || rm -f $(check_LTLIBRARIES)
+	@list='$(check_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
@@ -399,6 +448,12 @@ libgcjgc.la: $(libgcjgc_la_OBJECTS) $(libgcjgc_la_DEPENDENCIES)
 	$(libgcjgc_la_LINK)  $(libgcjgc_la_OBJECTS) $(libgcjgc_la_LIBADD) $(LIBS)
 libgcjgc_convenience.la: $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_DEPENDENCIES) 
 	$(LINK)  $(libgcjgc_convenience_la_OBJECTS) $(libgcjgc_convenience_la_LIBADD) $(LIBS)
+tests/$(am__dirstamp):
+	@$(MKDIR_P) tests
+	@: > tests/$(am__dirstamp)
+tests/staticrootslib.lo: tests/$(am__dirstamp)
+libstaticrootslib.la: $(libstaticrootslib_la_OBJECTS) $(libstaticrootslib_la_DEPENDENCIES) 
+	$(libstaticrootslib_la_LINK)  $(libstaticrootslib_la_OBJECTS) $(libstaticrootslib_la_LIBADD) $(LIBS)
 
 clean-checkPROGRAMS:
 	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
@@ -408,16 +463,30 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-tests/$(am__dirstamp):
-	@$(MKDIR_P) tests
-	@: > tests/$(am__dirstamp)
 tests/test.$(OBJEXT): tests/$(am__dirstamp)
 gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES) 
 	@rm -f gctest$(EXEEXT)
 	$(gctest_LINK) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
+tests/leak_test.$(OBJEXT): tests/$(am__dirstamp)
+leaktest$(EXEEXT): $(leaktest_OBJECTS) $(leaktest_DEPENDENCIES) 
+	@rm -f leaktest$(EXEEXT)
+	$(leaktest_LINK) $(leaktest_OBJECTS) $(leaktest_LDADD) $(LIBS)
+tests/middle.$(OBJEXT): tests/$(am__dirstamp)
+middletest$(EXEEXT): $(middletest_OBJECTS) $(middletest_DEPENDENCIES) 
+	@rm -f middletest$(EXEEXT)
+	$(middletest_LINK) $(middletest_OBJECTS) $(middletest_LDADD) $(LIBS)
+tests/staticrootstest.$(OBJEXT): tests/$(am__dirstamp)
+staticrootstest$(EXEEXT): $(staticrootstest_OBJECTS) $(staticrootstest_DEPENDENCIES) 
+	@rm -f staticrootstest$(EXEEXT)
+	$(staticrootstest_LINK) $(staticrootstest_OBJECTS) $(staticrootstest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f tests/leak_test.$(OBJEXT)
+	-rm -f tests/middle.$(OBJEXT)
+	-rm -f tests/staticrootslib.$(OBJEXT)
+	-rm -f tests/staticrootslib.lo
+	-rm -f tests/staticrootstest.$(OBJEXT)
 	-rm -f tests/test.$(OBJEXT)
 
 distclean-compile:
@@ -443,6 +512,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf tests/.libs tests/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -690,7 +760,7 @@ check-TESTS: $(TESTS)
 	  echo "$$dashes$$std"; \
 	  test "$$failed" -eq 0; \
 	else :; fi
-check-am: $(check_PROGRAMS)
+check-am: $(check_LTLIBRARIES) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-recursive
 all-am: Makefile $(LTLIBRARIES) all-multi
@@ -724,8 +794,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-multi clean-recursive
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-noinstLTLIBRARIES mostlyclean-am
+clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -801,9 +871,9 @@ uninstall-am:
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am all-multi am--refresh check check-TESTS check-am \
-	clean clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-multi clean-noinstLTLIBRARIES ctags ctags-recursive \
-	distclean distclean-compile distclean-generic \
+	clean clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-multi clean-noinstLTLIBRARIES ctags \
+	ctags-recursive distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-multi distclean-tags dvi dvi-am \
 	html html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
