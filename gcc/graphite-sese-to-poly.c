@@ -515,7 +515,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
   int nb_params = scop_nb_params (scop);
   ppl_Coefficient_t c;
   ppl_dimension_type dim = scattering_dimensions + nb_iterators + nb_params;
-  Value v;
+  mpz_t v;
 
   gcc_assert (scattering_dimensions >= used_scattering_dimensions);
 
@@ -614,7 +614,7 @@ build_scop_scattering (scop_p scop)
   gimple_bb_p previous_gbb = NULL;
   ppl_Linear_Expression_t static_schedule;
   ppl_Coefficient_t c;
-  Value v;
+  mpz_t v;
 
   mpz_init (v);
   ppl_new_Coefficient (&c);
@@ -665,9 +665,9 @@ build_scop_scattering (scop_p scop)
 
 static void
 add_value_to_dim (ppl_dimension_type d, ppl_Linear_Expression_t expr,
-		  Value k)
+		  mpz_t k)
 {
-  Value val;
+  mpz_t val;
   ppl_Coefficient_t coef;
 
   ppl_new_Coefficient (&coef);
@@ -695,7 +695,7 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
     {
       loop_p loop = get_loop (var);
       ppl_dimension_type l = sese_loop_depth (s, loop) - 1;
-      Value val;
+      mpz_t val;
 
       /* Scalar evolutions should happen in the sese region.  */
       gcc_assert (sese_loop_depth (s, loop) > 0);
@@ -719,9 +719,9 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
    linear expression EXPR.  K is the multiplier of the constant.  */
 
 static void
-scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, Value k)
+scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, mpz_t k)
 {
-  Value val;
+  mpz_t val;
   ppl_Coefficient_t coef;
   int v = int_cst_value (cst);
 
@@ -789,7 +789,7 @@ parameter_index_in_region (tree name, sese region)
 
 static void
 scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
-		      Value k)
+		      mpz_t k)
 {
   if (e == chrec_dont_know)
     return;
@@ -807,7 +807,7 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	{
 	  if (c)
 	    {
-	      Value val;
+	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 1), 0));
 	      mpz_init (val);
 	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 1)));
@@ -822,7 +822,7 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	{
 	  if (c)
 	    {
-	      Value val;
+	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 0), 0));
 	      mpz_init (val);
 	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 0)));
@@ -904,7 +904,7 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	if (c)
 	  {
 	    ppl_Coefficient_t coef;
-	    Value minus_one;
+	    mpz_t minus_one;
 
 	    ppl_subtract_Linear_Expression_from_Linear_Expression (c,
 								   tmp_expr);
@@ -961,7 +961,7 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
   data_reference_p dr;
   gimple stmt;
   loop_p loop = GBB_BB (gbb)->loop_father;
-  Value one;
+  mpz_t one;
 
   mpz_init (one);
   mpz_set_si (one, 1);
@@ -996,7 +996,7 @@ find_scop_parameters (scop_p scop)
   unsigned i;
   sese region = SCOP_REGION (scop);
   struct loop *loop;
-  Value one;
+  mpz_t one;
 
   mpz_init (one);
   mpz_set_si (one, 1);
@@ -1044,7 +1044,7 @@ add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
 				     ppl_dimension_type dim,
 				     ppl_Linear_Expression_t ub_expr)
 {
-  Value val;
+  mpz_t val;
   ppl_Linear_Expression_t nb_iters_le;
   ppl_Polyhedron_t pol;
   ppl_Coefficient_t coef;
@@ -1165,7 +1165,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
     }
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      Value one;
+      mpz_t one;
       ppl_Constraint_t ub;
       ppl_Linear_Expression_t ub_expr;
       double_int nit;
@@ -1209,7 +1209,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 static ppl_Linear_Expression_t
 create_linear_expr_from_tree (poly_bb_p pbb, tree t)
 {
-  Value one;
+  mpz_t one;
   ppl_Linear_Expression_t res;
   ppl_dimension_type dim;
   sese region = SCOP_REGION (PBB_SCOP (pbb));
@@ -1265,7 +1265,7 @@ static void
 add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
 			 poly_bb_p pbb, enum tree_code code)
 {
-  Value v;
+  mpz_t v;
   ppl_Coefficient_t c;
   ppl_Linear_Expression_t left, right;
   ppl_Constraint_t cstr;
@@ -1651,7 +1651,7 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
 			 poly_bb_p pbb)
 {
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
-  Value v;
+  mpz_t v;
   scop_p scop = PBB_SCOP (pbb);
   sese region = SCOP_REGION (scop);
 

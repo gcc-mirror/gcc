@@ -78,7 +78,7 @@ build_linearized_memory_access (ppl_dimension_type offset, poly_dr_p pdr)
   ppl_dimension_type i;
   ppl_dimension_type first = pdr_subscript_dim (pdr, 0);
   ppl_dimension_type last = pdr_subscript_dim (pdr, PDR_NB_SUBSCRIPTS (pdr));
-  Value size, sub_size;
+  mpz_t size, sub_size;
   graphite_dim_t dim = offset + pdr_dim (pdr);
 
   ppl_new_Linear_Expression_with_dimension (&res, dim);
@@ -196,7 +196,7 @@ build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
    the loop at DEPTH.  */
 
 static void
-pdr_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
+pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
 {
   ppl_dimension_type time_depth;
   ppl_Linear_Expression_t le, lma;
@@ -340,12 +340,12 @@ pdr_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
    accessed in LOOP at DEPTH.  */
 
 static void
-memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, Value strides)
+memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, mpz_t strides)
 {
   int i, j;
   lst_p l;
   poly_dr_p pdr;
-  Value s, n;
+  mpz_t s, n;
 
   mpz_init (s);
   mpz_init (n);
@@ -370,7 +370,7 @@ memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, Value strides)
    accessed in LOOP at DEPTH.  */
 
 static void
-memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
+memory_strides_in_loop (lst_p loop, graphite_dim_t depth, mpz_t strides)
 {
   if (mpz_cmp_si (loop->memory_strides, -1) == 0)
     {
@@ -465,7 +465,7 @@ memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
 static bool
 lst_interchange_profitable_p (lst_p loop1, lst_p loop2)
 {
-  Value d1, d2;
+  mpz_t d1, d2;
   bool res;
 
   gcc_assert (loop1 && loop2

@@ -181,7 +181,7 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
 			     graphite_dim_t depth,
 			     int stride)
 {
-  Value niter, strip_stride;
+  mpz_t niter, strip_stride;
   bool res;
 
   mpz_init (strip_stride);
