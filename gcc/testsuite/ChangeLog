@@ -1,3 +1,8 @@
+2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40406
+	* g++.dg/template/crash96.C: New.
+
 2010-05-06  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/43791
