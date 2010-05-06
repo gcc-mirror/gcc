@@ -1,3 +1,7 @@
+2010-05-06  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* tree.c (initializer_zerop): Handle STRING_CST.
+
 2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 40989
