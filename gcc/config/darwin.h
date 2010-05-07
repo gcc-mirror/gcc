@@ -273,6 +273,7 @@ extern GTY(()) int darwin_ms_struct;
     %{o*}%{!o:-o a.out} \
     %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
+    %{flto} %{fwhopr} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{!nostdlib:%{!nodefaultlibs: %(link_ssp) %G %L }} \
@@ -580,6 +581,16 @@ extern GTY(()) int darwin_ms_struct;
 
 #undef  TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END darwin_file_end
+
+/* Because Mach-O relocations have a counter from 1 to 255 for the
+   section number they apply to, it is necessary to output all
+   normal sections before the LTO sections, to make sure that the
+   sections that may have relocations always have a section number
+   smaller than 255.  */
+#undef  TARGET_ASM_LTO_START
+#define TARGET_ASM_LTO_START darwin_asm_lto_start
+#undef  TARGET_ASM_LTO_END
+#define TARGET_ASM_LTO_END darwin_asm_lto_end
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", SIZE)

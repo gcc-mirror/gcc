@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
     %{o*}%{!o:-o a.out} \
     %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
+    %{flto} %{fwhopr} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{!nostdlib:%{!nodefaultlibs:  %(link_ssp) %G %L }} \

@@ -1,3 +1,11 @@
+2010-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lto.h (struct lto_file_struct): Document offset member.
+	* lto-endian.h: New file.
+	* lto-macho.h: New file.
+	* lto-macho.c: New file.
+	* Make-lang.in: Add rule for lto-macho.o.
+
 2010-05-07  Richard Guenther <rguenther@suse.de>
 
 	PR lto/43857
