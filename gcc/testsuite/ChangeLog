@@ -1,3 +1,7 @@
+2010-05-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nullptr20.C: Use sprintf.
+
 2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/lto/20100423-2_0.c: Include <stdio.h>.

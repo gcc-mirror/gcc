@@ -1,3 +1,8 @@
+2010-05-07  Jason Merrill  <jason@redhat.com>
+
+	* trans-expr.c (gfc_conv_procedure_call): Rename nullptr to null_ptr
+	to avoid -Wc++-compat warning.
+
 2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 40989
