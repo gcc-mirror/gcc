@@ -1551,7 +1551,13 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
   insn_to_mem_ratio = ninsns / mem_ref_count;
 
   if (insn_to_mem_ratio < PREFETCH_MIN_INSN_TO_MEM_RATIO)
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file,
+		 "Not prefetching -- instruction to memory reference ratio (%d) too small\n",
+		 insn_to_mem_ratio);
+      return false;
+    }
 
   /* Profitability of prefetching is highly dependent on the trip count.
      For a given AHEAD distance, the first AHEAD iterations do not benefit

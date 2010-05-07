@@ -1,3 +1,8 @@
+2010-05-07  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* tree-ssa-loop-prefetch.c (is_loop_prefetching_profitable): Dump
+	a diagnostic info when the insn-to-mem ratio is too small.
+
 2010-05-07  Richard Guenther <rguenther@suse.de>
 
 	* gcc.c (LINK_COMMAND_SPEC): Provide a resolution file to
