@@ -1,3 +1,11 @@
+2010-05-07  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/40728
+        * gfortran.dg/coarray_1.f90: Fixed error message.
+        * gfortran.dg/selected_char_kind_3.f90: Fixed error message.
+        * gfortran.dg/intrinsic_std_1.f90: Fixed bogus message.
+        * gfortran.dg/intrinsic_std_5.f90: New.
+
 2010-05-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/nullptr20.C: Use sprintf.

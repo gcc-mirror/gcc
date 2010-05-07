@@ -20,7 +20,7 @@ SUBROUTINE no_implicit
   ! ASINH is an intrinsic of F2008
   ! The warning should be issued in the declaration above where it is declared
   ! EXTERNAL.
-  WRITE (*,*) ASINH (1.) ! { dg-bogus "Fortran 2008" }
+  WRITE (*,*) ASINH (1.) ! { dg-warning "Fortran 2008" }
 END SUBROUTINE no_implicit
 
 SUBROUTINE implicit_type
