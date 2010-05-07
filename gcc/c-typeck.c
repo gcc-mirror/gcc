@@ -9625,6 +9625,11 @@ build_binary_op (location_t location, enum tree_code code,
 	      else if (TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 		pedwarn (location, OPT_pedantic, "ISO C forbids "
 			 "ordered comparisons of pointers to functions");
+	      else if (null_pointer_constant_p (orig_op0)
+		       || null_pointer_constant_p (orig_op1))
+		warning_at (location, OPT_Wextra,
+			    "ordered comparison of pointer with null pointer");
+
 	    }
 	  else if (!addr_space_superset (as0, as1, &as_common))
 	    {
@@ -9649,13 +9654,17 @@ build_binary_op (location_t location, enum tree_code code,
 		     "ordered comparison of pointer with integer zero");
 	  else if (extra_warnings)
 	    warning_at (location, OPT_Wextra,
-		     "ordered comparison of pointer with integer zero");
+			"ordered comparison of pointer with integer zero");
 	}
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
 	  result_type = type1;
-	  pedwarn (location, OPT_pedantic,
-		   "ordered comparison of pointer with integer zero");
+	  if (pedantic)
+	    pedwarn (location, OPT_pedantic,
+		     "ordered comparison of pointer with integer zero");
+	  else if (extra_warnings)
+	    warning_at (location, OPT_Wextra,
+			"ordered comparison of pointer with integer zero");
 	}
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{

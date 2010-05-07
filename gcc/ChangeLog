@@ -1,3 +1,9 @@
+2010-05-07  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* c-typeck.c (build_binary_op): Warn ordered comparison of pointer
+	with null pointer and also warn about ordered comparison of zero with
+	pointer if -Wextra.
+
 2010-05-05  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-blocking.c
