@@ -160,6 +160,14 @@ namespace std
 	}
     }
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 1130. copy_exception name misleading
+  /// Obtain an exception_ptr pointing to a copy of the supplied object.
+  template<typename _Ex>
+    exception_ptr 
+    make_exception_ptr(_Ex __ex) throw()
+    { return std::copy_exception<_Ex>(__ex); }
+
   // @} group exceptions
 } // namespace std
 
