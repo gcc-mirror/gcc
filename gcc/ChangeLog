@@ -1,5 +1,12 @@
 2010-05-07  Changpeng Fang  <changpeng.fang@amd.com>
 
+	* tree-ssa-loop-prefetch.c (TRIP_COUNT_TO_AHEAD_RATIO): New.
+	(is_loop_prefetching_profitable): Do not insert prefetches
+	when the trip count is not at least TRIP_COUNT_TO_AHEAD_RATIO
+	times the prefetch ahead distance.
+
+2010-05-07  Changpeng Fang  <changpeng.fang@amd.com>
+
 	* tree-ssa-loop-prefetch.c (is_loop_prefetching_profitable):
 	Account for loop unrolling in the insn-to-prefetch ratio heuristic.
 	(loop_prefetch_arrays): Pass to is_loop_prefetching_profitable
