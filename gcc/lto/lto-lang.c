@@ -624,7 +624,7 @@ lto_handle_option (size_t scode, const char *arg,
 
   switch (code)
     {
-    case OPT_fresolution:
+    case OPT_fresolution_:
       resolution_file_name = arg;
       result = 1;
       break;

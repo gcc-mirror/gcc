@@ -1,3 +1,11 @@
+2010-05-07  Richard Guenther <rguenther@suse.de>
+
+	* lto-plugin.c (free_2): Do not free resolution_file.
+	(write_resolution): Check that we were passed a resolution file.
+	(all_symbols_read_handler): Adjust.
+	(cleanup_handler): Do not remove the resolution file.
+	(process_option): Handle -fresolution=.
+
 2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/43620

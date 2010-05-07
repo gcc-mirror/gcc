@@ -782,6 +782,7 @@ proper position among the other output files.  */
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=%(lto_gcc) \
+    -plugin-opt=-fresolution=%u.res \
     %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
     %{static:-plugin-opt=-pass-through=-lc}	\
     %{O*:-plugin-opt=-O%*} \
@@ -2044,6 +2045,23 @@ static int signal_count;
 /* Name with which this program was invoked.  */
 
 static const char *programname;
+
+/* This is the common prefix we use to make temp file names.
+   It is chosen once for each run of this program.
+   It is substituted into a spec by %g or %j.
+   Thus, all temp file names contain this prefix.
+   In practice, all temp file names start with this prefix.
+
+   This prefix comes from the envvar TMPDIR if it is defined;
+   otherwise, from the P_tmpdir macro if that is defined;
+   otherwise, in /usr/tmp or /tmp;
+   or finally the current directory if all else fails.  */
+
+static const char *temp_filename;
+
+/* Length of the prefix.  */
+
+static int temp_filename_length;
 
 /* Allocate the argument vector.  */
 
@@ -2081,7 +2099,7 @@ store_arg (const char *arg, int delete_always, int delete_failure)
   if (strcmp (arg, "-o") == 0)
     have_o_argbuf_index = argbuf_index;
   if (delete_always || delete_failure)
-    record_temp_file (arg, delete_always, delete_failure);
+    record_temp_file (temp_filename, delete_always, delete_failure);
 }
 
 /* Load specs from a file name named FILENAME, replacing occurrences of
@@ -2383,23 +2401,6 @@ read_specs (const char *filename, int main_p)
 
 /* Record the names of temporary files we tell compilers to write,
    and delete them at the end of the run.  */
-
-/* This is the common prefix we use to make temp file names.
-   It is chosen once for each run of this program.
-   It is substituted into a spec by %g or %j.
-   Thus, all temp file names contain this prefix.
-   In practice, all temp file names start with this prefix.
-
-   This prefix comes from the envvar TMPDIR if it is defined;
-   otherwise, from the P_tmpdir macro if that is defined;
-   otherwise, in /usr/tmp or /tmp;
-   or finally the current directory if all else fails.  */
-
-static const char *temp_filename;
-
-/* Length of the prefix.  */
-
-static int temp_filename_length;
 
 /* Define the list of temporary files to delete.  */
 

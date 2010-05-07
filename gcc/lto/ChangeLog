@@ -1,3 +1,11 @@
+2010-05-07  Richard Guenther <rguenther@suse.de>
+
+	PR lto/43857
+	PR lto/43371
+	* lang.opt (fresolution): Change to ...
+	(fresolution=): ... this.
+	* lto-lang.c (lto_handle_option): Adjust.
+
 2010-05-07  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (DUMPBASE_SUFFIX): Remove.

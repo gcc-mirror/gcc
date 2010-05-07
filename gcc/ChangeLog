@@ -1,3 +1,10 @@
+2010-05-07  Richard Guenther <rguenther@suse.de>
+
+	* gcc.c (LINK_COMMAND_SPEC): Provide a resolution file to
+	the linker plugin.
+	(store_arg): Queue temp_filename for deletion instead of
+	the whole argument.
+
 2010-05-07  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (DUMPBASE_SUFFIX): Define.
