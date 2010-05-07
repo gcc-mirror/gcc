@@ -4710,16 +4710,13 @@ execute_pre (bool do_fre)
   if (!run_scc_vn (do_fre))
     {
       if (!do_fre)
-	{
-	  remove_dead_inserted_code ();
-	  loop_optimizer_finalize ();
-	}
+	loop_optimizer_finalize ();
 
       return 0;
     }
+
   init_pre (do_fre);
   scev_initialize ();
-
 
   /* Collect and value number expressions computed in each basic block.  */
   compute_avail ();
