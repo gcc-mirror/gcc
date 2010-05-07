@@ -1,3 +1,8 @@
+2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/dbxmdebug.h: Remove.
+	* config.gcc (mips-sgi-irix[56]*): Remove mips/dbxmdebug.h.
+
 2010-05-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:

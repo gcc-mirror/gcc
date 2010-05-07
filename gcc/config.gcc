@@ -1707,7 +1707,7 @@ mips-sgi-irix[56]*)
 	esac
 	if test "x$stabs" = xyes
 	then
-		tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
+		tm_file="${tm_file} dbx.h"
 	fi
 	if test "x$gnu_ld" = xyes
 	then
