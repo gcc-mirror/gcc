@@ -276,7 +276,7 @@ along with GCC; see the file COPYING3.  If not see
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared: \
   %{!non_shared: %{!call_shared:%{!r: -call_shared " IRIX_NO_UNRESOLVED "}}}} \
-%{rpath} -init __gcc_init -fini __gcc_fini " IRIX_SUBTARGET_LINK_SPEC
+%{rpath} %{!r: -init __gcc_init -fini __gcc_fini} " IRIX_SUBTARGET_LINK_SPEC
 
 #ifdef IRIX_USING_GNU_LD
 #define IRIX_SUBTARGET_LINK_SPEC \
