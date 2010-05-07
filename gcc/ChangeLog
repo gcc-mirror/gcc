@@ -1,5 +1,9 @@
 2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/mips/iris.h (LINK_SPEC): Don't pass -init, -fini with -r.
+
+2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/mips/dbxmdebug.h: Remove.
 	* config.gcc (mips-sgi-irix[56]*): Remove mips/dbxmdebug.h.
 
