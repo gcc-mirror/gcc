@@ -199,6 +199,18 @@ along with GCC; see the file COPYING3.  If not see
 #define FENCE_FOLLOWING_MOVNT NULL_TREE
 #endif
 
+/* It is not profitable to prefetch when the trip count is not at
+   least TRIP_COUNT_TO_AHEAD_RATIO times the prefetch ahead distance.
+   For example, in a loop with a prefetch ahead distance of 10,
+   supposing that TRIP_COUNT_TO_AHEAD_RATIO is equal to 4, it is
+   profitable to prefetch when the trip count is greater or equal to
+   40.  In that case, 30 out of the 40 iterations will benefit from
+   prefetching.  */
+
+#ifndef TRIP_COUNT_TO_AHEAD_RATIO
+#define TRIP_COUNT_TO_AHEAD_RATIO 4
+#endif
+
 /* The group of references between that reuse may occur.  */
 
 struct mem_ref_group
@@ -1585,7 +1597,7 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
       return insn_to_prefetch_ratio >= MIN_INSN_TO_PREFETCH_RATIO;
     }
 
-  if (est_niter <= (HOST_WIDE_INT) ahead)
+  if (est_niter < (HOST_WIDE_INT) (TRIP_COUNT_TO_AHEAD_RATIO * ahead))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
