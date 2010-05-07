@@ -4,7 +4,7 @@
    Namelist input contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ free_saved (st_parameter_dt *dtp)
   if (dtp->u.p.saved_string == NULL)
     return;
 
-  free_mem (dtp->u.p.saved_string);
+  free (dtp->u.p.saved_string);
 
   dtp->u.p.saved_string = NULL;
   dtp->u.p.saved_used = 0;
@@ -128,7 +128,7 @@ free_line (st_parameter_dt *dtp)
   if (dtp->u.p.line_buffer == NULL)
     return;
 
-  free_mem (dtp->u.p.line_buffer);
+  free (dtp->u.p.line_buffer);
   dtp->u.p.line_buffer = NULL;
 }
 
@@ -2175,7 +2175,7 @@ nml_touch_nodes (namelist_info * nl)
       else
 	break;
     }
-  free_mem (ext_name);
+  free (ext_name);
   return;
 }
 
@@ -2440,18 +2440,18 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 				  pprev_nl, nml_err_msg, nml_err_msg_size,
 				  clow, chigh) == FAILURE)
 		  {
-		    free_mem (obj_name);
+		    free (obj_name);
 		    return FAILURE;
 		  }
 
 		if (dtp->u.p.input_complete)
 		  {
-		    free_mem (obj_name);
+		    free (obj_name);
 		    return SUCCESS;
 		  }
 	      }
 
-	    free_mem (obj_name);
+	    free (obj_name);
 	    goto incr_idx;
 
           default:

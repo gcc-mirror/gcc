@@ -1,8 +1,9 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010 
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -210,7 +211,7 @@ static void
 destroy_unit_mutex (gfc_unit * u)
 {
   __gthread_mutex_destroy (&u->lock);
-  free_mem (u);
+  free (u);
 }
 
 
@@ -473,10 +474,10 @@ free_internal_unit (st_parameter_dt *dtp)
   if (dtp->u.p.current_unit != NULL)
     {
       if (dtp->u.p.current_unit->ls != NULL)
-	free_mem (dtp->u.p.current_unit->ls);
+	free (dtp->u.p.current_unit->ls);
   
       if (dtp->u.p.current_unit->s)
-	free_mem (dtp->u.p.current_unit->s);
+	free (dtp->u.p.current_unit->s);
   
       destroy_unit_mutex (dtp->u.p.current_unit);
     }
@@ -642,7 +643,7 @@ close_unit_1 (gfc_unit *u, int locked)
   delete_unit (u);
 
   if (u->file)
-    free_mem (u->file);
+    free (u->file);
   u->file = NULL;
   u->file_len = 0;
 

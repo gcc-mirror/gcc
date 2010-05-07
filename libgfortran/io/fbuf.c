@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -52,8 +52,8 @@ fbuf_destroy (gfc_unit * u)
   if (u->fbuf == NULL)
     return;
   if (u->fbuf->buf)
-    free_mem (u->fbuf->buf);
-  free_mem (u->fbuf);
+    free (u->fbuf->buf);
+  free (u->fbuf);
   u->fbuf = NULL;
 }
 
