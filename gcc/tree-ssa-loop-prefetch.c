@@ -1532,7 +1532,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 static bool
 is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
 				unsigned ninsns, unsigned prefetch_count,
-				unsigned mem_ref_count)
+				unsigned mem_ref_count, unsigned unroll_factor)
 {
   int insn_to_mem_ratio, insn_to_prefetch_ratio;
 
@@ -1570,13 +1570,18 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
      by taking the ratio between the number of prefetches and the total
      number of instructions.  Since we are using integer arithmetic, we
      compute the reciprocal of this ratio.
-     TODO: Account for loop unrolling, which may reduce the costs of
-     shorter stride prefetches.  Note that not accounting for loop
-     unrolling over-estimates the cost and hence gives more conservative
-     results.  */
+     (unroll_factor * ninsns) is used to estimate the number of instructions in
+     the unrolled loop.  This implementation is a bit simplistic -- the number
+     of issued prefetch instructions is also affected by unrolling.  So,
+     prefetch_mod and the unroll factor should be taken into account when
+     determining prefetch_count.  Also, the number of insns of the unrolled
+     loop will usually be significantly smaller than the number of insns of the
+     original loop * unroll_factor (at least the induction variable increases
+     and the exit branches will get eliminated), so it might be better to use
+     tree_estimate_loop_size + estimated_unrolled_size.  */
   if (est_niter < 0)
     {
-      insn_to_prefetch_ratio = ninsns / prefetch_count;
+      insn_to_prefetch_ratio = (unroll_factor * ninsns) / prefetch_count;
       return insn_to_prefetch_ratio >= MIN_INSN_TO_PREFETCH_RATIO;
     }
 
@@ -1643,8 +1648,8 @@ loop_prefetch_arrays (struct loop *loop)
 	     ahead, unroll_factor, est_niter,
 	     ninsns, mem_ref_count, prefetch_count);
 
-  if (!is_loop_prefetching_profitable (ahead, est_niter, ninsns,
-				       prefetch_count, mem_ref_count))
+  if (!is_loop_prefetching_profitable (ahead, est_niter, ninsns, prefetch_count,
+				       mem_ref_count, unroll_factor))
     goto fail;
 
   mark_nontemporal_stores (loop, refs);
