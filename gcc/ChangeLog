@@ -1,3 +1,10 @@
+2010-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-pragma.c (pending_weak_d, pending_weak): New.
+	(pending_weaks): Change the type to VEC((pending_weak,gc) *.
+	(maybe_apply_pragma_weak, maybe_apply_pending_pragma_weaks,
+	handle_pragma_weak): Update the uses of pending_weaks.
+
 2010-05-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/44016

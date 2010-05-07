@@ -244,7 +244,16 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 }
 #endif  /* HANDLE_PRAGMA_PACK */
 
-static GTY(()) tree pending_weaks;
+typedef struct GTY(()) pending_weak_d
+{
+  tree name;
+  tree value;
+} pending_weak;
+
+DEF_VEC_O(pending_weak);
+DEF_VEC_ALLOC_O(pending_weak,gc);
+
+static GTY(()) VEC(pending_weak,gc) *pending_weaks;
 
 #ifdef HANDLE_PRAGMA_WEAK
 static void apply_pragma_weak (tree, tree);
@@ -274,7 +283,9 @@ apply_pragma_weak (tree decl, tree value)
 void
 maybe_apply_pragma_weak (tree decl)
 {
-  tree *p, t, id;
+  tree id;
+  int i;
+  pending_weak *pe;
 
   /* Avoid asking for DECL_ASSEMBLER_NAME when it's not needed.  */
 
@@ -293,11 +304,11 @@ maybe_apply_pragma_weak (tree decl)
 
   id = DECL_ASSEMBLER_NAME (decl);
 
-  for (p = &pending_weaks; (t = *p) ; p = &TREE_CHAIN (t))
-    if (id == TREE_PURPOSE (t))
+  for (i = 0; VEC_iterate (pending_weak, pending_weaks, i, pe); i++)
+    if (id == pe->name)
       {
-	apply_pragma_weak (decl, TREE_VALUE (t));
-	*p = TREE_CHAIN (t);
+	apply_pragma_weak (decl, pe->value);
+	VEC_unordered_remove (pending_weak, pending_weaks, i);
 	break;
       }
 }
@@ -307,15 +318,16 @@ maybe_apply_pragma_weak (tree decl)
 void
 maybe_apply_pending_pragma_weaks (void)
 {
-  tree *p, t, alias_id, id, decl, *next;
+  tree alias_id, id, decl;
+  int i;
+  pending_weak *pe;
 
-  for (p = &pending_weaks; (t = *p) ; p = next)
+  for (i = 0; VEC_iterate (pending_weak, pending_weaks, i, pe); i++)
     {
-      next = &TREE_CHAIN (t);
-      alias_id = TREE_PURPOSE (t);
-      id = TREE_VALUE (t);
+      alias_id = pe->name;
+      id = pe->value;
 
-      if (TREE_VALUE (t) == NULL)
+      if (id == NULL)
 	continue;
 
       decl = build_decl (UNKNOWN_LOCATION,
@@ -359,7 +371,12 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
 	assemble_alias (decl, value);
     }
   else
-    pending_weaks = tree_cons (name, value, pending_weaks);
+    {
+      pending_weak *pe;
+      pe = VEC_safe_push (pending_weak, gc, pending_weaks, NULL);
+      pe->name = name;
+      pe->value = value;
+    }
 }
 #else
 void
