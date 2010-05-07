@@ -1,3 +1,8 @@
+2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/dbxmdebug.h: Remove.
+	* config.gcc (mips-sgi-irix6.5*): Remove mips/dbxmdebug.h.
+
 2010-05-07  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* c-typeck.c (build_binary_op): Warn ordered comparison of pointer
