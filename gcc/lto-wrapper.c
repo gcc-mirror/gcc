@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "libiberty.h"
+#include "obstack.h"
 
 int debug;				/* true if -debug */
 
@@ -246,6 +247,8 @@ fork_execute (char **argv)
   free (at_args);
 }
 
+/* Template of LTRANS dumpbase suffix.  */
+#define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
@@ -350,6 +353,7 @@ run_gcc (unsigned argc, char *argv[])
   *argv_ptr = NULL;
 
   fork_execute (CONST_CAST (char **, new_argv));
+
   free (new_argv);
   new_argv = NULL;
 
@@ -362,16 +366,164 @@ run_gcc (unsigned argc, char *argv[])
   else if (lto_mode == LTO_MODE_WHOPR)
     {
       FILE *stream = fopen (ltrans_output_file, "r");
-      int c;
+      const char *collect_gcc_options, *collect_gcc;
+      struct obstack env_obstack;
+      bool seen_dumpbase = false;
+      char *dumpbase_suffix = NULL;
+      unsigned j;
 
       if (!stream)
 	fatal_perror ("fopen: %s", ltrans_output_file);
 
-      while ((c = getc (stream)) != EOF)
-	putc (c, stdout);
+      /* Get the driver and options.  */
+      collect_gcc = getenv ("COLLECT_GCC");
+      if (!collect_gcc)
+	fatal ("environment variable COLLECT_GCC must be set");
+
+      /* Set the CFLAGS environment variable.  */
+      collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+      if (!collect_gcc_options)
+	fatal ("environment variable COLLECT_GCC_OPTIONS must be set");
+
+      /* Count arguments.  */
+      i = 0;
+      for (j = 0; collect_gcc_options[j] != '\0'; ++j)
+	if (collect_gcc_options[j] == '\'')
+	  ++i;
+
+      if (i % 2 != 0)
+	fatal ("malformed COLLECT_GCC_OPTIONS");
+
+      /* Initalize the arguments for the LTRANS driver.  */
+      new_argv = (const char **) xmalloc ((8 + i / 2) * sizeof (char *));
+      argv_ptr = new_argv;
+      *argv_ptr++ = collect_gcc;
+      *argv_ptr++ = "-xlto";
+      *argv_ptr++ = "-c";
+      for (j = 0; collect_gcc_options[j] != '\0'; ++j)
+	if (collect_gcc_options[j] == '\'')
+	  {
+	    char *option;
+
+	    ++j;
+	    i = j;
+	    while (collect_gcc_options[j] != '\'')
+	      ++j;
+	    obstack_init (&env_obstack);
+	    obstack_grow (&env_obstack, &collect_gcc_options[i], j - i);
+	    if (seen_dumpbase)
+	      obstack_grow (&env_obstack, DUMPBASE_SUFFIX,
+			    sizeof (DUMPBASE_SUFFIX));
+	    else
+	      obstack_1grow (&env_obstack, 0);
+	    option = XOBFINISH (&env_obstack, char *);
+	    if (seen_dumpbase)
+	      {
+		dumpbase_suffix = option + 7 + j - i;
+		seen_dumpbase = false;
+	      }
+
+	    /* LTRANS does not need -fwhopr.  */
+	    if (strncmp (option, "-fwhopr", 7) != 0)
+	      {
+		if (strncmp (option, "-dumpbase", 9) == 0)
+		  seen_dumpbase = true;
+		*argv_ptr++ = option;
+	      }
+	  }
+      *argv_ptr++ = "-fltrans";
+
+      for (;;)
+	{
+	  const unsigned piece = 32;
+	  char *output_name;
+	  char *buf, *input_name = (char *)xmalloc (piece);
+	  size_t len;
+
+	  buf = input_name;
+cont:
+	  if (!fgets (buf, piece, stream))
+	    break;
+	  len = strlen (input_name);
+	  if (input_name[len - 1] != '\n')
+	    {
+	      input_name = (char *)xrealloc (input_name, len + piece);
+	      buf = input_name + len;
+	      goto cont;
+	    }
+	  input_name[len - 1] = '\0';
+
+	  if (input_name[0] == '*')
+	    {
+	      continue;
+	      output_name = &input_name[1];
+	    }
+	  else
+	    {
+	      struct pex_obj *pex;
+	      const char *errmsg;
+	      int err;
+	      int status;
+
+	      /* Otherwise, add FILES[I] to lto_execute_ltrans command line
+		 and add the resulting file to LTRANS output list.  */
+
+	      /* Replace the .o suffix with a .ltrans.o suffix and write
+		 the resulting name to the LTRANS output list.  */
+	      obstack_init (&env_obstack);
+	      obstack_grow (&env_obstack, input_name, strlen (input_name) - 2);
+	      obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
+	      output_name = XOBFINISH (&env_obstack, char *);
+
+	      argv_ptr[0] = "-o";
+	      argv_ptr[1] = output_name;
+	      argv_ptr[2] = input_name;
+	      argv_ptr[3] = NULL;
+
+	      /* Append a sequence number to -dumpbase for LTRANS.  */
+	      if (dumpbase_suffix)
+		snprintf (dumpbase_suffix, sizeof (DUMPBASE_SUFFIX) - 7,
+			  "%lu", (unsigned long) i);
+
+	      /* Execute the driver.  */
+	      pex = pex_init (0, "lto1", NULL);
+	      if (pex == NULL)
+		fatal ("pex_init failed: %s", xstrerror (errno));
+
+	      errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, new_argv[0],
+				CONST_CAST (char **, new_argv),
+				NULL, NULL, &err);
+	      if (errmsg)
+		fatal ("%s: %s", errmsg, xstrerror (err));
+
+	      if (!pex_get_status (pex, 1, &status))
+		fatal ("can't get program status: %s", xstrerror (errno));
+
+	      if (status)
+		{
+		  if (WIFSIGNALED (status))
+		    {
+		      int sig = WTERMSIG (status);
+		      fatal ("%s terminated with signal %d [%s]%s",
+			     new_argv[0], sig, strsignal (sig),
+			     WCOREDUMP (status) ? ", core dumped" : "");
+		    }
+		  else
+		    fatal ("%s terminated with status %d", new_argv[0], status);
+		}
+
+	      pex_free (pex);
+
+	      maybe_unlink_file (input_name);
+	    }
+
+	  fputs (output_name, stdout);
+	  putc ('\n', stdout);
+	}
       fclose (stream);
       maybe_unlink_file (ltrans_output_file);
       free (list_option_full);
+      obstack_free (&env_obstack, NULL);
     }
   else
     fatal ("invalid LTO mode");

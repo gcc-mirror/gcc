@@ -1,3 +1,10 @@
+2010-05-07  Richard Guenther  <rguenther@suse.de>
+
+	* lto-wrapper.c (DUMPBASE_SUFFIX): Define.
+	(run_gcc): Handle LTRANS phase invocation.
+	* collect2.c (maybe_run_lto_and_relink): Do not set
+	WPA_SAVE_LTRANS.
+
 2010-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (TREE_ADDRESSABLE): Adjust comment to say that
