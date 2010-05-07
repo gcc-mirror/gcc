@@ -1,3 +1,9 @@
+2010-05-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR documentation/44016
+	* doc/standards.texi (Standards): Link to unversioned
+	cxx0x_status.html page.
+
 2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris.h (LINK_SPEC): Don't pass -init, -fini with -r.

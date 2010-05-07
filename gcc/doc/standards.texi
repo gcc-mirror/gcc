@@ -183,7 +183,7 @@ working paper for the C++0x standard; the latest working paper is
 available on the ISO C++ committee's web site at
 @uref{http://www.open-std.org/jtc1/sc22/wg21/}. For information
 regarding the C++0x features available in the experimental C++0x mode,
-see @uref{http://gcc.gnu.org/gcc-4.3/cxx0x_status.html}. To select this
+see @uref{http://gcc.gnu.org/projects/cxx0x.html}. To select this
 standard in GCC, use the option @option{-std=c++0x}; to obtain all the
 diagnostics required by the standard, you should also specify
 @option{-pedantic} (or @option{-pedantic-errors} if you want them to be
