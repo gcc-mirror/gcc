@@ -294,12 +294,6 @@ free_2 (void)
   if (arguments_file_name)
     free (arguments_file_name);
   arguments_file_name = NULL;
-
-  if (resolution_file)
-    {
-      free (resolution_file);
-      resolution_file = NULL;
-    }
 }
 
 /*  Writes the relocations to disk. */
@@ -310,6 +304,7 @@ write_resolution (void)
   unsigned int i;
   FILE *f;
 
+  check (resolution_file, LDPL_FATAL, "resolution file not specified");
   f = fopen (resolution_file, "w");
   check (f, LDPL_FATAL, "could not open file");
 
@@ -467,7 +462,7 @@ static enum ld_plugin_status
 all_symbols_read_handler (void)
 {
   unsigned i;
-  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 2 + 1;
+  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 1;
   char **lto_argv;
   const char **lto_arg_ptr;
   if (num_claimed_files == 0)
@@ -483,17 +478,12 @@ all_symbols_read_handler (void)
   lto_arg_ptr = (const char **) lto_argv;
   assert (lto_wrapper_argv);
 
-  resolution_file = make_temp_file ("");
-
   write_resolution ();
 
   free_1 ();
 
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
-
-  *lto_arg_ptr++ = "-fresolution";
-  *lto_arg_ptr++ = resolution_file;
 
   for (i = 0; i < num_claimed_files; i++)
     {
@@ -541,12 +531,6 @@ cleanup_handler (void)
     {
       t = unlink (arguments_file_name);
       check (t == 0, LDPL_FATAL, "could not unlink arguments file");
-    }
-
-  if (resolution_file)
-    {
-      t = unlink (resolution_file);
-      check (t == 0, LDPL_FATAL, "could not unlink resolution file");
     }
 
   for (i = 0; i < num_output_files; i++)
@@ -657,10 +641,13 @@ process_option (const char *option)
   else
     {
       int size;
+      char *opt = xstrdup (option);
       lto_wrapper_num_args += 1;
       size = lto_wrapper_num_args * sizeof (char *);
       lto_wrapper_argv = (char **) xrealloc (lto_wrapper_argv, size);
-      lto_wrapper_argv[lto_wrapper_num_args - 1] = xstrdup(option);
+      lto_wrapper_argv[lto_wrapper_num_args - 1] = opt;
+      if (strncmp (option, "-fresolution=", sizeof ("-fresolution=") - 1) == 0)
+	resolution_file = opt + sizeof ("-fresolution=") - 1;
     }
 }
 
