@@ -184,7 +184,8 @@ gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
    that have been successfully decoded or 0 on failure.  */
 
 static int
-gnat_handle_option (size_t scode, const char *arg, int value, int kind ATTRIBUTE_UNUSED)
+gnat_handle_option (size_t scode, const char *arg, int value,
+		    int kind ATTRIBUTE_UNUSED)
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
