@@ -2,7 +2,7 @@
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ show_locus (st_parameter_common *cmp)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
 		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
-	  free_mem (filename);
+	  free (filename);
 	}
       else
 	{

@@ -3,7 +3,7 @@
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -351,7 +351,7 @@ raw_close (unix_stream * s)
     retval = close (s->fd);
   else
     retval = 0;
-  free_mem (s);
+  free (s);
   return retval;
 }
 
@@ -564,7 +564,7 @@ buf_close (unix_stream * s)
 {
   if (buf_flush (s) != 0)
     return -1;
-  free_mem (s->buffer);
+  free (s->buffer);
   return raw_close (s);
 }
 
@@ -739,7 +739,7 @@ static int
 mem_close (unix_stream * s)
 {
   if (s != NULL)
-    free_mem (s);
+    free (s);
 
   return 0;
 }
@@ -937,7 +937,7 @@ tempfile (st_parameter_open *opp)
 #endif /* HAVE_MKSTEMP */
 
   if (fd < 0)
-    free_mem (template);
+    free (template);
   else
     {
       opp->file = template;
@@ -1395,7 +1395,7 @@ retry:
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free_mem (u);
+	    free (u);
 	  goto retry;
 	}
 
@@ -1460,7 +1460,7 @@ flush_all_units (void)
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free_mem (u);
+	    free (u);
 	}
     }
   while (1);

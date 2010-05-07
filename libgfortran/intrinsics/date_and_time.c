@@ -3,7 +3,7 @@
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -366,7 +366,7 @@ secnds (GFC_REAL_4 *x)
 
   date_and_time (NULL, NULL, NULL, avalues, 0, 0, 0);
 
-  free_mem (avalues);
+  free (avalues);
 
   temp1 = 3600.0 * (GFC_REAL_4)values[4] +
 	    60.0 * (GFC_REAL_4)values[5] +

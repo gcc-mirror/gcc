@@ -1,3 +1,31 @@
+2010-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * libgfortran.h (free_mem): Remove prototype.
+        * runtime/memory.c (free_mem): Remove function.
+        * intrinsics/date_and_time.c (secnds): Replace free_mem() with
+        free().
+        * io/fbuf.c (fbuf_destroy): Likewise.
+        * io/format.c (free_format_hash_table): Likewise.
+        (save_parsed_format): Likewise.
+        (free_format_data): Likewise.
+        * io/list_read.c (free_saved): Likewise.
+        (free_line): Likewise.
+        (nml_touch_nodes): Likewise.
+        (nml_read_obj): Likewise
+        * io/lock.c (free_ionml): Likewise.
+        * io/open.c (new_unit): Likewise.
+        (already_open): Likewise.
+        * io/unit.c (destroy_unit_mutex): Likewise.
+        (free_internal_unit): Likewise.
+        (close_unit_1): Likewise.
+        * io/unix.c (raw_close): Likewise.
+        (buf_close): Likewise.
+        (mem_close): Likewise.
+        (tempfile): Likewise.
+        * io/write.c (nml_write_obj): Likewise.
+        * io/write_float.def (output_float_FMT_G_##): Likewise.
+        * runtime/error.c (show_locus): Likewise.
+
 2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/43620

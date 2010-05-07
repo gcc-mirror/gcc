@@ -1,10 +1,10 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist output contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1683,8 +1683,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 					  obj, ext_name);
 		}
 
-	      free_mem (obj_name);
-	      free_mem (ext_name);
+	      free (obj_name);
+	      free (ext_name);
 	      goto obj_loop;
 
             default:

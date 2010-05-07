@@ -4,7 +4,7 @@
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -766,9 +766,6 @@ internal_proto(set_fpu);
 
 extern void *get_mem (size_t) __attribute__ ((malloc));
 internal_proto(get_mem);
-
-extern void free_mem (void *);
-internal_proto(free_mem);
 
 extern void *internal_malloc_size (size_t) __attribute__ ((malloc));
 internal_proto(internal_malloc_size);

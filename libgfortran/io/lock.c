@@ -1,8 +1,9 @@
 /* Thread/recursion locking
-   Copyright 2002, 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2004, 2005, 2007, 2009, 2010 
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org> and Andy Vaught
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -25,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* library_start()-- Called with a library call is entered.  */
 
@@ -52,13 +54,13 @@ free_ionml (st_parameter_dt *dtp)
 	{
 	  t2 = t1;
 	  t1 = t1->next;
-	  free_mem (t2->var_name);
+	  free (t2->var_name);
 	  if (t2->var_rank)
 	    {
-	     free_mem (t2->dim);
-	     free_mem (t2->ls);
+	     free (t2->dim);
+	     free (t2->ls);
 	    }
-	  free_mem (t2);
+	  free (t2);
 	}
     }
   dtp->u.p.ionml = NULL;
