@@ -1,3 +1,8 @@
+2010-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (TREE_ADDRESSABLE): Adjust comment to say that
+	this is also meaningful on PARM_DECLs and RESULT_DECLs.
+
 2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (LINK_SPEC): Don't pass -init, -fini with -r.
