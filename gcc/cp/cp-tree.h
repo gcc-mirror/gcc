@@ -4857,7 +4857,7 @@ extern tree create_temporary_var		(tree);
 extern void initialize_vtbl_ptrs		(tree);
 extern tree build_java_class_ref		(tree);
 extern tree integral_constant_value		(tree);
-extern void diagnose_uninitialized_cst_or_ref_member (tree, bool);
+extern int diagnose_uninitialized_cst_or_ref_member (tree, bool, bool);
 
 /* in lex.c */
 extern void cxx_dup_lang_specific_decl		(tree);

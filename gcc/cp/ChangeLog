@@ -1,3 +1,15 @@
+2010-05-07  Fabien Chêne  <fabien.chene@gmail.com>
+
+	PR c++/43951
+	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Returns the
+	error count. Emit errors only if compain is true.
+	(build_new_1): Do not return error_mark_node if
+	diagnose_uninitialized_cst_or_ref_member_1 does not diagnose any
+	errors. Delay the check for user-provided constructor.
+	(perform_member_init): Adjust.
+	* cp-tree.h (diagnose_uninitialized_cst_or_ref_member): Change the
+	prototype.
+
 2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
 	    Jason Merrill  <jason@redhat.com>
 
