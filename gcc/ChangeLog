@@ -1,3 +1,9 @@
+2010-05-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44020
+	* tree-ssa-pre.c (execute_pre): Do not remove dead inserted
+	code when PRE is not yet initialized.
+
 2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/dbxmdebug.h: Remove.
