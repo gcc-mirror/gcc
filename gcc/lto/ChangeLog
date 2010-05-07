@@ -1,10 +1,21 @@
+2010-05-07  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (DUMPBASE_SUFFIX): Remove.
+	(lto_execute_ltrans): Move functionality to lto-wrapper.c.
+	Rename to ...
+	(lto_write_ltrans_list): ... only output the list of ltrans files.
+	(lto_maybe_unlink): Remove.
+	(do_whole_program_analysis): Do not execute LTRANS phase
+	from here.
+
 2010-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lto-lang.c (lto_handle_option): Add argument kind.
 
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
-	* lto.c (lto_promote_cross_file_statics): Compute boundary based on refs.
+	* lto.c (lto_promote_cross_file_statics): Compute boundary based on
+	refs.
 
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 

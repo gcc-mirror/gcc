@@ -973,187 +973,39 @@ lto_wpa_write_files (void)
   return output_files;
 }
 
-/* Template of LTRANS dumpbase suffix.  */
-#define DUMPBASE_SUFFIX	".ltrans18446744073709551615"
-
 /* Perform local transformations (LTRANS) on the files in the NULL-terminated
    FILES array.  These should have been written previously by
    lto_wpa_write_files ().  Transformations are performed via executing
    COLLECT_GCC for reach file.  */
 
 static void
-lto_execute_ltrans (char *const *files)
+lto_write_ltrans_list (char *const *files)
 {
-  struct pex_obj *pex;
-  const char *collect_gcc_options, *collect_gcc;
-  struct obstack env_obstack;
-  const char **argv;
-  const char **argv_ptr;
-  const char *errmsg;
-  size_t i, j;
-  int err;
-  int status;
   FILE *ltrans_output_list_stream = NULL;
-  bool seen_dumpbase = false;
-  char *dumpbase_suffix = NULL;
-
-  timevar_push (TV_WHOPR_WPA_LTRANS_EXEC);
-
-  /* Get the driver and options.  */
-  collect_gcc = getenv ("COLLECT_GCC");
-  if (!collect_gcc)
-    fatal_error ("environment variable COLLECT_GCC must be set");
-
-  /* Set the CFLAGS environment variable.  */
-  collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
-  if (!collect_gcc_options)
-    fatal_error ("environment variable COLLECT_GCC_OPTIONS must be set");
-
-  /* Count arguments.  */
-  i = 0;
-  for (j = 0; collect_gcc_options[j] != '\0'; ++j)
-    if (collect_gcc_options[j] == '\'')
-      ++i;
-
-  if (i % 2 != 0)
-    fatal_error ("malformed COLLECT_GCC_OPTIONS");
-
-  /* Initalize the arguments for the LTRANS driver.  */
-  argv = XNEWVEC (const char *, 8 + i / 2);
-  argv_ptr = argv;
-  *argv_ptr++ = collect_gcc;
-  *argv_ptr++ = "-xlto";
-  for (j = 0; collect_gcc_options[j] != '\0'; ++j)
-    if (collect_gcc_options[j] == '\'')
-      {
-	char *option;
-
-	++j;
-	i = j;
-	while (collect_gcc_options[j] != '\'')
-	  ++j;
-	obstack_init (&env_obstack);
-	obstack_grow (&env_obstack, &collect_gcc_options[i], j - i);
-	if (seen_dumpbase)
-	  obstack_grow (&env_obstack, DUMPBASE_SUFFIX,
-			sizeof (DUMPBASE_SUFFIX));
-	else
-	  obstack_1grow (&env_obstack, 0);
-	option = XOBFINISH (&env_obstack, char *);
-	if (seen_dumpbase)
-	  {
-	    dumpbase_suffix = option + 7 + j - i;
-	    seen_dumpbase = false;
-	  }
-
-	/* LTRANS does not need -fwpa nor -fltrans-*.  */
-	if (strncmp (option, "-fwpa", 5) != 0
-	    && strncmp (option, "-fltrans-", 9) != 0)
-	  {
-	    if (strncmp (option, "-dumpbase", 9) == 0)
-	      seen_dumpbase = true;
-	    *argv_ptr++ = option;
-	  }
-      }
-  *argv_ptr++ = "-fltrans";
+  unsigned i;
 
   /* Open the LTRANS output list.  */
-  if (ltrans_output_list)
-    {
-      ltrans_output_list_stream = fopen (ltrans_output_list, "w");
-      if (ltrans_output_list_stream == NULL)
-	error ("opening LTRANS output list %s: %m", ltrans_output_list);
-    }
+  if (!ltrans_output_list)
+    error ("no LTRANS output filename provided");
+
+  ltrans_output_list_stream = fopen (ltrans_output_list, "w");
+  if (ltrans_output_list_stream == NULL)
+    error ("opening LTRANS output list %s: %m", ltrans_output_list);
 
   for (i = 0; files[i]; ++i)
     {
       size_t len;
 
-      /* If the file is prefixed with a '*', it means that we do not
-	 need to re-compile it with LTRANS because it has not been
-	 modified by WPA.  Skip it from the command line to
-	 lto_execute_ltrans, but add it to ltrans_output_list_stream
-	 so it is linked after we are done.  */
-      if (files[i][0] == '*')
-	{
-	  size_t len = strlen (files[i]) - 1;
-	  if (ltrans_output_list_stream)
-	    if (fwrite (&files[i][1], 1, len, ltrans_output_list_stream) < len
-		|| fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
-	      error ("writing to LTRANS output list %s: %m",
-		     ltrans_output_list);
-	}
-      else
-	{
-	  char *output_name;
-
-	  /* Otherwise, add FILES[I] to lto_execute_ltrans command line
-	     and add the resulting file to LTRANS output list.  */
-
-	  /* Replace the .o suffix with a .ltrans.o suffix and write
-	     the resulting name to the LTRANS output list.  */
-	  obstack_init (&env_obstack);
-	  obstack_grow (&env_obstack, files[i], strlen (files[i]) - 2);
-	  obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
-	  output_name = XOBFINISH (&env_obstack, char *);
-	  if (ltrans_output_list_stream)
-	    {
-	      len = strlen (output_name);
-
-	      if (fwrite (output_name, 1, len, ltrans_output_list_stream) < len
-		  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
-		error ("writing to LTRANS output list %s: %m",
-		       ltrans_output_list);
-	    }
-
-	  argv_ptr[0] = "-o";
-	  argv_ptr[1] = output_name;
-	  argv_ptr[2] = files[i];
-	  argv_ptr[3] = NULL;
-
-	  /* Append a sequence number to -dumpbase for LTRANS.  */
-	  if (dumpbase_suffix)
-	    snprintf (dumpbase_suffix, sizeof (DUMPBASE_SUFFIX) - 7,
-		      "%lu", (unsigned long) i);
-
-	  /* Execute the driver.  */
-	  pex = pex_init (0, "lto1", NULL);
-	  if (pex == NULL)
-	    fatal_error ("pex_init failed: %s", xstrerror (errno));
-
-	  errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0],
-			    CONST_CAST (char **, argv), NULL, NULL, &err);
-	  if (errmsg)
-	    fatal_error ("%s: %s", errmsg, xstrerror (err));
-
-	  if (!pex_get_status (pex, 1, &status))
-	    fatal_error ("can't get program status: %s", xstrerror (errno));
-
-	  if (status)
-	    {
-	      if (WIFSIGNALED (status))
-		{
-		  int sig = WTERMSIG (status);
-		  fatal_error ("%s terminated with signal %d [%s]%s",
-			       argv[0], sig, strsignal (sig),
-			       WCOREDUMP (status) ? ", core dumped" : "");
-		}
-	      else
-		fatal_error ("%s terminated with status %d", argv[0], status);
-	    }
-
-	  pex_free (pex);
-	}
+      len = strlen (files[i]);
+      if (fwrite (files[i], 1, len, ltrans_output_list_stream) < len
+	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
+	error ("writing to LTRANS output list %s: %m",
+	       ltrans_output_list);
     }
 
   /* Close the LTRANS output list.  */
-  if (ltrans_output_list_stream && fclose (ltrans_output_list_stream))
+  if (fclose (ltrans_output_list_stream))
     error ("closing LTRANS output list %s: %m", ltrans_output_list);
-
-  obstack_free (&env_obstack, NULL);
-  free (argv);
-
-  timevar_pop (TV_WHOPR_WPA_LTRANS_EXEC);
 }
 
 
@@ -1616,20 +1468,6 @@ lto_fixup_decls (struct lto_file_decl_data **files)
   pointer_set_destroy (seen);
 }
 
-/* Unlink a temporary LTRANS file unless requested otherwise.  */
-
-static void
-lto_maybe_unlink (const char *file)
-{
-  if (!getenv ("WPA_SAVE_LTRANS"))
-    {
-      if (unlink_if_ordinary (file))
-        error ("deleting LTRANS input file %s: %m", file);
-    }
-  else
-    fprintf (stderr, "[Leaving LTRANS input file %s]\n", file);
-}
-
 /* Read the options saved from each file in the command line.  Called
    from lang_hooks.post_options which is called by process_options
    right before all the options are used to initialize the compiler.
@@ -1893,7 +1731,6 @@ static void
 do_whole_program_analysis (void)
 {
   char **output_files;
-  size_t i;
 
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
@@ -1944,15 +1781,7 @@ do_whole_program_analysis (void)
   if (flag_lto_report)
     print_lto_report ();
 
-  lto_execute_ltrans (output_files);
-
-  for (i = 0; output_files[i]; ++i)
-    {
-      if (output_files[i][0] != '*')
-	lto_maybe_unlink (output_files[i]);
-
-      free (output_files[i]);
-    }
+  lto_write_ltrans_list (output_files);
 
   XDELETEVEC (output_files);
 }

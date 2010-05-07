@@ -1007,10 +1007,6 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 
       *lto_c_ptr = NULL;
 
-      /* Save intermediate WPA files in lto1 if debug.  */
-      if (debug)
-	putenv (xstrdup ("WPA_SAVE_LTRANS=1"));
-
       /* Run the LTO back end.  */
       pex = collect_execute (prog, lto_c_argv, NULL, NULL, PEX_SEARCH);
       {
