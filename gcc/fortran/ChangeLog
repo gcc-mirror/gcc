@@ -1,3 +1,9 @@
+2010-05-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/40728
+	* intrinc.c (gfc_is_intrinsic): Do not prematurely mark symbol
+        as external
+
 2010-05-07  Jason Merrill  <jason@redhat.com>
 
 	* trans-expr.c (gfc_conv_procedure_call): Rename nullptr to null_ptr
@@ -17,6 +23,7 @@
 
 2010-05-05  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/32331
 	* resolve.c (traverse_data_list): Rephrase error message for
 	non-constant bounds in data-implied-do.
 

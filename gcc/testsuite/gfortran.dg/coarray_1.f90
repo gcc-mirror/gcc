@@ -13,6 +13,6 @@ sync memory  ! { dg-error "Fortran 2008:" }
 sync images(*)  ! { dg-error "Fortran 2008:" }
 
 ! num_images is implicitly defined:
-n = num_images()  ! { dg-error "convert UNKNOWN to INTEGER" }
+n = num_images()  ! { dg-error "has no IMPLICIT type" }
 error stop 'stop'  ! { dg-error "Fortran 2008:" }
 end
