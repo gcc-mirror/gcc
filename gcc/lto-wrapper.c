@@ -369,6 +369,7 @@ run_gcc (unsigned argc, char *argv[])
       const char *collect_gcc_options, *collect_gcc;
       struct obstack env_obstack;
       bool seen_dumpbase = false;
+      bool seen_o = false;
       char *dumpbase_suffix = NULL;
       unsigned j;
 
@@ -421,6 +422,18 @@ run_gcc (unsigned argc, char *argv[])
 	      {
 		dumpbase_suffix = option + 7 + j - i;
 		seen_dumpbase = false;
+	      }
+	    if (seen_o)
+	      {
+		seen_o = false;
+		continue;
+	      }
+
+	    /* If we see -o, skip it and its argument.  */
+	    if (strncmp (option, "-o", 2) == 0)
+	      {
+		seen_o = true;
+		continue;
 	      }
 
 	    /* LTRANS does not need -fwhopr.  */
