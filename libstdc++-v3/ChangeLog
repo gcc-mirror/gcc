@@ -1,3 +1,8 @@
+2010-05-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception_ptr.h (make_exception_ptr): Add.
+	* testsuite/18_support/exception_ptr/make_exception_ptr.cc: New.
+
 2010-05-06  Jason Merrill  <jason@redhat.com>
 
 	* config/abi/pre/gnu.ver: Move decltype(nullptr) into CXXABI_1.3.5.
