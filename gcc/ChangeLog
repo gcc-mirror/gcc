@@ -1,3 +1,9 @@
+2010-05-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR target/43708
+	* config/darwin-c.c (darwin_pragma_unused): Set DECL_READ_P
+	in addition to TREE_USED, to avoid "set but unused" warnings.
+
 2010-05-07  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-ssa-loop-prefetch.c (TRIP_COUNT_TO_AHEAD_RATIO): New.
