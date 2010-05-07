@@ -1,8 +1,8 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-O2 -flto} {-O2 -fwhopr} {-O3 -flto} {-O3 -fwhopr}} } */
 
-typedef unsigned int size_t;
-extern struct _IO_FILE *stderr;
+#include <stdio.h>
+
 typedef unsigned char uch;
 extern uch inbuf[];
 unsigned insize;
@@ -20,6 +20,6 @@ int fill_inbuf(int eof_ok)
 }
 void read_error(void)
 {
-  __builtin_fprintf(stderr, "\n%s: ", progname);
+  fprintf(stderr, "\n%s: ", progname);
 }
 

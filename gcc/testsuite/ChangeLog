@@ -1,3 +1,9 @@
+2010-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/lto/20100423-2_0.c: Include <stdio.h>.
+	(size_t, stderr): Remove.
+	(read_error): Replaced __builtin_fprintf by fprintf.
+
 2010-05-07  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* gcc.dg/ordered-comparison-1.c: New test.
