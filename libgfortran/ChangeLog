@@ -1,3 +1,7 @@
+2010-05-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (mem_alloc_r): Fix typo to reduce visibility.
+
 2010-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * libgfortran.h (free_mem): Remove prototype.
