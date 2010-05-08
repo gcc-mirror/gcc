@@ -807,7 +807,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_type
 	    = build_unc_object_type_from_ptr (gnu_fat, gnu_type,
 					      concat_name (gnu_entity_name,
-							   "UNC"));
+							   "UNC"),
+					      debug_info_p);
 	}
 
 #ifdef MINIMUM_ATOMIC_ALIGNMENT
@@ -2066,7 +2067,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   a record type for the object and its template with the fields
 	   shifted to have the template at a negative offset.  */
 	tem = build_unc_object_type (gnu_template_type, tem,
-				     create_concat_name (gnat_name, "XUT"));
+				     create_concat_name (gnat_name, "XUT"),
+				     debug_info_p);
 	shift_unc_components_for_thin_pointers (tem);
 
 	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);

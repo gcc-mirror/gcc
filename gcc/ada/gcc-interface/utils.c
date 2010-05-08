@@ -3299,15 +3299,16 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   end_subprog_body (gnu_body);
 }
 
-/* Build a type to be used to represent an aliased object whose nominal
-   type is an unconstrained array.  This consists of a RECORD_TYPE containing
-   a field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an
-   ARRAY_TYPE.  If ARRAY_TYPE is that of the unconstrained array, this
-   is used to represent an arbitrary unconstrained object.  Use NAME
-   as the name of the record.  */
+/* Build a type to be used to represent an aliased object whose nominal type
+   is an unconstrained array.  This consists of a RECORD_TYPE containing a
+   field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an ARRAY_TYPE.
+   If ARRAY_TYPE is that of an unconstrained array, this is used to represent
+   an arbitrary unconstrained object.  Use NAME as the name of the record.
+   DEBUG_INFO_P is true if we need to write debug information for the type.  */
 
 tree
-build_unc_object_type (tree template_type, tree object_type, tree name)
+build_unc_object_type (tree template_type, tree object_type, tree name,
+		       bool debug_info_p)
 {
   tree type = make_node (RECORD_TYPE);
   tree template_field = create_field_decl (get_identifier ("BOUNDS"),
@@ -3317,10 +3318,12 @@ build_unc_object_type (tree template_type, tree object_type, tree name)
 
   TYPE_NAME (type) = name;
   TYPE_CONTAINS_TEMPLATE_P (type) = 1;
-  finish_record_type (type,
-		      chainon (chainon (NULL_TREE, template_field),
-			       array_field),
-		      0, true);
+  TREE_CHAIN (template_field) = array_field;
+  finish_record_type (type, template_field, 0, true);
+
+  /* Declare it now since it will never be declared otherwise.  This is
+     necessary to ensure that its subtrees are properly marked.  */
+  create_type_decl (name, type, NULL, true, debug_info_p, Empty);
 
   return type;
 }
@@ -3329,7 +3332,7 @@ build_unc_object_type (tree template_type, tree object_type, tree name)
 
 tree
 build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
-				tree name)
+				tree name, bool debug_info_p)
 {
   tree template_type;
 
@@ -3339,7 +3342,9 @@ build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
     = (TYPE_IS_FAT_POINTER_P (thin_fat_ptr_type)
        ? TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (thin_fat_ptr_type))))
        : TREE_TYPE (TYPE_FIELDS (TREE_TYPE (thin_fat_ptr_type))));
-  return build_unc_object_type (template_type, object_type, name);
+
+  return
+    build_unc_object_type (template_type, object_type, name, debug_info_p);
 }
 
 /* Shift the component offsets within an unconstrained object TYPE to make it

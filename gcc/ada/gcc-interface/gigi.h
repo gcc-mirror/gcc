@@ -658,19 +658,20 @@ extern tree build_vms_descriptor32 (tree type, Mechanism_Type mech,
    and the GNAT node GNAT_SUBPROG.  */
 extern void build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog);
 
-/* Build a type to be used to represent an aliased object whose nominal
-   type is an unconstrained array.  This consists of a RECORD_TYPE containing
-   a field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an
-   ARRAY_TYPE.  If ARRAY_TYPE is that of the unconstrained array, this
-   is used to represent an arbitrary unconstrained object.  Use NAME
-   as the name of the record.  */
+/* Build a type to be used to represent an aliased object whose nominal type
+   is an unconstrained array.  This consists of a RECORD_TYPE containing a
+   field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an ARRAY_TYPE.
+   If ARRAY_TYPE is that of an unconstrained array, this is used to represent
+   an arbitrary unconstrained object.  Use NAME as the name of the record.
+   DEBUG_INFO_P is true if we need to write debug information for the type.  */
 extern tree build_unc_object_type (tree template_type, tree object_type,
-                                   tree name);
+				   tree name, bool debug_info_p);
 
 /* Same as build_unc_object_type, but taking a thin or fat pointer type
    instead of the template type.  */
 extern tree build_unc_object_type_from_ptr (tree thin_fat_ptr_type,
-					    tree object_type, tree name);
+					    tree object_type, tree name,
+					    bool debug_info_p);
 
 /* Shift the component offsets within an unconstrained object TYPE to make it
    suitable for use as a designated type for thin pointers.  */

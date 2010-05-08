@@ -1984,7 +1984,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
     {
       tree storage_type
 	= build_unc_object_type_from_ptr (result_type, type,
-					  get_identifier ("ALLOC"));
+					  get_identifier ("ALLOC"), false);
       tree template_type = TREE_TYPE (TYPE_FIELDS (storage_type));
       tree storage_ptr_type = build_pointer_type (storage_type);
       tree storage;
