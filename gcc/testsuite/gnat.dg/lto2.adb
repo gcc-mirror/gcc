@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-flto" }
+-- { dg-options "-flto" { target lto } }
 
 procedure Lto2 (Nbytes : Natural) is
 

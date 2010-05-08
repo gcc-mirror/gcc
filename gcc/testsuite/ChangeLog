@@ -1,3 +1,8 @@
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto[12456].adb: Add "target lto" marker.
+	* gnat.dg/specs/lto3.ads: Likewise.
+
 2010-05-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/28685

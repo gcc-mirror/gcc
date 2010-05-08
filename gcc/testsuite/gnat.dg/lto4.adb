@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-flto" }
+-- { dg-options "-flto" { target lto } }
 
 package body Lto4 is
 
