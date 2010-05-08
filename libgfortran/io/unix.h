@@ -98,7 +98,7 @@ extern char * mem_alloc_w (stream *, int *);
 internal_proto(mem_alloc_w);
 
 extern char * mem_alloc_r (stream *, int *);
-internal_proto(mem_alloc_w);
+internal_proto(mem_alloc_r);
 
 extern stream *input_stream (void);
 internal_proto(input_stream);
