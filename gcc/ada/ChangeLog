@@ -1,3 +1,16 @@
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (build_unc_object_type): Add DEBUG_INFO_P param.
+	(build_unc_object_type_from_ptr): Likewise.
+	* gcc-interface/utils.c (build_unc_object_type): Add DEBUG_INFO_P param
+	and pass it to create_type_decl.  Declare the type.  Simplify.
+	(build_unc_object_type_from_ptr): Add DEBUG_INFO_P parameter and pass
+	it to build_unc_object_type.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust to above change.
+	* gcc-interface/trans.c (Attribute_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils2.c (build_allocator): Likewise.
+
 2010-05-07 Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR 40989
