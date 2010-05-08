@@ -1,3 +1,9 @@
+2010-05-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44030
+	* tree-ssa-pre.c (eliminate): Copy NECESSARY flag.  Set
+	NECESSARY flag if we propagate from a inserted expression.
+
 2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (gimple_types_compatible_p) <ARRAY_TYPE>: Treat bounds of
