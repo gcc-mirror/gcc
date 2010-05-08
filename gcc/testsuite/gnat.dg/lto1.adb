@@ -2,7 +2,7 @@
 -- Testcase by Bill Neven <neven@hitt.nl>
 
 -- { dg-do run }
--- { dg-options "-O2 -flto" }
+-- { dg-options "-O2 -flto" { target lto } }
 
 with Lto1_Pkg; use Lto1_Pkg;
 

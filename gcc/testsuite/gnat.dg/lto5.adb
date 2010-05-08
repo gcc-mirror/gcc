@@ -1,5 +1,5 @@
 -- { dg-do run }
--- { dg-options "-flto" }
+-- { dg-options "-flto" { target lto } }
 
 with Lto5_Pkg;
 
