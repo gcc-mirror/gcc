@@ -1,3 +1,8 @@
+2010-05-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/28685
+	* gcc.dg/pr28685-1.c: New file.
+
 2010-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44030

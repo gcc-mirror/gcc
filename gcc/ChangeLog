@@ -1,3 +1,9 @@
+2010-05-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/28685
+	* tree-ssa-reassoc.c (eliminate_redundant_comparison): New function.
+	(optimize_ops_list): Call it.
+
 2010-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44030
