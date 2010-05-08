@@ -5955,8 +5955,8 @@ make_aligning_type (tree type, unsigned int align, tree size,
 
   if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
-
-  TYPE_NAME (record_type) = concat_name (name, "_ALIGN");
+  name = concat_name (name, "ALIGN");
+  TYPE_NAME (record_type) = name;
 
   /* Compute VOFFSET and then POS.  The next byte position multiple of some
      alignment after some address is obtained by "and"ing the alignment minus
@@ -6001,8 +6001,12 @@ make_aligning_type (tree type, unsigned int align, tree size,
 		  size_int (room + align / BITS_PER_UNIT));
 
   SET_TYPE_MODE (record_type, BLKmode);
-
   relate_alias_sets (record_type, type, ALIAS_SET_COPY);
+
+  /* Declare it now since it will never be declared otherwise.  This is
+     necessary to ensure that its subtrees are properly marked.  */
+  create_type_decl (name, record_type, NULL, true, false, Empty);
+
   return record_type;
 }
 

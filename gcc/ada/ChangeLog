@@ -1,5 +1,9 @@
 2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (make_aligning_type): Declare the type.
+
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Create variables for size
 	expressions of variant part of record types declared at library level.
 
