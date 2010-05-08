@@ -560,7 +560,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     && (((Nkind (Declaration_Node (gnat_entity))
 		   == N_Object_Declaration)
 		  && Present (Expression (Declaration_Node (gnat_entity))))
-		 || Present (Renamed_Object (gnat_entity))));
+		 || Present (Renamed_Object (gnat_entity))
+		 || Is_Imported (gnat_entity)));
 	bool inner_const_flag = const_flag;
 	bool static_p = Is_Statically_Allocated (gnat_entity);
 	bool mutable_p = false;
@@ -2973,6 +2974,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      maybe_present = true;
 	      break;
+	    }
+
+	  /* If this is a record subtype associated with a dispatch table,
+	     strip the suffix.  This is necessary to make sure 2 different
+	     subtypes associated with the imported and exported views of a
+	     dispatch table are properly merged in LTO mode.  */
+	  if (Is_Dispatch_Table_Entity (gnat_entity))
+	    {
+	      char *p;
+	      Get_Encoded_Name (gnat_entity);
+	      p = strrchr (Name_Buffer, '_');
+	      gcc_assert (p);
+	      strcpy (p+1, "dtS");
+	      gnu_entity_name = get_identifier (Name_Buffer);
 	    }
 
 	  /* When the subtype has discriminants and these discriminants affect

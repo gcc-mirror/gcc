@@ -6241,7 +6241,7 @@ package body Exp_Disp is
 
       Tname            : constant Name_Id := Chars (Typ);
       AI_Tag_Comp      : Elmt_Id;
-      DT               : Node_Id;
+      DT               : Node_Id := Empty;
       DT_Ptr           : Node_Id;
       Predef_Prims_Ptr : Node_Id;
       Iface_DT         : Node_Id;
@@ -6560,6 +6560,14 @@ package body Exp_Disp is
 
             Set_Is_Dispatch_Table_Entity (DT_Prims);
          end;
+      end if;
+
+      --  Mark entities of dispatch table. Required by the back end to
+      --  handle them properly.
+
+      if Present (DT) then
+         Set_Is_Dispatch_Table_Entity (DT);
+         Set_Is_Dispatch_Table_Entity (Etype (DT));
       end if;
 
       Set_Ekind        (DT_Ptr, E_Constant);
