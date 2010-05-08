@@ -129,6 +129,8 @@ static void prepend_attributes (Entity_Id, struct attrib **);
 static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
 static bool is_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, tree, bool, bool);
+static tree elaborate_expression_2 (tree, Entity_Id, tree, bool, bool,
+				    unsigned int);
 static tree make_packable_type (tree, bool);
 static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
@@ -1668,9 +1670,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
 	     bitfield.  */
-	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
-					 gnu_field_type, gnu_type, 1,
-					 NULL_TREE, bitsize_zero_node, 0);
+	  gnu_field
+	    = create_field_decl (get_identifier ("OBJECT"), gnu_field_type,
+				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);
 
 	  /* Do not emit debug info until after the parallel type is added.  */
 	  finish_record_type (gnu_type, gnu_field, 2, false);
@@ -1719,9 +1721,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
 	     bitfield.  */
-	  gnu_field = create_field_decl (get_identifier ("F"),
-					 gnu_field_type, gnu_type, 1,
-					 NULL_TREE, bitsize_zero_node, 0);
+	  gnu_field
+	    = create_field_decl (get_identifier ("F"), gnu_field_type,
+				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);
 
 	  finish_record_type (gnu_type, gnu_field, 2, debug_info_p);
 	  compute_record_mode (gnu_type);
@@ -1854,12 +1856,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tem = chainon (chainon (NULL_TREE,
 				create_field_decl (get_identifier ("P_ARRAY"),
 						   ptr_void_type_node,
-						   gnu_fat_type, 0,
-						   NULL_TREE, NULL_TREE, 0)),
+						   gnu_fat_type, NULL_TREE,
+						   NULL_TREE, 0, 0)),
 		       create_field_decl (get_identifier ("P_BOUNDS"),
 					  gnu_ptr_template,
-					  gnu_fat_type, 0,
-					  NULL_TREE, NULL_TREE, 0));
+					  gnu_fat_type, NULL_TREE,
+					  NULL_TREE, 0, 0));
 
 	/* Make sure we can put this into a register.  */
 	TYPE_ALIGN (gnu_fat_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
@@ -1899,16 +1901,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    sprintf (field_name, "LB%d", index);
 	    gnu_lb_field = create_field_decl (get_identifier (field_name),
 					      gnu_index_base_type,
-					      gnu_template_type, 0,
-					      NULL_TREE, NULL_TREE, 0);
+					      gnu_template_type, NULL_TREE,
+					      NULL_TREE, 0, 0);
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_lb_field));
 
 	    field_name[0] = 'U';
 	    gnu_hb_field = create_field_decl (get_identifier (field_name),
 					      gnu_index_base_type,
-					      gnu_template_type, 0,
-					      NULL_TREE, NULL_TREE, 0);
+					      gnu_template_type, NULL_TREE,
+					      NULL_TREE, 0, 0);
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_hb_field));
 
@@ -2354,35 +2356,30 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     inner dimensions.   */
 	  if (global_bindings_p () && ndim > 1)
 	    {
-	      tree gnu_str_name = get_identifier ("ST");
+	      tree gnu_st_name = get_identifier ("ST");
 	      tree gnu_arr_type;
 
 	      for (gnu_arr_type = TREE_TYPE (gnu_type);
 		   TREE_CODE (gnu_arr_type) == ARRAY_TYPE;
 		   gnu_arr_type = TREE_TYPE (gnu_arr_type),
-		   gnu_str_name = concat_name (gnu_str_name, "ST"))
+		   gnu_st_name = concat_name (gnu_st_name, "ST"))
 		{
 		  tree eltype = TREE_TYPE (gnu_arr_type);
 
 		  TYPE_SIZE (gnu_arr_type)
 		    = elaborate_expression_1 (TYPE_SIZE (gnu_arr_type),
-					      gnat_entity, gnu_str_name,
+					      gnat_entity, gnu_st_name,
 					      definition, false);
 
 		  /* ??? For now, store the size as a multiple of the
 		     alignment of the element type in bytes so that we
 		     can see the alignment from the tree.  */
 		  TYPE_SIZE_UNIT (gnu_arr_type)
-		    = build_binary_op
-		      (MULT_EXPR, sizetype,
-		       elaborate_expression_1
-		       (build_binary_op (EXACT_DIV_EXPR, sizetype,
-					 TYPE_SIZE_UNIT (gnu_arr_type),
-					 size_int (TYPE_ALIGN (eltype)
-						   / BITS_PER_UNIT)),
-			gnat_entity, concat_name (gnu_str_name, "A_U"),
-			definition, false),
-		       size_int (TYPE_ALIGN (eltype) / BITS_PER_UNIT));
+		    = elaborate_expression_2 (TYPE_SIZE_UNIT (gnu_arr_type),
+					      gnat_entity,
+					      concat_name (gnu_st_name, "A_U"),
+					      definition, false,
+					      TYPE_ALIGN (eltype));
 
 		  /* ??? create_type_decl is not invoked on the inner types so
 		     the MULT_EXPR node built above will never be marked.  */
@@ -2416,8 +2413,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  /* Make sure to reference the types themselves, and not just
 		     their names, as the debugger may fall back on them.  */
 		  gnu_field = create_field_decl (gnu_index_name, gnu_index,
-						 gnu_bound_rec,
-						 0, NULL_TREE, NULL_TREE, 0);
+						 gnu_bound_rec, NULL_TREE,
+						 NULL_TREE, 0, 0);
 		  TREE_CHAIN (gnu_field) = gnu_field_list;
 		  gnu_field_list = gnu_field;
 		}
@@ -2849,11 +2846,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* ...and reference the _Parent field of this record.  */
 	    gnu_field
 	      = create_field_decl (parent_name_id,
-				   gnu_parent, gnu_type, 0,
+				   gnu_parent, gnu_type,
 				   has_rep
 				   ? TYPE_SIZE (gnu_parent) : NULL_TREE,
 				   has_rep
-				   ? bitsize_zero_node : NULL_TREE, 1);
+				   ? bitsize_zero_node : NULL_TREE,
+				   0, 1);
 	    DECL_INTERNAL_P (gnu_field) = 1;
 	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field;
 	    TYPE_FIELDS (gnu_type) = gnu_field;
@@ -3250,8 +3248,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							 build_reference_type
 							 (gnu_unpad_base_type),
 							 gnu_subtype_marker,
-							 0, NULL_TREE,
-							 NULL_TREE, 0),
+							 NULL_TREE, NULL_TREE,
+							 0, 0),
 				      0, true);
 
 		  add_parallel_type (TYPE_STUB_DECL (gnu_type),
@@ -3477,11 +3475,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = chainon (chainon (NULL_TREE,
 				      create_field_decl
 				      (get_identifier ("P_ARRAY"),
-				       gnu_ptr_array,
-				       gnu_type, 0, 0, 0, 0)),
+				       gnu_ptr_array, gnu_type,
+				       NULL_TREE, NULL_TREE, 0, 0)),
 			     create_field_decl (get_identifier ("P_BOUNDS"),
-						gnu_ptr_template,
-						gnu_type, 0, 0, 0, 0));
+						gnu_ptr_template, gnu_type,
+						NULL_TREE, NULL_TREE, 0, 0));
 
 		/* Make sure we can place this into a register.  */
 		TYPE_ALIGN (gnu_type)
@@ -4090,8 +4088,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    has_copy_in_out = true;
 		  }
 
-		gnu_field = create_field_decl (gnu_param_name, gnu_param_type,
-					       gnu_return_type, 0, 0, 0, 0);
+		gnu_field
+		  = create_field_decl (gnu_param_name, gnu_param_type,
+				       gnu_return_type, NULL_TREE, NULL_TREE,
+				       0, 0);
 		Sloc_to_locus (Sloc (gnat_param),
 			       &DECL_SOURCE_LOCATION (gnu_field));
 		TREE_CHAIN (gnu_field) = gnu_field_list;
@@ -4495,45 +4495,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && !TREE_CONSTANT (TYPE_SIZE (gnu_type))
 	  && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
 	{
-	  if (TREE_CODE (gnu_type) == RECORD_TYPE
-	      && operand_equal_p (TYPE_ADA_SIZE (gnu_type),
-				  TYPE_SIZE (gnu_type), 0))
+	  tree size = TYPE_SIZE (gnu_type);
+
+	  TYPE_SIZE (gnu_type)
+	    = elaborate_expression_1 (size, gnat_entity,
+				      get_identifier ("SIZE"),
+				      definition, false);
+
+	  /* ??? For now, store the size as a multiple of the alignment in
+	     bytes so that we can see the alignment from the tree.  */
+	  TYPE_SIZE_UNIT (gnu_type)
+	    = elaborate_expression_2 (TYPE_SIZE_UNIT (gnu_type), gnat_entity,
+				      get_identifier ("SIZE_A_UNIT"),
+				      definition, false,
+				      TYPE_ALIGN (gnu_type));
+
+	  /* ??? gnu_type may come from an existing type so the MULT_EXPR node
+	     may not be marked by the call to create_type_decl below.  */
+	  MARK_VISITED (TYPE_SIZE_UNIT (gnu_type));
+
+	  if (TREE_CODE (gnu_type) == RECORD_TYPE)
 	    {
-	      TYPE_SIZE (gnu_type)
-		= elaborate_expression_1 (TYPE_SIZE (gnu_type),
-					  gnat_entity, get_identifier ("SIZE"),
-					  definition, false);
-	      SET_TYPE_ADA_SIZE (gnu_type, TYPE_SIZE (gnu_type));
+	      tree ada_size = TYPE_ADA_SIZE (gnu_type);
+
+	      if (operand_equal_p (ada_size, size, 0))
+		ada_size = TYPE_SIZE (gnu_type);
+	      else
+		ada_size
+		  = elaborate_expression_1 (ada_size, gnat_entity,
+					    get_identifier ("RM_SIZE"),
+					    definition, false);
+	      SET_TYPE_ADA_SIZE (gnu_type, ada_size);
 	    }
-	  else
-	    {
-	      TYPE_SIZE (gnu_type)
-		= elaborate_expression_1 (TYPE_SIZE (gnu_type),
-					  gnat_entity, get_identifier ("SIZE"),
-					  definition, false);
-
-	      /* ??? For now, store the size as a multiple of the alignment
-		 in bytes so that we can see the alignment from the tree.  */
-	      TYPE_SIZE_UNIT (gnu_type)
-		= build_binary_op
-		  (MULT_EXPR, sizetype,
-		   elaborate_expression_1
-		   (build_binary_op (EXACT_DIV_EXPR, sizetype,
-				     TYPE_SIZE_UNIT (gnu_type),
-				     size_int (TYPE_ALIGN (gnu_type)
-					       / BITS_PER_UNIT)),
-		    gnat_entity, get_identifier ("SIZE_A_UNIT"),
-		    definition, false),
-		   size_int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
-
-	      if (TREE_CODE (gnu_type) == RECORD_TYPE)
-		SET_TYPE_ADA_SIZE
-		  (gnu_type,
-		   elaborate_expression_1 (TYPE_ADA_SIZE (gnu_type),
-					   gnat_entity,
-					   get_identifier ("RM_SIZE"),
-					   definition, false));
-		 }
 	}
 
       /* If this is a record type or subtype, call elaborate_expression_1 on
@@ -4547,30 +4540,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      tree gnu_field = get_gnu_tree (gnat_temp);
 
-	      /* ??? Unfortunately, GCC needs to be able to prove the
-		 alignment of this offset and if it's a variable, it can't.
-		 In GCC 3.4, we'll use DECL_OFFSET_ALIGN in some way, but
-		 right now, we have to put in an explicit multiply and
-		 divide by that value.  */
+	      /* ??? For now, store the offset as a multiple of the alignment
+		 in bytes so that we can see the alignment from the tree.  */
 	      if (!CONTAINS_PLACEHOLDER_P (DECL_FIELD_OFFSET (gnu_field)))
 		{
-		DECL_FIELD_OFFSET (gnu_field)
-		  = build_binary_op
-		    (MULT_EXPR, sizetype,
-		     elaborate_expression_1
-		     (build_binary_op (EXACT_DIV_EXPR, sizetype,
-				       DECL_FIELD_OFFSET (gnu_field),
-				       size_int (DECL_OFFSET_ALIGN (gnu_field)
-						 / BITS_PER_UNIT)),
-		      gnat_temp, get_identifier ("OFFSET"),
-		      definition, false),
-		     size_int (DECL_OFFSET_ALIGN (gnu_field) / BITS_PER_UNIT));
+		  DECL_FIELD_OFFSET (gnu_field)
+		    = elaborate_expression_2 (DECL_FIELD_OFFSET (gnu_field),
+					      gnat_temp,
+					      get_identifier ("OFFSET"),
+					      definition, false,
+					      DECL_OFFSET_ALIGN (gnu_field));
 
-		/* ??? The context of gnu_field is not necessarily gnu_type so
-		   the MULT_EXPR node built above may not be marked by the call
-		   to create_type_decl below.  */
-		if (global_bindings_p ())
-		  MARK_VISITED (DECL_FIELD_OFFSET (gnu_field));
+		  /* ??? The context of gnu_field is not necessarily gnu_type
+		     so the MULT_EXPR node built above may not be marked by
+		     the call to create_type_decl below.  */
+		  if (global_bindings_p ())
+		    MARK_VISITED (DECL_FIELD_OFFSET (gnu_field));
 		}
 	    }
 
@@ -5859,6 +5844,23 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 
   return expr_variable ? gnat_save_expr (gnu_expr) : gnu_expr;
 }
+
+/* Similar, but take an alignment factor and make it explicit in the tree.  */
+
+static tree
+elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
+			bool definition, bool need_debug, unsigned int align)
+{
+  tree unit_align = size_int (align / BITS_PER_UNIT);
+  return
+    size_binop (MULT_EXPR,
+		elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
+						    gnu_expr,
+						    unit_align),
+					gnat_entity, gnu_name, definition,
+					need_debug),
+		unit_align);
+}
 
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
    starting bit position so that it is aligned to ALIGN bits, and leaving at
@@ -5928,8 +5930,8 @@ make_aligning_type (tree type, unsigned int align, tree size,
      consequences on the alignment computation, and create_field_decl would
      make one without this special argument, for instance because of the
      complex position expression.  */
-  field = create_field_decl (get_identifier ("F"), type, record_type,
-                             1, size, pos, -1);
+  field = create_field_decl (get_identifier ("F"), type, record_type, size,
+			     pos, 1, -1);
   TYPE_FIELDS (record_type) = field;
 
   TYPE_ALIGN (record_type) = base_align;
@@ -6050,10 +6052,11 @@ make_packable_type (tree type, bool in_record)
       else
 	new_size = DECL_SIZE (old_field);
 
-      new_field = create_field_decl (DECL_NAME (old_field), new_field_type,
-				     new_type, TYPE_PACKED (type), new_size,
-				     bit_position (old_field),
-				     !DECL_NONADDRESSABLE_P (old_field));
+      new_field
+	= create_field_decl (DECL_NAME (old_field), new_field_type, new_type,
+			     new_size, bit_position (old_field),
+			     TYPE_PACKED (type),
+			     !DECL_NONADDRESSABLE_P (old_field));
 
       DECL_INTERNAL_P (new_field) = DECL_INTERNAL_P (old_field);
       SET_DECL_ORIGINAL_FIELD_TO_FIELD (new_field, old_field);
@@ -6217,8 +6220,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Now create the field with the original size.  */
-  field  = create_field_decl (get_identifier ("F"), type, record, 0,
-			      orig_size, bitsize_zero_node, 1);
+  field  = create_field_decl (get_identifier ("F"), type, record, orig_size,
+			      bitsize_zero_node, 0, 1);
   DECL_INTERNAL_P (field) = 1;
 
   /* Do not emit debug info until after the auxiliary record is built.  */
@@ -6251,8 +6254,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       finish_record_type (marker,
 			  create_field_decl (orig_name,
 					     build_reference_type (type),
-					     marker, 0, NULL_TREE, NULL_TREE,
-					     0),
+					     marker, NULL_TREE, NULL_TREE,
+					     0, 0),
 			  0, true);
 
       add_parallel_type (TYPE_STUB_DECL (record), marker);
@@ -6680,9 +6683,9 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	      || !TYPE_CONTAINS_TEMPLATE_P (gnu_field_type));
 
   /* Now create the decl for the field.  */
-  gnu_field = create_field_decl (gnu_field_id, gnu_field_type, gnu_record_type,
-				 packed, gnu_size, gnu_pos,
-				 Is_Aliased (gnat_field));
+  gnu_field
+    = create_field_decl (gnu_field_id, gnu_field_type, gnu_record_type,
+			 gnu_size, gnu_pos, packed, Is_Aliased (gnat_field));
   Sloc_to_locus (Sloc (gnat_field), &DECL_SOURCE_LOCATION (gnu_field));
   TREE_THIS_VOLATILE (gnu_field) = Treat_As_Volatile (gnat_field);
 
@@ -6934,14 +6937,14 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	      create_type_decl (TYPE_NAME (gnu_variant_type), gnu_variant_type,
 				NULL, true, debug_info_p, gnat_component_list);
 
-	      gnu_field = create_field_decl (gnu_inner_name, gnu_variant_type,
-					     gnu_union_type, field_packed,
-					     (all_rep_and_size
-					      ? TYPE_SIZE (gnu_variant_type)
-					      : 0),
-					     (all_rep_and_size
-					      ? bitsize_zero_node : 0),
-					     0);
+	      gnu_field
+		= create_field_decl (gnu_inner_name, gnu_variant_type,
+				     gnu_union_type,
+				     all_rep_and_size
+				     ? TYPE_SIZE (gnu_variant_type) : 0,
+				     all_rep_and_size
+				     ? bitsize_zero_node : 0,
+				     field_packed, 0);
 
 	      DECL_INTERNAL_P (gnu_field) = 1;
 
@@ -6988,9 +6991,9 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
 	  gnu_union_field
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,
-				 union_field_packed,
 				 all_rep ? TYPE_SIZE (gnu_union_type) : 0,
-				 all_rep ? bitsize_zero_node : 0, 0);
+				 all_rep ? bitsize_zero_node : 0,
+				 union_field_packed, 0);
 
 	  DECL_INTERNAL_P (gnu_union_field) = 1;
 	  TREE_CHAIN (gnu_union_field) = gnu_field_list;
@@ -7061,7 +7064,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  finish_record_type (gnu_rep_type, gnu_our_rep_list, 1, debug_info_p);
 	  gnu_field
 	    = create_field_decl (get_identifier ("REP"), gnu_rep_type,
-				 gnu_record_type, 0, NULL_TREE, NULL_TREE, 1);
+				 gnu_record_type, NULL_TREE, NULL_TREE, 0, 1);
 	  DECL_INTERNAL_P (gnu_field) = 1;
 	  gnu_field_list = chainon (gnu_field_list, gnu_field);
 	}
@@ -8003,7 +8006,7 @@ create_field_decl_from (tree old_field, tree field_type, tree record_type,
 
   new_field
     = create_field_decl (DECL_NAME (old_field), field_type, record_type,
-			 DECL_PACKED (old_field), size, new_pos,
+			 size, new_pos, DECL_PACKED (old_field),
 			 !DECL_NONADDRESSABLE_P (old_field));
 
   if (!new_pos)
@@ -8071,7 +8074,6 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 			  tree record_type, tree pos_list, tree subst_list)
 {
   tree offset = DECL_FIELD_OFFSET (old_variant_part);
-  tree bitpos = DECL_FIELD_BIT_OFFSET (old_variant_part);
   tree old_union_type = TREE_TYPE (old_variant_part);
   tree new_union_type, new_variant_part, t;
   tree union_field_list = NULL_TREE;
@@ -8083,8 +8085,9 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
   /* If the position of the variant part is constant, subtract it from the
      size of the type of the parent to get the new size.  This manual CSE
      reduces the code size when not optimizing.  */
-  if (TREE_CODE (offset) == INTEGER_CST && TREE_CODE (bitpos) == INTEGER_CST)
+  if (TREE_CODE (offset) == INTEGER_CST)
     {
+      tree bitpos = DECL_FIELD_BIT_OFFSET (old_variant_part);
       tree first_bit = bit_from_pos (offset, bitpos);
       TYPE_SIZE (new_union_type)
 	= size_binop (MINUS_EXPR, TYPE_SIZE (record_type), first_bit);
