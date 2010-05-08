@@ -1,3 +1,8 @@
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (gimple_types_compatible_p) <ARRAY_TYPE>: Treat bounds of
+	domain types as equal if they are both PLACEHOLDER_EXPRs.
+
 2010-05-08  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (run_gcc): Remove linker output from
