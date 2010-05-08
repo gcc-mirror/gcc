@@ -3305,9 +3305,15 @@ gimple_types_compatible_p (tree t1, tree t2)
 
 	      /* The minimum/maximum values have to be the same.  */
 	      if ((min1 == min2
-		   || (min1 && min2 && operand_equal_p (min1, min2, 0)))
+		   || (min1 && min2
+		       && ((TREE_CODE (min1) == PLACEHOLDER_EXPR
+			    && TREE_CODE (min2) == PLACEHOLDER_EXPR)
+		           || operand_equal_p (min1, min2, 0))))
 		  && (max1 == max2
-		      || (max1 && max2 && operand_equal_p (max1, max2, 0))))
+		      || (max1 && max2
+			  && ((TREE_CODE (max1) == PLACEHOLDER_EXPR
+			       && TREE_CODE (max2) == PLACEHOLDER_EXPR)
+			      || operand_equal_p (max1, max2, 0)))))
 		goto same_types;
 	      else
 		goto different_types;
