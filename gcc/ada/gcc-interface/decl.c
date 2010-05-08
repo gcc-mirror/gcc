@@ -4516,7 +4516,61 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  if (TREE_CODE (gnu_type) == RECORD_TYPE)
 	    {
+	      tree variant_part = get_variant_part (gnu_type);
 	      tree ada_size = TYPE_ADA_SIZE (gnu_type);
+
+	      if (variant_part)
+		{
+		  tree union_type = TREE_TYPE (variant_part);
+		  tree offset = DECL_FIELD_OFFSET (variant_part);
+
+		  /* If the position of the variant part is constant, subtract
+		     it from the size of the type of the parent to get the new
+		     size.  This manual CSE reduces the data size.  */
+		  if (TREE_CODE (offset) == INTEGER_CST)
+		    {
+		      tree bitpos = DECL_FIELD_BIT_OFFSET (variant_part);
+		      TYPE_SIZE (union_type)
+			= size_binop (MINUS_EXPR, TYPE_SIZE (gnu_type),
+				      bit_from_pos (offset, bitpos));
+		      TYPE_SIZE_UNIT (union_type)
+			= size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (gnu_type),
+				      byte_from_pos (offset, bitpos));
+		    }
+		  else
+		    {
+		      TYPE_SIZE (union_type)
+			= elaborate_expression_1 (TYPE_SIZE (union_type),
+						  gnat_entity,
+						  get_identifier ("VSIZE"),
+						  definition, false);
+
+		      /* ??? For now, store the size as a multiple of the
+			 alignment in bytes so that we can see the alignment
+			 from the tree.  */
+		      TYPE_SIZE_UNIT (union_type)
+			= elaborate_expression_2 (TYPE_SIZE_UNIT (union_type),
+						  gnat_entity,
+						  get_identifier
+						  ("VSIZE_A_UNIT"),
+						  definition, false,
+						  TYPE_ALIGN (union_type));
+
+		      /* ??? For now, store the offset as a multiple of the
+			 alignment in bytes so that we can see the alignment
+			 from the tree.  */
+		      DECL_FIELD_OFFSET (variant_part)
+			= elaborate_expression_2 (offset,
+						  gnat_entity,
+						  get_identifier ("VOFFSET"),
+						  definition, false,
+						  DECL_OFFSET_ALIGN
+						  (variant_part));
+		    }
+
+		  DECL_SIZE (variant_part) = TYPE_SIZE (union_type);
+		  DECL_SIZE_UNIT (variant_part) = TYPE_SIZE_UNIT (union_type);
+		}
 
 	      if (operand_equal_p (ada_size, size, 0))
 		ada_size = TYPE_SIZE (gnu_type);

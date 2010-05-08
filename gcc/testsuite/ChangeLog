@@ -1,3 +1,9 @@
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/lto3.ads: New test.
+	* gnat.dg/specs/lto3_pkg1.ad[sb]: New helper.
+	* gnat.dg/specs/lto3_pkg2.ad[sb]: Likewise.
+
 2010-05-08  Quentin Ochem  <ochem@adacore.com>
 
 	* gnat.dg/sizetype3.ad[sb]: New test.

@@ -1,5 +1,10 @@
 2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Create variables for size
+	expressions of variant part of record types declared at library level.
+
+2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_field_decl): Move PACKED parameter.
 	* gcc-interface/utils.c (create_field_decl): Move PACKED parameter.
 	(rest_of_record_type_compilation): Adjust call to create_field_decl.
