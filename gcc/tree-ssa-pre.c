@@ -4351,6 +4351,7 @@ eliminate (void)
 	    sprime = fold_convert (TREE_TYPE (res), sprime);
 	  stmt = gimple_build_assign (res, sprime);
 	  SSA_NAME_DEF_STMT (res) = stmt;
+	  gimple_set_plf (stmt, NECESSARY, gimple_plf (phi, NECESSARY));
 
 	  gsi2 = gsi_after_labels (b);
 	  gsi_insert_before (&gsi2, stmt, GSI_NEW_STMT);
@@ -4381,8 +4382,11 @@ eliminate (void)
 	  && single_imm_use (lhs, &use_p, &use_stmt)
 	  && may_propagate_copy (USE_FROM_PTR (use_p), rhs))
 	{
-	  SET_USE (use_p, gimple_assign_rhs1 (stmt));
+	  SET_USE (use_p, rhs);
 	  update_stmt (use_stmt);
+	  if (bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (lhs))
+	      && TREE_CODE (rhs) == SSA_NAME)
+	    gimple_set_plf (SSA_NAME_DEF_STMT (rhs), NECESSARY, true);
 	}
 
       /* If this is a store or a now unused copy, remove it.  */
