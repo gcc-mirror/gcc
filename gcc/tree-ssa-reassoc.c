@@ -1215,6 +1215,113 @@ undistribute_ops_list (enum tree_code opcode,
   return changed;
 }
 
+/* If OPCODE is BIT_IOR_EXPR or BIT_AND_EXPR and CURR is a comparison
+   expression, examine the other OPS to see if any of them are comparisons
+   of the same values, which we may be able to combine or eliminate.
+   For example, we can rewrite (a < b) | (a == b) as (a <= b).  */
+
+static bool
+eliminate_redundant_comparison (enum tree_code opcode,
+				VEC (operand_entry_t, heap) **ops,
+				unsigned int currindex,
+				operand_entry_t curr)
+{
+  tree op1, op2;
+  enum tree_code lcode, rcode;
+  gimple def1, def2;
+  int i;
+  operand_entry_t oe;
+
+  if (opcode != BIT_IOR_EXPR && opcode != BIT_AND_EXPR)
+    return false;
+
+  /* Check that CURR is a comparison.  */
+  if (TREE_CODE (curr->op) != SSA_NAME)
+    return false;
+  def1 = SSA_NAME_DEF_STMT (curr->op);
+  if (!is_gimple_assign (def1))
+    return false;
+  lcode = gimple_assign_rhs_code (def1);
+  if (TREE_CODE_CLASS (lcode) != tcc_comparison)
+    return false;
+  op1 = gimple_assign_rhs1 (def1);
+  op2 = gimple_assign_rhs2 (def1);
+
+  /* Now look for a similar comparison in the remaining OPS.  */
+  for (i = currindex + 1;
+       VEC_iterate (operand_entry_t, *ops, i, oe);
+       i++)
+    {
+      tree t;
+
+      if (TREE_CODE (oe->op) != SSA_NAME)
+	continue;
+      def2 = SSA_NAME_DEF_STMT (oe->op);
+      if (!is_gimple_assign (def2))
+	continue;
+      rcode = gimple_assign_rhs_code (def2);
+      if (TREE_CODE_CLASS (rcode) != tcc_comparison)
+	continue;
+      if (operand_equal_p (op1, gimple_assign_rhs1 (def2), 0)
+	  && operand_equal_p (op2, gimple_assign_rhs2 (def2), 0))
+	;
+      else if (operand_equal_p (op1, gimple_assign_rhs2 (def2), 0)
+	       && operand_equal_p (op2, gimple_assign_rhs1 (def2), 0))
+	rcode = swap_tree_comparison (rcode);
+      else
+	continue;
+
+      /* If we got here, we have a match.  See if we can combine the
+	 two comparisons.  */
+      t = combine_comparisons (UNKNOWN_LOCATION,
+			       (opcode == BIT_IOR_EXPR
+				? TRUTH_OR_EXPR : TRUTH_AND_EXPR),
+			       lcode, rcode, TREE_TYPE (curr->op), op1, op2);
+      if (!t)
+	continue;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Equivalence: ");
+	  print_generic_expr (dump_file, curr->op, 0);
+	  fprintf (dump_file, " %s ", op_symbol_code (opcode));
+	  print_generic_expr (dump_file, oe->op, 0);
+	  fprintf (dump_file, " -> ");
+	  print_generic_expr (dump_file, t, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      /* Now we can delete oe, as it has been subsumed by the new combined
+         expression t.  */
+      VEC_ordered_remove (operand_entry_t, *ops, i);
+      reassociate_stats.ops_eliminated ++;
+
+      /* If t is the same as curr->op, we're done.  Otherwise we must
+	 replace curr->op with t.  Special case is if we got a constant
+	 back, in which case we add it to the end instead of in place of
+	 the current entry.  */
+      if (TREE_CODE (t) == INTEGER_CST)
+	{
+	  VEC_ordered_remove (operand_entry_t, *ops, currindex);
+	  add_to_ops_vec (ops, t);
+	}
+      else if (TREE_CODE (t) != lcode)
+	{
+	  tree tmpvar;
+	  gimple sum;
+	  enum tree_code subcode;
+	  tree newop1;
+	  tree newop2;
+	  tmpvar = create_tmp_var (TREE_TYPE (t), NULL);
+	  add_referenced_var (tmpvar);
+	  extract_ops_from_tree (t, &subcode, &newop1, &newop2);
+	  sum = build_and_add_sum (tmpvar, newop1, newop2, subcode);
+	  curr->op = gimple_get_lhs (sum);
+	}
+      return true;
+    }
+
+  return false;
+}
 
 /* Perform various identities and other optimizations on the list of
    operand entries, stored in OPS.  The tree code for the binary
@@ -1276,7 +1383,8 @@ optimize_ops_list (enum tree_code opcode,
       if (eliminate_not_pairs (opcode, ops, i, oe))
 	return;
       if (eliminate_duplicate_pair (opcode, ops, &done, i, oe, oelast)
-	  || (!done && eliminate_plus_minus_pair (opcode, ops, i, oe)))
+	  || (!done && eliminate_plus_minus_pair (opcode, ops, i, oe))
+	  || (!done && eliminate_redundant_comparison (opcode, ops, i, oe)))
 	{
 	  if (done)
 	    return;
