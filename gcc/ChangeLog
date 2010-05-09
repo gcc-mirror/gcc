@@ -1,3 +1,12 @@
+2010-05-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/10676
+	* c-typeck.c (lookup_field): Take a type directly.  Update
+	recursive calls.
+	(build_component_ref): Update call to lookup_field.
+	(set_init_label): Use lookup_field to find initialized field.
+	Handle returned list of fields like a sequence of designators.
+
 2010-05-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44024
