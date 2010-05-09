@@ -1,5 +1,10 @@
 2010-05-09  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44043
+	* gcc.c-torture/compile/pr44043.c: New testcase.
+
+2010-05-09  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/ipa/ipa-pta-11.c: Make p and q referenced.
 
 2010-05-09  Eric Botcazou  <ebotcazou@adacore.com>
