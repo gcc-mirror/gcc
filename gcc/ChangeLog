@@ -1,3 +1,14 @@
+2010-05-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/4784
+	* c-decl.c (detect_field_duplicates_hash): New.  Handle anonymous
+	structures and unions recursively.
+	(detect_field_duplicates): Move duplicate detection with a hash to
+	detect_field_duplicates_hash.  Always use a hash if anonymous
+	structures or unions are present.
+	* doc/extend.texi (Unnamed Fields): Document that duplicate fields
+	give errors.
+
 2010-05-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44046
