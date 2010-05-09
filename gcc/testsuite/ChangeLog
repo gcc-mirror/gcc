@@ -1,3 +1,7 @@
+2010-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto6.adb: Remove superfluous -gnat05 switch.
+
 2010-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto[12456].adb: Add "target lto" marker.
