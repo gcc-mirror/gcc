@@ -1,3 +1,7 @@
+2010-05-09  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c (store_arg): Revert last change.
+
 2010-05-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/28685
