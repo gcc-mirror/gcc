@@ -21,6 +21,9 @@ int l;
 int *s = &l;
 /* { dg-final { scan-ipa-dump "s = { ESCAPED NONLOCAL l }" "pta" } } */
 
+/* Make p and q referenced so they do not get optimized out.  */
+int foo() { return &p < &q; }
+
 int main()
 {
   return 0;
