@@ -1,3 +1,9 @@
+2010-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44046
+	* config/i386/driver-i386.c (host_detect_local_cpu): Properly
+	detect Atom, Core 2 and Core i7.
+
 2010-05-09  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c (store_arg): Handle temporary file deletion for

@@ -538,34 +538,61 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	cpu = "pentium";
       break;
     case PROCESSOR_PENTIUMPRO:
-      if (model == 28)
-	cpu = "atom";
-      else if (model >= 28 && l2sizekb < 2048)
-	/* Assume it's a small core if there's less than 2MB cache */
-	cpu = "atom";
-      else if (has_longmode)
-	cpu = "core2";
-      else if (arch)
+      switch (model)
 	{
-	  if (has_sse3)
-	    /* It is Core Duo.  */
-	    cpu = "pentium-m";
-	  else if (has_sse2)
-	    /* It is Pentium M.  */
-	    cpu = "pentium-m";
-	  else if (has_sse)
-	    /* It is Pentium III.  */
-	    cpu = "pentium3";
-	  else if (has_mmx)
-	    /* It is Pentium II.  */
-	    cpu = "pentium2";
+	case 0x1c:
+	case 0x26:
+	  /* Atom.  */
+	  cpu = "atom";
+	  break;
+	case 0x1a:
+	case 0x1e:
+	case 0x1f:
+	case 0x2e:
+	  /* FIXME: Optimize for Nehalem.  */
+	  cpu = "core2";
+	  break;
+	case 0x25:
+	case 0x2f:
+	  /* FIXME: Optimize for Westmere.  */
+	  cpu = "core2";
+	  break;
+	case 0x17:
+	case 0x1d:
+	  /* Penryn.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  cpu = "core2";
+	  break;
+	case 0x0f:
+	  /* Merom.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  cpu = "core2";
+	  break;
+	default:
+	  if (arch)
+	    {
+	      if (has_ssse3)
+		/* If it is an unknown CPU with SSSE3, assume Core 2.  */
+		cpu = "core2";
+	      else if (has_sse3)
+		/* It is Core Duo.  */
+		cpu = "pentium-m";
+	      else if (has_sse2)
+		/* It is Pentium M.  */
+		cpu = "pentium-m";
+	      else if (has_sse)
+		/* It is Pentium III.  */
+		cpu = "pentium3";
+	      else if (has_mmx)
+		/* It is Pentium II.  */
+		cpu = "pentium2";
+	      else
+		/* Default to Pentium Pro.  */
+		cpu = "pentiumpro";
+	    }
 	  else
-	    /* Default to Pentium Pro.  */
-	    cpu = "pentiumpro";
+	    /* For -mtune, we default to -mtune=generic.  */
+	    cpu = "generic";
+	  break;
 	}
-      else
-	/* For -mtune, we default to -mtune=generic.  */
-	cpu = "generic";
       break;
     case PROCESSOR_PENTIUM4:
       if (has_sse3)
