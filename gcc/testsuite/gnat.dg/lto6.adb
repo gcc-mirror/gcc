@@ -1,5 +1,5 @@
 -- { dg-do run }
--- { dg-options "-gnat05 -O2 -flto" { target lto } }
+-- { dg-options "-O2 -flto" { target lto } }
 
 with Lto6_Pkg; use Lto6_Pkg;
 
