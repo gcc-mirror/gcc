@@ -12760,8 +12760,7 @@ struct @{
 @end smallexample
 
 It is ambiguous which @code{a} is being referred to with @samp{foo.a}.
-Such constructs are not supported and must be avoided.  In the future,
-such constructs may be detected and treated as compilation errors.
+The compiler gives errors for such constructs.
 
 @opindex fms-extensions
 Unless @option{-fms-extensions} is used, the unnamed field must be a
