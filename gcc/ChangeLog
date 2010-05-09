@@ -1,5 +1,11 @@
 2010-05-09  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44043
+	* ipa-inline.c (estimate_function_body_sizes): Return after
+	disregarding inline limits.
+
+2010-05-09  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.c (store_arg): Revert last change.
 
 2010-05-08  Sandra Loosemore  <sandra@codesourcery.com>
