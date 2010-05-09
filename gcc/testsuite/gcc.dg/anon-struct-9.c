@@ -120,8 +120,8 @@ struct sbig
   S10(f)
   S10(g)
   S10(h)
-  S10(i)
   S10(j)
+  S10(k)
   struct
   {
     int a123; /* { dg-error "duplicate member" } */
