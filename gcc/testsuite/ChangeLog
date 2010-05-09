@@ -1,5 +1,10 @@
 2010-05-09  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/44051
+	* gcc.dg/anon-struct-9.c: Avoid generating identifier i386.
+
+2010-05-09  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/10676
 	* gcc.dg/anon-struct-10.c: New test.
 
