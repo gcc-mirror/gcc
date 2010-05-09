@@ -2082,7 +2082,15 @@ store_arg (const char *arg, int delete_always, int delete_failure)
   if (strcmp (arg, "-o") == 0)
     have_o_argbuf_index = argbuf_index;
   if (delete_always || delete_failure)
-    record_temp_file (arg, delete_always, delete_failure);
+    {
+      const char *p;
+      /* If the temporary file we should delete is specified as
+	 part of a joined argument extract the filename.  */
+      if (arg[0] == '-'
+	  && (p = strrchr (arg, '=')))
+	arg = p + 1;
+      record_temp_file (arg, delete_always, delete_failure);
+    }
 }
 
 /* Load specs from a file name named FILENAME, replacing occurrences of

@@ -1,5 +1,10 @@
 2010-05-09  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.c (store_arg): Handle temporary file deletion for
+	joined arguments.
+
+2010-05-09  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44043
 	* ipa-inline.c (estimate_function_body_sizes): Return after
 	disregarding inline limits.
