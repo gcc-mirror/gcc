@@ -14917,7 +14917,9 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 
     case ADDR_EXPR:
       {
-	tree base = get_base_address (TREE_OPERAND (t, 0));
+	tree base = TREE_OPERAND (t, 0);
+	if (!DECL_P (base))
+	  base = get_base_address (base);
 
 	if (!base)
 	  return false;
@@ -14927,7 +14929,9 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	   allocated on the stack.  */
 	if (DECL_P (base)
 	    && (flag_delete_null_pointer_checks
-		|| (TREE_CODE (base) == VAR_DECL && !TREE_STATIC (base))))
+		|| (DECL_CONTEXT (base)
+		    && TREE_CODE (DECL_CONTEXT (base)) == FUNCTION_DECL
+		    && auto_var_in_fn_p (base, DECL_CONTEXT (base)))))
 	  return !VAR_OR_FUNCTION_DECL_P (base) || !DECL_WEAK (base);
 
 	/* Constants are never weak.  */
