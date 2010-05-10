@@ -513,8 +513,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       nested_cycle = (loop != LOOP_VINFO_LOOP (loop_vinfo));
-      reduc_stmt = vect_is_simple_reduction (loop_vinfo, phi, !nested_cycle,
-                                             &double_reduc);
+      reduc_stmt = vect_force_simple_reduction (loop_vinfo, phi, !nested_cycle,
+						&double_reduc);
       if (reduc_stmt)
         {
           if (double_reduc)
@@ -1584,7 +1584,7 @@ report_vect_op (gimple stmt, const char *msg)
 }
 
 
-/* Function vect_is_simple_reduction
+/* Function vect_is_simple_reduction_1
 
    (1) Detect a cross-iteration def-use cycle that represents a simple
    reduction computation. We look for the following pattern:
@@ -1612,18 +1612,23 @@ report_vect_op (gimple stmt, const char *msg)
      a1 = phi < a0, a2 >
      inner loop (def of a3)
      a2 = phi < a3 >
+
+   If MODIFY is true it tries also to rework the code in-place to enable
+   detection of more reduction patterns.  For the time being we rewrite
+   "res -= RHS" into "rhs += -RHS" when it seems worthwhile.
 */
 
-gimple
-vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
-                          bool check_reduction, bool *double_reduc)
+static gimple
+vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
+			    bool check_reduction, bool *double_reduc,
+			    bool modify)
 {
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   edge latch_e = loop_latch_edge (loop);
   tree loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
   gimple def_stmt, def1 = NULL, def2 = NULL;
-  enum tree_code code;
+  enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
   int nloop_uses;
@@ -1743,7 +1748,14 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       return NULL;
     }
 
-  code = gimple_assign_rhs_code (def_stmt);
+  code = orig_code = gimple_assign_rhs_code (def_stmt);
+
+  /* We can handle "res -= x[i]", which is non-associative by
+     simply rewriting this into "res += -x[i]".  Avoid changing
+     gimple instruction for the first simple tests and only do this
+     if we're allowed to change code at all.  */
+  if (code == MINUS_EXPR && modify)
+    code = PLUS_EXPR;
 
   if (check_reduction
       && (!commutative_tree_code (code) || !associative_tree_code (code)))
@@ -1863,6 +1875,24 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       return NULL;
     }
 
+  /* If we detected "res -= x[i]" earlier, rewrite it into
+     "res += -x[i]" now.  If this turns out to be useless reassoc
+     will clean it up again.  */
+  if (orig_code == MINUS_EXPR)
+    {
+      tree rhs = gimple_assign_rhs2 (def_stmt);
+      tree negrhs = make_ssa_name (SSA_NAME_VAR (rhs), NULL);
+      gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
+							 rhs, NULL);
+      gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
+      set_vinfo_for_stmt (negate_stmt, new_stmt_vec_info (negate_stmt, 
+							  loop_info, NULL));
+      gsi_insert_before (&gsi, negate_stmt, GSI_NEW_STMT);
+      gimple_assign_set_rhs2 (def_stmt, negrhs);
+      gimple_assign_set_rhs_code (def_stmt, PLUS_EXPR);
+      update_stmt (def_stmt);
+    }
+
   /* Reduction is safe. We're dealing with one of the following:
      1) integer arithmetic and no trapv
      2) floating point arithmetic, and special flags permit this optimization
@@ -1940,6 +1970,28 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
     }
 }
 
+/* Wrapper around vect_is_simple_reduction_1, that won't modify code
+   in-place.  Arguments as there.  */
+
+static gimple
+vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
+                          bool check_reduction, bool *double_reduc)
+{
+  return vect_is_simple_reduction_1 (loop_info, phi, check_reduction,
+				     double_reduc, false);
+}
+
+/* Wrapper around vect_is_simple_reduction_1, which will modify code
+   in-place if it enables detection of more reductions.  Arguments
+   as there.  */
+
+gimple
+vect_force_simple_reduction (loop_vec_info loop_info, gimple phi,
+                          bool check_reduction, bool *double_reduc)
+{
+  return vect_is_simple_reduction_1 (loop_info, phi, check_reduction,
+				     double_reduc, true);
+}
 
 /* Function vect_estimate_min_profitable_iters
 
