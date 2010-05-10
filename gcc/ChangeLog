@@ -1,3 +1,13 @@
+2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-10  H.J. Lu<hongjiu.lu@intel.com>
+		    Vladimir Makarov<vmakarov@redhat.com>
+
+	PR rtl-optimization/44012
+	* ira-build.c (remove_unnecessary_allocnos): Nullify
+	regno_allocno_map of the removed allocno.
+
 2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_eh_gc_sections): Redirect objdump errors

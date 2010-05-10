@@ -1,3 +1,11 @@
+2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/44012
+	* gcc.dg/pr44012.c: New.
+
 2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/40406
