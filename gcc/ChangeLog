@@ -1,3 +1,12 @@
+2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.c (solaris_assemble_visibility): Declare decl, vis
+	unused.
+	Define visibility_types, name, type inside HAVE_GAS_HIDDEN.
+	* configure.ac (gcc_cv_ld_hidden): Explain stages of visibility
+	support in Sun ld.
+	* configure: Regenerate.
+
 2010-05-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
