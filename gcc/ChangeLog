@@ -1,5 +1,9 @@
 2010-05-10  Jan Hubicka  <jh@suse.cz>
 
+	* lto-stramer-out.c (produce_asm_for_decls): Correct accidentally commited change.
+
+2010-05-10  Jan Hubicka  <jh@suse.cz>
+
 	* passes.c (ipa_write_summaries_1, ipa_write_optimization_summaries): Allocate
 	encoders.
 	* lto-section-out.c (lto_new_out_decl_state): Do not allocate it here.
