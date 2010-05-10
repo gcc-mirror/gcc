@@ -1,5 +1,11 @@
 2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (gcc_cv_ld_eh_gc_sections): Redirect objdump errors
+	to /dev/null.
+	* configure: Regenerate.
+
+2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/sol2.c (solaris_assemble_visibility): Declare decl, vis
 	unused.
 	Define visibility_types, name, type inside HAVE_GAS_HIDDEN.
