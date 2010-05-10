@@ -111,11 +111,11 @@
 
 2010-05-07  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/40728
-        * gfortran.dg/coarray_1.f90: Fixed error message.
-        * gfortran.dg/selected_char_kind_3.f90: Fixed error message.
-        * gfortran.dg/intrinsic_std_1.f90: Fixed bogus message.
-        * gfortran.dg/intrinsic_std_5.f90: New.
+	PR fortran/40728
+	* gfortran.dg/coarray_1.f90: Fixed error message.
+	* gfortran.dg/selected_char_kind_3.f90: Fixed error message.
+	* gfortran.dg/intrinsic_std_1.f90: Fixed bogus message.
+	* gfortran.dg/intrinsic_std_5.f90: New.
 
 2010-05-07  Jason Merrill  <jason@redhat.com>
 
@@ -166,6 +166,11 @@
 	* g++.dg/cpp0x/nullptr22.C: New.
 	* g++.dg/debug/nullptr01.C: New.
 	* gcc.dg/Wcxx-compat-2.c: Test nullptr and constexpr.
+
+2010-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/Wunused-var-8.c: Move to...
+	* c-c++-common/Wunused-var-6.c: ... here.  New test.
 
 2010-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -571,10 +576,10 @@
 2010-04-28  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/9335
-        * g++.dg/template/recurse2.C: Update
-        * g++.dg/template/recurse.C: Update.
-        * g++.dg/template/pr23510.C: Update.
-        * lib/prune.exp: Filter out 'recursively instantiated'.
+	* g++.dg/template/recurse2.C: Update
+	* g++.dg/template/recurse.C: Update.
+	* g++.dg/template/pr23510.C: Update.
+	* lib/prune.exp: Filter out 'recursively instantiated'.
 
 2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
 
