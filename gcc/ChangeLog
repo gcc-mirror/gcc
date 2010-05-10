@@ -1,3 +1,8 @@
+2010-05-10  Wei Guozhi  <carrot@google.com>
+
+	PR target/42879
+	* config/arm/thumb2.md (thumb2_tlobits_cbranch): New insn pattern.
+
 2010-05-09  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/10676
