@@ -4,7 +4,7 @@
 	(can_reassociate_p): Use FLOAT_TYPE_P.
 	* tree-vectorizer.h (vect_is_simple_reduction): Rename to ...
 	(vect_force_simple_reduction): ... this.
-	* tree-parloops.c (gather_scalar_reductions): Use 
+	* tree-parloops.c (gather_scalar_reductions): Use
 	vect_force_simple_reduction.
 	* tree-vect-loop.c (vect_is_simple_reduction_1): Rename from
 	vect_is_simple_reduction, add modify argument, if true rewrite
@@ -63,8 +63,7 @@
 2010-05-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44050
-	* tree-inline.c (tree_function_versioning): Clone the ipa-pta
-	flag.
+	* tree-inline.c (tree_function_versioning): Clone the ipa-pta flag.
 
 2010-05-10  Wei Guozhi  <carrot@google.com>
 
@@ -224,8 +223,7 @@
 
 	* lto-wrapper.c (DUMPBASE_SUFFIX): Define.
 	(run_gcc): Handle LTRANS phase invocation.
-	* collect2.c (maybe_run_lto_and_relink): Do not set
-	WPA_SAVE_LTRANS.
+	* collect2.c (maybe_run_lto_and_relink): Do not set WPA_SAVE_LTRANS.
 
 2010-05-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -397,17 +395,12 @@
 	* config/mips/t-iris6 (MULTILIB_OPTIONS): Removed mabi=32.
 	(MULTILIB_DIRNAMES): Removed 32.
 	(MULTILIB_OSDIRNAMES): Removed ../lib.
-	* doc/install.texi (Prerequisites): Don't reference IRIX before
-	6.5.
+	* doc/install.texi (Prerequisites): Don't reference IRIX before 6.5.
 	(Specific, mips-sgi-irix5): Document removal.
-	(Specific, mips-sgi-irix6): Document IRIX 6.[0-4] and O32 ABI
-	removal.
+	(Specific, mips-sgi-irix6): Document IRIX 6.[0-4] and O32 ABI removal.
 	Remove references to older IRIX 6 releases and the O32 ABI.
 
 2010-05-06  Jakub Jelinek  <jakub@redhat.com>
-
-	* gcc.dg/Wunused-var-8.c: Move to...
-	* c-c++-common/Wunused-var-6.c: ... here.  New test.
 
 	PR bootstrap/43994
 	* df-problems.c (dead_debug_insert_before): Use *DF_REF_REAL_LOC
@@ -438,8 +431,7 @@
 	(insert_into_preds_of_block): Don't handle inserted_phi_names.
 	(eliminate): Don't look at inserted_phi_names, remove deleted
 	insns from inserted_exprs.
-	(remove_dead_inserted_code): Adjust to use bitmaps instead of
-	vectors.
+	(remove_dead_inserted_code): Adjust to use bitmaps instead of vectors.
 	(init_pre, fini_pre): Allocate and free bitmaps.
 	(execute_pre): Insert insns on edges before elimination.
 
@@ -461,8 +453,7 @@
 	(enable_warning_as_error): Call handle_option.
 	* opts.h (set_option): Update declaration.
 	(handle_option): Declare.
-	* langhooks.h (struct lang_hooks): Add argument kind to
-	handle_option.
+	* langhooks.h (struct lang_hooks): Add argument kind to handle_option.
 	* c.opt (Wimplicit,Wimplicit-int): Initialize to -1.
 	* c-opts.c (set_Wimplicit): Delete.
 	(c_family_lang_mask): New static constant.
@@ -492,8 +483,7 @@
 	(determine_invariantness_stmt): Handle PHI nodes.
 	(move_computations_stmt): Likewise.  Hoist PHI nodes in
 	if-converted form using COND_EXPRs.
-	(move_computations): Return TODO_cleanup_cfg if we hoisted PHI
-	nodes.
+	(move_computations): Return TODO_cleanup_cfg if we hoisted PHI nodes.
 	(tree_ssa_lim): Likewise.
 	* tree-flow.h (tree_ssa_lim): Adjust prototype.
 	* tree-ssa-loop.c (tree_ssa_loop_im): Return todo.
@@ -532,8 +522,7 @@
 	(lto_output_ref): New.
 	(add_references): New.
 	(output_refs): New.
-	(output_cgraph): Compute boundary based on references;
-	output refs.
+	(output_cgraph): Compute boundary based on references; output refs.
 	(output_varpool): Accept cgraph_node_set argument.
 	(input_ref): New.
 	(input_refs): New.
@@ -556,9 +545,8 @@
 	* tree-vect-stmts.c (vectorizable_call): Assert that vector
 	type is not NULL if it's transformation phase, and return
 	FALSE if it's analysis.
-	(vectorizable_conversion, vectorizable_operation, 
-	vectorizable_type_demotion, vectorizable_type_promotion):
-	Likewise.
+	(vectorizable_conversion, vectorizable_operation,
+	vectorizable_type_demotion, vectorizable_type_promotion): Likewise.
 
 2010-05-05  Andrew Pinski  <andrew.pinski@caviumnetworks.com>
 
@@ -581,8 +569,7 @@
 
 2010-05-05  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* stor-layout.c (pending_sizes): Change the type to
-	VEC(tree,gc) *.
+	* stor-layout.c (pending_sizes): Change the type to VEC(tree,gc) *.
 	(get_pending_sizes, put_pending_size, put_pending_sizes):
 	Update the uses of pending_sizes.
 	* c-decl.c (store_parm_decls): Likewise.
@@ -648,8 +635,9 @@
 2010-05-05  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_varpool): Forward declare; work on encoder.
-	(lto_varpool_encoder_new, lto_varpool_encoder_delete, lto_varpool_encoder_encode
-	lto_varpool_encoder_lookup, lto_varpool_encoder_deref, lto_varpool_encoder_size,
+	(lto_varpool_encoder_new, lto_varpool_encoder_delete,
+	lto_varpool_encoder_encode, lto_varpool_encoder_lookup,
+	lto_varpool_encoder_deref, lto_varpool_encoder_size,
 	lto_varpool_encoder_encode_initializer_p,
 	lto_set_varpool_encoder_encode_initializer): New functions.
 	(lto_output_cgraph): Take vset parameter too; compute varpool encoder;
@@ -665,7 +653,7 @@
 	* lto-section-out.c (lto_new_out_decl_state): Initialize
 	state->varpool_node_encoder.
 	* lto-streamer.h (lto_varpool_encoder_d): New.
-	(lto_out_decl_state, lto_file_decl_data): Add varpool_node_encoder.	
+	(lto_out_decl_state, lto_file_decl_data): Add varpool_node_encoder.
 	(lto_cgraph_encoder_delete, output_cgraph): Update prototype.
 	(lto_varpool_encoder_deref, lto_varpool_encoder_lookup,
 	lto_varpool_encoder_encode, lto_varpool_encoder_delete,
@@ -685,8 +673,7 @@
 
 2010-05-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
-	* Makefile.in (build/gengtype.o): Add $(HASHTAB_H) to
-	dependencies.
+	* Makefile.in (build/gengtype.o): Add $(HASHTAB_H) to dependencies.
 
 	* gengtype.h (erro_at_line): Constify pos argument.
 
@@ -735,8 +722,7 @@
 2010-05-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/43799
-	* config/i386/i386.md (sse_prologue_save): Add clobber CC
-	register.
+	* config/i386/i386.md (sse_prologue_save): Clobber CC register.
 	(*sse_prologue_save_insn1): Likewise.
 	(SSE prologue save splitter): Likewise.
 
@@ -819,8 +805,7 @@
 
 2010-05-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-	* config/sh/sh.c (sh_small_register_classes_for_mode_p): Remove
-	static.
+	* config/sh/sh.c (sh_small_register_classes_for_mode_p): Remove static.
 
 2010-05-04  Mikael Pettersson  <mikpe@it.uu.se>
 
@@ -1454,7 +1439,7 @@
 	(free_all_ipa_structures_after_ipa_cp): Renamed to
 	ipa_free_all_structures_after_ipa_cp.
 	(free_all_ipa_structures_after_iinln): Renamed to
-	ipa_free_all_structures_after_iinln.g
+	ipa_free_all_structures_after_iinln.
 	(ipa_write_param_call_note): Removed.
 	(ipa_read_param_call_note): Removed.
 	(ipa_write_indirect_edge_info): New function.
@@ -1486,8 +1471,7 @@
 	* tree-ssa-structalias.c (struct variable_info): Add
 	only_restrict_pointers flag.
 	(new_var_info): Initialize it.  Increment stats.total_vars here.
-	(create_function_info_for): Do not increment stats.total_vars
-	here.
+	(create_function_info_for): Do not increment stats.total_vars here.
 	(get_function_part_constraint): Fix build with C++.
 	(insert_into_field_list): Remove.
 	(push_fields_onto_fieldstack): Properly merge fields.
