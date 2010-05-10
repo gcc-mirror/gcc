@@ -2317,21 +2317,18 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 /* Builds a function decl.  The remaining parameters are the types of the
    function arguments.  Negative nargs indicates a varargs function.  */
 
-tree
-gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
+static tree
+build_library_function_decl_1 (tree name, const char *spec,
+			       tree rettype, int nargs, va_list p)
 {
   tree arglist;
   tree argtype;
   tree fntype;
   tree fndecl;
-  va_list p;
   int n;
 
   /* Library functions must be declared with global scope.  */
   gcc_assert (current_function_decl == NULL_TREE);
-
-  va_start (p, nargs);
-
 
   /* Create a list of the argument types.  */
   for (arglist = NULL_TREE, n = abs (nargs); n > 0; n--)
@@ -2348,6 +2345,14 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
 
   /* Build the function type and decl.  */
   fntype = build_function_type (rettype, arglist);
+  if (spec)
+    {
+      tree attr_args = build_tree_list (NULL_TREE,
+					build_string (strlen (spec), spec));
+      tree attrs = tree_cons (get_identifier ("fn spec"),
+			      attr_args, TYPE_ATTRIBUTES (fntype));
+      fntype = build_type_attribute_variant (fntype, attrs);
+    }
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, fntype);
 
@@ -2355,13 +2360,42 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
   DECL_EXTERNAL (fndecl) = 1;
   TREE_PUBLIC (fndecl) = 1;
 
-  va_end (p);
-
   pushdecl (fndecl);
 
   rest_of_decl_compilation (fndecl, 1, 0);
 
   return fndecl;
+}
+
+/* Builds a function decl.  The remaining parameters are the types of the
+   function arguments.  Negative nargs indicates a varargs function.  */
+
+tree
+gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
+{
+  tree ret;
+  va_list args;
+  va_start (args, nargs);
+  ret = build_library_function_decl_1 (name, NULL, rettype, nargs, args);
+  va_end (args);
+  return ret;
+}
+
+/* Builds a function decl.  The remaining parameters are the types of the
+   function arguments.  Negative nargs indicates a varargs function.
+   The SPEC parameter specifies the function argument and return type
+   specification according to the fnspec function type attribute.  */
+
+static tree
+gfc_build_library_function_decl_with_spec (tree name, const char *spec,
+					   tree rettype, int nargs, ...)
+{
+  tree ret;
+  va_list args;
+  va_start (args, nargs);
+  ret = build_library_function_decl_1 (name, spec, rettype, nargs, args);
+  va_end (args);
+  return ret;
 }
 
 static void
@@ -2821,12 +2855,12 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("set_max_subrecord_length")),
 				     void_type_node, 1, integer_type_node);
 
-  gfor_fndecl_in_pack = gfc_build_library_function_decl (
-        get_identifier (PREFIX("internal_pack")),
+  gfor_fndecl_in_pack = gfc_build_library_function_decl_with_spec (
+        get_identifier (PREFIX("internal_pack")), ".r",
         pvoid_type_node, 1, pvoid_type_node);
 
-  gfor_fndecl_in_unpack = gfc_build_library_function_decl (
-        get_identifier (PREFIX("internal_unpack")),
+  gfor_fndecl_in_unpack = gfc_build_library_function_decl_with_spec (
+        get_identifier (PREFIX("internal_unpack")), ".wR",
         void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
   gfor_fndecl_associated =

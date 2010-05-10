@@ -1,3 +1,13 @@
+2010-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* trans-decl.c (gfc_build_library_function_decl): Split out
+	worker to ...
+	(build_library_function_decl_1): ... this new function.
+	Set a fnspec attribute if a specification was provided.
+	(gfc_build_library_function_decl_with_spec): New function.
+	(gfc_build_intrinsic_function_decls): Annotate internal_pack
+	and internal_unpack.
+
 2010-05-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/40728

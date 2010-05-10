@@ -1097,6 +1097,10 @@ process_args:
   for (i = 0; i < gimple_call_num_args (call); ++i)
     {
       tree op = gimple_call_arg (call, i);
+      int flags = gimple_call_arg_flags (call, i);
+
+      if (flags & EAF_UNUSED)
+	continue;
 
       if (TREE_CODE (op) == WITH_SIZE_EXPR)
 	op = TREE_OPERAND (op, 0);
