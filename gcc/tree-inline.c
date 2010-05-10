@@ -4924,6 +4924,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
     (DECL_STRUCT_FUNCTION (old_decl));
   initialize_cfun (new_decl, old_decl,
 		   old_entry_block->count);
+  DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
+    = id.src_cfun->gimple_df->ipa_pta;
   push_cfun (DECL_STRUCT_FUNCTION (new_decl));
 
   /* Copy the function's static chain.  */

@@ -1,3 +1,8 @@
+2010-05-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44050
+	* gcc.dg/torture/pr44050.c: New testcase.
+
 2010-05-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/42879
