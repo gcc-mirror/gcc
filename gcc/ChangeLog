@@ -1,5 +1,10 @@
 2010-05-10  Richard Guenther  <rguenther@suse.de>
 
+	* lto-symtab.c (lto_symtab_entry_marked_p): Make entry
+	marked if the entry identifier is marked.
+
+2010-05-10  Richard Guenther  <rguenther@suse.de>
+
 	* c-common.c (struct c_common_attributes): Add fnspec attribute.
 	(handle_fnspec_attribute): New function.
 	* gimple.h (gimple_call_return_flags): Declare.
