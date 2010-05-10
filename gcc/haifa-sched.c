@@ -1695,6 +1695,7 @@ schedule_insn (rtx insn)
 	 sd_iterator_cond (&sd_it, &dep);)
       {
 	rtx dbg = DEP_PRO (dep);
+	struct reg_use_data *use, *next;
 
 	gcc_assert (DEBUG_INSN_P (dbg));
 
@@ -1715,6 +1716,14 @@ schedule_insn (rtx insn)
 	   temps introduced won't survive the schedule change.  */
 	INSN_VAR_LOCATION_LOC (dbg) = gen_rtx_UNKNOWN_VAR_LOC ();
 	df_insn_rescan (dbg);
+
+	/* Unknown location doesn't use any registers.  */
+	for (use = INSN_REG_USE_LIST (dbg); use != NULL; use = next)
+	  {
+	    next = use->next_insn_use;
+	    free (use);
+	  }
+	INSN_REG_USE_LIST (dbg) = NULL;
 
 	/* We delete rather than resolve these deps, otherwise we
 	   crash in sched_free_deps(), because forward deps are
