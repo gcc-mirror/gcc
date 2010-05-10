@@ -8,5 +8,5 @@ PROGRAM test
   IMPLICIT NONE
 
   INTEGER(KIND=4) :: arr(1)
-  arr = (/ INTEGER(KIND=4) :: HUGE(0_8) /) ! { dg-warning "Conversion from" }
+  arr = (/ INTEGER(KIND=4) :: HUGE(0_8) /) ! { dg-warning "conversion from" }
 END PROGRAM test

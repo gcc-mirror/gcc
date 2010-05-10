@@ -4016,8 +4016,40 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
     gfc_warning_now ("Extension: Conversion from %s to %s at %L",
 		     gfc_typename (&from_ts), gfc_typename (ts), &expr->where);
   else if (wflag && gfc_option.warn_conversion)
-    gfc_warning_now ("Conversion from %s to %s at %L",
-		     gfc_typename (&from_ts), gfc_typename (ts), &expr->where);
+    {
+      /* If the types are the same (but not LOGICAL), and if from-kind
+	 is larger than to-kind, this may indicate a loss of precision.
+	 The same holds for conversions from REAL to COMPLEX.  */
+      if (((from_ts.type == ts->type && from_ts.type != BT_LOGICAL)
+	     && from_ts.kind > ts->kind)
+	  || ((from_ts.type == BT_REAL && ts->type == BT_COMPLEX)
+	      && from_ts.kind > ts->kind))
+	gfc_warning_now ("Possible loss of precision in conversion "
+			 "from %s to %s at %L", gfc_typename (&from_ts),
+			 gfc_typename (ts), &expr->where);
+
+      /* If INTEGER is converted to REAL/COMPLEX, this is generally ok if
+	 the kind of the INTEGER value is less or equal to the kind of the
+	 REAL/COMPLEX one. Otherwise the value may not fit.
+	 Assignment of an overly large integer constant also generates
+	 an overflow error with range checking. */
+      else if (from_ts.type == BT_INTEGER
+	       && (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+	       && from_ts.kind > ts->kind)
+	gfc_warning_now ("Possible loss of digits in conversion "
+			 "from %s to %s at %L", gfc_typename (&from_ts),
+			 gfc_typename (ts), &expr->where);
+
+      /* If REAL/COMPLEX is converted to INTEGER, or COMPLEX is converted
+        to REAL we almost certainly have a loss of digits, regardless of
+        the respective kinds.  */
+      else if (((from_ts.type == BT_REAL || from_ts.type == BT_COMPLEX)
+		 && ts->type == BT_INTEGER)
+	       || (from_ts.type == BT_COMPLEX && ts->type == BT_REAL))
+	gfc_warning_now ("Likely loss of digits in conversion from"
+			"%s to %s at %L", gfc_typename (&from_ts),
+			gfc_typename (ts), &expr->where);
+    }
 
   /* Insert a pre-resolved function call to the right function.  */
   old_where = expr->where;
