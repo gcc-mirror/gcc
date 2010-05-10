@@ -1,5 +1,8 @@
 2010-05-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44017
+	* g++.dg/template/inherit5.C: New.
+
 	PR c++/44045
 	* g++.dg/cpp0x/initlist33.C: New.
 	* g++.dg/cpp0x/initlist26.C: Adjust.

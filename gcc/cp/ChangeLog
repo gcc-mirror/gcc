@@ -1,5 +1,8 @@
 2010-05-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44017
+	* semantics.c (baselink_for_fns): Revert earlier change.
+
 	PR c++/44045
 	* typeck.c (cp_build_modify_expr): Complain about assignment to
 	array from init list.
