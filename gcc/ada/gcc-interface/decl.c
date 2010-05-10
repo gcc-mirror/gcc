@@ -561,7 +561,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   == N_Object_Declaration)
 		  && Present (Expression (Declaration_Node (gnat_entity))))
 		 || Present (Renamed_Object (gnat_entity))
-		 || Is_Imported (gnat_entity)));
+		 || imported_p));
 	bool inner_const_flag = const_flag;
 	bool static_p = Is_Statically_Allocated (gnat_entity);
 	bool mutable_p = false;
@@ -742,6 +742,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && kind != E_Out_Parameter
 		    && Is_Composite_Type (Etype (gnat_entity))
 		    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
+		    && !Is_Exported (gnat_entity)
 		    && !imported_p
 		    && No (Renamed_Object (gnat_entity))
 		    && No (Address_Clause (gnat_entity))))
@@ -1000,7 +1001,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if ((Treat_As_Volatile (gnat_entity)
 	     || (!const_flag
 		 && (Is_Exported (gnat_entity)
-		     || Is_Imported (gnat_entity)
+		     || imported_p
 		     || Present (Address_Clause (gnat_entity)))))
 	    && !TYPE_VOLATILE (gnu_type))
 	  gnu_type = build_qualified_type (gnu_type,
@@ -2984,9 +2985,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      char *p;
 	      Get_Encoded_Name (gnat_entity);
-	      p = strrchr (Name_Buffer, '_');
+	      p = strchr (Name_Buffer, '_');
 	      gcc_assert (p);
-	      strcpy (p+1, "dtS");
+	      strcpy (p+2, "dtS");
 	      gnu_entity_name = get_identifier (Name_Buffer);
 	    }
 
