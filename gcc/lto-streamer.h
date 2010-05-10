@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "vec.h"
 #include "vecprim.h"
+#include "alloc-pool.h"
 
 /* Define when debugging the LTO streamer.  This causes the writer
    to output the numeric value for the memory address of the tree node
@@ -345,6 +346,9 @@ struct lto_streamer_cache_d
 {
   /* The mapping between tree nodes and slots into the nodes array.  */
   htab_t node_map;
+
+  /* Node map to store entries into.  */
+  alloc_pool node_map_entries;
 
   /* Next available slot in the nodes and offsets arrays.  */
   unsigned next_slot;

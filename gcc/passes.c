@@ -1694,6 +1694,9 @@ static void
 ipa_write_summaries_1 (cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
+  state->cgraph_node_encoder = lto_cgraph_encoder_new ();
+  state->varpool_node_encoder = lto_varpool_encoder_new ();
+
   lto_push_out_decl_state (state);
 
   gcc_assert (!flag_wpa);
@@ -1805,6 +1808,8 @@ void
 ipa_write_optimization_summaries (cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
+  state->cgraph_node_encoder = lto_cgraph_encoder_new ();
+  state->varpool_node_encoder = lto_varpool_encoder_new ();
   lto_push_out_decl_state (state);
 
   gcc_assert (flag_wpa);
