@@ -1978,6 +1978,10 @@ remove_unnecessary_allocnos (void)
 		  merged_p = true;
 		  ALLOCNO_LIVE_RANGES (a) = NULL;
 		  propagate_some_info_from_allocno (parent_a, a);
+		  /* Remove it from the corresponding regno allocno
+		     map to avoid info propagation of subsequent
+		     allocno into this already removed allocno.  */
+		  a_node->regno_allocno_map[regno] = NULL;
 		  finish_allocno (a);
 		}
 	    }
