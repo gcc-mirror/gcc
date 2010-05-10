@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ipa-utils.h"
+#include "except.h"
 
 /* Context of record_reference.  */
 struct record_reference_ctx
@@ -103,6 +104,86 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
     }
 
   return NULL_TREE;
+}
+
+/* Record references to typeinfos in the type list LIST.  */
+
+static void
+record_type_list (struct cgraph_node *node, tree list)
+{
+  for (; list; list = TREE_CHAIN (list))
+    {
+      tree type = TREE_VALUE (list);
+      
+      if (TYPE_P (type))
+	type = lookup_type_for_runtime (type);
+      STRIP_NOPS (type);
+      if (TREE_CODE (type) == ADDR_EXPR)
+	{
+	  type = TREE_OPERAND (type, 0);
+	  if (TREE_CODE (type) == VAR_DECL)
+	    {
+	      struct varpool_node *vnode = varpool_node (type);
+	      varpool_mark_needed_node (vnode);
+	      ipa_record_reference (node, NULL,
+				    NULL, vnode,
+				    IPA_REF_ADDR, NULL);
+	    }
+	}
+    }
+}
+
+/* Record all references we will introduce by producing EH tables
+   for NODE.  */
+
+static void
+record_eh_tables (struct cgraph_node *node, struct function *fun)
+{
+  eh_region i;
+
+  i = fun->eh->region_tree;
+  if (!i)
+    return;
+
+  while (1)
+    {
+      switch (i->type)
+	{
+	case ERT_CLEANUP:
+	case ERT_MUST_NOT_THROW:
+	  break;
+
+	case ERT_TRY:
+	  {
+	    eh_catch c;
+	    for (c = i->u.eh_try.first_catch; c; c = c->next_catch)
+	      record_type_list (node, c->type_list);
+	  }
+	  break;
+
+	case ERT_ALLOWED_EXCEPTIONS:
+	  record_type_list (node, i->u.allowed.type_list);
+	  break;
+	}
+      /* If there are sub-regions, process them.  */
+      if (i->inner)
+	i = i->inner;
+      /* If there are peers, process them.  */
+      else if (i->next_peer)
+	i = i->next_peer;
+      /* Otherwise, step back up the tree to the next peer.  */
+      else
+	{
+	  do
+	    {
+	      i = i->outer;
+	      if (i == NULL)
+		return;
+	    }
+	  while (i->next_peer == NULL);
+	  i = i->next_peer;
+	}
+    }
 }
 
 /* Reset inlining information of all incoming call edges of NODE.  */
@@ -297,6 +378,7 @@ build_cgraph_edges (void)
 	  && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl)))
 	varpool_finalize_decl (decl);
     }
+  record_eh_tables (node, cfun);
 
   pointer_set_destroy (visited_nodes);
   return 0;
@@ -375,6 +457,7 @@ rebuild_cgraph_edges (void)
 	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), node,
 				       mark_load, mark_store, mark_address);
     }
+  record_eh_tables (node, cfun);
   gcc_assert (!node->global.inlined_to);
 
   return 0;
