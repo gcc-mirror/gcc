@@ -2505,6 +2505,7 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
       fn_out_state =
 	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
       lto_output_decl_state_refs (ob, decl_state_stream, fn_out_state);
+      lto_delete_out_decl_state (fn_out_state);
     }
   lto_write_stream (decl_state_stream);
   free(decl_state_stream);
