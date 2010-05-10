@@ -1,5 +1,12 @@
 2010-05-10  Jan Hubicka  <jh@suse.cz>
 
+	* Makefile.in (cgraphbuild.o): Add dependency on except.h.
+	* cgraphbuild.c: Include except.h
+	(record_type_list, record_eh_tables): New function.
+	(build_cgraph_edges, rebuild_cgraph_edges): Use it.
+
+2010-05-10  Jan Hubicka  <jh@suse.cz>
+
 	* crtstuff.c (force_to_data, __do_global_dtors_aux_fini_array_entry,
 	__frame_dummy_init_array_entry, force_to_data): Attribute as used
 	rather than unused.
