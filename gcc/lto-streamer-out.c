@@ -2505,7 +2505,6 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
       fn_out_state =
 	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
       lto_output_decl_state_refs (ob, decl_state_stream, fn_out_state);
-      lto_delete_out_decl_state (fn_out_state);
     }
   lto_write_stream (decl_state_stream);
   free(decl_state_stream);
@@ -2522,6 +2521,12 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
   lto_write_options ();
 
   /* Deallocate memory and clean up.  */
+  for (idx = 0; idx < num_fns; idx++)
+    {
+      fn_out_state =
+	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+      lto_delete_out_decl_state (fn_out_state);
+    }
   lto_cgraph_encoder_delete (ob->decl_state->cgraph_node_encoder);
   lto_varpool_encoder_delete (ob->decl_state->varpool_node_encoder);
   VEC_free (lto_out_decl_state_ptr, heap, lto_function_decl_states);
