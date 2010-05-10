@@ -1,8 +1,14 @@
+2010-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44028
+	* haifa-sched.c (schedule_insn): When clearing INSN_VAR_LOCATION_LOC,
+	clear also INSN_REG_USE_LIST.
+
 2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
-	2010-05-10  H.J. Lu<hongjiu.lu@intel.com>
-		    Vladimir Makarov<vmakarov@redhat.com>
+	2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+		    Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/44012
 	* ira-build.c (remove_unnecessary_allocnos): Nullify
