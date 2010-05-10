@@ -1756,6 +1756,80 @@ gimple_call_flags (const_gimple stmt)
   return flags;
 }
 
+/* Detects argument flags for argument number ARG on call STMT.  */
+
+int
+gimple_call_arg_flags (const_gimple stmt, unsigned arg)
+{
+  tree type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  tree attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+  if (!attr)
+    return 0;
+
+  attr = TREE_VALUE (TREE_VALUE (attr));
+  if (1 + arg >= (unsigned) TREE_STRING_LENGTH (attr))
+    return 0;
+
+  switch (TREE_STRING_POINTER (attr)[1 + arg])
+    {
+    case 'x':
+    case 'X':
+      return EAF_UNUSED;
+
+    case 'R':
+      return EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE;
+
+    case 'r':
+      return EAF_NOCLOBBER | EAF_NOESCAPE;
+
+    case 'W':
+      return EAF_DIRECT | EAF_NOESCAPE;
+
+    case 'w':
+      return EAF_NOESCAPE;
+
+    case '.':
+    default:
+      return 0;
+    }
+}
+
+/* Detects return flags for the call STMT.  */
+
+int
+gimple_call_return_flags (const_gimple stmt)
+{
+  tree type;
+  tree attr = NULL_TREE;
+
+  if (gimple_call_flags (stmt) & ECF_MALLOC)
+    return ERF_NOALIAS;
+
+  type = TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt)));
+  attr = lookup_attribute ("fn spec", TYPE_ATTRIBUTES (type));
+  if (!attr)
+    return 0;
+
+  attr = TREE_VALUE (TREE_VALUE (attr));
+  if (TREE_STRING_LENGTH (attr) < 1)
+    return 0;
+
+  switch (TREE_STRING_POINTER (attr)[0])
+    {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+      return ERF_RETURNS_ARG | (TREE_STRING_POINTER (attr)[0] - '1');
+
+    case 'm':
+      return ERF_NOALIAS;
+
+    case '.':
+    default:
+      return 0;
+    }
+}
 
 /* Return true if GS is a copy assignment.  */
 

@@ -857,6 +857,8 @@ void gimple_seq_free (gimple_seq);
 void gimple_seq_add_seq (gimple_seq *, gimple_seq);
 gimple_seq gimple_seq_copy (gimple_seq);
 int gimple_call_flags (const_gimple);
+int gimple_call_return_flags (const_gimple);
+int gimple_call_arg_flags (const_gimple, unsigned);
 void gimple_call_reset_alias_info (gimple);
 bool gimple_assign_copy_p (gimple);
 bool gimple_assign_ssa_name_copy_p (gimple);

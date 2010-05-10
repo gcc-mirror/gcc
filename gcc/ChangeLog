@@ -1,5 +1,25 @@
 2010-05-10  Richard Guenther  <rguenther@suse.de>
 
+	* c-common.c (struct c_common_attributes): Add fnspec attribute.
+	(handle_fnspec_attribute): New function.
+	* gimple.h (gimple_call_return_flags): Declare.
+	(gimple_call_arg_flags): Likewise.
+	* gimple.c (gimple_call_arg_flags): New function.
+	(gimple_call_return_flags): Likewise.
+	* tree.h (EAF_DIRECT, EAF_NOCLOBBER, EAF_NOESCAPE, EAF_UNUSED):
+	New argument flags.
+	(ERF_RETURN_ARG_MASK, ERF_RETURNS_ARG, ERF_NOALIAS): New function
+	return value flags.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Skip unused args.
+	* tree-ssa-structalias.c (make_constraint_from_heapvar): Split
+	main work to ...
+	(make_heapvar_for): ... this new function.
+	(handle_rhs_call): Handle fnspec attribute argument specifiers.
+	(handle_lhs_call): Likewise.
+	(find_func_aliases): Adjust.
+
+2010-05-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44050
 	* tree-inline.c (tree_function_versioning): Clone the ipa-pta
 	flag.

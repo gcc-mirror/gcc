@@ -5169,6 +5169,30 @@ extern tree build_duplicate_type (tree);
 extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (const_tree);
 
+/* Call argument flags.  */
+
+/* Nonzero if the argument is not dereferenced recursively, thus only
+   directly reachable memory is read or written.  */
+#define EAF_DIRECT		(1 << 0)
+/* Nonzero if memory reached by the argument is not clobbered.  */
+#define EAF_NOCLOBBER		(1 << 1)
+/* Nonzero if the argument does not escape.  */
+#define EAF_NOESCAPE		(1 << 2)
+/* Nonzero if the argument is not used by the function.  */
+#define EAF_UNUSED		(1 << 3)
+
+/* Call return flags.  */
+
+/* Mask for the argument number that is returned.  Lower two bits of
+   the return flags, encodes argument slots zero to three.  */
+#define ERF_RETURN_ARG_MASK	(3)
+/* Nonzero if the return value is equal to the argument number
+   flags & ERF_RETURN_ARG_MASK.  */
+#define ERF_RETURNS_ARG		(1 << 2)
+/* Nonzero if the return value does not alias with anything.  Functions
+   with the malloc attribute have this set on their return value.  */
+#define ERF_NOALIAS		(1 << 3)
+
 extern int setjmp_call_p (const_tree);
 extern bool gimple_alloca_call_p (const_gimple);
 extern bool alloca_call_p (const_tree);

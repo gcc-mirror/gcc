@@ -529,6 +529,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
+static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -829,6 +830,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_target_attribute },
   { "optimize",               1, -1, true, false, false,
 			      handle_optimize_attribute },
+  /* For internal use (marking of builtins and runtime functions) only.
+     The name contains space to prevent its usage in source code.  */
+  { "fn spec",	 	      1, 1, false, true, true,
+			      handle_fnspec_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -7135,6 +7140,20 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	  return NULL_TREE;
 	}
     }
+  return NULL_TREE;
+}
+
+/* Handle a "fn spec" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
+			 tree args, int ARG_UNUSED (flags),
+			 bool *no_add_attrs ATTRIBUTE_UNUSED)
+{
+  gcc_assert (args
+	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
+	      && !TREE_CHAIN (args));
   return NULL_TREE;
 }
 

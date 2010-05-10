@@ -3599,11 +3599,11 @@ make_transitive_closure_constraints (varinfo_t vi)
   process_constraint (new_constraint (lhs, rhs));
 }
 
-/* Create a new artificial heap variable with NAME and make a
-   constraint from it to LHS.  Return the created variable.  */
+/* Create a new artificial heap variable with NAME.
+   Return the created variable.  */
 
 static varinfo_t
-make_constraint_from_heapvar (varinfo_t lhs, const char *name)
+make_heapvar_for (varinfo_t lhs, const char *name)
 {
   varinfo_t vi;
   tree heapvar = heapvar_lookup (lhs->decl, lhs->offset);
@@ -3635,6 +3635,16 @@ make_constraint_from_heapvar (varinfo_t lhs, const char *name)
   vi->is_full_var = true;
   insert_vi_for_tree (heapvar, vi);
 
+  return vi;
+}
+
+/* Create a new artificial heap variable with NAME and make a
+   constraint from it to LHS.  Return the created variable.  */
+
+static varinfo_t
+make_constraint_from_heapvar (varinfo_t lhs, const char *name)
+{
+  varinfo_t vi = make_heapvar_for (lhs, name);
   make_constraint_from (lhs, vi->id);
 
   return vi;
@@ -3709,15 +3719,59 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
 {
   struct constraint_expr rhsc;
   unsigned i;
+  bool returns_uses = false;
 
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
+      int flags = gimple_call_arg_flags (stmt, i);
 
-      /* Find those pointers being passed, and make sure they end up
-	 pointing to anything.  */
-      if (could_have_pointers (arg))
+      /* If the argument is not used or it does not contain pointers
+	 we can ignore it.  */
+      if ((flags & EAF_UNUSED)
+	  || !could_have_pointers (arg))
+	continue;
+
+      /* As we compute ESCAPED context-insensitive we do not gain
+         any precision with just EAF_NOCLOBBER but not EAF_NOESCAPE
+	 set.  The argument would still get clobbered through the
+	 escape solution.
+	 ???  We might get away with less (and more precise) constraints
+	 if using a temporary for transitively closing things.  */
+      if ((flags & EAF_NOCLOBBER)
+	   && (flags & EAF_NOESCAPE))
+	{
+	  varinfo_t uses = get_call_use_vi (stmt);
+	  if (!(flags & EAF_DIRECT))
+	    make_transitive_closure_constraints (uses);
+	  make_constraint_to (uses->id, arg);
+	  returns_uses = true;
+	}
+      else if (flags & EAF_NOESCAPE)
+	{
+	  varinfo_t uses = get_call_use_vi (stmt);
+	  varinfo_t clobbers = get_call_clobber_vi (stmt);
+	  if (!(flags & EAF_DIRECT))
+	    {
+	      make_transitive_closure_constraints (uses);
+	      make_transitive_closure_constraints (clobbers);
+	    }
+	  make_constraint_to (uses->id, arg);
+	  make_constraint_to (clobbers->id, arg);
+	  returns_uses = true;
+	}
+      else
 	make_escape_constraint (arg);
+    }
+
+  /* If we added to the calls uses solution make sure we account for
+     pointers to it to be returned.  */
+  if (returns_uses)
+    {
+      rhsc.var = get_call_use_vi (stmt)->id;
+      rhsc.offset = 0;
+      rhsc.type = SCALAR;
+      VEC_safe_push (ce_s, heap, *results, &rhsc);
     }
 
   /* The static chain escapes as well.  */
@@ -3752,44 +3806,63 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc, tree fndecl)
+handle_lhs_call (gimple stmt, tree lhs, int flags, VEC(ce_s, heap) *rhsc,
+		 tree fndecl)
 {
   VEC(ce_s, heap) *lhsc = NULL;
 
   get_constraint_for (lhs, &lhsc);
+  /* If the store is to a global decl make sure to
+     add proper escape constraints.  */
+  lhs = get_base_address (lhs);
+  if (lhs
+      && DECL_P (lhs)
+      && is_global_var (lhs))
+    {
+      struct constraint_expr tmpc;
+      tmpc.var = escaped_id;
+      tmpc.offset = 0;
+      tmpc.type = SCALAR;
+      VEC_safe_push (ce_s, heap, lhsc, &tmpc);
+    }
 
-  if (flags & ECF_MALLOC)
+  /* If the call returns an argument unmodified override the rhs
+     constraints.  */
+  flags = gimple_call_return_flags (stmt);
+  if (flags & ERF_RETURNS_ARG
+      && (flags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (stmt))
+    {
+      tree arg;
+      rhsc = NULL;
+      arg = gimple_call_arg (stmt, flags & ERF_RETURN_ARG_MASK);
+      get_constraint_for (arg, &rhsc);
+      process_all_all_constraints (lhsc, rhsc);
+      VEC_free (ce_s, heap, rhsc);
+    }
+  else if (flags & ERF_NOALIAS)
     {
       varinfo_t vi;
-      vi = make_constraint_from_heapvar (get_vi_for_tree (lhs), "HEAP");
+      struct constraint_expr tmpc;
+      rhsc = NULL;
+      vi = make_heapvar_for (get_vi_for_tree (lhs), "HEAP");
       /* We delay marking allocated storage global until we know if
          it escapes.  */
       DECL_EXTERNAL (vi->decl) = 0;
       vi->is_global_var = 0;
       /* If this is not a real malloc call assume the memory was
-         initialized and thus may point to global memory.  All
+	 initialized and thus may point to global memory.  All
 	 builtin functions with the malloc attribute behave in a sane way.  */
       if (!fndecl
 	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
 	make_constraint_from (vi, nonlocal_id);
+      tmpc.var = vi->id;
+      tmpc.offset = 0;
+      tmpc.type = ADDRESSOF;
+      VEC_safe_push (ce_s, heap, rhsc, &tmpc);
     }
-  else if (VEC_length (ce_s, rhsc) > 0)
-    {
-      /* If the store is to a global decl make sure to
-	 add proper escape constraints.  */
-      lhs = get_base_address (lhs);
-      if (lhs
-	  && DECL_P (lhs)
-	  && is_global_var (lhs))
-	{
-	  struct constraint_expr tmpc;
-	  tmpc.var = escaped_id;
-	  tmpc.offset = 0;
-	  tmpc.type = SCALAR;
-	  VEC_safe_push (ce_s, heap, lhsc, &tmpc);
-	}
-      process_all_all_constraints (lhsc, rhsc);
-    }
+
+  process_all_all_constraints (lhsc, rhsc);
+
   VEC_free (ce_s, heap, lhsc);
 }
 
@@ -4202,7 +4275,7 @@ find_func_aliases (gimple origt)
 	    handle_rhs_call (t, &rhsc);
 	  if (gimple_call_lhs (t)
 	      && could_have_pointers (gimple_call_lhs (t)))
-	    handle_lhs_call (gimple_call_lhs (t), flags, rhsc, fndecl);
+	    handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
 	  VEC_free (ce_s, heap, rhsc);
 	}
       else
