@@ -2658,8 +2658,7 @@ baselink_for_fns (tree fns)
   if (!cl)
     cl = DECL_CONTEXT (fn);
   cl = TYPE_BINFO (cl);
-  return build_baselink (TYPE_BINFO (DECL_CONTEXT (fn)), cl, fns,
-			 /*optype=*/NULL_TREE);
+  return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
 }
 
 /* Returns true iff DECL is an automatic variable from a function outside
