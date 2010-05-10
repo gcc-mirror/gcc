@@ -33,6 +33,7 @@
   select type (3.5)  ! { dg-error "is not a named variable" }
   select type (a%cp) ! { dg-error "is not a named variable" }
   select type (b)    ! { dg-error "Selector shall be polymorphic" }
+  end select
 
   select type (a)
     print *,"hello world!"  ! { dg-error "Expected TYPE IS, CLASS IS or END SELECT" }

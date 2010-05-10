@@ -1,3 +1,11 @@
+2010-05-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44044
+	* match.c (gfc_match_select_type): Move error message to
+	resolve_select_type.
+	* resolve.c (resolve_select_type): Error message moved here from
+	gfc_match_select_type. Correctly set type of temporary.
+
 2010-05-10  Richard Guenther  <rguenther@suse.de>
 
 	* trans-decl.c (gfc_build_library_function_decl): Split out
