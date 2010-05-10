@@ -1,3 +1,9 @@
+2010-05-10  Jan Hubicka  <jh@suse.cz>
+
+	* crtstuff.c (force_to_data, __do_global_dtors_aux_fini_array_entry,
+	__frame_dummy_init_array_entry, force_to_data): Attribute as used
+	rather than unused.
+
 2010-05-10  Michael Matz  <matz@suse.de>
 
 	* tree-ssa-reassoc.c (undistribute_ops_list): Use create_tmp_reg.
