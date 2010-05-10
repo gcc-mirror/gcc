@@ -1,3 +1,11 @@
+2010-05-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/27866
+	PR fortran/35003
+	PR fortran/42809
+	* intrinsic.c (gfc_convert_type_warn): Be more dicsriminative
+	about conversion warnings.
+
 2010-05-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44044
