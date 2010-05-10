@@ -6634,6 +6634,12 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
       if (BRACE_ENCLOSED_INITIALIZER_P (newrhs))
 	{
+	  if (modifycode != INIT_EXPR)
+	    {
+	      if (complain & tf_error)
+		error ("assigning to an array from an initializer list");
+	      return error_mark_node;
+	    }
 	  if (check_array_initializer (lhs, lhstype, newrhs))
 	    return error_mark_node;
 	  newrhs = digest_init (lhstype, newrhs);
