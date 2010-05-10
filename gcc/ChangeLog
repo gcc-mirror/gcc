@@ -1,3 +1,9 @@
+2010-05-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44050
+	* tree-inline.c (tree_function_versioning): Clone the ipa-pta
+	flag.
+
 2010-05-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/42879
