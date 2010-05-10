@@ -7078,8 +7078,21 @@ resolve_select_type (gfc_code *code)
   ns = code->ext.ns;
   gfc_resolve (ns);
 
+  /* Check for F03:C813.  */
+  if (code->expr1->ts.type != BT_CLASS
+      && !(code->expr2 && code->expr2->ts.type == BT_CLASS))
+    {
+      gfc_error ("Selector shall be polymorphic in SELECT TYPE statement "
+		 "at %L", &code->loc);
+      return;
+    }
+
   if (code->expr2)
-    selector_type = code->expr2->ts.u.derived->components->ts.u.derived;
+    {
+      if (code->expr1->symtree->n.sym->attr.untyped)
+	code->expr1->symtree->n.sym->ts = code->expr2->ts;
+      selector_type = code->expr2->ts.u.derived->components->ts.u.derived;
+    }
   else
     selector_type = code->expr1->ts.u.derived->components->ts.u.derived;
 

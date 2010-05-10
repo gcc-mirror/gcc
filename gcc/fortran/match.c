@@ -4314,7 +4314,10 @@ gfc_match_select_type (void)
       expr1->expr_type = EXPR_VARIABLE;
       if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
 	return MATCH_ERROR;
-      expr1->symtree->n.sym->ts = expr2->ts;
+      if (expr2->ts.type == BT_UNKNOWN)
+	expr1->symtree->n.sym->attr.untyped = 1;
+      else
+	expr1->symtree->n.sym->ts = expr2->ts;
       expr1->symtree->n.sym->attr.referenced = 1;
       expr1->symtree->n.sym->attr.class_ok = 1;
     }
@@ -4334,14 +4337,6 @@ gfc_match_select_type (void)
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
-      return MATCH_ERROR;
-    }
-
-  /* Check for F03:C813.  */
-  if (expr1->ts.type != BT_CLASS && !(expr2 && expr2->ts.type == BT_CLASS))
-    {
-      gfc_error ("Selector shall be polymorphic in SELECT TYPE statement "
-		 "at %C");
       return MATCH_ERROR;
     }
 
