@@ -1165,7 +1165,7 @@ undistribute_ops_list (enum tree_code opcode,
 	      fprintf (dump_file, "Building (");
 	      print_generic_expr (dump_file, oe1->op, 0);
 	    }
-	  tmpvar = create_tmp_var (TREE_TYPE (oe1->op), NULL);
+	  tmpvar = create_tmp_reg (TREE_TYPE (oe1->op), NULL);
 	  add_referenced_var (tmpvar);
 	  zero_one_operation (&oe1->op, c->oecode, c->op);
 	  EXECUTE_IF_SET_IN_SBITMAP (candidates2, first+1, i, sbi0)
@@ -1948,7 +1948,7 @@ can_reassociate_p (tree op)
   tree type = TREE_TYPE (op);
   if (INTEGRAL_TYPE_P (type)
       || NON_SAT_FIXED_POINT_TYPE_P (type)
-      || (flag_associative_math && SCALAR_FLOAT_TYPE_P (type)))
+      || (flag_associative_math && FLOAT_TYPE_P (type)))
     return true;
   return false;
 }

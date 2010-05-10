@@ -1,5 +1,20 @@
-2010-05-10  H.J. Lu<hongjiu.lu@intel.com>
-	    Vladimir Makarov<vmakarov@redhat.com>
+2010-05-10  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-reassoc.c (undistribute_ops_list): Use create_tmp_reg.
+	(can_reassociate_p): Use FLOAT_TYPE_P.
+	* tree-vectorizer.h (vect_is_simple_reduction): Rename to ...
+	(vect_force_simple_reduction): ... this.
+	* tree-parloops.c (gather_scalar_reductions): Use 
+	vect_force_simple_reduction.
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Rename from
+	vect_is_simple_reduction, add modify argument, if true rewrite
+	"a-b" into "a+(-b)".
+	(vect_is_simple_reduction, vect_force_simple_reduction): New
+	functions.
+	(vect_analyze_scalar_cycles_1): Use vect_force_simple_reduction.
+
+2010-05-10  H.J. Lu  <hongjiu.lu@intel.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/44012
 	* ira-build.c (remove_unnecessary_allocnos): Nullify
