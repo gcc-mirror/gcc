@@ -1,3 +1,9 @@
+2010-05-10  Fabien Chêne  <fabien.chene@gmail.com>
+
+	PR c++/43719
+	* decl.c (check_initializer): strip array type before checking for
+	uninitialized const or ref members.
+
 2010-05-07  Fabien Chêne  <fabien.chene@gmail.com>
 
 	PR c++/43951

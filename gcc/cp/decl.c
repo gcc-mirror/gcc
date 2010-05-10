@@ -5207,6 +5207,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 {
   tree type = TREE_TYPE (decl);
   tree init_code = NULL;
+  tree core_type;
 
   /* Things that are going to be initialized need to have complete
      type.  */
@@ -5318,14 +5319,12 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       check_for_uninitialized_const_var (decl);
       return build_aggr_init_full_exprs (decl, init, flags);
     }
-  else if (MAYBE_CLASS_TYPE_P (type))
+  else if (MAYBE_CLASS_TYPE_P (core_type = strip_array_types (type)))
     {
-      tree core_type = strip_array_types (type);
-
-      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
-	error ("structure %qD with uninitialized const members", decl);
-      if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
-	error ("structure %qD with uninitialized reference members", decl);
+      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
+	  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
+	diagnose_uninitialized_cst_or_ref_member (core_type, /*using_new=*/false,
+						  /*complain=*/true);
 
       check_for_uninitialized_const_var (decl);
     }
