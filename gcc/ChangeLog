@@ -1,3 +1,7 @@
+2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/mips.c (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P): Undef.
+
 2010-05-10  Jan Hubicka  <jh@suse.cz>
 
 	* lto-stramer-out.c (produce_asm_for_decls): Correct accidentally commited change.
