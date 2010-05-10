@@ -6244,7 +6244,7 @@ package body Exp_Disp is
       DT               : Node_Id := Empty;
       DT_Ptr           : Node_Id;
       Predef_Prims_Ptr : Node_Id;
-      Iface_DT         : Node_Id;
+      Iface_DT         : Node_Id := Empty;
       Iface_DT_Ptr     : Node_Id;
       New_Node         : Node_Id;
       Suffix_Index     : Int;
@@ -6568,6 +6568,11 @@ package body Exp_Disp is
       if Present (DT) then
          Set_Is_Dispatch_Table_Entity (DT);
          Set_Is_Dispatch_Table_Entity (Etype (DT));
+      end if;
+
+      if Present (Iface_DT) then
+         Set_Is_Dispatch_Table_Entity (Iface_DT);
+         Set_Is_Dispatch_Table_Entity (Etype (Iface_DT));
       end if;
 
       Set_Ekind        (DT_Ptr, E_Constant);
