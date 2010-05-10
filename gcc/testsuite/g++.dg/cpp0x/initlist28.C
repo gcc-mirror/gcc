@@ -4,5 +4,5 @@
 void foo()
 {
   int a[1];
-  throw a = {}; // { dg-error "invalid use of non-lvalue array" }
+  throw a = {}; // { dg-error "assign" }
 }
