@@ -1,3 +1,9 @@
+2010-05-10  Fabien Chêne  <fabien.chene@gmail.com>
+
+	PR c++/43719
+	* g++.dg/init/pr43719.C: New.
+	* g++.dg/anon-struct4.C: Adjust.
+
 2010-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44028
