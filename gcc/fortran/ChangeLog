@@ -1,5 +1,19 @@
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
+        PR fortran/43711
+        * openmp.c (gfc_match_omp_taskwait): Report unexpected characters
+        after OMP statement.
+        (gfc_match_omp_critical): Likewise.
+        (gfc_match_omp_flush): Likewise.
+        (gfc_match_omp_workshare): Likewise.
+        (gfc_match_omp_master): Likewise.
+        (gfc_match_omp_ordered): Likewise.
+        (gfc_match_omp_atomic): Likewise.
+        (gfc_match_omp_barrier): Likewise.
+        (gfc_match_omp_end_nowait): Likewise.
+
+2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/31820
 	* resolve.c (validate_case_label_expr): Removed FIXME.
 	(resolve_select): Raise default warning on case labels out of range
