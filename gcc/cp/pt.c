@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
@@ -3837,7 +3837,7 @@ process_partial_specialization (tree decl)
   int nargs = TREE_VEC_LENGTH (inner_args);
   int ntparms;
   int  i;
-  int did_error_intro = 0;
+  bool did_error_intro = false;
   struct template_parm_data tpd;
   struct template_parm_data tpd2;
 
@@ -3899,11 +3899,14 @@ process_partial_specialization (tree decl)
 	if (!did_error_intro)
 	  {
 	    error ("template parameters not used in partial specialization:");
-	    did_error_intro = 1;
+	    did_error_intro = true;
 	  }
 
 	error ("        %qD", TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
       }
+
+  if (did_error_intro)
+    return error_mark_node;
 
   /* [temp.class.spec]
 
