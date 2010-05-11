@@ -1,3 +1,7 @@
+2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* collect2.c (maybe_lto_object_file): Add x64-coff magic and check.
+
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_cgraph): Remove loop adding all varpool nodes

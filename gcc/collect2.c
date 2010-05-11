@@ -2574,6 +2574,7 @@ maybe_lto_object_file (const char *prog_name)
 
   static unsigned char elfmagic[4] = { 0x7f, 'E', 'L', 'F' };
   static unsigned char coffmagic[2] = { 0x4c, 0x01 };
+  static unsigned char coffmagic_x64[2] = { 0x64, 0x86 };
   static unsigned char machomagic[4][4] = {
     { 0xcf, 0xfa, 0xed, 0xfe },
     { 0xce, 0xfa, 0xed, 0xfe },
@@ -2589,7 +2590,8 @@ maybe_lto_object_file (const char *prog_name)
   fclose (f);
 
   if (memcmp (buf, elfmagic, sizeof (elfmagic)) == 0
-      || memcmp (buf, coffmagic, sizeof (coffmagic)) == 0)
+      || memcmp (buf, coffmagic, sizeof (coffmagic)) == 0
+      || memcmp (buf, coffmagic_x64, sizeof (coffmagic_x64)) == 0)
     return true;
   for (i = 0; i < 4; i++)
     if (memcmp (buf, machomagic[i], sizeof (machomagic[i])) == 0)
