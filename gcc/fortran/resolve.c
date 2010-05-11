@@ -6747,8 +6747,9 @@ validate_case_label_expr (gfc_expr *e, gfc_expr *case_expr)
       return FAILURE;
     }
 
-  /* Convert the case value kind to that of case expression kind, if needed.
-     FIXME:  Should a warning be issued?  */
+  /* Convert the case value kind to that of case expression kind,
+     if needed */
+
   if (e->ts.kind != case_expr->ts.kind)
     gfc_convert_type_warn (e, &case_expr->ts, 2, 0);
 
@@ -6834,6 +6835,31 @@ resolve_select (gfc_code *code)
       return;
     }
 
+
+  /* Raise a warning if an INTEGER case value exceeds the range of
+     the case-expr. Later, all expressions will be promoted to the
+     largest kind of all case-labels.  */
+
+  if (type == BT_INTEGER)
+    for (body = code->block; body; body = body->block)
+      for (cp = body->ext.case_list; cp; cp = cp->next)
+	{
+	  if (cp->low
+	      && gfc_check_integer_range (cp->low->value.integer,
+					  case_expr->ts.kind) != ARITH_OK)
+	    gfc_warning ("Expression in CASE statement at %L is "
+			 "not in the range of %s", &cp->low->where,
+			 gfc_typename (&case_expr->ts));
+
+	  if (cp->high
+	      && cp->low != cp->high
+	      && gfc_check_integer_range (cp->high->value.integer,
+					  case_expr->ts.kind) != ARITH_OK)
+	    gfc_warning ("Expression in CASE statement at %L is "
+			 "not in the range of %s", &cp->high->where,
+			 gfc_typename (&case_expr->ts));
+	}
+
   /* PR 19168 has a long discussion concerning a mismatch of the kinds
      of the SELECT CASE expression and its CASE values.  Walk the lists
      of case values, and if we find a mismatch, promote case_expr to
@@ -6856,7 +6882,6 @@ resolve_select (gfc_code *code)
 		  && gfc_compare_expr (cp->low, cp->high, INTRINSIC_GT) > 0)
 		continue;
 
-	      /* FIXME: Should a warning be issued?  */
 	      if (cp->low != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->low))
 		gfc_convert_type_warn (case_expr, &cp->low->ts, 2, 0);
@@ -6907,8 +6932,8 @@ resolve_select (gfc_code *code)
 
 	  /* Deal with single value cases and case ranges.  Errors are
 	     issued from the validation function.  */
-	  if(validate_case_label_expr (cp->low, case_expr) != SUCCESS
-	     || validate_case_label_expr (cp->high, case_expr) != SUCCESS)
+	  if (validate_case_label_expr (cp->low, case_expr) != SUCCESS
+	      || validate_case_label_expr (cp->high, case_expr) != SUCCESS)
 	    {
 	      t = FAILURE;
 	      break;
@@ -6930,7 +6955,7 @@ resolve_select (gfc_code *code)
 	      value = cp->low->value.logical == 0 ? 2 : 1;
 	      if (value & seen_logical)
 		{
-		  gfc_error ("constant logical value in CASE statement "
+		  gfc_error ("Constant logical value in CASE statement "
 			     "is repeated at %L",
 			     &cp->low->where);
 		  t = FAILURE;
