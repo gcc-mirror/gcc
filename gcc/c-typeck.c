@@ -8841,6 +8841,8 @@ emit_side_effect_warnings (location_t loc, tree expr)
 tree
 c_process_expr_stmt (location_t loc, tree expr)
 {
+  tree exprv;
+
   if (!expr)
     return NULL_TREE;
 
@@ -8861,8 +8863,11 @@ c_process_expr_stmt (location_t loc, tree expr)
       && warn_unused_value)
     emit_side_effect_warnings (loc, expr);
 
-  if (DECL_P (expr) || handled_component_p (expr))
-    mark_exp_read (expr);
+  exprv = expr;
+  while (TREE_CODE (exprv) == COMPOUND_EXPR)
+    exprv = TREE_OPERAND (exprv, 1);
+  if (DECL_P (exprv) || handled_component_p (exprv))
+    mark_exp_read (exprv);
 
   /* If the expression is not of a type to which we cannot assign a line
      number, wrap the thing in a no-op NOP_EXPR.  */

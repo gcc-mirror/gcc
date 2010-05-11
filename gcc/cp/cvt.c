@@ -1,6 +1,6 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -822,9 +822,23 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 tree
 convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 {
+  tree exprv;
+
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
+
+  exprv = expr;
+  while (TREE_CODE (exprv) == COMPOUND_EXPR)
+    exprv = TREE_OPERAND (exprv, 1);
+  if (DECL_P (exprv) || handled_component_p (exprv))
+    /* Expr is not being 'used' here, otherwise we whould have
+       called mark_{rl}value_use use here, which would have in turn
+       called mark_exp_read.  Rather, we call mark_exp_read directly
+       to avoid some warnings when
+       -Wunused-but-set-{variable,parameter} is in effect.  */
+    mark_exp_read (exprv);
+
   if (!TREE_TYPE (expr))
     return expr;
   if (invalid_nonstatic_memfn_p (expr, complain))
