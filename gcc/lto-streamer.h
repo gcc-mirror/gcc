@@ -863,6 +863,8 @@ void input_cgraph (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        cgraph_node_set,
 				        varpool_node_set vset);
+bool reachable_from_other_partition_p (struct cgraph_node *,
+				       cgraph_node_set);
 
 
 /* In lto-symtab.c.  */
@@ -872,6 +874,7 @@ extern void lto_symtab_merge_decls (void);
 extern void lto_symtab_merge_cgraph_nodes (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern enum ld_plugin_symbol_resolution lto_symtab_get_resolution (tree decl);
+extern void lto_symtab_free (void);
 
 
 /* In lto-opts.c.  */
