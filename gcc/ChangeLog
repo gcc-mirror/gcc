@@ -1,3 +1,7 @@
+2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+        * tree-ssa-loop-prefetch.c: Add debug for dropped prefetches.
+
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (execute): For -### don't quote arguments that
