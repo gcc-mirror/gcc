@@ -1,3 +1,15 @@
+2010-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44023
+	* df-problems.c (struct dead_debug): Add to_rescan field.
+	(dead_debug_init): Clear to_rescan field.
+	(dead_debug_finish): Rescan all debug insns in to_rescan
+	bitmap and free the bitmap.
+	(dead_debug_insert_before): Instead of rescanning debug insns
+	immediately queue their rescanning until dead_debug_finish.
+	(df_note_bb_compute): After dead_debug_add do continue instead
+	of break.
+
 2010-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44028

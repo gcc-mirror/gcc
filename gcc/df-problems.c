@@ -1,6 +1,6 @@
 /* Standard problems for dataflow support routines.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009 Free Software Foundation, Inc.
+   2008, 2009, 2010 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -3416,6 +3416,7 @@ struct dead_debug
 {
   struct dead_debug_use *head;
   bitmap used;
+  bitmap to_rescan;
 };
 
 /* Initialize DEBUG to an empty list, and clear USED, if given.  */
@@ -3424,6 +3425,7 @@ dead_debug_init (struct dead_debug *debug, bitmap used)
 {
   debug->head = NULL;
   debug->used = used;
+  debug->to_rescan = NULL;
   if (used)
     bitmap_clear (used);
 }
@@ -3447,9 +3449,25 @@ dead_debug_finish (struct dead_debug *debug, bitmap used)
 	{
 	  INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
 	  df_insn_rescan_debug_internal (insn);
+	  if (debug->to_rescan)
+	    bitmap_clear_bit (debug->to_rescan, INSN_UID (insn));
 	}
       debug->head = head->next;
       XDELETE (head);
+    }
+
+  if (debug->to_rescan)
+    {
+      bitmap_iterator bi;
+      unsigned int uid;
+
+      EXECUTE_IF_SET_IN_BITMAP (debug->to_rescan, 0, uid, bi)
+	{
+	  struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
+	  if (insn_info)
+	    df_insn_rescan (insn_info->insn);
+	}
+      BITMAP_FREE (debug->to_rescan);
     }
 }
 
@@ -3530,7 +3548,9 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
 	*DF_REF_REAL_LOC (cur->use)
 	  = gen_lowpart_SUBREG (GET_MODE (*DF_REF_REAL_LOC (cur->use)), dval);
       /* ??? Should we simplify subreg of subreg?  */
-      df_insn_rescan (DF_REF_INSN (cur->use));
+      if (debug->to_rescan == NULL)
+	debug->to_rescan = BITMAP_ALLOC (NULL);
+      bitmap_set_bit (debug->to_rescan, INSN_UID (DF_REF_INSN (cur->use)));
       uses = cur->next;
       XDELETE (cur);
     }
@@ -3728,7 +3748,10 @@ df_note_bb_compute (unsigned int bb_index,
 	      if (debug_insn)
 		{
 		  if (debug_insn > 0)
-		    dead_debug_add (&debug, use, uregno);
+		    {
+		      dead_debug_add (&debug, use, uregno);
+		      continue;
+		    }
 		  break;
 		}
 	      else
