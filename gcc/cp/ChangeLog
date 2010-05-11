@@ -1,3 +1,10 @@
+2010-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44062
+	* semantics.c (finish_expr_stmt): Don't call mark_exp_read here...
+	* cvt.c (convert_to_void): ... but here.  If expr is a COMPOUND_EXPR,
+	look at its second operand.
+
 2010-05-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44017

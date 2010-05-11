@@ -1,3 +1,12 @@
+2010-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44062
+	* c-parser.c (c_parser_expression): Mark LHS of a comma
+	expression as read if it is a decl, handled component or
+	COMPOUND_EXPR with that on the RHS.
+	* c-typeck.c (c_process_expr_stmt): Mark RHS of COMPOUND_EXPR
+	if it is a decl or handled component.
+
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_symtab_free): New function.
