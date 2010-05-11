@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -861,8 +861,11 @@ fixup_reorder_chain (void)
 	    }
 	  else if (extract_asm_operands (PATTERN (bb_end_insn)) != NULL)
 	    {
-	      /* If the old fallthru is still next, nothing to do.  */
-	      if (bb->aux == e_fall->dest
+	      /* If the old fallthru is still next or if
+		 asm goto doesn't have a fallthru (e.g. when followed by
+		 __builtin_unreachable ()), nothing to do.  */
+	      if (! e_fall
+		  || bb->aux == e_fall->dest
 		  || e_fall->dest == EXIT_BLOCK_PTR)
 		continue;
 

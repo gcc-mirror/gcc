@@ -1887,6 +1887,25 @@ try_optimize_cfg (int mode)
 		      && single_succ_edge (ENTRY_BLOCK_PTR)->dest != b))
 		{
 		  c = b->prev_bb;
+		  if ((mode & CLEANUP_CFGLAYOUT)
+		      && EDGE_COUNT (b->preds) > 0
+		      && b->il.rtl->footer
+		      && BARRIER_P (b->il.rtl->footer))
+		    {
+		      edge e;
+		      edge_iterator ei;
+
+		      FOR_EACH_EDGE (e, ei, b->preds)
+			if (e->flags & EDGE_FALLTHRU)
+			  {
+			    if (e->src->il.rtl->footer == NULL)
+			      {
+				e->src->il.rtl->footer = b->il.rtl->footer;
+				b->il.rtl->footer = NULL;
+			      }
+			    break;
+			  }
+		    }
 		  delete_basic_block (b);
 		  if (!(mode & CLEANUP_CFGLAYOUT))
 		    changed = true;
