@@ -458,7 +458,7 @@ lto_streamer_cache_add_to_node_array (struct lto_streamer_cache_d *cache,
   if (ix >= (int) VEC_length (tree, cache->nodes))
     {
       size_t sz = ix + (20 + ix) / 4;
-      VEC_safe_grow_cleared (tree, gc, cache->nodes, sz);
+      VEC_safe_grow_cleared (tree, heap, cache->nodes, sz);
       VEC_safe_grow_cleared (unsigned, heap, cache->offsets, sz);
     }
 
@@ -790,7 +790,7 @@ lto_streamer_cache_delete (struct lto_streamer_cache_d *c)
 
   htab_delete (c->node_map);
   free_alloc_pool (c->node_map_entries);
-  VEC_free (tree, gc, c->nodes);
+  VEC_free (tree, heap, c->nodes);
   VEC_free (unsigned, heap, c->offsets);
   free (c);
 }
