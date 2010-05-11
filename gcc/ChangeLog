@@ -1,5 +1,10 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* crtstuff.c (__JCR_LIST__, __DTOR_END__, __JCR_END__, __FRAME_END__):
+	Mark as used.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/44063
 	* ipa-inline.c (cgraph_edge_badness): Move always inlines to top of queue.
 	(cgraph_decide_inlining_of_small_function): Skip check when disrgarding
