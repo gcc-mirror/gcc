@@ -1,3 +1,9 @@
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c: Include ipa-utils.h
+	(cgraph_create_virtual_clone): Update references.
+	* Makefile.in (cgraph.o): Add dependency at ipa-utils.h
+
 2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
 
         * tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Reset
