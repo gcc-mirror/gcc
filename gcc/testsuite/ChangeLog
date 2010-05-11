@@ -1,3 +1,8 @@
+2010-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44023
+	* gcc.dg/pr44023.c: New test.
+
 2010-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto7.adb: New test.
