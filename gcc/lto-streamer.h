@@ -354,7 +354,7 @@ struct lto_streamer_cache_d
   unsigned next_slot;
 
   /* The nodes pickled so far.  */
-  VEC(tree,gc) *nodes;
+  VEC(tree,heap) *nodes;
 
   /* Offset into the stream where the nodes have been written.  */
   VEC(unsigned,heap) *offsets;
