@@ -1172,9 +1172,9 @@ program and of the preprocessor and the compiler proper.
 
 @item -###
 @opindex ###
-Like @option{-v} except the commands are not executed and all command
-arguments are quoted.  This is useful for shell scripts to capture the
-driver-generated command lines.
+Like @option{-v} except the commands are not executed and arguments
+are quoted unless they contain only alphanumeric characters or @code{./-_}.
+This is useful for shell scripts to capture the driver-generated command lines.
 
 @item -pipe
 @opindex pipe

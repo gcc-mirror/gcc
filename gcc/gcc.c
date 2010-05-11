@@ -3020,14 +3020,23 @@ execute (void)
 	      for (j = commands[i].argv; *j; j++)
 		{
 		  const char *p;
-		  fprintf (stderr, " \"");
 		  for (p = *j; *p; ++p)
+		    if (!ISALNUM ((unsigned char) *p)
+			&& *p != '_' && *p != '/' && *p != '-' && *p != '.')
+		      break;
+		  if (*p || !*j)
 		    {
-		      if (*p == '"' || *p == '\\' || *p == '$')
-			fputc ('\\', stderr);
-		      fputc (*p, stderr);
+		      fprintf (stderr, " \"");
+		      for (p = *j; *p; ++p)
+			{
+			  if (*p == '"' || *p == '\\' || *p == '$')
+			    fputc ('\\', stderr);
+			  fputc (*p, stderr);
+			}
+		      fputc ('"', stderr);
 		    }
-		  fputc ('"', stderr);
+		  else
+		    fprintf (stderr, " %s", *j);
 		}
 	    }
 	  else

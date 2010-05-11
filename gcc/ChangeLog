@@ -1,5 +1,9 @@
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c (execute): For -### don't quote arguments that
+	contain just alphanumerics and _/-. characters.
+	* doc/invoke.texi: Document that change for -###.
+
 	PR debug/44023
 	* df-problems.c (struct dead_debug): Add to_rescan field.
 	(dead_debug_init): Clear to_rescan field.
