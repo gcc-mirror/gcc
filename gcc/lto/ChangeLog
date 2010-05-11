@@ -1,3 +1,9 @@
+2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-coff.c (IMAGE_FILE_MACHINE_ADM64): Rename to
+	IMAGE_FILE_MACHINE_AMD64.
+	* lto-coff.c (IMAGE_FILE_MACHINE_ADM64): Likewise.
+
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_fixup_decls): Remove global var decls freeing here.
