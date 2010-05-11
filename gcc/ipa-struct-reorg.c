@@ -3241,6 +3241,7 @@ do_reorg_for_func (struct cgraph_node *node)
   create_new_accesses_for_func ();
   update_ssa (TODO_update_ssa);
   cleanup_tree_cfg ();
+  cgraph_rebuild_references ();
 
   /* Free auxiliary data representing local variables.  */
   free_new_vars_htab (new_local_vars);
