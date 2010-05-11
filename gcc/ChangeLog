@@ -1,5 +1,10 @@
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-opts.c (c_common_parse_file): If start_end_main_source_file,
+	don't call start_source_file debug hook here...
+	(finish_options): ... but here, after outputting predefined and
+	command line defines and undefs.
+
 	PR middle-end/44071
 	* cfglayout.c (fixup_reorder_chain): Allow asm goto to have
 	no fallthru edge.
