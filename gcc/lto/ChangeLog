@@ -1,5 +1,10 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (lto_fixup_decls): Remove global var decls freeing here.
+	(materialize_cgraph): Add it here.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (lto_fixup_decls): Free no longer needed lto_global_var_decls
 	vector.
 
