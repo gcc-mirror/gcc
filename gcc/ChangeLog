@@ -1,5 +1,11 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer.c (lto_streamer_cache_add_to_node_array,
+	lto_streamer_cache_delete): Put nodes into heap.
+	(struct lto_streamer_cache_d): Nodes vector is in heap.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	* cgraphbuild.c (cgraph_rebuild_references): New.
 	* cgraph.c (cgraph_mark_reachable_node): Accept references to optimized
 	out extern inlines.
