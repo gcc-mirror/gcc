@@ -1,3 +1,20 @@
+2010-05-11  Silvius Rus  <silvius.rus@gmail.com>
+
+	PR libstdc++/43259
+	* include/profile/impl/profiler_algos.h: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* include/profile/impl/profiler.h
+	(_GLIBCXX_PROFILE_DEFINE_UNINIT_DATA): Add.
+	* include/profile/impl/profiler_trace.h
+	(__mutex_t, __lock, __unlock): Remove.
+	(__lock_object_table, __lock_stack_table): Remove. Replace uses with
+	calls to __gnu_cxx::__mutex::lock.
+	(__unlock_object_table, __unlock_stack_table): Remove. Replace uses
+	with calls to __gnu_cxx::__mutex::unlock.
+	(__warn, __cost_factor_writer, __cost_factor_setter): Add.
+	* testsuite/ext/profile/profiler_algos.cc: New.
+
 2010-05-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* libsupc++/exception_ptr.h (make_exception_ptr): Add.
