@@ -1643,9 +1643,16 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
 {
   if (!node->reachable && node->local.finalized)
     {
-      notice_global_symbol (node->decl);
+      if (cgraph_global_info_ready)
+        {
+	  /* Verify that function does not appear to be needed out of blue
+	     during the optimization process.  This can happen for extern
+	     inlines when bodies was removed after inlining.  */
+	  gcc_assert ((node->analyzed || DECL_EXTERNAL (node->decl)));
+	}
+      else
+        notice_global_symbol (node->decl);
       node->reachable = 1;
-      gcc_assert (!cgraph_global_info_ready);
 
       node->next_needed = cgraph_nodes_queue;
       cgraph_nodes_queue = node;

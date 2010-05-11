@@ -1,8 +1,8 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (cgraph_rebuild_references): New.
-	(cgraph_mark_reachable_node): Accept references to optimized out
-	extern inlines.
+	* cgraph.c (cgraph_mark_reachable_node): Accept references to optimized
+	out extern inlines.
 	* cgraph.h (cgraph_rebuild_references): Declare.
 	* tree-inline.c (tree_function_versioning): Use it.
 	* ipa-struct-reorg.c (do_reorg_for_func): Likewise.
