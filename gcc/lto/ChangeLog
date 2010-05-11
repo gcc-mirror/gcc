@@ -1,3 +1,13 @@
+2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-coff.c (validate_file): Add x64-coff support.
+	* lto-coff.h (IMAGE_FILE_MACHINE_ADM64): New.
+	(COFF_KNOWN_MACHINES): Add IMAGE_FILE_MACHINE_ADM64.
+	* lto-lang.c (lto_build_c_type_nodes): Add check for
+	'long long unsigned int' for x64-windows.
+	(lto_init): Likewise.
+
+
 2010-05-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lto.h (struct lto_file_struct): Document offset member.

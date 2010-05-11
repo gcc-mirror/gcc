@@ -379,9 +379,10 @@ validate_file (lto_coff_file *coff_file)
       return false;
     }
 
-  if (COFF_CHARACTERISTICS != (COFF_CHARACTERISTICS & charact))
+  if (mach != IMAGE_FILE_MACHINE_ADM64
+      && COFF_CHARACTERISTICS != (COFF_CHARACTERISTICS & charact))
     {
-      /* ECOFF/XCOFF/PE+ support not implemented.  */
+      /* ECOFF/XCOFF support not implemented.  */
       error ("not a 32-bit COFF object file");
       return false;
     }

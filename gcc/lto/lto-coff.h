@@ -79,11 +79,13 @@ along with GCC; see the file COPYING3.  If not see
 /* COFF header machine codes.  */
 
 #define IMAGE_FILE_MACHINE_I386	(0x014c)
+#define IMAGE_FILE_MACHINE_ADM64 (0x8664)
 
 /* Known header magics for validation, as an array initialiser.  */
 
 #define COFF_KNOWN_MACHINES \
-  { IMAGE_FILE_MACHINE_I386/*, ... add more here when working.  */ }
+  { IMAGE_FILE_MACHINE_I386, \
+    IMAGE_FILE_MACHINE_ADM64/*, ... add more here when working.  */ }
 
 /* COFF object file header, section and symbol flags and types.  These are
    currently specific to PE-COFF, which is the only LTO-COFF format at the
