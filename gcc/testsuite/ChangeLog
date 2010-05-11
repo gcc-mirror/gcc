@@ -1,5 +1,10 @@
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
+        PR fortran/43711
+        * gfortran.dg/gomp/pr43711.f90: New.
+
+2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/31820
 	* gfortran.dg/select_5.f90: Updated.
 
