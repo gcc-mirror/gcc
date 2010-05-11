@@ -347,6 +347,21 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
   return false;
 }
 
+/* Dissolve the same_comdat_group list in which NODE resides.  */
+
+static void
+dissolve_same_comdat_group_list (struct cgraph_node *node)
+{
+  struct cgraph_node *n = node, *next;
+  do
+    {
+      next = n->same_comdat_group;
+      n->same_comdat_group = NULL;
+      n = next;
+    }
+  while (n != node);
+}
+
 /* Mark visibility of all functions.
 
    A local function is one whose calls can occur only in the current
@@ -377,17 +392,17 @@ function_and_variable_visibility (bool whole_program)
 	 and simplifies later passes.  */
       if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
 	{
-	  struct cgraph_node *n = node, *next;
-	  do
-	    {
+#ifdef ENABLE_CHECKING
+	  struct cgraph_node *n;
+
+	  for (n = node->same_comdat_group;
+	       n != node;
+	       n = n->same_comdat_group)
 	      /* If at least one of same comdat group functions is external,
 		 all of them have to be, otherwise it is a front-end bug.  */
 	      gcc_assert (DECL_EXTERNAL (n->decl));
-	      next = n->same_comdat_group;
-	      n->same_comdat_group = NULL;
-	      n = next;
-	    }
-	  while (n != node);
+#endif
+	  dissolve_same_comdat_group_list (node);
 	}
       gcc_assert ((!DECL_WEAK (node->decl) && !DECL_COMDAT (node->decl))
       	          || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
@@ -403,6 +418,12 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || !TREE_PUBLIC (node->decl));
 	  cgraph_make_decl_local (node->decl);
+	  if (node->same_comdat_group)
+	    /* cgraph_externally_visible_p has already checked all other nodes
+	       in the group and they will all be made local.  We need to
+	       dissolve the group at once so that the predicate does not
+	       segfault though. */
+	    dissolve_same_comdat_group_list (node);
 	}
       node->local.local = (cgraph_only_called_directly_p (node)
 			   && node->analyzed

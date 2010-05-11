@@ -1,3 +1,8 @@
+2010-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/43812
+	* g++.dg/ipa/pr43812.C: New test.
+
 2010-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44028
