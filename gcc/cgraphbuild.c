@@ -463,6 +463,37 @@ rebuild_cgraph_edges (void)
   return 0;
 }
 
+/* Rebuild cgraph edges for current function node.  This needs to be run after
+   passes that don't update the cgraph.  */
+
+void
+cgraph_rebuild_references (void)
+{
+  basic_block bb;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+  gimple_stmt_iterator gsi;
+
+  ipa_remove_all_references (&node->ref_list);
+
+  node->count = ENTRY_BLOCK_PTR->count;
+
+  FOR_EACH_BB (bb)
+    {
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
+					 mark_store, mark_address);
+
+	}
+      for (gsi = gsi_start (phi_nodes (bb)); !gsi_end_p (gsi); gsi_next (&gsi))
+	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), node,
+				       mark_load, mark_store, mark_address);
+    }
+  record_eh_tables (node, cfun);
+}
+
 struct gimple_opt_pass pass_rebuild_cgraph_edges =
 {
  {
