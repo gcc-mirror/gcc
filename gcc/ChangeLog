@@ -1,5 +1,12 @@
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/44059
+	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Use qnu_unique_object
+	even for DECL_ONE_ONLY DECL_ARTIFICIAL !TREE_READONLY decls.
+	* config/alpha/elf.h (ASM_DECLARE_OBJECT_NAME): Likewise.
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Set TREE_READONLY
+	on DW.ref.* decls.
+
 	PR c++/44062
 	* c-parser.c (c_parser_expression): Mark LHS of a comma
 	expression as read if it is a decl, handled component or

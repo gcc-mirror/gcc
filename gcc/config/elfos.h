@@ -1,7 +1,7 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
    Copyright (C) 1991, 1994, 1995, 1999, 2000, 2001, 2002, 2003, 2004,
-   2007, 2009 Free Software Foundation, Inc.
+   2007, 2009, 2010 Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GCC.
@@ -301,10 +301,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       HOST_WIDE_INT size;						\
 									\
       /* For template static data member instantiations or		\
-	 inline fn local statics, use gnu_unique_object so that		\
-	 they will be combined even under RTLD_LOCAL.  */		\
-      if (USE_GNU_UNIQUE_OBJECT						\
-	  && !DECL_ARTIFICIAL (DECL) && DECL_ONE_ONLY (DECL))		\
+	 inline fn local statics and their guard variables, use		\
+	 gnu_unique_object so that they will be combined even under	\
+	 RTLD_LOCAL.  Don't use gnu_unique_object for typeinfo,		\
+	 vtables and other read-only artificial decls.  */		\
+      if (USE_GNU_UNIQUE_OBJECT && DECL_ONE_ONLY (DECL)			\
+	  && (!DECL_ARTIFICIAL (DECL) || !TREE_READONLY (DECL)))	\
 	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "gnu_unique_object");	\
       else								\
 	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
