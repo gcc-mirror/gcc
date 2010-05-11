@@ -96,6 +96,7 @@ The callgraph:
 #include "except.h"
 #include "diagnostic.h"
 #include "rtl.h"
+#include "ipa-utils.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -2139,6 +2140,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   struct cgraph_node *new_node = NULL;
   tree new_decl;
   struct cgraph_node key, **slot;
+  size_t i;
+  struct ipa_replace_map *map;
 
   gcc_assert  (tree_versionable_function_p (old_decl));
 
@@ -2170,6 +2173,26 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   DECL_WEAK (new_node->decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
+  for (i = 0; VEC_iterate (ipa_replace_map_p, tree_map, i, map); i++)
+    {
+      tree var = map->new_tree;
+
+      STRIP_NOPS (var);
+      if (TREE_CODE (var) != ADDR_EXPR)
+	continue;
+      var = get_base_var (var);
+      if (!var)
+	continue;
+
+      /* Record references of the future statement initializing the constant
+	 argument.  */
+      if (TREE_CODE (var) == FUNCTION_DECL)
+	ipa_record_reference (new_node, NULL, cgraph_node (var),
+			      NULL, IPA_REF_ADDR, NULL);
+      else if (TREE_CODE (var) == VAR_DECL)
+	ipa_record_reference (new_node, NULL, NULL, varpool_node (var),
+			      IPA_REF_ADDR, NULL);
+    }
   if (!args_to_skip)
     new_node->clone.combined_args_to_skip = old_node->clone.combined_args_to_skip;
   else if (old_node->clone.combined_args_to_skip)
