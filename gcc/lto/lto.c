@@ -556,13 +556,11 @@ lto_1_to_1_map (void)
       if (node->global.inlined_to || node->clone_of)
 	continue;
       /* Nodes without a body do not need partitioning.  */
-      if (!node->analyzed || node->same_body_alias)
+      if (!node->analyzed)
 	continue;
-      /* We only need to partition the nodes that we read from the
-	 gimple bytecode files.  */
+
       file_data = node->local.lto_file_data;
-      if (file_data == NULL)
-	continue;
+      gcc_assert (!node->same_body_alias && file_data);
 
       slot = pointer_map_contains (pmap, file_data);
       if (slot)
@@ -735,22 +733,13 @@ lto_promote_cross_file_statics (void)
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
 	{
 	  struct cgraph_node *node = csi_node (csi);
-	  bool globalize = node->local.vtable_method;
-	  struct cgraph_edge *e;
 	  if (node->local.externally_visible)
 	    continue;
-	  if (!globalize
-	      && referenced_from_other_partition_p (&node->ref_list, set, vset))
-	    globalize = true;
-	  for (e = node->callers; e && !globalize; e = e->next_caller)
-	    {
-	      struct cgraph_node *caller = e->caller;
-	      if (caller->global.inlined_to)
-		caller = caller->global.inlined_to;
-	      if (!cgraph_node_in_set_p (caller, set))
-		globalize = true;
-	    }
-	  if (globalize)
+	  if (node->clone_of || node->global.inlined_to)
+	    continue;
+	  if (!DECL_EXTERNAL (node->decl)
+	      && (referenced_from_other_partition_p (&node->ref_list, set, vset)
+		  || reachable_from_other_partition_p (node, set)))
 	     {
 		gcc_assert (flag_wpa);
 		TREE_PUBLIC (node->decl) = 1;
@@ -1465,6 +1454,8 @@ lto_fixup_decls (struct lto_file_decl_data **files)
 	VEC_replace (tree, lto_global_var_decls, i, decl);
     }
 
+  VEC_free (tree, gc, lto_global_var_decls);
+  lto_global_var_decls = NULL;
   pointer_set_destroy (seen);
 }
 
@@ -1640,6 +1631,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 			 node->ipa_transforms_to_apply,
 			 (ipa_opt_pass)&pass_ipa_inline);
       }
+  lto_symtab_free ();
+
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 
   timevar_push (TV_IPA_LTO_DECL_INIT_IO);

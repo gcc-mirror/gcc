@@ -1,3 +1,15 @@
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_fixup_decls): Free no longer needed lto_global_var_decls
+	vector.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_1_to_1_map): Remove some no longer needed checks.
+	(lto_promote_cross_file_statics): Never promote DECL_EXTERNAL;
+	use reachable_from_other_partition_p and
+	referenced_from_other_partition_p test.
+
 2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* lto-coff.c (validate_file): Add x64-coff support.

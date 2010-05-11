@@ -1,5 +1,18 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto-symtab.c (lto_symtab_free): New function.
+	* lto-streamer.h (lto_symtab_free): Declare.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (reachable_from_other_partition_p): Export; do not assume
+	that if function is needed it is reachable.
+	(lto_output_node): See if it the function is reachable or referenced.
+	(output_cgraph): Update call of lto_output_node.
+	* lto-streamer.h (reachable_from_other_partition_p): Declare.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	* crtstuff.c (__JCR_LIST__, __DTOR_END__, __JCR_END__, __FRAME_END__):
 	Mark as used.
 
