@@ -1,5 +1,5 @@
 /* Dwarf2 assembler output helper routines.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -877,6 +877,7 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_INITIAL (decl) = decl;
+  TREE_READONLY (decl) = 1;
 
   if (TREE_PUBLIC (id))
     {
