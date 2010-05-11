@@ -1454,8 +1454,6 @@ lto_fixup_decls (struct lto_file_decl_data **files)
 	VEC_replace (tree, lto_global_var_decls, i, decl);
     }
 
-  VEC_free (tree, gc, lto_global_var_decls);
-  lto_global_var_decls = NULL;
   pointer_set_destroy (seen);
 }
 
@@ -1709,6 +1707,9 @@ materialize_cgraph (void)
   /* Inform the middle end about the global variables we have seen.  */
   for (i = 0; VEC_iterate (tree, lto_global_var_decls, i, decl); i++)
     rest_of_decl_compilation (decl, 1, 0);
+
+  VEC_free (tree, gc, lto_global_var_decls);
+  lto_global_var_decls = NULL;
 
   if (!quiet_flag)
     fprintf (stderr, "\n");
