@@ -379,7 +379,7 @@ validate_file (lto_coff_file *coff_file)
       return false;
     }
 
-  if (mach != IMAGE_FILE_MACHINE_ADM64
+  if (mach != IMAGE_FILE_MACHINE_AMD64
       && COFF_CHARACTERISTICS != (COFF_CHARACTERISTICS & charact))
     {
       /* ECOFF/XCOFF support not implemented.  */
