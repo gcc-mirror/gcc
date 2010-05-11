@@ -1,3 +1,14 @@
+2010-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34272
+	PR c++/43630
+	PR c++/34491
+	* g++.dg/template/crash97.C: New.
+	* g++.dg/template/crash98.C: Likewise.
+	* g++.dg/template/crash99.C: Likewise.
+	* g++.dg/cpp0x/pr31439.C: Adjust.
+	* g++.dg/template/crash95.C: Likewise.
+
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44071
