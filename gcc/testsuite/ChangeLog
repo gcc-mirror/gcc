@@ -1,3 +1,8 @@
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/44063
+	* gcc.c-torture/compile/pr44063.c: New testcase.
+
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44023

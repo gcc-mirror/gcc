@@ -1,3 +1,11 @@
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/44063
+	* ipa-inline.c (cgraph_edge_badness): Move always inlines to top of queue.
+	(cgraph_decide_inlining_of_small_function): Skip check when disrgarding
+	limits.
+	(estimate_function_body_sizes): Compute sizes even when disregarding.
+
 2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* collect2.c (maybe_lto_object_file): Add x64-coff magic and check.

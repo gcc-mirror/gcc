@@ -541,6 +541,9 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
     (cgraph_estimate_size_after_inlining (1, edge->caller, edge->callee)
      - edge->caller->global.size);
 
+  if (edge->callee->local.disregard_inline_limits)
+    return INT_MIN;
+
   if (dump)
     {
       fprintf (dump_file, "    Badness calculcation for %s -> %s\n",
@@ -1068,12 +1071,14 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	}
 
-      if (!cgraph_maybe_hot_edge_p (edge))
+      if (edge->callee->local.disregard_inline_limits)
+	;
+      else if (!cgraph_maybe_hot_edge_p (edge))
  	not_good = CIF_UNLIKELY_CALL;
-      if (!flag_inline_functions
+      else if (!flag_inline_functions
 	  && !DECL_DECLARED_INLINE_P (edge->callee->decl))
  	not_good = CIF_NOT_DECLARED_INLINED;
-      if (optimize_function_for_size_p (DECL_STRUCT_FUNCTION(edge->caller->decl)))
+      else if (optimize_function_for_size_p (DECL_STRUCT_FUNCTION(edge->caller->decl)))
  	not_good = CIF_OPTIMIZING_FOR_SIZE;
       if (not_good && growth > 0 && cgraph_estimate_growth (edge->callee) > 0)
 	{
@@ -1832,17 +1837,6 @@ estimate_function_body_sizes (struct cgraph_node *node)
   tree arg;
   int freq;
   tree funtype = TREE_TYPE (node->decl);
-
-  if (node->local.disregard_inline_limits)
-    {
-      if (dump_file)
-	fprintf (dump_file, "Disregarding inline limits.\n");
-      inline_summary (node)->self_time = 0;
-      inline_summary (node)->self_size = 0;
-      inline_summary (node)->time_inlining_benefit = 0;
-      inline_summary (node)->size_inlining_benefit = 0;
-      return;
-    }
 
   if (dump_file)
     fprintf (dump_file, "Analyzing function body size: %s\n",
