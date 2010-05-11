@@ -694,7 +694,6 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   lto_cgraph_encoder_t encoder;
   lto_varpool_encoder_t varpool_encoder;
   struct cgraph_asm_node *can;
-  struct varpool_node *vnode;
 
   ob = lto_create_simple_output_block (LTO_section_cgraph);
 
@@ -727,11 +726,6 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
       lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
       add_references (encoder, varpool_encoder, &vnode->ref_list);
     }
-  /* FIXME: We can not currenlty remove any varpool nodes or we get ICE merging
-     binfos.  */
-  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (vnode->needed)
-      lto_varpool_encoder_encode (varpool_encoder, vnode);
   /* Pickle in also the initializer of all referenced readonly variables
      to help folding.  Constant pool variables are not shared, so we must
      pickle those too.  */

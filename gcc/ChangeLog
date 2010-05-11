@@ -1,5 +1,10 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (output_cgraph): Remove loop adding all varpool nodes
+	into every boundary.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	* matrix-reorg.c (matrix_reorg): Rebuild edges.
 
 2010-05-11  Jan Hubicka  <jh@suse.cz>
