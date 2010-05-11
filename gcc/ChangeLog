@@ -1,5 +1,11 @@
 2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
 
+        * tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Reset
+	prefetch_before to PREFETCH_ALL if to accesses "meet" beyond
+	cache size.
+
+2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
+
         * tree-ssa-loop-prefetch.c: Add debug for dropped prefetches.
 
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
