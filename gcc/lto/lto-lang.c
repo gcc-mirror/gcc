@@ -1019,6 +1019,12 @@ lto_build_c_type_nodes (void)
       uintmax_type_node = long_unsigned_type_node;
       signed_size_type_node = long_integer_type_node;
     }
+  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+    {
+      intmax_type_node = long_long_integer_type_node;
+      uintmax_type_node = long_long_unsigned_type_node;
+      signed_size_type_node = long_long_integer_type_node;
+    }
   else
     gcc_unreachable ();
 
@@ -1061,6 +1067,11 @@ lto_init (void)
     {
       set_sizetype (long_unsigned_type_node);
       size_type_node = long_unsigned_type_node;
+    }
+  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+    {
+      set_sizetype (long_long_unsigned_type_node);
+      size_type_node = long_long_unsigned_type_node;
     }
   else
     gcc_unreachable ();
