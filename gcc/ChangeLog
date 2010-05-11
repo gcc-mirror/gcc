@@ -1,5 +1,9 @@
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
+	* matrix-reorg.c (matrix_reorg): Rebuild edges.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer.c (lto_streamer_cache_add_to_node_array,
 	lto_streamer_cache_delete): Put nodes into heap.
 	* lto-streamer.h (struct lto_streamer_cache_d): Nodes vector is in

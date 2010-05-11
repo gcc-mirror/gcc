@@ -2380,6 +2380,7 @@ matrix_reorg (void)
 	gimple_register_cfg_hooks ();
 	record_all_accesses_in_func ();
 	htab_traverse (matrices_to_reorg, transform_access_sites, NULL);
+        cgraph_rebuild_references ();
 	free_dominance_info (CDI_DOMINATORS);
 	free_dominance_info (CDI_POST_DOMINATORS);
 	pop_cfun ();
