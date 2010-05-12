@@ -9,9 +9,9 @@ void g(int);
 void g(double);
 
 template <int* IP>
-void foo();
+void foo();			// { dg-message "note" }
 template <long l>
-void foo();
+void foo();			// { dg-message "note" }
 
 void bar()
 {

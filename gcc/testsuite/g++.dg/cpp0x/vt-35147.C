@@ -1,7 +1,7 @@
 // { dg-options "-std=c++0x" }
 
 template<typename _Tp>
-  _Tp&& forward(_Tp&& __t) { return __t; }
+  _Tp&& forward(_Tp&& __t) { return __t; } // { dg-message "candidate" }
 
 void f(...);
 

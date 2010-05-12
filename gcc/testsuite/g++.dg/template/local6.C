@@ -1,6 +1,6 @@
-template <class T> struct PCVector2 // { dg-message "candidate is" }
+template <class T> struct PCVector2 // { dg-message "note" }
 {
-    template <class T2> PCVector2(const PCVector2<T> &cv) ;
+    template <class T2> PCVector2(const PCVector2<T> &cv) ; // { dg-message "candidate" }
 
     PCVector2<T> operator- (const PCVector2<T> &ov) const 
 	{ 

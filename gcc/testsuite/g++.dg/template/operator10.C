@@ -1,4 +1,5 @@
 // PR c++/30535
+// { dg-prune-output "note" }
 
 struct A {};
 

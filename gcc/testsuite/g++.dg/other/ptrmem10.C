@@ -3,7 +3,7 @@
 
 template <class C, void (C::*M) ()>
 static
-void foo(void *obj)
+void foo(void *obj)		// { dg-message "candidate" }
 {
   C *p = static_cast<C*>(obj);
   (p->*M)();

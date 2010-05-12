@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 template <class T>
-void f(int i);
+void f(int i);			// { dg-message "candidate" }
 
 void g()
 {

@@ -4,9 +4,9 @@
 // contributed by Alexandre Oliva <aoliva@redhat.com>
 // inspired in the failure reported in Red Hat bugzilla #168260.
 
-template<class F> void bind(F f) {}
+template<class F> void bind(F f) {} // { dg-message "note" }
 
-template<class F> void bindm(F f) {}
+template<class F> void bindm(F f) {} // { dg-message "note" }
 template<class F, class T> void bindm(F (T::*f)(void)) {} // { dg-message "note" }
 
 template<class F> void bindn(F f) {}

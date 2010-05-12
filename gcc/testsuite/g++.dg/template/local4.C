@@ -1,6 +1,6 @@
 // PR c++/17413
 
-template <typename T> void foo() {}
+template <typename T> void foo() {} // { dg-message "candidate" }
 
 int main () {
   struct S {};

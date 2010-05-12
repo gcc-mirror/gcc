@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 template<int I, typename... Args>
-void get_ith(const Args&... args);
+void get_ith(const Args&... args); // { dg-message "candidate" }
 
 void f()
 {

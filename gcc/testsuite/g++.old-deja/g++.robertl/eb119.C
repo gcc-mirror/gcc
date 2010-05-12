@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 template<bool B>
-void f()
+void f()			// { dg-message "candidate" }
 {
 }
 

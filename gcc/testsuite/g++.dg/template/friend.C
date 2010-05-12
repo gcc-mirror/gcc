@@ -7,7 +7,7 @@ extern ostream& cout;
 template <class T> struct s;
 
 template <class T>
-ostream& operator<<(ostream &o, const typename s<T>::t &x)
+ostream& operator<<(ostream &o, const typename s<T>::t &x) // { dg-message "note" }
 {
   return o;
 }

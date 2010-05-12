@@ -4,7 +4,7 @@
 // Origin:Wolfgang Bangerth <bangerth@dealii.org>
 // PR 21799: deduction of cvqualifiers on member functions was wrong
 
-template <class T> void f (T &,       void (T::*)()      ); 
+template <class T> void f (T &,       void (T::*)()      ); // { dg-message "candidate" }
  
 struct X { 
     void g() const {}

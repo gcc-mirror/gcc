@@ -8,9 +8,9 @@
 // overload resolution.
 
 
-template <typename T> void Foo (T const **);
+template <typename T> void Foo (T const **); // { dg-message "candidate" }
 template <typename T> void Bar (T const * const *);
-void Foo (int);       // { dg-message "candidate" } 
+void Foo (int);       // { dg-message "note" }
 void Foo (float);     // { dg-message "note" } candidate
 
 void baz (int **p1)

@@ -2508,11 +2508,11 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 			   return_type, strict, flags);
 
   if (i != 0)
-    return NULL;
+    goto fail;
 
   fn = instantiate_template (tmpl, targs, tf_none);
   if (fn == error_mark_node)
-    return NULL;
+    goto fail;
 
   /* In [class.copy]:
 
@@ -2541,7 +2541,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
       if (arg_types && same_type_p (TYPE_MAIN_VARIANT (TREE_VALUE (arg_types)),
 				    ctype))
-	return NULL;
+	goto fail;
     }
 
   if (obj != NULL_TREE)
@@ -2575,6 +2575,9 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     cand->template_decl = DECL_TEMPLATE_INFO (fn);
 
   return cand;
+ fail:
+  return add_candidate (candidates, tmpl, first_arg, arglist, nargs, NULL,
+			access_path, conversion_path, 0);
 }
 
 
@@ -2607,10 +2610,10 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 }
 
 /* The CANDS are the set of candidates that were considered for
-   overload resolution.  Return the set of viable candidates.  If none
-   of the candidates were viable, set *ANY_VIABLE_P to true.  STRICT_P
-   is true if a candidate should be considered viable only if it is
-   strictly viable.  */
+   overload resolution.  Return the set of viable candidates, or CANDS
+   if none are viable.  If any of the candidates were viable, set
+   *ANY_VIABLE_P to true.  STRICT_P is true if a candidate should be
+   considered viable only if it is strictly viable.  */
 
 static struct z_candidate*
 splice_viable (struct z_candidate *cands,
@@ -2675,6 +2678,10 @@ build_this (tree obj)
 static inline int
 equal_functions (tree fn1, tree fn2)
 {
+  if (TREE_CODE (fn1) != TREE_CODE (fn2))
+    return 0;
+  if (TREE_CODE (fn1) == TEMPLATE_DECL)
+    return fn1 == fn2;
   if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
       || DECL_EXTERN_C_FUNCTION_P (fn1))
     return decls_match (fn1, fn2);
@@ -2710,7 +2717,7 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
     inform (input_location, "%s %T <conversion>", msgstr, candidate->fn);
   else if (candidate->viable == -1)
     inform (input_location, "%s %+#D <near match>", msgstr, candidate->fn);
-  else if (DECL_DELETED_FN (candidate->fn))
+  else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
     inform (input_location, "%s %+#D <deleted>", msgstr, candidate->fn);
   else
     inform (input_location, "%s %+#D", msgstr, candidate->fn);
@@ -2750,12 +2757,12 @@ print_z_candidates (struct z_candidate *candidates)
     {
       tree fn = cand1->fn;
       /* Skip builtin candidates and conversion functions.  */
-      if (TREE_CODE (fn) != FUNCTION_DECL)
+      if (!DECL_P (fn))
 	continue;
       cand2 = &cand1->next;
       while (*cand2)
 	{
-	  if (TREE_CODE ((*cand2)->fn) == FUNCTION_DECL
+	  if (DECL_P ((*cand2)->fn)
 	      && equal_functions (fn, (*cand2)->fn))
 	    *cand2 = (*cand2)->next;
 	  else
@@ -3167,7 +3174,8 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
     {
       if (complain & tf_error)
 	{
-	  if (!any_viable_p && candidates && ! candidates->next)
+	  if (!any_viable_p && candidates && ! candidates->next
+	      && (TREE_CODE (candidates->fn) == FUNCTION_DECL))
 	    return cp_build_function_call_vec (candidates->fn, args, complain);
 	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
 	    fn = TREE_OPERAND (fn, 0);

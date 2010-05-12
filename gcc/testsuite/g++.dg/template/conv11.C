@@ -1,7 +1,7 @@
 int i;
 struct A
 {
-  template <class T> operator T&() { return i; }
+  template <class T> operator T&() { return i; } // { dg-message "candidate" }
 };
 
 int main()

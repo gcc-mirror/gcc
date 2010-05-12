@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-prune-output "note" }
 // Makes bogus x86 assembly code.
 #include <iostream>
 

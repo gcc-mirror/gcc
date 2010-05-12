@@ -1,19 +1,19 @@
 // { dg-do compile }
 template<typename T, template<T> class C>
-void f1(T, C<5>);
+void f1(T, C<5>);		// { dg-message "note" }
 
 template<typename T, template<T> class C>
 void f2(C<5>, T);
 
 template<typename T, template<T> class C>
-void f3(C<5>, T);
+void f3(C<5>, T);		// { dg-message "note" }
 
 template<typename T> struct metafun { typedef T type; };
 
 template<> struct metafun<short> { typedef int type; };
 
 template<typename T, template<typename metafun<T>::type> class C>
-void f4(T, C<5>);
+void f4(T, C<5>);		// { dg-message "note" }
 
 template<int N> struct X {};
 void g() {

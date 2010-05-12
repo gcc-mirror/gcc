@@ -7,7 +7,7 @@
 //
 
 template <class T>
-void ffree(long rows, T** array)
+void ffree(long rows, T** array) // { dg-message "candidate" }
 {
 for( long i = 0; i < rows; i++ )
   delete [] array[i];                   // delete row
@@ -21,7 +21,7 @@ return array = new T[size];
 }
 
 template <class T>
-T** allocate2d(long d1, long d2, T**& array)
+T** allocate2d(long d1, long d2, T**& array) // { dg-message "note" }
 {
 if( allocate1d(d1, array) != 0 )
   {

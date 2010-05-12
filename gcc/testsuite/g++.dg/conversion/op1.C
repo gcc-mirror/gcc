@@ -1,7 +1,7 @@
 class C
 {
   template<typename U> 
-  operator U();
+  operator U();			// { dg-message "candidate" }
 };
 
 int fn (C c) 

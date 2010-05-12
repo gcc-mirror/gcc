@@ -10,7 +10,7 @@ template <typename T, typename U>
 inline typename tType_equal<T, U>::type
 type_equal(U) { }
 
-template<typename T> T* g( T* t );
+template<typename T> T* g( T* t ); // { dg-message "candidate" }
 
 void test_g()
 {
