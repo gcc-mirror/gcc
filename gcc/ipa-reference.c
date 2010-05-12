@@ -71,8 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "lto-streamer.h"
 
-static void add_new_function (struct cgraph_node *node,
-			      void *data ATTRIBUTE_UNUSED);
 static void remove_node_data (struct cgraph_node *node,
 			      void *data ATTRIBUTE_UNUSED);
 static void duplicate_node_data (struct cgraph_node *src,
@@ -147,8 +145,6 @@ static bitmap module_statics_written;
    memory. */
 static bitmap all_module_statics;
 
-static struct pointer_set_t *visited_nodes;
-
 /* Obstack holding bitmaps of local analysis (live from analysis to
    propagation)  */
 static bitmap_obstack local_info_obstack;
@@ -156,7 +152,6 @@ static bitmap_obstack local_info_obstack;
 static bitmap_obstack global_info_obstack;
 
 /* Holders of ipa cgraph hooks: */
-static struct cgraph_node_hook_list *function_insertion_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
 
@@ -192,20 +187,6 @@ set_reference_vars_info (struct cgraph_node *node, ipa_reference_vars_info_t inf
       || VEC_length (ipa_reference_vars_info_t, ipa_reference_vars_vector) <= (unsigned int)node->uid)
      VEC_safe_grow_cleared (ipa_reference_vars_info_t, heap, ipa_reference_vars_vector, node->uid + 1);
   VEC_replace (ipa_reference_vars_info_t, ipa_reference_vars_vector, node->uid, info);
-}
-
-/* Get a bitmap that contains all of the locally referenced static
-   variables for function FN.  */
-static ipa_reference_local_vars_info_t
-get_local_reference_vars_info (struct cgraph_node *fn)
-{
-  ipa_reference_vars_info_t info = get_reference_vars_info (fn);
-
-  if (info)
-    return info->local;
-  else
-    /* This phase was not run.  */
-    return NULL;
 }
 
 /* Get a bitmap that contains all of the globally referenced static
@@ -303,7 +284,7 @@ add_static_var (tree var)
    perform compilation unit scope escape analysis.  */
 
 static inline bool
-has_proper_scope_for_analysis (tree t)
+is_proper_for_analysis (tree t)
 {
   /* If the variable has the "used" attribute, treat it as if it had a
      been touched by the devil.  */
@@ -313,15 +294,6 @@ has_proper_scope_for_analysis (tree t)
   /* Do not want to do anything with volatile except mark any
      function that uses one to be not const or pure.  */
   if (TREE_THIS_VOLATILE (t))
-    return false;
-
-  /* Do not care about a local automatic that is not static.  */
-  if (!TREE_STATIC (t) && !DECL_EXTERNAL (t))
-    return false;
-
-  /* FIXME: for LTO we should include PUBLIC vars too.  This is bit difficult
-     as summarie would need unsharing.  */
-  if (DECL_EXTERNAL (t) || TREE_PUBLIC (t))
     return false;
 
   /* We cannot touch decls where the type needs constructing.  */
@@ -334,160 +306,6 @@ has_proper_scope_for_analysis (tree t)
     add_static_var (t);
 
   return true;
-}
-
-/* Mark tree T as having address taken.  */
-
-static void
-mark_address_taken (tree x)
-{
-  if (TREE_CODE (x) == VAR_DECL
-      && module_statics_escape && has_proper_scope_for_analysis (x))
-    bitmap_set_bit (module_statics_escape, DECL_UID (x));
-}
-
-/* Wrapper around mark_address_taken for the stmt walker.  */
-
-static bool
-mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
-	      void *data ATTRIBUTE_UNUSED)
-{
-  addr = get_base_address (addr);
-  if (addr)
-    mark_address_taken (addr);
-  return false;
-}
-
-/* Mark load of T.  */
-
-static bool
-mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
-{
-  ipa_reference_local_vars_info_t local = (ipa_reference_local_vars_info_t)data;
-  t = get_base_address (t);
-  if (t && TREE_CODE (t) == VAR_DECL
-      && has_proper_scope_for_analysis (t))
-    bitmap_set_bit (local->statics_read, DECL_UID (t));
-  return false;
-}
-
-/* Mark store of T.  */
-
-static bool
-mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
-{
-  ipa_reference_local_vars_info_t local = (ipa_reference_local_vars_info_t)data;
-  t = get_base_address (t);
-  if (t && TREE_CODE (t) == VAR_DECL
-      && has_proper_scope_for_analysis (t))
-    {
-      if (local)
-	bitmap_set_bit (local->statics_written, DECL_UID (t));
-      /* Mark the write so we can tell which statics are
-	 readonly.  */
-      if (module_statics_written)
-	bitmap_set_bit (module_statics_written, DECL_UID (t));
-    }
-  return false;
-}
-
-/* Look for memory clobber and set read_all/write_all if present.  */
-
-static void
-check_asm_memory_clobber (ipa_reference_local_vars_info_t local, gimple stmt)
-{
-  size_t i;
-  tree op;
-
-  for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
-    {
-      op = gimple_asm_clobber_op (stmt, i);
-      if (simple_cst_equal(TREE_VALUE (op), memory_identifier_string) == 1)
-	{
-	  /* Abandon all hope, ye who enter here. */
-	  local->calls_read_all = true;
-	  local->calls_write_all = true;
-	}
-    }
-}
-
-/* Look for external calls and set read_all/write_all correspondingly.  */
-
-static void
-check_call (ipa_reference_local_vars_info_t local, gimple stmt)
-{
-  int flags = gimple_call_flags (stmt);
-  tree callee_t = gimple_call_fndecl (stmt);
-
-  /* Process indirect calls.  All direct calles are handled at propagation
-     time.  */
-  if (!callee_t)
-    {
-      if (flags & ECF_CONST)
-	;
-      else if (flags & ECF_PURE)
-	local->calls_read_all = true;
-      else
-	{
-	  local->calls_read_all = true;
-	  /* When function does not reutrn, it is safe to ignore anythign it writes
-	     to, because the effect will never happen.  */
-	  if ((flags & (ECF_NOTHROW | ECF_NORETURN))
-	      != (ECF_NOTHROW | ECF_NORETURN))
-	    local->calls_write_all = true;
-	}
-    }
-}
-
-/* TP is the part of the tree currently under the microscope.
-   WALK_SUBTREES is part of the walk_tree api but is unused here.
-   DATA is cgraph_node of the function being walked.  */
-
-static tree
-scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
-			   struct cgraph_node *fn)
-{
-  gimple stmt = gsi_stmt (*gsip);
-  ipa_reference_local_vars_info_t local = NULL;
-
-  if (is_gimple_debug (stmt))
-    return NULL;
-
-  if (fn)
-    local = get_reference_vars_info (fn)->local;
-
-  /* Look for direct loads and stores.  */
-  walk_stmt_load_store_addr_ops (stmt, local, mark_load, mark_store,
-				 mark_address);
-
-  if (is_gimple_call (stmt))
-    check_call (local, stmt);
-  else if (gimple_code (stmt) == GIMPLE_ASM)
-    check_asm_memory_clobber (local, stmt);
-
-  return NULL;
-}
-
-/* Call-back to scan variable initializers for static references.
-   Called using walk_tree.  */
-
-static tree
-scan_initializer_for_static_refs (tree *tp, int *walk_subtrees,
-				  void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (TREE_CODE (t) == ADDR_EXPR)
-    {
-      mark_address_taken (get_base_var (t));
-      *walk_subtrees = 0;
-    }
-  /* Save some cycles by not walking types and declaration as we
-     won't find anything useful there anyway.  */
-  else if (IS_TYPE_OR_DECL_P (*tp))
-    *walk_subtrees = 0;
-
-  return NULL;
 }
 
 /* Lookup the tree node for the static variable that has UID.  */
@@ -604,14 +422,6 @@ ipa_init (void)
   module_statics_written = BITMAP_ALLOC (&local_info_obstack);
   all_module_statics = BITMAP_ALLOC (&global_info_obstack);
 
-  /* There are some shared nodes, in particular the initializers on
-     static declarations.  We do not need to scan them more than once
-     since all we would be interested in are the addressof
-     operations.  */
-  visited_nodes = pointer_set_create ();
-
-  function_insertion_hook_holder =
-      cgraph_add_function_insertion_hook (&add_new_function, NULL);
   node_removal_hook_holder =
       cgraph_add_node_removal_hook (&remove_node_data, NULL);
   node_duplication_hook_holder =
@@ -627,13 +437,29 @@ ipa_init (void)
 static void
 analyze_variable (struct varpool_node *vnode)
 {
-  struct walk_stmt_info wi;
-  tree global = vnode->decl;
-
-  memset (&wi, 0, sizeof (wi));
-  wi.pset = visited_nodes;
-  walk_tree (&DECL_INITIAL (global), scan_initializer_for_static_refs,
-             &wi, wi.pset);
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (&vnode->ref_list, i, ref); i++)
+    {
+      tree var;
+      if (ref->refered_type != IPA_REF_VARPOOL)
+	continue;
+      var = ipa_ref_varpool_node (ref)->decl;
+      if (ipa_ref_varpool_node (ref)->externally_visible
+	  || !ipa_ref_varpool_node (ref)->analyzed
+	  || !is_proper_for_analysis (var))
+	continue;
+      switch (ref->use)
+	{
+	case IPA_REF_LOAD:
+	case IPA_REF_STORE:
+	  gcc_unreachable ();
+	  break;
+	case IPA_REF_ADDR:
+	  bitmap_set_bit (module_statics_escape, DECL_UID (var));
+	  break;
+	}
+    }
 }
 
 
@@ -664,49 +490,49 @@ init_function_info (struct cgraph_node *fn)
 static void
 analyze_function (struct cgraph_node *fn)
 {
-  tree decl = fn->decl;
-  struct function *this_cfun = DECL_STRUCT_FUNCTION (decl);
-  basic_block this_block;
-#ifdef ENABLE_CHECKING
-  tree step;
-#endif
   ipa_reference_local_vars_info_t local;
+  struct ipa_ref *ref;
+  int i;
+  tree var;
+  struct cgraph_edge *ie;
 
-  if (dump_file)
-    fprintf (dump_file, "\n local analysis of %s\n", cgraph_node_name (fn));
-
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
-  current_function_decl = decl;
-
-  init_function_info (fn);
-  FOR_EACH_BB_FN (this_block, this_cfun)
+  local = init_function_info (fn);
+  /* Process indirect calls.  All direct calles are handled at propagation
+     time.  */
+  for (ie = fn->indirect_calls; ie; ie = ie->next_callee)
+    if (!(ie->indirect_info->ecf_flags & ECF_CONST))
+      {
+        local->calls_read_all = true;
+        if (!(ie->indirect_info->ecf_flags & ECF_PURE)
+	    && ((ie->indirect_info->ecf_flags & (ECF_NOTHROW | ECF_NORETURN))
+		!=  (ECF_NOTHROW | ECF_NORETURN)))
+	  local->calls_write_all = true;
+      }
+  for (i = 0; ipa_ref_list_reference_iterate (&fn->ref_list, i, ref); i++)
     {
-      gimple_stmt_iterator gsi;
-      gimple phi;
-      tree op;
-      use_operand_p use;
-      ssa_op_iter iter;
-
-      /* Find the addresses taken in phi node arguments.  */
-      for (gsi = gsi_start_phis (this_block);
-	   !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      if (ref->refered_type != IPA_REF_VARPOOL)
+	continue;
+      var = ipa_ref_varpool_node (ref)->decl;
+      if (ipa_ref_varpool_node (ref)->externally_visible
+	  || !ipa_ref_varpool_node (ref)->analyzed
+	  || !is_proper_for_analysis (var))
+	continue;
+      switch (ref->use)
 	{
-	  phi = gsi_stmt (gsi);
-	  FOR_EACH_PHI_ARG (use, phi, iter, SSA_OP_USE)
-	    {
-	      op = USE_FROM_PTR (use);
-	      if (TREE_CODE (op) == ADDR_EXPR)
-		mark_address_taken (get_base_var (op));
-	    }
+	case IPA_REF_LOAD:
+          bitmap_set_bit (local->statics_read, DECL_UID (var));
+	  break;
+	case IPA_REF_STORE:
+          bitmap_set_bit (local->statics_written, DECL_UID (var));
+	  bitmap_set_bit (module_statics_written, DECL_UID (var));
+	  break;
+	case IPA_REF_ADDR:
+	  bitmap_set_bit (module_statics_escape, DECL_UID (var));
+	  break;
 	}
-
-      for (gsi = gsi_start_bb (this_block); !gsi_end_p (gsi); gsi_next (&gsi))
-	scan_stmt_for_static_refs (&gsi, fn);
     }
 
-  local = get_reference_vars_info (fn)->local;
-  if ((flags_from_decl_or_type (decl) & (ECF_NOTHROW | ECF_NORETURN))
+  if ((flags_from_decl_or_type (fn->decl) & (ECF_NOTHROW | ECF_NORETURN))
       == (ECF_NOTHROW | ECF_NORETURN))
     {
       local->calls_write_all = false;
@@ -718,23 +544,6 @@ analyze_function (struct cgraph_node *fn)
     BITMAP_FREE (local->statics_written);
   if (local->calls_read_all)
     BITMAP_FREE (local->statics_read);
-
-
-#ifdef ENABLE_CHECKING
-  /* Verify that all local initializers was expanded by gimplifier.  */
-  for (step = DECL_STRUCT_FUNCTION (decl)->local_decls;
-       step;
-       step = TREE_CHAIN (step))
-    {
-      tree var = TREE_VALUE (step);
-      if (TREE_CODE (var) == VAR_DECL
-	  && DECL_INITIAL (var)
-	  && !TREE_STATIC (var))
-	gcc_unreachable ();
-    }
-#endif
-  pop_cfun ();
-  current_function_decl = NULL;
 }
 
 /* Remove local data associated with function FN.  */
@@ -790,31 +599,6 @@ clean_function (struct cgraph_node *fn)
   set_reference_vars_info (fn, NULL);
 }
 
-/* Called when new function is inserted to callgraph late.  */
-static void
-add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
-{
-  /* There are some shared nodes, in particular the initializers on
-     static declarations.  We do not need to scan them more than once
-     since all we would be interested in are the addressof
-     operations.  */
-  analyze_function (node);
-  visited_nodes = NULL;
-}
-
-static bitmap
-copy_local_bitmap (bitmap src)
-{
-  bitmap dst;
-  if (!src)
-    return NULL;
-  if (src == all_module_statics)
-    return all_module_statics;
-  dst = BITMAP_ALLOC (&local_info_obstack);
-  bitmap_copy (dst, src);
-  return dst;
-}
-
 static bitmap
 copy_global_bitmap (bitmap src)
 {
@@ -828,6 +612,7 @@ copy_global_bitmap (bitmap src)
   return dst;
 }
 
+
 /* Called when new clone is inserted to callgraph late.  */
 
 static void
@@ -835,23 +620,12 @@ duplicate_node_data (struct cgraph_node *src, struct cgraph_node *dst,
 	 	     void *data ATTRIBUTE_UNUSED)
 {
   ipa_reference_global_vars_info_t ginfo;
-  ipa_reference_local_vars_info_t linfo;
   ipa_reference_global_vars_info_t dst_ginfo;
-  ipa_reference_local_vars_info_t dst_linfo;
 
   ginfo = get_global_reference_vars_info (src);
-  linfo = get_local_reference_vars_info (src);
-  if (!linfo && !ginfo)
+  if (!ginfo)
     return;
   init_function_info (dst);
-  if (linfo)
-    {
-      dst_linfo = get_local_reference_vars_info (dst);
-      dst_linfo->statics_read = copy_local_bitmap (linfo->statics_read);
-      dst_linfo->statics_written = copy_local_bitmap (linfo->statics_written);
-      dst_linfo->calls_read_all = linfo->calls_read_all;
-      dst_linfo->calls_write_all = linfo->calls_write_all;
-    }
   if (ginfo)
     {
       get_reference_vars_info (dst)->global = XCNEW (struct ipa_reference_global_vars_info_d);
@@ -893,23 +667,10 @@ generate_summary (void)
   FOR_EACH_STATIC_INITIALIZER (vnode)
     analyze_variable (vnode);
 
-  /* Process all of the functions next.
-
-     We do not want to process any of the clones so we check that this
-     is a master clone.  However, we do need to process any
-     AVAIL_OVERWRITABLE functions (these are never clones) because
-     they may cause a static variable to escape.  The code that can
-     overwrite such a function cannot access the statics because it
-     would not be in the same compilation unit.  When the analysis is
-     finished, the computed information of these AVAIL_OVERWRITABLE is
-     replaced with worst case info.
-  */
+  /* Process all of the functions next.  */
   for (node = cgraph_nodes; node; node = node->next)
-    if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+    if (node->analyzed)
       analyze_function (node);
-
-  pointer_set_destroy (visited_nodes);
-  visited_nodes = NULL;
 
   /* Prune out the variables that were found to behave badly
      (i.e. have their address taken).  */
@@ -1024,158 +785,6 @@ generate_summary (void)
 	     fprintf (dump_file, "\n  calls read all: ");
 	}
 }
-
-
-/* Return true if we need to write summary of NODE. */
-
-static bool
-write_node_summary_p (struct cgraph_node *node)
-{
-  gcc_assert (node->global.inlined_to == NULL);
-  return (node->analyzed
-	  && cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE
-	  && get_reference_vars_info (node) != NULL);
-}
-
-/* Serialize the ipa info for lto.  */
-
-static void
-ipa_reference_write_summary (cgraph_node_set set,
-			     varpool_node_set vset ATTRIBUTE_UNUSED)
-{
-  struct cgraph_node *node;
-  struct lto_simple_output_block *ob
-    = lto_create_simple_output_block (LTO_section_ipa_reference);
-  unsigned int count = 0;
-  cgraph_node_set_iterator csi;
-
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
-    if (write_node_summary_p (csi_node (csi)))
-	count++;
-
-  lto_output_uleb128_stream (ob->main_stream, count);
-
-  /* Process all of the functions.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
-    {
-      node = csi_node (csi);
-      if (write_node_summary_p (node))
-	{
-	  ipa_reference_local_vars_info_t l
-	    = get_reference_vars_info (node)->local;
-	  unsigned int index;
-	  bitmap_iterator bi;
-	  lto_cgraph_encoder_t encoder;
-	  int node_ref;
-
-	  encoder = ob->decl_state->cgraph_node_encoder;
-	  node_ref = lto_cgraph_encoder_encode (encoder, node);
-	  lto_output_uleb128_stream (ob->main_stream, node_ref);
-
-	  /* Stream out the statics read.  */
-	  if (l->calls_read_all)
-	    lto_output_sleb128_stream (ob->main_stream, -1);
-	  else
-	    {
-	      lto_output_sleb128_stream (ob->main_stream,
-					 bitmap_count_bits (l->statics_read));
-	      EXECUTE_IF_SET_IN_BITMAP (l->statics_read, 0, index, bi)
-		lto_output_var_decl_index(ob->decl_state, ob->main_stream,
-					  get_static_decl (index));
-	    }
-
-	  /* Stream out the statics written.  */
-	  if (l->calls_write_all)
-	    lto_output_sleb128_stream (ob->main_stream, -1);
-	  else
-	    {
-	      lto_output_sleb128_stream (ob->main_stream,
-					 bitmap_count_bits (l->statics_written));
-	      EXECUTE_IF_SET_IN_BITMAP (l->statics_written, 0, index, bi)
-		lto_output_var_decl_index(ob->decl_state, ob->main_stream,
-					  get_static_decl (index));
-	    }
-	}
-    }
-  lto_destroy_simple_output_block (ob);
-}
-
-
-/* Deserialize the ipa info for lto.  */
-
-static void
-ipa_reference_read_summary (void)
-{
-  struct lto_file_decl_data ** file_data_vec
-    = lto_get_file_decl_data ();
-  struct lto_file_decl_data * file_data;
-  unsigned int j = 0;
-
-  ipa_init ();
-
-  while ((file_data = file_data_vec[j++]))
-    {
-      const char *data;
-      size_t len;
-      struct lto_input_block *ib
-	= lto_create_simple_input_block (file_data,
-					 LTO_section_ipa_reference,
-					 &data, &len);
-      if (ib)
-	{
-	  unsigned int i;
-	  unsigned int f_count = lto_input_uleb128 (ib);
-
-	  for (i = 0; i < f_count; i++)
-	    {
-	      unsigned int j, index;
-	      struct cgraph_node *node;
-	      ipa_reference_local_vars_info_t l;
-	      int v_count;
-	      lto_cgraph_encoder_t encoder;
-
-	      index = lto_input_uleb128 (ib);
-	      encoder = file_data->cgraph_node_encoder;
-	      node = lto_cgraph_encoder_deref (encoder, index);
-	      l = init_function_info (node);
-
-	      /* Set the statics read.  */
-	      v_count = lto_input_sleb128 (ib);
-	      if (v_count == -1)
-	        l->calls_read_all = true;
-	      else
-		for (j = 0; j < (unsigned int)v_count; j++)
-		  {
-		    unsigned int var_index = lto_input_uleb128 (ib);
-		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								   var_index);
-		    add_static_var (v_decl);
-		    bitmap_set_bit (l->statics_read, DECL_UID (v_decl));
-		  }
-
-	      /* Set the statics written.  */
-	      v_count = lto_input_sleb128 (ib);
-	      if (v_count == -1)
-	        l->calls_write_all = true;
-	      else
-		for (j = 0; j < (unsigned int)v_count; j++)
-		  {
-		    unsigned int var_index = lto_input_uleb128 (ib);
-		    tree v_decl = lto_file_decl_data_get_var_decl (file_data,
-								   var_index);
-		    add_static_var (v_decl);
-		    bitmap_set_bit (l->statics_written, DECL_UID (v_decl));
-		  }
-	    }
-
-	  lto_destroy_simple_input_block (file_data,
-					  LTO_section_ipa_reference,
-					  ib, data, len);
-	}
-    }
-}
-
-
 
 /* Set READ_ALL/WRITE_ALL based on DECL flags.  */
 static void
@@ -1215,9 +824,10 @@ propagate (void)
   int order_pos = ipa_utils_reduced_inorder (order, false, true, NULL);
   int i;
 
-  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   if (dump_file)
     dump_cgraph (dump_file);
+
+  generate_summary ();
 
   /* Propagate the local information thru the call graph to produce
      the global information.  All the nodes within a cycle will have
@@ -1512,9 +1122,9 @@ struct ipa_opt_pass_d pass_ipa_reference =
   0,					/* todo_flags_start */
   0                                     /* todo_flags_finish */
  },
- generate_summary,		        /* generate_summary */
- ipa_reference_write_summary,		/* write_summary */
- ipa_reference_read_summary,		/* read_summary */
+ NULL,				        /* generate_summary */
+ NULL,					/* write_summary */
+ NULL,				 	/* read_summary */
  NULL,					/* write_optimization_summary */
  NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */

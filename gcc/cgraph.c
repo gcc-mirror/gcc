@@ -1036,6 +1036,7 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
 
 struct cgraph_edge *
 cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
+			     int ecf_flags,
 			     gcov_type count, int freq, int nest)
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, NULL, call_stmt,
@@ -1046,6 +1047,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
 
   edge->indirect_info = GGC_NEW (struct cgraph_indirect_call_info);
   edge->indirect_info->param_index = -1;
+  edge->indirect_info->ecf_flags = ecf_flags;
 
   edge->next_callee = caller->indirect_calls;
   if (caller->indirect_calls)
@@ -1292,6 +1294,15 @@ cgraph_node_remove_callees (struct cgraph_node *node)
 	cgraph_edge_remove_callee (e);
       cgraph_free_edge (e);
     }
+  for (e = node->indirect_calls; e; e = f)
+    {
+      f = e->next_callee;
+      cgraph_call_edge_removal_hooks (e);
+      if (!e->indirect_unknown_callee)
+	cgraph_edge_remove_callee (e);
+      cgraph_free_edge (e);
+    }
+  node->indirect_calls = NULL;
   node->callees = NULL;
   if (node->call_site_hash)
     {
@@ -2009,7 +2020,9 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	}
       else
 	{
-	  new_edge = cgraph_create_indirect_edge (n, call_stmt, count, freq,
+	  new_edge = cgraph_create_indirect_edge (n, call_stmt,
+						  e->indirect_info->ecf_flags,
+						  count, freq,
 						  e->loop_nest + loop_nest);
 	  new_edge->indirect_info->param_index = e->indirect_info->param_index;
 	}

@@ -757,12 +757,8 @@ static void
 ipa_note_param_call (struct cgraph_node *node, int formal_id, gimple stmt)
 {
   struct cgraph_edge *cs;
-  basic_block bb = gimple_bb (stmt);
-  int freq;
 
-  freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
-  cs = cgraph_create_indirect_edge (node, stmt, bb->count, freq,
-				    bb->loop_depth);
+  cs = cgraph_edge (node, stmt);
   cs->indirect_info->param_index = formal_id;
 }
 
@@ -1071,7 +1067,8 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 
       /* If we ever use indirect edges for anything other than indirect
 	 inlining, we will need to skip those with negative param_indices. */
-      gcc_assert (ici->param_index >= 0);
+      if (ici->param_index == -1)
+	continue;
 
       /* We must check range due to calls with variable number of arguments:  */
       if (ici->param_index >= ipa_get_cs_argument_count (top))

@@ -339,12 +339,21 @@ build_cgraph_edges (void)
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl;
 
-	  if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
-	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count,
-				compute_call_stmt_bb_frequency
-				  (current_function_decl, bb),
-				bb->loop_depth);
+	  if (is_gimple_call (stmt))
+	    {
+	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
+							 bb);
+	      decl = gimple_call_fndecl (stmt);
+	      if (decl)
+		cgraph_create_edge (node, cgraph_node (decl), stmt,
+				    bb->count, freq,
+				    bb->loop_depth);
+	      else
+		cgraph_create_indirect_edge (node, stmt,
+					     gimple_call_flags (stmt),
+					     bb->count, freq,
+					     bb->loop_depth);
+	    }
 	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
 					 mark_store, mark_address);
 	  if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
@@ -443,12 +452,21 @@ rebuild_cgraph_edges (void)
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl;
 
-	  if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
-	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count,
-				compute_call_stmt_bb_frequency
-				  (current_function_decl, bb),
-				bb->loop_depth);
+	  if (is_gimple_call (stmt))
+	    {
+	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
+							 bb);
+	      decl = gimple_call_fndecl (stmt);
+	      if (decl)
+		cgraph_create_edge (node, cgraph_node (decl), stmt,
+				    bb->count, freq,
+				    bb->loop_depth);
+	      else
+		cgraph_create_indirect_edge (node, stmt,
+					     gimple_call_flags (stmt),
+					     bb->count, freq,
+					     bb->loop_depth);
+	    }
 	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
 					 mark_store, mark_address);
 
