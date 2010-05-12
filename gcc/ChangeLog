@@ -1,3 +1,16 @@
+2010-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/44085
+	* gimplify.c (enum omp_region_type): Add ORT_UNTIED_TASK,
+	change value of ORT_TASK.
+	(new_omp_context): Handle ORT_UNTIED_TASK like ORT_TASK.
+	(omp_notice_threadprivate_variable): New function.
+	(omp_notice_variable): Call it for threadprivate variables.
+	If enclosing ctx is a task, print enclosing task rather than
+	enclosing parallel.  Handle ORT_UNTIED_TASK like ORT_TASK.
+	(gimplify_omp_task): Pass ORT_UNTIED_TASK instead of ORT_TASK
+	if task has untied clause.
+
 2010-05-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR documentation/44016
