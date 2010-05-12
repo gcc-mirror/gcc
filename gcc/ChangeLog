@@ -1,6 +1,13 @@
 2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree-mudflap.c (build_function_type_0, build_function_type_1,
+	build_function_type_2, build_function_type_3): Remove.
+	(mudflap_init): Use build_function_type_list.
+
+2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
 	* coverage.c (build_fn_info_value): Call build_constructor instead of
 	build_constructor_from_list.
 	(build_ctr_info_value): Likewise.
