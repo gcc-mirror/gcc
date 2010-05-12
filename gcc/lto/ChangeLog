@@ -1,3 +1,7 @@
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (materialize_cgraph): Revert my previous patch.
+
 2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* lto-coff.c (IMAGE_FILE_MACHINE_ADM64): Rename to

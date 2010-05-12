@@ -1708,9 +1708,6 @@ materialize_cgraph (void)
   for (i = 0; VEC_iterate (tree, lto_global_var_decls, i, decl); i++)
     rest_of_decl_compilation (decl, 1, 0);
 
-  VEC_free (tree, gc, lto_global_var_decls);
-  lto_global_var_decls = NULL;
-
   if (!quiet_flag)
     fprintf (stderr, "\n");
 
