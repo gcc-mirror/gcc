@@ -4289,6 +4289,10 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
     flag_schedule_insns = 0;
 #endif
 
+  /* For -O2 and beyond, turn on -fzee for x86_64 target. */
+  if (level > 1 && TARGET_64BIT)
+    flag_zee = 1;
+
   if (TARGET_MACHO)
     /* The Darwin libraries never set errno, so we might as well
        avoid calling them when that's the only reason we would.  */
