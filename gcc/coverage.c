@@ -672,40 +672,34 @@ build_fn_info_type (unsigned int counters)
 static tree
 build_fn_info_value (const struct function_list *function, tree type)
 {
-  tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
   unsigned ix;
-  tree array_value = NULL_TREE;
+  VEC(constructor_elt,gc) *v1 = NULL;
+  VEC(constructor_elt,gc) *v2 = NULL;
 
   /* ident */
-  value = tree_cons (fields, build_int_cstu (get_gcov_unsigned_t (),
-					     function->ident), value);
+  CONSTRUCTOR_APPEND_ELT (v1, fields,
+			  build_int_cstu (get_gcov_unsigned_t (),
+					  function->ident));
   fields = TREE_CHAIN (fields);
 
   /* checksum */
-  value = tree_cons (fields, build_int_cstu (get_gcov_unsigned_t (),
-					     function->checksum), value);
+  CONSTRUCTOR_APPEND_ELT (v1, fields,
+			  build_int_cstu (get_gcov_unsigned_t (),
+					  function->checksum));
   fields = TREE_CHAIN (fields);
 
   /* counters */
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
-      {
-	tree counters = build_int_cstu (get_gcov_unsigned_t (),
-					function->n_ctrs[ix]);
+      CONSTRUCTOR_APPEND_ELT (v2, NULL,
+			      build_int_cstu (get_gcov_unsigned_t (),
+					      function->n_ctrs[ix]));
 
-	array_value = tree_cons (NULL_TREE, counters, array_value);
-      }
+  CONSTRUCTOR_APPEND_ELT (v1, fields,
+			  build_constructor (TREE_TYPE (fields), v2));
 
-  /* FIXME: use build_constructor directly.  */
-  array_value = build_constructor_from_list (TREE_TYPE (fields),
-					     nreverse (array_value));
-  value = tree_cons (fields, array_value, value);
-
-  /* FIXME: use build_constructor directly.  */
-  value = build_constructor_from_list (type, nreverse (value));
-
-  return value;
+  return build_constructor (type, v1);
 }
 
 /* Creates the gcov_ctr_info RECORD_TYPE.  */
@@ -753,15 +747,14 @@ build_ctr_info_type (void)
 static tree
 build_ctr_info_value (unsigned int counter, tree type)
 {
-  tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
   tree fn;
+  VEC(constructor_elt,gc) *v = NULL;
 
   /* counters */
-  value = tree_cons (fields,
-		     build_int_cstu (get_gcov_unsigned_t (),
-				     prg_n_ctrs[counter]),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v, fields,
+			  build_int_cstu (get_gcov_unsigned_t (),
+					  prg_n_ctrs[counter]));
   fields = TREE_CHAIN (fields);
 
   if (prg_n_ctrs[counter])
@@ -779,13 +772,12 @@ build_ctr_info_value (unsigned int counter, tree type)
       DECL_SIZE_UNIT (tree_ctr_tables[counter]) = TYPE_SIZE_UNIT (array_type);
       varpool_finalize_decl (tree_ctr_tables[counter]);
 
-      value = tree_cons (fields,
-			 build1 (ADDR_EXPR, TREE_TYPE (fields),
-					    tree_ctr_tables[counter]),
-			 value);
+      CONSTRUCTOR_APPEND_ELT (v, fields,
+			      build1 (ADDR_EXPR, TREE_TYPE (fields),
+				      tree_ctr_tables[counter]));
     }
   else
-    value = tree_cons (fields, null_pointer_node, value);
+    CONSTRUCTOR_APPEND_ELT (v, fields, null_pointer_node);
   fields = TREE_CHAIN (fields);
 
   fn = build_decl (BUILTINS_LOCATION,
@@ -797,14 +789,9 @@ build_ctr_info_value (unsigned int counter, tree type)
   DECL_ARTIFICIAL (fn) = 1;
   TREE_NOTHROW (fn) = 1;
   DECL_ASSEMBLER_NAME (fn);  /* Initialize assembler name so we can stream out. */
-  value = tree_cons (fields,
-		     build1 (ADDR_EXPR, TREE_TYPE (fields), fn),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v, fields, build1 (ADDR_EXPR, TREE_TYPE (fields), fn));
 
-  /* FIXME: use build_constructor directly.  */
-  value = build_constructor_from_list (type, nreverse (value));
-
-  return value;
+  return build_constructor (type, v);
 }
 
 /* Creates the gcov_info RECORD_TYPE and initializer for it. Returns a
@@ -819,12 +806,13 @@ build_gcov_info (void)
   tree fn_info_ptr_type;
   tree ctr_info_type, ctr_info_ary_type, ctr_info_value = NULL_TREE;
   tree field, fields = NULL_TREE;
-  tree value = NULL_TREE;
   tree filename_string;
   int da_file_name_len;
   unsigned n_fns;
   const struct function_list *fn;
   tree string_type;
+  VEC(constructor_elt,gc) *v1 = NULL;
+  VEC(constructor_elt,gc) *v2 = NULL;
 
   /* Count the number of active counters.  */
   for (n_ctr_types = 0, ix = 0; ix != GCOV_COUNTERS; ix++)
@@ -839,23 +827,23 @@ build_gcov_info (void)
 		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cstu (TREE_TYPE (field), GCOV_VERSION),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v1, field,
+			  build_int_cstu (TREE_TYPE (field), GCOV_VERSION));
 
   /* next -- NULL */
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, null_pointer_node, value);
+  CONSTRUCTOR_APPEND_ELT (v1, field, null_pointer_node);
 
   /* stamp */
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, build_int_cstu (TREE_TYPE (field), local_tick),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v1, field,
+			  build_int_cstu (TREE_TYPE (field), local_tick));
 
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,
@@ -869,17 +857,17 @@ build_gcov_info (void)
   TREE_TYPE (filename_string) = build_array_type
     (char_type_node, build_index_type
      (build_int_cst (NULL_TREE, da_file_name_len)));
-  value = tree_cons (field, build1 (ADDR_EXPR, string_type, filename_string),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v1, field,
+			  build1 (ADDR_EXPR, string_type, filename_string));
 
   /* Build the fn_info type and initializer.  */
   fn_info_type = build_fn_info_type (n_ctr_types);
   fn_info_ptr_type = build_pointer_type (build_qualified_type
 					 (fn_info_type, TYPE_QUAL_CONST));
   for (fn = functions_head, n_fns = 0; fn; fn = fn->next, n_fns++)
-    fn_info_value = tree_cons (NULL_TREE,
-			       build_fn_info_value (fn, fn_info_type),
-			       fn_info_value);
+    CONSTRUCTOR_APPEND_ELT (v2, NULL_TREE,
+			    build_fn_info_value (fn, fn_info_type));
+
   if (n_fns)
     {
       tree array_type;
@@ -887,9 +875,7 @@ build_gcov_info (void)
       array_type = build_index_type (build_int_cst (NULL_TREE, n_fns - 1));
       array_type = build_array_type (fn_info_type, array_type);
 
-      /* FIXME: use build_constructor directly.  */
-      fn_info_value = build_constructor_from_list (array_type,
-						   nreverse (fn_info_value));
+      fn_info_value = build_constructor (array_type, v2);
       fn_info_value = build1 (ADDR_EXPR, fn_info_ptr_type, fn_info_value);
     }
   else
@@ -900,52 +886,46 @@ build_gcov_info (void)
 		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field,
-		     build_int_cstu (get_gcov_unsigned_t (), n_fns),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v1, field,
+			  build_int_cstu (get_gcov_unsigned_t (), n_fns));
 
   /* fn_info table */
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, fn_info_ptr_type);
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, fn_info_value, value);
+  CONSTRUCTOR_APPEND_ELT (v1, field, fn_info_value);
 
   /* counter_mask */
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field,
-		     build_int_cstu (get_gcov_unsigned_t (), prg_ctr_mask),
-		     value);
+  CONSTRUCTOR_APPEND_ELT (v1, field, 
+			  build_int_cstu (get_gcov_unsigned_t (),
+					  prg_ctr_mask));
 
   /* counters */
   ctr_info_type = build_ctr_info_type ();
   ctr_info_ary_type = build_index_type (build_int_cst (NULL_TREE,
 						       n_ctr_types));
   ctr_info_ary_type = build_array_type (ctr_info_type, ctr_info_ary_type);
+  v2 = NULL;
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
-      ctr_info_value = tree_cons (NULL_TREE,
-				  build_ctr_info_value (ix, ctr_info_type),
-				  ctr_info_value);
-  /* FIXME: use build_constructor directly.  */
-  ctr_info_value = build_constructor_from_list (ctr_info_ary_type,
-				                nreverse (ctr_info_value));
+      CONSTRUCTOR_APPEND_ELT (v2, NULL_TREE,
+			      build_ctr_info_value (ix, ctr_info_type));
+  ctr_info_value = build_constructor (ctr_info_ary_type, v2);
 
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, ctr_info_ary_type);
   TREE_CHAIN (field) = fields;
   fields = field;
-  value = tree_cons (field, ctr_info_value, value);
+  CONSTRUCTOR_APPEND_ELT (v1, field, ctr_info_value);
 
   finish_builtin_struct (type, "__gcov_info", fields, NULL_TREE);
 
-  /* FIXME: use build_constructor directly.  */
-  value = build_constructor_from_list (type, nreverse (value));
-
-  return value;
+  return build_constructor (type, v1);
 }
 
 /* Write out the structure which libgcov uses to locate all the

@@ -1,3 +1,11 @@
+2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	* coverage.c (build_fn_info_value): Call build_constructor instead of
+	build_constructor_from_list.
+	(build_ctr_info_value): Likewise.
+	(build_gcov_info): Likewise.
+
 2010-05-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (build_constructor): Compute TREE_CONSTANT for the
