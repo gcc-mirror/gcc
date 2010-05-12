@@ -1053,6 +1053,10 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
 
   t = TREE_TYPE (reference_type);
 
+  /* We're performing a user-defined conversion to a desired type, so set
+     this for the benefit of add_candidates.  */
+  flags |= LOOKUP_NO_CONVERSION;
+
   for (; conversions; conversions = TREE_CHAIN (conversions))
     {
       tree fns = TREE_VALUE (conversions);
@@ -4017,7 +4021,12 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
   if (DECL_CONV_FN_P (fn))
     {
       check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
-      strict = DEDUCE_CONV;
+      if (flags & LOOKUP_NO_CONVERSION)
+	/* We're doing return_type(x).  */
+	strict = DEDUCE_CONV;
+      else
+	/* We're doing x.operator return_type().  */
+	strict = DEDUCE_EXACT;
       /* [over.match.funcs] For conversion functions, the function
 	 is considered to be a member of the class of the implicit
 	 object argument for the purpose of defining the type of
@@ -6318,6 +6327,10 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
 	{
 	  if (!COMPLETE_TYPE_P (basetype))
 	    cxx_incomplete_type_error (instance_ptr, basetype);
+	  else if (optype)
+	    error ("no matching function for call to %<%T::operator %T(%A)%#V%>",
+		   basetype, optype, build_tree_list_vec (user_args),
+		   TREE_TYPE (TREE_TYPE (instance_ptr)));
 	  else
 	    {
 	      char *pretty_name;

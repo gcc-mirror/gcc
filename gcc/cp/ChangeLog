@@ -1,5 +1,10 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* call.c (add_candidates): Distinguish between type(x) and
+	x.operator type().
+	(convert_class_to_reference): Set LOOKUP_NO_CONVERSION.
+	(build_new_method_call): Give better error for conversion op.
+
 	* call.c (add_candidates): Add first_arg and return_type parms.
 	Add special constructor/conversion op handling.
 	(convert_class_to_reference): Use it.

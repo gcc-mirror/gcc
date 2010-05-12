@@ -1,5 +1,8 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/conv11.C: New.
+	* g++.dg/conversion/op1.C: Adjust expected error.
+
 	* g++.old-deja/g++.robertl/eb43.C: Prune "candidates" messages.
 
 2010-05-12  H.J. Lu  <hongjiu.lu@intel.com>

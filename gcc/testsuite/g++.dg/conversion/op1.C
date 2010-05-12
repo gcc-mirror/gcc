@@ -6,5 +6,5 @@ class C
 
 int fn (C c) 
 { 
-  return C::operator float(c); // { dg-error "operator U" }
+  return C::operator float(c); // { dg-error "operator float.C" }
 }
