@@ -1,3 +1,8 @@
+2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (sync_resolve_params): Remove write-only variable.
+
 2010-05-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct gcc_target): Add mode_dependent_address_p field.

@@ -8780,7 +8780,6 @@ sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
 {
   tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
   tree ptype;
-  int number;
   unsigned int parmnum;
 
   /* We've declared the implementation functions to use "volatile void *"
@@ -8788,7 +8787,6 @@ sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
      call to check_function_arguments what ever type the user used.  */
   arg_types = TREE_CHAIN (arg_types);
   ptype = TREE_TYPE (TREE_TYPE (VEC_index (tree, params, 0)));
-  number = 2;
 
   /* For the rest of the values, we need to cast these to FTYPE, so that we
      don't get warnings for passing pointer types, etc.  */
@@ -8813,7 +8811,6 @@ sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
       VEC_replace (tree, params, parmnum, val);
 
       arg_types = TREE_CHAIN (arg_types);
-      number++;
     }
 
   /* The definition of these primitives is variadic, with the remaining
