@@ -1147,6 +1147,10 @@ fsee
 Common
 Does nothing.  Preserved for backward compatibility.
 
+fzee
+Common Report Var(flag_zee) Init(0)
+Eliminate redundant zero extensions on targets that support implicit extensions.
+
 fshow-column
 Common C ObjC C++ ObjC++ Report Var(flag_show_column) Init(1)
 Show column numbers in diagnostics, when available.  Default on

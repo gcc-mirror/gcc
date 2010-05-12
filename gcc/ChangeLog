@@ -1,3 +1,14 @@
+2010-05-12  Sriraman Tallam  <tmsriram@google.com>
+
+	* implicit-zee.c: New file.
+	* tree-pass.h (pass_implicit_zee): Declare.
+	* passes.c (init_optimization_passes): Add zee pass.
+	* common.opt (fzee): New flag.
+	* timevar.def (TV_ZEE): Define.
+	* config/i386/i386.c (optimization_options): Turn on ZEE for level 2
+	and beyond.
+	* Makefile.in (implicit-zee.o): Add new build file.
+
 2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 

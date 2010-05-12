@@ -1,6 +1,7 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010
    Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
@@ -207,6 +208,7 @@ DEFTIMEVAR (TV_RELOAD	   	     , "reload")
 DEFTIMEVAR (TV_RELOAD_CSE_REGS       , "reload CSE regs")
 DEFTIMEVAR (TV_SEQABSTR              , "sequence abstraction")
 DEFTIMEVAR (TV_GCSE_AFTER_RELOAD      , "load CSE after reload")
+DEFTIMEVAR (TV_ZEE		     , "zee")
 DEFTIMEVAR (TV_THREAD_PROLOGUE_AND_EPILOGUE, "thread pro- & epilogue")
 DEFTIMEVAR (TV_IFCVT2		     , "if-conversion 2")
 DEFTIMEVAR (TV_COMBINE_STACK_ADJUST  , "combine stack adjustments")
