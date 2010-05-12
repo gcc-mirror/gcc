@@ -1,3 +1,10 @@
+2010-05-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (build_constructor): Compute TREE_CONSTANT for the
+	resultant constructor.
+	(build_constructor_single): Don't set TREE_CONSTANT.
+	(build_constructor_from_list): Don't compute TREE_CONSTANT.
+
 2010-05-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (struct varpool_node): Add aux.
