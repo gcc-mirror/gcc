@@ -1,6 +1,6 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
    Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,7 +111,7 @@ extern int offsettable_address_addr_space_p (int, enum machine_mode, rtx,
 #define offsettable_address_p(strict,mode,addr) \
 	offsettable_address_addr_space_p ((strict), (mode), (addr), \
 					  ADDR_SPACE_GENERIC)
-extern int mode_dependent_address_p (rtx);
+extern bool mode_dependent_address_p (rtx);
 
 extern int recog (rtx, rtx, int *);
 #ifndef GENERATOR_FILE
