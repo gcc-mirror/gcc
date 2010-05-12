@@ -1,0 +1,26 @@
+
+# Load support procs.
+load_lib objc-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS ""
+}
+
+# Initialize `dg'.
+dg-init
+
+# Gather a list of all tests.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.m]]
+
+# Main loop.
+dg-runtest $tests "-fgnu-runtime" $DEFAULT_CFLAGS
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+  dg-runtest $tests "-fnext-runtime" $DEFAULT_CFLAGS
+}
+
+# All done.
+dg-finish

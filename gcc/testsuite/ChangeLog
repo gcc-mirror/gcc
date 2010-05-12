@@ -1,3 +1,26 @@
+2010-05-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/Object1.m: New.
+	* objc.dg/torture: New directory.
+	* objc.dg/torture/tls: Ditto.
+	* objc.dg/tls: Ditto.
+	* objc.dg/torture/tls/trivial.m: New test.
+	* objc.dg/torture/tls/thr-init-2.m: New test.
+	* objc.dg/torture/tls/thr-init-3.m: New test.
+	* objc.dg/torture/tls/thr-init.m: New test.
+	* objc.dg/torture/tls/diag-1.m: New test.
+	* objc.dg/torture/tls/tls.exp: New.
+	* objc.dg/torture/trivial.m: New test.
+	* objc.dg/torture/dg-torture.exp: New.
+	* objc.dg/tls/diag-3.m: New test.
+	* objc.dg/tls/diag-4.m: New test.
+	* objc.dg/tls/diag-5.m: New test.
+	* objc.dg/tls/init-1.m: New test.
+	* objc.dg/tls/init-2.m: New test.
+	* objc.dg/tls/tls.exp: New.
+	* objc.dg/tls/diag-2.m: New test.
+	* lib/objc.exp: Respond to dg-additional-files.
+
 2010-05-12  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/m68k/20100512-1.c: New.
