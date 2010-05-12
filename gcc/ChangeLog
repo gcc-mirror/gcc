@@ -1,3 +1,8 @@
+2010-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44088
+	* config/i386/sse.md (*avx_vmmaskcmp<mode>3): New.
+
 2010-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44085
