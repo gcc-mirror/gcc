@@ -1,5 +1,13 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/20669
+	* call.c (add_template_candidate_real): If deduction fails, still
+	add the template as a non-viable candidate.
+	(equal_functions): Handle template candidates.
+	(print_z_candidate): Likewise.
+	(print_z_candidates): Likewise.
+	(build_new_function_call): Likewise.
+
 	* cp-tree.h (LOOKUP_LIST_ONLY): New.
 	* call.c (add_candidates): Enforce it.
 	(build_new_method_call): Try non-list ctor if no viable list ctor.

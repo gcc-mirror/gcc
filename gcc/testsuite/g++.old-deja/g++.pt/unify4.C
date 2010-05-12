@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-template <class T> void f (T);
+template <class T> void f (T);	// { dg-message "candidate" }
 
 void g ();
 void g (int);

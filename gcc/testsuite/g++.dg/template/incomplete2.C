@@ -3,7 +3,7 @@
 
 struct A;
 
-template<A&> void foo();
+template<A&> void foo();	// { dg-message "candidate" }
 
 A a;  // { dg-error "incomplete type" }
 

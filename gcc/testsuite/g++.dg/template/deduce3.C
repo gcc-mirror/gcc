@@ -1,5 +1,5 @@
 template <typename T>
-void f(int, T (*)() = 0);
+void f(int, T (*)() = 0);	// { dg-message "candidate" }
 
 void g() {
   typedef int A[2];

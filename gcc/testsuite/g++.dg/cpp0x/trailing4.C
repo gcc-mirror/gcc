@@ -5,7 +5,7 @@ template<class T, class U>
 auto f(T,U) -> decltype(T() + U())
 { return T() + U(); }
 
-template<class T> void g(T){}
+template<class T> void g(T){}	// { dg-message "candidate" }
 
 int main() { g(f); }		// { dg-error "no matching function" }
 

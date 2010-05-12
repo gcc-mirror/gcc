@@ -5,7 +5,7 @@
     template<class T, unsigned int Length>
     inline
     unsigned int
-    extent(T (&x)[Length])
+    extent(T (&x)[Length])	// { dg-message "candidate" }
     {
             return Length;
     }

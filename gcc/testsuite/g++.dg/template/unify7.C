@@ -3,7 +3,7 @@
 
 // PR c++/3518
 template <typename T> void Foo (const T &);
-template <typename T> void Baz (const T (*)());
+template <typename T> void Baz (const T (*)()); // { dg-message "candidate" }
 
 int &f ();
 

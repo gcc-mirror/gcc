@@ -8,7 +8,7 @@
 // errors.
 
 template <unsigned int N>
-char* begin(char (&a) [N] );
+char* begin(char (&a) [N] );	// { dg-message "candidate" }
 
 void bar(int i)
 {

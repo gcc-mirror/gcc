@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-template<typename, typename..., typename> void foo();
+template<typename, typename..., typename> void foo(); // { dg-message "candidate" }
 
 void bar()
 {

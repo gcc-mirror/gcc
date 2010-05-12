@@ -1,3 +1,10 @@
+2010-05-12  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Expect template
+	candidate messages.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2010-05-11  Silvius Rus  <silvius.rus@gmail.com>
 
 	PR libstdc++/43259
