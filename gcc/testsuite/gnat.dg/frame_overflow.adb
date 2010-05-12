@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-xfail-if "missing late warning" { *-*-* } { "-flto" } { "" } }
 
 with System;
 
