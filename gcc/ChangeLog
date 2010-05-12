@@ -1,3 +1,36 @@
+2010-05-12  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges): Build
+	indrect edges too.
+	* cgraph.c (cgraph_create_indirect_edge): Take ecf_flags argument.
+	(cgraph_clone_edge): Update.
+	(cgraph_node_remove_callees): Remove indirect calls too.
+	* cgraph.h (cgraph_indirect_call_info): Add ecf_flags.
+	(cgraph_create_indirect_edge): Update prototype.
+	* ipa-reference.c (has_proper_scope_for_analysis): Rename to
+	is_proper_for_analysis.
+	(add_new_function, visited_nodes, function_insertion_hook_holder,
+	get_local_reference_vars_info, mark_address_taken, mark_address,
+	mark_load, mark_store, check_asm_memory_clobber, check_call,
+	scan_stmt_for_static_refs, scan_initializer_for_static_refs): Remove.
+	(ipa_init): Do not initialize visited_nodes;
+	function_insertion_hook_holder.
+	(analyze_variable): Rewrite.
+	(analyze_function): Rewrite.
+	(copy_local_bitmap): Remove.
+	(duplicate_node_dat): Do not duplicate local info.
+	(generate_summary): Simplify to only walk cgraph.
+	(write_node_summary_p, ipa_reference_write_summary,
+	ipa_reference_read_summary): Remove.
+	(propagate): Do not remove function insertion;
+	generate summary.
+	(pass_ipa_reference): NULLify summary handling fields.
+	* lto-cgraph.c (lto_output_edge): Output ecf_flags.
+	(input_edge): Input ecf_flags.
+	* ipa-prop.c (ipa_note_parm_call): Expect edge to be around.
+	(update_indirect_edges_after_inlining): Ignore edges with unknown
+	param.
+
 2010-05-12  Sriraman Tallam  <tmsriram@google.com>
 
 	* implicit-zee.c: New file.

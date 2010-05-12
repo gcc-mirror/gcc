@@ -282,6 +282,21 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (bp, edge->call_stmt_cannot_inline_p, 1);
   bp_pack_value (bp, edge->can_throw_external, 1);
+  if (edge->indirect_unknown_callee)
+    {
+      int flags = edge->indirect_info->ecf_flags;
+      bp_pack_value (bp, (flags & ECF_CONST) != 0, 1);
+      bp_pack_value (bp, (flags & ECF_PURE) != 0, 1);
+      bp_pack_value (bp, (flags & ECF_NORETURN) != 0, 1);
+      bp_pack_value (bp, (flags & ECF_MALLOC) != 0, 1);
+      bp_pack_value (bp, (flags & ECF_NOTHROW) != 0, 1);
+      bp_pack_value (bp, (flags & ECF_RETURNS_TWICE) != 0, 1);
+      /* Flags that should not appear on indirect calls.  */
+      gcc_assert (!(flags & (ECF_LOOPING_CONST_OR_PURE
+			     | ECF_MAY_BE_ALLOCA
+			     | ECF_SIBCALL
+			     | ECF_NOVOPS)));
+    }
   lto_output_bitpack (ob->main_stream, bp);
   bitpack_delete (bp);
 }
@@ -1060,6 +1075,7 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d *bp;
   enum ld_plugin_symbol_resolution caller_resolution;
+  int ecf_flags = 0;
 
   caller = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
   if (caller == NULL || caller->decl == NULL_TREE)
@@ -1091,7 +1107,7 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
     return;
 
   if (indirect)
-    edge = cgraph_create_indirect_edge (caller, NULL, count, freq, nest);
+    edge = cgraph_create_indirect_edge (caller, NULL, 0, count, freq, nest);
   else
     edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
 
@@ -1100,6 +1116,22 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   edge->inline_failed = inline_failed;
   edge->call_stmt_cannot_inline_p = bp_unpack_value (bp, 1);
   edge->can_throw_external = bp_unpack_value (bp, 1);
+  if (indirect)
+    {
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_CONST;
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_PURE;
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_NORETURN;
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_MALLOC;
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_NOTHROW;
+      if (bp_unpack_value (bp, 1))
+	ecf_flags |= ECF_RETURNS_TWICE;
+      edge->indirect_info->ecf_flags = ecf_flags;
+    }
   bitpack_delete (bp);
 }
 
