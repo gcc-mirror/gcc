@@ -1,6 +1,6 @@
 #include "leak_detector.h"
 
-main() {
+int main() {
     int *p[10];
     int i;
     GC_find_leak = 1; /* for new collect versions not compiled  */
@@ -18,4 +18,5 @@ main() {
     CHECK_LEAKS();
     CHECK_LEAKS();
     CHECK_LEAKS();
+    return 0;
 }       

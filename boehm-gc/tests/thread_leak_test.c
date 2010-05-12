@@ -19,7 +19,7 @@ void * test(void * arg) {
 
 #define NTHREADS 5
 
-main() {
+int main() {
     int i;
     pthread_t t[NTHREADS];
     int code;
@@ -37,4 +37,5 @@ main() {
     CHECK_LEAKS();
     CHECK_LEAKS();
     CHECK_LEAKS();
+    return 0;
 }
