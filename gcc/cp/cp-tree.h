@@ -4109,8 +4109,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    have already generated a temporary, such as reference
    initialization and the catch parameter.  */
 #define DIRECT_BIND (1 << 4)
-/* User-defined conversions are not permitted.  (Built-in conversions
-   are permitted.)  */
+/* We're performing a user-defined conversion, so more user-defined
+   conversions are not permitted (only built-in conversions).  */
 #define LOOKUP_NO_CONVERSION (1 << 5)
 /* The user has explicitly called a destructor.  (Therefore, we do
    not need to check that the object is non-NULL before calling the
