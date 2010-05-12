@@ -1,5 +1,10 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (LOOKUP_LIST_ONLY): New.
+	* call.c (add_candidates): Enforce it.
+	(build_new_method_call): Try non-list ctor if no viable list ctor.
+	(build_user_type_conversion_1): Likewise.
+
 	* call.c (add_candidates): Distinguish between type(x) and
 	x.operator type().
 	(convert_class_to_reference): Set LOOKUP_NO_CONVERSION.
