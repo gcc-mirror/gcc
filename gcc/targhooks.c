@@ -958,6 +958,26 @@ default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* The default implementation of TARGET_MODE_DEPENDENT_ADDRESS_P.  */
+
+bool
+default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED)
+{
+#ifdef GO_IF_MODE_DEPENDENT_ADDRESS
+
+  GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
+  return false;
+  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
+ win: ATTRIBUTE_UNUSED_LABEL
+  return true;
+
+#else
+
+  return false;
+
+#endif
+}
+
 bool
 default_target_option_valid_attribute_p (tree ARG_UNUSED (fndecl),
 					 tree ARG_UNUSED (name),

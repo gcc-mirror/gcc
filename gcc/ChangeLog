@@ -1,3 +1,16 @@
+2010-05-12  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct gcc_target): Add mode_dependent_address_p field.
+	* target-def.h (TARGET_MODE_DEPENDENT_ADDRESS_P): New.
+	(TARGET_INITIALIZER): Use TARGET_MODE_DEPENDENT_ADDRESS_P.
+	* targhooks.c (default_mode_dependent_address_p): New function.
+	* targhooks.h (default_mode_dependent_address_p): Declare function.
+	* doc/tm.texi (TARGET_MODE_DEPENDENT_ADDRESS_P): New.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Update.
+	* recog.c: (mode_dependent_address_p): Call mode_dependent_address_p
+	target hook. Change return type to bool.
+	* recog.h: (mode_dependent_address_p): Change return type to bool.
+
 2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 

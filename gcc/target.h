@@ -663,6 +663,10 @@ struct gcc_target
 
   /* True if X is considered to be commutative.  */
   bool (* commutative_p) (const_rtx, int);
+  
+  /* True if ADDR is an address-expression whose effect depends
+     on the mode of the memory reference it is used in.  */
+  bool (* mode_dependent_address_p) (const_rtx addr);
 
   /* Given an invalid address X for a given machine mode, try machine-specific
      ways to make it legitimate.  Return X or an invalid address on failure.  */
