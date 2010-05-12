@@ -1,0 +1,17 @@
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib objc-dg.exp
+
+dg-init
+
+# Gather a list of all tests.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.m]]
+
+objc-dg-runtest $tests "-fgnu-runtime"
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+  objc-dg-runtest $tests "-fnext-runtime"
+}
+
+dg-finish
