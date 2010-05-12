@@ -3380,14 +3380,12 @@ update_pointer_to (tree old_type, tree new_type)
 {
   tree ptr = TYPE_POINTER_TO (old_type);
   tree ref = TYPE_REFERENCE_TO (old_type);
-  tree ptr1, ref1;
-  tree type;
+  tree t;
 
   /* If this is the main variant, process all the other variants first.  */
   if (TYPE_MAIN_VARIANT (old_type) == old_type)
-    for (type = TYPE_NEXT_VARIANT (old_type); type;
-	 type = TYPE_NEXT_VARIANT (type))
-      update_pointer_to (type, new_type);
+    for (t = TYPE_NEXT_VARIANT (old_type); t; t = TYPE_NEXT_VARIANT (t))
+      update_pointer_to (t, new_type);
 
   /* If no pointers and no references, we are done.  */
   if (!ptr && !ref)
@@ -3423,47 +3421,79 @@ update_pointer_to (tree old_type, tree new_type)
   /* Otherwise, first handle the simple case.  */
   if (TREE_CODE (new_type) != UNCONSTRAINED_ARRAY_TYPE)
     {
-      TYPE_POINTER_TO (new_type) = ptr;
-      TYPE_REFERENCE_TO (new_type) = ref;
+      tree new_ptr, new_ref;
 
+      /* If pointer or reference already points to new type, nothing to do.
+	 This can happen as update_pointer_to can be invoked multiple times
+	 on the same couple of types because of the type variants.  */
+      if ((ptr && TREE_TYPE (ptr) == new_type)
+	  || (ref && TREE_TYPE (ref) == new_type))
+	return;
+
+      /* Chain PTR and its variants at the end.  */
+      new_ptr = TYPE_POINTER_TO (new_type);
+      if (new_ptr)
+	{
+	  while (TYPE_NEXT_PTR_TO (new_ptr))
+	    new_ptr = TYPE_NEXT_PTR_TO (new_ptr);
+	  TYPE_NEXT_PTR_TO (new_ptr) = ptr;
+	}
+      else
+	TYPE_POINTER_TO (new_type) = ptr;
+
+      /* Now adjust them.  */
       for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
-	for (ptr1 = TYPE_MAIN_VARIANT (ptr); ptr1;
-	     ptr1 = TYPE_NEXT_VARIANT (ptr1))
-	  TREE_TYPE (ptr1) = new_type;
+	for (t = TYPE_MAIN_VARIANT (ptr); t; t = TYPE_NEXT_VARIANT (t))
+	  TREE_TYPE (t) = new_type;
 
+      /* Chain REF and its variants at the end.  */
+      new_ref = TYPE_REFERENCE_TO (new_type);
+      if (new_ref)
+	{
+	  while (TYPE_NEXT_REF_TO (new_ref))
+	    new_ref = TYPE_NEXT_REF_TO (new_ref);
+	  TYPE_NEXT_REF_TO (new_ref) = ref;
+	}
+      else
+	TYPE_REFERENCE_TO (new_type) = ref;
+
+      /* Now adjust them.  */
       for (; ref; ref = TYPE_NEXT_REF_TO (ref))
-	for (ref1 = TYPE_MAIN_VARIANT (ref); ref1;
-	     ref1 = TYPE_NEXT_VARIANT (ref1))
-	  TREE_TYPE (ref1) = new_type;
+	for (t = TYPE_MAIN_VARIANT (ref); t; t = TYPE_NEXT_VARIANT (t))
+	  TREE_TYPE (t) = new_type;
     }
 
-  /* Now deal with the unconstrained array case.  In this case the "pointer"
-     is actually a RECORD_TYPE where both fields are pointers to dummy nodes.
+  /* Now deal with the unconstrained array case.  In this case the pointer
+     is actually a record where both fields are pointers to dummy nodes.
      Turn them into pointers to the correct types using update_pointer_to.  */
-  else if (!TYPE_IS_FAT_POINTER_P (ptr))
-    gcc_unreachable ();
-
   else
     {
+      tree new_ptr = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (new_type));
       tree new_obj_rec = TYPE_OBJECT_RECORD_TYPE (new_type);
-      tree array_field = TYPE_FIELDS (ptr);
-      tree bounds_field = TREE_CHAIN (TYPE_FIELDS (ptr));
-      tree new_ptr = TYPE_POINTER_TO (new_type);
-      tree new_ref;
-      tree var;
+      tree array_field, bounds_field, new_ref, last;
+
+      gcc_assert (TYPE_IS_FAT_POINTER_P (ptr));
+
+      /* If PTR already points to new type, nothing to do.  This can happen
+	 since update_pointer_to can be invoked multiple times on the same
+	 couple of types because of the type variants.  */
+      if (TYPE_UNCONSTRAINED_ARRAY (ptr) == new_type)
+	return;
+
+      array_field = TYPE_FIELDS (ptr);
+      bounds_field = TREE_CHAIN (array_field);
 
       /* Make pointers to the dummy template point to the real template.  */
       update_pointer_to
 	(TREE_TYPE (TREE_TYPE (bounds_field)),
 	 TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (new_ptr)))));
 
-      /* The references to the template bounds present in the array type
-	 are made through a PLACEHOLDER_EXPR of type NEW_PTR.  Since we
-	 are updating PTR to make it a full replacement for NEW_PTR as
-	 pointer to NEW_TYPE, we must rework the PLACEHOLDER_EXPR so as
-	 to make it of type PTR.  */
+      /* The references to the template bounds present in the array type use
+	 the bounds field of NEW_PTR through a PLACEHOLDER_EXPR.  Since we
+	 are going to merge PTR in NEW_PTR, we must rework these references
+	 to use the bounds field of PTR instead.  */
       new_ref = build3 (COMPONENT_REF, TREE_TYPE (bounds_field),
-			build0 (PLACEHOLDER_EXPR, ptr),
+			build0 (PLACEHOLDER_EXPR, new_ptr),
 			bounds_field, NULL_TREE);
 
       /* Create the new array for the new PLACEHOLDER_EXPR and make pointers
@@ -3473,30 +3503,35 @@ update_pointer_to (tree old_type, tree new_type)
 	 substitute_in_type (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))),
 			     TREE_CHAIN (TYPE_FIELDS (new_ptr)), new_ref));
 
-      /* Make PTR the pointer to NEW_TYPE.  */
-      TYPE_POINTER_TO (new_type) = TYPE_REFERENCE_TO (new_type)
-	= TREE_TYPE (new_type) = ptr;
+      /* Merge PTR in NEW_PTR.  */
+      DECL_FIELD_CONTEXT (array_field) = new_ptr;
+      DECL_FIELD_CONTEXT (bounds_field) = new_ptr;
+      for (t = new_ptr; t; last = t, t = TYPE_NEXT_VARIANT (t))
+	TYPE_FIELDS (t) = TYPE_FIELDS (ptr);
+
+      /* Chain PTR and its variants at the end.  */
+      TYPE_NEXT_VARIANT (last) = TYPE_MAIN_VARIANT (ptr);
+
+      /* Now adjust them.  */
+      for (t = TYPE_MAIN_VARIANT (ptr); t; t = TYPE_NEXT_VARIANT (t))
+	{
+	  TYPE_MAIN_VARIANT (t) = new_ptr;
+	  SET_TYPE_UNCONSTRAINED_ARRAY (t, new_type);
+	}
 
       /* And show the original pointer NEW_PTR to the debugger.  This is the
 	 counterpart of the equivalent processing in gnat_pushdecl when the
-	 unconstrained array type is frozen after access types to it.  Note
-	 that update_pointer_to can be invoked multiple times on the same
-	 couple of types because of the type variants.  */
-      if (TYPE_NAME (ptr)
-	  && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL
-	  && !DECL_ORIGINAL_TYPE (TYPE_NAME (ptr)))
+	 unconstrained array type is frozen after access types to it.  */
+      if (TYPE_NAME (ptr) && TREE_CODE (TYPE_NAME (ptr)) == TYPE_DECL)
 	{
 	  DECL_ORIGINAL_TYPE (TYPE_NAME (ptr)) = new_ptr;
 	  DECL_ARTIFICIAL (TYPE_NAME (ptr)) = 0;
 	}
-      for (var = TYPE_MAIN_VARIANT (ptr); var; var = TYPE_NEXT_VARIANT (var))
-	SET_TYPE_UNCONSTRAINED_ARRAY (var, new_type);
 
       /* Now handle updating the allocation record, what the thin pointer
 	 points to.  Update all pointers from the old record into the new
 	 one, update the type of the array field, and recompute the size.  */
       update_pointer_to (TYPE_OBJECT_RECORD_TYPE (old_type), new_obj_rec);
-
       TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (new_obj_rec)))
 	= TREE_TYPE (TREE_TYPE (array_field));
 
@@ -3504,11 +3539,10 @@ update_pointer_to (tree old_type, tree new_type)
 	 we let layout_type work it out.  This will reset the field offsets to
 	 what they would be in a regular record, so we shift them back to what
 	 we want them to be for a thin pointer designated type afterwards.  */
-      DECL_SIZE (TYPE_FIELDS (new_obj_rec)) = 0;
-      DECL_SIZE (TREE_CHAIN (TYPE_FIELDS (new_obj_rec))) = 0;
-      TYPE_SIZE (new_obj_rec) = 0;
+      DECL_SIZE (TYPE_FIELDS (new_obj_rec)) = NULL_TREE;
+      DECL_SIZE (TREE_CHAIN (TYPE_FIELDS (new_obj_rec))) = NULL_TREE;
+      TYPE_SIZE (new_obj_rec) = NULL_TREE;
       layout_type (new_obj_rec);
-
       shift_unc_components_for_thin_pointers (new_obj_rec);
 
       /* We are done, at last.  */
