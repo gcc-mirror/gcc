@@ -174,7 +174,6 @@ tree maybe_inline_call_in_expr (tree);
 bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 tree copy_decl_no_change (tree decl, copy_body_data *id);
-void save_body (tree, tree *, tree *);
 int estimate_move_cost (tree type);
 int estimate_num_insns (gimple, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
@@ -182,7 +181,6 @@ int count_insns_seq (gimple_seq, eni_weights *);
 bool tree_versionable_function_p (tree);
 bool tree_can_inline_p (struct cgraph_edge *e);
 
-extern gimple_seq remap_gimple_seq (gimple_seq, copy_body_data *);
 extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
 extern gimple_seq copy_gimple_seq_and_replace_locals (gimple_seq seq);

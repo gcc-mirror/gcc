@@ -439,6 +439,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
      nodes a pointer to the normal node.  */
   struct varpool_node *extra_name;
   struct ipa_ref_list ref_list;
+  PTR GTY ((skip)) aux;
   /* Ordering of all cgraph nodes.  */
   int order;
 
@@ -673,6 +674,7 @@ void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
 bool varpool_extra_name_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
+void varpool_reset_queue (void);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \

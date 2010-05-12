@@ -1,3 +1,16 @@
+2010-05-12  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (struct varpool_node): Add aux.
+	* varasm.c (find_decl_and_mark_needed): Force output of varpool nodes.
+	* varpool.c (varpool_remove_node): Do not remove initializer.
+	(varpool_reset_queue): Export.
+	(varpool_finalize_decl): Volatile vars are forced to be output.
+	* lto-symtab.c (lto_varpool_replace_node): Clear out initializer of
+	replaced decl.
+	* ipa.c (enqueue_cgraph_node, enqueue_varpool_node,
+	process_references, varpool_can_remove_if_no_refs): New functions.
+	(cgraph_remove_unreachable_nodes): Handle variables too.
+
 2010-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44088

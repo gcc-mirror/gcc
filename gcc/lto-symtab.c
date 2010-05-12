@@ -291,6 +291,9 @@ lto_varpool_replace_node (struct varpool_node *vnode,
     prevailing_node = prevailing_node->extra_name;
   ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
 
+  /* Be sure we can garbage collect the initializer.  */
+  if (DECL_INITIAL (vnode->decl))
+    DECL_INITIAL (vnode->decl) = error_mark_node;
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);
 }
