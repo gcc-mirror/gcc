@@ -2860,6 +2860,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   if (ctors)
     {
       int ctorflags = flags;
+      bool try_single_arg = true;
       ctors = BASELINK_FUNCTIONS (ctors);
 
       first_arg = build_int_cst (build_pointer_type (totype), 0);
@@ -2868,28 +2869,44 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	  /* For list-initialization we consider explicit constructors, but
 	     give an error if one is selected.  */
 	  ctorflags &= ~LOOKUP_ONLYCONVERTING;
+	  /* If the class has a list ctor, try passing the list as a single
+	     argument first, but only consider list ctors.  */
 	  if (TYPE_HAS_LIST_CTOR (totype))
-	    args = make_tree_vector_single (expr);
+	    ctorflags |= LOOKUP_LIST_ONLY;
 	  else
-	    {
-	      args = ctor_to_vec (expr);
-	      /* We still allow more conversions within an init-list.  */
-	      ctorflags &= ~LOOKUP_NO_CONVERSION;
-	      /* But not for the copy ctor.  */
-	      ctorflags |= LOOKUP_NO_COPY_CTOR_CONVERSION;
-	    }
+	    try_single_arg = false;
 	}
-      else
-	args = make_tree_vector_single (expr);
 
       /* We should never try to call the abstract or base constructor
 	 from here.  */
       gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
 		  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)));
 
-      add_candidates (ctors, first_arg, args, NULL_TREE, NULL_TREE, false,
-		      TYPE_BINFO (totype), TYPE_BINFO (totype),
-		      ctorflags, &candidates);
+      /* If EXPR is not an initializer-list, or if totype has a list
+	 constructor, try EXPR as a single argument.  */
+      if (try_single_arg)
+	{
+	  args = make_tree_vector_single (expr);
+	  add_candidates (ctors, first_arg, args, NULL_TREE, NULL_TREE, false,
+			  TYPE_BINFO (totype), TYPE_BINFO (totype),
+			  ctorflags, &candidates);
+	}
+
+      /* If we didn't find a suitable list constructor for an initializer-list,
+	 try breaking it apart.  */
+      if (!candidates && BRACE_ENCLOSED_INITIALIZER_P (expr))
+	{
+	  args = ctor_to_vec (expr);
+	  /* We aren't looking for list-ctors anymore.  */
+	  ctorflags &= ~LOOKUP_LIST_ONLY;
+	  /* We still allow more conversions within an init-list.  */
+	  ctorflags &= ~LOOKUP_NO_CONVERSION;
+	  /* But not for the copy ctor.  */
+	  ctorflags |= LOOKUP_NO_COPY_CTOR_CONVERSION;
+	  add_candidates (ctors, first_arg, args, NULL_TREE, NULL_TREE, false,
+			  TYPE_BINFO (totype), TYPE_BINFO (totype),
+			  ctorflags, &candidates);
+	}
 
       for (cand = candidates; cand; cand = cand->next)
 	{
@@ -4009,6 +4026,7 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
 {
   tree ctype;
   const VEC(tree,gc) *non_static_args;
+  bool check_list_ctor;
   bool check_converting;
   unification_kind_t strict;
   tree fn;
@@ -4020,6 +4038,7 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
   fn = OVL_CURRENT (fns);
   if (DECL_CONV_FN_P (fn))
     {
+      check_list_ctor = false;
       check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
       if (flags & LOOKUP_NO_CONVERSION)
 	/* We're doing return_type(x).  */
@@ -4036,9 +4055,15 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
   else
     {
       if (DECL_CONSTRUCTOR_P (fn))
-	check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
+	{
+	  check_list_ctor = !!(flags & LOOKUP_LIST_ONLY);
+	  check_converting = !!(flags & LOOKUP_ONLYCONVERTING);
+	}
       else
-	check_converting = false;
+	{
+	  check_list_ctor = false;
+	  check_converting = false;
+	}
       strict = DEDUCE_CALL;
       ctype = conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE;
     }
@@ -4057,6 +4082,8 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
       fn = OVL_CURRENT (fns);
 
       if (check_converting && DECL_NONCONVERTING_P (fn))
+	continue;
+      if (check_list_ctor && !is_list_ctor (fn))
 	continue;
 
       /* Figure out which set of arguments to use.  */
@@ -6188,6 +6215,8 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
   tree orig_fns;
   VEC(tree,gc) *orig_args = NULL;
   void *p;
+  tree list = NULL_TREE;
+  bool try_normal;
 
   gcc_assert (instance != NULL_TREE);
 
@@ -6300,15 +6329,20 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
     name = complete_dtor_identifier;
 
   /* If CONSTRUCTOR_IS_DIRECT_INIT is set, this was a T{ } form
-     initializer, not T({ }).  If the type doesn't have a list ctor,
-     break apart the list into separate ctor args.  */
+     initializer, not T({ }).  If the type doesn't have a list ctor (or no
+     viable list ctor), break apart the list into separate ctor args.  */
+  try_normal = true;
   if (DECL_CONSTRUCTOR_P (fn) && args != NULL && !VEC_empty (tree, *args)
       && BRACE_ENCLOSED_INITIALIZER_P (VEC_index (tree, *args, 0))
-      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0))
-      && !TYPE_HAS_LIST_CTOR (basetype))
+      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0)))
     {
       gcc_assert (VEC_length (tree, *args) == 1);
-      *args = ctor_to_vec (VEC_index (tree, *args, 0));
+      list = VEC_index (tree, *args, 0);
+
+      if (TYPE_HAS_LIST_CTOR (basetype))
+	flags |= LOOKUP_LIST_ONLY;
+      else
+	try_normal = false;
     }
 
   first_mem_arg = instance_ptr;
@@ -6316,11 +6350,25 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
 
-  add_candidates (fns, first_mem_arg, args ? *args : NULL, optype,
-		  explicit_targs, template_only, conversion_path,
-		  access_binfo, flags, &candidates);
+  any_viable_p = false;
+  if (try_normal)
+    {
+      add_candidates (fns, first_mem_arg, user_args, optype,
+		      explicit_targs, template_only, conversion_path,
+		      access_binfo, flags, &candidates);
+      candidates = splice_viable (candidates, pedantic, &any_viable_p);
+    }
 
-  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  if (!any_viable_p && list)
+    {
+      VEC(tree,gc) *list_args = ctor_to_vec (list);
+      flags &= ~LOOKUP_LIST_ONLY;
+      add_candidates (fns, first_mem_arg, list_args, optype,
+		      explicit_targs, template_only, conversion_path,
+		      access_binfo, flags, &candidates);
+      candidates = splice_viable (candidates, pedantic, &any_viable_p);
+    }
+
   if (!any_viable_p)
     {
       if (complain & tf_error)

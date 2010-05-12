@@ -1,5 +1,7 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist32.C: New.
+
 	* g++.dg/template/conv11.C: New.
 	* g++.dg/conversion/op1.C: Adjust expected error.
 
