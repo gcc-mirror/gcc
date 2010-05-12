@@ -249,6 +249,8 @@ proc objc_target_compile { source dest type options } {
 
     set_ld_library_path_env_vars
 
+    set options [dg-additional-files-options $options $source]
+
     return [target_compile $source $dest $type $options]
 }
 
