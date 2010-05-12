@@ -1,5 +1,10 @@
 2010-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Tidy up
+	code, improve comments and fix formatting nits.
+
+2010-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (update_pointer_to): Return early if the old
 	pointer already points to the new type.  Chain the old pointer and its
 	variants at the end of new pointer's chain after updating them.
