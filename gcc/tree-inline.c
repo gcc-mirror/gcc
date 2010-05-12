@@ -688,7 +688,7 @@ copy_bind_expr (tree *tp, int *walk_subtrees, copy_body_data *id)
 /* Create a new gimple_seq by remapping all the statements in BODY
    using the inlining information in ID.  */
 
-gimple_seq
+static gimple_seq
 remap_gimple_seq (gimple_seq body, copy_body_data *id)
 {
   gimple_stmt_iterator si;

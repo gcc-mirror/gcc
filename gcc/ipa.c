@@ -118,6 +118,69 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
       }
 }
 
+/* Add cgraph NODE to queue starting at FIRST.  */
+
+static void
+enqueue_cgraph_node (struct cgraph_node *node, struct cgraph_node **first)
+{
+  node->aux = *first;
+  *first = node;
+}
+
+/* Add varpool NODE to queue starting at FIRST.  */
+
+static void
+enqueue_varpool_node (struct varpool_node *node, struct varpool_node **first)
+{
+  node->aux = *first;
+  *first = node;
+}
+
+/* Process references.  */
+
+static void
+process_references (struct ipa_ref_list *list,
+		    struct cgraph_node **first,
+		    struct varpool_node **first_varpool,
+		    bool before_inlining_p)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+    {
+      if (ref->refered_type == IPA_REF_CGRAPH)
+	{
+	  struct cgraph_node *node = ipa_ref_node (ref);
+	  if (!node->reachable
+	      && (!DECL_EXTERNAL (node->decl)
+	          || before_inlining_p))
+	    {
+	      node->reachable = true;
+	      enqueue_cgraph_node (node, first);
+	    }
+	}
+      else
+	{
+	  struct varpool_node *node = ipa_ref_varpool_node (ref);
+	  if (!node->needed)
+	    {
+	      varpool_mark_needed_node (node);
+	      enqueue_varpool_node (node, first_varpool);
+	    }
+	}
+    }
+}
+
+/* Return true when function NODE can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+static inline bool
+varpool_can_remove_if_no_refs (struct varpool_node *node)
+{
+  return (!node->force_output && !node->used_from_other_partition
+  	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
+}
+
 /* Perform reachability analysis and reclaim all unreachable nodes.
    If BEFORE_INLINING_P is true this function is called before inlining
    decisions has been made.  If BEFORE_INLINING_P is false this function also
@@ -127,8 +190,10 @@ bool
 cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   struct cgraph_node *first = (struct cgraph_node *) (void *) 1;
+  struct varpool_node *first_varpool = (struct varpool_node *) (void *) 1;
   struct cgraph_node *processed = (struct cgraph_node *) (void *) 2;
   struct cgraph_node *node, *next;
+  struct varpool_node *vnode, *vnext;
   bool changed = false;
 
 #ifdef ENABLE_CHECKING
@@ -140,15 +205,14 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (node = cgraph_nodes; node; node = node->next)
     gcc_assert (!node->aux);
 #endif
+  varpool_reset_queue ();
   for (node = cgraph_nodes; node; node = node->next)
     if (!cgraph_can_remove_if_no_direct_calls_p (node)
 	&& ((!DECL_EXTERNAL (node->decl))
-            || !node->analyzed
             || before_inlining_p))
       {
         gcc_assert (!node->global.inlined_to);
-	node->aux = first;
-	first = node;
+	enqueue_cgraph_node (node, &first);
 	node->reachable = true;
       }
     else
@@ -156,68 +220,92 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
         gcc_assert (!node->aux);
 	node->reachable = false;
       }
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    {
+      vnode->next_needed = NULL;
+      vnode->prev_needed = NULL;
+      if (!varpool_can_remove_if_no_refs (vnode))
+	{
+	  vnode->needed = false;
+	  varpool_mark_needed_node (vnode);
+	  enqueue_varpool_node (vnode, &first_varpool);
+	}
+      else
+	vnode->needed = false;
+    }
 
   /* Perform reachability analysis.  As a special case do not consider
      extern inline functions not inlined as live because we won't output
      them at all.  */
-  while (first != (void *) 1)
+  while (first != (struct cgraph_node *) (void *) 1
+  	 || first_varpool != (struct varpool_node *) (void *) 1)
     {
-      struct cgraph_edge *e;
-      node = first;
-      first = (struct cgraph_node *) first->aux;
-      node->aux = processed;
-
-      if (node->reachable)
-        for (e = node->callees; e; e = e->next_callee)
-	  if (!e->callee->reachable
-	      && node->analyzed
-	      && (!e->inline_failed || !e->callee->analyzed
-		  || (!DECL_EXTERNAL (e->callee->decl))
-                  || before_inlining_p))
-	    {
-	      bool prev_reachable = e->callee->reachable;
-	      e->callee->reachable |= node->reachable;
-	      if (!e->callee->aux
-	          || (e->callee->aux == processed
-		      && prev_reachable != e->callee->reachable))
-	        {
-	          e->callee->aux = first;
-	          first = e->callee;
-	        }
-	    }
-
-      /* If any function in a comdat group is reachable, force
-	 all other functions in the same comdat group to be
-	 also reachable.  */
-      if (node->same_comdat_group
-	  && node->reachable
-	  && !node->global.inlined_to)
+      if (first != (struct cgraph_node *) (void *) 1)
 	{
-	  for (next = node->same_comdat_group;
-	       next != node;
-	       next = next->same_comdat_group)
-	    if (!next->reachable)
-	      {
-		next->aux = first;
-		first = next;
-		next->reachable = true;
-	      }
-	}
+	  struct cgraph_edge *e;
+	  node = first;
+	  first = (struct cgraph_node *) first->aux;
+	  node->aux = processed;
 
-      /* We can freely remove inline clones even if they are cloned, however if
-	 function is clone of real clone, we must keep it around in order to
-	 make materialize_clones produce function body with the changes
-	 applied.  */
-      while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
-        {
-	  bool noninline = node->clone_of->decl != node->decl;
-	  node = node->clone_of;
-	  if (noninline)
+	  if (node->reachable)
+	    for (e = node->callees; e; e = e->next_callee)
+	      if (!e->callee->reachable
+		  && node->analyzed
+		  && (!e->inline_failed || !e->callee->analyzed
+		      || (!DECL_EXTERNAL (e->callee->decl))
+		      || before_inlining_p))
+		{
+		  bool prev_reachable = e->callee->reachable;
+		  e->callee->reachable |= node->reachable;
+		  if (!e->callee->aux
+		      || (e->callee->aux == processed
+			  && prev_reachable != e->callee->reachable))
+		    {
+		      e->callee->aux = first;
+		      first = e->callee;
+		    }
+		}
+
+	  /* If any function in a comdat group is reachable, force
+	     all other functions in the same comdat group to be
+	     also reachable.  */
+	  if (node->same_comdat_group
+	      && node->reachable
+	      && !node->global.inlined_to)
 	    {
-	      node->aux = first;
-	      first = node;
-	      break;
+	      for (next = node->same_comdat_group;
+		   next != node;
+		   next = next->same_comdat_group)
+		if (!next->reachable)
+		  {
+		    next->aux = first;
+		    first = next;
+		    next->reachable = true;
+		  }
 	    }
+
+	  /* We can freely remove inline clones even if they are cloned, however if
+	     function is clone of real clone, we must keep it around in order to
+	     make materialize_clones produce function body with the changes
+	     applied.  */
+	  while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
+	    {
+	      bool noninline = node->clone_of->decl != node->decl;
+	      node = node->clone_of;
+	      if (noninline)
+	      	{
+		  enqueue_cgraph_node (node, &first);
+		  break;
+		}
+	    }
+	  process_references (&node->ref_list, &first, &first_varpool, before_inlining_p);
+	}
+      if (first_varpool != (struct varpool_node *) (void *) 1)
+	{
+	  vnode = first_varpool;
+	  first_varpool = (struct varpool_node *)first_varpool->aux;
+	  vnode->aux = NULL;
+	  process_references (&vnode->ref_list, &first, &first_varpool, before_inlining_p);
 	}
     }
 
@@ -274,6 +362,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  else
 		    gcc_assert (!clone->in_other_partition);
 		  cgraph_node_remove_callees (node);
+		  ipa_remove_all_references (&node->ref_list);
 		  if (node->prev_sibling_clone)
 		    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
 		  else if (node->clone_of)
@@ -304,6 +393,19 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	}
       node->aux = NULL;
     }
+  if (file)
+    fprintf (file, "\nReclaiming variables:");
+  for (vnode = varpool_nodes; vnode; vnode = vnext)
+    {
+      vnext = vnode->next;
+      if (!vnode->needed)
+        {
+	   if (file)
+	     fprintf (file, " %s", varpool_node_name (vnode));
+	   varpool_remove_node (vnode);
+	}
+    }
+
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif

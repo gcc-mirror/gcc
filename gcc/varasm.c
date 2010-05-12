@@ -5650,6 +5650,7 @@ find_decl_and_mark_needed (tree decl, tree target)
   else if (vnode)
     {
       varpool_mark_needed_node (vnode);
+      vnode->force_output = 1;
       return vnode->decl;
     }
   else
