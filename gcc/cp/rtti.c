@@ -255,7 +255,8 @@ get_tinfo_decl_dynamic (tree exp)
   type = TYPE_MAIN_VARIANT (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
-  if (CLASS_TYPE_P (type) || TREE_CODE (type) == UNKNOWN_TYPE)
+  if (CLASS_TYPE_P (type) || type == unknown_type_node
+      || type == init_list_type_node)
     type = complete_type_or_else (type, exp);
 
   if (!type)
@@ -482,7 +483,8 @@ get_typeid (tree type)
   type = TYPE_MAIN_VARIANT (type);
 
   /* For UNKNOWN_TYPEs call complete_type_or_else to get diagnostics.  */
-  if (CLASS_TYPE_P (type) || TREE_CODE (type) == UNKNOWN_TYPE)
+  if (CLASS_TYPE_P (type) || type == unknown_type_node
+      || type == init_list_type_node)
     type = complete_type_or_else (type, NULL_TREE);
 
   if (!type)
