@@ -784,7 +784,6 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
   int power_sign;
   gfc_expr *result;
   arith rc;
-  extern bool init_flag;
 
   rc = ARITH_OK;
   result = gfc_get_constant_expr (op1->ts.type, op1->ts.kind, &op1->where);
@@ -899,7 +898,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
     case BT_REAL:
 
-      if (init_flag)
+      if (gfc_init_expr_flag)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
 			      "exponent in an initialization "
@@ -921,7 +920,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
     case BT_COMPLEX:
       {
-	if (init_flag)
+	if (gfc_init_expr_flag)
 	  {
 	    if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
 				"exponent in an initialization "

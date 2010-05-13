@@ -1,3 +1,8 @@
+2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/35779
+        * gfortran.dg/initialization_25.f90: New.
+
 2010-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/otr-fold-1.C: New test.

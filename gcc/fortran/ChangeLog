@@ -1,3 +1,12 @@
+2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/35779
+        * intrinsic.c (gfc_init_expr): Renamed to gfc_init_expr_flag.
+        Updated all usages.
+        * expr.c (init_flag): Removed; use gfc_init_expr_flag everywhere.
+        * array.c (match_array_list): Pass on gfc_init_expr_flag when matching
+        iterators.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44036

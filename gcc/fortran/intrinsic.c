@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Namespace to hold the resolved symbols for intrinsic subroutines.  */
 static gfc_namespace *gfc_intrinsic_namespace;
 
-int gfc_init_expr = 0;
+bool gfc_init_expr_flag = false;
 
 /* Pointers to an intrinsic function and its argument names that are being
    checked.  */
@@ -3803,7 +3803,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
 
   if ((isym->id == GFC_ISYM_REAL || isym->id == GFC_ISYM_DBLE
        || isym->id == GFC_ISYM_CMPLX)
-      && gfc_init_expr
+      && gfc_init_expr_flag
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Function '%s' "
 			 "as initialization expression at %L", name,
 			 &expr->where) == FAILURE)
@@ -3879,7 +3879,7 @@ got_specific:
      (4)   A reference to an elemental standard intrinsic function,
            where each argument is an initialization expression  */
 
-  if (gfc_init_expr && isym->elemental && flag
+  if (gfc_init_expr_flag && isym->elemental && flag
       && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Elemental function "
 			"as initialization expression with non-integer/non-"
 		        "character arguments at %L", &expr->where) == FAILURE)

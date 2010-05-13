@@ -879,7 +879,7 @@ match_array_list (gfc_constructor_base *result)
 
   for (n = 1;; n++)
     {
-      m = gfc_match_iterator (&iter, 0);
+      m = gfc_match_iterator (&iter, gfc_init_expr_flag);
       if (m == MATCH_YES)
 	break;
       if (m == MATCH_ERROR)
