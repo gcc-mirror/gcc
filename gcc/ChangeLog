@@ -1,5 +1,10 @@
 2010-05-13  Jan Hubicka  <jh@suse.cz>
 
+	* varpool.c (decide_is_variable_needed): Drop code checking
+	TREE_SYMBOL_REFERENCED.
+
+2010-05-13  Jan Hubicka  <jh@suse.cz>
+
 	* final.c (output_addr_const): Do not call mark_decl_referenced.
 	* cgraphunit.c (process_function_and_variable_attributes): Use
 	mark_needed_node dirrectly.
