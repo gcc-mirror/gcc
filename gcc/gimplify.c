@@ -6643,16 +6643,12 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case MODIFY_EXPR:
 	case INIT_EXPR:
-	  {
-	    tree from = TREE_OPERAND (*expr_p, 1);
-	    ret = gimplify_modify_expr (expr_p, pre_p, post_p,
-					fallback != fb_none);
-	    /* Don't let the end of loop logic change GS_OK into GS_ALL_DONE
-	       if the RHS has changed.  */
-	    if (ret == GS_OK && *expr_p == save_expr
-		&& TREE_OPERAND (*expr_p, 1) != from)
-	      continue;
-	  }
+	  ret = gimplify_modify_expr (expr_p, pre_p, post_p,
+				      fallback != fb_none);
+	  /* Don't let the end of loop logic change GS_OK to GS_ALL_DONE;
+	     gimplify_modify_expr_rhs might have changed the RHS.  */
+	  if (ret == GS_OK && *expr_p)
+	    continue;
 	  break;
 
 	case TRUTH_ANDIF_EXPR:

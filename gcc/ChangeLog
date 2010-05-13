@@ -1,5 +1,8 @@
 2010-05-13  Jason Merrill  <jason@redhat.com>
 
+	* gimplify.c (gimplify_expr) [MODIFY_EXPR]: Trust GS_OK even if the
+	rhs didn't change.
+
 	PR c++/43787
 	* gimplify.c (gimplify_expr): Keep working if gimplify_modify_expr
 	returns GS_OK.
