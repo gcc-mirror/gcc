@@ -776,6 +776,7 @@ enum cp_tree_index
     CPTI_KEYED_CLASSES,
 
     CPTI_NULLPTR,
+    CPTI_NULLPTR_TYPE,
 
     CPTI_MAX
 };
@@ -812,6 +813,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 #define nullptr_node			cp_global_trees[CPTI_NULLPTR]
+#define nullptr_type_node		cp_global_trees[CPTI_NULLPTR_TYPE]
 
 /* We cache these tree nodes so as to call get_identifier less
    frequently.  */
@@ -3002,6 +3004,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    || TREE_CODE (TYPE) == REAL_TYPE \
    || TREE_CODE (TYPE) == COMPLEX_TYPE)
 
+/* True iff TYPE is cv decltype(nullptr).  */
+#define NULLPTR_TYPE_P(TYPE)				\
+  (TREE_CODE (TYPE) == LANG_TYPE			\
+   && TYPE_MAIN_VARIANT (TYPE) == nullptr_type_node)
+
 /* [basic.types]
 
    Arithmetic types, enumeration types, pointer types,
@@ -3015,7 +3022,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    || ARITHMETIC_TYPE_P (TYPE)			\
    || TYPE_PTR_P (TYPE)				\
    || TYPE_PTRMEMFUNC_P (TYPE)                  \
-   || TREE_CODE (TYPE) == NULLPTR_TYPE)
+   || NULLPTR_TYPE_P (TYPE))
 
 /* Determines whether this type is a C++0x scoped enumeration
    type. Scoped enumerations types are introduced via "enum class" or

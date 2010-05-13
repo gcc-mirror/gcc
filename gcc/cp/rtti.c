@@ -1046,8 +1046,12 @@ typeinfo_in_lib_p (tree type)
     case BOOLEAN_TYPE:
     case REAL_TYPE:
     case VOID_TYPE:
-    case NULLPTR_TYPE:
       return true;
+
+    case LANG_TYPE:
+      if (NULLPTR_TYPE_P (type))
+	return true;
+      /* else fall through.  */
 
     default:
       return false;
@@ -1454,7 +1458,6 @@ emit_support_tinfos (void)
 {
   /* Dummy static variable so we can put nullptr in the array; it will be
      set before we actually start to walk the array.  */
-  static tree nullptr_type_node;
   static tree *const fundamentals[] =
   {
     &void_type_node,
@@ -1484,7 +1487,6 @@ emit_support_tinfos (void)
   if (!dtor || DECL_EXTERNAL (dtor))
     return;
   doing_runtime = 1;
-  nullptr_type_node = TREE_TYPE (nullptr_node);
   for (ix = 0; fundamentals[ix]; ix++)
     {
       tree bltn = *fundamentals[ix];

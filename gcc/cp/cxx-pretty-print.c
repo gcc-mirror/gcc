@@ -340,7 +340,7 @@ pp_cxx_constant (cxx_pretty_printer *pp, tree t)
       break;
 
     case INTEGER_CST:
-      if (TREE_CODE (TREE_TYPE (t)) == NULLPTR_TYPE)
+      if (NULLPTR_TYPE_P (TREE_TYPE (t)))
 	{
 	  pp_string (pp, "nullptr");
 	  break;

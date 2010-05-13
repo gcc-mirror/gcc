@@ -464,7 +464,7 @@ null_ptr_cst_p (tree t)
      an rvalue of type std::nullptr_t. */
   t = integral_constant_value (t);
   if (t == null_node
-      || TREE_CODE (TREE_TYPE (t)) == NULLPTR_TYPE)
+      || NULLPTR_TYPE_P (TREE_TYPE (t)))
     return true;
   if (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t))
     {
@@ -783,7 +783,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
      null pointer constant of integral type can be converted to an
      rvalue of type std::nullptr_t. */
   if ((tcode == POINTER_TYPE || TYPE_PTR_TO_MEMBER_P (to)
-       || tcode == NULLPTR_TYPE)
+       || NULLPTR_TYPE_P (to))
       && expr && null_ptr_cst_p (expr))
     conv = build_conv (ck_std, to, conv);
   else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
@@ -924,14 +924,14 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  || UNSCOPED_ENUM_P (from)
 	  || fcode == POINTER_TYPE
 	  || TYPE_PTR_TO_MEMBER_P (from)
-	  || fcode == NULLPTR_TYPE)
+	  || NULLPTR_TYPE_P (from))
 	{
 	  conv = build_conv (ck_std, to, conv);
 	  if (fcode == POINTER_TYPE
 	      || TYPE_PTRMEM_P (from)
 	      || (TYPE_PTRMEMFUNC_P (from)
 		  && conv->rank < cr_pbool)
-              || fcode == NULLPTR_TYPE)
+	      || NULLPTR_TYPE_P (from))
 	    conv->rank = cr_pbool;
 	  return conv;
 	}
@@ -5209,7 +5209,7 @@ convert_arg_to_ellipsis (tree arg)
 	  < TYPE_PRECISION (double_type_node))
       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (arg))))
     arg = convert_to_real (double_type_node, arg);
-  else if (TREE_CODE (TREE_TYPE (arg)) == NULLPTR_TYPE)
+  else if (NULLPTR_TYPE_P (TREE_TYPE (arg)))
     arg = null_pointer_node;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
     arg = perform_integral_promotions (arg);
