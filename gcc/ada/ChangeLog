@@ -1,7 +1,6 @@
 2010-05-13  Andreas Schwab  <schwab@linux-m68k.org>
 
-	* tracebak.c (__gnat_backtrace): Mark top_stack with
-	ATTRIBUTE_UNUSED.
+	* tracebak.c (__gnat_backtrace): Mark top_stack with ATTRIBUTE_UNUSED.
 
 2010-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -86,7 +85,7 @@
 	PR 40989
 	* gcc-interface/misc.c (gnat_handle_option): Add argument kind.
 
-2010-05-02  Giuseppe Scrivano <gscrivano@gnu.org>
+2010-05-02  Giuseppe Scrivano  <gscrivano@gnu.org>
 
 	* gnathtml.pl: Use 755 as mask for new directories.
 
