@@ -629,7 +629,7 @@ build_vtbl_ref_1 (tree instance, tree idx)
   if (!vtbl)
     vtbl = build_vfield_ref (instance, basetype);
 
-  aref = build_array_ref (input_location, vtbl, idx);
+  aref = build_array_ref (input_location, vtbl, idx, tf_warning_or_error);
   TREE_CONSTANT (aref) |= TREE_CONSTANT (vtbl) && TREE_CONSTANT (idx);
 
   return aref;
