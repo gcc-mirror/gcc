@@ -1,3 +1,13 @@
+2010-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/44036
+	* openmp.c (resolve_omp_clauses): Allow procedure pointers in clause
+	variable lists.
+	* trans-openmp.c (gfc_omp_privatize_by_reference): Don't privatize
+	by reference dummy procedures or non-dummy procedure pointers.
+	(gfc_omp_predetermined_sharing): Return
+	OMP_CLAUSE_DEFAULT_FIRSTPRIVATE for dummy procedures.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.

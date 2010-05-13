@@ -812,6 +812,8 @@ resolve_omp_clauses (gfc_code *code)
 		if (el)
 		  continue;
 	      }
+	    if (n->sym->attr.proc_pointer)
+	      continue;
 	  }
 	gfc_error ("Object '%s' is not a variable at %L", n->sym->name,
 		   &code->loc);
