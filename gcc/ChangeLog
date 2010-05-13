@@ -1,3 +1,10 @@
+2010-05-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc (i[34567]86-*-mingw* | x86_64-*-mingw*): Choose
+	t-mingw-w64 or t-mingw-w32 for multilib configuration.
+	* config/i386/t-mingw-w32: New.
+	* config/i386/t-mingw-w64 (MULTILIB_OSDIRNAMES): Change lib64 to lib.
+	
 2010-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gimple.c (gimple_fold_obj_type_ref): Removed (a replacement moved to
