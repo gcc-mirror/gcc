@@ -3210,7 +3210,7 @@ finish_offsetof (tree expr)
     }
   if (TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
-      || TREE_CODE (TREE_TYPE (expr)) == UNKNOWN_TYPE)
+      || TREE_TYPE (expr) == unknown_type_node)
     {
       if (TREE_CODE (expr) == COMPONENT_REF
 	  || TREE_CODE (expr) == COMPOUND_EXPR)

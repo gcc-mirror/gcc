@@ -6398,7 +6398,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
   flags &= ~tf_ptrmem_ok;
 
-  if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
+  if (lhstype == unknown_type_node)
     {
       if (flags & tf_error)
 	error ("not enough type information");

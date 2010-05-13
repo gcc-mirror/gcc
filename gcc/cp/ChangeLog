@@ -1,5 +1,16 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (UNKNOWN_TYPE): Remove.
+	* decl.c (cxx_init_decl_processing): Use LANG_TYPE instead.
+	* error.c (dumy_type, dump_type_prefix, dump_type_suffix): Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic): Likewise.
+	* class.c (instantiate_type): Check unknown_type_node rather than
+	UNKNOWN_TYPE.
+	* name-lookup.c (maybe_push_decl): Likewise.
+	* rtti.c (get_tinfo_decl_dynamic): Likewise.
+	(get_typeid): Likewise.
+	* semantics.c (finish_offsetof): Likewise.
+
 	PR c++/20669
 	* call.c (add_template_candidate_real): If deduction fails, still
 	add the template as a non-viable candidate.

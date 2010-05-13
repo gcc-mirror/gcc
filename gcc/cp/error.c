@@ -333,11 +333,13 @@ dump_type (tree t, int flags)
 
   switch (TREE_CODE (t))
     {
-    case UNKNOWN_TYPE:
+    case LANG_TYPE:
       if (t == init_list_type_node)
 	pp_string (cxx_pp, M_("<brace-enclosed initializer list>"));
-      else
+      else if (t == unknown_type_node)
 	pp_string (cxx_pp, M_("<unresolved overloaded function type>"));
+      else
+	gcc_unreachable ();
       break;
 
     case TREE_LIST:
@@ -698,7 +700,7 @@ dump_type_prefix (tree t, int flags)
     case TYPE_DECL:
     case TREE_VEC:
     case UNION_TYPE:
-    case UNKNOWN_TYPE:
+    case LANG_TYPE:
     case VOID_TYPE:
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
@@ -801,7 +803,7 @@ dump_type_suffix (tree t, int flags)
     case TYPE_DECL:
     case TREE_VEC:
     case UNION_TYPE:
-    case UNKNOWN_TYPE:
+    case LANG_TYPE:
     case VOID_TYPE:
     case TYPENAME_TYPE:
     case COMPLEX_TYPE:
