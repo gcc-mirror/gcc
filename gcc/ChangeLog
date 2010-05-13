@@ -1,3 +1,33 @@
+2010-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43983
+	* var-tracking.c (track_expr_p): Allow tracking of variables optimized
+	by SRA.
+	* Makefile.in (dwarf2out.o): Depend on $(TREE_FLOW_H).
+	* tree-sra.c (create_access_replacement): Call unshare_expr before
+	passing expr to SET_DECL_DEBUG_EXPR, and remove any SSA_NAMEs from
+	it.
+	* dwarf2out.c: Include tree-flow.h.
+	(struct var_loc_node): Rename var_loc_note field to loc, add comment.
+	(size_of_loc_descr, output_loc_operands, output_loc_operands_raw):
+	Handle DW_OP_bit_piece.
+	(decl_piece_bitsize, decl_piece_varloc_ptr, decl_piece_node,
+	construct_piece_list, adjust_piece_list): New functions.
+	(add_var_loc_to_decl): Handle SRA optimized variables.
+	Adjust for var_loc_note to loc field renaming.
+	(dw_loc_list_1): For WANT_ADDRESS == 2 prefer DECL_MODE of decl
+	in VAR_LOCATION note.
+	(new_loc_descr_op_bit_piece): New function.
+	(dw_sra_loc_expr): New function.
+	(dw_loc_list): Use it.  Don't handle the last range after the
+	loop, handle it inside of the loop.  Adjust for var_loc_note
+	to loc field renaming.
+	(add_location_or_const_value_attribute): Only special case
+	single entry loc lists if loc is NOTE_P.  Adjust for
+	var_loc_note to loc field renaming.
+	(dwarf2out_var_location): Don't set newloc->var_loc_note
+	and newloc->next here.
+
 2010-05-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_mark_address_taken_node): No longer imply needed flag.
