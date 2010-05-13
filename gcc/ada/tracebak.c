@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2000-2009, AdaCore                     *
+ *                     Copyright (C) 2000-2010, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -435,7 +435,7 @@ __gnat_backtrace (void **array,
 {
   struct layout *current;
   void *top_frame;
-  void *top_stack;
+  void *top_stack ATTRIBUTE_UNUSED;
   int cnt = 0;
 
   if (FORCE_CALL)
