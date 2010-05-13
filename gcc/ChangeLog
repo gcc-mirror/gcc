@@ -1,3 +1,9 @@
+2010-05-13  Jeff Law  <law@redhat.com>
+
+	* ira-conflicts.c (print_allocno_conflicts): New function broken out
+	from...
+	(print_conflicts): Call print_allocno_conflicts.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44104
