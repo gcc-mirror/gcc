@@ -2860,8 +2860,8 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
    LOC is the location to use in building the array reference.  */
 
 tree
-build_array_ref (location_t loc, tree array, tree idx,
-		 tsubst_flags_t complain)
+cp_build_array_ref (location_t loc, tree array, tree idx,
+		    tsubst_flags_t complain)
 {
   tree ret;
 
@@ -2882,8 +2882,8 @@ build_array_ref (location_t loc, tree array, tree idx,
     {
     case COMPOUND_EXPR:
       {
-	tree value = build_array_ref (loc, TREE_OPERAND (array, 1), idx,
-				      complain);
+	tree value = cp_build_array_ref (loc, TREE_OPERAND (array, 1), idx,
+					 complain);
 	ret = build2 (COMPOUND_EXPR, TREE_TYPE (value),
 		      TREE_OPERAND (array, 0), value);
 	SET_EXPR_LOCATION (ret, loc);
@@ -2893,8 +2893,10 @@ build_array_ref (location_t loc, tree array, tree idx,
     case COND_EXPR:
       ret = build_conditional_expr
 	      (TREE_OPERAND (array, 0),
-	       build_array_ref (loc, TREE_OPERAND (array, 1), idx, complain),
-	       build_array_ref (loc, TREE_OPERAND (array, 2), idx, complain),
+	       cp_build_array_ref (loc, TREE_OPERAND (array, 1), idx,
+				   complain),
+	       cp_build_array_ref (loc, TREE_OPERAND (array, 2), idx,
+				   complain),
 	       tf_warning_or_error);
       protected_set_expr_location (ret, loc);
       return ret;
@@ -3019,6 +3021,14 @@ build_array_ref (location_t loc, tree array, tree idx,
     protected_set_expr_location (ret, loc);
     return ret;
   }
+}
+
+/* Entry point for Obj-C++.  */
+
+tree
+build_array_ref (location_t loc, tree array, tree idx)
+{
+  return cp_build_array_ref (loc, array, idx, tf_warning_or_error);
 }
 
 /* Resolve a pointer to member function.  INSTANCE is the object

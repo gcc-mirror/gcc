@@ -1,3 +1,12 @@
+2010-05-13  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (cp_build_array_ref): Factor out from...
+	(build_array_ref): ...here.  Drop complain parm.
+	(build_new_op): Adjust.
+	* class.c (build_vtbl_ref_1): Adjust.
+	* decl2.c (grok_array_decl): Adjust.
+	* cp-tree.h: Adjust prototypes.
+
 2010-05-13  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (cp_finish_decl): Do not worry about used attribute.
