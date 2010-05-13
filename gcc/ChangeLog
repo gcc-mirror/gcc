@@ -1,3 +1,11 @@
+2010-05-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/rs6000/rs6000-protos.h
+	(rs6000_mode_dependent_address_ptr): Change argument to const_rtx.
+	* config/rs6000/rs6000.c (rs6000_mode_dependent_address)
+	(rs6000_debug_mode_dependent_address)
+	(rs6000_mode_dependent_address_ptr): Likewise.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43983
@@ -274,13 +282,13 @@
 
 2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
 
-        * tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Reset
+	* tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Reset
 	prefetch_before to PREFETCH_ALL if to accesses "meet" beyond
 	cache size.
 
 2010-05-11  Christian Borntraeger  <borntraeger@de.ibm.com>
 
-        * tree-ssa-loop-prefetch.c: Add debug for dropped prefetches.
+	* tree-ssa-loop-prefetch.c: Add debug for dropped prefetches.
 
 2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
