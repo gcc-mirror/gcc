@@ -1,3 +1,7 @@
+2010-05-13  Anatoly Sokolov  <aesok@post.ru>
+
+	* targhooks.c (default_mode_dependent_address_p): Cast 'addr' to rtx.
+
 2010-05-13  Jeff Law  <law@redhat.com>
 
 	* ira-conflicts.c (print_allocno_conflicts): New function broken out
