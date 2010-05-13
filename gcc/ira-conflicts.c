@@ -684,6 +684,59 @@ print_hard_reg_set (FILE *file, const char *title, HARD_REG_SET set)
   putc ('\n', file);
 }
 
+static void
+print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
+{
+  HARD_REG_SET conflicting_hard_regs;
+  ira_allocno_t conflict_a;
+  ira_allocno_conflict_iterator aci;
+  basic_block bb;
+
+  if (reg_p)
+    fprintf (file, ";; r%d", ALLOCNO_REGNO (a));
+  else
+    {
+      fprintf (file, ";; a%d(r%d,", ALLOCNO_NUM (a), ALLOCNO_REGNO (a));
+      if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
+        fprintf (file, "b%d", bb->index);
+      else
+        fprintf (file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
+      putc (')', file);
+    }
+  fputs (" conflicts:", file);
+  if (ALLOCNO_CONFLICT_ALLOCNO_ARRAY (a) != NULL)
+    FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
+      {
+        if (reg_p)
+          fprintf (file, " r%d,", ALLOCNO_REGNO (conflict_a));
+        else
+          {
+	    fprintf (file, " a%d(r%d,", ALLOCNO_NUM (conflict_a),
+		     ALLOCNO_REGNO (conflict_a));
+	    if ((bb = ALLOCNO_LOOP_TREE_NODE (conflict_a)->bb) != NULL)
+	      fprintf (file, "b%d)", bb->index);
+	    else
+	      fprintf (file, "l%d)",
+		       ALLOCNO_LOOP_TREE_NODE (conflict_a)->loop->num);
+	  }
+      }
+  COPY_HARD_REG_SET (conflicting_hard_regs,
+		     ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
+  AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
+  AND_HARD_REG_SET (conflicting_hard_regs,
+		    reg_class_contents[ALLOCNO_COVER_CLASS (a)]);
+  print_hard_reg_set (file, "\n;;     total conflict hard regs:",
+		      conflicting_hard_regs);
+  COPY_HARD_REG_SET (conflicting_hard_regs,
+		     ALLOCNO_CONFLICT_HARD_REGS (a));
+  AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
+  AND_HARD_REG_SET (conflicting_hard_regs,
+		    reg_class_contents[ALLOCNO_COVER_CLASS (a)]);
+  print_hard_reg_set (file, ";;     conflict hard regs:",
+		      conflicting_hard_regs);
+  putc ('\n', file);
+}
+
 /* Print information about allocno or only regno (if REG_P) conflicts
    to FILE.  */
 static void
@@ -691,58 +744,9 @@ print_conflicts (FILE *file, bool reg_p)
 {
   ira_allocno_t a;
   ira_allocno_iterator ai;
-  HARD_REG_SET conflicting_hard_regs;
 
   FOR_EACH_ALLOCNO (a, ai)
-    {
-      ira_allocno_t conflict_a;
-      ira_allocno_conflict_iterator aci;
-      basic_block bb;
-
-      if (reg_p)
-	fprintf (file, ";; r%d", ALLOCNO_REGNO (a));
-      else
-	{
-	  fprintf (file, ";; a%d(r%d,", ALLOCNO_NUM (a), ALLOCNO_REGNO (a));
-	  if ((bb = ALLOCNO_LOOP_TREE_NODE (a)->bb) != NULL)
-	    fprintf (file, "b%d", bb->index);
-	  else
-	    fprintf (file, "l%d", ALLOCNO_LOOP_TREE_NODE (a)->loop->num);
-	  putc (')', file);
-	}
-      fputs (" conflicts:", file);
-      if (ALLOCNO_CONFLICT_ALLOCNO_ARRAY (a) != NULL)
-	FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
-	  {
-	    if (reg_p)
-	      fprintf (file, " r%d,", ALLOCNO_REGNO (conflict_a));
-	    else
-	      {
-		fprintf (file, " a%d(r%d,", ALLOCNO_NUM (conflict_a),
-			 ALLOCNO_REGNO (conflict_a));
-		if ((bb = ALLOCNO_LOOP_TREE_NODE (conflict_a)->bb) != NULL)
-		  fprintf (file, "b%d)", bb->index);
-		else
-		  fprintf (file, "l%d)",
-			   ALLOCNO_LOOP_TREE_NODE (conflict_a)->loop->num);
-	      }
-	  }
-      COPY_HARD_REG_SET (conflicting_hard_regs,
-			 ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      AND_HARD_REG_SET (conflicting_hard_regs,
-			reg_class_contents[ALLOCNO_COVER_CLASS (a)]);
-      print_hard_reg_set (file, "\n;;     total conflict hard regs:",
-			  conflicting_hard_regs);
-      COPY_HARD_REG_SET (conflicting_hard_regs,
-			 ALLOCNO_CONFLICT_HARD_REGS (a));
-      AND_COMPL_HARD_REG_SET (conflicting_hard_regs, ira_no_alloc_regs);
-      AND_HARD_REG_SET (conflicting_hard_regs,
-			reg_class_contents[ALLOCNO_COVER_CLASS (a)]);
-      print_hard_reg_set (file, ";;     conflict hard regs:",
-			  conflicting_hard_regs);
-    }
-  putc ('\n', file);
+    print_allocno_conflicts (file, reg_p, a);
 }
 
 /* Print information about allocno or only regno (if REG_P) conflicts
