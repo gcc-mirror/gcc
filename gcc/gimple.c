@@ -4685,43 +4685,4 @@ gimple_decl_printable_name (tree decl, int verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
-
-/* Fold a OBJ_TYPE_REF expression to the address of a function.
-   KNOWN_TYPE carries the true type of OBJ_TYPE_REF_OBJECT(REF).  Adapted
-   from cp_fold_obj_type_ref, but it tolerates types with no binfo
-   data.  */
-
-tree
-gimple_fold_obj_type_ref (tree ref, tree known_type)
-{
-  HOST_WIDE_INT index;
-  HOST_WIDE_INT i;
-  tree v;
-  tree fndecl;
-
-  if (TYPE_BINFO (known_type) == NULL_TREE)
-    return NULL_TREE;
-
-  v = BINFO_VIRTUALS (TYPE_BINFO (known_type));
-  index = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-  i = 0;
-  while (i != index)
-    {
-      i += (TARGET_VTABLE_USES_DESCRIPTORS
-	    ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
-      v = TREE_CHAIN (v);
-    }
-
-  fndecl = TREE_VALUE (v);
-
-#ifdef ENABLE_CHECKING
-  gcc_assert (tree_int_cst_equal (OBJ_TYPE_REF_TOKEN (ref),
-				  DECL_VINDEX (fndecl)));
-#endif
-
-  cgraph_node (fndecl)->local.vtable_method = true;
-
-  return build_fold_addr_expr (fndecl);
-}
-
 #include "gt-gimple.h"

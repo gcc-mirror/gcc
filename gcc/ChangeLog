@@ -1,3 +1,16 @@
+2010-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple.c (gimple_fold_obj_type_ref): Removed (a replacement moved to
+	gimple-fold.c).
+	* gimple-fold.c (get_base_binfo_for_type): New function.
+	(gimple_get_relevant_ref_binfo): Likewise.
+	(gimple_fold_obj_type_ref_known_binfo): Likewise.
+	(gimple_fold_obj_type_ref): Likewise.
+	(fold_gimple_call): Simplify condition for folding virtual calls
+	and call gimple_fold_obj_type_ref.
+	* gimple.h (gimple_get_relevant_ref_binfo): Declare.
+	(gimple_fold_obj_type_ref_known_binfo): Likewise.
+
 2010-05-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/rs6000/rs6000-protos.h
