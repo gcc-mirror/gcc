@@ -4517,7 +4517,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
       return cp_build_unary_op (code, arg1, candidates != 0, complain);
 
     case ARRAY_REF:
-      return build_array_ref (input_location, arg1, arg2);
+      return build_array_ref (input_location, arg1, arg2, complain);
 
     case MEMBER_REF:
       return build_m_component_ref (cp_build_indirect_ref (arg1, RO_NULL, 

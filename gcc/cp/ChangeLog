@@ -1,5 +1,11 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (build_array_ref): Take complain parm.
+	* cp-tree.h: Add it to prototype.
+	* call.c (build_new_op): Pass it.
+	* class.c (build_vtbl_ref): Pass it.
+	* decl2.c (grok_array_decl): Pass it.
+
 	PR bootstrap/44048
 	PR target/44099
 	* cp-tree.def (NULLPTR_TYPE): Remove.
