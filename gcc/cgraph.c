@@ -1686,8 +1686,8 @@ cgraph_mark_needed_node (struct cgraph_node *node)
 void
 cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
+  cgraph_mark_reachable_node (node);
   node->address_taken = 1;
-  cgraph_mark_needed_node (node);
 }
 
 /* Return local info for the compiled function.  */
