@@ -1,3 +1,9 @@
+2010-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44104
+	* dwarf2out.c (modified_type_die): Don't dereference mod_type_die
+	if it is NULL.
+
 2010-05-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc (i[34567]86-*-mingw* | x86_64-*-mingw*): Choose
