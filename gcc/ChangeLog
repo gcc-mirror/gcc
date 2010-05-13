@@ -1,3 +1,10 @@
+2010-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43787
+	* gimplify.c (gimplify_expr): Keep working if gimplify_modify_expr
+	returns GS_OK.
+	(gimplify_modify_expr_rhs): Return GS_OK if anything changed.
+
 2010-05-12  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adjust the z10

@@ -1,3 +1,9 @@
+2010-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43787
+	* cp-gimplify.c (cp_gimplify_expr): Remove copies of empty classes.
+	* call.c (build_over_call): Don't try to avoid INIT_EXPR copies here.
+
 2010-05-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38064
