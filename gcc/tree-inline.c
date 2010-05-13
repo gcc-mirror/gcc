@@ -1711,6 +1711,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
 		  gcc_assert (dest->needed || !dest->analyzed
+			      || dest->address_taken
 		  	      || !id->src_node->analyzed);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		    cgraph_create_edge_including_clones

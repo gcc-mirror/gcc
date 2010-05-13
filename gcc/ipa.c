@@ -207,7 +207,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #endif
   varpool_reset_queue ();
   for (node = cgraph_nodes; node; node = node->next)
-    if (!cgraph_can_remove_if_no_direct_calls_p (node)
+    if (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
 	&& ((!DECL_EXTERNAL (node->decl))
             || before_inlining_p))
       {
@@ -405,6 +405,25 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	   varpool_remove_node (vnode);
 	}
     }
+  if (file)
+    fprintf (file, "\nClearing address taken flags:");
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->address_taken
+	&& !node->reachable_from_other_partition)
+      {
+	int i;
+        struct ipa_ref *ref;
+	bool found = false;
+        for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref)
+		    && !found; i++)
+	  found = true;
+	if (!found)
+	  {
+	    if (file)
+	      fprintf (file, " %s", cgraph_node_name (node));
+	    node->address_taken = false;
+	  }
+      }
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();

@@ -1,3 +1,17 @@
+2010-05-12  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_mark_address_taken_node): No longer imply needed flag.
+	* cgraph.h (cgraph_only_called_directly_p,
+	cgraph_can_remove_if_no_direct_calls_p): test address_taken flag.
+	(cgraph_can_remove_if_no_direct_calls_and_refs_p): New function.
+	* cgraphunit.c (cgraph_mark_functions_to_output): Test address_taken.
+	(assemble
+	* ipa.c (cgraph_remove_unreachable_nodes): Use
+	cgraph_can_remove_if_no_direct_calls_and_refs_p; clear address_taken flags.
+	* tree-inline.c (copy_bb): Check address_taken flag.
+	* tree-profile.c (tree_gen_ic_func_profiler): Check address_taken and
+	externally_visible flag.
+
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
 	PR bootstrap/44048

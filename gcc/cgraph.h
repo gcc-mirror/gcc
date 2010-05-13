@@ -856,7 +856,17 @@ varpool_node_set_nonempty_p (varpool_node_set set)
 static inline bool
 cgraph_only_called_directly_p (struct cgraph_node *node)
 {
-  return !node->needed && !node->local.externally_visible;
+  return !node->needed && !node->address_taken && !node->local.externally_visible;
+}
+
+/* Return true when function NODE can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+static inline bool
+cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
+{
+  return (!node->needed && !node->reachable_from_other_partition
+  	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
 }
 
 /* Return true when function NODE can be removed from callgraph
@@ -865,8 +875,7 @@ cgraph_only_called_directly_p (struct cgraph_node *node)
 static inline bool
 cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 {
-  return (!node->needed && !node->reachable_from_other_partition
-  	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
+  return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
 }
 
 /* Constant pool accessor function.  */

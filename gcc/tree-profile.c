@@ -345,7 +345,7 @@ tree_gen_ic_func_profiler (void)
   gimple stmt1, stmt2;
   tree tree_uid, cur_func;
 
-  if (!c_node->needed)
+  if (cgraph_only_called_directly_p (c_node))
     return;
 
   tree_init_edge_profiler ();

@@ -1201,6 +1201,7 @@ cgraph_mark_functions_to_output (void)
       if (node->analyzed
 	  && !node->global.inlined_to
 	  && (node->needed || node->reachable_from_other_partition
+	      || node->address_taken
 	      || (e && node->reachable))
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
