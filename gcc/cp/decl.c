@@ -6022,10 +6022,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;
-
-  /* If this was marked 'used', be sure it will be output.  */
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-    mark_decl_referenced (decl);
 }
 
 /* Returns a declaration for a VAR_DECL as if:
