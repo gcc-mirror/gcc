@@ -1118,9 +1118,9 @@ rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode, int, int,
 					     int, int *)
   = rs6000_legitimize_reload_address;
 
-static bool rs6000_mode_dependent_address (rtx);
-static bool rs6000_debug_mode_dependent_address (rtx);
-bool (*rs6000_mode_dependent_address_ptr) (rtx)
+static bool rs6000_mode_dependent_address (const_rtx);
+static bool rs6000_debug_mode_dependent_address (const_rtx);
+bool (*rs6000_mode_dependent_address_ptr) (const_rtx)
   = rs6000_mode_dependent_address;
 
 static enum reg_class rs6000_secondary_reload_class (enum reg_class,
@@ -5896,7 +5896,7 @@ rs6000_debug_legitimate_address_p (enum machine_mode mode, rtx x,
    sub-words of a TFmode operand, which is what we had before.  */
 
 static bool
-rs6000_mode_dependent_address (rtx addr)
+rs6000_mode_dependent_address (const_rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -5936,7 +5936,7 @@ rs6000_mode_dependent_address (rtx addr)
 
 /* Debug version of rs6000_mode_dependent_address.  */
 static bool
-rs6000_debug_mode_dependent_address (rtx addr)
+rs6000_debug_mode_dependent_address (const_rtx addr)
 {
   bool ret = rs6000_mode_dependent_address (addr);
 
