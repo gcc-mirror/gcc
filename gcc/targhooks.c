@@ -965,7 +965,7 @@ default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED)
 {
 #ifdef GO_IF_MODE_DEPENDENT_ADDRESS
 
-  GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
+  GO_IF_MODE_DEPENDENT_ADDRESS ((rtx) addr, win);
   return false;
   /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
  win: ATTRIBUTE_UNUSED_LABEL
