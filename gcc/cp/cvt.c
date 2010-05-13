@@ -704,7 +704,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 
       return fold_if_not_in_template (convert_to_integer (type, e));
     }
-  if (code == NULLPTR_TYPE && e && null_ptr_cst_p (e))
+  if (NULLPTR_TYPE_P (type) && e && null_ptr_cst_p (e))
     return nullptr_node;
   if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))
     return fold_if_not_in_template (cp_convert_to_pointer (type, e));

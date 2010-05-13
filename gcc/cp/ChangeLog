@@ -1,5 +1,23 @@
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
+	PR bootstrap/44048
+	PR target/44099
+	* cp-tree.def (NULLPTR_TYPE): Remove.
+	* cp-tree.h (NULLPTR_TYPE_P): New.
+	(SCALAR_TYPE_P): Use it.
+	(nullptr_type_node): New.
+	(cp_tree_index): Add CPTI_NULLPTR_TYPE.
+	* decl.c (cxx_init_decl_processing): Call record_builtin_type on
+	nullptr_type_node.
+	* cvt.c (ocp_convert): Use NULLPTR_TYPE_P instead of NULLPTR_TYPE.
+	* cxx-pretty-print.c (pp_cxx_constant): Likewise.
+	* error.c (dump_type, dump_type_prefix, dump_type_suffix): Likewise.
+	* mangle.c (write_type): Likewise.
+	* name-lookup.c (arg_assoc_type): Likewise.
+	* typeck.c (build_reinterpret_cast_1): Likewise.
+	* rtti.c (typeinfo_in_lib_p): Likewise.
+	(emit_support_tinfos): Remove local nullptr_type_node.
+
 	* cp-tree.h (UNKNOWN_TYPE): Remove.
 	* decl.c (cxx_init_decl_processing): Use LANG_TYPE instead.
 	* error.c (dumy_type, dump_type_prefix, dump_type_suffix): Likewise.

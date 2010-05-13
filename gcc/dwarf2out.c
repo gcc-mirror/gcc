@@ -12104,7 +12104,6 @@ is_base_type (tree type)
     case ENUMERAL_TYPE:
     case FUNCTION_TYPE:
     case METHOD_TYPE:
-    case NULLPTR_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
@@ -19186,18 +19185,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	 when appropriate.  */
       return;
 
-    case NULLPTR_TYPE:
-      {
-        dw_die_ref type_die = lookup_type_die (type);
-        if (type_die == NULL)
-          {
-            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die, type);
-            add_name_attribute (type_die, "decltype(nullptr)");
-            equate_type_number_to_die (type, type_die);
-          }
-      }
-      return;
-
     case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
@@ -19208,7 +19195,19 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       break;
 
     case LANG_TYPE:
-      /* No Dwarf representation currently defined.  */
+      /* Just use DW_TAG_unspecified_type.  */
+      {
+        dw_die_ref type_die = lookup_type_die (type);
+        if (type_die == NULL)
+          {
+	    tree name = TYPE_NAME (type);
+	    if (TREE_CODE (name) == TYPE_DECL)
+	      name = DECL_NAME (name);
+            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die, type);
+            add_name_attribute (type_die, IDENTIFIER_POINTER (name));
+            equate_type_number_to_die (type, type_die);
+          }
+      }
       break;
 
     default:

@@ -1,3 +1,13 @@
+2010-05-12  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/44048
+	PR target/44099
+	* dbxout.c (dbxout_type): Remove NULLPTR_TYPE handling.
+	* sdbout.c (plain_type_1): Likewise.
+	* dwarf2out.c (is_base_type): Likewise.
+	(gen_type_die_with_usage): Likewise.  Generate
+	DW_TAG_unspecified_type for any LANG_TYPE.
+
 2010-05-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges): Build

@@ -449,9 +449,6 @@ DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
    instantiation time.  */
 DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
 
-/* The type of a nullptr expression. This is a C++0x extension. */
-DEFTREECODE (NULLPTR_TYPE, "decltype(nullptr)", tcc_type, 0)
-
 /*
 Local variables:
 mode:c

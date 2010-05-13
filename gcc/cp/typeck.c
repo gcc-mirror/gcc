@@ -6028,7 +6028,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
      an integral type; the conversion has the same meaning and
      validity as a conversion of (void*)0 to the integral type.  */
   if (CP_INTEGRAL_TYPE_P (type)
-      && (TYPE_PTR_P (intype) || TREE_CODE (intype) == NULLPTR_TYPE))
+      && (TYPE_PTR_P (intype) || NULLPTR_TYPE_P (intype)))
     {
       if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
         {
@@ -6038,7 +6038,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
           else
             return error_mark_node;
         }
-      if (TREE_CODE (intype) == NULLPTR_TYPE)
+      if (NULLPTR_TYPE_P (intype))
         return build_int_cst (type, 0);
     }
   /* [expr.reinterpret.cast]
