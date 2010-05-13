@@ -1609,11 +1609,38 @@ create_access_replacement (struct access *access)
       && !DECL_ARTIFICIAL (access->base))
     {
       char *pretty_name = make_fancy_name (access->expr);
+      tree debug_expr = unshare_expr (access->expr), d;
 
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
 
-      SET_DECL_DEBUG_EXPR (repl, access->expr);
+      /* Get rid of any SSA_NAMEs embedded in debug_expr,
+	 as DECL_DEBUG_EXPR isn't considered when looking for still
+	 used SSA_NAMEs and thus they could be freed.  All debug info
+	 generation cares is whether something is constant or variable
+	 and that get_ref_base_and_extent works properly on the
+	 expression.  */
+      for (d = debug_expr; handled_component_p (d); d = TREE_OPERAND (d, 0))
+	switch (TREE_CODE (d))
+	  {
+	  case ARRAY_REF:
+	  case ARRAY_RANGE_REF:
+	    if (TREE_OPERAND (d, 1)
+		&& TREE_CODE (TREE_OPERAND (d, 1)) == SSA_NAME)
+	      TREE_OPERAND (d, 1) = SSA_NAME_VAR (TREE_OPERAND (d, 1));
+	    if (TREE_OPERAND (d, 3)
+		&& TREE_CODE (TREE_OPERAND (d, 3)) == SSA_NAME)
+	      TREE_OPERAND (d, 3) = SSA_NAME_VAR (TREE_OPERAND (d, 3));
+	    /* FALLTHRU */
+	  case COMPONENT_REF:
+	    if (TREE_OPERAND (d, 2)
+		&& TREE_CODE (TREE_OPERAND (d, 2)) == SSA_NAME)
+	      TREE_OPERAND (d, 2) = SSA_NAME_VAR (TREE_OPERAND (d, 2));
+	    break;
+	  default:
+	    break;
+	  }
+      SET_DECL_DEBUG_EXPR (repl, debug_expr);
       DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
       TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
     }

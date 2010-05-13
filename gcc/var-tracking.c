@@ -4505,10 +4505,27 @@ track_expr_p (tree expr, bool need_rtl)
       realdecl = DECL_DEBUG_EXPR (realdecl);
       if (realdecl == NULL_TREE)
 	realdecl = expr;
-      /* ??? We don't yet know how to emit DW_OP_piece for variable
-	 that has been SRA'ed.  */
       else if (!DECL_P (realdecl))
-	return 0;
+	{
+	  if (handled_component_p (realdecl))
+	    {
+	      HOST_WIDE_INT bitsize, bitpos, maxsize;
+	      tree innerdecl
+		= get_ref_base_and_extent (realdecl, &bitpos, &bitsize,
+					   &maxsize);
+	      if (!DECL_P (innerdecl)
+		  || DECL_IGNORED_P (innerdecl)
+		  || TREE_STATIC (innerdecl)
+		  || bitsize <= 0
+		  || bitpos + bitsize > 256
+		  || bitsize != maxsize)
+		return 0;
+	      else
+		realdecl = expr;
+	    }
+	  else
+	    return 0;
+	}
     }
 
   /* Do not track EXPR if REALDECL it should be ignored for debugging
