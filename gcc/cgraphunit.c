@@ -959,11 +959,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
     {
       tree decl = node->decl;
       if (DECL_PRESERVE_P (decl))
-	{
-	  mark_decl_referenced (decl);
-	  if (node->local.finalized)
-	     cgraph_mark_needed_node (node);
-	}
+	cgraph_mark_needed_node (node);
       if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
 	  if (! TREE_PUBLIC (node->decl))
@@ -979,7 +975,6 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       tree decl = vnode->decl;
       if (DECL_PRESERVE_P (decl))
 	{
-	  mark_decl_referenced (decl);
 	  vnode->force_output = true;
 	  if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
@@ -1602,7 +1597,6 @@ assemble_thunk (struct cgraph_node *node)
       cgraph_remove_same_body_alias (node);
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
-      mark_decl_referenced (thunk_fndecl);
       cgraph_add_new_function (thunk_fndecl, true);
       bitmap_obstack_release (NULL);
     }

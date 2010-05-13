@@ -1,3 +1,10 @@
+2010-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (output_addr_const): Do not call mark_decl_referenced.
+	* cgraphunit.c (process_function_and_variable_attributes): Use
+	mark_needed_node dirrectly.
+	(assemble_thunk): Do not call mark_decl_referenced.
+
 2010-05-13  Anatoly Sokolov  <aesok@post.ru>
 
 	* targhooks.c (default_mode_dependent_address_p): Cast 'addr' to rtx.
