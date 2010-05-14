@@ -55,6 +55,7 @@ void
 compile_resource_data (const char *name, const char *buffer, int length)
 {
   tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
+  VEC(constructor_elt,gc) *v = NULL;
 
   data_type = build_prim_array_type (unsigned_byte_type_node,
 				     strlen (name) + length);
@@ -65,15 +66,15 @@ compile_resource_data (const char *name, const char *buffer, int length)
 	      rtype, field, "resource_length", unsigned_int_type_node);
   PUSH_FIELD (input_location, rtype, field, "data", data_type);
   FINISH_RECORD (rtype);
-  START_RECORD_CONSTRUCTOR (rinit, rtype);
-  PUSH_FIELD_VALUE (rinit, "name_length", 
+  START_RECORD_CONSTRUCTOR (v, rtype);
+  PUSH_FIELD_VALUE (v, "name_length", 
 		    build_int_cst (NULL_TREE, strlen (name)));
-  PUSH_FIELD_VALUE (rinit, "resource_length", 
+  PUSH_FIELD_VALUE (v, "resource_length", 
 		    build_int_cst (NULL_TREE, length));
   data = build_string (strlen(name) + length, buffer);
   TREE_TYPE (data) = data_type;
-  PUSH_FIELD_VALUE (rinit, "data", data);
-  FINISH_RECORD_CONSTRUCTOR (rinit);
+  PUSH_FIELD_VALUE (v, "data", data);
+  FINISH_RECORD_CONSTRUCTOR (rinit, v, rtype);
   TREE_CONSTANT (rinit) = 1;
 
   decl = build_decl (input_location,

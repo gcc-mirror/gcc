@@ -942,6 +942,7 @@ build_utf8_ref (tree name)
   int name_hash;
   tree ref = IDENTIFIER_UTF8_REF (name);
   tree decl;
+  VEC(constructor_elt,gc) *v = NULL;
   if (ref != NULL_TREE)
     return ref;
 
@@ -956,14 +957,14 @@ build_utf8_ref (tree name)
 	      ctype, field, "length", unsigned_short_type_node);
   PUSH_FIELD (input_location, ctype, field, "data", str_type);
   FINISH_RECORD (ctype);
-  START_RECORD_CONSTRUCTOR (cinit, ctype);
+  START_RECORD_CONSTRUCTOR (v, ctype);
   name_hash = hashUtf8String (name_ptr, name_len) & 0xFFFF;
-  PUSH_FIELD_VALUE (cinit, "hash", build_int_cst (NULL_TREE, name_hash));
-  PUSH_FIELD_VALUE (cinit, "length", build_int_cst (NULL_TREE, name_len));
+  PUSH_FIELD_VALUE (v, "hash", build_int_cst (NULL_TREE, name_hash));
+  PUSH_FIELD_VALUE (v, "length", build_int_cst (NULL_TREE, name_len));
   string = build_string (name_len, name_ptr);
   TREE_TYPE (string) = str_type;
-  PUSH_FIELD_VALUE (cinit, "data", string);
-  FINISH_RECORD_CONSTRUCTOR (cinit);
+  PUSH_FIELD_VALUE (v, "data", string);
+  FINISH_RECORD_CONSTRUCTOR (cinit, v, ctype);
   TREE_CONSTANT (cinit) = 1;
 
   /* Generate a unique-enough identifier.  */
@@ -1425,9 +1426,10 @@ make_field_value (tree fdecl)
   int flags;
   tree type = TREE_TYPE (fdecl);
   int resolved = is_compiled_class (type) && ! flag_indirect_dispatch;
+  VEC(constructor_elt,gc) *v = NULL;
 
-  START_RECORD_CONSTRUCTOR (finit, field_type_node);
-  PUSH_FIELD_VALUE (finit, "name", build_utf8_ref (DECL_NAME (fdecl)));
+  START_RECORD_CONSTRUCTOR (v, field_type_node);
+  PUSH_FIELD_VALUE (v, "name", build_utf8_ref (DECL_NAME (fdecl)));
   if (resolved)
     type = build_class_ref (type);
   else
@@ -1438,14 +1440,14 @@ make_field_value (tree fdecl)
 			     (IDENTIFIER_POINTER (signature),
 			      IDENTIFIER_LENGTH (signature)));
     }
-  PUSH_FIELD_VALUE (finit, "type", type);
+  PUSH_FIELD_VALUE (v, "type", type);
 
   flags = get_access_flags_from_decl (fdecl);
   if (! resolved)
     flags |= 0x8000 /* FIELD_UNRESOLVED_FLAG */;
 
-  PUSH_FIELD_VALUE (finit, "accflags", build_int_cst (NULL_TREE, flags));
-  PUSH_FIELD_VALUE (finit, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
+  PUSH_FIELD_VALUE (v, "accflags", build_int_cst (NULL_TREE, flags));
+  PUSH_FIELD_VALUE (v, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
 
   {
     tree field_address = integer_zero_node;
@@ -1454,7 +1456,7 @@ make_field_value (tree fdecl)
       field_address = build_address_of (fdecl);
 
     PUSH_FIELD_VALUE
-      (finit, "info",
+      (v, "info",
        build_constructor_from_list (field_info_union_node,
 	 build_tree_list
 	   ((FIELD_STATIC (fdecl)
@@ -1465,7 +1467,7 @@ make_field_value (tree fdecl)
 	     : byte_position (fdecl)))));
   }
 
-  FINISH_RECORD_CONSTRUCTOR (finit);
+  FINISH_RECORD_CONSTRUCTOR (finit, v, field_type_node);
   return finit;
 }
 
@@ -1481,6 +1483,7 @@ make_method_value (tree mdecl)
   tree class_decl;
 #define ACC_TRANSLATED          0x4000
   int accflags = get_access_flags_from_decl (mdecl) | ACC_TRANSLATED;
+  VEC(constructor_elt,gc) *v = NULL;
 
   class_decl = DECL_CONTEXT (mdecl);
   /* For interfaces, the index field contains the dispatch index. */
@@ -1499,22 +1502,22 @@ make_method_value (tree mdecl)
   else
     code = build1 (ADDR_EXPR, nativecode_ptr_type_node, 
 		   make_local_function_alias (mdecl));
-  START_RECORD_CONSTRUCTOR (minit, method_type_node);
-  PUSH_FIELD_VALUE (minit, "name",
+  START_RECORD_CONSTRUCTOR (v, method_type_node);
+  PUSH_FIELD_VALUE (v, "name",
 		    build_utf8_ref (DECL_CONSTRUCTOR_P (mdecl) ?
 				    init_identifier_node
 				    : DECL_NAME (mdecl)));
   {
     tree signature = build_java_signature (TREE_TYPE (mdecl));
-    PUSH_FIELD_VALUE (minit, "signature", 
+    PUSH_FIELD_VALUE (v, "signature", 
 		      (build_utf8_ref 
 		       (unmangle_classname 
 			(IDENTIFIER_POINTER(signature),
 			 IDENTIFIER_LENGTH(signature)))));
   }
-  PUSH_FIELD_VALUE (minit, "accflags", build_int_cst (NULL_TREE, accflags));
-  PUSH_FIELD_VALUE (minit, "index", index);
-  PUSH_FIELD_VALUE (minit, "ncode", code);
+  PUSH_FIELD_VALUE (v, "accflags", build_int_cst (NULL_TREE, accflags));
+  PUSH_FIELD_VALUE (v, "index", index);
+  PUSH_FIELD_VALUE (v, "ncode", code);
 
   {
     /* Compute the `throws' information for the method.  */
@@ -1551,10 +1554,10 @@ make_method_value (tree mdecl)
 	table = build1 (ADDR_EXPR, ptr_type_node, array);
       }
 
-    PUSH_FIELD_VALUE (minit, "throws", table);
+    PUSH_FIELD_VALUE (v, "throws", table);
   }
 
-  FINISH_RECORD_CONSTRUCTOR (minit);
+  FINISH_RECORD_CONSTRUCTOR (minit, v, method_type_node);
   return minit;
 }
 
@@ -1717,6 +1720,29 @@ supers_all_compiled (tree type)
   return 1;
 }
 
+static void
+add_table_and_syms (VEC(constructor_elt,gc) **v,
+                    tree method_slot,
+                    const char *table_name, tree table_slot, tree table_type,
+                    const char *syms_name, tree syms_slot)
+{
+  if (method_slot == NULL_TREE)
+    {
+      PUSH_FIELD_VALUE (*v, table_name, null_pointer_node);
+      PUSH_FIELD_VALUE (*v, syms_name, null_pointer_node);
+    }
+  else
+    {
+      pushdecl_top_level (syms_slot);
+      PUSH_FIELD_VALUE (*v, table_name,
+                        build1 (ADDR_EXPR, table_type, table_slot));
+      PUSH_FIELD_VALUE (*v, syms_name,
+                        build1 (ADDR_EXPR, symbols_array_ptr_type,
+                                syms_slot));
+      TREE_CONSTANT (table_slot) = 1;
+    }
+}
+                    
 void
 make_class_data (tree type)
 {
@@ -1748,6 +1774,8 @@ make_class_data (tree type)
   tree dtable_start_offset = size_int (2 * POINTER_SIZE / BITS_PER_UNIT);
   VEC(int, heap) *field_indexes;
   tree first_real_field;
+  VEC(constructor_elt,gc) *v1 = NULL, *v2 = NULL;
+  tree reflection_data;
 
   this_class_addr = build_static_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
@@ -2032,8 +2060,8 @@ make_class_data (tree type)
   
   TYPE_CTABLE_DECL (type) = emit_catch_table (type);
 
-  START_RECORD_CONSTRUCTOR (temp, object_type_node);
-  PUSH_FIELD_VALUE (temp, "vtable",
+  START_RECORD_CONSTRUCTOR (v1, object_type_node);
+  PUSH_FIELD_VALUE (v1, "vtable",
 		    (flag_indirect_classes 
 		     ? null_pointer_node
 		     : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
@@ -2041,115 +2069,77 @@ make_class_data (tree type)
 				       class_dtable_decl),
 			       dtable_start_offset)));
   if (! flag_hash_synchronization)
-    PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
-  FINISH_RECORD_CONSTRUCTOR (temp);
-  START_RECORD_CONSTRUCTOR (cons, class_type_node);
-  PUSH_SUPER_VALUE (cons, temp);
-  PUSH_FIELD_VALUE (cons, "next_or_version", gcj_abi_version);
-  PUSH_FIELD_VALUE (cons, "name", build_utf8_ref (DECL_NAME (type_decl)));
-  PUSH_FIELD_VALUE (cons, "accflags",
+    PUSH_FIELD_VALUE (v1, "sync_info", null_pointer_node);
+  FINISH_RECORD_CONSTRUCTOR (temp, v1, object_type_node);
+  START_RECORD_CONSTRUCTOR (v2, class_type_node);
+  PUSH_SUPER_VALUE (v2, temp);
+  PUSH_FIELD_VALUE (v2, "next_or_version", gcj_abi_version);
+  PUSH_FIELD_VALUE (v2, "name", build_utf8_ref (DECL_NAME (type_decl)));
+  PUSH_FIELD_VALUE (v2, "accflags",
 		    build_int_cst (NULL_TREE,
 				   get_access_flags_from_decl (type_decl)));
 
-  PUSH_FIELD_VALUE (cons, "superclass", 
+  PUSH_FIELD_VALUE (v2, "superclass", 
 		    CLASS_INTERFACE (type_decl) ? null_pointer_node : super);
-  PUSH_FIELD_VALUE (cons, "constants", constant_pool_constructor);
-  PUSH_FIELD_VALUE (cons, "methods",
+  PUSH_FIELD_VALUE (v2, "constants", constant_pool_constructor);
+  PUSH_FIELD_VALUE (v2, "methods",
                     methods_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
-  PUSH_FIELD_VALUE (cons, "method_count",
+  PUSH_FIELD_VALUE (v2, "method_count",
 		    build_int_cst (NULL_TREE, method_count));
 
-  if (flag_indirect_dispatch)
-    PUSH_FIELD_VALUE (cons, "vtable_method_count", integer_minus_one_node);
-  else
-    PUSH_FIELD_VALUE (cons, "vtable_method_count", TYPE_NVIRTUALS (type));
+  PUSH_FIELD_VALUE (v2, "vtable_method_count",
+                    (flag_indirect_dispatch
+                     ? integer_minus_one_node
+                     : TYPE_NVIRTUALS (type)));
     
-  PUSH_FIELD_VALUE (cons, "fields",
+  PUSH_FIELD_VALUE (v2, "fields",
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
   /* If we're using the binary compatibility ABI we don't know the
      size until load time.  */
-  PUSH_FIELD_VALUE (cons, "size_in_bytes", 
+  PUSH_FIELD_VALUE (v2, "size_in_bytes", 
 		    (flag_indirect_dispatch 
 		     ? integer_minus_one_node 
 		     : size_in_bytes (type)));
-  PUSH_FIELD_VALUE (cons, "field_count", 
+  PUSH_FIELD_VALUE (v2, "field_count", 
 		    build_int_cst (NULL_TREE, field_count));
-  PUSH_FIELD_VALUE (cons, "static_field_count",
+  PUSH_FIELD_VALUE (v2, "static_field_count",
 		    build_int_cst (NULL_TREE, static_field_count));
 
-  if (flag_indirect_dispatch)
-    PUSH_FIELD_VALUE (cons, "vtable", null_pointer_node);
-  else
-    PUSH_FIELD_VALUE (cons, "vtable",
-		      dtable_decl == NULL_TREE ? null_pointer_node
-		      : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
+  PUSH_FIELD_VALUE (v2, "vtable",
+                    (flag_indirect_dispatch || dtable_decl == NULL_TREE
+                     ? null_pointer_node
+                     : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
 				build1 (ADDR_EXPR, dtable_ptr_type,
 					dtable_decl),
-				dtable_start_offset));
-  if (TYPE_OTABLE_METHODS (type) == NULL_TREE)
-    {
-      PUSH_FIELD_VALUE (cons, "otable", null_pointer_node);
-      PUSH_FIELD_VALUE (cons, "otable_syms", null_pointer_node);
-    }
-  else
-    {
-      pushdecl_top_level (TYPE_OTABLE_SYMS_DECL (type));
-      PUSH_FIELD_VALUE (cons, "otable",
-			build1 (ADDR_EXPR, otable_ptr_type, TYPE_OTABLE_DECL (type)));
-      PUSH_FIELD_VALUE (cons, "otable_syms",
-			build1 (ADDR_EXPR, symbols_array_ptr_type,
-				TYPE_OTABLE_SYMS_DECL (type)));
-      TREE_CONSTANT (TYPE_OTABLE_DECL (type)) = 1;
-    }
-  if (TYPE_ATABLE_METHODS(type) == NULL_TREE)
-    {
-      PUSH_FIELD_VALUE (cons, "atable", null_pointer_node);
-      PUSH_FIELD_VALUE (cons, "atable_syms", null_pointer_node);
-    }
-  else
-    {
-      pushdecl_top_level (TYPE_ATABLE_SYMS_DECL (type));
-      PUSH_FIELD_VALUE (cons, "atable",
-			build1 (ADDR_EXPR, atable_ptr_type, TYPE_ATABLE_DECL (type)));
-      PUSH_FIELD_VALUE (cons, "atable_syms",
-			build1 (ADDR_EXPR, symbols_array_ptr_type,
-				TYPE_ATABLE_SYMS_DECL (type)));
-      TREE_CONSTANT (TYPE_ATABLE_DECL (type)) = 1;
-    }
-   if (TYPE_ITABLE_METHODS(type) == NULL_TREE)
-    {
-      PUSH_FIELD_VALUE (cons, "itable", null_pointer_node);
-      PUSH_FIELD_VALUE (cons, "itable_syms", null_pointer_node);
-    }
-  else
-    {
-      pushdecl_top_level (TYPE_ITABLE_SYMS_DECL (type));
-      PUSH_FIELD_VALUE (cons, "itable",
-			build1 (ADDR_EXPR, itable_ptr_type, TYPE_ITABLE_DECL (type)));
-      PUSH_FIELD_VALUE (cons, "itable_syms",
-			build1 (ADDR_EXPR, symbols_array_ptr_type,
-				TYPE_ITABLE_SYMS_DECL (type)));
-      TREE_CONSTANT (TYPE_ITABLE_DECL (type)) = 1;
-    }
+                               dtable_start_offset)));
+  add_table_and_syms (&v2, TYPE_OTABLE_METHODS (type),
+                      "otable", TYPE_OTABLE_DECL (type), otable_ptr_type,
+                      "otable_syms", TYPE_OTABLE_SYMS_DECL (type));
+  add_table_and_syms (&v2, TYPE_ATABLE_METHODS (type),
+                      "atable", TYPE_ATABLE_DECL (type), atable_ptr_type,
+                      "atable_syms", TYPE_ATABLE_SYMS_DECL (type));
+  add_table_and_syms (&v2, TYPE_ITABLE_METHODS (type),
+                      "itable", TYPE_ITABLE_DECL (type), itable_ptr_type,
+                      "itable_syms", TYPE_ITABLE_SYMS_DECL (type));
  
-  PUSH_FIELD_VALUE (cons, "catch_classes",
+  PUSH_FIELD_VALUE (v2, "catch_classes",
 		    build1 (ADDR_EXPR, ptr_type_node, TYPE_CTABLE_DECL (type))); 
-  PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
-  PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "interface_count",
+  PUSH_FIELD_VALUE (v2, "interfaces", interfaces);
+  PUSH_FIELD_VALUE (v2, "loader", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "interface_count",
 		    build_int_cst (NULL_TREE, interface_len));
-  PUSH_FIELD_VALUE (cons, "state",
+  PUSH_FIELD_VALUE (v2, "state",
 		    convert (byte_type_node,
 			     build_int_cst (NULL_TREE, JV_STATE_PRELOADING)));
 
-  PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "depth", integer_zero_node);
-  PUSH_FIELD_VALUE (cons, "ancestors", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "idt", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "arrayclass", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "protectionDomain", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "thread", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "depth", integer_zero_node);
+  PUSH_FIELD_VALUE (v2, "ancestors", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "idt", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "arrayclass", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "protectionDomain", null_pointer_node);
 
   {
     tree assertion_table_ref;
@@ -2160,13 +2150,13 @@ make_class_data (tree type)
 				    build_pointer_type (assertion_table_type),
 				    emit_assertion_table (type));
     
-    PUSH_FIELD_VALUE (cons, "assertion_table", assertion_table_ref);
+    PUSH_FIELD_VALUE (v2, "assertion_table", assertion_table_ref);
   }
 
-  PUSH_FIELD_VALUE (cons, "hack_signers", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "chain", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "aux_info", null_pointer_node);
-  PUSH_FIELD_VALUE (cons, "engine", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "hack_signers", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "chain", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "aux_info", null_pointer_node);
+  PUSH_FIELD_VALUE (v2, "engine", null_pointer_node);
 
   if (TYPE_REFLECTION_DATA (current_class))
     {
@@ -2202,16 +2192,17 @@ make_class_data (tree type)
       TREE_READONLY (array) = 1;
       TREE_CONSTANT (DECL_INITIAL (array)) = 1;
       rest_of_decl_compilation (array, 1, 0);
-      
-      PUSH_FIELD_VALUE (cons, "reflection_data", build_address_of (array));
+
+      reflection_data = build_address_of (array);
 
       free (data);
       TYPE_REFLECTION_DATA (current_class) = NULL;
     }
   else
-    PUSH_FIELD_VALUE (cons, "reflection_data", null_pointer_node);
+    reflection_data = null_pointer_node;
 
-  FINISH_RECORD_CONSTRUCTOR (cons);
+  PUSH_FIELD_VALUE (v2, "reflection_data", reflection_data);
+  FINISH_RECORD_CONSTRUCTOR (cons, v2, class_type_node);
 
   DECL_INITIAL (decl) = cons;
   
@@ -2846,12 +2837,30 @@ emit_register_classes (tree *list_p)
     }
 }
 
+/* Build a constructor for an entry in the symbol table.  */
+
+static tree
+build_symbol_table_entry (tree clname, tree name, tree signature)
+{
+  tree symbol;
+  VEC(constructor_elt,gc) *v = NULL;
+
+  START_RECORD_CONSTRUCTOR (v, symbol_type);
+  PUSH_FIELD_VALUE (v, "clname", clname);
+  PUSH_FIELD_VALUE (v, "name", name);
+  PUSH_FIELD_VALUE (v, "signature", signature);
+  FINISH_RECORD_CONSTRUCTOR (symbol, v, symbol_type);
+  TREE_CONSTANT (symbol) = 1;
+
+  return symbol;
+}
+
 /* Make a symbol_type (_Jv_MethodSymbol) node for DECL. */
 
 static tree
 build_symbol_entry (tree decl, tree special)
 {
-  tree clname, name, signature, sym;
+  tree clname, name, signature;
   clname = build_utf8_ref (DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))));
   /* ???  Constructors are given the name foo.foo all the way through
      the compiler, but in the method table they're all renamed
@@ -2872,15 +2881,8 @@ build_symbol_entry (tree decl, tree special)
   if (special != NULL_TREE)
     signature = build2 (POINTER_PLUS_EXPR, TREE_TYPE (signature), signature,
 			fold_convert (sizetype, special));
-      
-  START_RECORD_CONSTRUCTOR (sym, symbol_type);
-  PUSH_FIELD_VALUE (sym, "clname", clname);
-  PUSH_FIELD_VALUE (sym, "name", name);
-  PUSH_FIELD_VALUE (sym, "signature", signature);
-  FINISH_RECORD_CONSTRUCTOR (sym);
-  TREE_CONSTANT (sym) = 1;
 
-  return sym;
+  return build_symbol_table_entry (clname, name, signature);
 } 
 
 /* Emit a symbol table: used by -findirect-dispatch.  */
@@ -2913,12 +2915,9 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
     }
 
   /* Terminate the list with a "null" entry. */
-  START_RECORD_CONSTRUCTOR (null_symbol, symbol_type);
-  PUSH_FIELD_VALUE (null_symbol, "clname", null_pointer_node);
-  PUSH_FIELD_VALUE (null_symbol, "name", null_pointer_node);
-  PUSH_FIELD_VALUE (null_symbol, "signature", null_pointer_node);
-  FINISH_RECORD_CONSTRUCTOR (null_symbol);
-  TREE_CONSTANT (null_symbol) = 1;  
+  null_symbol = build_symbol_table_entry (null_pointer_node,
+                                          null_pointer_node,
+                                          null_pointer_node);
   list = tree_cons (NULL_TREE, null_symbol, list);
 
   /* Put the list in the right order and make it a constructor. */
@@ -2953,10 +2952,11 @@ make_catch_class_record (tree catch_class, tree classname)
 {
   tree entry;
   tree type = TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (output_class)));
-  START_RECORD_CONSTRUCTOR (entry, type);
-  PUSH_FIELD_VALUE (entry, "address", catch_class);
-  PUSH_FIELD_VALUE (entry, "classname", classname);
-  FINISH_RECORD_CONSTRUCTOR (entry);
+  VEC(constructor_elt,gc) *v = NULL;
+  START_RECORD_CONSTRUCTOR (v, type);
+  PUSH_FIELD_VALUE (v, "address", catch_class);
+  PUSH_FIELD_VALUE (v, "classname", classname);
+  FINISH_RECORD_CONSTRUCTOR (entry, v, type);
   return entry;
 }
 
@@ -3010,6 +3010,23 @@ build_signature_for_libgcj (tree type)
   return ref;
 }
 
+/* Build an entry in the type assertion table.  */
+
+static tree
+build_assertion_table_entry (tree code, tree op1, tree op2)
+{
+  VEC(constructor_elt,gc) *v = NULL;
+  tree entry;
+
+  START_RECORD_CONSTRUCTOR (v, assertion_entry_type);
+  PUSH_FIELD_VALUE (v, "assertion_code", code);
+  PUSH_FIELD_VALUE (v, "op1", op1);
+  PUSH_FIELD_VALUE (v, "op2", op2);
+  FINISH_RECORD_CONSTRUCTOR (entry, v, assertion_entry_type);
+
+  return entry;
+}
+
 /* Add an entry to the type assertion table. Callback used during hashtable
    traversal.  */
 
@@ -3032,12 +3049,8 @@ add_assertion_table_entry (void **htab_entry, void *ptr)
     op2_utf8 = null_pointer_node;
   else
     op2_utf8 = build_signature_for_libgcj (as->op2);
-  
-  START_RECORD_CONSTRUCTOR (entry, assertion_entry_type);
-  PUSH_FIELD_VALUE (entry, "assertion_code", code_val);
-  PUSH_FIELD_VALUE (entry, "op1", op1_utf8);
-  PUSH_FIELD_VALUE (entry, "op2", op2_utf8);
-  FINISH_RECORD_CONSTRUCTOR (entry);
+
+  entry = build_assertion_table_entry (code_val, op1_utf8, op2_utf8);
   
   *list = tree_cons (NULL_TREE, entry, *list);
   return true;
@@ -3056,11 +3069,9 @@ emit_assertion_table (tree klass)
   htab_traverse (assertions_htab, add_assertion_table_entry, &list);
 
   /* Finish with a null entry.  */
-  START_RECORD_CONSTRUCTOR (null_entry, assertion_entry_type);
-  PUSH_FIELD_VALUE (null_entry, "assertion_code", integer_zero_node);
-  PUSH_FIELD_VALUE (null_entry, "op1", null_pointer_node);
-  PUSH_FIELD_VALUE (null_entry, "op2", null_pointer_node);
-  FINISH_RECORD_CONSTRUCTOR (null_entry);
+  null_entry = build_assertion_table_entry (integer_zero_node,
+                                            null_pointer_node,
+                                            null_pointer_node);
   
   list = tree_cons (NULL_TREE, null_entry, list);
   

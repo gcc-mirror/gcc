@@ -500,6 +500,7 @@ build_constants_constructor (void)
   tree cons;
   tree tags_list = NULL_TREE;
   tree data_list = NULL_TREE;
+  VEC(constructor_elt,gc) *v = NULL;
   int i;
 
   for (i = outgoing_cpool->count;  --i > 0; )
@@ -596,12 +597,12 @@ build_constants_constructor (void)
       data_value = null_pointer_node;
       tags_value = null_pointer_node;
     }
-  START_RECORD_CONSTRUCTOR (cons, constants_type_node);
-  PUSH_FIELD_VALUE (cons, "size",
+  START_RECORD_CONSTRUCTOR (v, constants_type_node);
+  PUSH_FIELD_VALUE (v, "size",
 		    build_int_cst (NULL_TREE, outgoing_cpool->count));
-  PUSH_FIELD_VALUE (cons, "tags", tags_value);
-  PUSH_FIELD_VALUE (cons, "data", data_value);
-  FINISH_RECORD_CONSTRUCTOR (cons);
+  PUSH_FIELD_VALUE (v, "tags", tags_value);
+  PUSH_FIELD_VALUE (v, "data", data_value);
+  FINISH_RECORD_CONSTRUCTOR (cons, v, constants_type_node);
   return cons;
 }
 
