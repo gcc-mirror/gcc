@@ -1,3 +1,10 @@
+2010-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44127
+	* gimplify.c (gimplify_seq_add_stmt): No longer static.
+	* gimple.h: Declare it.
+	* gimple.c (gimple_build_eh_filter): No ops.
+
 2010-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44136

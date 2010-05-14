@@ -480,11 +480,16 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   tree stmt = *expr_p;
   tree temp = voidify_wrapper_expr (stmt, NULL);
   tree body = TREE_OPERAND (stmt, 0);
+  gimple_seq try_ = NULL;
+  gimple_seq catch_ = NULL;
+  gimple mnt;
 
-  stmt = build_gimple_eh_filter_tree (body, NULL_TREE,
-				      build_call_n (terminate_node, 0));
+  gimplify_and_add (body, &try_);
+  mnt = gimple_build_eh_must_not_throw (terminate_node);
+  gimplify_seq_add_stmt (&catch_, mnt);
+  mnt = gimple_build_try (try_, catch_, GIMPLE_TRY_CATCH);
 
-  gimplify_and_add (stmt, pre_p);
+  gimplify_seq_add_stmt (pre_p, mnt);
   if (temp)
     {
       *expr_p = temp;

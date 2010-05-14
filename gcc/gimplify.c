@@ -159,7 +159,7 @@ gimple_tree_eq (const void *p1, const void *p2)
    During gimplification, we need to manipulate statement sequences
    before the def/use vectors have been constructed.  */
 
-static void
+void
 gimplify_seq_add_stmt (gimple_seq *seq_p, gimple gs)
 {
   gimple_stmt_iterator si;

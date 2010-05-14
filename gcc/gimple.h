@@ -220,6 +220,13 @@ gimple_seq_empty_p (const_gimple_seq s)
 
 void gimple_seq_add_stmt (gimple_seq *, gimple);
 
+/* Link gimple statement GS to the end of the sequence *SEQ_P.  If
+   *SEQ_P is NULL, a new sequence is allocated.  This function is
+   similar to gimple_seq_add_stmt, but does not scan the operands.
+   During gimplification, we need to manipulate statement sequences
+   before the def/use vectors have been constructed.  */
+void gimplify_seq_add_stmt (gimple_seq *, gimple);
+
 /* Allocate a new sequence and initialize its first element with STMT.  */
 
 static inline gimple_seq
