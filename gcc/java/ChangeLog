@@ -1,3 +1,27 @@
+2010-05-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR 44103
+	* java-tree.h (START_RECORD_CONSTRUCTOR): Change first argument to a
+	vector.  Move call to build_constructor...
+	(FINISH_RECORD_CONSTRUCTOR): ...here.  Add necessary arguments.  Clear
+	TREE_CONSTANT on the constructor.
+	(PUSH_SUPER_VALUE): Change first argument to a vector.
+	(PUSH_FIELD_VALUE): Likewise.
+	* resource.c (compile_resource_data): Update calls to above macros.
+	* constants.c (build_constants_constructor): Likewise.
+	* class.c (build_utf8_ref): Likewise.
+	(make_field_value): Likewise.
+	(make_method_value): Likewise.
+	(add_table_and_syms): New function.
+	(make_class_data): Call it.  Update calls to above macros.
+	(build_symbol_table_entry): New function.
+	(build_symbol_entry): Call it.  Update calls to above macros.
+	(emit_symbol_table): Likewise.
+	(make_catch_class_record): Update calls to above macros.
+	(build_assertion_table_entry): New function.
+	(add_assertion_table_entry): Call it.
+	(emit_assertion_table): Likewise.
+
 2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 40989

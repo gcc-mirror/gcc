@@ -1461,50 +1461,54 @@ extern tree *type_map;
 
 #define FINISH_RECORD(RTYPE) layout_type (RTYPE)
 
-/* Start building a RECORD_TYPE constructor with a given TYPE in CONS. */
-#define START_RECORD_CONSTRUCTOR(CONS, CTYPE) \
+/* Start building a RECORD_TYPE constructor's elements in V.  The
+   constructor will have type CTYPE.  */
+#define START_RECORD_CONSTRUCTOR(V, CTYPE) \
   do \
     { \
-      CONS = build_constructor ((CTYPE), VEC_alloc (constructor_elt, gc, 0)); \
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (CONS), TYPE_FIELDS (CTYPE), \
-			      NULL); \
+      V = VEC_alloc (constructor_elt, gc, 0); \
+      CONSTRUCTOR_APPEND_ELT (V, TYPE_FIELDS (CTYPE), NULL); \
     } \
   while (0)
 
-/* Append a field initializer to CONS for the dummy field for the inherited
+/* Append a field initializer to V for the dummy field for the inherited
    fields.  The dummy field has the given VALUE, and the same type as the
    super-class.   Must be specified before calls to PUSH_FIELD_VALUE. */
-#define PUSH_SUPER_VALUE(CONS, VALUE) \
+#define PUSH_SUPER_VALUE(V, VALUE) \
   do \
     { \
-      constructor_elt *_elt___ = VEC_last (constructor_elt, \
-					   CONSTRUCTOR_ELTS (CONS)); \
+      constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
       tree _next___ = TREE_CHAIN (_elt___->index); \
       gcc_assert (!DECL_NAME (_elt___->index)); \
       _elt___->value = VALUE; \
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (CONS), _next___, NULL); \
+      CONSTRUCTOR_APPEND_ELT (V, _next___, NULL); \
     } \
   while (0)
 
-/* Append a field initializer to CONS for a field with the given VALUE.
+/* Append a field initializer to V for a field with the given VALUE.
    NAME is a char* string used for error checking;
    the initializer must be specified in order. */
-#define PUSH_FIELD_VALUE(CONS, NAME, VALUE) 				\
+#define PUSH_FIELD_VALUE(V, NAME, VALUE) 				\
   do \
     { \
-      constructor_elt *_elt___ = VEC_last (constructor_elt, \
-					   CONSTRUCTOR_ELTS (CONS)); \
+      constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
       tree _next___ = TREE_CHAIN (_elt___->index); \
       gcc_assert (strcmp (IDENTIFIER_POINTER (DECL_NAME (_elt___->index)), \
 			  NAME) == 0); \
       _elt___->value = VALUE; \
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (CONS), _next___, NULL); \
+      CONSTRUCTOR_APPEND_ELT (V, _next___, NULL); \
     } \
   while (0)
 
-/* Finish creating a record CONSTRUCTOR CONS. */
-#define FINISH_RECORD_CONSTRUCTOR(CONS) \
-  VEC_pop (constructor_elt, CONSTRUCTOR_ELTS (CONS))
+/* Finish creating a record CONSTRUCTOR CONS with type CTYPE and elements V.  */
+#define FINISH_RECORD_CONSTRUCTOR(CONS, V, CTYPE)        \
+  do \
+    { \
+      VEC_pop (constructor_elt, V); \
+      CONS = build_constructor (CTYPE, V); \
+      TREE_CONSTANT (CONS) = 0; \
+    } \
+  while (0)
 
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
