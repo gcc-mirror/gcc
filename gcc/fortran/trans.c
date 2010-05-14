@@ -1067,6 +1067,8 @@ trans_code (gfc_code * code, tree cond)
 	  gfc_add_expr_to_block (&block, res);
 	}
 
+      gfc_set_backend_locus (&code->loc);
+
       switch (code->op)
 	{
 	case EXEC_NOP:
