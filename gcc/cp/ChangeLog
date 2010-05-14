@@ -1,3 +1,8 @@
+2010-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* cp-lang.c (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Remove both its undef
+	and define.
+
 2010-05-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* call.c (build_new_method_call): Change warning text.

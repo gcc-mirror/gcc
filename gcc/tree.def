@@ -432,16 +432,13 @@ DEFTREECODE (ALIGN_INDIRECT_REF, "align_indirect_ref", tcc_reference, 1)
    or 0 if the alignment is unknown.  */
 DEFTREECODE (MISALIGNED_INDIRECT_REF, "misaligned_indirect_ref", tcc_reference, 2)
 
-/* Used to represent lookup of runtime type dependent data.  Often this is
-   a reference to a vtable, but it needn't be.  Operands are:
+/* Used to represent lookup in a virtual method table which is dependent on
+   the runtime type of an object.  Operands are:
    OBJ_TYPE_REF_EXPR: An expression that evaluates the value to use.
    OBJ_TYPE_REF_OBJECT: Is the object on whose behalf the lookup is
    being performed.  Through this the optimizers may be able to statically
    determine the dynamic type of the object.
-   OBJ_TYPE_REF_TOKEN: Something front-end specific used to resolve the
-   reference to something simpler, usually to the address of a DECL.
-   Never touched by the middle-end.  Good choices would be either an
-   identifier or a vtable index.  */
+   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.  */
 DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
 
 /* Constructor: return an aggregate value made from specified components.

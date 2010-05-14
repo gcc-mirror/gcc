@@ -1,3 +1,13 @@
+2010-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	* langhooks-def.h (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Remove.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_FOLD_OBJ_TYPE_REF.
+	* langhooks.h (struct lang_hooks_for_decls): Removed field
+	fold_obj_type_ref.
+	* tree.c (free_lang_data): Remove assignment to
+	lang_hooks.fold_obj_type_ref.
+	* tree.def (OBJ_TYPE_REF): Update comment.
+
 2010-05-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44124
