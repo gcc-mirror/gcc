@@ -1,3 +1,8 @@
+2010-05-14  Tristan Gingold  <gingold@adacore.com>
+
+	* toplev.c (default_debug_hooks): Remove this variable.
+	(process_options): Remove assignments to default_debug_hooks.
+
 2010-05-14  Martin Jambor  <mjambor@suse.cz>
 
 	* langhooks-def.h (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Remove.
