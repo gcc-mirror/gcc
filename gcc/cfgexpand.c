@@ -2563,12 +2563,13 @@ expand_debug_expr (tree exp)
         if (bitpos < 0)
           return NULL;
 
+	if (GET_MODE (op0) == BLKmode)
+	  return NULL;
+
 	if ((bitpos % BITS_PER_UNIT) == 0
 	    && bitsize == GET_MODE_BITSIZE (mode1))
 	  {
 	    enum machine_mode opmode = GET_MODE (op0);
-
-	    gcc_assert (opmode != BLKmode);
 
 	    if (opmode == VOIDmode)
 	      opmode = mode1;

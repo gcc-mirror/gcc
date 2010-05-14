@@ -1,3 +1,8 @@
+2010-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44136
+	* gcc.dg/pr44136.c: New test.
+
 2010-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
