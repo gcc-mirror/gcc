@@ -7,6 +7,12 @@
 
 // { dg-final { scan-assembler-not "_ZSt9terminatev" } }
 
+// Also there should only be two EH call sites: #0 for throw A() and #1 for
+// _Unwind_Resume.  We don't want call site info for __cxa_end_catch, since
+// ~A is trivial.
+
+// { dg-final { scan-assembler-not "LEHB2" } }
+
 struct A
 {
   A() { }
