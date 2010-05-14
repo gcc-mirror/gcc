@@ -1,3 +1,8 @@
+2010-05-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* tree-ssa-loop.prefetch.c (prune_ref_by_group_reuse): Cast abs()
+	result to unsigned.
+
 2010-05-14  Tristan Gingold  <gingold@adacore.com>
 
 	* toplev.c (default_debug_hooks): Remove this variable.
