@@ -374,7 +374,7 @@ varpool_finalize_decl (tree decl)
   if (node->needed)
     varpool_enqueue_needed_node (node);
   node->finalized = true;
-  if (TREE_THIS_VOLATILE (decl))
+  if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl))
     node->force_output = true;
 
   if (decide_is_variable_needed (node, decl))

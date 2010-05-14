@@ -644,6 +644,7 @@ void varpool_node_set_add (varpool_node_set, struct varpool_node *);
 void varpool_node_set_remove (varpool_node_set, struct varpool_node *);
 void dump_varpool_node_set (FILE *, varpool_node_set);
 void debug_varpool_node_set (varpool_node_set);
+void ipa_discover_readonly_nonaddressable_vars (void);
 
 /* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
@@ -876,6 +877,19 @@ static inline bool
 cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
 {
   return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
+}
+
+/* Return true when all references to VNODE must be visible in ipa_ref_list.
+   i.e. if the variable is not externally visible or not used in some magic
+   way (asm statement or such).
+   The magic uses are all sumarized in force_output flag.  */
+
+static inline bool
+varpool_all_refs_explicit_p (struct varpool_node *vnode)
+{
+  return (!vnode->externally_visible
+	  && !vnode->used_from_other_partition
+	  && !vnode->force_output);
 }
 
 /* Constant pool accessor function.  */

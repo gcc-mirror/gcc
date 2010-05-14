@@ -1,5 +1,26 @@
 2010-05-14  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (ipa_discover_readonly_nonaddressable_vars): Declare.
+	(varpool_all_refs_explicit_p): New inline function.
+	* ipa-reference.c: Update comment.
+	(module_statics_written): Remove.
+	(get_static_decl): Remove.
+	(ipa_init): Do not initialize module_statics_written.
+	(analyze_function): Likewise.
+	(generate_summary): Likewise; do not compute module_statics_readonly
+	and do not update variable flags.
+	(propagate): Call ipa_discover_readonly_nonaddressable_vars.
+	* ipa.c: Inlucde flags.h
+	(cgraph_local_node_p): New.
+	(cgraph_remove_unreachable_nodes): Return early when not optimizing;
+	promote functions to local.
+	(ipa_discover_readonly_nonaddressable_vars): New function.
+	(function_and_variable_visibility): Use cgraph_local_node_p.
+	* varpool.c (varpool_finalize_decl): Set force_output for
+	DECL_PRESERVE_P vars.
+
+2010-05-14  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (cgraph_remove_unreachable_nodes): Revert accidental commit.
 
 2010-05-14  Richard Guenther  <rguenther@suse.de>
