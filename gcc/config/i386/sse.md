@@ -1483,6 +1483,20 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*avx_vmmaskcmp<mode>3"
+  [(set (match_operand:SSEMODEF2P 0 "register_operand" "=x")
+	(vec_merge:SSEMODEF2P
+	 (match_operator:SSEMODEF2P 3 "sse_comparison_operator"
+		[(match_operand:SSEMODEF2P 1 "register_operand" "x")
+		 (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "xm")])
+	 (match_dup 1)
+	 (const_int 1)))]
+  "AVX_VEC_FLOAT_MODE_P (<MODE>mode)"
+  "vcmp%D3s<ssemodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "<ssescalarmode>")])
+
 (define_insn "<sse>_vmmaskcmp<mode>3"
   [(set (match_operand:SSEMODEF2P 0 "register_operand" "=x")
 	(vec_merge:SSEMODEF2P

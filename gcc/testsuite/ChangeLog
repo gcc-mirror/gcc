@@ -1,3 +1,16 @@
+2010-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44088
+	* gcc.target/i386/avx-cmpsd-1.c: New.
+	* gcc.target/i386/avx-cmpsd-2.c: Likewise.
+	* gcc.target/i386/avx-cmpss-1.c: Likewise.
+	* gcc.target/i386/avx-cmpss-2.c: Likewise.
+	* gcc.target/i386/sse-cmpss-1.c: Likewise.
+	* gcc.target/i386/sse2-cmpsd-1.c: Likewise.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44036

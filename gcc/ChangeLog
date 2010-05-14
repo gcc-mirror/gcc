@@ -1,3 +1,11 @@
+2010-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44088
+	* config/i386/sse.md (*avx_vmmaskcmp<mode>3): New.
+
 2010-05-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44124
