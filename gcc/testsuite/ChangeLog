@@ -2,6 +2,9 @@
 
 	* gfortran.dg/gomp/pr44036-1.f90: Adjust.
 
+	PR debug/44136
+	* gcc.dg/pr44136.c: New test.
+
 2010-05-14  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/30566
