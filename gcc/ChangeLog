@@ -10,9 +10,9 @@
 
 2010-05-12  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
-	* config/s390/s390.c (override_options): Adjust the z10
-          defaults for max-unroll-times, max-completely-peeled-insns
-          and max-completely-peel-times.
+	* config/s390/s390.c (override_options): Adjust the z10 defaults
+	for max-unroll-times, max-completely-peeled-insns
+	and max-completely-peel-times.
 
 2010-05-12  Jakub Jelinek  <jakub@redhat.com>
 
