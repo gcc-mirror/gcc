@@ -3332,7 +3332,7 @@ bool
 vn_nary_may_trap (vn_nary_op_t nary)
 {
   tree type;
-  tree rhs2;
+  tree rhs2 = NULL_TREE;
   bool honor_nans = false;
   bool honor_snans = false;
   bool fp_operation = false;
@@ -3355,7 +3355,8 @@ vn_nary_may_trap (vn_nary_op_t nary)
 	       && TYPE_OVERFLOW_TRAPS (type))
 	honor_trapv = true;
     }
-  rhs2 = nary->op[1];
+  if (nary->length >= 2)
+    rhs2 = nary->op[1];
   ret = operation_could_trap_helper_p (nary->opcode, fp_operation,
 				       honor_trapv,
 				       honor_nans, honor_snans, rhs2,

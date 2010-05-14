@@ -1,3 +1,8 @@
+2010-05-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44124
+	* tree-ssa-sccvn.c (vn_nary_may_trap): Fix invalid memory access.
+
 2010-05-13  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_expr) [MODIFY_EXPR]: Trust GS_OK even if the
