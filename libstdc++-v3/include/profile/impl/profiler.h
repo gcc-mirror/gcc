@@ -44,6 +44,13 @@
 #endif
 
 // Mechanism to define data with inline linkage.
+#define _GLIBCXX_PROFILE_DEFINE_UNINIT_DATA(__type, __name)             \
+  inline __type&                                                        \
+  __get_##__name()                                                      \
+  {                                                                     \
+    static __type __name;                                               \
+    return __name;                                                      \
+  }
 #define _GLIBCXX_PROFILE_DEFINE_DATA(__type, __name, __initial_value...) \
   inline __type& __get_##__name() {                                      \
     static __type __name(__initial_value);                               \
@@ -360,11 +367,6 @@ namespace __gnu_profile
 #define __profcxx_map_to_unordered_map_iterate(__x...)
 #define __profcxx_map_to_unordered_map_invalidate(__x...)
 #define __profcxx_map_to_unordered_map_find(__x...)
-#endif
-
-// Run multithreaded unless instructed not to do so.
-#ifndef _GLIBCXX_PROFILE_NO_THREADS
-#define _GLIBCXX_PROFILE_THREADS
 #endif
 
 // Set default values for compile-time customizable variables.

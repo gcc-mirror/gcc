@@ -1,3 +1,15 @@
+2010-05-14  Silvius Rus  <silvius.rus@gmail.com>
+
+	PR libstdc++/43259
+	* include/profile/impl/profiler.h
+	(_GLIBCXX_PROFILE_DEFINE_UNINIT_DATA): Add.
+	* include/profile/impl/profiler_trace.h
+	(__mutex_t, __lock, __unlock): Remove.
+	(__lock_object_table, __lock_stack_table): Remove. Replace uses with
+	calls to __gnu_cxx::__mutex::lock.
+	(__unlock_object_table, __unlock_stack_table): Remove. Replace uses
+	with calls to __gnu_cxx::__mutex::unlock.
+
 2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/basic_string.h: Escape class names in doxygen docs.

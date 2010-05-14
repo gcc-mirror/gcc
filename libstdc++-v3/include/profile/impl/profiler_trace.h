@@ -53,43 +53,30 @@
 #define _GLIBCXX_IMPL_UNORDERED_MAP std::tr1::unordered_map
 #endif
 
+#include <ext/concurrence.h>
 #include <fstream>
 #include <string>
 #include <utility>
 #include <bits/stl_heap.h> // for std::make_heap, std::sort_heap
-
-#if (defined _GLIBCXX_PROFILE_THREADS) && !(defined _GLIBCXX_HAVE_TLS)
-#error You do not seem to have TLS support, which is required by the profile \
-  mode.  If your program is not multithreaded, recompile with \
-  -D_GLIBCXX_PROFILE_NO_THREADS
-#endif
-
-#if defined _GLIBCXX_PROFILE_THREADS && defined _GLIBCXX_HAVE_TLS
-#include <pthread.h>
-#endif
 
 #include "profile/impl/profiler_state.h"
 #include "profile/impl/profiler_node.h"
 
 namespace __gnu_profile
 {
+/** @brief Internal environment.  Values can be set one of two ways:
+    1. In config file "var = value".  The default config file path is 
+       libstdcxx-profile.conf.
+    2. By setting process environment variables.  For instance, in a Bash
+       shell you can set the unit cost of iterating through a map like this:
+       export __map_iterate_cost_factor=5.0.
+    If a value is set both in the input file and through an environment
+    variable, the environment value takes precedence.  */
+typedef _GLIBCXX_IMPL_UNORDERED_MAP<std::string, std::string> __env_t;
+_GLIBCXX_PROFILE_DEFINE_UNINIT_DATA(__env_t, __env);
 
-#if defined _GLIBCXX_PROFILE_THREADS && defined _GLIBCXX_HAVE_TLS
-#define _GLIBCXX_IMPL_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
-typedef pthread_mutex_t __mutex_t;
-/** @brief Pthread mutex wrapper.  */
-_GLIBCXX_PROFILE_DEFINE_DATA(__mutex_t, __global_lock, 
-                             PTHREAD_MUTEX_INITIALIZER);
-inline void __lock(__mutex_t& __m) { pthread_mutex_lock(&__m); }
-inline void __unlock(__mutex_t& __m) { pthread_mutex_unlock(&__m); }
-#else
-typedef int __mutex_t;
-/** @brief Mock mutex interface.  */
-#define _GLIBCXX_IMPL_MUTEX_INITIALIZER 0
-_GLIBCXX_PROFILE_DEFINE_DATA(__mutex_t, __global_lock, 0);
-inline void __lock(__mutex_t& __m) {}
-inline void __unlock(__mutex_t& __m) {}
-#endif
+/** @brief Master lock.  */
+_GLIBCXX_PROFILE_DEFINE_UNINIT_DATA(__gnu_cxx::__mutex, __global_lock);
 
 /** @brief Representation of a warning.  */
 struct __warning_data
@@ -228,14 +215,9 @@ class __trace_base
   void __write(FILE* f);
   void __collect_warnings(__warning_vector_t& __warnings);
 
-  void __lock_object_table();
-  void __lock_stack_table();
-  void __unlock_object_table();
-  void __unlock_stack_table();
-
  private:
-  __mutex_t __object_table_lock;
-  __mutex_t __stack_table_lock;
+  __gnu_cxx::__mutex __object_table_lock;
+  __gnu_cxx::__mutex __stack_table_lock;
   typedef _GLIBCXX_IMPL_UNORDERED_MAP<__object_t, 
                                       __object_info> __object_table_t;
   typedef _GLIBCXX_IMPL_UNORDERED_MAP<__stack_t, __stack_info, __stack_hash, 
@@ -263,30 +245,6 @@ void __trace_base<__object_info, __stack_info>::__collect_warnings(
 }
 
 template <typename __object_info, typename __stack_info>
-void __trace_base<__object_info, __stack_info>::__lock_object_table()
-{
-  __lock(this->__object_table_lock);
-}
-
-template <typename __object_info, typename __stack_info>
-void __trace_base<__object_info, __stack_info>::__lock_stack_table()
-{
-  __lock(this->__stack_table_lock);
-}
-
-template <typename __object_info, typename __stack_info>
-void __trace_base<__object_info, __stack_info>::__unlock_object_table()
-{
-  __unlock(this->__object_table_lock);
-}
-
-template <typename __object_info, typename __stack_info>
-void __trace_base<__object_info, __stack_info>::__unlock_stack_table()
-{
-  __unlock(this->__stack_table_lock);
-}
-
-template <typename __object_info, typename __stack_info>
 __trace_base<__object_info, __stack_info>::__trace_base()
 {
   // Do not pick the initial size too large, as we don't know which diagnostics
@@ -295,7 +253,6 @@ __trace_base<__object_info, __stack_info>::__trace_base()
   __stack_table.rehash(10000);
   __stack_table_byte_size = 0;
   __id = NULL;
-  __object_table_lock = __stack_table_lock = _GLIBCXX_IMPL_MUTEX_INITIALIZER;
 }
 
 template <typename __object_info, typename __stack_info>
@@ -304,10 +261,10 @@ void __trace_base<__object_info, __stack_info>::__add_object(
 {
   if (__max_mem() == 0 
       || __object_table.size() * sizeof(__object_info) <= __max_mem()) {
-    __lock_object_table();
+    this->__object_table_lock.lock();
     __object_table.insert(
         typename __object_table_t::value_type(__object, __info));
-    __unlock_object_table();
+    this->__object_table_lock.unlock();
   }
 }
 
@@ -318,14 +275,14 @@ __object_info* __trace_base<__object_info, __stack_info>::__get_object_info(
   // XXX: Revisit this to see if we can decrease mutex spans.
   // Without this mutex, the object table could be rehashed during an
   // insertion on another thread, which could result in a segfault.
-  __lock_object_table();
+  this->__object_table_lock.lock();
   typename __object_table_t::iterator __object_it = 
       __object_table.find(__object);
   if (__object_it == __object_table.end()){
-    __unlock_object_table();
+    this->__object_table_lock.unlock();
     return NULL;
   } else {
-    __unlock_object_table();
+    this->__object_table_lock.unlock();
     return &__object_it->second;
   }
 }
@@ -334,8 +291,8 @@ template <typename __object_info, typename __stack_info>
 void __trace_base<__object_info, __stack_info>::__retire_object(
     __object_t __object)
 {
-  __lock_object_table();
-  __lock_stack_table();
+  this->__object_table_lock.lock();
+  this->__stack_table_lock.lock();
   typename __object_table_t::iterator __object_it =
       __object_table.find(__object);
   if (__object_it != __object_table.end()){
@@ -358,8 +315,8 @@ void __trace_base<__object_info, __stack_info>::__retire_object(
     }
     __object_table.erase(__object);
   }
-  __unlock_stack_table();
-  __unlock_object_table();
+  this->__object_table_lock.unlock();
+  this->__stack_table_lock.unlock();
 }
 
 template <typename __object_info, typename __stack_info>
@@ -408,36 +365,36 @@ inline void __set_max_mem()
       _GLIBCXX_PROFILE_DATA(_S_max_mem));
 }
 
-inline int __log_magnitude(float f)
+inline int __log_magnitude(float __f)
 {
-  const float log_base = 10.0;
-  int result = 0;
-  int sign = 1;
-  if (f < 0) {
-    f = -f;
-    sign = -1;
+  const float __log_base = 10.0;
+  int __result = 0;
+  int __sign = 1;
+  if (__f < 0) {
+    __f = -__f;
+    __sign = -1;
   }
-  while (f > log_base) {
-    ++result;
-    f /= 10.0;
+  while (__f > __log_base) {
+    ++__result;
+    __f /= 10.0;
   }
-  return sign * result;
+  return __sign * __result;
 }
 
-inline FILE* __open_output_file(const char* extension)
+inline FILE* __open_output_file(const char* __extension)
 {
   // The path is made of _S_trace_file_name + "." + extension.
-  size_t root_len = strlen(_GLIBCXX_PROFILE_DATA(_S_trace_file_name));
-  size_t ext_len = strlen(extension);
-  char* file_name = new char[root_len + 1 + ext_len + 1];
-  memcpy(file_name, _GLIBCXX_PROFILE_DATA(_S_trace_file_name), root_len);
-  *(file_name + root_len) = '.';
-  memcpy(file_name + root_len + 1, extension, ext_len + 1);
-  FILE* out_file = fopen(file_name, "w");
-  if (out_file) {
-    return out_file;
+  size_t __root_len = strlen(_GLIBCXX_PROFILE_DATA(_S_trace_file_name));
+  size_t __ext_len = strlen(__extension);
+  char* __file_name = new char[__root_len + 1 + __ext_len + 1];
+  memcpy(__file_name, _GLIBCXX_PROFILE_DATA(_S_trace_file_name), __root_len);
+  *(__file_name + __root_len) = '.';
+  memcpy(__file_name + __root_len + 1, __extension, __ext_len + 1);
+  FILE* __out_file = fopen(__file_name, "w");
+  if (__out_file) {
+    return __out_file;
   } else {
-    fprintf(stderr, "Could not open trace file '%s'.\n", file_name);
+    fprintf(stderr, "Could not open trace file '%s'.\n", __file_name);
     abort();
   }
 }
@@ -451,7 +408,7 @@ inline FILE* __open_output_file(const char* extension)
  */
 inline void __report(void)
 {
-  __lock(_GLIBCXX_PROFILE_DATA(__global_lock));
+  _GLIBCXX_PROFILE_DATA(__global_lock).lock();
 
   __warning_vector_t __warnings;
 
@@ -493,7 +450,7 @@ inline void __report(void)
 
   fclose(__warn_file);
 
-  __unlock(_GLIBCXX_PROFILE_DATA(__global_lock));
+  _GLIBCXX_PROFILE_DATA(__global_lock).unlock();
 }
 
 inline void __set_trace_path()
@@ -559,7 +516,7 @@ inline void __read_cost_factors()
 	  std::string::size_type __end = __line.find_first_of(";\n");
 	  std::string __factor_value = __line.substr(__pos + 1, __end - __pos);
 
-	  setenv(__factor_name.c_str(), __factor_value.c_str(), 0);
+          _GLIBCXX_PROFILE_DATA(__env)[__factor_name] = __factor_value;
 	}
     }
 }
@@ -611,13 +568,23 @@ inline void __set_cost_factors()
   for (__decltype(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin()) __it
 	 = _GLIBCXX_PROFILE_DATA(__cost_factors)->begin();
        __it != _GLIBCXX_PROFILE_DATA(__cost_factors)->end(); ++__it)
-    if (char* __env_cost_factor = getenv((*__it)->__env_var))
-      (*__it)->__value = atof(__env_cost_factor);
+    {
+      const char* __env_cost_factor = getenv((*__it)->__env_var);
+      if (!__env_cost_factor)
+        {
+          __env_t::iterator __found = _GLIBCXX_PROFILE_DATA(__env).find(
+              (*__it)->__env_var);
+          if (__found != _GLIBCXX_PROFILE_DATA(__env).end())
+            __env_cost_factor = (*__found).second.c_str();
+        }
+      if (__env_cost_factor)
+        (*__it)->__value = atof(__env_cost_factor);
+    }
 }
 
 inline void __profcxx_init_unconditional()
 {
-  __lock(_GLIBCXX_PROFILE_DATA(__global_lock));
+  _GLIBCXX_PROFILE_DATA(__global_lock).lock();
 
   if (__is_invalid()) {
 
@@ -651,7 +618,7 @@ inline void __profcxx_init_unconditional()
     }
   }
 
-  __unlock(_GLIBCXX_PROFILE_DATA(__global_lock));
+  _GLIBCXX_PROFILE_DATA(__global_lock).unlock();
 }
 
 /** @brief This function must be called by each instrumentation point.
