@@ -107,6 +107,10 @@ ix86_target_macros_internal (int isa_flag,
       def_or_undef (parse_in, "__amdfam10");
       def_or_undef (parse_in, "__amdfam10__");
       break;
+    case PROCESSOR_BDVER1:
+      def_or_undef (parse_in, "__bdver1");
+      def_or_undef (parse_in, "__bdver1__");
+      break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__pentium4");
       def_or_undef (parse_in, "__pentium4__");
@@ -181,6 +185,9 @@ ix86_target_macros_internal (int isa_flag,
       break;
     case PROCESSOR_AMDFAM10:
       def_or_undef (parse_in, "__tune_amdfam10__");
+      break;
+    case PROCESSOR_BDVER1:
+      def_or_undef (parse_in, "__tune_bdver1__");
       break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__tune_pentium4__");
