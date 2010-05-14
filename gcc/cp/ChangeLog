@@ -1,3 +1,11 @@
+2010-05-14  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/30566
+	* name-lookup.c (pushdecl_maybe_friend): Avoid the warnings about
+	shadowing the outer parameter or variables by the declaration of
+	nested function in nested structure or class. Warn the shadowing by
+	the declaration of nested lambda expression.
+
 2010-05-13  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (cp_build_array_ref): Factor out from...

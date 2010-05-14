@@ -1,3 +1,10 @@
+2010-05-14  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/30566
+	* testsuite/g++.dg/warn/Wshadow-4.C: Adjust.
+	* testsuite/g++.dg/warn/Wshadow-5.C: New test.
+	* testsuite/g++.dg/warn/Wshadow-6.C: New test
+
 2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/35779

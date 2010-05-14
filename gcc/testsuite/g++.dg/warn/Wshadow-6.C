@@ -1,0 +1,39 @@
+// Test the declaration of nested lambda function shadows
+// a parameter or previous local.
+// { dg-do compile }
+// { dg-options "-std=c++0x -Wshadow" }
+
+struct S {};
+int f1(int x)   // { dg-warning "shadowed declaration" }
+{
+ int t = 0;
+ int m = 0;     // { dg-warning "shadowed declaration" }
+ [&t] (int x) { // { dg-warning "shadows a parameter" }
+   int m = 1;   // { dg-warning "shadows a previous local" }
+   t = t + x + m;
+ };
+ return t;
+}
+
+void f2(struct S i, int j) {
+  struct A {
+    struct S x;
+    void g(struct S i) { // { dg-warning "shadowed declaration" }
+	  struct S x;    // { dg-warning "shadows a member of" }
+	  struct S y;    // { dg-warning "shadowed declaration" }
+	  int t;
+	   [&t](struct S i){   // { dg-warning "shadows a parameter" }
+		 int j = 1;    // { dg-bogus "shadows" }
+		 struct S y;   // { dg-warning "shadows a previous local" }
+ 		 t = j;
+	   };
+    }
+  };
+}
+
+void f3(int i) {
+ [=]{
+   int j = i;
+   int i; // { dg-warning "shadows a member of" }
+ };
+}

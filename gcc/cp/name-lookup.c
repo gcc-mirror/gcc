@@ -1016,15 +1016,18 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	  else if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
 		   /* Inline decls shadow nothing.  */
 		   && !DECL_FROM_INLINE (x)
-		   && TREE_CODE (oldlocal) == PARM_DECL
+		   && (TREE_CODE (oldlocal) == PARM_DECL
+		       || TREE_CODE (oldlocal) == VAR_DECL)
 		   /* Don't check the `this' parameter.  */
-		   && !DECL_ARTIFICIAL (oldlocal))
+		   && !DECL_ARTIFICIAL (oldlocal)
+		   && !DECL_ARTIFICIAL (x))
 	    {
-	      bool err = false;
+	      bool nowarn = false;
 
 	      /* Don't complain if it's from an enclosing function.  */
 	      if (DECL_CONTEXT (oldlocal) == current_function_decl
-		  && TREE_CODE (x) != PARM_DECL)
+		  && TREE_CODE (x) != PARM_DECL
+		  && TREE_CODE (oldlocal) == PARM_DECL)
 		{
 		  /* Go to where the parms should be and see if we find
 		     them there.  */
@@ -1038,16 +1041,41 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		  if (b->kind == sk_function_parms)
 		    {
 		      error ("declaration of %q#D shadows a parameter", x);
-		      err = true;
+		      nowarn = true;
 		    }
 		}
 
-	      if (warn_shadow && !err)
+	      /* The local structure or class can't use parameters of
+		 the containing function anyway.  */
+	      if (DECL_CONTEXT (oldlocal) != current_function_decl)
 		{
-		  warning_at (input_location, OPT_Wshadow,
-			      "declaration of %q#D shadows a parameter", x);
-		  warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
-			      "shadowed declaration is here");
+		  cxx_scope *scope = current_binding_level;
+		  tree context = DECL_CONTEXT (oldlocal);
+		  for (; scope; scope = scope->level_chain)
+		   {
+		     if (scope->kind == sk_function_parms
+			 && scope->this_entity == context)
+		      break;
+		     if (scope->kind == sk_class
+			 && !LAMBDA_TYPE_P (scope->this_entity))
+		       {
+			 nowarn = true;
+			 break;
+		       }
+		   }
+		}
+
+	      if (warn_shadow && !nowarn)
+		{
+		  if (TREE_CODE (oldlocal) == PARM_DECL)
+		    warning_at (input_location, OPT_Wshadow,
+				"declaration of %q#D shadows a parameter", x);
+		  else
+		    warning_at (input_location, OPT_Wshadow,
+				"declaration of %qD shadows a previous local",
+				x);
+		   warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
+			       "shadowed declaration is here");
 		}
 	    }
 
@@ -1073,14 +1101,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		  /* Location of previous decl is not useful in this case.  */
 		  warning (OPT_Wshadow, "declaration of %qD shadows a member of 'this'",
 			   x);
-		}
-	      else if (oldlocal != NULL_TREE
-		       && TREE_CODE (oldlocal) == VAR_DECL)
-		{
-		  warning_at (input_location, OPT_Wshadow,
-			      "declaration of %qD shadows a previous local", x);
-		  warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
-			      "shadowed declaration is here");
 		}
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
