@@ -118,11 +118,24 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
       }
 }
 
-/* Add cgraph NODE to queue starting at FIRST.  */
+/* Add cgraph NODE to queue starting at FIRST.
+
+   The queue is linked via AUX pointers and terminated by pointer to 1.
+   We enqueue nodes at two occasions: when we find them reachable or when we find
+   their bodies needed for further clonning.  In the second case we mark them
+   by pointer to 2 after processing so they are re-queue when they become
+   reachable.  */
 
 static void
 enqueue_cgraph_node (struct cgraph_node *node, struct cgraph_node **first)
 {
+  /* Node is still in queue; do nothing.  */
+  if (node->aux && node->aux != (void *) 2)
+    return;
+  /* Node was already processed as unreachable, re-enqueue
+     only if it became reachable now.  */
+  if (node->aux == (void *)2 && !node->reachable)
+    return;
   node->aux = *first;
   *first = node;
 }
@@ -191,7 +204,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   struct cgraph_node *first = (struct cgraph_node *) (void *) 1;
   struct varpool_node *first_varpool = (struct varpool_node *) (void *) 1;
-  struct cgraph_node *processed = (struct cgraph_node *) (void *) 2;
   struct cgraph_node *node, *next;
   struct varpool_node *vnode, *vnext;
   bool changed = false;
@@ -204,6 +216,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #ifdef ENABLE_CHECKING
   for (node = cgraph_nodes; node; node = node->next)
     gcc_assert (!node->aux);
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    gcc_assert (!vnode->aux);
 #endif
   varpool_reset_queue ();
   for (node = cgraph_nodes; node; node = node->next)
@@ -236,7 +250,11 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
   /* Perform reachability analysis.  As a special case do not consider
      extern inline functions not inlined as live because we won't output
-     them at all.  */
+     them at all. 
+
+     We maintain two worklist, one for cgraph nodes other for varpools and
+     are finished once both are empty.  */
+
   while (first != (struct cgraph_node *) (void *) 1
   	 || first_varpool != (struct varpool_node *) (void *) 1)
     {
@@ -245,8 +263,12 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  struct cgraph_edge *e;
 	  node = first;
 	  first = (struct cgraph_node *) first->aux;
-	  node->aux = processed;
+	  if (!node->reachable)
+	    node->aux = (void *)2;
 
+	  /* If we found this node reachable, first mark on the callees
+	     reachable too, unless they are direct calls to extern inline functions
+	     we decided to not inline.  */
 	  if (node->reachable)
 	    for (e = node->callees; e; e = e->next_callee)
 	      if (!e->callee->reachable
@@ -255,15 +277,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      || (!DECL_EXTERNAL (e->callee->decl))
 		      || before_inlining_p))
 		{
-		  bool prev_reachable = e->callee->reachable;
-		  e->callee->reachable |= node->reachable;
-		  if (!e->callee->aux
-		      || (e->callee->aux == processed
-			  && prev_reachable != e->callee->reachable))
-		    {
-		      e->callee->aux = first;
-		      first = e->callee;
-		    }
+		  e->callee->reachable = true;
+		  enqueue_cgraph_node (e->callee, &first);
 		}
 
 	  /* If any function in a comdat group is reachable, force
@@ -278,9 +293,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		   next = next->same_comdat_group)
 		if (!next->reachable)
 		  {
-		    next->aux = first;
-		    first = next;
 		    next->reachable = true;
+		    enqueue_cgraph_node (next, &first);
 		  }
 	    }
 
@@ -292,7 +306,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      bool noninline = node->clone_of->decl != node->decl;
 	      node = node->clone_of;
-	      if (noninline)
+	      if (noninline && !node->reachable && !node->aux)
 	      	{
 		  enqueue_cgraph_node (node, &first);
 		  break;
@@ -306,17 +320,33 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  first_varpool = (struct varpool_node *)first_varpool->aux;
 	  vnode->aux = NULL;
 	  process_references (&vnode->ref_list, &first, &first_varpool, before_inlining_p);
+	  /* If any function in a comdat group is reachable, force
+	     all other functions in the same comdat group to be
+	     also reachable.  */
+	  if (vnode->same_comdat_group)
+	    {
+	      struct varpool_node *next;
+	      for (next = vnode->same_comdat_group;
+		   next != vnode;
+		   next = next->same_comdat_group)
+		if (!next->needed)
+		  {
+		    varpool_mark_needed_node (next);
+		    enqueue_varpool_node (next, &first_varpool);
+		  }
+	    }
 	}
     }
 
-  /* Remove unreachable nodes.  Extern inline functions need special care;
-     Unreachable extern inline functions shall be removed.
-     Reachable extern inline functions we never inlined shall get their bodies
-     eliminated.
-     Reachable extern inline functions we sometimes inlined will be turned into
-     unanalyzed nodes so they look like for true extern functions to the rest
-     of code.  Body of such functions is released via remove_node once the
-     inline clones are eliminated.  */
+  /* Remove unreachable nodes. 
+
+     Completely unreachable functions can be fully removed from the callgraph.
+     Extern inline functions that we decided to not inline need to become unanalyzed nodes of
+     callgraph (so we still have edges to them).  We remove function body then.
+
+     Also we need to care functions that are unreachable but we need to keep them around
+     for later clonning.  In this case we also turn them to unanalyzed nodes, but
+     keep the body around.  */
   for (node = cgraph_nodes; node; node = next)
     {
       next = node->next;
@@ -339,7 +369,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
 	      /* See if there is reachable caller.  */
 	      for (e = node->callers; e; e = e->next_caller)
-		if (e->caller->aux)
+		if (e->caller->reachable)
 		  break;
 
 	      /* If so, we need to keep node in the callgraph.  */
