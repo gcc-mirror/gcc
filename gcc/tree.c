@@ -5039,7 +5039,6 @@ free_lang_data (void)
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
   lang_hooks.set_decl_assembler_name = lhd_set_decl_assembler_name;
-  lang_hooks.fold_obj_type_ref = gimple_fold_obj_type_ref;
 
   /* Reset diagnostic machinery.  */
   diagnostic_starter (global_dc) = default_diagnostic_starter;
