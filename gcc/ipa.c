@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "gimple.h"
 #include "ggc.h"
+#include "flags.h"
 
 /* Fill array order with all nodes with output flag set in the reverse
    topological order.  */
@@ -192,6 +193,19 @@ varpool_can_remove_if_no_refs (struct varpool_node *node)
 {
   return (!node->force_output && !node->used_from_other_partition
   	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
+}
+
+/* Return true when function can be marked local.  */
+
+static bool
+cgraph_local_node_p (struct cgraph_node *node)
+{
+   return (cgraph_only_called_directly_p (node)
+	   && node->analyzed
+	   && !DECL_EXTERNAL (node->decl)
+	   && !node->local.externally_visible
+	   && !node->reachable_from_other_partition
+	   && !node->in_other_partition);
 }
 
 /* Perform reachability analysis and reclaim all unreachable nodes.
@@ -408,18 +422,31 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	}
       node->aux = NULL;
     }
+
   if (file)
-    fprintf (file, "\nReclaiming variables:");
+    fprintf (file, "\n");
+
+  /* We must release unused extern inlines or sanity checking will fail.  Rest of transformations
+     are undesirable at -O0 since we do not want to remove anything.  */
+  if (!optimize)
+    return changed;
+
+  if (file)
+    fprintf (file, "Reclaiming variables:");
   for (vnode = varpool_nodes; vnode; vnode = vnext)
     {
       vnext = vnode->next;
       if (!vnode->needed)
         {
-	   if (file)
-	     fprintf (file, " %s", varpool_node_name (vnode));
-	   varpool_remove_node (vnode);
+	  if (file)
+	    fprintf (file, " %s", varpool_node_name (vnode));
+	  varpool_remove_node (vnode);
+	  changed = true;
 	}
     }
+
+  /* Now update address_taken flags and try to promote functions to be local.  */
+
   if (file)
     fprintf (file, "\nClearing address taken flags:");
   for (node = cgraph_nodes; node; node = node->next)
@@ -431,12 +458,22 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	bool found = false;
         for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref)
 		    && !found; i++)
-	  found = true;
+	  {
+	    gcc_assert (ref->use == IPA_REF_ADDR);
+	    found = true;
+	  }
 	if (!found)
 	  {
 	    if (file)
 	      fprintf (file, " %s", cgraph_node_name (node));
 	    node->address_taken = false;
+	    changed = true;
+	    if (cgraph_local_node_p (node))
+	      {
+		node->local.local = true;
+		if (file)
+		  fprintf (file, " (local)");
+	      }
 	  }
       }
 
@@ -450,6 +487,64 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
   return changed;
 }
+
+/* Discover variables that have no longer address taken or that are read only
+   and update their flags.
+
+   FIXME: This can not be done in between gimplify and omp_expand since
+   readonly flag plays role on what is shared and what is not.  Currently we do
+   this transformation as part of ipa-reference pass, but it would make sense
+   to do it before early optimizations.  */
+
+void
+ipa_discover_readonly_nonaddressable_vars (void)
+{
+  struct varpool_node *vnode;
+  if (dump_file)
+    fprintf (dump_file, "Clearing variable flags:");
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (vnode->finalized && varpool_all_refs_explicit_p (vnode)
+	&& (TREE_ADDRESSABLE (vnode->decl) || !TREE_READONLY (vnode->decl)))
+      {
+	bool written = false;
+	bool address_taken = false;
+	int i;
+        struct ipa_ref *ref;
+        for (i = 0; ipa_ref_list_refering_iterate (&vnode->ref_list, i, ref)
+		    && (!written || !address_taken); i++)
+	  switch (ref->use)
+	    {
+	    case IPA_REF_ADDR:
+	      address_taken = true;
+	      break;
+	    case IPA_REF_LOAD:
+	      break;
+	    case IPA_REF_STORE:
+	      written = true;
+	      break;
+	    }
+	if (TREE_ADDRESSABLE (vnode->decl) && !address_taken)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, " %s (addressable)", varpool_node_name (vnode));
+	    TREE_ADDRESSABLE (vnode->decl) = 0;
+	  }
+	if (!TREE_READONLY (vnode->decl) && !address_taken && !written
+	    /* Making variable in explicit section readonly can cause section
+	       type conflict. 
+	       See e.g. gcc.c-torture/compile/pr23237.c */
+	    && DECL_SECTION_NAME (vnode->decl) == NULL)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, " %s (read-only)", varpool_node_name (vnode));
+	    TREE_READONLY (vnode->decl) = 1;
+	  }
+      }
+  if (dump_file)
+    fprintf (dump_file, "\n");
+}
+
+/* Return true when function NODE should be considered externally visible.  */
 
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
@@ -569,10 +664,7 @@ function_and_variable_visibility (bool whole_program)
 	       segfault though. */
 	    dissolve_same_comdat_group_list (node);
 	}
-      node->local.local = (cgraph_only_called_directly_p (node)
-			   && node->analyzed
-			   && !DECL_EXTERNAL (node->decl)
-			   && !node->local.externally_visible);
+      node->local.local = cgraph_local_node_p (node);
     }
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {

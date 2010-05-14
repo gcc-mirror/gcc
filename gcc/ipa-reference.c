@@ -22,13 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This file gathers information about how variables whose scope is
    confined to the compilation unit are used.
 
-   There are two categories of information produced by this pass:
-
-   1) The addressable (TREE_ADDRESSABLE) bit and readonly
-   (TREE_READONLY) bit associated with these variables is properly set
-   based on scanning all of the code withing the compilation unit.
-
-   2) The transitive call site specific clobber effects are computed
+   The transitive call site specific clobber effects are computed
    for the variables whose scope is contained within this compilation
    unit.
 
@@ -41,12 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    side effects of each call.  In later parts of the compiler, these
    local and global sets are examined to make the call clobbering less
    traumatic, promote some statics to registers, and improve aliasing
-   information.
-
-   Currently must be run after inlining decisions have been made since
-   otherwise, the local sets will not contain information that is
-   consistent with post inlined state.  The global sets are not prone
-   to this problem since they are by definition transitive.  */
+   information.  */
 
 #include "config.h"
 #include "system.h"
@@ -135,10 +124,6 @@ static GTY((param1_is(int), param2_is(tree)))
 /* This bitmap is used to knock out the module static variables whose
    addresses have been taken and passed around.  */
 static bitmap module_statics_escape;
-
-/* This bitmap is used to knock out the module static variables that
-   are not readonly.  */
-static bitmap module_statics_written;
 
 /* A bit is set for every module static we are considering.  This is
    ored into the local info when asm code is found that clobbers all
@@ -308,17 +293,6 @@ is_proper_for_analysis (tree t)
   return true;
 }
 
-/* Lookup the tree node for the static variable that has UID.  */
-static tree
-get_static_decl (int index)
-{
-  splay_tree_node stn =
-    splay_tree_lookup (reference_vars_to_consider, index);
-  if (stn)
-    return (tree)stn->value;
-  return NULL;
-}
-
 /* Lookup the tree node for the static variable that has UID and
    convert the name to a string for debugging.  */
 
@@ -419,7 +393,6 @@ ipa_init (void)
   bitmap_obstack_initialize (&local_info_obstack);
   bitmap_obstack_initialize (&global_info_obstack);
   module_statics_escape = BITMAP_ALLOC (&local_info_obstack);
-  module_statics_written = BITMAP_ALLOC (&local_info_obstack);
   all_module_statics = BITMAP_ALLOC (&global_info_obstack);
 
   node_removal_hook_holder =
@@ -524,7 +497,6 @@ analyze_function (struct cgraph_node *fn)
 	  break;
 	case IPA_REF_STORE:
           bitmap_set_bit (local->statics_written, DECL_UID (var));
-	  bitmap_set_bit (module_statics_written, DECL_UID (var));
 	  break;
 	case IPA_REF_ADDR:
 	  bitmap_set_bit (module_statics_escape, DECL_UID (var));
@@ -656,11 +628,9 @@ generate_summary (void)
   struct varpool_node *vnode;
   unsigned int index;
   bitmap_iterator bi;
-  bitmap module_statics_readonly;
   bitmap bm_temp;
 
   ipa_init ();
-  module_statics_readonly = BITMAP_ALLOC (&local_info_obstack);
   bm_temp = BITMAP_ALLOC (&local_info_obstack);
 
   /* Process all of the variables first.  */
@@ -682,46 +652,8 @@ generate_summary (void)
   bitmap_and_compl_into (all_module_statics,
 			 module_statics_escape);
 
-  bitmap_and_compl (module_statics_readonly, all_module_statics,
-		    module_statics_written);
-
-  /* If the address is not taken, we can unset the addressable bit
-     on this variable.  */
-  EXECUTE_IF_SET_IN_BITMAP (all_module_statics, 0, index, bi)
-    {
-      tree var = get_static_decl (index);
-      TREE_ADDRESSABLE (var) = 0;
-      if (dump_file)
-	fprintf (dump_file, "Not TREE_ADDRESSABLE var %s\n",
-		 get_static_name (index));
-    }
-
-  /* If the variable is never written, we can set the TREE_READONLY
-     flag.  Additionally if it has a DECL_INITIAL that is made up of
-     constants we can treat the entire global as a constant.  */
-
-  bitmap_and_compl (module_statics_readonly, all_module_statics,
-		    module_statics_written);
-  EXECUTE_IF_SET_IN_BITMAP (module_statics_readonly, 0, index, bi)
-    {
-      tree var = get_static_decl (index);
-
-      /* Ignore variables in named sections - changing TREE_READONLY
-	 changes the section flags, potentially causing conflicts with
-	 other variables in the same named section.  */
-      if (DECL_SECTION_NAME (var) == NULL_TREE)
-	{
-	  TREE_READONLY (var) = 1;
-	  if (dump_file)
-	    fprintf (dump_file, "read-only var %s\n",
-		     get_static_name (index));
-	}
-    }
-
   BITMAP_FREE(module_statics_escape);
-  BITMAP_FREE(module_statics_written);
   module_statics_escape = NULL;
-  module_statics_written = NULL;
 
   if (dump_file)
     EXECUTE_IF_SET_IN_BITMAP (all_module_statics, 0, index, bi)
@@ -748,7 +680,6 @@ generate_summary (void)
 			   all_module_statics);
       }
 
-  BITMAP_FREE(module_statics_readonly);
   BITMAP_FREE(bm_temp);
 
   if (dump_file)
@@ -1093,6 +1024,7 @@ propagate (void)
 	clean_function_local_data (node);
     }
   bitmap_obstack_release (&local_info_obstack);
+  ipa_discover_readonly_nonaddressable_vars ();
   return 0;
 }
 
