@@ -1784,12 +1784,13 @@ c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(TREE_H) $(FUNCTION_H) $(C_PRAGMA_H) toplev.h output.h $(GGC_H) $(TM_P_H) \
     $(C_COMMON_H) $(TARGET_H) gt-c-pragma.h $(CPPLIB_H) $(FLAGS_H)
 graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(FLAGS_H) output.h \
-    $(RTL_H) $(FUNCTION_H) hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(OBSTACK_H)
+    $(RTL_H) $(FUNCTION_H) hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(OBSTACK_H) \
+    $(CONFIG_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(FLAGS_H) hard-reg-set.h $(BASIC_BLOCK_H) $(OBSTACK_H)
 ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(EBITMAP_H)
-sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h
+sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
 COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
