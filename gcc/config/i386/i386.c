@@ -819,6 +819,93 @@ struct processor_costs amdfam10_cost = {
   1,                                    /* cond_not_taken_branch_cost.  */
 };
 
+struct processor_costs bdver1_cost = {
+  COSTS_N_INSNS (1),                    /* cost of an add instruction */
+  COSTS_N_INSNS (2),                    /* cost of a lea instruction */
+  COSTS_N_INSNS (1),                    /* variable shift costs */
+  COSTS_N_INSNS (1),                    /* constant shift costs */
+  {COSTS_N_INSNS (3),                   /* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),                   /*                               HI */
+   COSTS_N_INSNS (3),                   /*                               SI */
+   COSTS_N_INSNS (4),                   /*                               DI */
+   COSTS_N_INSNS (5)},                  /*                               other */
+  0,                                    /* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),                  /* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),                  /*                          HI */
+   COSTS_N_INSNS (51),                  /*                          SI */
+   COSTS_N_INSNS (83),                  /*                          DI */
+   COSTS_N_INSNS (83)},                 /*                          other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  9,					/* MOVE_RATIO */
+  4,					/* cost for loading QImode using movzbl */
+  {3, 4, 3},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {3, 4, 3},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {4, 4, 12},				/* cost of loading fp registers
+		   			   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+ 		   			   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {3, 3},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 4},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 4, 3},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 4, 5},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
+  					/* On K8
+  					    MOVD reg64, xmmreg 	Double	FSTORE 4
+					    MOVD reg32, xmmreg 	Double	FSTORE 4
+					   On AMDFAM10
+					    MOVD reg64, xmmreg 	Double	FADD 3
+                                                                1/1  1/1
+					    MOVD reg32, xmmreg 	Double	FADD 3
+                                                                1/1  1/1 */
+  64,					/* size of l1 cache.  */
+  1024,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  /* New AMD processors never drop prefetches; if they cannot be performed
+     immediately, they are queued.  We set number of simultaneous prefetches
+     to a large constant to reflect this (it probably is not a good idea not
+     to limit number of prefetches at all, as their execution also takes some
+     time).  */
+  100,					/* number of parallel prefetches */
+  2,					/* Branch cost */
+  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
+      very small blocks it is better to use loop. For large blocks, libcall can
+      do nontemporary accesses and beat inline considerably.  */
+  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  4,                                    /* scalar_stmt_cost.  */
+  2,                                    /* scalar load_cost.  */
+  2,                                    /* scalar_store_cost.  */
+  6,                                    /* vec_stmt_cost.  */
+  0,                                    /* vec_to_scalar_cost.  */
+  2,                                    /* scalar_to_vec_cost.  */
+  2,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  2,                                    /* vec_store_cost.  */
+  2,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
+};
+
 static const
 struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -1276,7 +1363,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_ATHLON  (1<<PROCESSOR_ATHLON)
 #define m_ATHLON_K8  (m_K8 | m_ATHLON)
 #define m_AMDFAM10  (1<<PROCESSOR_AMDFAM10)
-#define m_AMD_MULTIPLE  (m_K8 | m_ATHLON | m_AMDFAM10)
+#define m_BDVER1  (1<<PROCESSOR_BDVER1)
+#define m_AMD_MULTIPLE  (m_K8 | m_ATHLON | m_AMDFAM10 | m_BDVER1)
 
 #define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
 #define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
@@ -1321,7 +1409,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~m_386,
 
   /* X86_TUNE_USE_SAHF */
-  m_ATOM | m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_PENT4
+  m_ATOM | m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER1 | m_PENT4
   | m_NOCONA | m_CORE2 | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
@@ -1425,10 +1513,16 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      while enabling it on K8 brings roughly 2.4% regression that can be partly
      masked by careful scheduling of moves.  */
   m_ATOM | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC
-  | m_AMDFAM10,
+  | m_AMDFAM10 | m_BDVER1,
 
-  /* X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL */
-  m_AMDFAM10,
+  /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
+  m_AMDFAM10 | m_BDVER1,
+
+  /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL */
+  m_BDVER1,
+
+  /* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL */
+  m_BDVER1,
 
   /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
      are resolved on SSE register parts instead of whole registers, so we may
@@ -1461,7 +1555,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~(m_AMD_MULTIPLE | m_GENERIC),
 
   /* X86_TUNE_INTER_UNIT_CONVERSIONS */
-  ~(m_AMDFAM10),
+  ~(m_AMDFAM10 | m_BDVER1),
 
   /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
      than 4 branch instructions in the 16 byte window.  */
@@ -1497,11 +1591,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
      vector path on AMD machines.  */
-  m_K8 | m_GENERIC64 | m_AMDFAM10,
+  m_K8 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
      machines.  */
-  m_K8 | m_GENERIC64 | m_AMDFAM10,
+  m_K8 | m_GENERIC64 | m_AMDFAM10 | m_BDVER1,
 
   /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
      than a MOV.  */
@@ -1527,7 +1621,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
      with a subsequent conditional jump instruction into a single
      compare-and-branch uop.  */
-  m_CORE2,
+  m_CORE2 | m_BDVER1,
 
   /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
      will impact LEA instruction selection. */
@@ -2067,6 +2161,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
+  {&bdver1_cost, 32, 24, 32, 7, 32},
   {&atom_cost, 16, 7, 16, 7, 16}
 };
 
@@ -2093,7 +2188,8 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "athlon",
   "athlon-4",
   "k8",
-  "amdfam10"
+  "amdfam10",
+  "bdver1"
 };
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -2751,6 +2847,11 @@ override_options (bool main_args_p)
       {"barcelona", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
 	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
 	| PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM},
+      {"bdver1", PROCESSOR_BDVER1, CPU_BDVER1,
+	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+	| PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM
+	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AES 
+	| PTA_PCLMUL | PTA_AVX | PTA_FMA4 | PTA_XOP | PTA_LWP},
       {"generic32", PROCESSOR_GENERIC32, CPU_PENTIUMPRO,
 	0 /* flags are only used for -march switch.  */ },
       {"generic64", PROCESSOR_GENERIC64, CPU_GENERIC64,
@@ -7469,15 +7570,27 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	case MODE_V4SF:
 	  return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
 	case MODE_V2DF:
-	  return TARGET_AVX ? "vxorpd\t%0, %0, %0" : "xorpd\t%0, %0";
+	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	  else
+	    return TARGET_AVX ? "vxorpd\t%0, %0, %0" : "xorpd\t%0, %0";	    
 	case MODE_TI:
-	  return TARGET_AVX ? "vpxor\t%0, %0, %0" : "pxor\t%0, %0";
+	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	  else
+	    return TARGET_AVX ? "vpxor\t%0, %0, %0" : "pxor\t%0, %0";
 	case MODE_V8SF:
 	  return "vxorps\t%x0, %x0, %x0";
 	case MODE_V4DF:
-	  return "vxorpd\t%x0, %x0, %x0";
+	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vxorps\t%x0, %x0, %x0";
+	  else
+	    return "vxorpd\t%x0, %x0, %x0";
 	case MODE_OI:
-	  return "vpxor\t%x0, %x0, %x0";
+	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vxorps\t%x0, %x0, %x0";
+	  else
+	    return "vpxor\t%x0, %x0, %x0";
 	default:
 	  break;
 	}
@@ -13233,6 +13346,14 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  switch (GET_MODE_SIZE (mode))
 	    {
 	    case 16:
+	      /*  If we're optimizing for size, movups is the smallest.  */
+	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+		{
+		  op0 = gen_lowpart (V4SFmode, op0);
+		  op1 = gen_lowpart (V4SFmode, op1);
+		  emit_insn (gen_avx_movups (op0, op1));
+		  return;
+		}
 	      op0 = gen_lowpart (V16QImode, op0);
 	      op1 = gen_lowpart (V16QImode, op1);
 	      emit_insn (gen_avx_movdqu (op0, op1));
@@ -13259,6 +13380,13 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      emit_insn (gen_avx_movups256 (op0, op1));
 	      break;
 	    case V2DFmode:
+	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+		{
+		  op0 = gen_lowpart (V4SFmode, op0);
+		  op1 = gen_lowpart (V4SFmode, op1);
+		  emit_insn (gen_avx_movups (op0, op1));
+		  return;
+		}
 	      emit_insn (gen_avx_movupd (op0, op1));
 	      break;
 	    case V4DFmode:
@@ -13279,7 +13407,8 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
   if (MEM_P (op1))
     {
       /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_insn_for_size_p ())
+      if (optimize_insn_for_size_p () 
+	  || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	{
 	  op0 = gen_lowpart (V4SFmode, op0);
 	  op1 = gen_lowpart (V4SFmode, op1);
@@ -13302,13 +13431,13 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
         {
           rtx zero;
 
-          if (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL)
-            {
-              op0 = gen_lowpart (V2DFmode, op0);
-              op1 = gen_lowpart (V2DFmode, op1);
-              emit_insn (gen_sse2_movupd (op0, op1));
-              return;
-            }
+	  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL)
+	    {
+	      op0 = gen_lowpart (V2DFmode, op0);
+	      op1 = gen_lowpart (V2DFmode, op1);
+	      emit_insn (gen_sse2_movupd (op0, op1));
+	      return;
+	    }
 
 	  /* When SSE registers are split into halves, we can avoid
 	     writing to the top half twice.  */
@@ -13337,12 +13466,12 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	}
       else
         {
-          if (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL)
-            {
-              op0 = gen_lowpart (V4SFmode, op0);
-              op1 = gen_lowpart (V4SFmode, op1);
-              emit_insn (gen_sse_movups (op0, op1));
-              return;
+	  if (TARGET_SSE_UNALIGNED_LOAD_OPTIMAL)
+	    {
+	      op0 = gen_lowpart (V4SFmode, op0);
+	      op1 = gen_lowpart (V4SFmode, op1);
+	      emit_insn (gen_sse_movups (op0, op1));
+	      return;
             }
 
 	  if (TARGET_SSE_PARTIAL_REG_DEPENDENCY)
@@ -13361,7 +13490,8 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
   else if (MEM_P (op0))
     {
       /* If we're optimizing for size, movups is the smallest.  */
-      if (optimize_insn_for_size_p ())
+      if (optimize_insn_for_size_p ()
+	  || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
 	{
 	  op0 = gen_lowpart (V4SFmode, op0);
 	  op1 = gen_lowpart (V4SFmode, op1);
@@ -13382,19 +13512,37 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 
       if (TARGET_SSE2 && mode == V2DFmode)
 	{
-	  m = adjust_address (op0, DFmode, 0);
-	  emit_insn (gen_sse2_storelpd (m, op1));
-	  m = adjust_address (op0, DFmode, 8);
-	  emit_insn (gen_sse2_storehpd (m, op1));
+	  if (TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
+	    {
+	      op0 = gen_lowpart (V2DFmode, op0);
+	      op1 = gen_lowpart (V2DFmode, op1);
+	      emit_insn (gen_sse2_movupd (op0, op1));	      
+	    }
+	  else
+	    {
+	      m = adjust_address (op0, DFmode, 0);
+	      emit_insn (gen_sse2_storelpd (m, op1));
+	      m = adjust_address (op0, DFmode, 8);
+	      emit_insn (gen_sse2_storehpd (m, op1));
+	    }
 	}
       else
 	{
 	  if (mode != V4SFmode)
 	    op1 = gen_lowpart (V4SFmode, op1);
-	  m = adjust_address (op0, V2SFmode, 0);
-	  emit_insn (gen_sse_storelps (m, op1));
-	  m = adjust_address (op0, V2SFmode, 8);
-	  emit_insn (gen_sse_storehps (m, op1));
+
+	  if (TARGET_SSE_UNALIGNED_STORE_OPTIMAL)
+	    {
+	      op0 = gen_lowpart (V4SFmode, op0);
+	      emit_insn (gen_sse_movups (op0, op1));	      
+	    }
+	  else
+	    {
+	      m = adjust_address (op0, V2SFmode, 0);
+	      emit_insn (gen_sse_storelps (m, op1));
+	      m = adjust_address (op0, V2SFmode, 8);
+	      emit_insn (gen_sse_storehps (m, op1));
+	    }
 	}
     }
   else
@@ -19714,6 +19862,7 @@ ix86_issue_rate (void)
     case PROCESSOR_NOCONA:
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
+    case PROCESSOR_BDVER1:
       return 3;
 
     case PROCESSOR_CORE2:
@@ -19903,6 +20052,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
+    case PROCESSOR_BDVER1:
     case PROCESSOR_ATOM:
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:

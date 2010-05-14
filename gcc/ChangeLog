@@ -1,3 +1,61 @@
+2010-05-14  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* config.gcc: Add support for --with-cpu option for bdver1.
+	* config/i386/i386.h (TARGET_BDVER1): New macro.
+	(ix86_tune_indices): Change SSE_UNALIGNED_MOVE_OPTIMAL
+	to SSE_UNALIGNED_LOAD_OPTIMAL. Add SSE_UNALIGNED_STORE_OPTIMAL.
+	(ix86_tune_features) :Change SSE_UNALIGNED_MOVE_OPTIMAL
+	to SSE_UNALIGNED_LOAD_OPTIMAL. Add SSE_UNALIGNED_STORE_OPTIMAL.
+	Add SSE_PACKED_SINGLE_INSN_OPTIMAL.
+	(TARGET_CPU_DEFAULT_NAMES): Add bdver1.
+	(processor_type): Add PROCESSOR_BDVER1.
+	* config/i386/i386.md: Add bdver1 as a new cpu attribute to match
+	processor_type in config/i386/i386.h.
+	Add check for TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL to emit
+	movaps <reg, reg> instead of movapd <reg, reg> when replacing
+	movsd <reg, reg> or movss <reg, reg> for SSE and AVX.
+	Add check for  TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	to emit packed xor instead of packed double/packed integer
+	xor for SSE and AVX when moving a zero value.
+	* config/i386/sse.md: Add check for TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+	 to emit movaps instead of movapd/movdqa for SSE and AVX.
+	Add check for TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL to emit packed single
+	logical operations i.e and, or and xor instead of packed double logical
+	operations for SSE and AVX. 
+	* config/i386/i386-c.c: 
+	(ix86_target_macros_internal): Add PROCESSOR_BDVER1.
+	* config/i386/driver-i386.c: Turn on -mtune=native for BDVER1.
+	(has_fma4, has_xop): New.
+	* config/i386/i386.c (bdver1_cost): New variable.
+	(m_BDVER1): New macro.
+	(m_AMD_MULTIPLE): Add m_BDVER1.
+	(x86_tune_use_leave, x86_tune_push_memory, x86_tune_unroll_strlen,
+	 x86_tune_deep_branch_prediction, x86_tune_use_sahf, x86_tune_movx,
+	 x86_tune_use_simode_fiop, x86_tune_promote_qimode, 
+	 x86_tune_add_esp_8, x86_tune_tune_sub_esp_4, x86_tune_sub_esp_8,
+	 x86_tune_integer_dfmode_moves, x86_tune_partial_reg_dependency,
+	 x86_tune_sse_partial_reg_dependency, x86_tune_sse_unaligned_load_optimal,
+	 x86_tune_sse_unaligned_store_optimal, x86_tune_sse_typeless_stores,
+	 x86_tune_memory_mismatch_stall, x86_tune_use_ffreep,
+	 x86_tune_inter_unit_moves, x86_tune_inter_unit_conversions,
+	 x86_tune_use_bt, x86_tune_pad_returns, x86_tune_slow_imul_imm32_mem,
+	 x86_tune_slow_imul_imm8, x86_tune_fuse_cmp_and_branch): 
+	Enable/disable for bdver1.
+	(processor_target_table): Add bdver1_cost.
+	(cpu_names): Add bdver1.
+	(override_options): Set up PROCESSOR_BDVER1 for bdver1 entry in
+	 processor_alias_table.
+	(ix86_expand_vector_move_misalign): Change 
+	 TARGET_SSE_UNALIGNED_MOVE_OPTIMAL to TARGET_SSE_UNALIGNED_LOAD_OPTIMAL.
+	 Check for TARGET_SSE_UNALIGNED_STORE_OPTIMAL.
+	 Check for TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL to emit movups instead
+	 of movupd/movdqu for SSE and AVX.
+	(ix86_tune_issue_rate): Add PROCESSOR_BDVER1.
+	(ix86_tune_adjust_cost): Add code for bdver1.
+	(standard_sse_constant_opcode): Add check for
+	TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL to emit packed single xor instead
+	of packed double xor for SSE and AVX.
+
 2010-05-14  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* tree-ssa-loop.prefetch.c (prune_ref_by_group_reuse): Cast abs()

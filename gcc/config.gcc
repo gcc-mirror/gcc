@@ -1139,7 +1139,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			need_64bit_hwint=yes
 			need_64bit_isa=yes
 			case X"${with_cpu}" in
-			Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
+			Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xbdver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
 				;;
 			X)
 				if test x$with_cpu_64 = x; then
@@ -1148,7 +1148,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 				;;
 			*)
 				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-				echo "generic atom core2 nocona x86-64 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
+				echo "generic atom core2 nocona x86-64 bdver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
 				exit 1
 				;;
 			esac
@@ -1266,7 +1266,7 @@ i[34567]86-*-solaris2*)
 		need_64bit_isa=yes
 		use_gcc_stdint=wrap
 		case X"${with_cpu}" in
-		Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
+		Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xbdver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
 			;;
 		X)
 			if test x$with_cpu_64 = x; then
@@ -1275,7 +1275,7 @@ i[34567]86-*-solaris2*)
 			;;
 		*)
 			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-			echo "generic atom core2 nocona x86-64 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
+			echo "generic atom core2 nocona x86-64 bdver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
 			exit 1
 			;;
 		esac
@@ -1346,7 +1346,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			if test x$enable_targets = xall; then
 				tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 				case X"${with_cpu}" in
-				Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
+				Xgeneric|Xatom|Xcore2|Xnocona|Xx86-64|Xbdver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
 					;;
 				X)
 					if test x$with_cpu_64 = x; then
@@ -1355,7 +1355,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 					;;
 				*)
 					echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-					echo "generic atom core2 nocona x86-64 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
+					echo "generic atom core2 nocona x86-64 bdver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
 					exit 1
 					;;
 				esac
@@ -2626,6 +2626,10 @@ case ${target} in
     ;;
   i686-*-* | i786-*-*)
     case ${target_noncanonical} in
+      bdver1-*)
+	arch=bdver1
+	cpu=bdver1
+	;;
       amdfam10-*|barcelona-*)
 	arch=amdfam10
 	cpu=amdfam10
@@ -2703,6 +2707,10 @@ case ${target} in
     ;;
   x86_64-*-*)
     case ${target_noncanonical} in
+      bdver1-*)
+	arch=bdver1
+	cpu=bdver1
+	;;
       amdfam10-*|barcelona-*)
 	arch=amdfam10
 	cpu=amdfam10
@@ -3109,8 +3117,8 @@ case "${target}" in
 				;;
 			"" | x86-64 | generic | native \
 			| k8 | k8-sse3 | athlon64 | athlon64-sse3 | opteron \
-			| opteron-sse3 | athlon-fx | amdfam10 | barcelona \
-			| nocona | core2 | atom)
+			| opteron-sse3 | athlon-fx | bdver1 | amdfam10 \
+			| barcelona | nocona | core2 | atom)
 				# OK
 				;;
 			*)

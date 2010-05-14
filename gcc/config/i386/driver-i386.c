@@ -396,6 +396,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_movbe = 0, has_sse4_1 = 0, has_sse4_2 = 0;
   unsigned int has_popcnt = 0, has_aes = 0, has_avx = 0;
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
+  unsigned int has_fma4 = 0, has_xop = 0;
 
   bool arch;
 
@@ -460,6 +461,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_sse4a = ecx & bit_SSE4a;
       has_abm = ecx & bit_ABM;
       has_lwp = ecx & bit_LWP;
+      has_fma4 = ecx & bit_FMA4;
+      has_xop = ecx & bit_XOP;
 
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
@@ -490,6 +493,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       if (name == SIG_GEODE)
 	processor = PROCESSOR_GEODE;
+      else if (has_xop)
+	processor = PROCESSOR_BDVER1;
       else if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
       else if (has_sse2 || has_longmode)
@@ -629,6 +634,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     case PROCESSOR_AMDFAM10:
       cpu = "amdfam10";
       break;
+    case PROCESSOR_BDVER1:
+      cpu = "bdver1";
+      break;
 
     default:
       /* Use something reasonable.  */
@@ -674,6 +682,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	options = concat (options, " -mabm", NULL);
       if (has_lwp)
 	options = concat (options, " -mlwp", NULL);
+      if (has_fma4)
+	options = concat (options, " -mfma4", NULL);
+      if (has_xop)
+	options = concat (options, " -mxop", NULL);
 
       if (has_avx)
 	options = concat (options, " -mavx", NULL);
