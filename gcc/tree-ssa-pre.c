@@ -4347,6 +4347,10 @@ eliminate (void)
 
 	  remove_phi_node (&gsi, false);
 
+	  if (!bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (res))
+	      && TREE_CODE (sprime) == SSA_NAME)
+	    gimple_set_plf (SSA_NAME_DEF_STMT (sprime), NECESSARY, true);
+
 	  if (!useless_type_conversion_p (TREE_TYPE (res), TREE_TYPE (sprime)))
 	    sprime = fold_convert (TREE_TYPE (res), sprime);
 	  stmt = gimple_build_assign (res, sprime);
