@@ -6443,8 +6443,8 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
 	    /* This is not an error, it is runtime undefined
 	       behavior.  */
 	    warning (0, (DECL_CONSTRUCTOR_P (current_function_decl) ?
-		      "abstract virtual %q#D called from constructor"
-		      : "abstract virtual %q#D called from destructor"),
+		      "pure virtual %q#D called from constructor"
+		      : "pure virtual %q#D called from destructor"),
 		     fn);
 
 	  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE

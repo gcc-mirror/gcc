@@ -1,3 +1,8 @@
+2010-05-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* call.c (build_new_method_call): Change warning text.
+	* typeck2.c (build_functional_cast): Change error text.
+
 2010-05-14  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/30566
