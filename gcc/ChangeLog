@@ -1,3 +1,10 @@
+2010-05-14  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (enqueue_cgraph_node): Update comment; do not re-enqueue
+	nodes already in queue.
+	(cgraph_remove_unreachable_nodes): Cleanup; fix problem with re-enqueueing
+	node.
+
 2010-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44136
