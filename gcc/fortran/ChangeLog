@@ -1,3 +1,9 @@
+2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44135
+	* fortran/interface.c (get_sym_storage_size): Use signed instead of
+	unsigned mpz_get_?i routines.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44036

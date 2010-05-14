@@ -1,3 +1,8 @@
+2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44135
+	* gfortran.dg/actual_array_interface_2.f90: New test.
+
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44036
