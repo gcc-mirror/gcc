@@ -214,10 +214,10 @@ do_begin_catch (void)
 static int
 dtor_nothrow (tree type)
 {
-  if (type == NULL_TREE)
+  if (type == NULL_TREE || type == error_mark_node)
     return 0;
 
-  if (!CLASS_TYPE_P (type))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return 1;
 
   if (CLASSTYPE_LAZY_DESTRUCTOR (type))

@@ -1,6 +1,10 @@
 2010-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44127
+	* except.c (dtor_nothrow): Return nonzero for type with
+	trivial destructor.
+
+	PR c++/44127
 	* cp-gimplify.c (gimplify_must_not_throw_expr): Use
 	gimple_build_eh_must_not_throw.
 

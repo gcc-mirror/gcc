@@ -1,6 +1,12 @@
 2010-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44127
+	* gimple.h (enum gf_mask): Add GF_CALL_NOTHROW.
+	(gimple_call_set_nothrow): New.
+	* gimple.c (gimple_build_call_from_tree): Call it.
+	(gimple_call_flags): Set ECF_NOTHROW from GF_CALL_NOTHROW.
+
+	PR c++/44127
 	* gimplify.c (gimplify_seq_add_stmt): No longer static.
 	* gimple.h: Declare it.
 	* gimple.c (gimple_build_eh_filter): No ops.
