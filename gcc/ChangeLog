@@ -1,3 +1,9 @@
+2010-05-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44119
+	* tree-ssa-pre.c (eliminate): Properly mark replacement of
+	a PHI node necessary.
+
 2010-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (TREE_ADDRESSABLE): Remove bogus usage for FIELD_DECL.
