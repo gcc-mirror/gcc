@@ -1094,7 +1094,9 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		    {
 		      if (tem == field
 			  || (TREE_TYPE (tem) == TREE_TYPE (field)
-			      && compare_field_offset (tem, field)))
+			      && DECL_NONADDRESSABLE_P (tem)
+				 == DECL_NONADDRESSABLE_P (field)
+			      && gimple_compare_field_offset (tem, field)))
 			break;
 		    }
 		  /* In case of type mismatches across units we can fail

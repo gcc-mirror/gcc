@@ -1,3 +1,14 @@
+2010-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.h (compare_field_offset): Rename into...
+	(gimple_compare_field_offset): ...this.
+	* gimple.c (compare_field_offset): Rename into...
+	(gimple_compare_field_offset): ...this.  Compare the full access if
+	the offset is self-referential.
+	(gimple_types_compatible_p): Adjust for above renaming.
+	* lto-streamer-in.c (input_gimple_stmt): Likewise.  Also compare the
+	DECL_NONADDRESSABLE_P flag of fields before merging them.
+
 2010-05-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (ctor_to_list): Delete.

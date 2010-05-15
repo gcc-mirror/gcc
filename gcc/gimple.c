@@ -3219,16 +3219,35 @@ compare_type_names_p (tree t1, tree t2, bool for_completion_p)
   return false;
 }
 
-/* Return true if the field decls F1 and F2 are at the same offset.  */
+/* Return true if the field decls F1 and F2 are at the same offset.
+
+   This is intended to be used on GIMPLE types only.  In order to
+   compare GENERIC types, use fields_compatible_p instead.  */
 
 bool
-compare_field_offset (tree f1, tree f2)
+gimple_compare_field_offset (tree f1, tree f2)
 {
   if (DECL_OFFSET_ALIGN (f1) == DECL_OFFSET_ALIGN (f2))
-    return (operand_equal_p (DECL_FIELD_OFFSET (f1),
-			     DECL_FIELD_OFFSET (f2), 0)
-	    && tree_int_cst_equal (DECL_FIELD_BIT_OFFSET (f1),
-				   DECL_FIELD_BIT_OFFSET (f2)));
+    {
+      tree offset1 = DECL_FIELD_OFFSET (f1);
+      tree offset2 = DECL_FIELD_OFFSET (f2);
+      return ((offset1 == offset2
+	       /* Once gimplification is done, self-referential offsets are
+		  instantiated as operand #2 of the COMPONENT_REF built for
+		  each access and reset.  Therefore, they are not relevant
+		  anymore and fields are interchangeable provided that they
+		  represent the same access.  */
+	       || (TREE_CODE (offset1) == PLACEHOLDER_EXPR
+		   && TREE_CODE (offset2) == PLACEHOLDER_EXPR
+		   && (DECL_SIZE (f1) == DECL_SIZE (f2)
+		       || (TREE_CODE (DECL_SIZE (f1)) == PLACEHOLDER_EXPR
+			   && TREE_CODE (DECL_SIZE (f2)) == PLACEHOLDER_EXPR)
+		       || operand_equal_p (DECL_SIZE (f1), DECL_SIZE (f2), 0))
+		   && DECL_ALIGN (f1) == DECL_ALIGN (f2))
+	       || operand_equal_p (offset1, offset2, 0))
+	      && tree_int_cst_equal (DECL_FIELD_BIT_OFFSET (f1),
+				     DECL_FIELD_BIT_OFFSET (f2)));
+    }
 
   /* Fortran and C do not always agree on what DECL_OFFSET_ALIGN
      should be, so handle differing ones specially by decomposing
@@ -3576,7 +3595,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 	    /* The fields must have the same name, offset and type.  */
 	    if (DECL_NAME (f1) != DECL_NAME (f2)
 		|| DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
-		|| !compare_field_offset (f1, f2)
+		|| !gimple_compare_field_offset (f1, f2)
 		|| !gimple_types_compatible_p (TREE_TYPE (f1),
 					       TREE_TYPE (f2)))
 	      goto different_types;
