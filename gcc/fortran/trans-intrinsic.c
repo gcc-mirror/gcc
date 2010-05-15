@@ -4529,6 +4529,8 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
     {
       /* Allocatable scalar.  */
       arg1se.want_pointer = 1;
+      if (arg1->expr->ts.type == BT_CLASS)
+	gfc_add_component_ref (arg1->expr, "$data");
       gfc_conv_expr (&arg1se, arg1->expr);
       tmp = arg1se.expr;
     }

@@ -1,3 +1,19 @@
+2010-05-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43207
+	PR fortran/43969
+	* gfortran.h (gfc_class_null_initializer): New prototype.
+	* expr.c (gfc_class_null_initializer): New function to build a NULL
+	initializer for CLASS pointers.
+	* symbol.c (gfc_build_class_symbol): Modify internal naming of class
+	containers. Remove default NULL initialization of $data component.
+	* trans.c (gfc_allocate_array_with_status): Fix wording of an error 
+	message.
+	* trans-expr.c (gfc_conv_initializer,gfc_trans_subcomponent_assign):
+	Use new function 'gfc_class_null_initializer'.
+	* trans-intrinsic.c (gfc_conv_allocated): Handle allocatable scalar
+	class variables.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135
