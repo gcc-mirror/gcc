@@ -1,3 +1,11 @@
+2010-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx-cmpsd-1.c: Add -std=c99.
+	* gcc.target/i386/avx-cmpss-1.c: Likewise.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135
