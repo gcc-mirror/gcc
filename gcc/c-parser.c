@@ -40,9 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"			/* For rtl.h: needs enum reg_class.  */
 #include "tree.h"
-#include "rtl.h"
+#include "rtl.h"		/* For decl_default_tls_model.  */
 #include "langhooks.h"
 #include "input.h"
 #include "cpplib.h"
@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "plugin.h"
-#include "except.h"
 
 
 /* Initialization routine for this file.  */

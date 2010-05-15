@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "rtl.h"
 #include "ggc.h"
-#include "expr.h"
+#include "expr.h" /* For vector_mode_valid_p */
 #include "c-common.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "cgraph.h"
 #include "target-def.h"
-#include "gimple.h"
 #include "fixed-value.h"
 #include "libfuncs.h"
 

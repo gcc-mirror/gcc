@@ -1,3 +1,46 @@
+2010-05-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* vecir.h: New file with VEC primitives for tree, gimple, and rtl.
+	* Makefile.in: Add it.
+	Fix all other Makefile dependencies for changes below.
+	* tree.h: Include it instead of defining VEC primitives here.
+	* gimple.h: Likewise.
+	* rtl.h: Likewise.
+	* tree-inline.h: Inlclude vecir.h instead of gimple.h.
+	* except.h: Include vecir.h, break dependence on tree.h.
+
+	* gimplify.c (append_to_statement_list_1, append_to_statement_list):
+	Move from here...
+	* tree-iterator.c: ...to here.
+	* tree-iterator.h: Fix file introduction comment.  Add extern markers.
+
+	* c-lex.c: Include fixed-value.h instead of rtl.h.  Do not include
+	tm_p.h.
+	* c-cppbuiltin.c: Explain why debug.h and tm_p.h are included.
+	* c-objc-common.h: Do not include tm.h, rtl.h, insn-config.h,
+	integrate.h, function.h, toplev.h, tree-inline.h, ggc.h,
+	tree-mudflap.h, and target.h.
+	* c-semantics.c: Do not include except.h, ggc.h, rtl.h, timevar.h,
+	predict.h, tree-inline.h, gimple.h, and langhooks.h.
+	* c-decl.c: Do not include expr.h, ggc.h, libfuncs.h, except.h.
+	Add FIXME for why gimple.h is still included (should be unnecessary
+	since GCC 4.5 gimplification unit-at-a-time).
+	* c-typeck.c: Do not include rtl.h, tm_p.h, ggc.h, and gimple.h.
+	* c-pragma.c: Add FIXME for why function.h needs to be included just
+	for cfun, at front-end level.
+	Add note that REGISTER_TARGET_PRAGMAS should probably be a target hook.
+	Do not include ggc.h, but include vecprim.h for VEC(char).
+	* c-opts.c: Do not include tm.h, tree-inline.h, and tm_p.h.
+	Explain why target.h is included.
+	* c-omp.h: Do not include tm.h, function.h, and bitmap.h.
+	Explain why gimple.h is included.
+	* c-ppoutput.c: Do not include tm.h.
+	* c-common.c: Do not include gimple.h.  Explain why expr.h is included.
+	* c-parses.c: Explain why rtl.h is included, and that this (and only
+	this) is also why tm.h must be included.
+	Do not include except.h.
+	* c-lang.c: Do not include ggc.h.
+
 2010-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* targhooks.c (GO_IF_MODE_DEPENDENT_ADDRESS): Use CONST_CAST_RTX.
