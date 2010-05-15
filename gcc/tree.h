@@ -4475,10 +4475,6 @@ extern tree first_field (const_tree);
 
 extern bool initializer_zerop (const_tree);
 
-/* Given a CONSTRUCTOR CTOR, return the elements as a TREE_LIST.  */
-
-extern tree ctor_to_list (tree);
-
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
 extern VEC(tree,gc) *ctor_to_vec (tree);

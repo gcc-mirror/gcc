@@ -1,3 +1,8 @@
+2010-05-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (ctor_to_list): Delete.
+	* tree.c (ctor_to_list): Delete.
+
 2010-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c: Include toplev.h
