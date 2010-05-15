@@ -1,3 +1,14 @@
+2010-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/lib/mfdg.exp (additional_prunes): New global.
+	(dg-test): Clear additional_prunes before test is run.
+	(dg-prune-output): New procedure.
+	* testsuite/lib/libmudflap.exp (libmudflap-dg-test): Do not call
+	prune_gcc_output.
+	(libmudflap-dg-prune): New procedure.
+	* testsuite/libmudflap.c++/pass57-frag.cxx (dg-prune-output):
+	New dg directive.
+
 2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/43620

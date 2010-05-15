@@ -187,7 +187,6 @@ proc libmudflap-dg-test { prog do_what extra_tool_flags } {
     lappend options "libs=$mfconfig_libs"
 
     set comp_output [libmudflap_target_compile "$prog" "$output_file" "$compile_type" $options];
-    set comp_output [prune_gcc_output $comp_output ];
 
     return [list $comp_output $output_file]
 }
@@ -275,6 +274,22 @@ proc libmudflap-list-sourcefiles { } {
 	}
 	return $res
     }
+}
+
+
+proc libmudflap-dg-prune { system text } {
+    global additional_prunes
+
+    set text [prune_gcc_output $text]
+
+    foreach p $additional_prunes {
+	if { [string length $p] > 0 } {
+	    # Following regexp matches a complete line containing $p.
+	    regsub -all "(^|\n)\[^\n\]*$p\[^\n\]*" $text "" text
+	}
+    }
+
+    return $text
 }
 
 
