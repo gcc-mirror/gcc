@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "lto-streamer.h"
+#include "toplev.h"
 
 static void remove_node_data (struct cgraph_node *node,
 			      void *data ATTRIBUTE_UNUSED);
@@ -272,7 +273,8 @@ is_proper_for_analysis (tree t)
 
   /* This is a variable we care about.  Check if we have seen it
      before, and if not add it the set of variables we care about.  */
-  if (!bitmap_bit_p (all_module_statics, DECL_UID (t)))
+  if (all_module_statics
+      && !bitmap_bit_p (all_module_statics, DECL_UID (t)))
     add_static_var (t);
 
   return true;
@@ -884,6 +886,208 @@ propagate (void)
   return 0;
 }
 
+/* Return true if we need to write summary of NODE. */
+
+static bool
+write_node_summary_p (struct cgraph_node *node,
+		      cgraph_node_set set,
+		      varpool_node_set vset,
+		      bitmap ltrans_statics)
+{
+  ipa_reference_optimization_summary_t info;
+
+  /* See if we have (non-empty) info.  */
+  if (!node->analyzed || node->global.inlined_to)
+    return false;
+  info = get_reference_optimization_summary (node);
+  if (!info || (bitmap_empty_p (info->statics_not_read)
+		&& bitmap_empty_p (info->statics_not_written)))
+    return false;
+
+  /* See if we want to encode it.
+     Encode also referenced functions since constant folding might turn it into
+     a direct call.
+
+     In future we might also want to include summaries of functions references
+     by initializers of constant variables references in current unit.  */
+  if (!reachable_from_this_partition_p (node, set)
+      && !referenced_from_this_partition_p (&node->ref_list, set, vset))
+    return false;
+
+  /* See if the info has non-empty intersections with vars we want to encode.  */
+  if (!bitmap_intersect_p (info->statics_not_read, ltrans_statics)
+      && !bitmap_intersect_p (info->statics_not_written, ltrans_statics))
+    return false;
+  return true;
+}
+
+/* Stream out BITS&LTRANS_STATICS as list of decls to OB.  */
+
+static void
+stream_out_bitmap (struct lto_simple_output_block *ob,
+		   bitmap bits, bitmap ltrans_statics)
+{
+  unsigned int count = 0;
+  unsigned int index;
+  bitmap_iterator bi;
+  EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
+    count ++;
+  lto_output_uleb128_stream (ob->main_stream, count);
+  if (!count)
+    return;
+  EXECUTE_IF_AND_IN_BITMAP (bits, ltrans_statics, 0, index, bi)
+    {
+      tree decl = (tree)splay_tree_lookup (reference_vars_to_consider, index)->value;
+      lto_output_var_decl_index(ob->decl_state, ob->main_stream, decl);
+    }
+}
+
+/* Serialize the ipa info for lto.  */
+
+static void
+ipa_reference_write_optimization_summary (cgraph_node_set set,
+					  varpool_node_set vset)
+{
+  struct cgraph_node *node;
+  struct varpool_node *vnode;
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_ipa_reference);
+  unsigned int count = 0;
+  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
+  bitmap ltrans_statics = BITMAP_ALLOC (NULL);
+
+  reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
+
+  /* See what variables we are interested in.  */
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (referenced_from_this_partition_p (&vnode->ref_list, set, vset))
+      {
+	tree decl = vnode->decl;
+	if (is_proper_for_analysis (decl))
+	  {
+	    bitmap_set_bit (ltrans_statics, DECL_UID (decl));
+	    splay_tree_insert (reference_vars_to_consider,
+			       DECL_UID (decl), (splay_tree_value)decl);
+	  }
+      }
+
+  for (node = cgraph_nodes; node; node = node->next)
+    if (write_node_summary_p (node, set, vset, ltrans_statics))
+	count++;
+
+  lto_output_uleb128_stream (ob->main_stream, count);
+
+  /* Process all of the functions.  */
+  for (node = cgraph_nodes; node; node = node->next)
+    if (write_node_summary_p (node, set, vset, ltrans_statics))
+      {
+	ipa_reference_optimization_summary_t info;
+	int node_ref;
+
+	info = get_reference_optimization_summary (node);
+	node_ref = lto_cgraph_encoder_encode (encoder, node);
+	lto_output_uleb128_stream (ob->main_stream, node_ref);
+
+	stream_out_bitmap (ob, info->statics_not_read, ltrans_statics);
+	stream_out_bitmap (ob, info->statics_not_written, ltrans_statics);
+      }
+  BITMAP_FREE (ltrans_statics);
+  lto_destroy_simple_output_block (ob);
+  splay_tree_delete (reference_vars_to_consider);
+}
+
+/* Deserialize the ipa info for lto.  */
+
+static void
+ipa_reference_read_optimization_summary (void)
+{
+  struct lto_file_decl_data ** file_data_vec
+    = lto_get_file_decl_data ();
+  struct lto_file_decl_data * file_data;
+  unsigned int j = 0;
+  bitmap_obstack_initialize (&optimization_summary_obstack);
+
+  node_removal_hook_holder =
+      cgraph_add_node_removal_hook (&remove_node_data, NULL);
+  node_duplication_hook_holder =
+      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      const char *data;
+      size_t len;
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data,
+					 LTO_section_ipa_reference,
+					 &data, &len);
+      if (ib)
+	{
+	  unsigned int i;
+	  unsigned int f_count = lto_input_uleb128 (ib);
+
+	  for (i = 0; i < f_count; i++)
+	    {
+	      unsigned int j, index;
+	      struct cgraph_node *node;
+	      ipa_reference_optimization_summary_t info;
+	      int v_count;
+	      lto_cgraph_encoder_t encoder;
+
+	      index = lto_input_uleb128 (ib);
+	      encoder = file_data->cgraph_node_encoder;
+	      node = lto_cgraph_encoder_deref (encoder, index);
+	      info = XCNEW (struct ipa_reference_optimization_summary_d);
+	      set_reference_optimization_summary (node, info);
+	      info->statics_not_read = BITMAP_ALLOC (&optimization_summary_obstack);
+	      info->statics_not_written = BITMAP_ALLOC (&optimization_summary_obstack);
+	      if (dump_file)
+		fprintf (dump_file,
+			 "\nFunction name:%s/%i:\n  static not read:",
+			 cgraph_node_name (node), node->uid);
+
+	      /* Set the statics not read.  */
+	      v_count = lto_input_uleb128 (ib);
+	      for (j = 0; j < (unsigned int)v_count; j++)
+		{
+		  unsigned int var_index = lto_input_uleb128 (ib);
+		  tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								 var_index);
+		  bitmap_set_bit (info->statics_not_read, DECL_UID (v_decl));
+		  if (dump_file)
+		    fprintf (dump_file, " %s",
+			     lang_hooks.decl_printable_name (v_decl, 2));
+		}
+
+	      if (dump_file)
+		fprintf (dump_file,
+			 "\n  static not written:");
+	      /* Set the statics not written.  */
+	      v_count = lto_input_uleb128 (ib);
+	      for (j = 0; j < (unsigned int)v_count; j++)
+		{
+		  unsigned int var_index = lto_input_uleb128 (ib);
+		  tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								 var_index);
+		  bitmap_set_bit (info->statics_not_written, DECL_UID (v_decl));
+		  if (dump_file)
+		    fprintf (dump_file, " %s",
+			     lang_hooks.decl_printable_name (v_decl, 2));
+		}
+	      if (dump_file)
+		fprintf (dump_file, "\n");
+	    }
+
+	  lto_destroy_simple_input_block (file_data,
+					  LTO_section_ipa_reference,
+					  ib, data, len);
+	}
+      else
+	/* Fatal error here.  We do not want to support compiling ltrans units with
+	   different version of compiler or different flags than the WPA unit, so
+	   this should never happen.  */
+	fatal_error ("ipa reference summary is missing in ltrans unit");
+    }
+}
 
 static bool
 gate_reference (void)
@@ -913,8 +1117,8 @@ struct ipa_opt_pass_d pass_ipa_reference =
  NULL,				        /* generate_summary */
  NULL,					/* write_summary */
  NULL,				 	/* read_summary */
- NULL,					/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
+ ipa_reference_write_optimization_summary,/* write_optimization_summary */
+ ipa_reference_read_optimization_summary,/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */

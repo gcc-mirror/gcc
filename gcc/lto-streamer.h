@@ -865,6 +865,13 @@ bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        varpool_node_set vset);
 bool reachable_from_other_partition_p (struct cgraph_node *,
 				       cgraph_node_set);
+bool referenced_from_this_partition_p (struct ipa_ref_list *,
+				        cgraph_node_set,
+				        varpool_node_set vset);
+bool reachable_from_this_partition_p (struct cgraph_node *,
+				       cgraph_node_set);
+void compute_ltrans_boundary (struct lto_out_decl_state *state,
+			      cgraph_node_set, varpool_node_set);
 
 
 /* In lto-symtab.c.  */

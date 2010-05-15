@@ -1,3 +1,8 @@
+2010-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/ipareference_1.c: New file.
+	* gcc.dg/lto/ipareference_2.c: New file.
+
 2010-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44038
