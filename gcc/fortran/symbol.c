@@ -4717,15 +4717,15 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   /* Determine the name of the encapsulating type.  */
   if ((*as) && (*as)->rank && attr->allocatable)
-    sprintf (name, ".class.%s.%d.a", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "class$%s_%d_a", ts->u.derived->name, (*as)->rank);
   else if ((*as) && (*as)->rank)
-    sprintf (name, ".class.%s.%d", ts->u.derived->name, (*as)->rank);
+    sprintf (name, "class$%s_%d", ts->u.derived->name, (*as)->rank);
   else if (attr->pointer)
-    sprintf (name, ".class.%s.p", ts->u.derived->name);
+    sprintf (name, "class$%s_p", ts->u.derived->name);
   else if (attr->allocatable)
-    sprintf (name, ".class.%s.a", ts->u.derived->name);
+    sprintf (name, "class$%s_a", ts->u.derived->name);
   else
-    sprintf (name, ".class.%s", ts->u.derived->name);
+    sprintf (name, "class$%s", ts->u.derived->name);
 
   gfc_find_symbol (name, ts->u.derived->ns, 0, &fclass);
   if (fclass == NULL)
@@ -4759,7 +4759,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.codimension = attr->codimension;
       c->attr.abstract = ts->u.derived->attr.abstract;
       c->as = (*as);
-      c->initializer = gfc_get_null_expr (NULL);
+      c->initializer = NULL;
 
       /* Add component '$vptr'.  */
       if (gfc_add_component (fclass, "$vptr", &c) == FAILURE)

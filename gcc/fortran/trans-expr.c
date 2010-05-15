@@ -3894,7 +3894,10 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	case BT_DERIVED:
 	case BT_CLASS:
 	  gfc_init_se (&se, NULL);
-	  gfc_conv_structure (&se, expr, 1);
+	  if (ts->type == BT_CLASS && expr->expr_type == EXPR_NULL)
+	    gfc_conv_structure (&se, gfc_class_null_initializer(ts), 1);
+	  else
+	    gfc_conv_structure (&se, expr, 1);
 	  return se.expr;
 
 	case BT_CHARACTER:
@@ -4202,7 +4205,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
     {
       /* NULL initialization for CLASS components.  */
       tmp = gfc_trans_structure_assign (dest,
-					gfc_default_initializer (&cm->ts));
+					gfc_class_null_initializer (&cm->ts));
       gfc_add_expr_to_block (&block, tmp);
     }
   else if (cm->attr.dimension)

@@ -3628,6 +3628,32 @@ gfc_default_initializer (gfc_typespec *ts)
 }
 
 
+/* Build a NULL initializer for CLASS pointers,
+   initializing the $data and $vptr components to zero.  */
+
+gfc_expr *
+gfc_class_null_initializer (gfc_typespec *ts)
+{
+  gfc_expr *init;
+  gfc_component *comp;
+  
+  init = gfc_get_structure_constructor_expr (ts->type, ts->kind,
+					     &ts->u.derived->declared_at);
+  init->ts = *ts;
+  
+  for (comp = ts->u.derived->components; comp; comp = comp->next)
+    {
+      gfc_constructor *ctor = gfc_constructor_get();
+      ctor->expr = gfc_get_expr ();
+      ctor->expr->expr_type = EXPR_NULL;
+      ctor->expr->ts = comp->ts;
+      gfc_constructor_append (&init->value.constructor, ctor);
+    }
+
+  return init;
+}
+
+
 /* Given a symbol, create an expression node with that symbol as a
    variable. If the symbol is array valued, setup a reference of the
    whole array.  */
