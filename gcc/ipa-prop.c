@@ -2140,6 +2140,7 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
       index = lto_input_uleb128 (&ib_main);
       encoder = file_data->cgraph_node_encoder;
       node = lto_cgraph_encoder_deref (encoder, index);
+      gcc_assert (node->analyzed);
       ipa_read_node_info (&ib_main, node, data_in);
     }
   lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,

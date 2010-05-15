@@ -1,3 +1,8 @@
+2010-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (ipa_prop_read_section): Add sanity check that node is analyzed.
+	* passes.c (ipa_write_summaries): Write all analyzed nodes.
+
 2010-05-15  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* vecir.h: New file with VEC primitives for tree, gimple, and rtl.
