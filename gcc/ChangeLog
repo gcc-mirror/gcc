@@ -1,3 +1,7 @@
+2010-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* targhooks.c (GO_IF_MODE_DEPENDENT_ADDRESS): Use CONST_CAST_RTX.
+
 2010-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (grokfield): Allow typedefs for anonymous structs and
@@ -36,7 +40,7 @@
 	ipa_reference_read_optimization_summary): New.
 	(struct ipa_opt_pass_d pass_ipa_reference): Add
 	optimization summary streaming.
-	* lto-cgraph.c (referenced_from_this_partition_p, 
+	* lto-cgraph.c (referenced_from_this_partition_p,
 	reachable_from_this_partition_p): New functions.
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
 	call_may_clobber_ref_p_1): Ask ipa-reference even for public vars.
@@ -187,8 +191,8 @@
 	Add check for TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL to emit packed
 	single logical operations i.e and, or and xor instead of packed double
 	logical operations for SSE and AVX.
-	* config/i386/i386-c.c: 
-	(ix86_target_macros_internal): Add PROCESSOR_BDVER1.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Add PROCESSOR_BDVER1.
 	* config/i386/driver-i386.c: Turn on -mtune=native for BDVER1.
 	(has_fma4, has_xop): New.
 	* config/i386/i386.c (bdver1_cost): New variable.
@@ -289,7 +293,7 @@
 	t-mingw-w64 or t-mingw-w32 for multilib configuration.
 	* config/i386/t-mingw-w32: New.
 	* config/i386/t-mingw-w64 (MULTILIB_OSDIRNAMES): Change lib64 to lib.
-	
+
 2010-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gimple.c (gimple_fold_obj_type_ref): Removed (a replacement moved to
@@ -318,8 +322,7 @@
 	by SRA.
 	* Makefile.in (dwarf2out.o): Depend on $(TREE_FLOW_H).
 	* tree-sra.c (create_access_replacement): Call unshare_expr before
-	passing expr to SET_DECL_DEBUG_EXPR, and remove any SSA_NAMEs from
-	it.
+	passing expr to SET_DECL_DEBUG_EXPR, and remove any SSA_NAMEs from it.
 	* dwarf2out.c: Include tree-flow.h.
 	(struct var_loc_node): Rename var_loc_note field to loc, add comment.
 	(size_of_loc_descr, output_loc_operands, output_loc_operands_raw):
