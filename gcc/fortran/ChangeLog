@@ -1,5 +1,12 @@
 2010-05-15  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/44154
+	PR fortran/42647
+	* trans-decl.c (gfc_trans_deferred_vars): Modify ordering of
+	if branches.
+
+2010-05-15  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/43207
 	PR fortran/43969
 	* gfortran.h (gfc_class_null_initializer): New prototype.
