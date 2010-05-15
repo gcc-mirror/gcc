@@ -5423,9 +5423,6 @@ extern tree build_personality_function (const char *);
 
 void init_inline_once (void);
 
-/* In ipa-reference.c.  Used for parsing attributes of asm code.  */
-extern GTY(()) tree memory_identifier_string;
-
 /* Compute the number of operands in an expression node NODE.  For
    tcc_vl_exp nodes like CALL_EXPRs, this is stored in the node itself,
    otherwise it is looked up from the node's code.  */
