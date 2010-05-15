@@ -1,5 +1,8 @@
 2010-05-14  Jason Merrill  <jason@redhat.com>
 
+	C++ DR 475
+	* except.c (build_throw): Simplify, adjust for DR 475.
+
 	PR c++/44127
 	* except.c (dtor_nothrow): Return nonzero for type with
 	trivial destructor.

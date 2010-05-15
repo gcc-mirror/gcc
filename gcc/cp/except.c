@@ -665,8 +665,7 @@ build_throw (tree exp)
       tree cleanup;
       tree object, ptr;
       tree tmp;
-      tree temp_expr, allocate_expr;
-      bool elided;
+      tree allocate_expr;
 
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
@@ -719,10 +718,11 @@ build_throw (tree exp)
       allocate_expr = do_allocate_exception (temp_type);
       allocate_expr = get_target_expr (allocate_expr);
       ptr = TARGET_EXPR_SLOT (allocate_expr);
+      TARGET_EXPR_CLEANUP (allocate_expr) = do_free_exception (ptr);
+      CLEANUP_EH_ONLY (allocate_expr) = 1;
+
       object = build_nop (build_pointer_type (temp_type), ptr);
       object = cp_build_indirect_ref (object, RO_NULL, tf_warning_or_error);
-
-      elided = (TREE_CODE (exp) == TARGET_EXPR);
 
       /* And initialize the exception object.  */
       if (CLASS_TYPE_P (temp_type))
@@ -761,54 +761,16 @@ build_throw (tree exp)
 	  exp = build2 (INIT_EXPR, temp_type, object, tmp);
 	}
 
-      /* Pre-evaluate the thrown expression first, since if we allocated
-	 the space first we would have to deal with cleaning it up if
-	 evaluating this expression throws.
-
-	 The case where EXP the initializer is a cast or a function
-	 returning a class is a bit of a grey area in the standard; it's
-	 unclear whether or not it should be allowed to throw.  We used to
-	 say no, as that allowed us to optimize this case without worrying
-	 about deallocating the exception object if it does.  But that
-	 conflicted with expectations (PR 13944) and the EDG compiler; now
-	 we wrap the initialization in a TRY_CATCH_EXPR to call
-	 do_free_exception rather than in a MUST_NOT_THROW_EXPR, for this
-	 case only.
-
-	 BUT: Issue 475 may do away with this inconsistency by removing the
-	 terminate() in this situation.
-
-	 Note that we don't check the return value from stabilize_init
-	 because it will only return false in cases where elided is true,
-	 and therefore we don't need to work around the failure to
-	 preevaluate.  */
-      temp_expr = NULL_TREE;
-      stabilize_init (exp, &temp_expr);
-
-      /* Wrap the initialization in a CLEANUP_POINT_EXPR so that cleanups
-	 for temporaries within the initialization are run before the one
-	 for the exception object, preserving LIFO order.  */
-      exp = build1 (CLEANUP_POINT_EXPR, void_type_node, exp);
-
-      if (elided)
-	exp = build2 (TRY_CATCH_EXPR, void_type_node, exp,
-		      do_free_exception (ptr));
-      else
-	exp = build1 (MUST_NOT_THROW_EXPR, void_type_node, exp);
+      /* Mark any cleanups from the initialization as MUST_NOT_THROW, since
+	 they are run after the exception object is initialized.  */
+      cp_walk_tree_without_duplicates (&exp, wrap_cleanups_r, 0);
 
       /* Prepend the allocation.  */
       exp = build2 (COMPOUND_EXPR, TREE_TYPE (exp), allocate_expr, exp);
-      if (temp_expr)
-	{
-	  /* Prepend the calculation of the throw expression.  Also, force
-	     any cleanups from the expression to be evaluated here so that
-	     we don't have to do them during unwinding.  But first wrap
-	     them in MUST_NOT_THROW_EXPR, since they are run after the
-	     exception object is initialized.  */
-	  cp_walk_tree_without_duplicates (&temp_expr, wrap_cleanups_r, 0);
-	  exp = build2 (COMPOUND_EXPR, TREE_TYPE (exp), temp_expr, exp);
-	  exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
-	}
+
+      /* Force all the cleanups to be evaluated here so that we don't have
+	 to do them during unwinding.  */
+      exp = build1 (CLEANUP_POINT_EXPR, void_type_node, exp);
 
       throw_type = build_eh_type_type (prepare_eh_type (TREE_TYPE (object)));
 

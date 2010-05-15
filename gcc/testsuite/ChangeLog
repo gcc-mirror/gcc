@@ -1,3 +1,9 @@
+2010-05-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/cond4.C: New.
+	* g++.dg/eh/elide2.C: Adjust.
+	* g++.old-deja/g++.eh/terminate1.C: Adjust.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135

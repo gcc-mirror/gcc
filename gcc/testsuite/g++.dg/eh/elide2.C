@@ -1,12 +1,9 @@
 // PR c++/13944
 
-// Verify that we still call terminate() if we do run the copy constructor,
-// and it throws.
+// Verify that we don't call terminate() if initializing the exception
+// object throws.
 
 // { dg-do run }
-
-#include <cstdlib>
-#include <exception>
 
 struct A
 {
@@ -16,17 +13,17 @@ struct A
 
 A a;
 
-void
-good_terminate() { std::exit (0); }
-
 int main()
 {
-  std::set_terminate (good_terminate);
   try
     {
       throw a;
     }
-  catch (...)
+  catch (int)
+    {
+      return 0;
+    }
+  catch (A&)
     {
       return 2;
     }
