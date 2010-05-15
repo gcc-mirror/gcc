@@ -1,3 +1,9 @@
+2010-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44112
+	* dwarf2out.c (resolve_one_addr): Check TREE_ASM_WRITTEN
+	for all SYMBOL_REF_DECLs.
+
 2010-05-14  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (ipa_discover_readonly_nonaddressable_vars): Declare.
