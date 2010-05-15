@@ -1,3 +1,8 @@
+2010-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44148
+	* g++.dg/torture/pr44148.C: New test.
+
 2010-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c1x-anon-struct-1.c, gcc.dg/c1x-anon-struct-2.c,
