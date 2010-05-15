@@ -1748,7 +1748,7 @@ ipa_write_summaries (void)
 	  renumber_gimple_stmt_uids ();
 	  pop_cfun ();
 	}
-      if (node->needed || node->reachable || node->address_taken)
+      if (node->analyzed)
 	cgraph_node_set_add (set, node);
     }
   vset = varpool_node_set_new ();
