@@ -6567,6 +6567,8 @@ grokfield (location_t loc,
 	   Otherwise this is a forward declaration of a structure tag.
 
 	 If this is something of the form "foo;" and foo is a TYPE_DECL, then
+	   If foo names a structure or union without a tag, then this
+	     is an anonymous struct (this is permitted by C1X).
 	   If MS extensions are enabled and foo names a structure, then
 	     again this is an anonymous struct.
 	   Otherwise this is an error.
@@ -6580,14 +6582,11 @@ grokfield (location_t loc,
 		      || TREE_CODE (type) == UNION_TYPE);
       bool ok = false;
 
-      if (type_ok
-	  && (flag_ms_extensions || !declspecs->typedef_p))
+      if (type_ok)
 	{
 	  if (flag_ms_extensions)
 	    ok = true;
-	  else if (flag_iso)
-	    ok = false;
-	  else if (TYPE_NAME (type) == NULL)
+	  else if (TYPE_NAME (TYPE_MAIN_VARIANT (type)) == NULL)
 	    ok = true;
 	  else
 	    ok = false;
@@ -6597,7 +6596,15 @@ grokfield (location_t loc,
 	  pedwarn (loc, 0, "declaration does not declare anything");
 	  return NULL_TREE;
 	}
-      pedwarn (loc, OPT_pedantic, "ISO C doesn%'t support unnamed structs/unions");
+      if (!flag_isoc1x)
+	{
+	  if (flag_isoc99)
+	    pedwarn (loc, OPT_pedantic,
+		     "ISO C99 doesn%'t support unnamed structs/unions");
+	  else
+	    pedwarn (loc, OPT_pedantic,
+		     "ISO C90 doesn%'t support unnamed structs/unions");
+	}
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
@@ -6789,8 +6796,14 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (pedantic)
     {
       for (x = fieldlist; x; x = TREE_CHAIN (x))
-	if (DECL_NAME (x) != 0)
-	  break;
+	{
+	  if (DECL_NAME (x) != 0)
+	    break;
+	  if (flag_isoc1x
+	      && (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
+		  || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE))
+	    break;
+	}
 
       if (x == 0)
 	{
@@ -6893,7 +6906,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	pedwarn (DECL_SOURCE_LOCATION (x), OPT_pedantic,
 		 "invalid use of structure with flexible array member");
 
-      if (DECL_NAME (x))
+      if (DECL_NAME (x)
+	  || TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
+	  || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE)
 	saw_named_field = 1;
     }
 
