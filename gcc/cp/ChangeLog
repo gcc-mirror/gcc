@@ -1,3 +1,8 @@
+2010-05-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c: Include tree-iterator.h, as fixup for tree-inline.h changes.
+	* Make-lang.in: Fix dependencies accordingly.
+
 2010-05-14  Jason Merrill  <jason@redhat.com>
 
 	C++ DR 475

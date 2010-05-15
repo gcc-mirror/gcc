@@ -24,16 +24,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
-#include "function.h"
+#include "function.h"		/* For cfun.  FIXME: Does the parser know
+				   when it is inside a function, so that
+				   we don't have to look at cfun?  */
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
 #include "toplev.h"
-#include "ggc.h"
 #include "c-common.h"
 #include "output.h"
-#include "tm_p.h"
+#include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
+				   this not a target hook?).  */
 #include "vec.h"
+#include "vecprim.h"
 #include "target.h"
 #include "diagnostic.h"
 #include "opts.h"

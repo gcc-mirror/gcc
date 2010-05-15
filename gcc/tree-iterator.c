@@ -61,6 +61,47 @@ free_stmt_list (tree t)
   stmt_list_cache = t;
 }
 
+/* A subroutine of append_to_statement_list{,_force}.  T is not NULL.  */
+
+static void
+append_to_statement_list_1 (tree t, tree *list_p)
+{
+  tree list = *list_p;
+  tree_stmt_iterator i;
+
+  if (!list)
+    {
+      if (t && TREE_CODE (t) == STATEMENT_LIST)
+	{
+	  *list_p = t;
+	  return;
+	}
+      *list_p = list = alloc_stmt_list ();
+    }
+
+  i = tsi_last (list);
+  tsi_link_after (&i, t, TSI_CONTINUE_LINKING);
+}
+
+/* Add T to the end of the list container pointed to by LIST_P.
+   If T is an expression with no effects, it is ignored.  */
+
+void
+append_to_statement_list (tree t, tree *list_p)
+{
+  if (t && TREE_SIDE_EFFECTS (t))
+    append_to_statement_list_1 (t, list_p);
+}
+
+/* Similar, but the statement is always added, regardless of side effects.  */
+
+void
+append_to_statement_list_force (tree t, tree *list_p)
+{
+  if (t != NULL_TREE)
+    append_to_statement_list_1 (t, list_p);
+}
+
 /* Links a statement, or a chain of statements, before the current stmt.  */
 
 void

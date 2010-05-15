@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "sbitmap.h"
 #include "vecprim.h"
+#include "vecir.h"
 
 struct function;
 struct eh_region_d;

@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 
 #include "real.h"
-#include "rtl.h"
+#include "fixed-value.h"
 #include "tree.h"
 #include "input.h"
 #include "output.h"
@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "toplev.h"
 #include "intl.h"
-#include "tm_p.h"
 #include "splay-tree.h"
 #include "debug.h"
 #include "target.h"

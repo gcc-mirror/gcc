@@ -20,7 +20,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "cpplib.h"
 #include "../libcpp/internal.h"
 #include "tree.h"
