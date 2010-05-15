@@ -1,3 +1,22 @@
+2010-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c: Include toplev.h
+	(is_proper_for_analysis): Only add to all_module_statics
+	if it is allocated.
+	(write_node_summary_p, stream_out_bitmap,
+	ipa_reference_write_optimization_summary,
+	ipa_reference_read_optimization_summary): New.
+	(struct ipa_opt_pass_d pass_ipa_reference): Add
+	optimization summary streaming.
+	* lto-cgraph.c (referenced_from_this_partition_p, 
+	reachable_from_this_partition_p): New functions.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Ask ipa-reference even for public vars.
+	* opts.c (decode_options): Enable ipa_reference.
+	* Makefile.in (ipa-reference.o): Add toplev.h dependency.
+	* lto-streamer.h (referenced_from_this_partition_p,
+	reachable_from_this_partition_p): Declare.
+
 2010-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44038

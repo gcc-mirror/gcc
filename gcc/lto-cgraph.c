@@ -302,6 +302,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 }
 
 /* Return if LIST contain references from other partitions.  */
+
 bool
 referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set set,
 				   varpool_node_set vset)
@@ -337,6 +338,47 @@ reachable_from_other_partition_p (struct cgraph_node *node, cgraph_node_set set)
     return false;
   for (e = node->callers; e; e = e->next_caller)
     if (!cgraph_node_in_set_p (e->caller, set))
+      return true;
+  return false;
+}
+
+/* Return if LIST contain references from other partitions.  */
+
+bool
+referenced_from_this_partition_p (struct ipa_ref_list *list, cgraph_node_set set,
+				  varpool_node_set vset)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_refering_iterate (list, i, ref); i++)
+    {
+      if (ref->refering_type == IPA_REF_CGRAPH)
+	{
+	  if (cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	    return true;
+	}
+      else
+	{
+	  if (varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+				     vset))
+	    return true;
+	}
+    }
+  return false;
+}
+
+/* Return true when node is reachable from other partition.  */
+
+bool
+reachable_from_this_partition_p (struct cgraph_node *node, cgraph_node_set set)
+{
+  struct cgraph_edge *e;
+  if (!node->analyzed)
+    return false;
+  if (node->global.inlined_to)
+    return false;
+  for (e = node->callers; e; e = e->next_caller)
+    if (cgraph_node_in_set_p (e->caller, set))
       return true;
   return false;
 }
@@ -694,38 +736,22 @@ output_refs (cgraph_node_set set, varpool_node_set vset,
   lto_destroy_simple_output_block (ob);
 }
 
-
-/* Output the part of the cgraph in SET.  */
-
+/* Find out all cgraph and varpool nodes we want to encode in current unit
+   and insert them to encoders.  */
 void
-output_cgraph (cgraph_node_set set, varpool_node_set vset)
+compute_ltrans_boundary (struct lto_out_decl_state *state,
+			 cgraph_node_set set, varpool_node_set vset)
 {
   struct cgraph_node *node;
-  struct lto_simple_output_block *ob;
   cgraph_node_set_iterator csi;
   varpool_node_set_iterator vsi;
   struct cgraph_edge *edge;
-  int i, n_nodes;
-  bitmap written_decls;
+  int i;
   lto_cgraph_encoder_t encoder;
   lto_varpool_encoder_t varpool_encoder;
-  struct cgraph_asm_node *can;
 
-  ob = lto_create_simple_output_block (LTO_section_cgraph);
-
-  output_profile_summary (ob);
-
-  /* An encoder for cgraph nodes should have been created by
-     ipa_write_summaries_1.  */
-  gcc_assert (ob->decl_state->cgraph_node_encoder);
-  gcc_assert (ob->decl_state->varpool_node_encoder);
-  encoder = ob->decl_state->cgraph_node_encoder;
-  varpool_encoder = ob->decl_state->varpool_node_encoder;
-
-  /* The FUNCTION_DECLs for which we have written a node.  The first
-     node found is written as the "original" node, the remaining nodes
-     are considered its clones.  */
-  written_decls = lto_bitmap_alloc ();
+  encoder = state->cgraph_node_encoder = lto_cgraph_encoder_new ();
+  varpool_encoder = state->varpool_node_encoder = lto_varpool_encoder_new ();
 
   /* Go over all the nodes in SET and assign references.  */
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
@@ -775,6 +801,37 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
 	    }
 	}
     }
+}
+
+/* Output the part of the cgraph in SET.  */
+
+void
+output_cgraph (cgraph_node_set set, varpool_node_set vset)
+{
+  struct cgraph_node *node;
+  struct lto_simple_output_block *ob;
+  cgraph_node_set_iterator csi;
+  int i, n_nodes;
+  bitmap written_decls;
+  lto_cgraph_encoder_t encoder;
+  lto_varpool_encoder_t varpool_encoder;
+  struct cgraph_asm_node *can;
+
+  ob = lto_create_simple_output_block (LTO_section_cgraph);
+
+  output_profile_summary (ob);
+
+  /* An encoder for cgraph nodes should have been created by
+     ipa_write_summaries_1.  */
+  gcc_assert (ob->decl_state->cgraph_node_encoder);
+  gcc_assert (ob->decl_state->varpool_node_encoder);
+  encoder = ob->decl_state->cgraph_node_encoder;
+  varpool_encoder = ob->decl_state->varpool_node_encoder;
+
+  /* The FUNCTION_DECLs for which we have written a node.  The first
+     node found is written as the "original" node, the remaining nodes
+     are considered its clones.  */
+  written_decls = lto_bitmap_alloc ();
 
   /* Write out the nodes.  We must first output a node and then its clones,
      otherwise at a time reading back the node there would be nothing to clone

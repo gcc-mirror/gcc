@@ -1061,8 +1061,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
   /* Check if base is a global static variable that is not read
      by the function.  */
   if (TREE_CODE (base) == VAR_DECL
-      && TREE_STATIC (base)
-      && !TREE_PUBLIC (base))
+      && TREE_STATIC (base))
     {
       bitmap not_read;
 
@@ -1316,8 +1315,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
      by the function.  */
   if (callee != NULL_TREE
       && TREE_CODE (base) == VAR_DECL
-      && TREE_STATIC (base)
-      && !TREE_PUBLIC (base))
+      && TREE_STATIC (base))
     {
       bitmap not_written;
 
