@@ -1,5 +1,12 @@
 2010-05-15  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/lto/ipareference_1.c: Rename to ...
+	* gcc.dg/lto/ipareference_0.c: ... this one.
+	* gcc.dg/lto/ipareference_2.c: Rename to ...
+	* gcc.dg/lto/ipareference_1.c: ... this one.
+
+2010-05-15  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/lto/ipareference_1.c: New file.
 	* gcc.dg/lto/ipareference_2.c: New file.
 
