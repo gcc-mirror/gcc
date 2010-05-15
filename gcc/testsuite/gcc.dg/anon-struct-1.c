@@ -1,4 +1,4 @@
-/* { dg-options "-std=iso9899:1990" } */
+/* { dg-options "-std=iso9899:1990 -pedantic" } */
 /* In strict ISO C mode, we don't recognize the anonymous struct/union
    extension or any Microsoft extensions.  */
 
@@ -21,10 +21,10 @@ char testD[sizeof(struct D) == sizeof(struct A) ? 1 : -1];
 
 /* GNU extension.  */
 struct E {
-  struct { char z; };		/* { dg-warning "does not declare anything" } */
+  struct { char z; };		/* { dg-warning "unnamed structs" } */
   char e;
 };
-char testE[sizeof(struct E) == sizeof(struct A) ? 1 : -1];
+
 
 /* MS extension.  */
 typedef struct A typedef_A;
@@ -49,8 +49,8 @@ char testH[sizeof(struct H) == 2 * sizeof(struct A) ? 1 : -1];
 
 /* Make sure __extension__ gets turned back off.  */
 struct I {
-  struct { char z; };		/* { dg-warning "does not declare anything" } */
+  struct { char z; };		/* { dg-warning "unnamed structs" } */
   char i;
 };
-char testI[sizeof(struct I) == sizeof(struct A) ? 1 : -1];
+char testI[sizeof(struct I) == sizeof(struct E) ? 1 : -1];
 

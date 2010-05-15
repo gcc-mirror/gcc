@@ -1,3 +1,10 @@
+2010-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-anon-struct-1.c, gcc.dg/c1x-anon-struct-2.c,
+	gcc.dg/c90-anon-struct-1.c, gcc.dg/c99-anon-struct-1.c: New tests.
+	* gcc.dg/20080820.c, gcc.dg/anon-struct-1.c: Update expected
+	diagnostics and type sizes.
+
 2010-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto9.adb: New test.

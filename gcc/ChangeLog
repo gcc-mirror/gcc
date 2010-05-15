@@ -1,3 +1,15 @@
+2010-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokfield): Allow typedefs for anonymous structs and
+	unions by default if those structs and unions have no tags.  Do
+	not condition anonymous struct and unions handling on flag_iso.
+	Allow anonymous structs and unions for C1X.
+	(finish_struct): Do not diagnose lack of named fields when
+	anonymous structs and unions present for C1X.  Accept flexible
+	array members in structure with anonymous structs or unions but no
+	directly named fields.
+	* doc/extend.texi (Unnamed Fields): Update.
+
 2010-05-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.h (compare_field_offset): Rename into...
