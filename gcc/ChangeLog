@@ -1,3 +1,47 @@
+2010-05-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (memory_identifier_string): Remove.
+	* ipa-reference.c: Update comment; do not include gt-ipa-reference.h
+	(ipa_reference_global_vars_info_d): Remove statics_not_read and
+	statics_not_written.
+	(ipa_reference_optimization_summary_d): New structure.
+	(ipa_reference_optimization_summary_t): New type and vector.
+	(ipa_reference_vars_info_d): Embedd structures instead of using
+	pointers.
+	(reference_vars_to_consider): Remove out of GGC space.
+	(module_statics_escape): Remove.
+	(global_info_obstack): Rename to ...
+	(optimization_summary_obstack): ... this one.
+	(initialization_status_t): Remove.
+	(memory_identifier_string): Remove.
+	(get_reference_vars_info): Fix indenting.
+	(set_reference_vars_info): Likewise.
+	(get_reference_optimization_summary): New.
+	(set_reference_optimization_summary): New.
+	(get_global_reference_vars_info): Remove.
+	(ipa_reference_get_read_global): Remove.
+	(ipa_reference_get_written_global): Remove.
+	(ipa_reference_get_not_read_global): Update.
+	(ipa_reference_get_not_written_global): Update.
+	(is_proper_for_analysis): Outlaw addressable.
+	(propagate_bits): Update for new datastructures.
+	(analyze_variable): Remove.
+	(init_function_info): Update for new datastructures.
+	(clean_function_local_data): Remove.
+	(clean_function): Remove.
+	(copy_global_bitmap): Use optimizations_summary_obstack.
+	(duplicate_node_data): Duplicate optimization summary only.
+	(remove_node_data): Remove optimization summary only.
+	(generate_summary): Do not analyze variables; do not compute
+	module_statics_escape; do not prune solutions by it.
+	(read_write_all_from_decl): Fix typos in comments.
+	(propagate): Doscover readonly and nonaddressable first;
+	update for new datastructures; share global bitmaps.
+	* ipa-reference.h (ipa_reference_get_read_global,
+	ipa_reference_get_written_global): Remove.
+	* ipa-pure-const.c (check_stmt): Do not use memory_identifier_string.
+	* Makefile.in: Remove ipa-refereference from GT files.
+
 2010-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44112
