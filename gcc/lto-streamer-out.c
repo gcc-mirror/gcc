@@ -2090,18 +2090,25 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
 {
   struct cgraph_node *node;
   struct lto_out_decl_state *decl_state;
-  cgraph_node_set_iterator csi;
+#ifdef ENABLE_CHECKING
   bitmap output = lto_bitmap_alloc ();
+#endif
+  int i, n_nodes;
+  lto_cgraph_encoder_t encoder = lto_get_out_decl_state ()->cgraph_node_encoder;
 
   lto_writer_init ();
 
+  n_nodes = lto_cgraph_encoder_size (encoder);
   /* Process only the functions with bodies.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (i = 0; i < n_nodes; i++)
     {
-      node = csi_node (csi);
-      if (node->analyzed && !bitmap_bit_p (output, DECL_UID (node->decl)))
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (lto_cgraph_encoder_encode_body_p (encoder, node))
 	{
+#ifdef ENABLE_CHECKING
+	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
 	  bitmap_set_bit (output, DECL_UID (node->decl));
+#endif
 	  decl_state = lto_new_out_decl_state ();
 	  lto_push_out_decl_state (decl_state);
 	  if (!flag_wpa)
