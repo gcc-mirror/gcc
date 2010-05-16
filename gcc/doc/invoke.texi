@@ -1929,6 +1929,15 @@ Disable built-in declarations of functions that are not mandated by
 ANSI/ISO C@.  These include @code{ffs}, @code{alloca}, @code{_exit},
 @code{index}, @code{bzero}, @code{conjf}, and other related functions.
 
+@item -fnothrow-opt
+@opindex fnothrow-opt
+Treat a @code{throw()} exception specification as though it were a
+@code{noexcept} specification to reduce or eliminate the text size
+overhead relative to a function with no exception specification.  The
+semantic effect is that an exception thrown out of a function with
+such an exception specification will result in a call to
+@code{terminate} rather than @code{unexpected}.
+
 @item -fno-operator-names
 @opindex fno-operator-names
 Do not treat the operator name keywords @code{and}, @code{bitand},

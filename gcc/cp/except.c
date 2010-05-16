@@ -513,9 +513,18 @@ expand_end_catch_block (void)
 tree
 begin_eh_spec_block (void)
 {
-  tree r = build_stmt (input_location, EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
+  tree r;
+  /* A noexcept specification (or throw() with -fnothrow-opt) is a
+     MUST_NOT_THROW_EXPR.  */
+  if (TYPE_NOEXCEPT_P (TREE_TYPE (current_function_decl)))
+    {
+      r = build_stmt (input_location, MUST_NOT_THROW_EXPR, NULL_TREE);
+      TREE_SIDE_EFFECTS (r) = 1;
+    }
+  else
+    r = build_stmt (input_location, EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
   add_stmt (r);
-  EH_SPEC_STMTS (r) = push_stmt_list ();
+  TREE_OPERAND (r, 0) = push_stmt_list ();
   return r;
 }
 
@@ -524,7 +533,11 @@ finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
 {
   tree raises;
 
-  EH_SPEC_STMTS (eh_spec_block) = pop_stmt_list (EH_SPEC_STMTS (eh_spec_block));
+  TREE_OPERAND (eh_spec_block, 0)
+    = pop_stmt_list (TREE_OPERAND (eh_spec_block, 0));
+
+  if (TREE_CODE (eh_spec_block) == MUST_NOT_THROW_EXPR)
+    return;
 
   /* Strip cv quals, etc, from the specification types.  */
   for (raises = NULL_TREE;
