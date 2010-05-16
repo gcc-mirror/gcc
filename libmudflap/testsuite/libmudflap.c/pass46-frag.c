@@ -15,4 +15,4 @@ int main ()
  int m = boo [l % 2 + 12]; /* should not be instrumented */
  return m & strlen (""); /* a fancy way of saying "0" */
 }
-/* { dg-options "-fmudflap -fmudflapir -lmudflap -Wall" } */
+/* { dg-options "-fmudflap -fmudflapir -lmudflap" } */
