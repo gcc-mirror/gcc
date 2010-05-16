@@ -1,3 +1,24 @@
+2010-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_common_reswords): Add _Static_assert for C.
+	* c-parser.c (c_token_starts_declaration,
+	c_parser_next_token_starts_declaration,
+	c_parser_static_assert_declaration_no_semi,
+	c_parser_static_assert_declaration): New.
+	(c_parser_declaration_or_fndef): Add parameter static_assert_ok.
+	Handle static assertions if static_assert_ok.
+	(c_parser_external_declaration, c_parser_declaration_or_fndef,
+	c_parser_compound_statement_nostart, c_parser_label,
+	c_parser_for_statement, c_parser_objc_methodprotolist,
+	c_parser_omp_for_loop): All callers of
+	c_parser_declaration_or_fndef changed.
+	(c_parser_struct_declaration): Handle static assertions.
+	(c_parser_compound_statement_nostart): Use
+	c_parser_next_token_starts_declaration and
+	c_token_starts_declaration to detect start of declarations.
+	(c_parser_label, c_parser_for_statement, c_parser_omp_for_loop):
+	Likewise.
+
 2010-05-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
