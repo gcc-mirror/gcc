@@ -1,5 +1,14 @@
 2010-05-16  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (dump_cgraph_node): Dump versionable flag.
+	* cgraph.h (cgraph_local_info): Add versionable flag.
+	* ipa-cp.c (ipcp_analyze_node): Set versionable flag.
+	(ipcp_versionable_function_p): Use it.
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Stream
+	versionable flag.
+
+2010-05-16  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_clone_node): Take decl argument and insert
 	clone into hash when it is different from orig.
 	(cgraph_create_virtual_clone): Update use of cgraph_clone_node.
@@ -7,7 +16,8 @@
 	* lto-cgrpah.c (lto_cgraph_encoder_new): Create body map.
 	(lto_cgraph_encoder_delete): Delete body map.
 	(lto_cgraph_encoder_size): Move to header.
-	(lto_cgraph_encoder_encode_body_p, lto_set_cgraph_encoder_encode_body): New.
+	(lto_cgraph_encoder_encode_body_p,
+	lto_set_cgraph_encoder_encode_body): New.
 	(lto_output_node): Do not take written_decls argument; output clone_of
 	pointer.
 	(add_node_to): Add include_body_argument; call

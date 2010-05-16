@@ -105,6 +105,10 @@ struct GTY(()) cgraph_local_info {
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
 
+  /* False when there something makes versioning impossible.
+     Currently computed and used only by ipa-cp.  */
+  unsigned versionable : 1;
+
   /* True when function should be inlined independently on its size.  */
   unsigned disregard_inline_limits : 1;
 

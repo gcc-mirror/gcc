@@ -1830,6 +1830,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " always_inline");
   else if (node->local.inlinable)
     fprintf (f, " inlinable");
+  else if (node->local.versionable)
+    fprintf (f, " versionable");
   if (node->local.redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (TREE_ASM_WRITTEN (node->decl))
@@ -2046,6 +2048,8 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 
 /* Create node representing clone of N executed COUNT times.  Decrease
    the execution counts from original node too.
+   The new clone will have decl set to DECL that may or may not be the same
+   as decl of N.
 
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
