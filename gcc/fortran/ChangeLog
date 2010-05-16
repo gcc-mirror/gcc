@@ -1,3 +1,8 @@
+2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/35779
+	* array.c (match_array_list): Revert change from 2010-05-13.
+
 2010-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* trans-decl.c (module_htab_decls_hash): Revert last change.

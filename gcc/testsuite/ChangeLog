@@ -1,3 +1,9 @@
+2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/35779
+	* gfortran.dg/initialization_25.f90: Commented testcase.
+	* gfortran.dg/initialization_26.f90: New.
+
 2010-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pr43317.c: Do not pass -fipa-type-escape.
