@@ -51,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-lang.h"
 #include "langhooks.h"
 #include "tree-mudflap.h"
-#include "gimple.h" /* FIXME: For gimple_set_body and gimple_body, but why?  */
 #include "tree-iterator.h"
 #include "diagnostic.h"
 #include "tree-dump.h"
@@ -2370,7 +2369,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
-	  gimple_set_body (newdecl, gimple_body (olddecl));
 	  DECL_ARGUMENTS (newdecl) = copy_list (DECL_ARGUMENTS (olddecl));
 	  for (t = DECL_ARGUMENTS (newdecl); t ; t = TREE_CHAIN (t))
 	    DECL_CONTEXT (t) = newdecl;
@@ -2412,9 +2410,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     switch (TREE_CODE (olddecl))
       {
       case FUNCTION_DECL:
-	gimple_set_body (olddecl, gimple_body (newdecl));
-	/* fall through */
-
       case FIELD_DECL:
       case VAR_DECL:
       case PARM_DECL:
