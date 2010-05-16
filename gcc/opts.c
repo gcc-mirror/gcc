@@ -1151,7 +1151,6 @@ decode_options (unsigned int argc, const char **argv)
     {
       /* These passes are not WHOPR compatible yet.  */
       flag_ipa_cp = 0;
-      flag_ipa_type_escape = 0;
       flag_ipa_pta = 0;
       flag_ipa_struct_reorg = 0;
     }

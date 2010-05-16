@@ -717,10 +717,6 @@ fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
 Discover readonly and non addressable static variables
 
-fipa-type-escape
-Common Report Var(flag_ipa_type_escape) Init(0) Optimization
-Type based escape and alias analysis
-
 fipa-matrix-reorg
 Common Report Var(flag_ipa_matrix_reorg) Optimization
 Perform matrix layout flattening and transposing based

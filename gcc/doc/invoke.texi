@@ -346,7 +346,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg -fipa-pta @gol
 -fipa-profile -fipa-pure-const -fipa-reference -fipa-struct-reorg @gol
--fipa-type-escape -fira-algorithm=@var{algorithm} @gol
+-fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region} -fira-coalesce @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
@@ -6633,8 +6633,7 @@ Perform structure reorganization optimization, that change C-like structures
 layout in order to better utilize spatial locality.  This transformation is
 affective for programs containing arrays of structures.  Available in two
 compilation modes: profile-based (enabled with @option{-fprofile-generate})
-or static (which uses built-in heuristics).  Require @option{-fipa-type-escape}
-to provide the safety of this transformation.  It works only in whole program
+or static (which uses built-in heuristics).  It works only in whole program
 mode, so it requires @option{-fwhole-program} and @option{-combine} to be
 enabled.  Structures considered @samp{cold} by this transformation are not
 affected (see @option{--param struct-reorg-cold-struct-ratio=@var{value}}).

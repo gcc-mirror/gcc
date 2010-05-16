@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fipa-struct-reorg -fwhole-program -fipa-type-escape -g" } */
+/* { dg-options "-O -fipa-struct-reorg -fwhole-program -g" } */
 
 extern void *malloc(__SIZE_TYPE__);
 

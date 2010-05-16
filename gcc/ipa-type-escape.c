@@ -1,4 +1,4 @@
-/* Type based alias analysis.
+/* Escape analysis for types.
    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -2112,9 +2112,7 @@ type_escape_execute (void)
 static bool
 gate_type_escape_vars (void)
 {
-  return (flag_ipa_type_escape
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+  return flag_ipa_struct_reorg && flag_whole_program && (optimize > 0);
 }
 
 struct simple_ipa_opt_pass pass_ipa_type_escape =
