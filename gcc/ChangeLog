@@ -1,3 +1,8 @@
+2010-05-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-decl.c: Don't include gimple.h.
+	(merge_decls): Do not copy gimple_body.
+
 2010-05-15  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -fnothrow-opt.
