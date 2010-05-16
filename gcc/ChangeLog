@@ -1,3 +1,8 @@
+2010-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (nonoverlapping_memrefs_p): Remove use of
+	IPA type-escape information.
+
 2010-05-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_common_reswords): Add _Static_assert for C.

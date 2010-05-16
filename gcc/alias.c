@@ -2196,43 +2196,21 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   moffsetx = MEM_OFFSET (x);
   if (TREE_CODE (exprx) == COMPONENT_REF)
     {
-      if (TREE_CODE (expry) == VAR_DECL
-	  && POINTER_TYPE_P (TREE_TYPE (expry)))
-	{
-	 tree field = TREE_OPERAND (exprx, 1);
-	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
-	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
-						       TREE_TYPE (field)))
-	   return 1;
-	}
-      {
-	tree t = decl_for_component_ref (exprx);
-	if (! t)
-	  return 0;
-	moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
-	exprx = t;
-      }
+      tree t = decl_for_component_ref (exprx);
+      if (! t)
+	return 0;
+      moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
+      exprx = t;
     }
 
   moffsety = MEM_OFFSET (y);
   if (TREE_CODE (expry) == COMPONENT_REF)
     {
-      if (TREE_CODE (exprx) == VAR_DECL
-	  && POINTER_TYPE_P (TREE_TYPE (exprx)))
-	{
-	 tree field = TREE_OPERAND (expry, 1);
-	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
-	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
-						       TREE_TYPE (field)))
-	   return 1;
-	}
-      {
-	tree t = decl_for_component_ref (expry);
-	if (! t)
-	  return 0;
-	moffsety = adjust_offset_for_component_ref (expry, moffsety);
-	expry = t;
-      }
+      tree t = decl_for_component_ref (expry);
+      if (! t)
+	return 0;
+      moffsety = adjust_offset_for_component_ref (expry, moffsety);
+      expry = t;
     }
 
   if (! DECL_P (exprx) || ! DECL_P (expry))
