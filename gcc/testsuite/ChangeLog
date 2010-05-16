@@ -1,3 +1,15 @@
+2010-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/pr43317.c: Do not pass -fipa-type-escape.
+	* gcc.dg/pr43084.c: Likewise.
+	* gcc.dg/pr42250.c: Pass -fipa-struct-reorg instead of
+	-fipa-type-escape.
+	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Do not pass
+	-fipa-type-escape.
+	* gcc.dg/struct/struct-reorg.exp: Likewise.
+	* gcc.dg/struct/wo_prof_empty_str.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_return.c: Likewise.
+
 2010-05-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c1x-static-assert-1.c, gcc.dg/c1x-static-assert-2.c,

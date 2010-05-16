@@ -1,3 +1,12 @@
+2010-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (-fipa-struct-reorg): Do not mention
+	-fipa-type-escape.
+	* ipa-type-escape.c (gate_type_escape_vars): Run when
+	-fipa-struct-reorg runs.
+	* opts.c (decode_options): Do not unset flag_ipa_type_escape.
+	* common.opt (fipa-type-escape): Remove.
+
 2010-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* opts.c (handle_option): Call into LTO streamer only if ENABLE_LTO.
