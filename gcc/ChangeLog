@@ -1,3 +1,9 @@
+2010-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_symtab_entry_hash): Use IDENTIFIER_HASH_VALUE.
+	* optabs.c (libfunc_decl_hash): Likewise.
+	* varasm.c (emutls_decl): Likewise.
+
 2010-05-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-decl.c: Don't include gimple.h.
