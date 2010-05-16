@@ -1,3 +1,9 @@
+2010-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opts.c (handle_option): Call into LTO streamer only if ENABLE_LTO.
+	(decode_options): Likewise.
+	* Makefile.in (opts.o): Add dependency on LTO_STREAMER_H.
+
 2010-05-16  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (function_and_variable_visibility): Also bring local all
