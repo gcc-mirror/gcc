@@ -1,3 +1,8 @@
+2010-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc-interface/misc.c (gnat_handle_option): Remove special logic
+	for Wuninitialized without -O.
+	
 2010-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (enum standard_datatypes): Add new value

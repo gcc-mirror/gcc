@@ -209,12 +209,7 @@ gnat_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wall:
       warn_unused = value;
-
-      /* We save the value of warn_uninitialized, since if they put
-	 -Wuninitialized on the command line, we need to generate a
-	 warning about not using it without also specifying -O.  */
-      if (warn_uninitialized != 1)
-	warn_uninitialized = (value ? 2 : 0);
+      warn_uninitialized = value;
       break;
 
       /* These are used in the GCC Makefile.  */
