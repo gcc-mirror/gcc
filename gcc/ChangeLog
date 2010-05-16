@@ -1,3 +1,7 @@
+2010-05-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fnothrow-opt.
+
 2010-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-prop.c (ipa_prop_read_section): Add sanity check that node is analyzed.

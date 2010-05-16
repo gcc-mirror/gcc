@@ -689,6 +689,10 @@ C++ ObjC++
 fnonnull-objects
 C++ ObjC++
 
+fnothrow-opt
+C++ ObjC++ Optimization Var(flag_nothrow_opt)
+Treat a throw() exception specification as noexcept to improve code size
+
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
 ; to initialize any non-POD ivars in Objective-C++ classes.
 fobjc-call-cxx-cdtors

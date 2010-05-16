@@ -1,3 +1,9 @@
+2010-05-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/spec10.C: New.
+	* g++.dg/eh/spec11.C: New.
+	* g++.old-deja/g++.mike/eh34.C: Remove dg-options.
+
 2010-05-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44154

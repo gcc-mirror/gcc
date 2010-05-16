@@ -1741,6 +1741,12 @@ struct GTY(()) lang_type {
   (TYPE_RAISES_EXCEPTIONS (NODE) \
    && TREE_VALUE (TYPE_RAISES_EXCEPTIONS (NODE)) == NULL_TREE)
 
+/* For FUNCTION_TYPE or METHOD_TYPE, true if NODE is noexcept.  This is the
+   case for things declared noexcept(true) and, with -fnothrow-opt, for
+   throw() functions.  */
+#define TYPE_NOEXCEPT_P(NODE) \
+  (flag_nothrow_opt && TYPE_NOTHROW_P(NODE))
+
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
   (LANG_DECL_NS_CHECK (NODE)->level)
