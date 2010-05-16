@@ -1,3 +1,8 @@
+2010-05-16  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (function_and_variable_visibility): Also bring local all
+	aliases.
+
 2010-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (nonoverlapping_memrefs_p): Remove use of
