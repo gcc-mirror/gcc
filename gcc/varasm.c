@@ -365,7 +365,7 @@ emutls_decl (tree decl)
   /* Note that we use the hash of the decl's name, rather than a hash
      of the decl's pointer.  In emutls_finish we iterate through the
      hash table, and we want this traversal to be predictable.  */
-  in.hash = htab_hash_string (IDENTIFIER_POINTER (name));
+  in.hash = IDENTIFIER_HASH_VALUE (name);
   in.base.from = decl;
   loc = htab_find_slot_with_hash (emutls_htab, &in, in.hash, INSERT);
   h = (struct tree_map *) *loc;

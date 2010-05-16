@@ -3374,7 +3374,7 @@ module_htab_decls_hash (const void *x)
   const_tree n = DECL_NAME (t);
   if (n == NULL_TREE)
     n = TYPE_NAME (TREE_TYPE (t));
-  return htab_hash_string (IDENTIFIER_POINTER (n));
+  return IDENTIFIER_HASH_VALUE (n);
 }
 
 static int
