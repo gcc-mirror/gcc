@@ -1,5 +1,9 @@
 2010-05-16  Richard Guenther  <rguenther@suse.de>
 
+	* trans-decl.c (module_htab_decls_hash): Revert last change.
+
+2010-05-16  Richard Guenther  <rguenther@suse.de>
+
 	* trans-decl.c (module_htab_decls_hash): Use IDENTIFIER_HASH_VALUE.
 
 2010-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
