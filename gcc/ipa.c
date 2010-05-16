@@ -655,8 +655,11 @@ function_and_variable_visibility (bool whole_program)
       if (!node->local.externally_visible && node->analyzed
 	  && !DECL_EXTERNAL (node->decl))
 	{
+          struct cgraph_node *alias;
 	  gcc_assert (whole_program || !TREE_PUBLIC (node->decl));
 	  cgraph_make_decl_local (node->decl);
+	  for (alias = node->same_body; alias; alias = alias->next)
+	    cgraph_make_decl_local (alias->decl);
 	  if (node->same_comdat_group)
 	    /* cgraph_externally_visible_p has already checked all other nodes
 	       in the group and they will all be made local.  We need to
