@@ -183,6 +183,7 @@ ipcp_analyze_node (struct cgraph_node *node)
   /* Unreachable nodes should have been eliminated before ipcp.  */
   gcc_assert (node->needed || node->reachable);
 
+  node->local.versionable = tree_versionable_function_p (node->decl);
   ipa_initialize_node_params (node);
   ipa_detect_param_modifications (node);
 }
@@ -419,7 +420,7 @@ ipcp_versionable_function_p (struct cgraph_node *node)
   basic_block bb;
 
   /* There are a number of generic reasons functions cannot be versioned.  */
-  if (!tree_versionable_function_p (decl))
+  if (!node->local.versionable)
     return false;
 
   /* Removing arguments doesn't work if the function takes varargs.  */
