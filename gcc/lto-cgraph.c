@@ -71,6 +71,7 @@ lto_cgraph_encoder_new (void)
   lto_cgraph_encoder_t encoder = XCNEW (struct lto_cgraph_encoder_d);
   encoder->map = pointer_map_create ();
   encoder->nodes = NULL;
+  encoder->body = pointer_set_create ();
   return encoder;
 }
 
@@ -82,6 +83,7 @@ lto_cgraph_encoder_delete (lto_cgraph_encoder_t encoder)
 {
    VEC_free (cgraph_node_ptr, heap, encoder->nodes);
    pointer_map_destroy (encoder->map);
+   pointer_set_destroy (encoder->body);
    free (encoder);
 }
 
@@ -137,12 +139,22 @@ lto_cgraph_encoder_deref (lto_cgraph_encoder_t encoder, int ref)
 }
 
 
-/* Return number of encoded nodes in ENCODER.  */
+/* Return TRUE if we should encode initializer of NODE (if any).  */
 
-static int
-lto_cgraph_encoder_size (lto_cgraph_encoder_t encoder)
+bool
+lto_cgraph_encoder_encode_body_p (lto_cgraph_encoder_t encoder,
+				  struct cgraph_node *node)
 {
-  return VEC_length (cgraph_node_ptr, encoder->nodes);
+  return pointer_set_contains (encoder->body, node);
+}
+
+/* Return TRUE if we should encode body of NODE (if any).  */
+
+static void
+lto_set_cgraph_encoder_encode_body (lto_cgraph_encoder_t encoder,
+				    struct cgraph_node *node)
+{
+  pointer_set_insert (encoder->body, node);
 }
 
 /* Create a new varpool encoder.  */
@@ -394,17 +406,16 @@ reachable_from_this_partition_p (struct cgraph_node *node, cgraph_node_set set)
 static void
 lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		 lto_cgraph_encoder_t encoder, cgraph_node_set set,
-		 varpool_node_set vset,
-		 bitmap written_decls)
+		 varpool_node_set vset)
 {
   unsigned int tag;
   struct bitpack_d *bp;
-  bool boundary_p, wrote_decl_p;
+  bool boundary_p;
   intptr_t ref;
   bool in_other_partition = false;
+  struct cgraph_node *clone_of;
 
   boundary_p = !cgraph_node_in_set_p (node, set);
-  wrote_decl_p = bitmap_bit_p (written_decls, DECL_UID (node->decl));
 
   if (node->analyzed && !boundary_p)
     tag = LTO_cgraph_analyzed_node;
@@ -436,10 +447,18 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       in_other_partition = 1;
     }
 
-  lto_output_uleb128_stream (ob->main_stream, wrote_decl_p);
+  clone_of = node->clone_of;
+  while (clone_of
+	 && (ref = lto_cgraph_encoder_lookup (encoder, node->clone_of)) == LCC_NOT_FOUND)
+    if (clone_of->prev_sibling_clone)
+      clone_of = clone_of->prev_sibling_clone;
+    else
+      clone_of = clone_of->clone_of;
+  if (!clone_of)
+    lto_output_sleb128_stream (ob->main_stream, LCC_NOT_FOUND);
+  else
+    lto_output_sleb128_stream (ob->main_stream, ref);
 
-  if (!wrote_decl_p)
-    bitmap_set_bit (written_decls, DECL_UID (node->decl));
 
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
   lto_output_sleb128_stream (ob->main_stream, node->count);
@@ -636,11 +655,15 @@ output_profile_summary (struct lto_simple_output_block *ob)
 
 /* Add NODE into encoder as well as nodes it is cloned from.
    Do it in a way so clones appear first.  */
+
 static void
-add_node_to (lto_cgraph_encoder_t encoder, struct cgraph_node *node)
+add_node_to (lto_cgraph_encoder_t encoder, struct cgraph_node *node,
+	     bool include_body)
 {
   if (node->clone_of)
-    add_node_to (encoder, node->clone_of);
+    add_node_to (encoder, node->clone_of, include_body);
+  else if (include_body)
+    lto_set_cgraph_encoder_encode_body (encoder, node);
   lto_cgraph_encoder_encode (encoder, node);
 }
 
@@ -655,7 +678,7 @@ add_references (lto_cgraph_encoder_t encoder,
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
     if (ref->refered_type == IPA_REF_CGRAPH)
-      add_node_to (encoder, ipa_ref_node (ref));
+      add_node_to (encoder, ipa_ref_node (ref), false);
     else
       {
 	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
@@ -757,7 +780,7 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      add_node_to (encoder, node);
+      add_node_to (encoder, node, true);
       add_references (encoder, varpool_encoder, &node->ref_list);
     }
   for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
@@ -797,7 +820,7 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
 	    {
 	      /* We should have moved all the inlines.  */
 	      gcc_assert (!callee->global.inlined_to);
-	      add_node_to (encoder, callee);
+	      add_node_to (encoder, callee, false);
 	    }
 	}
     }
@@ -812,7 +835,6 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   struct lto_simple_output_block *ob;
   cgraph_node_set_iterator csi;
   int i, n_nodes;
-  bitmap written_decls;
   lto_cgraph_encoder_t encoder;
   lto_varpool_encoder_t varpool_encoder;
   struct cgraph_asm_node *can;
@@ -828,11 +850,6 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   encoder = ob->decl_state->cgraph_node_encoder;
   varpool_encoder = ob->decl_state->varpool_node_encoder;
 
-  /* The FUNCTION_DECLs for which we have written a node.  The first
-     node found is written as the "original" node, the remaining nodes
-     are considered its clones.  */
-  written_decls = lto_bitmap_alloc ();
-
   /* Write out the nodes.  We must first output a node and then its clones,
      otherwise at a time reading back the node there would be nothing to clone
      from.  */
@@ -840,10 +857,8 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   for (i = 0; i < n_nodes; i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
-      lto_output_node (ob, node, encoder, set, vset, written_decls);
+      lto_output_node (ob, node, encoder, set, vset);
     }
-
-  lto_bitmap_free (written_decls);
 
   /* Go over the nodes in SET again to write edges.  */
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
@@ -950,30 +965,32 @@ output_varpool (cgraph_node_set set, varpool_node_set vset)
 static struct cgraph_node *
 input_node (struct lto_file_decl_data *file_data,
 	    struct lto_input_block *ib,
-	    enum LTO_cgraph_tags tag)
+	    enum LTO_cgraph_tags tag,
+	    VEC(cgraph_node_ptr, heap) *nodes)
 {
   tree fn_decl;
   struct cgraph_node *node;
   struct bitpack_d *bp;
   int stack_size = 0;
   unsigned decl_index;
-  bool clone_p;
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
   int self_time = 0;
   int self_size = 0;
   int time_inlining_benefit = 0;
   int size_inlining_benefit = 0;
   unsigned long same_body_count = 0;
+  int clone_ref;
 
-  clone_p = (lto_input_uleb128 (ib) != 0);
+  clone_ref = lto_input_sleb128 (ib);
 
   decl_index = lto_input_uleb128 (ib);
   fn_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
 
-  if (clone_p)
-    node = cgraph_clone_node (cgraph_node (fn_decl), 0,
-			      CGRAPH_FREQ_BASE, 0, false, NULL);
-
+  if (clone_ref != LCC_NOT_FOUND)
+    {
+      node = cgraph_clone_node (VEC_index (cgraph_node_ptr, nodes, clone_ref), fn_decl,
+				0, CGRAPH_FREQ_BASE, 0, false, NULL);
+    }
   else
     node = cgraph_node (fn_decl);
 
@@ -1214,7 +1231,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
         input_edge (ib, nodes, true);
       else
 	{
-	  node = input_node (file_data, ib, tag);
+	  node = input_node (file_data, ib, tag,nodes);
 	  if (node == NULL || node->decl == NULL_TREE)
 	    internal_error ("bytecode stream: found empty cgraph node");
 	  VEC_safe_push (cgraph_node_ptr, heap, nodes, node);
