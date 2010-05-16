@@ -1,3 +1,11 @@
+2010-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-static-assert-1.c, gcc.dg/c1x-static-assert-2.c,
+	gcc.dg/c1x-static-assert-3.c, gcc.dg/c1x-static-assert-4.c,
+	gcc.dg/c1x-static-assert-5.c, gcc.dg/c1x-static-assert-6.c,
+	gcc.dg/c90-static-assert-1.c, gcc.dg/c99-static-assert-1.c: New
+	tests.
+
 2010-05-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/eh/spec10.C: New.
