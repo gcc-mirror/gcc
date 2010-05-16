@@ -1,3 +1,8 @@
+2010-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (build_common_builtin_nodes): Always clear TREE_NOTHROW on
+	BUILT_IN_ALLOCA if stack checking is enabled.
+
 2010-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* var-tracking.c (vars_copy_1): Inline ...
@@ -33,7 +38,8 @@
 
 2010-05-15  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-prop.c (ipa_prop_read_section): Add sanity check that node is analyzed.
+	* ipa-prop.c (ipa_prop_read_section): Add sanity check that node is
+	analyzed.
 	* passes.c (ipa_write_summaries): Write all analyzed nodes.
 
 2010-05-15  Steven Bosscher  <steven@gcc.gnu.org>
