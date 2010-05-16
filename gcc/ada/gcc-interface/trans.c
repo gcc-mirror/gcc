@@ -401,6 +401,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   /* Name of the _Parent field in tagged record types.  */
   parent_name_id = get_identifier (Get_Name_String (Name_uParent));
 
+  /* Name of the Exception_Data type defined in System.Standard_Library.  */
+  exception_data_name_id
+    = get_identifier ("system__standard_library__exception_data");
+
   /* Make the types and functions used for exception processing.  */
   jmpbuf_type
     = build_array_type (gnat_type_for_mode (Pmode, 0),

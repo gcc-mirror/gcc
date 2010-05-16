@@ -1,3 +1,15 @@
+2010-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (enum standard_datatypes): Add new value
+	ADT_exception_data_name_id.
+	(exception_data_name_id): New define.
+	* gcc-interface/trans.c (gigi): Initialize it.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Use the standard
+	exception type for standard exception definitions.  Do not make them
+	volatile.
+	<E_Record_Type>: Equate fields of types associated with an exception
+	definition to those of the standard exception type.
+
 2010-05-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* tracebak.c (__gnat_backtrace): Mark top_stack with ATTRIBUTE_UNUSED.

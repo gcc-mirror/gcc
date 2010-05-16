@@ -582,6 +582,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Get the type after elaborating the renamed object.  */
 	gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
 
+	/* If this is a standard exception definition, then use the standard
+	   exception type.  This is necessary to make sure that imported and
+	   exported views of exceptions are properly merged in LTO mode.  */
+	if (TREE_CODE (TYPE_NAME (gnu_type)) == TYPE_DECL
+	    && DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
+	  gnu_type = except_type_node;
+
 	/* For a debug renaming declaration, build a pure debug entity.  */
 	if (Present (Debug_Renaming_Link (gnat_entity)))
 	  {
@@ -1000,6 +1007,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   and disallow any optimizations for such a non-constant object.  */
 	if ((Treat_As_Volatile (gnat_entity)
 	     || (!const_flag
+		 && gnu_type != except_type_node
 		 && (Is_Exported (gnat_entity)
 		     || imported_p
 		     || Present (Address_Clause (gnat_entity)))))
@@ -2922,6 +2930,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      && Is_Itype (Etype (gnat_temp))
 	      && !present_gnu_tree (gnat_temp))
 	    gnat_to_gnu_entity (Etype (gnat_temp), NULL_TREE, 0);
+
+	/* If this is a record type associated with an exception definition,
+	   equate its fields to those of the standard exception type.  This
+	   will make it possible to convert between them.  */
+	if (gnu_entity_name == exception_data_name_id)
+	  {
+	    tree gnu_std_field;
+	    for (gnu_field = TYPE_FIELDS (gnu_type),
+		 gnu_std_field = TYPE_FIELDS (except_type_node);
+		 gnu_field;
+		 gnu_field = TREE_CHAIN (gnu_field),
+		 gnu_std_field = TREE_CHAIN (gnu_std_field))
+	      SET_DECL_ORIGINAL_FIELD_TO_FIELD (gnu_field, gnu_std_field);
+	    gcc_assert (!gnu_std_field);
+	  }
       }
       break;
 
