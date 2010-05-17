@@ -3,6 +3,9 @@
 	PR bootstrap/42347
 	* gcc.c-torture/compile/pr42347.c: New test.
 
+	PR middle-end/44102
+	* g++.dg/ext/asmgoto1.C: New test.
+
 2010-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

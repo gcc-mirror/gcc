@@ -793,7 +793,8 @@ fixup_reorder_chain (void)
 		 to prevent rtl_verify_flow_info from complaining.  */
 	      if (!e_fall)
 		{
-		  gcc_assert (!onlyjump_p (bb_end_insn));
+		  gcc_assert (!onlyjump_p (bb_end_insn)
+			      || returnjump_p (bb_end_insn));
 		  bb->il.rtl->footer = emit_barrier_after (bb_end_insn);
 		  continue;
 		}

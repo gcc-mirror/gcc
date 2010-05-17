@@ -4,6 +4,12 @@
 	* cfglayout.c (fixup_reorder_chain): Allow returnjump_p
 	to have no fallthru edge.
 
+	PR middle-end/44102
+	* cfgcleanup.c (try_optimize_cfg): When removing trivially empty
+	bb with no successors, move footer whenever in IR_RTL_CFGLAYOUT
+	mode, not just when CLEANUP_CFGLAYOUT, and when in IR_RTL_CFGRTL
+	add BARRIER after previous bb if needed.
+
 2010-05-17  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Delete
