@@ -163,6 +163,8 @@ struct ipa_param_descriptor
   tree decl;
   /* Whether the value parameter has been modified within the function.  */
   unsigned modified : 1;
+  /* The parameter is used.  */
+  unsigned used : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -235,6 +237,15 @@ static inline bool
 ipa_is_param_modified (struct ipa_node_params *info, int i)
 {
   return info->params[i].modified;
+}
+
+/* Return the used flag corresponding to the Ith formal parameter of
+   the function associated with INFO.  */
+
+static inline bool
+ipa_is_param_used (struct ipa_node_params *info, int i)
+{
+  return info->params[i].used;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
@@ -489,7 +500,6 @@ void ipa_dump_param_adjustments (FILE *, ipa_parm_adjustment_vec, tree);
 void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
-void lto_ipa_fixup_call_notes (struct cgraph_node *, gimple *);
 
 /* From tree-sra.c:  */
 bool build_ref_for_offset (tree *, tree, HOST_WIDE_INT, tree, bool);
