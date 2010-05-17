@@ -1,3 +1,9 @@
+2010-05-17  Dodji Seketeli  <dodji@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/44108
+	* decl.c (compute_array_index_type): Call mark_rvalue_use.
+
 2010-05-15  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (TYPE_NOEXCEPT_P): New macro.

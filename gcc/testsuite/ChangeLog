@@ -1,3 +1,9 @@
+2010-05-17  Dodji Seketeli  <dodji@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/44108
+	* c-c++-common/Wunused-var-8.c: New test.
+
 2010-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/42347
