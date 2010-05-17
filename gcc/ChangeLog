@@ -1,5 +1,10 @@
 2010-05-16  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_versionable_function_p): Walk cgraph edges instead of
+	function body; do not check stdarg field of struct function.
+
+2010-05-16  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (dump_cgraph_node): Dump versionable flag.
 	* cgraph.h (cgraph_local_info): Add versionable flag.
 	* ipa-cp.c (ipcp_analyze_node): Set versionable flag.
