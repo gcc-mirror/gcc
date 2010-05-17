@@ -84,7 +84,6 @@ lto_materialize_function (struct cgraph_node *node)
   struct lto_file_decl_data *file_data;
   const char *data, *name;
   size_t len;
-  tree step;
 
   /* Ignore clone nodes.  Read the body only from the original one.
      We may find clone nodes during LTRANS after WPA has made inlining
@@ -103,46 +102,33 @@ lto_materialize_function (struct cgraph_node *node)
 			       name, &len);
   if (data)
     {
-      struct function *fn;
-
       gcc_assert (!DECL_IS_BUILTIN (decl));
 
       /* This function has a definition.  */
       TREE_STATIC (decl) = 1;
 
       gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
-      allocate_struct_function (decl, false);
 
       /* Load the function body only if not operating in WPA mode.  In
 	 WPA mode, the body of the function is not needed.  */
       if (!flag_wpa)
 	{
+         allocate_struct_function (decl, false);
+	  announce_function (node->decl);
 	  lto_input_function_body (file_data, decl, data);
 	  lto_stats.num_function_bodies++;
 	}
 
-      fn = DECL_STRUCT_FUNCTION (decl);
       lto_free_section_data (file_data, LTO_section_function_body, name,
 			     data, len);
-
-      /* Look for initializers of constant variables and private
-	 statics.  */
-      for (step = fn->local_decls; step; step = TREE_CHAIN (step))
-	{
-	  tree decl = TREE_VALUE (step);
-	  if (TREE_CODE (decl) == VAR_DECL
-	      && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-	      && flag_unit_at_a_time)
-	    varpool_finalize_decl (decl);
-	}
+      if (!flag_wpa)
+	ggc_collect ();
     }
   else
     DECL_EXTERNAL (decl) = 1;
 
   /* Let the middle end know about the function.  */
   rest_of_decl_compilation (decl, 1, 0);
-  if (cgraph_node (decl)->needed)
-    cgraph_mark_reachable_node (cgraph_node (decl));
 }
 
 
@@ -1686,7 +1672,6 @@ materialize_cgraph (void)
       if (node->local.lto_file_data
           && !DECL_IS_BUILTIN (node->decl))
 	{
-	  announce_function (node->decl);
 	  lto_materialize_function (node);
 	  lto_stats.num_input_cgraph_nodes++;
 	}
