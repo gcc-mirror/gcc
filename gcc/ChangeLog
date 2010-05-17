@@ -1,3 +1,13 @@
+2010-05-17  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Delete
+	unnecessary prototype.  Replace copy_r12 and copy_r11 flag params
+	with copy_reg rtx param.
+	(rs6000_emit_prologue): Update rs6000_emit_allocate_stack calls.
+	Correct cases where code for ABI_V4 did not initialise the reg
+	used to access frame.  Also leave frame_reg_rtx as sp for large
+	frames that save no regs.
+
 2010-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44085
