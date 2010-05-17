@@ -1,3 +1,52 @@
+2010-05-17  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_indirect_call_info): New fields anc_offset,
+	otr_token and polymorphic.
+	* cgraph.c (cgraph_create_indirect_edge): Inilialize the above fields.
+	(cgraph_clone_edge): Copy the above fields.
+	* tree.c (get_binfo_at_offset): New function.
+	* tree.h (get_binfo_at_offset): Declare.
+	* ipa-prop.h (enum jump_func_type): Added known_type jump function
+	type, reordered items, updated comments.
+	(union jump_func_value): Added base_type field, reordered fields.
+	(enum ipa_lattice_type): Moved down in the file.
+	(struct ipa_param_descriptor): New field polymorphic.
+	(ipa_is_param_polymorphic): New function.
+	* ipa-prop.c: Include gimple.h and gimple-fold.h.
+	(ipa_print_node_jump_functions): Print known type jump functions.
+	(compute_complex_pass_through): Renamed to...
+	(compute_complex_assign_jump_func): this.
+	(compute_complex_ancestor_jump_func): New function.
+	(compute_known_type_jump_func): Likewise.
+	(compute_scalar_jump_functions): Create known type and complex ancestor
+	jump functions.
+	(ipa_note_param_call): New parameter polymorphic, set the corresponding
+	flag in the call note accordingly.
+	(ipa_analyze_call_uses): Renamed to...
+	(ipa_analyze_indirect_call_uses): this.  New parameter target, define
+	variable var only in the block where it is used.
+	(ipa_analyze_virtual_call_uses): New function.
+	(ipa_analyze_call_uses): Likewise.
+	(combine_known_type_and_ancestor_jfs): Likewise.
+	(update_jump_functions_after_inlining): Implemented handling of a
+	number of new jump function types combination.
+	(print_edge_addition_message): Removed.
+	(make_edge_direct_to_target): New function.
+	(try_make_edge_direct_simple_call): Likewise.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(update_call_notes_after_inlining): Renamed to...
+	(update_indirect_edges_after_inlining): this.  Moved edge creation for
+	indirect calls to try_make_edge_direct_simple_call, also calls
+	try_make_edge_direct_virtual_call for virtual calls.
+	(ipa_print_node_params): Changed the header message.
+	(ipa_write_jump_function): Stream also known type jump functions.
+	(ipa_read_jump_function): Likewise.
+	(ipa_write_indirect_edge_info): Stream new fields in
+	cgraph_indirect_call_info.
+	(ipa_read_indirect_edge_info): Likewise.
+	* Makefile.in (ipa-prop.o): Add dependency to GIMPLE_H and
+	GIMPLE_FOLD_H.
+
 2010-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (TARGET_SUN_TLS): Remove duplicate definition.

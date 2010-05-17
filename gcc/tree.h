@@ -5073,6 +5073,8 @@ extern location_t tree_nonartificial_location (tree);
 
 extern tree block_ultimate_origin (const_tree);
 
+extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
+
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);
 

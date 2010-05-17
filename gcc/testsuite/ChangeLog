@@ -1,3 +1,12 @@
+2010-05-17  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/ivinline-1.C: New test.
+	* g++.dg/ipa/ivinline-2.C: New test.
+	* g++.dg/ipa/ivinline-3.C: New test.
+	* g++.dg/ipa/ivinline-4.C: New test.
+	* g++.dg/ipa/ivinline-5.C: New test.
+	* g++.dg/ipa/ivinline-6.C: New test.
+
 2010-05-17  Dodji Seketeli  <dodji@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
