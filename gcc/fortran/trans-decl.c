@@ -4196,6 +4196,7 @@ create_main_function (tree fndecl)
      language standard parameters.  */
   {
     tree array_type, array, var;
+    VEC(constructor_elt,gc) *v = NULL;
 
     /* Passing a new option to the library requires four modifications:
      + add it to the tree_cons list below
@@ -4204,28 +4205,34 @@ create_main_function (tree fndecl)
             gfor_fndecl_set_options
           + modify the library (runtime/compile_options.c)!  */
 
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.warn_std), NULL_TREE);
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.allow_std), array);
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node, pedantic),
-		       array);
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.flag_dump_core), array);
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.flag_backtrace), array);
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.flag_sign_zero), array);
-
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)), array);
-
-    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
-		       gfc_option.flag_range_check), array);
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.warn_std));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.allow_std));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node, pedantic));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.flag_dump_core));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.flag_backtrace));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.flag_sign_zero));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           (gfc_option.rtcheck
+                                            & GFC_RTCHECK_BOUNDS)));
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node,
+                                           gfc_option.flag_range_check));
 
     array_type = build_array_type (integer_type_node,
 		       build_index_type (build_int_cst (NULL_TREE, 7)));
-    array = build_constructor_from_list (array_type, nreverse (array));
+    array = build_constructor (array_type, v);
     TREE_CONSTANT (array) = 1;
     TREE_STATIC (array) = 1;
 

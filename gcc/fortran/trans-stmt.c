@@ -1593,12 +1593,13 @@ gfc_trans_logical_select (gfc_code * code)
 static tree
 gfc_trans_character_select (gfc_code *code)
 {
-  tree init, node, end_label, tmp, type, case_num, label, fndecl;
+  tree init, end_label, tmp, type, case_num, label, fndecl;
   stmtblock_t block, body;
   gfc_case *cp, *d;
   gfc_code *c;
   gfc_se se;
   int n, k;
+  VEC(constructor_elt,gc) *inits = NULL;
 
   /* The jump table types are stored in static variables to avoid
      constructing them from scratch every single time.  */
@@ -1678,52 +1679,50 @@ gfc_trans_character_select (gfc_code *code)
     }
 
   /* Generate the structure describing the branches */
-  init = NULL_TREE;
-
   for(d = cp; d; d = d->right)
     {
-      node = NULL_TREE;
+      VEC(constructor_elt,gc) *node = NULL;
 
       gfc_init_se (&se, NULL);
 
       if (d->low == NULL)
         {
-          node = tree_cons (ss_string1[k], null_pointer_node, node);
-          node = tree_cons (ss_string1_len[k], integer_zero_node, node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string1[k], null_pointer_node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string1_len[k], integer_zero_node);
         }
       else
         {
           gfc_conv_expr_reference (&se, d->low);
 
-          node = tree_cons (ss_string1[k], se.expr, node);
-          node = tree_cons (ss_string1_len[k], se.string_length, node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string1[k], se.expr);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string1_len[k], se.string_length);
         }
 
       if (d->high == NULL)
         {
-          node = tree_cons (ss_string2[k], null_pointer_node, node);
-          node = tree_cons (ss_string2_len[k], integer_zero_node, node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string2[k], null_pointer_node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string2_len[k], integer_zero_node);
         }
       else
         {
           gfc_init_se (&se, NULL);
           gfc_conv_expr_reference (&se, d->high);
 
-          node = tree_cons (ss_string2[k], se.expr, node);
-          node = tree_cons (ss_string2_len[k], se.string_length, node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string2[k], se.expr);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string2_len[k], se.string_length);
         }
 
-      node = tree_cons (ss_target[k], build_int_cst (integer_type_node, d->n),
-			node);
+      CONSTRUCTOR_APPEND_ELT (node, ss_target[k],
+                              build_int_cst (integer_type_node, d->n));
 
-      tmp = build_constructor_from_list (select_struct[k], nreverse (node));
-      init = tree_cons (NULL_TREE, tmp, init);
+      tmp = build_constructor (select_struct[k], node);
+      CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, tmp);
     }
 
   type = build_array_type (select_struct[k],
 			   build_index_type (build_int_cst (NULL_TREE, n-1)));
 
-  init = build_constructor_from_list (type, nreverse(init));
+  init = build_constructor (type, inits);
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
   /* Create a static variable to hold the jump table.  */

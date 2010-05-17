@@ -1,3 +1,11 @@
+2010-05-17  Nathan Froyd  <froydnj@cs.rice.edu>
+
+	* trans-array.c (gfc_trans_array_constructor_value): Use
+	build_constructor instead of build_constructor_from_list.
+	(gfc_build_constant_array_constructor): Likewise.
+	* trans-decl.c (create_main_function): Likewise.
+	* trans-stmt.c (gfc_trans_character_select): Likewise.
+
 2010-05-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44044

@@ -1308,14 +1308,13 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  else
 	    {
 	      /* Collect multiple scalar constants into a constructor.  */
-	      tree list;
+	      VEC(constructor_elt,gc) *v = NULL;
 	      tree init;
 	      tree bound;
 	      tree tmptype;
 	      HOST_WIDE_INT idx = 0;
 
 	      p = c;
-	      list = NULL_TREE;
               /* Count the number of consecutive scalar constants.  */
 	      while (p && !(p->iterator
 			    || p->expr->expr_type != EXPR_CONSTANT))
@@ -1332,8 +1331,10 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 				(gfc_get_pchar_type (p->expr->ts.kind),
 				 se.expr);
 
-		  list = tree_cons (build_int_cst (gfc_array_index_type,
-						   idx++), se.expr, list);
+                  CONSTRUCTOR_APPEND_ELT (v,
+                                          build_int_cst (gfc_array_index_type,
+                                                         idx++),
+                                          se.expr);
 		  c = p;
 		  p = gfc_constructor_next (p);
 		}
@@ -1344,7 +1345,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 					  gfc_index_zero_node, bound);
 	      tmptype = build_array_type (type, tmptype);
 
-	      init = build_constructor_from_list (tmptype, nreverse (list));
+	      init = build_constructor (tmptype, v);
 	      TREE_CONSTANT (init) = 1;
 	      TREE_STATIC (init) = 1;
 	      /* Create a static variable to hold the data.  */
@@ -1671,17 +1672,17 @@ gfc_constant_array_constructor_p (gfc_constructor_base base)
 tree
 gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 {
-  tree tmptype, list, init, tmp;
+  tree tmptype, init, tmp;
   HOST_WIDE_INT nelem;
   gfc_constructor *c;
   gfc_array_spec as;
   gfc_se se;
   int i;
+  VEC(constructor_elt,gc) *v = NULL;
 
   /* First traverse the constructor list, converting the constants
      to tree to build an initializer.  */
   nelem = 0;
-  list = NULL_TREE;
   c = gfc_constructor_first (expr->value.constructor);
   while (c)
     {
@@ -1692,8 +1693,8 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
       else if (POINTER_TYPE_P (type))
 	se.expr = gfc_build_addr_expr (gfc_get_pchar_type (c->expr->ts.kind),
 				       se.expr);
-      list = tree_cons (build_int_cst (gfc_array_index_type, nelem),
-			se.expr, list);
+      CONSTRUCTOR_APPEND_ELT (v, build_int_cst (gfc_array_index_type, nelem),
+                              se.expr);
       c = gfc_constructor_next (c);
       nelem++;
     }
@@ -1723,7 +1724,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 
   tmptype = gfc_get_nodesc_array_type (type, &as, PACKED_STATIC, true);
 
-  init = build_constructor_from_list (tmptype, nreverse (list));
+  init = build_constructor (tmptype, v);
 
   TREE_CONSTANT (init) = 1;
   TREE_STATIC (init) = 1;
