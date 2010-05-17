@@ -1,5 +1,10 @@
 2010-05-18  Jan Hubicka  <jh@suse.cz>
 
+	* lto/lto.c (lto_1_to_1_map): Partition non-inline clones.
+	(lto_promote_cross_file_statics): Deal with non-inline clones.
+
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (lto_materialize_function): Announce function when
 	reading body; allocate_struct_function only when reading body;
 	do not finalize local statics; ggc_collect after reading;

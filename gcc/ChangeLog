@@ -1,5 +1,12 @@
 2010-05-17  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_create_virtual_clone): Only check
+	versionable_function_p when not in wpa and checking is enabled.
+	* cgraphunit.c (cgraph_materialize_all_clones): Stabilize after
+	there are no more functions to materialize.
+
+2010-05-17  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (struct ipa_replace_map): Add parm_num parameter.
 	* lto-cgraph.c (output_cgraph_opt_summary, input_cgraph_opt_summary):
 	New functions.

@@ -2425,9 +2425,8 @@ cgraph_materialize_all_clones (void)
 			}
 		    }
 		  cgraph_materialize_clone (node);
+		  stabilized = false;
 	        }
-	      else
-		stabilized = false;
 	    }
 	}
     }

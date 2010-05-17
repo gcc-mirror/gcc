@@ -2184,7 +2184,10 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   size_t i;
   struct ipa_replace_map *map;
 
-  gcc_assert  (tree_versionable_function_p (old_decl));
+#ifdef ENABLE_CHECKING
+  if (!flag_wpa)
+    gcc_assert  (tree_versionable_function_p (old_decl));
+#endif
 
   /* Make a new FUNCTION_DECL tree node */
   if (!args_to_skip)
