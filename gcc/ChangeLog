@@ -1,3 +1,9 @@
+2010-05-17  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* tree-ssa-loop-prefetch.c (PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO): New.
+	(schedule_prefetches): Do not generate a prefetch if the unroll factor
+	is far from what is required by the prefetch.
+
 2010-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_update_callgraph): Use ipa_is_param_used.
