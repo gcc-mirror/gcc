@@ -2127,7 +2127,9 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
      statements using the statement UIDs.  */
   output_cgraph (set, vset);
 
+#ifdef ENABLE_CHECKING
   lto_bitmap_free (output);
+#endif
 }
 
 struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
