@@ -1,3 +1,14 @@
+2010-05-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/44133
+	* tree-sra.c (create_access_replacement): New parameter rename, mark
+	the replaement for renaming only when it is true.
+	(get_access_replacement): Pass true in the rename parameter of
+	create_access_replacement.
+	(get_unrenamed_access_replacement): New function.
+	(replace_uses_with_default_def_ssa_name): New parameter racc, get the
+	replacement declaration from it.
+
 2010-05-17  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (try_fit_stack_local, add_frame_space): New static
