@@ -47,6 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcov-io.h"
 
 static void output_varpool (cgraph_node_set, varpool_node_set);
+static void output_cgraph_opt_summary (void);
+static void input_cgraph_opt_summary (VEC (cgraph_node_ptr, heap) * nodes);
+
 
 /* Cgraph streaming is organized as set of record whose type
    is indicated by a tag.  */
@@ -840,6 +843,9 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   lto_varpool_encoder_t varpool_encoder;
   struct cgraph_asm_node *can;
 
+  if (flag_wpa)
+    output_cgraph_opt_summary ();
+
   ob = lto_create_simple_output_block (LTO_section_cgraph);
 
   output_profile_summary (ob);
@@ -1403,6 +1409,8 @@ input_cgraph (void)
       input_refs (ib, nodes, varpool);
       lto_destroy_simple_input_block (file_data, LTO_section_refs,
 				      ib, data, len);
+      if (flag_ltrans)
+	input_cgraph_opt_summary (nodes);
       VEC_free (cgraph_node_ptr, heap, nodes);
       VEC_free (varpool_node_ptr, heap, varpool);
     }
@@ -1418,5 +1426,199 @@ input_cgraph (void)
 	 context of the nested function.  */
       if (node->local.lto_file_data)
 	node->aux = NULL;
+    }
+}
+
+/* True when we need optimization summary for NODE.  */
+
+static int
+output_cgraph_opt_summary_p (struct cgraph_node *node)
+{
+  if (!node->clone_of)
+    return false;
+  return (node->clone.tree_map
+          || node->clone.args_to_skip
+          || node->clone.combined_args_to_skip);
+}
+
+/* Output optimization summary for NODE to OB.  */
+
+static void
+output_node_opt_summary (struct output_block *ob,
+			 struct cgraph_node *node)
+{
+  unsigned int index;
+  bitmap_iterator bi;
+  struct ipa_replace_map *map;
+  struct bitpack_d *bp;
+  int i;
+
+  lto_output_uleb128_stream (ob->main_stream,
+			     bitmap_count_bits (node->clone.args_to_skip));
+  EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
+    lto_output_uleb128_stream (ob->main_stream, index);
+  lto_output_uleb128_stream (ob->main_stream,
+			     bitmap_count_bits (node->clone.combined_args_to_skip));
+  EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
+    lto_output_uleb128_stream (ob->main_stream, index);
+  lto_output_uleb128_stream (ob->main_stream,
+		             VEC_length (ipa_replace_map_p, node->clone.tree_map));
+  for (i = 0; VEC_iterate (ipa_replace_map_p, node->clone.tree_map, i, map); i++)
+    {
+      int parm_num;
+      tree parm;
+
+      for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm;
+	   parm = TREE_CHAIN (parm), parm_num++)
+	if (map->old_tree == parm)
+	  break;
+      /* At the moment we assume all old trees to be PARM_DECLs, because we have no
+         mechanism to store function local declarations into summaries.  */
+      gcc_assert (parm);
+      lto_output_uleb128_stream (ob->main_stream, parm_num);
+      lto_output_tree (ob, map->new_tree, true);
+      bp = bitpack_create ();
+      bp_pack_value (bp, map->replace_p, 1);
+      bp_pack_value (bp, map->ref_p, 1);
+      lto_output_bitpack (ob->main_stream, bp);
+      bitpack_delete (bp);
+    }
+}
+
+/* Output optimization summaries stored in callgraph.
+   At the moment it is the clone info structure.  */
+
+static void
+output_cgraph_opt_summary (void)
+{
+  struct cgraph_node *node;
+  int i, n_nodes;
+  lto_cgraph_encoder_t encoder;
+  struct output_block *ob = create_output_block (LTO_section_cgraph_opt_sum);
+  unsigned count = 0;
+
+  ob->cgraph_node = NULL;
+  encoder = ob->decl_state->cgraph_node_encoder;
+  n_nodes = lto_cgraph_encoder_size (encoder);
+  for (i = 0; i < n_nodes; i++)
+    if (output_cgraph_opt_summary_p (lto_cgraph_encoder_deref (encoder, i)))
+      count++;
+  lto_output_uleb128_stream (ob->main_stream, count);
+  for (i = 0; i < n_nodes; i++)
+    {
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (output_cgraph_opt_summary_p (node))
+	{
+	  lto_output_uleb128_stream (ob->main_stream, i);
+	  output_node_opt_summary (ob, node);
+	}
+    }
+  produce_asm (ob, NULL);
+  destroy_output_block (ob);
+}
+
+/* Input optimiation summary of NODE.  */
+
+static void
+input_node_opt_summary (struct cgraph_node *node,
+			struct lto_input_block *ib_main,
+			struct data_in *data_in)
+{
+  int i;
+  int count;
+  int bit;
+  struct bitpack_d *bp;
+
+  count = lto_input_uleb128 (ib_main);
+  if (count)
+    node->clone.args_to_skip = BITMAP_GGC_ALLOC ();
+  for (i = 0; i < count; i++)
+    {
+      bit = lto_input_uleb128 (ib_main);
+      bitmap_set_bit (node->clone.args_to_skip, bit);
+    }
+  count = lto_input_uleb128 (ib_main);
+  if (count)
+    node->clone.combined_args_to_skip = BITMAP_GGC_ALLOC ();
+  for (i = 0; i < count; i++)
+    {
+      bit = lto_input_uleb128 (ib_main);
+      bitmap_set_bit (node->clone.combined_args_to_skip, bit);
+    }
+  count = lto_input_uleb128 (ib_main);
+  for (i = 0; i < count; i++)
+    {
+      int parm_num;
+      tree parm;
+      struct ipa_replace_map *map = GGC_NEW (struct ipa_replace_map);
+
+      VEC_safe_push (ipa_replace_map_p, gc, node->clone.tree_map, map);
+      for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm_num;
+	   parm = TREE_CHAIN (parm))
+	parm_num --;
+      map->parm_num = lto_input_uleb128 (ib_main);
+      map->old_tree = NULL;
+      map->new_tree = lto_input_tree (ib_main, data_in);
+      bp = lto_input_bitpack (ib_main);
+      map->replace_p = bp_unpack_value (bp, 1);
+      map->ref_p = bp_unpack_value (bp, 1);
+      bitpack_delete (bp);
+    }
+}
+
+/* Read section in file FILE_DATA of length LEN with data DATA.  */
+
+static void
+input_cgraph_opt_section (struct lto_file_decl_data *file_data,
+			  const char *data, size_t len, VEC (cgraph_node_ptr,
+							     heap) * nodes)
+{
+  const struct lto_function_header *header =
+    (const struct lto_function_header *) data;
+  const int32_t cfg_offset = sizeof (struct lto_function_header);
+  const int32_t main_offset = cfg_offset + header->cfg_size;
+  const int32_t string_offset = main_offset + header->main_size;
+  struct data_in *data_in;
+  struct lto_input_block ib_main;
+  unsigned int i;
+  unsigned int count;
+
+  LTO_INIT_INPUT_BLOCK (ib_main, (const char *) data + main_offset, 0,
+			header->main_size);
+
+  data_in =
+    lto_data_in_create (file_data, (const char *) data + string_offset,
+			header->string_size, NULL);
+  count = lto_input_uleb128 (&ib_main);
+
+  for (i = 0; i < count; i++)
+    {
+      int ref = lto_input_uleb128 (&ib_main);
+      input_node_opt_summary (VEC_index (cgraph_node_ptr, nodes, ref),
+			      &ib_main, data_in);
+    }
+  lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
+			 len);
+  lto_data_in_delete (data_in);
+}
+
+/* Input optimization summary of cgraph.  */
+
+static void
+input_cgraph_opt_summary (VEC (cgraph_node_ptr, heap) * nodes)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      size_t len;
+      const char *data =
+	lto_get_section_data (file_data, LTO_section_cgraph_opt_sum, NULL,
+			      &len);
+
+      if (data)
+	input_cgraph_opt_section (file_data, data, len, nodes);
     }
 }

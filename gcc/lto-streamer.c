@@ -178,6 +178,9 @@ lto_get_section_name (int section_type, const char *name)
     case LTO_section_opts:
       return concat (LTO_SECTION_NAME_PREFIX, ".opts", NULL);
 
+    case LTO_section_cgraph_opt_sum:
+      return concat (LTO_SECTION_NAME_PREFIX, ".cgraphopt", NULL);
+
     default:
       internal_error ("bytecode stream: unexpected LTO section %s", name);
     }

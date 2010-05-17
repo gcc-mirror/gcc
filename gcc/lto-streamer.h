@@ -264,6 +264,7 @@ enum lto_section_type
   LTO_section_ipa_reference,
   LTO_section_symtab,
   LTO_section_opts,
+  LTO_section_cgraph_opt_sum,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 

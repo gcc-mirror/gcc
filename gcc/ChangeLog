@@ -1,3 +1,17 @@
+2010-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (struct ipa_replace_map): Add parm_num parameter.
+	* lto-cgraph.c (output_cgraph_opt_summary, input_cgraph_opt_summary):
+	New functions.
+	(output_cgraph): Call output_cgraph_opt_summary.
+	(input_cgrpah): Call input_cgraph_opt_summary.
+	(output_cgraph_opt_summary_p, output_node_opt_summary,
+	input_node_opt_summary, input_cgraph_opt_section): New functions.
+	* lto-section-in.c (lto_section_name): Add cgraphopt.
+	* tree-inline.c (tree_function_versioning): Handle parm_num.
+	* lto-streamer.c (lto_get_section_name): Handle cgraphopt.
+	* lto-streamer.h (lto_section_type): Add LTO_section_cgraph_opt_sum.
+
 2010-05-17  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* doc/invoke.texi: Update documentation for min-insn-to-prefetch-ratio.

@@ -157,6 +157,8 @@ struct GTY(()) ipa_replace_map
   tree old_tree;
   /* The new (replacing) tree.  */
   tree new_tree;
+  /* Parameter number to replace, when old_tree is NULL.  */
+  int parm_num;
   /* True when a substitution should be done, false otherwise.  */
   bool replace_p;
   /* True when we replace a reference to old_tree.  */
