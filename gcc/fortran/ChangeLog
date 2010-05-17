@@ -15,7 +15,7 @@
 	(DEF_FUNCTION_TYPE_7): Likewise.  Use ARG7.
 	(DEF_FUNCTION_TYPE_VAR_0): Use build_varags_function_type_list.
  
-2010-05-17  Nathan Froyd  <froydnj@cs.rice.edu>
+2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-array.c (gfc_trans_array_constructor_value): Use
 	build_constructor instead of build_constructor_from_list.
