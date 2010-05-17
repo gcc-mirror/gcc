@@ -211,6 +211,29 @@ visit_store_addr_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
       int index = ipa_get_param_decl_index (info, op);
       gcc_assert (index >= 0);
       info->params[index].modified = true;
+      info->params[index].used = true;
+    }
+
+  return false;
+}
+
+/* Callback of walk_stmt_load_store_addr_ops for the visit_load.
+   If OP is a parameter declaration, mark it as used in the info structure
+   passed in DATA.  */
+
+static bool
+visit_load_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
+			     tree op, void *data)
+{
+  struct ipa_node_params *info = (struct ipa_node_params *) data;
+
+  op = get_base_address (op);
+  if (op
+      && TREE_CODE (op) == PARM_DECL)
+    {
+      int index = ipa_get_param_decl_index (info, op);
+      gcc_assert (index >= 0);
+      info->params[index].used = true;
     }
 
   return false;
@@ -229,14 +252,26 @@ ipa_detect_param_modifications (struct cgraph_node *node)
   struct function *func;
   gimple_stmt_iterator gsi;
   struct ipa_node_params *info = IPA_NODE_REF (node);
+  int i;
 
   if (ipa_get_param_count (info) == 0 || info->modification_analysis_done)
     return;
 
+  for (i = 0; i < ipa_get_param_count (info); i++)
+    {
+      tree parm = ipa_get_param (info, i);
+      /* For SSA regs see if parameter is used.  For non-SSA we compute
+	 the flag during modification analysis.  */
+      if (is_gimple_reg (parm)
+	  && gimple_default_def (DECL_STRUCT_FUNCTION (node->decl), parm))
+	info->params[i].used = true;
+    }
+
   func = DECL_STRUCT_FUNCTION (decl);
   FOR_EACH_BB_FN (bb, func)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info, NULL,
+      walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
+				     visit_load_for_mod_analysis,
 				     visit_store_addr_for_mod_analysis,
 				     visit_store_addr_for_mod_analysis);
 
@@ -1747,6 +1782,8 @@ ipa_print_node_params (FILE * f, struct cgraph_node *node)
                   : "(unnamed)"));
       if (ipa_is_param_modified (info, i))
 	fprintf (f, " modified");
+      if (ipa_is_param_used (info, i))
+	fprintf (f, " used");
       fprintf (f, "\n");
     }
 }
@@ -2361,7 +2398,10 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    bp_pack_value (bp, info->params[j].modified, 1);
+    {
+      bp_pack_value (bp, info->params[j].modified, 1);
+      bp_pack_value (bp, info->params[j].used, 1);
+    }
   lto_output_bitpack (ob->main_stream, bp);
   bitpack_delete (bp);
   for (e = node->callees; e; e = e->next_callee)
@@ -2400,7 +2440,10 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     }
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
-    info->params[k].modified = bp_unpack_value (bp, 1);
+    {
+      info->params[k].modified = bp_unpack_value (bp, 1);
+      info->params[k].used = bp_unpack_value (bp, 1);
+    }
   bitpack_delete (bp);
   for (e = node->callees; e; e = e->next_callee)
     {
