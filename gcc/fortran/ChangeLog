@@ -1,3 +1,20 @@
+2010-05-17  Nathan Froyd  <froydnj@codesourcery.com
+
+	* trans-types.c (gfc_init_types): Use build_function_type_list.
+	(gfc_get_ppc_type): Likewise.
+	* trans-decl.c (gfc_generate_constructors): Likewise.
+	* f95-lang.c (build_builtin_fntypes): Likewise.
+	(gfc_init_builtin_functions): Likewise.
+	(DEF_FUNCTION_TYPE_0): Likewise.
+	(DEF_FUNCTION_TYPE_1): Likewise.
+	(DEF_FUNCTION_TYPE_2): Likewise.
+	(DEF_FUNCTION_TYPE_3): Likewise.
+	(DEF_FUNCTION_TYPE_4): Likewise.
+	(DEF_FUNCTION_TYPE_5): Likewise.
+	(DEF_FUNCTION_TYPE_6): Likewise.
+	(DEF_FUNCTION_TYPE_7): Likewise.  Use ARG7.
+	(DEF_FUNCTION_TYPE_VAR_0): Use build_varags_function_type_list.
+ 
 2010-05-17  Nathan Froyd  <froydnj@cs.rice.edu>
 
 	* trans-array.c (gfc_trans_array_constructor_value): Use

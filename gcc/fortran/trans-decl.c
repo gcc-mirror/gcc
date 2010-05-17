@@ -4633,8 +4633,7 @@ gfc_generate_constructors (void)
     return;
 
   fnname = get_file_function_name ("I");
-  type = build_function_type (void_type_node,
-			      gfc_chainon_list (NULL_TREE, void_type_node));
+  type = build_function_type_list (void_type_node, NULL_TREE);
 
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, fnname, type);

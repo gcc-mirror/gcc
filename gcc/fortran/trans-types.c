@@ -870,7 +870,7 @@ gfc_init_types (void)
   ppvoid_type_node = build_pointer_type (pvoid_type_node);
   pchar_type_node = build_pointer_type (gfc_character1_type_node);
   pfunc_type_node
-    = build_pointer_type (build_function_type (void_type_node, NULL_TREE));
+    = build_pointer_type (build_function_type_list (void_type_node, NULL_TREE));
 
   gfc_array_index_type = gfc_get_int_type (gfc_index_integer_kind);
   /* We cannot use gfc_index_zero_node in definition of gfc_array_range_type,
@@ -1934,7 +1934,7 @@ gfc_get_ppc_type (gfc_component* c)
   else
     t = void_type_node;
 
-  return build_pointer_type (build_function_type (t, NULL_TREE));
+  return build_pointer_type (build_function_type_list (t, NULL_TREE));
 }
 
 
