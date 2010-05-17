@@ -7369,6 +7369,8 @@ compute_array_index_type (tree name, tree size)
   /* The size might be the result of a cast.  */
   STRIP_TYPE_NOPS (size);
 
+  size = mark_rvalue_use (size);
+
   /* It might be a const variable or enumeration constant.  */
   size = integral_constant_value (size);
   if (error_operand_p (size))
