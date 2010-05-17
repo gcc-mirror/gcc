@@ -96,11 +96,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_SUN_TLS
 #define TARGET_SUN_TLS 1
 
-/* Follow Sun requirements for TLS code sequences and use Sun assembler TLS
-   syntax.  */
-#undef TARGET_SUN_TLS
-#define TARGET_SUN_TLS 1
-
 /* The Sun assembler uses .tcomm for TLS common sections.  */
 #define TLS_COMMON_ASM_OP ".tcomm"
 
