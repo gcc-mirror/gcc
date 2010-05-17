@@ -9143,6 +9143,29 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	  return FAILURE;
 	 }
     }
+
+  /* Constraints on polymorphic variables.  */
+  if (sym->ts.type == BT_CLASS && !(sym->result && sym->result != sym))
+    {
+      /* F03:C502.  */
+      if (!gfc_type_is_extensible (sym->ts.u.derived->components->ts.u.derived))
+	{
+	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
+		     sym->ts.u.derived->components->ts.u.derived->name,
+		     sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+      /* F03:C509.  */
+      /* Assume that use associated symbols were checked in the module ns.  */ 
+      if (!sym->attr.class_ok && !sym->attr.use_assoc)
+	{
+	  gfc_error ("CLASS variable '%s' at %L must be dummy, allocatable "
+		     "or pointer", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+    
   return SUCCESS;
 }
 
@@ -9193,27 +9216,6 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 			 "the default initialization", sym->name,
 			 &sym->declared_at) == FAILURE)
     return FAILURE;
-
-  if (sym->ts.type == BT_CLASS)
-    {
-      /* C502.  */
-      if (!gfc_type_is_extensible (sym->ts.u.derived->components->ts.u.derived))
-	{
-	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
-		     sym->ts.u.derived->components->ts.u.derived->name,
-		     sym->name, &sym->declared_at);
-	  return FAILURE;
-	}
-
-      /* C509.  */
-      /* Assume that use associated symbols were checked in the module ns.  */ 
-      if (!sym->attr.class_ok && !sym->attr.use_assoc)
-	{
-	  gfc_error ("CLASS variable '%s' at %L must be dummy, allocatable "
-		     "or pointer", sym->name, &sym->declared_at);
-	  return FAILURE;
-	}
-    }
 
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
@@ -11130,6 +11132,10 @@ resolve_symbol (gfc_symbol *sym)
   gfc_namespace *ns;
   gfc_component *c;
 
+  /* Avoid double resolution of function result symbols.  */
+  if ((sym->result || sym->attr.result) && (sym->ns != gfc_current_ns))
+    return;
+  
   if (sym->attr.flavor == FL_UNKNOWN)
     {
 
