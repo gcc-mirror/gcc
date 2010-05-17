@@ -225,6 +225,17 @@ struct mem_ref_group
 
 #define PREFETCH_ALL		(~(unsigned HOST_WIDE_INT) 0)
 
+/* Do not generate a prefetch if the unroll factor is significantly less
+   than what is required by the prefetch.  This is to avoid redundant
+   prefetches.  For example, if prefetch_mod is 16 and unroll_factor is
+   1, this means prefetching requires unrolling the loop 16 times, but
+   the loop is not going to be unrolled.  In this case (ratio = 16),
+   prefetching is not likely to be beneficial.  */
+
+#ifndef PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO
+#define PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO 8
+#endif
+
 /* The memory reference.  */
 
 struct mem_ref
@@ -920,6 +931,12 @@ schedule_prefetches (struct mem_ref_group *groups, unsigned unroll_factor,
       {
 	if (!should_issue_prefetch_p (ref))
 	  continue;
+
+        /* The loop is far from being sufficiently unrolled for this
+           prefetch.  Do not generate prefetch to avoid many redudant
+           prefetches.  */
+        if (ref->prefetch_mod / unroll_factor > PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO)
+          continue;
 
 	/* If we need to prefetch the reference each PREFETCH_MOD iterations,
 	   and we unroll the loop UNROLL_FACTOR times, we need to insert
