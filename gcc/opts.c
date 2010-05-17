@@ -616,24 +616,30 @@ handle_option (const char **argv, unsigned int lang_mask)
     {
       if (lang_hooks.handle_option (opt_index, arg, value) == 0)
 	result = 0;
+#ifdef ENABLE_LTO
       else
 	lto_register_user_option (opt_index, arg, value, lang_mask);
+#endif
     }
 
   if (result && (option->flags & CL_COMMON))
     {
       if (common_handle_option (opt_index, arg, value, lang_mask) == 0)
 	result = 0;
+#ifdef ENABLE_LTO
       else
 	lto_register_user_option (opt_index, arg, value, CL_COMMON);
+#endif
     }
 
   if (result && (option->flags & CL_TARGET))
     {
       if (!targetm.handle_option (opt_index, arg, value))
 	result = 0;
+#ifdef ENABLE_LTO
       else
 	lto_register_user_option (opt_index, arg, value, CL_TARGET);
+#endif
     }
 
  done:
@@ -961,8 +967,10 @@ decode_options (unsigned int argc, const char **argv)
       flag_unwind_tables = targetm.unwind_tables_default;
     }
 
+#ifdef ENABLE_LTO
   /* Clear any options currently held for LTO.  */
   lto_clear_user_options ();
+#endif
 
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */
