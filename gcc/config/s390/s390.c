@@ -1475,6 +1475,9 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
      without maintaining a stack frame back-chain.  */
   flag_asynchronous_unwind_tables = 1;
 
+  if (HAVE_prefetch || optimize >= 3)
+      flag_prefetch_loop_arrays = 1;
+
   /* Use MVCLE instructions to decrease code size if requested.  */
   if (size != 0)
     target_flags |= MASK_MVCLE;
@@ -1661,6 +1664,19 @@ override_options (void)
     }
 
   set_param_value ("max-pending-list-length", 256);
+  /* values for loop prefetching */
+  set_param_value ("l1-cache-line-size", 256);
+  if (!PARAM_SET_P (PARAM_L1_CACHE_SIZE))
+    set_param_value ("l1-cache-size", 128);
+  /* s390 has more than 2 levels and the size is much larger.  Since
+     we are always running virtualized assume that we only get a small
+     part of the caches above l1.  */
+  if (!PARAM_SET_P (PARAM_L2_CACHE_SIZE))
+    set_param_value ("l2-cache-size", 1500);
+  if (!PARAM_SET_P (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO))
+    set_param_value ("prefetch-min-insn-to-mem-ratio", 2);
+  if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
+    set_param_value ("simultaneous-prefetches", 6);
 }
 
 /* Map for smallest class containing reg regno.  */

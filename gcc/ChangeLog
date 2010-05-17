@@ -1,3 +1,9 @@
+2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+        * config/s390/s390.c: Define sane prefetch settings and activate
+        flag_prefetch_loop_arrays on -O3.
+        * config/s390/s390.h: Declare that read can use write prefetch.
+
 2010-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-streamer-out.c (lto_output): Fix --enable-checking=release

@@ -989,4 +989,6 @@ do {									\
   (TARGET_LONG_DISPLACEMENT? ((d) >= -524288 && (d) <= 524287) \
                            : ((d) >= 0 && (d) <= 4095))
 
+/* Reads can reuse write prefetches, used by tree-ssa-prefetch-loops.c.  */
+#define READ_CAN_USE_WRITE_PREFETCH 1
 #endif
