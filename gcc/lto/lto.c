@@ -537,9 +537,8 @@ lto_1_to_1_map (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      /* We will get proper partition based on function they are inlined to or
-	 cloned from.  */
-      if (node->global.inlined_to || node->clone_of)
+      /* We will get proper partition based on function they are inlined to.  */
+      if (node->global.inlined_to)
 	continue;
       /* Nodes without a body do not need partitioning.  */
       if (!node->analyzed)
@@ -721,7 +720,7 @@ lto_promote_cross_file_statics (void)
 	  struct cgraph_node *node = csi_node (csi);
 	  if (node->local.externally_visible)
 	    continue;
-	  if (node->clone_of || node->global.inlined_to)
+	  if (node->global.inlined_to)
 	    continue;
 	  if (!DECL_EXTERNAL (node->decl)
 	      && (referenced_from_other_partition_p (&node->ref_list, set, vset)
