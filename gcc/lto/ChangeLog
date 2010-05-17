@@ -1,3 +1,11 @@
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Announce function when
+	reading body; allocate_struct_function only when reading body;
+	do not finalize local statics; ggc_collect after reading;
+	do not mark reachable node.
+	(materialize_cgraph): Do not announce function.
+
 2010-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (materialize_cgraph): Revert my previous patch.
