@@ -1887,24 +1887,40 @@ try_optimize_cfg (int mode)
 		      && single_succ_edge (ENTRY_BLOCK_PTR)->dest != b))
 		{
 		  c = b->prev_bb;
-		  if ((mode & CLEANUP_CFGLAYOUT)
-		      && EDGE_COUNT (b->preds) > 0
-		      && b->il.rtl->footer
-		      && BARRIER_P (b->il.rtl->footer))
+		  if (EDGE_COUNT (b->preds) > 0)
 		    {
 		      edge e;
 		      edge_iterator ei;
 
-		      FOR_EACH_EDGE (e, ei, b->preds)
-			if (e->flags & EDGE_FALLTHRU)
-			  {
-			    if (e->src->il.rtl->footer == NULL)
-			      {
-				e->src->il.rtl->footer = b->il.rtl->footer;
-				b->il.rtl->footer = NULL;
-			      }
-			    break;
-			  }
+		      if (current_ir_type () == IR_RTL_CFGLAYOUT)
+			{
+			  if (b->il.rtl->footer
+			      && BARRIER_P (b->il.rtl->footer))
+			    FOR_EACH_EDGE (e, ei, b->preds)
+			      if ((e->flags & EDGE_FALLTHRU)
+				  && e->src->il.rtl->footer == NULL)
+				{
+				  if (b->il.rtl->footer)
+				    {
+				      e->src->il.rtl->footer = b->il.rtl->footer;
+				      b->il.rtl->footer = NULL;
+				    }
+				  else
+				    {
+				      start_sequence ();
+				      e->src->il.rtl->footer = emit_barrier ();
+				      end_sequence ();
+				    }
+				}
+			}
+		      else
+			{
+			  rtx last = get_last_bb_insn (b);
+			  if (last && BARRIER_P (last))
+			    FOR_EACH_EDGE (e, ei, b->preds)
+			      if ((e->flags & EDGE_FALLTHRU))
+				emit_barrier_after (BB_END (e->src));
+			}
 		    }
 		  delete_basic_block (b);
 		  if (!(mode & CLEANUP_CFGLAYOUT))

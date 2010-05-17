@@ -1,3 +1,9 @@
+2010-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/42347
+	* cfglayout.c (fixup_reorder_chain): Allow returnjump_p
+	to have no fallthru edge.
+
 2010-05-17  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Delete
