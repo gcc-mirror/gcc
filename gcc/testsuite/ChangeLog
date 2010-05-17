@@ -1,3 +1,9 @@
+2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+        PR 44078
+        * gcc.dg/tree-ssa/prefetch-7.c: Change pattern to match only the old
+        debug messages but not the newly introduced one.
+
 2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/35779
