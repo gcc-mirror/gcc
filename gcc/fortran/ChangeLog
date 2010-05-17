@@ -1,3 +1,11 @@
+2010-05-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44044
+	* resolve.c (resolve_fl_var_and_proc): Move error messages here from ...
+	(resolve_fl_variable_derived): ... this place.
+	(resolve_symbol): Make sure function symbols (and their result
+	variables) are not resolved twice.
+
 2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/35779

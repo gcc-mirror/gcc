@@ -1,3 +1,8 @@
+2010-05-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44044
+	* gfortran.dg/class_20.f03: New.
+
 2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
 
         PR 44078
