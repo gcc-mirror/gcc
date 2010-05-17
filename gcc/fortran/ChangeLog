@@ -1,3 +1,28 @@
+2010-05-17  Janus Weil  <janus@gcc.gnu.org>
+
+	* class.c (gfc_add_component_ref,gfc_class_null_initializer,
+	gfc_build_class_symbol,add_proc_component,add_proc_comps, 
+	add_procs_to_declared_vtab1,copy_vtab_proc_comps,
+	add_procs_to_declared_vtab,add_generic_specifics, 
+	add_generics_to_declared_vtab,gfc_find_derived_vtab,
+	find_typebound_proc_uop,gfc_find_typebound_proc,
+	gfc_find_typebound_user_op,gfc_find_typebound_intrinsic_op, 
+	gfc_get_tbp_symtree): Moved here from other places.
+	* expr.c (gfc_add_component_ref,gfc_class_null_initializer): Move to
+	class.c.
+	* gfortran.h (gfc_build_class_symbol,gfc_find_derived_vtab,
+	gfc_find_typebound_proc,gfc_find_typebound_user_op,
+	gfc_find_typebound_intrinsic_op,gfc_get_tbp_symtree,
+	gfc_add_component_ref, gfc_class_null_initializer): Moved to class.c.
+	* Make-lang.in: Add class.o.
+	* symbol.c (gfc_build_class_symbol,add_proc_component,add_proc_comps,
+	add_procs_to_declared_vtab1,copy_vtab_proc_comps,
+	add_procs_to_declared_vtab,add_generic_specifics,
+	add_generics_to_declared_vtab,gfc_find_derived_vtab,
+	find_typebound_proc_uop,gfc_find_typebound_proc,
+	gfc_find_typebound_user_op,gfc_find_typebound_intrinsic_op,
+	gfc_get_tbp_symtree): Move to class.c.
+
 2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-types.c (gfc_init_types): Use build_function_type_list.
