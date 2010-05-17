@@ -231,6 +231,17 @@ struct GTY(()) function_subsections {
   const char *unlikely_text_section_name;
 };
 
+/* Describe an empty area of space in the stack frame.  These can be chained
+   into a list; this is used to keep track of space wasted for alignment
+   reasons.  */
+struct GTY(()) frame_space
+{
+  struct frame_space *next;
+
+  HOST_WIDE_INT start;
+  HOST_WIDE_INT length;
+};
+
 /* Datastructures maintained for currently processed function in RTL form.  */
 struct GTY(()) rtl_data {
   struct expr_status expr;
@@ -277,6 +288,9 @@ struct GTY(()) rtl_data {
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
   rtx x_stack_slot_list;
+
+  /* List of empty areas in the stack frame.  */
+  struct frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
   rtx x_stack_check_probe_note;

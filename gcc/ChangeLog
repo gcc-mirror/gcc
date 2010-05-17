@@ -1,3 +1,15 @@
+2010-05-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* function.c (try_fit_stack_local, add_frame_space): New static
+	functions.
+	(assign_stack_local_1): Use them.  Look for opportunities to use
+	space previously wasted on alignment.
+	* function.h (struct frame_space): New.
+	(struct rtl_data): Add FRAME_SPACE_LIST member.
+	* reload1.c (something_was_spilled): New static variable.
+	(alter_reg): Set it.
+	(reload): Test it in addition to testing if the frame size changed.
+
 2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
 
         * config/s390/s390.c: Define sane prefetch settings and activate

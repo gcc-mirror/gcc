@@ -278,6 +278,75 @@ get_stack_local_alignment (tree type, enum machine_mode mode)
   return STACK_SLOT_ALIGNMENT (type, mode, alignment);
 }
 
+/* Determine whether it is possible to fit a stack slot of size SIZE and
+   alignment ALIGNMENT into an area in the stack frame that starts at
+   frame offset START and has a length of LENGTH.  If so, store the frame
+   offset to be used for the stack slot in *POFFSET and return true;
+   return false otherwise.  This function will extend the frame size when
+   given a start/length pair that lies at the end of the frame.  */
+
+static bool
+try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
+		     HOST_WIDE_INT size, unsigned int alignment,
+		     HOST_WIDE_INT *poffset)
+{
+  HOST_WIDE_INT this_frame_offset;
+  int frame_off, frame_alignment, frame_phase;
+
+  /* Calculate how many bytes the start of local variables is off from
+     stack alignment.  */
+  frame_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+  frame_off = STARTING_FRAME_OFFSET % frame_alignment;
+  frame_phase = frame_off ? frame_alignment - frame_off : 0;
+
+  /* Round the frame offset to the specified alignment.  */
+
+  /*  We must be careful here, since FRAME_OFFSET might be negative and
+      division with a negative dividend isn't as well defined as we might
+      like.  So we instead assume that ALIGNMENT is a power of two and
+      use logical operations which are unambiguous.  */
+  if (FRAME_GROWS_DOWNWARD)
+    this_frame_offset
+      = (FLOOR_ROUND (start + length - size - frame_phase,
+		      (unsigned HOST_WIDE_INT) alignment)
+	 + frame_phase);
+  else
+    this_frame_offset
+      = (CEIL_ROUND (start - frame_phase,
+		     (unsigned HOST_WIDE_INT) alignment)
+	 + frame_phase);
+
+  /* See if it fits.  If this space is at the edge of the frame,
+     consider extending the frame to make it fit.  Our caller relies on
+     this when allocating a new slot.  */
+  if (frame_offset == start && this_frame_offset < frame_offset)
+    frame_offset = this_frame_offset;
+  else if (this_frame_offset < start)
+    return false;
+  else if (start + length == frame_offset
+	   && this_frame_offset + size > start + length)
+    frame_offset = this_frame_offset + size;
+  else if (this_frame_offset + size > start + length)
+    return false;
+
+  *poffset = this_frame_offset;
+  return true;
+}
+
+/* Create a new frame_space structure describing free space in the stack
+   frame beginning at START and ending at END, and chain it into the
+   function's frame_space_list.  */
+
+static void
+add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
+{
+  struct frame_space *space = GGC_NEW (struct frame_space);
+  space->next = crtl->frame_space_list;
+  crtl->frame_space_list = space;
+  space->start = start;
+  space->length = end - start;
+}
+
 /* Allocate a stack slot of SIZE bytes and return a MEM rtx for it
    with machine mode MODE.
 
@@ -298,8 +367,8 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 {
   rtx x, addr;
   int bigend_correction = 0;
+  HOST_WIDE_INT slot_offset, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
-  int frame_off, frame_alignment, frame_phase;
 
   if (align == 0)
     {
@@ -317,9 +386,6 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
     alignment = align / BITS_PER_UNIT;
 
   alignment_in_bits = alignment * BITS_PER_UNIT;
-
-  if (FRAME_GROWS_DOWNWARD)
-    frame_offset -= size;
 
   /* Ignore alignment if it exceeds MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (alignment_in_bits > MAX_SUPPORTED_STACK_ALIGNMENT)
@@ -363,35 +429,55 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
   if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
     crtl->max_used_stack_slot_alignment = alignment_in_bits;
 
-  /* Calculate how many bytes the start of local variables is off from
-     stack alignment.  */
-  frame_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-  frame_off = STARTING_FRAME_OFFSET % frame_alignment;
-  frame_phase = frame_off ? frame_alignment - frame_off : 0;
-
-  /* Round the frame offset to the specified alignment.  The default is
-     to always honor requests to align the stack but a port may choose to
-     do its own stack alignment by defining STACK_ALIGNMENT_NEEDED.  */
-  if (STACK_ALIGNMENT_NEEDED
-      || mode != BLKmode
-      || size != 0)
+  if (mode != BLKmode || size != 0)
     {
-      /*  We must be careful here, since FRAME_OFFSET might be negative and
-	  division with a negative dividend isn't as well defined as we might
-	  like.  So we instead assume that ALIGNMENT is a power of two and
-	  use logical operations which are unambiguous.  */
-      if (FRAME_GROWS_DOWNWARD)
-	frame_offset
-	  = (FLOOR_ROUND (frame_offset - frame_phase,
-			  (unsigned HOST_WIDE_INT) alignment)
-	     + frame_phase);
-      else
-	frame_offset
-	  = (CEIL_ROUND (frame_offset - frame_phase,
-			 (unsigned HOST_WIDE_INT) alignment)
-	     + frame_phase);
+      struct frame_space **psp;
+
+      for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
+	{
+	  struct frame_space *space = *psp;
+	  if (!try_fit_stack_local (space->start, space->length, size,
+				    alignment, &slot_offset))
+	    continue;
+	  *psp = space->next;
+	  if (slot_offset > space->start)
+	    add_frame_space (space->start, slot_offset);
+	  if (slot_offset + size < space->start + space->length)
+	    add_frame_space (slot_offset + size,
+			     space->start + space->length);
+	  goto found_space;
+	}
+    }
+  else if (!STACK_ALIGNMENT_NEEDED)
+    {
+      slot_offset = frame_offset;
+      goto found_space;
     }
 
+  old_frame_offset = frame_offset;
+
+  if (FRAME_GROWS_DOWNWARD)
+    {
+      frame_offset -= size;
+      try_fit_stack_local (frame_offset, size, size, alignment, &slot_offset);
+
+      if (slot_offset > frame_offset)
+	add_frame_space (frame_offset, slot_offset);
+      if (slot_offset + size < old_frame_offset)
+	add_frame_space (slot_offset + size, old_frame_offset);
+    }
+  else
+    {
+      frame_offset += size;
+      try_fit_stack_local (old_frame_offset, size, size, alignment, &slot_offset);
+
+      if (slot_offset > old_frame_offset)
+	add_frame_space (old_frame_offset, slot_offset);
+      if (slot_offset + size < frame_offset)
+	add_frame_space (slot_offset + size, frame_offset);
+    }
+
+ found_space:
   /* On a big-endian machine, if we are allocating more space than we will use,
      use the least significant bytes of those that are allocated.  */
   if (BYTES_BIG_ENDIAN && mode != BLKmode && GET_MODE_SIZE (mode) < size)
@@ -402,16 +488,13 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
   if (virtuals_instantiated)
     addr = plus_constant (frame_pointer_rtx,
 			  trunc_int_for_mode
-			  (frame_offset + bigend_correction
+			  (slot_offset + bigend_correction
 			   + STARTING_FRAME_OFFSET, Pmode));
   else
     addr = plus_constant (virtual_stack_vars_rtx,
 			  trunc_int_for_mode
-			  (frame_offset + bigend_correction,
+			  (slot_offset + bigend_correction,
 			   Pmode));
-
-  if (!FRAME_GROWS_DOWNWARD)
-    frame_offset += size;
 
   x = gen_rtx_MEM (mode, addr);
   set_mem_align (x, alignment_in_bits);
