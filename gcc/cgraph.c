@@ -1045,7 +1045,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
   edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
 
-  edge->indirect_info = GGC_NEW (struct cgraph_indirect_call_info);
+  edge->indirect_info = GGC_CNEW (struct cgraph_indirect_call_info);
   edge->indirect_info->param_index = -1;
   edge->indirect_info->ecf_flags = ecf_flags;
 
@@ -2026,7 +2026,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 						  e->indirect_info->ecf_flags,
 						  count, freq,
 						  e->loop_nest + loop_nest);
-	  new_edge->indirect_info->param_index = e->indirect_info->param_index;
+	  *new_edge->indirect_info = *e->indirect_info;
 	}
     }
   else

@@ -378,10 +378,21 @@ typedef enum {
 
 struct GTY(()) cgraph_indirect_call_info
 {
+  /* Offset accumulated from ancestor jump functions of inlined call graph
+     edges.  */
+  HOST_WIDE_INT anc_offset;
+  /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
+  HOST_WIDE_INT otr_token;
+  /* Type of the object from OBJ_TYPE_REF_OBJECT. */
+  tree otr_type;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
   int ecf_flags;
+
+  /* Set when the call is a virtual call with the parameter being the
+     associated object pointer rather than a simple direct call.  */
+  unsigned polymorphic : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {

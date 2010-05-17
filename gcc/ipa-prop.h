@@ -39,37 +39,39 @@ along with GCC; see the file COPYING3.  If not see
                   argument.
    Unknown      - neither of the above.
 
-   IPA_JF_CONST_MEMBER_PTR stands for C++ member pointers, other constants are
-   represented with IPA_JF_CONST.
+   IPA_JF_CONST_MEMBER_PTR stands for C++ member pointers, it is a special
+   constant in this regard.  Other constants are represented with IPA_JF_CONST.
 
-   In addition to "ordinary" pass through functions represented by
-   IPA_JF_PASS_THROUGH, IPA_JF_ANCESTOR represents getting addresses of of
-   ancestor fields in C++ (e.g. &this_1(D)->D.1766.D.1756).  */
+   IPA_JF_ANCESTOR is a special pass-through jump function, which means that
+   the result is an address of a part of the object pointed to by the formal
+   parameter to which the function refers.  It is mainly intended to represent
+   getting addresses of of ancestor fields in C++
+   (e.g. &this_1(D)->D.1766.D.1756).  Note that if the original pointer is
+   NULL, ancestor jump function must behave like a simple pass-through.
+
+   Other pass-through functions can either simply pass on an unchanged formal
+   parameter or can apply one simple binary operation to it (such jump
+   functions are called polynomial).
+
+   IPA_JF_KNOWN_TYPE is a special type of an "unknown" function that applies
+   only to pointer parameters.  It means that even though we cannot prove that
+   the passed value is an interprocedural constant, we still know the exact
+   type of the containing object which may be valuable for devirtualization.
+
+   Jump functions are computed in ipa-prop.c by function
+   update_call_notes_after_inlining.  Some information can be lost and jump
+   functions degraded accordingly when inlining, see
+   update_call_notes_after_inlining in the same file.  */
+
 enum jump_func_type
 {
   IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
-  IPA_JF_CONST,
-  IPA_JF_CONST_MEMBER_PTR,
-  IPA_JF_PASS_THROUGH,
-  IPA_JF_ANCESTOR
+  IPA_JF_KNOWN_TYPE,        /* represented by field base_binfo */
+  IPA_JF_CONST,             /* represented by field costant */
+  IPA_JF_CONST_MEMBER_PTR,  /* represented by field member_cst */
+  IPA_JF_PASS_THROUGH,	    /* represented by field pass_through */
+  IPA_JF_ANCESTOR	    /* represented by field ancestor */
 };
-
-/* All formal parameters in the program have a lattice associated with it
-   computed by the interprocedural stage of IPCP.
-   There are three main values of the lattice:
-   IPA_TOP - unknown,
-   IPA_BOTTOM - non constant,
-   IPA_CONST_VALUE - simple scalar constant,
-   Cval of formal f will have a constant value if all callsites to this
-   function have the same constant value passed to f.
-   Integer and real constants are represented as IPA_CONST_VALUE.  */
-enum ipa_lattice_type
-{
-  IPA_BOTTOM,
-  IPA_CONST_VALUE,
-  IPA_TOP
-};
-
 
 /* Structure holding data required to describe a pass-through jump function.  */
 
@@ -87,8 +89,8 @@ struct GTY(()) ipa_pass_through_data
   enum tree_code operation;
 };
 
-/* Structure holding data required to describe and ancestor pass throu
-   funkci.  */
+/* Structure holding data required to describe an ancestor pass-through
+   jump function.  */
 
 struct GTY(()) ipa_ancestor_jf_data
 {
@@ -119,11 +121,28 @@ struct GTY (()) ipa_jump_func
      functions and member_cst holds constant c++ member functions.  */
   union jump_func_value
   {
+    tree GTY ((tag ("IPA_JF_KNOWN_TYPE"))) base_binfo;
     tree GTY ((tag ("IPA_JF_CONST"))) constant;
+    struct ipa_member_ptr_cst GTY ((tag ("IPA_JF_CONST_MEMBER_PTR"))) member_cst;
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
     struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
-    struct ipa_member_ptr_cst GTY ((tag ("IPA_JF_CONST_MEMBER_PTR"))) member_cst;
   } GTY ((desc ("%1.type"))) value;
+};
+
+/* All formal parameters in the program have a lattice associated with it
+   computed by the interprocedural stage of IPCP.
+   There are three main values of the lattice:
+   IPA_TOP - unknown,
+   IPA_BOTTOM - non constant,
+   IPA_CONST_VALUE - simple scalar constant,
+   Cval of formal f will have a constant value if all callsites to this
+   function have the same constant value passed to f.
+   Integer and real constants are represented as IPA_CONST_VALUE.  */
+enum ipa_lattice_type
+{
+  IPA_BOTTOM,
+  IPA_CONST_VALUE,
+  IPA_TOP
 };
 
 /* All formal parameters in the program have a cval computed by

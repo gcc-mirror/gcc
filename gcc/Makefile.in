@@ -2896,7 +2896,7 @@ ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
-   $(TREE_INLINE_H) $(TIMEVAR_H)
+   $(TREE_INLINE_H) $(GIMPLE_H) $(GIMPLE_FOLD_H) $(TIMEVAR_H)
 ipa-ref.o : ipa-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H)  $(TREE_H) $(TARGET_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) $(GGC_H) 
