@@ -4945,6 +4945,15 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	if (replace_info->replace_p)
 	  {
 	    tree op = replace_info->new_tree;
+	    if (!replace_info->old_tree)
+	      {
+		int i = replace_info->parm_num;
+		tree parm;
+		for (parm = DECL_ARGUMENTS (old_decl); i; parm = TREE_CHAIN (parm))
+		  i --;
+		replace_info->old_tree = parm;
+	      }
+		
 
 	    STRIP_NOPS (op);
 
