@@ -1,3 +1,7 @@
+2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
+ 
+	* tree.c (build_function_type_list_1): Remove bogus assert condition.
+ 
 2010-05-17  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Delete
