@@ -8372,7 +8372,7 @@ sparc_handle_vis_mul8x16 (int fncode, tree inner_type, tree elts0, tree elts1)
    function could not be folded.  */
 
 static tree
-sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
+sparc_fold_builtin (tree fndecl, tree call, bool ignore)
 {
   tree arg0, arg1, arg2;
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
@@ -8386,7 +8386,7 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
   switch (icode)
     {
     case CODE_FOR_fexpand_vis:
-      arg0 = TREE_VALUE (arglist);
+      arg0 = CALL_EXPR_ARG (call, 0);
       STRIP_NOPS (arg0);
 
       if (TREE_CODE (arg0) == VECTOR_CST)
@@ -8409,8 +8409,8 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
     case CODE_FOR_fmul8x16_vis:
     case CODE_FOR_fmul8x16au_vis:
     case CODE_FOR_fmul8x16al_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (call, 0);
+      arg1 = CALL_EXPR_ARG (call, 1);
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8427,8 +8427,8 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
       break;
 
     case CODE_FOR_fpmerge_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (call, 0);
+      arg1 = CALL_EXPR_ARG (call, 1);
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8450,9 +8450,9 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
       break;
 
     case CODE_FOR_pdist_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (call, 0);
+      arg1 = CALL_EXPR_ARG (call, 1);
+      arg2 = CALL_EXPR_ARG (call, 2);
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
       STRIP_NOPS (arg2);

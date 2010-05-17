@@ -3773,14 +3773,14 @@ picochip_final_prescan_insn (rtx insn, rtx * opvec ATTRIBUTE_UNUSED,
 /* Given a builtin function taking 2 operands (i.e., target + source),
    emit the RTL for the underlying instruction. */
 static rtx
-picochip_expand_builtin_2op (enum insn_code icode, tree arglist, rtx target)
+picochip_expand_builtin_2op (enum insn_code icode, tree call, rtx target)
 {
   tree arg0;
   rtx op0, pat;
   enum machine_mode tmode, mode0;
 
   /* Grab the incoming argument and emit its RTL. */
-  arg0 = TREE_VALUE (arglist);
+  arg0 = CALL_EXPR_ARG (call, 0);
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
 
   /* Determine the modes of the instruction operands. */
@@ -3811,15 +3811,15 @@ picochip_expand_builtin_2op (enum insn_code icode, tree arglist, rtx target)
 /* Given a builtin function taking 3 operands (i.e., target + two
    source), emit the RTL for the underlying instruction. */
 static rtx
-picochip_expand_builtin_3op (enum insn_code icode, tree arglist, rtx target)
+picochip_expand_builtin_3op (enum insn_code icode, tree call, rtx target)
 {
   tree arg0, arg1;
   rtx op0, op1, pat;
   enum machine_mode tmode, mode0, mode1;
 
   /* Grab the function's arguments. */
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg0 = CALL_EXPR_ARG (call, 0);
+  arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -3855,15 +3855,15 @@ picochip_expand_builtin_3op (enum insn_code icode, tree arglist, rtx target)
 
 /* Expand a builtin function which takes two arguments, and returns a void. */
 static rtx
-picochip_expand_builtin_2opvoid (enum insn_code icode, tree arglist)
+picochip_expand_builtin_2opvoid (enum insn_code icode, tree call)
 {
   tree arg0, arg1;
   rtx op0, op1, pat;
   enum machine_mode mode0, mode1;
 
   /* Grab the function's arguments. */
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg0 = CALL_EXPR_ARG (call, 0);
+  arg1 = CALL_EXPR_ARG (call, 1);
 
   /* Emit rtl sequences for the function arguments. */
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -3892,15 +3892,15 @@ picochip_expand_builtin_2opvoid (enum insn_code icode, tree arglist)
 
 /* Expand an array get into the corresponding RTL. */
 static rtx
-picochip_expand_array_get (tree arglist, rtx target)
+picochip_expand_array_get (tree call, rtx target)
 {
   tree arg0, arg1, arg2;
   rtx op0, op1, op2, pat;
 
   /* Grab the function's arguments. */
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  arg0 = CALL_EXPR_ARG (call, 0);
+  arg1 = CALL_EXPR_ARG (call, 1);
+  arg2 = CALL_EXPR_ARG (call, 2) ;
 
   /* Emit rtl sequences for the function arguments. */
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -3936,16 +3936,16 @@ picochip_expand_array_get (tree arglist, rtx target)
 
 /* Expand an array put into the corresponding RTL. */
 static rtx
-picochip_expand_array_put (tree arglist, rtx target)
+picochip_expand_array_put (tree call, rtx target)
 {
   tree arg0, arg1, arg2, arg3;
   rtx op0, op1, op2, op3, pat;
 
   /* Grab the function's arguments. */
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (arglist->common.chain);
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-  arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
+  arg0 = CALL_EXPR_ARG (call, 0);
+  arg1 = CALL_EXPR_ARG (call, 1);
+  arg2 = CALL_EXPR_ARG (call, 2);
+  arg3 = CALL_EXPR_ARG (call, 3);
 
   /* Emit rtl sequences for the function arguments. */
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -3980,15 +3980,15 @@ picochip_expand_array_put (tree arglist, rtx target)
 
 /* Expand an array testport into the corresponding RTL. */
 static rtx
-picochip_expand_array_testport (tree arglist, rtx target)
+picochip_expand_array_testport (tree call, rtx target)
 {
   tree arg0, arg1, arg2;
   rtx op0, op1, op2, pat;
 
   /* Grab the function's arguments. */
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  arg0 = CALL_EXPR_ARG (call, 0);
+  arg1 = CALL_EXPR_ARG (call, 1);
+  arg2 = CALL_EXPR_ARG (call, 2);
 
   /* Emit rtl sequences for the function arguments. */
   op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
@@ -4214,50 +4214,49 @@ picochip_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 			 int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree arglist = CALL_EXPR_ARGS(exp);
   int fcode = DECL_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {
     case PICOCHIP_BUILTIN_ASRI:
-      return picochip_expand_builtin_3op (CODE_FOR_builtin_asri, arglist,
+      return picochip_expand_builtin_3op (CODE_FOR_builtin_asri, exp,
 					  target);
 
     case PICOCHIP_BUILTIN_ADDS:
-      return picochip_expand_builtin_3op (CODE_FOR_sataddhi3, arglist,
+      return picochip_expand_builtin_3op (CODE_FOR_sataddhi3, exp,
 					  target);
 
     case PICOCHIP_BUILTIN_SUBS:
-      return picochip_expand_builtin_3op (CODE_FOR_satsubhi3, arglist,
+      return picochip_expand_builtin_3op (CODE_FOR_satsubhi3, exp,
 					  target);
 
     case PICOCHIP_BUILTIN_SBC:
-      return picochip_expand_builtin_2op (CODE_FOR_sbc, arglist, target);
+      return picochip_expand_builtin_2op (CODE_FOR_sbc, exp, target);
 
     case PICOCHIP_BUILTIN_BREV:
-      return picochip_expand_builtin_2op (CODE_FOR_brev, arglist, target);
+      return picochip_expand_builtin_2op (CODE_FOR_brev, exp, target);
 
     case PICOCHIP_BUILTIN_BYTESWAP:
-      return picochip_expand_builtin_2op (CODE_FOR_bswaphi2, arglist, target);
+      return picochip_expand_builtin_2op (CODE_FOR_bswaphi2, exp, target);
 
     case PICOCHIP_BUILTIN_GET:
-      return picochip_expand_builtin_2op (CODE_FOR_commsGet, arglist, target);
+      return picochip_expand_builtin_2op (CODE_FOR_commsGet, exp, target);
 
     case PICOCHIP_BUILTIN_PUT:
-      return picochip_expand_builtin_2opvoid (CODE_FOR_commsPut, arglist);
+      return picochip_expand_builtin_2opvoid (CODE_FOR_commsPut, exp);
 
     case PICOCHIP_BUILTIN_TESTPORT:
-      return picochip_expand_builtin_2op (CODE_FOR_commsTestPort, arglist,
+      return picochip_expand_builtin_2op (CODE_FOR_commsTestPort, exp,
 					  target);
 
     case PICOCHIP_BUILTIN_PUT_ARRAY:
-      return picochip_expand_array_put (arglist, target);
+      return picochip_expand_array_put (exp, target);
 
     case PICOCHIP_BUILTIN_GET_ARRAY:
-      return picochip_expand_array_get (arglist, target);
+      return picochip_expand_array_get (exp, target);
 
     case PICOCHIP_BUILTIN_TESTPORT_ARRAY:
-      return picochip_expand_array_testport (arglist, target);
+      return picochip_expand_array_testport (exp, target);
 
     case PICOCHIP_BUILTIN_HALT:
       return picochip_generate_halt ();

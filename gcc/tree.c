@@ -10376,22 +10376,6 @@ tree_block (tree t)
   return NULL;
 }
 
-/* Build and return a TREE_LIST of arguments in the CALL_EXPR exp.
-   FIXME: don't use this function.  It exists for compatibility with
-   the old representation of CALL_EXPRs where a list was used to hold the
-   arguments.  Places that currently extract the arglist from a CALL_EXPR
-   ought to be rewritten to use the CALL_EXPR itself.  */
-tree
-call_expr_arglist (tree exp)
-{
-  tree arglist = NULL_TREE;
-  int i;
-  for (i = call_expr_nargs (exp) - 1; i >= 0; i--)
-    arglist = tree_cons (NULL_TREE, CALL_EXPR_ARG (exp, i), arglist);
-  return arglist;
-}
-
-
 /* Create a nameless artificial label and put it in the current
    function context.  The label has a location of LOC.  Returns the
    newly created label.  */

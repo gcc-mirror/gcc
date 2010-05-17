@@ -10701,9 +10701,8 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
       if (avoid_folding_inline_builtin (fndecl))
 	return NULL_TREE;
 
-      /* FIXME: Don't use a list in this interface.  */
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-	  return targetm.fold_builtin (fndecl, CALL_EXPR_ARGS (exp), ignore);
+        return targetm.fold_builtin (fndecl, exp, ignore);
       else
 	{
 	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)

@@ -3000,7 +3000,7 @@ xtensa_init_builtins (void)
 
 
 static tree
-xtensa_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
+xtensa_fold_builtin (tree fndecl, tree call, bool ignore ATTRIBUTE_UNUSED)
 {
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1;
@@ -3008,8 +3008,8 @@ xtensa_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
   switch (fcode)
     {
     case XTENSA_BUILTIN_UMULSIDI3:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (call, 0);
+      arg1 = CALL_EXPR_ARG (call, 1);
       if ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
 	  || TARGET_MUL32_HIGH)
 	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,

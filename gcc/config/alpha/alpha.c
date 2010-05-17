@@ -7138,21 +7138,21 @@ alpha_fold_builtin_ctpop (unsigned HOST_WIDE_INT opint[], long op_const)
 /* Fold one of our builtin functions.  */
 
 static tree
-alpha_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
+alpha_fold_builtin (tree fndecl, tree call, bool ignore ATTRIBUTE_UNUSED)
 {
-  tree op[MAX_ARGS], t;
+  tree *op = CALL_EXPR_ARGP (call);
   unsigned HOST_WIDE_INT opint[MAX_ARGS];
-  long op_const = 0, arity = 0;
+  long op_const = 0;
+  int arity;
 
-  for (t = arglist; t ; t = TREE_CHAIN (t), ++arity)
+  for (i = 0; i < call_expr_nargs (call); i++)
     {
-      tree arg = TREE_VALUE (t);
+      tree arg = CALL_EXPR_ARG (call, i);
       if (arg == error_mark_node)
 	return NULL;
       if (arity >= MAX_ARGS)
 	return NULL;
 
-      op[arity] = arg;
       opint[arity] = 0;
       if (TREE_CODE (arg) == INTEGER_CST)
 	{
