@@ -1,3 +1,29 @@
+2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (CALL_EXPR_ARGS): Delete.
+	(call_expr_arglist): Delete.
+	* tree.c (call_expr_arglist): Delete.
+	* builtins.c (fold_call_expr): Pass the whole CALL_EXPR to
+	targetm.fold_builtin.
+	* config/alpha/alpha.c (alpha_fold_builtin): Rename arglist parameter.
+	Rewrite iteration to work on call_expr_nargs rather than TREE_CHAIN.
+	* config/picochip/picochip.c (picochip_expand_builtin_2op): Rename
+	arglist parameter.  Use CALL_EXPR_ARG.
+	(picochip_expand_builtin_3op): Likewise.
+	(picochip_expand_builtin_2opvoid): Likewise.
+	(picochip_expand_array_get): Likewise.
+	(picochip_expand_array_put): Likewise.
+	(picochip_expand_array_testport): Likewise.
+	(picochip_expand_builtin): Don't call CALL_EXPR_ARGS.  Pass exp
+	rather than arglist.
+	* config/rx/rx.c (rx_expand_builtin): Call call_expr_nargs instead of
+	CALL_EXPR_ARGS.
+	* config/sparc/sparc.c (sparc_fold_builtin): Use CALL_EXPR_ARG rather
+	than TREE_VALUE and TREE_CHAIN.
+	* config/xtensa/xtensa.c (xtensa_fold_builtin): Likewise.
+	* doc/tm.texi (TARGET_FOLD_BUILTIN): Pass CALL_EXPR tree instead of
+	the arglist.
+
 2010-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/42347

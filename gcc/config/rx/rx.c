@@ -1995,7 +1995,7 @@ rx_expand_builtin (tree exp,
 		   int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree arg    = CALL_EXPR_ARGS (exp) ? CALL_EXPR_ARG (exp, 0) : NULL_TREE;
+  tree arg    = call_expr_nargs (exp) >= 1 ? CALL_EXPR_ARG (exp, 0) : NULL_TREE;
   rtx  op     = arg ? expand_normal (arg) : NULL_RTX;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
