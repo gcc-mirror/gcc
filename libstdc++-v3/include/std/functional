@@ -169,17 +169,6 @@ namespace std
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
-  template<typename _Signature>
-    class result_of;
-
-  template<typename _Functor, typename... _ArgTypes>
-    struct result_of<_Functor(_ArgTypes...)>
-    {
-      typedef
-        decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
-        type;
-    };
-
   /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
     struct _Derives_from_unary_function : __sfinae_types

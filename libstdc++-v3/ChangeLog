@@ -1,3 +1,10 @@
+2010-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (result_of): Move...
+	* include/std/type_traits: ... here.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+
 2010-05-12  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/auto_ptr/assign_neg.cc: Expect template
