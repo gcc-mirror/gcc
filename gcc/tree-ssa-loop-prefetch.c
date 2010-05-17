@@ -1603,17 +1603,9 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
       return false;
     }
 
-  /* Profitability of prefetching is highly dependent on the trip count.
-     For a given AHEAD distance, the first AHEAD iterations do not benefit
-     from prefetching, and the last AHEAD iterations execute useless
-     prefetches.  So, if the trip count is not large enough relative to AHEAD,
-     prefetching may cause serious performance degradation.  To avoid this
-     problem when the trip count is not known at compile time, we
-     conservatively skip loops with high prefetching costs.  For now, only
-     the I-cache cost is considered.  The relative I-cache cost is estimated
-     by taking the ratio between the number of prefetches and the total
-     number of instructions.  Since we are using integer arithmetic, we
-     compute the reciprocal of this ratio.
+  /* Prefetching most likely causes performance degradation when the instruction
+     to prefetch ratio is too small.  Too many prefetch instructions in a loop
+     may reduce the I-cache performance.
      (unroll_factor * ninsns) is used to estimate the number of instructions in
      the unrolled loop.  This implementation is a bit simplistic -- the number
      of issued prefetch instructions is also affected by unrolling.  So,
@@ -1623,11 +1615,20 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
      original loop * unroll_factor (at least the induction variable increases
      and the exit branches will get eliminated), so it might be better to use
      tree_estimate_loop_size + estimated_unrolled_size.  */
-  if (est_niter < 0)
+  insn_to_prefetch_ratio = (unroll_factor * ninsns) / prefetch_count;
+  if (insn_to_prefetch_ratio < MIN_INSN_TO_PREFETCH_RATIO)
     {
-      insn_to_prefetch_ratio = (unroll_factor * ninsns) / prefetch_count;
-      return insn_to_prefetch_ratio >= MIN_INSN_TO_PREFETCH_RATIO;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file,
+		 "Not prefetching -- instruction to prefetch ratio (%d) too small\n",
+		 insn_to_prefetch_ratio);
+      return false;
     }
+
+  /* Could not do further estimation if the trip count is unknown.  Just assume
+     prefetching is profitable. Too aggressive???  */
+  if (est_niter < 0)
+    return true;
 
   if (est_niter < (HOST_WIDE_INT) (TRIP_COUNT_TO_AHEAD_RATIO * ahead))
     {

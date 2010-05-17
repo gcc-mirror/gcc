@@ -8518,8 +8518,7 @@ The size of L2 cache, in kilobytes.
 
 @item min-insn-to-prefetch-ratio
 The minimum ratio between the number of instructions and the
-number of prefetches to enable prefetching in a loop with an
-unknown trip count.
+number of prefetches to enable prefetching in a loop.
 
 @item prefetch-min-insn-to-mem-ratio
 The minimum ratio between the number of instructions and the
