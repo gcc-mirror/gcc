@@ -1,5 +1,11 @@
 2010-05-17  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/43990
+	* trans-expr.c (gfc_conv_structure): Remove unneeded and buggy code.
+	This is now handled via 'gfc_class_null_initializer'.
+
+2010-05-17  Janus Weil  <janus@gcc.gnu.org>
+
 	* class.c (gfc_add_component_ref,gfc_class_null_initializer,
 	gfc_build_class_symbol,add_proc_component,add_proc_comps, 
 	add_procs_to_declared_vtab1,copy_vtab_proc_comps,
