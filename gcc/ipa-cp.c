@@ -416,35 +416,21 @@ ipcp_print_all_lattices (FILE * f)
 static bool
 ipcp_versionable_function_p (struct cgraph_node *node)
 {
-  tree decl = node->decl;
-  basic_block bb;
+  struct cgraph_edge *edge;
 
   /* There are a number of generic reasons functions cannot be versioned.  */
   if (!node->local.versionable)
     return false;
 
-  /* Removing arguments doesn't work if the function takes varargs.  */
-  if (DECL_STRUCT_FUNCTION (decl)->stdarg)
-    return false;
-
-  /* Removing arguments doesn't work if we use __builtin_apply_args.  */
-  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (decl))
+  /* Removing arguments doesn't work if the function takes varargs
+     or use __builtin_apply_args. */
+  for (edge = node->callees; edge; edge = edge->next_callee)
     {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  const_gimple stmt = gsi_stmt (gsi);
-	  tree t;
-
-	  if (!is_gimple_call (stmt))
-	    continue;
-	  t = gimple_call_fndecl (stmt);
-	  if (t == NULL_TREE)
-	    continue;
-	  if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (t) == BUILT_IN_APPLY_ARGS)
-	    return false;
-	}
+      tree t = edge->callee->decl;
+      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	  && (DECL_FUNCTION_CODE (t) == BUILT_IN_APPLY_ARGS
+	     || DECL_FUNCTION_CODE (t) == BUILT_IN_VA_START))
+	return false;
     }
 
   return true;
