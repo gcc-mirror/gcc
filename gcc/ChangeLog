@@ -1,3 +1,7 @@
+2010-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (TARGET_SUN_TLS): Remove duplicate definition.
+
 2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (CALL_EXPR_ARGS): Delete.
