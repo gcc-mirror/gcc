@@ -1,3 +1,8 @@
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (decode_options): Do not disable whopr at ipa_cp.
+	* ipa-prop.c (ipa_detect_param_modifications): Walk PHI nodes too.
+
 2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR lto/44184

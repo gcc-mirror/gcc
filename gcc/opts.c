@@ -1150,7 +1150,6 @@ decode_options (unsigned int argc, const char **argv)
   if (flag_wpa || flag_ltrans)
     {
       /* These passes are not WHOPR compatible yet.  */
-      flag_ipa_cp = 0;
       flag_ipa_pta = 0;
       flag_ipa_struct_reorg = 0;
     }

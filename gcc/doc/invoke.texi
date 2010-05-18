@@ -7456,8 +7456,6 @@ that otherwise would not fit in memory.  This option enables
 
 Disabled by default.
 
-This option is experimental.
-
 @item -fwpa
 @opindex fwpa
 This is an internal option used by GCC when compiling with
