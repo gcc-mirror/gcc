@@ -1,3 +1,8 @@
+2010-05-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/43332
+	* haifa-sched.c (setup_insn_max_reg_pressure): Check barrier.
+
 2010-05-18  Anatoly Sokolov  <aesok@post.ru>
 
 	* tree.h (build_int_cstu): Implement as static inline.
