@@ -1460,8 +1460,9 @@ darwin_asm_named_section (const char *name,
       obstack_grow (&lto_section_names_obstack, "\\0\"\n", 4);
 
       /* Output the dummy section name.  */
-      fprintf (asm_out_file, "\t.section %s,__%08X,regular,debug\t# %s\n",
-	       LTO_SEGMENT_NAME, lto_section_names_offset, name);
+      fprintf (asm_out_file, "\t# %s\n", name);
+      fprintf (asm_out_file, "\t.section %s,__%08X,regular,debug\n",
+	       LTO_SEGMENT_NAME, lto_section_names_offset);
 
       /* Update the offset for the next section name.  Make sure we stay
 	 within reasonable length.  */  

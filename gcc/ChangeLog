@@ -1,3 +1,11 @@
+2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Add
+	lto-macho as lto_binary_reader.
+
+	* darwin.c (darwin_asm_named_section): Do not add assembler comment
+	after .section directive; just print it before the directive instead.
+
 2010-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_virtual_clone): Only check
