@@ -1,4 +1,4 @@
-/* { dg-lto-do assemble } */
+/* { dg-lto-do link } */
 /* Forgot to steam in/out the number of labels for asm goto.  PR44184.  */
 
 extern int printf (__const char *__restrict __format, ...);
