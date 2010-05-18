@@ -1,3 +1,7 @@
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (propagate): Walk all nodes in the cleanup stage.
+
 2010-05-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/43332
