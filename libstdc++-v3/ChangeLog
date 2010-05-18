@@ -1,3 +1,10 @@
+2010-05-18  Eelis van der Weegen  <gcc-bugzilla@contacts.eelis.net>
+
+	PR libstdc++/44190
+	* include/debug/vector (vector<>::resize): Call
+	_M_update_guaranteed_capacity.
+	* testsuite/23_containers/vector/capacity/44190.cc: New.
+
 2010-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/functional (result_of): Move...
