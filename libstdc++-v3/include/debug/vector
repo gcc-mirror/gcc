@@ -235,6 +235,7 @@ namespace __debug
 	_Base::resize(__sz, __c);
 	if (__realloc)
 	  this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
