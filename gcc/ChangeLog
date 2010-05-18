@@ -1,3 +1,9 @@
+2010-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Add a few checks from
+	rtx_equal_p inline.
+
 2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Add

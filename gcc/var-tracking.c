@@ -2484,6 +2484,7 @@ static location_chain
 find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 {
   location_chain node;
+  enum rtx_code loc_code;
 
   if (!var)
     return NULL;
@@ -2495,28 +2496,41 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 
   gcc_assert (var->var_part[0].offset == 0);
 
+  loc_code = GET_CODE (loc);
   for (node = var->var_part[0].loc_chain; node; node = node->next)
-    if (rtx_equal_p (loc, node->loc))
-      return node;
-    else if (GET_CODE (node->loc) == VALUE
-	     && !VALUE_RECURSED_INTO (node->loc))
-      {
-	decl_or_value dv = dv_from_value (node->loc);
-	variable var = (variable)
-		       htab_find_with_hash (vars, dv, dv_htab_hash (dv));
+    {
+      if (GET_CODE (node->loc) != loc_code)
+	{
+	  if (GET_CODE (node->loc) != VALUE)
+	    continue;
+	}
+      else if (loc == node->loc)
+	return node;
+      else if (loc_code != VALUE)
+	{
+	  if (rtx_equal_p (loc, node->loc))
+	    return node;
+	  continue;
+	}
+      if (!VALUE_RECURSED_INTO (node->loc))
+	{
+	  decl_or_value dv = dv_from_value (node->loc);
+	  variable var = (variable)
+			 htab_find_with_hash (vars, dv, dv_htab_hash (dv));
 
-	if (var)
-	  {
-	    location_chain where;
-	    VALUE_RECURSED_INTO (node->loc) = true;
-	    if ((where = find_loc_in_1pdv (loc, var, vars)))
-	      {
-		VALUE_RECURSED_INTO (node->loc) = false;
-		return where;
-	      }
-	    VALUE_RECURSED_INTO (node->loc) = false;
-	  }
-      }
+	  if (var)
+	    {
+	      location_chain where;
+	      VALUE_RECURSED_INTO (node->loc) = true;
+	      if ((where = find_loc_in_1pdv (loc, var, vars)))
+		{
+		  VALUE_RECURSED_INTO (node->loc) = false;
+		  return where;
+		}
+	      VALUE_RECURSED_INTO (node->loc) = false;
+	    }
+	}
+    }
 
   return NULL;
 }
