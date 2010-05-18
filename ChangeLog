@@ -1,3 +1,8 @@
+2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* configure.ac (--enable-lto): All *-apple-darwin* now support LTO.
+	* configure: Regenerate.
+
 2010-05-12  Sriraman Tallam  <tmsriram@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

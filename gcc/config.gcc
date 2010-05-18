@@ -1891,12 +1891,14 @@ powerpc-*-darwin*)
 	  *-darwin[0-6]*)
 	    ;;
 	esac
+	lto_binary_reader=lto-macho
 	extra_headers=altivec.h
 	;;
 powerpc64-*-darwin*)
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
 	# We're omitting t-darwin8 to avoid building any multilibs
+	lto_binary_reader=lto-macho
 	extra_headers=altivec.h
 	;;
 powerpc*-*-freebsd*)
