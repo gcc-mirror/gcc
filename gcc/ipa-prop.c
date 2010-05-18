@@ -269,11 +269,18 @@ ipa_detect_param_modifications (struct cgraph_node *node)
 
   func = DECL_STRUCT_FUNCTION (decl);
   FOR_EACH_BB_FN (bb, func)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
-				     visit_load_for_mod_analysis,
-				     visit_store_addr_for_mod_analysis,
-				     visit_store_addr_for_mod_analysis);
+    {
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
+				       visit_load_for_mod_analysis,
+				       visit_store_addr_for_mod_analysis,
+				       visit_store_addr_for_mod_analysis);
+      for (gsi = gsi_start (phi_nodes (bb)); !gsi_end_p (gsi); gsi_next (&gsi))
+	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info,
+				       visit_load_for_mod_analysis,
+				       visit_store_addr_for_mod_analysis,
+				       visit_store_addr_for_mod_analysis);
+    }
 
   info->modification_analysis_done = 1;
 }
