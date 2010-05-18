@@ -1905,9 +1905,9 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   return t;
 }
 
-/* Similar to `build_call_list', but for template definitions of non-dependent
-   expressions. NON_DEP is the non-dependent expression that has been
-   built.  */
+/* Similar to `build_nt_call_vec', but for template definitions of
+   non-dependent expressions. NON_DEP is the non-dependent expression
+   that has been built.  */
 
 tree
 build_min_non_dep_call_vec (tree non_dep, tree fn, VEC(tree,gc) *argvec)

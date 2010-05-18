@@ -1067,14 +1067,14 @@ extern void initialize_builtins (void);
 
 extern tree lookup_name (tree);
 extern bool special_method_p (tree);
-extern void maybe_rewrite_invocation (tree *, tree *, tree *, tree *);
-extern tree build_known_method_ref (tree, tree, tree, tree, tree, tree);
+extern void maybe_rewrite_invocation (tree *, VEC(tree,gc) **, tree *, tree *);
+extern tree build_known_method_ref (tree, tree, tree, tree, VEC(tree,gc) *, tree);
 extern tree build_class_init (tree, tree);
 extern int attach_init_test_initialization_flags (void **, void *);
 extern tree build_invokevirtual (tree, tree, tree);
 extern tree build_invokeinterface (tree, tree);
 extern tree build_jni_stub (tree);
-extern tree invoke_build_dtable (int, tree);
+extern tree invoke_build_dtable (int, VEC(tree,gc) *);
 extern tree build_field_ref (tree, tree, tree);
 extern tree java_modify_addr_for_volatile (tree);
 extern void pushdecl_force_head (tree);

@@ -1,3 +1,7 @@
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (build_min_non_dep_call_vec): Update comment.
+
 2010-05-17  Jason Merrill  <jason@redhat.com>
 
 	* call.c (struct z_candidate): Add explicit_targs field.
