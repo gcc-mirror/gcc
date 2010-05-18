@@ -1,3 +1,11 @@
+2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR lto/44184
+	* lto-streamer-out.c (output_gimple_stmt): Output number of labels
+	in a GIMPLE_ASM.
+	* lto-streamer-in.c (input_gimple_stmt): Read number of labels
+	in a GIMPLE_ASM.
+
 2010-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (TARGET_SUN_TLS): Remove duplicate definition.
