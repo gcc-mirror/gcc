@@ -781,15 +781,9 @@ proper position among the other output files.  */
     %{fuse-linker-plugin: \
     -plugin %(linker_plugin_file) \
     -plugin-opt=%(lto_wrapper) \
-    -plugin-opt=%(lto_gcc) \
     -plugin-opt=-fresolution=%u.res \
     %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
     %{static:-plugin-opt=-pass-through=-lc}	\
-    %{O*:-plugin-opt=-O%*} \
-    %{w:-plugin-opt=-w} \
-    %{f*:-plugin-opt=-f%*} \
-    %{m*:-plugin-opt=-m%*} \
-    %{v:-plugin-opt=-v} \
     } \
     %{flto} %{fwhopr} %l " LINK_PIE_SPEC \
    "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\

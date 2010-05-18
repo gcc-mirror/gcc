@@ -1,3 +1,17 @@
+2010-05-18  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44143
+	* lto-wrapper.c (verbose): New variable.  Initialize from -v.
+	(debug): Initialize from -save-temps.
+	(collect_execute): Print command-line when verbose.
+	(run_gcc): Always use COLLECT_GCC_OPTIONS.  Use fork_execute
+	for ltrans invocation.  Produce -dumpbase flag again.
+	(process_args): Remove.
+	(main): Simplify.
+	* collect2.c (maybe_run_lto_and_relink): Only pass object
+	files to lto-wrapper.
+	* gcc.c (LINK_COMMAND_SPEC): Likewise.
+
 2010-05-18  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (decode_options): Do not disable whopr at ipa_cp.

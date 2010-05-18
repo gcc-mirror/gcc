@@ -940,10 +940,8 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 
   if (lto_objects.first)
     {
-      const char *opts;
       char **lto_c_argv;
       const char **lto_c_ptr;
-      const char *cp;
       const char **p, **q, **r;
       const char **lto_o_ptr;
       struct lto_object *list;
@@ -954,52 +952,15 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       if (!lto_wrapper)
 	fatal ("COLLECT_LTO_WRAPPER must be set.");
 
+      num_lto_c_args++;
+
       /* There is at least one object file containing LTO info,
          so we need to run the LTO back end and relink.  */
-
-      /* Get compiler options passed down from the parent `gcc' command.
-         These must be passed to the LTO back end.  */
-      opts = getenv ("COLLECT_GCC_OPTIONS");
-
-      /* Increment the argument count by the number of inherited options.
-         Some arguments may be filtered out later.  Again, an upper bound
-         suffices.  */
-
-      cp = opts;
-
-      while (cp && *cp)
-        {
-          extract_string (&cp);
-          num_lto_c_args++;
-        }
-      obstack_free (&temporary_obstack, temporary_firstobj);
-
-      if (debug)
-	num_lto_c_args++;
-
-      /* Increment the argument count by the number of initial
-	 arguments added below.  */
-      num_lto_c_args += 9;
 
       lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
       lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
 
       *lto_c_ptr++ = lto_wrapper;
-      *lto_c_ptr++ = c_file_name;
-
-      cp = opts;
-
-      while (cp && *cp)
-        {
-          const char *s = extract_string (&cp);
-
-	  /* Pass the option or argument to the wrapper.  */
-	  *lto_c_ptr++ = xstrdup (s);
-        }
-      obstack_free (&temporary_obstack, temporary_firstobj);
-
-      if (debug)
-	*lto_c_ptr++ = xstrdup ("-debug");
 
       /* Add LTO objects to the wrapper command line.  */
       for (list = lto_objects.first; list; list = list->next)
