@@ -2623,7 +2623,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   tree gnu_subprog_addr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_subprog);
   Entity_Id gnat_formal;
   Node_Id gnat_actual;
-  tree gnu_actual_list = NULL_TREE;
+  VEC(tree,gc) *gnu_actual_vec = NULL;
   tree gnu_name_list = NULL_TREE;
   tree gnu_before_list = NULL_TREE;
   tree gnu_after_list = NULL_TREE;
@@ -2973,11 +2973,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    gnu_actual = convert (DECL_ARG_TYPE (gnu_formal), gnu_actual);
 	}
 
-      gnu_actual_list = tree_cons (NULL_TREE, gnu_actual, gnu_actual_list);
+      VEC_safe_push (tree, gc, gnu_actual_vec, gnu_actual);
     }
 
-  gnu_call = build_call_list (TREE_TYPE (gnu_subprog_type), gnu_subprog_addr,
-			      nreverse (gnu_actual_list));
+  gnu_call = build_call_vec (TREE_TYPE (gnu_subprog_type), gnu_subprog_addr,
+                             gnu_actual_vec);
   set_expr_location_from_node (gnu_call, gnat_node);
 
   /* If it's a function call, the result is the call expression unless a target

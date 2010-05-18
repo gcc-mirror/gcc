@@ -3245,12 +3245,12 @@ void
 build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
 {
   tree gnu_subprog_type, gnu_subprog_addr, gnu_subprog_call;
-  tree gnu_stub_param, gnu_param_list, gnu_arg_types, gnu_param;
+  tree gnu_stub_param, gnu_arg_types, gnu_param;
   tree gnu_stub_decl = DECL_FUNCTION_STUB (gnu_subprog);
   tree gnu_body;
+  VEC(tree,gc) *gnu_param_vec = NULL;
 
   gnu_subprog_type = TREE_TYPE (gnu_subprog);
-  gnu_param_list = NULL_TREE;
 
   begin_subprog_body (gnu_stub_decl);
   gnat_pushlevel ();
@@ -3274,7 +3274,7 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
       else
 	gnu_param = gnu_stub_param;
 
-      gnu_param_list = tree_cons (NULL_TREE, gnu_param, gnu_param_list);
+      VEC_safe_push (tree, gc, gnu_param_vec, gnu_param);
     }
 
   gnu_body = end_stmt_group ();
@@ -3282,9 +3282,8 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   /* Invoke the internal subprogram.  */
   gnu_subprog_addr = build1 (ADDR_EXPR, build_pointer_type (gnu_subprog_type),
 			     gnu_subprog);
-  gnu_subprog_call = build_call_list (TREE_TYPE (gnu_subprog_type),
-				      gnu_subprog_addr,
-				      nreverse (gnu_param_list));
+  gnu_subprog_call = build_call_vec (TREE_TYPE (gnu_subprog_type),
+                                     gnu_subprog_addr, gnu_param_vec);
 
   /* Propagate the return value, if any.  */
   if (VOID_TYPE_P (TREE_TYPE (gnu_subprog_type)))

@@ -1,3 +1,22 @@
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (expand_java_multianewarray): Use build_call_vec instead of
+	build_call_list.
+	(pop_arguments): Return a VEC instead of a tree.  Take a method type
+	rather than a list of argument types.
+	(rewrite_rule): Change signature. of rewrite_arglist member.
+	(rewrite_arglist_getcaller): Update signature.
+	(rewrite_arglist_getclass): Likewise.
+	(maybe_rewrite_invocation): Update for rewrite_arglist change.
+	(build_known_method_ref): Take a VEC instead of a tree.
+	(invoke_build_dtable): Likewise.
+	(expand_invoke): Update calls to pop_arguments.  Use build_call_vec
+	instead of build_call_list.
+	(build_jni_stub): Use build_call_vec instead of build_call_list.
+	* java-tree.h (maybe_rewrite_invocation): Update declaration.
+	(build_known_method_ref): Likewise.
+	(invoke_build_dtable): Likewise.
+
 2010-05-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR 44103
