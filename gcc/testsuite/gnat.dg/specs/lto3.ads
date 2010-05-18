@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-options "-gnatws" }
 -- { dg-options "-gnatws -flto" { target lto } }
 
 with Lto3_Pkg1;
