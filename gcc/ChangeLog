@@ -1,3 +1,10 @@
+2010-05-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* tree.h (build_int_cstu): Implement as static inline.
+	* tree.c (build_int_cstu): Remove function.
+	(double_int_to_tree, double_int_fits_to_tree_p): Handle size types as
+	sign extended.
+
 2010-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44143
