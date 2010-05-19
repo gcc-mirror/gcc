@@ -1,5 +1,16 @@
 2010-05-19  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43987
+	* tree-ssa-structalias.c (could_have_pointers): For possibly
+	address-taken variables force pointers to be recorded.
+	(create_variable_info_for_1): Likewise.
+	(push_fields_onto_fieldstack): Pass in wheter all fields
+	must have pointers.
+	(find_func_aliases): Query types instead of vars whether
+	they contain pointers where appropriate.
+
+2010-05-19  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2010-04-26  Richard Guenther  <rguenther@suse.de>
 

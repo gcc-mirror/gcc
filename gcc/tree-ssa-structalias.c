@@ -2803,7 +2803,11 @@ type_could_have_pointers (tree type)
 static bool
 could_have_pointers (tree t)
 {
-  return type_could_have_pointers (TREE_TYPE (t));
+  return (((TREE_CODE (t) == VAR_DECL
+	    || TREE_CODE (t) == PARM_DECL
+	    || TREE_CODE (t) == RESULT_DECL)
+	   && (TREE_PUBLIC (t) || DECL_EXTERNAL (t) || TREE_ADDRESSABLE (t)))
+	  || type_could_have_pointers (TREE_TYPE (t)));
 }
 
 /* Return the position, in bits, of FIELD_DECL from the beginning of its
@@ -3889,7 +3893,7 @@ find_func_aliases (gimple origt)
      operations with pointer result, others are dealt with as escape
      points if they have pointer operands.  */
   else if (is_gimple_assign (t)
-	   && could_have_pointers (gimple_assign_lhs (t)))
+	   && type_could_have_pointers (TREE_TYPE (gimple_assign_lhs (t))))
     {
       /* Otherwise, just a regular assignment statement.  */
       tree lhsop = gimple_assign_lhs (t);
@@ -4204,7 +4208,7 @@ var_can_have_subvars (const_tree v)
 
 static int
 push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
-			     HOST_WIDE_INT offset)
+			     HOST_WIDE_INT offset, bool must_have_pointers_p)
 {
   tree field;
   int count = 0;
@@ -4230,7 +4234,8 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	  push = true;
 	else if (!(pushed = push_fields_onto_fieldstack
-		   (TREE_TYPE (field), fieldstack, offset + foff))
+		   (TREE_TYPE (field), fieldstack, offset + foff,
+		    must_have_pointers_p))
 		 && (DECL_SIZE (field)
 		     && !integer_zerop (DECL_SIZE (field))))
 	  /* Empty structures may have actual size, like in C++.  So
@@ -4253,10 +4258,11 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    /* If adjacent fields do not contain pointers merge them.  */
 	    if (pair
 		&& !pair->may_have_pointers
-		&& !could_have_pointers (field)
 		&& !pair->has_unknown_size
 		&& !has_unknown_size
-		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff)
+		&& pair->offset + (HOST_WIDE_INT)pair->size == offset + foff
+		&& !must_have_pointers_p
+		&& !could_have_pointers (field))
 	      {
 		pair = VEC_last (fieldoff_s, *fieldstack);
 		pair->size += TREE_INT_CST_LOW (DECL_SIZE (field));
@@ -4270,7 +4276,8 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 		  pair->size = TREE_INT_CST_LOW (DECL_SIZE (field));
 		else
 		  pair->size = -1;
-		pair->may_have_pointers = could_have_pointers (field);
+		pair->may_have_pointers
+		  = must_have_pointers_p || could_have_pointers (field);
 		pair->only_restrict_pointers
 		  = (!has_unknown_size
 		     && POINTER_TYPE_P (TREE_TYPE (field))
@@ -4436,7 +4443,10 @@ create_variable_info_for (tree decl, const char *name)
   VEC (fieldoff_s,heap) *fieldstack = NULL;
 
   if (var_can_have_subvars (decl) && use_field_sensitive)
-    push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
+    push_fields_onto_fieldstack (decl_type, &fieldstack, 0,
+				 TREE_PUBLIC (decl)
+				 || DECL_EXTERNAL (decl)
+				 || TREE_ADDRESSABLE (decl));
 
   /* If the variable doesn't have subvars, we may end up needing to
      sort the field list and create fake variables for all the
