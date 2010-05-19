@@ -1,3 +1,21 @@
+2010-05-19  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+        * tree-ssa-loop-prefetch.c (mem_ref_group, ar_data): Change step
+	to tree.
+        (dump_mem_ref): Adopt debug code to handle a tree as step.  This
+	also checks for a constant int vs.  non-constant but
+	loop-invariant steps.
+        (find_or_create_group): Change the sort algorithm to only consider
+	steps that are constant ints.
+        (idx_analyze_ref): Adopt code to handle a tree instead of a
+	HOST_WIDE_INT for step.
+        (gather_memory_references_ref): Handle tree instead of int and be
+	prepared to see a NULL_TREE.
+        (prune_ref_by_self_reuse, prune_ref_by_group_reuse): Do not prune
+	prefetches if the step cannot be calculated at compile time.
+        (issue_prefetch_ref): Issue prefetches for non-constant but
+	loop-invariant steps.
+
 2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	Revert:

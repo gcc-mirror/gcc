@@ -216,7 +216,7 @@ along with GCC; see the file COPYING3.  If not see
 struct mem_ref_group
 {
   tree base;			/* Base of the reference.  */
-  HOST_WIDE_INT step;		/* Step of the reference.  */
+  tree step;			/* Step of the reference.  */
   struct mem_ref *refs;		/* References in the group.  */
   struct mem_ref_group *next;	/* Next group of references.  */
 };
@@ -271,7 +271,10 @@ dump_mem_ref (FILE *file, struct mem_ref *ref)
   fprintf (file, "  group %p (base ", (void *) ref->group);
   print_generic_expr (file, ref->group->base, TDF_SLIM);
   fprintf (file, ", step ");
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC, ref->group->step);
+  if (cst_and_fits_in_hwi (ref->group->step))
+    fprintf (file, HOST_WIDE_INT_PRINT_DEC, int_cst_value (ref->group->step));
+  else
+    print_generic_expr (file, ref->group->step, TDF_TREE);
   fprintf (file, ")\n");
 
   fprintf (file, "  delta ");
@@ -287,19 +290,20 @@ dump_mem_ref (FILE *file, struct mem_ref *ref)
    exist.  */
 
 static struct mem_ref_group *
-find_or_create_group (struct mem_ref_group **groups, tree base,
-		      HOST_WIDE_INT step)
+find_or_create_group (struct mem_ref_group **groups, tree base, tree step)
 {
   struct mem_ref_group *group;
 
   for (; *groups; groups = &(*groups)->next)
     {
-      if ((*groups)->step == step
+      if (operand_equal_p ((*groups)->step, step, 0)
 	  && operand_equal_p ((*groups)->base, base, 0))
 	return *groups;
 
-      /* Keep the list of groups sorted by decreasing step.  */
-      if ((*groups)->step < step)
+      /* If step is an integer constant, keep the list of groups sorted
+         by decreasing step.  */
+        if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
+            && int_cst_value ((*groups)->step) < int_cst_value (step))
 	break;
     }
 
@@ -384,7 +388,7 @@ struct ar_data
 {
   struct loop *loop;			/* Loop of the reference.  */
   gimple stmt;				/* Statement of the reference.  */
-  HOST_WIDE_INT *step;			/* Step of the memory reference.  */
+  tree *step;				/* Step of the memory reference.  */
   HOST_WIDE_INT *delta;			/* Offset of the memory reference.  */
 };
 
@@ -396,7 +400,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
 {
   struct ar_data *ar_data = (struct ar_data *) data;
   tree ibase, step, stepsize;
-  HOST_WIDE_INT istep, idelta = 0, imult = 1;
+  HOST_WIDE_INT idelta = 0, imult = 1;
   affine_iv iv;
 
   if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF
@@ -404,14 +408,10 @@ idx_analyze_ref (tree base, tree *index, void *data)
     return false;
 
   if (!simple_iv (ar_data->loop, loop_containing_stmt (ar_data->stmt),
-		  *index, &iv, false))
+		  *index, &iv, true))
     return false;
   ibase = iv.base;
   step = iv.step;
-
-  if (!cst_and_fits_in_hwi (step))
-    return false;
-  istep = int_cst_value (step);
 
   if (TREE_CODE (ibase) == POINTER_PLUS_EXPR
       && cst_and_fits_in_hwi (TREE_OPERAND (ibase, 1)))
@@ -425,6 +425,12 @@ idx_analyze_ref (tree base, tree *index, void *data)
       ibase = build_int_cst (TREE_TYPE (ibase), 0);
     }
 
+  if (*ar_data->step == NULL_TREE)
+    *ar_data->step = step;
+  else
+    *ar_data->step = fold_build2 (PLUS_EXPR, sizetype,
+				  fold_convert (sizetype, *ar_data->step),
+				  fold_convert (sizetype, step));
   if (TREE_CODE (base) == ARRAY_REF)
     {
       stepsize = array_ref_element_size (base);
@@ -432,11 +438,12 @@ idx_analyze_ref (tree base, tree *index, void *data)
 	return false;
       imult = int_cst_value (stepsize);
 
-      istep *= imult;
+      *ar_data->step = fold_build2 (MULT_EXPR, sizetype,
+				    fold_convert (sizetype, *ar_data->step),
+				    fold_convert (sizetype, step));
       idelta *= imult;
     }
 
-  *ar_data->step += istep;
   *ar_data->delta += idelta;
   *index = ibase;
 
@@ -450,7 +457,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
 
 static bool
 analyze_ref (struct loop *loop, tree *ref_p, tree *base,
-	     HOST_WIDE_INT *step, HOST_WIDE_INT *delta,
+	     tree *step, HOST_WIDE_INT *delta,
 	     gimple stmt)
 {
   struct ar_data ar_data;
@@ -458,7 +465,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
   HOST_WIDE_INT bit_offset;
   tree ref = *ref_p;
 
-  *step = 0;
+  *step = NULL_TREE;
   *delta = 0;
 
   /* First strip off the component references.  Ignore bitfields.  */
@@ -493,14 +500,17 @@ static bool
 gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
 			      tree ref, bool write_p, gimple stmt)
 {
-  tree base;
-  HOST_WIDE_INT step, delta;
+  tree base, step;
+  HOST_WIDE_INT delta;
   struct mem_ref_group *agrp;
 
   if (get_base_address (ref) == NULL)
     return false;
 
   if (!analyze_ref (loop, &ref, &base, &step, &delta, stmt))
+    return false;
+  /* If analyze_ref fails the default is a NULL_TREE.  We can stop here.  */
+  if (step == NULL_TREE)
     return false;
 
   /* Now we know that REF = &BASE + STEP * iter + DELTA, where DELTA and STEP
@@ -576,8 +586,16 @@ gather_memory_references (struct loop *loop, bool *no_other_refs, unsigned *ref_
 static void
 prune_ref_by_self_reuse (struct mem_ref *ref)
 {
-  HOST_WIDE_INT step = ref->group->step;
-  bool backward = step < 0;
+  HOST_WIDE_INT step;
+  bool backward;
+
+  /* If the step size is non constant, we cannot calculate prefetch_mod.  */
+  if (!cst_and_fits_in_hwi (ref->group->step))
+    return;
+
+  step = int_cst_value (ref->group->step);
+
+  backward = step < 0;
 
   if (step == 0)
     {
@@ -661,8 +679,8 @@ static void
 prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
 			  bool by_is_before)
 {
-  HOST_WIDE_INT step = ref->group->step;
-  bool backward = step < 0;
+  HOST_WIDE_INT step;
+  bool backward;
   HOST_WIDE_INT delta_r = ref->delta, delta_b = by->delta;
   HOST_WIDE_INT delta = delta_b - delta_r;
   HOST_WIDE_INT hit_from;
@@ -672,6 +690,16 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   unsigned HOST_WIDE_INT reduced_prefetch_block;
   tree ref_type;
   int align_unit;
+
+  /* If the step is non constant we cannot calculate prefetch_before.  */
+  if (!cst_and_fits_in_hwi (ref->group->step)) {
+    return;
+  }
+
+  step = int_cst_value (ref->group->step);
+
+  backward = step < 0;
+
 
   if (delta == 0)
     {
@@ -986,7 +1014,7 @@ static void
 issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 {
   HOST_WIDE_INT delta;
-  tree addr, addr_base, write_p, local;
+  tree addr, addr_base, write_p, local, forward;
   gimple prefetch;
   gimple_stmt_iterator bsi;
   unsigned n_prefetches, ap;
@@ -1009,13 +1037,28 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 
   for (ap = 0; ap < n_prefetches; ap++)
     {
-      /* Determine the address to prefetch.  */
-      delta = (ahead + ap * ref->prefetch_mod) * ref->group->step;
-      addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-			  addr_base, size_int (delta));
-      addr = force_gimple_operand_gsi (&bsi, unshare_expr (addr), true, NULL,
-				       true, GSI_SAME_STMT);
-
+      if (cst_and_fits_in_hwi (ref->group->step))
+        {
+          /* Determine the address to prefetch.  */
+          delta = (ahead + ap * ref->prefetch_mod) *
+		   int_cst_value (ref->group->step);
+          addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+                              addr_base, size_int (delta));
+          addr = force_gimple_operand_gsi (&bsi, unshare_expr (addr), true, NULL,
+                                           true, GSI_SAME_STMT);
+        }
+      else
+        {
+          /* The step size is non-constant but loop-invariant.  We use the
+             heuristic to simply prefetch ahead iterations ahead.  */
+          forward = fold_build2 (MULT_EXPR, sizetype,
+                                 fold_convert (sizetype, ref->group->step),
+                                 fold_convert (sizetype, size_int (ahead)));
+          addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr_base,
+			      forward);
+          addr = force_gimple_operand_gsi (&bsi, unshare_expr (addr), true,
+					   NULL, true, GSI_SAME_STMT);
+      }
       /* Create the prefetch instruction.  */
       prefetch = gimple_build_call (built_in_decls[BUILT_IN_PREFETCH],
 				    3, addr, write_p, local);
