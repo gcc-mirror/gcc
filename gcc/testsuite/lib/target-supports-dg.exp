@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009
+#   Copyright (C) 1997, 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009, 2010
 #   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -145,12 +145,23 @@ proc dg-require-named-sections { args } {
 }
 
 # If the target does not match the required effective target, skip this test.
+# Only apply this if the optional selector matches.
 
 proc dg-require-effective-target { args } {
     set args [lreplace $args 0 0]
-    if { [llength $args] != 1 } {
-	error "syntax error, need a single effective-target keyword"
+    # Verify the number of arguments.  The last is optional.
+    if { [llength $args] < 1 || [llength $args] > 2 } {
+	error "syntax error, need a single effective-target keyword with optional selector"
     }
+    
+    # Evaluate selector if present.
+    if { [llength $args] == 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	}
+    }
+
     if { ![is-effective-target [lindex $args 0]] } {
 	upvar dg-do-what dg-do-what
         set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]

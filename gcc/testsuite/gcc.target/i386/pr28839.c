@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -ftree-vectorize -funswitch-loops" } */
+/* { dg-require-effective-target sse2 } */
 
 static int ready[10];
 void abort (void);

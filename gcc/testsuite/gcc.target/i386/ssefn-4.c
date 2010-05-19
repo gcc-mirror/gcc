@@ -3,6 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 

@@ -1035,9 +1035,12 @@ and before any @code{dg-additional-sources} directive.
 They require at least one argument, which can be an empty string if the
 specific procedure does not examine the argument.
 
-@item @{ dg-require-effective-target @var{keyword} @}
+@item @{ dg-require-effective-target @var{keyword} [@{ @var{selector} @}] @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
+If the directive includes the optional @samp{@{ @var{selector} @}}
+then the effective-target test is only performed if the target system
+matches the @var{selector}.
 This directive must appear after any @code{dg-do} directive in the test
 and before any @code{dg-additional-sources} directive.
 

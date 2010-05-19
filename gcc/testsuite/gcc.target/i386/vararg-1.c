@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-w" { target { lp64 } } } */
 /* { dg-options "-w -msse2 -mpreferred-stack-boundary=2" { target { ilp32 } } } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 #include <stdarg.h>

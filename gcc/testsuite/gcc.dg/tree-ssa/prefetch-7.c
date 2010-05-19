@@ -1,5 +1,6 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 --param max-unrolled-insns=1 -fdump-tree-aprefetch-details -fdump-tree-final_cleanup" } */
 
 #define K 1000000

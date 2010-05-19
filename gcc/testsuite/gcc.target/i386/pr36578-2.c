@@ -1,6 +1,7 @@
 /* Test for unsafe floating-point conversions.  */
 /* { dg-do run } */
 /* { dg-options "-msse2 -mfpmath=sse" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 

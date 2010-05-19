@@ -1,6 +1,7 @@
 /* Test whether using target specific options, we can generate SSE5 code.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=k8 -mfpmath=sse -msse2" } */
+/* { dg-require-effective-target sse2 } */
 
 extern void exit (int);
 

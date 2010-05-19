@@ -24,6 +24,29 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# Return 1 if 3dnow instructions can be compiled.
+proc check_effective_target_3dnow { } {
+    return [check_no_compiler_messages 3dnow object {
+	void _m_pfadd (void)
+	{
+	    __builtin_ia32_pfadd();
+	}
+    } "-O2 -m3dnow" ]
+}
+
+# Return 1 if sse3 instructions can be compiled.
+proc check_effective_target_sse3 { } {
+    return [check_no_compiler_messages sse3 object {
+	typedef double __m128d __attribute__ ((__vector_size__ (16)));
+	typedef double __v2df __attribute__ ((__vector_size__ (16)));
+
+	__m128d _mm_addsub_pd (__m128d __X, __m128d __Y)
+	{
+	    return (__m128d) __builtin_ia32_addsubpd ((__v2df)__X, (__v2df)__Y);
+	}
+    } "-O2 -msse3" ]
+}
+
 # Return 1 if ssse3 instructions can be compiled.
 proc check_effective_target_ssse3 { } {
     return [check_no_compiler_messages ssse3 object {

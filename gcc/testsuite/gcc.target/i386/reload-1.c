@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O3 -msse2 -fdump-rtl-csa" } */
 
 #include <emmintrin.h>

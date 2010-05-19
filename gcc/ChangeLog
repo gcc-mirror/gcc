@@ -1,5 +1,10 @@
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/sourcebuild.texi (Directives): Document optional
+	dg-require-effective-target selector.
+
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (gcc_cv_as_hidden): Check for Solaris 9/x86 as
 	hidden alias bug.
 	(gcc_cv_as_ix86_quad): Check for .quad directive.

@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target dfp } */
 /* { dg-options "-O -msse2 -std=gnu99" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 
