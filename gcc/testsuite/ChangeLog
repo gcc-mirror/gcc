@@ -1,3 +1,8 @@
+2010-05-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44196
+	* g++.dg/lto/20100519-1_0.C: New testcase.
+
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/42360
