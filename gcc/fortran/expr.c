@@ -782,6 +782,8 @@ gfc_is_constant_expr (gfc_expr *e)
       break;
 
     case EXPR_FUNCTION:
+    case EXPR_PPC:
+    case EXPR_COMPCALL:
       /* Specification functions are constant.  */
       if (check_specification_function (e) == MATCH_YES)
 	{
@@ -2808,6 +2810,7 @@ check_restricted (gfc_expr *e)
 gfc_try
 gfc_specification_expr (gfc_expr *e)
 {
+  gfc_component *comp;
 
   if (e == NULL)
     return SUCCESS;
@@ -2822,7 +2825,9 @@ gfc_specification_expr (gfc_expr *e)
   if (e->expr_type == EXPR_FUNCTION
 	  && !e->value.function.isym
 	  && !e->value.function.esym
-	  && !gfc_pure (e->symtree->n.sym))
+	  && !gfc_pure (e->symtree->n.sym)
+	  && (!gfc_is_proc_ptr_comp (e, &comp)
+	      || !comp-> attr.pure))
     {
       gfc_error ("Function '%s' at %L must be PURE",
 		 e->symtree->n.sym->name, &e->where);
@@ -3560,6 +3565,8 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 
   switch (expr->expr_type)
     {
+    case EXPR_PPC:
+    case EXPR_COMPCALL:
     case EXPR_FUNCTION:
       for (args = expr->value.function.actual; args; args = args->next)
 	{

@@ -1,3 +1,10 @@
+2010-05-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43591
+	* expr.c (gfc_is_constant_expr, gfc_traverse_expr): Handle
+	proc-pointers and type-bound procedures.
+	(gfc_specification_expr): Check proc-pointers for pureness.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135
@@ -18,7 +25,7 @@
 
 	PR fortran/40728
 	* intrinc.c (gfc_is_intrinsic): Do not prematurely mark symbol
-        as external.
+	as external.
 
 2010-05-06  Tobias Burnus  <burnus@net-b.de>
 
