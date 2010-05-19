@@ -1,3 +1,10 @@
+2010-05-19  Eelis van der Weegen  <gcc-bugzilla@contacts.eelis.net>
+
+	PR libstdc++/44190
+	* include/debug/vector (vector<>::resize): Call
+	_M_update_guaranteed_capacity.
+	* testsuite/23_containers/vector/capacity/44190.cc: New.
+
 2010-05-14  Silvius Rus  <silvius.rus@gmail.com>
 
 	PR libstdc++/43259
