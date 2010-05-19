@@ -1,3 +1,25 @@
+2010-05-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* hooks.h (hook_tree_tree_tree_bool_null): Rename to...
+	(hook_tree_tree_int_treep_bool_null): ...this.  Update signature.
+	* hooks.c: Likewise.
+	* target-def.h (TARGET_FOLD_BUILTIN): Define to
+	hook_tree_tree_int_treep_bool_null.
+	* target.h: (struct gcc_target): Update signature of fold_builtin
+	field.
+	* doc/tm.texi (TARGET_FOLD_BUILTIN): Update description and signature.
+	* builtins.c (fold_call_expr): Pass call_expr_nargs and CALL_EXPR_ARGP
+	instead of the call expression.
+	(fold_builtin_call_array): Pass n and argarray directly.
+	(fold_call_stmt): Pass nargs and gimple_call_arg_ptr instead of
+	consing a list.
+	* config/alpha/alpha.c (alpha_fold_builtin): Update signature.  Lift
+	MAX_ARGS check out of the loop.  Delete declaration of `arity', declare
+	`i' and use it in place of `arity'.
+	* config/sparc/sparc.c (sparc_fold_builtin): Update signature.
+	Dereference `args' directly.
+	* config/xtensa/xtensa (xtensa_fold_builtin): Likewise.
+
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document

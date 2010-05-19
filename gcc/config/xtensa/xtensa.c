@@ -142,7 +142,7 @@ static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
 					 gimple_seq *);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
 static void xtensa_init_builtins (void);
-static tree xtensa_fold_builtin (tree, tree, bool);
+static tree xtensa_fold_builtin (tree, int, tree *, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void xtensa_va_start (tree, rtx);
 static bool xtensa_frame_pointer_required (void);
@@ -3000,7 +3000,8 @@ xtensa_init_builtins (void)
 
 
 static tree
-xtensa_fold_builtin (tree fndecl, tree call, bool ignore ATTRIBUTE_UNUSED)
+xtensa_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
+		     bool ignore ATTRIBUTE_UNUSED)
 {
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1;
@@ -3008,8 +3009,8 @@ xtensa_fold_builtin (tree fndecl, tree call, bool ignore ATTRIBUTE_UNUSED)
   switch (fcode)
     {
     case XTENSA_BUILTIN_UMULSIDI3:
-      arg0 = CALL_EXPR_ARG (call, 0);
-      arg1 = CALL_EXPR_ARG (call, 1);
+      arg0 = args[0];
+      arg1 = args[1];
       if ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
 	  || TARGET_MUL32_HIGH)
 	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,

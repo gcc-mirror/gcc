@@ -386,7 +386,7 @@ static void sparc_init_libfuncs (void);
 static void sparc_init_builtins (void);
 static void sparc_vis_init_builtins (void);
 static rtx sparc_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static tree sparc_fold_builtin (tree, tree, bool);
+static tree sparc_fold_builtin (tree, int, tree *, bool);
 static int sparc_vis_mul8x16 (int, int);
 static tree sparc_handle_vis_mul8x16 (int, tree, tree, tree);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -8372,7 +8372,8 @@ sparc_handle_vis_mul8x16 (int fncode, tree inner_type, tree elts0, tree elts1)
    function could not be folded.  */
 
 static tree
-sparc_fold_builtin (tree fndecl, tree call, bool ignore)
+sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
+		    tree *args, bool ignore)
 {
   tree arg0, arg1, arg2;
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
@@ -8386,7 +8387,7 @@ sparc_fold_builtin (tree fndecl, tree call, bool ignore)
   switch (icode)
     {
     case CODE_FOR_fexpand_vis:
-      arg0 = CALL_EXPR_ARG (call, 0);
+      arg0 = args[0];
       STRIP_NOPS (arg0);
 
       if (TREE_CODE (arg0) == VECTOR_CST)
@@ -8409,8 +8410,8 @@ sparc_fold_builtin (tree fndecl, tree call, bool ignore)
     case CODE_FOR_fmul8x16_vis:
     case CODE_FOR_fmul8x16au_vis:
     case CODE_FOR_fmul8x16al_vis:
-      arg0 = CALL_EXPR_ARG (call, 0);
-      arg1 = CALL_EXPR_ARG (call, 1);
+      arg0 = args[0];
+      arg1 = args[1];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8427,8 +8428,8 @@ sparc_fold_builtin (tree fndecl, tree call, bool ignore)
       break;
 
     case CODE_FOR_fpmerge_vis:
-      arg0 = CALL_EXPR_ARG (call, 0);
-      arg1 = CALL_EXPR_ARG (call, 1);
+      arg0 = args[0];
+      arg1 = args[1];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8450,9 +8451,9 @@ sparc_fold_builtin (tree fndecl, tree call, bool ignore)
       break;
 
     case CODE_FOR_pdist_vis:
-      arg0 = CALL_EXPR_ARG (call, 0);
-      arg1 = CALL_EXPR_ARG (call, 1);
-      arg2 = CALL_EXPR_ARG (call, 2);
+      arg0 = args[0];
+      arg1 = args[1];
+      arg2 = args[2];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
       STRIP_NOPS (arg2);

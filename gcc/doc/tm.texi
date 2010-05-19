@@ -10784,14 +10784,14 @@ another @code{CALL_EXPR}.
 @var{arglist} really has type @samp{VEC(tree,gc)*}
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, tree @var{call}, bool @var{ignore})
+@deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, int @var{n_args}, tree *@var{argp}, bool @var{ignore})
 
 Fold a call to a machine specific built-in function that was set up by
 @samp{TARGET_INIT_BUILTINS}.  @var{fndecl} is the declaration of the
-built-in function.  @var{call} is the @code{CALL_EXPR} representing
-the call.  The result is another tree containing a
-simplified expression for the call's result.  If @var{ignore} is true
-the value will be ignored.
+built-in function.  @var{n_args} is the number of arguments passed to
+the function; the arguments themselves are pointed to by @var{argp}.
+The result is another tree containing a simplified expression for the
+call's result.  If @var{ignore} is true the value will be ignored.
 @end deftypefn
 
 @deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const_rtx @var{insn})

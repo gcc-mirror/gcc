@@ -456,7 +456,7 @@
 #define TARGET_INIT_BUILTINS hook_void_void
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
 #define TARGET_RESOLVE_OVERLOADED_BUILTIN NULL
-#define TARGET_FOLD_BUILTIN hook_tree_tree_tree_bool_null
+#define TARGET_FOLD_BUILTIN hook_tree_tree_int_treep_bool_null
 #define TARGET_BUILTIN_DECL NULL
 
 /* In tree-ssa-math-opts.c  */
