@@ -868,11 +868,16 @@ cp_build_qualified_type_real (tree type,
      [dcl.ref], [dcl.fct]  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TREE_CODE (type) == REFERENCE_TYPE
+	  || TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE))
     {
       bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
     }
+
+  /* But preserve any function-cv-quals on a FUNCTION_TYPE.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    type_quals |= type_memfn_quals (type);
 
   /* A restrict-qualified type must be a pointer (or reference)
      to object or incomplete type. */
@@ -1038,8 +1043,11 @@ strip_typedefs (tree t)
 					  TREE_CHAIN (arg_types));
 	  }
 	else
+	  {
 	    result = build_function_type (type,
 					  arg_types);
+	    result = apply_memfn_quals (result, type_memfn_quals (t));
+	  }
 
 	if (TYPE_RAISES_EXCEPTIONS (t))
 	  result = build_exception_variant (result,

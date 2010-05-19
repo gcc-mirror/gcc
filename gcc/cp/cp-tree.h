@@ -5413,6 +5413,8 @@ extern bool error_type_p			(const_tree);
 extern int ptr_reasonably_similar		(const_tree, const_tree);
 extern tree build_ptrmemfunc			(tree, tree, int, bool);
 extern int cp_type_quals			(const_tree);
+extern int type_memfn_quals			(const_tree);
+extern tree apply_memfn_quals			(tree, cp_cv_quals);
 extern bool cp_type_readonly			(const_tree);
 extern bool cp_has_mutable_p			(const_tree);
 extern bool at_least_as_qualified_p		(const_tree, const_tree);
