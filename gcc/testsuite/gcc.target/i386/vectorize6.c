@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -ftree-vectorize -mveclibabi=svml -ffast-math" } */
+/* { dg-require-effective-target sse2 } */
 
 double x[256];
 

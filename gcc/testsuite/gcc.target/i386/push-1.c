@@ -1,5 +1,6 @@
 /* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-w -msse2 -Os" } */
+/* { dg-require-effective-target sse2 } */
 
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 

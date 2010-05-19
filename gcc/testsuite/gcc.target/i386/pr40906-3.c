@@ -1,5 +1,6 @@
 /* { dg-do run { target *-*-linux* } } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -fomit-frame-pointer -msse2 -mpush-args -mno-accumulate-outgoing-args" } */
 
 #include "sse2-check.h"

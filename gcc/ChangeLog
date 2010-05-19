@@ -1,3 +1,10 @@
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	3dnow, sse3, sse2.
+	(Directives): Document optional	dg-require-effective-target
+	selector.
+
 2010-05-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44196

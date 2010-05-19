@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-require-effective-target 3dnow } */
 /* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow" } */
 
 /* Test that the intrinsics compile with optimization.  All of them are
