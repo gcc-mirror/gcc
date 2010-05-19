@@ -2105,6 +2105,7 @@ typedef struct
   int warn_aliasing;
   int warn_ampersand;
   int warn_conversion;
+  int warn_conversion_extra;
   int warn_implicit_interface;
   int warn_implicit_procedure;
   int warn_line_truncation;

@@ -92,6 +92,10 @@ Wconversion
 Fortran Warning
 ; Documented in C
 
+Wconversion-extra
+Fortran Warning
+Warn about most implicit conversions
+
 Wimplicit-interface
 Fortran Warning
 Warn about calls with implicit interface

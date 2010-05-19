@@ -4015,18 +4015,38 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 
   /* At this point, a conversion is necessary. A warning may be needed.  */
   if ((gfc_option.warn_std & sym->standard) != 0)
-    gfc_warning_now ("Extension: Conversion from %s to %s at %L",
-		     gfc_typename (&from_ts), gfc_typename (ts), &expr->where);
-  else if (wflag && gfc_option.warn_conversion)
     {
+      gfc_warning_now ("Extension: Conversion from %s to %s at %L",
+		       gfc_typename (&from_ts), gfc_typename (ts),
+		       &expr->where);
+    }
+  else if (wflag)
+    {
+      /* Two modes of warning:
+	  - gfc_option.warn_conversion tries to be more intelligent
+	    about the warnings raised and omits those where smaller
+	    kinds are promoted to larger ones without change in the
+	    value
+	  - gfc_option.warn_conversion_extra does not take the kinds
+	    into account and also warns for coversions like
+	    REAL(4) -> REAL(8)
+
+	 NOTE: Possible enhancement for warn_conversion
+	 If converting from a smaller to a larger kind, check if the
+	 value is constant and if yes, whether the value still fits
+	 in the smaller kind. If yes, omit the warning.
+      */
+
       /* If the types are the same (but not LOGICAL), and if from-kind
 	 is larger than to-kind, this may indicate a loss of precision.
 	 The same holds for conversions from REAL to COMPLEX.  */
       if (((from_ts.type == ts->type && from_ts.type != BT_LOGICAL)
-	     && from_ts.kind > ts->kind)
+           && ((gfc_option.warn_conversion && from_ts.kind > ts->kind)
+	       || gfc_option.warn_conversion_extra))
 	  || ((from_ts.type == BT_REAL && ts->type == BT_COMPLEX)
-	      && from_ts.kind > ts->kind))
-	gfc_warning_now ("Possible loss of precision in conversion "
+	      && ((gfc_option.warn_conversion && from_ts.kind > ts->kind)
+		  || gfc_option.warn_conversion_extra)))
+	gfc_warning_now ("Possible change of value in conversion "
 			 "from %s to %s at %L", gfc_typename (&from_ts),
 			 gfc_typename (ts), &expr->where);
 
@@ -4037,18 +4057,21 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	 an overflow error with range checking. */
       else if (from_ts.type == BT_INTEGER
 	       && (ts->type == BT_REAL || ts->type == BT_COMPLEX)
-	       && from_ts.kind > ts->kind)
-	gfc_warning_now ("Possible loss of digits in conversion "
+	       && ((gfc_option.warn_conversion && from_ts.kind > ts->kind)
+		   || gfc_option.warn_conversion_extra))
+	gfc_warning_now ("Possible change of value in conversion "
 			 "from %s to %s at %L", gfc_typename (&from_ts),
 			 gfc_typename (ts), &expr->where);
 
       /* If REAL/COMPLEX is converted to INTEGER, or COMPLEX is converted
         to REAL we almost certainly have a loss of digits, regardless of
         the respective kinds.  */
-      else if (((from_ts.type == BT_REAL || from_ts.type == BT_COMPLEX)
-		 && ts->type == BT_INTEGER)
-	       || (from_ts.type == BT_COMPLEX && ts->type == BT_REAL))
-	gfc_warning_now ("Likely loss of digits in conversion from"
+      else if ((((from_ts.type == BT_REAL || from_ts.type == BT_COMPLEX)
+		  && ts->type == BT_INTEGER)
+		|| (from_ts.type == BT_COMPLEX && ts->type == BT_REAL))
+	       && (gfc_option.warn_conversion
+	           || gfc_option.warn_conversion_extra))
+	gfc_warning_now ("Possible change of value in conversion from "
 			"%s to %s at %L", gfc_typename (&from_ts),
 			gfc_typename (ts), &expr->where);
     }
