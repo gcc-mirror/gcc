@@ -1949,7 +1949,7 @@ pop_arguments (tree method_type)
       VEC_safe_push (tree, gc, args, type);
     }
 
-  arity = VEC_length (tree, typestack);
+  arity = VEC_length (tree, args);
 
   while (arity--)
     {

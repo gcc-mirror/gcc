@@ -1,5 +1,9 @@
 2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* expr.c (pop_arguments): Fix use of undeclared variable.
+
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* expr.c (expand_java_multianewarray): Use build_call_vec instead of
 	build_call_list.
 	(pop_arguments): Return a VEC instead of a tree.  Take a method type
