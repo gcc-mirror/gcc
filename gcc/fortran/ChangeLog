@@ -1,5 +1,12 @@
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/38404
+	* primary.c (match_string_constant): Move start_locus just inside 
+	the string.
+	* data.c (create_character_intializer): Clarified truncation warning.
+
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/34505
 	* intrinsic.h (gfc_check_float): New prototype.
 	(gfc_check_sngl): New prototype.
