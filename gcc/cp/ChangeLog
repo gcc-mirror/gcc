@@ -1,5 +1,9 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	* call.c (struct z_candidate): Add explicit_targs field.
+	(add_template_candidate_real): Set it.
+	(build_over_call): Use it to control init-list warning.
+
 	PR c++/44157
 	* call.c (build_over_call): Limit init-list deduction warning to
 	cases where the argument is actually an init-list.

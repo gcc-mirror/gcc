@@ -447,6 +447,7 @@ struct z_candidate {
      indicated by the CONVERSION_PATH.  */
   tree conversion_path;
   tree template_decl;
+  tree explicit_targs;
   candidate_warning *warnings;
   z_candidate *next;
 };
@@ -2586,6 +2587,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     cand->template_decl = build_template_info (tmpl, targs);
   else
     cand->template_decl = DECL_TEMPLATE_INFO (fn);
+  cand->explicit_targs = explicit_targs;
 
   return cand;
 }
@@ -5664,7 +5666,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    pattype = PACK_EXPANSION_PATTERN (pattype);
 	  pattype = non_reference (pattype);
 
-	  if (!is_std_init_list (pattype))
+	  if (TREE_CODE (pattype) == TEMPLATE_TYPE_PARM
+	      && (cand->explicit_targs == NULL_TREE
+		  || (TREE_VEC_LENGTH (cand->explicit_targs)
+		      <= TEMPLATE_TYPE_IDX (pattype))))
 	    {
 	      pedwarn (input_location, 0, "deducing %qT as %qT",
 		       non_reference (TREE_TYPE (patparm)),
