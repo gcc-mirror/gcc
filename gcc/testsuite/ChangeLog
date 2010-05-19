@@ -1,3 +1,8 @@
+2010-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44193
+	* g++.dg/template/fntype1.C: New.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135
