@@ -688,8 +688,8 @@ warnings.
 @cindex warnings, all
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
-This currently includes @option{-Waliasing},
-@option{-Wampersand}, @option{-Wsurprising}, @option{-Wintrinsics-std},
+This currently includes @option{-Waliasing}, @option{-Wampersand}, 
+@option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
 @option{-Wno-tabs}, @option{-Wintrinsic-shadow} and @option{-Wline-truncation}.
 
 @item -Waliasing
@@ -746,7 +746,14 @@ Warn when a source code line will be truncated.
 @opindex @code{Wconversion}
 @cindex warnings, conversion
 @cindex conversion
-Warn about implicit conversions between different types.
+Warn about implicit conversions that are likely to change the value of 
+the expression after conversion. Implied by @option{-Wall}.
+
+@item -Wconversion-extra
+@opindex @code{Wconversion-extra}
+@cindex warnings, conversion
+@cindex conversion
+Warn about implicit conversions between different types and kinds.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}

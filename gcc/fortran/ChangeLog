@@ -1,5 +1,18 @@
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/44055
+	* lang.opt (Wconversion-extra): New option.
+	* gfortran.h (gfc_option_t): Add warn_conversion_extra.
+	* options.c (gfc_init_options): Disable -Wconversion-extra by default.
+	(set_Wall): Enable -Wconversion.
+	(gfc_handle_option): Set warn_conversion_extra.
+	* intrinsic.c (gfc_convert_type_warn): Ignore kind conditions
+	introduced for -Wconversion if -Wconversion-extra is present.
+	* invoke.texi: Add -Wconversion to -Wall; document new behaviour of
+	-Wconversion; document -Wconversion-extra.
+
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/42360
 	* gfortran.h (gfc_has_default_initializer): New.
 	* expr.c (gfc_has_default_initializer): New.
