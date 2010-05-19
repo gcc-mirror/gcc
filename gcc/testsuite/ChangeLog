@@ -1,3 +1,8 @@
+2010-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44158
+	* g++.dg/cpp0x/rv-trivial-bug.C: Test copy-init too.
+
 2010-05-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43987

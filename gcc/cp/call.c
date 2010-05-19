@@ -5747,7 +5747,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      else if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn)))
+      else if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn))
+	       || move_fn_p (fn))
 	{
 	  mark_used (fn);
 	  already_used = true;
@@ -5765,7 +5766,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
-	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
+	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))
+		   && !move_fn_p (fn))
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
       else if (TREE_CODE (arg) == TARGET_EXPR
