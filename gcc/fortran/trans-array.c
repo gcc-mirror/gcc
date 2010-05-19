@@ -6223,25 +6223,6 @@ gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 }
 
 
-/* Check for default initializer; sym->value is not enough as it is also
-   set for EXPR_NULL of allocatables.  */
-
-static bool
-has_default_initializer (gfc_symbol *der)
-{
-  gfc_component *c;
-
-  gcc_assert (der->attr.flavor == FL_DERIVED);
-  for (c = der->components; c; c = c->next)
-    if ((c->ts.type != BT_DERIVED && c->initializer)
-        || (c->ts.type == BT_DERIVED
-            && (!c->attr.pointer && has_default_initializer (c->ts.u.derived))))
-      break;
-
-  return c != NULL;
-}
-
-
 /* NULLIFY an allocatable/pointer array on function entry, free it on exit.
    Do likewise, recursively if necessary, with the allocatable components of
    derived types.  */
@@ -6308,7 +6289,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       if (!sym->attr.save
 	  && !(TREE_STATIC (sym->backend_decl) && sym->attr.is_main_program))
 	{
-	  if (sym->value == NULL || !has_default_initializer (sym->ts.u.derived))
+	  if (sym->value == NULL
+	      || !gfc_has_default_initializer (sym->ts.u.derived))
 	    {
 	      rank = sym->as ? sym->as->rank : 0;
 	      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, descriptor, rank);

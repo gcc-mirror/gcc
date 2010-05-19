@@ -703,21 +703,6 @@ resolve_entries (gfc_namespace *ns)
 }
 
 
-static bool
-has_default_initializer (gfc_symbol *der)
-{
-  gfc_component *c;
-
-  gcc_assert (der->attr.flavor == FL_DERIVED);
-  for (c = der->components; c; c = c->next)
-    if ((c->ts.type != BT_DERIVED && c->initializer)
-	|| (c->ts.type == BT_DERIVED
-	    && (!c->attr.pointer && has_default_initializer (c->ts.u.derived))))
-      break;
-
-  return c != NULL;
-}
-
 /* Resolve common variables.  */
 static void
 resolve_common_vars (gfc_symbol *sym, bool named_common)
@@ -751,7 +736,7 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
 		       "has an ultimate component that is "
 		       "allocatable", csym->name, &csym->declared_at);
-      if (has_default_initializer (csym->ts.u.derived))
+      if (gfc_has_default_initializer (csym->ts.u.derived))
 	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
 		       "may not have default initializer", csym->name,
 		       &csym->declared_at);
@@ -8056,7 +8041,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	 and rhs is the same symbol as the lhs.  */
       if ((*rhsptr)->expr_type == EXPR_VARIABLE
 	    && (*rhsptr)->symtree->n.sym->ts.type == BT_DERIVED
-	    && has_default_initializer ((*rhsptr)->symtree->n.sym->ts.u.derived)
+	    && gfc_has_default_initializer ((*rhsptr)->symtree->n.sym->ts.u.derived)
 	    && (lhs->symtree->n.sym == (*rhsptr)->symtree->n.sym))
 	*rhsptr = gfc_get_parentheses (*rhsptr);
 
@@ -9204,13 +9189,13 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
      or POINTER attribute, the object shall have the SAVE attribute."
 
      The check for initializers is performed with
-     has_default_initializer because gfc_default_initializer generates
+     gfc_has_default_initializer because gfc_default_initializer generates
      a hidden default for allocatable components.  */
   if (!(sym->value || no_init_flag) && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && !sym->ns->save_all && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
-      && has_default_initializer (sym->ts.u.derived)
+      && gfc_has_default_initializer (sym->ts.u.derived)
       && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Implied SAVE for "
 			 "module variable '%s' at %L, needed due to "
 			 "the default initialization", sym->name,
@@ -12245,7 +12230,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
       return FAILURE;
     }
 
-  if (sym->attr.in_common && has_default_initializer (sym->ts.u.derived))
+  if (sym->attr.in_common && gfc_has_default_initializer (sym->ts.u.derived))
     {
       gfc_error ("Derived type variable '%s' at %L with default "
 		 "initialization cannot be in EQUIVALENCE with a variable "

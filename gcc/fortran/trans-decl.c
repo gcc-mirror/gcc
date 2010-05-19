@@ -3872,10 +3872,14 @@ generate_local_decl (gfc_symbol * sym)
 	       && sym->attr.dummy
 	       && sym->attr.intent == INTENT_OUT)
 	{
-	  if (!(sym->ts.type == BT_DERIVED
-		&& sym->ts.u.derived->components->initializer))
+	  if (sym->ts.type != BT_DERIVED)
 	    gfc_warning ("Dummy argument '%s' at %L was declared INTENT(OUT) "
 		         "but was not set",  sym->name, &sym->declared_at);
+	  else if (!gfc_has_default_initializer (sym->ts.u.derived))
+	    gfc_warning ("Derived-type dummy argument '%s' at %L was "
+			 "declared INTENT(OUT) but was not set and does "
+			 "not have a default initializer",
+			 sym->name, &sym->declared_at);
 	}
       /* Specific warning for unused dummy arguments. */
       else if (warn_unused_variable && sym->attr.dummy)

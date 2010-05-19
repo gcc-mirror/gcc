@@ -1,5 +1,18 @@
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/42360
+	* gfortran.h (gfc_has_default_initializer): New.
+	* expr.c (gfc_has_default_initializer): New.
+	* resolve.c (has_default_initializer): Removed, use
+	gfc_has_default_initializer() instead. Updated all callers.
+	* trans-array.c (has_default_initializer): Removed, use
+	gfc_has_default_initializer() instead. Updated all callers.
+	* trans-decl.c (generate_local_decl): Do not check the
+	first component only to check for initializers, but use
+	gfc_has_default_initializer() instead.
+
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/38404
 	* primary.c (match_string_constant): Move start_locus just inside 
 	the string.

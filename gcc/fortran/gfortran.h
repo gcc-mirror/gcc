@@ -2617,6 +2617,7 @@ gfc_try gfc_check_assign (gfc_expr *, gfc_expr *, int);
 gfc_try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 
+bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
 gfc_expr *gfc_get_variable_expr (gfc_symtree *);
 
