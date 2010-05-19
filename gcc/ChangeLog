@@ -1,3 +1,37 @@
+2010-05-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43455
+	* tree-inline.c (tree_can_inline_p): Also check compatibility
+	of return types.
+
+	2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42653
+	* tree.c (free_lang_data_in_decl): Do not reset DECL_CONTEXT
+	of FUNCTION_DECLs.
+
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42425
+	* tree.c (free_lang_data_in_type): Do not free TYPE_CONTEXT
+	if emitting debug information and it is either a function
+	or a namespace decl.
+
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43080
+	* gimple.c (gimple_decl_printable_name): Deal gracefully
+	with a NULL DECL_NAME.
+
+	2010-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43946
+	* passes.c (init_optimization_passes): Move pass_ipa_free_lang_data
+	first after all lowering passes.
+
 2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR lto/44184

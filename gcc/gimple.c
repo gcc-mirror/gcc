@@ -4563,7 +4563,8 @@ gimple_ior_addresses_taken (bitmap addresses_taken, gimple stmt)
 const char *
 gimple_decl_printable_name (tree decl, int verbosity)
 {
-  gcc_assert (decl && DECL_NAME (decl));
+  if (!DECL_NAME (decl))
+    return NULL;
 
   if (DECL_ASSEMBLER_NAME_SET_P (decl))
     {

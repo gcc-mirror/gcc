@@ -1,3 +1,32 @@
+2010-05-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43455
+	* gcc.dg/lto/20100423-1_0.c: New testcase.
+	* gcc.dg/lto/20100423-1_1.c: Likewise.
+
+	2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42653
+	* g++.dg/lto/20100423-1_0.C: New testcase.
+
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42425
+	* g++.dg/lto/20100423-2_0.C: New testcase.
+
+	2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43080
+	* g++.dg/lto/20100423-3_0.C: New testcase.
+
+	2010-04-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43946
+	* gcc.dg/lto/20100430-1_0.c: New testcase.
+
 2010-05-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43591

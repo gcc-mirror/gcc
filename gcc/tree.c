@@ -4265,7 +4265,12 @@ free_lang_data_in_type (tree type)
       TYPE_LANG_SLOT_1 (type) = NULL_TREE;
     }
 
-  TYPE_CONTEXT (type) = NULL_TREE;
+  if (debug_info_level < DINFO_LEVEL_TERSE
+      || (TYPE_CONTEXT (type)
+	  && TREE_CODE (TYPE_CONTEXT (type)) != FUNCTION_DECL
+	  && TREE_CODE (TYPE_CONTEXT (type)) != NAMESPACE_DECL))
+    TYPE_CONTEXT (type) = NULL_TREE;
+
   if (debug_info_level < DINFO_LEVEL_TERSE)
     TYPE_STUB_DECL (type) = NULL_TREE;
 }
@@ -4368,7 +4373,8 @@ free_lang_data_in_decl (tree decl)
 
   /* Ignore any intervening types, because we are going to clear their
      TYPE_CONTEXT fields.  */
-  if (TREE_CODE (decl) != FIELD_DECL)
+  if (TREE_CODE (decl) != FIELD_DECL
+      && TREE_CODE (decl) != FUNCTION_DECL)
     DECL_CONTEXT (decl) = decl_function_context (decl);
 
   if (DECL_CONTEXT (decl)

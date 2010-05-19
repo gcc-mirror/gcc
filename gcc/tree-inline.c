@@ -5079,7 +5079,7 @@ tree_can_inline_p (struct cgraph_edge *e)
 	return false;
     }
 #endif
-  tree caller, callee;
+  tree caller, callee, lhs;
 
   caller = e->caller->decl;
   callee = e->callee->decl;
@@ -5105,8 +5105,16 @@ tree_can_inline_p (struct cgraph_edge *e)
       return false;
     }
 
+  /* Do not inline calls where we cannot triviall work around mismatches
+     in argument or return types.  */
   if (e->call_stmt
-      && !gimple_check_call_args (e->call_stmt))
+      && ((DECL_RESULT (callee)
+	   && !DECL_BY_REFERENCE (DECL_RESULT (callee))
+	   && (lhs = gimple_call_lhs (e->call_stmt)) != NULL_TREE
+	   && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
+					  TREE_TYPE (lhs))
+	   && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
+	  || !gimple_check_call_args (e->call_stmt)))
     {
       e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
       gimple_call_set_cannot_inline (e->call_stmt, true);
