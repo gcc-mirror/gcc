@@ -868,12 +868,11 @@ match_string_constant (gfc_expr **result)
 
   gfc_gobble_whitespace ();
 
-  start_locus = gfc_current_locus;
-
   c = gfc_next_char ();
   if (c == '\'' || c == '"')
     {
       kind = gfc_default_character_kind;
+      start_locus = gfc_current_locus;
       goto got_delim;
     }
 
@@ -917,11 +916,12 @@ match_string_constant (gfc_expr **result)
     goto no_match;
 
   gfc_gobble_whitespace ();
-  start_locus = gfc_current_locus;
 
   c = gfc_next_char ();
   if (c != '\'' && c != '"')
     goto no_match;
+
+  start_locus = gfc_current_locus;
 
   if (kind == -1)
     {
@@ -976,7 +976,6 @@ got_delim:
   e->ts.is_iso_c = 0;
 
   gfc_current_locus = start_locus;
-  gfc_next_char ();		/* Skip delimiter */
 
   /* We disable the warning for the following loop as the warning has already
      been printed in the loop above.  */
