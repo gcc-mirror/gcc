@@ -1,6 +1,7 @@
 /* PR middle-end/37010 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-msse2 -mpreferred-stack-boundary=2" } */
+/* { dg-require-effective-target sse2 } */
 
 #include <emmintrin.h>
 #include "cpuid.h"

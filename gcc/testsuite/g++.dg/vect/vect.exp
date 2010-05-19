@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -75,6 +75,9 @@ if  [istarget "powerpc-*paired*"]  {
 } elseif { [istarget  "spu-*-*"] } {
    set dg-do-what-default run
 } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
+    if { ![check_effective_target_sse2] } then {
+	return
+    }
     lappend DEFAULT_VECTCFLAGS "-msse2"
     if [check_sse2_hw_available] {
 	set dg-do-what-default run

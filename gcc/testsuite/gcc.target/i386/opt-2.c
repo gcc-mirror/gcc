@@ -2,6 +2,7 @@
    whether we vectorize a simple loop.  */
 /* { dg-do compile } */
 /* { dg-options "-O1 -msse2 -mfpmath=sse -march=k8" } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "prefetcht0" } } */
 /* { dg-final { scan-assembler "addps" } } */
 /* { dg-final { scan-assembler "subss" } } */

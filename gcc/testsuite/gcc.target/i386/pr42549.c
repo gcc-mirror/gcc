@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target 3dnow } */
 /* { dg-options "-O2 -m3dnow" } */
 
 #include "mmx-3dnow-check.h"
