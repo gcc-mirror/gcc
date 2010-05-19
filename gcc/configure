@@ -21359,7 +21359,35 @@ foobar:' > conftest.s
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }
     then
-	gcc_cv_as_hidden=yes
+
+# Solaris 9/x86 as incorrectly emits an alias for a hidden symbol with
+# STV_HIDDEN, so disable .hidden support if so.
+case "${target}" in
+  i?86-*-solaris2*)
+    if test x$gcc_cv_as != x && test x$gcc_cv_objdump != x; then
+      cat > conftest.s <<EOF
+.globl hidden
+        .hidden hidden
+hidden:
+.globl default
+        .set    default,hidden
+EOF
+      if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+        && $gcc_cv_objdump -t conftest.o 2>/dev/null | \
+        grep '\.hidden default' > /dev/null; then
+        gcc_cv_as_hidden=no
+      else
+        gcc_cv_as_hidden=yes
+      fi
+    else
+      # Assume bug is present if objdump is missing.
+      gcc_cv_as_hidden=no
+    fi
+    ;;
+  *)
+    gcc_cv_as_hidden=yes
+    ;;
+esac
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -22921,6 +22949,39 @@ if test $gcc_cv_as_ix86_ffreep = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_AS_IX86_FFREEP 1
+_ACEOF
+
+fi
+
+    echo "$as_me:$LINENO: checking assembler for .quad directive" >&5
+echo $ECHO_N "checking assembler for .quad directive... $ECHO_C" >&6
+if test "${gcc_cv_as_ix86_quad+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_ix86_quad=no
+  if test x$gcc_cv_as != x; then
+    echo '.quad 0' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_ix86_quad=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_ix86_quad" >&5
+echo "${ECHO_T}$gcc_cv_as_ix86_quad" >&6
+if test $gcc_cv_as_ix86_quad = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_IX86_QUAD 1
 _ACEOF
 
 fi

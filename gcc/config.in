@@ -274,6 +274,12 @@
 #endif
 
 
+/* Define if your assembler supports the .quad directive. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_QUAD
+#endif
+
+
 /* Define if your assembler supports the sahf mnemonic. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_SAHF
