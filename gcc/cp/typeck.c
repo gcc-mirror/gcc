@@ -810,6 +810,7 @@ merge_types (tree t1, tree t2)
 	tree valtype = merge_types (TREE_TYPE (t1), TREE_TYPE (t2));
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
+	tree parms;
 	tree rval, raises;
 
 	/* Save space: see if the result is identical to one of the args.  */
@@ -821,21 +822,25 @@ merge_types (tree t1, tree t2)
 	/* Simple way if one arg fails to specify argument types.  */
 	if (p1 == NULL_TREE || TREE_VALUE (p1) == void_type_node)
 	  {
-	    rval = build_function_type (valtype, p2);
-	    if ((raises = TYPE_RAISES_EXCEPTIONS (t2)))
-	      rval = build_exception_variant (rval, raises);
-	    return cp_build_type_attribute_variant (rval, attributes);
+	    parms = p2;
+	    raises = TYPE_RAISES_EXCEPTIONS (t2);
 	  }
-	raises = TYPE_RAISES_EXCEPTIONS (t1);
-	if (p2 == NULL_TREE || TREE_VALUE (p2) == void_type_node)
+	else if (p2 == NULL_TREE || TREE_VALUE (p2) == void_type_node)
 	  {
-	    rval = build_function_type (valtype, p1);
-	    if (raises)
-	      rval = build_exception_variant (rval, raises);
-	    return cp_build_type_attribute_variant (rval, attributes);
+	    parms = p1;
+	    raises = TYPE_RAISES_EXCEPTIONS (t1);
+	  }
+	else
+	  {
+	    parms = commonparms (p1, p2);
+	    /* In cases where we're merging a real declaration with a
+	       built-in declaration, t1 is the real one.  */
+	    raises = TYPE_RAISES_EXCEPTIONS (t1);
 	  }
 
-	rval = build_function_type (valtype, commonparms (p1, p2));
+	rval = build_function_type (valtype, parms);
+	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
+	rval = apply_memfn_quals (rval, type_memfn_quals (t1));
 	t1 = build_exception_variant (rval, raises);
 	break;
       }

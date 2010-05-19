@@ -1,5 +1,7 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/parse/fn-typedef2.C: New.
+
 	* g++.dg/other/cv_func.C: Don't expect errors about cv-qualified
 	function type.
 
