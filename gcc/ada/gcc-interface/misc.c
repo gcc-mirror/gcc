@@ -132,6 +132,8 @@ static tree gnat_eh_personality		(void);
 #define LANG_HOOKS_BUILTIN_FUNCTION	gnat_builtin_function
 #undef  LANG_HOOKS_EH_PERSONALITY
 #define LANG_HOOKS_EH_PERSONALITY	gnat_eh_personality
+#undef  LANG_HOOKS_DEEP_UNSHARING
+#define LANG_HOOKS_DEEP_UNSHARING	true
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

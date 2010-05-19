@@ -191,7 +191,6 @@ static void Compilation_Unit_to_gnu (Node_Id);
 static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void add_cleanup (tree, Node_Id);
-static tree unshare_save_expr (tree *, int *, void *);
 static void add_stmt_list (List_Id);
 static void push_exception_label_stack (tree *, Entity_Id);
 static tree build_stmt_group (List_Id, bool);
@@ -635,16 +634,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   for (info = elab_info_list; info; info = info->next)
     {
       tree gnu_body = DECL_SAVED_TREE (info->elab_proc), gnu_stmts;
-
-      /* Unshare SAVE_EXPRs between subprograms.  These are not unshared by
-	 the gimplifier for obvious reasons, but it turns out that we need to
-	 unshare them for the global level because of SAVE_EXPRs made around
-	 checks for global objects and around allocators for global objects
-	 of variable size, in order to prevent node sharing in the underlying
-	 expression.  Note that this implicitly assumes that the SAVE_EXPR
-	 nodes themselves are not shared between subprograms, which would be
-	 an upstream bug for which we would not change the outcome.  */
-      walk_tree_without_duplicates (&gnu_body, unshare_save_expr, NULL);
 
       /* We should have a BIND_EXPR but it may not have any statements in it.
 	 If it doesn't have any, we have nothing to do except for setting the
@@ -5863,20 +5852,6 @@ void
 mark_visited (tree t)
 {
   walk_tree (&t, mark_visited_r, NULL, NULL);
-}
-
-/* Utility function to unshare expressions wrapped up in a SAVE_EXPR.  */
-
-static tree
-unshare_save_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		   void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (TREE_CODE (t) == SAVE_EXPR)
-    TREE_OPERAND (t, 0) = unshare_expr (TREE_OPERAND (t, 0));
-
-  return NULL_TREE;
 }
 
 /* Add GNU_CLEANUP, a cleanup action, to the current code group and
