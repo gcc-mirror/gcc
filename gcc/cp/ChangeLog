@@ -1,5 +1,9 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44157
+	* call.c (build_over_call): Limit init-list deduction warning to
+	cases where the argument is actually an init-list.
+
 	PR c++/44158
 	* call.c (build_over_call): Don't do bitwise copy for move ctor.
 

@@ -1,5 +1,8 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44157
+	* g++.dg/cpp0x/initlist34.C: New.
+
 	PR c++/44158
 	* g++.dg/cpp0x/rv-trivial-bug.C: Test copy-init too.
 
