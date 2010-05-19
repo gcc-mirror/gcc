@@ -616,7 +616,7 @@ struct gcc_target
       				      tree decl, void *params);
 
   /* Fold a target-specific builtin.  */
-  tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
+  tree (* fold_builtin) (tree fndecl, int nargs, tree *argp, bool ignore);
 
   /* Returns a code for a target-specific builtin that implements
      reciprocal of the function, or NULL_TREE if not available.  */

@@ -10702,7 +10702,8 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
 	return NULL_TREE;
 
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-        return targetm.fold_builtin (fndecl, exp, ignore);
+        return targetm.fold_builtin (fndecl, call_expr_nargs (exp),
+				     CALL_EXPR_ARGP (exp), ignore);
       else
 	{
 	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
@@ -10766,7 +10767,6 @@ fold_builtin_call_array (location_t loc, tree type,
 			 tree *argarray)
 {
   tree ret = NULL_TREE;
-  int i;
    tree exp;
 
   if (TREE_CODE (fn) == ADDR_EXPR)
@@ -10790,12 +10790,10 @@ fold_builtin_call_array (location_t loc, tree type,
 	  return build_call_array_loc (loc, type, fn, n, argarray);
         if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
           {
-            tree arglist = NULL_TREE;
-	    for (i = n - 1; i >= 0; i--)
-	      arglist = tree_cons (NULL_TREE, argarray[i], arglist);
-            ret = targetm.fold_builtin (fndecl, arglist, false);
-            if (ret)
-              return ret;
+	    ret = targetm.fold_builtin (fndecl, n, argarray, false);
+	    if (ret)
+	      return ret;
+
 	    return build_call_array_loc (loc, type, fn, n, argarray);
           }
         else if (n <= MAX_ARGS_TO_FOLD_BUILTIN)
@@ -13698,14 +13696,10 @@ fold_call_stmt (gimple stmt, bool ignore)
 
       if (avoid_folding_inline_builtin (fndecl))
 	return NULL_TREE;
-      /* FIXME: Don't use a list in this interface.  */
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
         {
-          tree arglist = NULL_TREE;
-          int i;
-          for (i = nargs - 1; i >= 0; i--)
-            arglist = tree_cons (NULL_TREE, gimple_call_arg (stmt, i), arglist);
-	  return targetm.fold_builtin (fndecl, arglist, ignore);
+	  return targetm.fold_builtin (fndecl, nargs,
+				       gimple_call_arg_ptr (stmt, 0), ignore);
         }
       else
 	{
