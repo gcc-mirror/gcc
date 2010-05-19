@@ -940,7 +940,7 @@ cv_unqualified (tree type)
   if (type == error_mark_node)
     return type;
 
-  quals = TYPE_QUALS (type);
+  quals = cp_type_quals (type);
   quals &= ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
   return cp_build_qualified_type (type, quals);
 }

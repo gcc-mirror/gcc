@@ -494,7 +494,7 @@ do_build_copy_constructor (tree fndecl)
 
 	      if (DECL_MUTABLE_P (field))
 		quals &= ~TYPE_QUAL_CONST;
-	      quals |= TYPE_QUALS (expr_type);
+	      quals |= cp_type_quals (expr_type);
 	      expr_type = cp_build_qualified_type (expr_type, quals);
 	    }
 
@@ -934,7 +934,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       if (const_p)
 	{
 	  data.quals = TYPE_QUAL_CONST;
-	  rhs_parm_type = build_qualified_type (type, TYPE_QUAL_CONST);
+	  rhs_parm_type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
 	}
       else
 	rhs_parm_type = type;

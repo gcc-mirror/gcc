@@ -2212,7 +2212,7 @@ finish_compound_literal (tree type, tree compound_literal)
   if (TREE_CODE (type) == ARRAY_TYPE)
     cp_complete_array_type (&type, compound_literal, false);
   compound_literal = digest_init (type, compound_literal);
-  if ((!at_function_scope_p () || cp_type_readonly (type))
+  if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))
       && initializer_constant_valid_p (compound_literal, type))
     {
       tree decl = create_temporary_var (type);
@@ -5629,7 +5629,7 @@ capture_decltype (tree decl)
   if (TREE_CODE (type) != REFERENCE_TYPE)
     {
       if (!LAMBDA_EXPR_MUTABLE_P (lam))
-	type = cp_build_qualified_type (type, (TYPE_QUALS (type)
+	type = cp_build_qualified_type (type, (cp_type_quals (type)
 					       |TYPE_QUAL_CONST));
       type = build_reference_type (type);
     }

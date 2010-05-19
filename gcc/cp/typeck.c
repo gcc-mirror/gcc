@@ -633,10 +633,10 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 
       if (DERIVED_FROM_P (class1, class2))
 	t2 = (build_pointer_type
-	      (cp_build_qualified_type (class1, TYPE_QUALS (class2))));
+	      (cp_build_qualified_type (class1, cp_type_quals (class2))));
       else if (DERIVED_FROM_P (class2, class1))
 	t1 = (build_pointer_type
-	      (cp_build_qualified_type (class2, TYPE_QUALS (class1))));
+	      (cp_build_qualified_type (class2, cp_type_quals (class1))));
       else
         {
           if (complain & tf_error)
@@ -1250,7 +1250,10 @@ structural_comptypes (tree t1, tree t2, int strict)
   /* Qualifiers must match.  For array types, we will check when we
      recur on the array element types.  */
   if (TREE_CODE (t1) != ARRAY_TYPE
-      && TYPE_QUALS (t1) != TYPE_QUALS (t2))
+      && cp_type_quals (t1) != cp_type_quals (t2))
+    return false;
+  if (TREE_CODE (t1) == FUNCTION_TYPE
+      && type_memfn_quals (t1) != type_memfn_quals (t2))
     return false;
   if (TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
     return false;
@@ -2032,7 +2035,7 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
   else
     {
       /* Is this a string constant which has decayed to 'const char *'?  */
-      t = build_pointer_type (build_qualified_type (t, TYPE_QUAL_CONST));
+      t = build_pointer_type (cp_build_qualified_type (t, TYPE_QUAL_CONST));
       if (!same_type_p (TREE_TYPE (exp), t))
 	return 0;
       STRIP_NOPS (exp);
@@ -7642,7 +7645,7 @@ check_return_expr (tree retval, bool *no_warning)
       if ((cxx_dialect != cxx98) 
           && named_return_value_okay_p
           /* The variable must not have the `volatile' qualifier.  */
-	  && !(cp_type_quals (TREE_TYPE (retval)) & TYPE_QUAL_VOLATILE)
+	  && !CP_TYPE_VOLATILE_P (TREE_TYPE (retval))
 	  /* The return type must be a class type.  */
 	  && CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	flags = flags | LOOKUP_PREFER_RVALUE;
@@ -7900,17 +7903,6 @@ apply_memfn_quals (tree type, cp_cv_quals memfn_quals)
   /* This should really have a different TYPE_MAIN_VARIANT, but that gets
      complex.  */
   return build_qualified_type (type, memfn_quals);
-}
-
-/* Returns nonzero if the TYPE is const from a C++ perspective: look inside
-   arrays.  */
-
-bool
-cp_type_readonly (const_tree type)
-{
-  /* This CONST_CAST is okay because strip_array_types returns its
-     argument unmodified and we assign it to a const_tree.  */
-  return (cp_type_quals (type) & TYPE_QUAL_CONST) != 0;
 }
 
 /* Returns nonzero if TYPE is const or volatile.  */

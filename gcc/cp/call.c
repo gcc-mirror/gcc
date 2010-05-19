@@ -1246,7 +1246,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
      type, so that we can later do a const_cast to the desired type.  */
   if (related_p && c_cast_p
       && !at_least_as_qualified_p (to, tfrom))
-    to = build_qualified_type (to, cp_type_quals (tfrom));
+    to = cp_build_qualified_type (to, cp_type_quals (tfrom));
   compatible_p = reference_compatible_p (to, tfrom);
 
   /* Directly bind reference when target expression's type is compatible with
@@ -1617,9 +1617,8 @@ add_function_candidate (struct z_candidate **candidates,
 	     parameter, we can just change the parm type.  */
 	  if (ctype && is_this)
 	    {
-	      parmtype
-		= build_qualified_type (ctype,
-					TYPE_QUALS (TREE_TYPE (parmtype)));
+	      parmtype = cp_build_qualified_type
+		(ctype, cp_type_quals (TREE_TYPE (parmtype)));
 	      parmtype = build_pointer_type (parmtype);
 	    }
 
@@ -3777,11 +3776,11 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	 the type of the other.  */
       if ((conv2 || conv3)
 	  && CLASS_TYPE_P (arg2_type)
-	  && TYPE_QUALS (arg2_type) != TYPE_QUALS (arg3_type))
+	  && cp_type_quals (arg2_type) != cp_type_quals (arg3_type))
 	arg2_type = arg3_type =
 	  cp_build_qualified_type (arg2_type,
-				   TYPE_QUALS (arg2_type)
-				   | TYPE_QUALS (arg3_type));
+				   cp_type_quals (arg2_type)
+				   | cp_type_quals (arg3_type));
     }
 
   /* [expr.cond]
@@ -4997,7 +4996,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  }
 	/* Build up the array.  */
 	elttype = cp_build_qualified_type
-	  (elttype, TYPE_QUALS (elttype) | TYPE_QUAL_CONST);
+	  (elttype, cp_type_quals (elttype) | TYPE_QUAL_CONST);
 	array = build_array_of_n_type (elttype, len);
 	array = finish_compound_literal (array, new_ctor);
 
@@ -5378,7 +5377,7 @@ type_passed_as (tree type)
     {
       type = build_reference_type (type);
       /* There are no other pointers to this temporary.  */
-      type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
+      type = cp_build_qualified_type (type, TYPE_QUAL_RESTRICT);
     }
   else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
@@ -7735,7 +7734,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
     {
       if (complain & tf_error)
 	{
-	  if (!(TYPE_QUALS (TREE_TYPE (type)) & TYPE_QUAL_CONST)
+	  if (!CP_TYPE_CONST_P (TREE_TYPE (type))
 	      && !TYPE_REF_IS_RVALUE (type)
 	      && !real_lvalue_p (expr))
 	    error ("invalid initialization of non-const reference of "
