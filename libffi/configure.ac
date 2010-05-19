@@ -245,13 +245,39 @@ if test x$TARGET = xX86 || test x$TARGET = xX86_64; then
 	libffi_cv_as_x86_pcrel, [
 	libffi_cv_as_x86_pcrel=yes
 	echo '.text; foo: nop; .data; .long foo-.; .text' > conftest.s
-	if $CC $CFLAGS -c conftest.s 2>&1 | grep -i warning > /dev/null; then
+	if $CC $CFLAGS -c conftest.s 2>&1 | $EGREP -i 'illegal|warning' > /dev/null; then
 	    libffi_cv_as_x86_pcrel=no
 	fi
 	])
     if test "x$libffi_cv_as_x86_pcrel" = xyes; then
 	AC_DEFINE(HAVE_AS_X86_PCREL, 1,
 		  [Define if your assembler supports PC relative relocs.])
+    fi
+
+    AC_CACHE_CHECK([assembler .ascii pseudo-op support],
+       libffi_cv_as_ascii_pseudo_op, [
+       libffi_cv_as_ascii_pseudo_op=unknown
+       # Check if we have .ascii
+       AC_TRY_COMPILE([asm (".ascii \"string\"");],,
+		       [libffi_cv_as_ascii_pseudo_op=yes],
+		       [libffi_cv_as_ascii_pseudo_op=no])
+    ])
+    if test "x$libffi_cv_as_ascii_pseudo_op" = xyes; then
+       AC_DEFINE(HAVE_AS_ASCII_PSEUDO_OP, 1,
+	       [Define if your assembler supports .ascii.])
+    fi
+
+    AC_CACHE_CHECK([assembler .string pseudo-op support],
+       libffi_cv_as_string_pseudo_op, [
+       libffi_cv_as_string_pseudo_op=unknown
+       # Check if we have .string
+       AC_TRY_COMPILE([asm (".string \"string\"");],,
+		       [libffi_cv_as_string_pseudo_op=yes],
+		       [libffi_cv_as_string_pseudo_op=no])
+    ])
+    if test "x$libffi_cv_as_string_pseudo_op" = xyes; then
+       AC_DEFINE(HAVE_AS_STRING_PSEUDO_OP, 1,
+	       [Define if your assembler supports .string.])
     fi
 fi
 

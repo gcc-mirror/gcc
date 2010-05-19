@@ -1,5 +1,15 @@
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (libffi_cv_as_x86_pcrel): Check for illegal in as
+	output, too.
+	(libffi_cv_as_ascii_pseudo_op): Check for .ascii.
+	(libffi_cv_as_string_pseudo_op): Check for .string.
+	* configure: Regenerate.
+	* fficonfig.h.in: Regenerate.
+	* src/x86/sysv.S (.eh_frame): Use .ascii, .string or error.
+
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	Backport from mainline:
 	2010-03-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
