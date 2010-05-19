@@ -7952,23 +7952,8 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
   if (TREE_CODE (decl) == TYPE_DECL)
     return;
 
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      && type_quals != TYPE_UNQUALIFIED)
-    {
-      /* This was an error in C++98 (cv-qualifiers cannot be added to
-	 a function type), but DR 295 makes the code well-formed by
-	 dropping the extra qualifiers. */
-      if (pedantic)
-	{
-	  tree bad_type = build_qualified_type (type, type_quals);
-	  pedwarn (input_location, OPT_pedantic, 
-		   "ignoring %qV qualifiers added to function type %qT",
-		   bad_type, type);
-	}
-
-      TREE_TYPE (decl) = TYPE_MAIN_VARIANT (type);
-      return;
-    }
+  gcc_assert (!(TREE_CODE (type) == FUNCTION_TYPE
+		&& type_quals != TYPE_UNQUALIFIED));
 
   /* Avoid setting TREE_READONLY incorrectly.  */
   if (/* If the object has a constructor, the constructor may modify

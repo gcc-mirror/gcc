@@ -1,5 +1,8 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/other/cv_func.C: Don't expect errors about cv-qualified
+	function type.
+
 	PR c++/44193
 	* g++.dg/template/fntype1.C: New.
 

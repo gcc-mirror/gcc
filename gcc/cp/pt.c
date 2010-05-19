@@ -14099,9 +14099,9 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
     {
       /*  Although a CVR qualifier is ignored when being applied to a
 	  substituted template parameter ([8.3.2]/1 for example), that
-	  does not apply during deduction [14.8.2.4]/1, (even though
-	  that is not explicitly mentioned, [14.8.2.4]/9 indicates
-	  this).  Except when we're allowing additional CV qualifiers
+	  does not allow us to unify "const T" with "int&" because both
+	  types are not of the form "cv-list T" [14.8.2.5 temp.deduct.type].
+	  It is ok when we're allowing additional CV qualifiers
 	  at the outer level [14.8.2.1]/3,1st bullet.  */
       if ((TREE_CODE (arg) == REFERENCE_TYPE
 	   || TREE_CODE (arg) == FUNCTION_TYPE

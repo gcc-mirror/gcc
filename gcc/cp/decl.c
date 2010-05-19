@@ -8224,21 +8224,6 @@ grokdeclarator (const cp_declarator *declarator,
     error ("qualifiers are not allowed on declaration of %<operator %T%>",
 	   ctor_return_type);
 
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      && type_quals != TYPE_UNQUALIFIED)
-    {
-      /* This was an error in C++98 (cv-qualifiers cannot be added to
-	 a function type), but DR 295 makes the code well-formed by
-	 dropping the extra qualifiers. */
-      if (pedantic && cxx_dialect == cxx98)
-	{
-	  tree bad_type = build_qualified_type (type, type_quals);
-	  pedwarn (input_location, OPT_pedantic, 
-		   "ignoring %qV qualifiers added to function type %qT",
-		   bad_type, type);
-	}
-      type_quals = TYPE_UNQUALIFIED;
-    }
   type_quals |= cp_type_quals (type);
   type = cp_build_qualified_type_real
     (type, type_quals, ((typedef_decl && !DECL_ARTIFICIAL (typedef_decl)
