@@ -17,7 +17,7 @@ struct AS
 template <typename T> struct B1 : T
 {
   typedef typename T::L __restrict__ r;// { dg-error "'__restrict__' qualifiers cannot" "" }
-  typedef typename T::myT __restrict__ p;// { dg-error "ignoring '__restrict__'" }
+  typedef typename T::myT __restrict__ p;
 
   // The following are DR 295 dependent
   typedef typename T::myT volatile *myvolatile;
