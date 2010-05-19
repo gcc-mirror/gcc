@@ -1,5 +1,9 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (grokdeclarator): Don't check quals on fn type.
+	* typeck.c (cp_apply_type_quals_to_decl): Likewise.
+	* tree.c (cp_build_qualified_type_real): Simplify qualifier checking.
+
 	PR c++/44193
 	* typeck.c (type_memfn_quals): New fn.
 	(apply_memfn_quals): New fn.

@@ -865,13 +865,15 @@ cp_build_qualified_type_real (tree type,
     }
 
   /* A reference or method type shall not be cv-qualified.
-     [dcl.ref], [dcl.fct]  */
+     [dcl.ref], [dcl.fct].  This used to be an error, but as of DR 295
+     (in CD1) we always ignore extra cv-quals on functions.  */
   if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
       && (TREE_CODE (type) == REFERENCE_TYPE
 	  || TREE_CODE (type) == FUNCTION_TYPE
 	  || TREE_CODE (type) == METHOD_TYPE))
     {
-      bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
     }
 
@@ -890,24 +892,16 @@ cp_build_qualified_type_real (tree type,
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
-  if (bad_quals == TYPE_UNQUALIFIED)
+  if (bad_quals == TYPE_UNQUALIFIED
+      || (complain & tf_ignore_bad_quals))
     /*OK*/;
-  else if (!(complain & (tf_error | tf_ignore_bad_quals)))
+  else if (!(complain & tf_error))
     return error_mark_node;
   else
     {
-      if (complain & tf_ignore_bad_quals)
-	/* We're not going to warn about constifying things that can't
-	   be constified.  */
-	bad_quals &= ~TYPE_QUAL_CONST;
-      if (bad_quals)
-	{
-	  tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
-
-	  if (!(complain & tf_ignore_bad_quals))
-	    error ("%qV qualifiers cannot be applied to %qT",
-		   bad_type, type);
-	}
+      tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
+      error ("%qV qualifiers cannot be applied to %qT",
+	     bad_type, type);
     }
 
   /* Retrieve (or create) the appropriately qualified variant.  */
