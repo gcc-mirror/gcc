@@ -1,5 +1,10 @@
 2010-05-19  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44196
+	* tree.c (find_decls_types_r): Walk BLOCKs and its vars.
+
+2010-05-19  Richard Guenther  <rguenther@suse.de>
+
 	* doc/invoke.texi (-fwhopr): Document new optional jobs argument.
 	* common.opt (fwhopr=): New.
 	* opts.c (common_handle_option): Handle OPT_fwhopr.
