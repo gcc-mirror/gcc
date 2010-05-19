@@ -1,5 +1,9 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44193
+	* pt.c (tsubst) [TYPENAME_TYPE]: Discard cv-quals on
+	function/reference type.
+
 	* call.c (struct z_candidate): Add explicit_targs field.
 	(add_template_candidate_real): Set it.
 	(build_over_call): Use it to control init-list warning.

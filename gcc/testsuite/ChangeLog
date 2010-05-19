@@ -1,5 +1,8 @@
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44193
+	* g++.dg/template/fntype1.C: New.
+
 	PR c++/44157
 	* g++.dg/cpp0x/initlist34.C: New.
 
