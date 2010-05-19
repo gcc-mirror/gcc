@@ -155,7 +155,7 @@ init_rtti_processing (void)
 			     /*tag_scope=*/ts_current, false);
   pop_namespace ();
   const_type_info_type_node
-    = build_qualified_type (type_info_type, TYPE_QUAL_CONST);
+    = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type_node);
 
   unemitted_tinfo_decls = VEC_alloc (tree, gc, 124);
@@ -192,8 +192,8 @@ build_headof (tree exp)
                                                   tf_warning_or_error), 
                            index);
 
-  type = build_qualified_type (ptr_type_node,
-			       cp_type_quals (TREE_TYPE (exp)));
+  type = cp_build_qualified_type (ptr_type_node,
+				  cp_type_quals (TREE_TYPE (exp)));
   return build2 (POINTER_PLUS_EXPR, type, exp,
 		 convert_to_integer (sizetype, offset));
 }
@@ -726,7 +726,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 				    /*tag_scope=*/ts_current, false);
 
 	      tinfo_ptr = build_pointer_type
-		(build_qualified_type
+		(cp_build_qualified_type
 		 (tinfo_ptr, TYPE_QUAL_CONST));
 	      name = "__dynamic_cast";
 	      tmp = tree_cons
@@ -871,7 +871,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
 
     /* Generate the NTBS array variable.  */
     tree name_type = build_cplus_array_type
-		     (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
+		     (cp_build_qualified_type (char_type_node, TYPE_QUAL_CONST),
 		     NULL_TREE);
 
     /* Determine the name of the variable -- and remember with which
@@ -1495,8 +1495,8 @@ emit_support_tinfos (void)
 
       types[0] = bltn;
       types[1] = build_pointer_type (bltn);
-      types[2] = build_pointer_type (build_qualified_type (bltn,
-							   TYPE_QUAL_CONST));
+      types[2] = build_pointer_type (cp_build_qualified_type (bltn,
+							      TYPE_QUAL_CONST));
 
       for (i = 0; i < 3; ++i)
 	{

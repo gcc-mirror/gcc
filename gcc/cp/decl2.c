@@ -1272,7 +1272,7 @@ cp_reconstruct_complex_type (tree type, tree bottom)
 
   if (TYPE_ATTRIBUTES (type))
     outer = cp_build_type_attribute_variant (outer, TYPE_ATTRIBUTES (type));
-  return cp_build_qualified_type (outer, TYPE_QUALS (type));
+  return cp_build_qualified_type (outer, cp_type_quals (type));
 }
 
 /* Like decl_attributes, but handle C++ complexity.  */

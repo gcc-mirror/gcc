@@ -2200,7 +2200,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* But we want to operate on a non-const version to start with,
      since we'll be modifying the elements.  */
   non_const_pointer_type = build_pointer_type
-    (cp_build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_CONST));
+    (cp_build_qualified_type (type, cp_type_quals (type) & ~TYPE_QUAL_CONST));
 
   data_addr = fold_convert (non_const_pointer_type, data_addr);
   /* Any further uses of alloc_node will want this type, too.  */
