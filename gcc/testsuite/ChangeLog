@@ -1,3 +1,8 @@
+2010-05-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/ipareference2_0.c: New file.
+	* gcc.dg/lto/ipareference2_1.c: New file.
+
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/fn-typedef2.C: New.

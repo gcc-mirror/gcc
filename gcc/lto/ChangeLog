@@ -1,6 +1,12 @@
+2010-05-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (promote_var, promote_fn): New functions.
+	(lto_promote_cross_file_statics): Compute correctly boundary including
+	static initializers of readonly vars.
+
 2010-05-18  Jan Hubicka  <jh@suse.cz>
 
-	* lto/lto.c (lto_1_to_1_map): Partition non-inline clones.
+	* lto.c (lto_1_to_1_map): Partition non-inline clones.
 	(lto_promote_cross_file_statics): Deal with non-inline clones.
 
 2010-05-18  Jan Hubicka  <jh@suse.cz>
