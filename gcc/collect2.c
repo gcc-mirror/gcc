@@ -1207,7 +1207,7 @@ main (int argc, char **argv)
 	    use_verbose = true;
 	    lto_mode = LTO_MODE_LTO;
 	  }
-        else if (! strcmp (argv[i], "-fwhopr") && ! use_plugin)
+        else if (! strncmp (argv[i], "-fwhopr", 7) && ! use_plugin)
 	  {
 	    use_verbose = true;
 	    lto_mode = LTO_MODE_WHOPR;
@@ -1482,7 +1482,8 @@ main (int argc, char **argv)
 	      break;
 
             case 'f':
-	      if (strcmp (arg, "-flto") == 0 || strcmp (arg, "-fwhopr") == 0)
+	      if (strcmp (arg, "-flto") == 0
+		  || strncmp (arg, "-fwhopr", 7) == 0)
 		{
 #ifdef ENABLE_LTO
 		  /* Do not pass LTO flag to the linker. */

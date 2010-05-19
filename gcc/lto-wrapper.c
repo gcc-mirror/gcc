@@ -148,7 +148,10 @@ collect_execute (char **argv)
   if (pex == NULL)
     fatal_perror ("pex_init failed");
 
-  errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0], argv, NULL,
+  /* Do not use PEX_LAST here, we use our stdout for communicating with
+     collect2 or the linker-plugin.  Any output from the sub-process
+     will confuse that.  */
+  errmsg = pex_run (pex, PEX_SEARCH, argv[0], argv, NULL,
 		    NULL, &err);
   if (errmsg != NULL)
     {
@@ -264,6 +267,7 @@ run_gcc (unsigned argc, char *argv[])
   const char *collect_gcc_options, *collect_gcc;
   struct obstack env_obstack;
   bool seen_o = false;
+  int parallel = 0;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -329,8 +333,16 @@ run_gcc (unsigned argc, char *argv[])
 	/* We've handled these LTO options, do not pass them on.  */
 	if (strcmp (option, "-flto") == 0)
 	  lto_mode = LTO_MODE_LTO;
-	else if (strcmp (option, "-fwhopr") == 0)
-	  lto_mode = LTO_MODE_WHOPR;
+	else if (strncmp (option, "-fwhopr", 7) == 0)
+	  {
+	    lto_mode = LTO_MODE_WHOPR;
+	    if (option[7] == '=')
+	      {
+		parallel = atoi (option+8);
+		if (parallel <= 1)
+		  parallel = 0;
+	      }
+	  }
 	else
 	  *argv_ptr++ = option;
       }
@@ -416,12 +428,22 @@ run_gcc (unsigned argc, char *argv[])
   else if (lto_mode == LTO_MODE_WHOPR)
     {
       FILE *stream = fopen (ltrans_output_file, "r");
-      int nr = 0;
+      unsigned int nr = 0;
+      char **input_names = NULL;
+      char **output_names = NULL;
+      char *makefile = NULL;
+      FILE *mstream = NULL;
 
       if (!stream)
 	fatal_perror ("fopen: %s", ltrans_output_file);
 
       argv_ptr[1] = "-fltrans";
+
+      if (parallel)
+	{
+	  makefile = make_temp_file (".mk");
+	  mstream = fopen (makefile, "w");
+	}
 
       for (;;)
 	{
@@ -444,10 +466,7 @@ cont:
 	  input_name[len - 1] = '\0';
 
 	  if (input_name[0] == '*')
-	    {
-	      continue;
-	      output_name = &input_name[1];
-	    }
+	    output_name = &input_name[1];
 	  else
 	    {
 	      /* Otherwise, add FILES[I] to lto_execute_ltrans command line
@@ -467,7 +486,7 @@ cont:
 					+ sizeof(DUMPBASE_SUFFIX) + 1);
 		  snprintf (dumpbase,
 			    strlen (linker_output) + sizeof(DUMPBASE_SUFFIX),
-			    "%s.ltrans%d", linker_output, nr++);
+			    "%s.ltrans%u", linker_output, nr);
 		  argv_ptr[0] = dumpbase;
 		}
 
@@ -476,14 +495,52 @@ cont:
 	      argv_ptr[4] = input_name;
 	      argv_ptr[5] = NULL;
 
-	      fork_execute (CONST_CAST (char **, new_argv));
-
-	      maybe_unlink_file (input_name);
+	      if (parallel)
+		{
+		  fprintf (mstream, "%s:\n\t@%s ", output_name, new_argv[0]);
+		  for (i = 1; new_argv[i] != NULL; ++i)
+		    fprintf (mstream, " '%s'", new_argv[i]);
+		  fprintf (mstream, "\n");
+		}
+	      else
+		fork_execute (CONST_CAST (char **, new_argv));
 	    }
 
-	  fputs (output_name, stdout);
-	  putc ('\n', stdout);
+	  nr++;
+	  input_names = (char **)xrealloc (input_names, nr * sizeof (char *));
+	  output_names = (char **)xrealloc (output_names, nr * sizeof (char *));
+	  input_names[nr-1] = input_name;
+	  output_names[nr-1] = output_name;
 	}
+      if (parallel)
+	{
+	  struct pex_obj *pex;
+	  char jobs[32];
+	  fprintf (mstream, "all:");
+	  for (i = 0; i < nr; ++i)
+	    fprintf (mstream, " \\\n\t%s", output_names[i]);
+	  fprintf (mstream, "\n");
+	  fclose (mstream);
+	  new_argv[0] = "make";
+	  new_argv[1] = "-f";
+	  new_argv[2] = makefile;
+	  snprintf (jobs, 31, "-j%d", parallel);
+	  new_argv[3] = jobs;
+	  new_argv[4] = "all";
+	  new_argv[5] = NULL;
+	  pex = collect_execute (CONST_CAST (char **, new_argv));
+	  collect_wait (new_argv[0], pex);
+	  maybe_unlink_file (makefile);
+	}
+      for (i = 0; i < nr; ++i)
+	{
+	  fputs (output_names[i], stdout);
+	  putc ('\n', stdout);
+	  maybe_unlink_file (input_names[i]);
+	  free (input_names[i]);
+	}
+      free (output_names);
+      free (input_names);
       fclose (stream);
       maybe_unlink_file (ltrans_output_file);
       free (list_option_full);
