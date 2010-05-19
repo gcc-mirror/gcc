@@ -1094,9 +1094,12 @@ but not if @code{-fpic} is also present:
 /* @{ dg-skip-if "" @{ *-*-* @}  @{ "-O2 -g" "-O3 -g" @} @{ "-fpic" @} @} */
 @end smallexample
 
-@item @{ dg-require-effective-target @var{keyword} @}
+@item @{ dg-require-effective-target @var{keyword} [@{ @var{selector} @}] @}
 Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
+If the directive includes the optional @samp{@{ @var{selector} @}}
+then the effective-target test is only performed if the target system
+matches the @var{selector}.
 This directive must appear after any @code{dg-do} directive in the test
 and before any @code{dg-additional-sources} directive.
 @xref{Effective-Target Keywords, , }.
@@ -1595,6 +1598,9 @@ Target uses a ColdFire FPU.
 @item hard_float
 Target supports FPU instructions.
 
+@item sse2
+Target supports compiling @code{sse2} instructions.
+
 @item sync_char_short
 Target supports atomic operations on @code{char} and @code{short}.
 
@@ -1794,6 +1800,9 @@ Target supports @code{wchar_t} that is compatible with @code{char32_t}.
 @subsubsection Local to tests in @code{gcc.target/i386}
 
 @table @code
+@item 3dnow
+Target supports compiling @code{3dnow} instructions.
+
 @item aes
 Target supports compiling @code{aes} instructions.
 
@@ -1805,6 +1814,9 @@ Target supports attribute @code{ms_hook_prologue}.
 
 @item pclmul
 Target supports compiling @code{pclmul} instructions.
+
+@item sse3
+Target supports compiling @code{sse3} instructions.
 
 @item sse4
 Target supports compiling @code{sse4} instructions.

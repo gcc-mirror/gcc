@@ -1,6 +1,7 @@
 /* PR middle-end/37009 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-options "-msse2" } */
+/* { dg-require-effective-target sse2 } */
 
 #include <stdarg.h>
 #include <emmintrin.h>

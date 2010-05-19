@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-math-errno -fno-trapping-math -msse2 -mfpmath=sse" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 

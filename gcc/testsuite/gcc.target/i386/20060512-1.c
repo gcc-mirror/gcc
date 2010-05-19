@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99 -msse2 -mpreferred-stack-boundary=4" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"
 

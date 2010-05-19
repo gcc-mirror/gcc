@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -msse2 -ftree-vectorize" } */
+/* { dg-require-effective-target sse2 } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse2-check.h"

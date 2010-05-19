@@ -3133,6 +3133,18 @@ proc check_effective_target_avx { } {
     } "-O2 -mavx" ]
 }
 
+# Return 1 if sse2 instructions can be compiled.
+proc check_effective_target_sse2 { } {
+    return [check_no_compiler_messages sse2 object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	
+	__m128i _mm_srli_si128 (__m128i __A, int __N)
+	{
+	    return (__m128i)__builtin_ia32_psrldqi128 (__A, 8);
+	}
+    } "-O2 -msse2" ]
+}
+
 # Return 1 if C wchar_t type is compatible with char16_t.
 
 proc check_effective_target_wchar_t_char16_t_compatible { } {

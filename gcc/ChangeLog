@@ -1,5 +1,12 @@
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	3dnow, sse3, sse2.
+	(Directives): Document optional	dg-require-effective-target
+	selector.
+
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (i[34567]86-*-solaris2*): Default with_arch_32 to
 	pentiumpro on Solaris 8/x86 with Sun as.
 	* configure.ac (gcc_cv_as_hidden): Check for Solaris 9/x86 as
