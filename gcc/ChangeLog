@@ -1,3 +1,19 @@
+2010-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* langhooks.h (struct lang_hooks): Add new field deep_unsharing.
+	* langhooks-def.h (LANG_HOOKS_DEEP_UNSHARING): New macro.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_DEEP_UNSHARING.
+	* gimplify.c: (mostly_copy_tree_r): Copy trees under SAVE_EXPR and
+	TARGET_EXPR nodes, but only once, if instructed to do so.  Do not
+	propagate the 'data' argument to copy_tree_r.
+	(copy_if_shared_r): Remove bogus ATTRIBUTE_UNUSED marker.
+	Propagate 'data' argument to walk_tree.
+	(copy_if_shared): New function.
+	(unmark_visited_r): Remove bogus ATTRIBUTE_UNUSED marker.
+	(unmark_visited): New function.
+	(unshare_body): Call copy_if_shared instead of doing it manually.
+	(unvisit_body): Call unmark_visited instead of doing it manually.
+
 2010-05-19  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* hooks.h (hook_tree_tree_tree_bool_null): Rename to...

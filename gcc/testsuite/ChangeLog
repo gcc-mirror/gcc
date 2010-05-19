@@ -1,3 +1,11 @@
+2010-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr23.ad[sb]: New test.
+	* gnat.dg/discr23_pkg.ads: New helper.
+
+	* gnat.dg/specs/controlled1.ads: New test.
+	* gnat.dg/specs/controlled1_pkg.ads: New helper.
+
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44055

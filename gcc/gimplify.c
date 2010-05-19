@@ -820,9 +820,44 @@ annotate_all_with_location (gimple_seq stmt_p, location_t location)
       annotate_one_with_location (gs, location);
     }
 }
+
+/* This page contains routines to unshare tree nodes, i.e. to duplicate tree
+   nodes that are referenced more than once in GENERIC functions.  This is
+   necessary because gimplification (translation into GIMPLE) is performed
+   by modifying tree nodes in-place, so gimplication of a shared node in a
+   first context could generate an invalid GIMPLE form in a second context.
 
+   This is achieved with a simple mark/copy/unmark algorithm that walks the
+   GENERIC representation top-down, marks nodes with TREE_VISITED the first
+   time it encounters them, duplicates them if they already have TREE_VISITED
+   set, and finally removes the TREE_VISITED marks it has set.
 
-/* Similar to copy_tree_r() but do not copy SAVE_EXPR or TARGET_EXPR nodes.
+   The algorithm works only at the function level, i.e. it generates a GENERIC
+   representation of a function with no nodes shared within the function when
+   passed a GENERIC function (except for nodes that are allowed to be shared).
+
+   At the global level, it is also necessary to unshare tree nodes that are
+   referenced in more than one function, for the same aforementioned reason.
+   This requires some cooperation from the front-end.  There are 2 strategies:
+
+     1. Manual unsharing.  The front-end needs to call unshare_expr on every
+        expression that might end up being shared across functions.
+
+     2. Deep unsharing.  This is an extension of regular unsharing.  Instead
+        of calling unshare_expr on expressions that might be shared across
+        functions, the front-end pre-marks them with TREE_VISITED.  This will
+        ensure that they are unshared on the first reference within functions
+        when the regular unsharing algorithm runs.  The counterpart is that
+        this algorithm must look deeper than for manual unsharing, which is
+        specified by LANG_HOOKS_DEEP_UNSHARING.
+
+  If there are only few specific cases of node sharing across functions, it is
+  probably easier for a front-end to unshare the expressions manually.  On the
+  contrary, if the expressions generated at the global level are as widespread
+  as expressions generated within functions, deep unsharing is very likely the
+  way to go.  */
+
+/* Similar to copy_tree_r but do not copy SAVE_EXPR or TARGET_EXPR nodes.
    These nodes model computations that should only be done once.  If we
    were to unshare something like SAVE_EXPR(i++), the gimplification
    process would create wrong code.  */
@@ -830,21 +865,39 @@ annotate_all_with_location (gimple_seq stmt_p, location_t location)
 static tree
 mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
 {
-  enum tree_code code = TREE_CODE (*tp);
-  /* Don't unshare types, decls, constants and SAVE_EXPR nodes.  */
-  if (TREE_CODE_CLASS (code) == tcc_type
-      || TREE_CODE_CLASS (code) == tcc_declaration
-      || TREE_CODE_CLASS (code) == tcc_constant
-      || code == SAVE_EXPR || code == TARGET_EXPR
-      /* We can't do anything sensible with a BLOCK used as an expression,
-	 but we also can't just die when we see it because of non-expression
-	 uses.  So just avert our eyes and cross our fingers.  Silly Java.  */
-      || code == BLOCK)
+  tree t = *tp;
+  enum tree_code code = TREE_CODE (t);
+
+  /* Do not copy SAVE_EXPR or TARGET_EXPR nodes themselves, but copy
+     their subtrees if we can make sure to do it only once.  */
+  if (code == SAVE_EXPR || code == TARGET_EXPR)
+    {
+      if (data && !pointer_set_insert ((struct pointer_set_t *)data, t))
+	;
+      else
+	*walk_subtrees = 0;
+    }
+
+  /* Stop at types, decls, constants like copy_tree_r.  */
+  else if (TREE_CODE_CLASS (code) == tcc_type
+	   || TREE_CODE_CLASS (code) == tcc_declaration
+	   || TREE_CODE_CLASS (code) == tcc_constant
+	   /* We can't do anything sensible with a BLOCK used as an
+	      expression, but we also can't just die when we see it
+	      because of non-expression uses.  So we avert our eyes
+	      and cross our fingers.  Silly Java.  */
+	   || code == BLOCK)
     *walk_subtrees = 0;
+
+  /* Cope with the statement expression extension.  */
+  else if (code == STATEMENT_LIST)
+    ;
+
+  /* Leave the bulk of the work to copy_tree_r itself.  */
   else
     {
       gcc_assert (code != BIND_EXPR);
-      copy_tree_r (tp, walk_subtrees, data);
+      copy_tree_r (tp, walk_subtrees, NULL);
     }
 
   return NULL_TREE;
@@ -852,16 +905,10 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
 
 /* Callback for walk_tree to unshare most of the shared trees rooted at
    *TP.  If *TP has been visited already (i.e., TREE_VISITED (*TP) == 1),
-   then *TP is deep copied by calling copy_tree_r.
-
-   This unshares the same trees as copy_tree_r with the exception of
-   SAVE_EXPR nodes.  These nodes model computations that should only be
-   done once.  If we were to unshare something like SAVE_EXPR(i++), the
-   gimplification process would create wrong code.  */
+   then *TP is deep copied by calling mostly_copy_tree_r.  */
 
 static tree
-copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		  void *data ATTRIBUTE_UNUSED)
+copy_if_shared_r (tree *tp, int *walk_subtrees, void *data)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
@@ -884,27 +931,29 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
      any deeper.  */
   else if (TREE_VISITED (t))
     {
-      walk_tree (tp, mostly_copy_tree_r, NULL, NULL);
+      walk_tree (tp, mostly_copy_tree_r, data, NULL);
       *walk_subtrees = 0;
     }
 
-  /* Otherwise, mark the tree as visited and keep looking.  */
+  /* Otherwise, mark the node as visited and keep looking.  */
   else
     TREE_VISITED (t) = 1;
 
   return NULL_TREE;
 }
 
-static tree
-unmark_visited_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		  void *data ATTRIBUTE_UNUSED)
-{
-  if (TREE_VISITED (*tp))
-    TREE_VISITED (*tp) = 0;
-  else
-    *walk_subtrees = 0;
+/* Unshare most of the shared trees rooted at *TP. */
 
-  return NULL_TREE;
+static inline void
+copy_if_shared (tree *tp)
+{
+  /* If the language requires deep unsharing, we need a pointer set to make
+     sure we don't repeatedly unshare subtrees of unshareable nodes.  */
+  struct pointer_set_t *visited
+    = lang_hooks.deep_unsharing ? pointer_set_create () : NULL;
+  walk_tree (tp, copy_if_shared_r, visited, NULL);
+  if (visited)
+    pointer_set_destroy (visited);
 }
 
 /* Unshare all the trees in BODY_P, a pointer into the body of FNDECL, and the
@@ -916,10 +965,38 @@ unshare_body (tree *body_p, tree fndecl)
 {
   struct cgraph_node *cgn = cgraph_node (fndecl);
 
-  walk_tree (body_p, copy_if_shared_r, NULL, NULL);
+  copy_if_shared (body_p);
+
   if (body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unshare_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);
+}
+
+/* Callback for walk_tree to unmark the visited trees rooted at *TP.
+   Subtrees are walked until the first unvisited node is encountered.  */
+
+static tree
+unmark_visited_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+
+  /* If this node has been visited, unmark it and keep looking.  */
+  if (TREE_VISITED (t))
+    TREE_VISITED (t) = 0;
+
+  /* Otherwise, don't look any deeper.  */
+  else
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+/* Unmark the visited trees rooted at *TP.  */
+
+static inline void
+unmark_visited (tree *tp)
+{
+  walk_tree (tp, unmark_visited_r, NULL, NULL);
 }
 
 /* Likewise, but mark all trees as not visited.  */
@@ -929,7 +1006,8 @@ unvisit_body (tree *body_p, tree fndecl)
 {
   struct cgraph_node *cgn = cgraph_node (fndecl);
 
-  walk_tree (body_p, unmark_visited_r, NULL, NULL);
+  unmark_visited (body_p);
+
   if (body_p == &DECL_SAVED_TREE (fndecl))
     for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
       unvisit_body (&DECL_SAVED_TREE (cgn->decl), cgn->decl);

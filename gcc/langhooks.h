@@ -446,6 +446,10 @@ struct lang_hooks
      is enabled.  */
   bool eh_use_cxa_end_cleanup;
 
+  /* True if this language requires deep unsharing of tree nodes prior to
+     gimplification.  */
+  bool deep_unsharing;
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };
