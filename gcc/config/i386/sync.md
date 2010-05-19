@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -51,7 +51,7 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_MFENCE))
    (clobber (reg:CC FLAGS_REG))]
   "!(TARGET_64BIT || TARGET_SSE2)"
-  "lock{%;| }or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}"
+  "lock{%;} or{l}\t{$0, (%%esp)|DWORD PTR [esp], 0}"
   [(set_attr "memory" "unknown")])
 
 ;; ??? It would be possible to use cmpxchg8b on pentium for DImode
@@ -111,7 +111,7 @@
 	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_CMPXCHG"
-  "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
+  "lock{%;} cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
 
 (define_insn "sync_double_compare_and_swap<mode>"
   [(set (match_operand:DCASMODE 0 "register_operand" "=A")
@@ -125,7 +125,7 @@
 	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
+  "lock{%;} cmpxchg<doublemodesuffix>b\t%1")
 
 ;; Theoretically we'd like to use constraint "r" (any reg) for operand
 ;; 3, but that includes ecx.  If operand 3 and 4 are the same (like when
@@ -148,7 +148,7 @@
 	  UNSPECV_CMPXCHG))
    (clobber (reg:CC FLAGS_REG))]
   "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
-  "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
+  "xchg{l}\t%%ebx, %3\;lock{%;} cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
 
 (define_expand "sync_compare_and_swap_cc<mode>"
   [(parallel
@@ -213,7 +213,7 @@
 	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   "TARGET_CMPXCHG"
-  "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
+  "lock{%;} cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
 
 (define_insn "sync_double_compare_and_swap_cc<mode>"
   [(set (match_operand:DCASMODE 0 "register_operand" "=A")
@@ -232,7 +232,7 @@
 	    UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   ""
-  "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
+  "lock{%;} cmpxchg<doublemodesuffix>b\t%1")
 
 ;; See above for the explanation of using the constraint "SD" for
 ;; operand 3.
@@ -253,7 +253,7 @@
 	    UNSPECV_CMPXCHG)
 	  (match_dup 2)))]
   "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
-  "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
+  "xchg{l}\t%%ebx, %3\;lock{%;} cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
 
 (define_insn "sync_old_add<mode>"
   [(set (match_operand:IMODE 0 "register_operand" "=<modeconstraint>")
@@ -264,7 +264,7 @@
 		    (match_operand:IMODE 2 "register_operand" "0")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_XADD"
-  "lock{%;| }xadd{<modesuffix>}\t{%0, %1|%1, %0}")
+  "lock{%;} xadd{<modesuffix>}\t{%0, %1|%1, %0}")
 
 ;; Recall that xchg implicitly sets LOCK#, so adding it again wastes space.
 (define_insn "sync_lock_test_and_set<mode>"
@@ -288,12 +288,12 @@
   if (TARGET_USE_INCDEC)
     {
       if (operands[1] == const1_rtx)
-	return "lock{%;| }inc{<modesuffix>}\t%0";
+	return "lock{%;} inc{<modesuffix>}\t%0";
       if (operands[1] == constm1_rtx)
-	return "lock{%;| }dec{<modesuffix>}\t%0";
+	return "lock{%;} dec{<modesuffix>}\t%0";
     }
 
-  return "lock{%;| }add{<modesuffix>}\t{%1, %0|%0, %1}";
+  return "lock{%;} add{<modesuffix>}\t{%1, %0|%0, %1}";
 })
 
 (define_insn "sync_sub<mode>"
@@ -308,12 +308,12 @@
   if (TARGET_USE_INCDEC)
     {
       if (operands[1] == const1_rtx)
-	return "lock{%;| }dec{<modesuffix>}\t%0";
+	return "lock{%;} dec{<modesuffix>}\t%0";
       if (operands[1] == constm1_rtx)
-	return "lock{%;| }inc{<modesuffix>}\t%0";
+	return "lock{%;} inc{<modesuffix>}\t%0";
     }
 
-  return "lock{%;| }sub{<modesuffix>}\t{%1, %0|%0, %1}";
+  return "lock{%;} sub{<modesuffix>}\t{%1, %0|%0, %1}";
 })
 
 (define_insn "sync_ior<mode>"
@@ -324,7 +324,7 @@
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }or{<modesuffix>}\t{%1, %0|%0, %1}")
+  "lock{%;} or{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_and<mode>"
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
@@ -334,7 +334,7 @@
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }and{<modesuffix>}\t{%1, %0|%0, %1}")
+  "lock{%;} and{<modesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_xor<mode>"
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
@@ -344,4 +344,4 @@
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }xor{<modesuffix>}\t{%1, %0|%0, %1}")
+  "lock{%;} xor{<modesuffix>}\t{%1, %0|%0, %1}")

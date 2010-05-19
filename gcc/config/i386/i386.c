@@ -11277,10 +11277,8 @@ print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case ';':
-#if TARGET_MACHO
-	  fputs (" ; ", file);
-#else
-	  fputc (' ', file);
+#if TARGET_MACHO || !HAVE_AS_IX86_REP_LOCK_PREFIX
+	  fputs (";", file);
 #endif
 	  return;
 

@@ -1,5 +1,42 @@
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	Backport from mainline:
+	2010-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/44074
+	* configure.ac (HAVE_AS_IX86_REP_LOCK_PREFIX): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.c (print_operand) <case ;>: Also print ; if
+	!HAVE_AS_IX86_REP_LOCK_PREFIX.
+	Don't emit whitespace.
+	* config/i386/i386.md (*rep_movdi_rex64): Use {%;} after rep.
+	(*rep_movsi): Likewise.
+	(*rep_movsi_rex64): Likewise.
+	(*rep_movqi): Likewise.
+	(*rep_movqi_rex64): Likewise.
+	(*rep_stosdi_rex64): Likewise.
+	(*rep_stossi): Likewise.
+	(*rep_stossi_rex64): Likewise.
+	(*rep_stosqi): Likewise.
+	(*rep_stosqi_rex64): Likewise.
+	(*cmpstrnqi_nz_1): Use {%;} after repz.
+	(*cmpstrnqi_nz_rex_1): Likewise.
+	(*cmpstrnqi_1): Likewise.
+	(*cmpstrnqi_rex_1): Likewise.
+	(*strlenqi_1): Use {%;} after repnz.
+	(*strlenqi_rex_1): Likewise.
+	* config/i386/sync.md (memory_barrier_nosse): Replace {%;| } by {%;} .
+	(*sync_compare_and_swap<mode>): Likewise.
+	(sync_double_compare_and_swap<mode>): Likewise.
+	(*sync_double_compare_and_swapdi_pic): Likewise.
+	(sync_old_add<mode>): Likewise.
+	(sync_add<mode>): Likewise.
+	(sync_sub<mode>): Likewise.
+	(sync_<code><mode>): Likewise.
+
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/sourcebuild.texi (Directives): Document optional
 	dg-require-effective-target selector.
 
