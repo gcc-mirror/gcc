@@ -1,5 +1,10 @@
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/42360
+	* gfortran.dg/warn_intent_out_not_set.f90: New.
+
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/38404
 	* gfortran.dg/data_char_1.f90: Updated warning message.
 	* gfortran.dg/data_array_6.f: New.

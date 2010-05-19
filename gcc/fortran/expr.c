@@ -3557,6 +3557,31 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 }
 
 
+/* Check for default initializer; sym->value is not enough
+   as it is also set for EXPR_NULL of allocatables.  */
+
+bool
+gfc_has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+
+  gcc_assert (der->attr.flavor == FL_DERIVED);
+  for (c = der->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED)
+      {
+        if (!c->attr.pointer
+	     && gfc_has_default_initializer (c->ts.u.derived))
+	  return true;
+      }
+    else
+      {
+        if (c->initializer)
+	  return true;
+      }
+
+  return false;
+}
+
 /* Get an expression for a default initializer.  */
 
 gfc_expr *
@@ -3565,7 +3590,8 @@ gfc_default_initializer (gfc_typespec *ts)
   gfc_expr *init;
   gfc_component *comp;
 
-  /* See if we have a default initializer.  */
+  /* See if we have a default initializer in this, but not in nested
+     types (otherwise we could use gfc_has_default_initializer()).  */
   for (comp = ts->u.derived->components; comp; comp = comp->next)
     if (comp->initializer || comp->attr.allocatable)
       break;
