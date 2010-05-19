@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h" /* stdio.h must precede rtl.h for FFS.  */
+#include "rtl.h"
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
