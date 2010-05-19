@@ -1,3 +1,8 @@
+2010-05-19  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/ivinline-8.C: New test.
+	* gcc.dg/ipa/iinline-2.c: Likewise.
+
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/34505

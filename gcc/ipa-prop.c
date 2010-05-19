@@ -304,16 +304,87 @@ ipa_count_arguments (struct cgraph_edge *cs)
   ipa_set_cs_argument_count (IPA_EDGE_REF (cs), arg_num);
 }
 
+/* Print the jump functions associated with call graph edge CS to file F.  */
+
+static void
+ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
+{
+  int i, count;
+
+  count = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
+  for (i = 0; i < count; i++)
+    {
+      struct ipa_jump_func *jump_func;
+      enum jump_func_type type;
+
+      jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
+      type = jump_func->type;
+
+      fprintf (f, "       param %d: ", i);
+      if (type == IPA_JF_UNKNOWN)
+	fprintf (f, "UNKNOWN\n");
+      else if (type == IPA_JF_KNOWN_TYPE)
+	{
+	  tree binfo_type = TREE_TYPE (jump_func->value.base_binfo);
+	  fprintf (f, "KNOWN TYPE, type in binfo is: ");
+	  print_generic_expr (f, binfo_type, 0);
+	  fprintf (f, " (%u)\n", TYPE_UID (binfo_type));
+	}
+      else if (type == IPA_JF_CONST)
+	{
+	  tree val = jump_func->value.constant;
+	  fprintf (f, "CONST: ");
+	  print_generic_expr (f, val, 0);
+	  if (TREE_CODE (val) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
+	    {
+	      fprintf (f, " -> ");
+	      print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)),
+				  0);
+	    }
+	  fprintf (f, "\n");
+	}
+      else if (type == IPA_JF_CONST_MEMBER_PTR)
+	{
+	  fprintf (f, "CONST MEMBER PTR: ");
+	  print_generic_expr (f, jump_func->value.member_cst.pfn, 0);
+	  fprintf (f, ", ");
+	  print_generic_expr (f, jump_func->value.member_cst.delta, 0);
+	  fprintf (f, "\n");
+	}
+      else if (type == IPA_JF_PASS_THROUGH)
+	{
+	  fprintf (f, "PASS THROUGH: ");
+	  fprintf (f, "%d, op %s ",
+		   jump_func->value.pass_through.formal_id,
+		   tree_code_name[(int)
+				  jump_func->value.pass_through.operation]);
+	  if (jump_func->value.pass_through.operation != NOP_EXPR)
+	    print_generic_expr (dump_file,
+				jump_func->value.pass_through.operand, 0);
+	  fprintf (dump_file, "\n");
+	}
+      else if (type == IPA_JF_ANCESTOR)
+	{
+	  fprintf (f, "ANCESTOR: ");
+	  fprintf (f, "%d, offset "HOST_WIDE_INT_PRINT_DEC", ",
+		   jump_func->value.ancestor.formal_id,
+		   jump_func->value.ancestor.offset);
+	  print_generic_expr (f, jump_func->value.ancestor.type, 0);
+	  fprintf (dump_file, "\n");
+	}
+    }
+}
+
+
 /* Print the jump functions of all arguments on all call graph edges going from
    NODE to file F.  */
 
 void
 ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 {
-  int i, count;
   struct cgraph_edge *cs;
-  struct ipa_jump_func *jump_func;
-  enum jump_func_type type;
+  int i;
 
   fprintf (f, "  Jump functions of caller  %s:\n", cgraph_node_name (node));
   for (cs = node->callees; cs; cs = cs->next_callee)
@@ -321,69 +392,26 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
       if (!ipa_edge_args_info_available_for_edge_p (cs))
 	continue;
 
-      fprintf (f, "    callsite  %s ", cgraph_node_name (node));
-      fprintf (f, "-> %s :: \n", cgraph_node_name (cs->callee));
+      fprintf (f, "    callsite  %s/%i -> %s/%i : \n",
+	       cgraph_node_name (node), node->uid,
+	       cgraph_node_name (cs->callee), cs->callee->uid);
+      ipa_print_node_jump_functions_for_edge (f, cs);
+    }
 
-      count = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
-      for (i = 0; i < count; i++)
+  for (cs = node->indirect_calls, i = 0; cs; cs = cs->next_callee, i++)
+    {
+      if (!ipa_edge_args_info_available_for_edge_p (cs))
+	continue;
+
+      if (cs->call_stmt)
 	{
-	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  type = jump_func->type;
-
-	  fprintf (f, "       param %d: ", i);
-	  if (type == IPA_JF_UNKNOWN)
-	    fprintf (f, "UNKNOWN\n");
-	  else if (type == IPA_JF_KNOWN_TYPE)
-	    {
-	      tree binfo_type = TREE_TYPE (jump_func->value.base_binfo);
-	      fprintf (f, "KNOWN TYPE, type in binfo is: ");
-	      print_generic_expr (f, binfo_type, 0);
-	      fprintf (f, " (%u)\n", TYPE_UID (binfo_type));
-	    }
-	  else if (type == IPA_JF_CONST)
- 	    {
-	      tree val = jump_func->value.constant;
-	      fprintf (f, "CONST: ");
-	      print_generic_expr (f, val, 0);
-	      if (TREE_CODE (val) == ADDR_EXPR
-		  && TREE_CODE (TREE_OPERAND (val, 0)) == CONST_DECL)
-		{
-		  fprintf (f, " -> ");
-		  print_generic_expr (f, DECL_INITIAL (TREE_OPERAND (val, 0)),
-						       0);
-		}
-	      fprintf (f, "\n");
-	    }
-	  else if (type == IPA_JF_CONST_MEMBER_PTR)
-	    {
-	      fprintf (f, "CONST MEMBER PTR: ");
-	      print_generic_expr (f, jump_func->value.member_cst.pfn, 0);
-	      fprintf (f, ", ");
-	      print_generic_expr (f, jump_func->value.member_cst.delta, 0);
-	      fprintf (f, "\n");
-	    }
-	  else if (type == IPA_JF_PASS_THROUGH)
- 	    {
-	      fprintf (f, "PASS THROUGH: ");
-	      fprintf (f, "%d, op %s ",
-		       jump_func->value.pass_through.formal_id,
-		       tree_code_name[(int)
-				      jump_func->value.pass_through.operation]);
-	      if (jump_func->value.pass_through.operation != NOP_EXPR)
-		print_generic_expr (dump_file,
-				    jump_func->value.pass_through.operand, 0);
-	      fprintf (dump_file, "\n");
- 	    }
-	  else if (type == IPA_JF_ANCESTOR)
-	    {
-	      fprintf (f, "ANCESTOR: ");
-	      fprintf (f, "%d, offset "HOST_WIDE_INT_PRINT_DEC", ",
-		       jump_func->value.ancestor.formal_id,
-		       jump_func->value.ancestor.offset);
-	      print_generic_expr (f, jump_func->value.ancestor.type, 0);
-	      fprintf (dump_file, "\n");
-	    }
+	  fprintf (f, "    indirect callsite %d for stmt ", i);
+	  print_gimple_stmt (f, cs->call_stmt, 0, TDF_SLIM);
 	}
+      else
+	fprintf (f, "    indirect callsite %d :\n", i);
+      ipa_print_node_jump_functions_for_edge (f, cs);
+
     }
 }
 
@@ -852,8 +880,8 @@ compute_cst_member_ptr_arguments (struct ipa_jump_func *functions,
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
 
-void
-ipa_compute_jump_functions (struct cgraph_edge *cs)
+static void
+ipa_compute_jump_functions_for_edge (struct cgraph_edge *cs)
 {
   struct ipa_node_params *info = IPA_NODE_REF (cs->caller);
   struct ipa_edge_args *arguments = IPA_EDGE_REF (cs);
@@ -878,6 +906,34 @@ ipa_compute_jump_functions (struct cgraph_edge *cs)
   /* Finally, let's check whether we actually pass a new constant member
      pointer here...  */
   compute_cst_member_ptr_arguments (arguments->jump_functions, call);
+}
+
+/* Compute jump functions for all edges - both direct and indirect - outgoing
+   from NODE.  Also count the actual arguments in the process.  */
+
+void
+ipa_compute_jump_functions (struct cgraph_node *node)
+{
+  struct cgraph_edge *cs;
+
+  for (cs = node->callees; cs; cs = cs->next_callee)
+    {
+      /* We do not need to bother analyzing calls to unknown
+	 functions unless they may become known during lto/whopr.  */
+      if (!cs->callee->analyzed && !flag_lto && !flag_whopr)
+	continue;
+      ipa_count_arguments (cs);
+      if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
+	  != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
+	ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+      ipa_compute_jump_functions_for_edge (cs);
+    }
+
+  for (cs = node->indirect_calls; cs; cs = cs->next_callee)
+    {
+      ipa_count_arguments (cs);
+      ipa_compute_jump_functions_for_edge (cs);
+    }
 }
 
 /* If RHS looks like a rhs of a statement loading pfn from a member
@@ -1345,6 +1401,11 @@ make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
     }
+
+  if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
+      != ipa_get_param_count (IPA_NODE_REF (callee)))
+    ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
+
   return ie;
 }
 
