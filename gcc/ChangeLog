@@ -1,5 +1,13 @@
 2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
 
+	Revert:
+	2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (build_call_list): Remove.
+	* tree.c (build_call_list): Remove.
+
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree.h (build_call_list): Remove.
 	* tree.c (build_call_list): Remove.
 
