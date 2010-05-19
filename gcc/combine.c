@@ -2310,6 +2310,7 @@ static void
 propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
 {
   rtx next, move_pos = move ? last : NULL_RTX, loc;
+  bool first_p;
 
 #ifdef AUTO_INC_DEC
   struct rtx_subst_pair p;
@@ -2318,6 +2319,7 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
   p.after = move;
 #endif
 
+  first_p = true;
   next = NEXT_INSN (insn);
   while (next != last)
     {
@@ -2325,6 +2327,11 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
       next = NEXT_INSN (insn);
       if (DEBUG_INSN_P (insn))
 	{
+	  if (first_p)
+	    {
+	      src = make_compound_operation (src, SET);
+	      first_p = false;
+	    }
 #ifdef AUTO_INC_DEC
 	  loc = simplify_replace_fn_rtx (INSN_VAR_LOCATION_LOC (insn),
 					 dest, propagate_for_debug_subst, &p);
@@ -3294,6 +3301,14 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
 	  i2scratch = true;
 
+	  /* *SPLIT may be part of I2SRC, so make sure we have the
+	     original expression around for later debug processing.
+	     We should not need I2SRC any more in other cases.  */
+	  if (MAY_HAVE_DEBUG_INSNS)
+	    i2src = copy_rtx (i2src);
+	  else
+	    i2src = NULL;
+
 	  /* Get NEWDEST as a register in the proper mode.  We have already
 	     validated that we can do this.  */
 	  if (GET_MODE (i2dest) != split_mode && split_mode != VOIDmode)
@@ -3790,7 +3805,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	call_usage = copy_rtx (call_usage);
 
 	if (substed_i2)
-	  replace_rtx (call_usage, i2dest, i2src);
+	  {
+	    /* I2SRC must still be meaningful at this point.  Some splitting
+	       operations can invalidate I2SRC, but those operations do not
+	       apply to calls.  */
+	    gcc_assert (i2src);
+	    replace_rtx (call_usage, i2dest, i2src);
+	  }
 
 	if (substed_i1)
 	  replace_rtx (call_usage, i1dest, i1src);

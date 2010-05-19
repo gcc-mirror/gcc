@@ -1,3 +1,11 @@
+2010-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* combine.c (propagate_for_debug): Call make_compound_operation
+	on the source value.
+	(try_combine): When implementing a split chosen by find_split_point,
+	either copy i2src or set it to null.  Assert that i2src is not null
+	before substituting into CALL_INSN_FUNCTION_USAGE.
+
 2010-05-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (double_int_ior): New function.
