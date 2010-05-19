@@ -1,3 +1,14 @@
+2010-05-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (double_int_ior): New function.
+	* tree.h (build_int_cst_wide_type): Remove.
+	* tree.c (build_int_cst_wide_type): Remove.
+	* fold-const.c (native_interpret_int): Use double_int_to_tree instead
+	of build_int_cst_wide_type.
+	* stor-layout.c (set_sizetype): (Ditto.).
+	* dojump.c (do_jump): Use build_int_cstu instead of
+	build_int_cst_wide_type.
+
 2010-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* langhooks.h (struct lang_hooks): Add new field deep_unsharing.

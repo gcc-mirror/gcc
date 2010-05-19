@@ -1,3 +1,8 @@
+2010-05-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* jcf-parse.c (get_constant): Use double_int_to_tree instead of
+	build_int_cst_wide_type.
+
 2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* expr.c (pop_arguments): Fix use of undeclared variable.
