@@ -1971,21 +1971,10 @@ struct gimple_opt_pass pass_inline_parameters =
 static void
 inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 {
-  struct cgraph_edge *cs;
-
-  if (!flag_ipa_cp)
-    {
-      ipa_initialize_node_params (node);
-      ipa_detect_param_modifications (node);
-    }
+  ipa_initialize_node_params (node);
+  ipa_detect_param_modifications (node);
   ipa_analyze_params_uses (node);
-
-  if (!flag_ipa_cp)
-    for (cs = node->callees; cs; cs = cs->next_callee)
-      {
-	ipa_count_arguments (cs);
-	ipa_compute_jump_functions (cs);
-      }
+  ipa_compute_jump_functions (node);
 
   if (dump_file)
     {

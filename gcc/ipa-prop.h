@@ -413,7 +413,7 @@ ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *node)
 }
 
 /* Callsite related calculations.  */
-void ipa_compute_jump_functions (struct cgraph_edge *);
+void ipa_compute_jump_functions (struct cgraph_node *);
 void ipa_count_arguments (struct cgraph_edge *);
 
 /* Function formal parameters related computations.  */

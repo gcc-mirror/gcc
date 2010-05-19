@@ -1,3 +1,20 @@
+2010-05-19  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_print_node_jump_functions): Print jump functions
+	also for indirect edges.  Actual printing moved...
+	(ipa_print_node_jump_functions_for_edge): ...here.
+	(ipa_compute_jump_functions): Renamed to
+	ipa_compute_jump_functions_for_edge and made static.
+	(ipa_compute_jump_functions): New function.
+	(make_edge_direct_to_target): Check if the number of arguments on
+	the newly direct edge is the same as the number of parametrs of
+	the callee.
+	* ipa-cp.c (ipcp_init_stage): Most functionality moved to new
+	ipa_compute_jump_functions.  Call ipa_analyze_params_uses.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Call
+	analysis functions unconditionally, call the new
+	ipa_analyze_params_uses on the node instead of every edge.
+
 2010-05-19  Christian Borntraeger  <borntraeger@de.ibm.com>
 
         * tree-ssa-loop-prefetch.c (mem_ref_group, ar_data): Change step

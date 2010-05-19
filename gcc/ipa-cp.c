@@ -614,7 +614,6 @@ static void
 ipcp_init_stage (void)
 {
   struct cgraph_node *node;
-  struct cgraph_edge *cs;
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
@@ -623,19 +622,10 @@ ipcp_init_stage (void)
     {
       if (!node->analyzed)
 	continue;
+
+      ipa_analyze_params_uses (node);
       /* building jump functions  */
-      for (cs = node->callees; cs; cs = cs->next_callee)
-	{
-	  /* We do not need to bother analyzing calls to unknown
-	     functions unless they may become known during lto/whopr.  */
-	  if (!cs->callee->analyzed && !flag_lto && !flag_whopr)
-	    continue;
-	  ipa_count_arguments (cs);
-	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
-	  ipa_compute_jump_functions (cs);
-	}
+      ipa_compute_jump_functions (node);
     }
 }
 
