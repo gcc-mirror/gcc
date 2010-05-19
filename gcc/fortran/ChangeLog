@@ -1,3 +1,16 @@
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34505
+	* intrinsic.h (gfc_check_float): New prototype.
+	(gfc_check_sngl): New prototype.
+	* check.c (gfc_check_float): New.
+	(gfc_check_sngl): New.
+	* intrinsic.c (add_functions): Moved DFLOAT from aliasing DBLE
+	to be a specific for REAL. Added check routines for FLOAT, DFLOAT
+	and SNGL.
+	* intrinsic.texi: Removed individual nodes of FLOAT, DFLOAT and SNGL,
+	added them to the list of specifics of REAL instead.
+
 2010-05-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43990

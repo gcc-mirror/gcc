@@ -1244,6 +1244,20 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   return SUCCESS;
 }
 
+gfc_try
+gfc_check_float (gfc_expr *a)
+{
+  if (type_check (a, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if ((a->ts.kind != gfc_default_integer_kind)
+      && gfc_notify_std (GFC_STD_GNU, "GNU extension: non-default INTEGER"
+			 "kind argument to %s intrinsic at %L",
+			 gfc_current_intrinsic, &a->where) == FAILURE	)
+    return FAILURE;
+
+  return SUCCESS;
+}
 
 /* A single complex argument.  */
 
@@ -1255,7 +1269,6 @@ gfc_check_fn_c (gfc_expr *a)
 
   return SUCCESS;
 }
-
 
 /* A single real argument.  */
 
@@ -2953,6 +2966,20 @@ gfc_check_sleep_sub (gfc_expr *seconds)
   return SUCCESS;
 }
 
+gfc_try
+gfc_check_sngl (gfc_expr *a)
+{
+  if (type_check (a, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if ((a->ts.kind != gfc_default_double_kind)
+      && gfc_notify_std (GFC_STD_GNU, "GNU extension: non double precision"
+			 "REAL argument to %s intrinsic at %L",
+			 gfc_current_intrinsic, &a->where) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
 
 gfc_try
 gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)

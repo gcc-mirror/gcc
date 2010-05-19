@@ -1476,8 +1476,6 @@ add_functions (void)
 	     gfc_check_dble, gfc_simplify_dble, gfc_resolve_dble,
 	     a, BT_REAL, dr, REQUIRED);
 
-  make_alias ("dfloat", GFC_STD_GNU);
-
   make_generic ("dble", GFC_ISYM_DBLE, GFC_STD_F77);
 
   add_sym_1 ("digits", GFC_ISYM_DIGITS, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
@@ -2293,11 +2291,15 @@ add_functions (void)
 	     a, BT_UNKNOWN, dr, REQUIRED);
 
   add_sym_1 ("float", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
-	     gfc_check_i, gfc_simplify_float, NULL,
+	     gfc_check_float, gfc_simplify_float, NULL,
 	     a, BT_INTEGER, di, REQUIRED);
 
+  add_sym_1 ("dfloat", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
+	     gfc_check_float, gfc_simplify_dble, gfc_resolve_dble,
+	     a, BT_REAL, dr, REQUIRED);
+
   add_sym_1 ("sngl", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
-	     NULL, gfc_simplify_sngl, NULL,
+	     gfc_check_sngl, gfc_simplify_sngl, NULL,
 	     a, BT_REAL, dd, REQUIRED);
 
   make_generic ("real", GFC_ISYM_REAL, GFC_STD_F77);

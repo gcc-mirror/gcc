@@ -92,7 +92,6 @@ Some basic guidelines for editing this document:
 * @code{DATE_AND_TIME}: DATE_AND_TIME, Date and time subroutine
 * @code{DBLE}:          DBLE,      Double precision conversion function
 * @code{DCMPLX}:        DCMPLX,    Double complex conversion function
-* @code{DFLOAT}:        DFLOAT,    Double precision conversion function
 * @code{DIGITS}:        DIGITS,    Significant digits function
 * @code{DIM}:           DIM,       Positive difference
 * @code{DOT_PRODUCT}:   DOT_PRODUCT, Dot product function
@@ -111,7 +110,6 @@ Some basic guidelines for editing this document:
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
 * @code{FGET}:          FGET,      Read a single character in stream mode from stdin
 * @code{FGETC}:         FGETC,     Read a single character in stream mode
-* @code{FLOAT}:         FLOAT,     Convert integer to default real
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
@@ -241,7 +239,6 @@ Some basic guidelines for editing this document:
 * @code{SIZE}:          SIZE,      Function to determine the size of an array
 * @code{SIZEOF}:        SIZEOF,    Determine the size in bytes of an expression
 * @code{SLEEP}:         SLEEP,     Sleep for the specified number of seconds
-* @code{SNGL}:          SNGL,      Convert double precision real to default real
 * @code{SPACING}:       SPACING,   Smallest distance between two numbers of a given type
 * @code{SPREAD}:        SPREAD,    Add a dimension to an array 
 * @code{SQRT}:          SQRT,      Square-root function
@@ -3102,7 +3099,7 @@ end program test_dble
 @end smallexample
 
 @item @emph{See also}:
-@ref{DFLOAT}, @ref{FLOAT}, @ref{REAL}
+@ref{REAL}
 @end table
 
 
@@ -3154,47 +3151,6 @@ program test_dcmplx
 end program test_dcmplx
 @end smallexample
 @end table
-
-
-
-@node DFLOAT
-@section @code{DFLOAT} --- Double conversion function 
-@fnindex DFLOAT
-@cindex conversion, to real
-
-@table @asis
-@item @emph{Description}:
-@code{DFLOAT(A)} Converts @var{A} to double precision real type.
-
-@item @emph{Standard}:
-GNU extension
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DFLOAT(A)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{A} @tab The type shall be @code{INTEGER}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of type double precision real.
-
-@item @emph{Example}:
-@smallexample
-program test_dfloat
-    integer :: i = 5
-    print *, dfloat(i)
-end program test_dfloat
-@end smallexample
-
-@item @emph{See also}:
-@ref{DBLE}, @ref{FLOAT}, @ref{REAL}
-@end table
-
 
 
 @node DIGITS
@@ -4026,46 +3982,6 @@ program test_fdate
     print *, 'Program ended on ', date
 end program test_fdate
 @end smallexample
-@end table
-
-
-
-@node FLOAT
-@section @code{FLOAT} --- Convert integer to default real
-@fnindex FLOAT
-@cindex conversion, to real
-
-@table @asis
-@item @emph{Description}:
-@code{FLOAT(A)} converts the integer @var{A} to a default real value.
-
-@item @emph{Standard}:
-Fortran 77 and later
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = FLOAT(A)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{A} @tab The type shall be @code{INTEGER}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of type default @code{REAL}.
-
-@item @emph{Example}:
-@smallexample
-program test_float
-    integer :: i = 1
-    if (float(i) /= 1.) call abort
-end program test_float
-@end smallexample
-
-@item @emph{See also}:
-@ref{DBLE}, @ref{DFLOAT}, @ref{REAL}
 @end table
 
 
@@ -9154,6 +9070,9 @@ See @code{PRECISION} for an example.
 @section @code{REAL} --- Convert to real type 
 @fnindex REAL
 @fnindex REALPART
+@fnindex FLOAT
+@fnindex DFLOAT
+@fnindex SNGL
 @cindex conversion, to real
 @cindex complex numbers, real part
 
@@ -9210,13 +9129,15 @@ end program test_real
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name           @tab Argument           @tab Return type     @tab Standard
-@item @code{REAL(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
+@item Name             @tab Argument           @tab Return type     @tab Standard
+@item @code{FLOAT(A)}  @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
+@item @code{DFLOAT(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(8)}  @tab GNU extension
+@item @code{SNGL(A)}   @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
 @end multitable
 
 
 @item @emph{See also}:
-@ref{DBLE}, @ref{DFLOAT}, @ref{FLOAT}
+@ref{DBLE}
 
 @end table
 
@@ -10211,40 +10132,6 @@ program test_sleep
   call sleep(5)
 end
 @end smallexample
-@end table
-
-
-
-@node SNGL
-@section @code{SNGL} --- Convert double precision real to default real
-@fnindex SNGL
-@cindex conversion, to real
-
-@table @asis
-@item @emph{Description}:
-@code{SNGL(A)} converts the double precision real @var{A}
-to a default real value. This is an archaic form of @code{REAL}
-that is specific to one type for @var{A}.
-
-@item @emph{Standard}:
-Fortran 77 and later
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SNGL(A)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{A} @tab The type shall be a double precision @code{REAL}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of type default @code{REAL}.
-
-@item @emph{See also}:
-@ref{DBLE}
 @end table
 
 

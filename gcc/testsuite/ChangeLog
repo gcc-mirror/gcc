@@ -1,3 +1,10 @@
+2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34505
+	* gfortran.dg/dfloat_1.f90: Add warnings for non-default kind
+	arguments; add check for return value kind.
+	* gfortran.dg/float_1.f90: Likewise.
+
 2010-05-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/20011009-1.c (COMMENT): Define.
