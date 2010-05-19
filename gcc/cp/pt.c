@@ -9791,7 +9791,10 @@ tsubst_function_type (tree t,
 
   /* Construct a new type node and return it.  */
   if (TREE_CODE (t) == FUNCTION_TYPE)
-    fntype = build_function_type (return_type, arg_types);
+    {
+      fntype = build_function_type (return_type, arg_types);
+      fntype = apply_memfn_quals (fntype, type_memfn_quals (t));
+    }
   else
     {
       tree r = TREE_TYPE (TREE_VALUE (arg_types));
@@ -9813,7 +9816,6 @@ tsubst_function_type (tree t,
       fntype = build_method_type_directly (r, return_type,
 					   TREE_CHAIN (arg_types));
     }
-  fntype = cp_build_qualified_type_real (fntype, TYPE_QUALS (t), complain);
   fntype = cp_build_type_attribute_variant (fntype, TYPE_ATTRIBUTES (t));
 
   return fntype;
@@ -10111,14 +10113,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		int quals;
 		gcc_assert (TYPE_P (arg));
 
-		/* cv-quals from the template are discarded when
-		   substituting in a function or reference type.  */
-		if (TREE_CODE (arg) == FUNCTION_TYPE
-		    || TREE_CODE (arg) == METHOD_TYPE
-		    || TREE_CODE (arg) == REFERENCE_TYPE)
-		  quals = cp_type_quals (arg);
-		else
-		  quals = cp_type_quals (arg) | cp_type_quals (t);
+		quals = cp_type_quals (arg) | cp_type_quals (t);
 		  
 		return cp_build_qualified_type_real
 		  (arg, quals, complain | tf_ignore_bad_quals);
@@ -10378,7 +10373,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    /* The type of the implicit object parameter gets its
 	       cv-qualifiers from the FUNCTION_TYPE. */
 	    tree memptr;
-	    tree method_type = build_memfn_type (type, r, cp_type_quals (type));
+	    tree method_type = build_memfn_type (type, r, type_memfn_quals (type));
 	    memptr = build_ptrmemfunc_type (build_pointer_type (method_type));
 	    return cp_build_qualified_type_real (memptr, cp_type_quals (t),
 						 complain);
@@ -15042,7 +15037,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	{
 	  tree method_type;
 	  tree fntype;
-	  cp_cv_quals cv_quals;
 
 	  /* Check top-level cv qualifiers */
 	  if (!check_cv_quals_for_unify (UNIFY_ALLOW_NONE, arg, parm))
@@ -15061,9 +15055,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  /* Extract the cv-qualifiers of the member function from the
 	     implicit object parameter and place them on the function
 	     type to be restored later. */
-	  cv_quals =
-	    cp_type_quals(TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (method_type))));
-	  fntype = build_qualified_type (fntype, cv_quals);
+	  fntype = apply_memfn_quals (fntype, type_memfn_quals (method_type));
 	  return unify (tparms, targs, TREE_TYPE (parm), fntype, strict);
 	}
 

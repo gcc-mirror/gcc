@@ -7265,8 +7265,7 @@ build_ptrmem_type (tree class_type, tree member_type)
 {
   if (TREE_CODE (member_type) == METHOD_TYPE)
     {
-      tree arg_types = TYPE_ARG_TYPES (member_type);
-      cp_cv_quals quals = cp_type_quals (TREE_TYPE (TREE_VALUE (arg_types)));
+      cp_cv_quals quals = type_memfn_quals (member_type);
       member_type = build_memfn_type (member_type, class_type, quals);
       return build_ptrmemfunc_type (build_pointer_type (member_type));
     }
@@ -8683,7 +8682,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      && (TREE_CODE (type) == FUNCTION_TYPE
 		  || (memfn_quals && TREE_CODE (type) == METHOD_TYPE)))
 	    {
-	      memfn_quals |= cp_type_quals (type);
+	      memfn_quals |= type_memfn_quals (type);
 	      type = build_memfn_type (type,
 				       declarator->u.pointer.class_type,
 				       memfn_quals);
@@ -8691,7 +8690,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    }
 
 	  if (TREE_CODE (type) == FUNCTION_TYPE
-	      && cp_type_quals (type) != TYPE_UNQUALIFIED)
+	      && type_memfn_quals (type) != TYPE_UNQUALIFIED)
             error (declarator->kind == cdk_reference
                    ? G_("cannot declare reference to qualified function type %qT")
                    : G_("cannot declare pointer to qualified function type %qT"),
@@ -8994,7 +8993,7 @@ grokdeclarator (const cp_declarator *declarator,
 	 function type.  */
       if (memfn_quals && TREE_CODE (type) == FUNCTION_TYPE)
         {
-          type = cp_build_qualified_type (type, memfn_quals);
+          type = apply_memfn_quals (type, memfn_quals);
           
           /* We have now dealt with these qualifiers.  */
           memfn_quals = TYPE_UNQUALIFIED;
@@ -9114,7 +9113,7 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  /* A cv-qualifier-seq shall only be part of the function type
 	     for a non-static member function. [8.3.5/4 dcl.fct] */
-	  if (cp_type_quals (type) != TYPE_UNQUALIFIED
+	  if (type_memfn_quals (type) != TYPE_UNQUALIFIED
 	      && (current_class_type == NULL_TREE || staticp) )
 	    {
 	      error (staticp
@@ -9127,7 +9126,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 	  /* The qualifiers on the function type become the qualifiers on
 	     the non-static member function. */
-	  memfn_quals |= cp_type_quals (type);
+	  memfn_quals |= type_memfn_quals (type);
 	  type_quals = TYPE_UNQUALIFIED;
 	}
     }
@@ -9195,7 +9194,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    type = build_memfn_type (type, ctype, memfn_quals);
 	  /* Core issue #547: need to allow this in template type args.  */
 	  else if (template_type_arg && TREE_CODE (type) == FUNCTION_TYPE)
-	    type = cp_build_qualified_type (type, memfn_quals);
+	    type = apply_memfn_quals (type, memfn_quals);
 	  else
 	    error ("invalid qualifiers on non-member function type");
 	}
@@ -12944,7 +12943,6 @@ static_fn_type (tree memfntype)
 {
   tree fntype;
   tree args;
-  int quals;
 
   if (TYPE_PTRMEMFUNC_P (memfntype))
     memfntype = TYPE_PTRMEMFUNC_FN_TYPE (memfntype);
@@ -12956,8 +12954,7 @@ static_fn_type (tree memfntype)
   gcc_assert (TREE_CODE (memfntype) == METHOD_TYPE);
   args = TYPE_ARG_TYPES (memfntype);
   fntype = build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
-  quals = cp_type_quals (TREE_TYPE (TREE_VALUE (args)));
-  fntype = build_qualified_type (fntype, quals);
+  fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype));
   fntype = (cp_build_type_attribute_variant
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));
   fntype = (build_exception_variant
