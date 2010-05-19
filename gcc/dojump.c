@@ -542,7 +542,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
 		  unsigned HOST_WIDE_INT mask
 		    = (unsigned HOST_WIDE_INT) 1 << TREE_INT_CST_LOW (shift);
 		  do_jump (build2 (BIT_AND_EXPR, argtype, arg,
-				   build_int_cst_wide_type (argtype, mask, 0)),
+				   build_int_cstu (argtype, mask)),
 			   clr_label, set_label, setclr_prob);
 		  break;
 		}

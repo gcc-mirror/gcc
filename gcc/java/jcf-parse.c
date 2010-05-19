@@ -1,6 +1,6 @@
 /* Parser for Java(TM) .class files.
    Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1040,14 +1040,15 @@ get_constant (JCF *jcf, int index)
       }
     case CONSTANT_Long:
       {
-	unsigned HOST_WIDE_INT num = JPOOL_UINT (jcf, index);
-	unsigned HOST_WIDE_INT lo;
-	HOST_WIDE_INT hi;
-	
-	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
-	num = JPOOL_UINT (jcf, index+1);
-	add_double (lo, hi, num, 0, &lo, &hi);
-	value = build_int_cst_wide_type (long_type_node, lo, hi);
+	unsigned HOST_WIDE_INT num;
+	double_int val;
+
+	num = JPOOL_UINT (jcf, index);
+	val = double_int_lshift (uhwi_to_double_int (num), 32, 64, false);
+	num = JPOOL_UINT (jcf, index + 1);
+	val = double_int_ior (val, uhwi_to_double_int (num));
+
+	value = double_int_to_tree (long_type_node, val);
 	break;
       }
 

@@ -1063,17 +1063,6 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
   return build_int_cst_wide (type, low1, hi);
 }
 
-/* Create an INT_CST node of TYPE and value HI:LOW.  The value is truncated
-   and sign extended according to the value range of TYPE.  */
-
-tree
-build_int_cst_wide_type (tree type,
-			 unsigned HOST_WIDE_INT low, HOST_WIDE_INT high)
-{
-  fit_double_type (low, high, &low, &high, type);
-  return build_int_cst_wide (type, low, high);
-}
-
 /* Constructs tree in type TYPE from with value given by CST.  Signedness
    of CST is assumed to be the same as the signedness of TYPE.  */
 

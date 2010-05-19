@@ -7408,13 +7408,14 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
-  unsigned int HOST_WIDE_INT lo = 0;
-  HOST_WIDE_INT hi = 0;
+  double_int result;
 
   if (total_bytes > len)
     return NULL_TREE;
   if (total_bytes * BITS_PER_UNIT > 2 * HOST_BITS_PER_WIDE_INT)
     return NULL_TREE;
+
+  result = double_int_zero;
   words = total_bytes / UNITS_PER_WORD;
 
   for (byte = 0; byte < total_bytes; byte++)
@@ -7436,13 +7437,13 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
       value = ptr[offset];
 
       if (bitpos < HOST_BITS_PER_WIDE_INT)
-	lo |= (unsigned HOST_WIDE_INT) value << bitpos;
+	result.low |= (unsigned HOST_WIDE_INT) value << bitpos;
       else
-	hi |= (unsigned HOST_WIDE_INT) value
-	      << (bitpos - HOST_BITS_PER_WIDE_INT);
+	result.high |= (unsigned HOST_WIDE_INT) value
+		       << (bitpos - HOST_BITS_PER_WIDE_INT);
     }
 
-  return build_int_cst_wide_type (type, lo, hi);
+  return double_int_to_tree (type, result);
 }
 
 

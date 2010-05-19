@@ -126,11 +126,24 @@ double_int double_int_udivmod (double_int, double_int, unsigned, double_int *);
 double_int double_int_setbit (double_int, unsigned);
 
 /* Logical operations.  */
+
+/* Returns ~A.  */
+
 static inline double_int
 double_int_not (double_int a)
 {
   a.low = ~a.low;
   a.high = ~ a.high;
+  return a;
+}
+
+/* Returns A | B.  */
+
+static inline double_int
+double_int_ior (double_int a, double_int b)
+{
+  a.low |= b.low;
+  a.high |= b.high;
   return a;
 }
 

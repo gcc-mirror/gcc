@@ -2275,9 +2275,7 @@ set_sizetype (tree type)
      sign-extended in a way consistent with force_fit_type.  */
   max = TYPE_MAX_VALUE (sizetype);
   TYPE_MAX_VALUE (sizetype)
-    = build_int_cst_wide_type (sizetype,
-			       TREE_INT_CST_LOW (max),
-			       TREE_INT_CST_HIGH (max));
+    = double_int_to_tree (sizetype, tree_to_double_int (max));
 
   t = make_node (INTEGER_TYPE);
   TYPE_NAME (t) = get_identifier ("bit_size_type");
