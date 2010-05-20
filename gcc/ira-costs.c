@@ -1773,5 +1773,32 @@ ira_tune_allocno_costs_and_cover_classes (void)
 	}
       if (min_cost != INT_MAX)
 	ALLOCNO_COVER_CLASS_COST (a) = min_cost;
+
+      /* Some targets allow pseudos to be allocated to unaligned
+         sequences of hard registers.  However, selecting an unaligned
+         sequence can unnecessarily restrict later allocations.  So
+         increase the cost of unaligned hard regs to encourage the use
+         of aligned hard regs.  */
+      {
+	int nregs, index;
+
+	if ((nregs = ira_reg_class_nregs[cover_class][ALLOCNO_MODE (a)]) > 1)
+	  {
+	    ira_allocate_and_set_costs
+	      (&ALLOCNO_HARD_REG_COSTS (a), cover_class,
+	       ALLOCNO_COVER_CLASS_COST (a));
+	    reg_costs = ALLOCNO_HARD_REG_COSTS (a);
+	    for (j = n - 1; j >= 0; j--)
+	      {
+		if (j % nregs != 0)
+		  {
+		    regno = ira_non_ordered_class_hard_regs[cover_class][j];
+		    index = ira_class_hard_reg_index[cover_class][regno];
+		    ira_assert (index != 0);
+		    reg_costs[index] += ALLOCNO_FREQ (a);
+		  }
+	      }
+	  }
+      }
     }
 }
