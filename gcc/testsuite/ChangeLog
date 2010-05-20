@@ -1,3 +1,9 @@
+2010-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_3dnow):
+	Fix test code.
+	(check_effective_target_xop): Remove __may_alias__ attribute.
+
 2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/44202
@@ -62,13 +68,13 @@
 	* gcc.target/i386/3dnowA-2.c: Likewise.
 	* gcc.target/i386/pr42549.c: Likewise.
 
-	* gcc.target/i386/sse3-addsubpd.c: Use dg-require-effective-target sse3.
+	* gcc.target/i386/sse3-lddqu.c: Use dg-require-effective-target sse3. 
+	* gcc.target/i386/sse3-addsubpd.c: Likewise.
 	* gcc.target/i386/sse3-addsubps.c: Likewise.
 	* gcc.target/i386/sse3-haddpd.c: Likewise.
 	* gcc.target/i386/sse3-haddps.c: Likewise.
 	* gcc.target/i386/sse3-hsubpd.c: Likewise.
 	* gcc.target/i386/sse3-hsubps.c: Likewise.
-	* gcc.target/i386/sse3-lddqu.c: Likewise.
 	* gcc.target/i386/sse3-movddup.c: Likewise.
 	* gcc.target/i386/sse3-movshdup.c: Likewise.
 	* gcc.target/i386/sse3-movsldup.c: Likewise.
@@ -492,13 +498,13 @@
 
 2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
 
-        PR 44078
-        * gcc.dg/tree-ssa/prefetch-7.c: Change pattern to match only the old
-        debug messages but not the newly introduced one.
+	PR 44078
+	* gcc.dg/tree-ssa/prefetch-7.c: Change pattern to match only the old
+	debug messages but not the newly introduced one.
 
 2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/35779
+	PR fortran/35779
 	* gfortran.dg/initialization_25.f90: Commented testcase.
 	* gfortran.dg/initialization_26.f90: New.
 
@@ -624,8 +630,8 @@
 
 2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/35779
-        * gfortran.dg/initialization_25.f90: New.
+	PR fortran/35779
+	* gfortran.dg/initialization_25.f90: New.
 
 2010-05-13  Martin Jambor  <mjambor@suse.cz>
 
@@ -799,8 +805,8 @@
 
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/43711
-        * gfortran.dg/gomp/pr43711.f90: New.
+	PR fortran/43711
+	* gfortran.dg/gomp/pr43711.f90: New.
 
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -1500,7 +1506,7 @@
 	* gcc.target/arm/thumb-stackframe.c: New test.
 
 2010-04-27  Shujing Zhao  <pearly.zhao@oracle.com>
-	
+
 	* gcc.dg/pr32207.c: Fix typo in expected warning messages.
 	* gcc.dg/misc-column.c: Likewise.
 	* gcc.dg/Walways-true-1.c: Likewise.
@@ -1542,7 +1548,7 @@
 	* obj-c++.dg/stubify-1.mm: Ditto.
 	* lib/objc-torture.exp: Do not require link success for
 	"trivial.m" in the runtime checks when dowhat = 'compile'.
-	* lib/dg-pch.exp: (dg-flags-pch): New Proc.
+	* lib/dg-pch.exp (dg-flags-pch): New Proc.
 	* objc.dg/stubify-1.m:  Restrict to ilp32 targets.  Require
 	Darwin8/OSX10.4 - compatible code generation.
 	* objc.dg/stubify-2.m: Ditto.
