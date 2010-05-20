@@ -1,3 +1,8 @@
+2010-05-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* ipa-prop.c (compute_complex_ancestor_jump_func): Bail
+	out if !cond.
+
 2010-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43733
