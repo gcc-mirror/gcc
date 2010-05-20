@@ -80,10 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
-#include "ggc.h"
 #include "toplev.h"
-#include "real.h"
 #include "flags.h"
 #include "gfortran.h"
 #include "constructor.h"
@@ -5268,8 +5265,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       gfc_trans_scalarizing_loops (&loop, &block);
 
       desc = loop.temp_ss->data.info.descriptor;
-
-      gcc_assert (is_gimple_lvalue (desc));
     }
   else if (expr->expr_type == EXPR_FUNCTION)
     {

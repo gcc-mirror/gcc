@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "convert.h"
-#include "ggc.h"
 #include "toplev.h"
-#include "real.h"
-#include "gimple.h"
 #include "langhooks.h"
 #include "flags.h"
 #include "gfortran.h"
@@ -1114,8 +1110,6 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
 {
   tree var;
   tree tmp;
-
-  gcc_assert (types_compatible_p (TREE_TYPE (len), gfc_charlen_type_node));
 
   if (gfc_can_put_var_on_stack (len))
     {

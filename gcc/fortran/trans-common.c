@@ -99,8 +99,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree.h"
 #include "toplev.h"
-#include "tm.h"
-#include "rtl.h"
+#include "tm.h"		/* For rtl.h.  */
+#include "rtl.h"	/* For decl_default_tls_model.  */
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"

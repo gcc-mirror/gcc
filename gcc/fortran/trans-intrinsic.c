@@ -25,12 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"		/* For UNITS_PER_WORD.  */
 #include "tree.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include "gimple.h"
 #include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
