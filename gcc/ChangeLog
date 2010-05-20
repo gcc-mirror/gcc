@@ -6,6 +6,9 @@
 
 2010-05-19  James E. Wilson  <wilson@codesourcery.com>
 
+	* config/mips/mips-dsp.md (add<DSPV:mode>3,
+	mips_add<DSP:dspfmt1>_s_<DSP:dspfmt2>): Add ISA_HAS_DSP condition.
+
 	PR target/43764
 	* mips.c (mips_call_expr_from_insn): New arg second_call.  Set it.
 	(mips_annotate_pic_calls): Pass new arg to mips_call_expr_from_insn.
