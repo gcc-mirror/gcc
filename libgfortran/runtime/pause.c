@@ -26,7 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-
 static void
 do_pause (void)
 {
@@ -36,25 +35,23 @@ do_pause (void)
 
   fgets(buff, 4, stdin);
   if (strncmp(buff, "go\n", 3) != 0)
-    stop_numeric (-1);
+    stop_string ('\0', 0);
   st_printf ("RESUMED\n");
 }
 
-/* A numeric or blank STOP statement.  */
+/* A numeric PAUSE statement.  */
 
-extern void pause_numeric (GFC_INTEGER_4 code);
+extern void pause_numeric (GFC_INTEGER_4);
 export_proto(pause_numeric);
 
 void
 pause_numeric (GFC_INTEGER_4 code)
 {
-  if (code == -1)
-    st_printf ("PAUSE\n");
-  else
-    st_printf ("PAUSE %d\n", (int)code);
-
+  st_printf ("PAUSE %d\n", (int) code);
   do_pause ();
 }
+
+/* A character string or blank PAUSE statement.  */
 
 extern void pause_string (char *string, GFC_INTEGER_4 len);
 export_proto(pause_string);

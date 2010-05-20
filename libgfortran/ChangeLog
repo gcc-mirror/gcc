@@ -1,3 +1,16 @@
+2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* runtime/stop.c (error_stop_numeric): New function and updated comment.
+	Add declaration for stop_numeric and remove declaration for stop_string.
+	(stop_string): Use for blank STOP.
+	(stop_numeric): Remove use of special -1 stop code.
+	* runtime/pause.c (do_pause): Use stop_string for blank stop.
+	(pause_numeric): Remove use of special -1 pause code.
+	* gfortran.map: Add new symbol to run-time library.
+	* libgfortran.h: Move declaration for stop_string to here to make
+	function visible for do_pause. Remove declaration for stop_numeric.
+
 2010-05-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.h (mem_alloc_r): Fix typo to reduce visibility.
