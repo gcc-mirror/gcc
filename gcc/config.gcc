@@ -1760,7 +1760,6 @@ mips*-sde-elf*)
 	    # MIPS toolkit libraries.
 	    tm_file="$tm_file mips/sdemtk.h"
 	    tmake_file="$tmake_file mips/t-sdemtk"
-	    extra_options="$extra_options mips/sdemtk.opt"
 	    case ${enable_threads} in
 	      "" | yes | mipssde)
 		thread_file='mipssde'
