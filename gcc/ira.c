@@ -413,6 +413,11 @@ static HARD_REG_SET no_unit_alloc_regs;
    allocation order.  */
 short ira_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 
+/* Array of the number of hard registers of given class which are
+   available for allocation.  The order is defined by the
+   the hard register numbers.  */
+short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
 /* The number of elements of the above array for given register
    class.  */
 int ira_class_hard_regs_num[N_REG_CLASSES];
@@ -437,7 +442,10 @@ setup_class_hard_regs (void)
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       CLEAR_HARD_REG_SET (processed_hard_reg_set);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	ira_class_hard_reg_index[cl][0] = -1;
+	{
+	  ira_non_ordered_class_hard_regs[cl][0] = -1;
+	  ira_class_hard_reg_index[cl][0] = -1;
+	}
       for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
 #ifdef REG_ALLOC_ORDER
@@ -457,6 +465,10 @@ setup_class_hard_regs (void)
 	    }
 	}
       ira_class_hard_regs_num[cl] = n;
+      for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (temp_hard_regset, i))
+	  ira_non_ordered_class_hard_regs[cl][n++] = i;
+      ira_assert (ira_class_hard_regs_num[cl] == n);
     }
 }
 

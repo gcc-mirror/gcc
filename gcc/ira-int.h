@@ -743,6 +743,11 @@ extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
    allocation.  */
 extern int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
 
+/* Array of the number of hard registers of given class which are
+   available for allocation.  The order is defined by the the hard
+   register numbers.  */
+extern short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
 /* Index (in ira_class_hard_regs) for given register class and hard
    register (in general case a hard register can belong to several
    register classes).  The index is negative for hard registers

@@ -1,3 +1,11 @@
+2009-09-14  Vladimir Makarov <vmakarov@redhat.com>
+
+	* ira.c (ira_non_ordered_class_hard_regs): Define.
+        (setup_class_hard_regs): Initialize ira_non_ordered_class_hard_regs.
+	* ira-int.h (ira_non_ordered_class_hard_regs): Declare.
+	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Increase
+	cost of unaligned hard regs when allocating multi-reg pseudos.
+
 2010-05-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.gcc (mips*-sde-elf*): Don't use sdemtk.opt.
