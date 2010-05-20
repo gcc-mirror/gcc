@@ -690,7 +690,8 @@ Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand}, 
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
-@option{-Wno-tabs}, @option{-Wintrinsic-shadow} and @option{-Wline-truncation}.
+@option{-Wno-tabs}, @option{-Wintrinsic-shadow}, @option{-Wline-truncation},
+and @option{-Wunused}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -832,15 +833,22 @@ intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
 @code{INTRINSIC} declaration might be needed to get calls later resolved to
 the desired intrinsic/procedure.
 
+@item -Wunused-dummy-argument
+@opindex @code{Wunused-dummy-argument}
+@cindex warnings, unused dummy argument
+@cindex unused dummy argument
+@cindex dummy argument, unused
+Warn about unused dummy arguments. This option is implied by @option{-Wall}.
+
 @item -Wunused-parameter
 @opindex @code{Wunused-parameter}
 @cindex warnings, unused parameter
 @cindex unused parameter
 Contrary to @command{gcc}'s meaning of @option{-Wunused-parameter},
 @command{gfortran}'s implementation of this option does not warn
-about unused dummy arguments, but about unused @code{PARAMETER} values.
-@option{-Wunused-parameter} is not included in @option{-Wall} but is
-implied by @option{-Wall -Wextra}.
+about unused dummy arguments (see @option{-Wunused-dummy-argument}),
+but about unused @code{PARAMETER} values. @option{-Wunused-parameter}
+is not included in @option{-Wall} but is implied by @option{-Wall -Wextra}.
 
 @item -Walign-commons
 @opindex @code{Walign-commons}

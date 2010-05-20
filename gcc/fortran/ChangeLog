@@ -1,3 +1,16 @@
+2010-05-20  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/38407
+        * lang.opt (Wunused-dummy-argument): New option.
+        * gfortran.h (gfc_option_t): Add warn_unused_dummy_argument.
+        * options.c (gfc_init_options): Disable warn_unused_dummy_argument.
+        (set_Wall): Enable warn_unused_dummy_argument.
+        (gfc_handle_option): Set warn_unused_dummy_argument according to
+        command line.
+        * trans-decl.c (generate_local_decl): Separate warnings about
+        unused variables and unused dummy arguments.
+        * invoke.texi: Documented new option.
+
 2010-05-20  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* trans-expr.c: Do not include convert.h, ggc.h, real.h, and gimple.h.

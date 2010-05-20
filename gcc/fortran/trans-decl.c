@@ -3878,24 +3878,29 @@ generate_local_decl (gfc_symbol * sym)
 
       if (sym->attr.referenced)
 	gfc_get_symbol_decl (sym);
-      /* INTENT(out) dummy arguments are likely meant to be set.  */
-      else if (warn_unused_variable
-	       && sym->attr.dummy
-	       && sym->attr.intent == INTENT_OUT)
+
+      /* Warnings for unused dummy arguments.  */
+      else if (sym->attr.dummy)
 	{
-	  if (sym->ts.type != BT_DERIVED)
-	    gfc_warning ("Dummy argument '%s' at %L was declared INTENT(OUT) "
-		         "but was not set",  sym->name, &sym->declared_at);
-	  else if (!gfc_has_default_initializer (sym->ts.u.derived))
-	    gfc_warning ("Derived-type dummy argument '%s' at %L was "
-			 "declared INTENT(OUT) but was not set and does "
-			 "not have a default initializer",
-			 sym->name, &sym->declared_at);
+	  /* INTENT(out) dummy arguments are likely meant to be set.  */
+	  if (gfc_option.warn_unused_dummy_argument
+	      && sym->attr.intent == INTENT_OUT)
+	    {
+	      if (sym->ts.type != BT_DERIVED)
+		gfc_warning ("Dummy argument '%s' at %L was declared "
+			     "INTENT(OUT) but was not set",  sym->name,
+			     &sym->declared_at);
+	      else if (!gfc_has_default_initializer (sym->ts.u.derived))
+		gfc_warning ("Derived-type dummy argument '%s' at %L was "
+			     "declared INTENT(OUT) but was not set and "
+			     "does not have a default initializer",
+			     sym->name, &sym->declared_at);
+	    }
+	  else if (gfc_option.warn_unused_dummy_argument)
+	    gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
+			 &sym->declared_at);
 	}
-      /* Specific warning for unused dummy arguments. */
-      else if (warn_unused_variable && sym->attr.dummy)
-	gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
-		     &sym->declared_at);
+
       /* Warn for unused variables, but not if they're inside a common
 	 block or are use-associated.  */
       else if (warn_unused_variable
