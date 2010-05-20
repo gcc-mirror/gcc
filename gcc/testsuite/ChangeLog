@@ -1,3 +1,8 @@
+2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/44202
+	* gcc.c-torture/execute/pr44202-1.c: New test.
+
 2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851
