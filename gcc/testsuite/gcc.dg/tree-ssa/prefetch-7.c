@@ -2,7 +2,7 @@
 /* { dg-require-effective-target ilp32 } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=athlon" } } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 --param max-unrolled-insns=1 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
 
 #define K 1000000
 int a[K], b[K];
@@ -48,13 +48,13 @@ void test(int *p)
 /* { dg-final { scan-tree-dump-times "a nontemporal store" 2 "aprefetch" } } */
 
 /* { dg-final { scan-tree-dump-times "builtin_prefetch" 8 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "=\\{nt\\}" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "=\\{nt\\}" 18 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_ia32_mfence" 2 "optimized" } } */
 
 /* { dg-final { scan-assembler-times "prefetchw" 5 } } */
 /* { dg-final { scan-assembler-times "prefetcht" 1 } } */
 /* { dg-final { scan-assembler-times "prefetchnta" 2 } } */
-/* { dg-final { scan-assembler-times "movnti" 2 } } */
+/* { dg-final { scan-assembler-times "movnti" 18 } } */
 /* { dg-final { scan-assembler-times "mfence" 2 } } */
 
 /* { dg-final { cleanup-tree-dump "aprefetch" } } */
