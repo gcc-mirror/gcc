@@ -44,11 +44,13 @@ stop_numeric (GFC_INTEGER_4 code)
 void
 stop_string (const char *string, GFC_INTEGER_4 len)
 {
-  st_printf ("STOP ");
-  while (len--)
-    st_printf ("%c", *(string++));
-  st_printf ("\n");
-
+  if (string)
+    {
+      st_printf ("STOP ");
+      while (len--)
+	st_printf ("%c", *(string++));
+      st_printf ("\n");
+    }
   sys_exit (0);
 }
 
