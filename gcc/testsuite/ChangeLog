@@ -1,3 +1,8 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44178
+	* g++.dg/debug/pr44178.C: New test.
+
 2010-05-20  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/44185
