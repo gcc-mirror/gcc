@@ -1,3 +1,8 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/44074
+	* configure: Regenerate.
+
 2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/44202
