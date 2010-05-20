@@ -1,3 +1,11 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (new_loc_descr_op_bit_piece): Add offset
+	argument.  Don't use DW_OP_piece if offset is non-zero,
+	put offset into second DW_OP_bit_piece argument.
+	(dw_sra_loc_expr): Adjust callers.  For memory expressions
+	compute offset.
+
 2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/44202
