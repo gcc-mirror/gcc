@@ -576,7 +576,8 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
 
   cond_bb = single_pred (assign_bb);
   cond = last_stmt (cond_bb);
-  if (gimple_code (cond) != GIMPLE_COND
+  if (!cond
+      || gimple_code (cond) != GIMPLE_COND
       || gimple_cond_code (cond) != NE_EXPR
       || gimple_cond_lhs (cond) != parm
       || !integer_zerop (gimple_cond_rhs (cond)))
