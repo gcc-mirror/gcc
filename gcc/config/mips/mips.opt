@@ -224,6 +224,10 @@ mmt
 Target Report Var(TARGET_MT)
 Allow the use of MT instructions
 
+mno-float
+Target Report RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
+Prevent the use of all floating-point operations
+
 mno-flush-func
 Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines
