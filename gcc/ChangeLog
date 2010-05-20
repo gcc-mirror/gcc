@@ -1,3 +1,9 @@
+2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/44202
+	* config/cris/cris.md ("*addsi3_v32"): Correct "cc"
+	settings for 16-bit-constant "addo" alternative.
+
 2010-05-14  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/38591

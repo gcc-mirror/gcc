@@ -1853,7 +1853,7 @@
    add%u2 %2,%0
    addo.%Z2 %2,%1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,yes,no,no,no,no,no,no")
-   (set_attr "cc" "*,none,*,none,*,*,none,*,*,*,*,*,none")])
+   (set_attr "cc" "*,none,*,none,*,*,none,*,none,*,*,*,none")])
 
 (define_insn "*addhi3_non_v32"
   [(set (match_operand:HI 0 "register_operand"		"=r,r, r,r,r,r")
