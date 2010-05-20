@@ -718,7 +718,7 @@ initiate_bb_reg_pressure_info (basic_block bb)
 
   if (current_nr_blocks > 1)
     FOR_BB_INSNS (bb, insn)
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	setup_ref_regs (PATTERN (insn));
   initiate_reg_pressure_info (df_get_live_in (bb));
 #ifdef EH_RETURN_DATA_REGNO

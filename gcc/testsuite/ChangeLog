@@ -1,3 +1,8 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44178
+	* g++.dg/debug/pr44178.C: New test.
+
 2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/44202

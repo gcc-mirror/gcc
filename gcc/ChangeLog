@@ -1,3 +1,9 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44178
+	* haifa-sched.c (initiate_bb_reg_pressure_info): Do not call
+	setup_ref_regs for DEBUG_INSNs.
+
 2010-05-19  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR bootstrap/43870
