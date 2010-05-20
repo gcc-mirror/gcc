@@ -98,6 +98,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : first(__a), second(__b) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      pair(const pair&) = default;
+
       // DR 811.
       template<class _U1, class = typename
 	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
@@ -149,6 +151,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	second = std::move(__p.second);
 	return *this;
       }
+
+      template<class _U1, class _U2>
+        pair&
+        operator=(const pair<_U1, _U2>& __p)
+	{
+	  first = __p.first;
+	  second = __p.second;
+	  return *this;
+	}
 
       template<class _U1, class _U2>
         pair&
