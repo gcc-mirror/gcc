@@ -827,8 +827,9 @@ internal_proto(filename_from_unit);
 
 /* stop.c */
 
-extern void stop_numeric (GFC_INTEGER_4) __attribute__ ((noreturn));
-iexport_proto(stop_numeric);
+extern void stop_string (const char *, GFC_INTEGER_4)
+  __attribute__ ((noreturn));
+export_proto(stop_string);
 
 /* reshape_packed.c */
 

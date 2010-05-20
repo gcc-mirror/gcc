@@ -2006,41 +2006,22 @@ gfc_match_cycle (void)
 static match
 gfc_match_stopcode (gfc_statement st)
 {
-  int stop_code;
   gfc_expr *e;
   match m;
-  int cnt;
 
-  stop_code = -1;
   e = NULL;
 
   if (gfc_match_eos () != MATCH_YES)
     {
-      m = gfc_match_small_literal_int (&stop_code, &cnt);
+      m = gfc_match_expr (&e);
       if (m == MATCH_ERROR)
 	goto cleanup;
-
-      if (m == MATCH_YES && cnt > 5)
-	{
-	  gfc_error ("Too many digits in STOP code at %C");
-	  goto cleanup;
-	}
-
       if (m == MATCH_NO)
-	{
-	  /* Try a character constant.  */
-	  m = gfc_match_expr (&e);
-	  if (m == MATCH_ERROR)
-	    goto cleanup;
-	  if (m == MATCH_NO)
-	    goto syntax;
-	  if (e->ts.type != BT_CHARACTER || e->expr_type != EXPR_CONSTANT)
-	    goto syntax;
-	}
-
-      if (gfc_match_eos () != MATCH_YES)
 	goto syntax;
     }
+
+  if (gfc_match_eos () != MATCH_YES)
+    goto syntax;
 
   if (gfc_pure (NULL))
     {
@@ -2053,6 +2034,31 @@ gfc_match_stopcode (gfc_statement st)
     {
       gfc_error ("Image control statement STOP at %C in CRITICAL block");
       return MATCH_ERROR;
+    }
+
+  if (e != NULL)
+    {
+      if (!(e->ts.type == BT_CHARACTER || e->ts.type == BT_INTEGER))
+	{
+	  gfc_error ("STOP code at %L must be either INTEGER or CHARACTER type",
+		     &e->where);
+	  return MATCH_ERROR;
+	}
+
+      if (e->ts.type == BT_CHARACTER
+	  && e->ts.kind != gfc_default_character_kind)
+	{
+	  gfc_error ("STOP code at %L must be default character KIND=%d",
+		     &e->where, (int) gfc_default_character_kind);
+	  return MATCH_ERROR;
+	}
+
+      if (e->expr_type != EXPR_CONSTANT)
+	{
+	  gfc_error ("STOP code at %L must be a constant expression",
+		     &e->where);
+	  return MATCH_ERROR;
+	}
     }
 
   switch (st)
@@ -2071,7 +2077,7 @@ gfc_match_stopcode (gfc_statement st)
     }
 
   new_st.expr1 = e;
-  new_st.ext.stop_code = stop_code;
+  new_st.ext.stop_code = -1;
 
   return MATCH_YES;
 

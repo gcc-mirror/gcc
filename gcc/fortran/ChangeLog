@@ -1,3 +1,19 @@
+2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* trans-stmt.c (gfc_trans_stop): Add generation of call to
+	gfortran_error_stop_numeric. Fix up some whitespace. Use stop_string for
+	blank STOP, handling a null expression. (gfc_trans_pause): Use
+	pause_string for blank PAUSE.
+	* trans.h: Add external function declaration for error_stop_numeric.
+	* trans-decl.c (gfc_build_builtin_function_decls): Add the building of
+	the declaration for the library call. Adjust whitespaces.
+	* match.c (gfc_match_stopcode): Remove use of the actual stop code to
+	signal no stop code. Match the expression following the stop and pass
+	that to the translators. Remove the old use of digit matching.  Add
+	checks that the stop_code expression is INTEGER or CHARACTER, constant,
+	and if CHARACTER, default character KIND.
+
 2010-05-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44055

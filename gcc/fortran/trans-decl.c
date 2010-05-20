@@ -86,6 +86,7 @@ tree gfor_fndecl_pause_numeric;
 tree gfor_fndecl_pause_string;
 tree gfor_fndecl_stop_numeric;
 tree gfor_fndecl_stop_string;
+tree gfor_fndecl_error_stop_numeric;
 tree gfor_fndecl_error_stop_string;
 tree gfor_fndecl_runtime_error;
 tree gfor_fndecl_runtime_error_at;
@@ -2774,22 +2775,32 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_stop_numeric =
     gfc_build_library_function_decl (get_identifier (PREFIX("stop_numeric")),
 				     void_type_node, 1, gfc_int4_type_node);
-  /* Stop doesn't return.  */
+  /* STOP doesn't return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric) = 1;
+
 
   gfor_fndecl_stop_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("stop_string")),
 				     void_type_node, 2, pchar_type_node,
-                                     gfc_int4_type_node);
-  /* Stop doesn't return.  */
+				     gfc_int4_type_node);
+  /* STOP doesn't return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_stop_string) = 1;
+
+
+  gfor_fndecl_error_stop_numeric =
+    gfc_build_library_function_decl (get_identifier (PREFIX("error_stop_numeric")),
+				     void_type_node, 1, gfc_int4_type_node);
+  /* ERROR STOP doesn't return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_error_stop_numeric) = 1;
+
 
   gfor_fndecl_error_stop_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("error_stop_string")),
 				     void_type_node, 2, pchar_type_node,
-                                     gfc_int4_type_node);
+				     gfc_int4_type_node);
   /* ERROR STOP doesn't return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_error_stop_string) = 1;
+
 
   gfor_fndecl_pause_numeric =
     gfc_build_library_function_decl (get_identifier (PREFIX("pause_numeric")),
@@ -2798,7 +2809,7 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_pause_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("pause_string")),
 				     void_type_node, 2, pchar_type_node,
-                                     gfc_int4_type_node);
+				     gfc_int4_type_node);
 
   gfor_fndecl_runtime_error =
     gfc_build_library_function_decl (get_identifier (PREFIX("runtime_error")),
