@@ -2308,7 +2308,7 @@ df_ref_compare (const void *r1, const void *r2)
       if (DF_REF_EXTRACT_MODE (ref1) != DF_REF_EXTRACT_MODE (ref2))
 	return DF_REF_EXTRACT_MODE (ref1) - DF_REF_EXTRACT_MODE (ref2);
     }
-  return 0;
+  return (int)DF_REF_ORDER (ref1) - (int)DF_REF_ORDER (ref2);
 }
 
 static void
