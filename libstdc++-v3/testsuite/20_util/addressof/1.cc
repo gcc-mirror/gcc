@@ -1,9 +1,9 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-error "no matching" "" { target *-*-* } 1196 }
-// { dg-excess-errors "" }
+// { dg-do compile }
 
-// Copyright (C) 2009, 2010 Free Software Foundation
+// 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,16 +20,32 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <forward_list>
+#include <memory>
+#include <testsuite_hooks.h>
+#include <testsuite_api.h>
 
-struct A
-{
-  explicit A(int) { }
-};
+void f1(int) { }
 
-void f()
+void test01()
 {
-  typedef std::forward_list<A> test_type;
-  test_type l;
-  l.assign(10, 1);
+  bool test __attribute__((unused)) = true;
+  using namespace __gnu_test;
+  
+  OverloadedAddress* ao1 = new OverloadedAddress();
+  OverloadedAddress& o1 = *ao1;
+
+  VERIFY( std::addressof(o1) == ao1 );
+
+  const OverloadedAddress* ao2 = new OverloadedAddress();
+  const OverloadedAddress& o2 = *ao2;
+
+  VERIFY( std::addressof(o2) == ao2 );
+
+  VERIFY( std::addressof(f1) == &f1 );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }

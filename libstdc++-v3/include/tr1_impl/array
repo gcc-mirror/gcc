@@ -83,19 +83,19 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       // Iterators.
       iterator
       begin()
-      { return iterator(&_M_instance[0]); }
+      { return iterator(std::__addressof(_M_instance[0])); }
 
       const_iterator
       begin() const 
-      { return const_iterator(&_M_instance[0]); }
+      { return const_iterator(std::__addressof(_M_instance[0])); }
 
       iterator
       end()
-      { return iterator(&_M_instance[_Nm]); }
+      { return iterator(std::__addressof(_M_instance[_Nm])); }
 
       const_iterator
       end() const
-      { return const_iterator(&_M_instance[_Nm]); }
+      { return const_iterator(std::__addressof(_M_instance[_Nm])); }
 
       reverse_iterator 
       rbegin()
@@ -116,11 +116,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #ifdef _GLIBCXX_INCLUDE_AS_CXX0X
       const_iterator
       cbegin() const 
-      { return const_iterator(&_M_instance[0]); }
+      { return const_iterator(std::__addressof(_M_instance[0])); }
 
       const_iterator
       cend() const
-      { return const_iterator(&_M_instance[_Nm]); }
+      { return const_iterator(std::__addressof(_M_instance[_Nm])); }
 
       const_reverse_iterator 
       crbegin() const
@@ -182,13 +182,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       back() const
       { return _Nm ? *(end() - 1) : *end(); }
 
-      _Tp* 
+      _Tp*
       data()
-      { return &_M_instance[0]; }
+      { return std::__addressof(_M_instance[0]); }
 
-      const _Tp* 
+      const _Tp*
       data() const
-      { return &_M_instance[0]; }
+      { return std::__addressof(_M_instance[0]); }
     };
 
   // Array comparisons.

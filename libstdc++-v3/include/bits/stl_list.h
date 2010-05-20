@@ -128,14 +128,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _List_iterator(_List_node_base* __x)
       : _M_node(__x) { }
 
-      // Must downcast from List_node_base to _List_node to get to _M_data.
+      // Must downcast from _List_node_base to _List_node to get to _M_data.
       reference
       operator*() const
       { return static_cast<_Node*>(_M_node)->_M_data; }
 
       pointer
       operator->() const
-      { return &static_cast<_Node*>(_M_node)->_M_data; }
+      { return std::__addressof(static_cast<_Node*>(_M_node)->_M_data); }
 
       _Self&
       operator++()
@@ -215,7 +215,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
       pointer
       operator->() const
-      { return &static_cast<_Node*>(_M_node)->_M_data; }
+      { return std::__addressof(static_cast<_Node*>(_M_node)->_M_data); }
 
       _Self&
       operator++()
@@ -461,7 +461,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	_Node* __p = this->_M_get_node();
 	__try
 	  {
-	    _M_get_Tp_allocator().construct(&__p->_M_data, __x);
+	    _M_get_Tp_allocator().construct
+	      (std::__addressof(__p->_M_data), __x);
 	  }
 	__catch(...)
 	  {
@@ -1453,7 +1454,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
         _M_get_Node_allocator().destroy(__n);
 #else
-	_M_get_Tp_allocator().destroy(&__n->_M_data);
+	_M_get_Tp_allocator().destroy(std::__addressof(__n->_M_data));
 #endif
         _M_put_node(__n);
       }

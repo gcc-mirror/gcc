@@ -139,7 +139,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       pointer
       operator->() const
-      { return &static_cast<_Node*>(this->_M_node)->_M_value; }
+      { return std::__addressof(static_cast<_Node*>
+				(this->_M_node)->_M_value); }
 
       _Self&
       operator++()
@@ -210,7 +211,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       pointer
       operator->() const
-      { return &static_cast<_Node*>(this->_M_node)->_M_value; }
+      { return std::__addressof(static_cast<_Node*>
+				(this->_M_node)->_M_value); }
 
       _Self&
       operator++()

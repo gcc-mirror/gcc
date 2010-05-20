@@ -1,6 +1,7 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -71,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __try
 	    {
 	      for (; __first != __last; ++__first, ++__cur)
-		std::_Construct(&*__cur, *__first);
+		std::_Construct(std::__addressof(*__cur), *__first);
 	      return __cur;
 	    }
 	  __catch(...)
@@ -129,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __try
 	    {
 	      for (; __cur != __last; ++__cur)
-		std::_Construct(&*__cur, __x);
+		std::_Construct(std::__addressof(*__cur), __x);
 	    }
 	  __catch(...)
 	    {
@@ -185,11 +186,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _ForwardIterator __cur = __first;
 	  __try
 	    {
-	      std::_Construct(&*__first, _GLIBCXX_MOVE(__value));
+	      std::_Construct(std::__addressof(*__first),
+			      _GLIBCXX_MOVE(__value));
 	      _ForwardIterator __prev = __cur;
 	      ++__cur;
 	      for(; __cur != __last; ++__cur, ++__prev)
-		std::_Construct(&*__cur, _GLIBCXX_MOVE(*__prev));
+		std::_Construct(std::__addressof(*__cur),
+				_GLIBCXX_MOVE(*__prev));
 	      __value = _GLIBCXX_MOVE(*__prev);
 	    }
 	  __catch(...)
@@ -245,7 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __try
 	    {
 	      for (; __n > 0; --__n, ++__cur)
-		std::_Construct(&*__cur, __x);
+		std::_Construct(std::__addressof(*__cur), __x);
 	    }
 	  __catch(...)
 	    {
@@ -301,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __try
 	{
 	  for (; __first != __last; ++__first, ++__cur)
-	    __alloc.construct(&*__cur, *__first);
+	    __alloc.construct(std::__addressof(*__cur), *__first);
 	  return __cur;
 	}
       __catch(...)
@@ -337,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __try
 	{
 	  for (; __cur != __last; ++__cur)
-	    __alloc.construct(&*__cur, __x);
+	    __alloc.construct(std::__addressof(*__cur), __x);
 	}
       __catch(...)
 	{
@@ -362,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __try
 	{
 	  for (; __n > 0; --__n, ++__cur)
-	    __alloc.construct(&*__cur, __x);
+	    __alloc.construct(std::__addressof(*__cur), __x);
 	}
       __catch(...)
 	{
@@ -498,7 +501,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __try
 	{
 	  for (; __n > 0; --__n, ++__first, ++__cur)
-	    ::new(static_cast<void*>(&*__cur)) typename
+	    ::new(static_cast<void*>(std::__addressof(*__cur))) typename
 		iterator_traits<_ForwardIterator>::value_type(*__first);
 	  return __cur;
 	}

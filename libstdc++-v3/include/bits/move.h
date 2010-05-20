@@ -1,6 +1,6 @@
 // Move, forward and identity for C++0x + swap -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,19 @@
 #include <bits/c++config.h>
 #include <cstddef>
 #include <bits/concept_check.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // Used, in C++03 mode too, by allocators, etc.
+  template<typename _Tp>
+    inline _Tp*
+    __addressof(_Tp& __r)
+    {
+      return reinterpret_cast<_Tp*>
+	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
+    }
+
+_GLIBCXX_END_NAMESPACE
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <type_traits> // Brings in std::declval too.
@@ -82,6 +95,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
   /// declval, defined in <type_traits>.
+
+  /**
+   *  @brief Returns the actual address of the object or function
+   *         referenced by r, even in the presence of an overloaded
+   *         operator&.
+   *  @param  __r  Reference to an object or function.
+   *  @return   The actual address.
+  */
+  template<typename _Tp>
+    inline _Tp*
+    addressof(_Tp& __r)
+    { return std::__addressof(__r); }
 
 _GLIBCXX_END_NAMESPACE
 

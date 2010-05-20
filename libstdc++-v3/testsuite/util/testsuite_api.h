@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Exception testing utils for the C++ library testsuite. 
 //
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -150,6 +150,30 @@ namespace __gnu_test
       operator()() const
       { return result_type(2); }
     };
+
+  // For std::addressof, etc.
+  struct OverloadedAddressAux { };
+  
+  struct OverloadedAddress
+  {
+    OverloadedAddressAux
+    operator&() const { return OverloadedAddressAux(); }
+  };
+
+  inline bool
+  operator<(const OverloadedAddress&, const OverloadedAddress&)
+  { return false; }
+
+  inline bool
+  operator==(const OverloadedAddress&, const OverloadedAddress&)
+  { return false; }
+
+  struct OverloadedAddress_hash
+  {
+    size_t
+    operator()(const OverloadedAddress&) const
+    { return 1; }
+  };
 }
 
 #endif

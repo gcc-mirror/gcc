@@ -1,9 +1,8 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-error "no matching" "" { target *-*-* } 1196 }
-// { dg-excess-errors "" }
 
-// Copyright (C) 2009, 2010 Free Software Foundation
+// 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+//
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,16 +19,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+
+// This file tests explicit instantiation of library containers
+
 #include <forward_list>
+#include <testsuite_hooks.h>
+#include <testsuite_api.h>
 
-struct A
-{
-  explicit A(int) { }
-};
+// { dg-do compile }
 
-void f()
-{
-  typedef std::forward_list<A> test_type;
-  test_type l;
-  l.assign(10, 1);
-}
+// libstdc++/41792
+template class std::forward_list<__gnu_test::OverloadedAddress>;
