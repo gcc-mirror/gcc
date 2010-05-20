@@ -1,3 +1,10 @@
+2010-05-20  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR middle-end/44185
+	* gcc.dg/tree-ssa/prefetch-6.c: Add --param min-insn-to-prefetch-ratio=6.
+	* gcc.dg/tree-ssa/prefetch-7.c: Remove --param max-unrolled-insns=1 to
+        allow unrolling, and adjust the movnti count.
+
 2010-05-20  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44197
