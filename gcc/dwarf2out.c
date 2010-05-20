@@ -14364,12 +14364,12 @@ dw_loc_list_1 (tree loc, rtx varloc, int want_address,
    if it is not possible.  */
 
 static dw_loc_descr_ref
-new_loc_descr_op_bit_piece (HOST_WIDE_INT bitsize)
+new_loc_descr_op_bit_piece (HOST_WIDE_INT bitsize, HOST_WIDE_INT offset)
 {
-  if ((bitsize % BITS_PER_UNIT) == 0)
+  if ((bitsize % BITS_PER_UNIT) == 0 && offset == 0)
     return new_loc_descr (DW_OP_piece, bitsize / BITS_PER_UNIT, 0);
   else if (dwarf_version >= 3 || !dwarf_strict)
-    return new_loc_descr (DW_OP_bit_piece, bitsize, 0);
+    return new_loc_descr (DW_OP_bit_piece, bitsize, offset);
   else
     return NULL;
 }
@@ -14448,7 +14448,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
 	  if (padsize > decl_size)
 	    return NULL;
 	  decl_size -= padsize;
-	  *descr_tail = new_loc_descr_op_bit_piece (padsize);
+	  *descr_tail = new_loc_descr_op_bit_piece (padsize, 0);
 	  if (*descr_tail == NULL)
 	    return NULL;
 	  descr_tail = &(*descr_tail)->dw_loc_next;
@@ -14461,7 +14461,47 @@ dw_sra_loc_expr (tree decl, rtx loc)
       decl_size -= bitsize;
       if (last == NULL)
 	{
-	  *descr_tail = new_loc_descr_op_bit_piece (bitsize);
+	  HOST_WIDE_INT offset = 0;
+	  if (GET_CODE (varloc) == VAR_LOCATION
+	      && GET_CODE (PAT_VAR_LOCATION_LOC (varloc)) != PARALLEL)
+	    {
+	      varloc = PAT_VAR_LOCATION_LOC (varloc);
+	      if (GET_CODE (varloc) == EXPR_LIST)
+		varloc = XEXP (varloc, 0);
+	    }
+	  do 
+	    {
+	      if (GET_CODE (varloc) == CONST
+		  || GET_CODE (varloc) == SIGN_EXTEND
+		  || GET_CODE (varloc) == ZERO_EXTEND)
+		varloc = XEXP (varloc, 0);
+	      else if (GET_CODE (varloc) == SUBREG)
+		varloc = SUBREG_REG (varloc);
+	      else
+		break;
+	    }
+	  while (1);
+	  /* DW_OP_bit_size offset should be zero for register
+	     or implicit location descriptions and empty location
+	     descriptions, but for memory addresses needs big endian
+	     adjustment.  */
+	  if (MEM_P (varloc))
+	    {
+	      unsigned HOST_WIDE_INT memsize
+		= INTVAL (MEM_SIZE (varloc)) * BITS_PER_UNIT;
+	      if (memsize != bitsize)
+		{
+		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
+		      && (memsize > BITS_PER_WORD || bitsize > BITS_PER_WORD))
+		    return NULL;
+		  if (memsize < bitsize)
+		    return NULL;
+		  if (BITS_BIG_ENDIAN)
+		    offset = memsize - bitsize;
+		}
+	    }
+
+	  *descr_tail = new_loc_descr_op_bit_piece (bitsize, offset);
 	  if (*descr_tail == NULL)
 	    return NULL;
 	  descr_tail = &(*descr_tail)->dw_loc_next;
@@ -14472,7 +14512,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
      the decl.  */
   if (descr != NULL && decl_size != 0)
     {
-      *descr_tail = new_loc_descr_op_bit_piece (decl_size);
+      *descr_tail = new_loc_descr_op_bit_piece (decl_size, 0);
       if (*descr_tail == NULL)
 	return NULL;
     }
