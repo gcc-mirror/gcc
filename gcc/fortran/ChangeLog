@@ -1,3 +1,8 @@
+2010-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	* options.c (gfc_init_options,gfc_post_options): Enable
+	flag_associative_math by default.
+
 2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851
@@ -126,7 +131,7 @@
 
 2010-05-16  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/35779
+	PR fortran/35779
 	* array.c (match_array_list): Revert change from 2010-05-13.
 
 2010-05-16  Richard Guenther  <rguenther@suse.de>
@@ -179,12 +184,12 @@
 
 2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/35779
-        * intrinsic.c (gfc_init_expr): Renamed to gfc_init_expr_flag.
-        Updated all usages.
-        * expr.c (init_flag): Removed; use gfc_init_expr_flag everywhere.
-        * array.c (match_array_list): Pass on gfc_init_expr_flag when matching
-        iterators.
+	PR fortran/35779
+	* intrinsic.c (gfc_init_expr): Renamed to gfc_init_expr_flag.
+	Updated all usages.
+	* expr.c (init_flag): Removed; use gfc_init_expr_flag everywhere.
+	* array.c (match_array_list): Pass on gfc_init_expr_flag when matching
+	iterators.
 
 2010-05-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -198,17 +203,17 @@
 
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/43711
-        * openmp.c (gfc_match_omp_taskwait): Report unexpected characters
-        after OMP statement.
-        (gfc_match_omp_critical): Likewise.
-        (gfc_match_omp_flush): Likewise.
-        (gfc_match_omp_workshare): Likewise.
-        (gfc_match_omp_master): Likewise.
-        (gfc_match_omp_ordered): Likewise.
-        (gfc_match_omp_atomic): Likewise.
-        (gfc_match_omp_barrier): Likewise.
-        (gfc_match_omp_end_nowait): Likewise.
+	PR fortran/43711
+	* openmp.c (gfc_match_omp_taskwait): Report unexpected characters
+	after OMP statement.
+	(gfc_match_omp_critical): Likewise.
+	(gfc_match_omp_flush): Likewise.
+	(gfc_match_omp_workshare): Likewise.
+	(gfc_match_omp_master): Likewise.
+	(gfc_match_omp_ordered): Likewise.
+	(gfc_match_omp_atomic): Likewise.
+	(gfc_match_omp_barrier): Likewise.
+	(gfc_match_omp_end_nowait): Likewise.
 
 2010-05-11  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -247,7 +252,7 @@
 
 	PR fortran/40728
 	* intrinc.c (gfc_is_intrinsic): Do not prematurely mark symbol
-        as external
+	as external.
 
 2010-05-07  Jason Merrill  <jason@redhat.com>
 
@@ -735,64 +740,64 @@
 
 2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
 
-        * gfortran.h (gfc_get_null_expr): New prototype.
-        (gfc_get_operator_expr): New prototype.
-        (gfc_get_character_expr): New prototype.
-        (gfc_get_iokind_expr): New prototype.
-        * expr.c (gfc_get_null_expr): New.
-        (gfc_get_character_expr): New.
-        (gfc_get_iokind_expr): New.
-        (gfc_get_operator_expr): Moved here from matchexp.c (build_node).
-        * matchexp.c (build_node): Renamed and moved to
-        expr.c (gfc_get_operator_expr). Reordered arguments to match 
-        other functions. Fixed all callers.
-        (gfc_get_parentheses): Use specific function to build expr.
-        * array.c (gfc_match_array_constructor): Likewise.
-        * arith.c (eval_intrinsic): Likewise.
-        (gfc_hollerith2int): Likewise.
-        (gfc_hollerith2real): Likewise.
-        (gfc_hollerith2complex): Likewise.
-        (gfc_hollerith2logical): Likewise.
-        * data.c (create_character_intializer): Likewise.
-        * decl.c (gfc_match_null): Likewise.
-        (enum_initializer): Likewise.
-        * io.c (gfc_match_format): Likewise.
-        (match_io): Likewise.
-        * match.c (gfc_match_nullify): Likewise.
-        * primary.c (match_string_constant): Likewise.
-        (match_logical_constant): Likewise.
-        (build_actual_constructor): Likewise.
-        * resolve.c (build_default_init_expr): Likewise.
-        * symbol.c (generate_isocbinding_symbol): Likewise.
-        (gfc_build_class_symbol): Likewise.
-        (gfc_find_derived_vtab): Likewise.
-        * simplify.c (simplify_achar_char): Likewise.
-        (gfc_simplify_adjustl): Likewise.
-        (gfc_simplify_adjustr): Likewise.
-        (gfc_simplify_and): Likewise.
-        (gfc_simplify_bit_size): Likewise.
-        (gfc_simplify_is_iostat_end): Likewise.
-        (gfc_simplify_is_iostat_eor): Likewise.
-        (gfc_simplify_isnan): Likewise.
-        (simplify_bound): Likewise.
-        (gfc_simplify_leadz): Likewise.
-        (gfc_simplify_len_trim): Likewise.
-        (gfc_simplify_logical): Likewise.
-        (gfc_simplify_maxexponent): Likewise.
-        (gfc_simplify_minexponent): Likewise.
-        (gfc_simplify_new_line): Likewise.
-        (gfc_simplify_null): Likewise.
-        (gfc_simplify_or): Likewise.
-        (gfc_simplify_precision): Likewise.
-        (gfc_simplify_repeat): Likewise.
-        (gfc_simplify_scan): Likewise.
-        (gfc_simplify_size): Likewise.
-        (gfc_simplify_trailz): Likewise.
-        (gfc_simplify_trim): Likewise.
-        (gfc_simplify_verify): Likewise.
-        (gfc_simplify_xor): Likewise.
-        * trans-io.c (build_dt): Likewise.
-        (gfc_new_nml_name_expr): Removed.
+	* gfortran.h (gfc_get_null_expr): New prototype.
+	(gfc_get_operator_expr): New prototype.
+	(gfc_get_character_expr): New prototype.
+	(gfc_get_iokind_expr): New prototype.
+	* expr.c (gfc_get_null_expr): New.
+	(gfc_get_character_expr): New.
+	(gfc_get_iokind_expr): New.
+	(gfc_get_operator_expr): Moved here from matchexp.c (build_node).
+	* matchexp.c (build_node): Renamed and moved to
+	expr.c (gfc_get_operator_expr). Reordered arguments to match 
+	other functions. Fixed all callers.
+	(gfc_get_parentheses): Use specific function to build expr.
+	* array.c (gfc_match_array_constructor): Likewise.
+	* arith.c (eval_intrinsic): Likewise.
+	(gfc_hollerith2int): Likewise.
+	(gfc_hollerith2real): Likewise.
+	(gfc_hollerith2complex): Likewise.
+	(gfc_hollerith2logical): Likewise.
+	* data.c (create_character_intializer): Likewise.
+	* decl.c (gfc_match_null): Likewise.
+	(enum_initializer): Likewise.
+	* io.c (gfc_match_format): Likewise.
+	(match_io): Likewise.
+	* match.c (gfc_match_nullify): Likewise.
+	* primary.c (match_string_constant): Likewise.
+	(match_logical_constant): Likewise.
+	(build_actual_constructor): Likewise.
+	* resolve.c (build_default_init_expr): Likewise.
+	* symbol.c (generate_isocbinding_symbol): Likewise.
+	(gfc_build_class_symbol): Likewise.
+	(gfc_find_derived_vtab): Likewise.
+	* simplify.c (simplify_achar_char): Likewise.
+	(gfc_simplify_adjustl): Likewise.
+	(gfc_simplify_adjustr): Likewise.
+	(gfc_simplify_and): Likewise.
+	(gfc_simplify_bit_size): Likewise.
+	(gfc_simplify_is_iostat_end): Likewise.
+	(gfc_simplify_is_iostat_eor): Likewise.
+	(gfc_simplify_isnan): Likewise.
+	(simplify_bound): Likewise.
+	(gfc_simplify_leadz): Likewise.
+	(gfc_simplify_len_trim): Likewise.
+	(gfc_simplify_logical): Likewise.
+	(gfc_simplify_maxexponent): Likewise.
+	(gfc_simplify_minexponent): Likewise.
+	(gfc_simplify_new_line): Likewise.
+	(gfc_simplify_null): Likewise.
+	(gfc_simplify_or): Likewise.
+	(gfc_simplify_precision): Likewise.
+	(gfc_simplify_repeat): Likewise.
+	(gfc_simplify_scan): Likewise.
+	(gfc_simplify_size): Likewise.
+	(gfc_simplify_trailz): Likewise.
+	(gfc_simplify_trim): Likewise.
+	(gfc_simplify_verify): Likewise.
+	(gfc_simplify_xor): Likewise.
+	* trans-io.c (build_dt): Likewise.
+	(gfc_new_nml_name_expr): Removed.
 
 2010-04-12  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -1186,16 +1191,16 @@
 
 2010-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/43039
-        * trans-expr.c (conv_parent_component_references): Ensure that
+	PR fortran/43039
+	* trans-expr.c (conv_parent_component_references): Ensure that
 	'dt' has a backend_decl.
 
-        PR fortran/43043
-        * trans-expr.c (gfc_conv_structure): Ensure that the derived
+	PR fortran/43043
+	* trans-expr.c (gfc_conv_structure): Ensure that the derived
 	type has a backend_decl.
 
-        PR fortran/43044
-        * resolve.c (resolve_global_procedure): Check that the 'cl'
+	PR fortran/43044
+	* resolve.c (resolve_global_procedure): Check that the 'cl'
 	structure is not NULL.
 
 2010-03-18  Shujing Zhao  <pearly.zhao@oracle.com>
@@ -1315,11 +1320,11 @@
 	and DECL_SIZE when encountering a larger common block and call
 	layout_decl.
 
-2010-02-24  Tobias Burnus  <burnus@net-b.de>              
+2010-02-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43042
 	* trans-expr.c (gfc_conv_initializer): Call directly
-	gfc_conv_constant for C_NULL_(FUN)PTR.              
+	gfc_conv_constant for C_NULL_(FUN)PTR.
 
 2010-02-22  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -1607,8 +1612,8 @@
 
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/41478
-        * trans-array.c (duplicate_allocatable):  Static version of
+	PR fortran/41478
+	* trans-array.c (duplicate_allocatable):  Static version of
 	gfc_duplicate_allocatable with provision to handle scalar
 	components. New boolean argument to switch off call to malloc
 	if true.
@@ -1637,7 +1642,7 @@
 	use associated but not generic is given an interface that
 	includes itself, then make it generic.
 
-2010-01-11  Joseph Myers  <joseph@codesourcery.com>  
+2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR translation/42469

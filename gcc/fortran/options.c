@@ -134,6 +134,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.coarray = GFC_FCOARRAY_NONE;
 
   flag_errno_math = 0;
+  flag_associative_math = -1;
 
   set_default_std_flags ();
 
@@ -246,6 +247,11 @@ gfc_post_options (const char **pfilename)
   /* Enable whole-file mode if LTO is in effect.  */
   if (flag_lto || flag_whopr)
     gfc_option.flag_whole_file = 1;
+
+  /* Fortran allows associative math - but we cannot reassociate if
+     we want traps or signed zeros. Cf. also flag_protect_parens.  */
+  if (flag_associative_math == -1)
+    flag_associative_math = (!flag_trapping_math && !flag_signed_zeros);
 
   /* -fbounds-check is equivalent to -fcheck=bounds */
   if (flag_bounds_check)
