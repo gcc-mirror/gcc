@@ -167,7 +167,7 @@ varpool_remove_node (struct varpool_node *node)
     node->prev->next = node->next;
   else
     {
-      if (node->alias)
+      if (node->alias && node->extra_name)
 	{
           gcc_assert (node->extra_name->extra_name == node);
 	  node->extra_name->extra_name = node->next;
