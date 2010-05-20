@@ -576,11 +576,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       pointer
       address(reference __x) const
-      { return &__x; }
+      { return std::__addressof(__x); }
 
       const_pointer
       address(const_reference __x) const
-      { return &__x; }
+      { return std::__addressof(__x); }
 
       size_type
       max_size() const throw() 

@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 	  _M_get_Node_allocator().destroy(__tmp);
 #else
-	  _M_get_Tp_allocator().destroy(&__tmp->_M_data);
+	  _M_get_Tp_allocator().destroy(std::__addressof(__tmp->_M_data));
 #endif
 	  _M_put_node(__tmp);
 	}
@@ -198,7 +198,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 526. Is it undefined if a function in the standard changes
 	      // in parameters?
-	      if (&*__first != &__value)
+	      if (std::__addressof(*__first) != std::__addressof(__value))
 		_M_erase(__first);
 	      else
 		__extra = __first;

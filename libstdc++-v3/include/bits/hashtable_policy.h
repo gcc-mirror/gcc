@@ -145,7 +145,7 @@ namespace __detail
   
       pointer
       operator->() const
-      { return &this->_M_cur->_M_v; }
+      { return std::__addressof(this->_M_cur->_M_v); }
 
       _Node_iterator&
       operator++()
@@ -190,7 +190,7 @@ namespace __detail
   
       pointer
       operator->() const
-      { return &this->_M_cur->_M_v; }
+      { return std::__addressof(this->_M_cur->_M_v); }
 
       _Node_const_iterator&
       operator++()
@@ -288,7 +288,7 @@ namespace __detail
   
       pointer
       operator->() const
-      { return &this->_M_cur_node->_M_v; }
+      { return std::__addressof(this->_M_cur_node->_M_v); }
 
       _Hashtable_iterator&
       operator++()
@@ -338,7 +338,7 @@ namespace __detail
   
       pointer
       operator->() const
-      { return &this->_M_cur_node->_M_v; }
+      { return std::__addressof(this->_M_cur_node->_M_v); }
 
       _Hashtable_const_iterator&
       operator++()

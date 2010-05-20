@@ -390,7 +390,8 @@ namespace std
     public:
       typedef _Tp type;
 
-      reference_wrapper(_Tp& __indata): _M_data(&__indata)
+      reference_wrapper(_Tp& __indata)
+      : _M_data(std::__addressof(__indata))
       { }
 
       reference_wrapper(_Tp&&) = delete;

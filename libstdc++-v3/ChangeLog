@@ -1,5 +1,78 @@
 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/41792
+	* include/tr1_impl/array: Use std::__addressof.
+	* include/std/functional (reference_wrapper): Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/stl_construct.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* testsuite/20_util/reference_wrapper/41792.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/set/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/list/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/map/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	dr438/assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-05-20  Peter Dimov  <pdimov@pdimov.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (__addressof, addressof): Add.
+	* testsuite/util/testsuite_api.h (struct OverloadedAddress): Add.
+	* testsuite/20_util/addressof/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/addressof/1.cc: Likewise.
+
+2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_pair.h (pair<>::pair(const pair&)): Defaulted
 	in C++0x mode.
 	(pair<>::operator=(const pair<>&)): Add in C++0x mode.

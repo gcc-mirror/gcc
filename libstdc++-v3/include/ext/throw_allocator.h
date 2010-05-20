@@ -620,6 +620,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return _M_allocator.max_size(); }
 
       pointer
+      address(reference __x) const { return std::__addressof(__x); }
+
+      const_pointer
+      address(const_reference __x) const { return std::__addressof(__x); }
+
+      pointer
       allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
       {
 	if (__n > this->max_size())
