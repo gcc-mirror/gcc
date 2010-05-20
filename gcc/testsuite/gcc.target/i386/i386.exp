@@ -40,9 +40,12 @@ proc check_effective_target_ms_hook_prologue { } {
 # Return 1 if 3dnow instructions can be compiled.
 proc check_effective_target_3dnow { } {
     return [check_no_compiler_messages 3dnow object {
-	void _m_pfadd (void)
+	typedef int __m64 __attribute__ ((__vector_size__ (8)));
+	typedef float __v2sf __attribute__ ((__vector_size__ (8)));
+
+	__m64 _m_pfadd (__m64 __A, __m64 __B)
 	{
-	    __builtin_ia32_pfadd();
+	    return (__m64) __builtin_ia32_pfadd ((__v2sf)__A, (__v2sf)__B);
 	}
     } "-O2 -m3dnow" ]
 }
@@ -173,7 +176,7 @@ proc check_effective_target_fma4 { } {
 # Return 1 if xop instructions can be compiled.
 proc check_effective_target_xop { } {
     return [check_no_compiler_messages xop object {
-	typedef long long __m128i __attribute__ ((__vector_size__ (16), __may_alias__));
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
 	typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 	__m128i _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
 	{

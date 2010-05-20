@@ -130,20 +130,20 @@
 
 2010-05-19  Christian Borntraeger  <borntraeger@de.ibm.com>
 
-        * tree-ssa-loop-prefetch.c (mem_ref_group, ar_data): Change step
+	* tree-ssa-loop-prefetch.c (mem_ref_group, ar_data): Change step
 	to tree.
-        (dump_mem_ref): Adopt debug code to handle a tree as step.  This
+	(dump_mem_ref): Adopt debug code to handle a tree as step.  This
 	also checks for a constant int vs.  non-constant but
 	loop-invariant steps.
-        (find_or_create_group): Change the sort algorithm to only consider
+	(find_or_create_group): Change the sort algorithm to only consider
 	steps that are constant ints.
-        (idx_analyze_ref): Adopt code to handle a tree instead of a
+	(idx_analyze_ref): Adopt code to handle a tree instead of a
 	HOST_WIDE_INT for step.
-        (gather_memory_references_ref): Handle tree instead of int and be
+	(gather_memory_references_ref): Handle tree instead of int and be
 	prepared to see a NULL_TREE.
-        (prune_ref_by_self_reuse, prune_ref_by_group_reuse): Do not prune
+	(prune_ref_by_self_reuse, prune_ref_by_group_reuse): Do not prune
 	prefetches if the step cannot be calculated at compile time.
-        (issue_prefetch_ref): Issue prefetches for non-constant but
+	(issue_prefetch_ref): Issue prefetches for non-constant but
 	loop-invariant steps.
 
 2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
@@ -272,7 +272,7 @@
 	* configure.ac (HAVE_AS_IX86_REP_LOCK_PREFIX): New test.
 	* configure: Regenerate.
 	* config.in: Regenerate.
-	* config/i386/i386.c (print_operand) <case ;>: Also print ; if
+	* config/i386/i386.c (print_operand) <case ;>: Also print ";" if
 	!HAVE_AS_IX86_REP_LOCK_PREFIX.
 	Don't emit whitespace.
 	* config/i386/i386.md (*rep_movdi_rex64): Use {%;} after rep.
@@ -392,9 +392,9 @@
 	add BARRIER after previous bb if needed.
 
 2010-05-17  Nathan Froyd  <froydnj@codesourcery.com>
- 
+
 	* tree.c (build_function_type_list_1): Remove bogus assert condition.
- 
+
 2010-05-17  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Delete
@@ -430,9 +430,9 @@
 
 2010-05-17  Christian Borntraeger  <borntraeger@de.ibm.com>
 
-        * config/s390/s390.c: Define sane prefetch settings and activate
-        flag_prefetch_loop_arrays on -O3.
-        * config/s390/s390.h: Declare that read can use write prefetch.
+	* config/s390/s390.c: Define sane prefetch settings and activate
+	flag_prefetch_loop_arrays on -O3.
+	* config/s390/s390.h: Declare that read can use write prefetch.
 
 2010-05-17  Jakub Jelinek  <jakub@redhat.com>
 
