@@ -1,3 +1,8 @@
+2010-05-20  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44197
+	* gcc.c-torture/compile/pr44197.c: New file.
+
 2010-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/i386.exp (check_effective_target_3dnow):

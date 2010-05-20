@@ -1,3 +1,8 @@
+2010-05-20  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44197
+	* varpool.c (varpool_remove_node): Handle in-varpool aliases.
+
 2010-05-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR bootstrap/43870
