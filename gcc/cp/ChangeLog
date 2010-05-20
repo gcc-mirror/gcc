@@ -1,3 +1,9 @@
+2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/30298
+	* decl.c (xref_basetypes): Return false in case of ill-formed
+	redefinition.
+
 2010-05-19  Jason Merrill  <jason@redhat.com>
 
 	* call.c (reference_binding): Use cp_build_qualified_type_real

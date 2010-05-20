@@ -1,3 +1,9 @@
+2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/30298
+	* g++.dg/inherit/crash1.C: New.
+	* g++.dg/inherit/crash2.C: Likewise.
+
 2010-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44178
@@ -6,7 +12,8 @@
 2010-05-20  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/44185
-	* gcc.dg/tree-ssa/prefetch-6.c: Add --param min-insn-to-prefetch-ratio=6.
+	* gcc.dg/tree-ssa/prefetch-6.c: Add
+	--param min-insn-to-prefetch-ratio=6.
 	* gcc.dg/tree-ssa/prefetch-7.c: Remove --param max-unrolled-insns=1 to
         allow unrolling, and adjust the movnti count.
 
