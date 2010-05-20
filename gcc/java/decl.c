@@ -1,7 +1,7 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1856,6 +1856,10 @@ start_java_method (tree fndecl)
 
       /* Add parm_decl to the decl_map. */
       push_jvm_slot (i, parm_decl);
+
+      /* The this parameter of methods is artificial.  */
+      if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE && i == 0)
+	DECL_ARTIFICIAL (parm_decl) = 1;
 
       type_map[i] = TREE_TYPE (parm_decl);
       if (TYPE_IS_WIDE (TREE_TYPE (parm_decl)))

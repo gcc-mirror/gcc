@@ -1,3 +1,9 @@
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43521
+	* decl.c (start_java_method): Set DECL_ARTIFICIAL on the 'this'
+	PARM_DECL.
+
 2010-05-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* jcf-parse.c (get_constant): Use double_int_to_tree instead of
