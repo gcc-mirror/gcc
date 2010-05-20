@@ -1,3 +1,8 @@
+2010-05-19  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	PR bootstrap/43870
+	* df-scan.c (df_ref_compare): Stabilize sort.
+
 2010-05-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/44202
