@@ -1,3 +1,23 @@
+2010-05-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* trans-expr.c: Do not include convert.h, ggc.h, real.h, and gimple.h.
+	(gfc_conv_string_tmp): Do not assert type comparibilty.
+	*  trans-array.c: Do not include gimple.h, ggc.h, and real.h.
+	(gfc_conv_expr_descriptor): Remove assert.
+	* trans-common.c: Clarify why rtl.h and tm.h are included.
+	* trans-openmp.c: Do not include ggc.h and real.h.
+	Explain why gimple.h is included.
+	* trans-const.c: Do not include ggc.h.
+	* trans-stmt.c: Do not include gimple.h, ggc.h, and real.h.
+	* trans.c: Do not include ggc.h and real.h.
+	Explain why gimple.h is included.
+	* trans-types.c: Do not include tm.h.  Explain why langhooks.h
+	and dwarf2out.h are included.
+	* trans-io.c: Do not include gimple.h and real.h.
+	* trans-decl.c: Explain why gimple.h, tm.h, and rtl.h are included.
+	* trans-intrinsic.c: Do not include gimple.h.  Explain why tm.h
+	is included.
+
 2010-05-20  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (gfc_init_options,gfc_post_options): Enable

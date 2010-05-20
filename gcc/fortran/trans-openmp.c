@@ -24,10 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
-#include "ggc.h"
+#include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "toplev.h"
-#include "real.h"
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-stmt.h"

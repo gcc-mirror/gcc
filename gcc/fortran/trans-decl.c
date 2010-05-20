@@ -26,11 +26,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-dump.h"
-#include "gimple.h"
+#include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "ggc.h"
 #include "toplev.h"
-#include "tm.h"
-#include "rtl.h"
+#include "tm.h"		/* For rtl.h.  */
+#include "rtl.h"	/* For decl_default_tls_model.  */
 #include "target.h"
 #include "function.h"
 #include "flags.h"
