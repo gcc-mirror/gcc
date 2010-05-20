@@ -1,3 +1,9 @@
+2010-05-20 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* runtime/stop.c (stop_string): Make sure nothing is emitted for
+	blank stop.
+
 2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851
