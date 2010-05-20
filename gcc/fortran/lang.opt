@@ -132,6 +132,10 @@ Wintrinsic-shadow
 Fortran Warning
 Warn if a user-procedure has the same name as an intrinsic
 
+Wunused-dummy-argument
+Fortran Warning
+Warn about unused dummy arguments.
+
 cpp
 Fortran Joined Separate Negative(nocpp)
 Enable preprocessing

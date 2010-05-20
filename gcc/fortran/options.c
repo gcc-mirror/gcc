@@ -87,6 +87,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.warn_intrinsic_shadow = 0;
   gfc_option.warn_intrinsics_std = 0;
   gfc_option.warn_align_commons = 1;
+  gfc_option.warn_unused_dummy_argument = 0;
   gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
@@ -417,6 +418,7 @@ set_Wall (int setting)
   gfc_option.warn_intrinsic_shadow = setting;
   gfc_option.warn_intrinsics_std = setting;
   gfc_option.warn_character_truncation = setting;
+  gfc_option.warn_unused_dummy_argument = setting;
 
   warn_unused = setting;
   warn_return_type = setting;
@@ -614,6 +616,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Walign_commons:
       gfc_option.warn_align_commons = value;
+      break;
+
+    case OPT_Wunused_dummy_argument:
+      gfc_option.warn_unused_dummy_argument = value;
       break;
 
     case OPT_fall_intrinsics:

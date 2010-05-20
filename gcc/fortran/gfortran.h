@@ -2117,6 +2117,7 @@ typedef struct
   int warn_character_truncation;
   int warn_array_temp;
   int warn_align_commons;
+  int warn_unused_dummy_argument;
   int max_errors;
 
   int flag_all_intrinsics;
