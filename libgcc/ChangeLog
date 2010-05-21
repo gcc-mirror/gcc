@@ -1,3 +1,7 @@
+2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.host (sparc64-*-rtems*): New target.
+
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/32/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Support Sun
