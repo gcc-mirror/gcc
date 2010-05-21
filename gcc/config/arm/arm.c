@@ -4794,8 +4794,8 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
     return false;
 
   /* Never tailcall something for which we have no decl, or if we
-     are in Thumb mode.  */
-  if (decl == NULL || TARGET_THUMB)
+     are generating code for Thumb-1.  */
+  if (decl == NULL || TARGET_THUMB1)
     return false;
 
   /* The PIC register is live on entry to VxWorks PLT entries, so we

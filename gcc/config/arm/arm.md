@@ -8650,7 +8650,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (GET_CODE (operands[0]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[0]))"
   "*
@@ -8666,7 +8666,7 @@
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (GET_CODE (operands[1]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[1]))"
   "*
@@ -8681,7 +8681,7 @@
 	 (match_operand:SI 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB
+  "TARGET_THUMB1
    && GET_CODE (operands[0]) == SYMBOL_REF
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[0]))"
   "bl\\t%a0"
@@ -8695,7 +8695,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB
+  "TARGET_THUMB1
    && GET_CODE (operands[1]) == SYMBOL_REF
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[1]))"
   "bl\\t%a1"
@@ -8709,7 +8709,7 @@
 		    (match_operand 1 "general_operand" ""))
 	      (return)
 	      (use (match_operand 2 "" ""))])]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "
   {
     if (operands[2] == NULL_RTX)
@@ -8723,7 +8723,7 @@
 			 (match_operand 2 "general_operand" "")))
 	      (return)
 	      (use (match_operand 3 "" ""))])]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "
   {
     if (operands[3] == NULL_RTX)
@@ -8736,7 +8736,7 @@
 	(match_operand 1 "" ""))
   (return)
   (use (match_operand 2 "" ""))]
-  "TARGET_ARM && GET_CODE (operands[0]) == SYMBOL_REF"
+  "TARGET_32BIT && GET_CODE (operands[0]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
   "
@@ -8749,15 +8749,20 @@
 	     (match_operand 2 "" "")))
   (return)
   (use (match_operand 3 "" ""))]
-  "TARGET_ARM && GET_CODE (operands[1]) == SYMBOL_REF"
+  "TARGET_32BIT && GET_CODE (operands[1]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
   "
   [(set_attr "type" "call")]
 )
 
+(define_expand "return"
+  [(return)]
+  "TARGET_32BIT && USE_RETURN_INSN (FALSE)"
+  "")
+
 ;; Often the return insn will be the same as loading from memory, so set attr
-(define_insn "return"
+(define_insn "*arm_return"
   [(return)]
   "TARGET_ARM && USE_RETURN_INSN (FALSE)"
   "*

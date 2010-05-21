@@ -1,3 +1,18 @@
+2010-05-21  Julian Brown  <julian@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Only forbid
+	sibling calls for Thumb-1.
+	* config/arm/arm.h (USE_RETURN_INSN): Enable for Thumb-2.
+	* config/arm/arm.md (*call_symbol, *call_value_symbol): Use for
+	Thumb-2.
+	(*call_insn, *call_value_insn): Don't use for Thumb-2.
+	(sibcall, sibcall_value, *sibcall_insn, *sibcall_value_insn): Use
+	for Thumb-2.
+	(return): New expander.
+	(*arm_return): New name for ARM return insn.
+	* config/arm/thumb2.md (*thumb2_return): New insn pattern.
+
 2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config.gcc (sparc64-*-rtems*): New target.
