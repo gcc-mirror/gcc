@@ -4844,7 +4844,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
             // "the type returned by a _Generator"
             __typeof__(__gen())>)
 
-      for (; __n > 0; --__n, ++__first)
+      for (__decltype(__n + 0) __niter = __n;
+	   __niter > 0; --__niter, ++__first)
 	*__first = __gen();
       return __first;
     }
