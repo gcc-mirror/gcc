@@ -2509,31 +2509,46 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
     {
     case CALL_EXPR:
       {
-	tree folded, sc = currop->op1;
+	tree folded, sc = NULL_TREE;
 	unsigned int nargs = 0;
-	tree *args = XNEWVEC (tree, VEC_length (vn_reference_op_s,
-						ref->operands) - 1);
+	tree fn, *args;
+	if (TREE_CODE (currop->op0) == FUNCTION_DECL)
+	  fn = currop->op0;
+	else
+	  {
+	    pre_expr op0 = get_or_alloc_expr_for (currop->op0);
+	    fn = find_or_generate_expression (block, op0, stmts, domstmt);
+	    if (!fn)
+	      return NULL_TREE;
+	  }
+	if (currop->op1)
+	  {
+	    pre_expr scexpr = get_or_alloc_expr_for (currop->op1);
+	    sc = find_or_generate_expression (block, scexpr, stmts, domstmt);
+	    if (!sc)
+	      return NULL_TREE;
+	  }
+	args = XNEWVEC (tree, VEC_length (vn_reference_op_s,
+					  ref->operands) - 1);
 	while (*operand < VEC_length (vn_reference_op_s, ref->operands))
 	  {
 	    args[nargs] = create_component_ref_by_pieces_1 (block, ref,
 							    operand, stmts,
 							    domstmt);
+	    if (!args[nargs])
+	      {
+		free (args);
+		return NULL_TREE;
+	      }
 	    nargs++;
 	  }
 	folded = build_call_array (currop->type,
-				   TREE_CODE (currop->op0) == FUNCTION_DECL
-				   ? build_fold_addr_expr (currop->op0)
-				   : currop->op0,
+				   (TREE_CODE (fn) == FUNCTION_DECL
+				    ? build_fold_addr_expr (fn) : fn),
 				   nargs, args);
 	free (args);
 	if (sc)
-	  {
-	    pre_expr scexpr = get_or_alloc_expr_for (sc);
-	    sc = find_or_generate_expression (block, scexpr, stmts, domstmt);
-	    if (!sc)
-	      return NULL_TREE;
-	    CALL_EXPR_STATIC_CHAIN (folded) = sc;
-	  }
+	  CALL_EXPR_STATIC_CHAIN (folded) = sc;
 	return folded;
       }
       break;

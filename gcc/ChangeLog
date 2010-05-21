@@ -1,3 +1,9 @@
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43845
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Properly
+	lookup the CALL_EXPR function and arguments.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44205
