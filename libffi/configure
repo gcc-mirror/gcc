@@ -13287,15 +13287,19 @@ _ACEOF
 
     fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .ascii pseudo-op support" >&5
-$as_echo_n "checking assembler .ascii pseudo-op support... " >&6; }
-if test "${libffi_cv_as_ascii_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
+    echo "$as_me:$LINENO: checking assembler .ascii pseudo-op support" >&5
+echo $ECHO_N "checking assembler .ascii pseudo-op support... $ECHO_C" >&6
+if test "${libffi_cv_as_ascii_pseudo_op+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
        libffi_cv_as_ascii_pseudo_op=unknown
        # Check if we have .ascii
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+       cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 asm (".ascii \"string\"");
 int
@@ -13306,31 +13310,61 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
   libffi_cv_as_ascii_pseudo_op=yes
 else
-  libffi_cv_as_ascii_pseudo_op=no
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+libffi_cv_as_ascii_pseudo_op=no
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_ascii_pseudo_op" >&5
-$as_echo "$libffi_cv_as_ascii_pseudo_op" >&6; }
+echo "$as_me:$LINENO: result: $libffi_cv_as_ascii_pseudo_op" >&5
+echo "${ECHO_T}$libffi_cv_as_ascii_pseudo_op" >&6
     if test "x$libffi_cv_as_ascii_pseudo_op" = xyes; then
 
-$as_echo "#define HAVE_AS_ASCII_PSEUDO_OP 1" >>confdefs.h
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_ASCII_PSEUDO_OP 1
+_ACEOF
 
     fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .string pseudo-op support" >&5
-$as_echo_n "checking assembler .string pseudo-op support... " >&6; }
-if test "${libffi_cv_as_string_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
+    echo "$as_me:$LINENO: checking assembler .string pseudo-op support" >&5
+echo $ECHO_N "checking assembler .string pseudo-op support... $ECHO_C" >&6
+if test "${libffi_cv_as_string_pseudo_op+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
        libffi_cv_as_string_pseudo_op=unknown
        # Check if we have .string
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+       cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 asm (".string \"string\"");
 int
@@ -13341,19 +13375,45 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
   libffi_cv_as_string_pseudo_op=yes
 else
-  libffi_cv_as_string_pseudo_op=no
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+libffi_cv_as_string_pseudo_op=no
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_string_pseudo_op" >&5
-$as_echo "$libffi_cv_as_string_pseudo_op" >&6; }
+echo "$as_me:$LINENO: result: $libffi_cv_as_string_pseudo_op" >&5
+echo "${ECHO_T}$libffi_cv_as_string_pseudo_op" >&6
     if test "x$libffi_cv_as_string_pseudo_op" = xyes; then
 
-$as_echo "#define HAVE_AS_STRING_PSEUDO_OP 1" >>confdefs.h
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_STRING_PSEUDO_OP 1
+_ACEOF
 
     fi
 fi

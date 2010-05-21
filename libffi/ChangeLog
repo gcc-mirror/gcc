@@ -1,3 +1,7 @@
+2010-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerate.
+
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_x86_pcrel): Check for illegal in as
