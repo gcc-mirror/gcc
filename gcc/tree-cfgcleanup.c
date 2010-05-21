@@ -267,6 +267,7 @@ static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
   gimple_stmt_iterator gsi;
+  location_t locus;
 
   /* BB must have a single outgoing edge.  */
   if (single_succ_p (bb) != 1
@@ -285,6 +286,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
+  locus = single_succ_edge (bb)->goto_locus;
+
   /* There should not be an edge coming from entry, or an EH edge.  */
   {
     edge_iterator ei;
@@ -292,6 +295,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
     FOR_EACH_EDGE (e, ei, bb->preds)
       if (e->src == ENTRY_BLOCK_PTR || (e->flags & EDGE_EH))
+	return false;
+      /* If goto_locus of any of the edges differs, prevent removing
+	 the forwarder block for -O0.  */
+      else if (optimize == 0 && e->goto_locus != locus)
 	return false;
   }
 
@@ -305,6 +312,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	{
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
+	    return false;
+	  if (optimize == 0 && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 
@@ -608,11 +617,7 @@ cleanup_tree_cfg_bb (basic_block bb)
 
   retval = cleanup_control_flow_bb (bb);
 
-  /* Forwarder blocks can carry line number information which is
-     useful when debugging, so we only clean them up when
-     optimizing.  */
-  if (optimize > 0
-      && tree_forwarder_block_p (bb, false)
+  if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
     return true;
 
