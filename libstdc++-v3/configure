@@ -15628,7 +15628,7 @@ fi
 /* end confdefs.h.  */
 
     #include <features.h>
-    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+    #if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined(__UCLIBC__)
       _GLIBCXX_ok
     #endif
 
@@ -15641,49 +15641,6 @@ else
 fi
 rm -f conftest*
 
-
-    if test $enable_clocale = auto; then
-      # Test for bugs early in glibc-2.2.x series
-      if test "$cross_compiling" = yes; then :
-  enable_clocale_flag=generic
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #define _GNU_SOURCE 1
-      #include <locale.h>
-      #include <string.h>
-      #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      extern __typeof(newlocale) __newlocale;
-      extern __typeof(duplocale) __duplocale;
-      extern __typeof(strcoll_l) __strcoll_l;
-      #endif
-      int main()
-      {
-	const char __one[] = "Äuglein Augmen";
-        const char __two[] = "Äuglein";
-       	int i;
-        int j;
-        __locale_t        loc;
-        __locale_t        loc_dup;
-        loc = __newlocale(1 << LC_ALL, "de_DE", 0);
-        loc_dup = __duplocale(loc);
-        i = __strcoll_l(__one, __two, loc);
-        j = __strcoll_l(__one, __two, loc_dup);
-        return 0;
-      }
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-  enable_clocale_flag=gnu
-else
-  enable_clocale_flag=generic
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-    fi
 
     # Set it to scream when it hurts.
     ac_save_CFLAGS="$CFLAGS"
