@@ -13699,7 +13699,9 @@ fold_call_stmt (gimple stmt, bool ignore)
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
         {
 	  return targetm.fold_builtin (fndecl, nargs,
-				       gimple_call_arg_ptr (stmt, 0), ignore);
+				       (nargs > 0
+					? gimple_call_arg_ptr (stmt, 0)
+					: &error_mark_node), ignore);
         }
       else
 	{

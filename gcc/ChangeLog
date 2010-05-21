@@ -1,3 +1,9 @@
+2010-05-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR middle-end/44204
+	* builtins.c (fold_call_stmt): Pass &error_mark_node if the call
+	statement has no arguments.
+
 2010-05-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/44139
