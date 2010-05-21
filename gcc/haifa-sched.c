@@ -1720,6 +1720,12 @@ schedule_insn (rtx insn)
 	/* Unknown location doesn't use any registers.  */
 	for (use = INSN_REG_USE_LIST (dbg); use != NULL; use = next)
 	  {
+	    struct reg_use_data *prev = use;
+
+	    /* Remove use from the cyclic next_regno_use chain first.  */
+	    while (prev->next_regno_use != use)
+	      prev = prev->next_regno_use;
+	    prev->next_regno_use = use->next_regno_use;
 	    next = use->next_insn_use;
 	    free (use);
 	  }

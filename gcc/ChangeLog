@@ -1,3 +1,9 @@
+2010-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44223
+	* haifa-sched.c (schedule_insn): When freeing INSN_REG_USE_LIST,
+	unchain each use from the cyclic next_regno_use chain first.
+
 2010-05-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Increase the default
