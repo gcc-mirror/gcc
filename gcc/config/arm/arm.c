@@ -7799,7 +7799,7 @@ neg_const_double_rtx_ok_for_fpa (rtx x)
     init_fp_table ();
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-  r = REAL_VALUE_NEGATE (r);
+  r = real_value_negate (&r);
   if (REAL_VALUE_MINUS_ZERO (r))
     return 0;
 
@@ -7850,7 +7850,7 @@ vfp3_const_double_index (rtx x)
 
   /* Extract sign, exponent and mantissa.  */
   sign = REAL_VALUE_NEGATIVE (r) ? 1 : 0;
-  r = REAL_VALUE_ABS (r);
+  r = real_value_abs (&r);
   exponent = REAL_EXP (&r);
   /* For the mantissa, we expand into two HOST_WIDE_INTS, apart from the
      highest (sign) bit, with a fixed binary point at bit point_pos.
@@ -15133,7 +15133,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       {
 	REAL_VALUE_TYPE r;
 	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	r = REAL_VALUE_NEGATE (r);
+	r = real_value_negate (&r);
 	fprintf (stream, "%s", fp_const_from_val (&r));
       }
       return;

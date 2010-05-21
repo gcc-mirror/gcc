@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "rtl.h"
 #include "tree.h"
+#include "realmpfr.h"
 #include "gimple.h"
 #include "flags.h"
 #include "regs.h"

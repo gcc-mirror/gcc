@@ -345,7 +345,7 @@ fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
   $(TREE_DUMP_H) debug.h pointer-set.h
 fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
   $(REAL_H) toplev.h $(TARGET_H) $(FLAGS_H) dwarf2out.h
-fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS) realmpfr.h
 fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-openmp.o: $(GFORTRAN_TRANS_DEPS)

@@ -1285,6 +1285,7 @@ OBJS-common = \
 	print-tree.o \
 	profile.o \
 	real.o \
+	realmpfr.o \
 	recog.o \
 	reg-stack.o \
 	regcprop.o \
@@ -2694,7 +2695,7 @@ tree-pretty-print.o : tree-pretty-print.c $(CONFIG_H) $(SYSTEM_H) \
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FLAGS_H) $(TOPLEV_H) $(HASHTAB_H) $(EXPR_H) $(RTL_H) \
    $(GGC_H) $(TM_P_H) langhooks.h $(MD5_H) intl.h $(TARGET_H) \
-   $(GIMPLE_H)
+   $(GIMPLE_H) realmpfr.h
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) version.h $(TM_P_H) $(FLAGS_H) $(INPUT_H) $(TOPLEV_H) intl.h \
    $(DIAGNOSTIC_H) langhooks.h $(LANGHOOKS_DEF_H) diagnostic.def opts.h \
@@ -2728,7 +2729,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) $(CFGLOOP_H) hosthooks.h \
    $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h $(GGC_H) $(INTEGRATE_H) \
    opts.h params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
-   tree-ssa-alias.h $(PLUGIN_H)
+   tree-ssa-alias.h $(PLUGIN_H) realmpfr.h
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
@@ -2807,7 +2808,7 @@ builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(GIMPLE_H) $(FLAGS_H) $(TARGET_H) $(FUNCTION_H) $(REGS_H) \
    $(EXPR_H) $(OPTABS_H) insn-config.h $(RECOG_H) output.h typeclass.h \
    hard-reg-set.h $(TOPLEV_H) hard-reg-set.h $(EXCEPT_H) $(TM_P_H) $(PREDICT_H) \
-   libfuncs.h langhooks.h $(BASIC_BLOCK_H) tree-mudflap.h \
+   libfuncs.h langhooks.h $(BASIC_BLOCK_H) tree-mudflap.h realmpfr.h \
    $(BUILTINS_DEF) $(MACHMODE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) value-prof.h
 calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(EXPR_H) $(OPTABS_H) langhooks.h $(TARGET_H) \
@@ -2853,7 +2854,8 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(HASHTAB_H) $(TM_P_H) debug.h langhooks.h $(TREE_PASS_H) gt-emit-rtl.h \
    $(DF_H) $(PARAMS_H) $(TARGET_H)
 real.o : real.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(TOPLEV_H) $(TM_P_H) $(REAL_H) dfp.h
+   $(TOPLEV_H) $(TM_P_H) $(REAL_H) dfp.h realmpfr.h
+realmpfr.o : realmpfr.c realmpfr.h $(CONFIG_H) $(SYSTEM_H) $(REAL_H)
 dfp.o : dfp.c dfp.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	$(TREE_H) \
    $(TOPLEV_H) $(TM_P_H) $(REAL_H) $(DECNUM_H)
 fixed-value.o: fixed-value.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

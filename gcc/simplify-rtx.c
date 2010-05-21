@@ -1481,10 +1481,10 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  d = t;
 	  break;
 	case ABS:
-	  d = REAL_VALUE_ABS (d);
+	  d = real_value_abs (&d);
 	  break;
 	case NEG:
-	  d = REAL_VALUE_NEGATE (d);
+	  d = real_value_negate (&d);
 	  break;
 	case FLOAT_TRUNCATE:
 	  d = real_value_truncate (mode, d);
