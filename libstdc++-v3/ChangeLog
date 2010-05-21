@@ -1,3 +1,12 @@
+2010-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/25306
+	* include/bits/stl_algobase.h (fill_n): Use a properly typed __niter
+	initialized to __n.
+	* include/bits/stl_algo.h (generate_n): Likewise.
+	* testsuite/25_algorithms/fill_n/25306.cc: New.
+	* testsuite/25_algorithms/generate_n/25306.cc: Likewise.
+
 2010-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Use GNU locale model for

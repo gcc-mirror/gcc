@@ -748,7 +748,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
-      for (; __n > 0; --__n, ++__first)
+      for (__decltype(__n + 0) __niter = __n;
+	   __niter > 0; --__niter, ++__first)
 	*__first = __value;
       return __first;
     }
@@ -759,7 +760,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       const _Tp __tmp = __value;
-      for (; __n > 0; --__n, ++__first)
+      for (__decltype(__n + 0) __niter = __n;
+	   __niter > 0; --__niter, ++__first)
 	*__first = __tmp;
       return __first;
     }
