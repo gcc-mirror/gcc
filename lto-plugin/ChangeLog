@@ -1,3 +1,7 @@
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* lto-plugin.c (write_resolution): Do not assert syms is non-NULL.
+
 2010-05-07  Richard Guenther <rguenther@suse.de>
 
 	* lto-plugin.c (free_2): Do not free resolution_file.
