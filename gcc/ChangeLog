@@ -1,3 +1,10 @@
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43949
+	* tree-vrp.c (ssa_name_nonnegative_p): Return true for unsigend
+	types.
+	(extract_range_from_binary_expr): Handle TRUNC_MOD_EXPR.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44205

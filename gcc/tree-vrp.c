@@ -1364,6 +1364,10 @@ ssa_name_nonnegative_p (const_tree t)
 {
   value_range_t *vr = get_value_range (t);
 
+  if (INTEGRAL_TYPE_P (t)
+      && TYPE_UNSIGNED (t))
+    return true;
+
   if (!vr)
     return false;
 
@@ -2079,6 +2083,7 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != CEIL_DIV_EXPR
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
+      && code != TRUNC_MOD_EXPR
       && code != RSHIFT_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
@@ -2147,6 +2152,7 @@ extract_range_from_binary_expr (value_range_t *vr,
       && code != CEIL_DIV_EXPR
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
+      && code != TRUNC_MOD_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2496,6 +2502,31 @@ extract_range_from_binary_expr (value_range_t *vr,
 		}
 	    }
 	}
+    }
+  else if (code == TRUNC_MOD_EXPR)
+    {
+      bool sop = false;
+      if (vr1.type != VR_RANGE
+	  || symbolic_range_p (&vr1)
+	  || range_includes_zero_p (&vr1)
+	  || vrp_val_is_min (vr1.min))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+      type = VR_RANGE;
+      /* Compute MAX <|vr1.min|, |vr1.max|> - 1.  */
+      max = fold_unary_to_constant (ABS_EXPR, TREE_TYPE (vr1.min), vr1.min);
+      if (tree_int_cst_lt (max, vr1.max))
+	max = vr1.max;
+      max = int_const_binop (MINUS_EXPR, max, integer_one_node, 0);
+      /* If the dividend is non-negative the modulus will be
+	 non-negative as well.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (max))
+	  || (vrp_expr_computes_nonnegative (op0, &sop) && !sop))
+	min = build_int_cst (TREE_TYPE (max), 0);
+      else
+	min = fold_unary_to_constant (NEGATE_EXPR, TREE_TYPE (max), max);
     }
   else if (code == MINUS_EXPR)
     {
