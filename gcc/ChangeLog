@@ -1,3 +1,7 @@
+2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.gcc (sparc64-*-rtems*): New target.
+
 2010-05-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (build_function_decl_skip_args): Fix grammar.
