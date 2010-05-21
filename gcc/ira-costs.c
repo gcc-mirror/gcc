@@ -1794,7 +1794,7 @@ ira_tune_allocno_costs_and_cover_classes (void)
 		  {
 		    regno = ira_non_ordered_class_hard_regs[cover_class][j];
 		    index = ira_class_hard_reg_index[cover_class][regno];
-		    ira_assert (index != 0);
+		    ira_assert (index != -1);
 		    reg_costs[index] += ALLOCNO_FREQ (a);
 		  }
 	      }
