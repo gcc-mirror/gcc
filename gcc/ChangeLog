@@ -1,3 +1,51 @@
+2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree.h: Include real.h and fixed-value.h as basic datatypes.
+	* dfp.c, convert.c, reload1.c, reginfo.c, tree-flow.h,
+	tree-ssa-threadedge.c, tree-ssanames.c, tree-loop-linear.c,
+	tree-into-ssa.c, tree-vect-generic.c, tree-ssa-structalias.c,
+	tree-ssa-loop-im.c, tree-dump.c, tree-complex.c, tree-ssa-uninit.c,
+	genrecog.c, tree-ssa-threadupdate.c, tree-ssa-loop-niter.c,
+	tree-pretty-print.c, tree-loop-distribution.c,
+	tree-ssa-loop-unswitch.c, c-lex.c, optabs.c, postreload-gcse.c,
+	tree-ssa-loop-manip.c, postreload.c, tree-ssa-loop-ch.c,
+	tree-tailcall.c, tree.c, reload.c, tree-scalar-evolution.c, rtlanal.c,
+	tree-phinodes.c, builtins.c, final.c, genoutput.c, fold-const.c,
+	tree-ssa-dse.c, genautomata.c, tree-ssa-uncprop.c, toplev.c,
+	tree-chrec.c, genemit.c, c-cppbuiltin.c, tree-ssa-sccvn.c,
+	tree-ssa-ccp.c, tree-ssa-loop-ivopts.c, mode-switching.c,
+	tree-call-cdce.c, cse.c, genpeep.c, tree-ssa-math-opts.c,
+	tree-ssa-dom.c, tree-nrv.c, tree-ssa-propagate.c, tree-ssa-alias.c,
+	tree-ssa-sink.c, jump.c, ifcvt.c, dwarf2out.c, expr.c, genattrtab.c,
+	genconditions.c, tree-ssa-loop-ivcanon.c, tree-ssa-loop.c,
+	tree-parloops.c, recog.c, tree-ssa-address.c, lcm.c, tree-eh.c,
+	gimple-pretty-print.c, c-pretty-print.c, print-rtl.c, gcse.c,
+	tree-if-conv.c, tree-data-ref.c, tree-affine.c, gimplify.c,
+	tree-ssa-phiopt.c, implicit-zee.c, expmed.c, tree-dfa.c, emit-rtl.c,
+	store-motion.c, cselib.c, tree-cfgcleanup.c, simplify-rtx.c,
+	tree-ssa-pre.c, genpreds.c, tree-mudflap.c, print-tree.c,
+	tree-ssa-copy.c, tree-ssa-forwprop.c, tree-ssa-dce.c, varasm.c,
+	tree-nested.c, tree-ssa.c, tree-ssa-loop-prefetch.c, rtl.c,
+	tree-inline.c, integrate.c, tree-optimize.c, tree-ssa-phiprop.c,
+	fixed-value.c, combine.c, tree-profile.c, c-common.c, sched-vis.c,
+	tree-cfg.c, passes.c, tree-ssa-reassoc.c, config/alpha/alpha.c,
+	config/frv/frv.c, config/s390/s390.c, config/m32c/m32c.c,
+	config/spu/spu.c, config/sparc/sparc.c, config/mep/mep.c,
+	config/m32r/m32r.c, config/rx/rx.c, config/i386/i386.c,
+	config/sh/sh.c, config/pdp11/pdp11.c, config/avr/avr.c,
+	config/crx/crx.c, config/xtensa/xtensa.c, config/stormy16/stormy16.c,
+	config/fr30/fr30.c, config/lm32/lm32.c, config/moxie/moxie.c,
+	config/m68hc11/m68hc11.c, config/cris/cris.c, config/iq2000/iq2000.c,
+	config/mn10300/mn10300.c, config/ia64/ia64.c, config/m68k/m68k.c,
+	config/rs6000/rs6000.c, config/picochip/picochip.c, config/darwin.c,
+	config/arc/arc.c, config/mcore/mcore.c, config/score/score3.c,
+	config/score/score7.c, config/score/score.c, config/arm/arm.c,
+	config/pa/pa.c, config/mips/mips.c, config/vax/vax.c,
+	config/h8300/h8300.c, config/v850/v850.c, config/mmix/mmix.c,
+	config/bfin/bfin.c:
+	Clean up redundant includes.
+	* Makefile.in: Update accordingly.
+
 2010-05-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR middle-end/44204

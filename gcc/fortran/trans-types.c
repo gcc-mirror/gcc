@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
-#include "real.h"
 #include "flags.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 

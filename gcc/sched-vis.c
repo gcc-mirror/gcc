@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
-#include "real.h"
 #include "insn-attr.h"
 #include "sched-int.h"
 #include "tree-pass.h"

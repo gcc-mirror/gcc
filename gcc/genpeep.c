@@ -373,7 +373,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"tm_p.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");
-  printf ("#include \"real.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"except.h\"\n");
   printf ("#include \"function.h\"\n");

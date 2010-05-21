@@ -45,10 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-mudflap.h"
 #include "opts.h"
-#include "real.h"
 #include "cgraph.h"
 #include "target-def.h"
-#include "fixed-value.h"
 #include "libfuncs.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */

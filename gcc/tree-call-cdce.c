@@ -23,15 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
-
-/* These RTL headers are needed for basic-block.h.  */
-#include "rtl.h"
-#include "tm_p.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
 #include "basic-block.h"
-
 #include "tree.h"
 #include "diagnostic.h"
 #include "tree-flow.h"

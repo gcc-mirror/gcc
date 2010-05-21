@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "function.h"
 #include "expr.h"
-#include "real.h"
 #include "except.h"
 #include "diagnostic.h"
 #include "toplev.h"

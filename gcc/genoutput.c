@@ -235,7 +235,6 @@ output_prologue (void)
   printf ("#include \"function.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
-  printf ("#include \"real.h\"\n");
   printf ("#include \"insn-config.h\"\n\n");
   printf ("#include \"conditions.h\"\n");
   printf ("#include \"insn-attr.h\"\n\n");

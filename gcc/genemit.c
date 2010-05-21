@@ -853,7 +853,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"function.h\"\n");
   printf ("#include \"expr.h\"\n");
   printf ("#include \"optabs.h\"\n");
-  printf ("#include \"real.h\"\n");
   printf ("#include \"dfp.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"output.h\"\n");

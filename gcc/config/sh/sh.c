@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
-#include "real.h"
 #include "langhooks.h"
 #include "basic-block.h"
 #include "df.h"

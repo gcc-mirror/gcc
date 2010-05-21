@@ -25,10 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
 #include "expr.h"
@@ -44,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "domwalk.h"
-#include "ggc.h"
 #include "params.h"
 #include "vecprim.h"
 

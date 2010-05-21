@@ -30,9 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "flags.h"
-#include "output.h"
 #include "regs.h"
 #include "expr.h"
 #include "function.h"
@@ -44,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "timevar.h"
 #include "value-prof.h"
-#include "ggc.h"
 #include "cgraph.h"
 
 static GTY(()) tree gcov_type_node;

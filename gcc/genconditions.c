@@ -81,7 +81,6 @@ write_header (void)
 \n\
 #include \"regs.h\"\n\
 #include \"recog.h\"\n\
-#include \"real.h\"\n\
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\

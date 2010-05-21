@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "conditions.h"
 #include "flags.h"
-#include "real.h"
 #include "hard-reg-set.h"
 #include "output.h"
 #include "except.h"

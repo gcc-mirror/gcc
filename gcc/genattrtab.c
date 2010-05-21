@@ -4537,7 +4537,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-config.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"regs.h\"\n");
-  printf ("#include \"real.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"flags.h\"\n");

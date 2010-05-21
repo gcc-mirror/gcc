@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "output.h"
 #include "diagnostic.h"
-#include "real.h"
 
 static tree
 process_init_constructor (tree type, tree init);

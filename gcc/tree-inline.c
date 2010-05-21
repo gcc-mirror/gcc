@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
-#include "rtl.h"
 #include "expr.h"
 #include "flags.h"
 #include "params.h"
