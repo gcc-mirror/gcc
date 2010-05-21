@@ -1,3 +1,8 @@
+2010-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1/functional: Use std::__addressof.
+	* include/tr1/hashtable_policy.h: Likewise.
+
 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/41792
