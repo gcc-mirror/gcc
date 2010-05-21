@@ -1,3 +1,7 @@
+2010-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr25993.c: Use @function as type specifier.
+
 2010-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/const3.C: New test.

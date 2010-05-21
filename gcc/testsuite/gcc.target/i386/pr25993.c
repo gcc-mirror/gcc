@@ -10,7 +10,7 @@ extern int func(void);
 #else
 .global func
 #endif
-.type func,%function
+.type func,@function
 .align 4
 func:
         ret
