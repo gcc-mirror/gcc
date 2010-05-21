@@ -1814,10 +1814,8 @@ typedef struct
 
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
-/* This is disabled for Thumb-2 because it will confuse the
-   conditional insn counter.  */
 #define USE_RETURN_INSN(ISCOND)				\
-  (TARGET_ARM ? use_return_insn (ISCOND, NULL) : 0)
+  (TARGET_32BIT ? use_return_insn (ISCOND, NULL) : 0)
 
 /* Definitions for register eliminations.
 

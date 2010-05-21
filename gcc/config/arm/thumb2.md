@@ -1054,6 +1054,19 @@
    (set_attr "length" "20")]
 )
 
+;; Note: this is not predicable, to avoid issues with linker-generated
+;; interworking stubs.
+(define_insn "*thumb2_return"
+  [(return)]
+  "TARGET_THUMB2 && USE_RETURN_INSN (FALSE)"
+  "*
+  {
+    return output_return_instruction (const_true_rtx, TRUE, FALSE);
+  }"
+  [(set_attr "type" "load1")
+   (set_attr "length" "12")]
+)
+
 (define_insn_and_split "thumb2_eh_return"
   [(unspec_volatile [(match_operand:SI 0 "s_register_operand" "r")]
 		    VUNSPEC_EH_RETURN)
