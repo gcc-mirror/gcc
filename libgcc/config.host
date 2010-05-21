@@ -535,7 +535,7 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	;;
-sparc-*-rtems*)
+sparc-*-rtems* | sparc64-*-rtems* )
 	;;
 sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	;;
