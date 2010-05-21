@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -224,6 +224,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   edge_iterator ei;
   edge e, succ;
   basic_block dest;
+  location_t locus;
 
   /* BB must have a single outgoing edge.  */
   if (single_succ_p (bb) != 1
@@ -242,6 +243,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
+  locus = single_succ_edge (bb)->goto_locus;
+
   /* Now walk through the statements backward.  We can ignore labels,
      anything else means this is not a forwarder block.  */
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
@@ -252,6 +255,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	{
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
+	    return false;
+	  if (optimize == 0 && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 
@@ -289,6 +294,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	  if (!single_pred_p (dest))
 	    return false;
 	}
+      /* If goto_locus of any of the edges differs, prevent removing
+	 the forwarder block for -O0.  */
+      if (optimize == 0 && e->goto_locus != locus)
+	return false;
     }
 
   return true;
@@ -543,12 +552,8 @@ cleanup_tree_cfg_bb (basic_block bb)
     return true;
 
   retval = cleanup_control_flow_bb (bb);
-  
-  /* Forwarder blocks can carry line number information which is
-     useful when debugging, so we only clean them up when
-     optimizing.  */
-  if (optimize > 0
-      && tree_forwarder_block_p (bb, false)
+
+  if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
     return true;
 

@@ -1,3 +1,11 @@
+2010-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44205
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Return false if
+	at -O0 goto_locus of any of the incoming edges differs from
+	goto_locus of outgoing edge, or gimple_location of any of the
+	labels differs.
+
 2010-05-19  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR bootstrap/43870
