@@ -1,3 +1,11 @@
+2010-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Use GNU locale model for
+	glibc 2.3 and later, but not uClibc, without an execution test.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml, doc/xml/manual/prerequisites.xml,
+	doc/xml/faq.xml: Update.
+
 2010-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1/functional: Use std::__addressof.

@@ -113,8 +113,7 @@
      <para>If not explicitly specified, the configure proccess tries
       to guess the most suitable package from the choices above. The
       default is 'generic'. On glibc-based systems of sufficient
-      vintage (2.2.5 and newer) and capability (with installed DE and
-      FR locale data), 'gnu' is automatically selected. This option
+      vintage (2.3 and newer), 'gnu' is automatically selected. This option
       can change the library ABI.
      </para>
  </listitem></varlistentry>

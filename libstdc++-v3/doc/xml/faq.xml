@@ -640,6 +640,8 @@
          5.0.1) and later uses localization and formatting code from the system
          C library (glibc) version 2.2.5 which contains necessary bugfixes.
          Most GNU/Linux distros make more recent versions available now.
+         libstdc++ 4.6.0 and later require glibc 2.3 or later for this
+         localization and formatting code.
       </para>
       <para>The guideline is simple:  the more recent the C++ library, the
          more recent the C library.  (This is also documented in the main
