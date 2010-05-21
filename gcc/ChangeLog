@@ -1,5 +1,11 @@
 2010-05-21  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44038
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Avoid
+	taking the address of a V_C_E of a constant.
+
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43949
 	* tree-vrp.c (ssa_name_nonnegative_p): Return true for unsigend
 	types.

@@ -1,5 +1,10 @@
 2010-05-21  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44038
+	* gcc.c-torture/compile/pr44038.c: New testcase.
+
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43949
 	* g++.dg/warn/Warray-bounds-5.C: New testcase.
 
