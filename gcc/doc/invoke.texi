@@ -187,7 +187,7 @@ in the following sections.
 -fno-implicit-templates @gol
 -fno-implicit-inline-templates @gol
 -fno-implement-inlines  -fms-extensions @gol
--fno-nonansi-builtins  -fno-operator-names @gol
+-fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -fno-pretty-templates @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth=@var{n} @gol
@@ -1933,10 +1933,13 @@ ANSI/ISO C@.  These include @code{ffs}, @code{alloca}, @code{_exit},
 @opindex fnothrow-opt
 Treat a @code{throw()} exception specification as though it were a
 @code{noexcept} specification to reduce or eliminate the text size
-overhead relative to a function with no exception specification.  The
-semantic effect is that an exception thrown out of a function with
-such an exception specification will result in a call to
-@code{terminate} rather than @code{unexpected}.
+overhead relative to a function with no exception specification.  If
+the function has local variables of types with non-trivial
+destructors, the exception specification will actually make the
+function smaller because the EH cleanups for those variables can be
+optimized away.  The semantic effect is that an exception thrown out of
+a function with such an exception specification will result in a call
+to @code{terminate} rather than @code{unexpected}.
 
 @item -fno-operator-names
 @opindex fno-operator-names
