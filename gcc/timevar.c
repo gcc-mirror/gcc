@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
-#include "coretypes.h"
-#include "tm.h"
-#include "intl.h"
-#include "rtl.h"
-#include "toplev.h"
+#include "timevar.h"
 
 #ifndef HAVE_CLOCK_T
 typedef int clock_t;
@@ -109,8 +105,8 @@ static double clocks_to_msec;
 #define CLOCKS_TO_MSEC (1 / (double)CLOCKS_PER_SEC)
 #endif
 
-#include "flags.h"
-#include "timevar.h"
+/* True if timevars should be used.  In GCC, this happens with
+   the -ftime-report flag.  */
 
 bool timevar_enable;
 
@@ -408,7 +404,7 @@ timevar_print (FILE *fp)
      TIMEVAR.  */
   start_time = now;
 
-  fputs (_("\nExecution times (seconds)\n"), fp);
+  fputs ("\nExecution times (seconds)\n", fp);
   for (id = 0; id < (unsigned int) TIMEVAR_LAST; ++id)
     {
       struct timevar_def *tv = &timevars[(timevar_id_t) id];
@@ -466,7 +462,7 @@ timevar_print (FILE *fp)
     }
 
   /* Print total time.  */
-  fputs (_(" TOTAL                 :"), fp);
+  fputs (" TOTAL                 :", fp);
 #ifdef HAVE_USER_TIME
   fprintf (fp, "%7.2f          ", total->user);
 #endif
@@ -499,7 +495,7 @@ print_time (const char *str, long total)
 {
   long all_time = get_run_time ();
   fprintf (stderr,
-	   _("time in %s: %ld.%06ld (%ld%%)\n"),
+	   "time in %s: %ld.%06ld (%ld%%)\n",
 	   str, total / 1000000, total % 1000000,
 	   all_time == 0 ? 0
 	   : (long) (((100.0 * (double) total) / (double) all_time) + .5));

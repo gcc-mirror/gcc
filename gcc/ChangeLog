@@ -1,3 +1,12 @@
+2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in: Fix c-pch.o and ggc-common.o dependencies on timevars.
+
+	* timevar.c: Do not include any core headers.
+	(timevar_print): De-i18n-ize.
+	(print_time): Likewise.
+	* timevar.h (timevar_push, timevar_pop): Make inline functions.
+
 2010-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* diagnostic.c: Don't include tm.h, tree.h, tm_p.h, langhooks.h or
