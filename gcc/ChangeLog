@@ -1,3 +1,8 @@
+2010-05-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/44139
+	* varasm.c (emutls_decl): Merge attributes to new decl.
+
 2010-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/44101
