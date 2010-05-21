@@ -1,5 +1,9 @@
 2010-05-21  Joseph Myers  <joseph@codesourcery.com>
 
+	* cxx-pretty-print.c: Correct merge error.
+
+2010-05-21  Joseph Myers  <joseph@codesourcery.com>
+
 	* error.c: Include tree-diagnostic.h and tree-pretty-print.h.
 	(cp_print_error_function): Use diagnostic_abstract_origin macro.
 	(cp_printer): Handle %K here using percent_K_format.
