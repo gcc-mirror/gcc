@@ -27,7 +27,6 @@
 #include "obstack.h"
 #include "bitmap.h"
 #include "flags.h"
-#include "tm_p.h"
 #include "basic-block.h"
 #include "output.h"
 #include "tree.h"

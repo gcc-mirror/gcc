@@ -1,3 +1,7 @@
+2010-05-22  Andreas Tobler  <andreast@fgznet.ch>
+
+	* tree-ssa-structalias.c: Remove tm_p.h from include.
+
 2010-05-21  Jeff Law  <law@redhat.com>
 
 	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Fix typo.
