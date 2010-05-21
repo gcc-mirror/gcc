@@ -1,5 +1,6 @@
 /* Pass computing data for optimizing stdarg functions.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -26,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "langhooks.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "target.h"
 #include "tree-flow.h"
 #include "tree-pass.h"

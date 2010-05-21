@@ -1,3 +1,194 @@
+2010-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic.c: Don't include tm.h, tree.h, tm_p.h, langhooks.h or
+	langhooks-def.h.
+	(diagnostic_initialize): Initialize x_data not last_function.
+	(diagnostic_report_current_function): Move to tree-diagnostic.c.
+	(default_diagnostic_starter): Call
+	diagnostic_report_current_module not
+	diagnostic_report_current_function.
+	(diagnostic_report_diagnostic): Initialize x_data not
+	abstract_origin.
+	(verbatim): Likewise.
+	* diagnostic.h (struct diagnostic_info): Change abstract_origin to
+	x_data.
+	(struct diagnostic_context): Change last_function to x_data.
+	(diagnostic_auxiliary_data): Replace with
+	diagnostic_context_auxiliary_data and
+	diagnostic_info_auxiliary_data.
+	(diagnostic_last_function_changed, diagnostic_set_last_function,
+	diagnostic_report_current_function): Move to tree-diagnostic.h.
+	(print_declaration, dump_generic_node, print_generic_stmt,
+	print_generic_stmt_indented, print_generic_expr,
+	print_generic_decl, debug_c_tree, dump_omp_clauses,
+	print_call_name, debug_generic_expr, debug_generic_stmt,
+	debug_tree_chain, default_tree_printer): Move to
+	tree-pretty-print.h.
+	(debug_gimple_stmt, debug_gimple_seq, print_gimple_seq,
+	print_gimple_stmt, print_gimple_expr, dump_gimple_stmt): Move to
+	gimple-pretty-print.h.
+	* pretty-print.c: Don't include tree.h
+	(pp_base_format): Don't handle %K here.
+	(pp_base_tree_identifier): Move to tree-pretty-print.c.
+	* pretty-print.h (text_info): Change abstract_origin to x_data.
+	(pp_tree_identifier, pp_unsupported_tree,
+	pp_base_tree_identifier): Move to tree-pretty-print.h.
+	* gimple-pretty-print.h, tree-diagnostic.c, tree-diagnostic.h,
+	tree-pretty-print.h: New files.
+	* tree-pretty-print.c: Include tree-pretty-print.h.
+	(percent_K_format): New.  Moved from pretty-print.c.
+	(pp_base_tree_identifier): Move from pretty-print.c.
+	* c-objc-common.c: Include tree-pretty-print.h.
+	(c_tree_printer): Handle %K here.
+	* langhooks.c: Include tree-diagnostic.h.
+	(lhd_print_error_function): Use diagnostic_abstract_origin macro.
+	* toplev.c: Include tree-diagnostic.h and tree-pretty-print.h.
+	(default_tree_printer): Handle %K using percent_K_format.
+	(general_init): Use default_tree_diagnostic_starter.
+	* tree.c: Include tree-diagnostic.h and tree-pretty-print.h.
+	(free_lang_data): Use default_tree_diagnostic_starter.
+	* c-pretty-print.c: Include tree-pretty-print.h.
+	* cfgexpand.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* cgraphunit.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* dwarf2out.c: Include tree-pretty-print.h.
+	* except.c: Include tree-pretty-print.h.
+	* gimple-pretty-print.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* gimplify.c: Include tree-pretty-print.h.
+	* graphite-poly.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* ipa-cp.c: Include tree-pretty-print.h.
+	* ipa-inline.c: Include gimple-pretty-print.h.
+	* ipa-prop.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* ipa-pure-const.c: Include gimple-pretty-print.h.
+	* ipa-struct-reorg.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* ipa-type-escape.c: Include tree-pretty-print.h.
+	* print-rtl.c: Include tree-pretty-print.h.
+	* print-tree.c: Include gimple-pretty-print.h.
+	* sese.c: Include tree-pretty-print.h.
+	* tree-affine.c: Include tree-pretty-print.h.
+	* tree-browser.c: Include tree-pretty-print.h.
+	* tree-call-cdce.c: Include gimple-pretty-print.h.
+	* tree-cfg.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-chrec.c: Include tree-pretty-print.h.
+	* tree-data-ref.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-dfa.c: Include tree-pretty-print.h.
+	* tree-if-conv.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-inline.c: Include tree-pretty-print.h.
+	* tree-into-ssa.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-nrv.c: Include tree-pretty-print.h.
+	* tree-object-size.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-outof-ssa.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-parloops.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-predcom.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-scalar-evolution.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-sra.c: Include tree-pretty-print.h.
+	* tree-ssa-address.c: Include tree-pretty-print.h.
+	* tree-ssa-alias.c: Include tree-pretty-print.h.
+	* tree-ssa-ccp.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-coalesce.c: Include tree-pretty-print.h.
+	* tree-ssa-copy.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-copyrename.c: Include tree-pretty-print.h.
+	* tree-ssa-dce.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-dom.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-dse.c: Include gimple-pretty-print.h.
+	* tree-ssa-forwprop.c: Include tree-pretty-print.h.
+	* tree-ssa-ifcombine.c: Include tree-pretty-print.h.
+	* tree-ssa-live.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-loop-im.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-loop-ivcanon.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-loop-ivopts.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-loop-niter.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-loop-prefetch.c: Include tree-pretty-print.h.
+	* tree-ssa-math-opts.c: Include gimple-pretty-print.h.
+	* tree-ssa-operands.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-phiprop.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-pre.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-propagate.c: Include gimple-pretty-print.h.
+	* tree-ssa-reassoc.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-sccvn.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-sink.c: Include gimple-pretty-print.h.
+	* tree-ssa-ter.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-ssa-uninit.c: Include gimple-pretty-print.h.
+	* tree-ssa.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-stdarg.c: Include gimple-pretty-print.h.
+	* tree-switch-conversion.c: Include gimple-pretty-print.h.
+	* tree-tailcall.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vect-data-refs.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vect-loop-manip.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vect-loop.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vect-patterns.c: Include gimple-pretty-print.h.
+	* tree-vect-slp.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vect-stmts.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* tree-vectorizer.c: Include tree-pretty-print.h.
+	* tree-vrp.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* value-prof.c: Include tree-pretty-print.h and
+	gimple-pretty-print.h.
+	* var-tracking.c: Include tree-pretty-print.h.
+	* Makefile.in (OBJS-common): Add tree-diagnostic.o.
+	(tree-diagnostic.o): New dependencies.
+	(c-objc-common.o, c-pretty-print.o, langhooks.o, tree.o,
+	tree-inline.o, print-tree.o, stor-layout.o, tree-ssa-uninit.o,
+	tree-ssa.o, tree-into-ssa.o, tree-ssa-ter.o, tree-ssa-coalesce.o,
+	tree-outof-ssa.o, tree-ssa-forwprop.o, tree-ssa-phiprop.o,
+	tree-ssa-ifcombine.o, tree-nrv.o, tree-ssa-copy.o,
+	tree-ssa-propagate.o, tree-ssa-dom.o, tree-ssa-uncprop.o,
+	tree-ssa-live.o, tree-ssa-copyrename.o, tree-ssa-pre.o,
+	tree-ssa-sccvn.o, tree-vrp.o, tree-cfg.o, tree-tailcall.o,
+	tree-ssa-sink.o, tree-if-conv.o, tree-dfa.o, tree-ssa-operands.o,
+	tree-ssa-address.o, tree-ssa-loop-niter.o,
+	tree-ssa-loop-ivcanon.o, tree-ssa-loop-prefetch.o, tree-predcom.o,
+	tree-ssa-loop-ivopts.o, tree-affine.o, tree-ssa-loop-im.o,
+	tree-ssa-math-opts.o, tree-ssa-alias.o, tree-ssa-reassoc.o,
+	gimplify.o, tree-browser.o, tree-chrec.o, tree-scalar-evolution.o,
+	tree-data-ref.o, sese.o, graphite-poly.o, tree-vect-loop.o,
+	tree-vect-loop-manip.o, tree-vect-patterns.o, tree-vect-slp.o,
+	tree-vect-stmts.o, tree-vect-data-refs.o, tree-vectorizer.o,
+	tree-parloops.o, tree-stdarg.o, tree-object-size.o,
+	gimple-pretty-print.o, tree-pretty-print.o, diagnostic.o,
+	toplev.o, print-rtl.o, except.o, dwarf2out.o, cgraphunit.o,
+	ipa-prop.o, ipa-cp.o, ipa-inline.o, ipa-pure-const.o,
+	ipa-type-escape.o, ipa-struct-reorg.o, tree-ssa-dce.o,
+	tree-call-cdce.o, tree-ssa-ccp.o, tree-sra.o,
+	tree-switch-conversion.o, var-tracking.o, value-prof.o,
+	cfgexpand.o, pretty-print.o): Update dependencies.
+
 2010-05-22  Andreas Tobler  <andreast@fgznet.ch>
 
 	* tree-ssa-structalias.c: Remove tm_p.h from include.

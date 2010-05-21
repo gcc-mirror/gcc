@@ -1,6 +1,6 @@
 /* Switch Conversion converts variable initializations based on switch
    statements to initializations from a static array.
-   Copyright (C) 2006, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Martin Jambor <jamborm@suse.cz>
 
 This file is part of GCC.
@@ -94,6 +94,7 @@ eight) times the number of the actual switch branches. */
 #include "input.h"
 #include "tree-pass.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "tree-dump.h"
 #include "timevar.h"
 

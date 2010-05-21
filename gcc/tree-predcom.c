@@ -199,6 +199,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "params.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-pass.h"
 #include "tree-affine.h"
 #include "tree-inline.h"

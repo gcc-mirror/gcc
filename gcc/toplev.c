@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "timevar.h"
 #include "diagnostic.h"
+#include "tree-diagnostic.h"
+#include "tree-pretty-print.h"
 #include "params.h"
 #include "reload.h"
 #include "ira.h"
@@ -1632,6 +1634,10 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       t = va_arg (*text->args_ptr, tree);
       break;
 
+    case 'K':
+      percent_K_format (text);
+      return true;
+
     default:
       return false;
     }
@@ -1685,6 +1691,7 @@ general_init (const char *argv0)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc);
+  diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;

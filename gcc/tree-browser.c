@@ -1,5 +1,6 @@
 /* Tree browser.
-   Copyright (C) 2002, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010
+   Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -25,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-inline.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "hashtab.h"
 
 

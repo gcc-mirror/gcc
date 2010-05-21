@@ -1,3 +1,12 @@
+2010-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* error.c: Include tree-diagnostic.h and tree-pretty-print.h.
+	(cp_print_error_function): Use diagnostic_abstract_origin macro.
+	(cp_printer): Handle %K here using percent_K_format.
+	* cxx-pretty-print.c: Include tree-pretty-print.h.
+	* Make-lang.in (cp/error.o, cp/cxx-pretty-print.o): Update
+	dependencies.
+
 2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* error.c, tree.c, typeck2.c, cxx-pretty-print.c, mangle.c:

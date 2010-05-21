@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "timevar.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "langhooks.h"
 
 /* Some of the aliasing is called very early, before this phase is
