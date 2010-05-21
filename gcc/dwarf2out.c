@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "md5.h"
 #include "tm_p.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "debug.h"
 #include "target.h"
 #include "langhooks.h"

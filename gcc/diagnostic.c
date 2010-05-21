@@ -26,17 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
 #include "version.h"
-#include "tm_p.h"
 #include "flags.h"
 #include "input.h"
 #include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "langhooks.h"
-#include "langhooks-def.h"
 #include "opts.h"
 #include "plugin.h"
 
@@ -105,7 +100,7 @@ diagnostic_initialize (diagnostic_context *context)
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
   context->last_module = 0;
-  context->last_function = NULL;
+  context->x_data = NULL;
   context->lock = 0;
   context->inhibit_notes_p = false;
 }
@@ -230,16 +225,6 @@ diagnostic_action_after_output (diagnostic_context *context,
     }
 }
 
-/* Prints out, if necessary, the name of the current function
-   that caused an error.  Called from all error and warning functions.  */
-void
-diagnostic_report_current_function (diagnostic_context *context,
-				    diagnostic_info *diagnostic)
-{
-  diagnostic_report_current_module (context);
-  lang_hooks.print_error_function (context, input_filename, diagnostic);
-}
-
 void
 diagnostic_report_current_module (diagnostic_context *context)
 {
@@ -287,7 +272,7 @@ void
 default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_function (context, diagnostic);
+  diagnostic_report_current_module (context);
   pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
 }
 
@@ -460,8 +445,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		      NULL));
     }
   diagnostic->message.locus = &diagnostic->location;
-  diagnostic->message.abstract_origin = &diagnostic->abstract_origin;
-  diagnostic->abstract_origin = NULL;
+  diagnostic->message.x_data = &diagnostic->x_data;
+  diagnostic->x_data = NULL;
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
@@ -469,7 +454,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_flush (context->printer);
   diagnostic_action_after_output (context, diagnostic);
   diagnostic->message.format_spec = saved_format_spec;
-  diagnostic->abstract_origin = NULL;
+  diagnostic->x_data = NULL;
 
   context->lock--;
 
@@ -522,7 +507,7 @@ verbatim (const char *gmsgid, ...)
   text.args_ptr = &ap;
   text.format_spec = _(gmsgid);
   text.locus = NULL;
-  text.abstract_origin = NULL;
+  text.x_data = NULL;
   pp_format_verbatim (global_dc->printer, &text);
   pp_flush (global_dc->printer);
   va_end (ap);

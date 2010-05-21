@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008
+   Copyright (C) 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-dump.h"

@@ -42,9 +42,8 @@ typedef struct diagnostic_info
   text_info message;
   location_t location;
   unsigned int override_column;
-  /* TREE_BLOCK if the diagnostic is to be reported in some inline
-     function inlined into other function, otherwise NULL.  */
-  tree abstract_origin;
+  /* Auxiliary data for client.  */
+  void *x_data;
   /* The kind of diagnostic it is about.  */
   diagnostic_t kind;
   /* Which OPT_* directly controls this diagnostic.  */
@@ -103,10 +102,8 @@ struct diagnostic_context
   /* Client hook to report an internal error.  */
   void (*internal_error) (const char *, va_list *);
 
-  /* Function of last diagnostic message; more generally, function such that
-     if next diagnostic message is in it then we don't have to mention the
-     function name.  */
-  tree last_function;
+  /* Auxiliary data for client.  */
+  void *x_data;
 
   /* Used to detect when the input file stack has changed since last
      described.  */
@@ -131,8 +128,9 @@ diagnostic_inhibit_notes (diagnostic_context * context)
    displayed.  */
 #define diagnostic_finalizer(DC) (DC)->end_diagnostic
 
-/* Extension hook for client.  */
-#define diagnostic_auxiliary_data(DC) (DC)->x_data
+/* Extension hooks for client.  */
+#define diagnostic_context_auxiliary_data(DC) (DC)->x_data
+#define diagnostic_info_auxiliary_data(DI) (DI)->x_data
 
 /* Same as pp_format_decoder.  Works on 'diagnostic_context *'.  */
 #define diagnostic_format_decoder(DC) ((DC)->printer->format_decoder)
@@ -145,18 +143,6 @@ diagnostic_inhibit_notes (diagnostic_context * context)
 #define diagnostic_line_cutoff(DC) ((DC)->printer->wrapping.line_cutoff)
 
 #define diagnostic_flush_buffer(DC) pp_base_flush ((DC)->printer)
-
-/* True if the last function in which a diagnostic was reported is
-   different from the current one.  */
-#define diagnostic_last_function_changed(DC, DI) \
-  ((DC)->last_function != ((DI)->abstract_origin \
-			   ? (DI)->abstract_origin : current_function_decl))
-
-/* Remember the current function as being the last one in which we report
-   a diagnostic.  */
-#define diagnostic_set_last_function(DC, DI) \
-  (DC)->last_function = (((DI) && (DI)->abstract_origin) \
-			 ? (DI)->abstract_origin : current_function_decl)
 
 /* True if the last module or file in which a diagnostic was reported is
    different from the current one.  */
@@ -208,8 +194,6 @@ extern diagnostic_context *global_dc;
 extern void diagnostic_initialize (diagnostic_context *);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);
-extern void diagnostic_report_current_function (diagnostic_context *,
-						diagnostic_info *);
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
@@ -233,31 +217,5 @@ void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 
 /* Pure text formatting support functions.  */
 extern char *file_name_as_prefix (const char *);
-
-/* In tree-pretty-print.c  */
-extern void print_declaration (pretty_printer *, tree, int, int);
-extern int dump_generic_node (pretty_printer *, tree, int, int, bool);
-extern void print_generic_stmt (FILE *, tree, int);
-extern void print_generic_stmt_indented (FILE *, tree, int, int);
-extern void print_generic_expr (FILE *, tree, int);
-extern void print_generic_decl (FILE *, tree, int);
-extern void debug_c_tree (tree);
-extern void dump_omp_clauses (pretty_printer *, tree, int, int);
-extern void print_call_name (pretty_printer *, tree, int);
-
-/* In gimple-pretty-print.c  */
-extern void debug_generic_expr (tree);
-extern void debug_generic_stmt (tree);
-extern void debug_tree_chain (tree);
-extern void debug_gimple_stmt (gimple);
-extern void debug_gimple_seq (gimple_seq);
-extern void print_gimple_seq (FILE *, gimple_seq, int, int);
-extern void print_gimple_stmt (FILE *, gimple, int, int);
-extern void print_gimple_expr (FILE *, gimple, int, int);
-extern void dump_gimple_stmt (pretty_printer *, gimple, int, int);
-
-/* In toplev.c  */
-extern bool default_tree_printer (pretty_printer *, text_info *, const char *,
-				  int, bool, bool, bool);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

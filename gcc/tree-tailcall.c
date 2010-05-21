@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "except.h"
 #include "tree-pass.h"
 #include "flags.h"

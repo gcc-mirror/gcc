@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "ipa-prop.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "statistics.h"
 #include "tree-dump.h"
 #include "timevar.h"

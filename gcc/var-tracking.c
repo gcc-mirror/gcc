@@ -112,6 +112,7 @@
 #include "toplev.h"
 #include "params.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "pointer-set.h"
 #include "recog.h"
 

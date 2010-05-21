@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "tree-flow.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "except.h"
 #include "debug.h"
 #include "pointer-set.h"

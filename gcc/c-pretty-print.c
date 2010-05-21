@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "intl.h"
 #include "c-pretty-print.h"
+#include "tree-pretty-print.h"
 #include "c-tree.h"
 #include "tree-iterator.h"
 #include "diagnostic.h"

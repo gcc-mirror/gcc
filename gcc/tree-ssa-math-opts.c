@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "target.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */

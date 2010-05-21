@@ -1,5 +1,6 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -23,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "pretty-print.h"
-#include "tree.h"
 #include "ggc.h"
 
 #if HAVE_ICONV
@@ -188,7 +188,6 @@ pp_base_indent (pretty_printer *pp)
    %.*s: a substring the length of which is specified by an argument
 	 integer.
    %Ns: likewise, but length specified as constant in the format string.
-   %K: a statement, from which EXPR_LOCATION and TREE_BLOCK will be recorded.
    Flag 'q': quote formatted text (must come immediately after '%').
 
    Arguments can be used sequentially, or through %N$ resp. *N$
@@ -470,35 +469,6 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	  else
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "x");
-	  break;
-
-	case 'K':
-	  {
-	    tree t = va_arg (*text->args_ptr, tree), block;
-	    gcc_assert (text->locus != NULL);
-	    *text->locus = EXPR_LOCATION (t);
-	    gcc_assert (text->abstract_origin != NULL);
-	    block = TREE_BLOCK (t);
-	    *text->abstract_origin = NULL;
-	    while (block
-		   && TREE_CODE (block) == BLOCK
-		   && BLOCK_ABSTRACT_ORIGIN (block))
-	      {
-		tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-		while (TREE_CODE (ao) == BLOCK
-		       && BLOCK_ABSTRACT_ORIGIN (ao)
-		       && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-		  ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
-		if (TREE_CODE (ao) == FUNCTION_DECL)
-		  {
-		    *text->abstract_origin = block;
-		    break;
-		  }
-		block = BLOCK_SUPERCONTEXT (block);
-	      }
-	  }
 	  break;
 
 	case '.':
@@ -829,21 +799,6 @@ pp_base_maybe_space (pretty_printer *pp)
       pp_space (pp);
       pp_base (pp)->padding = pp_none;
     }
-}
-
-/* Print the identifier ID to PRETTY-PRINTER.  */
-
-void
-pp_base_tree_identifier (pretty_printer *pp, tree id)
-{
-  if (pp_translate_identifiers (pp))
-    {
-      const char *text = identifier_to_locale (IDENTIFIER_POINTER (id));
-      pp_append_text (pp, text, text + strlen (text));
-    }
-  else
-    pp_append_text (pp, IDENTIFIER_POINTER (id),
-		    IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
 }
 
 /* The string starting at P has LEN (at least 1) bytes left; if they

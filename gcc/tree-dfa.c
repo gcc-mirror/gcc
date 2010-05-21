@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-dump.h"
 #include "gimple.h"
 #include "tree-flow.h"

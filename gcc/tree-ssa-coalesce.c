@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "bitmap.h"
 #include "tree-flow.h"
 #include "hashtab.h"

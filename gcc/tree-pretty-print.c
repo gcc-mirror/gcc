@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "output.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "hashtab.h"
 #include "tree-flow.h"
 #include "langhooks.h"
@@ -2854,4 +2855,53 @@ newline_and_indent (pretty_printer *buffer, int spc)
 {
   pp_newline (buffer);
   INDENT (spc);
+}
+
+/* Handle a %K format for TEXT.  Separate from default_tree_printer so
+   it can also be used in front ends.
+   %K: a statement, from which EXPR_LOCATION and TREE_BLOCK will be recorded.
+*/
+
+void
+percent_K_format (text_info *text)
+{
+  tree t = va_arg (*text->args_ptr, tree), block;
+  gcc_assert (text->locus != NULL);
+  *text->locus = EXPR_LOCATION (t);
+  gcc_assert (pp_ti_abstract_origin (text) != NULL);
+  block = TREE_BLOCK (t);
+  *pp_ti_abstract_origin (text) = NULL;
+  while (block
+	 && TREE_CODE (block) == BLOCK
+	 && BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      tree ao = BLOCK_ABSTRACT_ORIGIN (block);
+
+      while (TREE_CODE (ao) == BLOCK
+	     && BLOCK_ABSTRACT_ORIGIN (ao)
+	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
+	ao = BLOCK_ABSTRACT_ORIGIN (ao);
+
+      if (TREE_CODE (ao) == FUNCTION_DECL)
+	{
+	  *pp_ti_abstract_origin (text) = block;
+	  break;
+	}
+      block = BLOCK_SUPERCONTEXT (block);
+    }
+}
+
+/* Print the identifier ID to PRETTY-PRINTER.  */
+
+void
+pp_base_tree_identifier (pretty_printer *pp, tree id)
+{
+  if (pp_translate_identifiers (pp))
+    {
+      const char *text = identifier_to_locale (IDENTIFIER_POINTER (id));
+      pp_append_text (pp, text, text + strlen (text));
+    }
+  else
+    pp_append_text (pp, IDENTIFIER_POINTER (id),
+		    IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
 }

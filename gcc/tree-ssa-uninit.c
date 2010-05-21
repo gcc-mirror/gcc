@@ -1,5 +1,5 @@
 /* Predicate aware uninitialized variable warning.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010 Free Software
    Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "function.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "pointer-set.h"
 #include "tree-flow.h"
