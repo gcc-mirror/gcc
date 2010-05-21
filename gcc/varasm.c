@@ -403,6 +403,8 @@ emutls_decl (tree decl)
 	int foo() { return i; }
 	__thread int i = 1;
      in which I goes from external to locally defined and initialized.  */
+  DECL_DLLIMPORT_P (to) = DECL_DLLIMPORT_P (decl);
+  DECL_ATTRIBUTES (to) = targetm.merge_decl_attributes (decl, to);
 
   TREE_STATIC (to) = TREE_STATIC (decl);
   TREE_USED (to) = TREE_USED (decl);
