@@ -1,3 +1,7 @@
+2010-05-21  Jeff Law  <law@redhat.com>
+
+	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Fix typo.
+
 2010-05-21  Jason Merrill  <jason@redhat.com>
 
 	* tree-eh.c (cleanup_is_dead_in): New.
