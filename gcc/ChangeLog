@@ -1,3 +1,9 @@
+2010-05-21  Jason Merrill  <jason@redhat.com>
+
+	* tree-eh.c (cleanup_is_dead_in): New.
+	(lower_try_finally): Don't generate a dead cleanup region.
+	(lower_cleanup): Likewise.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44223

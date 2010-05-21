@@ -1,3 +1,7 @@
+2010-05-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/spec11.C: Test cleanup optimization.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44223
