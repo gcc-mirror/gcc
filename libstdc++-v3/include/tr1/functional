@@ -42,6 +42,7 @@
 #include <bits/stringfwd.h>
 #include <tr1/functional_hash.h>
 #include <ext/type_traits.h>
+#include <bits/move.h> // for std::__addressof
 
 namespace std
 {
@@ -452,7 +453,8 @@ namespace tr1
       typedef _Tp type;
 
       explicit
-      reference_wrapper(_Tp& __indata): _M_data(&__indata)
+      reference_wrapper(_Tp& __indata)
+      : _M_data(std::__addressof(__indata))
       { }
 
       reference_wrapper(const reference_wrapper<_Tp>& __inref):
