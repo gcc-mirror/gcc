@@ -1,3 +1,31 @@
+2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* real: Do not include gmp.h, mpfr.h, and mpc.h.
+	(REAL_VALUE_NEGATE, REAL_VALUE_ABS, real_arithmetic2): Remove.
+	(real_value_negate, real_value_abs): New prototypes.
+	(do_mpc_arg2, real_from_mpfr, mpfr_from_real): Move from here...
+	* realmpfr.h (do_mpc_arg2, real_from_mpfr, mpfr_from_real): ...to here,
+	new include file for interface between MPFR and REAL_VALUE_TYPE.
+	* real.c: Include realmpfr.h.
+	(real_arithmetic2): Remove legacy function.
+	(real_value_negate): New.
+	(real_value_abs): New.
+	(mfpr_from_real, real_from_mpfr): Move from here...
+	* realmpfr.c (mpfr_from_real, real_from_mpfr): ...to here, new file.
+	* builtins.c: Include realmpfr.h.
+	* fold-const.c: Include realmpfr.h.
+	(fold_comparison): Use real_value_negate instead of REAL_VALUE_NEGATE.
+	(fold_negate_const): Likewise.
+	(fold_abs_const): Use real_value_abs instead of REAL_VALUE_ABS.
+	* toplev.c: Include realmpfr.h.
+	* simplify-rtx.c (simplify_const_unary_operation): Use real_value_abs
+	and real_value_negate.
+	* fixed-value.c (check_real_for_fixed_mode): Likewise.
+	* config/arm/arm.c (neg_const_double_rtx_ok_for_fpa): Likewise.
+	(vfp3_const_double_index): Likewise.
+	(arm_print_operand): Likewise.
+	* Makefile.in: Update dependencies.
+
 2010-05-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Increase the default

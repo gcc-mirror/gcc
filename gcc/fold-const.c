@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "tree.h"
+#include "realmpfr.h"
 #include "rtl.h"
 #include "expr.h"
 #include "tm_p.h"
@@ -8977,7 +8978,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    return fold_build2_loc (loc, swap_tree_comparison (code), type,
 				TREE_OPERAND (arg0, 0),
 				build_real (TREE_TYPE (arg1),
-					    REAL_VALUE_NEGATE (cst)));
+					    real_value_negate (&cst)));
 
 	  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
 	  /* a CMP (-0) -> a CMP 0  */
@@ -15166,7 +15167,7 @@ fold_negate_const (tree arg0, tree type)
       }
 
     case REAL_CST:
-      t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
+      t = build_real (type, real_value_negate (&TREE_REAL_CST (arg0)));
       break;
 
     case FIXED_CST:
@@ -15225,7 +15226,7 @@ fold_abs_const (tree arg0, tree type)
 
     case REAL_CST:
       if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg0)))
-	t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
+	t = build_real (type, real_value_negate (&TREE_REAL_CST (arg0)));
       else
 	t =  arg0;
       break;
