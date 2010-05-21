@@ -92,15 +92,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "tree-flow.h"
-#include "real.h"
 #include "timevar.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "basic-block.h"
 #include "target.h"
 #include "diagnostic.h"
-#include "rtl.h"
-#include "expr.h"
+
+/* FIXME: RTL headers have to be included here for optabs.  */
+#include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
+#include "expr.h"		/* Because optabs.h wants sepops.  */
 #include "optabs.h"
 
 /* This structure represents one basic block that either computes a

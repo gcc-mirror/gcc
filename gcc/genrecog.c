@@ -2474,7 +2474,6 @@ write_header (void)
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
-#include \"real.h\"\n\
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\

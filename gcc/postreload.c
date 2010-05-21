@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "output.h"
 #include "cselib.h"
-#include "real.h"
 #include "toplev.h"
 #include "except.h"
 #include "tree.h"

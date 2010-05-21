@@ -88,7 +88,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "timevar.h"
-#include "rtl.h"
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
@@ -98,7 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
-#include "target.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;

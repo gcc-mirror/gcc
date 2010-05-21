@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "hashtab.h"
 #include "flags.h"
-#include "real.h"
 #include "function.h"
 #include "output.h"
 #include "expr.h"

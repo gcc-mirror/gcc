@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "target.h"
 #include "target-def.h"
-#include "real.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32

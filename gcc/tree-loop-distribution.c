@@ -46,11 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
-#include "target.h"
-
-#include "rtl.h"
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-flow.h"

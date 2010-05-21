@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "hard-reg-set.h"
 #include "regs.h"
-#include "real.h"
 #include "output.h"
 #include "toplev.h"
 #include "hashtab.h"

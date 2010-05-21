@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tm.h"
-#include "rtl.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "diagnostic.h"

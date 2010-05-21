@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "expr.h"
 #include "optabs.h"
-#include "real.h"
 #include "recog.h"
 #include "langhooks.h"
 #include "df.h"

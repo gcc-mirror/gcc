@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "toplev.h"
-#include "fixed-value.h"
 
 /* Compare two fixed objects for bitwise identity.  */
 

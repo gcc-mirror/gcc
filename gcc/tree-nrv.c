@@ -22,16 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "function.h"
 #include "basic-block.h"
-#include "expr.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "langhooks.h"
+#include "flags.h"	/* For "optimize" in gate_pass_return_slot.
+			   FIXME: That should be up to the pass manager,
+			   but pass_nrv is not in pass_all_optimizations.  */
 
 /* This file implements return value optimizations for functions which
    return aggregate types.

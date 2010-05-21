@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "vecir.h"
 #include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
 #include "alias.h"
 #include "options.h"
 

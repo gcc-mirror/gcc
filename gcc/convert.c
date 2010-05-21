@@ -32,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "real.h"
-#include "fixed-value.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
    EXPR must be pointer, reference, integer, enumeral, or literal zero;

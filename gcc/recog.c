@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "function.h"
 #include "flags.h"
-#include "real.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "output.h"

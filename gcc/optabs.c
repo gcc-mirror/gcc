@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "reload.h"
 #include "ggc.h"
-#include "real.h"
 #include "basic-block.h"
 #include "target.h"
 

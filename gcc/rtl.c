@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "real.h"
 #include "ggc.h"
 #ifdef GENERATOR_FILE
 # include "errors.h"

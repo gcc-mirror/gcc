@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "recog.h"
 #include "integrate.h"
-#include "real.h"
 #include "except.h"
 #include "function.h"
 #include "toplev.h"

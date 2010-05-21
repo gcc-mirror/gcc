@@ -65,7 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "dwarf2asm.h"
 #include "integrate.h"
-#include "real.h"
 #include "debug.h"
 #include "target.h"
 #include "langhooks.h"

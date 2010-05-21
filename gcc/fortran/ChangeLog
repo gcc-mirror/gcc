@@ -1,3 +1,8 @@
+2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* trans-const.c, trans-types.c, trans-intrinsic.c:
+	Clean up redundant includes.
+
 2010-05-20  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/38407

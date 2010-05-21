@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "toplev.h"
-#include "real.h"
 #include "double-int.h"
 #include "gfortran.h"
 #include "trans.h"

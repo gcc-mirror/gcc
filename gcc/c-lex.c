@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 
-#include "real.h"
-#include "fixed-value.h"
 #include "tree.h"
 #include "input.h"
 #include "output.h"
