@@ -1,3 +1,9 @@
+2010-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/44101
+	* gimplify.c (gimplify_init_constructor): Build a VIEW_CONVERT_EXPR
+	around the uniquized constructor if its type requires a conversion.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44205

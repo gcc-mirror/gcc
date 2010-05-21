@@ -1,3 +1,7 @@
+2010-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/const3.C: New test.
+
 2010-05-20  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/38407

@@ -3813,8 +3813,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		if (notify_temp_creation)
 		  return GS_ERROR;
 
-	        walk_tree (&ctor, force_labels_r, NULL, NULL);
-		TREE_OPERAND (*expr_p, 1) = tree_output_constant_def (ctor);
+		walk_tree (&ctor, force_labels_r, NULL, NULL);
+		ctor = tree_output_constant_def (ctor);
+		if (!useless_type_conversion_p (type, TREE_TYPE (ctor)))
+		  ctor = build1 (VIEW_CONVERT_EXPR, type, ctor);
+		TREE_OPERAND (*expr_p, 1) = ctor;
 
 		/* This is no longer an assignment of a CONSTRUCTOR, but
 		   we still may have processing to do on the LHS.  So
