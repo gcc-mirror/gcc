@@ -1,3 +1,8 @@
+2010-05-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (override_options): Increase the default
+	of max-completely-peel-times.
+
 2010-05-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44038

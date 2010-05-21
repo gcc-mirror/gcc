@@ -1643,7 +1643,7 @@ override_options (void)
       if (!PARAM_SET_P (PARAM_MAX_UNROLL_TIMES))
 	set_param_value ("max-unroll-times", 32);
       if (!PARAM_SET_P (PARAM_MAX_COMPLETELY_PEELED_INSNS))
-	set_param_value ("max-completely-peeled-insns", 800);
+	set_param_value ("max-completely-peeled-insns", 2000);
       if (!PARAM_SET_P (PARAM_MAX_COMPLETELY_PEEL_TIMES))
 	set_param_value ("max-completely-peel-times", 64);
     }
