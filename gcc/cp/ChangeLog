@@ -1,3 +1,8 @@
+2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* semantics.c: Include bitmap.h.
+	* Make-lang.in: Update dependencies.
+
 2010-05-22  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (maybe_emit_vtables): Produce same comdat group when outputting

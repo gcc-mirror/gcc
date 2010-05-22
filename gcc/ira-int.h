@@ -542,7 +542,7 @@ extern int ira_copies_num;
 struct ira_spilled_reg_stack_slot
 {
   /* pseudo-registers assigned to the stack slot.  */
-  regset_head spilled_regs;
+  bitmap_head spilled_regs;
   /* RTL representation of the stack slot.  */
   rtx mem;
   /* Size of the stack slot.  */

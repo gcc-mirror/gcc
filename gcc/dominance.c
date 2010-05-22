@@ -47,6 +47,7 @@
 #include "vecprim.h"
 #include "pointer-set.h"
 #include "graphds.h"
+#include "bitmap.h"
 
 /* We name our nodes with integers, beginning with 1.  Zero is reserved for
    'undefined' or 'end of list'.  The name of each node is given by the dfs

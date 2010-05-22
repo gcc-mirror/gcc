@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "addresses.h"
 #include "basic-block.h"
+#include "df.h"
 #include "reload.h"
 #include "recog.h"
 #include "output.h"
@@ -44,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "tree.h"
 #include "ira.h"
-#include "df.h"
 #include "target.h"
 #include "emit-rtl.h"
 

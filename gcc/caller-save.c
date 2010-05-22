@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "recog.h"
 #include "basic-block.h"
+#include "df.h"
 #include "reload.h"
 #include "function.h"
 #include "expr.h"
@@ -37,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "addresses.h"
 #include "output.h"
-#include "df.h"
 #include "ggc.h"
 
 /* True if caller-save has been initialized.  */

@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "vec.h"
 #include "vecprim.h"
+#include "bitmap.h"
+#include "sbitmap.h"
 #include "timevar.h"
 
 /* Store the data structures necessary for depth-first search.  */

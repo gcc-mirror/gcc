@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define _TREE_FLOW_H 1
 
 #include "bitmap.h"
+#include "sbitmap.h"
 #include "basic-block.h"
 #include "hashtab.h"
 #include "gimple.h"

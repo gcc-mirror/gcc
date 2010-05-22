@@ -1,3 +1,43 @@
+2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* coretypes.h (struct simple_bitmap_def, sbitmap, const_sbitmap):
+	New core types.
+	* sbitmap.h (struct sbitmap_def): Do not typedef here.
+	* sbitmap.c: Include sbitmap.h.
+	* basic-block.h: Do not include bitmap.h, sbitmap.h, partition.h,
+	hard-reg-set.h.  Split everything related to regsets out from here...
+	* regset.h: ...to here.  New file.
+	* df.h: Include regset.h and sbitmap.h.
+	* tree-flow.h: Likewise.
+	* cfgloop.h: Likewise.
+	* except.h: Do not include sbitmap.h.  Include hashtab.h.
+	* cgraph.h: Include vec.h and function.h.
+	* reload.h (struct insn_chain): Change types of live_throughout
+	and dead_or_set from regset_head to bitmap_head.
+	(compute_use_by_pseudos): Be defined also if regset.h is not included.
+	* ira-int.h (struct ira_spilled_reg_stack_slot): Change type of
+	spilled_regs from regset_head to bitmap_head to avoid dependency
+	in regset.h.
+	* sel-sched-ir.h: Include regset.h.
+	* reload.c: Include df.h before reload.h.
+	* caller-save.c: Likewise.
+	* reload1.c: Likewise.
+	* ira.c: Likewise.
+	(mark_elimination): Update type of r to bitmap, consistent with
+	DF_LR_IN.
+	* dominance.c: Include bitmap.h.
+	* modulo-sched.c: Include df.h.
+	* cfganal.c: Include bitmap.h and sbitmap.h.
+	* cfgbuild.c: Include sbitmap.h.
+	* lcm.c: Include sbitmap.h.
+	* gcse.c (alloc_gcse_mem): Allocate regset with ALLOC_REG_SET.
+	* domwalk.c: Include sbitmap.h, exclude ggc.h.
+	* cfgexpand.c: Inlcude bitmap.h and sbitmap.h.
+	* cselib.c: Include bitmap.h.
+	* tree-optimize.c: Include regset.h.
+	* stmt.c: Include bitmap.h.
+	* Makefile.in: Update dependencies.
+
 2010-05-22  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (struct varpool_node): Add same_comdat_group.

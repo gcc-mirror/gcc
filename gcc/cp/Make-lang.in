@@ -303,7 +303,7 @@ cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) except.h toplev.h \
   $(FLAGS_H) debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H) \
   $(TREE_INLINE_H) $(CGRAPH_H) $(TARGET_H) $(C_COMMON_H) $(GIMPLE_H) \
-  gt-cp-semantics.h
+  bitmap.h gt-cp-semantics.h
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) $(TREE_DUMP_H)
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h $(INTEGRATE_H) \
   insn-config.h input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \

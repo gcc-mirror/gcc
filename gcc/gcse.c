@@ -624,7 +624,7 @@ static void
 alloc_gcse_mem (void)
 {
   /* Allocate vars to track sets of regs.  */
-  reg_set_bitmap = BITMAP_ALLOC (NULL);
+  reg_set_bitmap = ALLOC_REG_SET (NULL);
 
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */

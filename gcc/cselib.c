@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "alloc-pool.h"
 #include "target.h"
+#include "bitmap.h"
 
 static bool cselib_record_memory;
 static bool cselib_preserve_constants;

@@ -225,8 +225,8 @@ struct insn_chain
   /* Register life information: record all live hard registers, and
      all live pseudos that have a hard register.  This set also
      contains pseudos spilled by IRA.  */
-  regset_head live_throughout;
-  regset_head dead_or_set;
+  bitmap_head live_throughout;
+  bitmap_head dead_or_set;
 
   /* Copies of the global variables computed by find_reloads.  */
   struct reload *rld;
@@ -242,8 +242,10 @@ extern struct insn_chain *reload_insn_chain;
 
 /* Allocate a new insn_chain structure.  */
 extern struct insn_chain *new_insn_chain (void);
+#endif
 
-extern void compute_use_by_pseudos (HARD_REG_SET *, regset);
+#if defined SET_HARD_REG_BIT
+extern void compute_use_by_pseudos (HARD_REG_SET *, bitmap);
 #endif
 
 /* Functions from reload.c:  */

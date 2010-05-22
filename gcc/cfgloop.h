@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "double-int.h"
 
+#include "bitmap.h"
+#include "sbitmap.h"
+
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
 {

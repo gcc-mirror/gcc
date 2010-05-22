@@ -45,7 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "target.h"
 #include "ssaexpand.h"
-
+#include "bitmap.h"
+#include "sbitmap.h"
 
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */

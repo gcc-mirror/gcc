@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DF_H
 
 #include "bitmap.h"
+#include "regset.h"
+#include "sbitmap.h"
 #include "basic-block.h"
 #include "alloc-pool.h"
 #include "timevar.h"

@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "except.h"
 #include "plugin.h"
-
+#include "regset.h"	/* FIXME: For reg_obstack.  */
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
