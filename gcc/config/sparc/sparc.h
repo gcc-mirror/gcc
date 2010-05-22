@@ -1835,33 +1835,6 @@ do {									\
 #define RTX_OK_FOR_OLO10_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-
-   In PIC mode,
-
-      (mem:HI [%l7+a])
-
-   is not equivalent to
-   
-      (mem:QI [%l7+a]) (mem:QI [%l7+a+1])
-
-   because [%l7+a+1] is interpreted as the address of (a+1).  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
-{							\
-  if (flag_pic == 1)					\
-    {							\
-      if (GET_CODE (ADDR) == PLUS)			\
-	{						\
-	  rtx op0 = XEXP (ADDR, 0);			\
-	  rtx op1 = XEXP (ADDR, 1);			\
-	  if (op0 == pic_offset_table_rtx		\
-	      && SYMBOLIC_CONST (op1))			\
-	    goto LABEL;					\
-	}						\
-    }							\
-}
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
