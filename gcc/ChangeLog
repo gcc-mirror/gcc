@@ -1,3 +1,12 @@
+2010-05-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* dbgcnt.c: Include toplev.h instead of errors.h.
+	* ira-emit.c: Don't include errors.h.
+	* ira.c: Include toplev.h instead of errors.h.
+	* lto-compress.c: Include toplev.h instead of errors.h.
+	* Makefile.in (lto-compress.o, lto-streamer-out.o, ira-emit.o,
+	ira.o, dbgcnt.o): Update dependencies.
+
 2010-05-22  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p): Check type qualifications

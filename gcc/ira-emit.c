@@ -1,5 +1,5 @@
 /* Integrated Register Allocator.  Changing code and generating moves.
-   Copyright (C) 2006, 2007, 2008, 2009
+   Copyright (C) 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "output.h"
 #include "reload.h"
-#include "errors.h"
 #include "df.h"
 #include "ira-int.h"
 

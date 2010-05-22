@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "diagnostic.h"
-#include "errors.h"
+#include "toplev.h"
 #include "langhooks.h"
 #include "lto-streamer.h"
 #include "lto-compress.h"

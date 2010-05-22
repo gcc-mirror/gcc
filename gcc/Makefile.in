@@ -2215,7 +2215,7 @@ double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TREE_H) langhooks.h $(LTO_HEADER_H) $(LTO_SECTION_H) \
-	lto-compress.h $(DIAGNOSTIC_H) errors.h
+	lto-compress.h $(DIAGNOSTIC_H) $(TOPLEV_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(ZLIBINC) $< $(OUTPUT_OPTION)
 
 lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
@@ -2232,7 +2232,7 @@ lto-streamer-out.o : lto-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TOPLEV_H) $(TREE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) $(BASIC_BLOCK_H) tree-iterator.h \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) \
-   $(DIAGNOSTIC_H) except.h $(LTO_STREAMER_H) errors.h
+   $(DIAGNOSTIC_H) except.h $(LTO_STREAMER_H) $(TOPLEV_H)
 lto-section-in.o: lto-section-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TOPLEV_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
    $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) \
@@ -3263,7 +3263,7 @@ ira-color.o: ira-color.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 ira-emit.o: ira-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) hard-reg-set.h \
    $(BASIC_BLOCK_H) $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) \
-   $(TREE_PASS_H) output.h reload.h errors.h $(DF_H) $(IRA_INT_H)
+   $(TREE_PASS_H) output.h reload.h $(DF_H) $(IRA_INT_H)
 ira-lives.o: ira-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TARGET_H) $(RTL_H) $(REGS_H) $(EXCEPT_H) hard-reg-set.h $(FLAGS_H) \
    insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(TOPLEV_H) $(TM_P_H) $(PARAMS_H) \
@@ -3272,7 +3272,7 @@ ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) $(OBSTACK_H) \
    $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TIMEVAR_H) $(TREE_PASS_H) output.h \
-   $(EXCEPT_H) reload.h errors.h $(INTEGRATE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
+   $(EXCEPT_H) reload.h $(TOPLEV_H) $(INTEGRATE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H)\
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
@@ -3399,7 +3399,7 @@ hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
 pretty-print.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(PRETTY_PRINT_H) \
    $(GGC_H)
 errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h $(BCONFIG_H)
-dbgcnt.o: dbgcnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h errors.h $(DBGCNT_H) \
+dbgcnt.o: dbgcnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TOPLEV_H) $(DBGCNT_H) \
    $(TM_H) $(RTL_H) output.h
 lower-subreg.o : lower-subreg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(MACHMODE_H) $(TM_H) $(RTL_H) $(TM_P_H) $(TIMEVAR_H) $(FLAGS_H) \
