@@ -1008,7 +1008,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   options_p nodot;
   int i;
   type_p rtx_tp, rtvec_tp, tree_tp, mem_attrs_tp, note_union_tp, scalar_tp;
-  type_p bitmap_tp, basic_block_tp, reg_attrs_tp, constant_tp, symbol_union_tp;
+  type_p basic_block_tp, reg_attrs_tp, constant_tp, symbol_union_tp;
 
   if (t->kind != TYPE_UNION)
     {
@@ -1024,7 +1024,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   tree_tp = create_pointer (find_structure ("tree_node", 1));
   mem_attrs_tp = create_pointer (find_structure ("mem_attrs", 0));
   reg_attrs_tp = create_pointer (find_structure ("reg_attrs", 0));
-  bitmap_tp = create_pointer (find_structure ("bitmap_element_def", 0));
   basic_block_tp = create_pointer (find_structure ("basic_block_def", 0));
   constant_tp = create_pointer (find_structure ("constant_descriptor_rtx", 0));
   scalar_tp = &scalar_nonchar;  /* rtunion int */
@@ -1169,11 +1168,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case 't':
 	      t = tree_tp;
 	      subname = "rt_tree";
-	      break;
-
-	    case 'b':
-	      t = bitmap_tp;
-	      subname = "rt_bit";
 	      break;
 
 	    case 'B':

@@ -512,16 +512,6 @@ print_rtx (const_rtx in_rtx)
 	sawclose = 0;
 	break;
 
-      case 'b':
-#ifndef GENERATOR_FILE
-	if (XBITMAP (in_rtx, i) == NULL)
-	  fputs (" {null}", outfile);
-	else
-	  bitmap_print (outfile, XBITMAP (in_rtx, i), " {", "}");
-#endif
-	sawclose = 0;
-	break;
-
       case 't':
 #ifndef GENERATOR_FILE
 	dump_addr (outfile, " ", XTREE (in_rtx, i));

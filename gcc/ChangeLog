@@ -1,3 +1,12 @@
+2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (union rtunion_def): Remove rt_bit member.
+	(XBITMAP, X0BITMAP, XCBITMAP): Remove.
+	* print-rtl (print_rtx): Do not print the member.
+	* gengtype.c (adjust_field_rtx_def): Do not handle it.
+	* gengenrtl.c (type_from_format): Likewise.
+	(accessor_from_format): Likewise.
+
 2010-05-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* dbgcnt.c: Include toplev.h instead of errors.h.

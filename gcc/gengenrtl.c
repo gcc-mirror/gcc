@@ -76,8 +76,6 @@ type_from_format (int c)
 
     case 'E':
       return "rtvec ";
-    case 'b':
-      return "struct bitmap_head_def *";  /* bitmap - typedef not available */
     case 't':
       return "union tree_node *";  /* tree - typedef not available */
     case 'B':
@@ -108,9 +106,6 @@ accessor_from_format (int c)
 
     case 'E':
       return "XVEC";
-
-    case 'b':
-      return "XBITMAP";
 
     case 't':
       return "XTREE";
