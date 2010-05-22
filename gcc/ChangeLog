@@ -1,3 +1,9 @@
+2010-05-22  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sparc/sparc.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
+	* config/sparc/sparc.c (TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	(sparc_mode_dependent_address_p): New function.
+
 2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in: Fix c-pch.o and ggc-common.o dependencies on timevars.
