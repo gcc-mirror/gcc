@@ -334,6 +334,21 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  first_varpool = (struct varpool_node *)first_varpool->aux;
 	  vnode->aux = NULL;
 	  process_references (&vnode->ref_list, &first, &first_varpool, before_inlining_p);
+	  /* If any function in a comdat group is reachable, force
+	     all other functions in the same comdat group to be
+	     also reachable.  */
+	  if (vnode->same_comdat_group)
+	    {
+	      struct varpool_node *next;
+	      for (next = vnode->same_comdat_group;
+		   next != vnode;
+		   next = next->same_comdat_group)
+		if (!next->needed)
+		  {
+		    varpool_mark_needed_node (next);
+		    enqueue_varpool_node (next, &first_varpool);
+		  }
+	    }
 	}
     }
 

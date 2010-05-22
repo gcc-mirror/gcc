@@ -565,12 +565,14 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
 static void
 lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node *node,
+			 lto_varpool_encoder_t varpool_encoder,
 		         cgraph_node_set set, varpool_node_set vset)
 {
   bool boundary_p = !varpool_node_in_set_p (node, vset) && node->analyzed;
   struct bitpack_d *bp;
   struct varpool_node *alias;
   int count = 0;
+  int ref;
 
   lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->decl);
   bp = bitpack_create ();
@@ -602,6 +604,14 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp_pack_value (bp, count != 0, 1);
   lto_output_bitpack (ob->main_stream, bp);
   bitpack_delete (bp);
+  if (node->same_comdat_group && !boundary_p)
+    {
+      ref = lto_varpool_encoder_lookup (varpool_encoder, node->same_comdat_group);
+      gcc_assert (ref != LCC_NOT_FOUND);
+    }
+  else
+    ref = LCC_NOT_FOUND;
+  lto_output_sleb128_stream (ob->main_stream, ref);
 
   if (count)
     {
@@ -961,6 +971,7 @@ output_varpool (cgraph_node_set set, varpool_node_set vset)
   for (i = 0; i < len; i++)
     {
       lto_output_varpool_node (ob, lto_varpool_encoder_deref (varpool_encoder, i),
+      			       varpool_encoder,
 			       set, vset);
     }
 
@@ -1081,6 +1092,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   struct bitpack_d *bp;
   bool aliases_p;
   int count;
+  int ref = LCC_NOT_FOUND;
 
   decl_index = lto_input_uleb128 (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
@@ -1098,6 +1110,9 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   if (node->finalized)
     varpool_mark_needed_node (node);
   bitpack_delete (bp);
+  ref = lto_input_sleb128 (ib);
+  /* Store a reference for now, and fix up later to be a pointer.  */
+  node->same_comdat_group = (struct varpool_node *) (intptr_t) ref;
   if (aliases_p)
     {
       count = lto_input_uleb128 (ib);
@@ -1291,6 +1306,8 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
 {
   unsigned HOST_WIDE_INT len;
   VEC(varpool_node_ptr, heap) *varpool = NULL;
+  int i;
+  struct varpool_node *node;
 
   len = lto_input_uleb128 (ib);
   while (len)
@@ -1298,6 +1315,16 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
       VEC_safe_push (varpool_node_ptr, heap, varpool,
 		     input_varpool_node (file_data, ib));
       len--;
+    }
+  for (i = 0; VEC_iterate (varpool_node_ptr, varpool, i, node); i++)
+    {
+      int ref = (int) (intptr_t) node->same_comdat_group;
+
+      /* Fixup same_comdat_group from reference to pointer.  */
+      if (ref != LCC_NOT_FOUND)
+	node->same_comdat_group = VEC_index (varpool_node_ptr, varpool, ref);
+      else
+	node->same_comdat_group = NULL;
     }
   return varpool;
 }
