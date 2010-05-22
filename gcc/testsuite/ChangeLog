@@ -1,3 +1,8 @@
+2010-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44212
+	* gfortran.dg/class_22.f03: New.
+
 2010-05-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR lto/44238

@@ -4319,7 +4319,10 @@ gfc_match_select_type (void)
       expr1 = gfc_get_expr();
       expr1->expr_type = EXPR_VARIABLE;
       if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
-	return MATCH_ERROR;
+	{
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
       if (expr2->ts.type == BT_UNKNOWN)
 	expr1->symtree->n.sym->attr.untyped = 1;
       else
@@ -4331,19 +4334,20 @@ gfc_match_select_type (void)
     {
       m = gfc_match (" %e ", &expr1);
       if (m != MATCH_YES)
-	return m;
+	goto cleanup;
     }
 
   m = gfc_match (" )%t");
   if (m != MATCH_YES)
-    return m;
+    goto cleanup;
 
   /* Check for F03:C811.  */
   if (!expr2 && (expr1->expr_type != EXPR_VARIABLE || expr1->ref != NULL))
     {
       gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
 		 "use associate-name=>");
-      return MATCH_ERROR;
+      m = MATCH_ERROR;
+      goto cleanup;
     }
 
   new_st.op = EXEC_SELECT_TYPE;
@@ -4354,6 +4358,10 @@ gfc_match_select_type (void)
   select_type_push (expr1->symtree->n.sym);
 
   return MATCH_YES;
+  
+cleanup:
+  gfc_current_ns = gfc_current_ns->parent;
+  return m;
 }
 
 

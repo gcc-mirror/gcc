@@ -1,5 +1,14 @@
 2010-05-22  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/44212
+	* match.c (gfc_match_select_type): On error jump back out of the local
+	namespace.
+	* parse.c (parse_derived): Defer creation of vtab symbols to resolution
+	stage, more precisely to ...
+	* resolve.c (resolve_fl_derived): ... this place.
+
+2010-05-22  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/44213
 	* resolve.c (ensure_not_abstract): Allow abstract types with
 	non-abstract ancestors.

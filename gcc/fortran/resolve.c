@@ -10577,6 +10577,22 @@ resolve_fl_derived (gfc_symbol *sym)
   int i;
 
   super_type = gfc_get_derived_super_type (sym);
+  
+  if (sym->attr.is_class && sym->ts.u.derived == NULL)
+    {
+      /* Fix up incomplete CLASS symbols.  */
+      gfc_component *data;
+      gfc_component *vptr;
+      gfc_symbol *vtab;
+      data = gfc_find_component (sym, "$data", true, true);
+      vptr = gfc_find_component (sym, "$vptr", true, true);
+      if (vptr->ts.u.derived == NULL)
+	{
+	  vtab = gfc_find_derived_vtab (data->ts.u.derived, false);
+	  gcc_assert (vtab);
+	  vptr->ts.u.derived = vtab->ts.u.derived;
+	}
+    }
 
   /* F2008, C432. */
   if (super_type && sym->attr.coarray_comp && !super_type->attr.coarray_comp)
