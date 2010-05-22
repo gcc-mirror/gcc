@@ -318,7 +318,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "reload.h"
-#include "errors.h"
+#include "toplev.h"
 #include "integrate.h"
 #include "df.h"
 #include "ggc.h"
