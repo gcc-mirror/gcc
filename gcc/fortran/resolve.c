@@ -10541,7 +10541,10 @@ ensure_not_abstract (gfc_symbol* sub, gfc_symbol* ancestor)
      This is not the most efficient way to do this, but it should be ok and is
      clearer than something sophisticated.  */
 
-  gcc_assert (ancestor && ancestor->attr.abstract && !sub->attr.abstract);
+  gcc_assert (ancestor && !sub->attr.abstract);
+  
+  if (!ancestor->attr.abstract)
+    return SUCCESS;
 
   /* Walk bindings of this ancestor.  */
   if (ancestor->f2k_derived)

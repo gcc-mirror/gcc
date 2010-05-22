@@ -1,3 +1,9 @@
+2010-05-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44213
+	* resolve.c (ensure_not_abstract): Allow abstract types with
+	non-abstract ancestors.
+
 2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* trans-const.c: Include realmpfr.h.
