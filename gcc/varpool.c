@@ -194,6 +194,19 @@ varpool_remove_node (struct varpool_node *node)
       gcc_assert (varpool_nodes_queue == node);
       varpool_nodes_queue = node->next_needed;
     }
+  if (node->same_comdat_group)
+    {
+      struct varpool_node *prev;
+      for (prev = node->same_comdat_group;
+	   prev->same_comdat_group != node;
+	   prev = prev->same_comdat_group)
+	;
+      if (node->same_comdat_group == prev)
+	prev->same_comdat_group = NULL;
+      else
+	prev->same_comdat_group = node->same_comdat_group;
+      node->same_comdat_group = NULL;
+    }
   ipa_remove_all_references (&node->ref_list);
   ipa_remove_all_refering (&node->ref_list);
   ggc_free (node);
@@ -416,8 +429,9 @@ varpool_analyze_pending_decls (void)
   timevar_push (TV_VARPOOL);
   while (varpool_first_unanalyzed_node)
     {
-      tree decl = varpool_first_unanalyzed_node->decl;
-      bool analyzed = varpool_first_unanalyzed_node->analyzed;
+      struct varpool_node *node = varpool_first_unanalyzed_node, *next;
+      tree decl = node->decl;
+      bool analyzed = node->analyzed;
 
       varpool_first_unanalyzed_node->analyzed = true;
 
@@ -435,6 +449,13 @@ varpool_analyze_pending_decls (void)
 	}
       if (DECL_INITIAL (decl))
 	record_references_in_initializer (decl, analyzed);
+      if (node->same_comdat_group)
+	{
+	  for (next = node->same_comdat_group;
+	       next != node;
+	       next = next->same_comdat_group)
+	    varpool_mark_needed_node (next);
+	}
       changed = true;
     }
   timevar_pop (TV_VARPOOL);

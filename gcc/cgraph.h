@@ -457,6 +457,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   /* For normal nodes a pointer to the first extra name alias.  For alias
      nodes a pointer to the normal node.  */
   struct varpool_node *extra_name;
+  /* Circular list of nodes in the same comdat group if non-NULL.  */
+  struct varpool_node *same_comdat_group;
   struct ipa_ref_list ref_list;
   PTR GTY ((skip)) aux;
   /* Ordering of all cgraph nodes.  */

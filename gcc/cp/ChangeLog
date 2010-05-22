@@ -1,3 +1,9 @@
+2010-05-22  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_emit_vtables): Produce same comdat group when outputting
+	comdat vtables.
+	(cxx_callgraph_analyze_expr): Remove code marking vtables needed.
+
 2010-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* cxx-pretty-print.c: Correct merge error.

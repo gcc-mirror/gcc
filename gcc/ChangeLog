@@ -1,3 +1,17 @@
+2010-05-22  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (struct varpool_node): Add same_comdat_group.
+	* lto-cgrpah.c (lto_output_varpool_node): Output same_comdat_group
+	pointer.
+	(output_varpool): Update call of lto_output_varpool_node.
+	(input_varpool): Read same_comdat_group pointer.
+	(input_varpool_1): Fixup same_comdat_group pointer.
+	* ipa.c (cgraph_remove_unreachable_nodes): WHen one of same comdat
+	group is needed, all are.
+	* varpool.c (varpool_remove_node): Remove node from same comdat group
+	linklist too.
+	(varpool_analyze_pending_decls): Walk same comdat groups.
+
 2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* rtl.h (union rtunion_def): Remove rt_bit member.
