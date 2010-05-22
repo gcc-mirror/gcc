@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "alloc-pool.h"
 #include "pretty-print.h"
+#include "bitmap.h"
+
 
 /* Functions and data structures for expanding case statements.  */
 

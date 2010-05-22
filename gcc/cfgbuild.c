@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "toplev.h"
 #include "timevar.h"
+#include "sbitmap.h"
 
 static void make_edges (basic_block, basic_block, int);
 static void make_label_edge (sbitmap, basic_block, rtx, int);

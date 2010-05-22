@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "basic-block.h"
 #include "domwalk.h"
-#include "ggc.h"
+#include "sbitmap.h"
 
 /* This file implements a generic walker for dominator trees.
 

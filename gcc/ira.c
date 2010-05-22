@@ -310,6 +310,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "df.h"
 #include "expr.h"
 #include "recog.h"
 #include "params.h"
@@ -320,7 +321,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "toplev.h"
 #include "integrate.h"
-#include "df.h"
 #include "ggc.h"
 #include "ira-int.h"
 
@@ -1899,7 +1899,7 @@ mark_elimination (int from, int to)
   FOR_EACH_BB (bb)
     {
       /* We don't use LIVE info in IRA.  */
-      regset r = DF_LR_IN (bb);
+      bitmap r = DF_LR_IN (bb);
 
       if (REGNO_REG_SET_P (r, from))
 	{

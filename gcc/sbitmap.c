@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "basic-block.h"
+#include "sbitmap.h"
 
 #if GCC_VERSION >= 3400
 #if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG

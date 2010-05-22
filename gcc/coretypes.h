@@ -46,6 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
+struct simple_bitmap_def;
+typedef struct simple_bitmap_def *sbitmap;
+typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;

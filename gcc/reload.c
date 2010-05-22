@@ -100,6 +100,7 @@ a register with any other reload.  */
 #include "expr.h"
 #include "optabs.h"
 #include "recog.h"
+#include "df.h"
 #include "reload.h"
 #include "regs.h"
 #include "addresses.h"
@@ -110,7 +111,6 @@ a register with any other reload.  */
 #include "toplev.h"
 #include "params.h"
 #include "target.h"
-#include "df.h"
 #include "ira.h"
 
 /* True if X is a constant that can be forced into the constant pool.  */
