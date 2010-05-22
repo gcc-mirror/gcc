@@ -1633,7 +1633,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       lto_obj_file_close (current_lto_file);
       current_lto_file = NULL;
-      ggc_collect ();
+      /* ???  We'd want but can't ggc_collect () here as the type merging
+         code in gimple.c uses hashtables that are not ggc aware.  */
     }
 
   if (resolution_file_name)
