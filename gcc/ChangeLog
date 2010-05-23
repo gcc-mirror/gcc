@@ -1,3 +1,8 @@
+2010-05-23  Naarten Lankhorst  <mlankhorst@codeweavers.com>
+
+	PR target/43869
+	* config/i386/i386.c: Make sure that the correct regparm is passed.
+
 2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sbitmap.h (sbitmap_ptr, const_sbitmap_ptr): Move from here...
