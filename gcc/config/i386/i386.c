@@ -21367,6 +21367,7 @@ def_builtin (int mask, const char *name, enum ix86_builtin_func_type tcode,
     {
       ix86_builtins_isa[(int) code].isa = mask;
 
+      mask &= ~OPTION_MASK_ISA_64BIT;
       if (mask == 0
 	  || (mask & ix86_isa_flags) != 0
 	  || (lang_hooks.builtin_function

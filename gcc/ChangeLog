@@ -1,3 +1,12 @@
+2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44245
+	* config/i386/i386.c (def_builtin): Properly check
+	OPTION_MASK_ISA_64BIT.
+
 2010-05-23  Maarten Lankhorst  <mlankhorst@codeweavers.com>
 
 	Merged from trunk
