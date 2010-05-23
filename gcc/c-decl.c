@@ -1786,18 +1786,48 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
   /* Redeclaration of a type is a constraint violation (6.7.2.3p1),
      but silently ignore the redeclaration if either is in a system
-     header.  (Conflicting redeclarations were handled above.)  */
+     header.  (Conflicting redeclarations were handled above.)  This
+     is allowed for C1X if the types are the same, not just
+     compatible.  */
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
+      bool types_different = false;
+      int comptypes_result;
+
+      comptypes_result
+	= comptypes_check_different_types (oldtype, newtype, &types_different);
+
+      if (comptypes_result != 1 || types_different)
+	{
+	  error ("redefinition of typedef %q+D with different type", newdecl);
+	  locate_old_decl (olddecl);
+	  return false;
+	}
+
       if (DECL_IN_SYSTEM_HEADER (newdecl)
 	  || DECL_IN_SYSTEM_HEADER (olddecl)
 	  || TREE_NO_WARNING (newdecl)
 	  || TREE_NO_WARNING (olddecl))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
-      error ("redefinition of typedef %q+D", newdecl);
-      locate_old_decl (olddecl);
-      return false;
+      if (pedantic && !flag_isoc1x)
+	{
+	  pedwarn (input_location, OPT_pedantic,
+		   "redefinition of typedef %q+D", newdecl);
+	  locate_old_decl (olddecl);
+	}
+      else if (variably_modified_type_p (newtype, NULL))
+	{
+	  /* Whether there is a constraint violation for the types not
+	     being the same cannot be determined at compile time; a
+	     warning that there may be one at runtime is considered
+	     appropriate (WG14 reflector message 11743, 8 May 2009).  */
+	  warning (0, "redefinition of typedef %q+D may be a constraint "
+		   "violation at runtime", newdecl);
+	  locate_old_decl (olddecl);
+	}
+
+      return true;
     }
 
   /* Function declarations can either be 'static' or 'extern' (no
