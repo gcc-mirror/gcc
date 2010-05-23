@@ -1,3 +1,16 @@
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regs.h: Do not include obstack.h, basic-block.h.
+	Include machmode.h.
+	* jump.c: Include basic-block.h.
+	* profile.c: Likewise.
+	* tree-profile.c: Likewise.
+	* coverage.c: Likewise.
+	* basic-block.h (optimize_function_for_size_p): Move to function.h.
+	(optimize_function_for_speed_p): Likewise.
+	* function.h (optimize_function_for_size_p,
+	optimize_function_for_speed_p): Moved here from basic-block.h.
+
 2010-05-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* lto-wrapper.c (run_gcc): Unset MAKEFLAGS and MFLAGS

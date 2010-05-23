@@ -22,9 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_REGS_H
 #define GCC_REGS_H
 
-#include "obstack.h"
+#include "machmode.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
 
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
