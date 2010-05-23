@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "recog.h"
 #include "function.h"
+#include "basic-block.h"
 #include "expr.h"
 #include "except.h"
 #include "diagnostic.h"
