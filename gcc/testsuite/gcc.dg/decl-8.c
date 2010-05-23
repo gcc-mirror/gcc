@@ -1,7 +1,7 @@
 /* Test diagnostics for duplicate typedefs.  Basic diagnostics.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu89 -pedantic-errors" } */
 
 typedef int I; /* { dg-message "note: previous declaration of 'I' was here" } */
 typedef int I; /* { dg-error "redefinition of typedef 'I'" } */

@@ -1,3 +1,9 @@
+2010-05-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-typedef-1.c, gcc.dg/c1x-typedef-2.c,
+	gcc.dg/c90-typedef-1.c, gcc.dg/c99-typedef-1.c: New tests.
+	* gcc.dg/decl-8.c: Use -std=gnu89 -pedantic-errors.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.c-target/pr43869.c: Move "dg-do run" before lp64.

@@ -506,6 +506,7 @@ extern tree c_objc_common_truthvalue_conversion (location_t, tree);
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
+extern int comptypes_check_different_types (tree, tree, bool *);
 extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree);
 extern void c_incomplete_type_error (const_tree, const_tree);

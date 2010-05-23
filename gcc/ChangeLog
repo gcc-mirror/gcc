@@ -1,3 +1,17 @@
+2010-05-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (diagnose_mismatched_decls): Give error for duplicate
+	typedefs with different but compatible types.  Allow duplicate
+	typedefs with the same type except for pedantic non-C1X, but give
+	warning for variably modified types.
+	* c-typeck.c (tagged_types_tu_compatible_p,
+	function_types_compatible_p, type_lists_compatible_p,
+	comptypes_internal): Add parameter different_types_p; set
+	*different_types_p for different but compatible types.  All
+	callers changed.
+	(comptypes_check_different_types): New.
+	* c-tree.h (comptypes_check_different_types): Declare.
+
 2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* regs.h: Do not include obstack.h, basic-block.h.
