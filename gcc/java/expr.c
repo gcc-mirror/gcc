@@ -27,11 +27,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "flags.h"
-#include "expr.h"
 #include "java-tree.h"
 #include "javaop.h"
 #include "java-opcodes.h"
@@ -39,11 +36,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "parse.h"
 #include "toplev.h"
-#include "except.h"
-#include "tm_p.h"
 #include "ggc.h"
 #include "tree-iterator.h"
-#include "gimple.h"
 #include "target.h"
 
 static void flush_quick_stack (void);

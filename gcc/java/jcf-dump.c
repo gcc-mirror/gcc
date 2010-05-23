@@ -51,8 +51,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "ggc.h"
 #include "intl.h"
 
 #include "jcf.h"
