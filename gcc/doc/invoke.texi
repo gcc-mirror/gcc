@@ -7459,7 +7459,8 @@ that otherwise would not fit in memory.  This option enables
 
 If you specify the optional @var{n} the link stage is executed in
 parallel using @var{n} parallel jobs by utilizing an installed
-@code{make} program.
+@command{make} program.  The environment variable @env{MAKE} may be
+used to override the program used.
 
 Disabled by default.
 

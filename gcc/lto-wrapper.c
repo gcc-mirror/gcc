@@ -521,7 +521,12 @@ cont:
 	    fprintf (mstream, " \\\n\t%s", output_names[i]);
 	  fprintf (mstream, "\n");
 	  fclose (mstream);
-	  new_argv[0] = "make";
+	  /* Avoid passing --jobserver-fd= and similar flags.  */
+	  putenv (xstrdup ("MAKEFLAGS="));
+	  putenv (xstrdup ("MFLAGS="));
+	  new_argv[0] = getenv ("MAKE");
+	  if (!new_argv[0])
+	    new_argv[0] = "make";
 	  new_argv[1] = "-f";
 	  new_argv[2] = makefile;
 	  snprintf (jobs, 31, "-j%d", parallel);
