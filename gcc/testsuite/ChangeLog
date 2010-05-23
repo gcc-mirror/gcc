@@ -1,3 +1,9 @@
+2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44245
+	* gcc.target/i386/crc32-3.c: New.
+	* gcc.target/i386/crc32-4.c: Likewise.
+
 2010-05-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c1x-typedef-1.c, gcc.dg/c1x-typedef-2.c,
