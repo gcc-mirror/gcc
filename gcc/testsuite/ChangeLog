@@ -1,3 +1,8 @@
+2010-05-23  Naarten Lankhorst  <mlankhorst@codeweavers.com>
+
+	PR target/43869
+	* gcc.c-target/pr43869.c: New test.
+
 2010-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44212
