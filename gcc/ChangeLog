@@ -1,4 +1,4 @@
-2010-05-23  Naarten Lankhorst  <mlankhorst@codeweavers.com>
+2010-05-23  Maarten Lankhorst  <mlankhorst@codeweavers.com>
 
 	PR target/43869
 	* config/i386/i386.c: Make sure that the correct regparm is passed.
