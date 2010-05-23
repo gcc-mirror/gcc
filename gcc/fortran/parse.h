@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_PARSE_H
 #define GFC_PARSE_H
 
-#include "gfortran.h"
-
 /* Enum for what the compiler is currently doing.  */
 typedef enum
 {

@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 #include "parse.h"
-#include "toplev.h"
 #include "constructor.h"
 
 /* Matches a kind-parameter expression, which is either a named

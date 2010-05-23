@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "target.h"
 #include "cpp.h"
-#include "toplev.h"
+#include "toplev.h"	/* For sorry.  */
 #include "tm.h"
 
 gfc_option_t gfc_option;

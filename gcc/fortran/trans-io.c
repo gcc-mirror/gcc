@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "ggc.h"
-#include "toplev.h"
+#include "toplev.h"	/* For internal_error.  */
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-stmt.h"

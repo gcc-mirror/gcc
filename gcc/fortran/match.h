@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_MATCH_H
 #define GFC_MATCH_H
 
-#include "gfortran.h"
-
 /* gfc_new_block points to the symbol of a newly matched block.  */
 extern gfc_symbol *gfc_new_block;
 
