@@ -1,3 +1,9 @@
+2010-05-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lto-wrapper.c (run_gcc): Unset MAKEFLAGS and MFLAGS
+	before calling make; allow override through $MAKE.
+	* doc/invoke.texi (Optimize Options): Document override.
+
 2010-05-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/rs6000/rs6000.c (rs6000_mode_dependent_address_p): New.
