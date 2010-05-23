@@ -44,9 +44,6 @@ struct simple_bitmap_def
   SBITMAP_ELT_TYPE elms[1];	/* The elements.  */
 };
 
-typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
-typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
-
 /* Return the set size needed for N elements.  */
 #define SBITMAP_SET_SIZE(N) (((N) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
 #define SBITMAP_SIZE_BYTES(BITMAP) ((BITMAP)->size * sizeof (SBITMAP_ELT_TYPE))

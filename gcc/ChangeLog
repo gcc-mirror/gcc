@@ -1,3 +1,12 @@
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sbitmap.h (sbitmap_ptr, const_sbitmap_ptr): Move from here...
+	* sbitmap.c: ...to here to internalize sbitmap element access.
+	Do not include tm.h, rtl.h, flags.h, hard-reg-set.h, and obstack.h.
+	Explain why basic-block.h is included.
+	* function.h: Include tm.h for CUMULATIVE_ARGS.
+	* Makefile.in: Update dependencies.
+
 2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* coretypes.h (struct simple_bitmap_def, sbitmap, const_sbitmap):
