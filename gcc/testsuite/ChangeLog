@@ -1,3 +1,7 @@
+2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c-target/pr43869.c: Move "dg-do run" before lp64.
+
 2010-05-23  Naarten Lankhorst  <mlankhorst@codeweavers.com>
 
 	PR target/43869
