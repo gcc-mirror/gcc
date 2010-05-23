@@ -1,3 +1,12 @@
+2010-05-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/rs6000/rs6000.c (rs6000_mode_dependent_address_p): New.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	(rs6000_mode_dependent_address_ptr): Make static.
+	* config/rs6000/rs6000.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
+	* config/rs6000/rs6000-protos.h (rs6000_mode_dependent_address_ptr):
+	Remove.
+
 2010-05-23  Maarten Lankhorst  <mlankhorst@codeweavers.com>
 
 	PR target/43869

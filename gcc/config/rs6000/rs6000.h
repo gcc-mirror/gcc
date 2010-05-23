@@ -1892,15 +1892,6 @@ do {									     \
     goto WIN;								     \
 } while (0)
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)		\
-do {								\
-  if (rs6000_mode_dependent_address_ptr (ADDR))			\
-    goto LABEL;							\
-} while (0)
-
 #define FIND_BASE_TERM rs6000_find_base_term
 
 /* The register number of the register used to address a table of
