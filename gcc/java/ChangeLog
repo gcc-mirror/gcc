@@ -1,5 +1,29 @@
 2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* java-gimplify.c: Do not include tm.h, toplev.h.
+	* typeck.c: Do not include tm.h.
+	* mangle_name.c: Do not include tm.h.
+	* jcf-dump.c: Do not include tm.h, ggc.h.
+	* class.c: Do not include rtl.h, tm_p.h, target.h, except.h, cgraph.h.
+	* decl.c: Do not include tm.h, rtl.h, function.h, expr.h, except.h,
+	and timevar.h.
+	* jcf-parse.c: Do not include tm.h and tm_p.h.
+	* resource.c: Do not include tm.h, rtl.h, flags.h, obstack.h,
+	target.h, and expr.h.
+	* except.c: Do not include tm.h, rtl.h, function.h.
+	* builtins.c: Do not include convert.h.  Explain why RTL headers
+	have to be included here.
+	* verify-glue.c: Do not include tm.h.
+	* jcf-depend.c: Do not include tm.h.
+	* jcf-reader.c: Include ggc.h.
+	* jcf-io.c: Do not include tm.h, toplev.h.
+	* expr.c: Do not include tm.h, rtl.h, expr.h, except.h, tm_p.h,
+	gimple.h.
+	* lang.c: Do not include rtl.h, expr.h.
+	* Make-lang.in: Update dependencies.
+
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* jcf-parse.c: Include bitmap.h.
 	* Make-lang.in: Update dependencies.
 

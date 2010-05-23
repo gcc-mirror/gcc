@@ -27,9 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
@@ -38,15 +36,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "output.h"
 #include "parse.h"
 #include "function.h"
-#include "tm_p.h"
 #include "ggc.h"
 #include "stdio.h"
-#include "target.h"
-#include "except.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "cgraph.h"
 #include "vecprim.h"
+#include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
 
 /* DOS brain-damage */
 #ifndef O_BINARY
