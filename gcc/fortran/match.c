@@ -2013,7 +2013,7 @@ gfc_match_stopcode (gfc_statement st)
 
   if (gfc_match_eos () != MATCH_YES)
     {
-      m = gfc_match_expr (&e);
+      m = gfc_match_init_expr (&e);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
@@ -2033,7 +2033,7 @@ gfc_match_stopcode (gfc_statement st)
   if (st == ST_STOP && gfc_find_state (COMP_CRITICAL) == SUCCESS)
     {
       gfc_error ("Image control statement STOP at %C in CRITICAL block");
-      return MATCH_ERROR;
+      goto cleanup;
     }
 
   if (e != NULL)
@@ -2042,7 +2042,14 @@ gfc_match_stopcode (gfc_statement st)
 	{
 	  gfc_error ("STOP code at %L must be either INTEGER or CHARACTER type",
 		     &e->where);
-	  return MATCH_ERROR;
+	  goto cleanup;
+	}
+
+      if (e->rank != 0)
+	{
+	  gfc_error ("STOP code at %L must be scalar",
+		     &e->where);
+	  goto cleanup;
 	}
 
       if (e->ts.type == BT_CHARACTER
@@ -2050,14 +2057,15 @@ gfc_match_stopcode (gfc_statement st)
 	{
 	  gfc_error ("STOP code at %L must be default character KIND=%d",
 		     &e->where, (int) gfc_default_character_kind);
-	  return MATCH_ERROR;
+	  goto cleanup;
 	}
 
-      if (e->expr_type != EXPR_CONSTANT)
+      if (e->ts.type == BT_INTEGER
+	  && e->ts.kind != gfc_default_integer_kind)
 	{
-	  gfc_error ("STOP code at %L must be a constant expression",
-		     &e->where);
-	  return MATCH_ERROR;
+	  gfc_error ("STOP code at %L must be default integer KIND=%d",
+		     &e->where, (int) gfc_default_integer_kind);
+	  goto cleanup;
 	}
     }
 

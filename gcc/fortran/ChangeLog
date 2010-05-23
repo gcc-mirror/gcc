@@ -1,3 +1,10 @@
+2010-05-22 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* match.c (gfc_match_stopcode): Use gfc_match_init_expr. Go to cleanup
+	before returning MATCH_ERROR. Add check for scalar. Add check for
+	default integer kind.
+
 2010-05-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44212
