@@ -10,6 +10,7 @@
 	(optimize_function_for_speed_p): Likewise.
 	* function.h (optimize_function_for_size_p,
 	optimize_function_for_speed_p): Moved here from basic-block.h.
+	* Makefile.in: Update dependencies.
 
 2010-05-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
