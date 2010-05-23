@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hashtab.h"
 #include "vecprim.h"
+#include "tm.h"		/* For CUMULATIVE_ARGS.  */
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
