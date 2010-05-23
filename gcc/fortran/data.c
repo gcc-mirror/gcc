@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    trans-array.c.  */
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "data.h"
 #include "constructor.h"

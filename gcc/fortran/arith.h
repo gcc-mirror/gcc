@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_ARITH_H
 #define GFC_ARITH_H
 
-#include "gfortran.h"
-
 /* MPFR also does not have the conversion of a mpfr_t to a mpz_t, so declare
    a function for this as well.  */
 

@@ -21,10 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_CONSTRUCTOR_H
 #define GFC_CONSTRUCTOR_H
 
-#include "gfortran.h"
-#include "splay-tree.h"
-
-
 /* Get a new constructor structure.  */
 gfc_constructor *gfc_constructor_get (void);
 

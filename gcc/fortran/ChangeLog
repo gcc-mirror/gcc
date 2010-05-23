@@ -1,3 +1,33 @@
+2010-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h: Do not include system.h.
+	* bbt.c: Include system.h.
+	* data.c: Ditto.
+	* dependency.c: Ditto.
+	* dump-parse-tree.c: Ditto.
+	* arith.h: Do not include gfortran.h.
+	* constructor.h: Do not include gfortran.h and splay-tree.h.
+	* match.h: Do not include gfortran.h.
+	* parse.h: Ditto.
+	* target-memory.h: Ditto.
+	* openmp.c: Do not include toplev.h and target.h.
+	* trans-stmt.c: Ditto not include toplev.h.
+	* primary.c: Ditto.
+	* trans-common.c: Tell why toplev.h is needed. And
+	do not include target.h.
+	* trans-expr.c: Tell why toplev.h is needed.
+	* trans-array.c: Ditto.
+	* trans-openmp.c: Ditto.
+	* trans-const.c: Ditto.
+	* trans.c: Ditto.
+	* trans-types.c: Ditto.
+	* trans-io.c: Ditto.
+	* trans-decl.c: Ditto.
+	* scanner.c: Ditto.
+	* convert.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* options.c: Ditto.
+
 2010-05-22 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851

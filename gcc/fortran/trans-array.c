@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "toplev.h"
+#include "toplev.h"	/* For internal_error/fatal_error.  */
 #include "flags.h"
 #include "gfortran.h"
 #include "constructor.h"

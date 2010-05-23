@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    if dependencies.  Ideally these would probably be merged.  */
    
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "dependency.h"
 #include "constructor.h"

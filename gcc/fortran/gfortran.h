@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "libgfortran.h"
 
 
-#include "system.h"
 #include "intl.h"
 #include "coretypes.h"
 #include "input.h"

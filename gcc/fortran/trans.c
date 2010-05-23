@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "tree-iterator.h"
-#include "toplev.h"
+#include "toplev.h"	/* For internal_error.  */
 #include "defaults.h"
 #include "flags.h"
 #include "gfortran.h"

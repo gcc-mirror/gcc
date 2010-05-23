@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    TODO: Dump DATA.  */
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "constructor.h"
 

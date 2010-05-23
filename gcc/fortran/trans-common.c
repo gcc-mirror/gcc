@@ -96,9 +96,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "target.h"
 #include "tree.h"
-#include "toplev.h"
+#include "toplev.h"	/* For exact_log2.  */
 #include "tm.h"		/* For rtl.h.  */
 #include "rtl.h"	/* For decl_default_tls_model.  */
 #include "gfortran.h"
