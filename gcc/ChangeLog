@@ -1,3 +1,9 @@
+2010-05-23  Naarten Lankhorst  <mlankhorst@codeweavers.com>
+
+	Merged from trunk
+	PR target/43869
+	* config/i386/i386.c: Make sure that the correct regparm is passed.
+
 2010-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44223
