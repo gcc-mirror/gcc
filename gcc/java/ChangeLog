@@ -1,6 +1,7 @@
-2010-05-21  Steven Bosscher  <steven@gcc.gnu.org>
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* typeck.c, decl.c, jcf-parse.c, except.c, expr.c:
+	* jcf-parse.c: Include bitmap.h.
+	* Make-lang.in: Update dependencies.
 
 2010-05-20  Jakub Jelinek  <jakub@redhat.com>
 

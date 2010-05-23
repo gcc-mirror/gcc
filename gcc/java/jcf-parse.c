@@ -43,6 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tm_p.h"
 #include "cgraph.h"
 #include "vecprim.h"
+#include "bitmap.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
