@@ -6321,7 +6321,8 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
       && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0))
       && !TYPE_HAS_LIST_CTOR (basetype))
     {
-      gcc_assert (VEC_length (tree, *args) == 1);
+      gcc_assert (VEC_length (tree, *args) == 1
+		  && !(flags & LOOKUP_ONLYCONVERTING));
       *args = ctor_to_vec (VEC_index (tree, *args, 0));
     }
 

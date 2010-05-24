@@ -1,3 +1,9 @@
+2010-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41510
+	* g++.dg/cpp0x/initlist35.C: New.
+	* g++.dg/init/brace6.C: Adjust.
+
 2010-05-24  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44196
