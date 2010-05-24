@@ -1397,13 +1397,11 @@ insn_contains_asm (rtx insn)
   return for_each_rtx (&insn, insn_contains_asm_1, NULL);
 }
 
-/* Set up regs_asm_clobbered.  */
+/* Add register clobbers from asm statements.  */
 static void
-compute_regs_asm_clobbered (char *regs_asm_clobbered)
+compute_regs_asm_clobbered (void)
 {
   basic_block bb;
-
-  memset (regs_asm_clobbered, 0, sizeof (char) * FIRST_PSEUDO_REGISTER);
 
   FOR_EACH_BB (bb)
     {
@@ -1425,7 +1423,7 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 		      + hard_regno_nregs[dregno][mode] - 1;
 
 		    for (i = dregno; i <= end; ++i)
-		      regs_asm_clobbered[i] = 1;
+		      SET_HARD_REG_BIT(crtl->asm_clobbers, i);
 		  }
 	      }
 	}
@@ -1437,12 +1435,6 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 void
 ira_setup_eliminable_regset (void)
 {
-  /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
-     asm.  Unlike regs_ever_live, elements of this array corresponding
-     to eliminable regs (like the frame pointer) are set if an asm
-     sets them.  */
-  char *regs_asm_clobbered
-    = (char *) alloca (FIRST_PSEUDO_REGISTER * sizeof (char));
 #ifdef ELIMINABLE_REGS
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
@@ -1466,7 +1458,8 @@ ira_setup_eliminable_regset (void)
   COPY_HARD_REG_SET (ira_no_alloc_regs, no_unit_alloc_regs);
   CLEAR_HARD_REG_SET (eliminable_regset);
 
-  compute_regs_asm_clobbered (regs_asm_clobbered);
+  compute_regs_asm_clobbered ();
+
   /* Build the regset of all eliminable registers and show we can't
      use those that we already know won't be eliminated.  */
 #ifdef ELIMINABLE_REGS
@@ -1476,7 +1469,7 @@ ira_setup_eliminable_regset (void)
 	= (! targetm.can_eliminate (eliminables[i].from, eliminables[i].to)
 	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
 
-      if (! regs_asm_clobbered[eliminables[i].from])
+      if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, eliminables[i].from))
 	{
 	    SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
 
@@ -1490,7 +1483,7 @@ ira_setup_eliminable_regset (void)
 	df_set_regs_ever_live (eliminables[i].from, true);
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  if (! regs_asm_clobbered[HARD_FRAME_POINTER_REGNUM])
+  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
     {
       SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
       if (need_fp)
@@ -1504,7 +1497,7 @@ ira_setup_eliminable_regset (void)
 #endif
 
 #else
-  if (! regs_asm_clobbered[FRAME_POINTER_REGNUM])
+  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
     {
       SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
       if (need_fp)
