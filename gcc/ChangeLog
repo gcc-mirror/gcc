@@ -1,3 +1,8 @@
+2010-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* function.c (assign_stack_local_1): Initialize variable
+	to avoid warning when bootstrapping at -O3.
+
 2010-05-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* configure.ac (all_lang_makefiles): Remove everything related to it.

@@ -367,7 +367,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 {
   rtx x, addr;
   int bigend_correction = 0;
-  HOST_WIDE_INT slot_offset, old_frame_offset;
+  HOST_WIDE_INT slot_offset = 0, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
 
   if (align == 0)
