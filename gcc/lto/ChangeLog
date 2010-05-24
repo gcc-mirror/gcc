@@ -1,3 +1,8 @@
+2010-05-24  Richard Guenther  <rguenther@suse.de>
+
+	* lto-elf.c (lto_obj_build_section_table): Work around
+	FreeBSD libelf issue.
+
 2010-05-22  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (read_cgraph_and_symbols): Do not collect.
