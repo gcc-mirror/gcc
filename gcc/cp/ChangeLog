@@ -1,3 +1,17 @@
+2010-05-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* rtti.c (tinfo_base_init): Use build_constructor instead of
+	build_constructor_from_list.  Don't cons a tree node for
+	returning.
+	(generic_initializer): Use build_constructor_single instead of
+	build_constructor_from_list.
+	(ptr_initializer): Use build_constructor instead of
+	build_constructor_from_list
+	(ptm_initializer): Likewise.
+	(class_initializer): Likewise.  Take varargs instead of TRAIL.
+	(get_pseudo_ti_init): Adjust calls to class_initializer.  Use
+	build_constructor instead of build_constructor_from_list.
+
 2010-05-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* semantics.c: Include bitmap.h.
