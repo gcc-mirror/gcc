@@ -120,11 +120,11 @@ bootstrap, this does not perform a comparison to test that the compiler
 is running properly.  Note that the disk space required by a ``lean''
 bootstrap is approximately independent of the number of stages.
 
-@item stage@var{N}-bubble (@var{N} = 1@dots{}4)
+@item stage@var{N}-bubble (@var{N} = 1@dots{}4, profile, feedback)
 Rebuild all the stages up to @var{N}, with the appropriate flags,
 ``bubbling'' the changes as described above.
 
-@item all-stage@var{N} (@var{N} = 1@dots{}4)
+@item all-stage@var{N} (@var{N} = 1@dots{}4, profile, feedback)
 Assuming that stage @var{N} has already been built, rebuild it with the
 appropriate flags.  This is rarely needed.
 
@@ -137,15 +137,16 @@ is running properly, since it should produce the same object files
 regardless of how it itself was compiled.
 
 @item profiledbootstrap
-Builds a compiler with profiling feedback information.  For more
-information, see
+Builds a compiler with profiling feedback information.  In this case,
+the second and third stages are named @samp{profile} and @samp{feedback},
+respectively.  For more information, see
 @ref{Building,,Building with profile feedback,gccinstall,Installing GCC}.
 
 @item restrap
 Restart a bootstrap, so that everything that was not built with
 the system compiler is rebuilt.
 
-@item stage@var{N}-start (@var{N} = 1@dots{}4)
+@item stage@var{N}-start (@var{N} = 1@dots{}4, profile, feedback)
 For each package that is bootstrapped, rename directories so that,
 for example, @file{gcc} points to the stage@var{N} GCC, compiled
 with the stage@var{N-1} GCC@footnote{Customarily, the system compiler
