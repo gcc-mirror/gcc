@@ -1,3 +1,8 @@
+2010-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44256
+	* gcc.dg/lto/20100426_0.c: New testcase.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

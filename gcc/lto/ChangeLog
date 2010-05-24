@@ -1,5 +1,10 @@
 2010-05-24  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44256
+	* lto.c (lto_fixup_type): Deal with non-type TYPE_CONTEXT.
+
+2010-05-24  Richard Guenther  <rguenther@suse.de>
+
 	* lto-elf.c (lto_obj_build_section_table): Work around
 	FreeBSD libelf issue.
 

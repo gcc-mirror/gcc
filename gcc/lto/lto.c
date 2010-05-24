@@ -1435,7 +1435,13 @@ lto_fixup_type (tree t, void *data)
   /* Accessor is for derived node types only. */
   LTO_FIXUP_SUBTREE (t->type.binfo);
 
-  LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE (TYPE_CONTEXT (t));
+  if (TYPE_CONTEXT (t))
+    {
+      if (TYPE_P (TYPE_CONTEXT (t)))
+	LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE (TYPE_CONTEXT (t));
+      else
+	LTO_FIXUP_SUBTREE (TYPE_CONTEXT (t));
+    }
   LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE (TYPE_CANONICAL (t));
 
   /* The following re-creates proper variant lists while fixing up
