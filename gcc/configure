@@ -662,7 +662,6 @@ build_install_headers_dir
 build_exeext
 all_selected_languages
 all_languages
-all_lang_makefiles
 all_lang_makefrags
 all_gtfiles
 all_compilers
@@ -17108,7 +17107,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17111 "configure"
+#line 17110 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17214,7 +17213,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17217 "configure"
+#line 17216 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25127,8 +25126,6 @@ all_compilers=
 all_outputs='Makefile gccbug'
 # List of language makefile fragments.
 all_lang_makefrags=
-# List of language subdirectory makefiles.  Deprecated.
-all_lang_makefiles=
 # Additional files for gengtype
 all_gtfiles="$target_gtfiles"
 
@@ -25219,9 +25216,6 @@ do
 	fi
 	if test -f $srcdir/$gcc_subdir/$subdir-tree.def; then
 	    lang_tree_files="$lang_tree_files $srcdir/$gcc_subdir/$subdir-tree.def"
-	fi
-	if test -f ${srcdir}/$gcc_subdir/Makefile.in
-		then all_lang_makefiles="$gcc_subdir/Makefile"
 	fi
 	all_languages="$all_languages $language"
 	all_compilers="$all_compilers $compilers"
@@ -25330,7 +25324,6 @@ fi
 
 
 # Substitute configuration variables
-
 
 
 
