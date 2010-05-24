@@ -1,3 +1,9 @@
+2010-05-24  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.target/arm/frame-pointer-1.c: New test.
+	* gcc.target/i386/pr9771-1.c: Move code out of main to allow frame
+	pointer elimination.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44245
