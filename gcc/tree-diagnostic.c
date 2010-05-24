@@ -44,5 +44,6 @@ default_tree_diagnostic_starter (diagnostic_context *context,
 				 diagnostic_info *diagnostic)
 {
   diagnostic_report_current_function (context, diagnostic);
-  pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
+  pp_set_prefix (context->printer, diagnostic_build_prefix (context,
+							    diagnostic));
 }

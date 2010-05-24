@@ -87,6 +87,18 @@ struct diagnostic_context
   /* True if we should raise a SIGABRT on errors.  */
   bool abort_on_error;
 
+  /* True if we should show the column number on diagnostics.  */
+  bool show_column;
+
+  /* True if pedwarns are errors.  */
+  bool pedantic_errors;
+
+  /* True if permerrors are warnings.  */
+  bool permissive;
+
+  /* True if errors are fatal.  */
+  bool fatal_errors;
+
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
      might say:
@@ -211,7 +223,7 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 extern bool emit_diagnostic (diagnostic_t, location_t, int,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 #endif
-extern char *diagnostic_build_prefix (diagnostic_info *);
+extern char *diagnostic_build_prefix (diagnostic_context *, diagnostic_info *);
 void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 

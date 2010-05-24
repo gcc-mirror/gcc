@@ -1,3 +1,32 @@
+2010-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic.c: Don't include flags.h.
+	(pedantic_warning_kind, permissive_error_kind): Take diagnostic
+	context parameters.  Check flags in the context passed as a
+	parameter.
+	(diagnostic_build_prefix): Add context parameter.  Check
+	show_column flag in context.
+	(diagnostic_action_after_output): Check fatal_errors flag in
+	context.
+	(diagnostic_report_current_module): Check show_column flag in
+	context.
+	(default_diagnostic_starter): Update call to
+	diagnostic_build_prefix.
+	(diagnostic_report_diagnostic): Pass context to
+	pedantic_warning_kind.
+	(emit_diagnostic): Pass context to permissive_error_kind.
+	(permerror): Pass context to permissive_error_kind.
+	* diagnostic.h (struct diagnostic_context): Add show_column,
+	pedantic_errors, permissive and fatal_errors fields.
+	(diagnostic_build_prefix): Update prototype.
+	* langhooks.c
+	* toplev.c (process_options): Set flags in global_dc from
+	flag_show_column, flag_pedantic_errors, flag_permissive,
+	flag_fatal_errors.
+	* tree-diagnostic.c (default_tree_diagnostic_starter): Update call
+	to diagnostic_build_prefix.
+	* Makefile.in (diagnostic.o): Update dependencies.
+
 2010-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/ia32intrin.h (__crc32q): Define only if

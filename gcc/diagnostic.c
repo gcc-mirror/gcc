@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
-#include "flags.h"
 #include "input.h"
 #include "toplev.h"
 #include "intl.h"
@@ -35,8 +34,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "plugin.h"
 
-#define pedantic_warning_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
-#define permissive_error_kind() (flag_permissive ? DK_WARNING : DK_ERROR)
+#define pedantic_warning_kind(DC)			\
+  ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
+#define permissive_error_kind(DC) ((DC)->permissive ? DK_WARNING : DK_ERROR)
 
 /* Prototypes.  */
 static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
@@ -156,7 +156,8 @@ diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 char *
-diagnostic_build_prefix (diagnostic_info *diagnostic)
+diagnostic_build_prefix (diagnostic_context *context,
+			 diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T) (T),
@@ -173,7 +174,7 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
   return
     (s.file == NULL
      ? build_message_string ("%s: %s", progname, text)
-     : flag_show_column
+     : context->show_column
      ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
      : build_message_string ("%s:%d: %s", s.file, s.line, text));
 }
@@ -196,7 +197,7 @@ diagnostic_action_after_output (diagnostic_context *context,
     case DK_SORRY:
       if (context->abort_on_error)
 	real_abort ();
-      if (flag_fatal_errors)
+      if (context->fatal_errors)
 	{
 	  fnotice (stderr, "compilation terminated due to -Wfatal-errors.\n");
 	  diagnostic_finish (context);
@@ -246,7 +247,7 @@ diagnostic_report_current_module (diagnostic_context *context)
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
-	  if (flag_show_column)
+	  if (context->show_column)
 	    pp_verbatim (context->printer,
 			 "In file included from %s:%d:%d",
 			 map->to_file,
@@ -273,7 +274,8 @@ default_diagnostic_starter (diagnostic_context *context,
 			    diagnostic_info *diagnostic)
 {
   diagnostic_report_current_module (context);
-  pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
+  pp_set_prefix (context->printer, diagnostic_build_prefix (context,
+							    diagnostic));
 }
 
 void
@@ -326,7 +328,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   if (diagnostic->kind == DK_PEDWARN)
     {
-      diagnostic->kind = pedantic_warning_kind ();
+      diagnostic->kind = pedantic_warning_kind (context);
       /* We do this to avoid giving the message for -pedantic-errors.  */
       orig_diag_kind = diagnostic->kind;
     }
@@ -524,7 +526,7 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   if (kind == DK_PERMERROR)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
-			   permissive_error_kind ());
+			   permissive_error_kind (global_dc));
       diagnostic.option_index = OPT_fpermissive;
     }
   else {
@@ -643,7 +645,7 @@ permerror (location_t location, const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
-                       permissive_error_kind ());
+                       permissive_error_kind (global_dc));
   diagnostic.option_index = OPT_fpermissive;
   va_end (ap);
   return report_diagnostic (&diagnostic);

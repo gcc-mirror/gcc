@@ -1,3 +1,11 @@
+2010-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* error.c (cp_diagnostic_starter): Update call to
+	diagnostic_build_prefix.
+	(cp_print_error_function,
+	print_instantiation_partial_context_line): Check show_column flag
+	in context.
+
 2010-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41510
