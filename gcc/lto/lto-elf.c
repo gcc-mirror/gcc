@@ -189,6 +189,13 @@ lto_elf_build_section_table (lto_file *lto_file)
   section_hash_table = htab_create (37, hash_name, eq_name, free);
 
   base_offset = elf_getbase (elf_file->elf);
+  /* We are reasonably sure that elf_getbase does not fail at this
+     point.  So assume that we run into the incompatibility with
+     the FreeBSD libelf implementation that has a non-working
+     elf_getbase for non-archive members in which case the offset
+     should be zero.  */
+  if (base_offset == (size_t)-1)
+    base_offset = 0;
   for (section = elf_getscn (elf_file->elf, 0);
        section;
        section = elf_nextscn (elf_file->elf, section)) 
