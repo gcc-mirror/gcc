@@ -1,3 +1,8 @@
+2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/44100
+	* typeck.c (cp_build_unary_op): Fold offsetof-like computations.
+
 2010-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* error.c (cp_diagnostic_starter): Update call to
