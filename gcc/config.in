@@ -272,7 +272,7 @@
 #endif
 
 
-/* Define if your assembler supports the sahf mnemonic. */
+/* Define if your assembler supports the sahf mnemonic in 64bit mode. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_SAHF
 #endif

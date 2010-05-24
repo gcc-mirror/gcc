@@ -21369,7 +21369,8 @@ if test "${gcc_cv_as_ix86_sahf+set}" = set; then
 else
   gcc_cv_as_ix86_sahf=no
   if test x$gcc_cv_as != x; then
-    echo 'sahf' > conftest.s
+    echo '.code64
+       sahf' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
