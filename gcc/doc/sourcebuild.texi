@@ -1500,8 +1500,14 @@ ARM target supports generating NEON instructions.
 Test system supports executing NEON instructions.
 
 @item arm_neon_ok
-ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp}.
-Some multilibs may be incompatible with these options.
+@anchor{arm_neon_ok}
+ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
+options.  Some multilibs may be incompatible with these options.
+
+@item arm_neon_fp16_ok
+@anchor{arm_neon_fp16_ok}
+ARM Target supports @code{-mfpu=neon-fp16 -mfloat-abi=softfp} or compatible
+options.  Some multilibs may be incompatible with these options.
 
 @item arm_thumb1_ok
 ARM target generates Thumb-1 code for @code{-mthumb}.
@@ -1875,6 +1881,16 @@ compliance mode.
 @item mips16_attribute
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
+
+@item arm_neon
+NEON support.  Only ARM targets support this feature, and only then
+in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
+keyword}.
+
+@item arm_neon_fp16
+NEON and half-precision floating point support.  Only ARM targets
+support this feature, and only then in certain modes; see
+the @ref{arm_neon_ok,,arm_neon_fp16_ok effective target keyword}.
 @end table
 
 @node Require Support

@@ -1,7 +1,8 @@
 /* Test various operators on __fp16 and mixed __fp16/float operands.  */
 /* { dg-do compile { target arm*-*-* } } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-mfp16-format=ieee -ffast-math -mfpu=neon -mfloat-abi=softfp" } */
+/* { dg-options "-mfp16-format=ieee -ffast-math" } */
+/* { dg-add-options arm_neon } */
 
 #include "arm-fp16-ops.h"
 

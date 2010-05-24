@@ -1,3 +1,11 @@
+2010-05-24  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/neon-testgen.ml: Use dg-add-options arm_neon.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Update arm_neon_ok
+	description.  Add arm_neon_fp16_ok.
+	(Add Options): Add arm_neon and arm_neon_fp16.
+
 2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* configure.ac (--enable-lto): All *-apple-darwin* now support LTO.

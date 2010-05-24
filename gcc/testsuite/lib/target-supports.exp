@@ -1603,19 +1603,87 @@ proc check_effective_target_arm_hard_vfp_ok { } {
     }
 }
 
+# Add the options needed for NEON.  We need either -mfloat-abi=softfp
+# or -mfloat-abi=hard, but if one is already specified by the
+# multilib, use it.  Similarly, if a -mfpu option already enables
+# NEON, do not add -mfpu=neon.
+
+proc add_options_for_arm_neon { flags } {
+    if { ! [check_effective_target_arm_neon_ok] } {
+	return "$flags"
+    }
+    global et_arm_neon_flags
+    return "$flags $et_arm_neon_flags"
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon
-# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
-# options.
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_neon_flags to the
+# best options to add.
+
+proc check_effective_target_arm_neon_ok_nocache { } {
+    global et_arm_neon_flags
+    set et_arm_neon_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
+		#include "arm_neon.h"
+		int dummy;
+	    } "$flags"] } {
+		set et_arm_neon_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
 
 proc check_effective_target_arm_neon_ok { } {
-    if { [check_effective_target_arm32] } {
-        return [check_no_compiler_messages arm_neon_ok object {
-	    #include "arm_neon.h"
-            int dummy;
-        } "-mfpu=neon -mfloat-abi=softfp"]
-    } else {
-        return 0
+    return [check_cached_effective_target arm_neon_ok \
+		check_effective_target_arm_neon_ok_nocache]
+}
+
+# Add the options needed for NEON.  We need either -mfloat-abi=softfp
+# or -mfloat-abi=hard, but if one is already specified by the
+# multilib, use it.
+
+proc add_options_for_arm_neon_fp16 { flags } {
+    if { ! [check_effective_target_arm_neon_fp16_ok] } {
+	return "$flags"
     }
+    global et_arm_neon_fp16_flags
+    return "$flags $et_arm_neon_fp16_flags"
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=neon-fp16
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_neon_flags to the
+# best options to add.
+
+proc check_effective_target_arm_neon_fp16_ok_nocache { } {
+    global et_arm_neon_fp16_flags
+    set et_arm_neon_fp16_flags ""
+    if { [check_effective_target_arm32] } {
+	# Always add -mfpu=neon-fp16, since there is no preprocessor
+	# macro for FP16 support.
+	foreach flags {"-mfpu=neon-fp16" "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_neon_fp16_ok object {
+		#include "arm_neon.h"
+		int dummy;
+	    } "$flags"] } {
+		set et_arm_neon_fp16_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
+
+proc check_effective_target_arm_neon_fp16_ok { } {
+    return [check_cached_effective_target arm_neon_fp16_ok \
+		check_effective_target_arm_neon_fp16_ok_nocache]
 }
 
 # Return 1 is this is an ARM target where -mthumb causes Thumb-1 to be
@@ -1654,7 +1722,7 @@ proc check_effective_target_arm_neon_hw { } {
 	       : "0" (a), "w" (b));
 	  return (a != 1);
 	}
-    } "-mfpu=neon -mfloat-abi=softfp"]
+    } [add_options_for_arm_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.

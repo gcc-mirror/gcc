@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_neon_hw } */
-/* { dg-options "-O2 -mfpu=neon -mfloat-abi=softfp" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_neon } */
 /* Check that the arm_final_prescan_insn ccfsm code does not try to
  * conditionally execute NEON instructions.  */
 #include <arm_neon.h>
