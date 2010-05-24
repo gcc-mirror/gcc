@@ -1,3 +1,8 @@
+2010-05-24  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (__ARM_ARCH__): __ARM_ARCH_7EM__
+	added to the preprocessor condition.
+
 2010-05-24  Paul Brook  <paul@codesourcery.com>
 
 	* gengtype-lex.l: Add HARD_REG_SET.
