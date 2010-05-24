@@ -4677,6 +4677,15 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (TREE_CHAIN (t), fld);
       *ws = 0;
     }
+  else if (TREE_CODE (t) == BLOCK)
+    {
+      tree tem;
+      for (tem = BLOCK_VARS (t); tem; tem = TREE_CHAIN (tem))
+	fld_worklist_push (tem, fld);
+      for (tem = BLOCK_SUBBLOCKS (t); tem; tem = BLOCK_CHAIN (tem))
+	fld_worklist_push (tem, fld);
+      fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
+    }
 
   fld_worklist_push (TREE_TYPE (t), fld);
 
