@@ -314,13 +314,14 @@ get_emutls_init_templ_addr (tree decl)
   to = build_decl (DECL_SOURCE_LOCATION (decl),
 		   VAR_DECL, name, TREE_TYPE (decl));
   SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
-  DECL_TLS_MODEL (to) = TLS_MODEL_EMULATED;
+
   DECL_ARTIFICIAL (to) = 1;
   TREE_USED (to) = TREE_USED (decl);
   TREE_READONLY (to) = 1;
   DECL_IGNORED_P (to) = 1;
   DECL_CONTEXT (to) = DECL_CONTEXT (decl);
   DECL_SECTION_NAME (to) = DECL_SECTION_NAME (decl);
+  DECL_PRESERVE_P (to) = DECL_PRESERVE_P (decl);
 
   DECL_WEAK (to) = DECL_WEAK (decl);
   if (DECL_ONE_ONLY (decl))
@@ -333,6 +334,7 @@ get_emutls_init_templ_addr (tree decl)
   else
     TREE_STATIC (to) = 1;
 
+  DECL_VISIBILITY_SPECIFIED (to) = DECL_VISIBILITY_SPECIFIED (decl);
   DECL_INITIAL (to) = DECL_INITIAL (decl);
   DECL_INITIAL (decl) = NULL;
 
@@ -385,6 +387,8 @@ emutls_decl (tree decl)
       DECL_TLS_MODEL (to) = TLS_MODEL_EMULATED;
       DECL_ARTIFICIAL (to) = 1;
       DECL_IGNORED_P (to) = 1;
+      /* FIXME: work around PR44132.  */
+      DECL_PRESERVE_P (to) = 1;
       TREE_READONLY (to) = 0;
       SET_DECL_ASSEMBLER_NAME (to, DECL_NAME (to));
       if (DECL_ONE_ONLY (decl))
@@ -412,6 +416,10 @@ emutls_decl (tree decl)
   DECL_COMMON (to) = DECL_COMMON (decl);
   DECL_WEAK (to) = DECL_WEAK (decl);
   DECL_VISIBILITY (to) = DECL_VISIBILITY (decl);
+  DECL_VISIBILITY_SPECIFIED (to) = DECL_VISIBILITY_SPECIFIED (decl);
+  
+  /* Fortran might pass this to us.  */
+  DECL_RESTRICTED_P (to) = DECL_RESTRICTED_P (decl);
 
   return to;
 }
@@ -450,15 +458,38 @@ emutls_common_1 (void **loc, void *xstmts)
   return 1;
 }
 
+/* Callback to finalize one emutls control variable.  */
+
+static int
+emutls_finalize_control_var (void **loc, 
+				void *unused ATTRIBUTE_UNUSED)
+{
+  struct tree_map *h = *(struct tree_map **) loc;
+  if (h != NULL) 
+    {
+      struct varpool_node *node = varpool_node (h->to);
+      /* Because varpool_finalize_decl () has side-effects,
+         only apply to un-finalized vars.  */
+      if (node && !node->finalized) 
+	varpool_finalize_decl (h->to);
+    }
+  return 1;
+}
+
+/* Finalize emutls control vars and add a static constructor if
+   required.  */
+
 void
 emutls_finish (void)
 {
+  if (emutls_htab == NULL)
+    return;
+  htab_traverse_noresize (emutls_htab, 
+			  emutls_finalize_control_var, NULL);
+
   if (targetm.emutls.register_common)
     {
       tree body = NULL_TREE;
-
-      if (emutls_htab == NULL)
-	return;
 
       htab_traverse_noresize (emutls_htab, emutls_common_1, &body);
       if (body == NULL_TREE)

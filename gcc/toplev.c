@@ -1063,16 +1063,17 @@ compile_file (void)
   if (errorcount || sorrycount)
     return;
 
+  /* Ensure that emulated TLS control vars are finalized and build 
+     a static constructor for them, when it is required.  */
+  if (!targetm.have_tls)
+    emutls_finish ();
+
   varpool_assemble_pending_decls ();
   finish_aliases_2 ();
 
   /* Likewise for mudflap static object registrations.  */
   if (flag_mudflap)
     mudflap_finish_file ();
-
-  /* Likewise for emulated thread-local storage.  */
-  if (!targetm.have_tls)
-    emutls_finish ();
 
   output_shared_constant_pool ();
   output_object_blocks ();

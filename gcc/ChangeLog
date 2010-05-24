@@ -1,3 +1,16 @@
+2010-05-24  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/44132
+	PR middle-end/43602
+	* varasm.c (get_emutls_init_templ_addr): Copy DECL_PRESERVE_P,
+	DECL_VISIBILITY_SPECIFIED.
+	(emutls_decl): Set DECL_PRESERVE_P and copy
+	DECL_VISIBILITY_SPECIFIED, DECL_RESTRICTED_P.
+	(emutls_finalize_control_var): New callback.
+	(emutls_finish): Finalize emutls control variables.
+	* toplev.c (compile_file): Move the call to emutls_finish () 
+	before varpool_assemble_pending_decls ().
+
 2010-05-24  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (__ARM_ARCH__): __ARM_ARCH_7EM__
