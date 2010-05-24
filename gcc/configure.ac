@@ -3244,9 +3244,10 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([sahf mnemonic],
       gcc_cv_as_ix86_sahf,,,
-      [sahf],,
+      [.code64
+       sahf],,
       [AC_DEFINE(HAVE_AS_IX86_SAHF, 1,
-        [Define if your assembler supports the sahf mnemonic.])])
+        [Define if your assembler supports the sahf mnemonic in 64bit mode.])])
 
     gcc_GAS_CHECK_FEATURE([swap suffix],
       gcc_cv_as_ix86_swap,,,
