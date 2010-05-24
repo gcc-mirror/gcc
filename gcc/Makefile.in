@@ -1020,7 +1020,7 @@ BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
-# Used from ada/Make-lang.in
+# Used from ada/gcc-interface/Make-lang.in
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
 
@@ -1055,7 +1055,6 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 # C can be supported this way too (leave for later).
 
 LANG_MAKEFRAGS = @all_lang_makefrags@
-LANG_MAKEFILES = @all_lang_makefiles@
 
 # Flags to pass to recursive makes.
 # CC is set by configure.
