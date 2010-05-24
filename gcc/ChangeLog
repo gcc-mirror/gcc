@@ -1,3 +1,8 @@
+2010-05-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/makefile.texi (Makefile): Mention stages 'profile'
+	and 'feedback' for profiledbootstrap.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44245
