@@ -2550,7 +2550,8 @@ cp_diagnostic_starter (diagnostic_context *context,
   diagnostic_report_current_module (context);
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
-  pp_base_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
+  pp_base_set_prefix (context->printer, diagnostic_build_prefix (context,
+								 diagnostic));
 }
 
 static void
@@ -2644,7 +2645,7 @@ cp_print_error_function (diagnostic_context *context,
 		  pp_base_newline (context->printer);
 		  if (s.file != NULL)
 		    {
-		      if (flag_show_column && s.column != 0)
+		      if (context->show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d:%d"),
 				   cxx_printable_name_translate (fndecl, 2),
@@ -2750,7 +2751,7 @@ print_instantiation_partial_context_line (diagnostic_context *context,
       const char *str;
       str = decl_as_string_translate (t->decl,
 				      TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
-      if (flag_show_column)
+      if (context->show_column)
 	pp_verbatim (context->printer,
 		     recursive_p
 		     ? _("%s:%d:%d:   recursively instantiated from %qs\n")
@@ -2765,7 +2766,7 @@ print_instantiation_partial_context_line (diagnostic_context *context,
     }
   else
     {
-      if (flag_show_column)
+      if (context->show_column)
 	pp_verbatim (context->printer, 
 		     recursive_p
 		     ? _("%s:%d:%d:   recursively instantiated from here")
@@ -2816,7 +2817,7 @@ print_instantiation_partial_context (diagnostic_context *context,
 	{
 	  expanded_location xloc;
 	  xloc = expand_location (loc);
-	  if (flag_show_column)
+	  if (context->show_column)
 	    pp_verbatim (context->printer,
 			 _("%s:%d:%d:   [ skipping %d instantiation contexts ]\n"),
 			 xloc.file, xloc.line, xloc.column, skip);

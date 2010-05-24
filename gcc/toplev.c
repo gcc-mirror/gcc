@@ -1827,6 +1827,11 @@ process_options (void)
   if (flag_compare_debug) 
     diagnostic_inhibit_notes (global_dc);
 
+  global_dc->show_column = flag_show_column;
+  global_dc->pedantic_errors = flag_pedantic_errors;
+  global_dc->permissive = flag_permissive;
+  global_dc->fatal_errors = flag_fatal_errors;
+
   if (flag_section_anchors && !target_supports_section_anchors_p ())
     {
       warning (OPT_fsection_anchors,
