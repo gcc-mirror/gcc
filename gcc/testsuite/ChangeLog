@@ -1,3 +1,34 @@
+2010-05-24  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/neon/: Regenerated test cases.
+
+	* gcc.target/arm/neon/polytypes.c,
+	gcc.target/arm/neon-vmla-1.c, gcc.target/arm/neon-vmls-1.c,
+	gcc.target/arm/neon-cond-1.c, gcc.target/arm/neon/vfp-shift-a2t2.c,
+	gcc.target/arm/neon-thumb2-move.c, gcc.dg/torture/arm-fp16-ops-8.c, 
+	gcc.dg/torture/arm-fp16-ops-7.c, g++.dg/ext/arm-fp16/arm-fp16-ops-7.C,
+	g++.dg/ext/arm-fp16/arm-fp16-ops-8.C, g++.dg/abi/mangle-neon.C: Use
+	dg-add-options arm_neon.
+
+	* gcc.target/arm/fp16-compile-vcvt.c, gcc.dg/torture/arm-fp16-ops-5.c,
+	gcc.dg/torture/arm-fp16-ops-6.c, g++.dg/ext/arm-fp16/arm-fp16-ops-5.C,
+	g++.dg/ext/arm-fp16/arm-fp16-ops-6.C: Use dg-add-options arm_neon_fp16
+	and arm_neon_fp16_ok.
+
+	* gcc.dg/vect/vect.exp, g++.dg/vect/vect.exp,
+	gfortran.dg/vect/vect.exp: Use add_options_for_arm_neon.
+
+	* lib/target-supports.exp (add_options_for_arm_neon): New.
+	(check_effective_target_arm_neon_ok_nocache): New, from
+	check_effective_target_arm_neon_ok.  Check multiple possibilities.
+	(check_effective_target_arm_neon_ok): Use
+	check_effective_target_arm_neon_ok_nocache.
+	(add_options_for_arm_neon_fp16)
+	(check_effective_target_arm_neon_fp16_ok)
+	check_effective_target_arm_neon_fp16_ok_nocache): New.
+	(check_effective_target_arm_neon_hw): Use add_options_for_arm_neon.
+
 2010-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41510

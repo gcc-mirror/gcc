@@ -2,7 +2,8 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -mfpu=neon -mfloat-abi=softfp" } */
+/* { dg-options "-save-temps" } */
+/* { dg-add-options arm_neon } */
 
 #include <arm_neon.h>
 
