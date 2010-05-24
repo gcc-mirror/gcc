@@ -1,3 +1,11 @@
+2010-05-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (quick_stack): Change type to a VEC.  Update comment.
+	(tree_list_free_list): Delete.
+	(flush_quick_stack): Update for quick_stack type change.
+	(push_value): Likewise.
+	(pop_value): Likewise.
+
 2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* java-gimplify.c: Do not include tm.h, toplev.h.

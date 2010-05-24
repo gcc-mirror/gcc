@@ -90,8 +90,8 @@ tree dtable_ident = NULL_TREE;
 int always_initialize_class_p = 0;
 
 /* We store the stack state in two places:
-   Within a basic block, we use the quick_stack, which is a
-   pushdown list (TREE_LISTs) of expression nodes.
+   Within a basic block, we use the quick_stack, which is a VEC of expression
+   nodes.
    This is the top part of the stack;  below that we use find_stack_slot.
    At the end of a basic block, the quick_stack must be flushed
    to the stack slot array (as handled by find_stack_slot).
@@ -116,10 +116,7 @@ int always_initialize_class_p = 0;
    So dup cannot just add an extra element to the quick_stack, but iadd can.
 */
 
-static GTY(()) tree quick_stack;
-
-/* A free-list of unused permanent TREE_LIST nodes.  */
-static GTY((deletable)) tree tree_list_free_list;
+static GTY(()) VEC(tree,gc) *quick_stack;
 
 /* The physical memory page size used in this computer.  See
    build_field_ref().  */
@@ -215,33 +212,24 @@ static void
 flush_quick_stack (void)
 {
   int stack_index = stack_pointer;
-  tree prev, cur, next;
+  unsigned ix;
+  tree t;
 
-  /* First reverse the quick_stack, and count the number of slots it has. */
-  for (cur = quick_stack, prev = NULL_TREE; cur != NULL_TREE; cur = next)
-    {
-      next = TREE_CHAIN (cur);
-      TREE_CHAIN (cur) = prev;
-      prev = cur;
-      stack_index -= 1 + TYPE_IS_WIDE (TREE_TYPE (TREE_VALUE (cur)));
-    }
-  quick_stack = prev;
+  /* Count the number of slots the quick stack is holding.  */
+  for (ix = 0; VEC_iterate(tree, quick_stack, ix, t); ix++)
+    stack_index -= 1 + TYPE_IS_WIDE (TREE_TYPE (t));
 
-  while (quick_stack != NULL_TREE)
+  for (ix = 0; VEC_iterate(tree, quick_stack, ix, t); ix++)
     {
-      tree decl;
-      tree node = quick_stack, type;
-      quick_stack = TREE_CHAIN (node);
-      TREE_CHAIN (node) = tree_list_free_list;
-      tree_list_free_list = node;
-      node = TREE_VALUE (node);
-      type = TREE_TYPE (node);
+      tree decl, type = TREE_TYPE (t);
 
       decl = find_stack_slot (stack_index, type);
-      if (decl != node)
-	java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (node), decl, node));
+      if (decl != t)
+	java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (t), decl, t));
       stack_index += 1 + TYPE_IS_WIDE (type);
     }
+
+  VEC_truncate (tree, quick_stack, 0);
 }
 
 /* Push TYPE on the type stack.
@@ -282,16 +270,8 @@ push_value (tree value)
       value = convert (type, value);
     }
   push_type (type);
-  if (tree_list_free_list == NULL_TREE)
-    quick_stack = tree_cons (NULL_TREE, value, quick_stack);
-  else
-    {
-      tree node = tree_list_free_list;
-      tree_list_free_list = TREE_CHAIN (tree_list_free_list);
-      TREE_VALUE (node) = value;
-      TREE_CHAIN (node) = quick_stack;
-      quick_stack = node;
-    }
+  VEC_safe_push (tree, gc, quick_stack, value);
+
   /* If the value has a side effect, then we need to evaluate it
      whether or not the result is used.  If the value ends up on the
      quick stack and is then popped, this won't happen -- so we flush
@@ -604,15 +584,8 @@ static tree
 pop_value (tree type)
 {
   type = pop_type (type);
-  if (quick_stack)
-    {
-      tree node = quick_stack;
-      quick_stack = TREE_CHAIN (quick_stack);
-      TREE_CHAIN (node) = tree_list_free_list;
-      tree_list_free_list = node;
-      node = TREE_VALUE (node);
-      return node;
-    }
+  if (VEC_length (tree, quick_stack) != 0)
+    return VEC_pop (tree, quick_stack);
   else
     return find_stack_slot (stack_pointer, promote_type (type));
 }
