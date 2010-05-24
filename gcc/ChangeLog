@@ -1,3 +1,11 @@
+2010-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/ia32intrin.h (__crc32q): Define only if
+	__SSE4_2__ is defined.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
