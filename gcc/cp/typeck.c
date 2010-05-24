@@ -5024,6 +5024,20 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 	  return arg;
 	}
 
+      /* ??? Cope with user tricks that amount to offsetof.  */
+      if (TREE_CODE (argtype) != FUNCTION_TYPE
+	  && TREE_CODE (argtype) != METHOD_TYPE
+	  && argtype != unknown_type_node
+	  && (val = get_base_address (arg))
+	  && TREE_CODE (val) == INDIRECT_REF
+	  && TREE_CONSTANT (TREE_OPERAND (val, 0)))
+	{
+	  tree type = build_pointer_type (argtype);
+	  tree op0 = fold_convert (type, TREE_OPERAND (val, 0));
+	  tree op1 = fold_convert (sizetype, fold_offsetof (arg, val));
+	  return fold_build2 (POINTER_PLUS_EXPR, type, op0, op1);
+	}
+
       /* Uninstantiated types are all functions.  Taking the
 	 address of a function is a no-op, so just return the
 	 argument.  */

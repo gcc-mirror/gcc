@@ -1,5 +1,9 @@
 2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* g++.dg/parse/array-size2.C: Remove dg-error directives.
+
+2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/38394
 	* gnat.dg/array13.ad[sb]: New test.
 
