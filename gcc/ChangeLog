@@ -1,3 +1,15 @@
+2010-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-05-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43733
+	* configure.ac (gcc_cv_as_ix86_sahf): Switch to 64bit mode.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.md (x86_sahf_1): Conditionally output 0x9e
+	instead of sahf only for 64bit targets.
+
 2010-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
@@ -242,8 +254,8 @@
 2010-04-08  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adjust the z10
-          defaults for max-unroll-times, max-completely-peeled-insns
-          and max-completely-peel-times.
+	defaults for max-unroll-times, max-completely-peeled-insns
+	and max-completely-peel-times.
 
 2010-04-08  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
