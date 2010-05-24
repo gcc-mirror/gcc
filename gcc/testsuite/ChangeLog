@@ -1,3 +1,8 @@
+2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/38394
+	* gnat.dg/array13.ad[sb]: New test.
+
 2010-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41510
