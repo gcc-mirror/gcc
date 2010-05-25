@@ -1,3 +1,26 @@
+2010-05-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (objc_build_constructor): Take a VEC instead of a tree.
+	Use build_constructor instead of build_constructor_from_list.
+	(objc_build_string_object): Build a VEC argument for
+	objc_build_constructor.
+	(init_def_list): Likewise.
+	(init_objc_symtab): Likewise.
+	(init_module_descriptor): Likewise.
+	(generate_static_references): Likewise.
+	(build_selector_translation_table): Likewise.
+	(build_descriptor_table_initializer): Likewise.
+	(generate_descriptor_table): Likewise.
+	(build_protocol_initializer): Likewise.
+	(build_ivar_list_initializer): Likewise.
+	(generate_ivars_list): Likewise.
+	(build_dispatch_table_initializer): Likewise.
+	(generate_dispatch_table): Likewise.
+	(generate_protocol_list): Likewise.
+	(build_category_initializer): Likewise.
+	(build_shared_structure_initializer): Likewise.
+	(generate_objc_image_info): Likewise.
+
 2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc++/32052
