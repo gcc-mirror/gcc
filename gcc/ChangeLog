@@ -1,3 +1,9 @@
+2010-05-25  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (optimization_options): Fix and move the
+	flag_prefetch_loop_arrays override ...
+	(override_options): ... here.
+
 2010-05-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* diagnostic.c: Don't include plugin.h.

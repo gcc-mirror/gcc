@@ -1474,9 +1474,6 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
      without maintaining a stack frame back-chain.  */
   flag_asynchronous_unwind_tables = 1;
 
-  if (HAVE_prefetch || optimize >= 3)
-      flag_prefetch_loop_arrays = 1;
-
   /* Use MVCLE instructions to decrease code size if requested.  */
   if (size != 0)
     target_flags |= MASK_MVCLE;
@@ -1676,6 +1673,11 @@ override_options (void)
     set_param_value ("prefetch-min-insn-to-mem-ratio", 2);
   if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
     set_param_value ("simultaneous-prefetches", 6);
+
+  /* This cannot reside in optimization_options since HAVE_prefetch
+     requires the arch flags to be evaluated already.  */
+  if (HAVE_prefetch && optimize >= 3)
+    flag_prefetch_loop_arrays = 1;
 }
 
 /* Map for smallest class containing reg regno.  */
