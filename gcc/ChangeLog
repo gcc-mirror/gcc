@@ -1,3 +1,8 @@
+2010-05-25  Vladimir Makarov <vmakarov@redhat.com>
+
+	* ira-build.c (update_conflict_hard_reg_costs): New.
+	(ira_build): Call update_conflict_hard_reg_costs.
+
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41371
