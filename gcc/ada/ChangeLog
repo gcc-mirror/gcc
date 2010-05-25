@@ -1,3 +1,10 @@
+2010-05-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (internal_error_function): Add context
+	parameter.  Use it to access show_column flag and instead of using
+	global_dc.  Call warn_if_plugins.
+	* gcc-interface/Make-lang.in (ada/misc.o): Update dependencies.
+
 2010-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (LANG_HOOKS_DEEP_UNSHARING): Redefine.

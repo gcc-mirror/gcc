@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "opts.h"
-#include "plugin.h"
 
 #define pedantic_warning_kind(DC)			\
   ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
@@ -380,14 +379,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   context->lock++;
 
-  if (diagnostic->kind == DK_ICE && plugins_active_p ())
-    {
-      fnotice (stderr, "*** WARNING *** there are active plugins, do not report"
-	       " this as a bug unless you can reproduce it without enabling"
-	       " any plugins.\n");
-      dump_active_plugins (stderr);
-    }
-
   if (diagnostic->kind == DK_ICE)
     {
 #ifndef ENABLE_CHECKING
@@ -405,7 +396,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	}
 #endif
       if (context->internal_error)
-	(*context->internal_error) (diagnostic->message.format_spec,
+	(*context->internal_error) (context,
+				    diagnostic->message.format_spec,
 				    diagnostic->message.args_ptr);
     }
   ++diagnostic_kind_count (context, diagnostic->kind);

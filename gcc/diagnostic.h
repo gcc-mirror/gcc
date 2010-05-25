@@ -112,7 +112,7 @@ struct diagnostic_context
   diagnostic_finalizer_fn end_diagnostic;
 
   /* Client hook to report an internal error.  */
-  void (*internal_error) (const char *, va_list *);
+  void (*internal_error) (diagnostic_context *, const char *, va_list *);
 
   /* Auxiliary data for client.  */
   void *x_data;

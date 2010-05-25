@@ -2735,7 +2735,7 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GIMPLE_H) realmpfr.h
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    version.h $(INPUT_H) $(TOPLEV_H) intl.h $(DIAGNOSTIC_H) \
-   diagnostic.def opts.h $(PLUGIN_H)
+   diagnostic.def opts.h
 opts.o : opts.c opts.h options.h $(TOPLEV_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_H) $(TM_H) langhooks.h $(GGC_H) $(EXPR_H) $(RTL_H) \
    output.h $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h $(TARGET_H) \

@@ -1,3 +1,17 @@
+2010-05-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic.c: Don't include plugin.h.
+	(diagnostic_report_diagnostic): Don't handle plugins specially
+	here.  Pass context to internal_error callback.
+	* diagnostic.h (struct diagnostic_context): Add context parameter
+	to internal_error callback.
+	* plugin.c (warn_if_plugins, plugins_internal_error_function):
+	New.
+	* plugin.h (struct diagnostic_context): Declare.
+	(warn_if_plugins, plugins_internal_error_function): Declare.
+	* toplev.c (general_init): Set global_dc->internal_error.
+	* Makefile.in (diagnostic.o): Update dependencies.
+
 2010-05-25 Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/darwin64.h: Update DARWIN_ARCH_SPEC.

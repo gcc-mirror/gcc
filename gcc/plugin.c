@@ -810,6 +810,32 @@ debug_active_plugins (void)
   dump_active_plugins (stderr);
 }
 
+/* Give a warning if plugins are present, before an ICE message asking
+   to submit a bug report.  */
+
+void
+warn_if_plugins (void)
+{
+  if (plugins_active_p ())
+    {
+      fnotice (stderr, "*** WARNING *** there are active plugins, do not report"
+	       " this as a bug unless you can reproduce it without enabling"
+	       " any plugins.\n");
+      dump_active_plugins (stderr);
+    }
+
+}
+
+/* Likewise, as a callback from the diagnostics code.  */
+
+void
+plugins_internal_error_function (struct diagnostic_context *context ATTRIBUTE_UNUSED,
+				 const char *msgid ATTRIBUTE_UNUSED,
+				 va_list *ap ATTRIBUTE_UNUSED)
+{
+  warn_if_plugins ();
+}
+
 /* The default version check. Compares every field in VERSION. */
 
 bool
