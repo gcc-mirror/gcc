@@ -1,5 +1,10 @@
 2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
 
+	PR ObjC/44140
+	* objc.dg/torture/tls/thr-init-3.m: XFAIL lto/whopr for all.
+
+2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* obj-c++.dg/torture/tls/trivial.mm: New.
 	* obj-c++.dg/torture/tls/thr-init-1.mm: New.
 	* obj-c++.dg/torture/tls/thr-init-2.mm: New.
