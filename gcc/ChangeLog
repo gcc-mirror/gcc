@@ -1,3 +1,10 @@
+2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (loc_descr_plus_const): When offset is negative, use
+	DW_OP_minus with negated offset instead of DW_OP_plus.
+	(loc_list_from_tree): Don't test whether second operand is
+	INTEGER_CST.
+
 2010-05-25  Wei Guozhi  <carrot@google.com>
 
 	* config/arm/thumb2.md (thumb2_tlobits_cbranch): Add constraint to
