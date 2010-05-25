@@ -1,3 +1,8 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* attribs.c: Do not include rtl.h.
+	* Makefile.in: Update dependencies.
+
 2010-05-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (double_int_and): New.
