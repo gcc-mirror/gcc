@@ -26,3 +26,9 @@ proc obj-c++-dg-test { prog do_what extra_tool_flags } {
 proc obj-c++-dg-prune { system text } {
     return [gcc-dg-prune $system $text]
 }
+
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+proc obj-c++-dg-runtest { testcases default-extra-flags } {
+    return [gcc-dg-runtest $testcases ${default-extra-flags}]
+}

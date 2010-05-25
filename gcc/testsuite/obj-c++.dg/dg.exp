@@ -28,7 +28,7 @@ if ![info exists DEFAULT_OBJCXXFLAGS] then {
 dg-init
 
 # Gather a list of all tests.
-set tests [lsort [find $srcdir/$subdir *.mm]]
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mm]]
 
 # Main loop.
 dg-runtest $tests "-fgnu-runtime" $DEFAULT_OBJCXXFLAGS

@@ -1,0 +1,16 @@
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib obj-c++-dg.exp
+
+dg-init
+# Gather a list of all tests.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mm]]
+
+obj-c++-dg-runtest $tests "-fgnu-runtime"
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+  obj-c++-dg-runtest $tests "-fnext-runtime"
+}
+
+dg-finish

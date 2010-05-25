@@ -1,3 +1,28 @@
+2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* obj-c++.dg/torture/tls/trivial.mm: New.
+	* obj-c++.dg/torture/tls/thr-init-1.mm: New.
+	* obj-c++.dg/torture/tls/thr-init-2.mm: New.
+	* obj-c++.dg/torture/tls/thr-init-3.mm: New.
+	* obj-c++.dg/torture/tls/diag-1.mm: New.
+	* obj-c++.dg/torture/tls/tls.exp: New.
+	* obj-c++.dg/torture/trivial.mm: New.
+	* obj-c++.dg/torture/dg-torture.exp: New.
+	* obj-c++.dg/dg.exp: Gather tests explicitly from the source dir.
+	* obj-c++.dg/tls/trivial.m: New.
+	* obj-c++.dg/tls/init-1.mm: New.
+	* obj-c++.dg/tls/diag-1.mm: New.
+	* obj-c++.dg/tls/init-2.mm: New.
+	* obj-c++.dg/tls/diag-2.mm: New.
+	* obj-c++.dg/tls/diag-3.mm: New.
+	* obj-c++.dg/tls/diag-4.mm: New.
+	* obj-c++.dg/tls/static-1.mm: New.
+	* obj-c++.dg/tls/tls.exp: New.
+	* obj-c++.dg/tls/diag-5.mm: New.
+	* obj-c++.dg/tls/static-1a.mm: New.
+	* objc-obj-c++-shared/Object1.mm: New.
+	* lib/obj-c++-dg.exp (obj-c++-dg-runtest): New proc.
+
 2010-05-24  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR ObjC++/43689
