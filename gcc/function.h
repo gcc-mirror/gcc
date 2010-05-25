@@ -580,6 +580,10 @@ struct GTY(()) function {
   unsigned int after_inlining : 1;
   unsigned int always_inline_functions_inlined : 1;
 
+  /* Nonzero if function being compiled can throw synchronous non-call
+     exceptions.  */
+  unsigned int can_throw_non_call_exceptions : 1;
+
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */
 

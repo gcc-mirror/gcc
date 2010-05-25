@@ -1877,6 +1877,7 @@ output_function (struct cgraph_node *node)
   bp_pack_value (bp, fn->after_tree_profile, 1);
   bp_pack_value (bp, fn->returns_pcc_struct, 1);
   bp_pack_value (bp, fn->returns_struct, 1);
+  bp_pack_value (bp, fn->can_throw_non_call_exceptions, 1);
   bp_pack_value (bp, fn->always_inline_functions_inlined, 1);
   bp_pack_value (bp, fn->after_inlining, 1);
   bp_pack_value (bp, fn->dont_save_pending_sizes_p, 1);

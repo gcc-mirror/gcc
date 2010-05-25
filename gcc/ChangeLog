@@ -1,3 +1,44 @@
+2010-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.h (struct function): Add can_throw_non_call_exceptions bit.
+	* lto-streamer-in.c (input_function): Stream it in.
+	* lto-streamer-out.c (output_function): Stream it out.
+	* function.c (allocate_struct_function): Set it.
+	(expand_function_end): Substitute cfun->can_throw_non_call_exceptions
+	for flag_non_call_exceptions.
+	* cfgbuild.c (control_flow_insn_p): Likewise.
+	(make_edges): Likewise.
+	* cfgexpand.c (expand_stack_alignment): Likewise.
+	* combine.c (distribute_notes): Likewise.
+	* cse.c (cse_extended_basic_block): Likewise.
+	* except.c (insn_could_throw_p): Likewise.
+	* gcse.c (simple_mem): Likewise.
+	* ipa-pure-const.c (check_call): Likewise.
+	(check_stmt ): Likewise.
+	* lower-subreg.c (lower-subreg.c): Likewise.
+	* optabs.c (emit_libcall_block): Likewise.
+	(prepare_cmp_insn): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_loads): Likewise.
+	* postreload.c (rest_of_handle_postreload): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	(emit_input_reload_insns): Likewise.
+	(emit_output_reload_insns): Likewise.
+	(fixup_abnormal_edges): Likewise.
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Likewise.
+	* store-motion.c (find_moveable_store): Likewise.
+	* tree-eh.c (stmt_could_throw_p): Likewise.
+	(tree_could_throw_p): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	(thumb1_expand_prologue): Likewise.
+	* config/rx/rx.md (cbranchsf4): Likewise.
+	(cmpsf): Likewise.
+	* config/s390/s390.c (s390_emit_prologue): Likewise.
+	* tree-inline.c (initialize_cfun): Copy can_throw_non_call_exceptions.
+	(inline_forbidden_into_p): New predicate.
+	(expand_call_inline): Use it to forbid inlining.
+	(tree_can_inline_p): Likewise.
+
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/i386/i386-c.c: Do not include rtl.h.

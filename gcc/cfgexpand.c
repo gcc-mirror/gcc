@@ -3683,7 +3683,7 @@ expand_stack_alignment (void)
      stack.  We check PREFERRED_STACK_BOUNDARY if there may be non-call
      exceptions since callgraph doesn't collect incoming stack alignment
      in this case.  */
-  if (flag_non_call_exceptions
+  if (cfun->can_throw_non_call_exceptions
       && PREFERRED_STACK_BOUNDARY > crtl->preferred_stack_boundary)
     preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
   else

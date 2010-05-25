@@ -2028,6 +2028,8 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   cfun->stdarg = src_cfun->stdarg;
   cfun->dont_save_pending_sizes_p = src_cfun->dont_save_pending_sizes_p;
   cfun->after_inlining = src_cfun->after_inlining;
+  cfun->can_throw_non_call_exceptions
+    = src_cfun->can_throw_non_call_exceptions;
   cfun->returns_struct = src_cfun->returns_struct;
   cfun->returns_pcc_struct = src_cfun->returns_pcc_struct;
   cfun->after_tree_profile = src_cfun->after_tree_profile;
@@ -2960,6 +2962,29 @@ inline_forbidden_p (tree fndecl)
   return forbidden_p;
 }
 
+/* Return true if CALLEE cannot be inlined into CALLER.  */
+
+static bool
+inline_forbidden_into_p (tree caller, tree callee)
+{
+  /* Don't inline if the functions have different EH personalities.  */
+  if (DECL_FUNCTION_PERSONALITY (caller)
+      && DECL_FUNCTION_PERSONALITY (callee)
+      && (DECL_FUNCTION_PERSONALITY (caller)
+	  != DECL_FUNCTION_PERSONALITY (callee)))
+    return true;
+
+  /* Don't inline if the callee can throw non-call exceptions but the
+     caller cannot.  */
+  if (DECL_STRUCT_FUNCTION (callee)
+      && DECL_STRUCT_FUNCTION (callee)->can_throw_non_call_exceptions
+      && !(DECL_STRUCT_FUNCTION (caller)
+	   && DECL_STRUCT_FUNCTION (caller)->can_throw_non_call_exceptions))
+    return true;
+
+  return false;
+}
+
 /* Returns nonzero if FN is a function that does not have any
    fundamental inline blocking properties.  */
 
@@ -3622,15 +3647,11 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
   cg_edge = cgraph_edge (id->dst_node, stmt);
 
-  /* Don't inline functions with different EH personalities.  */
-  if (DECL_FUNCTION_PERSONALITY (cg_edge->caller->decl)
-      && DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl)
-      && (DECL_FUNCTION_PERSONALITY (cg_edge->caller->decl)
-	  != DECL_FUNCTION_PERSONALITY (cg_edge->callee->decl)))
+  /* First check that inlining isn't simply forbidden in this case.  */
+  if (inline_forbidden_into_p (cg_edge->caller->decl, cg_edge->callee->decl))
     goto egress;
 
-  /* Don't try to inline functions that are not well-suited to
-     inlining.  */
+  /* Don't try to inline functions that are not well-suited to inlining.  */
   if (!cgraph_inline_p (cg_edge, &reason))
     {
       /* If this call was originally indirect, we do not want to emit any
@@ -5180,12 +5201,8 @@ tree_can_inline_p (struct cgraph_edge *e)
   caller = e->caller->decl;
   callee = e->callee->decl;
 
-  /* We cannot inline a function that uses a different EH personality
-     than the caller.  */
-  if (DECL_FUNCTION_PERSONALITY (caller)
-      && DECL_FUNCTION_PERSONALITY (callee)
-      && (DECL_FUNCTION_PERSONALITY (caller)
-	  != DECL_FUNCTION_PERSONALITY (callee)))
+  /* First check that inlining isn't simply forbidden in this case.  */
+  if (inline_forbidden_into_p (caller, callee))
     {
       e->inline_failed = CIF_UNSPECIFIED;
       gimple_call_set_cannot_inline (e->call_stmt, true);

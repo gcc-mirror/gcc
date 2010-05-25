@@ -7966,11 +7966,10 @@ s390_emit_prologue (void)
 	  insn = emit_insn (gen_move_insn (addr, temp_reg));
 	}
 
-      /* If we support asynchronous exceptions (e.g. for Java),
+      /* If we support non-call exceptions (e.g. for Java),
 	 we need to make sure the backchain pointer is set up
 	 before any possibly trapping memory access.  */
-
-      if (TARGET_BACKCHAIN && flag_non_call_exceptions)
+      if (TARGET_BACKCHAIN && cfun->can_throw_non_call_exceptions)
 	{
 	  addr = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 	  emit_clobber (addr);

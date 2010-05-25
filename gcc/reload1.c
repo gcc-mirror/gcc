@@ -4299,7 +4299,7 @@ reload_as_needed (int live_known)
 	      subst_reloads (insn);
 
 	      /* Adjust the exception region notes for loads and stores.  */
-	      if (flag_non_call_exceptions && !CALL_P (insn))
+	      if (cfun->can_throw_non_call_exceptions && !CALL_P (insn))
 		fixup_eh_region_note (insn, prev, next);
 
 	      /* If this was an ASM, make sure that all the reload insns
@@ -7331,7 +7331,7 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 		  rl->when_needed);
     }
 
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     copy_reg_eh_region_note_forward (insn, get_insns (), NULL);
 
   /* End this sequence.  */
@@ -7551,7 +7551,7 @@ emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
   else
     output_reload_insns[rl->opnum] = get_insns ();
 
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     copy_reg_eh_region_note_forward (insn, get_insns (), NULL);
 
   end_sequence ();
@@ -9019,7 +9019,7 @@ fixup_abnormal_edges (void)
     }
 
   /* We've possibly turned single trapping insn into multiple ones.  */
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     {
       sbitmap blocks;
       blocks = sbitmap_alloc (last_basic_block);

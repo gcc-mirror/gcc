@@ -1200,7 +1200,7 @@ eliminate_partially_redundant_loads (void)
 		  /* Are the operands unchanged since the start of the
 		     block?  */
 		  && oprs_unchanged_p (src, insn, false)
-		  && !(flag_non_call_exceptions && may_trap_p (src))
+		  && !(cfun->can_throw_non_call_exceptions && may_trap_p (src))
 		  && !side_effects_p (src)
 		  /* Is the expression recorded?  */
 		  && (expr = lookup_expr_in_table (src)) != NULL)

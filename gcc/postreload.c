@@ -1590,7 +1590,7 @@ rest_of_handle_postreload (void)
   reload_cse_regs (get_insns ());
   /* Reload_cse_regs can eliminate potentially-trapping MEMs.
      Remove any EH edges associated with them.  */
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     purge_all_dead_edges ();
 
   return 0;

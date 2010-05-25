@@ -1212,7 +1212,7 @@ decompose_multiword_subregs (void)
 			 basic block and still produce the correct control
 			 flow graph for it.  */
 		      gcc_assert (!cfi
-				  || (flag_non_call_exceptions
+				  || (cfun->can_throw_non_call_exceptions
 				      && can_throw_internal (insn)));
 
 		      insn = resolve_simple_move (set, insn);

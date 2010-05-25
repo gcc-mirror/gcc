@@ -560,9 +560,9 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
     return;
 
   /* If we are handling exceptions, we must be careful with memory references
-     that may trap. If we are not, the behavior is undefined, so we may just
+     that may trap.  If we are not, the behavior is undefined, so we may just
      continue.  */
-  if (flag_non_call_exceptions && may_trap_p (dest))
+  if (cfun->can_throw_non_call_exceptions && may_trap_p (dest))
     return;
 
   /* Even if the destination cannot trap, the source may.  In this case we'd
