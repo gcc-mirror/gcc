@@ -69,6 +69,10 @@ Os
 Common Optimization
 Optimize for space rather than speed
 
+Ofast
+Common Optimization
+Optimize for speed disregarding exact standards compliance
+
 W
 Common RejectNegative Var(extra_warnings) Warning
 This switch is deprecated; use -Wextra instead

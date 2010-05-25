@@ -393,7 +393,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
 -fwhole-program -fwhopr[=@var{n}] -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
--O  -O0  -O1  -O2  -O3  -Os}
+-O  -O0  -O1  -O2  -O3  -Os -Ofast}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -5890,6 +5890,13 @@ optimizations designed to reduce code size.
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
 -falign-labels  -freorder-blocks  -freorder-blocks-and-partition @gol
 -fprefetch-loop-arrays  -ftree-vect-loop-version}
+
+@item -Ofast
+@opindex Ofast
+Disregard strict standards compliance.  @option{-Ofast} enables all
+@option{-O3} optimizations.  It also enables optimizations that are not
+valid for all standard compliant programs.
+It turns on @option{-ffast-math}.
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.

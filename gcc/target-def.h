@@ -431,6 +431,7 @@
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook_void_void
 
 #define TARGET_HANDLE_OPTION hook_bool_size_t_constcharptr_int_true
+#define TARGET_HANDLE_OFAST hook_void_void
 #define TARGET_HELP NULL
 
 /* In except.c */
@@ -939,6 +940,7 @@
   TARGET_DEFAULT_TARGET_FLAGS,			\
   TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE,		\
   TARGET_HANDLE_OPTION,				\
+  TARGET_HANDLE_OFAST,				\
   TARGET_HELP,					\
   TARGET_EH_RETURN_FILTER_MODE,			\
   TARGET_LIBGCC_CMP_RETURN_MODE,                \
