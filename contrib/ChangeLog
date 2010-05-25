@@ -1,3 +1,13 @@
+2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Redirect grep output to /dev/null instead
+	of grep -q.
+
+	Backport from mainline:
+	2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Don't use tail -n.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.
