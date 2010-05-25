@@ -29,8 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
-#include "rtl.h"
-#include "expr.h"
 #include "output.h"
 #include "flags.h"
 #include "toplev.h"
@@ -372,7 +370,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       tree x = copy_node (a);
       TREE_CHAIN (x) = t;
       DECL_CONTEXT (x) = thunk_fndecl;
-      SET_DECL_RTL (x, NULL_RTX);
+      SET_DECL_RTL (x, NULL);
       DECL_HAS_VALUE_EXPR_P (x) = 0;
       t = x;
     }

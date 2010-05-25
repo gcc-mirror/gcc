@@ -36,11 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "toplev.h"
 #include "flags.h"
-#include "rtl.h"
-#include "expr.h"
 #include "output.h"
 #include "timevar.h"
-#include "debug.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
@@ -48,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "gimple.h"
 #include "bitmap.h"
+
+#include "rtl.h"          /* For decl_default_tls_model.  */
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or

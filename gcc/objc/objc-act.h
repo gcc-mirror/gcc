@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OBJC_ACT_H
 #define GCC_OBJC_ACT_H
 
-/* For enum gimplify_status */
-#include "gimple.h"
-
 /*** Language hooks ***/
 
 bool objc_init (void);

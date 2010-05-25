@@ -27,16 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "toplev.h"
-#include "insn-config.h"
-#include "integrate.h"
 #include "tree-inline.h"
 #include "debug.h"
-#include "target.h"
 #include "convert.h"
 #include "tree-flow.h"
 #include "cgraph.h"
+#include "splay-tree.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);

@@ -45,9 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "tm_p.h"
-#include "expr.h"
 
 #ifdef OBJCPLUS
 #include "cp-tree.h"
@@ -62,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "objc-act.h"
 #include "input.h"
-#include "except.h"
+#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 #include "function.h"
 #include "output.h"
 #include "toplev.h"
@@ -73,9 +70,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "libfuncs.h"
 #include "hashtab.h"
 #include "langhooks-def.h"
+
+/* For enum gimplify_status */
+#include "gimple.h"
 
 #define OBJC_VOID_AT_END	void_list_node
 

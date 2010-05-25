@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "function.h"
 #include "hashtab.h"
-#include "splay-tree.h"
 #include "vec.h"
 #include "c-common.h"
 #include "name-lookup.h"
@@ -244,9 +243,6 @@ typedef struct template_parm_index_s template_parm_index;
 
 struct GTY(()) ptrmem_cst {
   struct tree_common common;
-  /* This isn't used, but the middle-end expects all constants to have
-     this field.  */
-  rtx rtl;
   tree member;
 };
 typedef struct ptrmem_cst * ptrmem_cst_t;
