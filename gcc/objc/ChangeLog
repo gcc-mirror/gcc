@@ -1,3 +1,11 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-act.h: Do not include gimple.h.
+	* objc-act.c: Do not include rtl.h, expr.h, libfuncs.h, and tm_p.h.
+	Include gimple.h.  Explain why except.h has to be included.
+	* objc-lang.c: Do not include diagnostics.h.
+	* Make-lang.in: Update dependencies.
+
 2010-05-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (objc_build_constructor): Adjust OBJCPLUS impedance

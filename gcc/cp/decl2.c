@@ -33,8 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "expr.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
@@ -53,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "gimple.h"
 #include "pointer-set.h"
+#include "splay-tree.h"
 
 extern cpp_reader *parse_in;
 

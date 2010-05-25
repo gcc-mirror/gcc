@@ -30,13 +30,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "output.h"
 #include "toplev.h"
 #include "target.h"
 #include "convert.h"
 #include "cgraph.h"
 #include "tree-dump.h"
+#include "splay-tree.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -3955,7 +3955,7 @@ build_clone (tree fn, tree name)
     }
 
   /* Create the RTL for this function.  */
-  SET_DECL_RTL (clone, NULL_RTX);
+  SET_DECL_RTL (clone, NULL);
   rest_of_decl_compilation (clone, /*top_level=*/1, at_eof);
 
   if (pch_file)

@@ -1,3 +1,12 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objcp-decl.c: Do not include tm.h, rtl.h, expr.h, c-common.h,
+	flags.h, input.h, except.h, output.h, toplev.h, cpplib.h, debug.h,
+	and target.h.
+	* objcp-lang.c: Do not include tm.h, toplev.h, diagnostics.h,
+	and debug.h.  Explain why except.h has to be included.
+	* Make-lang.in: Update dependencies.
+
 2010-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objcp-decl.c: Do not include varray.h.

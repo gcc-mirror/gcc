@@ -1,3 +1,7 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (EXCEPT_H): Fix typo.
+
 2010-05-25  Vladimir Makarov <vmakarov@redhat.com>
 
 	* ira-build.c (update_conflict_hard_reg_costs): New.

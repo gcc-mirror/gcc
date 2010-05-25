@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-act.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "diagnostic.h"
 #include "c-objc-common.h"
 
 enum c_language_kind c_language = clk_objc;

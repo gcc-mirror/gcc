@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "obstack.h"
 #include "tree.h"
 #include "intl.h"
 #include "pointer-set.h"
@@ -43,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
-#include "rtl.h"
 #include "timevar.h"
 #include "tree-iterator.h"
 #include "vecprim.h"
@@ -7241,7 +7239,7 @@ tsubst_friend_function (tree decl, tree args)
      later if we need it.  */
   if (TREE_CODE (new_friend) != TEMPLATE_DECL)
     {
-      SET_DECL_RTL (new_friend, NULL_RTX);
+      SET_DECL_RTL (new_friend, NULL);
       SET_DECL_ASSEMBLER_NAME (new_friend, NULL_TREE);
     }
 
@@ -9133,7 +9131,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	TREE_TYPE (r) = type;
 	/* Clear out the mangled name and RTL for the instantiation.  */
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
-	SET_DECL_RTL (r, NULL_RTX);
+	SET_DECL_RTL (r, NULL);
 	/* Leave DECL_INITIAL set on deleted instantiations.  */
 	if (!DECL_DELETED_FN (r))
 	  DECL_INITIAL (r) = NULL_TREE;
@@ -9561,12 +9559,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* Clear out the mangled name and RTL for the instantiation.  */
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
-	  SET_DECL_RTL (r, NULL_RTX);
+	  SET_DECL_RTL (r, NULL);
 	/* The initializer must not be expanded until it is required;
 	   see [temp.inst].  */
 	DECL_INITIAL (r) = NULL_TREE;
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
-	  SET_DECL_RTL (r, NULL_RTX);
+	  SET_DECL_RTL (r, NULL);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
@@ -16814,7 +16812,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Clear out DECL_RTL; whatever was there before may not be right
 	 since we've reset the type of the declaration.  */
-      SET_DECL_RTL (d, NULL_RTX);
+      SET_DECL_RTL (d, NULL);
       DECL_IN_AGGR_P (d) = 0;
 
       /* The initializer is placed in DECL_INITIAL by

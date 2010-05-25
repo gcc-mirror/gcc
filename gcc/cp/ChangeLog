@@ -1,3 +1,32 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cp-tree.h: Do not include splay-tree.h.
+	(struct prtmem_cst): Remove unused field and false comment.
+	* typeck.c: Do not include rtl.h, expr.h, and tm_p.h.
+	* optimize.c: Do not inclde rtl.h, insn-config.h, and integrate.h.
+	* init.c: Do not include rtl.h and expr.h.
+	* class.c: Do not include rtl.h.  Include splay-tree.h.
+	(build_clone): Use plain NULL instead of NULL_RTX.
+	* decl.c: Do not include expr.h.  Explain why rtl.h has to be
+	included.  Include splay-tree.h.
+	* method.c: Do not include rtl.h and expr.h.
+	(use_thunk): Use plain NULL instead of NULL_RTX.
+	* except.c: Do not include rtl.h, expr.h, and libfuncs.h.
+	* tree.c: Do not include rtl.h, insn-config.h, integrate.h,
+	and target.h.  Include splay-tree.h.
+	* expr.c: Do not include rtl.h and expr.h.
+	* pt.c: Do not include obstack.h and rtl.h.
+	(tsubst_friend_function): Use plain NULL instead of NULL_RTX.
+	(tsubst_decl): Likewise.
+	(instantiate_decl): Likewise.
+	* semantics.c: Do not include exprt.h and debug.h.  Explain why
+	rtl.h has to be included.
+	* decl2.c: Do not include rtl.h and expr.h.  Include splay-tree.h.
+	* call.c: Do not include rtl.h and expr.h.
+	* search.c: Do not include obstack.h and rtl.h.
+	* friend.c: Do not include rtl.h and expr.h.
+	* Make-lang.in: Update dependencies.
+
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/18249

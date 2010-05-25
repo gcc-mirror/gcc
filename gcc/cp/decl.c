@@ -33,8 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "expr.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "tree-iterator.h"
@@ -55,7 +53,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-flow.h"
 #include "pointer-set.h"
+#include "splay-tree.h"
 #include "plugin.h"
+
+#include "rtl.h"          /* For decl_default_tls_model.  */
 
 static tree grokparms (tree parmlist, tree *);
 static const char *redeclaration_error_message (tree, tree);

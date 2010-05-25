@@ -858,7 +858,7 @@ REVISION_s  := "\"\""
 endif
 
 # Shorthand variables for dependency lists.
-EXCEPT_H = except.h $(HASHTAB_) vecprim.h vecir.h
+EXCEPT_H = except.h $(HASHTAB_H) vecprim.h vecir.h
 TOPLEV_H = toplev.h $(INPUT_H) bversion.h
 TARGET_H = $(TM_H) target.h insn-modes.h
 MACHMODE_H = machmode.h mode-classes.def insn-modes.h
