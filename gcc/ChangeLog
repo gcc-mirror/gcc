@@ -1,3 +1,11 @@
+2010-05-25  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+	PR 44203
+	* tree-ssa-loop-prefetch.c: Fix logic for step calculation to
+	match the original (and intended) behaviour before r159557.  This
+	changeset changed a=a+b*c to a=(a+b)*b which was obviously wrong
+	in two ways.
+
 2010-05-25  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi: Document -Ofast.
