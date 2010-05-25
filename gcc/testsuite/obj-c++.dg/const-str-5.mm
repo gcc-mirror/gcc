@@ -10,7 +10,7 @@
 @end
 
 @interface MyConstantString: MyBase {
-  union {
+  union equiv_u {
     void     *u;
     unsigned char   *c;
   } _contents;
