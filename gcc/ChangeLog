@@ -1,3 +1,10 @@
+2010-05-25 Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/darwin64.h: Update DARWIN_ARCH_SPEC.
+	* config/rs6000/t-darwin64: New.
+	* config.gcc (powerpc64-*-darwin*): Use darwin.opts, t-darwin64,
+	build crt2.
+
 2010-05-25  Christian Borntraeger  <borntraeger@de.ibm.com>
 
 	PR 44203
