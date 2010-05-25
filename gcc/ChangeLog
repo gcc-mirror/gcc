@@ -1,5 +1,11 @@
 2010-05-25  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44069
+	* gimple-fold.c (maybe_fold_stmt_addition): Avoid generating
+	out-of-bounds array accesses.
+
+2010-05-25  Richard Guenther  <rguenther@suse.de>
+
 	* lto-wrapper.c (nr, input_names, output_names, makefile): Globalize.
 	(lto_wrapper_exit): Unlink all LTRANS temporary files on error.
 	(run_gcc): Re-organize to make cleanup easier.
