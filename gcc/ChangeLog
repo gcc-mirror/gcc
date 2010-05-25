@@ -1,3 +1,9 @@
+2010-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* lto-wrapper.c (nr, input_names, output_names, makefile): Globalize.
+	(lto_wrapper_exit): Unlink all LTRANS temporary files on error.
+	(run_gcc): Re-organize to make cleanup easier.
+
 2010-05-25  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (optimization_options): Fix and move the
