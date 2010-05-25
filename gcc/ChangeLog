@@ -1,3 +1,9 @@
+2010-05-25  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (double_int_and): New.
+	* combine.c (try_combine): Clean up, use double_int_* and
+	immed_double_int_const functions.
+
 2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_ld_jalr_reloc): Redirect grep stdout,
