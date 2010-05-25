@@ -1,3 +1,13 @@
+2010-05-25  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/30668
+	PR fortran/31346
+	PR fortran/34260
+	* resolve.c (resolve_global_procedure): Add check for global
+	procedures with implicit interfaces and assumed-shape or optional
+	dummy arguments. Verify that function return type, kind and string
+	lengths match.
+
 2010-05-21  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h: Do not include system.h.
