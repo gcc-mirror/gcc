@@ -2086,7 +2086,7 @@ objc_build_constructor (tree type, VEC(constructor_elt,gc) *elts)
 #ifdef OBJCPLUS
   /* Adjust for impedance mismatch.  We should figure out how to build
      CONSTRUCTORs that consistently please both the C and C++ gods.  */
-  if (!TREE_PURPOSE (elts))
+  if (!VEC_index (constructor_elt, elts, 0)->index)
     TREE_TYPE (constructor) = init_list_type_node;
 #endif
 
