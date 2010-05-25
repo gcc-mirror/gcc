@@ -1,3 +1,16 @@
+2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43260
+	* java-tree.h (pending_static_fields): New extern declaration.
+	(java_write_globals): New prototype.
+	* lang.c (LANG_HOOKS_WRITE_GLOBALS): Define.
+	* decl.c (java_mark_class_local): When clearing DECL_EXTERNAL
+	of a static field push it into pending_static_fields vector.
+	* class.c (pending_static_fields): New variable.
+	(add_field): If static field is not DECL_EXTERNAL, push it into
+	pending_static_fields vector.
+	(java_write_globals): New function.
+
 2010-05-24  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* expr.c (quick_stack): Change type to a VEC.  Update comment.

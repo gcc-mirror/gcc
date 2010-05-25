@@ -1,6 +1,6 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,6 +108,10 @@ static GTY(()) VEC(tree,gc) *registered_class;
 /* A tree that returns the address of the class$ of the class
    currently being compiled.  */
 static GTY(()) tree this_classdollar;
+
+/* A list of static class fields.  This is to emit proper debug
+   info for them.  */
+VEC(tree,gc) *pending_static_fields;
 
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE (followed by its siblings).
@@ -873,6 +877,8 @@ add_field (tree klass, tree name, tree field_type, int flags)
       /* Considered external unless we are compiling it into this
 	 object file.  */
       DECL_EXTERNAL (field) = (is_compiled_class (klass) != 2);
+      if (!DECL_EXTERNAL (field))
+	VEC_safe_push (tree, gc, pending_static_fields, field);
     }
 
   return field;
@@ -3222,6 +3228,19 @@ in_same_package (tree name1, tree name2)
   split_qualified_name (&pkg2, &tmp, name2);
 
   return (pkg1 == pkg2);
+}
+
+/* lang_hooks.decls.final_write_globals: perform final processing on
+   global variables.  */
+
+void
+java_write_globals (void)
+{
+  tree *vec = VEC_address (tree, pending_static_fields);
+  int len = VEC_length (tree, pending_static_fields);
+  write_global_declarations ();
+  emit_debug_global_declarations (vec, len);
+  VEC_free (tree, gc, pending_static_fields);
 }
 
 #include "gt-java-class.h"

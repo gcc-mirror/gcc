@@ -2000,7 +2000,11 @@ java_mark_class_local (tree klass)
 
   for (t = TYPE_FIELDS (klass); t ; t = TREE_CHAIN (t))
     if (FIELD_STATIC (t))
-      java_mark_decl_local (t);
+      {
+	if (DECL_EXTERNAL (t))
+	  VEC_safe_push (tree, gc, pending_static_fields, t);
+	java_mark_decl_local (t);
+      }
 
   for (t = TYPE_METHODS (klass); t ; t = TREE_CHAIN (t))
     if (!METHOD_ABSTRACT (t))
