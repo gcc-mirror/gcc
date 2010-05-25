@@ -1,6 +1,6 @@
 /* C++ Parser.
    Copyright (C) 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008, 2009  Free Software Foundation, Inc.
+   2005, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -150,6 +150,7 @@ typedef struct GTY(()) cp_token_cache {
 
 /* The various kinds of non integral constant we encounter. */
 typedef enum non_integral_constant {
+  NIC_NONE,
   /* floating-point literal */
   NIC_FLOAT,
   /* %<this%> */
@@ -218,7 +219,8 @@ typedef enum name_lookup_error {
 
 /* The various kinds of required token */
 typedef enum required_token {
-  RT_SEMICOLON = 1,  /* ';' */
+  RT_NONE,
+  RT_SEMICOLON,  /* ';' */
   RT_OPEN_PAREN, /* '(' */
   RT_CLOSE_BRACE, /* '}' */
   RT_OPEN_BRACE,  /* '{' */
@@ -3715,7 +3717,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	    /* Using `va_arg' in a constant-expression is not
 	       allowed.  */
-	    if (cp_parser_non_integral_constant_expression (parser,NIC_VA_ARG))
+	    if (cp_parser_non_integral_constant_expression (parser,
+							    NIC_VA_ARG))
 	      return error_mark_node;
 	    return build_x_va_arg (expression, type);
 	  }
@@ -4842,7 +4845,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Only type conversions to integral or enumeration types
 	   can be used in constant-expressions.  */
 	if (!cast_valid_in_integral_constant_expression_p (type)
-	    && (cp_parser_non_integral_constant_expression (parser, NIC_CAST)))
+	    && cp_parser_non_integral_constant_expression (parser, NIC_CAST))
 	  return error_mark_node;
 
 	switch (keyword)
@@ -5895,7 +5898,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
     {
       tree cast_expression;
       tree expression = error_mark_node;
-      non_integral_constant non_constant_p = 0;
+      non_integral_constant non_constant_p = NIC_NONE;
 
       /* Consume the operator token.  */
       token = cp_lexer_consume_token (parser->lexer);
@@ -5936,7 +5939,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  gcc_unreachable ();
 	}
 
-      if (non_constant_p
+      if (non_constant_p != NIC_NONE
 	  && cp_parser_non_integral_constant_expression (parser,
 							 non_constant_p))
 	expression = error_mark_node;
@@ -6503,8 +6506,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  /* Only type conversions to integral or enumeration types
 	     can be used in constant-expressions.  */
 	  if (!cast_valid_in_integral_constant_expression_p (type)
-	      && (cp_parser_non_integral_constant_expression (parser,
-							      NIC_CAST)))
+	      && cp_parser_non_integral_constant_expression (parser,
+							     NIC_CAST))
 	    return error_mark_node;
 
 	  /* Perform the cast.  */
@@ -6739,8 +6742,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	 least one of the operands is of enumeration type.  */
 
       if (overloaded_p
-	  && (cp_parser_non_integral_constant_expression (parser,
-							  NIC_OVERLOADED)))
+	  && cp_parser_non_integral_constant_expression (parser,
+							 NIC_OVERLOADED))
 	return error_mark_node;
     }
 
@@ -13475,7 +13478,7 @@ cp_parser_asm_definition (cp_parser* parser)
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
   bool goto_p = false;
-  required_token missing = 0;
+  required_token missing = RT_NONE;
 
   /* Look for the `asm' keyword.  */
   cp_parser_require_keyword (parser, RID_ASM, RT_ASM);
@@ -19258,8 +19261,8 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
     type = TREE_TYPE (type);
   if (cast != error_mark_node
       && !cast_valid_in_integral_constant_expression_p (type)
-      && (cp_parser_non_integral_constant_expression (parser,
-						      NIC_CONSTRUCTOR)))
+      && cp_parser_non_integral_constant_expression (parser,
+						     NIC_CONSTRUCTOR))
     return error_mark_node;
   return cast;
 }
