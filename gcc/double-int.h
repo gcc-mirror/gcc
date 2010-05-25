@@ -147,6 +147,16 @@ double_int_ior (double_int a, double_int b)
   return a;
 }
 
+/* Returns A & B.  */
+
+static inline double_int
+double_int_and (double_int a, double_int b)
+{
+  a.low &= b.low;
+  a.high &= b.high;
+  return a;
+}
+
 /* Shift operations.  */
 double_int double_int_lshift (double_int, HOST_WIDE_INT, unsigned int, bool);
 double_int double_int_rshift (double_int, HOST_WIDE_INT, unsigned int, bool);
