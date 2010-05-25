@@ -1697,6 +1697,7 @@ general_init (const char *argv0)
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;
   global_dc->show_option_requested = flag_diagnostics_show_option;
+  global_dc->internal_error = plugins_internal_error_function;
 
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV
