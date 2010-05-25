@@ -1906,9 +1906,10 @@ powerpc-*-darwin*)
 	extra_headers=altivec.h
 	;;
 powerpc64-*-darwin*)
-	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
-	# We're omitting t-darwin8 to avoid building any multilibs
+	extra_parts="crt2.o"
+	tmake_file="t-darwin ${cpu_type}/t-darwin ${cpu_type}/t-darwin64 t-slibgcc-darwin"
+	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	lto_binary_reader=lto-macho
 	extra_headers=altivec.h
 	;;
