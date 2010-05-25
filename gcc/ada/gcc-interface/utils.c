@@ -30,20 +30,17 @@
 #include "tree.h"
 #include "flags.h"
 #include "toplev.h"
-#include "rtl.h"
 #include "output.h"
 #include "ggc.h"
 #include "debug.h"
 #include "convert.h"
 #include "target.h"
-#include "function.h"
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "cgraph.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
-#include "gimple.h"
+#include "rtl.h"		/* For decl_default_tls_model.  */
 
 #include "ada.h"
 #include "types.h"
@@ -5314,7 +5311,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   new_type = build_vector_type (type, nunits);
 
   /* Build back pointers if needed.  */
-  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+  *node = reconstruct_complex_type (*node, new_type);
 
   return NULL_TREE;
 }

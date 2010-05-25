@@ -29,7 +29,9 @@
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "expr.h"
+#include "rtl.h"	/* FIXME: For set_stack_check_libfunc and
+			   gen_rtx_SYMBOL_REF -- here is a front end
+			   still trying to generate RTL!  */
 #include "ggc.h"
 #include "output.h"
 #include "tree-iterator.h"

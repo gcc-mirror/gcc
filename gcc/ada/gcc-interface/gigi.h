@@ -863,20 +863,6 @@ extern bool default_pass_by_ref (tree gnu_type);
    if it should be passed by reference.  */
 extern bool must_pass_by_ref (tree gnu_type);
 
-/* This function is called by the front end to enumerate all the supported
-   modes for the machine.  We pass a function which is called back with
-   the following integer parameters:
-
-   FLOAT_P	nonzero if this represents a floating-point mode
-   COMPLEX_P	nonzero is this represents a complex mode
-   COUNT	count of number of items, nonzero for vector mode
-   PRECISION	number of bits in data representation
-   MANTISSA	number of bits in mantissa, if FP and known, else zero.
-   SIZE		number of bits used to store data
-   ALIGN	number of bits to which mode is aligned.  */
-extern void enumerate_modes (void (*f) (int, int, int, int, int, int,
-					unsigned int));
-
 /* Return the size of the FP mode with precision PREC.  */
 extern int fp_prec_to_size (int prec);
 

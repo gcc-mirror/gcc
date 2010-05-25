@@ -34,21 +34,17 @@
 #include "tree.h"
 #include "diagnostic.h"
 #include "target.h"
-#include "expr.h"
-#include "libfuncs.h"
 #include "ggc.h"
 #include "flags.h"
 #include "debug.h"
-#include "cgraph.h"
-#include "optabs.h"
 #include "toplev.h"
-#include "except.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "opts.h"
 #include "options.h"
-#include "tree-inline.h"
 #include "plugin.h"
+#include "function.h"	/* For pass_by_reference.  */
+#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 
 #include "ada.h"
 #include "adadecode.h"
@@ -717,85 +713,6 @@ must_pass_by_ref (tree gnu_type)
 	  || TREE_ADDRESSABLE (gnu_type)
 	  || (TYPE_SIZE (gnu_type)
 	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
-}
-
-/* This function is called by the front end to enumerate all the supported
-   modes for the machine.  We pass a function which is called back with
-   the following integer parameters:
-
-   FLOAT_P	nonzero if this represents a floating-point mode
-   COMPLEX_P	nonzero is this represents a complex mode
-   COUNT	count of number of items, nonzero for vector mode
-   PRECISION	number of bits in data representation
-   MANTISSA	number of bits in mantissa, if FP and known, else zero.
-   SIZE		number of bits used to store data
-   ALIGN	number of bits to which mode is aligned.  */
-
-void
-enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
-{
-  int iloop;
-
-  for (iloop = 0; iloop < NUM_MACHINE_MODES; iloop++)
-    {
-      enum machine_mode i = (enum machine_mode) iloop;
-      enum machine_mode j;
-      bool float_p = 0;
-      bool complex_p = 0;
-      bool vector_p = 0;
-      bool skip_p = 0;
-      int mantissa = 0;
-      enum machine_mode inner_mode = i;
-
-      switch (GET_MODE_CLASS (i))
-	{
-	case MODE_INT:
-	  break;
-	case MODE_FLOAT:
-	  float_p = 1;
-	  break;
-	case MODE_COMPLEX_INT:
-	  complex_p = 1;
-	  inner_mode = GET_MODE_INNER (i);
-	  break;
-	case MODE_COMPLEX_FLOAT:
-	  float_p = 1;
-	  complex_p = 1;
-	  inner_mode = GET_MODE_INNER (i);
-	  break;
-	case MODE_VECTOR_INT:
-	  vector_p = 1;
-	  inner_mode = GET_MODE_INNER (i);
-	  break;
-	case MODE_VECTOR_FLOAT:
-	  float_p = 1;
-	  vector_p = 1;
-	  inner_mode = GET_MODE_INNER (i);
-	  break;
-	default:
-	  skip_p = 1;
-	}
-
-      /* Skip this mode if it's one the front end doesn't need to know about
-	 (e.g., the CC modes) or if there is no add insn for that mode (or
-	 any wider mode), meaning it is not supported by the hardware.  If
-	 this a complex or vector mode, we care about the inner mode.  */
-      for (j = inner_mode; j != VOIDmode; j = GET_MODE_WIDER_MODE (j))
-	if (optab_handler (add_optab, j)->insn_code != CODE_FOR_nothing)
-	  break;
-
-      if (float_p)
-	{
-	  const struct real_format *fmt = REAL_MODE_FORMAT (inner_mode);
-
-	  mantissa = fmt->p;
-	}
-
-      if (!skip_p && j != VOIDmode)
-	(*f) (float_p, complex_p, vector_p ? GET_MODE_NUNITS (i) : 0,
-	      GET_MODE_BITSIZE (i), mantissa,
-	      GET_MODE_SIZE (i) * BITS_PER_UNIT, GET_MODE_ALIGNMENT (i));
-    }
 }
 
 /* Return the size of the FP mode with precision PREC.  */

@@ -29,7 +29,6 @@
 #include "tm.h"
 #include "tree.h"
 #include "ggc.h"
-#include "flags.h"
 #include "output.h"
 #include "tree-inline.h"
 
