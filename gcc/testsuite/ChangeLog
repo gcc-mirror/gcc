@@ -1,3 +1,10 @@
+2010-05-25  Jack Howarth <howarth@bromo.med.uc.edu>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* g++.dg/abi/mangle40.C: Adjust dg-require-alias syntax.
+	* gcc.c-torture/compile/pr44197.c: Require alias support.
+	* gcc.dg/lto/20081222_0.c: Ditto.
+
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42801

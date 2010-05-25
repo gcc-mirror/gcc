@@ -1,3 +1,4 @@
+/* { dg-require-alias "" } */
 typedef unsigned short int __uint16_t;
 enum
 {
