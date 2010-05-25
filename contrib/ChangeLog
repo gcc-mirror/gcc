@@ -1,3 +1,8 @@
+2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Redirect grep output to /dev/null instead
+	of grep -q.
+
 2010-04-14  Release Manager
 
 	* GCC 4.5.0 released.

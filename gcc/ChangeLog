@@ -1,3 +1,9 @@
+2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_ld_jalr_reloc): Redirect grep stdout,
+	stderr to /dev/null instead of grep -q.
+	* configure: Regenerate.
+
 2010-05-25  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p): Check type qualifications

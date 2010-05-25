@@ -224,7 +224,7 @@ else
   VARIANTS=""
   for VAR in $VARS
   do
-    grep -q "Running target $VAR" $SUM_FILES && VARIANTS="$VARIANTS $VAR"
+    grep "Running target $VAR" $SUM_FILES > /dev/null && VARIANTS="$VARIANTS $VAR"
   done
 fi
 
@@ -418,6 +418,6 @@ cat ${TMP}/var-* | $AWK -f $TOTAL_AWK
 # This is ugly, but if there's version output from the compiler under test
 # at the end of the file, we want it.  The other thing that might be there
 # is the final summary counts.
-tail -2 $FIRST_SUM | grep -q '^#' || tail -2 $FIRST_SUM
+tail -2 $FIRST_SUM | grep '^#' > /dev/null || tail -2 $FIRST_SUM
 
 exit 0
