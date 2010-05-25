@@ -1,7 +1,7 @@
 /* Definitions for parsing and type checking for the GNU compiler for
    the Java(TM) language.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1230,6 +1230,10 @@ extern void java_read_sourcefilenames (const char *fsource_filename);
 extern void rewrite_reflection_indexes (void *);
 
 int cxx_keyword_p (const char *name, int length);
+
+extern GTY(()) VEC(tree,gc) *pending_static_fields;
+
+extern void java_write_globals (void);   
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
