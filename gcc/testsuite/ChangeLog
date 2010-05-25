@@ -1,3 +1,9 @@
+2010-05-24  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR ObjC++/43689
+	* obj-c++.dg/const-str-5.mm: Name pointer equivalence union.
+	* obj-c++.dg/const-str-6.mm: Ditto.
+
 2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/parse/array-size2.C: Remove dg-error directives.
