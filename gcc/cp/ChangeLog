@@ -1,3 +1,15 @@
+2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/18249
+	* parser.c (non_integral_constant): Add NIC_NONE.
+	(required_token): Add RT_NONE.
+	(cp_parser_unary_expression): Initialize non_constant_p
+	to NIC_NONE.
+	(cp_parser_asm_definition): Initialize missing to RT_NONE.
+	(cp_parser_primary_expression, cp_parser_postfix_expression,
+	cp_parser_cast_expression, cp_parser_binary_expression,
+	cp_parser_functional_cast): Fix formatting.
+
 2010-05-25  Shujing Zhao  <pearly.zhao@oracle.com>
 	
 	PR c++/18249
