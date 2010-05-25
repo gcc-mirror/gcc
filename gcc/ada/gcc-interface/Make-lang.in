@@ -1233,8 +1233,8 @@ ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TARGET_H) $(EXPR_H) libfuncs.h \
-   $(FLAGS_H) debug.h $(CGRAPH_H) $(OPTABS_H) toplev.h except.h langhooks.h \
+   $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TARGET_H) $(FUNCTION_H) \
+   $(FLAGS_H) debug.h toplev.h $(EXCEPT_H) langhooks.h \
    $(LANGHOOKS_DEF_H) opts.h options.h $(TREE_INLINE_H) $(PLUGIN_H) \
    ada/gcc-interface/ada.h ada/adadecode.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h \
@@ -1243,14 +1243,14 @@ ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/targtyps.o : ada/gcc-interface/targtyps.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) $(TM_P_H) $(TREE_H) ada/gcc-interface/ada.h \
+   coretypes.h $(TM_H) $(TREE_H) ada/gcc-interface/ada.h \
    ada/types.h ada/atree.h ada/elists.h ada/namet.h ada/nlists.h \
    ada/snames.h ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h \
    ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(FLAGS_H) $(EXPR_H) output.h tree-iterator.h \
+   $(TM_H) $(TREE_H) $(FLAGS_H) output.h tree-iterator.h \
    $(GIMPLE_H) ada/gcc-interface/ada.h ada/adadecode.h ada/types.h \
    ada/atree.h ada/elists.h ada/namet.h ada/nlists.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h ada/einfo.h \
@@ -1260,15 +1260,15 @@ ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 ada/utils.o : ada/gcc-interface/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(RTL_H) output.h debug.h convert.h \
-   $(TARGET_H) function.h langhooks.h pointer-set.h $(CGRAPH_H) \
-   $(TREE_DUMP_H) $(TREE_INLINE_H) tree-iterator.h $(GIMPLE_H) \
+   $(TARGET_H) function.h langhooks.h $(CGRAPH_H) \
+   $(TREE_DUMP_H) $(TREE_INLINE_H) tree-iterator.h \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h \
    $(ADA_TREE_H) ada/gcc-interface/gigi.h gt-ada-utils.h gtype-ada.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/utils2.o : ada/gcc-interface/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(FLAGS_H) output.h $(TREE_INLINE_H) \
+   $(TM_H) $(TREE_H) output.h $(TREE_INLINE_H) \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/snames.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h \
    ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h

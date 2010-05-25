@@ -1,3 +1,19 @@
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc-interface/utils.c: Do not include function.h, pointer-set.h,
+	and gimple.h.  Explain why rtl.h has to be included.
+	(handle_vector_size_attribute): Call reconstruct_complex_type directly.
+	* gcc-interface/targtyps.c: Do not include tm_p.h
+	* gcc-interface/utils2.c: Do not include flags.h.
+	* gcc-interface/trans.c: Do not include expr.h.  Include rtl.h instead,
+	and explain why it has to be included.
+	* gcc-interface/misc.c: Do not include expr.h, libfuncs.h, cgraph.h,
+	and optabs.h.
+	Include function.h and explain why.  Explain why except.h is included.
+	(enumerate_modes): Remove unused function. 
+	* gcc-interface/gigi.h (enumerate_modes): Remove prototype.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-05-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (internal_error_function): Add context

@@ -30,7 +30,6 @@
 #include "coretypes.h"
 #include "tree.h"
 #include "tm.h"
-#include "tm_p.h"
 
 #include "ada.h"
 #include "types.h"
