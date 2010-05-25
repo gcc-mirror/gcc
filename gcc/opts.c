@@ -63,7 +63,7 @@ bool warn_larger_than;
 HOST_WIDE_INT larger_than_size;
 
 /* True to warn about any function whose frame size is larger
- * than N bytes. */
+   than N bytes. */
 bool warn_frame_larger_than;
 HOST_WIDE_INT frame_larger_than_size;
 
@@ -804,6 +804,7 @@ decode_options (unsigned int argc, const char **argv)
   int opt2;
   int opt3;
   int opt1_max;
+  int ofast = 0;
 
   if (first_time_p)
     {
@@ -831,6 +832,7 @@ decode_options (unsigned int argc, const char **argv)
 	{
 	  optimize = 1;
 	  optimize_size = 0;
+	  ofast = 0;
 	}
       else if (argv[i][0] == '-' && argv[i][1] == 'O')
 	{
@@ -843,6 +845,14 @@ decode_options (unsigned int argc, const char **argv)
 
 	      /* Optimizing for size forces optimize to be 2.  */
 	      optimize = 2;
+	      ofast = 0;
+	    }
+	  else if (strcmp (p, "fast") == 0)
+	    {
+	      /* -Ofast only adds flags to -O3.  */
+	      optimize_size = 0;
+	      optimize = 3;
+	      ofast = 1;
 	    }
 	  else
 	    {
@@ -853,6 +863,7 @@ decode_options (unsigned int argc, const char **argv)
 		  if ((unsigned int) optimize > 255)
 		    optimize = 255;
 		  optimize_size = 0;
+		  ofast = 0;
 		}
 	    }
 	}
@@ -966,6 +977,17 @@ decode_options (unsigned int argc, const char **argv)
     }
   else
     set_param_value ("min-crossjump-insns", initial_min_crossjump_insns);
+
+  /* -Ofast adds optimizations to -O3.  */
+  if (ofast)
+    {
+      /* Which is -ffast-math for now.  */
+      set_fast_math_flags (1);
+      /* Allow targets to enable extra options with -Ofast
+	 before general options processing so disabling them
+	 again afterwards works.  */
+      targetm.handle_ofast ();
+    }
 
   /* Enable -Werror=coverage-mismatch by default */
   enable_warning_as_error("coverage-mismatch", 1, lang_mask);

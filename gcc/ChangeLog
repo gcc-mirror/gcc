@@ -1,3 +1,13 @@
+2010-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi: Document -Ofast.
+	* target.h (struct gcc_target): Add handle_ofast.
+	* target-def.h (TARGET_HANDLE_OFAST): Add.
+	(TARGET_INITIALIZER): Adjust.
+	* opts.c (decode_options): Handle -Ofast.  Enable
+	-ffast-math with it.
+	* common.opt (Ofast): Add.
+
 2010-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/tm.texi (STORE_FLAG_VALUE): Do not refer to sCC patterns.

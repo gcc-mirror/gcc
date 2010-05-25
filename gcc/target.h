@@ -531,6 +531,9 @@ struct gcc_target
      form was.  Return true if the switch was valid.  */
   bool (* handle_option) (size_t code, const char *arg, int value);
 
+  /* Handle target-specific parts of specifying -Ofast.  */
+  void (* handle_ofast) (void);
+
   /* Display extra, target specific information in response to a
      --target-help switch.  */
   void (* target_help) (void);
