@@ -1,3 +1,11 @@
+2010-05-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/43610
+	* optabs.c (prepare_float_lib_cmp): Allow reversing the comparison
+	even if !FLOAT_LIB_COMPARE_RETURNS_BOOL.  Always compute true_rtx and
+	false_rtx.  Use false_rtx to compute the correct *ptest for reversed
+	comparisons for which !FLOAT_LIB_COMPARE_RETURNS_BOOL.
+
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (loc_descr_plus_const): When offset is negative, use
