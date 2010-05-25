@@ -1,3 +1,10 @@
+2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/44216
+	* configure.ac (libgcj_cv_exidx): Enable AC_LANG_WERROR.
+	Save and restore werror flag.
+	* configure: Regenerate.
+
 2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/43620
