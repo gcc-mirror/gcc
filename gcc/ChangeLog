@@ -1,5 +1,10 @@
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* config/i386/i386-c.c: Do not include rtl.h.
+	* config/i386/t-i386: Update dependencies.
+
+2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* attribs.c: Do not include rtl.h.
 	* Makefile.in: Update dependencies.
 
