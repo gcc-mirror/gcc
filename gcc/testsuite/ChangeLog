@@ -1,3 +1,7 @@
+2010-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/sra-10.c: Do not dump esra details.
+
 2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR ObjC/44140

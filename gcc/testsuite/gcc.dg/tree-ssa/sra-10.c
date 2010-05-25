@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-esra-details" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 struct S
 {
