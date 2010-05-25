@@ -2490,12 +2490,16 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
   if (!var)
     return NULL;
 
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_onepart_p (var->dv));
+#endif
 
   if (!var->n_var_parts)
     return NULL;
 
+#ifdef ENABLE_CHECKING
   gcc_assert (var->var_part[0].offset == 0);
+#endif
 
   loc_code = GET_CODE (loc);
   for (node = var->var_part[0].loc_chain; node; node = node->next)
@@ -2589,6 +2593,33 @@ intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
   dataflow_set *s1set = dsm->cur;
   dataflow_set *s2set = dsm->src;
   location_chain found;
+
+  if (s2var)
+    {
+      location_chain s2node;
+
+#ifdef ENABLE_CHECKING
+      gcc_assert (dv_onepart_p (s2var->dv));
+#endif
+
+      if (s2var->n_var_parts)
+	{
+#ifdef ENABLE_CHECKING
+	  gcc_assert (s2var->var_part[0].offset == 0);
+#endif
+	  s2node = s2var->var_part[0].loc_chain;
+
+	  for (; s1node && s2node;
+	       s1node = s1node->next, s2node = s2node->next)
+	    if (s1node->loc != s2node->loc)
+	      break;
+	    else if (s1node->loc == val)
+	      continue;
+	    else
+	      insert_into_intersection (dest, s1node->loc,
+					MIN (s1node->init, s2node->init));
+	}
+    }
 
   for (; s1node; s1node = s1node->next)
     {

@@ -1,5 +1,12 @@
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Guard asserts with
+	ENABLE_CHECKING.
+	(intersect_loc_chains): Walk the s2var's loc_chain together
+	with s1node chain as long as the locations are equal, don't
+	call find_loc_in_1pdv in that case.
+
 	PR debug/42801
 	* tree-inline.c (remap_decls): Remap DECL_VALUE_EXPR here...
 	(copy_bind_expr): ... instead of here.
