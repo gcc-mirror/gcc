@@ -1,3 +1,22 @@
+2010-05-25  Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	PR c++/18249
+	* parser.c: Remove inclusion of dyn-string.h.
+	(non_integral_constant): New enum.
+	(name_lookup_error): New enum.
+	(required_token): New enum.
+	(cp_parser_required_error): New function.
+	(cp_parser_require): Change the type of variable token_desc to
+	required_token and use cp_parser_required_error.
+	(cp_parser_require_keyword): Likewise.
+	(cp_parser_error): Use gmsgid as parameter.
+	(cp_parser_name_lookup_error): Change the type of variable desired to
+	name_lookup_error and put the diagnostic in the full sentences. Change
+	caller.
+	(cp_parser_non_integral_constant_expression): Change the type of the
+	variable thing to non_integral_constant and put the diagnostics in
+	full sentences. Change caller.
+
 2010-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/44100
