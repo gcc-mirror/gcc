@@ -1,7 +1,7 @@
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42801
-	* gcc.dg/guality/sra-2.c: New test.
+	* gcc.dg/guality/vla-2.c: New test.
 
 2010-05-25  Richard Guenther  <rguenther@suse.de>
 
