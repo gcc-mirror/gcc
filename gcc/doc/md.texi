@@ -4705,20 +4705,28 @@ else must be negative.  Otherwise the instruction is not suitable and
 you should omit it from the machine description.  You describe to the
 compiler exactly which value is stored by defining the macro
 @code{STORE_FLAG_VALUE} (@pxref{Misc}).  If a description cannot be
-found that can be used for all the @samp{s@var{cond}} patterns, you
-should omit those operations from the machine description.
+found that can be used for all the possible comparison operators, you
+should pick one and use a @code{define_expand} to map all results
+onto the one you chose.
 
-These operations may fail, but should do so only in relatively
-uncommon cases; if they would fail for common cases involving
-integer comparisons, it is best to omit these patterns.
+These operations may @code{FAIL}, but should do so only in relatively
+uncommon cases; if they would @code{FAIL} for common cases involving
+integer comparisons, it is best to restrict the predicates to not
+allow these operands.  Likewise if a given comparison operator will
+always fail, independent of the operands (for floating-point modes, the
+@code{ordered_comparison_operator} predicate is often useful in this case).
 
-If these operations are omitted, the compiler will usually generate code
-that copies the constant one to the target and branches around an
-assignment of zero to the target.  If this code is more efficient than
-the potential instructions used for the @samp{cstore@var{mode}4} pattern
-followed by those required to convert the result into a 1 or a zero in
-@code{SImode}, you should omit the @samp{cstore@var{mode}4} operations from
-the machine description.
+If this pattern is omitted, the compiler will generate a conditional
+branch---for example, it may copy a constant one to the target and branching
+around an assignment of zero to the target---or a libcall.  If the predicate
+for operand 1 only rejects some operators, it will also try reordering the
+operands and/or inverting the result value (e.g.@: by an exclusive OR).
+These possibilities could be cheaper or equivalent to the instructions
+used for the @samp{cstore@var{mode}4} pattern followed by those required
+to convert a positive result from @code{STORE_FLAG_VALUE} to 1; in this
+case, you can and should make operand 1's predicate reject some operators
+in the @samp{cstore@var{mode}4} pattern, or remove the pattern altogether
+from the machine description.
 
 @cindex @code{cbranch@var{mode}4} instruction pattern
 @item @samp{cbranch@var{mode}4}
