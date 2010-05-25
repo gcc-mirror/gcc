@@ -1,3 +1,13 @@
+2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42801
+	* tree-inline.c (remap_decls): Remap DECL_VALUE_EXPR here...
+	(copy_bind_expr): ... instead of here.
+	(copy_tree_body_r): If id->remapping_type_depth clear TREE_BLOCK
+	if the block hasn't been remapped.
+	* dwarf2out.c (gen_formal_parameter_die, gen_variable_die): When
+	emitting concrete instance of abstract VLA, add DW_AT_type attribute.
+
 2010-05-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44069
