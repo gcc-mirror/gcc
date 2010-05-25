@@ -4233,6 +4233,10 @@ allocate_struct_function (tree fndecl, bool abstract_p)
       /* Assume all registers in stdarg functions need to be saved.  */
       cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;
       cfun->va_list_fpr_size = VA_LIST_MAX_FPR_SIZE;
+
+      /* ??? This could be set on a per-function basis by the front-end
+         but is this worth the hassle?  */
+      cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
     }
 }
 
@@ -4246,7 +4250,7 @@ push_struct_function (tree fndecl)
   allocate_struct_function (fndecl, false);
 }
 
-/* Reset cfun, and other non-struct-function variables to defaults as
+/* Reset crtl and other non-struct-function variables to defaults as
    appropriate for emitting rtl at the start of a function.  */
 
 static void
@@ -4778,7 +4782,7 @@ expand_function_end (void)
       /* We want to ensure that instructions that may trap are not
 	 moved into the epilogue by scheduling, because we don't
 	 always emit unwind information for the epilogue.  */
-      if (flag_non_call_exceptions)
+      if (cfun->can_throw_non_call_exceptions)
 	emit_insn (gen_blockage ());
     }
 
@@ -4924,7 +4928,7 @@ expand_function_end (void)
   /* @@@ This is a kludge.  We want to ensure that instructions that
      may trap are not moved into the epilogue by scheduling, because
      we don't always emit unwind information for the epilogue.  */
-  if (! USING_SJLJ_EXCEPTIONS && flag_non_call_exceptions)
+  if (!USING_SJLJ_EXCEPTIONS && cfun->can_throw_non_call_exceptions)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */

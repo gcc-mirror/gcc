@@ -3880,7 +3880,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
   /* If we're using non-call exceptions, a libcall corresponding to an
      operation that may trap may also trap.  */
   /* ??? See the comment in front of make_reg_eh_region_note.  */
-  if (flag_non_call_exceptions && may_trap_p (equiv))
+  if (cfun->can_throw_non_call_exceptions && may_trap_p (equiv))
     {
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (CALL_P (insn))
@@ -4126,7 +4126,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   /* Don't allow operands to the compare to trap, as that can put the
      compare and branch in different basic blocks.  */
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     {
       if (may_trap_p (x))
 	x = force_reg (mode, x);

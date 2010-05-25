@@ -340,7 +340,7 @@ check_call (funct_state local, gimple call, bool ipa)
         if (gimple_op (call, i)
 	    && tree_could_throw_p (gimple_op (call, i)))
 	  {
-	    if (possibly_throws && flag_non_call_exceptions)
+	    if (possibly_throws && cfun->can_throw_non_call_exceptions)
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "    operand can throw; looping\n");
@@ -405,7 +405,7 @@ check_call (funct_state local, gimple call, bool ipa)
      those bits. */
   else if (!ipa || !callee_t)
     {
-      if (possibly_throws && flag_non_call_exceptions)
+      if (possibly_throws && cfun->can_throw_non_call_exceptions)
         {
 	  if (dump_file)
 	    fprintf (dump_file, "    can throw; looping\n");
@@ -503,7 +503,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   if (gimple_code (stmt) != GIMPLE_CALL
       && stmt_could_throw_p (stmt))
     {
-      if (flag_non_call_exceptions)
+      if (cfun->can_throw_non_call_exceptions)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "    can throw; looping");

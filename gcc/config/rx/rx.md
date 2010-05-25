@@ -176,7 +176,7 @@
 					  [(cc0) (const_int 0)])
 		      (label_ref (match_operand 3 ""))
 		      (pc)))]
-  "ALLOW_RX_FPU_INSNS && ! flag_non_call_exceptions"
+  "ALLOW_RX_FPU_INSNS && !cfun->can_throw_non_call_exceptions"
   ""
 )
 
@@ -211,7 +211,7 @@
    (set_attr "length"  "2,2,3,4,5,6,5")]
 )
 
-;; This pattern is disabled when -fnon-call-exceptions is active because
+;; This pattern is disabled if the function can throw non-call exceptions,
 ;; it could generate a floating point exception, which would introduce an
 ;; edge into the flow graph between this insn and the conditional branch
 ;; insn to follow, thus breaking the cc0 relationship.  Run the g++ test
@@ -220,7 +220,7 @@
   [(set (cc0)
 	(compare:CC (match_operand:SF 0 "register_operand"  "r,r,r")
 		    (match_operand:SF 1 "rx_source_operand" "r,i,Q")))]
-  "ALLOW_RX_FPU_INSNS && ! flag_non_call_exceptions"
+  "ALLOW_RX_FPU_INSNS && !cfun->can_throw_non_call_exceptions"
   {
     rx_float_compare_mode = true;
     return "fcmp\t%1, %0";

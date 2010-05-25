@@ -1309,6 +1309,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->after_tree_profile = bp_unpack_value (bp, 1);
   fn->returns_pcc_struct = bp_unpack_value (bp, 1);
   fn->returns_struct = bp_unpack_value (bp, 1);
+  fn->can_throw_non_call_exceptions = bp_unpack_value (bp, 1);
   fn->always_inline_functions_inlined = bp_unpack_value (bp, 1);
   fn->after_inlining = bp_unpack_value (bp, 1);
   fn->dont_save_pending_sizes_p = bp_unpack_value (bp, 1);
