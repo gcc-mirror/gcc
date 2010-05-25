@@ -1,5 +1,8 @@
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* lang.c (java_classify_record): Return RECORD_IS_INTERFACE
+	for interfaces.
+
 	PR debug/43260
 	* java-tree.h (pending_static_fields): New extern declaration.
 	(java_write_globals): New prototype.
