@@ -1,4 +1,9 @@
-2010-05-09  Paolo Bonzini  <bonzini@gnu.org>
+2010-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/tm.texi (STORE_FLAG_VALUE): Do not refer to sCC patterns.
+	* doc/md.texi (cstoreXX4): Update for cond-optab changes.
+
+2010-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/43610
 	* optabs.c (prepare_float_lib_cmp): Allow reversing the comparison
