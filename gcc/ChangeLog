@@ -1,3 +1,9 @@
+2010-05-25  Wei Guozhi  <carrot@google.com>
+
+	* config/arm/thumb2.md (thumb2_tlobits_cbranch): Add constraint to
+	tst instruction and a new alternative.
+	* config/arm/constraints.md (Pu): New constraint.
+
 2010-05-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* function.c (assign_stack_local_1): Initialize variable
