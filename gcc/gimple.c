@@ -3362,11 +3362,20 @@ gimple_types_compatible_p (tree t1, tree t2)
 	    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
 	    && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
 		|| !COMPLETE_TYPE_P (TREE_TYPE (t2)))
+	    && TYPE_QUALS (TREE_TYPE (t1)) == TYPE_QUALS (TREE_TYPE (t2))
 	    && compare_type_names_p (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
 				     TYPE_MAIN_VARIANT (TREE_TYPE (t2)), true))
 	  {
 	    /* Replace the pointed-to incomplete type with the
-	       complete one.  */
+	       complete one.
+	       ???  This simple name-based merging causes at least some
+	       of the ICEs in canonicalizing FIELD_DECLs during stmt
+	       read.  For example in GCC we have two different struct deps
+	       and we mismatch the use in struct cpp_reader in sched-int.h
+	       vs. mkdeps.c.  Of course the whole exercise is for TBAA
+	       with structs which contain pointers to incomplete types
+	       in one unit and to complete ones in another.  So we
+	       probably should merge these types only with more context.  */
 	    if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
 	      TREE_TYPE (t1) = TREE_TYPE (t2);
 	    else

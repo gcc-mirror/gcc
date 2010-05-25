@@ -1,3 +1,11 @@
+2010-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p): Check type qualifications
+	before merging pointer to complete and pointer to incomplete type.
+	* lto-symtab.c (lto_symtab_resolve_symbols): For commons make sure
+	we use our own resolution algorithm.  The gold linker plugin
+	doesn't do the job we want it to do here.
+
 2010-05-24  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44196

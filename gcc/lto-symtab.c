@@ -406,6 +406,13 @@ lto_symtab_resolve_symbols (void **slot)
     {
       if (TREE_CODE (e->decl) == FUNCTION_DECL)
 	e->node = cgraph_get_node (e->decl);
+      else if (TREE_CODE (e->decl) == VAR_DECL)
+	{
+	  /* The LTO plugin for gold doesn't handle common symbols
+	     properly.  Let us choose manually.  */
+	  if (DECL_COMMON (e->decl))
+	    e->resolution = LDPR_UNKNOWN;
+	}
     }
 
   e = (lto_symtab_entry_t) *slot;
