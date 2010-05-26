@@ -1,3 +1,9 @@
+2010-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43382
+	* pt.c (fn_type_unification): Don't get confused by recursive
+	unification.
+
 2010-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41510

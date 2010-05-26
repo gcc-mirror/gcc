@@ -8242,7 +8242,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   int i, len = -1;
   tree result;
   int incomplete = 0;
-  bool very_local_specializations = false;
+  htab_t saved_local_specializations = NULL;
 
   gcc_assert (PACK_EXPANSION_P (t));
   pattern = PACK_EXPANSION_PATTERN (t);
@@ -8260,13 +8260,15 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
       if (TREE_CODE (parm_pack) == PARM_DECL)
 	{
-	  arg_pack = retrieve_local_specialization (parm_pack);
-	  if (arg_pack == NULL_TREE)
+	  if (!cp_unevaluated_operand)
+	    arg_pack = retrieve_local_specialization (parm_pack);
+	  else
 	    {
-	      /* This can happen for a parameter name used later in a function
-		 declaration (such as in a late-specified return type).  Just
-		 make a dummy decl, since it's only used for its type.  */
-	      gcc_assert (cp_unevaluated_operand != 0);
+	      /* We can't rely on local_specializations for a parameter
+		 name used later in a function declaration (such as in a
+		 late-specified return type).  Even if it exists, it might
+		 have the wrong value for a recursive call.  Just make a
+		 dummy decl, since it's only used for its type.  */
 	      arg_pack = tsubst_decl (parm_pack, args, complain);
 	      arg_pack = make_fnparm_pack (arg_pack);
 	    }
@@ -8372,11 +8374,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   if (len < 0)
     return error_mark_node;
 
-  if (!local_specializations)
+  if (cp_unevaluated_operand)
     {
-      /* We're in a late-specified return type, so we don't have a local
-	 specializations table.  Create one for doing this expansion.  */
-      very_local_specializations = true;
+      /* We're in a late-specified return type, so create our own local
+	 specializations table; the current table is either NULL or (in the
+	 case of recursive unification) might have bindings that we don't
+	 want to use or alter.  */
+      saved_local_specializations = local_specializations;
       local_specializations = htab_create (37,
 					   hash_local_specialization,
 					   eq_local_specializations,
@@ -8467,10 +8471,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
         }
     }
 
-  if (very_local_specializations)
+  if (saved_local_specializations)
     {
       htab_delete (local_specializations);
-      local_specializations = NULL;
+      local_specializations = saved_local_specializations;
     }
   
   return result;
