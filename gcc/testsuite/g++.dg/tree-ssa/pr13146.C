@@ -30,7 +30,10 @@ class multi: public third, public second
 {
 public:
   short s;
-  char f3;
+  /* The following field used to be of type char but that causes
+     class multi to effectively get alias-set zero which we end
+     up not optimizing because of the fix for PR44164.  */
+  int f3;
 };
 
 extern void link_error ();

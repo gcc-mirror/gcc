@@ -1,5 +1,14 @@
 2010-05-26  Richard Guenther  <rguenther@suse.de>
 
+	PR rtl-optimization/44164
+	* tree-ssa-alias.c (aliasing_component_refs_p): Fix the
+	no-common access-path disambiguation.
+	(indirect_ref_may_alias_decl_p): Adjust.
+	(indirect_refs_may_alias_p): Likewise.
+	(refs_may_alias_p_1): Likewise.
+
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44069
 	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Avoid generating
 	out-of-bounds array accesses.

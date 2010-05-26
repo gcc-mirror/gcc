@@ -561,13 +561,21 @@ same_type_for_tbaa (tree type1, tree type2)
 
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
-   on an indirect reference may alias.  */
+   on an indirect reference may alias.  REF2 is the only one that can
+   be a decl in which case REF2_IS_DECL is true.
+   REF1_ALIAS_SET, BASE1_ALIAS_SET, REF2_ALIAS_SET and BASE2_ALIAS_SET
+   are the respective alias sets.  */
 
 static bool
 aliasing_component_refs_p (tree ref1, tree type1,
+			   alias_set_type ref1_alias_set,
+			   alias_set_type base1_alias_set,
 			   HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
 			   tree ref2, tree type2,
-			   HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2)
+			   alias_set_type ref2_alias_set,
+			   alias_set_type base2_alias_set,
+			   HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2,
+			   bool ref2_is_decl)
 {
   /* If one reference is a component references through pointers try to find a
      common base and apply offset based disambiguation.  This handles
@@ -611,8 +619,20 @@ aliasing_component_refs_p (tree ref1, tree type1,
       offset1 -= offadj;
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
+
   /* If we have two type access paths B1.path1 and B2.path2 they may
-     only alias if either B1 is in B2.path2 or B2 is in B1.path1.  */
+     only alias if either B1 is in B2.path2 or B2 is in B1.path1.
+     But we can still have a path that goes B1.path1...B2.path2 with
+     a part that we do not see.  So we can only disambiguate now
+     if there is no B2 in the tail of path1 and no B1 on the
+     tail of path2.  */
+  if (base1_alias_set == ref2_alias_set
+      || alias_set_subset_of (base1_alias_set, ref2_alias_set))
+    return true;
+  /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
+  if (!ref2_is_decl)
+    return (base2_alias_set == ref1_alias_set
+	    || alias_set_subset_of (base2_alias_set, ref1_alias_set));
   return false;
 }
 
@@ -647,9 +667,11 @@ decl_refs_may_alias_p (tree base1,
 static bool
 indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
 			       HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
+			       alias_set_type ref1_alias_set,
 			       alias_set_type base1_alias_set,
 			       tree ref2, tree base2,
 			       HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2,
+			       alias_set_type ref2_alias_set,
 			       alias_set_type base2_alias_set)
 {
   /* If only one reference is based on a variable, they cannot alias if
@@ -693,9 +715,11 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
       && handled_component_p (ref1)
       && handled_component_p (ref2))
     return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
 				      ref2, TREE_TYPE (base2),
-				      offset2, max_size2);
+				      ref2_alias_set, base2_alias_set,
+				      offset2, max_size2, true);
 
   return true;
 }
@@ -710,9 +734,11 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
 static bool
 indirect_refs_may_alias_p (tree ref1, tree ptr1,
 			   HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
+			   alias_set_type ref1_alias_set,
 			   alias_set_type base1_alias_set,
 			   tree ref2, tree ptr2,
 			   HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2,
+			   alias_set_type ref2_alias_set,
 			   alias_set_type base2_alias_set)
 {
   /* If both bases are based on pointers they cannot alias if they may not
@@ -754,9 +780,11 @@ indirect_refs_may_alias_p (tree ref1, tree ptr1,
       && handled_component_p (ref1)
       && handled_component_p (ref2))
     return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
 				      ref2, TREE_TYPE (TREE_TYPE (ptr2)),
-				      offset2, max_size2);
+				      ref2_alias_set, base2_alias_set,
+				      offset2, max_size2, false);
 
   return true;
 }
@@ -909,14 +937,18 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   set = tbaa_p ? -1 : 0;
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, TREE_OPERAND (base2, 0),
-					  offset2, max_size2, set,
+					  offset2, max_size2,
+					  ao_ref_alias_set (ref2), set,
 					  ref1->ref, base1,
-					  offset1, max_size1, set);
+					  offset1, max_size1,
+					  ao_ref_alias_set (ref1), set);
   else if (ind1_p && ind2_p)
     return indirect_refs_may_alias_p (ref1->ref, TREE_OPERAND (base1, 0),
-				      offset1, max_size1, set,
+				      offset1, max_size1,
+				      ao_ref_alias_set (ref1), set,
 				      ref2->ref, TREE_OPERAND (base2, 0),
-				      offset2, max_size2, set);
+				      offset2, max_size2,
+				      ao_ref_alias_set (ref2), set);
 
   gcc_unreachable ();
 }
