@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "tree.h"
 #include "function.h"		/* For cfun.  FIXME: Does the parser know
 				   when it is inside a function, so that

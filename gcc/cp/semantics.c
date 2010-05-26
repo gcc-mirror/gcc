@@ -46,8 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "bitmap.h"
 
-#include "rtl.h"          /* For decl_default_tls_model.  */
-
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
    during template instantiation, which may be regarded as a

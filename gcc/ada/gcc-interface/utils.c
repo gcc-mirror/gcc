@@ -40,7 +40,6 @@
 #include "tree-dump.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
-#include "rtl.h"		/* For decl_default_tls_model.  */
 
 #include "ada.h"
 #include "types.h"

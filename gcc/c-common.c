@@ -28,9 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "output.h"
 #include "c-pragma.h"
-#include "rtl.h"
 #include "ggc.h"
-#include "expr.h" /* For vector_mode_valid_p */
 #include "c-common.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -48,6 +46,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target-def.h"
 #include "libfuncs.h"
+
+/* FIXME: Still need to include rtl.h here (via expr.h) in a front-end file.
+   Pretend this is a back-end file.  */
+#define IN_GCC_BACKEND
+#include "expr.h" /* For vector_mode_valid_p */
+
+/* FIXME: Needed for TARGET_ENUM_VA_LIST, which should be a target hook.  */
+#include "tm_p.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
