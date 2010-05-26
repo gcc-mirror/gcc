@@ -1,3 +1,8 @@
+2010-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto10.adb: New test.
+	* gnat.dg/lto10_pkg.ads: New helper.
+
 2010-05-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* lib/target-supports.exp (check_effective_target_int128): New

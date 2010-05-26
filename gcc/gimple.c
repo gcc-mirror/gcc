@@ -3299,8 +3299,7 @@ gimple_types_compatible_p (tree t1, tree t2)
   if (TREE_CODE (t1) == VOID_TYPE)
     return 1;
 
-  /* For numerical types do some simple checks before doing three
-     hashtable queries.  */
+  /* Do some simple checks before doing three hashtable queries.  */
   if (INTEGRAL_TYPE_P (t1)
       || SCALAR_FLOAT_TYPE_P (t1)
       || FIXED_POINT_TYPE_P (t1)
@@ -3332,6 +3331,14 @@ gimple_types_compatible_p (tree t1, tree t2)
 	return gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2));
 
       /* For integral types fall thru to more complex checks.  */
+    }
+
+  else if (AGGREGATE_TYPE_P (t1) || POINTER_TYPE_P (t1))
+    {
+      /* Can't be the same type if they have different alignment or mode.  */
+      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+	  || TYPE_MODE (t1) != TYPE_MODE (t2))
+	return 0;
     }
 
   /* If the hash values of t1 and t2 are different the types can't

@@ -1,3 +1,8 @@
+2010-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple.c (gimple_types_compatible_p): Return 0 for aggregate and
+	pointer types if they have different alignment or mode.
+
 2010-05-26  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sparc/sparc.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
