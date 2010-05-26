@@ -164,6 +164,9 @@ extern void weak_finish (void);
 /* Emit any pending emutls declarations and initializations.  */
 extern void emutls_finish (void);
 
+/* Return the default TLS model for a given variable.  */
+extern enum tls_model decl_default_tls_model (const_tree);
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
    or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,

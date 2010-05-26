@@ -1,3 +1,8 @@
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c: Do not include rtl.h
+	* semantics.c: Likewise.
+
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cp-tree.h: Do not include splay-tree.h.

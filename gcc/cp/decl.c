@@ -56,8 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "plugin.h"
 
-#include "rtl.h"          /* For decl_default_tls_model.  */
-
 static tree grokparms (tree parmlist, tree *);
 static const char *redeclaration_error_message (tree, tree);
 

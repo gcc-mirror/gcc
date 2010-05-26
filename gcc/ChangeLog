@@ -1,3 +1,17 @@
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (decl_default_tls_model): Move prototype from here...
+	* output.h: ...to here.
+	* c-decl.c: Do not include rtl.h.
+	* c-pragma.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-gimplify.c: Likewise.  And also not hard-reg-set.
+	* c-common.c: Do not include rtl.h.  Include tm_p.h and add a
+	FIXME note for it.  Add a FIXME note for expr.h.
+	* config/i386/i386-protos.h (ix86_enum_va_list, ix86_fn_abi_va_list,
+	ix86_canonical_va_list_type): Make visible even if RTX_CODE is not
+	defined.
+
 2010-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44199

@@ -2373,7 +2373,6 @@ extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 
 /* In varasm.c */
 extern void init_varasm_once (void);
-extern enum tls_model decl_default_tls_model (const_tree);
 
 extern rtx make_debug_expr_from_rtl (const_rtx);
 

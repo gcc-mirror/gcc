@@ -24,13 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "tree-dump.h"
 #include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "ggc.h"
 #include "toplev.h"	/* For announce_function/internal_error.  */
-#include "tm.h"		/* For rtl.h.  */
-#include "rtl.h"	/* For decl_default_tls_model.  */
+#include "output.h"	/* For decl_default_tls_model.  */
 #include "target.h"
 #include "function.h"
 #include "flags.h"
