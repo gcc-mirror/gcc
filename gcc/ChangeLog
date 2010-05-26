@@ -1,3 +1,8 @@
+2010-04-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
+
+	* config/picochip/picochip.md (movsi): Split a movsi from a
+	const after reload.
+
 2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* ggc-zone.c: Update copyright year.
