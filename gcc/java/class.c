@@ -930,8 +930,6 @@ hashUtf8String (const char *str, int len)
   return hash;
 }
 
-static GTY(()) tree utf8_decl_list = NULL_TREE;
-
 tree
 build_utf8_ref (tree name)
 {
@@ -996,14 +994,12 @@ build_utf8_ref (tree name)
 	}
     }
 
-  TREE_CHAIN (decl) = utf8_decl_list;
   layout_decl (decl, 0);
   DECL_SIZE (decl) = TYPE_SIZE (ctype);
   DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (ctype);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
   varpool_mark_needed_node (varpool_node (decl));
-  utf8_decl_list = decl;
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
   IDENTIFIER_UTF8_REF (name) = ref;
   return ref;

@@ -71,7 +71,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 extern struct obstack temporary_obstack;
 
-static GTY(()) tree parse_roots[3];
+static GTY(()) tree parse_roots[2];
 
 /* The FIELD_DECL for the current field.  */
 #define current_field parse_roots[0]
@@ -80,13 +80,16 @@ static GTY(()) tree parse_roots[3];
 #define current_method parse_roots[1]
 
 /* A list of TRANSLATION_UNIT_DECLs for the files to be compiled.  */
-#define current_file_list parse_roots[2]
+static GTY(()) VEC(tree,gc) *current_file_list;
 
 /* Line 0 in current file, if compiling from bytecode. */
 static location_t file_start_location;
 
 /* The Java archive that provides main_class;  the main input file. */
 static GTY(()) struct JCF * main_jcf;
+
+/* A list of all the class DECLs seen so far.  */
+static GTY(()) VEC(tree,gc) *all_class_list;
 
 /* The number of source files passed to us by -fsource-filename and an
    array of pointers to each name.  Used by find_sourcefile().  */
@@ -1479,8 +1482,7 @@ jcf_parse (JCF* jcf)
   if (current_class == object_type_node)
     layout_class_methods (object_type_node);
   else
-    all_class_list = tree_cons (NULL_TREE,
-				TYPE_NAME (current_class), all_class_list );
+    VEC_safe_push (tree, gc, all_class_list, TYPE_NAME (current_class));
 }
 
 /* If we came across inner classes, load them now. */
@@ -1511,16 +1513,17 @@ duplicate_class_warning (const char *filename)
 static void
 java_layout_seen_class_methods (void)
 {
-  tree previous_list = all_class_list;
-  tree end = NULL_TREE;
-  tree current;
+  unsigned start = 0;
+  unsigned end = VEC_length (tree, all_class_list);
 
   while (1)
     {
-      for (current = previous_list;
-	   current != end; current = TREE_CHAIN (current))
+      unsigned ix;
+      unsigned new_length;
+
+      for (ix = start; ix != end; ix++)
         {
-	  tree decl = TREE_VALUE (current);
+	  tree decl = VEC_index (tree, all_class_list, ix);
           tree cls = TREE_TYPE (decl);
 
 	  input_location = DECL_SOURCE_LOCATION (decl);
@@ -1533,11 +1536,11 @@ java_layout_seen_class_methods (void)
 
       /* Note that new classes might have been added while laying out
          methods, changing the value of all_class_list.  */
-
-      if (previous_list != all_class_list)
+      new_length = VEC_length (tree, all_class_list);
+      if (end != new_length)
 	{
-	  end = previous_list;
-	  previous_list = all_class_list;
+	  start = end;
+	  end = new_length;
 	}
       else
 	break;
@@ -1664,22 +1667,24 @@ parse_class_file (void)
   input_location = save_location;
 }
 
+static VEC(tree,gc) *predefined_filenames;
+
 void
 add_predefined_file (tree name)
 {
-  predef_filenames = tree_cons (NULL_TREE, name, predef_filenames);
+  VEC_safe_push (tree, gc, predefined_filenames, name);
 }
 
 int
 predefined_filename_p (tree node)
 {
-  tree iter;
+  unsigned ix;
+  tree f;
 
-  for (iter = predef_filenames; iter != NULL_TREE; iter = TREE_CHAIN (iter))
-    {
-      if (TREE_VALUE (iter) == node)
-	return 1;
-    }
+  for (ix = 0; VEC_iterate (tree, predefined_filenames, ix, f); ix++)
+    if (f == node)
+      return 1;
+
   return 0;
 }
 
@@ -1735,6 +1740,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   tree node;
   FILE *finput = NULL;
   int in_quotes = 0;
+  unsigned ix;
  
   bitmap_obstack_initialize (&bit_obstack);
   field_offsets = BITMAP_ALLOC (&bit_obstack);
@@ -1834,8 +1840,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    {
 	      tree file_decl = build_decl (input_location,
 					   TRANSLATION_UNIT_DECL, node, NULL);
-	      TREE_CHAIN (file_decl) = current_file_list;
-	      current_file_list = file_decl;
+	      VEC_safe_push (tree, gc, current_file_list, file_decl);
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
 	    }
 	}
@@ -1853,17 +1858,16 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       const char *resource_filename;
       
       /* Only one resource file may be compiled at a time.  */
-      assert (TREE_CHAIN (current_file_list) == NULL);
+      assert (VEC_length (tree, current_file_list) == 1);
 
-      resource_filename = IDENTIFIER_POINTER (DECL_NAME (current_file_list));
+      resource_filename = IDENTIFIER_POINTER (DECL_NAME (VEC_index (tree, current_file_list, 0)));
       compile_resource_file (resource_name, resource_filename);
 
       goto finish;
     }
 
   current_jcf = main_jcf;
-  current_file_list = nreverse (current_file_list);
-  for (node = current_file_list; node; node = TREE_CHAIN (node))
+  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
     {
       unsigned char magic_string[4];
       char *real_path;
@@ -1952,7 +1956,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
     }
 
-  for (node = current_file_list; node; node = TREE_CHAIN (node))
+  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
     {
       input_location = DECL_SOURCE_LOCATION (node);
       if (CLASS_FILE_P (node))
