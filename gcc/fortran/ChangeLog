@@ -1,3 +1,9 @@
+2010-05-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40011
+	* resolve.c (resolve_global_procedure): Resolve the gsymbol's
+	namespace before trying to reorder the gsymbols.
+
 2010-05-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/30668

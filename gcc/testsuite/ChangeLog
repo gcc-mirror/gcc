@@ -1,3 +1,8 @@
+2010-05-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40011
+	* gfortran.dg/whole_file_19.f90 : New test.
+
 2010-05-25  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/30668
