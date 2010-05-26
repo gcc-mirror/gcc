@@ -1,3 +1,11 @@
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (alias_set_subset_of): Handle alias-set zero
+	child properly.
+
 2010-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44199

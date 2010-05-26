@@ -406,7 +406,7 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
   /* Otherwise, check if set1 is a subset of set2.  */
   ase = get_alias_set_entry (set2);
   if (ase != 0
-      && ((ase->has_zero_child && set1 == 0)
+      && (ase->has_zero_child
 	  || splay_tree_lookup (ase->children,
 			        (splay_tree_key) set1)))
     return true;
