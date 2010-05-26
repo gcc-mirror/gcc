@@ -274,9 +274,7 @@ if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
       return false;
     }
 
-  /* See if it needs speculative loading or not.  */
-  if (bb != loop->header
-      && gimple_assign_rhs_could_trap_p (stmt))
+  if (gimple_assign_rhs_could_trap_p (stmt))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "tree could trap...\n");
@@ -588,6 +586,19 @@ predicate_bbs (loop_p loop)
   return true;
 }
 
+/* Returns true when BB has a predicate that is not trivial: true or
+   NULL_TREE.  */
+
+static bool
+is_predicated (basic_block bb)
+{
+  tree cond = (tree) bb->aux;
+
+  return (cond != NULL_TREE
+	  && cond != boolean_true_node
+	  && !integer_onep (cond));
+}
+
 /* Return true when LOOP is if-convertible.
    LOOP is if-convertible if:
    - it is innermost,
@@ -681,6 +692,10 @@ if_convertible_loop_p (struct loop *loop)
     {
       basic_block bb = ifc_bbs[i];
       gimple_stmt_iterator itr;
+
+      /* For non predicated BBs, don't check their statements.  */
+      if (!is_predicated (bb))
+	continue;
 
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
 	if (!if_convertible_stmt_p (loop, bb, gsi_stmt (itr)))
