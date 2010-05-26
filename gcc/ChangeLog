@@ -1,3 +1,23 @@
+2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc-zone.c: Update copyright year.
+	(poison_region): Mark memory for Valgrind as undefined before
+	memset () call and inaccessible afterwards.
+	(ggc_pch_total_size): Change type of i to int.
+
+2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc-common.c (ggc_free_overhead): Allow empty slot.
+
+2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc-common.c: Update copyright year.
+	(ggc_rlimit_bound): Remove prototype.  Compile only if
+	!ENABLE_GC_CHECKING && !ENABLE_GC_ALWAYS_COLLECT.
+	(ggc_min_heapsize_heuristic): Compile only if !ENABLE_GC_CHECKING
+	&& !ENABLE_GC_ALWAYS_COLLECT.  Make static.
+	(ggc_min_heapsize_heuristic): Likewise.
+
 2010-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/44164

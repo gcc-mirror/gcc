@@ -1,6 +1,6 @@
 /* "Bag-of-pages" zone garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
+   2010 Free Software Foundation, Inc.
 
    Contributed by Richard Henderson (rth@redhat.com) and Daniel Berlin
    (dberlin@dberlin.org).  Rewritten by Daniel Jacobowitz
@@ -1385,8 +1385,12 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
 
 /* Poison the chunk.  */
 #ifdef ENABLE_GC_CHECKING
-#define poison_region(PTR, SIZE) \
-  memset ((PTR), 0xa5, (SIZE))
+#define poison_region(PTR, SIZE)				      \
+  do {								      \
+    VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED ((PTR), (SIZE)));   \
+    memset ((PTR), 0xa5, (SIZE));				      \
+    VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS ((PTR), (SIZE)));    \
+  } while (0)
 #else
 #define poison_region(PTR, SIZE)
 #endif
@@ -2349,7 +2353,7 @@ ggc_pch_count_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
 size_t
 ggc_pch_total_size (struct ggc_pch_data *d)
 {
-  enum gt_types_enum i;
+  int i;
   size_t alloc_size, total_size;
 
   total_size = 0;
