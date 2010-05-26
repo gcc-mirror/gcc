@@ -460,6 +460,10 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "----------[%d]-------------\n", bb->index);
 
+  if (EDGE_COUNT (bb->preds) > 2
+      || EDGE_COUNT (bb->succs) > 2)
+    return false;
+
   if (exit_bb)
     {
       if (bb != loop->latch)

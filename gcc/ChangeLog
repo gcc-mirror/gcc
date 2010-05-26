@@ -1,5 +1,10 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (if_convertible_bb_p): Don't handle BBs with more
+	than 2 predecessors or more than 2 successors.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (if_convertible_loop_p): Avoid if-conversion
 	of loops in which the data dependence analysis fails.
 
