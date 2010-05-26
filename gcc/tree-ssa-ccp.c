@@ -2294,6 +2294,18 @@ maybe_fold_stmt_addition (location_t loc, tree res_type, tree op0, tree op1)
 	  if (!is_gimple_assign (offset_def))
 	    return NULL_TREE;
 
+	  /* As we will end up creating a variable index array access
+	     in the outermost array dimension make sure there isn't
+	     a more inner array that the index could overflow to.  */
+	  if (TREE_CODE (TREE_OPERAND (op0, 0)) == ARRAY_REF)
+	    return NULL_TREE;
+
+	  /* Do not build array references of something that we can't
+	     see the true number of array dimensions for.  */
+	  if (!DECL_P (TREE_OPERAND (op0, 0))
+	      && !handled_component_p (TREE_OPERAND (op0, 0)))
+	    return NULL_TREE;
+
 	  if (gimple_assign_rhs_code (offset_def) == MULT_EXPR
 	      && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
 	      && tree_int_cst_equal (gimple_assign_rhs2 (offset_def),

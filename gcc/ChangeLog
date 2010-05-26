@@ -1,5 +1,11 @@
 2010-05-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44069
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Avoid generating
+	out-of-bounds array accesses.
+
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2010-04-15  Richard Guenther  <rguenther@suse.de>
 
