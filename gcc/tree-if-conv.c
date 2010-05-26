@@ -589,11 +589,11 @@ if_convertible_loop_p (struct loop *loop)
   edge_iterator ei;
   basic_block exit_bb = NULL;
 
-  /* Handle only inner most loop.  */
+  /* Handle only innermost loop.  */
   if (!loop || loop->inner)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "not inner most loop\n");
+	fprintf (dump_file, "not innermost loop\n");
       return false;
     }
 
@@ -631,7 +631,7 @@ if_convertible_loop_p (struct loop *loop)
   if (!ifc_bbs)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,"Irreducible loop\n");
+	fprintf (dump_file, "Irreducible loop\n");
       free_dominance_info (CDI_POST_DOMINATORS);
       return false;
     }
@@ -662,7 +662,7 @@ if_convertible_loop_p (struct loop *loop)
     }
 
   if (dump_file)
-    fprintf (dump_file,"Applying if-conversion\n");
+    fprintf (dump_file, "Applying if-conversion\n");
 
   free_dominance_info (CDI_POST_DOMINATORS);
   return true;
@@ -1020,7 +1020,7 @@ tree_if_conversion (struct loop *loop)
   if (!if_convertible_loop_p (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,"-------------------------\n");
+	fprintf (dump_file, "-------------------------\n");
       if (ifc_bbs)
 	{
 	  free (ifc_bbs);
