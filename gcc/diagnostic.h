@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_H
 
 #include "pretty-print.h"
-#include "options.h"
 
 /* Constants used to discriminate diagnostics.  */
 typedef enum
@@ -73,12 +72,17 @@ struct diagnostic_context
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
 
-  /* For each option index that can be passed to warning() et all
-     (OPT_* from options.h), this array may contain a new kind that
-     the diagnostic should be changed to before reporting, or
-     DK_UNSPECIFIED to leave it as the reported kind, or DK_IGNORED to
-     not report it at all.  N_OPTS is from <options.h>.  */
-  diagnostic_t classify_diagnostic[N_OPTS];
+  /* The number of option indexes that can be passed to warning() et
+     al.  */
+  int n_opts;
+
+  /* For each option index that can be passed to warning() et al
+     (OPT_* from options.h when using this code with the core GCC
+     options), this array may contain a new kind that the diagnostic
+     should be changed to before reporting, or DK_UNSPECIFIED to leave
+     it as the reported kind, or DK_IGNORED to not report it at
+     all.  */
+  diagnostic_t *classify_diagnostic;
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -96,8 +100,18 @@ struct diagnostic_context
   /* True if permerrors are warnings.  */
   bool permissive;
 
+  /* The index of the option to associate with turning permerrors into
+     warnings.  */
+  int opt_permissive;
+
   /* True if errors are fatal.  */
   bool fatal_errors;
+
+  /* True if all warnings should be disabled.  */
+  bool inhibit_warnings;
+
+  /* True if warnings should be given in system headers.  */
+  bool warn_system_headers;
 
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
@@ -113,6 +127,18 @@ struct diagnostic_context
 
   /* Client hook to report an internal error.  */
   void (*internal_error) (diagnostic_context *, const char *, va_list *);
+
+  /* Client hook to say whether the option controlling a diagnostic is
+     enabled.  Returns nonzero if enabled, zero if disabled.  */
+  int (*option_enabled) (int);
+
+  /* Client hook to return the name of an option that controls a
+     diagnostic.  Returns malloced memory.  The first diagnostic_t
+     argument is the kind of diagnostic before any reclassification
+     (of warnings as errors, etc.); the second is the kind after any
+     reclassification.  May return NULL if no name is to be printed.
+     May be passed 0 as well as the index of a particular option.  */
+  char *(*option_name) (diagnostic_context *, int, diagnostic_t, diagnostic_t);
 
   /* Auxiliary data for client.  */
   void *x_data;
@@ -187,9 +213,9 @@ extern diagnostic_context *global_dc;
 #define sorrycount diagnostic_kind_count (global_dc, DK_SORRY)
 
 /* Returns nonzero if warnings should be emitted.  */
-#define diagnostic_report_warnings_p(LOC)			\
-  (!inhibit_warnings					\
-   && !(in_system_header_at (LOC) && !warn_system_headers))
+#define diagnostic_report_warnings_p(DC, LOC)				\
+  (!(DC)->inhibit_warnings						\
+   && !(in_system_header_at (LOC) && !(DC)->warn_system_headers))
 
 #define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
 
@@ -203,7 +229,7 @@ extern diagnostic_context *global_dc;
     ((DI)->option_index = (OPTIDX))
 
 /* Diagnostic related functions.  */
-extern void diagnostic_initialize (diagnostic_context *);
+extern void diagnostic_initialize (diagnostic_context *, int);
 extern void diagnostic_finish (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);
 

@@ -1,3 +1,39 @@
+2010-05-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic.c: Don't include opts.h.
+	(permissive_error_option): Define.
+	(diagnostic_initialize): Take n_opts parameter.  Allocate memory
+	for classify_diagnostic.  Don't use memset for
+	classify_diagnostic.  Initialize new and recently added fields.
+	(diagnostic_classify_diagnostic): Use context->n_opts instead of
+	N_OPTS.
+	(diagnostic_report_diagnostic): Pass context parameter to
+	diagnostic_report_warnings_p.  Use option_enabled and option_name
+	hooks from context.
+	(emit_diagnostic): Use permissive_error_option.
+	(permerror): Likewise.
+	* diagnostic.h: Don't include options.h.
+	(struct diagnostic_context): Add n_opts, opt_permissive,
+	inhibit_warnings, warn_system_headers, option_enabled and
+	option_name fields.  Change classify_diagnostic to a pointer.
+	* opts-diagnostic.h: New file.
+	* opts.c: Include opts-diagnostic.h.
+	(common_handle_option): Set global_dc fields for -Wfatal-errors,
+	-Wsystem-headers, -fshow-column, -pedantic-errors and -w.
+	(option_name): New function.
+	* c-opts.c (c_common_init_options): Set global_dc->opt_permissive.
+	(c_common_handle_option): Set global_dc->permissive for
+	-fpermissive.
+	* c-common.c (c_cpp_error): Save and restore
+	global_dc->warn_system_headers, not variable warn_system_headers.
+	* toplev.c: Include opts-diagnostic.h.
+	(general_init): Update call to diagnostic_initialize.  Set
+	global_dc->show_column, global_dc->option_enabled and
+	global_dc->option_name.
+	(process_options): Don't set global_dc fields here.
+	* Makefile.in (DIAGNOSTIC_H): Remove options.h.
+	(diagnostic.o, opts.o, toplev.o): Update dependencies.
+
 2010-04-30  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (movsi): Split a movsi from a

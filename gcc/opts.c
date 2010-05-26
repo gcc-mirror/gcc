@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "params.h"
 #include "diagnostic.h"
+#include "opts-diagnostic.h"
 #include "tm_p.h"		/* For OPTIMIZATION_OPTIONS.  */
 #include "insn-attr.h"		/* For INSN_SCHEDULING.  */
 #include "target.h"
@@ -1703,6 +1704,10 @@ common_handle_option (size_t scode, const char *arg, int value,
       warn_larger_than = value != -1;
       break;
 
+    case OPT_Wfatal_errors:
+      global_dc->fatal_errors = value;
+      break;
+
     case OPT_Wframe_larger_than_:
       frame_larger_than_size = value;
       warn_frame_larger_than = value != -1;
@@ -1724,6 +1729,10 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wstrict_overflow_:
       warn_strict_overflow = value;
+      break;
+
+    case OPT_Wsystem_headers:
+      global_dc->warn_system_headers = value;
       break;
 
     case OPT_Wunused:
@@ -1955,6 +1964,10 @@ common_handle_option (size_t scode, const char *arg, int value,
       flag_profile_values_set = true;
       break;
 
+    case OPT_fshow_column:
+      global_dc->show_column = value;
+      break;
+
     case OPT_fvisibility_:
       {
         if (!strcmp(arg, "default"))
@@ -2168,11 +2181,15 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_pedantic_errors:
-      flag_pedantic_errors = pedantic = 1;
+      global_dc->pedantic_errors = flag_pedantic_errors = pedantic = 1;
       break;
 
     case OPT_fwhopr:
       flag_whopr = value;
+      break;
+
+    case OPT_w:
+      global_dc->inhibit_warnings = true;
       break;
 
     case OPT_fsee:
@@ -2509,4 +2526,39 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
 	}
     }
   free (new_option);
+}
+
+/* Return malloced memory for the name of the option OPTION_INDEX
+   which enabled a diagnostic (context CONTEXT), originally of type
+   ORIG_DIAG_KIND but possibly converted to DIAG_KIND by options such
+   as -Werror.  */
+
+char *
+option_name (diagnostic_context *context, int option_index,
+	     diagnostic_t orig_diag_kind, diagnostic_t diag_kind)
+{
+  if (option_index)
+    {
+      /* A warning classified as an error.  */
+      if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
+	  && diag_kind == DK_ERROR)
+	return concat (cl_options[OPT_Werror_].opt_text,
+		       /* Skip over "-W".  */
+		       cl_options[option_index].opt_text + 2,
+		       NULL);
+      /* A warning with option.  */
+      else
+	return xstrdup (cl_options[option_index].opt_text);
+    }
+  /* A warning without option classified as an error.  */
+  else if (orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
+	   || diag_kind == DK_WARNING)
+    {
+      if (context->warning_as_error_requested)
+	return xstrdup (cl_options[OPT_Werror].opt_text);
+      else
+	return xstrdup (_("enabled by default"));
+    }
+  else
+    return NULL;
 }

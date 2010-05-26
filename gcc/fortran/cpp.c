@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -975,13 +975,13 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
-  int save_warn_system_headers = warn_system_headers;
+  bool save_warn_system_headers = global_dc->warn_system_headers;
   bool ret;
 
   switch (level)
     {
     case CPP_DL_WARNING_SYSHDR:
-      warn_system_headers = 1;
+      global_dc->warn_system_headers = 1;
       /* Fall through.  */
     case CPP_DL_WARNING:
       dlevel = DK_WARNING;
@@ -1012,7 +1012,7 @@ cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     diagnostic_override_option_index (&diagnostic, OPT_Wcpp);
   ret = report_diagnostic (&diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
-    warn_system_headers = save_warn_system_headers;
+    global_dc->warn_system_headers = save_warn_system_headers;
   return ret;
 }
 

@@ -31,11 +31,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "opts.h"
 
 #define pedantic_warning_kind(DC)			\
   ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
 #define permissive_error_kind(DC) ((DC)->permissive ? DK_WARNING : DK_ERROR)
+#define permissive_error_option(DC) ((DC)->opt_permissive)
 
 /* Prototypes.  */
 static char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
@@ -77,8 +77,10 @@ file_name_as_prefix (const char *f)
 
 /* Initialize the diagnostic message outputting machinery.  */
 void
-diagnostic_initialize (diagnostic_context *context)
+diagnostic_initialize (diagnostic_context *context, int n_opts)
 {
+  int i;
+
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
   context->printer = XNEW (pretty_printer);
@@ -91,13 +93,24 @@ diagnostic_initialize (diagnostic_context *context)
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
   context->some_warnings_are_errors = false;
   context->warning_as_error_requested = false;
-  memset (context->classify_diagnostic, DK_UNSPECIFIED,
-	  sizeof context->classify_diagnostic);
+  context->n_opts = n_opts;
+  context->classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
+  for (i = 0; i < n_opts; i++)
+    context->classify_diagnostic[i] = DK_UNSPECIFIED;
   context->show_option_requested = false;
   context->abort_on_error = false;
+  context->show_column = false;
+  context->pedantic_errors = false;
+  context->permissive = false;
+  context->opt_permissive = 0;
+  context->fatal_errors = false;
+  context->inhibit_warnings = false;
+  context->warn_system_headers = false;
   context->internal_error = NULL;
   diagnostic_starter (context) = default_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
+  context->option_enabled = NULL;
+  context->option_name = NULL;
   context->last_module = 0;
   context->x_data = NULL;
   context->lock = 0;
@@ -295,7 +308,7 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
   diagnostic_t old_kind;
 
   if (option_index <= 0
-      || option_index >= N_OPTS
+      || option_index >= context->n_opts
       || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
     return DK_UNSPECIFIED;
 
@@ -322,7 +335,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
   if ((diagnostic->kind == DK_WARNING || diagnostic->kind == DK_PEDWARN)
-      && !diagnostic_report_warnings_p (location))
+      && !diagnostic_report_warnings_p (context, location))
     return false;
 
   if (diagnostic->kind == DK_PEDWARN)
@@ -360,7 +373,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
     {
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
-      if (! option_enabled (diagnostic->option_index))
+      if (! context->option_enabled (diagnostic->option_index))
 	return false;
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
@@ -405,38 +418,20 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   saved_format_spec = diagnostic->message.format_spec;
   if (context->show_option_requested)
     {
-      const char * option_text = NULL;
+      char *option_text;
 
-      if (diagnostic->option_index)
-	{
-	  /* A warning classified as an error.  */
-	  if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN)
-	      && diagnostic->kind == DK_ERROR)
-	    option_text 
-	      = ACONCAT ((cl_options[OPT_Werror_].opt_text,
-			  /* Skip over "-W".  */
-			  cl_options[diagnostic->option_index].opt_text + 2,
-			  NULL));
-	  /* A warning with option.  */
-	  else
-	    option_text = cl_options[diagnostic->option_index].opt_text;
-	}
-      /* A warning without option classified as an error.  */
-      else if (orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
-	       || diagnostic->kind == DK_WARNING)
-	{
-	  if (context->warning_as_error_requested)
-	    option_text = cl_options[OPT_Werror].opt_text;
-	  else
-	    option_text = _("enabled by default");
-	}
+      option_text = context->option_name (context, diagnostic->option_index,
+					  orig_diag_kind, diagnostic->kind);
 
       if (option_text)
-	diagnostic->message.format_spec
-	  = ACONCAT ((diagnostic->message.format_spec,
-		      " ", 
-		      "[", option_text, "]",
-		      NULL));
+	{
+	  diagnostic->message.format_spec
+	    = ACONCAT ((diagnostic->message.format_spec,
+			" ", 
+			"[", option_text, "]",
+			NULL));
+	  free (option_text);
+	}
     }
   diagnostic->message.locus = &diagnostic->location;
   diagnostic->message.x_data = &diagnostic->x_data;
@@ -519,7 +514,7 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
 			   permissive_error_kind (global_dc));
-      diagnostic.option_index = OPT_fpermissive;
+      diagnostic.option_index = permissive_error_option (global_dc);
     }
   else {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, location, kind);
@@ -638,7 +633,7 @@ permerror (location_t location, const char *gmsgid, ...)
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
                        permissive_error_kind (global_dc));
-  diagnostic.option_index = OPT_fpermissive;
+  diagnostic.option_index = permissive_error_option (global_dc);
   va_end (ap);
   return report_diagnostic (&diagnostic);
 }
