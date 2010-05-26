@@ -1,5 +1,12 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (if_convertible_gimple_assign_stmt_p): Do not
+	special case loop->header.
+	(is_predicated): New.
+	(if_convertible_loop_p): Call it.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (add_to_dst_predicate_list): Do not pass a statemet
 	iterator in parameter.  Do not generate code during the analysis.
 	(tree_if_convert_cond_stmt): Removed.
