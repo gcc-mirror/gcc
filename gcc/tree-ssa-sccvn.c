@@ -2833,58 +2833,50 @@ sort_scc (VEC (tree, heap) *scc)
 	 compare_ops);
 }
 
-/* Insert the no longer used nary *ENTRY to the current hash.  */
+/* Insert the no longer used nary ONARY to the hash INFO.  */
 
-static int
-copy_nary (void **entry, void *data ATTRIBUTE_UNUSED)
+static void
+copy_nary (vn_nary_op_t onary, vn_tables_t info)
 {
-  vn_nary_op_t onary = (vn_nary_op_t) *entry;
   size_t size = (sizeof (struct vn_nary_op_s)
 		 - sizeof (tree) * (4 - onary->length));
-  vn_nary_op_t nary = (vn_nary_op_t) obstack_alloc (&current_info->nary_obstack,
-						    size);
+  vn_nary_op_t nary = (vn_nary_op_t) obstack_alloc (&info->nary_obstack, size);
   void **slot;
   memcpy (nary, onary, size);
-  slot = htab_find_slot_with_hash (current_info->nary, nary, nary->hashcode,
-				   INSERT);
+  slot = htab_find_slot_with_hash (info->nary, nary, nary->hashcode, INSERT);
   gcc_assert (!*slot);
   *slot = nary;
-  return 1;
 }
 
-/* Insert the no longer used phi *ENTRY to the current hash.  */
+/* Insert the no longer used phi OPHI to the hash INFO.  */
 
-static int
-copy_phis (void **entry, void *data ATTRIBUTE_UNUSED)
+static void
+copy_phi (vn_phi_t ophi, vn_tables_t info)
 {
-  vn_phi_t ophi = (vn_phi_t) *entry;
-  vn_phi_t phi = (vn_phi_t) pool_alloc (current_info->phis_pool);
+  vn_phi_t phi = (vn_phi_t) pool_alloc (info->phis_pool);
   void **slot;
   memcpy (phi, ophi, sizeof (*phi));
   ophi->phiargs = NULL;
-  slot = htab_find_slot_with_hash (current_info->phis, phi, phi->hashcode,
-				   INSERT);
+  slot = htab_find_slot_with_hash (info->phis, phi, phi->hashcode, INSERT);
+  gcc_assert (!*slot);
   *slot = phi;
-  return 1;
 }
 
-/* Insert the no longer used reference *ENTRY to the current hash.  */
+/* Insert the no longer used reference OREF to the hash INFO.  */
 
-static int
-copy_references (void **entry, void *data ATTRIBUTE_UNUSED)
+static void
+copy_reference (vn_reference_t oref, vn_tables_t info)
 {
-  vn_reference_t oref = (vn_reference_t) *entry;
   vn_reference_t ref;
   void **slot;
-  ref = (vn_reference_t) pool_alloc (current_info->references_pool);
+  ref = (vn_reference_t) pool_alloc (info->references_pool);
   memcpy (ref, oref, sizeof (*ref));
   oref->operands = NULL;
-  slot = htab_find_slot_with_hash (current_info->references, ref, ref->hashcode,
+  slot = htab_find_slot_with_hash (info->references, ref, ref->hashcode,
 				   INSERT);
   if (*slot)
     free_reference (*slot);
   *slot = ref;
-  return 1;
 }
 
 /* Process a strongly connected component in the SSA graph.  */
@@ -2892,53 +2884,59 @@ copy_references (void **entry, void *data ATTRIBUTE_UNUSED)
 static void
 process_scc (VEC (tree, heap) *scc)
 {
-  /* If the SCC has a single member, just visit it.  */
+  tree var;
+  unsigned int i;
+  unsigned int iterations = 0;
+  bool changed = true;
+  htab_iterator hi;
+  vn_nary_op_t nary;
+  vn_phi_t phi;
+  vn_reference_t ref;
 
+  /* If the SCC has a single member, just visit it.  */
   if (VEC_length (tree, scc) == 1)
     {
       tree use = VEC_index (tree, scc, 0);
       if (!VN_INFO (use)->use_processed)
 	visit_use (use);
+      return;
     }
-  else
+
+  /* Iterate over the SCC with the optimistic table until it stops
+     changing.  */
+  current_info = optimistic_info;
+  while (changed)
     {
-      tree var;
-      unsigned int i;
-      unsigned int iterations = 0;
-      bool changed = true;
-
-      /* Iterate over the SCC with the optimistic table until it stops
-	 changing.  */
-      current_info = optimistic_info;
-      while (changed)
-	{
-	  changed = false;
-	  iterations++;
-	  /* As we are value-numbering optimistically we have to
-	     clear the expression tables and the simplified expressions
-	     in each iteration until we converge.  */
-	  htab_empty (optimistic_info->nary);
-	  htab_empty (optimistic_info->phis);
-	  htab_empty (optimistic_info->references);
-	  obstack_free (&optimistic_info->nary_obstack, NULL);
-	  gcc_obstack_init (&optimistic_info->nary_obstack);
-	  empty_alloc_pool (optimistic_info->phis_pool);
-	  empty_alloc_pool (optimistic_info->references_pool);
-	  for (i = 0; VEC_iterate (tree, scc, i, var); i++)
-	    VN_INFO (var)->expr = NULL_TREE;
-	  for (i = 0; VEC_iterate (tree, scc, i, var); i++)
-	    changed |= visit_use (var);
-	}
-
-      statistics_histogram_event (cfun, "SCC iterations", iterations);
-
-      /* Finally, copy the contents of the no longer used optimistic
-	 table to the valid table.  */
-      current_info = valid_info;
-      htab_traverse (optimistic_info->nary, copy_nary, NULL);
-      htab_traverse (optimistic_info->phis, copy_phis, NULL);
-      htab_traverse (optimistic_info->references, copy_references, NULL);
+      changed = false;
+      iterations++;
+      /* As we are value-numbering optimistically we have to
+	 clear the expression tables and the simplified expressions
+	 in each iteration until we converge.  */
+      htab_empty (optimistic_info->nary);
+      htab_empty (optimistic_info->phis);
+      htab_empty (optimistic_info->references);
+      obstack_free (&optimistic_info->nary_obstack, NULL);
+      gcc_obstack_init (&optimistic_info->nary_obstack);
+      empty_alloc_pool (optimistic_info->phis_pool);
+      empty_alloc_pool (optimistic_info->references_pool);
+      for (i = 0; VEC_iterate (tree, scc, i, var); i++)
+	VN_INFO (var)->expr = NULL_TREE;
+      for (i = 0; VEC_iterate (tree, scc, i, var); i++)
+	changed |= visit_use (var);
     }
+
+  statistics_histogram_event (cfun, "SCC iterations", iterations);
+
+  /* Finally, copy the contents of the no longer used optimistic
+     table to the valid table.  */
+  FOR_EACH_HTAB_ELEMENT (optimistic_info->nary, nary, vn_nary_op_t, hi)
+    copy_nary (nary, valid_info);
+  FOR_EACH_HTAB_ELEMENT (optimistic_info->phis, phi, vn_phi_t, hi)
+    copy_phi (phi, valid_info);
+  FOR_EACH_HTAB_ELEMENT (optimistic_info->references, ref, vn_reference_t, hi)
+    copy_reference (ref, valid_info);
+
+  current_info = valid_info;
 }
 
 DEF_VEC_O(ssa_op_iter);

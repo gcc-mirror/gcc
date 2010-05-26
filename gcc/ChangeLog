@@ -1,3 +1,13 @@
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (copy_nary): Adjust.
+	(copy_phis): Rename to ...
+	(copy_phi): ... this.  Adjust.
+	(copy_references): Rename to ...
+	(copy_reference): ... this.  Adjust.
+	(process_scc): Use HTAB_FOR_EACH_ELEMENT to insert the
+	result into the valid table.
+
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/spu/spu-c.c: Do not include function.h, rtl.h, expr.h,
