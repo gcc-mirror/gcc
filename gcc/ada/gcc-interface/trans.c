@@ -29,11 +29,9 @@
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "rtl.h"	/* FIXME: For set_stack_check_libfunc and
-			   gen_rtx_SYMBOL_REF -- here is a front end
-			   still trying to generate RTL!  */
 #include "ggc.h"
 #include "output.h"
+#include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
 #include "gimple.h"
 
@@ -313,7 +311,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
+    set_stack_check_libfunc ("_gnat_stack_check");
 
   /* Retrieve alignment settings.  */
   double_float_alignment = get_target_double_float_alignment ();

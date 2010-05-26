@@ -1548,7 +1548,6 @@ extern int currently_expanding_to_rtl;
 extern int ceil_log2 (unsigned HOST_WIDE_INT);
 
 /* In explow.c */
-extern void set_stack_check_libfunc (rtx);
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (rtx, HOST_WIDE_INT);
 
