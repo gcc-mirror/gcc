@@ -1824,20 +1824,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	&& not_in_recursive (sym, gsym->ns)
 	&& not_entry_self_reference (sym, gsym->ns))
     {
-      /* Make sure that translation for the gsymbol occurs before
-	 the procedure currently being resolved.  */
-      ns = gsym->ns->resolved ? NULL : gfc_global_ns_list;
-      for (; ns && ns != gsym->ns; ns = ns->sibling)
-	{
-	  if (ns->sibling == gsym->ns)
-	    {
-	      ns->sibling = gsym->ns->sibling;
-	      gsym->ns->sibling = gfc_global_ns_list;
-	      gfc_global_ns_list = gsym->ns;
-	      break;
-	    }
-	}
-
+      /* Resolve the gsymbol namespace if needed.  */
       if (!gsym->ns->resolved)
 	{
 	  gfc_dt_list *old_dt_list;
@@ -1855,6 +1842,20 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
 	  /* Restore the derived types of this namespace.  */
 	  gfc_derived_types = old_dt_list;
+	}
+
+      /* Make sure that translation for the gsymbol occurs before
+	 the procedure currently being resolved.  */
+      ns = gfc_global_ns_list;
+      for (; ns && ns != gsym->ns; ns = ns->sibling)
+	{
+	  if (ns->sibling == gsym->ns)
+	    {
+	      ns->sibling = gsym->ns->sibling;
+	      gsym->ns->sibling = gfc_global_ns_list;
+	      gfc_global_ns_list = gsym->ns;
+	      break;
+	    }
 	}
 
       if (gsym->ns->proc_name->attr.function
