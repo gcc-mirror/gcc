@@ -1,3 +1,15 @@
+2010-05-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* pretty-print.c: Don't include ggc.h.
+	(identifier_to_locale_alloc, identifier_to_locale_free): Define.
+	(identifier_to_locale): Use them for allocation.
+	* pretty-print.h (identifier_to_locale_alloc,
+	identifier_to_locale_free): Declare.
+	* toplev.c (alloc_for_identifier_to_locale): New.
+	(general_init): Set identifier_to_locale_alloc and
+	identifier_to_locale_free.
+	* Makefile.in (pretty-print.o): Update dependencies.
+
 2010-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple.c (gimple_types_compatible_p): Return 0 for aggregate and

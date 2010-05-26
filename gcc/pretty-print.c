@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "pretty-print.h"
-#include "ggc.h"
 
 #if HAVE_ICONV
 #include <iconv.h>
@@ -857,14 +856,21 @@ decode_utf8_char (const unsigned char *p, size_t len, unsigned int *value)
     }
 }
 
+/* Allocator for identifier_to_locale and corresponding function to
+   free memory.  */
+
+void *(*identifier_to_locale_alloc) (size_t) = xmalloc;
+void (*identifier_to_locale_free) (void *) = free;
+
 /* Given IDENT, an identifier in the internal encoding, return a
    version of IDENT suitable for diagnostics in the locale character
-   set: either IDENT itself, or a garbage-collected string converted
-   to the locale character set and using escape sequences if not
-   representable in the locale character set or containing control
-   characters or invalid byte sequences.  Existing backslashes in
-   IDENT are not doubled, so the result may not uniquely specify the
-   contents of an arbitrary byte sequence identifier.  */
+   set: either IDENT itself, or a string, allocated using
+   identifier_to_locale_alloc, converted to the locale character set
+   and using escape sequences if not representable in the locale
+   character set or containing control characters or invalid byte
+   sequences.  Existing backslashes in IDENT are not doubled, so the
+   result may not uniquely specify the contents of an arbitrary byte
+   sequence identifier.  */
 
 const char *
 identifier_to_locale (const char *ident)
@@ -895,7 +901,7 @@ identifier_to_locale (const char *ident)
      outside printable ASCII.  */
   if (!valid_printable_utf8)
     {
-      char *ret = GGC_NEWVEC (char, 4 * idlen + 1);
+      char *ret = (char *) identifier_to_locale_alloc (4 * idlen + 1);
       char *p = ret;
       for (i = 0; i < idlen; i++)
 	{
@@ -938,7 +944,7 @@ identifier_to_locale (const char *ident)
 	      size_t outbytesleft = ret_alloc - 1;
 	      size_t iconv_ret;
 
-	      ret = GGC_NEWVEC (char, ret_alloc);
+	      ret = (char *) identifier_to_locale_alloc (ret_alloc);
 	      outbuf = ret;
 
 	      if (iconv (cd, 0, 0, 0, 0) == (size_t) -1)
@@ -954,7 +960,7 @@ identifier_to_locale (const char *ident)
 		  if (errno == E2BIG)
 		    {
 		      ret_alloc *= 2;
-		      ggc_free (ret);
+		      identifier_to_locale_free (ret);
 		      ret = NULL;
 		      continue;
 		    }
@@ -975,7 +981,7 @@ identifier_to_locale (const char *ident)
 		  if (errno == E2BIG)
 		    {
 		      ret_alloc *= 2;
-		      ggc_free (ret);
+		      identifier_to_locale_free (ret);
 		      ret = NULL;
 		      continue;
 		    }
@@ -997,7 +1003,7 @@ identifier_to_locale (const char *ident)
 
   /* Otherwise, convert non-ASCII characters in IDENT to UCNs.  */
   {
-    char *ret = GGC_NEWVEC (char, 10 * idlen + 1);
+    char *ret = (char *) identifier_to_locale_alloc (10 * idlen + 1);
     char *p = ret;
     for (i = 0; i < idlen;)
       {
