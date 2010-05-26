@@ -1668,6 +1668,14 @@ realloc_for_line_map (void *ptr, size_t len)
   return ggc_realloc (ptr, len);
 }
 
+/* A helper function: used as the allocator function for
+   identifier_to_locale.  */
+static void *
+alloc_for_identifier_to_locale (size_t len)
+{
+  return ggc_alloc (len);
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -1689,6 +1697,9 @@ general_init (const char *argv0)
   unlock_std_streams ();
 
   gcc_init_libintl ();
+
+  identifier_to_locale_alloc = alloc_for_identifier_to_locale;
+  identifier_to_locale_free = ggc_free;
 
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
