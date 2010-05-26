@@ -1687,6 +1687,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_O:
     case OPT_Os:
+    case OPT_Ofast:
       /* Currently handled in a prescan.  */
       break;
 

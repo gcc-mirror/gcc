@@ -1,3 +1,7 @@
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
+	* opts.c (common_handle_option): Handle OPT_Ofast.
+
 2010-05-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* diagnostic.c: Don't include opts.h.
