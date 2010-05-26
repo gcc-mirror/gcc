@@ -936,13 +936,14 @@ handle_signature_attribute (int member_index, JCF *jcf,
 #define HANDLE_EXCEPTIONS_ATTRIBUTE(COUNT) \
 { \
   int n = COUNT; \
-  tree list = DECL_FUNCTION_THROWS (current_method); \
+  VEC (tree,gc) *v = VEC_alloc (tree, gc, n); \
+  gcc_assert (DECL_FUNCTION_THROWS (current_method) == NULL); \
   while (--n >= 0) \
     { \
       tree thrown_class = get_class_constant (jcf, JCF_readu2 (jcf)); \
-      list = tree_cons (NULL_TREE, thrown_class, list); \
+      VEC_quick_push (tree, v, thrown_class); \
     } \
-  DECL_FUNCTION_THROWS (current_method) = nreverse (list); \
+  DECL_FUNCTION_THROWS (current_method) = v; \
 }
 
 #define HANDLE_DEPRECATED_ATTRIBUTE()  handle_deprecated ()

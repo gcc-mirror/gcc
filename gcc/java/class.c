@@ -1519,18 +1519,19 @@ make_method_value (tree mdecl)
   {
     /* Compute the `throws' information for the method.  */
     tree table = null_pointer_node;
-    if (DECL_FUNCTION_THROWS (mdecl) != NULL_TREE)
+    if (DECL_FUNCTION_THROWS (mdecl) != NULL)
       {
-	int length = 1 + list_length (DECL_FUNCTION_THROWS (mdecl));
-	tree iter, type, array;
+	int length = 1 + VEC_length (tree, DECL_FUNCTION_THROWS (mdecl));
+	tree t, type, array;
 	char buf[60];
+        unsigned ix;
 
 	table = tree_cons (NULL_TREE, table, NULL_TREE);
-	for (iter = DECL_FUNCTION_THROWS (mdecl);
-	     iter != NULL_TREE;
-	     iter = TREE_CHAIN (iter))
+	for (ix = 0;
+	     VEC_iterate (tree, DECL_FUNCTION_THROWS (mdecl), ix, t);
+	     ix++)
 	  {
-	    tree sig = DECL_NAME (TYPE_NAME (TREE_VALUE (iter)));
+	    tree sig = DECL_NAME (TYPE_NAME (t));
 	    tree utf8
 	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
 						    IDENTIFIER_LENGTH (sig)));

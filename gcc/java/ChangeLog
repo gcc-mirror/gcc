@@ -1,5 +1,13 @@
 2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* java-tree.h (struct lang_decl_func): Change type of throws_list
+	field to a VEC.
+	* jcf-parse.c (HANDLE_EXCEPTIONS_ATTRIBUTE): Adjust for changed type
+	of DECL_FUNCTION_THROWS.
+	* class.c (make_method_value): Likewise.
+
+2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* class.c (utf8_decl_list): Delete.
 	(build_utf8_ref): Remove references to it.
 	* java-tree.h (all_class_list): Delete.
