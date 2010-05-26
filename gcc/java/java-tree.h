@@ -776,7 +776,7 @@ struct GTY(()) lang_decl_func {
   int max_stack;
   int arg_slot_count;
   source_location last_line;	/* End line number for a function decl */
-  tree throws_list;		/* Exception specified by `throws' */
+  VEC(tree,gc) *throws_list;	/* Exception specified by `throws' */
   tree exc_obj;			/* Decl holding the exception object.  */
 
   /* Class initialization test variables  */
