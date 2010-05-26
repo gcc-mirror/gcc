@@ -893,7 +893,7 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
         (match_operand:SI 1 "const_int_operand" ""))]
-  ""
+  "reload_completed"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "{
