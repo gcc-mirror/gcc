@@ -1,3 +1,18 @@
+2010-05-26  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sparc/sparc.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
+	LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P): Remove macros.
+	* config/sparc/sparc-protos.h (function_value): Remove declaration.
+	* config/sparc/sparc.c (sparc_function_value, sparc_libcall_value,
+	sparc_function_value_regno_p): New functions.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(function_value): Rename to...
+	(sparc_function_value_1): ... this. Make static. Change 'incoming_p'
+	argument to 'outgoing'.
+	(function_arg_record_value, function_arg_union_value,
+	function_arg_vector_value): Update comment.
+
 2010-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (struct dw_fde_struct): Reorder flags.

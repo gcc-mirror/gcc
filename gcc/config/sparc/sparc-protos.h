@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define __SPARC_PROTOS_H__
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_value (const_tree, enum machine_mode, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *,
 				  enum machine_mode, tree, int);
 extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
