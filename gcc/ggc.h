@@ -307,8 +307,6 @@ extern void ggc_print_statistics (void);
 extern void stringpool_statistics (void);
 
 /* Heuristics.  */
-extern int ggc_min_expand_heuristic (void);
-extern int ggc_min_heapsize_heuristic (void);
 extern void init_ggc_heuristics (void);
 
 /* Zone collection.  */

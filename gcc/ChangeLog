@@ -1,3 +1,8 @@
+2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc.h (ggc_min_expand_heuristic, ggc_min_heapsize_heuristic):
+	Remove.
+
 2010-05-26  Richard Guenther  <rguenther@suse.de>
 
 	* opts.c (common_handle_option): Handle OPT_Ofast.
