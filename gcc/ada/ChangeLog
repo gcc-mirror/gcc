@@ -1,5 +1,10 @@
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* gcc-interface/trans.c: Do not include rtl.h, insclude libfuncs.h.
+	(gigi): Adjust call to set_stack_check_libfunc.
+
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* gcc-interface/utils.c: Do not include rtl.h.
 
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>

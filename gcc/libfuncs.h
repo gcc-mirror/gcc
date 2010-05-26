@@ -71,4 +71,7 @@ extern GTY(()) rtx libfunc_table[LTI_MAX];
 
 #define gcov_flush_libfunc	(libfunc_table[LTI_gcov_flush])
 
+/* In explow.c */
+extern void set_stack_check_libfunc (const char *);
+
 #endif /* GCC_LIBFUNCS_H */

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
+#include "libfuncs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
 #include "ggc.h"
@@ -1346,9 +1347,10 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 static GTY(()) rtx stack_check_libfunc;
 
 void
-set_stack_check_libfunc (rtx libfunc)
+set_stack_check_libfunc (const char *libfunc_name)
 {
-  stack_check_libfunc = libfunc;
+  gcc_assert (stack_check_libfunc == NULL_RTX);
+  stack_check_libfunc = gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
 }
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */

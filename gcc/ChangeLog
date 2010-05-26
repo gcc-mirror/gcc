@@ -1,3 +1,10 @@
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* explow.c (set_stack_check_libfunc): Adjust to accept name as a
+	string instead of SYMBOL_REF rtx.
+	* rtl.h (set_stack_check_libfunc): Move prototype from here...
+	* libfuncs.h: ...to here.  Adjust for explow.c change.
+
 2010-05-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* pretty-print.c: Don't include ggc.h.
