@@ -1,5 +1,12 @@
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* config/avr/avr-c.c: Do not include regs.h.
+	Include cpplib.h for cpp_define and tree.h for c-common.h.
+	* config/avr/avr-devices.c (avr_mcu_types): Fix initializer.
+	* config/avr/t-avr: Fix dependencies for avr-c.o.
+
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* explow.c (set_stack_check_libfunc): Adjust to accept name as a
 	string instead of SYMBOL_REF rtx.
 	* rtl.h (set_stack_check_libfunc): Move prototype from here...
