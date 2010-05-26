@@ -207,7 +207,6 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
 }
 
 /* STMT is a GIMPLE_COND.  Update two destination's predicate list.
-   Remove COND_EXPR, if it is not the exit condition of LOOP.
    Otherwise update the exit condition of LOOP appropriately.  GSI
    points to the statement STMT.  */
 
@@ -232,24 +231,12 @@ tree_if_convert_cond_stmt (struct loop *loop, gimple stmt, tree cond,
   /* If C is false, then FALSE_EDGE is taken.  */
   c2 = invert_truthvalue_loc (loc, unshare_expr (c));
   add_to_dst_predicate_list (loop, false_edge, cond, c2, gsi);
-
-  /* Now this conditional statement is redundant.  Remove it.  But, do
-     not remove the exit condition!  Update the exit condition using
-     the new condition.  */
-  if (!bb_with_exit_edge_p (loop, gimple_bb (stmt)))
-    {
-      gsi_remove (gsi, true);
-      cond = NULL_TREE;
-    }
 }
 
 /* If-convert stmt T which is part of LOOP.
 
-   If T is a GIMPLE_ASSIGN then it is converted into a conditional
-   modify expression using COND.  For conditional expressions, add
-   a condition in the destination basic block's predicate list and
-   remove the conditional expression itself.  GSI points to the
-   statement T.  */
+   For conditional expressions, add a condition in the destination
+   basic block's predicate list.  GSI points to the statement T.  */
 
 static tree
 tree_if_convert_stmt (struct loop *loop, gimple t, tree cond,
@@ -286,8 +273,6 @@ tree_if_convert_stmt (struct loop *loop, gimple t, tree cond,
       break;
 
     case GIMPLE_COND:
-      /* Update destination blocks' predicate list and remove this
-	 condition expression.  */
       tree_if_convert_cond_stmt (loop, t, cond, gsi);
       cond = NULL_TREE;
       break;
@@ -911,6 +896,32 @@ process_phi_nodes (struct loop *loop)
     }
 }
 
+/* Remove all GIMPLE_CONDs and GIMPLE_LABELs of all the basic blocks
+   other than the exit and latch of the LOOP.  */
+
+static void
+remove_conditions_and_labels (loop_p loop)
+{
+  gimple_stmt_iterator gsi;
+  unsigned int i;
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs [i];
+
+      if (bb_with_exit_edge_p (loop, bb)
+        || bb == loop->latch)
+      continue;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+      if (gimple_code (gsi_stmt (gsi)) == GIMPLE_COND
+          || gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+        gsi_remove (&gsi, true);
+      else
+        gsi_next (&gsi);
+    }
+}
+
 /* Combine all the basic blocks from LOOP into one or two super basic
    blocks.  Replace PHI nodes with conditional modify expressions.  */
 
@@ -922,6 +933,8 @@ combine_blocks (struct loop *loop)
   unsigned int i;
   edge e;
   edge_iterator ei;
+
+  remove_conditions_and_labels (loop);
 
   /* Process phi nodes to prepare blocks for merge.  */
   process_phi_nodes (loop);
@@ -988,17 +1001,9 @@ combine_blocks (struct loop *loop)
       if (bb == exit_bb || bb == loop->latch)
 	continue;
 
-      /* Remove labels and make stmts member of loop->header.  */
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-	{
-	  if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
-	    gsi_remove (&gsi, true);
-	  else
-	    {
-	      gimple_set_bb (gsi_stmt (gsi), merge_target_bb);
-	      gsi_next (&gsi);
-	    }
-	}
+      /* Make stmts member of loop->header.  */
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_bb (gsi_stmt (gsi), merge_target_bb);
 
       /* Update stmt list.  */
       last = gsi_last_bb (merge_target_bb);
@@ -1049,9 +1054,8 @@ tree_if_conversion (struct loop *loop)
       basic_block bb = ifc_bbs [i];
       tree cond = (tree) bb->aux;
 
-      /* Process all the statements in this basic block.
-	 Remove conditional expression, if any, and annotate
-	 destination basic block(s) appropriately.  */
+      /* Predicate basic block(s) with the condition expressions
+	 leading to their execution.  */
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); /* empty */)
 	{
 	  gimple t = gsi_stmt (itr);
