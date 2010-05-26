@@ -623,6 +623,20 @@ if_convertible_loop_p (struct loop *loop)
 	return false;
     }
 
+  /* Don't if-convert the loop when the data dependences cannot be
+     computed: the loop won't be vectorized in that case.  */
+  {
+    VEC (data_reference_p, heap) *refs = VEC_alloc (data_reference_p, heap, 5);
+    VEC (ddr_p, heap) *ddrs = VEC_alloc (ddr_p, heap, 25);
+    bool res = compute_data_dependences_for_loop (loop, true, &refs, &ddrs);
+
+    free_data_refs (refs);
+    free_dependence_relations (ddrs);
+
+    if (!res)
+      return false;
+  }
+
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */

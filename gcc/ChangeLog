@@ -1,5 +1,10 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (if_convertible_loop_p): Avoid if-conversion
+	of loops in which the data dependence analysis fails.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (if_convertible_loop_p): Do not compute/free
 	CDI_POST_DOMINATORS.
 	(tree_if_conversion): Same.
