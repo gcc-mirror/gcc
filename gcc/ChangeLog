@@ -1,5 +1,16 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (add_to_dst_predicate_list): Do not pass a statemet
+	iterator in parameter.  Do not generate code during the analysis.
+	(tree_if_convert_cond_stmt): Removed.
+	(tree_if_convert_stmt): Removed.
+	(predicate_bbs): New.
+	(if_convertible_loop_p): Call predicate_bbs.
+	(tree_if_conversion): Simplify the top-level logic as predicate_bbs
+	now contains all the analysis part.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (tree_if_convert_cond_stmt): Do not remove
 	statements in the analysis part.
 	(tree_if_convert_stmt): Update comment.
