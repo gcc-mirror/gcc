@@ -1,3 +1,8 @@
+2010-05-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* cpp.c (cb_cpp_error): Save and restore
+	global_dc->warn_system_headers, not variable warn_system_headers.
+
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* fortran/f95-lang.c: Do not include libfuncs.h, expr.h, and except.h.

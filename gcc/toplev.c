@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks.h"
 #include "cgraph.h"
 #include "opts.h"
+#include "opts-diagnostic.h"
 #include "coverage.h"
 #include "value-prof.h"
 #include "alloc-pool.h"
@@ -1691,13 +1692,16 @@ general_init (const char *argv0)
 
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
-  diagnostic_initialize (global_dc);
+  diagnostic_initialize (global_dc, N_OPTS);
   diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   pp_format_decoder (global_dc->printer) = &default_tree_printer;
   global_dc->show_option_requested = flag_diagnostics_show_option;
+  global_dc->show_column = flag_show_column;
   global_dc->internal_error = plugins_internal_error_function;
+  global_dc->option_enabled = option_enabled;
+  global_dc->option_name = option_name;
 
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV
@@ -1827,11 +1831,6 @@ process_options (void)
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
   if (flag_compare_debug) 
     diagnostic_inhibit_notes (global_dc);
-
-  global_dc->show_column = flag_show_column;
-  global_dc->pedantic_errors = flag_pedantic_errors;
-  global_dc->permissive = flag_permissive;
-  global_dc->fatal_errors = flag_fatal_errors;
 
   if (flag_section_anchors && !target_supports_section_anchors_p ())
     {
