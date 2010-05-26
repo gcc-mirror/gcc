@@ -1,3 +1,9 @@
+2010-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/44164
+	* gcc.c-torture/execute/pr44164.c: New testcase.
+	* g++.dg/tree-ssa/pr13146.C: Adjust.
+
 2010-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40011
