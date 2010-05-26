@@ -682,6 +682,7 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
     case RID_SHORT:
     case RID_INT:
     case RID_LONG:
+    case RID_INT128:
     case RID_SIGNED:
     case RID_UNSIGNED:
     case RID_FLOAT:
@@ -12164,6 +12165,7 @@ cp_parser_type_specifier (cp_parser* parser,
    GNU Extension:
 
    simple-type-specifier:
+     __int128
      __typeof__ unary-expression
      __typeof__ ( type-id )
 
@@ -12210,6 +12212,13 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       if (decl_specs)
 	decl_specs->explicit_int_p = true;
       type = integer_type_node;
+      break;
+    case RID_INT128:
+      if (!int128_integer_type_node)
+	break;
+      if (decl_specs)
+        decl_specs->explicit_int128_p = true;
+      type = int128_integer_type_node;
       break;
     case RID_LONG:
       if (decl_specs)

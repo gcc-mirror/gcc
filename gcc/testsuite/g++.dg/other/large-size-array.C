@@ -1,10 +1,14 @@
 /* { dg-do compile } */
 #include <limits.h>
 
+#ifdef _WIN64
+#define DIM ULLONG_MAX>>1
+#else
 #ifdef __LP64__
 #define DIM UINT_MAX>>1
 #else
 #define DIM USHRT_MAX>>1
+#endif
 #endif
 
 int

@@ -3220,6 +3220,16 @@ _26_GLOBAL_$N$_tmp_n.iilg4Gya$app_instance
 {anonymous}::app_instance
 {anonymous}::app_instance
 #
+--format=gnu-v3 --no-params
+_Z3fo5n
+fo5(__int128)
+fo5
+#
+--format=gnu-v3 --no-params
+_Z3fo5o
+fo5(unsigned __int128)
+fo5
+#
 --format=java
 _ZN4java3awt10ScrollPane7addImplEPNS0_9ComponentEPNS_4lang6ObjectEi
 java.awt.ScrollPane.addImpl(java.awt.Component, java.lang.Object, int)

@@ -1,3 +1,8 @@
+2ß1ß-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* testsuite/demangle-expected: Add tests for __int128
+	and unsigned __int128 types.
+
 2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
 	    Jason Merrill  <jason@redhat.com>
 

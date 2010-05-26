@@ -814,6 +814,9 @@ c_cpp_builtins (cpp_reader *pfile)
   builtin_define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_LONG_LONG__",
 			      long_long_integer_type_node);
+  if (int128_integer_type_node != NULL_TREE)
+    builtin_define_type_sizeof ("__SIZEOF_INT128__",
+			        int128_integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_SHORT__", short_integer_type_node);
   builtin_define_type_sizeof ("__SIZEOF_FLOAT__", float_type_node);
   builtin_define_type_sizeof ("__SIZEOF_DOUBLE__", double_type_node);
