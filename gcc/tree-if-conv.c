@@ -624,7 +624,6 @@ if_convertible_loop_p (struct loop *loop)
     }
 
   calculate_dominance_info (CDI_DOMINATORS);
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */
   ifc_bbs = get_loop_body_in_if_conv_order (loop);
@@ -632,7 +631,6 @@ if_convertible_loop_p (struct loop *loop)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Irreducible loop\n");
-      free_dominance_info (CDI_POST_DOMINATORS);
       return false;
     }
 
@@ -664,7 +662,6 @@ if_convertible_loop_p (struct loop *loop)
   if (dump_file)
     fprintf (dump_file, "Applying if-conversion\n");
 
-  free_dominance_info (CDI_POST_DOMINATORS);
   return true;
 }
 
@@ -1026,7 +1023,6 @@ tree_if_conversion (struct loop *loop)
 	  free (ifc_bbs);
 	  ifc_bbs = NULL;
 	}
-      free_dominance_info (CDI_POST_DOMINATORS);
       return;
     }
 

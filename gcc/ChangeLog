@@ -1,5 +1,11 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (if_convertible_loop_p): Do not compute/free
+	CDI_POST_DOMINATORS.
+	(tree_if_conversion): Same.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (tree_if_conversion): Do not return a bool.
 
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
