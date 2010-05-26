@@ -1,5 +1,9 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (tree_if_conversion): Do not return a bool.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c: Update copyright years.  Fix comments.
 	Fix indentation.
 
