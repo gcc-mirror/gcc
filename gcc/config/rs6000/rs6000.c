@@ -17164,7 +17164,7 @@ rs6000_emit_epilogue (int sibcall)
 	frame_reg_rtx = gen_rtx_REG (Pmode, 11);
       /* Prevent reordering memory accesses against stack pointer restore.  */
       else if (cfun->calls_alloca
-	       || offset_below_red_zone_p (-info->total_size))
+	       || info->total_size > (TARGET_32BIT ? 220 : 288))
 	{
 	  rtx mem1 = gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx);
 	  rtx mem2 = gen_rtx_MEM (BLKmode, sp_reg_rtx);
@@ -17186,7 +17186,7 @@ rs6000_emit_epilogue (int sibcall)
     {
       /* Prevent reordering memory accesses against stack pointer restore.  */
       if (cfun->calls_alloca
-	  || offset_below_red_zone_p (-info->total_size))
+	  || info->total_size > (TARGET_32BIT ? 220 : 288))
 	{
 	  rtx mem = gen_rtx_MEM (BLKmode, sp_reg_rtx);
 	  MEM_NOTRAP_P (mem) = 1;
