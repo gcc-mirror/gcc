@@ -1,5 +1,9 @@
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* c-typeck.c: Do not include expr.h.
+
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* rtl.h (decl_default_tls_model): Move prototype from here...
 	* output.h: ...to here.
 	* c-decl.c: Do not include rtl.h.
