@@ -1,6 +1,6 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,7 +70,6 @@ static int compare_ptr_data (const void *, const void *);
 static void relocate_ptrs (void *, void *);
 static void write_pch_globals (const struct ggc_root_tab * const *tab,
 			       struct traversal_state *state);
-static double ggc_rlimit_bound (double);
 
 /* Maintain global roots that are preserved during GC.  */
 
@@ -742,6 +741,8 @@ mmap_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
 }
 #endif /* HAVE_MMAP_FILE */
 
+#if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
+
 /* Modify the bound based on rlimits.  */
 static double
 ggc_rlimit_bound (double limit)
@@ -776,7 +777,7 @@ ggc_rlimit_bound (double limit)
 }
 
 /* Heuristic to set a default for GGC_MIN_EXPAND.  */
-int
+static int
 ggc_min_expand_heuristic (void)
 {
   double min_expand = physmem_total();
@@ -795,7 +796,7 @@ ggc_min_expand_heuristic (void)
 }
 
 /* Heuristic to set a default for GGC_MIN_HEAPSIZE.  */
-int
+static int
 ggc_min_heapsize_heuristic (void)
 {
   double phys_kbytes = physmem_total();
@@ -832,6 +833,7 @@ ggc_min_heapsize_heuristic (void)
 
   return phys_kbytes;
 }
+#endif
 
 void
 init_ggc_heuristics (void)
@@ -980,7 +982,13 @@ ggc_free_overhead (void *ptr)
 {
   PTR *slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr),
 					NO_INSERT);
-  struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
+  struct ptr_hash_entry *p;
+  /* The pointer might be not found if a PCH read happened between allocation
+     and ggc_free () call.  FIXME: account memory properly in the presence of
+     PCH. */
+  if (!slot)
+      return;
+  p = (struct ptr_hash_entry *) *slot;
   p->loc->freed += p->size;
   htab_clear_slot (ptr_hash, slot);
   free (p);
