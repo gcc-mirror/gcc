@@ -1,5 +1,9 @@
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* fortran/f95-lang.c: Do not include libfuncs.h, expr.h, and except.h.
+
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* trans-common.c: Do not include rtl.h, include output.h instead.
 	* trans-decl.c: Likewise.
 

@@ -43,11 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "cgraph.h"
-/* For gfc_maybe_initialize_eh.  */
-#include "libfuncs.h"
-#include "expr.h"
-#include "except.h"
-
 #include "gfortran.h"
 #include "cpp.h"
 #include "trans.h"
