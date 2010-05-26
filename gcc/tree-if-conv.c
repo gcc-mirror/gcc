@@ -1004,10 +1004,10 @@ combine_blocks (struct loop *loop)
     merge_blocks (loop->header, exit_bb);
 }
 
-/* Main entry point: return true when LOOP is if-converted, otherwise
-   the loop remains unchanged.  */
+/* If-convert LOOP when it is legal.  For the moment this pass has no
+   profitability analysis.  */
 
-static bool
+static void
 tree_if_conversion (struct loop *loop)
 {
   gimple_stmt_iterator itr;
@@ -1027,7 +1027,7 @@ tree_if_conversion (struct loop *loop)
 	  ifc_bbs = NULL;
 	}
       free_dominance_info (CDI_POST_DOMINATORS);
-      return false;
+      return;
     }
 
   for (i = 0; i < loop->num_nodes; i++)
@@ -1071,8 +1071,6 @@ tree_if_conversion (struct loop *loop)
   clean_predicate_lists (loop);
   free (ifc_bbs);
   ifc_bbs = NULL;
-
-  return true;
 }
 
 /* Tree if-conversion pass management.  */
