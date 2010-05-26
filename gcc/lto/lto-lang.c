@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm.h"
 #include "tree.h"
-#include "expr.h"
 #include "target.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
