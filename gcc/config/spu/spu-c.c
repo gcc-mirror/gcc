@@ -22,15 +22,8 @@
 #include "tree.h"
 #include "c-tree.h"
 #include "c-pragma.h"
-#include "function.h"
-#include "rtl.h"
-#include "expr.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "insn-config.h"
-#include "insn-codes.h"
-#include "recog.h"
-#include "optabs.h"
 
 
 /* Keep the vector keywords handy for fast comparisons.  */
