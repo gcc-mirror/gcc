@@ -1,3 +1,15 @@
+2010-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* cp-tree.h (cp_decl_specifier_seq): Add new bifield
+	explicit_int128_p.
+	* decl.c (grokdeclarator): Handle __int128.
+	* parser.c (cp_lexer_next_token_is_decl_specifier_ke): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	* rtti.c (emit_support_tinfos): Add int128 nodes for rtti.
+	* typeck.c (cp_common_type): Handle __int128.
+	* mangle.c (integer_type_codes): Add itk_int128 and
+	itk_unsigned_int128.
+
 2010-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43382
