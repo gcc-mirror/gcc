@@ -1,3 +1,21 @@
+2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c (utf8_decl_list): Delete.
+	(build_utf8_ref): Remove references to it.
+	* java-tree.h (all_class_list): Delete.
+	(predef_filenames): Delete.
+	(enum java_tree_index) [JTI ALL_CLASS_LIST,JTI_PREDEF_FILENAMES]:
+	Delete.
+	* jcf-parse.c (parse_roots): Decrease size to 2.
+	(current_file_list): Convert to a VEC.
+	(all_class_list): Declare.
+	(jcf_parse): Adjust for new type of all_class_list.
+	(java_layout_seen_class_methods): Likewise.
+	(predefined_filenames): Declare.
+	(add_predefined_file): Use it.
+	(predefined_filename_p): Likewise.
+	(java_parse_file): Adjust for new type of current_file_list.                                                                                                                                                     *
+
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.c (java_classify_record): Return RECORD_IS_INTERFACE

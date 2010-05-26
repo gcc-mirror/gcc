@@ -43,7 +43,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif
 
 /* A list of all the resources files.  */
-static GTY(()) tree resources = NULL;
+static GTY(()) VEC(tree,gc) *resources;
 
 void
 compile_resource_data (const char *name, const char *buffer, int length)
@@ -86,13 +86,14 @@ compile_resource_data (const char *name, const char *buffer, int length)
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
   varpool_finalize_decl (decl);
 
-  resources = tree_cons (NULL_TREE, decl, resources);
+  VEC_safe_push (tree, gc, resources, decl);
 }
 
 void
 write_resource_constructor (tree *list_p)
 {
-  tree iter, t, register_resource_fn;
+  tree decl, t, register_resource_fn;
+  unsigned ix;
 
   if (resources == NULL)
     return;
@@ -105,9 +106,9 @@ write_resource_constructor (tree *list_p)
   register_resource_fn = t;
 
   /* Write out entries in the same order in which they were defined.  */
-  for (iter = nreverse (resources); iter ; iter = TREE_CHAIN (iter))
+  for (ix = 0; VEC_iterate (tree, resources, ix, decl); ix++)
     {
-      t = build_fold_addr_expr (TREE_VALUE (iter));
+      t = build_fold_addr_expr (decl);
       t = build_call_expr (register_resource_fn, 1, t);
       append_to_statement_list (t, list_p);
     }

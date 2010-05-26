@@ -102,10 +102,6 @@ struct JCF;
 #define output_class \
   java_global_trees[JTI_OUTPUT_CLASS]
 
-/* List of all class DECLs seen so far.  */
-#define all_class_list \
-  java_global_trees[JTI_ALL_CLASS_LIST]
-
 /* List of virtual decls referred to by this translation unit, used to
    generate virtual method offset symbol table.  */
 
@@ -370,9 +366,6 @@ enum java_tree_index
   JTI_MAIN_CLASS,
   JTI_CURRENT_CLASS,
   JTI_OUTPUT_CLASS,
-  JTI_ALL_CLASS_LIST,
-
-  JTI_PREDEF_FILENAMES,
 
   JTI_MAX
 };
@@ -629,9 +622,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 
 #define nativecode_ptr_array_type_node \
   java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
-
-#define predef_filenames \
-  java_global_trees[JTI_PREDEF_FILENAMES]
 
 #define nativecode_ptr_type_node ptr_type_node
 
