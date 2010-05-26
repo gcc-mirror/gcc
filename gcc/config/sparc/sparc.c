@@ -400,6 +400,9 @@ static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
 static bool sparc_rtx_costs (rtx, int, int, int *, bool);
 static bool sparc_promote_prototypes (const_tree);
+static rtx sparc_function_value (const_tree, const_tree, bool);
+static rtx sparc_libcall_value (enum machine_mode, const_rtx);
+static bool sparc_function_value_regno_p (const unsigned int);
 static rtx sparc_struct_value_rtx (tree, int);
 static enum machine_mode sparc_promote_function_mode (const_tree, enum machine_mode,
 						      int *, const_tree, int);
@@ -531,6 +534,13 @@ static bool fpu_option_set = false;
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES sparc_promote_prototypes
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE sparc_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE sparc_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P sparc_function_value_regno_p
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX sparc_struct_value_rtx
@@ -5150,10 +5160,10 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
     }
 }
 
-/* Used by function_arg and function_value to implement the complex
+/* Used by function_arg and sparc_function_value_1 to implement the complex
    conventions of the 64-bit ABI for passing and returning structures.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    TYPE is the data type of the argument (as a tree).
     This is null for libcalls where that information may
@@ -5251,10 +5261,10 @@ function_arg_record_value (const_tree type, enum machine_mode mode,
   return parms.ret;
 }
 
-/* Used by function_arg and function_value to implement the conventions
+/* Used by function_arg and sparc_function_value_1 to implement the conventions
    of the 64-bit ABI for passing and returning unions.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    SIZE is the size in bytes of the union.
    MODE is the argument's machine mode.
@@ -5289,10 +5299,10 @@ function_arg_union_value (int size, enum machine_mode mode, int slotno,
   return regs;
 }
 
-/* Used by function_arg and function_value to implement the conventions
+/* Used by function_arg and sparc_function_value_1 to implement the conventions
    for passing and returning large (BLKmode) vectors.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    SIZE is the size in bytes of the vector (at least 8 bytes).
    REGNO is the FP hard register the vector will be passed in.  */
@@ -5747,17 +5757,18 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
     }
 }
 
-/* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE macros.
+/* Handle TARGET_FUNCTION_VALUE, and TARGET_LIBCALL_VALUE target hook.
    For v9, function return values are subject to the same rules as arguments,
    except that up to 32 bytes may be returned in registers.  */
 
-rtx
-function_value (const_tree type, enum machine_mode mode, int incoming_p)
+static rtx
+sparc_function_value_1 (const_tree type, enum machine_mode mode,
+			bool outgoing)
 {
   /* Beware that the two values are swapped here wrt function_arg.  */
-  int regbase = (incoming_p
-		 ? SPARC_OUTGOING_INT_ARG_FIRST
-		 : SPARC_INCOMING_INT_ARG_FIRST);
+  int regbase = (outgoing
+		 ? SPARC_INCOMING_INT_ARG_FIRST
+		 : SPARC_OUTGOING_INT_ARG_FIRST);
   enum mode_class mclass = GET_MODE_CLASS (mode);
   int regno;
 
@@ -5838,6 +5849,38 @@ function_value (const_tree type, enum machine_mode mode, int incoming_p)
     regno = regbase;
 
   return gen_rtx_REG (mode, regno);
+}
+
+/* Handle TARGET_FUNCTION_VALUE.
+
+   On SPARC the value is found in the first "output" register, but the called
+   function leaves it in the first "input" register.  */
+
+static rtx
+sparc_function_value (const_tree valtype,
+		      const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		      bool outgoing)
+{
+  return sparc_function_value_1 (valtype, TYPE_MODE (valtype), outgoing);
+}
+
+/* Handle TARGET_LIBCALL_VALUE.  */
+
+static rtx
+sparc_libcall_value (enum machine_mode mode,
+		     const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return sparc_function_value_1 (NULL_TREE, mode, false);
+}
+
+/* Handle FUNCTION_VALUE_REGNO_P.  
+   On SPARC, the first "output" reg is used for integer values, and
+   the first floating point register is used for floating point values.  */
+
+static bool
+sparc_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 8 || regno == 32);
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function

@@ -1419,34 +1419,6 @@ extern char leaf_reg_remap[];
 #define LOCAL_REGNO(REGNO) \
   ((REGNO) >= 16 && (REGNO) <= 31)
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-
-/* On SPARC the value is found in the first "output" register.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 1)
-
-/* But the called function leaves it in the first "input" register.  */
-
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) \
-  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 0)
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE) \
-  function_value (NULL_TREE, (MODE), 1)
-
-/* 1 if N is a possible register number for a function value
-   as seen by the caller.
-   On SPARC, the first "output" reg is used for integer values,
-   and the first floating point register is used for floating point values.  */
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 8 || (N) == 32)
-
 /* Define the size of space to allocate for the return value of an
    untyped_call.  */
 
