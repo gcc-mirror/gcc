@@ -1,5 +1,14 @@
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (tree_if_convert_cond_stmt): Do not remove
+	statements in the analysis part.
+	(tree_if_convert_stmt): Update comment.
+	(remove_conditions_and_labels): New.
+	(combine_blocks): Call remove_conditions_and_labels.
+	(tree_if_conversion): Update comment.
+
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (if_convertible_bb_p): Don't handle BBs with more
 	than 2 predecessors or more than 2 successors.
 
