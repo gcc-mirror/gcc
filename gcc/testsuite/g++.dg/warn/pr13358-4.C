@@ -9,9 +9,9 @@ void use_longlong ()
 {
   unsigned long long x1, x2, x3; // { dg-warning "ISO C\\+\\+ 1998 does not support 'long long'" }
   // make sure we warn with hex, decimal and octal
-  x1 = 0x1b27da572ef3cd86; // { dg-warning "integer constant is too large for 'long' type" "long long" { target ilp32 } }
-  x2 = 1956772631100509574; // { dg-warning "integer constant is too large for 'long' type" "long long" { target ilp32 } }
-  x3 = 0154476645345674746606; // { dg-warning "integer constant is too large for 'long' type" "long long" { target ilp32 } }
+  x1 = 0x1b27da572ef3cd86; // { dg-warning "integer constant is too large for 'long' type" "long long" { target { llp64 || ilp32 } } }
+  x2 = 1956772631100509574; // { dg-warning "integer constant is too large for 'long' type" "long long" { target { llp64 || ilp32 } } }
+  x3 = 0154476645345674746606; // { dg-warning "integer constant is too large for 'long' type" "long long" { target { llp64 || ilp32 } } }
 }
 
 void use_longlong2 ()

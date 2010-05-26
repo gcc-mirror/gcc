@@ -1500,6 +1500,19 @@ proc check_effective_target_vect_intfloat_cvt { } {
     return $et_vect_intfloat_cvt_saved
 }
 
+#Return 1 if we're supporting __int128 for target, 0 otherwise.
+
+proc check_effective_target_int128 { } {
+    return [check_no_compiler_messages int128 object {
+	int dummy[
+    	#ifndef __SIZEOF_INT128__
+    	-1
+    	#else
+    	1
+    	#endif
+	];
+    }]
+}
 
 # Return 1 if the target supports unsigned int->float conversion 
 #

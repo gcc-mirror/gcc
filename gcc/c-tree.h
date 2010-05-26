@@ -196,6 +196,7 @@ enum c_typespec_keyword {
   cts_char,
   cts_int,
   cts_float,
+  cts_int128,
   cts_double,
   cts_dfloat32,
   cts_dfloat64,

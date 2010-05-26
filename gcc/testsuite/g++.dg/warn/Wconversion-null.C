@@ -5,6 +5,7 @@
 
 void g(int) {}
 void g(long) {}
+void g(long long) {}
 extern void g(void*);
 
 template <int I>
@@ -20,6 +21,9 @@ void l(int) {}
 
 template <>
 void l(long) {}
+
+template <>
+void l(long long) {}
 
 int main()
 {

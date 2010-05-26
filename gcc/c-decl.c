@@ -8633,6 +8633,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<void%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_int128)
+		  error_at (loc,
+			    ("both %<long%> and %<__int128%> in "
+			     "declaration specifiers"));
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
 			  ("both %<long%> and %<_Bool%> in "
@@ -8669,6 +8673,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<short%> and %<void%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_int128)
+		error_at (loc,
+			  ("both %<short%> and %<__int128%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_bool)
 		error_at (loc,
@@ -8819,7 +8827,13 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      dupe = specs->saturating_p;
 	      pedwarn (loc, OPT_pedantic,
 		       "ISO C does not support saturating types");
-	      if (specs->typespec_word == cts_void)
+	      if (specs->typespec_word == cts_int128)
+	        {
+		  error_at (loc,
+			    ("both %<_Sat%> and %<__int128%> in "
+			     "declaration specifiers"));
+	        }
+	      else if (specs->typespec_word == cts_void)
 		error_at (loc,
 			  ("both %<_Sat%> and %<void%> in "
 			   "declaration specifiers"));
@@ -8874,7 +8888,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
       else
 	{
 	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
-	     "_Decimal64", "_Decimal128", "_Fract" or "_Accum".  */
+	     "__int128", "_Decimal64", "_Decimal128", "_Fract" or "_Accum".  */
 	  if (specs->typespec_word != cts_none)
 	    {
 	      error_at (loc,
@@ -8883,6 +8897,31 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    }
 	  switch (i)
 	    {
+	    case RID_INT128:
+	      if (int128_integer_type_node == NULL_TREE)
+		{
+		  error_at (loc, "%<__int128%> is not supported for this target");
+		  return specs;
+		}
+	      if (!in_system_header)
+		pedwarn (loc, OPT_pedantic,
+			 "ISO C does not support %<__int128%> type");
+
+	      if (specs->long_p)
+		error_at (loc,
+			  ("both %<__int128%> and %<long%> in "
+			   "declaration specifiers"));
+	      else if (specs->saturating_p)
+		error_at (loc,
+			  ("both %<_Sat%> and %<__int128%> in "
+			   "declaration specifiers"));
+	      else if (specs->short_p)
+		error_at (loc,
+			  ("both %<__int128%> and %<short%> in "
+			   "declaration specifiers"));
+	      else
+		specs->typespec_word = cts_int128;
+	      return specs;
 	    case RID_VOID:
 	      if (specs->long_p)
 		error_at (loc,
@@ -9348,6 +9387,19 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = unsigned_char_type_node;
       else
 	specs->type = char_type_node;
+      if (specs->complex_p)
+	{
+	  pedwarn (input_location, OPT_pedantic,
+		   "ISO C does not support complex integer types");
+	  specs->type = build_complex_type (specs->type);
+	}
+      break;
+    case cts_int128:
+      gcc_assert (!specs->long_p && !specs->short_p && !specs->long_long_p);
+      gcc_assert (!(specs->signed_p && specs->unsigned_p));
+      specs->type = (specs->unsigned_p
+		     ? int128_unsigned_type_node
+		     : int128_integer_type_node);
       if (specs->complex_p)
 	{
 	  pedwarn (input_location, OPT_pedantic,

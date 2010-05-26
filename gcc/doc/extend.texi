@@ -33,6 +33,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::           Double-word integers---@code{long long int}.
+* __int128::			128-bit integers---@code{__int128}.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
 * Half-Precision::      Half-Precision Floating Point.
@@ -803,6 +804,17 @@ or may (if it is a macro argument), contain a side effect.  Then repeating
 the operand in the middle would perform the side effect twice.  Omitting
 the middle operand uses the value already computed without the undesirable
 effects of recomputing it.
+
+@node __int128
+@section 128-bits integers
+@cindex @code{__int128} data types
+
+As an extension the integer scalar type @code{__int128} is supported for
+targets having an integer mode wide enough to hold 128-bit.
+Simply write @code{__int128} for a signed 128-bit integer, or
+@code{unsigned __int128} for an unsigned 128-bit integer.  There is no
+support in GCC to express an integer constant of type @code{__int128}
+for targets having @code{long long} integer with less then 128 bit width.
 
 @node Long Long
 @section Double-Word Integers

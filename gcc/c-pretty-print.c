@@ -864,6 +864,9 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
   else if (type == long_long_integer_type_node
 	   || type == long_long_unsigned_type_node)
     pp_string (pp, "ll");
+  else if (type == int128_integer_type_node
+           || type == int128_unsigned_type_node)
+    pp_string (pp, "I128");
 }
 
 /* Print out a CHARACTER literal.  */

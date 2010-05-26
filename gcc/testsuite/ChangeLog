@@ -1,3 +1,22 @@
+2010-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lib/target-supports.exp (check_effective_target_int128): New
+	function to check if __int128 types are available for target.
+	* testsuite/c-c++-common/int128-types-1.c: New.
+	* testsuite/c-c++-common/int128-1.c: New.
+	* testsuite/c-c++-common/int128-2.c: New.
+	* g++.dg/abi/mangle43.C: New.
+	* g++.dg/init/enum1.C: Handle __int128 case and add -Wno-overflow.
+	* g++.dg/cpp0x/nullptr04.C: Use __SIZE_TYPE__ for getting
+	pointer-wide scalar.
+	* g++.dg/other/pr25632.C: Likewise.
+	* g++.dg/other/large-size-array.C (DIM): Use ULLONG_MAX for win64 case.
+	* g++.dg/warn/pr13358-2.C: Add llp64 for check of special
+	overflow warnings.
+	* g++.dg/warn/pr13358-4.C: Likewise.
+	* g++.dg/warn/Wconversion-null-2.C:  Add 'long long' case.
+	* g++.dg/warn/Wconversion-null.C: Likewise.
+
 2010-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43382
