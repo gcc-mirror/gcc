@@ -1,4 +1,8 @@
-2010-05-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
+2010-05-25  Sterling Augustine <sterling@tensilica.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself for xtensa port.
+	
+	2010-05-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config.sub: Update to version 2010-05-21.
 	* config.guess: Update to version 2010-04-03.
