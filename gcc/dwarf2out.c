@@ -311,9 +311,10 @@ typedef struct GTY(()) dw_fde_struct {
   unsigned int drap_reg;
   /* Virtual dynamic realign argument pointer register.  */
   unsigned int vdrap_reg;
+  /* These 3 flags are copied from rtl_data in function.h.  */
   unsigned all_throwers_are_sibcalls : 1;
-  unsigned nothrow : 1;
   unsigned uses_eh_lsda : 1;
+  unsigned nothrow : 1;
   /* Whether we did stack realign in this call frame.  */
   unsigned stack_realign : 1;
   /* Whether dynamic realign argument pointer register has been saved.  */
@@ -3602,6 +3603,27 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   j += 2;
 }
 
+/* Return true if frame description entry FDE is needed for EH.  */
+
+static bool
+fde_needed_for_eh_p (dw_fde_ref fde)
+{
+  if (flag_asynchronous_unwind_tables)
+    return true;
+
+  if (TARGET_USES_WEAK_UNWIND_INFO && DECL_WEAK (fde->decl))
+    return true;
+
+  if (fde->uses_eh_lsda)
+    return true;
+
+  /* If exceptions are enabled, we have collected nothrow info.  */
+  if (flag_exceptions && (fde->all_throwers_are_sibcalls || fde->nothrow))
+    return false;
+
+  return true;
+}
+
 /* Output the call frame information used to record information
    that relates to calculating the frame pointer, and records the
    location of saved registers.  */
@@ -3631,41 +3653,25 @@ output_call_frame_info (int for_eh)
   if (dwarf2out_do_cfi_asm ())
     return;
 
-  /* If we make FDEs linkonce, we may have to emit an empty label for
-     an FDE that wouldn't otherwise be emitted.  We want to avoid
-     having an FDE kept around when the function it refers to is
-     discarded.  Example where this matters: a primary function
-     template in C++ requires EH information, but an explicit
-     specialization doesn't.  */
-  if (TARGET_USES_WEAK_UNWIND_INFO
-      && ! flag_asynchronous_unwind_tables
-      && flag_exceptions
-      && for_eh)
-    for (i = 0; i < fde_table_in_use; i++)
-      if ((fde_table[i].nothrow || fde_table[i].all_throwers_are_sibcalls)
-	  && !fde_table[i].uses_eh_lsda
-	  && ! DECL_WEAK (fde_table[i].decl))
-	targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl,
-				      for_eh, /* empty */ 1);
-
-  /* If we don't have any functions we'll want to unwind out of, don't
-     emit any EH unwind information.  Note that if exceptions aren't
-     enabled, we won't have collected nothrow information, and if we
-     asked for asynchronous tables, we always want this info.  */
+  /* If we don't have any functions we'll want to unwind out of, don't emit
+     any EH unwind information.  If we make FDEs linkonce, we may have to
+     emit an empty label for an FDE that wouldn't otherwise be emitted.  We
+     want to avoid having an FDE kept around when the function it refers to
+     is discarded.  Example where this matters: a primary function template
+     in C++ requires EH information, an explicit specialization doesn't.  */
   if (for_eh)
     {
-      bool any_eh_needed = !flag_exceptions || flag_asynchronous_unwind_tables;
+      bool any_eh_needed = false;
 
       for (i = 0; i < fde_table_in_use; i++)
 	if (fde_table[i].uses_eh_lsda)
 	  any_eh_needed = any_lsda_needed = true;
-	else if (TARGET_USES_WEAK_UNWIND_INFO && DECL_WEAK (fde_table[i].decl))
+	else if (fde_needed_for_eh_p (&fde_table[i]))
 	  any_eh_needed = true;
-	else if (! fde_table[i].nothrow
-		 && ! fde_table[i].all_throwers_are_sibcalls)
-	  any_eh_needed = true;
+	else if (TARGET_USES_WEAK_UNWIND_INFO)
+	  targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl, 1, 1);
 
-      if (! any_eh_needed)
+      if (!any_eh_needed)
 	return;
     }
 
@@ -3822,10 +3828,7 @@ output_call_frame_info (int for_eh)
       fde = &fde_table[i];
 
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
-      if (for_eh && !flag_asynchronous_unwind_tables && flag_exceptions
-	  && (fde->nothrow || fde->all_throwers_are_sibcalls)
-	  && ! (TARGET_USES_WEAK_UNWIND_INFO && DECL_WEAK (fde_table[i].decl))
-	  && !fde->uses_eh_lsda)
+      if (for_eh && !fde_needed_for_eh_p (fde))
 	continue;
 
       for (k = 0; k < (fde->dw_fde_switched_sections ? 2 : 1); k++)
@@ -3961,9 +3964,9 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->dw_fde_cfi = NULL;
   fde->dw_fde_switch_cfi = NULL;
   fde->funcdef_number = current_function_funcdef_no;
-  fde->nothrow = crtl->nothrow;
-  fde->uses_eh_lsda = crtl->uses_eh_lsda;
   fde->all_throwers_are_sibcalls = crtl->all_throwers_are_sibcalls;
+  fde->uses_eh_lsda = crtl->uses_eh_lsda;
+  fde->nothrow = crtl->nothrow;
   fde->drap_reg = INVALID_REGNUM;
   fde->vdrap_reg = INVALID_REGNUM;
   if (flag_reorder_blocks_and_partition)
