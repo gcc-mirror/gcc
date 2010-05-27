@@ -1096,7 +1096,7 @@ gate_reference (void)
 {
   return (flag_ipa_reference
 	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  && !seen_error ());
 }
 
 struct ipa_opt_pass_d pass_ipa_reference =

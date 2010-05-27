@@ -1,6 +1,6 @@
 /* Code to maintain a C++ template repository.
    Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008  Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
 This file is part of GCC.
@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "flags.h"
 
 static const char *extract_string (const char **);
@@ -243,7 +243,7 @@ finish_repo (void)
   if (!flag_use_repository || flag_compare_debug)
     return;
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   repo_file = reopen_repo_file_for_write ();

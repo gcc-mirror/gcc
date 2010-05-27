@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TOPLEV_H
 #include "input.h"
 #include "bversion.h"
+#include "diagnostic-core.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -32,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 extern int toplev_main (int, char **);
 extern int read_integral_parameter (const char *, const char *, const int);
 extern void strip_off_ending (char *, int);
-extern const char *trim_filename (const char *);
 extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
      ATTRIBUTE_NORETURN;
 extern void _fatal_insn (const char *, const_rtx, const char *, int, const char *)
@@ -42,41 +42,6 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
-
-/* If we haven't already defined a frontend specific diagnostics
-   style, use the generic one.  */
-#ifndef GCC_DIAG_STYLE
-#define GCC_DIAG_STYLE __gcc_tdiag__
-#endif
-/* None of these functions are suitable for ATTRIBUTE_PRINTF, because
-   each language front end can extend them with its own set of format
-   specifiers.  We must use custom format checks.  */
-#if (ENABLE_CHECKING && GCC_VERSION >= 4001) || GCC_VERSION == BUILDING_GCC_VERSION
-#define ATTRIBUTE_GCC_DIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
-#else
-#define ATTRIBUTE_GCC_DIAG(m, n) ATTRIBUTE_NONNULL(m)
-#endif
-extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
-     ATTRIBUTE_NORETURN;
-/* Pass one of the OPT_W* from options.h as the first parameter.  */
-extern bool warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern bool warning_at (location_t, int, const char *, ...)
-    ATTRIBUTE_GCC_DIAG(3,4);
-extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
-extern void error_n (location_t, int, const char *, const char *, ...)
-    ATTRIBUTE_GCC_DIAG(3,5) ATTRIBUTE_GCC_DIAG(4,5);
-extern void error_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
-     ATTRIBUTE_NORETURN;
-/* Pass one of the OPT_W* from options.h as the second parameter.  */
-extern bool pedwarn (location_t, int, const char *, ...)
-     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
-extern void inform (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void inform_n (location_t, int, const char *, const char *, ...)
-    ATTRIBUTE_GCC_DIAG(3,5) ATTRIBUTE_GCC_DIAG(4,5);
-extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
@@ -97,13 +62,6 @@ extern void output_quoted_string	(FILE *, const char *);
 extern void output_file_directive	(FILE *, const char *);
 #endif
 
-#ifdef BUFSIZ
-  /* N.B. Unlike all the others, fnotice is just gettext+fprintf, and
-     therefore it can have ATTRIBUTE_PRINTF.  */
-extern void fnotice			(FILE *, const char *, ...)
-     ATTRIBUTE_PRINTF_2;
-#endif
-
 extern void wrapup_global_declaration_1 (tree);
 extern bool wrapup_global_declaration_2 (tree);
 extern bool wrapup_global_declarations (tree *, int);
@@ -122,7 +80,6 @@ extern unsigned local_tick;
 /* Top-level source file.  */
 extern const char *main_input_filename;
 
-extern const char *progname;
 extern const char *dump_base_name;
 extern const char *dump_dir_name;
 extern const char *aux_base_name;

@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "langhooks.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "flags.h"
@@ -5512,7 +5512,7 @@ execute_expand_omp (void)
 static bool
 gate_expand_omp (void)
 {
-  return (flag_openmp != 0 && errorcount == 0);
+  return (flag_openmp != 0 && !seen_error ());
 }
 
 struct gimple_opt_pass pass_expand_omp =
@@ -6561,7 +6561,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* If we have issued syntax errors, avoid doing any heavy lifting.
      Just replace the OpenMP directives with a NOP to avoid
      confusing RTL expansion.  */
-  if (errorcount && is_gimple_omp (stmt))
+  if (seen_error () && is_gimple_omp (stmt))
     {
       gsi_replace (gsi_p, gimple_build_nop (), true);
       return;

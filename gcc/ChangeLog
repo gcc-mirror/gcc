@@ -1,3 +1,81 @@
+2010-05-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* diagnostic-core.h: New.  Contents moved from diagnostic.h and
+	toplev.h.
+	* diagnostic.c: Don't include toplev.h.
+	(progname): Define.  Moved from toplev.c.
+	(seen_error): New function.
+	* diagnostic.h: Include diagnostic-core.h.
+	(diagnostic_t, emit_diagnostic): Don't declare here.
+	* toplev.c (progname): Move to toplev.c.
+	(emit_debug_global_declarations, compile_file, finalize,
+	do_compile, toplev_main): Use seen_error.
+	* toplev.h: Include diagnostic-core.h.
+	(trim_filename, GCC_DIAG_STYLE, ATTRIBUTE_GCC_DIAG,
+	internal_error, warning, warning_at, error, error_n, error_at,
+	fatal_error, pedwarn, permerror, sorry, inform, inform_n,
+	verbatim, fnotice, progname): Move to diagnostic-core.h.
+	* builtins.c: Include diagnostic-core.h instead of diagnostic.h.
+	(expand_builtin_expect): Use seen_error.
+	* c-decl.c: Include diagnostic-core.h instead of diagnostic.h.
+	(c_make_fname_decl, c_write_global_declarations): Use seen_error.
+	* c-format.c: Include diagnostic-core.h instead of diagnostic.h.
+	* c-gimplify.c: Include diagnostic-core.h instead of diagnostic.h.
+	* c-lang.c: Include diagnostic-core.h instead of diagnostic.h.
+	* c-lex.c (c_lex_with_flags, interpret_float): Don't increment
+	errorcount for errors.
+	* c-opts.c (c_common_finish): Use seen_error.
+	* cgraph.c: Include diagnostic-core.h instead of diagnostic.h.
+	* cgraphunit.c (verify_cgraph_node, verify_cgraph,
+	cgraph_output_pending_asms, cgraph_optimize): Use seen_error.
+	* coverage.c: Include diagnostic-core.h instead of diagnostic.h.
+	(get_coverage_counts): Use seen_error.
+	* dwarf2out.c (dwarf2out_finish): Use seen_error.
+	* gimplify.c (gimplify_var_or_parm_decl, gimple_push_cleanup,
+	gimplify_body): Use seen_error.
+	* ipa-inline.c (cgraph_early_inlining): Use seen_error.
+	* ipa-pure-const.c (gate_pure_const): Use seen_error.
+	* ipa-reference.c (gate_reference): Use seen_error.
+	* jump.c: Include diagnostic-core.h instead of diagnostic.h.
+	* lambda-code.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	* lto-cgraph.c: Include diagnostic-core.h instead of diagnostic.h.
+	* lto-compress.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	* lto-section-in.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	* lto-streamer-out.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	* lto-streamer.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	(gate_lto_out): Use seen_error.
+	* matrix-reorg.c: Include diagnostic-core.h instead of
+	diagnostic.h.
+	* omega.c: Include diagnostic-core.h instead of diagnostic.h.
+	* omp-low.c: Include diagnostic-core.h instead of diagnostic.h.
+	(gate_expand_omp, lower_omp_1): Use seen_error.
+	* passes.c: Include diagnostic-core.h instead of diagnostic.h.
+	(rest_of_decl_compilation, rest_of_type_compilation,
+	gate_rest_of_compilation, ipa_write_summaries): Use seen_error.
+	* tree-cfg.c (label_to_block_fn): Use seen_error.
+	* tree-inline.c (optimize_inline_calls): Use seen_error.
+	* tree-mudflap.c (mudflap_finish_file): Use
+	seen_error.
+	* tree-optimize.c (gate_all_optimizations,
+	gate_all_early_local_passes, gate_all_early_optimizations): Use
+	seen_error.
+	* tree-ssa-structalias.c (gate_ipa_pta): Use seen_error.
+	* varpool.c: Include diagnostic-core.h instead of diagnostic.h.
+	(varpool_remove_unreferenced_decls,
+	varpool_assemble_pending_decls): Use seen_error.
+	* Makefile.in (DIAGNOSTIC_CORE_H): Define.
+	(TOPLEV_H, DIAGNOSTIC_H): Update.
+	(c-decl.o, c-lang.o, c-format.o, lto-compress.o, lto-cgraph.o,
+	lto-streamer-out.o, lto-section-in.o, lto-streamer.o,
+	c-gimplify.o, omp-low.o, omega.o, diagnostic.o, passes.o,
+	builtins.o, jump.o, cgraph.o, varpool.o, matrix-reorg.o,
+	coverage.o, lambda-code.o): Update dependencies.
+
 2010-05-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/44188

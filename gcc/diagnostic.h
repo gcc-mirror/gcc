@@ -23,15 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTIC_H
 
 #include "pretty-print.h"
-
-/* Constants used to discriminate diagnostics.  */
-typedef enum
-{
-#define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-  DK_LAST_DIAGNOSTIC_KIND
-} diagnostic_t;
+#include "diagnostic-core.h"
 
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
@@ -246,8 +238,6 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    va_list *, location_t,
 					    diagnostic_t)
      ATTRIBUTE_GCC_DIAG(2,0);
-extern bool emit_diagnostic (diagnostic_t, location_t, int,
-			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 #endif
 extern char *diagnostic_build_prefix (diagnostic_context *, diagnostic_info *);
 void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);

@@ -1,3 +1,8 @@
+2010-05-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-act.c: Include diagnostic-core.h instead of diagnostic.h.
+	* Make-lang.in (objc/objc-act.o): Update dependencies.
+
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objc-act.h: Do not include gimple.h.

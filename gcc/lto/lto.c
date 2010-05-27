@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "toplev.h"
 #include "tree.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tm.h"
 #include "libiberty.h"
 #include "cgraph.h"
@@ -1710,7 +1710,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   /* FIXME lto. This loop needs to be changed to use the pass manager to
      call the ipa passes directly.  */
-  if (!errorcount)
+  if (!seen_error ())
     for (i = 0; i < last_file_ix; i++)
       {
 	struct lto_file_decl_data *file_data = all_file_decl_data [i];
@@ -1901,7 +1901,7 @@ lto_main (int debug_p ATTRIBUTE_UNUSED)
      command line.  */
   read_cgraph_and_symbols (num_in_fnames, in_fnames);
 
-  if (!errorcount)
+  if (!seen_error ())
     {
       /* If WPA is enabled analyze the whole call graph and create an
 	 optimization plan.  Otherwise, read in all the function

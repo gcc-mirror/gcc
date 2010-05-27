@@ -1416,7 +1416,7 @@ c_common_finish (void)
   FILE *deps_stream = NULL;
 
   /* Don't write the deps file if there are errors.  */
-  if (cpp_opts->deps.style != DEPS_NONE && errorcount == 0)
+  if (cpp_opts->deps.style != DEPS_NONE && !seen_error ())
     {
       /* If -M or -MM was seen without -MF, default output to the
 	 output stream.  */

@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "input.h"
-#include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
 
@@ -45,6 +44,10 @@ static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
 static void diagnostic_action_after_output (diagnostic_context *,
 					    diagnostic_info *);
 static void real_abort (void) ATTRIBUTE_NORETURN;
+
+/* Name of program invoked, sans directories.  */
+
+const char *progname;
 
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;
@@ -695,6 +698,14 @@ sorry (const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_SORRY);
   report_diagnostic (&diagnostic);
   va_end (ap);
+}
+
+/* Return true if an error or a "sorry" has been seen.  Various
+   processing is disabled after errors.  */
+bool
+seen_error (void)
+{
+  return errorcount || sorrycount;
 }
 
 /* An error which is severe enough that we make no attempt to

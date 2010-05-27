@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graph.h"
 #include "regs.h"
 #include "timevar.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "params.h"
 #include "reload.h"
 #include "dwarf2asm.h"
@@ -211,7 +211,7 @@ rest_of_decl_compilation (tree decl,
   else if (TREE_CODE (decl) == TYPE_DECL
 	   /* Like in rest_of_type_compilation, avoid confusing the debug
 	      information machinery when there are errors.  */
-	   && !(sorrycount || errorcount))
+	   && !seen_error ())
     {
       timevar_push (TV_SYMOUT);
       debug_hooks->type_decl (decl, !top_level);
@@ -232,7 +232,7 @@ rest_of_type_compilation (tree type, int toplev)
 {
   /* Avoid confusing the debug information machinery when there are
      errors.  */
-  if (errorcount != 0 || sorrycount != 0)
+  if (seen_error ())
     return;
 
   timevar_push (TV_SYMOUT);
@@ -287,7 +287,7 @@ gate_rest_of_compilation (void)
 {
   /* Early return if there were errors.  We can run afoul of our
      consistency checks, and there's not really much point in fixing them.  */
-  return !(rtl_dump_and_exit || flag_syntax_only || errorcount || sorrycount);
+  return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
 }
 
 struct gimple_opt_pass pass_rest_of_compilation =
@@ -1716,7 +1716,7 @@ ipa_write_summaries (void)
   struct varpool_node *vnode;
   int i, order_pos;
 
-  if (!flag_generate_lto || errorcount || sorrycount)
+  if (!flag_generate_lto || seen_error ())
     return;
 
   set = cgraph_node_set_new ();

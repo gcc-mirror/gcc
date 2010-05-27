@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cgraph.h"
 #include "langhooks.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "hashtab.h"
 #include "ggc.h"
 #include "timevar.h"
@@ -517,7 +517,7 @@ varpool_remove_unreferenced_decls (void)
 
   varpool_reset_queue ();
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   while (node)
@@ -549,7 +549,7 @@ varpool_assemble_pending_decls (void)
 {
   bool changed = false;
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return false;
 
   timevar_push (TV_VAROUT);

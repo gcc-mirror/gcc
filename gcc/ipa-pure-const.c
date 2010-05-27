@@ -1163,7 +1163,7 @@ gate_pure_const (void)
 {
   return (flag_ipa_pure_const
 	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  && !seen_error ());
 }
 
 struct ipa_opt_pass_d pass_ipa_pure_const =

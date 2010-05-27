@@ -1876,7 +1876,7 @@ gimplify_var_or_parm_decl (tree *expr_p)
       && !TREE_STATIC (decl) && !DECL_EXTERNAL (decl)
       && decl_function_context (decl) == current_function_decl)
     {
-      gcc_assert (errorcount || sorrycount);
+      gcc_assert (seen_error ());
       return GS_ERROR;
     }
 
@@ -5197,7 +5197,7 @@ gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p)
 
   /* Errors can result in improperly nested cleanups.  Which results in
      confusion when trying to resolve the GIMPLE_WITH_CLEANUP_EXPR.  */
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   if (gimple_conditional_context ())
@@ -7673,7 +7673,7 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   gcc_assert (gimplify_ctxp == NULL);
 
 #ifdef ENABLE_TYPES_CHECKING
-  if (!errorcount && !sorrycount)
+  if (!seen_error ())
     verify_types_in_gimple_seq (gimple_bind_body (outer_bind));
 #endif
 

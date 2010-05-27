@@ -1,6 +1,6 @@
 /* Mainly the interface between cpplib and the C front ends.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -322,7 +322,6 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	  case CPP_N_INVALID:
 	    /* cpplib has issued an error.  */
 	    *value = error_mark_node;
-	    errorcount++;
 	    break;
 
 	  case CPP_N_INTEGER:
@@ -668,7 +667,6 @@ interpret_float (const cpp_token *token, unsigned int flags)
 	if (mode == VOIDmode)
 	  {
 	    error ("unsupported non-standard suffix on floating constant");
-	    errorcount++;
 
 	    return error_mark_node;
 	  }
