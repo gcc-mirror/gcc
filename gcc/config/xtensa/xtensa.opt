@@ -26,6 +26,10 @@ mfused-madd
 Target Report Mask(FUSED_MADD)
 Enable fused multiply/add and multiply/subtract FP instructions
 
+mforce-no-pic
+Target Report Mask(FORCE_NO_PIC)
+Disable position-independent code (PIC) for use in OS kernel code
+
 mlongcalls
 Target
 Use indirect CALLXn instructions for large programs

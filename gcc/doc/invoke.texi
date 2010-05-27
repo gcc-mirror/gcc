@@ -889,6 +889,7 @@ See i386 and x86-64 Options.
 @emph{Xtensa Options}
 @gccoptlist{-mconst16 -mno-const16 @gol
 -mfused-madd  -mno-fused-madd @gol
+-mforce-no-pic @gol
 -mserialize-volatile  -mno-serialize-volatile @gol
 -mtext-section-literals  -mno-text-section-literals @gol
 -mtarget-align  -mno-target-align @gol
@@ -17081,6 +17082,12 @@ When this option is enabled, GCC inserts @code{MEMW} instructions before
 @code{volatile} memory references to guarantee sequential consistency.
 The default is @option{-mserialize-volatile}.  Use
 @option{-mno-serialize-volatile} to omit the @code{MEMW} instructions.
+
+@item -mforce-no-pic
+@opindex mforce-no-pic
+For targets, like GNU/Linux, where all user-mode Xtensa code must be
+position-independent code (PIC), this option disables PIC for compiling
+kernel code.
 
 @item -mtext-section-literals
 @itemx -mno-text-section-literals

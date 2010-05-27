@@ -2109,6 +2109,8 @@ override_options (void)
   if (flag_pic && TARGET_CONST16)
     error ("-f%s is not supported with CONST16 instructions",
 	   (flag_pic > 1 ? "PIC" : "pic"));
+  else if (TARGET_FORCE_NO_PIC)
+    flag_pic = 0;
   else if (XTENSA_ALWAYS_PIC)
     {
       if (TARGET_CONST16)
