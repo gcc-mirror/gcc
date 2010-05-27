@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <errno.h>
 #include "coretypes.h"
 #include "tm.h"
 #include "intl.h"
@@ -222,7 +223,8 @@ maybe_unlink_file (const char *file)
 {
   if (! debug)
     {
-      if (unlink_if_ordinary (file))
+      if (unlink_if_ordinary (file)
+	  && errno != ENOENT)
 	fatal_perror ("deleting LTRANS file %s", file);
     }
   else
@@ -262,6 +264,7 @@ fork_execute (char **argv)
   collect_wait (new_argv[0], pex);
 
   maybe_unlink_file (args_name);
+  args_name = NULL;
   free (at_args);
 }
 

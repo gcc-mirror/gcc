@@ -1,3 +1,9 @@
+2010-05-27  Richard Guenther  <rguenther@suse.de>
+
+	* lto-wrapper.c (maybe_unlink_file): Ignore unlink failure
+	for non-existant files.
+	(fork_execute): Mark args_name file as deleted.
+
 2010-05-27  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrp/44287
