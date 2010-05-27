@@ -1,5 +1,6 @@
-// { dg-require-effective-target tls }
 // { dg-do run }
+// { dg-require-effective-target tls }
+/* { dg-skip-if "PR44140" { *-*-* } { "-flto" "-fwhopr" } { "" } } */
 
 extern "C" {
 extern void abort ();

@@ -1,3 +1,15 @@
+2010-05-27  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR ObjC/44140
+	* objc.dg/torture/tls/thr-init-2.m: Skip for -flto, -fwhopr.
+	* objc.dg/torture/tls/thr-init-3.m: Ditto.
+	* objc.dg/torture/tls/thr-init.m: Ditto.
+	* objc.dg/torture/trivial.m: Ditto.
+	* obj-c++.dg/torture/tls/thr-init-1.mm: Ditto.
+	* obj-c++.dg/torture/tls/thr-init-2.mm: Ditto.
+	* obj-c++.dg/torture/tls/thr-init-3.mm: Ditto.
+	* obj-c++.dg/torture/trivial.mm: Ditto.
+	
 2010-05-27  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* g++.dg/lto/20100302_0.C: Skip on darwin.
