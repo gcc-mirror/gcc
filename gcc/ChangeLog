@@ -1,4 +1,14 @@
-2010-05-27 Sterling Augustine <sterling@tensilica.com>
+2010-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/44255
+	* combine.c (struct rtx_subst_pair): Define unconditionally.
+	(propagate_for_debug_subst): Likewise.  If not AUTO_INC_DEC,
+	copy_rtx pair->to instead of cleanup_auto_inc_dec it.
+	Call make_compound_operation on pair->to.
+	(propagate_for_debug): Don't call make_compound_operation here.
+	Always use simplify_replace_fn_rtx.
+
+2010-05-27  Sterling Augustine  <sterling@tensilica.com>
 
 	* doc/invoke.texi (xtensa options): Add -mforce-no-pic.
 	* config/xtensa/xtensa.c (override_options): Check
