@@ -1,3 +1,10 @@
+2010-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40497
+	* include/bits/cpp_type_traits.h (__is_iterator): Add.
+	* include/bits/stl_iterator_base_funcs.h (next, prev): Use it.
+	* testsuite/24_iterators/operations/40497.cc: New.
+
 2010-05-19  Eelis van der Weegen  <gcc-bugzilla@contacts.eelis.net>
 
 	PR libstdc++/44190
