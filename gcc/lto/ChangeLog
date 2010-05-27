@@ -1,3 +1,16 @@
+2010-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/44230
+	* lto.h (lto_eh_personality): New prototype.
+	* lto.c: Include debug.h.
+	(first_personality_decl): New static variable.
+	(lto_materialize_function): Set it to DECL_FUNCTION_PERSONALITY of the
+	first function for which it is non-null.
+	(lto_eh_personality_decl): New static variable.
+	(lto_eh_personality): New function.
+	* lto-lang.c (LANG_HOOKS_EH_PERSONALITY): Redefine to above function.
+	* Make-lang.in (lto/lto.o): Add dependency on debug.h.
+
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lto-lang.c: Do not include expr.h.

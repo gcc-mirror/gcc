@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "ipa-prop.h"
 #include "common.h"
+#include "debug.h"
 #include "timevar.h"
 #include "gimple.h"
 #include "lto.h"
@@ -61,6 +62,9 @@ along with GCC; see the file COPYING3.  If not see
 DEF_VEC_P(bitmap);
 DEF_VEC_ALLOC_P(bitmap,heap);
 
+static GTY(()) tree first_personality_decl;
+
+
 /* Read the constructors and inits.  */
 
 static void
@@ -75,7 +79,7 @@ lto_materialize_constructors_and_inits (struct lto_file_decl_data * file_data)
 			 data, len);
 }
 
-/* Read the function body for the function associated with NODE if possible.  */
+/* Read the function body for the function associated with NODE.  */
 
 static void
 lto_materialize_function (struct cgraph_node *node)
@@ -113,9 +117,11 @@ lto_materialize_function (struct cgraph_node *node)
 	 WPA mode, the body of the function is not needed.  */
       if (!flag_wpa)
 	{
-         allocate_struct_function (decl, false);
-	  announce_function (node->decl);
+	  allocate_struct_function (decl, false);
+	  announce_function (decl);
 	  lto_input_function_body (file_data, decl, data);
+	  if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
+	    first_personality_decl = DECL_FUNCTION_PERSONALITY (decl);
 	  lto_stats.num_function_bodies++;
 	}
 
@@ -1841,6 +1847,28 @@ do_whole_program_analysis (void)
   lto_write_ltrans_list (output_files);
 
   XDELETEVEC (output_files);
+}
+
+
+static GTY(()) tree lto_eh_personality_decl;
+
+/* Return the LTO personality function decl.  */
+
+tree
+lto_eh_personality (void)
+{
+  if (!lto_eh_personality_decl)
+    {
+      /* Use the first personality DECL for our personality if we don't
+	 support multiple ones.  This ensures that we don't artificially
+	 create the need for them in a single-language program.  */
+      if (first_personality_decl && !dwarf2out_do_cfi_asm ())
+	lto_eh_personality_decl = first_personality_decl;
+      else
+	lto_eh_personality_decl = lhd_gcc_personality ();
+    }
+
+  return lto_eh_personality_decl;
 }
 
 
