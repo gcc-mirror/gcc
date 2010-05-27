@@ -1,3 +1,20 @@
+2010-05-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/44188
+	* c-common.c (is_typedef_decl): Move this definition ...
+	* tree.c (is_typedef_decl): ... here.
+	(typdef_variant_p): Move definition here from gcc/cp/tree.c.
+	* c-common.h (is_typedef_decl): Move this declaration ...
+	* tree.h (is_typedef_decl): ... here.
+	(typedef_variant_p): Move declaration here from gcc/cp/cp-tree.h
+	* dwarf2out.c (is_naming_typedef_decl): New function.
+	(gen_tagged_type_die): Split out of ...
+	(gen_type_die_with_usage): ... this function. When an anonymous
+	tagged type is named by a typedef, make sure a DW_TAG_typedef DIE
+	is emitted for the typedef.
+	(gen_typedef_die): Emit DW_TAG_typedef also for typedefs naming
+	anonymous tagged types.
+
 2010-05-27  Jason Merrill  <jason@redhat.com>
 
 	* print-tree.c (debug_vec_tree): New fn.
