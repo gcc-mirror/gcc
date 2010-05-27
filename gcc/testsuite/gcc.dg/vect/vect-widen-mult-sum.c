@@ -30,6 +30,7 @@ int main (void)
 
   for (i=0; i<N; i++) {
     X[i] = 16-i; 
+    __asm__ volatile ("");
   }
 
   sum = main1 (X, 1, 16, N-1);

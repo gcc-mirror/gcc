@@ -48,7 +48,10 @@ int main (void)
   check_vect ();
 
   for (i = 0; i < N; i++)
-    uc[i] = i+3;
+    {
+      uc[i] = i+3;
+      __asm__ volatile ("");
+    }
 
   main1 (N/8, 123, 124, 125, 126, 127, 128, 129, 313);
   return 0;
