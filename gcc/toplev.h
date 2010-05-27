@@ -119,6 +119,9 @@ extern void target_reinit (void);
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 
+/* Top-level source file.  */
+extern const char *main_input_filename;
+
 extern const char *progname;
 extern const char *dump_base_name;
 extern const char *dump_dir_name;
