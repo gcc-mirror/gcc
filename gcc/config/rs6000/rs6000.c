@@ -1210,7 +1210,7 @@ char rs6000_reg_names[][8] =
      "24", "25", "26", "27", "28", "29", "30", "31",
      "mq", "lr", "ctr","ap",
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-      "xer",
+      "ca",
       /* AltiVec registers.  */
       "0",  "1",  "2",  "3",  "4",  "5",  "6", "7",
       "8",  "9",  "10", "11", "12", "13", "14", "15",
@@ -1236,7 +1236,7 @@ static const char alt_reg_names[][8] =
   "%f24",  "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
     "mq",    "lr",  "ctr",   "ap",
   "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
-   "xer",
+   "ca",
   /* AltiVec registers.  */
    "%v0",  "%v1",  "%v2",  "%v3",  "%v4",  "%v5",  "%v6", "%v7",
    "%v8",  "%v9", "%v10", "%v11", "%v12", "%v13", "%v14", "%v15",
@@ -1649,8 +1649,8 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (CR_REGNO_P (regno))
     return GET_MODE_CLASS (mode) == MODE_CC;
 
-  if (XER_REGNO_P (regno))
-    return mode == PSImode;
+  if (CA_REGNO_P (regno))
+    return mode == BImode;
 
   /* AltiVec only in AldyVec registers.  */
   if (ALTIVEC_REGNO_P (regno))
@@ -1771,7 +1771,7 @@ rs6000_debug_reg_global (void)
   rs6000_debug_reg_print (CTR_REGNO, CTR_REGNO, "ctr");
   rs6000_debug_reg_print (CR0_REGNO, CR7_REGNO, "cr");
   rs6000_debug_reg_print (MQ_REGNO, MQ_REGNO, "mq");
-  rs6000_debug_reg_print (XER_REGNO, XER_REGNO, "xer");
+  rs6000_debug_reg_print (CA_REGNO, CA_REGNO, "ca");
   rs6000_debug_reg_print (VRSAVE_REGNO, VRSAVE_REGNO, "vrsave");
   rs6000_debug_reg_print (VSCR_REGNO, VSCR_REGNO, "vscr");
   rs6000_debug_reg_print (SPE_ACC_REGNO, SPE_ACC_REGNO, "spe_a");
@@ -1896,7 +1896,7 @@ rs6000_init_hard_regno_mode_ok (void)
   rs6000_regno_regclass[MQ_REGNO] = MQ_REGS;
   rs6000_regno_regclass[LR_REGNO] = LINK_REGS;
   rs6000_regno_regclass[CTR_REGNO] = CTR_REGS;
-  rs6000_regno_regclass[XER_REGNO] = XER_REGS;
+  rs6000_regno_regclass[CA_REGNO] = CA_REGS;
   rs6000_regno_regclass[VRSAVE_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[VSCR_REGNO] = VRSAVE_REGS;
   rs6000_regno_regclass[SPE_ACC_REGNO] = SPE_ACC_REGS;
@@ -25745,8 +25745,8 @@ rs6000_dbx_register_number (unsigned int regno)
     return 109;
   if (CR_REGNO_P (regno))
     return regno - CR0_REGNO + 86;
-  if (regno == XER_REGNO)
-    return 101;
+  if (regno == CA_REGNO)
+    return 101;  /* XER */
   if (ALTIVEC_REGNO_P (regno))
     return regno - FIRST_ALTIVEC_REGNO + 1124;
   if (regno == VRSAVE_REGNO)

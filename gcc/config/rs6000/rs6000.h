@@ -946,7 +946,7 @@ extern unsigned rs6000_pointer_size;
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-	cr5, r1, r2, ap, xer (fixed)
+	cr5, r1, r2, ap, ca (fixed)
 	v0 - v1		(not saved or used for anything)
 	v13 - v3	(not saved; incoming vector arg registers)
 	v2		(not saved; incoming vector arg reg; return value)
@@ -1008,8 +1008,8 @@ extern unsigned rs6000_pointer_size;
 /* PAIRED SIMD registers are just the FPRs.  */
 #define PAIRED_SIMD_REGNO_P(N) ((N) >= 32 && (N) <= 63)
 
-/* True if register is the XER register.  */
-#define XER_REGNO_P(N) ((N) == XER_REGNO)
+/* True if register is the CA register.  */
+#define CA_REGNO_P(N) ((N) == CA_REGNO)
 
 /* True if register is an AltiVec register.  */
 #define ALTIVEC_REGNO_P(N) ((N) >= FIRST_ALTIVEC_REGNO && (N) <= LAST_ALTIVEC_REGNO)
@@ -1229,7 +1229,7 @@ enum reg_class
   CR0_REGS,
   CR_REGS,
   NON_FLOAT_REGS,
-  XER_REGS,
+  CA_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1260,7 +1260,7 @@ enum reg_class
   "CR0_REGS",								\
   "CR_REGS",								\
   "NON_FLOAT_REGS",							\
-  "XER_REGS",								\
+  "CA_REGS",								\
   "ALL_REGS"								\
 }
 
@@ -1290,7 +1290,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
   { 0xffffffff, 0x00000000, 0x0000efff, 0x00020000 }, /* NON_FLOAT_REGS */   \
-  { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* XER_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* CA_REGS */	     \
   { 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff }  /* ALL_REGS */	     \
 }
 
@@ -1311,7 +1311,7 @@ enum reg_class
   GENERAL_REGS, SPECIAL_REGS, FLOAT_REGS, ALTIVEC_REGS, /* VSX_REGS, */	     \
   /* VRSAVE_REGS,*/ VSCR_REGS, SPE_ACC_REGS, SPEFSCR_REGS,		     \
   /* MQ_REGS, LINK_REGS, CTR_REGS, */					     \
-  CR_REGS, XER_REGS, LIM_REG_CLASSES					     \
+  CR_REGS, CA_REGS, LIM_REG_CLASSES					     \
 }
 
 #define IRA_COVER_CLASSES_VSX						     \
@@ -1319,7 +1319,7 @@ enum reg_class
   GENERAL_REGS, SPECIAL_REGS, /* FLOAT_REGS, ALTIVEC_REGS, */ VSX_REGS,	     \
   /* VRSAVE_REGS,*/ VSCR_REGS, SPE_ACC_REGS, SPEFSCR_REGS,		     \
   /* MQ_REGS, LINK_REGS, CTR_REGS, */					     \
-  CR_REGS, XER_REGS, LIM_REG_CLASSES					     \
+  CR_REGS, CA_REGS, LIM_REG_CLASSES					     \
 }
 
 /* The same information, inverted:
@@ -2259,7 +2259,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[74][0],	/* cr6  */				\
   &rs6000_reg_names[75][0],	/* cr7  */				\
 									\
-  &rs6000_reg_names[76][0],	/* xer  */				\
+  &rs6000_reg_names[76][0],	/* ca  */				\
 									\
   &rs6000_reg_names[77][0],	/* v0  */				\
   &rs6000_reg_names[78][0],	/* v1  */				\
@@ -2333,6 +2333,8 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\
   {"cc",   68}, {"sp",    1}, {"toc",   2},			\
+  /* CA is only part of XER, but we do not model the other parts (yet).  */ \
+  {"xer",  76},							\
   /* VSX registers overlaid on top of FR, Altivec registers */	\
   {"vs0",  32}, {"vs1",  33}, {"vs2",  34}, {"vs3",  35},	\
   {"vs4",  36}, {"vs5",  37}, {"vs6",  38}, {"vs7",  39},	\

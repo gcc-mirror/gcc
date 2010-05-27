@@ -1,3 +1,18 @@
+2010-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md ("z" constraint): Change to CA_REGS.
+	* config/rs6000/predicates.md: Change XER_REGNO_P to CA_REGNO_P
+	throughout.
+	* config/rs6000/rs6000.c (rs6000_reg_names, alt_reg_names): Change
+	"xer" to "ca".
+	Change XER_REGNO_P to CA_REGNO_P, XER_REGNO to CA_REGNO, and
+	XER_REGS to CA_REGS throughout.
+	* config/rs6000/rs6000.h: Same.
+	(ADDITIONAL_REGISTER_NAMES): Add "xer".
+	* config/rs6000/rs6000.md: Change XER_REGNO to CA_REGNO.  Document
+	that mode_iterator "P" is the size for arithmetic carries as well.
+	* doc/md.texi (rs6000 section, "z" constraint): Fix documentation.
+
 2010-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/44255
