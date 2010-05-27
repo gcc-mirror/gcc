@@ -201,11 +201,12 @@ cgraph_estimate_time_after_inlining (int frequency, struct cgraph_node *to,
 
 /* Estimate self time of the function after inlining WHAT into TO.  */
 
-static int
+static inline int
 cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
 				     struct cgraph_node *what)
 {
-  int size = (what->global.size - inline_summary (what)->size_inlining_benefit) * times + to->global.size;
+  int size = ((what->global.size - inline_summary (what)->size_inlining_benefit)
+	      * times + to->global.size);
   gcc_assert (size >= 0);
   return size;
 }
@@ -511,7 +512,7 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
    We call recursive inlining all cases where same function appears more than
    once in the single recursion nest path in the inline graph.  */
 
-static bool
+static inline bool
 cgraph_recursive_inlining_p (struct cgraph_node *to,
 			     struct cgraph_node *what,
 			     cgraph_inline_failed_t *reason)
@@ -679,10 +680,16 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 
   if (!node->local.inlinable)
     return;
+  /* See if there is something to do.  */
+  for (edge = node->callers; edge; edge = edge->next_caller)
+    if (edge->inline_failed)
+      break;
+  if (!edge)
+    return;
   /* Prune out edges we won't inline into anymore.  */
   if (!cgraph_default_inline_p (node, &failed_reason))
     {
-      for (edge = node->callers; edge; edge = edge->next_caller)
+      for (; edge; edge = edge->next_caller)
 	if (edge->aux)
 	  {
 	    fibheap_delete_node (heap, (fibnode_t) edge->aux);
@@ -693,7 +700,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
       return;
     }
 
-  for (edge = node->callers; edge; edge = edge->next_caller)
+  for (; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       {
 	int badness = cgraph_edge_badness (edge, false);
@@ -704,33 +711,55 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 	    if (n->key == badness)
 	      continue;
 
-	    /* fibheap_replace_key only increase the keys.  */
+	    /* fibheap_replace_key only decrease the keys.
+	       When we increase the key we do not update heap
+	       and instead re-insert the element once it becomes
+	       a minium of heap.  */
 	    if (badness < n->key)
 	      {
 		fibheap_replace_key (heap, n, badness);
 		gcc_assert (n->key == badness);
 	        continue;
 	      }
-	    fibheap_delete_node (heap, (fibnode_t) edge->aux);
 	  }
-	edge->aux = fibheap_insert (heap, badness, edge);
+	else
+	  edge->aux = fibheap_insert (heap, badness, edge);
       }
 }
 
-/* Recompute heap nodes for each of caller edges of each of callees.  */
+/* Recompute heap nodes for each of caller edges of each of callees.
+   Walk recursively into all inline clones.  */
 
 static void
 update_callee_keys (fibheap_t heap, struct cgraph_node *node,
 		    bitmap updated_nodes)
 {
-  struct cgraph_edge *e;
+  struct cgraph_edge *e = node->callees;
   node->global.estimated_growth = INT_MIN;
 
-  for (e = node->callees; e; e = e->next_callee)
-    if (e->inline_failed)
-      update_caller_keys (heap, e->callee, updated_nodes);
-    else if (!e->inline_failed)
-      update_callee_keys (heap, e->callee, updated_nodes);
+  if (!e)
+    return;
+  while (true)
+    if (!e->inline_failed && e->callee->callees)
+      e = e->callee->callees;
+    else
+      {
+	if (e->inline_failed)
+	  update_caller_keys (heap, e->callee, updated_nodes);
+	if (e->next_callee)
+	  e = e->next_callee;
+	else
+	  {
+	    do
+	      {
+		if (e->caller == node)
+		  return;
+		e = e->caller->callers;
+	      }
+	    while (!e->next_callee);
+	    e = e->next_callee;
+	  }
+      }
 }
 
 /* Enqueue all recursive calls from NODE into priority queue depending on
@@ -1001,6 +1030,7 @@ cgraph_decide_inlining_of_small_functions (void)
       int old_size = overall_size;
       struct cgraph_node *where, *callee;
       int badness = fibheap_min_key (heap);
+      int current_badness;
       int growth;
       cgraph_inline_failed_t not_good = CIF_OK;
 
@@ -1009,9 +1039,18 @@ cgraph_decide_inlining_of_small_functions (void)
       edge->aux = NULL;
       if (!edge->inline_failed)
 	continue;
-#ifdef ENABLE_CHECKING
-      gcc_assert (cgraph_edge_badness (edge, false) == badness);
-#endif
+
+      /* When updating the edge costs, we only decrease badness in the keys.
+	 When the badness increase, we keep the heap as it is and re-insert
+	 key now.  */
+      current_badness = cgraph_edge_badness (edge, false);
+      gcc_assert (current_badness >= badness);
+      if (current_badness != badness)
+	{
+	  edge->aux = fibheap_insert (heap, current_badness, edge);
+	  continue;
+	}
+      
       callee = edge->callee;
 
       growth = (cgraph_estimate_size_after_inlining (1, edge->caller, edge->callee)
@@ -1194,7 +1233,7 @@ cgraph_decide_inlining_of_small_functions (void)
       if (!edge->inline_failed)
 	continue;
 #ifdef ENABLE_CHECKING
-      gcc_assert (cgraph_edge_badness (edge, false) == badness);
+      gcc_assert (cgraph_edge_badness (edge, false) >= badness);
 #endif
       if (dump_file)
 	{

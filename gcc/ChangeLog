@@ -1,3 +1,12 @@
+2010-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_estimate_size_after_inlining): Make inline.
+	(update_caller_keys): Return early if there are no callers;
+	only update fibheap when decresing the key.
+	(update_callee_keys): Avoid recursion.
+	(decide_inlining_of_small_functions): When badness does not match;
+	re-insert into fibheap.
+
 2010-05-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Makefile.in (ALL_CFLAGS): Add file-specific CFLAGS.
