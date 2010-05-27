@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
@@ -1292,7 +1292,7 @@ mudflap_finish_file (void)
   tree ctor_statements = NULL_TREE;
 
   /* No need to continue when there were errors.  */
-  if (errorcount != 0 || sorrycount != 0)
+  if (seen_error ())
     return;
 
   /* Insert a call to __mf_init.  */

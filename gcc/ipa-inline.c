@@ -1701,7 +1701,7 @@ cgraph_early_inlining (void)
   unsigned int todo = 0;
   int iterations = 0;
 
-  if (sorrycount || errorcount)
+  if (seen_error ())
     return 0;
 
   if (!optimize

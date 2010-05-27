@@ -579,7 +579,7 @@ verify_cgraph_node (struct cgraph_node *node)
   gimple_stmt_iterator gsi;
   bool error_found = false;
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   timevar_push (TV_CGRAPH_VERIFY);
@@ -883,7 +883,7 @@ verify_cgraph (void)
 {
   struct cgraph_node *node;
 
-  if (sorrycount || errorcount)
+  if (seen_error ())
     return;
 
   for (node = cgraph_nodes; node; node = node->next)
@@ -897,7 +897,7 @@ cgraph_output_pending_asms (void)
 {
   struct cgraph_asm_node *can;
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   for (can = cgraph_asm_nodes; can; can = can->next)
@@ -1895,7 +1895,7 @@ ipa_passes (void)
 void
 cgraph_optimize (void)
 {
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
 #ifdef ENABLE_CHECKING
@@ -1917,11 +1917,11 @@ cgraph_optimize (void)
   cgraph_state = CGRAPH_STATE_IPA;
 
   /* Don't run the IPA passes if there was any error or sorry messages.  */
-  if (errorcount == 0 && sorrycount == 0)
+  if (!seen_error ())
     ipa_passes ();
 
   /* Do nothing else if any IPA pass found errors.  */
-  if (errorcount || sorrycount)
+  if (seen_error ())
     {
       timevar_pop (TV_CGRAPHOPT);
       return;
@@ -1979,7 +1979,7 @@ cgraph_optimize (void)
   verify_cgraph ();
   /* Double check that all inline clones are gone and that all
      function bodies have been released from memory.  */
-  if (!(sorrycount || errorcount))
+  if (!seen_error ())
     {
       struct cgraph_node *node;
       bool error_found = false;

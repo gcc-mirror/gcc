@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "decl.h"
 #include "flags.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "output.h"
 #include "target.h"

@@ -4060,7 +4060,7 @@ optimize_inline_calls (tree fn)
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
      code.  */
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return 0;
 
   /* Clear out ID.  */

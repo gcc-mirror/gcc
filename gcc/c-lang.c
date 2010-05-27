@@ -1,6 +1,6 @@
 /* Language-specific hook definitions for C front end.
    Copyright (C) 1991, 1995, 1997, 1998,
-   1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "tree-inline.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "c-objc-common.h"
 #include "c-pragma.h"
 

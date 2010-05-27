@@ -6626,7 +6626,7 @@ gate_ipa_pta (void)
   return (optimize
 	  && flag_ipa_pta
 	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  && !seen_error ());
 }
 
 /* IPA PTA solutions for ESCAPED.  */

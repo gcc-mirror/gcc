@@ -1,7 +1,7 @@
 /* Read and write coverage files, and associated functionality.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
-   Inc.
+   2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "intl.h"
 
 #include "gcov-io.c"
@@ -376,7 +376,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	    inform (input_location, "number of counters is %d instead of %d",
 		    entry->summary.num, expected);
 	  
-	  if (!(errorcount || sorrycount)
+	  if (!seen_error ()
 	      && !warned++)
 	    {
 	      inform (input_location, "coverage mismatch ignored");

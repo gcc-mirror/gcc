@@ -1,5 +1,5 @@
 /* Matrix layout transformations.
-   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <razya@il.ibm.com>
    Originally written by Revital Eres and Mustafa Hagog.
 
@@ -126,7 +126,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "target.h"
 #include "cgraph.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "timevar.h"
 #include "params.h"
 #include "fibheap.h"

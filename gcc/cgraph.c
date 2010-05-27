@@ -94,7 +94,7 @@ The callgraph:
 #include "tree-flow.h"
 #include "value-prof.h"
 #include "except.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "rtl.h"
 #include "ipa-utils.h"
 

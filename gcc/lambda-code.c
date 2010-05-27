@@ -28,7 +28,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "basic-block.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "obstack.h"
 #include "tree-flow.h"
 #include "tree-dump.h"

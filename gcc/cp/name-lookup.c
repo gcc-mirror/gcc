@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "name-lookup.h"
 #include "timevar.h"
 #include "toplev.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "debug.h"
 #include "c-pragma.h"
 
@@ -5505,7 +5505,7 @@ void
 cp_emit_debug_info_for_using (tree t, tree context)
 {
   /* Don't try to emit any debug information if we have errors.  */
-  if (sorrycount || errorcount)
+  if (seen_error ())
     return;
 
   /* Ignore this FUNCTION_DECL if it refers to a builtin declaration

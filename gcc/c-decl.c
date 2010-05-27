@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-mudflap.h"
 #include "tree-iterator.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tree-dump.h"
 #include "cgraph.h"
 #include "hashtab.h"
@@ -3535,7 +3535,7 @@ c_make_fname_decl (location_t loc, tree id, int type_dep)
 	 the __FUNCTION__ is believed to appear in K&R style function
 	 parameter declarator.  In that case we still don't have
 	 function_scope.  */
-      && (!errorcount || current_function_scope))
+      && (!seen_error () || current_function_scope))
     {
       DECL_CONTEXT (decl) = current_function_decl;
       bind (id, decl, current_function_scope,
@@ -9660,7 +9660,7 @@ c_write_global_declarations (void)
 
   /* After cgraph has had a chance to emit everything that's going to
      be emitted, output debug information for globals.  */
-  if (errorcount == 0 && sorrycount == 0)
+  if (!seen_error ())
     {
       timevar_push (TV_SYMOUT);
       for (t = all_translation_units; t; t = TREE_CHAIN (t))

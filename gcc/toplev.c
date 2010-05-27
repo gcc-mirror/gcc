@@ -126,10 +126,6 @@ static bool no_backend;
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
-/* Name of program invoked, sans directories.  */
-
-const char *progname;
-
 /* Copy of argument vector to toplev_main.  */
 static const char **save_argv;
 
@@ -907,7 +903,7 @@ emit_debug_global_declarations (tree *vec, int len)
   int i;
 
   /* Avoid confusing the debug information machinery when there are errors.  */
-  if (errorcount != 0 || sorrycount != 0)
+  if (seen_error ())
     return;
 
   timevar_push (TV_SYMOUT);
@@ -1055,7 +1051,7 @@ compile_file (void)
   /* This must also call cgraph_finalize_compilation_unit.  */
   lang_hooks.decls.final_write_globals ();
 
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return;
 
   /* Ensure that emulated TLS control vars are finalized and build 
@@ -2350,7 +2346,7 @@ finalize (void)
   if (flag_gen_aux_info)
     {
       fclose (aux_info_file);
-      if (errorcount)
+      if (seen_error ())
 	unlink (aux_info_file_name);
     }
 
@@ -2393,7 +2389,7 @@ do_compile (void)
   process_options ();
 
   /* Don't do any more if an error has already occurred.  */
-  if (!errorcount)
+  if (!seen_error ())
     {
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non
@@ -2458,7 +2454,7 @@ toplev_main (int argc, char **argv)
   invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
 
   finalize_plugins ();
-  if (errorcount || sorrycount)
+  if (seen_error ())
     return (FATAL_EXIT_CODE);
 
   return (SUCCESS_EXIT_CODE);

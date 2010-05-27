@@ -1564,7 +1564,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     case LAMBDA_EXPR:
       /* A lambda can't appear in a template arg, but don't crash on
 	 erroneous input.  */
-      gcc_assert (errorcount > 0);
+      gcc_assert (seen_error ());
       return val;
 
     default:

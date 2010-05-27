@@ -21887,7 +21887,7 @@ dwarf2out_finish (const char *filename)
 	    add_child_die (origin->die_parent, die);
 	  else if (die == comp_unit_die)
 	    ;
-	  else if (errorcount > 0 || sorrycount > 0)
+	  else if (seen_error ())
 	    /* It's OK to be confused by errors in the input.  */
 	    add_child_die (comp_unit_die, die);
 	  else

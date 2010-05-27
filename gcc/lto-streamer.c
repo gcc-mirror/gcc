@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "tree-flow.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "bitmap.h"
 #include "vec.h"
 #include "lto-streamer.h"
@@ -848,7 +848,7 @@ gate_lto_out (void)
 {
   return ((flag_generate_lto || in_lto_p)
 	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  && !seen_error ());
 }
 
 
