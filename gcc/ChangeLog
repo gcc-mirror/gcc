@@ -1,4 +1,13 @@
-2010-05-27  Jon `:wqBeniston <jon@beniston.com
+2010-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* sched-ebb.c: Rename struct deps to struct deps_desc.
+	* ddg.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+
+2010-05-27  Jon Beniston <jon@beniston.com>
 
 	PR 43726
 	* config/lm32/lm32.h: Remove definition of 
