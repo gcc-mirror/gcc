@@ -26,8 +26,7 @@ main1 ()
       arr[i] = i;
       iarr[i].a = i;
       iarr[i].b = i * 3;
-      if (arr[i] == 178)
-         abort();
+      __asm__ volatile ("");
     }
 
   for (i = 0; i < N; i++)

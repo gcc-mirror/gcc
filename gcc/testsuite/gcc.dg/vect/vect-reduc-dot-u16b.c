@@ -37,6 +37,7 @@ int main (void)
   for (i=0; i<N; i++) {
     X[i] = i;
     Y[i] = 64-i;
+    __asm__ volatile ("");
   }
 
   dot2 = foo2 (N);

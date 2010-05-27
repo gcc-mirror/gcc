@@ -31,6 +31,7 @@ int main (void)
   for (i=0; i<N; i++) {
     uX[i] = 16-i;
     uY[i] = 16-i;
+    __asm__ volatile ("");
   }
 
   foo1 (N);

@@ -18,6 +18,7 @@ int main1 ()
   for (i = 0; i < N; i++)
     {
       s.cb[i] = 3*i;
+      __asm__ volatile ("");
     }
 
   for (i = 0; i < N; i++)

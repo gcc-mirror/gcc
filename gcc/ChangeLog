@@ -1,3 +1,9 @@
+2010-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44284
+	* tree-vect-stmts.c (vectorizable_assignment): Handle
+	sign-changing conversions as simple copy.
+
 2010-05-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gthr-posix.h (pthread_cancel): Don't declare if compiling against

@@ -39,6 +39,7 @@ main (void)
     {
       X[i] = i;
       Y[i] = N - i;
+      __asm__ volatile ("");
     }
 
   dot = foo (N);
