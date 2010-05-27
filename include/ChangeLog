@@ -1,3 +1,7 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	* obstack.h: Update to GCC 3.3 version.
+
 2003-04-22  Release Manager
 
 	* GCC 3.2.3 Released.

@@ -1,3 +1,8 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (current_binding_level): Add *&.
+	* parse.y (constructor_declarator): Fix for bison pedantry.
+
 2003-04-22  Release Manager
 
 	* GCC 3.2.3 Released.
