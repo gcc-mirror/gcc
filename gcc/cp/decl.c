@@ -8248,12 +8248,6 @@ grokdeclarator (const cp_declarator *declarator,
 	      memfn_quals = TYPE_UNQUALIFIED;
 	    }
 
-	  if (TREE_CODE (type) == FUNCTION_TYPE
-	      && cp_type_quals (type) != TYPE_UNQUALIFIED)
-	    error ("cannot declare %s to qualified function type %qT",
-		   declarator->kind == cdk_reference ? "reference" : "pointer",
-		   type);
-
 	  /* When the pointed-to type involves components of variable size,
 	     care must be taken to ensure that the size evaluation code is
 	     emitted early enough to dominate all the possible later uses
