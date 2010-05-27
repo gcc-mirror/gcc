@@ -1,3 +1,8 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43555
+	* g++.dg/ext/vla9.C: New.
+
 2010-05-22  Release Manager
 
 	* GCC 4.3.5 released.
