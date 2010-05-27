@@ -60,6 +60,20 @@ debug_tree (tree node)
   putc ('\n', stderr);
 }
 
+/* Print the vector of trees VEC on standard error, for debugging.
+   Most nodes referred to by this one are printed recursively
+   down to a depth of six.  */
+
+void
+debug_vec_tree (VEC(tree,gc) *vec)
+{
+  table = XCNEWVEC (struct bucket *, HASH_SIZE);
+  print_vec_tree (stderr, "", vec, 0);
+  free (table);
+  table = 0;
+  putc ('\n', stderr);
+}
+
 /* Print PREFIX and ADDR to FILE.  */
 void
 dump_addr (FILE *file, const char *prefix, const void *addr)
@@ -860,8 +874,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	      {
 		char temp[10];
 		sprintf (temp, "elt %d", i);
-		indent_to (file, indent + 4);
-		print_node_brief (file, temp, TREE_VEC_ELT (node, i), 0);
+		print_node (file, temp, TREE_VEC_ELT (node, i), indent + 4);
 	      }
 	  break;
 
@@ -978,4 +991,28 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     }
 
   fprintf (file, ">");
+}
+
+/* Print the tree vector VEC in full on file FILE, preceded by PREFIX,
+   starting in column INDENT.  */
+
+void
+print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
+{
+  tree elt;
+  unsigned ix;
+
+  /* Indent to the specified column, since this is the long form.  */
+  indent_to (file, indent);
+
+  /* Print the slot this node is in, and its code, and address.  */
+  fprintf (file, "%s <VEC", prefix);
+  dump_addr (file, " ", vec);
+
+  for (ix = 0; VEC_iterate (tree, vec, ix, elt); ++ix)
+    {
+      char temp[10];
+      sprintf (temp, "elt %d", ix);
+      print_node (file, temp, elt, indent + 4);
+    }
 }
