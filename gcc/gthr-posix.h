@@ -124,7 +124,9 @@ __gthrw(pthread_join)
 __gthrw(pthread_equal)
 __gthrw(pthread_self)
 __gthrw(pthread_detach)
+#ifndef __BIONIC__
 __gthrw(pthread_cancel)
+#endif
 __gthrw(sched_yield)
 
 __gthrw(pthread_mutex_lock)
@@ -238,7 +240,15 @@ static inline int
 __gthread_active_p (void)
 {
   static void *const __gthread_active_ptr
-    = __extension__ (void *) &__gthrw_(pthread_cancel);
+    = __extension__ (void *) &__gthrw_(
+/* Android's C library does not provide pthread_cancel, check for
+   `pthread_create' instead.  */
+#ifndef __BIONIC__
+				       pthread_cancel
+#else
+				       pthread_create
+#endif
+				       );
   return __gthread_active_ptr != 0;
 }
 
