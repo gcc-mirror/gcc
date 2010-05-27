@@ -480,7 +480,11 @@ narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
 
   for (; itk < itk_none; itk += 2 /* skip unsigned types */)
     {
-      tree upper = TYPE_MAX_VALUE (integer_types[itk]);
+      tree upper;
+
+      if (integer_types[itk] == NULL_TREE)
+	continue;
+      upper = TYPE_MAX_VALUE (integer_types[itk]);
 
       if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
 	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
@@ -508,7 +512,11 @@ narrowest_signed_type (unsigned HOST_WIDE_INT low,
 
   for (; itk < itk_none; itk += 2 /* skip signed types */)
     {
-      tree upper = TYPE_MAX_VALUE (integer_types[itk]);
+      tree upper;
+
+      if (integer_types[itk] == NULL_TREE)
+	continue;
+      upper = TYPE_MAX_VALUE (integer_types[itk]);
 
       if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
 	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high

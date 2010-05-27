@@ -1,3 +1,9 @@
+2010-05-27  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrp/44287
+	* c-lex.c (narrowest_unsigned_type): Check for NULL_TREE.
+	(narrow_signed_type): Likewise.
+
 2010-05-26  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (verify_cgraph_node): Do checking that DECL match

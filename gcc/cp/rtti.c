@@ -1502,6 +1502,8 @@ emit_support_tinfos (void)
       tree types[3];
       int i;
 
+      if (bltn == NULL_TREE)
+	continue;
       types[0] = bltn;
       types[1] = build_pointer_type (bltn);
       types[2] = build_pointer_type (cp_build_qualified_type (bltn,

@@ -4975,14 +4975,19 @@ layout_class_type (tree t, tree *virtuals_p)
 	     of the field.  Then, we are supposed to use the left over
 	     bits as additional padding.  */
 	  for (itk = itk_char; itk != itk_none; ++itk)
-	    if (INT_CST_LT (DECL_SIZE (field),
-			    TYPE_SIZE (integer_types[itk])))
+	    if (integer_types[itk] != NULL_TREE
+		&& INT_CST_LT (DECL_SIZE (field),
+			       TYPE_SIZE (integer_types[itk])))
 	      break;
 
 	  /* ITK now indicates a type that is too large for the
 	     field.  We have to back up by one to find the largest
 	     type that fits.  */
-	  integer_type = integer_types[itk - 1];
+	  do
+	  {
+            --itk;
+	    integer_type = integer_types[itk];
+	  } while (itk > 0 && integer_type == NULL_TREE);
 
 	  /* Figure out how much additional padding is required.  GCC
 	     3.2 always created a padding field, even if it had zero
