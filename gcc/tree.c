@@ -3950,28 +3950,6 @@ build_block (tree vars, tree subblocks, tree supercontext, tree chain)
   return block;
 }
 
-expanded_location
-expand_location (source_location loc)
-{
-  expanded_location xloc;
-  if (loc <= BUILTINS_LOCATION)
-    {
-      xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
-      xloc.line = 0;
-      xloc.column = 0;
-      xloc.sysp = 0;
-    }
-  else
-    {
-      const struct line_map *map = linemap_lookup (line_table, loc);
-      xloc.file = map->to_file;
-      xloc.line = SOURCE_LINE (map, loc);
-      xloc.column = SOURCE_COLUMN (map, loc);
-      xloc.sysp = map->sysp != 0;
-    };
-  return xloc;
-}
-
 
 /* Like SET_EXPR_LOCATION, but make sure the tree can have a location.
 

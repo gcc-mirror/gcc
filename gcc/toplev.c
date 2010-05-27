@@ -143,12 +143,6 @@ const char *main_input_filename;
    to optimize in process_options ().  */
 #define AUTODETECT_VALUE 2
 
-/* Current position in real source file.  */
-
-location_t input_location;
-
-struct line_maps *line_table;
-
 /* Name to use as base of names for dump output files.  */
 
 const char *dump_base_name;

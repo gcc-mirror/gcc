@@ -1,3 +1,13 @@
+2010-05-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* input.c: New file.
+	* input.h (main_input_filename): Move declaration to toplev.h.
+	* toplev.c (input_location, line_table): Move to input.c
+	* toplev.h (main_input_filename): Move declaration from input.h.
+	* tree.c (expand_location): Move to input.c.
+	* Makefile.in (OBJS-common): Add input.o.
+	(input.o): Add dependencies.
+
 2010-05-27  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (maybe_unlink_file): Ignore unlink failure
