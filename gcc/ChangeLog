@@ -1,5 +1,9 @@
 2010-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-modes.def (PSImode): Delete.
+
+2010-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md ("z" constraint): Change to CA_REGS.
 	* config/rs6000/predicates.md: Change XER_REGNO_P to CA_REGNO_P
 	throughout.
