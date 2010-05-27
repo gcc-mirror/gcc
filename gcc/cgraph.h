@@ -227,8 +227,9 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
      to the edge to speed up cgraph_edge function.  */
   htab_t GTY((param_is (struct cgraph_edge))) call_site_hash;
 #ifdef ENABLE_CHECKING
-  /* Declaration node used to be clone of.  Used for checking only.  */
-  tree former_clone_of;
+  /* Declaration node used to be clone of.  Used for checking only. 
+     We must skip it or we get references from release checking GGC files. */
+  tree GTY ((skip)) former_clone_of;
 #endif
 
   PTR GTY ((skip)) aux;

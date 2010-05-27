@@ -1,5 +1,10 @@
 2010-05-27  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (struct cgraph_node): Mark former_clone_of by GTY ((skip)).
+	* cgraphunit.c (clone_of_p): Compile only when checking is enabled.
+
+2010-05-27  Jan Hubicka  <jh@suse.cz>
+
 	* sched-ebb.c: Rename struct deps to struct deps_desc.
 	* ddg.c: Likewise.
 	* sel-sched-ir.c: Likewise.
