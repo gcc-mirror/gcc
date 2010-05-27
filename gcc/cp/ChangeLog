@@ -1,3 +1,7 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	* parse.y (constructor_declarator): Fix for bison pedantry.
+
 2005-05-03  Release Manager
 
 	* GCC 3.3.6 Released.
