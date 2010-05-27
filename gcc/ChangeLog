@@ -1,3 +1,17 @@
+2010-05-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* c-common.h (c_register_addr_space): Add prototype.
+	(ADDR_SPACE_KEYWORD): Remove.
+	* c-common.c (c_register_addr_space): New function.
+	(c_addr_space_name): Reimplement.
+	(c_common_reswords): Do not include TARGET_ADDR_SPACE_KEYWORDS.
+
+	* config/spu/spu.h (TARGET_ADDR_SPACE_KEYWORDS): Remove.
+	(REGISTER_TARGET_PRAGMAS): Call c_register_addr_space.
+
+	* doc/tm.texi (Named Address Spaces): Mention c_register_addr_space.
+	Remove TARGET_ADDR_SPACE_KEYWORDS.
+
 2010-05-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* input.c: New file.

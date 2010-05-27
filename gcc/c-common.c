@@ -718,11 +718,6 @@ const struct c_common_resword c_common_reswords[] =
   { "inout",		RID_INOUT,		D_OBJC },
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
-
-#ifdef TARGET_ADDR_SPACE_KEYWORDS
-  /* Any address space keywords recognized by the target.  */
-  TARGET_ADDR_SPACE_KEYWORDS,
-#endif
 };
 
 const unsigned int num_c_common_reswords =
@@ -857,17 +852,34 @@ const struct attribute_spec c_common_format_attribute_table[] =
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
+
+/* Register reserved keyword WORD as qualifier for address space AS.  */
+
+void
+c_register_addr_space (const char *word, addr_space_t as)
+{
+  int rid = RID_FIRST_ADDR_SPACE + as;
+  tree id;
+
+  /* Address space qualifiers are only supported
+     in C with GNU extensions enabled.  */
+  if (c_dialect_cxx () || c_dialect_objc () || flag_no_asm)
+    return;
+
+  id = get_identifier (word);
+  C_SET_RID_CODE (id, rid);
+  C_IS_RESERVED_WORD (id) = 1;
+  ridpointers [rid] = id;
+}
+
 /* Return identifier for address space AS.  */
+
 const char *
 c_addr_space_name (addr_space_t as)
 {
-  unsigned int i;
-
-  for (i = 0; i < num_c_common_reswords; i++)
-    if (c_common_reswords[i].rid == RID_FIRST_ADDR_SPACE + as)
-      return c_common_reswords[i].word;
-
-  gcc_unreachable ();
+  int rid = RID_FIRST_ADDR_SPACE + as;
+  gcc_assert (ridpointers [rid]);
+  return IDENTIFIER_POINTER (ridpointers [rid]);
 }
 
 /* Push current bindings for the function name VAR_DECLS.  */

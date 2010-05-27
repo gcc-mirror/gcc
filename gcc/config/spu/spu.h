@@ -245,6 +245,7 @@ enum reg_class {
 	 && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
 
 #define REGISTER_TARGET_PRAGMAS() do {					\
+c_register_addr_space ("__ea", ADDR_SPACE_EA);				\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 }while (0);
 
@@ -607,9 +608,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 /* Address spaces.  */
 #define ADDR_SPACE_EA	1
-
-/* Named address space keywords.  */
-#define TARGET_ADDR_SPACE_KEYWORDS ADDR_SPACE_KEYWORD ("__ea", ADDR_SPACE_EA)
 
 
 /* Builtins.  */
