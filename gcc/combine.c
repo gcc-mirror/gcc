@@ -2271,6 +2271,7 @@ cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
 
   return x;
 }
+#endif
 
 /* Auxiliary data structure for propagate_for_debug_stmt.  */
 
@@ -2294,12 +2295,16 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
   if (!pair->adjusted)
     {
       pair->adjusted = true;
+#ifdef AUTO_INC_DEC
       pair->to = cleanup_auto_inc_dec (pair->to, pair->after, VOIDmode);
+#else
+      pair->to = copy_rtx (pair->to);
+#endif
+      pair->to = make_compound_operation (pair->to, SET);
       return pair->to;
     }
   return copy_rtx (pair->to);
 }
-#endif
 
 /* Replace occurrences of DEST with SRC in DEBUG_INSNs between INSN
    and LAST.  If MOVE holds, debug insns must also be moved past
@@ -2309,16 +2314,12 @@ static void
 propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
 {
   rtx next, move_pos = move ? last : NULL_RTX, loc;
-  bool first_p;
 
-#ifdef AUTO_INC_DEC
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
   p.after = move;
-#endif
 
-  first_p = true;
   next = NEXT_INSN (insn);
   while (next != last)
     {
@@ -2326,17 +2327,8 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
       next = NEXT_INSN (insn);
       if (DEBUG_INSN_P (insn))
 	{
-	  if (first_p)
-	    {
-	      src = make_compound_operation (src, SET);
-	      first_p = false;
-	    }
-#ifdef AUTO_INC_DEC
 	  loc = simplify_replace_fn_rtx (INSN_VAR_LOCATION_LOC (insn),
 					 dest, propagate_for_debug_subst, &p);
-#else
-	  loc = simplify_replace_rtx (INSN_VAR_LOCATION_LOC (insn), dest, src);
-#endif
 	  if (loc == INSN_VAR_LOCATION_LOC (insn))
 	    continue;
 	  INSN_VAR_LOCATION_LOC (insn) = loc;
