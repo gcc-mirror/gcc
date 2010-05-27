@@ -1949,7 +1949,7 @@ Any VSX register
 @samp{CR} register (condition register)
 
 @item z
-@samp{FPMEM} stack memory for FPR-GPR transfers
+@samp{XER[CA]} carry bit (part of the XER register)
 
 @item I
 Signed 16-bit constant

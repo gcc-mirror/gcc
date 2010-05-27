@@ -51,7 +51,7 @@
 (define_register_constraint "y" "CR_REGS"
   "@internal")
 
-(define_register_constraint "z" "XER_REGS"
+(define_register_constraint "z" "CA_REGS"
   "@internal")
 
 ;; Use w as a prefix to add VSX modes
