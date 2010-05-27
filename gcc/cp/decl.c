@@ -8502,6 +8502,34 @@ grokdeclarator (const cp_declarator *declarator,
 		   declarator->kind == cdk_reference ? "reference" : "pointer",
 		   type);
 
+	  /* When the pointed-to type involves components of variable size,
+	     care must be taken to ensure that the size evaluation code is
+	     emitted early enough to dominate all the possible later uses
+	     and late enough for the variables on which it depends to have
+	     been assigned.
+
+	     This is expected to happen automatically when the pointed-to
+	     type has a name/declaration of it's own, but special attention
+	     is required if the type is anonymous.
+
+	     We handle the NORMAL and FIELD contexts here by inserting a
+	     dummy statement that just evaluates the size at a safe point
+	     and ensures it is not deferred until e.g. within a deeper
+	     conditional context (c++/43555).
+
+	     We expect nothing to be needed here for PARM or TYPENAME.
+	     Evaluating the size at this point for TYPENAME would
+	     actually be incorrect, as we might be in the middle of an
+	     expression with side effects on the pointed-to type size
+	     "arguments" prior to the pointer declaration point and the
+	     size evaluation could end up prior to the side effects.  */
+
+	  if (!TYPE_NAME (type)
+	      && (decl_context == NORMAL || decl_context == FIELD)
+	      && at_function_scope_p ()
+	      && variably_modified_type_p (type, NULL_TREE))
+	    finish_expr_stmt (TYPE_SIZE (type));
+
 	  if (declarator->kind == cdk_reference)
 	    {
 	      /* In C++0x, the type we are creating a reference to might be
