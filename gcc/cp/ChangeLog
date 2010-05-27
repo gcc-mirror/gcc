@@ -1,3 +1,9 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (current_binding_level): Add *&.
+	* parse.y (constructor_declarator): Fix for bison pedantry.
+	(nomods_initdcl0): Likewise.
+
 2002-06-19  Akim Demaille  <akim@epita.fr>
 
 	* parse.y (TYPENAME): Rename as tTYPENAME to avoid the clash with

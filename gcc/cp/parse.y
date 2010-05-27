@@ -765,7 +765,7 @@ fndef:
 
 constructor_declarator:
 	  nested_name_specifier SELFNAME '(' 
-                { $$ = begin_constructor_declarator ($1, $2); }
+                { $<ttype>$ = begin_constructor_declarator ($1, $2); }
 	  parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>4, $5, $7, $8); }
 	| nested_name_specifier SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
@@ -773,7 +773,7 @@ constructor_declarator:
 		  $$ = make_call_declarator ($$, empty_parms (), $4, $5);
 		}
 	| global_scope nested_name_specifier SELFNAME '(' 
-                { $$ = begin_constructor_declarator ($2, $3); }
+                { $<ttype>$ = begin_constructor_declarator ($2, $3); }
 	 parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>5, $6, $8, $9); }
 	| global_scope nested_name_specifier SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
@@ -781,7 +781,7 @@ constructor_declarator:
 		  $$ = make_call_declarator ($$, empty_parms (), $5, $6);
 		}
 	| nested_name_specifier self_template_type '(' 
-                { $$ = begin_constructor_declarator ($1, $2); }
+                { $<ttype>$ = begin_constructor_declarator ($1, $2); }
 	  parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>4, $5, $7, $8); }
 	| nested_name_specifier self_template_type LEFT_RIGHT cv_qualifiers exception_specification_opt
@@ -789,7 +789,7 @@ constructor_declarator:
 		  $$ = make_call_declarator ($$, empty_parms (), $4, $5);
 		}
 	| global_scope nested_name_specifier self_template_type '(' 
-                { $$ = begin_constructor_declarator ($2, $3); }
+                { $<ttype>$ = begin_constructor_declarator ($2, $3); }
 	 parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($<ttype>5, $6, $8, $9); }
 	| global_scope nested_name_specifier self_template_type LEFT_RIGHT cv_qualifiers exception_specification_opt
@@ -2080,7 +2080,7 @@ notype_initdcl0:
 nomods_initdcl0:
           notype_declarator maybeasm
             { /* Set things up as initdcl0_innards expects.  */
-	      $<ttype>3 = $2;
+	      $<ttype>$ = $2;
 	      $2 = $1; 
               $<ftype>1.t = NULL_TREE;
 	      $<ftype>1.lookups = NULL_TREE; }
