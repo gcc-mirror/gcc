@@ -1,3 +1,11 @@
+2010-05-27  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline:
+	2009-04-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/39580
+	* sel-sched-ir.c (insert_in_history_vect): Remove incorrect gcc_assert.
+
 2010-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44199

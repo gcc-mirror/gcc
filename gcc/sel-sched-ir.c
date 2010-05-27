@@ -1505,14 +1505,6 @@ insert_in_history_vect (VEC (expr_history_def, heap) **pvect,
     {
       expr_history_def *phist = VEC_index (expr_history_def, vect, ind);
 
-      /* When merging, either old vinsns are the *same* or, if not, both 
-         old and new vinsns are different pointers.  In the latter case, 
-         though, new vinsns should be equal.  */
-      gcc_assert (phist->old_expr_vinsn == old_expr_vinsn
-                  || (phist->new_expr_vinsn != new_expr_vinsn 
-                      && (vinsn_equal_p 
-                          (phist->old_expr_vinsn, old_expr_vinsn))));
-
       /* It is possible that speculation types of expressions that were 
          propagated through different paths will be different here.  In this
          case, merge the status to get the correct check later.  */
