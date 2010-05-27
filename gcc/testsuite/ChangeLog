@@ -1,3 +1,8 @@
+2010-05-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.dg/glibc-uclibc-1.c, gcc.dg/glibc-uclibc-2.c: Remove, no longer
+	necessary.
+
 2010-05-26  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/lto/materialize-1_0.c: New file.

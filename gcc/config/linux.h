@@ -1,6 +1,6 @@
 /* Definitions for Linux-based GNU systems with ELF format
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006,
-   2007, 2009 Free Software Foundation, Inc.
+   2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -78,9 +78,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    %{shared:-lc} \
    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
 
+/* C libraries supported on Linux.  */
+#define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+#define OPTION_UCLIBC (linux_libc == LIBC_UCLIBC)
+#define OPTION_BIONIC (linux_libc == LIBC_BIONIC)
+
 #define LINUX_TARGET_OS_CPP_BUILTINS()				\
     do {							\
-	builtin_define ("__gnu_linux__");			\
+	if (OPTION_GLIBC)					\
+	  builtin_define ("__gnu_linux__");			\
 	builtin_define_std ("linux");				\
 	builtin_define_std ("unix");				\
 	builtin_assert ("system=linux");			\
@@ -105,13 +111,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* Determine which dynamic linker to use depending on whether GLIBC or
-   uClibc is the default C library and whether -muclibc or -mglibc has
-   been passed to change the default.  */
-#if UCLIBC_DEFAULT
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
+   uClibc or Bionic is the default C library and whether
+   -muclibc or -mglibc or -mbionic has been passed to change the default.  */
+
+#define CHOOSE_DYNAMIC_LINKER1(LIBC1, LIBC2, LIBC3, LD1, LD2, LD3)	\
+  "%{" LIBC2 ":" LD2 ";:%{" LIBC3 ":" LD3 ";:" LD1 "}}"
+
+#if DEFAULT_LIBC == LIBC_GLIBC
+#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+  CHOOSE_DYNAMIC_LINKER1 ("mglibc", "muclibc", "mbionic", G, U, B)
+#elif DEFAULT_LIBC == LIBC_UCLIBC
+#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+  CHOOSE_DYNAMIC_LINKER1 ("muclibc", "mglibc", "mbionic", U, G, B)
+#elif DEFAULT_LIBC == LIBC_BIONIC
+#define CHOOSE_DYNAMIC_LINKER(G, U, B) \
+  CHOOSE_DYNAMIC_LINKER1 ("mbionic", "mglibc", "muclibc", B, G, U)
 #else
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
-#endif
+#error "Unsupported DEFAULT_LIBC"
+#endif /* DEFAULT_LIBC */
 
 /* For most targets the following definitions suffice;
    GLIBC_DYNAMIC_LINKER must be defined for each target using them, or
@@ -120,18 +137,25 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
-#define LINUX_DYNAMIC_LINKER \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)
-#define LINUX_DYNAMIC_LINKER32 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32)
-#define LINUX_DYNAMIC_LINKER64 \
-  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64)
+#define BIONIC_DYNAMIC_LINKER "/system/bin/linker"
+#define BIONIC_DYNAMIC_LINKER32 "/system/bin/linker"
+#define BIONIC_DYNAMIC_LINKER64 "/system/bin/linker64"
+
+#define LINUX_DYNAMIC_LINKER						\
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER,	\
+			 BIONIC_DYNAMIC_LINKER)
+#define LINUX_DYNAMIC_LINKER32						\
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER32, \
+			 BIONIC_DYNAMIC_LINKER32)
+#define LINUX_DYNAMIC_LINKER64						\
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64, \
+			 BIONIC_DYNAMIC_LINKER64)
 
 /* Determine whether the entire c99 runtime
    is present in the runtime library.  */
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 /* Whether we have sincos that follows the GNU extension.  */
-#define TARGET_HAS_SINCOS (OPTION_GLIBC)
+#define TARGET_HAS_SINCOS (OPTION_GLIBC | OPTION_BIONIC)
 
 #define TARGET_POSIX_IO

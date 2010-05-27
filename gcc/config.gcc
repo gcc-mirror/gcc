@@ -508,23 +508,29 @@ case ${target} in
     *-*-gnu*)
       tmake_file="$tmake_file t-gnu";;
   esac
-  # glibc / uclibc switch.  uclibc isn't usable for GNU/Hurd and neither for
-  # GNU/k*BSD.
+  # Common C libraries.
+  tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3"
+  # glibc / uclibc / bionic switch.
+  # uclibc and bionic aren't usable for GNU/Hurd and neither for GNU/k*BSD.
   case $target in
     *linux*)
       extra_options="$extra_options linux.opt";;
     *)
       tm_defines="$tm_defines OPTION_GLIBC=1";;
   esac
-  case ${target} in
+  case $target in
+    *-*-*android*)
+      tm_defines="$tm_defines DEFAULT_LIBC=LIBC_BIONIC"
+      ;;
     *-*-*uclibc*)
-      tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+      tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
       ;;
     *)
-      tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
+      tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
       ;;
   esac
-  # Assume that glibc or uClibc are being used and so __cxa_atexit is provided.
+  # Assume that glibc or uClibc or Bionic are being used and so __cxa_atexit
+  # is provided.
   default_use_cxa_atexit=yes
   use_gcc_tgmath=no
   use_gcc_stdint=wrap
@@ -826,7 +832,7 @@ bfin*-elf*)
 bfin*-uclinux*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h glibc-stdint.h bfin/uclinux.h"
 	tmake_file=bfin/t-bfin-uclinux
-	tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
 	extra_options="${extra_options} linux.opt"
 	use_collect2=no
 	;;
@@ -907,7 +913,7 @@ moxie-*-uclinux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h glibc-stdint.h moxie/uclinux.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
-	tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
 	extra_options="${extra_options} linux.opt"
 	;;
 h8300-*-rtems*)
@@ -1632,7 +1638,7 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 	default_m68k_cpu=68020
 	default_cf_cpu=5206
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h flat.h m68k/linux.h m68k/uclinux.h ./sysroot-suffix.h"
- 	tm_defines="${tm_defines} MOTOROLA=1 UCLIBC_DEFAULT=1"
+ 	tm_defines="${tm_defines} MOTOROLA=1 DEFAULT_LIBC=LIBC_UCLIBC"
 	extra_options="${extra_options} linux.opt"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"
 	;;
