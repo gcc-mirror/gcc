@@ -1,3 +1,14 @@
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (debug_vec_tree): New fn.
+	(print_vec_tree): New fn.
+	* tree.h: Declare them.
+	* gdbinit.in (pvt): New command.
+
+	* print-tree.c (print_node) [TREE_VEC]: Print elements normally.
+
+	* gdbinit.in (pdd): New command.
+
 2010-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_estimate_size_after_inlining): Make inline.
