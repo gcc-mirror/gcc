@@ -1,3 +1,9 @@
+2010-05-27  Jon `:wqBeniston <jon@beniston.com
+
+	PR 43726
+	* config/lm32/lm32.h: Remove definition of 
+	GO_IF_MODE_DEPENDENT_ADDRESS. Update copyright year.
+
 2010-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/44230
