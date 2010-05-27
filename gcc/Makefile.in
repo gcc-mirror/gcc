@@ -974,7 +974,7 @@ INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile. If you change this,
 # you probably want to update BUILD_CFLAGS in configure.ac
-ALL_CFLAGS = $(T_CFLAGS) \
+ALL_CFLAGS = $(T_CFLAGS) $(CFLAGS-$@) \
   $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) @DEFS@
 
 # The C++ version.
@@ -1446,14 +1446,18 @@ OBJS = $(OBJS-common) $(OBJS-md) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
+# This lists all host objects for the front ends.
+ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
+  $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
+
+ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) libbackend.o \
+  @TREEBROWSER@ main.o gccspec.o version.o intl.o prefix.o cppspec.o \
+  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
+  $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+
 # This lists all host object files, whether they are included in this
 # compilation or not.
-ALL_HOST_OBJS = $(GCC_OBJS) $(C_OBJS) $(OBJS) libbackend.o \
-  @TREEBROWSER@ main.o gccspec.o version.o intl.o prefix.o cppspec.o \
-  $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS)) \
-  $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) \
-  mips-tfile.o mips-tdump.o \
-  $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
 BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
 
@@ -1571,6 +1575,13 @@ s-alltree: Makefile
 	done | sed 's|$(srcdir)/||' >> tmp-all-tree.def
 	$(SHELL) $(srcdir)/../move-if-change tmp-all-tree.def all-tree.def
 	$(STAMP) s-alltree
+
+# Now that LANG_MAKEFRAGS are included, we can add special flags to the
+# objects that belong to the front ends.  We add an extra define that
+# causes back-end specific include files to be poisoned, in the hope that
+# we can avoid introducing dependencies of the front ends on things that
+# no front end should ever look at (e.g. everything RTL related).
+$(foreach file,$(ALL_HOST_FRONTEND_OBJS),$(eval CFLAGS-$(file) += -DIN_GCC_FRONTEND))
 
 #
 

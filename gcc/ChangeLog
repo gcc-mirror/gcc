@@ -1,3 +1,16 @@
+2010-05-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (ALL_CFLAGS): Add file-specific CFLAGS.
+	(ALL_HOST_FRONTEND_OBJS): New, for all front-end specific objects.
+	(ALL_HOST_BACKEND_OBJS): New, for all backend and target objects.
+	(ALL_HOST_OBJS): Now a union of the above two.
+	<section "Language makefile fragments">: Add -DIN_GCC_FRONTEND for
+	all files in ALL_HOST_FRONTEND_OBJS.
+	* system.h: Poison GCC_RTL_H if IN_GCC_FRONTEND is defined.
+
+	* c-common.c: Pretend to be a backend file by undefining
+	IN_GCC_FRONTEND (still need rtl.h here).
+
 2010-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (struct cgraph_node): Mark former_clone_of by GTY ((skip)).
