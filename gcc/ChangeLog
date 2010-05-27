@@ -1,3 +1,35 @@
+2010-05-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	Add support for Bionic C library
+
+	* config.gcc (LIBC_GLIBC, LIBC_BIONIC, LIBC_UCLIBC): New tm_define
+	macro.
+	(DEFAULT_LIBC): New tm_define macro set to one of LIBC_*.
+	(bfin*-uclinux, moxie-*-uclinux*, m68k-*-uclinux*): Update.
+
+	* config/linux.h (OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC): Define.
+	(LINUX_TARGET_OS_CPP_BUILTINS): Define __gnu_linux__ only for GLIBC.
+	(CHOOSE_DYNAMIC_LINKER1, CHOOSE_DYNAMIC_LINKER): Make it easier
+	to support multiple C libraries.  Handle Bionic.
+	(BIONIC_DYNAMIC_LINKER, BIONIC_DYNAMIC_LINKER32,)
+	(BIONIC_DYNAMIC_LINKER64): Define.
+	(LINUX_DYNAMIC_LINKER, LINUX_DYNAMIC_LINKER32, LINUX_DYNAMIC_LINKER64):
+	Update.
+	(TARGET_HAS_SINCOS): Enable for Bionic.
+
+	* config/linux.opt: Rewrite to handle more than 2 C libraries.  Make
+	the last option specified on command line take effect.
+	(linux_uclibc): Rename to linux_libc, initialize using DEFAULT_LIBC.
+	(mbionic): New.
+	(mglibc, muclibc): Update.
+
+	* config/alpha/linux-elf.h, config/rs6000/linux64.h,
+	* config/rs6000/sysv4.h (CHOOSE_DYNAMIC_LINKER): Update to use
+	DEFAULT_LIBC.
+
+	* doc/invoke.texi (-mglibc, -muclibc): Update.
+	(-mbionic): Document.
+
 2010-05-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* c-common.h (c_register_addr_space): Add prototype.

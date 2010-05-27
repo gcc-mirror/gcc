@@ -11477,13 +11477,18 @@ These @samp{-m} options are defined for GNU/Linux targets:
 @table @gcctabopt
 @item -mglibc
 @opindex mglibc
-Use the GNU C library instead of uClibc.  This is the default except
-on @samp{*-*-linux-*uclibc*} targets.
+Use the GNU C library.  This is the default except
+on @samp{*-*-linux-*uclibc*} and @samp{*-*-linux-*android*} targets.
 
 @item -muclibc
 @opindex muclibc
-Use uClibc instead of the GNU C library.  This is the default on
+Use uClibc C library.  This is the default on
 @samp{*-*-linux-*uclibc*} targets.
+
+@item -mbionic
+@opindex mbionic
+Use Bionic C library.  This is the default on
+@samp{*-*-linux-*android*} targets.
 @end table
 
 @node H8/300 Options
