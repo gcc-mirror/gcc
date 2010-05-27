@@ -129,7 +129,7 @@
 	* gcc.target/arm/neon/polytypes.c,
 	gcc.target/arm/neon-vmla-1.c, gcc.target/arm/neon-vmls-1.c,
 	gcc.target/arm/neon-cond-1.c, gcc.target/arm/neon/vfp-shift-a2t2.c,
-	gcc.target/arm/neon-thumb2-move.c, gcc.dg/torture/arm-fp16-ops-8.c, 
+	gcc.target/arm/neon-thumb2-move.c, gcc.dg/torture/arm-fp16-ops-8.c,
 	gcc.dg/torture/arm-fp16-ops-7.c, g++.dg/ext/arm-fp16/arm-fp16-ops-7.C,
 	g++.dg/ext/arm-fp16/arm-fp16-ops-8.C, g++.dg/abi/mangle-neon.C: Use
 	dg-add-options arm_neon.
@@ -219,9 +219,9 @@
 
 2010-05-20  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/38407
-        * warn_unused_dummy_argument_1.f90: New.
-        * warn_unused_dummy_argument_2.f90: New.
+	PR fortran/38407
+	* warn_unused_dummy_argument_1.f90: New.
+	* warn_unused_dummy_argument_2.f90: New.
 
 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -240,7 +240,7 @@
 	* gcc.dg/tree-ssa/prefetch-6.c: Add
 	--param min-insn-to-prefetch-ratio=6.
 	* gcc.dg/tree-ssa/prefetch-7.c: Remove --param max-unrolled-insns=1 to
-        allow unrolling, and adjust the movnti count.
+	allow unrolling, and adjust the movnti count.
 
 2010-05-20  Jan Hubicka  <jh@suse.cz>
 
@@ -317,7 +317,7 @@
 	* gcc.target/i386/3dnowA-2.c: Likewise.
 	* gcc.target/i386/pr42549.c: Likewise.
 
-	* gcc.target/i386/sse3-lddqu.c: Use dg-require-effective-target sse3. 
+	* gcc.target/i386/sse3-lddqu.c: Use dg-require-effective-target sse3.
 	* gcc.target/i386/sse3-addsubpd.c: Likewise.
 	* gcc.target/i386/sse3-addsubps.c: Likewise.
 	* gcc.target/i386/sse3-haddpd.c: Likewise.

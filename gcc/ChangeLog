@@ -152,8 +152,7 @@
 	* c-common.h (enum rid): Add RID_INT128.
 	* c-cppbuiltin.c (c_cpp_builtins): Define __SIZEOF_INT128__
 	if target supports 128-bit integer scalar.
-	* c-decl.c (declspecs_add_type): Handle new keyword
-	__int128.
+	* c-decl.c (declspecs_add_type): Handle new keyword __int128.
 	(finish_declspecs): Likewise.
 	* c-parser.c (c_token_starts_typename): Handle RID_INT128.
 	(c_token_starts_declspecs): Likewise.
@@ -168,7 +167,7 @@
 	(build_common_tree_nodes_2): Likewise.
 	* tree.h (enum integer_type_kind): Add itk_int128 and
 	itk_unsigned_int128.
-	(int128_integer_type_node): New define..
+	(int128_integer_type_node): New define.
 	(int128_unsigned_type_node): New define.
 	* doc/extend.texi: Add documentation about __int128 type.
 
@@ -189,8 +188,7 @@
 
 2010-05-26  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
-	* ggc.h (ggc_min_expand_heuristic, ggc_min_heapsize_heuristic):
-	Remove.
+	* ggc.h (ggc_min_expand_heuristic, ggc_min_heapsize_heuristic): Remove.
 
 2010-05-26  Richard Guenther  <rguenther@suse.de>
 
@@ -406,8 +404,7 @@
 	here.  Pass context to internal_error callback.
 	* diagnostic.h (struct diagnostic_context): Add context parameter
 	to internal_error callback.
-	* plugin.c (warn_if_plugins, plugins_internal_error_function):
-	New.
+	* plugin.c (warn_if_plugins, plugins_internal_error_function): New.
 	* plugin.h (struct diagnostic_context): Declare.
 	(warn_if_plugins, plugins_internal_error_function): Declare.
 	* toplev.c (general_init): Set global_dc->internal_error.
@@ -434,8 +431,7 @@
 	* target.h (struct gcc_target): Add handle_ofast.
 	* target-def.h (TARGET_HANDLE_OFAST): Add.
 	(TARGET_INITIALIZER): Adjust.
-	* opts.c (decode_options): Handle -Ofast.  Enable
-	-ffast-math with it.
+	* opts.c (decode_options): Handle -Ofast.  Enable -ffast-math with it.
 	* common.opt (Ofast): Add.
 
 2010-05-25  Paolo Bonzini  <bonzini@gnu.org>
@@ -455,8 +451,7 @@
 
 	* dwarf2out.c (loc_descr_plus_const): When offset is negative, use
 	DW_OP_minus with negated offset instead of DW_OP_plus.
-	(loc_list_from_tree): Don't test whether second operand is
-	INTEGER_CST.
+	(loc_list_from_tree): Don't test whether second operand is INTEGER_CST.
 
 2010-05-25  Wei Guozhi  <carrot@google.com>
 
@@ -488,18 +483,14 @@
 
 	* diagnostic.c: Don't include flags.h.
 	(pedantic_warning_kind, permissive_error_kind): Take diagnostic
-	context parameters.  Check flags in the context passed as a
-	parameter.
+	context parameters.  Check flags in the context passed as a parameter.
 	(diagnostic_build_prefix): Add context parameter.  Check
 	show_column flag in context.
-	(diagnostic_action_after_output): Check fatal_errors flag in
-	context.
-	(diagnostic_report_current_module): Check show_column flag in
-	context.
+	(diagnostic_action_after_output): Check fatal_errors flag in context.
+	(diagnostic_report_current_module): Check show_column flag in context.
 	(default_diagnostic_starter): Update call to
 	diagnostic_build_prefix.
-	(diagnostic_report_diagnostic): Pass context to
-	pedantic_warning_kind.
+	(diagnostic_report_diagnostic): Pass context to pedantic_warning_kind.
 	(emit_diagnostic): Pass context to permissive_error_kind.
 	(permerror): Pass context to permissive_error_kind.
 	* diagnostic.h (struct diagnostic_context): Add show_column,
@@ -528,7 +519,7 @@
 	DECL_VISIBILITY_SPECIFIED, DECL_RESTRICTED_P.
 	(emutls_finalize_control_var): New callback.
 	(emutls_finish): Finalize emutls control variables.
-	* toplev.c (compile_file): Move the call to emutls_finish () 
+	* toplev.c (compile_file): Move the call to emutls_finish ()
 	before varpool_assemble_pending_decls ().
 
 2010-05-24  Daniel Gutson  <dgutson@codesourcery.com>
@@ -572,8 +563,7 @@
 
 2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* regs.h: Do not include obstack.h, basic-block.h.
-	Include machmode.h.
+	* regs.h: Do not include obstack.h, basic-block.h.  Include machmode.h.
 	* jump.c: Include basic-block.h.
 	* profile.c: Likewise.
 	* tree-profile.c: Likewise.
@@ -758,10 +748,8 @@
 	* tree.c: Include tree-diagnostic.h and tree-pretty-print.h.
 	(free_lang_data): Use default_tree_diagnostic_starter.
 	* c-pretty-print.c: Include tree-pretty-print.h.
-	* cfgexpand.c: Include tree-pretty-print.h and
-	gimple-pretty-print.h.
-	* cgraphunit.c: Include tree-pretty-print.h and
-	gimple-pretty-print.h.
+	* cfgexpand.c: Include tree-pretty-print.h and gimple-pretty-print.h.
+	* cgraphunit.c: Include tree-pretty-print.h and gimple-pretty-print.h.
 	* dwarf2out.c: Include tree-pretty-print.h.
 	* except.c: Include tree-pretty-print.h.
 	* gimple-pretty-print.c: Include tree-pretty-print.h and
@@ -771,8 +759,7 @@
 	gimple-pretty-print.h.
 	* ipa-cp.c: Include tree-pretty-print.h.
 	* ipa-inline.c: Include gimple-pretty-print.h.
-	* ipa-prop.c: Include tree-pretty-print.h and
-	gimple-pretty-print.h.
+	* ipa-prop.c: Include tree-pretty-print.h and gimple-pretty-print.h.
 	* ipa-pure-const.c: Include gimple-pretty-print.h.
 	* ipa-struct-reorg.c: Include tree-pretty-print.h and
 	gimple-pretty-print.h.
@@ -783,8 +770,7 @@
 	* tree-affine.c: Include tree-pretty-print.h.
 	* tree-browser.c: Include tree-pretty-print.h.
 	* tree-call-cdce.c: Include gimple-pretty-print.h.
-	* tree-cfg.c: Include tree-pretty-print.h and
-	gimple-pretty-print.h.
+	* tree-cfg.c: Include tree-pretty-print.h and gimple-pretty-print.h.
 	* tree-chrec.c: Include tree-pretty-print.h.
 	* tree-data-ref.c: Include tree-pretty-print.h and
 	gimple-pretty-print.h.
@@ -1020,8 +1006,7 @@
 	config/score/score7.c, config/score/score.c, config/arm/arm.c,
 	config/pa/pa.c, config/mips/mips.c, config/vax/vax.c,
 	config/h8300/h8300.c, config/v850/v850.c, config/mmix/mmix.c,
-	config/bfin/bfin.c:
-	Clean up redundant includes.
+	config/bfin/bfin.c: Clean up redundant includes.
 	* Makefile.in: Update accordingly.
 
 2010-05-21  Nathan Froyd  <froydnj@codesourcery.com>
@@ -1052,7 +1037,7 @@
 2009-09-14  Vladimir Makarov <vmakarov@redhat.com>
 
 	* ira.c (ira_non_ordered_class_hard_regs): Define.
-        (setup_class_hard_regs): Initialize ira_non_ordered_class_hard_regs.
+	(setup_class_hard_regs): Initialize ira_non_ordered_class_hard_regs.
 	* ira-int.h (ira_non_ordered_class_hard_regs): Declare.
 	* ira-costs.c (ira_tune_allocno_costs_and_cover_classes): Increase
 	cost of unaligned hard regs when allocating multi-reg pseudos.
@@ -1076,8 +1061,7 @@
 
 2010-05-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* ipa-prop.c (compute_complex_ancestor_jump_func): Bail
-	out if !cond.
+	* ipa-prop.c (compute_complex_ancestor_jump_func): Bail out if !cond.
 
 2010-05-20  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -1159,7 +1143,7 @@
 	* langhooks.h (struct lang_hooks): Add new field deep_unsharing.
 	* langhooks-def.h (LANG_HOOKS_DEEP_UNSHARING): New macro.
 	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_DEEP_UNSHARING.
-	* gimplify.c: (mostly_copy_tree_r): Copy trees under SAVE_EXPR and
+	* gimplify.c (mostly_copy_tree_r): Copy trees under SAVE_EXPR and
 	TARGET_EXPR nodes, but only once, if instructed to do so.  Do not
 	propagate the 'data' argument to copy_tree_r.
 	(copy_if_shared_r): Remove bogus ATTRIBUTE_UNUSED marker.
@@ -1177,7 +1161,7 @@
 	* hooks.c: Likewise.
 	* target-def.h (TARGET_FOLD_BUILTIN): Define to
 	hook_tree_tree_int_treep_bool_null.
-	* target.h: (struct gcc_target): Update signature of fold_builtin
+	* target.h (struct gcc_target): Update signature of fold_builtin
 	field.
 	* doc/tm.texi (TARGET_FOLD_BUILTIN): Update description and signature.
 	* builtins.c (fold_call_expr): Pass call_expr_nargs and CALL_EXPR_ARGP
@@ -2172,9 +2156,9 @@
 	* targhooks.h (default_mode_dependent_address_p): Declare function.
 	* doc/tm.texi (TARGET_MODE_DEPENDENT_ADDRESS_P): New.
 	(GO_IF_MODE_DEPENDENT_ADDRESS): Update.
-	* recog.c: (mode_dependent_address_p): Call mode_dependent_address_p
+	* recog.c (mode_dependent_address_p): Call mode_dependent_address_p
 	target hook. Change return type to bool.
-	* recog.h: (mode_dependent_address_p): Change return type to bool.
+	* recog.h (mode_dependent_address_p): Change return type to bool.
 
 2010-05-12  Kazu Hirata  <kazu@codesourcery.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
@@ -2931,7 +2915,7 @@
 	(input_refs): New.
 	(input_cgraph): Call input_refs.
 	* lto-section-in.c (lto_section_name): Add refs.
-	* Makefile.in: (cgraph.h): Include ipa-ref.h and ipa-ref-inline.h
+	* Makefile.in (cgraph.h): Include ipa-ref.h and ipa-ref-inline.h
 	(ipa-ref.o): New file.
 	* varpool.c (varpool_node): Clear ipa ref list.
 	(varpool_remove_node): Remove references.
@@ -5058,7 +5042,7 @@
 	(SUBTARGET_FRAME_POINTER_REQUIRED): Define.
 	(ACCUMULATE_OUTGOING_ARGS): Define.
 	* doc/invoke.texi (maccumulate-outgoing-args): Document for SH.
-	* gcc/config/sh/sh.opt: (maccumulate-outgoing-args): New option.
+	* gcc/config/sh/sh.opt (maccumulate-outgoing-args): New option.
 
 2010-04-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -5912,7 +5896,7 @@
 	PR bootstrap/43684
 	* varasm.c (default_assemble_visibility): Wrap vars that are
 	set, but unused, by targets without GAS.
-	* config/rs6000/rs6000.c: (paired_emit_vector_compare):
+	* config/rs6000/rs6000.c (paired_emit_vector_compare):
 	Remove set, but unused, vars.
 	(rs6000_legitimize_tls_address): Likewise.
 	(altivec_expand_dst_builtin): Likewise.
