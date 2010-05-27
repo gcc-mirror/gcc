@@ -534,6 +534,22 @@ case ${target} in
   default_use_cxa_atexit=yes
   use_gcc_tgmath=no
   use_gcc_stdint=wrap
+  # Add Android userspace support to Linux targets.
+  case $target in
+    *linux*)
+      tm_file="$tm_file linux-android.h"
+      extra_options="$extra_options linux-android.opt"
+      ;;
+  esac
+  # Enable compilation for Android by default for *android* targets.
+  case $target in
+    *-*-*android*)
+      tm_defines="$tm_defines ANDROID_DEFAULT=1"
+      ;;
+    *)
+      tm_defines="$tm_defines ANDROID_DEFAULT=0"
+      ;;
+  esac
   ;;
 *-*-netbsd*)
   tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
@@ -717,7 +733,7 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
+	tm_file="dbxelf.h elfos.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
 	arm*b-*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
@@ -774,9 +790,8 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-eabi*)
-	  tm_file="$tm_file arm/eabi.h newlib-stdint.h"
+	  tm_file="$tm_file newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi"
-	  extra_options="${extra_options} arm/eabi.opt"
 	  use_gcc_stdint=wrap
 	  ;;
 	arm*-*-symbianelf*)

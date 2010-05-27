@@ -42,16 +42,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'.  */
    
-#undef	STARTFILE_SPEC
 #if defined HAVE_LD_PIE
-#define STARTFILE_SPEC \
+#define LINUX_TARGET_STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #else
-#define STARTFILE_SPEC \
+#define LINUX_TARGET_STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC LINUX_TARGET_STARTFILE_SPEC
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -59,24 +60,27 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    object constructed before entering `main', followed by a normal
    GNU/Linux "finalizer" file, `crtn.o'.  */
 
-#undef	ENDFILE_SPEC
-#define ENDFILE_SPEC \
+#define LINUX_TARGET_ENDFILE_SPEC \
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC LINUX_TARGET_ENDFILE_SPEC
 
 /* This is for -profile to use -lc_p instead of -lc.  */
+#define LINUX_TARGET_CC1_SPEC "%{profile:-p}"
 #ifndef CC1_SPEC
-#define CC1_SPEC "%{profile:-p}"
+#define CC1_SPEC LINUX_TARGET_CC1_SPEC
 #endif
 
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
-#undef	LIB_SPEC
-#define LIB_SPEC \
+#define LINUX_TARGET_LIB_SPEC \
   "%{pthread:-lpthread} \
    %{shared:-lc} \
    %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}}"
+#undef  LIB_SPEC
+#define LIB_SPEC LINUX_TARGET_LIB_SPEC
 
 /* C libraries supported on Linux.  */
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
@@ -92,6 +96,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	builtin_assert ("system=linux");			\
 	builtin_assert ("system=unix");				\
 	builtin_assert ("system=posix");			\
+	if (OPTION_ANDROID)					\
+	  builtin_define ("__ANDROID__");			\
     } while (0)
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
