@@ -1,3 +1,16 @@
+2010-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (verify_cgraph_node): Do checking that DECL match
+	edge only when checking is enabled; check using former_clone_of;
+	check inline clones too.
+	(cgraph_materialize_clone): Record former_clone_of pointer.
+	(cgraph_redirect_edge_call_stmt_to_callee): Assert that we are not
+	combining redirections; dump args_to_skip bitmap
+	(cgraph_materialize_all_clones): Do no redirection here.
+	* ipa-inline.c (inline_transform): Do redirection here.
+	* cgraph.h (struct cgraph_node): Add former_clone_of filed (enabled
+	cheking only).
+
 2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/avr/avr-c.c: Do not include regs.h.
