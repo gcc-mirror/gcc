@@ -1,3 +1,8 @@
+2010-05-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* buildings.c: Pretend to be a backend file by undefining
+	IN_GCC_FRONTEND (still need rtl.h here).
+
 2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (struct lang_decl_func): Change type of throws_list

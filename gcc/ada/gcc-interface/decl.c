@@ -23,6 +23,10 @@
  *                                                                          *
  ****************************************************************************/
 
+/* FIXME: Still need to include rtl.h here (via expr.h) because this file
+   actually generates RTL (search for gen_rtx_* in gnat_to_gnu_entity).  */
+#undef IN_GCC_FRONTEND
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -24,6 +24,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Written by Tom Tromey <tromey@redhat.com>.  */
 
+/* FIXME: Still need to include rtl.h here (see below).  */
+#undef IN_GCC_FRONTEND
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

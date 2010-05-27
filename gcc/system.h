@@ -789,6 +789,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
   VA_FIXEDARG VA_CLOSE VA_START
 #endif /* IN_GCC */
 
+/* Front ends should never have to include middle-end headers.  Enforce
+   this by poisoning the header double-include protection defines.  */
+#ifdef IN_GCC_FRONTEND
+#pragma GCC poison GCC_RTL_H
+#endif
+
 /* Note: not all uses of the `index' token (e.g. variable names and
    structure members) have been eliminated.  */
 #undef bcopy

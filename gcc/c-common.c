@@ -19,6 +19,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* FIXME: Still need to include rtl.h here (via expr.h) in a front-end file.
+   Pretend this is a back-end file.  */
+#undef IN_GCC_FRONTEND
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -47,9 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "libfuncs.h"
 
-/* FIXME: Still need to include rtl.h here (via expr.h) in a front-end file.
-   Pretend this is a back-end file.  */
-#define IN_GCC_BACKEND
 #include "expr.h" /* For vector_mode_valid_p */
 
 /* FIXME: Needed for TARGET_ENUM_VA_LIST, which should be a target hook.  */
