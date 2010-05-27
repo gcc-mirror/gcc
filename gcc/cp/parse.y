@@ -237,7 +237,7 @@ cp_parse_init ()
 /* All identifiers that are declared typedefs in the current block.
    In some contexts, they are treated just like IDENTIFIER,
    but they can also serve as typespecs in declarations.  */
-%token TYPENAME
+%token tTYPENAME
 %token SELFNAME
 
 /* A template function.  */
@@ -295,7 +295,7 @@ cp_parse_init ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER PFUNCNAME TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
+%left IDENTIFIER PFUNCNAME tTYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
 
 %left '{' ',' ';'
 
@@ -325,7 +325,7 @@ cp_parse_init ()
 
 %type <code> unop
 
-%type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
+%type <ttype> identifier IDENTIFIER tTYPENAME CONSTANT expr nonnull_exprlist
 %type <ttype> PFUNCNAME maybe_identifier
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas expr_no_comma_rangle
@@ -956,7 +956,7 @@ member_init:
 
 identifier:
 	  IDENTIFIER
-	| TYPENAME
+	| tTYPENAME
 	| SELFNAME
 	| PTYPENAME
 	| NSNAME
@@ -993,17 +993,21 @@ explicit_instantiation:
 		{ do_type_instantiation ($4.t, $1, 1);
 		  yyungetc (';', 1); }
           end_explicit_instantiation
+		{}
 	| SCSPEC TEMPLATE begin_explicit_instantiation typed_declspecs 
           declarator
 		{ tree specs = strip_attrs ($4.t);
 		  do_decl_instantiation (specs, $5, $1); }
           end_explicit_instantiation
+		{}
 	| SCSPEC TEMPLATE begin_explicit_instantiation notype_declarator
 		{ do_decl_instantiation (NULL_TREE, $4, $1); }
           end_explicit_instantiation
+		{}
 	| SCSPEC TEMPLATE begin_explicit_instantiation constructor_declarator
 		{ do_decl_instantiation (NULL_TREE, $4, $1); }
           end_explicit_instantiation
+		{}
 	;
 
 begin_explicit_instantiation: 
@@ -1020,7 +1024,7 @@ template_type:
 	  PTYPENAME '<' template_arg_list_opt template_close_bracket
 	    .finish_template_type
                 { $$ = $5; }
-	| TYPENAME  '<' template_arg_list_opt template_close_bracket
+	| tTYPENAME  '<' template_arg_list_opt template_close_bracket
 	    .finish_template_type
                 { $$ = $5; }
 	| self_template_type
@@ -1487,7 +1491,7 @@ object_template_id:
 
 unqualified_id:
 	  notype_unqualified_id
-	| TYPENAME
+	| tTYPENAME
 	| SELFNAME
 	;
 
@@ -2706,7 +2710,7 @@ after_type_component_declarator0:
 	  after_type_declarator maybeasm maybe_attribute maybe_init
 		{ $$ = parse_field0 ($1, $<ftype>0.t, $<ftype>0.lookups,
 				     $3, $2, $4); }
-	| TYPENAME ':' expr_no_commas maybe_attribute
+	| tTYPENAME ':' expr_no_commas maybe_attribute
 		{ $$ = parse_bitfield0 ($1, $<ftype>0.t, $<ftype>0.lookups,
 					$4, $3); }
 	;
@@ -2729,7 +2733,7 @@ notype_component_declarator0:
 after_type_component_declarator:
 	  after_type_declarator maybeasm maybe_attribute maybe_init
 		{ $$ = parse_field ($1, $3, $2, $4); }
-	| TYPENAME ':' expr_no_commas maybe_attribute
+	| tTYPENAME ':' expr_no_commas maybe_attribute
 		{ $$ = parse_bitfield ($1, $4, $3); }
 	;
 
@@ -2995,7 +2999,7 @@ functional_cast:
 	;
 
 type_name:
-	  TYPENAME
+	  tTYPENAME
 	| SELFNAME
 	| template_type  %prec EMPTY
 	;
@@ -3012,7 +3016,7 @@ nested_name_specifier:
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
    inline here?!?  (jason) */
 nested_name_specifier_1:
-	  TYPENAME SCOPE
+	  tTYPENAME SCOPE
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
@@ -3108,7 +3112,7 @@ typename_sub1:
 /* This needs to return a TYPE_DECL for simple names so that we don't
    forget what name was used.  */
 typename_sub2:
-	  TYPENAME SCOPE
+	  tTYPENAME SCOPE
 		{
 		  if (TREE_CODE ($1) != TYPE_DECL)
 		    $$ = lastiddecl;
@@ -3542,7 +3546,7 @@ label_colon:
                 { finish_label_stmt ($1); }
 	| PTYPENAME ':'
                 { finish_label_stmt ($1); }
-	| TYPENAME ':'
+	| tTYPENAME ':'
                 { finish_label_stmt ($1); }
 	| SELFNAME ':'
                 { finish_label_stmt ($1); }
