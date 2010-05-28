@@ -1,3 +1,24 @@
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c: Include diagnostic.h.
+	(error_count): Remove.  All users changed to use errorcount.
+	(programname): Remove.  All users changed to use progname.
+	(fancy_abort, internal_error, fatal_error, error, warning, inform,
+	fnotice): Remove.
+	(execute): Don't include "Internal error" and bug reporting
+	information in argument of internal_error call.
+	(process_command): Don't increment error_count after calling
+	perror_with_name.
+	(input_filename): Rename to gcc_input_filename.  All users
+	changed.
+	(main): Call diagnostic_initialize.  Register delete_temp_files
+	with atexit.  Use seen_error to test for errors.
+	* gcc.h: Include diagnostic-core.h.
+	(fatal_error, error, warning): Remove.
+	* Makefile.in (GCC_H): Add $(DIAGNOSTIC_CORE_H).
+	(GCC_OBJS): Add diagnostic.o, pretty-print.o and input.o.
+	(gcc.o): Update dependencies.
+
 2010-05-28  Jeff Law  <law@redhat.com>
 
 	* ira.c (ira_bad_reload_regno, ira_build_reload_regno_1): New
