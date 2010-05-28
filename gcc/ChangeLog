@@ -1,4 +1,12 @@
-2010-05-27  Jon Beniston <jon@beniston.com>
+2010-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43636
+	* builtins.c (expand_movstr): Use a temporary pseudo instead
+	of target even when target is not NULL and not const0_rtx, but
+	fails movstr predicate.
+	* config/m32c/blkmov.md (movstr): Add predicate to first operand.
+
+2010-05-27  Jon Beniston  <jon@beniston.com>
 
 	PR 43726
 	* config/lm32/lm32.h: Remove definition of

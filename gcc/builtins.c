@@ -3464,6 +3464,7 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 
   dest_mem = get_memory_rtx (dest, NULL);
   src_mem = get_memory_rtx (src, NULL);
+  data = insn_data + CODE_FOR_movstr;
   if (!endp)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
@@ -3472,17 +3473,17 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
     }
   else
     {
-      if (target == 0 || target == const0_rtx)
+      if (target == 0
+	  || target == const0_rtx
+	  || ! (*data->operand[0].predicate) (target, Pmode))
 	{
 	  end = gen_reg_rtx (Pmode);
-	  if (target == 0)
+	  if (target != const0_rtx)
 	    target = end;
 	}
       else
 	end = target;
     }
-
-  data = insn_data + CODE_FOR_movstr;
 
   if (data->operand[0].mode != VOIDmode)
     end = gen_lowpart (data->operand[0].mode, end);

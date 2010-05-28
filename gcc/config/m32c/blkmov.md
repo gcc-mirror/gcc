@@ -1,5 +1,5 @@
 ;; Machine Descriptions for R8C/M16C/M32C
-;; Copyright (C) 2006, 2007
+;; Copyright (C) 2006, 2007, 2010
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;
@@ -214,7 +214,7 @@
 ;; 2 = source (mem:BLK ...)
 
 (define_expand "movstr"
-  [(match_operand 0 "" "")
+  [(match_operand 0 "m32c_nonimmediate_operand" "")
    (match_operand 1 "ap_operand" "")
    (match_operand 2 "ap_operand" "")
    ]
