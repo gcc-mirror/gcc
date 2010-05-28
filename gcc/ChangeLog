@@ -1,3 +1,9 @@
+2010-05-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/44266
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Use
+	emit_library_call machinery to set up __tls_get_addr calls.
+
 2010-05-28  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (movqi): Fix typo ('*' -> '#').
