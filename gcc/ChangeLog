@@ -1,3 +1,24 @@
+2010-05-28  Dodji Seketeli  <dodji@redhat.com>
+
+	revert fix for PR c++/44188
+	* c-common.c (is_typedef_decl): Revert the moving of  this
+	definition ...
+	* tree.c (is_typedef_decl): ... here.
+	(typdef_variant_p): Revert the moving of this  definition
+	here from gcc/cp/tree.c.
+	* c-common.h (is_typedef_decl): Revert the moving of this
+	declaration ...
+	* tree.h (is_typedef_decl): ... here.
+	(typedef_variant_p): Revert the moving of this  declaration here
+	from gcc/cp/cp-tree.h
+	* dwarf2out.c (is_naming_typedef_decl): Revert this new function.
+	(gen_tagged_type_die): Revert the splitting out of ...
+	(gen_type_die_with_usage): ... this function. Revert the anonymous
+	tagged type handling.
+	(gen_typedef_die): Revert emitting DW_TAG_typedef  for
+	typedefs naming anonymous tagged types.
+
+
 2010-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-modes.def (PSImode): Delete.

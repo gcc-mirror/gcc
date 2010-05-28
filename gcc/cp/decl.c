@@ -9081,12 +9081,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	    {
 	      if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
-		/* We do not rename the debug info representing the
-		   anonymous tagged type because the standard says in
-		   [dcl.typedef] that the naming applies only for
-		   linkage purposes.  */
-		/*debug_hooks->set_name (t, decl);*/
-		TYPE_NAME (t) = decl;
+		{
+		  debug_hooks->set_name (t, decl);
+		  TYPE_NAME (t) = decl;
+		}
   	    }
 
 	  if (TYPE_LANG_SPECIFIC (type))

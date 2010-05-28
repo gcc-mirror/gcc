@@ -1,3 +1,12 @@
+2010-05-28  Dodji Seketeli  <dodji@redhat.com>
+
+	Revert fix of PR c++/44188
+	* cp-tree.h (typedef_variant_p): Revert moving this declaration to
+	gcc/tree.h.
+	* tree.c (typedef_variant_p): Revert moving this definition to
+	gcc/tree.c.
+	* decl.c (grokdeclarator): Revert naming typedef handling.
+
 2010-05-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* call.c: Include diagnostic-core.h instead of diagnostic.h.

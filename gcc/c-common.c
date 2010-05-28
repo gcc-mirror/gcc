@@ -9387,6 +9387,15 @@ set_underlying_type (tree x)
     }
 }
 
+/* Returns true if X is a typedef decl.  */
+
+bool
+is_typedef_decl (tree x)
+{
+  return (x && TREE_CODE (x) == TYPE_DECL
+          && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
+}
+
 /* Record the types used by the current global variable declaration
    being parsed, so that we can decide later to emit their debug info.
    Those types are in types_used_by_cur_var_decl, and we are going to
