@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "tree.h"
 #include "c-pragma.h"
-#include "c-tree.h"
 #include "incpath.h"
 #include "c-common.h"
 #include "toplev.h"
