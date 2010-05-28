@@ -1,5 +1,9 @@
 2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* expr.c (get_symbol_table_index): Add spaces in expression.
+
+2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* java-tree.h (method_entry): Declare.  Declare VECs containing it.
 	(struct lang_type): Change type of otable_methods, atable_methods, and
 	itable_methods to VECs.  Fix comment for atable_methods.
