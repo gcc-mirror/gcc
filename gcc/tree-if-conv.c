@@ -693,16 +693,16 @@ if_convertible_loop_p (struct loop *loop)
       basic_block bb = ifc_bbs[i];
       gimple_stmt_iterator itr;
 
+      for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
+	if (!if_convertible_phi_p (loop, bb, gsi_stmt (itr)))
+	  return false;
+
       /* For non predicated BBs, don't check their statements.  */
       if (!is_predicated (bb))
 	continue;
 
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
 	if (!if_convertible_stmt_p (loop, bb, gsi_stmt (itr)))
-	  return false;
-
-      for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
-	if (!if_convertible_phi_p (loop, bb, gsi_stmt (itr)))
 	  return false;
     }
 
