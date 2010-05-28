@@ -848,123 +848,29 @@ lto_promote_cross_file_statics (void)
 }
 
 
-/* Given a file name FNAME, return a string with FNAME prefixed with '*'.  */
-
-static char *
-prefix_name_with_star (const char *fname)
-{
-  char *star_fname;
-  size_t len;
-  
-  len = strlen (fname) + 1 + 1;
-  star_fname = XNEWVEC (char, len);
-  snprintf (star_fname, len, "*%s", fname);
-
-  return star_fname;
-}
-
-
-/* Return a copy of FNAME without the .o extension.  */
-
-static char *
-strip_extension (const char *fname)
-{
-  char *s = XNEWVEC (char, strlen (fname) - 2 + 1);
-  gcc_assert (strstr (fname, ".o"));
-  snprintf (s, strlen (fname) - 2 + 1, "%s", fname);
-
-  return s;
-}
-
-
-/* Return a file name associated with cgraph node set SET.  This may
-   be a new temporary file name if SET needs to be processed by
-   LTRANS, or the original file name if all the nodes in SET belong to
-   the same input file.  */
-
-static char *
-get_filename_for_set (cgraph_node_set set)
-{
-  char *fname = NULL;
-  static const size_t max_fname_len = 100;
-
-  /* Create a new temporary file to store SET.  To facilitate
-     debugging, use file names from SET as part of the new
-     temporary file name.  */
-  cgraph_node_set_iterator si;
-  struct pointer_set_t *pset = pointer_set_create ();
-  for (si = csi_start (set); !csi_end_p (si); csi_next (&si))
-    {
-      struct cgraph_node *n = csi_node (si);
-      const char *node_fname;
-      char *f;
-
-      /* Don't use the same file name more than once.  */
-      if (pointer_set_insert (pset, n->local.lto_file_data))
-	continue;
-
-      /* The first file name found in SET determines the output
-	 directory.  For the remaining files, we use their
-	 base names.  */
-      node_fname = n->local.lto_file_data->file_name;
-      if (fname == NULL)
-	{
-	  fname = strip_extension (node_fname);
-	  continue;
-	}
-
-      f = strip_extension (lbasename (node_fname));
-
-      /* If the new name causes an excessively long file name,
-	 make the last component "___" to indicate overflow.  */
-      if (strlen (fname) + strlen (f) > max_fname_len - 3)
-	{
-	  fname = reconcat (fname, fname, "___", NULL);
-	  break;
-	}
-      else
-	{
-	  fname = reconcat (fname, fname, "_", f, NULL);
-	  free (f);
-	}
-    }
-
-  pointer_set_destroy (pset);
-
-  if (!fname)
-    {
-      /* Since SET does not need to be processed by LTRANS, use
-	 the original file name and mark it with a '*' prefix so that
-	 lto_execute_ltrans knows not to process it.  */
-      cgraph_node_set_iterator si = csi_start (set);
-      struct cgraph_node *first = csi_node (si);
-      fname = prefix_name_with_star (first->local.lto_file_data->file_name);
-    }
-  else
-    {
-      /* Add the extension .wpa.o to indicate that this file has been
-	 produced by WPA.  */
-      fname = reconcat (fname, fname, ".wpa.o", NULL);
-      gcc_assert (fname);
-    }
-
-  return fname;
-}
-
 static lto_file *current_lto_file;
 
 
-/* Write all output files in WPA mode.  Returns a NULL-terminated array of
-   output file names.  */
+/* Write all output files in WPA mode and the file with the list of
+   LTRANS units.  */
 
-static char **
+static void
 lto_wpa_write_files (void)
 {
-  char **output_files;
-  unsigned i, n_sets, last_out_file_ix, num_out_files;
+  unsigned i, n_sets;
   lto_file *file;
   cgraph_node_set set;
   varpool_node_set vset;
+  FILE *ltrans_output_list_stream;
+  char *temp_filename;
+  size_t blen;
+
+  /* Open the LTRANS output list.  */
+  if (!ltrans_output_list)
+    fatal_error ("no LTRANS output list filename provided");
+  ltrans_output_list_stream = fopen (ltrans_output_list, "w");
+  if (ltrans_output_list_stream == NULL)
+    fatal_error ("opening LTRANS output list %s: %m", ltrans_output_list);
 
   timevar_push (TV_WHOPR_WPA);
 
@@ -987,86 +893,57 @@ lto_wpa_write_files (void)
 
   timevar_push (TV_WHOPR_WPA_IO);
 
-  /* The number of output files depends on the number of input files
-     and how many callgraph node sets we create.  Reserve enough space
-     for the maximum of these two.  */
-  num_out_files = MAX (VEC_length (cgraph_node_set, lto_cgraph_node_sets),
-                       num_in_fnames);
-  output_files = XNEWVEC (char *, num_out_files + 1);
+  /* Generate a prefix for the LTRANS unit files.  */
+  blen = strlen (ltrans_output_list);
+  temp_filename = (char *) xmalloc (blen + sizeof ("2147483648.o"));
+  strcpy (temp_filename, ltrans_output_list);
+  if (blen > sizeof (".out")
+      && strcmp (temp_filename + blen - sizeof (".out") + 1,
+		 ".out") == 0)
+    temp_filename[blen - sizeof (".out") + 1] = '\0';
+  blen = strlen (temp_filename);
 
   n_sets = VEC_length (cgraph_node_set, lto_cgraph_node_sets);
   for (i = 0; i < n_sets; i++)
     {
-      char *temp_filename;
+      size_t len;
 
       set = VEC_index (cgraph_node_set, lto_cgraph_node_sets, i);
       vset = VEC_index (varpool_node_set, lto_varpool_node_sets, i);
-      temp_filename = get_filename_for_set (set);
-      output_files[i] = temp_filename;
+      if (!cgraph_node_set_nonempty_p (set)
+	  && !varpool_node_set_nonempty_p (vset))
+	continue;
 
-      if (cgraph_node_set_nonempty_p (set) || varpool_node_set_nonempty_p (vset))
-	{
-	  /* Write all the nodes in SET to TEMP_FILENAME.  */
-	  file = lto_obj_file_open (temp_filename, true);
-	  if (!file)
-	    fatal_error ("lto_obj_file_open() failed");
+      /* Write all the nodes in SET.  */
+      sprintf (temp_filename + blen, "%u.o", i);
+      file = lto_obj_file_open (temp_filename, true);
+      if (!file)
+	fatal_error ("lto_obj_file_open() failed");
 
-	  if (!quiet_flag)
-	    fprintf (stderr, " %s", temp_filename);
+      if (!quiet_flag)
+	fprintf (stderr, " %s", temp_filename);
 
-	  lto_set_current_out_file (file);
+      lto_set_current_out_file (file);
 
-	  ipa_write_optimization_summaries (set, vset);
+      ipa_write_optimization_summaries (set, vset);
 
-	  lto_set_current_out_file (NULL);
-	  lto_obj_file_close (file);
-	}
+      lto_set_current_out_file (NULL);
+      lto_obj_file_close (file);
+
+      len = strlen (temp_filename);
+      if (fwrite (temp_filename, 1, len, ltrans_output_list_stream) < len
+	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
+	fatal_error ("writing to LTRANS output list %s: %m",
+		     ltrans_output_list);
     }
-
-  last_out_file_ix = n_sets;
 
   lto_stats.num_output_files += n_sets;
 
-  output_files[last_out_file_ix] = NULL;
-
-  timevar_pop (TV_WHOPR_WPA_IO);
-
-  return output_files;
-}
-
-/* Perform local transformations (LTRANS) on the files in the NULL-terminated
-   FILES array.  These should have been written previously by
-   lto_wpa_write_files ().  Transformations are performed via executing
-   COLLECT_GCC for reach file.  */
-
-static void
-lto_write_ltrans_list (char *const *files)
-{
-  FILE *ltrans_output_list_stream = NULL;
-  unsigned i;
-
-  /* Open the LTRANS output list.  */
-  if (!ltrans_output_list)
-    error ("no LTRANS output filename provided");
-
-  ltrans_output_list_stream = fopen (ltrans_output_list, "w");
-  if (ltrans_output_list_stream == NULL)
-    error ("opening LTRANS output list %s: %m", ltrans_output_list);
-
-  for (i = 0; files[i]; ++i)
-    {
-      size_t len;
-
-      len = strlen (files[i]);
-      if (fwrite (files[i], 1, len, ltrans_output_list_stream) < len
-	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
-	error ("writing to LTRANS output list %s: %m",
-	       ltrans_output_list);
-    }
-
   /* Close the LTRANS output list.  */
   if (fclose (ltrans_output_list_stream))
-    error ("closing LTRANS output list %s: %m", ltrans_output_list);
+    fatal_error ("closing LTRANS output list %s: %m", ltrans_output_list);
+
+  timevar_pop (TV_WHOPR_WPA_IO);
 }
 
 
@@ -1793,8 +1670,6 @@ materialize_cgraph (void)
 static void
 do_whole_program_analysis (void)
 {
-  char **output_files;
-
   /* Note that since we are in WPA mode, materialize_cgraph will not
      actually read in all the function bodies.  It only materializes
      the decls and cgraph nodes so that analysis can be performed.  */
@@ -1829,7 +1704,7 @@ do_whole_program_analysis (void)
       fprintf (stderr, "\nStreaming out");
       fflush (stderr);
     }
-  output_files = lto_wpa_write_files ();
+  lto_wpa_write_files ();
   ggc_collect ();
   if (!quiet_flag)
     fprintf (stderr, "\n");
@@ -1843,10 +1718,6 @@ do_whole_program_analysis (void)
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
-
-  lto_write_ltrans_list (output_files);
-
-  XDELETEVEC (output_files);
 }
 
 
