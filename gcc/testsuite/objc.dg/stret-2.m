@@ -10,7 +10,8 @@
 
 struct astruct {
   float a, b;
-} glob = { 1.0, 2.0 };
+  char c;
+} glob = { 1.0, 2.0, 'a' };
 
 struct bstruct {
   float a, b, c, d, e, f;
