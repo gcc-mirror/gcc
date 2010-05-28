@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "hashtab.h"
 #include "vec.h"
-#include "c-common.h"
-#include "name-lookup.h"
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
@@ -36,18 +34,17 @@ along with GCC; see the file COPYING3.  If not see
    in c-common.h.  */
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_cxxdiag__
-#if GCC_VERSION >= 4001
-#define ATTRIBUTE_GCC_CXXDIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
-#else
-#define ATTRIBUTE_GCC_CXXDIAG(m, n) ATTRIBUTE_NONNULL(m)
-#endif
-#ifdef GCC_TOPLEV_H
+#if defined(GCC_TOPLEV_H) || defined (GCC_C_COMMON_H)
 #error \
 In order for the format checking to accept the C++ front end diagnostic \
-framework extensions, you must include this file before toplev.h, not after.
+framework extensions, you must include this file before toplev.h and \
+c-common.h, not after.
 #endif
 #include "toplev.h"
 #include "diagnostic.h"
+#include "c-common.h"
+
+#include "name-lookup.h"
 
 /* Usage of TREE_LANG_FLAG_?:
    0: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
@@ -4813,7 +4810,7 @@ extern const char *class_key_or_enum_as_string	(tree);
 extern void print_instantiation_context		(void);
 extern void maybe_warn_variadic_templates       (void);
 extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
-extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_CXXDIAG(3,4);
+extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 
 /* in except.c */
 extern void init_exception_processing		(void);
