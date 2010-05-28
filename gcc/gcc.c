@@ -377,9 +377,11 @@ static int used_arg (const char *, int);
 static int default_arg (const char *, int);
 static void set_multilib_dir (void);
 static void print_multilib_info (void);
+static void inform (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 static void perror_with_name (const char *);
-static void fatal_ice (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-static void notice (const char *, ...) ATTRIBUTE_PRINTF_1;
+static void internal_error (const char *, ...)
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void fnotice (FILE *, const char *, ...) ATTRIBUTE_PRINTF_2;
 static void display_help (void);
 static void add_preprocessor_option (const char *, int);
 static void add_assembler_option (const char *, int);
@@ -388,7 +390,7 @@ static void process_command (int, const char **);
 static int execute (void);
 static void alloc_args (void);
 static void clear_args (void);
-static void fatal_error (int);
+static void fatal_signal (int);
 #if defined(ENABLE_SHARED_LIBGCC) && !defined(REAL_LIBGCC_SPEC)
 static void init_gcc_specs (struct obstack *, const char *, const char *,
 			    const char *);
@@ -1795,7 +1797,7 @@ init_spec (void)
     return;			/* Already initialized.  */
 
   if (verbose_flag)
-    notice ("Using built-in specs.\n");
+    fnotice (stderr, "Using built-in specs.\n");
 
 #ifdef EXTRA_SPECS
   extra_specs = XCNEWVEC (struct spec_list, ARRAY_SIZE (extra_specs_1));
@@ -1980,7 +1982,7 @@ set_spec (const char *name, const char *spec)
 
 #ifdef DEBUG_SPECS
   if (verbose_flag)
-    notice ("Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
+    fnotice (stderr, "Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
 #endif
 
   /* Free the old spec.  */
@@ -2103,7 +2105,7 @@ load_specs (const char *filename)
   char *specs_p;
 
   if (verbose_flag)
-    notice ("Reading specs from %s\n", filename);
+    fnotice (stderr, "Reading specs from %s\n", filename);
 
   /* Open and stat the file.  */
   desc = open (filename, O_RDONLY, 0);
@@ -2199,8 +2201,9 @@ read_specs (const char *filename, int main_p)
 		p1++;
 
 	      if (*p1++ != '<' || p[-2] != '>')
-		fatal ("specs %%include syntax malformed after %ld characters",
-		       (long) (p1 - buffer + 1));
+		fatal_error ("specs %%include syntax malformed after "
+			     "%ld characters",
+			     (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
 	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, true);
@@ -2218,15 +2221,16 @@ read_specs (const char *filename, int main_p)
 		p1++;
 
 	      if (*p1++ != '<' || p[-2] != '>')
-		fatal ("specs %%include syntax malformed after %ld characters",
-		       (long) (p1 - buffer + 1));
+		fatal_error ("specs %%include syntax malformed after "
+			     "%ld characters",
+			     (long) (p1 - buffer + 1));
 
 	      p[-2] = '\0';
 	      new_filename = find_a_file (&startfile_prefixes, p1, R_OK, true);
 	      if (new_filename)
 		read_specs (new_filename, FALSE);
 	      else if (verbose_flag)
-		notice ("could not find specs file %s\n", p1);
+		fnotice (stderr, "could not find specs file %s\n", p1);
 	      continue;
 	    }
 	  else if (!strncmp (p1, "%rename", sizeof "%rename" - 1)
@@ -2243,16 +2247,18 @@ read_specs (const char *filename, int main_p)
 		p1++;
 
 	      if (! ISALPHA ((unsigned char) *p1))
-		fatal ("specs %%rename syntax malformed after %ld characters",
-		       (long) (p1 - buffer));
+		fatal_error ("specs %%rename syntax malformed after "
+			     "%ld characters",
+			     (long) (p1 - buffer));
 
 	      p2 = p1;
 	      while (*p2 && !ISSPACE ((unsigned char) *p2))
 		p2++;
 
 	      if (*p2 != ' ' && *p2 != '\t')
-		fatal ("specs %%rename syntax malformed after %ld characters",
-		       (long) (p2 - buffer));
+		fatal_error ("specs %%rename syntax malformed after "
+			     "%ld characters",
+			     (long) (p2 - buffer));
 
 	      name_len = p2 - p1;
 	      *p2++ = '\0';
@@ -2260,8 +2266,9 @@ read_specs (const char *filename, int main_p)
 		p2++;
 
 	      if (! ISALPHA ((unsigned char) *p2))
-		fatal ("specs %%rename syntax malformed after %ld characters",
-		       (long) (p2 - buffer));
+		fatal_error ("specs %%rename syntax malformed after "
+			     "%ld characters",
+			     (long) (p2 - buffer));
 
 	      /* Get new spec name.  */
 	      p3 = p2;
@@ -2269,8 +2276,9 @@ read_specs (const char *filename, int main_p)
 		p3++;
 
 	      if (p3 != p - 1)
-		fatal ("specs %%rename syntax malformed after %ld characters",
-		       (long) (p3 - buffer));
+		fatal_error ("specs %%rename syntax malformed after "
+			     "%ld characters",
+			     (long) (p3 - buffer));
 	      *p3 = '\0';
 
 	      for (sl = specs; sl; sl = sl->next)
@@ -2278,21 +2286,22 @@ read_specs (const char *filename, int main_p)
 		  break;
 
 	      if (!sl)
-		fatal ("specs %s spec was not found to be renamed", p1);
+		fatal_error ("specs %s spec was not found to be renamed", p1);
 
 	      if (strcmp (p1, p2) == 0)
 		continue;
 
 	      for (newsl = specs; newsl; newsl = newsl->next)
 		if (strcmp (newsl->name, p2) == 0)
-		  fatal ("%s: attempt to rename spec '%s' to already defined spec '%s'",
+		  fatal_error ("%s: attempt to rename spec '%s' to "
+			       "already defined spec '%s'",
 		    filename, p1, p2);
 
 	      if (verbose_flag)
 		{
-		  notice ("rename spec %s to %s\n", p1, p2);
+		  fnotice (stderr, "rename spec %s to %s\n", p1, p2);
 #ifdef DEBUG_SPECS
-		  notice ("spec is '%s'\n\n", *(sl->ptr_spec));
+		  fnotice (stderr, "spec is '%s'\n\n", *(sl->ptr_spec));
 #endif
 		}
 
@@ -2305,8 +2314,8 @@ read_specs (const char *filename, int main_p)
 	      continue;
 	    }
 	  else
-	    fatal ("specs unknown %% command after %ld characters",
-		   (long) (p1 - buffer));
+	    fatal_error ("specs unknown %% command after %ld characters",
+			 (long) (p1 - buffer));
 	}
 
       /* Find the colon that should end the suffix.  */
@@ -2316,8 +2325,8 @@ read_specs (const char *filename, int main_p)
 
       /* The colon shouldn't be missing.  */
       if (*p1 != ':')
-	fatal ("specs file malformed after %ld characters",
-	       (long) (p1 - buffer));
+	fatal_error ("specs file malformed after %ld characters",
+		     (long) (p1 - buffer));
 
       /* Skip back over trailing whitespace.  */
       p2 = p1;
@@ -2329,8 +2338,8 @@ read_specs (const char *filename, int main_p)
       /* Find the next line.  */
       p = skip_whitespace (p1 + 1);
       if (p[1] == 0)
-	fatal ("specs file malformed after %ld characters",
-	       (long) (p - buffer));
+	fatal_error ("specs file malformed after %ld characters",
+		     (long) (p - buffer));
 
       p1 = p;
       /* Find next blank line or end of string.  */
@@ -2381,7 +2390,7 @@ read_specs (const char *filename, int main_p)
     }
 
   if (link_command_spec == 0)
-    fatal ("spec file has no spec for linking");
+    fatal_error ("spec file has no spec for linking");
 }
 
 /* Record the names of temporary files we tell compilers to write,
@@ -2709,7 +2718,7 @@ static void
 xputenv (const char *string)
 {
   if (verbose_flag)
-    notice ("%s\n", string);
+    fnotice (stderr, "%s\n", string);
   putenv (CONST_CAST (char *, string));
 }
 
@@ -2910,7 +2919,7 @@ add_sysrooted_prefix (struct path_prefix *pprefix, const char *prefix,
 		      int require_machine_suffix, int os_multilib)
 {
   if (!IS_ABSOLUTE_PATH (prefix))
-    fatal ("system path '%s' is not absolute", prefix);
+    fatal_error ("system path '%s' is not absolute", prefix);
 
   if (target_system_root)
     {
@@ -2982,7 +2991,7 @@ execute (void)
     if (strcmp (argbuf[i], "|") == 0)
       {				/* each command.  */
 #if defined (__MSDOS__) || defined (OS2) || defined (VMS)
-	fatal ("-pipe not supported");
+	fatal_error ("-pipe not supported");
 #endif
 	argbuf[i] = 0;	/* termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
@@ -3053,7 +3062,7 @@ execute (void)
 	  return 0;
         }
 #ifdef DEBUG
-      notice ("\nGo ahead? (y or n) ");
+      fnotice (stderr, "\nGo ahead? (y or n) ");
       fflush (stderr);
       i = getchar ();
       if (i != '\n')
@@ -3114,7 +3123,7 @@ execute (void)
       if (errmsg != NULL)
 	{
 	  if (err == 0)
-	    fatal (errmsg);
+	    fatal_error (errmsg);
 	  else
 	    {
 	      errno = err;
@@ -3169,7 +3178,7 @@ execute (void)
 	      }
 	    else
 #endif
-	      fatal_ice ("\
+	      internal_error ("\
 Internal error: %s (program %s)\n\
 Please submit a full bug report.\n\
 See %s for instructions.",
@@ -3197,7 +3206,8 @@ See %s for instructions.",
 	    if (ut + st != 0)
 	      {
 		if (report_times)
-		  notice ("# %s %.2f %.2f\n", commands[i].prog, ut, st);
+		  fnotice (stderr, "# %s %.2f %.2f\n",
+			   commands[i].prog, ut, st);
 
 		if (report_times_to_file)
 		  {
@@ -3912,7 +3922,7 @@ process_command (int argc, const char **argv)
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to '-Xlinker' is missing");
+	    fatal_error ("argument to '-Xlinker' is missing");
 
 	  n_infiles++;
 	  i++;
@@ -3920,21 +3930,21 @@ process_command (int argc, const char **argv)
       else if (strcmp (argv[i], "-Xpreprocessor") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to '-Xpreprocessor' is missing");
+	    fatal_error ("argument to '-Xpreprocessor' is missing");
 
 	  add_preprocessor_option (argv[i+1], strlen (argv[i+1]));
 	}
       else if (strcmp (argv[i], "-Xassembler") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to '-Xassembler' is missing");
+	    fatal_error ("argument to '-Xassembler' is missing");
 
 	  add_assembler_option (argv[i+1], strlen (argv[i+1]));
 	}
       else if (strcmp (argv[i], "-l") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to '-l' is missing");
+	    fatal_error ("argument to '-l' is missing");
 
 	  n_infiles++;
 	  i++;
@@ -3955,7 +3965,7 @@ process_command (int argc, const char **argv)
 		   || strcmp (argv[i]+12, "object") == 0)
 	    save_temps_flag = SAVE_TEMPS_OBJ;
 	  else
-	    fatal ("'%s' is an unknown -save-temps option", argv[i]);
+	    fatal_error ("'%s' is an unknown -save-temps option", argv[i]);
 	}
       else if (strcmp (argv[i], "-no-canonical-prefixes") == 0)
 	/* Already handled as a special case, so ignored here.  */
@@ -3969,7 +3979,7 @@ process_command (int argc, const char **argv)
 	{
 	  struct user_specs *user = XNEW (struct user_specs);
 	  if (++i >= argc)
-	    fatal ("argument to '-specs' is missing");
+	    fatal_error ("argument to '-specs' is missing");
 
 	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i];
@@ -3983,7 +3993,7 @@ process_command (int argc, const char **argv)
 	{
 	  struct user_specs *user = XNEW (struct user_specs);
 	  if (strlen (argv[i]) == 7)
-	    fatal ("argument to '-specs=' is missing");
+	    fatal_error ("argument to '-specs=' is missing");
 
 	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i] + 7;
@@ -4011,7 +4021,7 @@ process_command (int argc, const char **argv)
       else if (strcmp (argv[i], "-wrapper") == 0)
         {
 	  if (++i >= argc)
-	    fatal ("argument to '-wrapper' is missing");
+	    fatal_error ("argument to '-wrapper' is missing");
 
           wrapper_string = argv[i];
 	  n_switches++;
@@ -4039,7 +4049,7 @@ process_command (int argc, const char **argv)
 		int len;
 
 		if (p[1] == 0 && i + 1 == argc)
-		  fatal ("argument to '-B' is missing");
+		  fatal_error ("argument to '-B' is missing");
 		if (p[1] == 0)
 		  value = argv[++i];
 		else
@@ -4216,7 +4226,7 @@ process_command (int argc, const char **argv)
     {
       /* -save-temps overrides -pipe, so that temp files are produced */
       if (save_temps_flag)
-	error ("warning: -pipe ignored because -save-temps specified");
+	warning (0, "-pipe ignored because -save-temps specified");
       use_pipes = 0;
     }
 
@@ -4432,7 +4442,7 @@ process_command (int argc, const char **argv)
 	  if (c == 'x')
 	    {
 	      if (p[1] == 0 && i + 1 == argc)
-		fatal ("argument to '-x' is missing");
+		fatal_error ("argument to '-x' is missing");
 	      if (p[1] == 0)
 		spec_lang = argv[++i];
 	      else
@@ -4460,7 +4470,7 @@ process_command (int argc, const char **argv)
 		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
 		}
 	      if (i + n_args >= argc)
-		fatal ("argument to '-%s' is missing", p);
+		fatal_error ("argument to '-%s' is missing", p);
 	      switches[n_switches].args
 		= XNEWVEC (const char *, n_args + 1);
 	      while (j < n_args)
@@ -4552,7 +4562,7 @@ process_command (int argc, const char **argv)
     }
 
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
-    error ("warning: '-x %s' after last input file has no effect", spec_lang);
+    warning (0, "'-x %s' after last input file has no effect", spec_lang);
 
   if (compare_debug == 2 || compare_debug == 3)
     {
@@ -4715,7 +4725,7 @@ end_going_arg (void)
 
 	  if (full_script_path == NULL)
 	    {
-	      error (_("unable to locate default linker script '%s' in the library search paths"), string);
+	      error ("unable to locate default linker script '%s' in the library search paths", string);
 	      /* Script was not found on search path.  */
 	      return;
 	    }
@@ -4903,7 +4913,7 @@ do_self_spec (const char *spec)
 
 	  /* Each switch should start with '-'.  */
 	  if (c != '-')
-	    fatal ("switch '%s' does not start with '-'", argbuf[i]);
+	    fatal_error ("switch '%s' does not start with '-'", argbuf[i]);
 
 	  p++;
 	  c = *p;
@@ -4927,7 +4937,7 @@ do_self_spec (const char *spec)
 		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
 		}
 	      if (i + n_args >= argbuf_index)
-		fatal ("argument to '-%s' is missing", p);
+		fatal_error ("argument to '-%s' is missing", p);
 	      sw->args
 		= XNEWVEC (const char *, n_args + 1);
 	      while (j < n_args)
@@ -5019,20 +5029,20 @@ create_at_file (char **argv)
   int status;
 
   if (f == NULL)
-    fatal ("could not open temporary response file %s",
-	   temp_file);
+    fatal_error ("could not open temporary response file %s",
+		 temp_file);
 
   status = writeargv (argv, f);
 
   if (status)
-    fatal ("could not write to temporary response file %s",
-	   temp_file);
+    fatal_error ("could not write to temporary response file %s",
+		 temp_file);
 
   status = fclose (f);
 
   if (EOF == status)
-    fatal ("could not close temporary response file %s",
-	   temp_file);
+    fatal_error ("could not close temporary response file %s",
+		 temp_file);
 
   store_arg (at_argument, 0, 0);
 
@@ -5133,7 +5143,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	switch (c = *p++)
 	  {
 	  case 0:
-	    fatal ("spec '%s' invalid", spec);
+	    fatal_error ("spec '%s' invalid", spec);
 
 	  case 'b':
 	    if (save_temps_length)
@@ -5209,7 +5219,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      notice ("%s\n", _(buf));
+	      inform (0, "%s", _(buf));
 	      if (*p)
 		p++;
 	    }
@@ -5282,7 +5292,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
 		    if (*p == '.' || ISALNUM ((unsigned char) *p))
-		      fatal ("spec '%s' has invalid '%%0%c'", spec, *p);
+		      fatal_error ("spec '%s' has invalid '%%0%c'", spec, *p);
 		    if (suffix_length == 0)
 		      suffix = TARGET_OBJECT_SUFFIX;
 		    else
@@ -5591,7 +5601,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      int cur_index = argbuf_index;
 	      /* Handle the {...} following the %W.  */
 	      if (*p != '{')
-		fatal ("spec '%s' has invalid '%%W%c", spec, *p);
+		fatal_error ("spec '%s' has invalid '%%W%c", spec, *p);
 	      p = handle_braces (p + 1);
 	      if (p == 0)
 		return -1;
@@ -5611,7 +5621,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* Skip past the option value and make a copy.  */
 	      if (*p != '{')
-		fatal ("spec '%s' has invalid '%%x%c'", spec, *p);
+		fatal_error ("spec '%s' has invalid '%%x%c'", spec, *p);
 	      while (*p++ != '}')
 		;
 	      string = save_string (p1 + 1, p - p1 - 2);
@@ -5815,7 +5825,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	       %[...] modifies -D options the way %P does;
 	       %(...) uses the spec unmodified.  */
 	  case '[':
-	    error ("warning: use of obsolete %%[ operator in specs");
+	    warning (0, "use of obsolete %%[ operator in specs");
 	  case '(':
 	    {
 	      const char *name = p;
@@ -5833,7 +5843,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  {
 		    name = *(sl->ptr_spec);
 #ifdef DEBUG_SPECS
-		    notice ("Processing spec %c%s%c, which is '%s'\n",
+		    fnotice (stderr, "Processing spec %c%s%c, which is '%s'\n",
 			    c, sl->name, (c == '(') ? ')' : ']', name);
 #endif
 		    break;
@@ -5958,7 +5968,7 @@ eval_spec_function (const char *func, const char *args)
 
   sf = lookup_spec_function (func);
   if (sf == NULL)
-    fatal ("unknown spec function '%s'", func);
+    fatal_error ("unknown spec function '%s'", func);
 
   /* Push the spec processing context.  */
   save_argbuf_index = argbuf_index;
@@ -5978,7 +5988,7 @@ eval_spec_function (const char *func, const char *args)
 
   alloc_args ();
   if (do_spec_2 (args) < 0)
-    fatal ("error in args to spec function '%s'", func);
+    fatal_error ("error in args to spec function '%s'", func);
 
   /* argbuf_index is an index for the next argument to be inserted, and
      so contains the count of the args already inserted.  */
@@ -6027,10 +6037,10 @@ handle_spec_function (const char *p)
         break;
       /* Only allow [A-Za-z0-9], -, and _ in function names.  */
       if (!ISALNUM (*endp) && !(*endp == '-' || *endp == '_'))
-	fatal ("malformed spec function name");
+	fatal_error ("malformed spec function name");
     }
   if (*endp != '(')		/* ) */
-    fatal ("no arguments for spec function");
+    fatal_error ("no arguments for spec function");
   func = save_string (p, endp - p);
   p = ++endp;
 
@@ -6049,7 +6059,7 @@ handle_spec_function (const char *p)
     }
   /* ( */
   if (*endp != ')')
-    fatal ("malformed spec function arguments");
+    fatal_error ("malformed spec function arguments");
   args = save_string (p, endp - p);
   p = ++endp;
 
@@ -6295,7 +6305,7 @@ handle_braces (const char *p)
   return p;
 
  invalid:
-  fatal ("braced spec '%s' is invalid at '%c'", orig, *p);
+  fatal_error ("braced spec '%s' is invalid at '%c'", orig, *p);
 
 #undef SKIP_WHITE
 }
@@ -6383,7 +6393,7 @@ process_brace_body (const char *p, const char *atom, const char *end_atom,
   return p;
 
  invalid:
-  fatal ("braced spec body '%s' is invalid", body);
+  fatal_error ("braced spec body '%s' is invalid", body);
 }
 
 /* Return 0 iff switch number SWITCHNUM is obsoleted by a later switch
@@ -6600,7 +6610,7 @@ set_input (const char *filename)
 /* On fatal signals, delete all the temporary files.  */
 
 static void
-fatal_error (int signum)
+fatal_signal (int signum)
 {
   signal (signum, SIG_DFL);
   delete_failure_queue ();
@@ -6775,16 +6785,16 @@ main (int argc, char **argv)
   gcc_init_libintl ();
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
-    signal (SIGINT, fatal_error);
+    signal (SIGINT, fatal_signal);
 #ifdef SIGHUP
   if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
-    signal (SIGHUP, fatal_error);
+    signal (SIGHUP, fatal_signal);
 #endif
   if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
-    signal (SIGTERM, fatal_error);
+    signal (SIGTERM, fatal_signal);
 #ifdef SIGPIPE
   if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
-    signal (SIGPIPE, fatal_error);
+    signal (SIGPIPE, fatal_signal);
 #endif
 #ifdef SIGCHLD
   /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
@@ -7154,7 +7164,7 @@ main (int argc, char **argv)
       else
 	/* The error status indicates that only one set of fixed
 	   headers should be built.  */
-	fatal ("not configured with sysroot headers suffix");
+	fatal_error ("not configured with sysroot headers suffix");
     }
 
   if (print_help_list)
@@ -7200,8 +7210,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       int n;
       const char *thrmod;
 
-      notice ("Target: %s\n", spec_machine);
-      notice ("Configured with: %s\n", configuration_arguments);
+      fnotice (stderr, "Target: %s\n", spec_machine);
+      fnotice (stderr, "Configured with: %s\n", configuration_arguments);
 
 #ifdef THREAD_MODEL_SPEC
       /* We could have defined THREAD_MODEL_SPEC to "%*" by default,
@@ -7215,7 +7225,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       thrmod = thread_model;
 #endif
 
-      notice ("Thread model: %s\n", thrmod);
+      fnotice (stderr, "Thread model: %s\n", thrmod);
 
       /* compiler_version is truncated at the first space when initialized
 	 from version string, so truncate version_string at the first space
@@ -7226,17 +7236,18 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
       if (! strncmp (version_string, compiler_version, n)
 	  && compiler_version[n] == 0)
-	notice ("gcc version %s %s\n", version_string, pkgversion_string);
+	fnotice (stderr, "gcc version %s %s\n", version_string,
+		 pkgversion_string);
       else
-	notice ("gcc driver version %s %sexecuting gcc version %s\n",
-		version_string, pkgversion_string, compiler_version);
+	fnotice (stderr, "gcc driver version %s %sexecuting gcc version %s\n",
+		 version_string, pkgversion_string, compiler_version);
 
       if (n_infiles == 0)
 	return (0);
     }
 
   if (n_infiles == added_libraries)
-    fatal ("no input files");
+    fatal_error ("no input files");
 
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
@@ -7285,7 +7296,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     }
 
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
-   fatal ("cannot specify -o with -c, -S or -E with multiple files");
+   fatal_error ("cannot specify -o with -c, -S or -E with multiple files");
 
   if (combine_flag && save_temps_flag)
     {
@@ -7319,7 +7330,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		  value = do_spec (input_file_compiler->spec);
 		  infiles[i].preprocessed = true;
 		  if (!have_o_argbuf_index)
-		    fatal ("spec '%s' is invalid", input_file_compiler->spec);
+		    fatal_error ("spec '%s' is invalid",
+				 input_file_compiler->spec);
 		  infiles[i].name = argbuf[have_o_argbuf_index];
 		  infiles[i].incompiler
 		    = lookup_compiler (infiles[i].name,
@@ -7397,7 +7409,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      else if (compare_debug && debug_check_temp_file[0])
 		{
 		  if (verbose_flag)
-		    error ("Recompiling with -fcompare-debug");
+		    inform (0, "recompiling with -fcompare-debug");
 
 		  compare_debug = -compare_debug;
 		  n_switches = n_switches_debug_check[1];
@@ -7420,7 +7432,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 					 debug_check_temp_file[1]));
 
 		  if (verbose_flag)
-		    error ("Comparing final insns dumps");
+		    inform (0, "comparing final insns dumps");
 
 		  if (compare_files (debug_check_temp_file))
 		    this_file_error = 1;
@@ -7510,12 +7522,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 						 "liblto_plugin.so", R_OK,
 						 false);
 	  if (!linker_plugin_file_spec)
-	    fatal ("-fuse-linker-plugin, but liblto_plugin.so not found");
+	    fatal_error ("-fuse-linker-plugin, but liblto_plugin.so not found");
 
 	  lto_libgcc_spec = find_a_file (&startfile_prefixes, "libgcc.a",
 					 R_OK, true);
 	  if (!lto_libgcc_spec)
-	    fatal ("could not find libgcc.a");
+	    fatal_error ("could not find libgcc.a");
 	}
       lto_gcc_spec = argv[0];
 
@@ -7544,8 +7556,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
-	error ("%s: linker input file unused because linking not done",
-	       outfiles[i]);
+	warning (0, "%s: linker input file unused because linking not done",
+		 outfiles[i]);
 
   /* Delete some or all of the temporary files we made.  */
 
@@ -7663,20 +7675,20 @@ perror_with_name (const char *name)
 void
 fancy_abort (const char *file, int line, const char *func)
 {
-  fatal_ice ("internal gcc abort in %s, at %s:%d", func, file, line);
+  internal_error ("internal gcc abort in %s, at %s:%d", func, file, line);
 }
 
 /* Output an error message and exit.  */
 
 void
-fatal_ice (const char *cmsgid, ...)
+internal_error (const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, cmsgid);
+  va_start (ap, gmsgid);
 
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, _(cmsgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
@@ -7684,14 +7696,14 @@ fatal_ice (const char *cmsgid, ...)
 }
 
 void
-fatal (const char *cmsgid, ...)
+fatal_error (const char *gmsgid, ...)
 {
   va_list ap;
 
-  va_start (ap, cmsgid);
+  va_start (ap, gmsgid);
 
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, _(cmsgid), ap);
+  vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
@@ -7710,7 +7722,21 @@ error (const char *gmsgid, ...)
   va_list ap;
 
   va_start (ap, gmsgid);
-  fprintf (stderr, "%s: ", programname);
+  error_count++;
+  fprintf (stderr, "%s: %s: ", programname, _("error: "));
+  vfprintf (stderr, _(gmsgid), ap);
+  va_end (ap);
+
+  fprintf (stderr, "\n");
+}
+
+void
+warning (int dummy ATTRIBUTE_UNUSED, const char *gmsgid, ...)
+{
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  fprintf (stderr, "%s: %s: ", programname, _("warning: "));
   vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
 
@@ -7718,12 +7744,25 @@ error (const char *gmsgid, ...)
 }
 
 static void
-notice (const char *cmsgid, ...)
+inform (int dummy ATTRIBUTE_UNUSED, const char *gmsgid, ...)
+{
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  fprintf (stderr, "%s: %s: ", programname, _("note: "));
+  vfprintf (stderr, _(gmsgid), ap);
+  va_end (ap);
+
+  fprintf (stderr, "\n");
+}
+
+static void
+fnotice (FILE *fp, const char *cmsgid, ...)
 {
   va_list ap;
 
   va_start (ap, cmsgid);
-  vfprintf (stderr, _(cmsgid), ap);
+  vfprintf (fp, _(cmsgid), ap);
   va_end (ap);
 }
 
@@ -7879,7 +7918,8 @@ used_arg (const char *p, int len)
 	      if (*q == '\0')
 		{
 		invalid_matches:
-		  fatal ("multilib spec '%s' is invalid", multilib_matches);
+		  fatal_error ("multilib spec '%s' is invalid",
+			       multilib_matches);
 		}
 	      q++;
 	    }
@@ -8070,8 +8110,8 @@ set_multilib_dir (void)
 	  if (*p == '\0')
 	    {
 	    invalid_exclusions:
-	      fatal ("multilib exclusions '%s' is invalid",
-		     multilib_exclusions);
+	      fatal_error ("multilib exclusions '%s' is invalid",
+			   multilib_exclusions);
 	    }
 
 	  if (! ok)
@@ -8128,8 +8168,8 @@ set_multilib_dir (void)
 	  if (*p == '\0')
 	    {
 	    invalid_select:
-	      fatal ("multilib select '%s' is invalid",
-		     multilib_select);
+	      fatal_error ("multilib select '%s' is invalid",
+			   multilib_select);
 	    }
 	  ++p;
 	}
@@ -8269,7 +8309,7 @@ print_multilib_info (void)
 	  if (*p == '\0')
 	    {
 	    invalid_select:
-	      fatal ("multilib select '%s' is invalid", multilib_select);
+	      fatal_error ("multilib select '%s' is invalid", multilib_select);
 	    }
 
 	  ++p;
@@ -8307,8 +8347,8 @@ print_multilib_info (void)
 		if (*e == '\0')
 		  {
 		  invalid_exclusion:
-		    fatal ("multilib exclusion '%s' is invalid",
-			   multilib_exclusions);
+		    fatal_error ("multilib exclusion '%s' is invalid",
+				 multilib_exclusions);
 		  }
 
 		if (! m)
@@ -8513,7 +8553,7 @@ getenv_spec_function (int argc, const char **argv)
 
   value = getenv (argv[0]);
   if (!value)
-    fatal ("environment variable \"%s\" not defined", argv[0]);
+    fatal_error ("environment variable \"%s\" not defined", argv[0]);
 
   /* We have to escape every character of the environment variable so
      they are not interpreted as active spec characters.  A
@@ -8604,12 +8644,12 @@ compare_version_strings (const char *v1, const char *v2)
     abort ();
   rresult = regexec (&r, v1, 0, NULL, 0);
   if (rresult == REG_NOMATCH)
-    fatal ("invalid version number `%s'", v1);
+    fatal_error ("invalid version number `%s'", v1);
   else if (rresult != 0)
     abort ();
   rresult = regexec (&r, v2, 0, NULL, 0);
   if (rresult == REG_NOMATCH)
-    fatal ("invalid version number `%s'", v2);
+    fatal_error ("invalid version number `%s'", v2);
   else if (rresult != 0)
     abort ();
 
@@ -8652,13 +8692,13 @@ version_compare_spec_function (int argc, const char **argv)
   bool result;
 
   if (argc < 3)
-    fatal ("too few arguments to %%:version-compare");
+    fatal_error ("too few arguments to %%:version-compare");
   if (argv[0][0] == '\0')
     abort ();
   if ((argv[0][1] == '<' || argv[0][1] == '>') && argv[0][0] != '!')
     nargs = 2;
   if (argc != nargs + 3)
-    fatal ("too many arguments to %%:version-compare");
+    fatal_error ("too many arguments to %%:version-compare");
 
   switch_len = strlen (argv[nargs + 1]);
   for (i = 0; i < n_switches; i++)
@@ -8699,7 +8739,7 @@ version_compare_spec_function (int argc, const char **argv)
       break;
 
     default:
-      fatal ("unknown operator '%s' in %%:version-compare", argv[0]);
+      fatal_error ("unknown operator '%s' in %%:version-compare", argv[0]);
     }
   if (! result)
     return NULL;
@@ -8796,7 +8836,7 @@ compare_debug_dump_opt_spec_function (int arg,
   static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
 
   if (arg != 0)
-    fatal ("too many arguments to %%:compare-debug-dump-opt");
+    fatal_error ("too many arguments to %%:compare-debug-dump-opt");
 
   do_spec_2 ("%{fdump-final-insns=*:%*}");
   do_spec_1 (" ", 0, NULL);
@@ -8863,7 +8903,7 @@ compare_debug_self_opt_spec_function (int arg,
 				      const char **argv ATTRIBUTE_UNUSED)
 {
   if (arg != 0)
-    fatal ("too many arguments to %%:compare-debug-self-opt");
+    fatal_error ("too many arguments to %%:compare-debug-self-opt");
 
   if (compare_debug >= 0)
     return NULL;
@@ -8898,17 +8938,18 @@ compare_debug_auxbase_opt_spec_function (int arg,
   int len;
 
   if (arg == 0)
-    fatal ("too few arguments to %%:compare-debug-auxbase-opt");
+    fatal_error ("too few arguments to %%:compare-debug-auxbase-opt");
 
   if (arg != 1)
-    fatal ("too many arguments to %%:compare-debug-auxbase-opt");
+    fatal_error ("too many arguments to %%:compare-debug-auxbase-opt");
 
   if (compare_debug >= 0)
     return NULL;
 
   len = strlen (argv[0]);
   if (len < 3 || strcmp (argv[0] + len - 3, ".gk") != 0)
-    fatal ("argument to %%:compare-debug-auxbase-opt does not end in .gk");
+    fatal_error ("argument to %%:compare-debug-auxbase-opt "
+		 "does not end in .gk");
 
   if (debug_auxbase_opt)
     return debug_auxbase_opt;

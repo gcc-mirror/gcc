@@ -1,5 +1,5 @@
 /* Additional functions for the GCC driver on Darwin native.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -107,7 +107,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   if (sysctl (osversion_name, ARRAY_SIZE (osversion_name), osversion,
 	      &osversion_len, NULL, 0) == -1)
     {
-      fprintf (stderr, "sysctl for kern.osversion failed: %s\n",
+      warning (0, "sysctl for kern.osversion failed: %s",
 	       xstrerror (errno));
       return;
     }
@@ -151,7 +151,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   return;
   
  parse_failed:
-  fprintf (stderr, "couldn't understand kern.osversion `%.*s'\n",
+  warning (0, "couldn't understand kern.osversion `%.*s'",
 	   (int) osversion_len, osversion);
   return;
 }

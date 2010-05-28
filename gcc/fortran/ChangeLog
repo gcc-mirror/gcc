@@ -1,5 +1,11 @@
 2010-05-28  Joseph Myers  <joseph@codesourcery.com>
 
+	* gfortranspec.c (append_arg, lang_specific_driver): Use
+	fatal_error instead of fatal.  Use warning instead of fprintf for
+	warnings.
+
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
 	* cpp.c (gfc_cpp_init_0): Use xstrerror instead of strerror.
 	* module.c (write_char, gfc_dump_module, gfc_use_module): Use
 	xstrerror instead of strerror.
