@@ -1,3 +1,9 @@
+2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44293
+	* tree-if-conv.c (if_convertible_loop_p): Check the
+	if-convertibility of phi nodes in non predicated BBs.
+
 2010-05-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (error, warning, inform): Remove duplicate ": " in output.
