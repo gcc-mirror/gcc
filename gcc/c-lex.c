@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "input.h"
 #include "output.h"
-#include "c-tree.h"
 #include "c-common.h"
 #include "flags.h"
 #include "timevar.h"
