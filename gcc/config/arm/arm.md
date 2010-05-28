@@ -693,7 +693,6 @@
   ""
 )
 
-;; ??? Make Thumb-2 variants which prefer low regs
 (define_insn "*addsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
@@ -702,7 +701,7 @@
 	 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_32BIT"
+  "TARGET_ARM"
   "@
    add%.\\t%0, %1, %2
    sub%.\\t%0, %1, #%n2"
@@ -715,7 +714,7 @@
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r, r")
 		  (match_operand:SI 1 "arm_add_operand"    "rI,L"))
 	 (const_int 0)))]
-  "TARGET_32BIT"
+  "TARGET_ARM"
   "@
    cmn%?\\t%0, %1
    cmp%?\\t%0, #%n1"
