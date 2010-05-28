@@ -7723,7 +7723,7 @@ error (const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   error_count++;
-  fprintf (stderr, "%s: %s: ", programname, _("error: "));
+  fprintf (stderr, "%s: %s", programname, _("error: "));
   vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
 
@@ -7736,7 +7736,7 @@ warning (int dummy ATTRIBUTE_UNUSED, const char *gmsgid, ...)
   va_list ap;
 
   va_start (ap, gmsgid);
-  fprintf (stderr, "%s: %s: ", programname, _("warning: "));
+  fprintf (stderr, "%s: %s", programname, _("warning: "));
   vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
 
@@ -7749,7 +7749,7 @@ inform (int dummy ATTRIBUTE_UNUSED, const char *gmsgid, ...)
   va_list ap;
 
   va_start (ap, gmsgid);
-  fprintf (stderr, "%s: %s: ", programname, _("note: "));
+  fprintf (stderr, "%s: %s", programname, _("note: "));
   vfprintf (stderr, _(gmsgid), ap);
   va_end (ap);
 
