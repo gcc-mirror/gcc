@@ -719,7 +719,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fwhole_file:
-      gfc_option.flag_whole_file = 1;
+      gfc_option.flag_whole_file = value;
       break;
 
     case OPT_fsecond_underscore:
