@@ -239,13 +239,10 @@ add_static_var (tree var)
 {
   int uid = DECL_UID (var);
   gcc_assert (TREE_CODE (var) == VAR_DECL);
-  if (!bitmap_bit_p (all_module_statics, uid))
-    {
-      if (dump_file)
-	splay_tree_insert (reference_vars_to_consider,
-			   uid, (splay_tree_value)var);
-      bitmap_set_bit (all_module_statics, uid);
-    }
+  if (dump_file)
+    splay_tree_insert (reference_vars_to_consider,
+		       uid, (splay_tree_value)var);
+  bitmap_set_bit (all_module_statics, uid);
 }
 
 /* Return true if the variable T is the right kind of static variable to
@@ -962,15 +959,15 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 
   /* See what variables we are interested in.  */
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (referenced_from_this_partition_p (&vnode->ref_list, set, vset))
+    if (!vnode->externally_visible
+	&& vnode->analyzed
+	&& is_proper_for_analysis (vnode->decl)
+	&& referenced_from_this_partition_p (&vnode->ref_list, set, vset))
       {
 	tree decl = vnode->decl;
-	if (is_proper_for_analysis (decl))
-	  {
-	    bitmap_set_bit (ltrans_statics, DECL_UID (decl));
-	    splay_tree_insert (reference_vars_to_consider,
-			       DECL_UID (decl), (splay_tree_value)decl);
-	  }
+	bitmap_set_bit (ltrans_statics, DECL_UID (decl));
+	splay_tree_insert (reference_vars_to_consider,
+			   DECL_UID (decl), (splay_tree_value)decl);
       }
 
   for (node = cgraph_nodes; node; node = node->next)

@@ -1,3 +1,9 @@
+2010-05-28  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (add_static_var): Remove redundant all_module_statics check.
+	(ipa_reference_write_optimization_summary): Call is_proper_for_analysis only
+	on local statics.
+
 2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
 
         * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
