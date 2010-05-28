@@ -853,26 +853,6 @@ const struct attribute_spec c_common_format_attribute_table[] =
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
-
-/* Register reserved keyword WORD as qualifier for address space AS.  */
-
-void
-c_register_addr_space (const char *word, addr_space_t as)
-{
-  int rid = RID_FIRST_ADDR_SPACE + as;
-  tree id;
-
-  /* Address space qualifiers are only supported
-     in C with GNU extensions enabled.  */
-  if (c_dialect_cxx () || c_dialect_objc () || flag_no_asm)
-    return;
-
-  id = get_identifier (word);
-  C_SET_RID_CODE (id, rid);
-  C_IS_RESERVED_WORD (id) = 1;
-  ridpointers [rid] = id;
-}
-
 /* Return identifier for address space AS.  */
 
 const char *

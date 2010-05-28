@@ -9672,4 +9672,23 @@ c_write_global_declarations (void)
   ext_block = NULL;
 }
 
+/* Register reserved keyword WORD as qualifier for address space AS.  */
+
+void
+c_register_addr_space (const char *word, addr_space_t as)
+{
+  int rid = RID_FIRST_ADDR_SPACE + as;
+  tree id;
+
+  /* Address space qualifiers are only supported
+     in C with GNU extensions enabled.  */
+  if (c_dialect_objc () || flag_no_asm)
+    return;
+
+  id = get_identifier (word);
+  C_SET_RID_CODE (id, rid);
+  C_IS_RESERVED_WORD (id) = 1;
+  ridpointers [rid] = id;
+}
+
 #include "gt-c-decl.h"

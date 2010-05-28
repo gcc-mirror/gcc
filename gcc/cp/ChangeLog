@@ -1,3 +1,7 @@
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree.c (c_register_addr_space): Add stub.
+
 2010-05-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++spec.c (lang_specific_driver): Use fatal_error instead of

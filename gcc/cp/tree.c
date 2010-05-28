@@ -3199,6 +3199,16 @@ cp_free_lang_data (tree t)
     }
 }
 
+/* Stub for c-common.  Please keep in sync with c-decl.c.
+   FIXME: If address space support is target specific, then this
+   should be a C target hook.  But currently this is not possible,
+   because this function is called via REGISTER_TARGET_PRAGMAS.  */
+void
+c_register_addr_space (const char *word ATTRIBUTE_UNUSED,
+		       addr_space_t as ATTRIBUTE_UNUSED)
+{
+}
+
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree

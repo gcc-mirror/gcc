@@ -1,3 +1,9 @@
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.h: Add FIXME for awkward split of c_register_addr_space.
+	* c-common.c (c_register_addr_space): Remove here.
+	* c-decl.c (c_register_addr_space): Re-add here.
+
 2010-05-28  Mike Stump  <mikestump@comcast.net>
 
 	* config/darwin-c.c: Remove c-tree.h include.
