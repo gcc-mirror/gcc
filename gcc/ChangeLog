@@ -1,5 +1,11 @@
 2010-05-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41048
+	* dwarf2out.c (double_int_type_size_in_bits): New function.
+	(round_up_to_align): Change first argument and return value to
+	double_int.
+	(field_byte_offset): Work internally on double_ints.
+
 	PR target/43636
 	* builtins.c (expand_movstr): Use a temporary pseudo instead
 	of target even when target is not NULL and not const0_rtx, but
