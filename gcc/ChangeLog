@@ -1,3 +1,8 @@
+2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree-vect-stmts.c (vectorizable_assignment): Call build1 instead of
+	build1_stat.
+
 2010-05-28  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44312
