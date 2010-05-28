@@ -64,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Define this so that all GNU/Linux targets handle the same pragmas.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
+#define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+
 /* Determine whether the entire c99 runtime is present in the
    runtime library.  */
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
