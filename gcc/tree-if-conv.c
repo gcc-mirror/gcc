@@ -864,31 +864,37 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
   gimple new_stmt;
   basic_block bb;
   tree rhs;
-  tree arg_0, arg_1;
+  tree arg;
 
   gcc_assert (gimple_code (phi) == GIMPLE_PHI
 	      && gimple_phi_num_args (phi) == 2);
 
   bb = gimple_bb (phi);
 
-  /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
-  if (EDGE_PRED (bb, 1)->src == true_bb)
-    {
-      arg_0 = gimple_phi_arg_def (phi, 1);
-      arg_1 = gimple_phi_arg_def (phi, 0);
-    }
+  arg = degenerate_phi_result (phi);
+  if (arg)
+    rhs = arg;
   else
     {
-      arg_0 = gimple_phi_arg_def (phi, 0);
-      arg_1 = gimple_phi_arg_def (phi, 1);
+      tree arg_0, arg_1;
+      /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
+      if (EDGE_PRED (bb, 1)->src == true_bb)
+	{
+	  arg_0 = gimple_phi_arg_def (phi, 1);
+	  arg_1 = gimple_phi_arg_def (phi, 0);
+	}
+      else
+	{
+	  arg_0 = gimple_phi_arg_def (phi, 0);
+	  arg_1 = gimple_phi_arg_def (phi, 1);
+	}
+
+      /* Build new RHS using selected condition and arguments.  */
+      rhs = build3 (COND_EXPR, TREE_TYPE (PHI_RESULT (phi)),
+		    unshare_expr (cond), arg_0, arg_1);
     }
 
-  /* Build new RHS using selected condition and arguments.  */
-  rhs = build3 (COND_EXPR, TREE_TYPE (PHI_RESULT (phi)),
-	        unshare_expr (cond), unshare_expr (arg_0),
-	        unshare_expr (arg_1));
-
-  new_stmt = gimple_build_assign (unshare_expr (PHI_RESULT (phi)), rhs);
+  new_stmt = gimple_build_assign (PHI_RESULT (phi), rhs);
   SSA_NAME_DEF_STMT (gimple_phi_result (phi)) = new_stmt;
   gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
   update_stmt (new_stmt);

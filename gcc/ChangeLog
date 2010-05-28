@@ -1,5 +1,10 @@
 2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (replace_phi_with_cond_gimple_assign_stmt): Don't
+	generate COND_EXPRs for degenerate_phi_result.
+
+2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/44293
 	* tree-if-conv.c (if_convertible_loop_p): Check the
 	if-convertibility of phi nodes in non predicated BBs.
