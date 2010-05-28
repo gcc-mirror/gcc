@@ -5793,15 +5793,17 @@ allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
      take any reg in the right class and not in use.
      If we want a consecutive group, here is where we look for it.
 
-     We use two passes so we can first look for reload regs to
+     We use three passes so we can first look for reload regs to
      reuse, which are already in use for other reloads in this insn,
-     and only then use additional registers.
+     and only then use additional registers which are not "bad", then
+     finally any register.
+
      I think that maximizing reuse is needed to make sure we don't
      run out of reload regs.  Suppose we have three reloads, and
      reloads A and B can share regs.  These need two regs.
      Suppose A and B are given different regs.
      That leaves none for C.  */
-  for (pass = 0; pass < 2; pass++)
+  for (pass = 0; pass < 3; pass++)
     {
       /* I is the index in spill_regs.
 	 We advance it round-robin between insns to use all spill regs
@@ -5841,6 +5843,13 @@ allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
 					      regnum))))
 	    {
 	      int nr = hard_regno_nregs[regnum][rld[r].mode];
+
+	      /* During the second pass we want to avoid reload registers
+		 which are "bad" for this reload.  */
+	      if (pass == 1
+		  && ira_bad_reload_regno (regnum, rld[r].in, rld[r].out))
+		continue;
+
 	      /* Avoid the problem where spilling a GENERAL_OR_FP_REG
 		 (on 68000) got us two FP regs.  If NR is 1,
 		 we would reject both of them.  */
@@ -5871,7 +5880,7 @@ allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
 	    }
 	}
 
-      /* If we found something on pass 1, omit pass 2.  */
+      /* If we found something on the current pass, omit later passes.  */
       if (count < n_spills)
 	break;
     }
