@@ -17,15 +17,11 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
-#undef IN_GCC_FRONTEND
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
-#include "regs.h"
-#include "hard-reg-set.h"
-#include "output.h"
 #include "tree.h"
 #include "cp/cp-tree.h" /* This is why we're a separate module.  */
 #include "flags.h"

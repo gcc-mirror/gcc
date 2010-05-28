@@ -1,3 +1,10 @@
+2010-05-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/44299
+	* config/i386/t-cygming: Adjust header dependencies for winnt-cxx.c.
+	* config/i386/winnt-cxx.c (IN_GCC_FRONTEND): Remove undefine.
+	* config/i386/winnt.c (IN_GCC_FRONTEND): Likewise.
+
 2010-05-28  Alan Modra  <amodra@gmail.com>
 
 	PR target/44266
