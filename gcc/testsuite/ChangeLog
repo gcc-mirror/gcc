@@ -1,3 +1,9 @@
+2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR ObjC++/23616
+	* obj-c++.dg/try-catch-2.mm: Adjust xfail.
+	* obj-c++.dg/try-catch-9.mm: Ditto.
+
 2010-05-28  Dodji Seketeli  <dodji@redhat.com>
 
 	Revert patch for PR c++/44188
