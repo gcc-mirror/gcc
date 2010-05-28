@@ -1374,6 +1374,46 @@ setup_prohibited_mode_move_regs (void)
 
 
 
+/* Return nonzero if REGNO is a particularly bad choice for reloading X.  */
+static bool
+ira_bad_reload_regno_1 (int regno, rtx x)
+{
+  int x_regno;
+  ira_allocno_t a;
+  enum reg_class pref;
+
+  /* We only deal with pseudo regs.  */
+  if (! x || GET_CODE (x) != REG)
+    return false;
+
+  x_regno = REGNO (x);
+  if (x_regno < FIRST_PSEUDO_REGISTER)
+    return false;
+
+  /* If the pseudo prefers REGNO explicitly, then do not consider
+     REGNO a bad spill choice.  */
+  pref = reg_preferred_class (x_regno);
+  if (reg_class_size[pref] == 1)
+    return !TEST_HARD_REG_BIT (reg_class_contents[pref], regno);
+
+  /* If the pseudo conflicts with REGNO, then we consider REGNO a
+     poor choice for a reload regno.  */
+  a = ira_regno_allocno_map[x_regno];
+  if (TEST_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), regno))
+    return true;
+
+  return false;
+}
+
+/* Return nonzero if REGNO is a particularly bad choice for reloading
+   IN or OUT.  */
+bool
+ira_bad_reload_regno (int regno, rtx in, rtx out)
+{
+  return (ira_bad_reload_regno_1 (regno, in)
+	  || ira_bad_reload_regno_1 (regno, out));
+}
+
 /* Function specific hard registers that can not be used for the
    register allocation.  */
 HARD_REG_SET ira_no_alloc_regs;

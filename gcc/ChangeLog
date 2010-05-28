@@ -1,5 +1,10 @@
 2010-05-28  Jeff Law  <law@redhat.com>
 
+	* ira.c (ira_bad_reload_regno, ira_build_reload_regno_1): New
+	functions.
+	* ira.h (ira_bad_reload_regno): Declare
+	* reload1.c (allocate_reload_reg): Use ira_bad_reload_regno.
+
 	* ira-color.c (update_curr_costs): Free updated hard reg costs.
 	(ira_reassign_conflict_allocnos): Remove bogus asserts.
 	(allocno_reload_assign): Likewise.
