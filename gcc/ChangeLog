@@ -1,3 +1,7 @@
+2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+        * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
+
 2010-05-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR bootstrap/44314
