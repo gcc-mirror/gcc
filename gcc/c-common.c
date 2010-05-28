@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "tree-inline.h"
-#include "c-tree.h"
 #include "toplev.h"
 #include "diagnostic.h"
 #include "tree-iterator.h"

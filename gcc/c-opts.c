@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "mkdeps.h"
 #include "target.h"		/* For gcc_targetcm.  */
-#include "c-tree.h"		/* For c_cpp_error.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true

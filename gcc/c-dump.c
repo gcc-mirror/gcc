@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "c-tree.h"
 #include "tree-dump.h"
+#include "c-common.h"
 
 /* Dump information common to statements from STMT.  */
 

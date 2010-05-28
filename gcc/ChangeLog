@@ -1,5 +1,14 @@
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
+ 	* c-lex.c: Do not include c-tree.h.
+ 	* c-pretty-print.c: Likewise.
+ 	* c-opts.c: Likewise.
+ 	* c-gimplify.c: Likewise.
+	* c-common.c: Likewise.
+	* c-dump.c: Likewise.  Include c-common.h.
+
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* c-common.h (GCC_DIAG_STYLE): Define earlier in the file,
 	before including diagnostic-core.h.
 	(c_cpp_error): New prototype moved from c-tree.h.
