@@ -1,5 +1,5 @@
 /* LTO routines for COFF object files.
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright 2009, 2010 Free Software Foundation, Inc.
    Contributed by Dave Korn.
 
 This file is part of GCC.
@@ -133,15 +133,6 @@ lto_file_init (lto_file *file, const char *filename, off_t offset)
   file->offset = offset;
 }
 
-/* Return an error string after an error, or a predetermined one
-   if ERRCODE is not -1.  */
-
-static const char *
-coff_errmsg (int errcode)
-{
-  return strerror (errcode == -1 ? errno : errcode);
-}
-
 /* Returns a hash code for P.  */
 
 static hashval_t
@@ -273,7 +264,7 @@ lto_coff_begin_section_with_type (const char *name, size_t type)
   /* Create a new section.  */
   file->scn = coff_newsection (file, name, type);
   if (!file->scn)
-    fatal_error ("could not create a new COFF section: %s", coff_errmsg (-1));
+    fatal_error ("could not create a new COFF section: %m");
 
   /* Add a string table entry and record the offset.  */
   gcc_assert (file->shstrtab_stream);
@@ -312,7 +303,7 @@ lto_obj_append_data (const void *data, size_t len, void *block)
 
   coff_data = coff_newdata (file->scn);
   if (!coff_data)
-    fatal_error ("could not append data to COFF section: %s", coff_errmsg (-1));
+    fatal_error ("could not append data to COFF section: %m");
 
   coff_data->d_buf = CONST_CAST (void *, data);
   coff_data->d_size = len;

@@ -140,15 +140,6 @@ lto_file_init (lto_file *file, const char *filename, off_t offset)
   file->offset = offset;
 }
 
-/* Return an error string after an error, or a predetermined one
-   if ERRCODE is not -1.  */
-
-static const char *
-mach_o_errmsg (int errcode)
-{
-  return strerror (errcode == -1 ? errno : errcode);
-}
-
 /* Returns a hash code for P.  */
 
 static hashval_t
@@ -321,7 +312,7 @@ lto_obj_begin_section (const char *name)
   /* Create a new section.  */
   file->scn = mach_o_new_section (file, name);
   if (!file->scn)
-    fatal_error ("could not create a new Mach-O section: %s", mach_o_errmsg (-1));
+    fatal_error ("could not create a new Mach-O section: %m");
 }
 
 
@@ -343,7 +334,7 @@ lto_obj_append_data (const void *data, size_t len, void *block)
 
   mach_o_data = mach_o_new_data (file->scn);
   if (!mach_o_data)
-    fatal_error ("could not append data to Mach-O section: %s", mach_o_errmsg (-1));
+    fatal_error ("could not append data to Mach-O section: %m");
 
   mach_o_data->d_buf = CONST_CAST (void *, data);
   mach_o_data->d_size = len;

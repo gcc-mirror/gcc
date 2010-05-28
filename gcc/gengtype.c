@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -392,7 +392,7 @@ read_input_list (const char *listname)
 {
   FILE *list = fopen (listname, "r");
   if (!list)
-    fatal ("cannot open %s: %s", listname, strerror (errno));
+    fatal ("cannot open %s: %s", listname, xstrerror (errno));
   else
     {
       struct fileloc epos;
@@ -508,7 +508,7 @@ read_input_list (const char *listname)
   }
 
   if (ferror (list))
-    fatal ("error reading %s: %s", listname, strerror (errno));
+    fatal ("error reading %s: %s", listname, xstrerror (errno));
 
   fclose (list);
 }
@@ -1838,11 +1838,11 @@ close_output_files (void)
       {
         FILE *newfile = fopen (of->name, "w");
         if (newfile == NULL)
-          fatal ("opening output file %s: %s", of->name, strerror (errno));
+          fatal ("opening output file %s: %s", of->name, xstrerror (errno));
         if (fwrite (of->buf, 1, of->bufused, newfile) != of->bufused)
-          fatal ("writing output file %s: %s", of->name, strerror (errno));
+          fatal ("writing output file %s: %s", of->name, xstrerror (errno));
         if (fclose (newfile) != 0)
-          fatal ("closing output file %s: %s", of->name, strerror (errno));
+          fatal ("closing output file %s: %s", of->name, xstrerror (errno));
       }
       free(of->buf);
       of->buf = NULL;

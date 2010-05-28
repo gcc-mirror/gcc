@@ -1,6 +1,6 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -926,7 +926,7 @@ dump_begin (int phase, int *flag_ptr)
   dfi = get_dump_file_info (phase);
   stream = fopen (name, dfi->state < 0 ? "w" : "a");
   if (!stream)
-    error ("could not open dump file %qs: %s", name, strerror (errno));
+    error ("could not open dump file %qs: %m", name);
   else
     dfi->state = 1;
   free (name);
