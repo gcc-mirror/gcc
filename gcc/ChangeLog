@@ -1,3 +1,9 @@
+2010-05-28  Jeff Law  <law@redhat.com>
+
+	* ira-color.c (update_curr_costs): Free updated hard reg costs.
+	(ira_reassign_conflict_allocnos): Remove bogus asserts.
+	(allocno_reload_assign): Likewise.
+
 2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-vect-stmts.c (vectorizable_assignment): Call build1 instead of
