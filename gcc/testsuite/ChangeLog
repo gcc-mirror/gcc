@@ -1,6 +1,11 @@
+2010-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43636
+	* gcc.c-torture/compile/pr43636.c: New test.
+
 2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
 
-	PR ObjC++/23616
+	PR objc++/23616
 	* obj-c++.dg/try-catch-2.mm: Adjust xfail.
 	* obj-c++.dg/try-catch-9.mm: Ditto.
 
@@ -21,7 +26,7 @@
 
 2010-05-27  Iain Sandoe  <iains@gcc.gnu.org>
 
-	PR ObjC/44140
+	PR objc/44140
 	* objc.dg/torture/tls/thr-init-2.m: Skip for -flto, -fwhopr.
 	* objc.dg/torture/tls/thr-init-3.m: Ditto.
 	* objc.dg/torture/tls/thr-init.m: Ditto.
@@ -152,7 +157,7 @@
 
 2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
 
-	PR ObjC/44140
+	PR objc/44140
 	* objc.dg/torture/tls/thr-init-3.m: XFAIL lto/whopr for all.
 
 2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
@@ -182,7 +187,7 @@
 
 2010-05-24  Iain Sandoe  <iains@gcc.gnu.org>
 
-	PR ObjC++/43689
+	PR objc++/43689
 	* obj-c++.dg/const-str-5.mm: Name pointer equivalence union.
 	* obj-c++.dg/const-str-6.mm: Ditto.
 
