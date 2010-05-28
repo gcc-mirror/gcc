@@ -18,7 +18,7 @@ extern struct objc_class _NSConstantStringClassReference;
 Class _NSConstantStringClassReference;
 #endif
 
-static const NSConstantString *appKey = @"MyApp";
+const NSConstantString *appKey = @"MyApp";
 
 /* { dg-final { scan-assembler ".section __OBJC, __cstring_object" } } */
 /* { dg-final { scan-assembler ".long\t__NSConstantStringClassReference\n\t.long\t.*\n\t.long\t5\n\t.data" { target { *-*-darwin* && { ! lp64 } } } } } */
