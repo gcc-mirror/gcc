@@ -916,6 +916,14 @@ struct GTY(()) lang_decl {
 #define TYPE_REFLECTION_DATASIZE(T)					\
 				(TYPE_LANG_SPECIFIC (T)->reflection_datasize)
 
+typedef struct GTY(()) method_entry_d {
+  tree method;
+  tree special;
+} method_entry;
+
+DEF_VEC_O(method_entry);
+DEF_VEC_ALLOC_O(method_entry,gc);
+
 struct GTY(()) lang_type {
   tree signature;
   struct JCF *jcf;
@@ -923,18 +931,18 @@ struct GTY(()) lang_type {
   tree cpool_data_ref;		/* Cached */
   tree package_list;		/* List of package names, progressive */
 
-  tree otable_methods;          /* List of static decls referred to by this
-				   class.  */
+  VEC(method_entry,gc) *otable_methods; /* List of static decls referred
+					   to by this class.  */
   tree otable_decl;		/* The static address table.  */
   tree otable_syms_decl;
 
-  tree atable_methods;          /* List of static decls referred to by this
-				   class.  */
+  VEC(method_entry,gc) *atable_methods; /* List of abstract methods
+					   referred to by this class.  */
   tree atable_decl;		/* The static address table.  */
   tree atable_syms_decl;
 
-  tree itable_methods;          /* List of interfaces methods referred
-				   to by this class.  */
+  VEC(method_entry,gc) *itable_methods; /* List of interface methods
+					   referred to by this class.  */
   tree itable_decl;		/* The interfaces table.  */
   tree itable_syms_decl;
 
@@ -1103,7 +1111,8 @@ extern void make_class_data (tree);
 extern int alloc_name_constant (int, tree);
 extern int alloc_constant_fieldref (tree, tree);
 extern void emit_register_classes (tree *);
-extern tree emit_symbol_table (tree, tree, tree, tree, tree, int);
+extern tree emit_symbol_table (tree, tree, VEC(method_entry,gc) *,
+			       tree, tree, int);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
 extern char *print_int_node (tree);
@@ -1206,7 +1215,7 @@ extern void register_exception_range(struct eh_range *, int, int);
 extern void finish_method (tree);
 extern void java_expand_body (tree);
 
-extern int get_symbol_table_index (tree, tree, tree *);
+extern int get_symbol_table_index (tree, tree, VEC(method_entry,gc) **);
 
 extern tree make_catch_class_record (tree, tree);
 extern tree emit_catch_table (tree);

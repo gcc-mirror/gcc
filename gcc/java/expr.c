@@ -2289,34 +2289,22 @@ invoke_build_dtable (int is_invoke_interface, VEC(tree,gc) *arg_list)
    reused.  */
 
 int
-get_symbol_table_index (tree t, tree special, tree *symbol_table)
+get_symbol_table_index (tree t, tree special,
+			VEC(method_entry,gc) **symbol_table)
 {
-  int i = 1;
-  tree method_list;
+  method_entry *e;
+  unsigned i;
 
-  if (*symbol_table == NULL_TREE)
-    {
-      *symbol_table = build_tree_list (special, t);
-      return 1;
-    }
-  
-  method_list = *symbol_table;
-  
-  while (1)
-    {
-      tree value = TREE_VALUE (method_list);
-      tree purpose = TREE_PURPOSE (method_list);
-      if (value == t && purpose == special)
-	return i;
-      i++;
-      if (TREE_CHAIN (method_list) == NULL_TREE)
-        break;
-      else
-        method_list = TREE_CHAIN (method_list);
-    }
+  for (i = 0; VEC_iterate (method_entry, *symbol_table, i, e); i++)
+    if (t == e->method && special == e->special)
+      goto done;
 
-  TREE_CHAIN (method_list) = build_tree_list (special, t);
-  return i;
+  e = VEC_safe_push (method_entry, gc, *symbol_table, NULL);
+  e->method = t;
+  e->special = special;
+
+ done:
+  return i+1;
 }
 
 tree 
