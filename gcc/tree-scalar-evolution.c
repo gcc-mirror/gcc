@@ -900,23 +900,6 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
   return res;
 }
 
-/* Helper function.  */
-
-static inline tree
-set_nb_iterations_in_loop (struct loop *loop,
-			   tree res)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
-      print_generic_expr (dump_file, res, 0);
-      fprintf (dump_file, "))\n");
-    }
-
-  loop->nb_iterations = res;
-  return res;
-}
-
 
 
 /* This section selects the loops that will be good candidates for the
@@ -2685,8 +2668,11 @@ resolve_mixers (struct loop *loop, tree chrec)
 /* Entry point for the analysis of the number of iterations pass.
    This function tries to safely approximate the number of iterations
    the loop will run.  When this property is not decidable at compile
-   time, the result is chrec_dont_know.  Otherwise the result is
-   a scalar or a symbolic parameter.
+   time, the result is chrec_dont_know.  Otherwise the result is a
+   scalar or a symbolic parameter.  When the number of iterations may
+   be equal to zero and the property cannot be determined at compile
+   time, the result is a COND_EXPR that represents in a symbolic form
+   the conditions under which the number of iterations is not zero.
 
    Example of analysis: suppose that the loop has an exit condition:
 
@@ -2705,37 +2691,53 @@ resolve_mixers (struct loop *loop, tree chrec)
 tree
 number_of_latch_executions (struct loop *loop)
 {
-  tree res, type;
   edge exit;
   struct tree_niter_desc niter_desc;
+  tree may_be_zero;
+  tree res;
 
-  /* Determine whether the number_of_iterations_in_loop has already
+  /* Determine whether the number of iterations in loop has already
      been computed.  */
   res = loop->nb_iterations;
   if (res)
     return res;
-  res = chrec_dont_know;
+
+  may_be_zero = NULL_TREE;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "(number_of_iterations_in_loop\n");
+    fprintf (dump_file, "(number_of_iterations_in_loop = \n");
 
+  res = chrec_dont_know;
   exit = single_exit (loop);
-  if (!exit)
-    goto end;
 
-  if (!number_of_iterations_exit (loop, exit, &niter_desc, false))
-    goto end;
+  if (exit && number_of_iterations_exit (loop, exit, &niter_desc, false))
+    {
+      may_be_zero = niter_desc.may_be_zero;
+      res = niter_desc.niter;
+    }
 
-  type = TREE_TYPE (niter_desc.niter);
-  if (integer_nonzerop (niter_desc.may_be_zero))
-    res = build_int_cst (type, 0);
-  else if (integer_zerop (niter_desc.may_be_zero))
-    res = niter_desc.niter;
+  if (res == chrec_dont_know
+      || !may_be_zero
+      || integer_zerop (may_be_zero))
+    ;
+  else if (integer_nonzerop (may_be_zero))
+    res = build_int_cst (TREE_TYPE (res), 0);
+
+  else if (COMPARISON_CLASS_P (may_be_zero))
+    res = fold_build3 (COND_EXPR, TREE_TYPE (res), may_be_zero,
+		       build_int_cst (TREE_TYPE (res), 0), res);
   else
     res = chrec_dont_know;
 
-end:
-  return set_nb_iterations_in_loop (loop, res);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
+      print_generic_expr (dump_file, res, 0);
+      fprintf (dump_file, "))\n");
+    }
+
+  loop->nb_iterations = res;
+  return res;
 }
 
 /* Returns the number of executions of the exit condition of LOOP,

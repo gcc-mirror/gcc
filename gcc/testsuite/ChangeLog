@@ -1,3 +1,7 @@
+2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/vect/vect-outer-fir-lb.c: Un-XFAIL-ed.
+
 2010-05-28  Mike Stump  <mikestump@comcast.net>
 
 	PR objc/44125
@@ -40,7 +44,7 @@
 	* obj-c++.dg/torture/tls/thr-init-2.mm: Ditto.
 	* obj-c++.dg/torture/tls/thr-init-3.mm: Ditto.
 	* obj-c++.dg/torture/trivial.mm: Ditto.
-	
+
 2010-05-27  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* g++.dg/lto/20100302_0.C: Skip on darwin.

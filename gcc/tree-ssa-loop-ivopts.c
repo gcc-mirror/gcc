@@ -681,6 +681,11 @@ contains_abnormal_ssa_name_p (tree expr)
 			    idx_contains_abnormal_ssa_name_p,
 			    NULL);
 
+  if (code == COND_EXPR)
+    return contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0))
+      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1))
+      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 2));
+
   switch (codeclass)
     {
     case tcc_binary:
