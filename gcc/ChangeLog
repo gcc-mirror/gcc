@@ -1,5 +1,17 @@
 2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (set_nb_iterations_in_loop): Inlined in the
+	only place it was called from.
+	(number_of_latch_executions): Do not return chrec_dont_know when the
+	may_be_zero is a runtime condition: instead, return a COND_EXPR
+	including the may_be_zero condition.
+	* cfgloop.h (struct loop): Add a note on COND_EXPRs to the comment
+	of nb_iterations.
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Handle
+	COND_EXPRs.
+
+2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (replace_phi_with_cond_gimple_assign_stmt): Don't
 	generate COND_EXPRs for degenerate_phi_result.
 

@@ -10,10 +10,7 @@ float coeff[M];
 float out[N];
 float fir_out[N];
 
-/* Should be vectorized. Fixed misaligment in the inner-loop.  */
-/* Currently not vectorized because the loop-count for the inner-loop
-   has a maybe_zero component. Will be fixed when we incorporate the
-   "cond_expr in rhs" patch.  */
+/* Vectorized.  Fixed misaligment in the inner-loop.  */
 __attribute__ ((noinline))
 void foo (){
  int i,j,k;
@@ -30,7 +27,7 @@ void foo (){
 
     do {
       diff += in[j+i]*coeff[j];
-      j+=4;	
+      j+=4;
     } while (j < M);
 
     out[i] += diff;
@@ -39,7 +36,7 @@ void foo (){
 
 }
 
-/* Vectorized. Changing misalignment in the inner-loop.  */
+/* Vectorized.  Changing misalignment in the inner-loop.  */
 __attribute__ ((noinline))
 void fir (){
   int i,j,k;
@@ -68,7 +65,7 @@ int main (void)
 
   foo ();
   fir ();
-  
+
   for (i = 0; i < N; i++) {
     if (out[i] != fir_out[i])
       abort ();
@@ -77,6 +74,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
