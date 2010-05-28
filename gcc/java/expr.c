@@ -2304,7 +2304,7 @@ get_symbol_table_index (tree t, tree special,
   e->special = special;
 
  done:
-  return i+1;
+  return i + 1;
 }
 
 tree 
