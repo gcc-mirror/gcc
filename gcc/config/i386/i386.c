@@ -1981,6 +1981,7 @@ static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
 static void ix86_add_new_builtins (int);
 static rtx ix86_expand_vec_perm_builtin (tree);
+static tree ix86_canonical_va_list_type (tree);
 
 enum ix86_function_specific_strings
 {
@@ -30482,7 +30483,7 @@ ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
 /* This function returns the calling abi specific va_list type node.
    It returns  the FNDECL specific va_list type.  */
 
-tree
+static tree
 ix86_fn_abi_va_list (tree fndecl)
 {
   if (!TARGET_64BIT)
@@ -30498,7 +30499,7 @@ ix86_fn_abi_va_list (tree fndecl)
 /* Returns the canonical va_list type specified by TYPE. If there
    is no valid TYPE provided, it return NULL_TREE.  */
 
-tree
+static tree
 ix86_canonical_va_list_type (tree type)
 {
   tree wtype, htype;
@@ -30571,31 +30572,36 @@ ix86_canonical_va_list_type (tree type)
 }
 
 /* Iterate through the target-specific builtin types for va_list.
-    IDX denotes the iterator, *PTREE is set to the result type of
-    the va_list builtin, and *PNAME to its internal type.
-    Returns zero if there is no element for this index, otherwise
-    IDX should be increased upon the next call.
-    Note, do not iterate a base builtin's name like __builtin_va_list.
-    Used from c_common_nodes_and_builtins.  */
+   IDX denotes the iterator, *PTREE is set to the result type of
+   the va_list builtin, and *PNAME to its internal type.
+   Returns zero if there is no element for this index, otherwise
+   IDX should be increased upon the next call.
+   Note, do not iterate a base builtin's name like __builtin_va_list.
+   Used from c_common_nodes_and_builtins.  */
 
-int
+static int
 ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 {
-  if (!TARGET_64BIT)
-    return 0;
-  switch (idx) {
-  case 0:
-    *ptree = ms_va_list_type_node;
-    *pname = "__builtin_ms_va_list";
-    break;
-  case 1:
-    *ptree = sysv_va_list_type_node;
-    *pname = "__builtin_sysv_va_list";
-    break;
-  default:
-    return 0;
-  }
-  return 1;
+  if (TARGET_64BIT)
+    {
+      switch (idx)
+	{
+	default:
+	  break;
+
+	case 0:
+	  *ptree = ms_va_list_type_node;
+	  *pname = "__builtin_ms_va_list";
+	  return 1;
+
+	case 1:
+	  *ptree = sysv_va_list_type_node;
+	  *pname = "__builtin_sysv_va_list";
+	  return 1;
+	}
+    }
+
+  return 0;
 }
 
 /* Initialize the GCC target structure.  */

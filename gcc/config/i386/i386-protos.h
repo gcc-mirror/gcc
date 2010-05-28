@@ -192,10 +192,6 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 #endif	/* RTX_CODE  */
 
 #ifdef TREE_CODE
-extern int ix86_enum_va_list (int, const char **, tree *);
-extern tree ix86_fn_abi_va_list (tree);
-extern tree ix86_canonical_va_list_type (tree);
-
 extern int ix86_return_pops_args (tree, tree, int);
 
 extern int ix86_data_alignment (tree, int);

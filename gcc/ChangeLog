@@ -1,3 +1,12 @@
+2010-05-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_fn_abi_va_list): Make static.
+	(ix86_canonical_va_list_type): Make static.  Add declaration.
+	(ix86_enum_va_list): Make static.  Reindent.
+	* config/i386/i386-protos.h (ix86_fn_abi_va_list): Remove declaration.
+	(ix86_canonical_va_list_type): Ditto.
+	(ix86_enum_va_list): Ditto.
+
 2010-05-28  Richard Guenther  <rguenther@suse.de>
 
 	* lto-wrapper.c (run_gcc): With -save-temps generate a
