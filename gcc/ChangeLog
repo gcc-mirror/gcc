@@ -1,3 +1,14 @@
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* final.c (rest_of_clean_state): Use %m in errors instead of
+	strerror (errno).
+	* gengtype.c (read_input_list, close_output_files): Use xstrerror
+	instead of strerror.
+	* toplev.c (process_options): Use %m in errors instead of strerror
+	(errno).
+	* tree-dump.c (dump_begin): Use %m in errors instead of strerror
+	(errno).
+
 2010-05-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_fn_abi_va_list): Make static.

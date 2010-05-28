@@ -1,3 +1,14 @@
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-coff.c (coff_errmsg): Remove.
+	(lto_coff_begin_section_with_type, lto_obj_append_data): Use %m in
+	errors instead of coff_errmsg (-1).
+	* lto-macho.c (mach_o_errmsg): Remove.
+	(lto_obj_begin_section, lto_obj_append_data): Use %m in errors
+	instead of mach_o_errmsg (-1).
+	* lto.c (read_cgraph_and_symbols): Use %m in errors instead of
+	xstrerror (errno).
+
 2010-05-28  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (prefix_name_with_star): Removed.

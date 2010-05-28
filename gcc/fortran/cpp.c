@@ -523,7 +523,8 @@ gfc_cpp_init_0 (void)
 	  print.outf = fopen (gfc_cpp_option.output_filename, "w");
 	  if (print.outf == NULL)
 	    gfc_fatal_error ("opening output file %s: %s",
-			     gfc_cpp_option.output_filename, strerror(errno));
+			     gfc_cpp_option.output_filename,
+			     xstrerror (errno));
 	}
       else
 	print.outf = stdout;
@@ -533,7 +534,7 @@ gfc_cpp_init_0 (void)
       print.outf = fopen (gfc_cpp_option.temporary_filename, "w");
       if (print.outf == NULL)
 	gfc_fatal_error ("opening output file %s: %s",
-			 gfc_cpp_option.temporary_filename, strerror(errno));
+			 gfc_cpp_option.temporary_filename, xstrerror (errno));
     }
 
   gcc_assert(cpp_in);

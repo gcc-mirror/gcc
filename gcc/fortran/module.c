@@ -1299,7 +1299,7 @@ static void
 write_char (char out)
 {
   if (putc (out, module_fp) == EOF)
-    gfc_fatal_error ("Error writing modules file: %s", strerror (errno));
+    gfc_fatal_error ("Error writing modules file: %s", xstrerror (errno));
 
   /* Add this to our MD5.  */
   md5_process_bytes (&out, sizeof (out), &ctx);
@@ -5124,7 +5124,7 @@ gfc_dump_module (const char *name, int dump_flag)
   module_fp = fopen (filename_tmp, "w");
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for writing at %C: %s",
-		     filename_tmp, strerror (errno));
+		     filename_tmp, xstrerror (errno));
 
   /* Write the header, including space reserved for the MD5 sum.  */
   now = time (NULL);
@@ -5162,7 +5162,7 @@ gfc_dump_module (const char *name, int dump_flag)
 
   if (fclose (module_fp))
     gfc_fatal_error ("Error writing module file '%s' for writing: %s",
-		     filename_tmp, strerror (errno));
+		     filename_tmp, xstrerror (errno));
 
   /* Read the MD5 from the header of the old module file and compare.  */
   if (read_md5_from_module_file (filename, md5_old) != 0
@@ -5171,16 +5171,16 @@ gfc_dump_module (const char *name, int dump_flag)
       /* Module file have changed, replace the old one.  */
       if (unlink (filename) && errno != ENOENT)
 	gfc_fatal_error ("Can't delete module file '%s': %s", filename,
-			 strerror (errno));
+			 xstrerror (errno));
       if (rename (filename_tmp, filename))
 	gfc_fatal_error ("Can't rename module file '%s' to '%s': %s",
-			 filename_tmp, filename, strerror (errno));
+			 filename_tmp, filename, xstrerror (errno));
     }
   else
     {
       if (unlink (filename_tmp))
 	gfc_fatal_error ("Can't delete temporary module file '%s': %s",
-			 filename_tmp, strerror (errno));
+			 filename_tmp, xstrerror (errno));
     }
 }
 
@@ -5530,7 +5530,7 @@ gfc_use_module (void)
 
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
-		     filename, strerror (errno));
+		     filename, xstrerror (errno));
 
   /* Check that we haven't already USEd an intrinsic module with the
      same name.  */

@@ -1948,14 +1948,14 @@ process_options (void)
       FILE *final_output = fopen (flag_dump_final_insns, "w");
       if (!final_output)
 	{
-	  error ("could not open final insn dump file %qs: %s",
-		 flag_dump_final_insns, strerror (errno));
+	  error ("could not open final insn dump file %qs: %m",
+		 flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
       else if (fclose (final_output))
 	{
-	  error ("could not close zeroed insn dump file %qs: %s",
-		 flag_dump_final_insns, strerror (errno));
+	  error ("could not close zeroed insn dump file %qs: %m",
+		 flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
     }
