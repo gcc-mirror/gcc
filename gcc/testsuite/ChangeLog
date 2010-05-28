@@ -1,3 +1,8 @@
+2010-05-28  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/44125
+	* objc.dg/const-str-9.m: Remove static.
+
 2010-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43636
