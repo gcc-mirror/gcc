@@ -30,6 +30,8 @@
 /* We use glibc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 1
 
+#define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
+
 /* glibc has float and long double forms of math functions.  */
 #undef  TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)

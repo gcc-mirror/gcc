@@ -1,3 +1,9 @@
+2010-05-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR bootstrap/44314
+	* config/alpha/linux.h, config/rs6000/linux.h, config/rs6000/linux64.h
+	(OPTION_GLIBC): Define.
+
 2010-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41048
