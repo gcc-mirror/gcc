@@ -4298,6 +4298,20 @@ This hook returns a type node for @code{va_list} for the target.
 The default version of the hook returns @code{void*}.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_ENUM_VA_LIST_P (int @var{idx}, const char ** @var{pname}, tree @var{ptype})
+This target hook is used in function @code{c_common_nodes_and_builtins}
+to iterate through the target specific builtin types for va_list. The
+variable @var{idx} is used as iterator. @var{pname} has to be a pointer
+to a @code{const char *} and @var{ptype} a pointer to a @code{tree} typed
+variable.
+The arguments @var{pname} and @var{ptype} are used to store the result of
+this macro and are set to the name of the va_list builtin type and its
+internal type.
+If the return value of this macro is zero, then there is no more element.
+Otherwise the @var{IDX} should be increased for the next call of this
+macro to iterate through all types.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_FN_ABI_VA_LIST (tree @var{fndecl})
 This hook returns the va_list type of the calling convention specified by
 @var{fndecl}.
@@ -4493,20 +4507,6 @@ should recognize only the caller's register numbers.
 
 If this hook is not defined, then FUNCTION_VALUE_REGNO_P will be used.
 @end deftypefn
-
-@defmac TARGET_ENUM_VA_LIST (@var{idx}, @var{pname}, @var{ptype})
-This target macro is used in function @code{c_common_nodes_and_builtins}
-to iterate through the target specific builtin types for va_list. The
-variable @var{idx} is used as iterator. @var{pname} has to be a pointer
-to a @code{const char *} and @var{ptype} a pointer to a @code{tree} typed
-variable.
-The arguments @var{pname} and @var{ptype} are used to store the result of
-this macro and are set to the name of the va_list builtin type and its
-internal type.
-If the return value of this macro is zero, then there is no more element.
-Otherwise the @var{IDX} should be increased for the next call of this
-macro to iterate through all types.
-@end defmac
 
 @defmac APPLY_RESULT_SIZE
 Define this macro if @samp{untyped_call} and @samp{untyped_return}

@@ -5114,21 +5114,21 @@ c_common_nodes_and_builtins (void)
     (build_decl (UNKNOWN_LOCATION,
 		 TYPE_DECL, get_identifier ("__builtin_va_list"),
 		 va_list_type_node));
-#ifdef TARGET_ENUM_VA_LIST
-  {
-    int l;
-    const char *pname;
-    tree ptype;
-    for (l = 0; TARGET_ENUM_VA_LIST (l, &pname, &ptype); ++l)
-      {
-	lang_hooks.decls.pushdecl
-	  (build_decl (UNKNOWN_LOCATION,
-		       TYPE_DECL, get_identifier (pname),
-	  	       ptype));
+  if (targetm.enum_va_list)
+    {
+      int l;
+      const char *pname;
+      tree ptype;
 
-      }
-  }
-#endif
+      for (l = 0; targetm.enum_va_list (l, &pname, &ptype); ++l)
+	{
+	  lang_hooks.decls.pushdecl
+	    (build_decl (UNKNOWN_LOCATION,
+		         TYPE_DECL, get_identifier (pname),
+	  	         ptype));
+
+	}
+    }
 
   if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
     {

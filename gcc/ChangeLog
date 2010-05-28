@@ -1,5 +1,15 @@
 2010-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
+	* c-common.c (c_common_nodes_and_builtins): Replace use
+	of TARGET_ENUM_VA_LIST by target hook enum_va_list.
+	* config/i386/i386.c (TARGET_ENUM_VA_LIST_P): Hook
+	to ix86_enum_va_list.
+	* config/i386/i386.h (TARGET_ENUM_VA_LIST): Removed.
+	* doc/tm.texi (TARGET_ENUM_VA_LIST): Removed.
+	(TARGET_ENUM_VA_LIST_P): Add hook description.
+	* target-def.h (TARGET_ENUM_VA_LIST_P): Added.
+	* target.h (gcc_target): Add enum_va_list hook.
+
 	PR bootstrap/44299
 	* config/i386/t-cygming: Adjust header dependencies for winnt-cxx.c.
 	* config/i386/winnt-cxx.c (IN_GCC_FRONTEND): Remove undefine.
