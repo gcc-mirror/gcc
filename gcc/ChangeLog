@@ -1,3 +1,7 @@
+2010-05-28  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (movqi): Fix typo ('*' -> '#').
+
 2010-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43636
