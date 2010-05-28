@@ -799,7 +799,10 @@ extern const struct attribute_spec c_common_format_attribute_table[];
 
 extern tree (*make_fname_decl) (location_t, tree, int);
 
+/* In c-decl.c and cp/tree.c.  FIXME.  */
 extern void c_register_addr_space (const char *str, addr_space_t as);
+
+/* In c-common.c.  */
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
 extern void record_builtin_type (enum rid, const char *, tree);
