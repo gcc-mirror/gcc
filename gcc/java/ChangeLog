@@ -1,3 +1,14 @@
+2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (method_entry): Declare.  Declare VECs containing it.
+	(struct lang_type): Change type of otable_methods, atable_methods, and
+	itable_methods to VECs.  Fix comment for atable_methods.
+	(emit_symbol_table): Take a VEC instead of a tree.
+	(get_symbol_table_index): Take a VEC * instead of a tree *.
+	* class.c (add_table_and_syms): Take a VEC instead of a tree.
+	(emit_symbol_table): Update for changed parameter type.
+	* expr.c (get_symbol_table_index): Likewise.
+
 2010-05-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* buildings.c: Pretend to be a backend file by undefining
