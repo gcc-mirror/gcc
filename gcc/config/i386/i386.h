@@ -2450,11 +2450,6 @@ struct GTY(()) machine_function {
 #undef TARG_COND_BRANCH_COST
 #define TARG_COND_BRANCH_COST           ix86_cost->branch_cost
 
-/* Enum through the target specific extra va_list types.
-   Please, do not iterate the base va_list type name.  */
-#define TARGET_ENUM_VA_LIST(IDX, PNAME, PTYPE) \
-  (TARGET_64BIT ? ix86_enum_va_list (IDX, PNAME, PTYPE) : 0)
-
 /* Cost of any scalar operation, excluding load and store.  */
 #undef TARG_SCALAR_STMT_COST
 #define TARG_SCALAR_STMT_COST           ix86_cost->scalar_stmt_cost
