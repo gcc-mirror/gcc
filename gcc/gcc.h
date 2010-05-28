@@ -59,8 +59,10 @@ struct spec_function
 /* These are exported by gcc.c.  */
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
-extern void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fatal_error (const char *, ...)
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
+extern void warning (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
 extern void set_input (const char *);
 

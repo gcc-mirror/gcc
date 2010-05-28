@@ -244,7 +244,7 @@ append_arg (const char *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal ("overflowed output arg list for '%s'", arg);
+    fatal_error ("overflowed output arg list for '%s'", arg);
 
   g77_newargv[g77_newargc++] = arg;
 }
@@ -402,11 +402,11 @@ For more information about these matters, see the file named COPYING\n\n"));
       if (i + skip < argc)
 	i += skip;
       else
-	fatal ("argument to '%s' missing", argv[i]);
+	fatal_error ("argument to '%s' missing", argv[i]);
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
-    fatal ("no input files; unwilling to write output files");
+    fatal_error ("no input files; unwilling to write output files");
 
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)
@@ -428,8 +428,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 	{
 	  char *p;
 
-	  fprintf (stderr, _("Warning: Using -M <directory> is deprecated, "
-	           "use -J instead\n"));
+	  warning (0, "using -M <directory> is deprecated, use -J instead");
 	  if (argv[i][2] == '\0')
 	    {
 	      if (i+1 < argc)
@@ -441,7 +440,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 		  i++;
 		}
 	      else
-		fatal ("argument to '%s' missing", argv[i]);
+		fatal_error ("argument to '%s' missing", argv[i]);
 	    }
 	  else
 	    {

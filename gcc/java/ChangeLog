@@ -1,3 +1,8 @@
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (lang_specific_driver): Use fatal_error instead of
+	fatal.  Use warning instead of error for warnings.
+
 2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* expr.c (get_symbol_table_index): Add spaces in expression.

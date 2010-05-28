@@ -1,3 +1,28 @@
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR driver/15303
+	* gcc.c (inform, warning, inform): New functions.
+	(fatal_ice): Rename to internal_error; change cmsgid parameter to
+	gmsgid.  All callers changed.
+	(notice): Rename to fnotice; add parameter fp.  All callers
+	changed.
+	(fatal_error): Rename to fatal_signal.  All users changed.
+	(fatal): Rename to fatal_error; change cmsgid parameter to
+	gmsgid.  All callers changed.
+	(process_command): Use warning instead of error for warnings.
+	(end_going_arg): Don't use _() around argument of error.
+	(do_spec_1): Use inform for message from %n specs.  Use warning
+	instead of error for warnings.
+	(main): Use inform for comparison messages.  Use warning for
+	message about unused linker input.
+	(error): Increment error_count.  Print "error: ".
+	* gcc.h (fatal): Change to fatal_error.
+	(warning): Declare.
+	* config/darwin-driver.c (darwin_default_min_version): Use warning
+	instead of fprintf for warnings.
+	* cppspec.c (lang_specific_driver): Use fatal_error instead of
+	fatal.
+
 2010-05-28  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/thumb2.md (*thumb2_addsi3_compare0): New.
