@@ -1,3 +1,15 @@
+2010-05-28  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44312
+	* lto-streamer-in.c (unpack_ts_fixed_cst_value_fields):
+	Stream fixed-point constants mode.
+	(unpack_ts_type_value_fields): Fix width of TYPE_MODE
+	and TYPE_PRECISION.
+	* lto-streamer-out.c (pack_ts_fixed_cst_value_fields):
+	Stream fixed-point constants mode.
+	(pack_ts_function_decl_value_fields): Fix width of TYPE_MODE
+	and TYPE_PRECISION.
+
 2010-05-28  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (movqi): Fix typo ('*' -> '#').

@@ -1632,6 +1632,7 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 
   fv.data.low = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
   fv.data.high = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
+  fv.mode = (enum machine_mode) bp_unpack_value (bp, HOST_BITS_PER_INT);
   TREE_FIXED_CST (expr) = fv;
 }
 
@@ -1764,8 +1765,8 @@ unpack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum machine_mode mode;
 
-  TYPE_PRECISION (expr) = (unsigned) bp_unpack_value (bp, 9);
-  mode = (enum machine_mode) bp_unpack_value (bp, 7);
+  TYPE_PRECISION (expr) = (unsigned) bp_unpack_value (bp, 10);
+  mode = (enum machine_mode) bp_unpack_value (bp, 8);
   SET_TYPE_MODE (expr, mode);
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);

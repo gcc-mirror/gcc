@@ -388,6 +388,7 @@ pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
   struct fixed_value fv = TREE_FIXED_CST (expr);
   bp_pack_value (bp, fv.data.low, HOST_BITS_PER_WIDE_INT);
   bp_pack_value (bp, fv.data.high, HOST_BITS_PER_WIDE_INT);
+  bp_pack_value (bp, fv.mode, HOST_BITS_PER_INT);
 }
 
 
@@ -513,8 +514,8 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, TYPE_PRECISION (expr), 9);
-  bp_pack_value (bp, TYPE_MODE (expr), 7);
+  bp_pack_value (bp, TYPE_PRECISION (expr), 10);
+  bp_pack_value (bp, TYPE_MODE (expr), 8);
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   bp_pack_value (bp, TYPE_NO_FORCE_BLK (expr), 1);
   bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
