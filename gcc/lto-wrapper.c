@@ -407,13 +407,21 @@ run_gcc (unsigned argc, char *argv[])
       if (linker_output)
 	{
 	  char *dumpbase = (char *) xmalloc (strlen (linker_output)
-					     + sizeof(".wpa") + 1);
+					     + sizeof (".wpa") + 1);
 	  strcpy (dumpbase, linker_output);
 	  strcat (dumpbase, ".wpa");
 	  argv_ptr[0] = dumpbase;
 	}
 
-      ltrans_output_file = make_temp_file (".ltrans.out");
+      if (linker_output && debug)
+	{
+	  ltrans_output_file = (char *) xmalloc (strlen (linker_output)
+						 + sizeof (".ltrans.out") + 1);
+	  strcpy (ltrans_output_file, linker_output);
+	  strcat (ltrans_output_file, ".ltrans.out");
+	}
+      else
+	ltrans_output_file = make_temp_file (".ltrans.out");
       list_option_full = (char *) xmalloc (sizeof (char) *
 		         (strlen (ltrans_output_file) + list_option_len + 1));
       tmp = list_option_full;
@@ -516,7 +524,7 @@ cont:
 				      + sizeof(DUMPBASE_SUFFIX) + 1);
 	      snprintf (dumpbase,
 			strlen (linker_output) + sizeof(DUMPBASE_SUFFIX),
-			"%s.ltrans%u", linker_output, nr);
+			"%s.ltrans%u", linker_output, i);
 	      argv_ptr[0] = dumpbase;
 	    }
 

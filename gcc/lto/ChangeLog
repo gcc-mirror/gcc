@@ -1,3 +1,13 @@
+2010-05-28  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (prefix_name_with_star): Removed.
+	(strip_extension): Likewise.
+	(get_filename_for_set): Likewise.
+	(lto_write_ltrans_list): Fold into ...
+	(lto_wpa_write_files): ... this.  Name LTRANS units
+	by suffixing the ltrans output list filename.
+	(do_whole_program_analysis): Adjust.
+
 2010-05-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto.c: Include diagnostic-core.h instead of diagnostic.h.

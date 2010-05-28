@@ -1,3 +1,8 @@
+2010-05-28  Richard Guenther  <rguenther@suse.de>
+
+	* lto-wrapper.c (run_gcc): With -save-temps generate a
+	user-visible ltrans filename.  Fixup ltrans unit numbering.
+
 2010-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* c-common.c (c_common_nodes_and_builtins): Replace use
