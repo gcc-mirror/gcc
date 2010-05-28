@@ -601,20 +601,8 @@ extern bool c_override_global_bindings_to_false;
 extern void c_finish_incomplete_decl (tree);
 extern void c_write_global_declarations (void);
 
-/* In order for the format checking to accept the C frontend
-   diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  */
-#if GCC_VERSION >= 4001
-#define ATTRIBUTE_GCC_CDIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m ,n))) ATTRIBUTE_NONNULL(m)
-#else
-#define ATTRIBUTE_GCC_CDIAG(m, n) ATTRIBUTE_NONNULL(m)
-#endif
-
-extern void pedwarn_c90 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_CDIAG(3,4);
-extern void pedwarn_c99 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_CDIAG(3,4);
-
-extern bool c_cpp_error (cpp_reader *, int, int, location_t, unsigned int,
-			 const char *, va_list *)
-     ATTRIBUTE_GCC_CDIAG(6,0);
+/* In c-errors.c */
+extern void pedwarn_c90 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
+extern void pedwarn_c99 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 
 #endif /* ! GCC_C_TREE_H */

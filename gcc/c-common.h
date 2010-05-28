@@ -26,6 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "ggc.h"
 
+/* In order for the format checking to accept the C frontend
+   diagnostic framework extensions, you must include this file before
+   toplev.h, not after.  The C front end formats are a subset of those
+   for C++, so they are the appropriate set to use in common code;
+   cp-tree.h overrides this for C++.  */
+#ifndef GCC_DIAG_STYLE
+#define GCC_DIAG_STYLE __gcc_cdiag__
+#endif
+#include "diagnostic-core.h"
+
 /* Usage of TREE_LANG_FLAG_?:
    0: TREE_NEGATED_INT (in INTEGER_CST).
       IDENTIFIER_MARKED (used by search routines).
@@ -999,6 +1009,9 @@ extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
+extern bool c_cpp_error (cpp_reader *, int, int, location_t, unsigned int,
+			 const char *, va_list *)
+     ATTRIBUTE_GCC_DIAG(6,0);
 
 /* Positive if an implicit `extern "C"' scope has just been entered;
    negative if such a scope has just been exited.  */
@@ -1174,14 +1187,5 @@ extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 extern bool c_omp_sharing_predetermined (tree);
 extern tree c_omp_remap_decl (tree, bool);
 extern void record_types_used_by_current_var_decl (tree);
-
-/* In order for the format checking to accept the C frontend
-   diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  The C front end formats are a subset of those
-   for C++, so they are the appropriate set to use in common code;
-   cp-tree.h overrides this for C++.  */
-#ifndef GCC_DIAG_STYLE
-#define GCC_DIAG_STYLE __gcc_cdiag__
-#endif
 
 #endif /* ! GCC_C_COMMON_H */

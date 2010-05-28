@@ -1,5 +1,16 @@
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* c-common.h (GCC_DIAG_STYLE): Define earlier in the file,
+	before including diagnostic-core.h.
+	(c_cpp_error): New prototype moved from c-tree.h.
+	Use ATTRIBUTE_GCC_DIAG instead of ATTRIBUTE_GCC_CDIAG.
+	* c-tree.h (ATTRIBUTE_GCC_CDIAG): Remove define.
+	(pedwarn_c90, perwarn_c99): Use ATTRIBUTE_GCC_DIAG instead.
+	(c_cpp_error): Prototype moved to c-common.h.
+	* Makefile.in: Update dependency for C_COMMON_H.
+
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* c-common.h: Add FIXME for awkward split of c_register_addr_space.
 	* c-common.c (c_register_addr_space): Remove here.
 	* c-decl.c (c_register_addr_space): Re-add here.
