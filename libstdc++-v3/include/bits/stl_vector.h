@@ -718,13 +718,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *   Returns a pointer such that [data(), data() + size()) is a valid
        *   range.  For a non-empty %vector, data() == &front().
        */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Tp*
+#else
       pointer
+#endif
       data()
-      { return pointer(this->_M_impl._M_start); }
+      { return std::__addressof(front()); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const _Tp*
+#else
       const_pointer
+#endif
       data() const
-      { return const_pointer(this->_M_impl._M_start); }
+      { return std::__addressof(front()); }
 
       // [23.2.4.3] modifiers
       /**
