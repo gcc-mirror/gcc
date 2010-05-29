@@ -130,44 +130,54 @@ ifc_temp_var (tree type, tree exp)
   return stmt;
 }
 
+/* Return true when COND is a true predicate.  */
+
+static inline bool
+is_true_predicate (tree cond)
+{
+  return (cond == NULL_TREE
+	  || cond == boolean_true_node
+	  || integer_onep (cond));
+}
+
+/* Returns true when BB has a predicate that is not trivial: true or
+   NULL_TREE.  */
+
+static inline bool
+is_predicated (basic_block bb)
+{
+  return !is_true_predicate ((tree) bb->aux);
+}
+
 /* Add condition NEW_COND to the predicate list of basic block BB.  */
 
-static void
+static inline void
 add_to_predicate_list (basic_block bb, tree new_cond)
 {
   tree cond = (tree) bb->aux;
 
-  if (cond)
-    cond = fold_build2_loc (EXPR_LOCATION (cond),
-			    TRUTH_OR_EXPR, boolean_type_node,
-			    unshare_expr (cond), new_cond);
-  else
-    cond = new_cond;
-
-  bb->aux = cond;
+  bb->aux = is_true_predicate (cond) ? new_cond :
+    fold_build2_loc (EXPR_LOCATION (cond),
+		     TRUTH_OR_EXPR, boolean_type_node,
+		     cond, new_cond);
 }
 
 /* Add the condition COND to the previous condition PREV_COND, and add
    this to the predicate list of the destination of edge E.  LOOP is
    the loop to be if-converted.  */
 
-static tree
+static void
 add_to_dst_predicate_list (struct loop *loop, edge e,
 			   tree prev_cond, tree cond)
 {
-  tree new_cond = NULL_TREE;
-
   if (!flow_bb_inside_loop_p (loop, e->dest))
-    return NULL_TREE;
+    return;
 
-  if (prev_cond == boolean_true_node || !prev_cond)
-    new_cond = unshare_expr (cond);
-  else
-    new_cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-			    unshare_expr (prev_cond), cond);
+  if (!is_true_predicate (prev_cond))
+    cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			prev_cond, cond);
 
-  add_to_predicate_list (e->dest, new_cond);
-  return new_cond;
+  add_to_predicate_list (e->dest, cond);
 }
 
 /* Return true if one of the successor edges of BB exits LOOP.  */
@@ -566,19 +576,6 @@ predicate_bbs (loop_p loop)
   loop->header->aux = boolean_true_node;
 
   return true;
-}
-
-/* Returns true when BB has a predicate that is not trivial: true or
-   NULL_TREE.  */
-
-static bool
-is_predicated (basic_block bb)
-{
-  tree cond = (tree) bb->aux;
-
-  return (cond != NULL_TREE
-	  && cond != boolean_true_node
-	  && !integer_onep (cond));
 }
 
 /* Return true when LOOP is if-convertible.
