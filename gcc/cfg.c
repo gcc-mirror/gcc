@@ -514,7 +514,7 @@ dump_regset (regset r, FILE *outf)
    stream.  This function is designed to be used from within the
    debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_regset (regset r)
 {
   dump_regset (r, stderr);
@@ -668,7 +668,7 @@ dump_flow_info (FILE *file, int flags)
   putc ('\n', file);
 }
 
-void
+DEBUG_FUNCTION void
 debug_flow_info (void)
 {
   dump_flow_info (stderr, TDF_DETAILS);
@@ -868,13 +868,13 @@ free_aux_for_edges (void)
   clear_aux_for_edges ();
 }
 
-void
+DEBUG_FUNCTION void
 debug_bb (basic_block bb)
 {
   dump_bb (bb, stderr, 0);
 }
 
-basic_block
+DEBUG_FUNCTION basic_block
 debug_bb_n (int n)
 {
   basic_block bb = BASIC_BLOCK (n);

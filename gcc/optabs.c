@@ -6676,7 +6676,7 @@ init_optabs (void)
 /* Print information about the current contents of the optabs on
    STDERR.  */
 
-void
+DEBUG_FUNCTION void
 debug_optab_libfuncs (void)
 {
   int i;

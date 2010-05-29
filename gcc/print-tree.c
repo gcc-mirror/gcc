@@ -50,7 +50,7 @@ static struct bucket **table;
    Most nodes referred to by this one are printed recursively
    down to a depth of six.  */
 
-void
+DEBUG_FUNCTION void
 debug_tree (tree node)
 {
   table = XCNEWVEC (struct bucket *, HASH_SIZE);
@@ -64,7 +64,7 @@ debug_tree (tree node)
    Most nodes referred to by this one are printed recursively
    down to a depth of six.  */
 
-void
+DEBUG_FUNCTION void
 debug_vec_tree (VEC(tree,gc) *vec)
 {
   table = XCNEWVEC (struct bucket *, HASH_SIZE);

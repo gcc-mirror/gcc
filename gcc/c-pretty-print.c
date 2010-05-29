@@ -2231,7 +2231,7 @@ print_c_tree (FILE *file, tree t)
 
 /* Print the tree T in full, on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_c_tree (tree t)
 {
   print_c_tree (stderr, t);

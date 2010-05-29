@@ -81,7 +81,7 @@ newline_and_indent (pretty_printer *buffer, int spc)
 
 /* Print the GIMPLE statement GS on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_gimple_stmt (gimple gs)
 {
   print_gimple_stmt (stderr, gs, 0, TDF_VOPS|TDF_MEMSYMS);
@@ -147,7 +147,7 @@ print_gimple_seq (FILE *file, gimple_seq seq, int spc, int flags)
 
 /* Print the GIMPLE sequence SEQ on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_gimple_seq (gimple_seq seq)
 {
   print_gimple_seq (stderr, seq, 0, TDF_VOPS|TDF_MEMSYMS);

@@ -1316,7 +1316,7 @@ cancel_loop_tree (struct loop *loop)
      -- loop latches have only single successor that is header of their loop
      -- irreducible loops are correctly marked
   */
-void
+DEBUG_FUNCTION void
 verify_loop_structure (void)
 {
   unsigned *sizes, i, j;

@@ -77,7 +77,7 @@ do_niy (pretty_printer *buffer, const_tree node)
 
 /* Debugging function to print out a generic expression.  */
 
-void
+DEBUG_FUNCTION void
 debug_generic_expr (tree t)
 {
   print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS);
@@ -86,7 +86,7 @@ debug_generic_expr (tree t)
 
 /* Debugging function to print out a generic statement.  */
 
-void
+DEBUG_FUNCTION void
 debug_generic_stmt (tree t)
 {
   print_generic_stmt (stderr, t, TDF_VOPS|TDF_MEMSYMS);
@@ -95,7 +95,7 @@ debug_generic_stmt (tree t)
 
 /* Debugging function to print out a chain of trees .  */
 
-void
+DEBUG_FUNCTION void
 debug_tree_chain (tree t)
 {
   struct pointer_set_t *seen = pointer_set_create ();

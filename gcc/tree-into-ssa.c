@@ -1494,7 +1494,7 @@ dump_decl_set (FILE *file, bitmap set)
 
 /* Dump bitmap SET (assumed to contain VAR_DECLs) to FILE.  */
 
-void
+DEBUG_FUNCTION void
 debug_decl_set (bitmap set)
 {
   dump_decl_set (stderr, set);
@@ -1565,7 +1565,7 @@ dump_defs_stack (FILE *file, int n)
    dumped.  New levels are created when the dominator tree traversal
    used for renaming enters a new sub-tree.  */
 
-void
+DEBUG_FUNCTION void
 debug_defs_stack (int n)
 {
   dump_defs_stack (stderr, n);
@@ -1599,7 +1599,7 @@ dump_currdefs (FILE *file)
 
 /* Dump the current reaching definition of every symbol to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_currdefs (void)
 {
   dump_currdefs (stderr);
@@ -1625,7 +1625,7 @@ dump_tree_ssa (FILE *file)
 
 /* Dump SSA information to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_tree_ssa (void)
 {
   dump_tree_ssa (stderr);
@@ -1671,7 +1671,7 @@ dump_tree_ssa_stats (FILE *file)
 
 /* Dump SSA statistics on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_tree_ssa_stats (void)
 {
   dump_tree_ssa_stats (stderr);
@@ -1739,7 +1739,7 @@ dump_def_blocks (FILE *file)
 
 /* Dump the DEF_BLOCKS hash table on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_def_blocks (void)
 {
   dump_def_blocks (stderr);
@@ -2692,7 +2692,7 @@ dump_names_replaced_by (FILE *file, tree name)
 
 /* Dump all the names replaced by NAME to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_names_replaced_by (tree name)
 {
   dump_names_replaced_by (stderr, name);
@@ -2757,7 +2757,7 @@ dump_update_ssa (FILE *file)
 
 /* Dump SSA update information to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_update_ssa (void)
 {
   dump_update_ssa (stderr);

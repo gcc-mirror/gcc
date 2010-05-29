@@ -716,7 +716,7 @@ void debug_sa_points_to_info (void);
 
 /* Print out constraint C to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_constraint (constraint_t c)
 {
   dump_constraint (stderr, c);
@@ -735,7 +735,7 @@ dump_constraints (FILE *file, int from)
 
 /* Print out all constraints to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_constraints (void)
 {
   dump_constraints (stderr, 0);
@@ -825,7 +825,7 @@ dump_constraint_graph (FILE *file)
 
 /* Print out the constraint graph to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_constraint_graph (void)
 {
   dump_constraint_graph (stderr);
@@ -5434,7 +5434,7 @@ dump_solution_for_var (FILE *file, unsigned int var)
 
 /* Print the points-to solution for VAR to stdout.  */
 
-void
+DEBUG_FUNCTION void
 debug_solution_for_var (unsigned int var)
 {
   dump_solution_for_var (stdout, var);
@@ -6035,7 +6035,7 @@ dump_sa_points_to_info (FILE *outfile)
 
 /* Debug points-to information to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_sa_points_to_info (void)
 {
   dump_sa_points_to_info (stderr);

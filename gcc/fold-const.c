@@ -13768,7 +13768,7 @@ recursive_label:
    by "call debug_fold_checksum (op0)", then just trace down till the
    outputs differ.  */
 
-void
+DEBUG_FUNCTION void
 debug_fold_checksum (const_tree t)
 {
   int i;

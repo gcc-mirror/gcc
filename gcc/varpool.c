@@ -263,7 +263,7 @@ dump_varpool (FILE *f)
 
 /* Dump the variable pool to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_varpool (void)
 {
   dump_varpool (stderr);

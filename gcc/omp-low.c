@@ -1112,13 +1112,13 @@ dump_omp_region (FILE *file, struct omp_region *region, int indent)
     dump_omp_region (file, region->next, indent);
 }
 
-void
+DEBUG_FUNCTION void
 debug_omp_region (struct omp_region *region)
 {
   dump_omp_region (stderr, region, 0);
 }
 
-void
+DEBUG_FUNCTION void
 debug_all_omp_regions (void)
 {
   dump_omp_region (stderr, root_omp_region, 0);

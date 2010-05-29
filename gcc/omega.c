@@ -363,7 +363,7 @@ omega_print_vars (FILE *file, omega_pb pb)
 
 /* Debug problem PB.  */
 
-void
+DEBUG_FUNCTION void
 debug_omega_problem (omega_pb pb)
 {
   omega_print_problem (stderr, pb);

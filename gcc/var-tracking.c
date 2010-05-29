@@ -1098,7 +1098,7 @@ dv_from_value (rtx value)
 
 extern void debug_dv (decl_or_value dv);
 
-void
+DEBUG_FUNCTION void
 debug_dv (decl_or_value dv)
 {
   if (dv_is_value_p (dv))

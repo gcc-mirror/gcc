@@ -569,7 +569,7 @@ clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
 #endif
 
 /* Verify cgraph nodes of given cgraph node.  */
-void
+DEBUG_FUNCTION void
 verify_cgraph_node (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
@@ -878,7 +878,7 @@ verify_cgraph_node (struct cgraph_node *node)
 }
 
 /* Verify whole cgraph structure.  */
-void
+DEBUG_FUNCTION void
 verify_cgraph (void)
 {
   struct cgraph_node *node;

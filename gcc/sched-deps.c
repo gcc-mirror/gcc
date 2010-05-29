@@ -4077,7 +4077,7 @@ dump_ds (FILE *f, ds_t s)
   fprintf (f, "}");
 }
 
-void
+DEBUG_FUNCTION void
 debug_ds (ds_t s)
 {
   dump_ds (stderr, s);

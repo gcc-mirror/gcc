@@ -161,7 +161,7 @@ dump_data_references (FILE *file, VEC (data_reference_p, heap) *datarefs)
 
 /* Dump into STDERR all the data references from DATAREFS.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_references (VEC (data_reference_p, heap) *datarefs)
 {
   dump_data_references (stderr, datarefs);
@@ -169,7 +169,7 @@ debug_data_references (VEC (data_reference_p, heap) *datarefs)
 
 /* Dump to STDERR all the dependence relations from DDRS.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_dependence_relations (VEC (ddr_p, heap) *ddrs)
 {
   dump_data_dependence_relations (stderr, ddrs);
@@ -190,7 +190,7 @@ dump_data_dependence_relations (FILE *file,
 
 /* Print to STDERR the data_reference DR.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_reference (struct data_reference *dr)
 {
   dump_data_reference (stderr, dr);
@@ -364,7 +364,7 @@ print_dist_vectors  (FILE *outf, VEC (lambda_vector, heap) *dist_vects,
 
 /* Debug version.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_dependence_relation (struct data_dependence_relation *ddr)
 {
   dump_data_dependence_relation (stderr, ddr);
@@ -4606,7 +4606,7 @@ dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
 
 /* Call dump_rdg_vertex on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg_vertex (struct graph *rdg, int i)
 {
   dump_rdg_vertex (stderr, rdg, i);
@@ -4635,7 +4635,7 @@ void dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
 
 /* Call dump_rdg_vertex on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg_component (struct graph *rdg, int c)
 {
   dump_rdg_component (stderr, rdg, c, NULL);
@@ -4661,7 +4661,7 @@ dump_rdg (FILE *file, struct graph *rdg)
 
 /* Call dump_rdg on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg (struct graph *rdg)
 {
   dump_rdg (stderr, rdg);

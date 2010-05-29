@@ -2094,13 +2094,13 @@ df_insn_uid_debug (unsigned int uid,
 }
 
 
-void
+DEBUG_FUNCTION void
 df_insn_debug (rtx insn, bool follow_chain, FILE *file)
 {
   df_insn_uid_debug (INSN_UID (insn), follow_chain, file);
 }
 
-void
+DEBUG_FUNCTION void
 df_insn_debug_regno (rtx insn, FILE *file)
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
@@ -2118,7 +2118,7 @@ df_insn_debug_regno (rtx insn, FILE *file)
   fprintf (file, "\n");
 }
 
-void
+DEBUG_FUNCTION void
 df_regno_debug (unsigned int regno, FILE *file)
 {
   fprintf (file, "reg %d defs ", regno);
@@ -2131,7 +2131,7 @@ df_regno_debug (unsigned int regno, FILE *file)
 }
 
 
-void
+DEBUG_FUNCTION void
 df_ref_debug (df_ref ref, FILE *file)
 {
   fprintf (file, "%c%d ",
@@ -2159,7 +2159,7 @@ df_ref_debug (df_ref ref, FILE *file)
 
 /* Functions for debugging from GDB.  */
 
-void
+DEBUG_FUNCTION void
 debug_df_insn (rtx insn)
 {
   df_insn_debug (insn, true, stderr);
@@ -2167,42 +2167,42 @@ debug_df_insn (rtx insn)
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_reg (rtx reg)
 {
   df_regno_debug (REGNO (reg), stderr);
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_regno (unsigned int regno)
 {
   df_regno_debug (regno, stderr);
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_ref (df_ref ref)
 {
   df_ref_debug (ref, stderr);
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_defno (unsigned int defno)
 {
   df_ref_debug (DF_DEFS_GET (defno), stderr);
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_useno (unsigned int defno)
 {
   df_ref_debug (DF_USES_GET (defno), stderr);
 }
 
 
-void
+DEBUG_FUNCTION void
 debug_df_chain (struct df_link *link)
 {
   df_chain_dump (link, stderr);

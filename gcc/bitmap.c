@@ -2023,7 +2023,7 @@ bitmap_ior_and_into (bitmap a, const_bitmap b, const_bitmap c)
 
 /* Debugging function to print out the contents of a bitmap.  */
 
-void
+DEBUG_FUNCTION void
 debug_bitmap_file (FILE *file, const_bitmap head)
 {
   const bitmap_element *ptr;
@@ -2063,7 +2063,7 @@ debug_bitmap_file (FILE *file, const_bitmap head)
 /* Function to be called from the debugger to print the contents
    of a bitmap.  */
 
-void
+DEBUG_FUNCTION void
 debug_bitmap (const_bitmap head)
 {
   debug_bitmap_file (stdout, head);
@@ -2072,7 +2072,7 @@ debug_bitmap (const_bitmap head)
 /* Function to print out the contents of a bitmap.  Unlike debug_bitmap_file,
    it does not print anything but the bits.  */
 
-void
+DEBUG_FUNCTION void
 bitmap_print (FILE *file, const_bitmap head, const char *prefix, const char *suffix)
 {
   const char *comma = "";

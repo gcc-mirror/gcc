@@ -4084,7 +4084,7 @@ number_blocks (tree fn)
 
 /* If VAR is present in a subblock of BLOCK, return the subblock.  */
 
-tree
+DEBUG_FUNCTION tree
 debug_find_var_in_block_tree (tree var, tree block)
 {
   tree t;

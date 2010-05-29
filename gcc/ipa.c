@@ -1004,7 +1004,7 @@ dump_cgraph_node_set (FILE *f, cgraph_node_set set)
 
 /* Dump content of SET to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_cgraph_node_set (cgraph_node_set set)
 {
   dump_cgraph_node_set (stderr, set);
@@ -1161,7 +1161,7 @@ dump_varpool_node_set (FILE *f, varpool_node_set set)
 
 /* Dump content of SET to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_varpool_node_set (varpool_node_set set)
 {
   dump_varpool_node_set (stderr, set);

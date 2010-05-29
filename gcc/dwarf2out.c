@@ -8239,7 +8239,7 @@ print_dwarf_line_table (FILE *outfile)
 
 /* Print the information collected for a given DIE.  */
 
-void
+DEBUG_FUNCTION void
 debug_dwarf_die (dw_die_ref die)
 {
   print_die (die, stderr);
@@ -8248,7 +8248,7 @@ debug_dwarf_die (dw_die_ref die)
 /* Print all DWARF information collected for the compilation unit.
    This routine is a debugging aid only.  */
 
-void
+DEBUG_FUNCTION void
 debug_dwarf (void)
 {
   print_indent = 0;

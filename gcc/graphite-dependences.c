@@ -202,7 +202,7 @@ print_pddr (FILE *file, poly_ddr_p pddr)
 
 /* Prints to STDERR the poly_ddr_p PDDR.  */
 
-void
+DEBUG_FUNCTION void
 debug_pddr (poly_ddr_p pddr)
 {
   print_pddr (stderr, pddr);

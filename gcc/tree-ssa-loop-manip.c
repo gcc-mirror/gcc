@@ -441,7 +441,7 @@ check_loop_closed_ssa_stmt (basic_block bb, gimple stmt)
 /* Checks that invariants of the loop closed ssa form are preserved.
    Call verify_ssa when VERIFY_SSA_P is true.  */
 
-void
+DEBUG_FUNCTION void
 verify_loop_closed_ssa (bool verify_ssa_p)
 {
   basic_block bb;

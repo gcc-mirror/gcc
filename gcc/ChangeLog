@@ -1,3 +1,103 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vrp.c (debug_value_range, debug_all_value_ranges,
+	debug_asserts_for, debug_all_asserts): Annotate with DEBUG_FUNCTION.
+	* tree-into-ssa.c (debug_decl_set, debug_defs_stack, debug_currdefs,
+	debug_tree_ssa, debug_tree_ssa_stats, debug_def_blocks,
+	debug_names_replaced_by, debug_update_ssa): Likewise.	
+	* sbitmap.c (debug_sbitmap): Likewise.
+	* genrecog.c (debug_decision, debug_decision_list): Likewise.
+	* tree-pretty-print.c (debug_generic_expr, debug_generic_stmt,
+	debug_tree_chain): Likewise.
+	* tree-loop-distribution.c (debug_rdg_partitions): Likewise.
+	* cgraph.c (debug_cgraph_node, debug_cgraph): Likewise.
+	* optabs.c  (debug_optab_libfuncs): Likewise.
+	(verify_loop_closed_ssa): Likewise.
+	* value-prof.c (verify_histograms): Likewise.
+	* reload.c (debug_reload_to_stream, debug_reload): Likewise.
+	* bitmap.c (debug_bitmap_file, debug_bitmap, bitmap_print): Likewise.
+	* cfghooks.c (verify_flow_info): Likewise.
+	* fold-const.c (debug_fold_checksum): Likewise.
+	* omp-low.c (debug_omp_region, debug_all_omp_regions): Likewise.
+	* cfg.c (debug_regset, debug_flow_info, debug_bb, debug_bb_n):
+	Likewise.
+	* omega.c (debug_omega_problem): Likewise.
+	* cgraphunit.c (verify_cgraph_node, verify_cgraph): Likewise.
+	* tree-ssa-ccp.c (debug_lattice_value): Likewise.
+	* dominance.c (verify_dominators, debug_dominance_info,
+	debug_dominance_tree): Likewise.
+	* df-core.c (df_insn_uid_debug, df_insn_debug, df_insn_debug_regno,
+	* df_regno_debug, df_ref_debug,
+	debug_df_insn, debug_df_reg, debug_df_regno, debug_df_ref,
+	debug_df_defno, debug_df_useno, debug_df_chain): Likewise.
+	* tree-ssa-dom.c (debug_dominator_optimization_stats): Likewise.
+	* sel-sched.c (debug_state): Likewise.
+	* tree-ssa-alias.c (debug_alias_info, debug_points_to_info_for): Likewise.
+	* cfganal.c (print_edge_list, verify_edge_list): Likewise.
+	* dwarf2out.c (debug_dwarf_die, debug_dwarf): Likewise.
+	* tree-eh.c (verify_eh_edges, verify_eh_dispatch_edge): Likewise.
+	* gimple-pretty-print.c (debug_gimple_stmt, debug_gimple_seq): Likewise.
+	* c-pretty-print.c (debug_c_tree): Likewise.
+	* sel-sched-dump.c (debug_insn_rtx, debug_vinsn, debug_expr, debug_insn
+	debug_av_set, debug_lv_set, debug_ilist, debug_blist, debug_insn_vector,
+	debug_hard_reg_set, debug_mem_addr_value): Likewise.
+	* ebitmap.c (debug_ebitmap): Likewise.
+	* function.c (debug_find_var_in_block_tree): Likewise.
+	* print-rtl.c (debug_rtx): Likewise.
+	(debug_rtx_count): Likewise.
+	(debug_rtx_list, debug_rtx_range, debug_rtx_find): Likewise.
+	* stor-layout.c (debug_rli): Likewise.
+	* ipa.c (debug_cgraph_node_set, debug_varpool_node_set): Likewise.
+	* tree-data-ref.c (debug_data_references, debug_data_dependence_relations,
+	debug_data_reference, debug_data_dependence_relation, debug_rdg_vertex,
+	debug_rdg_component, debug_rdg): Likewise.
+	* tree-affine.c (debug_aff): Likewise.
+	* tree-dfa.c (debug_referenced_vars, debug_variable, debug_dfa_stats): Likewise.
+	* except.c (debug_eh_tree, verify_eh_tree): Likewise.
+	* emit-rtl.c (verify_rtl_sharing): Likewise.
+	* tree-ssa-pre.c (debug_pre_expr, debug_bitmap_set,
+	debug_value_expressions): Likewise.
+	* tree-ssa-live.c (debug_scope_block, debug_scope_blocks): Likewise.
+	* sese.c (debug_rename_map, debug_ivtype_map): Likewise.
+	* print-tree.c (debug_tree, debug_vec_tree): Likewise.
+	* cfglayout.c (verify_insn_chain): Likewise.
+	* graphite-clast-to-gimple.c (debug_clast_name_indexes,
+	debug_clast_stmt, debug_generated_program): Likewise.
+	* ggc-page.c (debug_print_page_list): Likewise.
+	* tree-ssa-ter.c (debug_ter): Likewise.
+	* graphite-dependences.c (debug_pddr): Likewise.
+	* sched-deps.c (debug_ds): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	* graphite-poly.c (debug_scattering_function, debug_iteration_domain,
+	debug_scattering_functions, debug_iteration_domains, debug_pdr,
+	debug_pdrs, debug_pbb_domain, debug_pbb, debug_scop_context, debug_scop,
+	debug_cloog, debug_scop_params, debug_lst): Likewise.
+	* tree-inline.c (debug_find_tree): Likewise.
+	* graphite-ppl.c (debug_ppl_linear_expr, debug_ppl_polyhedron_matrix,
+	debug_ppl_powerset_matrix): Likewise.
+	* var-tracking.c (debug_dv): Likewise.
+	* system.h (DEBUG_FUNCTION, DEBUG_VARIABLE): Define.
+	* cfgloop.c (verify_loop_structure): Likewise.
+	* plugin.c (dump_active_plugins, debug_active_plugins): Likewise.
+	* c-common.c (verify_sequence_points): Likewise.
+	* sched-rgn.c (debug_regions, debug_region, debug_candidate,
+	debug_candidates, debug_rgn_dependencies): Likewise.
+	* tree-ssa-structalias.c (debug_constraint, debug_constraints,
+	* debug_constraint_graph, debug_solution_for_var,
+	debug_sa_points_to_info): Likewise.
+	* sched-vis.c (debug_insn_slim, debug_bb_slim, debug_bb_n_slim):
+	Likewie.
+	* tree-cfg.c (debug_cfg_stats, verify_stmts, debug_function,
+	debug_loops, debug_loop, debug_loop_num): Likewise.
+	* passes.c (debug_pass): Likewise.
+	(dump_properties): Likewise; add cfglayout property.
+	(debug_properties): Likewise.
+	* tree-ssa-reassoc.c (debug_ops_vector): Likewise.
+	* varpool.c (debug_varpool): Likewise.
+	* regcprop.c (debug_value_data): Likewise.
+	* tree-ssa-operands.c (verify_imm_links, debug_immediate_uses,
+	debug_immediate_uses_for): Likewise.
+
 2010-05-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/44315
