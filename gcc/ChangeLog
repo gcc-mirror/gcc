@@ -1,3 +1,8 @@
+2010-05-29  Mike Stump  <mikestump@comcast.net>
+
+	* Makefile.in (build/gencondmd.o): Be sure to use GTM_H instead of
+	TM_H when building to avoid dependency loops.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_materialize_clone): Only remove calles, refs and body;
