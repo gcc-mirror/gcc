@@ -305,8 +305,8 @@ typedef struct GTY(()) dw_fde_struct {
   const char *dw_fde_unlikely_section_end_label;
   dw_cfi_ref dw_fde_cfi;
   dw_cfi_ref dw_fde_switch_cfi; /* Last CFI before switching sections.  */
-  unsigned funcdef_number;
   HOST_WIDE_INT stack_realignment;
+  unsigned funcdef_number;
   /* Dynamic realign argument pointer register.  */
   unsigned int drap_reg;
   /* Virtual dynamic realign argument pointer register.  */

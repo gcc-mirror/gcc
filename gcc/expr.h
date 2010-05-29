@@ -273,9 +273,9 @@ do {								\
 typedef struct separate_ops
 {
   enum tree_code code;
+  location_t location;
   tree type;
   tree op0, op1, op2;
-  location_t location;
 } *sepops;
 
 /* Functions from optabs.c, commonly used, and without need for the optabs

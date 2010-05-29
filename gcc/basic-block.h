@@ -303,6 +303,9 @@ struct GTY(()) control_flow_graph {
   /* The first free basic block number.  */
   int x_last_basic_block;
 
+  /* UIDs for LABEL_DECLs.  */
+  int last_label_uid;
+
   /* Mapping of labels to their associated blocks.  At present
      only used for the gimple CFG.  */
   VEC(basic_block,gc) *x_label_to_block_map;
@@ -318,9 +321,6 @@ struct GTY(()) control_flow_graph {
   /* Maximal number of entities in the single jumptable.  Used to estimate
      final flowgraph size.  */
   int max_jumptable_ents;
-
-  /* UIDs for LABEL_DECLs.  */
-  int last_label_uid;
 };
 
 /* Defines for accessing the fields of the CFG structure for function FN.  */
