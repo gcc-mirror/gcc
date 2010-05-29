@@ -1186,7 +1186,7 @@ ipcp_insert_stage (void)
          new versioned node.  */
       node1 =
 	cgraph_create_virtual_clone (node, redirect_callers, replace_trees,
-				     args_to_skip, "clone");
+				     args_to_skip, "constprop");
       args_to_skip = NULL;
       VEC_free (cgraph_edge_p, heap, redirect_callers);
       replace_trees = NULL;

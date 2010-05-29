@@ -1,3 +1,8 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44324
+	* ipa-cp.c (ipcp_insert_stage): Replace "clone" by "constprop".
+
 2010-05-29  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.c (cached_bp): New global variable.
