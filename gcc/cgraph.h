@@ -311,7 +311,6 @@ struct GTY(()) cgraph_node_set_def
 {
   htab_t GTY((param_is (struct cgraph_node_set_element_def))) hashtab;
   VEC(cgraph_node_ptr, gc) *nodes;
-  PTR GTY ((skip)) aux;
 };
 
 typedef struct varpool_node *varpool_node_ptr;
@@ -326,7 +325,6 @@ struct GTY(()) varpool_node_set_def
 {
   htab_t GTY((param_is (struct varpool_node_set_element_def))) hashtab;
   VEC(varpool_node_ptr, gc) *nodes;
-  PTR GTY ((skip)) aux;
 };
 
 typedef struct cgraph_node_set_def *cgraph_node_set;
@@ -869,14 +867,14 @@ struct GTY(()) constant_descriptor_tree {
 static inline bool
 cgraph_node_set_nonempty_p (cgraph_node_set set)
 {
-  return VEC_length (cgraph_node_ptr, set->nodes);
+  return !VEC_empty (cgraph_node_ptr, set->nodes);
 }
 
 /* Return true if set is nonempty.  */
 static inline bool
 varpool_node_set_nonempty_p (varpool_node_set set)
 {
-  return VEC_length (varpool_node_ptr, set->nodes);
+  return !VEC_empty (varpool_node_ptr, set->nodes);
 }
 
 /* Return true when function NODE is only called directly.
