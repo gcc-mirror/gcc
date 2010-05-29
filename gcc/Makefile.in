@@ -3748,12 +3748,11 @@ build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
 build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
    $(GGC_H) $(TOPLEV_H)
-build/gencondmd.o : \
-   TM_H := $(GTM_H)
 build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
-  coretypes.h $(GTM_H) insn-constants.h $(RTL_H) $(TM_P_H)		\
-  $(FUNCTION_H) $(REGS_H) $(RECOG_H) output.h $(FLAGS_H)		\
-  $(RESOURCE_H) $(TOPLEV_H) reload.h $(EXCEPT_H) tm-constrs.h
+  coretypes.h $(GTM_H) insn-constants.h					\
+  $(filter-out insn-flags.h, $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(REGS_H) \
+  $(RECOG_H) output.h $(FLAGS_H) $(RESOURCE_H) $(TOPLEV_H) reload.h 	\
+  $(EXCEPT_H) tm-constrs.h)
 # This pulls in tm-pred.h which contains inline functions wrapping up
 # predicates from the back-end so those functions must be discarded.
 # No big deal since gencondmd.c is a dummy file for non-GCC compilers.
