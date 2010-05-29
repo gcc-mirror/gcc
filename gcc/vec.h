@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VEC_H
 #define GCC_VEC_H
 
+#include "statistics.h"		/* For MEM_STAT_DECL.  */
+
 /* The macros here implement a set of templated vector types and
    associated interfaces.  These templates are implemented with
    macros, as we're not in C++ land.  The interface functions are

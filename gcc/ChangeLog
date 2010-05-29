@@ -1,5 +1,11 @@
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* vec.h: Include statistics.h
+	* Makefile.in: Introduce VEC_H.  Replace all vec.h dependencies
+	with VEC_H.
+
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
  	* c-lex.c: Do not include c-tree.h.
  	* c-pretty-print.c: Likewise.
  	* c-opts.c: Likewise.
