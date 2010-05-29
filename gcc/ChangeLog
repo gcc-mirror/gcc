@@ -1,3 +1,12 @@
+2010-05-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-if-conv.c (add_to_dst_predicate_list): Do not use the ->aux
+	field on edges.
+	(predicate_bbs): Same.
+	(clean_predicate_lists): Same.
+	(find_phi_replacement_condition): Do not AND the predicate from
+	edge->aux.
+
 2010-05-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/44315

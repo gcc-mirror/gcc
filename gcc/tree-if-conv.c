@@ -163,15 +163,8 @@ add_to_dst_predicate_list (struct loop *loop, edge e,
   if (prev_cond == boolean_true_node || !prev_cond)
     new_cond = unshare_expr (cond);
   else
-    {
-      /* Add the condition COND to the e->aux field.  In case the edge
-	 destination is a PHI node, this condition will be added to
-	 the block predicate to construct a complete condition.  */
-      e->aux = cond;
-
-      new_cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-			      unshare_expr (prev_cond), cond);
-    }
+    new_cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			    unshare_expr (prev_cond), cond);
 
   add_to_predicate_list (e->dest, new_cond);
   return new_cond;
@@ -469,12 +462,12 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
 /* Returns true when the analysis of the predicates for all the basic
    blocks in LOOP succeeded.
 
-   predicate_bbs first clears the ->aux fields of the edges and basic
-   blocks.  These fields are then initialized with the tree
-   expressions representing the predicates under which a basic block
-   is executed in the LOOP.  As the loop->header is executed at each
-   iteration, it has the "true" predicate.  Other statements executed
-   under a condition are predicated with that condition, for example
+   predicate_bbs first clears the ->aux fields of the basic blocks.
+   These fields are then initialized with the tree expressions
+   representing the predicates under which a basic block is executed
+   in the LOOP.  As the loop->header is executed at each iteration, it
+   has the "true" predicate.  Other statements executed under a
+   condition are predicated with that condition, for example
 
    | if (x)
    |   S1;
@@ -490,18 +483,7 @@ predicate_bbs (loop_p loop)
   unsigned int i;
 
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      edge e;
-      edge_iterator ei;
-      basic_block bb = ifc_bbs [i];
-      gimple_stmt_iterator itr = gsi_start_phis (bb);
-
-      if (!gsi_end_p (itr))
-	FOR_EACH_EDGE (e, ei, bb->preds)
-	  e->aux = NULL;
-
-      bb->aux = NULL;
-    }
+    ifc_bbs[i]->aux = NULL;
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -714,26 +696,18 @@ if_convertible_loop_p (struct loop *loop)
 
 /* During if-conversion, the bb->aux field is used to hold a predicate
    list.  This function cleans for all the basic blocks in the given
-   LOOP their predicate list.  It also cleans up the e->aux field of
-   all the successor edges: e->aux is used to hold the true and false
-   conditions for conditional expressions.  */
+   LOOP their predicate list.  */
 
 static void
 clean_predicate_lists (struct loop *loop)
 {
-  basic_block *bb;
   unsigned int i;
-  edge e;
-  edge_iterator ei;
+  basic_block *bbs = get_loop_body (loop);
 
-  bb = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
-    {
-      bb[i]->aux = NULL;
-      FOR_EACH_EDGE (e, ei, bb[i]->succs)
-	e->aux = NULL;
-    }
-  free (bb);
+    bbs[i]->aux = NULL;
+
+  free (bbs);
 }
 
 /* Basic block BB has two predecessors.  Using predecessor's bb->aux
@@ -799,12 +773,6 @@ find_phi_replacement_condition (struct loop *loop,
     {
       *cond = (tree) (second_edge->src)->aux;
 
-      /* If there is a condition on an incoming edge, add it to the
-	 incoming bb predicate.  */
-      if (second_edge->aux)
-	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
-			*cond, (tree) second_edge->aux);
-
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
 	*cond = invert_truthvalue (*cond);
       else
@@ -812,15 +780,7 @@ find_phi_replacement_condition (struct loop *loop,
 	first_edge = second_edge;
     }
   else
-    {
-      *cond = (tree) (first_edge->src)->aux;
-
-      /* If there is a condition on an incoming edge, add it to the
-	 incoming bb predicate.  */
-      if (first_edge->aux)
-	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
-			*cond, (tree) first_edge->aux);
-    }
+    *cond = (tree) (first_edge->src)->aux;
 
   /* Gimplify the condition: the vectorizer prefers to have gimple
      values as conditions.  Various targets use different means to
