@@ -1,3 +1,7 @@
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in: Replace vec.h dependency with VEC_H.
+
 2010-05-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-coff.c (coff_errmsg): Remove.
