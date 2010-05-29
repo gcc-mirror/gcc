@@ -1531,22 +1531,8 @@ static GTY(()) unsigned int tmp_ompfn_id_num;
 static tree
 create_omp_child_function_name (bool task_copy)
 {
-  tree name = DECL_ASSEMBLER_NAME (current_function_decl);
-  size_t len = IDENTIFIER_LENGTH (name);
-  char *tmp_name, *prefix;
-  const char *suffix;
-
-  suffix = task_copy ? "_omp_cpyfn" : "_omp_fn";
-  prefix = XALLOCAVEC (char, len + strlen (suffix) + 1);
-  memcpy (prefix, IDENTIFIER_POINTER (name), len);
-  strcpy (prefix + len, suffix);
-#ifndef NO_DOT_IN_LABEL
-  prefix[len] = '.';
-#elif !defined NO_DOLLAR_IN_LABEL
-  prefix[len] = '$';
-#endif
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, tmp_ompfn_id_num++);
-  return get_identifier (tmp_name);
+  return (clone_function_name (current_function_decl,
+			       task_copy ? "_omp_cpyfn" : "_omp_fn"));
 }
 
 /* Build a decl for the omp child function.  It'll not contain a body

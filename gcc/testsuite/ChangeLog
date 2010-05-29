@@ -1,3 +1,7 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Update testcase.
+
 2010-05-28  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/vect/vect-outer-fir-lb.c: Un-XFAIL-ed.

@@ -2143,24 +2143,26 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   return new_node;
 }
 
-/* Create a new name for omp child function.  Returns an identifier.  */
+/* Create a new name for clone of DECL, add SUFFIX.  Returns an identifier.  */
 
 static GTY(()) unsigned int clone_fn_id_num;
 
-static tree
-clone_function_name (tree decl)
+tree
+clone_function_name (tree decl, const char *suffix)
 {
   tree name = DECL_ASSEMBLER_NAME (decl);
   size_t len = IDENTIFIER_LENGTH (name);
   char *tmp_name, *prefix;
 
-  prefix = XALLOCAVEC (char, len + strlen ("_clone") + 1);
+  prefix = XALLOCAVEC (char, len + strlen (suffix) + 2);
   memcpy (prefix, IDENTIFIER_POINTER (name), len);
-  strcpy (prefix + len, "_clone");
+  strcpy (prefix + len + 1, suffix);
 #ifndef NO_DOT_IN_LABEL
   prefix[len] = '.';
 #elif !defined NO_DOLLAR_IN_LABEL
   prefix[len] = '$';
+#else
+  prefix[len] = '_';
 #endif
   ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
   return get_identifier (tmp_name);
@@ -2176,7 +2178,8 @@ struct cgraph_node *
 cgraph_create_virtual_clone (struct cgraph_node *old_node,
 			     VEC(cgraph_edge_p,heap) *redirect_callers,
 			     VEC(ipa_replace_map_p,gc) *tree_map,
-			     bitmap args_to_skip)
+			     bitmap args_to_skip,
+			     const char * suffix)
 {
   tree old_decl = old_node->decl;
   struct cgraph_node *new_node = NULL;
@@ -2197,7 +2200,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   DECL_STRUCT_FUNCTION (new_decl) = NULL;
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name (old_decl);
+  DECL_NAME (new_decl) = clone_function_name (old_decl, suffix);
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
   SET_DECL_RTL (new_decl, NULL);
 
