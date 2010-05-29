@@ -1,3 +1,10 @@
+2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/44261
+	config/pa/pa.md (negdf2_slow, negsf2_slow): New patterns.
+	(negdf2): Adjust expander pattern and use negdf2_slow.
+	(negsf2): Likewise.
+
 2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* basic-block.h (struct control_flow_graph): Move last_label_uid field up.
