@@ -1,3 +1,7 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* varpool.c (varpool_get_node): Fix lookup.
+
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/spu/spu-protos.h: Do not include rtl.h.  Protect
