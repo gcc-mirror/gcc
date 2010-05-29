@@ -1,3 +1,8 @@
+2010-05-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/44315
+	* Makefile.in (build/gencondmd.o): Add a missing `\'.
+
 2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44261
@@ -31,6 +36,7 @@
 
 2010-05-29  Mike Stump  <mikestump@comcast.net>
 
+	PR bootstrap/44315
 	* Makefile.in (build/gencondmd.o): Be sure to use GTM_H instead of
 	TM_H when building to avoid dependency loops.
 
