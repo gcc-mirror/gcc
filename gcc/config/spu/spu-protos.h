@@ -1,4 +1,5 @@
-/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -17,8 +18,6 @@
 #ifndef _SPU_PROTOS_
 #define _SPU_PROTOS_
 
-#include "rtl.h"
-
 extern void spu_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern void builtin_define_std (const char *);
 extern void spu_optimization_options (int level, int size);
@@ -31,7 +30,6 @@ extern int spu_expand_block_move (rtx * ops);
 extern void spu_emit_branch_or_set (int is_set, rtx cmp, rtx * operands);
 extern int spu_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern HOST_WIDE_INT const_double_to_hwint (rtx x);
-extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
 extern void print_operand_address (FILE * file, register rtx addr);
 extern void print_operand (FILE * file, rtx x, int code);
 extern int spu_split_immediate (rtx * ops);
@@ -40,6 +38,9 @@ extern int direct_return (void);
 extern void spu_expand_prologue (void);
 extern void spu_expand_epilogue (unsigned char sibcall_p);
 extern rtx spu_return_addr (int count, rtx frame);
+
+#ifdef RTX_CODE
+extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
 extern rtx spu_const (enum machine_mode mode, HOST_WIDE_INT val);
 extern rtx spu_const_from_ints (enum machine_mode mode, 
 			        int a, int b, int c, int d);
@@ -83,6 +84,8 @@ extern void spu_builtin_insert (rtx ops[]);
 extern void spu_builtin_promote (rtx ops[]);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
+#endif /* RTX_CODE  */
+
 extern void spu_init_expanders (void);
 extern void spu_split_convert (rtx *);
 extern void spu_function_profiler (FILE *, int);
@@ -94,4 +97,5 @@ extern rtx spu_expand_builtin (tree exp, rtx target, rtx subtarget,
 			       enum machine_mode mode, int ignore);
 extern rtx spu_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 
-#endif
+#endif /* _SPU_PROTOS_  */
+
