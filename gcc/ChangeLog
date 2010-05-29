@@ -146,9 +146,10 @@
 
 2010-05-28  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-reference.c (add_static_var): Remove redundant all_module_statics check.
-	(ipa_reference_write_optimization_summary): Call is_proper_for_analysis only
-	on local statics.
+	* ipa-reference.c (add_static_var): Remove redundant all_module_statics
+	check.
+	(ipa_reference_write_optimization_summary): Call is_proper_for_analysis
+	only on local statics.
 
 2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -228,7 +229,7 @@
 
 2010-05-28  Dodji Seketeli  <dodji@redhat.com>
 
-	revert fix for PR c++/44188
+	Revert fix for PR c++/44188
 	* c-common.c (is_typedef_decl): Revert the moving of  this
 	definition ...
 	* tree.c (is_typedef_decl): ... here.
@@ -245,7 +246,6 @@
 	tagged type handling.
 	(gen_typedef_die): Revert emitting DW_TAG_typedef  for
 	typedefs naming anonymous tagged types.
-
 
 2010-05-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
