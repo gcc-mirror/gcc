@@ -5,8 +5,9 @@
 
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphunit.c (cgraph_materialize_clone): Only remove calles, refs and body;
-	not the whole node for masters of materialized clones.
+	* cgraphunit.c (cgraph_materialize_clone): Only remove calles,
+	refs and body; not the whole node for masters of materialized
+	clones.
 
 2010-05-29  Mike Stump  <mikestump@comcast.net>
 
