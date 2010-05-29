@@ -1,3 +1,8 @@
+2010-05-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44306
+	* gcc.dg/tree-ssa/pr44306.c: New.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/ipa-cp-1.c: Update testcase.

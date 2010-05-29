@@ -1,5 +1,13 @@
 2010-05-29  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/44306
+	* tree-if-conv.c (is_true_predicate): New.
+	(is_predicated): Use is_true_predicate.
+	(add_to_predicate_list): Same.  Do not use unshare_expr.
+	(add_to_dst_predicate_list): Same.
+
+2010-05-29  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (add_to_dst_predicate_list): Do not use the ->aux
 	field on edges.
 	(predicate_bbs): Same.
