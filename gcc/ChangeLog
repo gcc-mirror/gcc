@@ -1,3 +1,7 @@
+2010-05-29  Mike Stump  <mikestump@comcast.net>
+
+	* config/rs6000/rs6000-c.c: Remove c-tree.h include.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (clone_function_name): Take SUFFIX argument; export.

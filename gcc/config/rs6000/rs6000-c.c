@@ -29,7 +29,6 @@
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"
-#include "c-tree.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
