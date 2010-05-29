@@ -2311,7 +2311,11 @@ cgraph_materialize_clone (struct cgraph_node *node)
   node->next_sibling_clone = NULL;
   node->prev_sibling_clone = NULL;
   if (!node->clone_of->analyzed && !node->clone_of->clones)
-    cgraph_remove_node (node->clone_of);
+    {
+      cgraph_release_function_body (node->clone_of);
+      cgraph_node_remove_callees (node->clone_of);
+      ipa_remove_all_references (&node->clone_of->ref_list);
+    }
   node->clone_of = NULL;
   bitmap_obstack_release (NULL);
 }
