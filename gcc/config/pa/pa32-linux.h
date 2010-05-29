@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 "	.text\n"							\
 "	.word __canonicalize_funcptr_for_compare-$PIC_pcrel$0");	\
   STATIC func_ptr __CTOR_LIST__[1]					\
-    __attribute__ ((__unused__, section(".ctors"),			\
+    __attribute__ ((__used__, section(".ctors"),			\
 		    aligned(sizeof(func_ptr))))				\
     = { (func_ptr) (-1) }
 
