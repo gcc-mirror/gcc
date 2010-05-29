@@ -266,12 +266,21 @@ print_lto_report (void)
 	     lto_section_name[i], lto_stats.section_size[i]);
 }
 
+/* We cache a single bitpack assuming that usually at most one is
+   life.  This saves repeated re-allocations.  */
+static struct bitpack_d *cached_bp;
 
 /* Create a new bitpack.  */
 
 struct bitpack_d *
 bitpack_create (void)
 {
+  if (cached_bp)
+    {
+      struct bitpack_d *bp = cached_bp;
+      cached_bp = NULL;
+      return bp;
+    }
   return XCNEW (struct bitpack_d);
 }
 
@@ -281,6 +290,14 @@ bitpack_create (void)
 void
 bitpack_delete (struct bitpack_d *bp)
 {
+  if (!cached_bp)
+    {
+      bp->num_bits = 0;
+      bp->first_unused_bit = 0;
+      VEC_truncate (bitpack_word_t, bp->values, 0);
+      cached_bp = bp;
+      return;
+    }
   VEC_free (bitpack_word_t, heap, bp->values);
   free (bp);
 }
@@ -324,7 +341,9 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
   bitpack_word_t word;
 
   /* We cannot encode more bits than BITS_PER_BITPACK_WORD.  */
+#ifdef ENABLE_CHECKING
   gcc_assert (nbits > 0 && nbits <= BITS_PER_BITPACK_WORD);
+#endif
 
   /* Compute which word will contain the next NBITS.  */
   ix = bp_get_next_word (bp, nbits);
@@ -334,7 +353,6 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 	 array, add a new word.  Additionally, we should only
 	 need to add a single word, since every pack operation cannot
 	 use more bits than fit in a single word.  */
-      gcc_assert (ix < VEC_length (bitpack_word_t, bp->values) + 1);
       VEC_safe_push (bitpack_word_t, heap, bp->values, 0);
     }
 
@@ -343,7 +361,6 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 
   /* To fit VAL in WORD, we need to shift VAL to the left to
      skip the bottom BP->FIRST_UNUSED_BIT bits.  */
-  gcc_assert (BITS_PER_BITPACK_WORD >= bp->first_unused_bit + nbits);
   val <<= bp->first_unused_bit;
 
   /* Update WORD with VAL.  */
