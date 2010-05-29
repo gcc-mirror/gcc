@@ -115,6 +115,6 @@ spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 spu-c.o: $(srcdir)/config/spu/spu-c.c \
     $(srcdir)/config/spu/spu-protos.h \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPPLIB_H) \
-    $(TM_P_H) c-pragma.h coretypes.h $(TM_H) insn-codes.h
+    $(TM_P_H) $(C_COMMON_H) $(C_PRAGMA_H) coretypes.h $(TM_H) insn-codes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/spu/spu-c.c

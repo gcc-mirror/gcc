@@ -20,7 +20,7 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-tree.h"
+#include "c-common.h"
 #include "c-pragma.h"
 #include "tm_p.h"
 #include "langhooks.h"

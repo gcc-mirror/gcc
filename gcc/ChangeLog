@@ -1,3 +1,10 @@
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/spu/spu-protos.h: Do not include rtl.h.  Protect
+	RTL specific prototypes with #ifdef RTX_CODE.
+	* config/spu/spu-c.c: Include c-common.h instead of c-tree.h.
+	* config/spu/t-spu-elf: Fix dependencies.
+
 2010-05-29  Mike Stump  <mikestump@comcast.net>
 
 	* Makefile.in (build/gencondmd.o): Be sure to use GTM_H instead of
