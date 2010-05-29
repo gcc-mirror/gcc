@@ -1,3 +1,8 @@
+2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h (struct cp_decl_specifier_seq): Move type_location field up.
+	(struct cp_declarator): Move id_loc field up.
+
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cp-tree.h (ATTRIBUTE_GCC_CXXDIAG): Remove.  Require that
