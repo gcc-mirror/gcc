@@ -232,7 +232,7 @@ dump_referenced_vars (FILE *file)
 
 /* Dump the list of all the referenced variables to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_referenced_vars (void)
 {
   dump_referenced_vars (stderr);
@@ -305,7 +305,7 @@ dump_variable (FILE *file, tree var)
 
 /* Dump variable VAR and its may-aliases to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_variable (tree var)
 {
   dump_variable (stderr, var);
@@ -392,7 +392,7 @@ dump_dfa_stats (FILE *file)
 
 /* Dump DFA statistics on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_dfa_stats (void)
 {
   dump_dfa_stats (stderr);

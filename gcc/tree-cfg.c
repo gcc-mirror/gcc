@@ -2110,7 +2110,7 @@ dump_cfg_stats (FILE *file)
 /* Dump CFG statistics on stderr.  Keep extern so that it's always
    linked in the final executable.  */
 
-void
+DEBUG_FUNCTION void
 debug_cfg_stats (void)
 {
   dump_cfg_stats (stderr);
@@ -4074,7 +4074,7 @@ verify_eh_throw_stmt_node (void **slot, void *data)
 
 /* Verify the GIMPLE statements in every basic block.  */
 
-void
+DEBUG_FUNCTION void
 verify_stmts (void)
 {
   basic_block bb;
@@ -6314,7 +6314,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
 /* Dump FUNCTION_DECL FN to stderr using FLAGS (see TDF_* in tree.h)  */
 
-void
+DEBUG_FUNCTION void
 debug_function (tree fn, int flags)
 {
   dump_function_to_file (fn, stderr, flags);
@@ -6455,7 +6455,7 @@ print_loops (FILE *file, int verbosity)
 
 /* Debugging loops structure at tree level, at some VERBOSITY level.  */
 
-void
+DEBUG_FUNCTION void
 debug_loops (int verbosity)
 {
   print_loops (stderr, verbosity);
@@ -6463,7 +6463,7 @@ debug_loops (int verbosity)
 
 /* Print on stderr the code of LOOP, at some VERBOSITY level.  */
 
-void
+DEBUG_FUNCTION void
 debug_loop (struct loop *loop, int verbosity)
 {
   print_loop (stderr, loop, 0, verbosity);
@@ -6472,7 +6472,7 @@ debug_loop (struct loop *loop, int verbosity)
 /* Print on stderr the code of loop number NUM, at some VERBOSITY
    level.  */
 
-void
+DEBUG_FUNCTION void
 debug_loop_num (unsigned num, int verbosity)
 {
   debug_loop (get_loop (num), verbosity);

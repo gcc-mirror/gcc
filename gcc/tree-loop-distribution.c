@@ -970,7 +970,7 @@ dump_rdg_partitions (FILE *file, VEC (bitmap, heap) *partitions)
 /* Debug PARTITIONS.  */
 extern void debug_rdg_partitions (VEC (bitmap, heap) *);
 
-void
+DEBUG_FUNCTION void
 debug_rdg_partitions (VEC (bitmap, heap) *partitions)
 {
   dump_rdg_partitions (stderr, partitions);

@@ -857,7 +857,7 @@ error:
 /* Verify common invariants in the SSA web.
    TODO: verify the variable annotations.  */
 
-void
+DEBUG_FUNCTION void
 verify_ssa (bool check_modified_stmt)
 {
   size_t i;

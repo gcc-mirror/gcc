@@ -7337,7 +7337,7 @@ static const char *const reload_when_needed_name[] =
 
 /* These functions are used to print the variables set by 'find_reloads' */
 
-void
+DEBUG_FUNCTION void
 debug_reload_to_stream (FILE *f)
 {
   int r;
@@ -7432,7 +7432,7 @@ debug_reload_to_stream (FILE *f)
     }
 }
 
-void
+DEBUG_FUNCTION void
 debug_reload (void)
 {
   debug_reload_to_stream (stderr);

@@ -818,7 +818,7 @@ print_aff (FILE *file, aff_tree *val)
 
 /* Prints the affine VAL to the standard error, used for debugging.  */
 
-void
+DEBUG_FUNCTION void
 debug_aff (aff_tree *val)
 {
   print_aff (stderr, val);

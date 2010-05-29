@@ -358,7 +358,7 @@ dump_alias_info (FILE *file)
 
 /* Dump alias information on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_alias_info (void)
 {
   dump_alias_info (stderr);
@@ -437,7 +437,7 @@ dump_points_to_info_for (FILE *file, tree ptr)
 
 /* Dump points-to information for VAR into stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_points_to_info_for (tree var)
 {
   dump_points_to_info_for (stderr, var);

@@ -3307,7 +3307,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 
 /* Dump the EH tree for FN on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_eh_tree (struct function *fn)
 {
   dump_eh_tree (stderr, fn);
@@ -3315,7 +3315,7 @@ debug_eh_tree (struct function *fn)
 
 /* Verify invariants on EH datastructures.  */
 
-void
+DEBUG_FUNCTION void
 verify_eh_tree (struct function *fun)
 {
   eh_region r, outer;

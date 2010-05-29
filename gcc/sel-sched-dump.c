@@ -164,7 +164,7 @@ dump_insn_rtx (rtx insn)
 
 
 /* Dump INSN to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_insn_rtx (rtx insn)
 {
   switch_dump (stderr);
@@ -214,7 +214,7 @@ dump_vinsn (vinsn_t vi)
 }
 
 /* Dump vinsn VI to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_vinsn (vinsn_t vi)
 {
   switch_dump (stderr);
@@ -295,7 +295,7 @@ dump_expr (expr_t expr)
 }
 
 /* Dump expression EXPR to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_expr (expr_t expr)
 {
   switch_dump (stderr);
@@ -353,7 +353,7 @@ dump_insn (insn_t i)
 }
 
 /* Dump INSN to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_insn (insn_t insn)
 {
   switch_dump (stderr);
@@ -861,7 +861,7 @@ sel_debug_cfg_1 (int flags)
 }
 
 /* Dumps av_set AV to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_av_set (av_set_t av)
 {
   switch_dump (stderr);
@@ -871,7 +871,7 @@ debug_av_set (av_set_t av)
 }
 
 /* Dump LV to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_lv_set (regset lv)
 {
   switch_dump (stderr);
@@ -881,7 +881,7 @@ debug_lv_set (regset lv)
 }
 
 /* Dump an instruction list P to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_ilist (ilist_t p)
 {
   switch_dump (stderr);
@@ -891,7 +891,7 @@ debug_ilist (ilist_t p)
 }
 
 /* Dump a boundary list BNDS to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_blist (blist_t bnds)
 {
   switch_dump (stderr);
@@ -901,7 +901,7 @@ debug_blist (blist_t bnds)
 }
 
 /* Dump an insn vector SUCCS.  */
-void
+DEBUG_FUNCTION void
 debug_insn_vector (rtx_vec_t succs)
 {
   switch_dump (stderr);
@@ -911,7 +911,7 @@ debug_insn_vector (rtx_vec_t succs)
 }
 
 /* Dump a hard reg set SET to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_hard_reg_set (HARD_REG_SET set)
 {
   switch_dump (stderr);
@@ -928,7 +928,7 @@ sel_debug_cfg (void)
 }
 
 /* Print a current cselib value for X's address to stderr.  */
-rtx
+DEBUG_FUNCTION rtx
 debug_mem_addr_value (rtx x)
 {
   rtx t, addr;

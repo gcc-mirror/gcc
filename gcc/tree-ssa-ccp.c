@@ -261,7 +261,7 @@ dump_lattice_value (FILE *outf, const char *prefix, prop_value_t val)
 
 void debug_lattice_value (prop_value_t val);
 
-void
+DEBUG_FUNCTION void
 debug_lattice_value (prop_value_t val)
 {
   dump_lattice_value (stderr, "", val);

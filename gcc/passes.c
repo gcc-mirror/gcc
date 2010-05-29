@@ -121,7 +121,7 @@ print_current_pass (FILE *file)
 
 
 /* Call from the debugger to get the current pass name.  */
-void
+DEBUG_FUNCTION void
 debug_pass (void)
 {
   print_current_pass (stderr);
@@ -1988,7 +1988,7 @@ execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple *stmts)
 extern void debug_properties (unsigned int);
 extern void dump_properties (FILE *, unsigned int);
 
-void
+DEBUG_FUNCTION void
 dump_properties (FILE *dump, unsigned int props)
 {
   fprintf (dump, "Properties:\n");
@@ -2012,9 +2012,11 @@ dump_properties (FILE *dump, unsigned int props)
     fprintf (dump, "PROP_gimple_lomp\n");
   if (props & PROP_gimple_lcx)
     fprintf (dump, "PROP_gimple_lcx\n");
+  if (props & PROP_cfglayout)
+    fprintf (dump, "PROP_cfglayout\n");
 }
 
-void
+DEBUG_FUNCTION void
 debug_properties (unsigned int props)
 {
   dump_properties (stderr, props);

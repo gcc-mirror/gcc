@@ -88,7 +88,7 @@ current_ir_type (void)
    Currently it does following: checks edge and basic block list correctness
    and calls into IL dependent checking then.  */
 
-void
+DEBUG_FUNCTION void
 verify_flow_info (void)
 {
   size_t *edge_checksum;

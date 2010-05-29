@@ -778,7 +778,7 @@ plugins_active_p (void)
 /* Dump to FILE the names and associated events for all the active
    plugins.  */
 
-void
+DEBUG_FUNCTION void
 dump_active_plugins (FILE *file)
 {
   int event;
@@ -804,7 +804,7 @@ dump_active_plugins (FILE *file)
 
 /* Dump active plugins to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_active_plugins (void)
 {
   dump_active_plugins (stderr);

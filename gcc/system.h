@@ -873,4 +873,14 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define VALGRIND_FREELIKE_BLOCK(x,y)
 #endif
 
+/* In LTO -fwhole-program build we still want to keep the debug functions available
+   for debugger.  Mark them as used to prevent removal.  */
+#if (GCC_VERSION > 4000)
+#define DEBUG_FUNCTION __attribute__ ((__used__))
+#define DEBUG_VARIABLE __attribute__ ((__used__))
+#else
+#define DEBUG_FUNCTION
+#define DEBUG_VARIABLE
+#endif
+
 #endif /* ! GCC_SYSTEM_H */

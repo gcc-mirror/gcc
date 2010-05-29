@@ -386,7 +386,7 @@ visit_hist (void **slot, void *data)
 
 /* Verify sanity of the histograms.  */
 
-void
+DEBUG_FUNCTION void
 verify_histograms (void)
 {
   basic_block bb;

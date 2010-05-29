@@ -1915,7 +1915,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
 /* Dump call graph node NODE to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_cgraph_node (struct cgraph_node *node)
 {
   dump_cgraph_node (stderr, node);
@@ -1937,7 +1937,7 @@ dump_cgraph (FILE *f)
 
 /* Dump the call graph to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_cgraph (void)
 {
   dump_cgraph (stderr);

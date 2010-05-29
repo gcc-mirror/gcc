@@ -813,7 +813,7 @@ normalize_offset (tree *poffset, tree *pbitpos, unsigned int off_align)
 
 /* Print debugging information about the information in RLI.  */
 
-void
+DEBUG_FUNCTION void
 debug_rli (record_layout_info rli)
 {
   print_node_brief (stderr, "type", rli->t, 0);

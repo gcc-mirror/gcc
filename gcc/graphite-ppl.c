@@ -580,7 +580,7 @@ ppl_print_linear_expr (FILE *file, ppl_Linear_Expression_t le)
 
 /* Print to STDERR the linear expression LE.  */
 
-void
+DEBUG_FUNCTION void
 debug_ppl_linear_expr (ppl_Linear_Expression_t le)
 {
   ppl_print_linear_expr (stderr, le);
@@ -618,7 +618,7 @@ ppl_print_powerset_matrix (FILE *file,
 
 /* Print to STDERR the polyhedron PH under its PolyLib matrix form.  */
 
-void
+DEBUG_FUNCTION void
 debug_ppl_polyhedron_matrix (ppl_Polyhedron_t ph)
 {
   ppl_print_polyhedron_matrix (stderr, ph);
@@ -626,7 +626,7 @@ debug_ppl_polyhedron_matrix (ppl_Polyhedron_t ph)
 
 /* Print to STDERR the powerset PS in its PolyLib matrix form.  */
 
-void
+DEBUG_FUNCTION void
 debug_ppl_powerset_matrix (ppl_Pointset_Powerset_C_Polyhedron_t ps)
 {
   ppl_print_powerset_matrix (stderr, ps);

@@ -354,7 +354,7 @@ extract_edgelst (sbitmap set, edgelst *el)
 
 /* Print the regions, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_regions (void)
 {
   int rgn, bb;
@@ -379,7 +379,7 @@ debug_regions (void)
 
 /* Print the region's basic blocks.  */
 
-void
+DEBUG_FUNCTION void
 debug_region (int rgn)
 {
   int bb;
@@ -1594,7 +1594,7 @@ free_trg_info (void)
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_candidate (int i)
 {
   if (!candidate_table[i].is_valid)
@@ -1631,7 +1631,7 @@ debug_candidate (int i)
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_candidates (int trg)
 {
   int i;
@@ -2775,7 +2775,7 @@ free_pending_lists (void)
    Callable from debugger.  */
 /* Print dependences for debugging starting from FROM_BB.
    Callable from debugger.  */
-void
+DEBUG_FUNCTION void
 debug_rgn_dependencies (int from_bb)
 {
   int bb;

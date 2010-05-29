@@ -389,7 +389,7 @@ free_edge_list (struct edge_list *elist)
 
 /* This function provides debug output showing an edge list.  */
 
-void
+DEBUG_FUNCTION void
 print_edge_list (FILE *f, struct edge_list *elist)
 {
   int x;
@@ -416,7 +416,7 @@ print_edge_list (FILE *f, struct edge_list *elist)
    verifying that all edges are present, and that there are no
    extra edges.  */
 
-void
+DEBUG_FUNCTION void
 verify_edge_list (FILE *f, struct edge_list *elist)
 {
   int pred, succ, index;

@@ -2537,7 +2537,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
 /* Go through all the RTL insn bodies and check that there is no unexpected
    sharing in between the subexpressions.  */
 
-void
+DEBUG_FUNCTION void
 verify_rtl_sharing (void)
 {
   rtx p;

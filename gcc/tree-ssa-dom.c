@@ -1042,7 +1042,7 @@ dump_dominator_optimization_stats (FILE *file)
 
 /* Dump SSA statistics on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_dominator_optimization_stats (void)
 {
   dump_dominator_optimization_stats (stderr);

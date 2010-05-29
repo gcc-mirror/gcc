@@ -1057,7 +1057,7 @@ copyprop_hardreg_forward (void)
 
 /* Dump the value chain data to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_value_data (struct value_data *vd)
 {
   HARD_REG_SET set;

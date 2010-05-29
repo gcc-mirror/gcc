@@ -645,7 +645,7 @@ found:
 
 /* Prints the page-entry for object size ORDER, for debugging.  */
 
-void
+DEBUG_FUNCTION void
 debug_print_page_list (int order)
 {
   page_entry *p;

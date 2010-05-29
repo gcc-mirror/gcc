@@ -989,7 +989,7 @@ bb_dom_dfs_out (enum cdi_direction dir, basic_block bb)
 }
 
 /* Verify invariants of dominator structure.  */
-void
+DEBUG_FUNCTION void
 verify_dominators (enum cdi_direction dir)
 {
   int err = 0;
@@ -1466,7 +1466,7 @@ dom_info_available_p (enum cdi_direction dir)
   return dom_computed[dir_index] != DOM_NONE;
 }
 
-void
+DEBUG_FUNCTION void
 debug_dominance_info (enum cdi_direction dir)
 {
   basic_block bb, bb2;
@@ -1507,7 +1507,7 @@ debug_dominance_tree_1 (enum cdi_direction dir, basic_block root,
 /* Prints to stderr representation of the dominance tree (for direction DIR)
    rooted in ROOT.  */
 
-void
+DEBUG_FUNCTION void
 debug_dominance_tree (enum cdi_direction dir, basic_block root)
 {
   debug_dominance_tree_1 (dir, root, 0, false);

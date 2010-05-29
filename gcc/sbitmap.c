@@ -1011,7 +1011,7 @@ dump_sbitmap_file (FILE *file, const_sbitmap bmap)
   fprintf (file, "}\n");
 }
 
-void
+DEBUG_FUNCTION void
 debug_sbitmap (const_sbitmap bmap)
 {
   dump_sbitmap_file (stderr, bmap);
