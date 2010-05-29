@@ -1852,10 +1852,10 @@ struct ix86_frame
   int nregs;
   int padding1;
   int va_arg_size;
+  int red_zone_size;
   HOST_WIDE_INT frame;
   int padding2;
   int outgoing_arguments_size;
-  int red_zone_size;
 
   HOST_WIDE_INT to_allocate;
   /* The offsets relative to ARG_POINTER.  */

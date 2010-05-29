@@ -46,8 +46,8 @@ struct optab_handlers
 struct optab_d
 {
   enum rtx_code code;
-  const char *libcall_basename;
   char libcall_suffix;
+  const char *libcall_basename;
   void (*libcall_gen)(struct optab_d *, const char *name, char suffix,
 		      enum machine_mode);
   struct optab_handlers handlers[NUM_MACHINE_MODES];

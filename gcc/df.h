@@ -364,6 +364,7 @@ struct df_base_ref
   ENUM_BITFIELD(df_ref_type) type : 8;
 				/* Type of ref.  */
   int flags : 16;		/* Various df_ref_flags.  */
+  unsigned int regno;		/* The register number referenced.  */
   rtx reg;			/* The register referenced.  */
   struct df_link *chain;	/* Head of def-use, use-def.  */
   /* Pointer to the insn info of the containing instruction.  FIXME!
@@ -375,7 +376,6 @@ struct df_base_ref
      themselves rather than using an external structure.  */
   union df_ref_d *next_reg;     /* Next ref with same regno and type.  */
   union df_ref_d *prev_reg;     /* Prev ref with same regno and type.  */
-  unsigned int regno;		/* The register number referenced.  */
   /* Location in the ref table.  This is only valid after a call to
      df_maybe_reorganize_[use,def]_refs which is an expensive operation.  */
   int id;

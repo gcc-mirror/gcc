@@ -1,3 +1,14 @@
+2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* basic-block.h (struct control_flow_graph): Move last_label_uid field up.
+	* df.h (struct df_base_ref): Move regno field up.
+	* dwarf2out.c (struct dw_fde_struct): Move funcdef_number field down.
+	* expr.h (struct separate_ops): Move location field up.
+	* optabs.h (struct optab_d): Move libcall_basename field down.
+	* config/i386/i386.c (struct ix86_frame): Move red_zone_size up.
+	* config/i386/i386.h (struct machine_function): Convert call_abi field
+	into a bitfield.  Move cfa field to the end of the structure.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* varpool.c (varpool_get_node): Fix lookup.
