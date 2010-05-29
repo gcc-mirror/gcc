@@ -1,3 +1,8 @@
+2010-05-29  Mike Stump  <mikestump@comcast.net>
+
+	* configure.ac: Add multilib support for gmp.  Proper -I and -L
+	flags for gmp are added.
+
 2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Redirect grep stdout, stderr to /dev/null instead
