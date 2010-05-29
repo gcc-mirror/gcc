@@ -2106,10 +2106,9 @@ static struct cgraph_node *
 cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 				 tree new_decl,
 				 VEC(cgraph_edge_p,heap) *redirect_callers)
- {
+{
    struct cgraph_node *new_version;
    struct cgraph_edge *e;
-   struct cgraph_edge *next_callee;
    unsigned i;
 
    gcc_assert (old_version);
@@ -2118,34 +2117,24 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 
    new_version->analyzed = true;
    new_version->local = old_version->local;
+   new_version->local.externally_visible = false;
+   new_version->local.local = true;
+   new_version->local.vtable_method = false;
    new_version->global = old_version->global;
    new_version->rtl = new_version->rtl;
    new_version->reachable = true;
    new_version->count = old_version->count;
 
-   /* Clone the old node callees.  Recursive calls are
-      also cloned.  */
-   for (e = old_version->callees;e; e=e->next_callee)
-     {
-       cgraph_clone_edge (e, new_version, e->call_stmt,
-			  e->lto_stmt_uid, REG_BR_PROB_BASE,
-			  CGRAPH_FREQ_BASE,
-			  e->loop_nest, true);
-     }
-   /* Fix recursive calls.
-      If OLD_VERSION has a recursive call after the
-      previous edge cloning, the new version will have an edge
-      pointing to the old version, which is wrong;
-      Redirect it to point to the new version. */
-   for (e = new_version->callees ; e; e = next_callee)
-     {
-       next_callee = e->next_callee;
-       if (e->callee == old_version)
-	 cgraph_redirect_edge_callee (e, new_version);
-
-       if (!next_callee)
-	 break;
-     }
+   for (e = old_version->callees; e; e=e->next_callee)
+     cgraph_clone_edge (e, new_version, e->call_stmt,
+			e->lto_stmt_uid, REG_BR_PROB_BASE,
+			CGRAPH_FREQ_BASE,
+			e->loop_nest, true);
+   for (e = old_version->indirect_calls; e; e=e->next_callee)
+     cgraph_clone_edge (e, new_version, e->call_stmt,
+			e->lto_stmt_uid, REG_BR_PROB_BASE,
+			CGRAPH_FREQ_BASE,
+			e->loop_nest, true);
    for (i = 0; VEC_iterate (cgraph_edge_p, redirect_callers, i, e); i++)
      {
        /* Redirect calls to the old version node to point to its new
@@ -2175,7 +2164,8 @@ struct cgraph_node *
 cgraph_function_versioning (struct cgraph_node *old_version_node,
 			    VEC(cgraph_edge_p,heap) *redirect_callers,
 			    VEC (ipa_replace_map_p,gc)* tree_map,
-			    bitmap args_to_skip)
+			    bitmap args_to_skip,
+			    const char *clone_name)
 {
   tree old_decl = old_version_node->decl;
   struct cgraph_node *new_version_node = NULL;

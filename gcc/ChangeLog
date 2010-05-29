@@ -1,3 +1,19 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (clone_function_name): Take SUFFIX argument; export.
+	(cgraph_create_virtual_clone): Take SUFFIX argument; udpate
+	use of clone_function_name.
+	* cgraph.h (cgraph_create_virtual_clone, 
+	cgraph_function_versioning): update prototypes.
+	(clone_function_name): Declare.
+	* ipa-cp.c (ipcp_insert_stage): Update call of
+	cgraph_create_virtual_clone.
+	* omp-low.c (create_omp_child_function_name): Use
+	cgraph_create_virtual_clone.
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Fix edges updating.
+	(cgraph_function_versioning): Take SUFFIX argument; produce new name
+	and make decl local.
+
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* vec.h: Include statistics.h
