@@ -1,3 +1,19 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (bitmap vector): Remove.
+	(lto_cgraph_node_sets,  lto_varpool_node_sets): Remove.
+	(ltrans_partition_def): New structure.
+	(ltrans_partition): New type and VECtor.
+	(new_partition): New function.
+	(add_cgraph_node_to_partition): New function.
+	(lto_1_to_1_map): Reorganize for partitions.
+	(lto_add_inline_clones): Remove.
+	(lto_add_all_inlinees): Remove.
+	(lto_promote_cross_file_statics): Use partitions.
+	(cmp_partitions): New function.
+	(lto_wpa_write_files): Do not call lto_add_all_inlinees;
+	use partitions; output files sorted by size.
+
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Make-lang.in: Replace vec.h dependency with VEC_H.
