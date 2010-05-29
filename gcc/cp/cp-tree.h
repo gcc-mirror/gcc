@@ -4368,14 +4368,14 @@ typedef enum cp_decl_spec {
 typedef struct cp_decl_specifier_seq {
   /* The number of times each of the keywords has been seen.  */
   unsigned specs[(int) ds_last];
+  /* The location of the primary type. Mainly used for error
+     reporting.  */
+  location_t type_location;
   /* The primary type, if any, given by the decl-specifier-seq.
      Modifiers, like "short", "const", and "unsigned" are not
      reflected here.  This field will be a TYPE, unless a typedef-name
      was used, in which case it will be a TYPE_DECL.  */
   tree type;
-  /* The location of the primary type. Mainly used for error
-     reporting.  */
-  location_t type_location;
   /* The attributes, if any, provided with the specifier sequence.  */
   tree attributes;
   /* If non-NULL, a built-in type that the user attempted to redefine
@@ -4445,12 +4445,12 @@ struct cp_declarator {
   /* Whether we parsed an ellipsis (`...') just before the declarator,
      to indicate this is a parameter pack.  */
   BOOL_BITFIELD parameter_pack_p : 1;
+  location_t id_loc; /* Currently only set for cdk_id and cdk_function. */
   /* Attributes that apply to this declarator.  */
   tree attributes;
   /* For all but cdk_id and cdk_error, the contained declarator.  For
      cdk_id and cdk_error, guaranteed to be NULL.  */
   cp_declarator *declarator;
-  location_t id_loc; /* Currently only set for cdk_id and cdk_function. */
   union {
     /* For identifiers.  */
     struct {
