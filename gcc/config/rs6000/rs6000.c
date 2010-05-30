@@ -14299,10 +14299,8 @@ rs6000_output_function_entry (FILE *file, const char *fname)
 	  break;
 	}
     }
-  if (TARGET_AIX)
-    RS6000_OUTPUT_BASENAME (file, fname);
-  else
-    assemble_name (file, fname);
+
+  RS6000_OUTPUT_BASENAME (file, fname);
 }
 
 /* Print an operand.  Recognize special options, documented below.  */
@@ -20524,10 +20522,7 @@ rs6000_output_function_epilogue (FILE *file,
       /* Offset from start of code to tb table.  */
       fputs ("\t.long ", file);
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
-      if (TARGET_AIX)
-	RS6000_OUTPUT_BASENAME (file, fname);
-      else
-	assemble_name (file, fname);
+      RS6000_OUTPUT_BASENAME (file, fname);
       putc ('-', file);
       rs6000_output_function_entry (file, fname);
       putc ('\n', file);
