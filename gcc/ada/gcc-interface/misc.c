@@ -460,10 +460,10 @@ gnat_init_gcc_eh (void)
      right exception regions.  */
   using_eh_for_cleanups ();
 
-  /* Turn on -fexceptions and -fnon-call-exceptions. The first one triggers
-     the generation of the necessary exception runtime tables. The second one
-     is useful for two reasons: 1/ we map some asynchronous signals like SEGV
-     to exceptions, so we need to ensure that the insns which can lead to such
+  /* Turn on -fexceptions and -fnon-call-exceptions.  The first one triggers
+     the generation of the necessary exception tables.  The second one is
+     useful for two reasons: 1/ we map some asynchronous signals like SEGV to
+     exceptions, so we need to ensure that the insns which can lead to such
      signals are correctly attached to the exception region they pertain to,
      2/ Some calls to pure subprograms are handled as libcall blocks and then
      marked as "cannot trap" if the flag is not set (see emit_libcall_block).

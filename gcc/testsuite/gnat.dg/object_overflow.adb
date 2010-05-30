@@ -5,7 +5,7 @@ procedure Object_Overflow is
   procedure Proc (x : Boolean) is begin null; end;
 
   type Arr is array(Long_Integer) of Boolean;
-  Obj : Arr; -- { dg-warning "Storage_Error will be raised" }
+  Obj : Arr; -- { dg-warning "Storage_Error" }
 
 begin
   Obj(1) := True;
