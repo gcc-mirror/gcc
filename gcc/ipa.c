@@ -284,16 +284,19 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	     reachable too, unless they are direct calls to extern inline functions
 	     we decided to not inline.  */
 	  if (node->reachable)
-	    for (e = node->callees; e; e = e->next_callee)
-	      if (!e->callee->reachable
-		  && node->analyzed
-		  && (!e->inline_failed || !e->callee->analyzed
-		      || (!DECL_EXTERNAL (e->callee->decl))
-		      || before_inlining_p))
-		{
-		  e->callee->reachable = true;
-		  enqueue_cgraph_node (e->callee, &first);
-		}
+	    {
+	      for (e = node->callees; e; e = e->next_callee)
+		if (!e->callee->reachable
+		    && node->analyzed
+		    && (!e->inline_failed || !e->callee->analyzed
+			|| (!DECL_EXTERNAL (e->callee->decl))
+			|| before_inlining_p))
+		  {
+		    e->callee->reachable = true;
+		    enqueue_cgraph_node (e->callee, &first);
+		  }
+	      process_references (&node->ref_list, &first, &first_varpool, before_inlining_p);
+	    }
 
 	  /* If any function in a comdat group is reachable, force
 	     all other functions in the same comdat group to be
@@ -316,7 +319,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	     function is clone of real clone, we must keep it around in order to
 	     make materialize_clones produce function body with the changes
 	     applied.  */
-	  while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
+	  while (node->clone_of && !node->clone_of->aux
+	         && !gimple_has_body_p (node->decl))
 	    {
 	      bool noninline = node->clone_of->decl != node->decl;
 	      node = node->clone_of;
@@ -326,7 +330,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  break;
 		}
 	    }
-	  process_references (&node->ref_list, &first, &first_varpool, before_inlining_p);
 	}
       if (first_varpool != (struct varpool_node *) (void *) 1)
 	{
@@ -367,6 +370,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       if (node->aux && !node->reachable)
         {
 	  cgraph_node_remove_callees (node);
+	  ipa_remove_all_references (&node->ref_list);
 	  node->analyzed = false;
 	  node->local.inlinable = false;
 	}

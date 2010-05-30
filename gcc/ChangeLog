@@ -1,5 +1,11 @@
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (cgraph_remove_unreachable_node): Walk references of correct node;
+	remove references in node we no longer keep in cgrpah but need body
+	of.
+
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_mark_reachable): Relax check for analyzed nodes.
 
 2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
