@@ -1,5 +1,11 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
+	* dwarf2out.c (reference_to_unused,
+	premark_types_used_by_global_vars_helper): Avoid creating of new
+	varool nodes.
+
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_node_cannot_return,
 	cgraph_edge_cannot_lead_to_return): New functions.
 	* cgraph.c (cgraph_node_cannot_return,
