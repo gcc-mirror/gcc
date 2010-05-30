@@ -247,7 +247,7 @@
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
   do {									\
     unsigned HOST_WIDE_INT _new_size = SIZE;				\
-    fputs (".comm ", (FILE));						\
+    fputs ("\t.comm ", (FILE));						\
     RS6000_OUTPUT_BASENAME ((FILE), (NAME));				\
     if (_new_size == 0) _new_size = 1;					\
     fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", _new_size);	\

@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do {									\
     unsigned HOST_WIDE_INT _new_size = (SIZE);				\
-    fprintf ((FILE), ".comm ");						\
+    fprintf ((FILE), "\t.comm ");						\
     assemble_name ((FILE), (NAME));					\
     if (_new_size == 0) _new_size = 1;					\
     fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\

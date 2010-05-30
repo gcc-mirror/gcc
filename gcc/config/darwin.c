@@ -92,6 +92,10 @@ output_objc_section_asm_op (const void *directive)
 {
   static bool been_here = false;
 
+  /* The NeXT ObjC Runtime requires these sections to be present and in 
+     order in the object.  The code below implements this by emitting 
+     a section header for each ObjC section the first time that an ObjC
+     section is requested.  */
   if (! been_here)
     {
       static const enum darwin_section_enum tomark[] =
@@ -152,7 +156,8 @@ name_needs_quotes (const char *name)
 {
   int c;
   while ((c = *name++) != '\0')
-    if (! ISIDNUM (c) && c != '.' && c != '$')
+    if (! ISIDNUM (c) 
+	  && c != '.' && c != '$' && c != '_' )
       return 1;
   return 0;
 }
@@ -305,7 +310,7 @@ machopic_output_function_base_name (FILE *file)
       ++current_pic_label_num;
       function_base_func_name = current_name;
     }
-  fprintf (file, "\"L%011d$pb\"", current_pic_label_num);
+  fprintf (file, "L%011d$pb", current_pic_label_num);
 }
 
 /* The suffix attached to non-lazy pointer symbols.  */
@@ -1076,7 +1081,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 void
 darwin_mark_decl_preserved (const char *name)
 {
-  fprintf (asm_out_file, ".no_dead_strip ");
+  fprintf (asm_out_file, "\t.no_dead_strip ");
   assemble_name (asm_out_file, name);
   fputc ('\n', asm_out_file);
 }
