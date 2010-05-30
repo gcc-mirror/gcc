@@ -594,6 +594,8 @@ void cgraph_set_readonly_flag (struct cgraph_node *, bool);
 void cgraph_set_pure_flag (struct cgraph_node *, bool);
 void cgraph_set_looping_const_or_pure_flag (struct cgraph_node *, bool);
 tree clone_function_name (tree decl, const char *);
+bool cgraph_node_cannot_return (struct cgraph_node *);
+bool cgraph_edge_cannot_lead_to_return (struct cgraph_edge *);
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function (tree, bool);
