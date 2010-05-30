@@ -1,3 +1,9 @@
+2010-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_entry): Use
+	RS6000_OUTPUT_BASENAME unconditionally.
+	(rs6000_output_function_epilogue): Likewise.
+
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (wrapup_global_declaration_2): Avoid creation of new varpool
@@ -18,8 +24,8 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (reference_to_unused,
-	premark_types_used_by_global_vars_helper): Avoid creating of new
-	varool nodes.
+	premark_types_used_by_global_vars_helper): Avoid creation of new
+	varpool nodes.
 
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
@@ -42,14 +48,14 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (ipa_write_optimization_summaries_1, ipa_write_summaries_2,
-	ipa_read_summaries_1, ipa_read_optimization_summaries_1): Initilalize dump
-	files.
+	ipa_read_summaries_1, ipa_read_optimization_summaries_1): Initialize
+	dump files.
 
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (cgraph_remove_unreachable_node): Walk references of correct node;
-	remove references in node we no longer keep in cgrpah but need body
-	of.
+	* ipa.c (cgraph_remove_unreachable_node): Walk references of correct
+	node; remove references in node we no longer keep in cgrpah but need
+	body of.
 
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
@@ -94,15 +100,17 @@
 	debug_df_defno, debug_df_useno, debug_df_chain): Likewise.
 	* tree-ssa-dom.c (debug_dominator_optimization_stats): Likewise.
 	* sel-sched.c (debug_state): Likewise.
-	* tree-ssa-alias.c (debug_alias_info, debug_points_to_info_for): Likewise.
+	* tree-ssa-alias.c (debug_alias_info, debug_points_to_info_for):
+	Likewise.
 	* cfganal.c (print_edge_list, verify_edge_list): Likewise.
 	* dwarf2out.c (debug_dwarf_die, debug_dwarf): Likewise.
 	* tree-eh.c (verify_eh_edges, verify_eh_dispatch_edge): Likewise.
-	* gimple-pretty-print.c (debug_gimple_stmt, debug_gimple_seq): Likewise.
+	* gimple-pretty-print.c (debug_gimple_stmt, debug_gimple_seq):
+	Likewise.
 	* c-pretty-print.c (debug_c_tree): Likewise.
 	* sel-sched-dump.c (debug_insn_rtx, debug_vinsn, debug_expr, debug_insn
-	debug_av_set, debug_lv_set, debug_ilist, debug_blist, debug_insn_vector,
-	debug_hard_reg_set, debug_mem_addr_value): Likewise.
+	debug_av_set, debug_lv_set, debug_ilist, debug_blist,
+	debug_insn_vector, debug_hard_reg_set, debug_mem_addr_value): Likewise.
 	* ebitmap.c (debug_ebitmap): Likewise.
 	* function.c (debug_find_var_in_block_tree): Likewise.
 	* print-rtl.c (debug_rtx): Likewise.
@@ -110,11 +118,13 @@
 	(debug_rtx_list, debug_rtx_range, debug_rtx_find): Likewise.
 	* stor-layout.c (debug_rli): Likewise.
 	* ipa.c (debug_cgraph_node_set, debug_varpool_node_set): Likewise.
-	* tree-data-ref.c (debug_data_references, debug_data_dependence_relations,
-	debug_data_reference, debug_data_dependence_relation, debug_rdg_vertex,
+	* tree-data-ref.c (debug_data_references,
+	debug_data_dependence_relations, debug_data_reference,
+	debug_data_dependence_relation, debug_rdg_vertex,
 	debug_rdg_component, debug_rdg): Likewise.
 	* tree-affine.c (debug_aff): Likewise.
-	* tree-dfa.c (debug_referenced_vars, debug_variable, debug_dfa_stats): Likewise.
+	* tree-dfa.c (debug_referenced_vars, debug_variable, debug_dfa_stats):
+	Likewise.
 	* except.c (debug_eh_tree, verify_eh_tree): Likewise.
 	* emit-rtl.c (verify_rtl_sharing): Likewise.
 	* tree-ssa-pre.c (debug_pre_expr, debug_bitmap_set,
@@ -132,8 +142,8 @@
 	* tree-ssa.c (verify_ssa): Likewise.
 	* graphite-poly.c (debug_scattering_function, debug_iteration_domain,
 	debug_scattering_functions, debug_iteration_domains, debug_pdr,
-	debug_pdrs, debug_pbb_domain, debug_pbb, debug_scop_context, debug_scop,
-	debug_cloog, debug_scop_params, debug_lst): Likewise.
+	debug_pdrs, debug_pbb_domain, debug_pbb, debug_scop_context,
+	debug_scop, debug_cloog, debug_scop_params, debug_lst): Likewise.
 	* tree-inline.c (debug_find_tree): Likewise.
 	* graphite-ppl.c (debug_ppl_linear_expr, debug_ppl_polyhedron_matrix,
 	debug_ppl_powerset_matrix): Likewise.
@@ -216,7 +226,8 @@
 
 2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* basic-block.h (struct control_flow_graph): Move last_label_uid field up.
+	* basic-block.h (struct control_flow_graph): Move last_label_uid field
+	up.
 	* df.h (struct df_base_ref): Move regno field up.
 	* dwarf2out.c (struct dw_fde_struct): Move funcdef_number field down.
 	* expr.h (struct separate_ops): Move location field up.
