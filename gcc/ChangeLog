@@ -1,5 +1,12 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (cgraph_dump_file): Declare.
+	* cgraphunit.c (cgraph_dump_file): Export.
+	* ipa.c (dump_cgraph_node_set, dump_varpool_node_set): Be less
+	verbose.
+
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
 	* dwarf2out.c (reference_to_unused,
 	premark_types_used_by_global_vars_helper): Avoid creating of new
 	varool nodes.

@@ -145,7 +145,7 @@ static void cgraph_expand_function (struct cgraph_node *);
 static void cgraph_output_pending_asms (void);
 static void cgraph_analyze_function (struct cgraph_node *);
 
-static FILE *cgraph_dump_file;
+FILE *cgraph_dump_file;
 
 /* A vector of FUNCTION_DECLs declared as static constructors.  */
 static GTY (()) VEC(tree, gc) *static_ctors;

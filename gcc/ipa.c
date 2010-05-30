@@ -1002,8 +1002,9 @@ dump_cgraph_node_set (FILE *f, cgraph_node_set set)
   for (iter = csi_start (set); !csi_end_p (iter); csi_next (&iter))
     {
       struct cgraph_node *node = csi_node (iter);
-      dump_cgraph_node (f, node);
+      fprintf (f, " %s/%i", cgraph_node_name (node), node->uid);
     }
+  fprintf (f, "\n");
 }
 
 /* Dump content of SET to stderr.  */
@@ -1159,8 +1160,9 @@ dump_varpool_node_set (FILE *f, varpool_node_set set)
   for (iter = vsi_start (set); !vsi_end_p (iter); vsi_next (&iter))
     {
       struct varpool_node *node = vsi_node (iter);
-      dump_varpool_node (f, node);
+      fprintf (f, " %s", varpool_node_name (node));
     }
+  fprintf (f, "\n");
 }
 
 /* Dump content of SET to stderr.  */
