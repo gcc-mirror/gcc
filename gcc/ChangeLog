@@ -1,3 +1,10 @@
+2010-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42975
+	* tree-eh.c (execute_cleanup_eh_1): Copy from execute_cleanup_eh.
+	(execute_cleanup_eh): Clear DECL_FUNCTION_PERSONALITY if it is
+	no longer needed.
+
 2010-05-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (output_objc_section_asm_op): Add comment.
