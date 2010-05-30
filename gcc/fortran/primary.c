@@ -1754,8 +1754,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  && !gfc_is_proc_ptr_comp (primary, NULL)
 	  && !(gfc_matching_procptr_assignment
 	       && sym->attr.flavor == FL_PROCEDURE))
-      || (sym->ts.type == BT_CLASS
-	  && sym->ts.u.derived->components->attr.dimension))
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension))
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character
@@ -1890,16 +1889,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	    return m;
 	}
       else if (component->ts.type == BT_CLASS
-	       && component->ts.u.derived->components->as != NULL
+	       && CLASS_DATA (component)->as != NULL
 	       && !component->attr.proc_pointer)
 	{
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;
 
-	  m = gfc_match_array_ref (&tail->u.ar,
-				   component->ts.u.derived->components->as,
+	  m = gfc_match_array_ref (&tail->u.ar, CLASS_DATA (component)->as,
 				   equiv_flag,
-			   component->ts.u.derived->components->as->corank);
+				   CLASS_DATA (component)->as->corank);
 	  if (m != MATCH_YES)
 	    return m;
 	}
@@ -2000,9 +1998,9 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
   if (sym->ts.type == BT_CLASS)
     {
-      dimension = sym->ts.u.derived->components->attr.dimension;
-      pointer = sym->ts.u.derived->components->attr.pointer;
-      allocatable = sym->ts.u.derived->components->attr.allocatable;
+      dimension = CLASS_DATA (sym)->attr.dimension;
+      pointer = CLASS_DATA (sym)->attr.pointer;
+      allocatable = CLASS_DATA (sym)->attr.allocatable;
     }
   else
     {
@@ -2061,8 +2059,8 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	if (comp->ts.type == BT_CLASS)
 	  {
-	    pointer = comp->ts.u.derived->components->attr.pointer;
-	    allocatable = comp->ts.u.derived->components->attr.allocatable;
+	    pointer = CLASS_DATA (comp)->attr.pointer;
+	    allocatable = CLASS_DATA (comp)->attr.allocatable;
 	  }
 	else
 	  {
@@ -2110,9 +2108,9 @@ gfc_expr_attr (gfc_expr *e)
 	  attr = sym->attr;
 	  if (sym->ts.type == BT_CLASS)
 	    {
-	      attr.dimension = sym->ts.u.derived->components->attr.dimension;
-	      attr.pointer = sym->ts.u.derived->components->attr.pointer;
-	      attr.allocatable = sym->ts.u.derived->components->attr.allocatable;
+	      attr.dimension = CLASS_DATA (sym)->attr.dimension;
+	      attr.pointer = CLASS_DATA (sym)->attr.pointer;
+	      attr.allocatable = CLASS_DATA (sym)->attr.allocatable;
 	    }
 	}
       else

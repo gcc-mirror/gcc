@@ -1,3 +1,26 @@
+2010-05-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gcc/fortran/gfortran.h (CLASS_DATA): New macro for accessing the
+	$data component of a class container.
+	* gcc/fortran/decl.c (attr_decl1): Use macro CLASS_DATA.
+	* gcc/fortran/expr.c (gfc_check_pointer_assign,gfc_check_assign_symbol,
+	gfc_has_ultimate_allocatable,gfc_has_ultimate_pointer): Ditto.
+	* gcc/fortran/interface.c (matching_typebound_op): Ditto.
+	* gcc/fortran/match.c (gfc_match_allocate, gfc_match_deallocate): Ditto.
+	* gcc/fortran/parse.c (parse_derived): Ditto.
+	* gcc/fortran/primary.c (gfc_match_varspec, gfc_variable_attr,
+	gfc_expr_attr): Ditto.
+	* gcc/fortran/resolve.c (resolve_structure_cons, find_array_spec,
+	resolve_deallocate_expr, resolve_allocate_expr, resolve_select_type,
+	resolve_fl_var_and_proc, resolve_typebound_procedure,
+	resolve_fl_derived): Ditto.
+	* gcc/fortran/symbol.c (gfc_type_compatible): Restructured.
+	* gcc/fortran/trans-array.c (structure_alloc_comps): Use macro
+	CLASS_DATA.
+	* gcc/fortran/trans-decl.c (gfc_get_symbol_decl,
+	gfc_trans_deferred_vars): Ditto.
+	* gcc/fortran/trans-stmt.c (gfc_trans_allocate): Ditto.
+
 2010-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (gfc_handle_option): Fix handling of -fno-whole-file.

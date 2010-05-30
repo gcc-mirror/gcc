@@ -5755,19 +5755,16 @@ attr_decl1 (void)
   /* Update symbol table.  DIMENSION attribute is set in
      gfc_set_array_spec().  For CLASS variables, this must be applied
      to the first component, or '$data' field.  */
-  if (sym->ts.type == BT_CLASS && sym->ts.u.derived)
+  if (sym->ts.type == BT_CLASS)
     {
-      gfc_component *comp;
-      comp = gfc_find_component (sym->ts.u.derived, "$data", true, true);
-      if (comp == NULL || gfc_copy_attr (&comp->attr, &current_attr,
-					 &var_locus) == FAILURE)
+      if (gfc_copy_attr (&CLASS_DATA (sym)->attr, &current_attr,&var_locus)
+	  == FAILURE)
 	{
 	  m = MATCH_ERROR;
 	  goto cleanup;
 	}
-      sym->attr.class_ok = (sym->attr.class_ok
-			      || current_attr.allocatable
-			      || current_attr.pointer);
+      sym->attr.class_ok = (sym->attr.class_ok || current_attr.allocatable
+			    || current_attr.pointer);
     }
   else
     {

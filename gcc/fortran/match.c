@@ -2785,8 +2785,8 @@ gfc_match_allocate (void)
 	   && (tail->expr->ref->type == REF_COMPONENT
 		|| tail->expr->ref->type == REF_ARRAY));
       if (sym && sym->ts.type == BT_CLASS)
-	b2 = !(sym->ts.u.derived->components->attr.allocatable
-	       || sym->ts.u.derived->components->attr.pointer);
+	b2 = !(CLASS_DATA (sym)->attr.allocatable
+	       || CLASS_DATA (sym)->attr.pointer);
       else
 	b2 = sym && !(sym->attr.allocatable || sym->attr.pointer
 		      || sym->attr.proc_pointer);
@@ -3047,8 +3047,8 @@ gfc_match_deallocate (void)
 	   && (tail->expr->ref->type == REF_COMPONENT
 	       || tail->expr->ref->type == REF_ARRAY));
       if (sym && sym->ts.type == BT_CLASS)
-	b2 = !(sym->ts.u.derived->components->attr.allocatable
-	       || sym->ts.u.derived->components->attr.pointer);
+	b2 = !(CLASS_DATA (sym)->attr.allocatable
+	       || CLASS_DATA (sym)->attr.pointer);
       else
 	b2 = sym && !(sym->attr.allocatable || sym->attr.pointer
 		      || sym->attr.proc_pointer);

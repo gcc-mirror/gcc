@@ -4661,8 +4661,6 @@ gfc_type_is_extension_of (gfc_symbol *t1, gfc_symbol *t2)
 bool
 gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
 {
-  gfc_component *cmp1, *cmp2;
-
   bool is_class1 = (ts1->type == BT_CLASS);
   bool is_class2 = (ts2->type == BT_CLASS);
   bool is_derived1 = (ts1->type == BT_DERIVED);
@@ -4674,28 +4672,12 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   if (is_derived1 && is_derived2)
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
 
-  cmp1 = cmp2 = NULL;
-
-  if (is_class1)
-    {
-      cmp1 = gfc_find_component (ts1->u.derived, "$data", true, false);
-      if (cmp1 == NULL)
-	return 0;
-    }
-
-  if (is_class2)
-    {
-      cmp2 = gfc_find_component (ts2->u.derived, "$data", true, false);
-      if (cmp2 == NULL)
-	return 0;
-    }
-
   if (is_class1 && is_derived2)
-    return gfc_type_is_extension_of (cmp1->ts.u.derived, ts2->u.derived);
-
+    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+				     ts2->u.derived);
   else if (is_class1 && is_class2)
-    return gfc_type_is_extension_of (cmp1->ts.u.derived, cmp2->ts.u.derived);
-
+    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+				     ts2->u.derived->components->ts.u.derived);
   else
     return 0;
 }
