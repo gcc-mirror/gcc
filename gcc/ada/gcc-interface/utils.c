@@ -1380,7 +1380,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 
   /* For an external constant whose initializer is not absolute, do not emit
      debug info.  In DWARF this would mean a global relocation in a read-only
-     section which runs afoul of the PE-COFF runtime relocation mechanism.  */
+     section which runs afoul of the PE-COFF run-time relocation mechanism.  */
   if (extern_flag
       && constant_p
       && initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
@@ -2445,7 +2445,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	       make_descriptor_field ("CLASS", gnat_type_for_size (8, 1),
 				      record_type, size_int (klass)));
 
-  /* Of course this will crash at run-time if the address space is not
+  /* Of course this will crash at run time if the address space is not
      within the low 32 bits, but there is nothing else we can do.  */
   pointer32_type = build_pointer_type_for_mode (type, SImode, false);
 

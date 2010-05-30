@@ -448,7 +448,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 the regular processing take place, which leaves us with a regular
 	 exception data object for VMS exceptions too.  The condition code
 	 mapping is taken care of by the front end and the bitmasking by the
-	 runtime library.  */
+	 run-time library.  */
       goto object;
 
     case E_Discriminant:
@@ -1220,7 +1220,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
 		    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_alloc_type))
 		    && !Is_Imported (gnat_entity))
-		  post_error ("?Storage_Error will be raised at run-time!",
+		  post_error ("?`Storage_Error` will be raised at run time!",
 			      gnat_entity);
 
 		gnu_expr
@@ -3713,7 +3713,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = ptr_void_type_node;
       else
 	{
-	  /* The runtime representation is the equivalent type.  */
+	  /* The run-time representation is the equivalent type.  */
 	  gnu_type = gnat_to_gnu_type (gnat_equiv_type);
 	  maybe_present = true;
 	}

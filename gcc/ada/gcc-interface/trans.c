@@ -358,7 +358,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   void_ftype = build_function_type (void_type_node, NULL_TREE);
   ptr_void_ftype = build_pointer_type (void_ftype);
 
-  /* Now declare runtime functions.  */
+  /* Now declare run-time functions.  */
   t = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
   /* malloc is a function declaration tree for a function to allocate
@@ -1683,7 +1683,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_prefix);
 
 	/* Cache the expression we have just computed.  Since we want to do it
-	   at runtime, we force the use of a SAVE_EXPR and let the gimplifier
+	   at run time, we force the use of a SAVE_EXPR and let the gimplifier
 	   create the temporary.  */
 	if (pa)
 	  {
@@ -1930,8 +1930,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
       is parenthesized. This still has the Etype of the name, but since it is
       not a name, para 7 does not apply, and we need to go to the base type.
       This is the only case where parenthesization affects the dynamic
-      semantics (i.e. the range of possible values at runtime that is covered
-      by the others alternative.
+      semantics (i.e. the range of possible values at run time that is covered
+      by the others alternative).
 
       Another exception is if the subtype of the expression is non-static.  In
       that case, we also have to use the base type.  */
@@ -2002,7 +2002,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	    }
 
 	  /* If the case value is a subtype that raises Constraint_Error at
-	     run-time because of a wrong bound, then gnu_low or gnu_high is
+	     run time because of a wrong bound, then gnu_low or gnu_high is
 	     not translated into an INTEGER_CST.  In such a case, we need
 	     to ensure that the when statement is not added in the tree,
 	     otherwise it will crash the gimplifier.  */
@@ -5566,7 +5566,7 @@ gnat_to_gnu (Node_Id gnat_node)
   /* If the result is a constant that overflowed, raise Constraint_Error.  */
   if (TREE_CODE (gnu_result) == INTEGER_CST && TREE_OVERFLOW (gnu_result))
     {
-      post_error ("Constraint_Error will be raised at run-time?", gnat_node);
+      post_error ("?`Constraint_Error` will be raised at run time", gnat_node);
       gnu_result
 	= build1 (NULL_EXPR, gnu_result_type,
 		  build_call_raise (CE_Overflow_Check_Failed, gnat_node,
