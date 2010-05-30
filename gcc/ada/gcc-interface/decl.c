@@ -4382,11 +4382,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Task_Subtype:
     case E_Protected_Type:
     case E_Protected_Subtype:
+      /* Concurrent types are always transformed into their record type.  */
       if (type_annotate_only && No (gnat_equiv_type))
 	gnu_type = void_type_node;
       else
-	gnu_type = gnat_to_gnu_type (gnat_equiv_type);
-
+	gnu_decl = gnat_to_gnu_entity (gnat_equiv_type, NULL_TREE, 0);
       maybe_present = true;
       break;
 
