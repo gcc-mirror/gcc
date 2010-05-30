@@ -4285,7 +4285,7 @@ gfc_trans_allocate (gfc_code * code)
 	      else if (code->ext.alloc.ts.type == BT_DERIVED)
 		ts = &code->ext.alloc.ts;
 	      else if (expr->ts.type == BT_CLASS)
-		ts = &expr->ts.u.derived->components->ts;
+		ts = &CLASS_DATA (expr)->ts;
 	      else
 		ts = &expr->ts;
 

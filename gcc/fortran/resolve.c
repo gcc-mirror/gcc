@@ -905,8 +905,8 @@ resolve_structure_cons (gfc_expr *expr)
 	  && !(comp->attr.pointer || comp->attr.allocatable
 	       || comp->attr.proc_pointer
 	       || (comp->ts.type == BT_CLASS
-		   && (comp->ts.u.derived->components->attr.pointer
-		       || comp->ts.u.derived->components->attr.allocatable))))
+		   && (CLASS_DATA (comp)->attr.pointer
+		       || CLASS_DATA (comp)->attr.allocatable))))
 	{
 	  t = FAILURE;
 	  gfc_error ("The NULL in the derived type constructor at %L is "
@@ -4131,7 +4131,7 @@ find_array_spec (gfc_expr *e)
   gfc_ref *ref;
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
-    as = e->symtree->n.sym->ts.u.derived->components->as;
+    as = CLASS_DATA (e->symtree->n.sym)->as;
   else
     as = e->symtree->n.sym->as;
   derived = NULL;
@@ -6004,8 +6004,8 @@ resolve_deallocate_expr (gfc_expr *e)
 
   if (sym->ts.type == BT_CLASS)
     {
-      allocatable = sym->ts.u.derived->components->attr.allocatable;
-      pointer = sym->ts.u.derived->components->attr.pointer;
+      allocatable = CLASS_DATA (sym)->attr.allocatable;
+      pointer = CLASS_DATA (sym)->attr.pointer;
     }
   else
     {
@@ -6028,8 +6028,8 @@ resolve_deallocate_expr (gfc_expr *e)
 	  c = ref->u.c.component;
 	  if (c->ts.type == BT_CLASS)
 	    {
-	      allocatable = c->ts.u.derived->components->attr.allocatable;
-	      pointer = c->ts.u.derived->components->attr.pointer;
+	      allocatable = CLASS_DATA (c)->attr.allocatable;
+	      pointer = CLASS_DATA (c)->attr.pointer;
 	    }
 	  else
 	    {
@@ -6224,11 +6224,11 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     {
       if (sym->ts.type == BT_CLASS)
 	{
-	  allocatable = sym->ts.u.derived->components->attr.allocatable;
-	  pointer = sym->ts.u.derived->components->attr.pointer;
-	  dimension = sym->ts.u.derived->components->attr.dimension;
-	  codimension = sym->ts.u.derived->components->attr.codimension;
-	  is_abstract = sym->ts.u.derived->components->attr.abstract;
+	  allocatable = CLASS_DATA (sym)->attr.allocatable;
+	  pointer = CLASS_DATA (sym)->attr.pointer;
+	  dimension = CLASS_DATA (sym)->attr.dimension;
+	  codimension = CLASS_DATA (sym)->attr.codimension;
+	  is_abstract = CLASS_DATA (sym)->attr.abstract;
 	}
       else
 	{
@@ -6262,11 +6262,11 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		c = ref->u.c.component;
 		if (c->ts.type == BT_CLASS)
 		  {
-		    allocatable = c->ts.u.derived->components->attr.allocatable;
-		    pointer = c->ts.u.derived->components->attr.pointer;
-		    dimension = c->ts.u.derived->components->attr.dimension;
-		    codimension = c->ts.u.derived->components->attr.codimension;
-		    is_abstract = c->ts.u.derived->components->attr.abstract;
+		    allocatable = CLASS_DATA (c)->attr.allocatable;
+		    pointer = CLASS_DATA (c)->attr.pointer;
+		    dimension = CLASS_DATA (c)->attr.dimension;
+		    codimension = CLASS_DATA (c)->attr.codimension;
+		    is_abstract = CLASS_DATA (c)->attr.abstract;
 		  }
 		else
 		  {
@@ -6349,7 +6349,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
       else if (e->ts.type == BT_CLASS
 	       && ((code->ext.alloc.ts.type == BT_UNKNOWN
-		    && (init_e = gfc_default_initializer (&e->ts.u.derived->components->ts)))
+		    && (init_e = gfc_default_initializer (&CLASS_DATA (e)->ts)))
 		   || (code->ext.alloc.ts.type == BT_DERIVED
 		       && (init_e = gfc_default_initializer (&code->ext.alloc.ts)))))
 	{
@@ -7153,10 +7153,10 @@ resolve_select_type (gfc_code *code)
     {
       if (code->expr1->symtree->n.sym->attr.untyped)
 	code->expr1->symtree->n.sym->ts = code->expr2->ts;
-      selector_type = code->expr2->ts.u.derived->components->ts.u.derived;
+      selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
     }
   else
-    selector_type = code->expr1->ts.u.derived->components->ts.u.derived;
+    selector_type = CLASS_DATA (code->expr1)->ts.u.derived;
 
   /* Loop over TYPE IS / CLASS IS cases.  */
   for (body = code->block; body; body = body->block)
@@ -9185,11 +9185,11 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
   if (sym->ts.type == BT_CLASS && !(sym->result && sym->result != sym))
     {
       /* F03:C502.  */
-      if (!gfc_type_is_extensible (sym->ts.u.derived->components->ts.u.derived))
+      if (!gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
 	{
 	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
-		     sym->ts.u.derived->components->ts.u.derived->name,
-		     sym->name, &sym->declared_at);
+		     CLASS_DATA (sym)->ts.u.derived->name, sym->name,
+		     &sym->declared_at);
 	  return FAILURE;
 	}
 
@@ -10424,7 +10424,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	  goto error;
 	}
 
-      if (me_arg->ts.u.derived->components->ts.u.derived
+      if (CLASS_DATA (me_arg)->ts.u.derived
 	  != resolve_bindings_derived)
 	{
 	  gfc_error ("Argument '%s' of '%s' with PASS(%s) at %L must be of"
@@ -10434,20 +10434,19 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	}
   
       gcc_assert (me_arg->ts.type == BT_CLASS);
-      if (me_arg->ts.u.derived->components->as
-	  && me_arg->ts.u.derived->components->as->rank > 0)
+      if (CLASS_DATA (me_arg)->as && CLASS_DATA (me_arg)->as->rank > 0)
 	{
 	  gfc_error ("Passed-object dummy argument of '%s' at %L must be"
 		     " scalar", proc->name, &where);
 	  goto error;
 	}
-      if (me_arg->ts.u.derived->components->attr.allocatable)
+      if (CLASS_DATA (me_arg)->attr.allocatable)
 	{
 	  gfc_error ("Passed-object dummy argument of '%s' at %L must not"
 		     " be ALLOCATABLE", proc->name, &where);
 	  goto error;
 	}
-      if (me_arg->ts.u.derived->components->attr.class_pointer)
+      if (CLASS_DATA (me_arg)->attr.class_pointer)
 	{
 	  gfc_error ("Passed-object dummy argument of '%s' at %L must not"
 		     " be POINTER", proc->name, &where);
@@ -10633,14 +10632,11 @@ resolve_fl_derived (gfc_symbol *sym)
   if (sym->attr.is_class && sym->ts.u.derived == NULL)
     {
       /* Fix up incomplete CLASS symbols.  */
-      gfc_component *data;
-      gfc_component *vptr;
-      gfc_symbol *vtab;
-      data = gfc_find_component (sym, "$data", true, true);
-      vptr = gfc_find_component (sym, "$vptr", true, true);
+      gfc_component *data = gfc_find_component (sym, "$data", true, true);
+      gfc_component *vptr = gfc_find_component (sym, "$vptr", true, true);
       if (vptr->ts.u.derived == NULL)
 	{
-	  vtab = gfc_find_derived_vtab (data->ts.u.derived, false);
+	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived, false);
 	  gcc_assert (vtab);
 	  vptr->ts.u.derived = vtab->ts.u.derived;
 	}
@@ -10834,7 +10830,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	  if ((me_arg->ts.type != BT_DERIVED && me_arg->ts.type != BT_CLASS)
 	      || (me_arg->ts.type == BT_DERIVED && me_arg->ts.u.derived != sym)
 	      || (me_arg->ts.type == BT_CLASS
-		  && me_arg->ts.u.derived->components->ts.u.derived != sym))
+		  && CLASS_DATA (me_arg)->ts.u.derived != sym))
 	    {
 	      gfc_error ("Argument '%s' of '%s' with PASS(%s) at %L must be of"
 			 " the derived type '%s'", me_arg->name, c->name,
@@ -10947,9 +10943,9 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CLASS && c->ts.u.derived->components->attr.pointer
-	  && c->ts.u.derived->components->ts.u.derived->components == NULL
-	  && !c->ts.u.derived->components->ts.u.derived->attr.zero_comp)
+      if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.pointer
+	  && CLASS_DATA (c)->ts.u.derived->components == NULL
+	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp)
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,
@@ -10959,8 +10955,7 @@ resolve_fl_derived (gfc_symbol *sym)
 
       /* C437.  */
       if (c->ts.type == BT_CLASS
-	  && !(c->ts.u.derived->components->attr.pointer
-	       || c->ts.u.derived->components->attr.allocatable))
+	  && !(CLASS_DATA (c)->attr.pointer || CLASS_DATA (c)->attr.allocatable))
 	{
 	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
 		     "or pointer", c->name, &c->loc);

@@ -6079,14 +6079,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				 build_int_cst (TREE_TYPE (comp), 0));
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
-	  else if (c->ts.type == BT_CLASS
-		   && c->ts.u.derived->components->attr.allocatable)
+	  else if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
 	      /* Allocatable scalar CLASS components.  */
 	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
 	      
 	      /* Add reference to '$data' component.  */
-	      tmp = c->ts.u.derived->components->backend_decl;
+	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
 				  comp, tmp, NULL_TREE);
 
@@ -6116,13 +6115,12 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				 build_int_cst (TREE_TYPE (comp), 0));
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
-	  else if (c->ts.type == BT_CLASS
-		   && c->ts.u.derived->components->attr.allocatable)
+	  else if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
 	      /* Allocatable scalar CLASS components.  */
 	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
 	      /* Add reference to '$data' component.  */
-	      tmp = c->ts.u.derived->components->backend_decl;
+	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
 				  comp, tmp, NULL_TREE);
 	      tmp = fold_build2 (MODIFY_EXPR, void_type_node, comp,

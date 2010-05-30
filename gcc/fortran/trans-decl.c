@@ -1074,8 +1074,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Make sure that the vtab for the declared type is completed.  */
   if (sym->ts.type == BT_CLASS)
     {
-      gfc_component *c = gfc_find_component (sym->ts.u.derived,
-					     "$data", true, true);
+      gfc_component *c = CLASS_DATA (sym);
       if (!c->ts.u.derived->backend_decl)
 	gfc_find_derived_vtab (c->ts.u.derived, true);
     }
@@ -1221,8 +1220,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Remember this variable for allocation/cleanup.  */
   if (sym->attr.dimension || sym->attr.allocatable
       || (sym->ts.type == BT_CLASS &&
-	  (sym->ts.u.derived->components->attr.dimension
-	   || sym->ts.u.derived->components->attr.allocatable))
+	  (CLASS_DATA (sym)->attr.dimension
+	   || CLASS_DATA (sym)->attr.allocatable))
       || (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.alloc_comp)
       /* This applies a derived type default initializer.  */
       || (sym->ts.type == BT_DERIVED
@@ -3272,7 +3271,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	}
       else if (sym->attr.allocatable
 	       || (sym->ts.type == BT_CLASS
-		   && sym->ts.u.derived->components->attr.allocatable))
+		   && CLASS_DATA (sym)->attr.allocatable))
 	{
 	  if (!sym->attr.save)
 	    {

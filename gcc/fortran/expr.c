@@ -3306,8 +3306,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     }
 
   if (!pointer && !proc_pointer
-	&& !(lvalue->ts.type == BT_CLASS
-		&& lvalue->ts.u.derived->components->attr.pointer))
+	&& !(lvalue->ts.type == BT_CLASS && CLASS_DATA (lvalue)->attr.pointer))
     {
       gfc_error ("Pointer assignment to non-POINTER at %L", &lvalue->where);
       return FAILURE;
@@ -3544,8 +3543,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.where = sym->declared_at;
 
   if (sym->attr.pointer || sym->attr.proc_pointer
-      || (sym->ts.type == BT_CLASS 
-	  && sym->ts.u.derived->components->attr.pointer
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.pointer
 	  && rvalue->expr_type == EXPR_NULL))
     r = gfc_check_pointer_assign (&lvalue, rvalue);
   else
@@ -4039,14 +4037,14 @@ gfc_has_ultimate_allocatable (gfc_expr *e)
       last = ref;
 
   if (last && last->u.c.component->ts.type == BT_CLASS)
-    return last->u.c.component->ts.u.derived->components->attr.alloc_comp;
+    return CLASS_DATA (last->u.c.component)->attr.alloc_comp;
   else if (last && last->u.c.component->ts.type == BT_DERIVED)
     return last->u.c.component->ts.u.derived->attr.alloc_comp;
   else if (last)
     return false;
 
   if (e->ts.type == BT_CLASS)
-    return e->ts.u.derived->components->attr.alloc_comp;
+    return CLASS_DATA (e)->attr.alloc_comp;
   else if (e->ts.type == BT_DERIVED)
     return e->ts.u.derived->attr.alloc_comp;
   else
@@ -4069,14 +4067,14 @@ gfc_has_ultimate_pointer (gfc_expr *e)
       last = ref;
  
   if (last && last->u.c.component->ts.type == BT_CLASS)
-    return last->u.c.component->ts.u.derived->components->attr.pointer_comp;
+    return CLASS_DATA (last->u.c.component)->attr.pointer_comp;
   else if (last && last->u.c.component->ts.type == BT_DERIVED)
     return last->u.c.component->ts.u.derived->attr.pointer_comp;
   else if (last)
     return false;
 
   if (e->ts.type == BT_CLASS)
-    return e->ts.u.derived->components->attr.pointer_comp;
+    return CLASS_DATA (e)->attr.pointer_comp;
   else if (e->ts.type == BT_DERIVED)
     return e->ts.u.derived->attr.pointer_comp;
   else
