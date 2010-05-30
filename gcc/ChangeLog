@@ -1,5 +1,18 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (cgraph_node_cannot_return,
+	cgraph_edge_cannot_lead_to_return): New functions.
+	* cgraph.c (cgraph_node_cannot_return,
+	cgraph_edge_cannot_lead_to_return): Use them.
+	* ipa-pure-const.c (pure_const_names): New static var.
+	(check_call): Handle calls not leading to return.
+	(pure_const_read_summary): Dump info read.
+	(propagate): Dump info about propagation process; ignore side
+	effects of functions not leading to exit; fix handling of
+	pure functions.
+
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
 	* config/i386/i386.c (pro_epilogue_adjust_stack): Use EBP
 	for tail call epilogues.
 

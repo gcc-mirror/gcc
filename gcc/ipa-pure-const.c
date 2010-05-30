@@ -72,6 +72,8 @@ enum pure_const_state_e
   IPA_NEITHER
 };
 
+const char *pure_const_names[3] = {"const", "pure", "neither"};
+
 /* Holder for the const_state.  There is one of these per function
    decl.  */
 struct funct_state_d
@@ -444,6 +446,16 @@ check_call (funct_state local, gimple call, bool ipa)
 	    fprintf (dump_file, "    pure function call in not const\n");
 	  if (local->pure_const_state == IPA_CONST)
 	    local->pure_const_state = IPA_PURE;
+	}
+      else if ((flags & (ECF_NORETURN | ECF_NOTHROW))
+	       == (ECF_NORETURN | ECF_NOTHROW)
+	       || (!flag_exceptions && (flags & ECF_NORETURN)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "    noreturn nothrow call is looping pure\n");
+	  if (local->pure_const_state == IPA_CONST)
+	    local->pure_const_state = IPA_PURE;
+          local->looping = true;
 	}
       else
 	{
@@ -872,6 +884,29 @@ pure_const_read_summary (void)
 	      fs->looping_previously_known = bp_unpack_value (bp, 1);
 	      fs->looping = bp_unpack_value (bp, 1);
 	      fs->can_throw = bp_unpack_value (bp, 1);
+	      if (dump_file)
+		{
+		  int flags = flags_from_decl_or_type (node->decl);
+		  fprintf (dump_file, "Read info for %s/%i ",
+			   cgraph_node_name (node),
+			   node->uid);
+		  if (flags & ECF_CONST)
+		    fprintf (dump_file, " const");
+		  if (flags & ECF_PURE)
+		    fprintf (dump_file, " pure");
+		  if (flags & ECF_NOTHROW)
+		    fprintf (dump_file, " nothrow");
+		  fprintf (dump_file, "\n  pure const state: %s\n",
+			   pure_const_names[fs->pure_const_state]);
+		  fprintf (dump_file, "  previously known state: %s\n",
+			   pure_const_names[fs->looping_previously_known]);
+		  if (fs->looping)
+		    fprintf (dump_file,"  function is locally looping\n");
+		  if (fs->looping_previously_known)
+		    fprintf (dump_file,"  function is previously known looping\n");
+		  if (fs->can_throw)
+		    fprintf (dump_file,"  function is locally throwing\n");
+		}
 	      bitpack_delete (bp);
 	    }
 
@@ -938,12 +973,21 @@ propagate (void)
       int count = 0;
       node = order[i];
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Starting cycle\n");
+
       /* Find the worst state for any node in the cycle.  */
       w = node;
       while (w)
 	{
 	  struct cgraph_edge *e;
 	  funct_state w_l = get_function_state (w);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Visiting %s/%i state:%s looping %i\n",
+		     cgraph_node_name (w),
+		     w->uid,
+		     pure_const_names[w_l->pure_const_state],
+		     w_l->looping);
 	  if (pure_const_state < w_l->pure_const_state)
 	    pure_const_state = w_l->pure_const_state;
 
@@ -954,6 +998,13 @@ propagate (void)
 	      looping |= w_l->looping_previously_known;
 	      if (pure_const_state < w_l->state_previously_known)
 	        pure_const_state = w_l->state_previously_known;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file,
+			   "    Overwritable. state %s looping %i\n",
+			   pure_const_names[w_l->state_previously_known],
+			   w_l->looping_previously_known);
+		}
 	    }
 
 	  if (pure_const_state == IPA_NEITHER)
@@ -967,35 +1018,92 @@ propagate (void)
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      struct cgraph_node *y = e->callee;
+	      enum pure_const_state_e edge_state = IPA_CONST;
+	      bool edge_looping = false;
 
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file,
+			   "    Call to %s/%i",
+			   cgraph_node_name (e->callee),
+			   e->callee->uid);
+		}
 	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
 		{
 		  funct_state y_l = get_function_state (y);
-		  if (pure_const_state < y_l->pure_const_state)
-		    pure_const_state = y_l->pure_const_state;
-		  if (pure_const_state == IPA_NEITHER)
-		    break;
-		  if (y_l->looping)
-		    looping = true;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file,
+			       " state:%s looping:%i\n",
+			       pure_const_names[y_l->pure_const_state],
+			       y_l->looping);
+		    }
+		  else if (y_l->pure_const_state > ECF_PURE
+			   && cgraph_edge_cannot_lead_to_return (e))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{	
+			  fprintf (dump_file,
+				   "        Ignoring side effects -> pure, looping\n");
+			}
+		      edge_state = IPA_PURE;
+		      edge_looping = true;
+		    }
+		  else
+		    {
+		      edge_state = y_l->pure_const_state;
+		      edge_looping = y_l->looping;
+		    }
 		}
 	      else
 	        {
 		  int flags = flags_from_decl_or_type (y->decl);
 
 		  if (flags & ECF_LOOPING_CONST_OR_PURE)
-		    looping = true;
+		    {
+		      edge_looping = true;
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, " unavailable looping");
+		    }
 		  if (flags & ECF_CONST)
-		    ;
-		  else if ((flags & ECF_PURE) && pure_const_state == IPA_CONST)
-		    pure_const_state = IPA_PURE;
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+		        fprintf (dump_file, " const\n");
+		    }
+		  else if (flags & ECF_PURE)
+		    {
+		      edge_state = IPA_PURE;
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+		        fprintf (dump_file, " pure\n");
+		    }
+		  else if (cgraph_edge_cannot_lead_to_return (e))
+		    {
+		      edge_state = IPA_PURE;
+		      edge_looping = true;
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+		        fprintf (dump_file, " ignoring side effects->pure looping\n");
+		    }
 		  else
-		    pure_const_state = IPA_NEITHER, looping = true;
-
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+		        fprintf (dump_file, " neihter\n");
+		      edge_state = IPA_NEITHER;
+		      edge_looping = true;
+		    }
 		}
+	      pure_const_state = MAX (pure_const_state, MIN (edge_state,
+				      w_l->state_previously_known));
+	      looping = MAX (looping, MIN (edge_looping, edge_state));
+	      if (pure_const_state == IPA_NEITHER)
+	        break;
 	    }
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Result %s looping %i\n",
+		 pure_const_names [pure_const_state],
+		 looping);
 
       /* Copy back the region's pure_const_state which is shared by
 	 all nodes in the region.  */

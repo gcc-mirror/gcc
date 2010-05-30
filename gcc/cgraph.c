@@ -2584,4 +2584,39 @@ cgraph_propagate_frequency (struct cgraph_node *node)
    return false;
 }
 
+/* Return true when NODE can not return or throw and thus
+   it is safe to ignore its side effects for IPA analysis.  */
+
+bool
+cgraph_node_cannot_return (struct cgraph_node *node)
+{
+  int flags = flags_from_decl_or_type (node->decl);
+  if (!flag_exceptions)
+    return (flags & ECF_NORETURN) != 0;
+  else
+    return ((flags & (ECF_NORETURN | ECF_NOTHROW))
+	     == (ECF_NORETURN | ECF_NOTHROW));
+}
+
+/* Return true when call of E can not lead to return from caller
+   and thus it is safe to ignore its side effects for IPA analysis
+   when computing side effects of the caller.
+   FIXME: We could actually mark all edges that have no reaching
+   patch to EXIT_BLOCK_PTR or throw to get better results.  */
+bool
+cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
+{
+  if (e->indirect_unknown_callee)
+    {
+      int flags = e->indirect_info->ecf_flags;
+      if (!flag_exceptions)
+	return (flags & ECF_NORETURN) != 0;
+      else
+	return ((flags & (ECF_NORETURN | ECF_NOTHROW))
+		 == (ECF_NORETURN | ECF_NOTHROW));
+    }
+  else
+    return cgraph_node_cannot_return (e->callee);
+}
+
 #include "gt-cgraph.h"
