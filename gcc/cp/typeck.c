@@ -3225,6 +3225,25 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
   return ret;
 }
 
+/* Build a function call using varargs.  */
+
+tree
+cp_build_function_call_nary (tree function, tsubst_flags_t complain, ...)
+{
+  VEC(tree,gc) *vec;
+  va_list args;
+  tree ret, t;
+
+  vec = make_tree_vector ();
+  va_start (args, complain);
+  for (t = va_arg (args, tree); t != NULL_TREE; t = va_arg (args, tree))
+    VEC_safe_push (tree, gc, vec, t);
+  va_end (args);
+  ret = cp_build_function_call_vec (function, &vec, complain);
+  release_tree_vector (vec);
+  return ret;
+}
+
 /* Build a function call using a vector of arguments.  PARAMS may be
    NULL if there are no parameters.  This changes the contents of
    PARAMS.  */

@@ -6240,10 +6240,10 @@ register_dtor_fn (tree decl)
 {
   tree cleanup;
   tree compound_stmt;
-  tree args;
   tree fcall;
   tree type;
   bool use_dtor;
+  tree arg0, arg1 = NULL_TREE, arg2 = NULL_TREE;
 
   type = TREE_TYPE (decl);
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
@@ -6321,25 +6321,23 @@ register_dtor_fn (tree decl)
 	   in, and, in general, it's cheaper to pass NULL than any
 	   other value.  */
 	addr = null_pointer_node;
-      args = tree_cons (NULL_TREE,
-			cp_build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0,
-                                        tf_warning_or_error),
-			NULL_TREE);
+      arg2 = cp_build_unary_op (ADDR_EXPR, get_dso_handle_node (), 0,
+                                tf_warning_or_error);
       if (targetm.cxx.use_aeabi_atexit ())
 	{
-	  args = tree_cons (NULL_TREE, cleanup, args);
-	  args = tree_cons (NULL_TREE, addr, args);
+	  arg1 = cleanup;
+	  arg0 = addr;
 	}
       else
 	{
-	  args = tree_cons (NULL_TREE, addr, args);
-	  args = tree_cons (NULL_TREE, cleanup, args);
+	  arg1 = addr;
+	  arg0 = cleanup;
 	}
     }
   else
-    args = tree_cons (NULL_TREE, cleanup, NULL_TREE);
-  return cp_build_function_call (get_atexit_node (), args, 
-				 tf_warning_or_error);
+    arg0 = cleanup;
+  return cp_build_function_call_nary (get_atexit_node (), tf_warning_or_error,
+				      arg0, arg1, arg2, NULL_TREE);
 }
 
 /* DECL is a VAR_DECL with static storage duration.  INIT, if present,
@@ -12936,9 +12934,8 @@ cxx_maybe_build_cleanup (tree decl)
       fn = lookup_name (id);
       arg = build_address (decl);
       mark_used (decl);
-      cleanup = cp_build_function_call (fn, build_tree_list (NULL_TREE,
-							     arg),
-					tf_warning_or_error);
+      cleanup = cp_build_function_call_nary (fn, tf_warning_or_error,
+					     arg, NULL_TREE);
     }
   /* Handle ordinary C++ destructors.  */
   type = TREE_TYPE (decl);
