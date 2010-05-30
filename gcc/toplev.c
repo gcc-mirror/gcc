@@ -772,17 +772,19 @@ wrapup_global_declaration_2 (tree decl)
     {
       struct varpool_node *node;
       bool needed = true;
-      node = varpool_node (decl);
+      node = varpool_get_node (decl);
 
-      if (node->finalized)
+      if (!node && flag_ltrans)
 	needed = false;
-      else if (node->alias)
+      else if (node && node->finalized)
+	needed = false;
+      else if (node && node->alias)
 	needed = false;
       else if (!cgraph_global_info_ready
 	       && (TREE_USED (decl)
 		   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 	/* needed */;
-      else if (node->needed)
+      else if (node && node->needed)
 	/* needed */;
       else if (DECL_COMDAT (decl))
 	needed = false;
