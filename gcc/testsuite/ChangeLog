@@ -1,5 +1,11 @@
 2010-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/prot2.ad[sb]: New test.
+	* gnat.dg/prot2_pkg1.ads: New helper.
+	* gnat.dg/prot2_pkg2.ad[sb]: Likewise.
+
+2010-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array11.adb: Adjust dg-warning directive.
 	* gnat.dg/object_overflow.adb: Likewise.
 
