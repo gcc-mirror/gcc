@@ -209,7 +209,7 @@ along with GCC; see the file COPYING3.  If not see
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( fputs (".comm ", (FILE)),			\
+( fputs ("\t.comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (ROUNDED)))
 
@@ -217,7 +217,7 @@ along with GCC; see the file COPYING3.  If not see
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( fputs (".lcomm ", (FILE)),			\
+( fputs ("\t.lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (ROUNDED)))
 

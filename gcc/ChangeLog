@@ -1,3 +1,15 @@
+2010-05-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.c (output_objc_section_asm_op): Add comment.
+	(name_needs_quotes): Add '_' to list of valid comment chars.
+	(machopic_output_function_base_name): Remove unneeded quotes.
+	(darwin_encode_section_info): Adjust asm whitespace.
+	* config/i386/darwin.h (ASM_OUTPUT_COMMON): Adjust asm tabs.
+	(ASM_OUTPUT_LOCAL): Ditto.
+	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Ditto.
+	* config/darwin.h (GLOBAL_ASM_OP): Ditto.
+	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Ditto.
+	
 2010-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_entry): Use
