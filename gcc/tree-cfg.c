@@ -3608,6 +3608,20 @@ verify_gimple_assign_single (gimple stmt)
       return res;
 
     case COND_EXPR:
+      if (!is_gimple_reg (lhs)
+	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 0))
+	      && !COMPARISON_CLASS_P (TREE_OPERAND (rhs1, 0)))
+	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 1))
+	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 1)))
+	  || (!is_gimple_reg (TREE_OPERAND (rhs1, 2))
+	      && !is_gimple_min_invariant (TREE_OPERAND (rhs1, 2))))
+	{
+	  error ("invalid COND_EXPR in gimple assignment");
+	  debug_generic_stmt (rhs1);
+	  return true;
+	}
+      return res;
+
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
     case ASSERT_EXPR:
