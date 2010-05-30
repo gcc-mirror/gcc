@@ -1670,7 +1670,11 @@ ipa_write_summaries_2 (struct opt_pass *pass, cgraph_node_set set,
 	  if (pass->tv_id)
 	    timevar_push (pass->tv_id);
 
+          pass_init_dump_file (pass);
+
 	  ipa_pass->write_summary (set,vset);
+
+          pass_fini_dump_file (pass);
 
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -1784,7 +1788,11 @@ ipa_write_optimization_summaries_1 (struct opt_pass *pass, cgraph_node_set set,
 	  if (pass->tv_id)
 	    timevar_push (pass->tv_id);
 
+          pass_init_dump_file (pass);
+
 	  ipa_pass->write_optimization_summary (set, vset);
+
+          pass_fini_dump_file (pass);
 
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -1840,7 +1848,11 @@ ipa_read_summaries_1 (struct opt_pass *pass)
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
 
+	      pass_init_dump_file (pass);
+
 	      ipa_pass->read_summary ();
+
+	      pass_fini_dump_file (pass);
 
 	      /* Stop timevar.  */
 	      if (pass->tv_id)
@@ -1886,7 +1898,11 @@ ipa_read_optimization_summaries_1 (struct opt_pass *pass)
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
 
+	      pass_init_dump_file (pass);
+
 	      ipa_pass->read_optimization_summary ();
+
+	      pass_fini_dump_file (pass);
 
 	      /* Stop timevar.  */
 	      if (pass->tv_id)

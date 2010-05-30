@@ -1,3 +1,9 @@
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (ipa_write_optimization_summaries_1, ipa_write_summaries_2,
+	ipa_read_summaries_1, ipa_read_optimization_summaries_1): Initilalize dump
+	files.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_remove_unreachable_node): Walk references of correct node;
