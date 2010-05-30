@@ -1,5 +1,21 @@
 2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* cp-tree.h (cp_build_function_call_nary): Declare.
+	* typeck.c (cp_build_function_call_nary): Define.
+	* decl.c (register_dtor_fn): Use it instead of
+	cp_build_function_call.
+	(cxx_maybe_build_cleanup): Likewise.
+	* decl2.c (generate_ctor_or_dtor_function): Likewise.
+	* except.c (do_get_exception_ptr): Likewise.
+	(do_begin_catch): Likewise.
+	(do_allocate_exception): Likewise.
+	(do_free_exception): Likewise.
+	(build_throw): Likewise.  Use cp_build_function_call_vec instead
+	of cp_build_function_call.
+	(do_end_catch): Likewise.
+
+2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* cp-tree.h (struct cp_decl_specifier_seq): Move type_location field up.
 	(struct cp_declarator): Move id_loc field up.
 

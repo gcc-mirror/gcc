@@ -5371,6 +5371,8 @@ extern tree cp_build_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree get_member_function_from_ptrfunc	(tree *, tree);
 extern tree cp_build_function_call              (tree, tree, tsubst_flags_t);
+extern tree cp_build_function_call_nary         (tree, tsubst_flags_t, ...)
+						ATTRIBUTE_SENTINEL;
 extern tree cp_build_function_call_vec		(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,

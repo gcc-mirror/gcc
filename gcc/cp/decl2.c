@@ -3275,7 +3275,6 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 				location_t *locus)
 {
   char function_key;
-  tree arguments;
   tree fndecl;
   tree body;
   size_t i;
@@ -3308,17 +3307,18 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
       /* Calls to pure or const functions will expand to nothing.  */
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
 	{
+	  tree call;
+
 	  if (! body)
 	    body = start_objects (function_key, priority);
 
-	  arguments = tree_cons (NULL_TREE,
-				 build_int_cst (NULL_TREE, priority),
-				 NULL_TREE);
-	  arguments = tree_cons (NULL_TREE,
-				 build_int_cst (NULL_TREE, constructor_p),
-				 arguments);
-	  finish_expr_stmt (cp_build_function_call (fndecl, arguments,
-						    tf_warning_or_error));
+	  call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
+					      build_int_cst (NULL_TREE,
+							     constructor_p),
+					      build_int_cst (NULL_TREE,
+							     priority),
+					      NULL_TREE);
+	  finish_expr_stmt (call);
 	}
     }
 
