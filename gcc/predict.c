@@ -168,6 +168,9 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
   if (edge->caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
       || edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return false;
+  if (edge->caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
+      && edge->callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE)
+    return false;
   if (optimize_size)
     return false;
   if (edge->caller->frequency == NODE_FREQUENCY_HOT)
