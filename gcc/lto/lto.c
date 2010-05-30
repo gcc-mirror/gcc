@@ -636,6 +636,9 @@ promote_var (struct varpool_node *vnode)
   gcc_assert (flag_wpa);
   TREE_PUBLIC (vnode->decl) = 1;
   DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	    "Promoting var as hidden: %s\n", varpool_node_name (vnode));
   return true;
 }
 
@@ -659,6 +662,10 @@ promote_fn (struct cgraph_node *node)
 	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
 	}
     }
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file,
+	     "Promoting function as hidden: %s/%i\n",
+	     cgraph_node_name (node), node->uid);
   return true;
 }
 
@@ -862,6 +869,15 @@ lto_wpa_write_files (void)
 
       if (!quiet_flag)
 	fprintf (stderr, " %s (%s %i insns)", temp_filename, part->name, part->insns);
+      if (cgraph_dump_file)
+	{
+	  fprintf (cgraph_dump_file, "Writting partition %s to file %s, %i insns\n",
+		   part->name, temp_filename, part->insns);
+	  fprintf (cgraph_dump_file, "cgraph nodes:");
+	  dump_cgraph_node_set (cgraph_dump_file, set);
+	  fprintf (cgraph_dump_file, "varpool nodes:");
+	  dump_varpool_node_set (cgraph_dump_file, vset);
+	}
       gcc_assert (cgraph_node_set_nonempty_p (set)
 		  || varpool_node_set_nonempty_p (vset) || !i);
 
@@ -1632,6 +1648,12 @@ do_whole_program_analysis (void)
       dump_memory_report (false);
     }
 
+  if (cgraph_dump_file)
+    {
+      dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
+    }
+
   cgraph_function_flags_ready = true;
   bitmap_obstack_initialize (NULL);
   ipa_register_cgraph_hooks ();
@@ -1639,6 +1661,12 @@ do_whole_program_analysis (void)
 
   execute_ipa_pass_list (all_regular_ipa_passes);
 
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Optimized ");
+      dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
+    }
   verify_cgraph ();
   bitmap_obstack_release (NULL);
 

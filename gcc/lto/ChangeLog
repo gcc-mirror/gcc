@@ -1,3 +1,8 @@
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (promote_var, promote_fn, lto_wpa_write_files): Dump
+	partitioning decisions.
+
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (bitmap vector): Remove.

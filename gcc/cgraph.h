@@ -598,6 +598,7 @@ bool cgraph_node_cannot_return (struct cgraph_node *);
 bool cgraph_edge_cannot_lead_to_return (struct cgraph_edge *);
 
 /* In cgraphunit.c  */
+extern FILE *cgraph_dump_file;
 void cgraph_finalize_function (tree, bool);
 void cgraph_mark_if_needed (tree);
 void cgraph_finalize_compilation_unit (void);
