@@ -1659,7 +1659,8 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
 	  /* Verify that function does not appear to be needed out of blue
 	     during the optimization process.  This can happen for extern
 	     inlines when bodies was removed after inlining.  */
-	  gcc_assert ((node->analyzed || DECL_EXTERNAL (node->decl)));
+	  gcc_assert ((node->analyzed || node->in_other_partition
+		       || DECL_EXTERNAL (node->decl)));
 	}
       else
         notice_global_symbol (node->decl);

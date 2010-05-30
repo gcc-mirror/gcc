@@ -1,3 +1,7 @@
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_mark_reachable): Relax check for analyzed nodes.
+
 2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44165
