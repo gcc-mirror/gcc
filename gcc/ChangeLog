@@ -1,3 +1,7 @@
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (maybe_hot_edge_p): Calls to functions called once is cold.
+
 2010-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42975
