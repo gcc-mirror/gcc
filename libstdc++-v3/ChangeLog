@@ -1,3 +1,9 @@
+2010-05-31  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/22_locale/codecvt/unshift/char/1.cc (test01): Clarify
+	size definition.  Use memcpy and memcmp to avoid access beyond
+	allocated memory.
+
 2010-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40497
