@@ -1,3 +1,12 @@
+2010-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44182
+	* tree-inline.c (copy_edges_for_bb): Don't split bb if a stmt that
+	newly needs to end a bb is followed by debug stmts, instead return
+	true from the function at the end.
+	(maybe_move_debug_stmts_to_successors): New function.
+	(copy_cfg_body): Call it if copy_edges_for_bb returned true.
+
 2010-05-31  Kai Tietz  <kai.tietz@onevision.com>
 
 	Merged from trunk
