@@ -1,3 +1,8 @@
+2010-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_decide_is_function_needed): Really return false
+	for nested functions in non-optimized compilation.
+
 2010-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): Handle
@@ -35,7 +40,7 @@
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (wrapup_global_declaration_2): Avoid creation of new varpool
-	nodes 
+	nodes.
 
 2010-05-30  Richard Guenther  <rguenther@suse.de>
 

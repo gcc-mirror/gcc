@@ -1,5 +1,4 @@
 -- { dg-do compile }
--- { dg-xfail-if "missing late warning" { *-*-* } { "-flto" } { "" } }
 
 with System;
 
@@ -11,8 +10,8 @@ procedure frame_overflow is
    type Bitmap_T is record
       Bits : Bitmap_Array_T := (others => False);
    end record;
-   
-   function -- { dg-error "too large" }
+
+   function
      Set_In (Bitmap : Bitmap_T; Bitpos : Bitpos_Range_T)  return Bitmap_T
    is
       Result: Bitmap_T := Bitmap; -- { dg-error "Storage_Error" }
