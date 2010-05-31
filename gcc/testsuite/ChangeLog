@@ -1,3 +1,8 @@
+2010-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/44338
+	* gcc.target/i386/sse-24.c: New test.
+
 2010-05-31  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/builtin-apply4.c: Compile with -Wmissing-return.
