@@ -369,6 +369,9 @@ check_call (funct_state local, gimple call, bool ipa)
      graph.  */
   if (callee_t)
     {
+      /* built_in_return is really just an return statemnt.  */
+      if (gimple_call_builtin_p (call, BUILT_IN_RETURN))
+	return;
       /* When bad things happen to bad functions, they cannot be const
 	 or pure.  */
       if (setjmp_call_p (callee_t))

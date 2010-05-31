@@ -568,8 +568,12 @@ make_edges (void)
 		 create abnormal edges to them.  */
 	      make_eh_edges (last);
 
+	      /* BUILTIN_RETURN is really a return statement.  */
+	      if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
+		make_edge (bb, EXIT_BLOCK_PTR, 0), fallthru = false;
 	      /* Some calls are known not to return.  */
-	      fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
+	      else
+	        fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
 	      break;
 
 	    case GIMPLE_ASSIGN:
@@ -2247,6 +2251,10 @@ is_ctrl_altering_stmt (gimple t)
 
 	/* A call also alters control flow if it does not return.  */
 	if (flags & ECF_NORETURN)
+	  return true;
+
+	/* BUILT_IN_RETURN call is same as return statement.  */
+	if (gimple_call_builtin_p (t, BUILT_IN_RETURN))
 	  return true;
       }
       break;
@@ -4436,6 +4444,10 @@ gimple_verify_flow_info (void)
 	    }
 	  break;
 
+	case GIMPLE_CALL:
+	  if (!gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
+	    break;
+	  /* ... fallthru ... */
 	case GIMPLE_RETURN:
 	  if (!single_succ_p (bb)
 	      || (single_succ_edge (bb)->flags
@@ -7050,7 +7062,9 @@ split_critical_edges (void)
 	      gsi = gsi_last_bb (e->src);
 	      if (!gsi_end_p (gsi)
 		  && stmt_ends_bb_p (gsi_stmt (gsi))
-		  && gimple_code (gsi_stmt (gsi)) != GIMPLE_RETURN)
+		  && (gimple_code (gsi_stmt (gsi)) != GIMPLE_RETURN
+		      && !gimple_call_builtin_p (gsi_stmt (gsi),
+						 BUILT_IN_RETURN)))
 		split_edge (e);
 	    }
 	}
@@ -7148,7 +7162,8 @@ execute_warn_function_return (void)
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
 	{
 	  last = last_stmt (e->src);
-	  if (gimple_code (last) == GIMPLE_RETURN
+	  if ((gimple_code (last) == GIMPLE_RETURN
+	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
 	      && (location = gimple_location (last)) != UNKNOWN_LOCATION)
 	    break;
 	}
