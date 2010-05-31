@@ -4241,6 +4241,26 @@ find_func_aliases (gimple origt)
 	  /* va_end doesn't have any effect that matters.  */
 	  case BUILT_IN_VA_END:
 	    return;
+	  /* Alternate return.  Simply give up for now.  */
+	  case BUILT_IN_RETURN:
+	    {
+	      fi = NULL;
+	      if (!in_ipa_mode
+		  || !(fi = get_vi_for_tree (cfun->decl)))
+		make_constraint_from (get_varinfo (escaped_id), anything_id);
+	      else if (in_ipa_mode
+		       && fi != NULL)
+		{
+		  struct constraint_expr lhs, rhs;
+		  lhs = get_function_part_constraint (fi, fi_result);
+		  rhs.var = anything_id;
+		  rhs.offset = 0;
+		  rhs.type = SCALAR;
+		  get_constraint_for (gimple_return_retval (t), &rhsc);
+		  process_constraint (new_constraint (lhs, rhs));
+		}
+	      return;
+	    }
 	  /* printf-style functions may have hooks to set pointers to
 	     point to somewhere into the generated string.  Leave them
 	     for a later excercise...  */
