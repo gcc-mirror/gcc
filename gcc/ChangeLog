@@ -1,3 +1,10 @@
+2010-05-31  Kai Tietz  <kai.tietz@onevision.com>
+
+	Merged from trunk
+	PR target/44161
+	* config/i386/cygming.h (SUBTARGET_OVERRIDE_OPTIONS): Handle
+	flag_pic.
+
 2010-05-28  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44312

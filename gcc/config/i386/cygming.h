@@ -150,7 +150,15 @@ union tree_node;
 #undef  SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (flag_pic)								\
+  if (TARGET_64BIT && flag_pic != 1)					\
+    {									\
+      if (flag_pic > 1)							\
+        warning (0,							\
+	         "-fPIC ignored for target (all code is position independent)"\
+                 );                         				\
+      flag_pic = 1;							\
+    }									\
+  else if (!TARGET_64BIT && flag_pic)					\
     {									\
       warning (0, "-f%s ignored for target (all code is position independent)",\
 	       (flag_pic > 1) ? "PIC" : "pic");				\
