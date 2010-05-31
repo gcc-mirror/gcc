@@ -1,3 +1,9 @@
+2010-05-31  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/44161
+	* config/i386/cygming.h (SUBTARGET_OVERRIDE_OPTIONS): Handle
+	flag_pic.
+
 2010-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraphunit.c (cgraph_decide_is_function_needed): Really return false
