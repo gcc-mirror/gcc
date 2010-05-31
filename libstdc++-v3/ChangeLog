@@ -1,3 +1,18 @@
+2010-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (front, back): Add.
+	* include/debug/string: Adjust.
+	* include/ext/vstring.h (front, back): Tweak the implementation
+	to follow more closely the letter of the specs.
+	* testsuite/21_strings/basic_string/element_access/char/
+	front_back.cc: New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/
+	front_back.cc: Likewise.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* testsuite/util/testsuite_abi.cc: Adjust.
+	* configure.ac: Bump minor version to 6:15:0.
+	* configure: Regenerate.
+
 2010-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_vector.h (vector<>::data): Fix return type

@@ -262,6 +262,11 @@ namespace __gnu_debug
 
     using _Base::at;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    using _Base::front;
+    using _Base::back;
+#endif
+
     // 21.3.5 modifiers:
     basic_string&
     operator+=(const basic_string& __str)

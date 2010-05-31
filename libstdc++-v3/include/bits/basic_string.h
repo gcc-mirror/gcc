@@ -851,6 +851,40 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return _M_data()[__n];
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  Returns a read/write reference to the data at the first
+       *  element of the %string.
+       */
+      reference
+      front()
+      { return operator[](0); }
+
+      /**
+       *  Returns a read-only (constant) reference to the data at the first
+       *  element of the %string.
+       */
+      const_reference
+      front() const
+      { return operator[](0); }
+
+      /**
+       *  Returns a read/write reference to the data at the last
+       *  element of the %string.
+       */
+      reference
+      back()
+      { return operator[](this->size() - 1); }
+
+      /**
+       *  Returns a read-only (constant) reference to the data at the
+       *  last element of the %string.
+       */
+      const_reference
+      back() const
+      { return operator[](this->size() - 1); }
+#endif
+
       /**
        *  @brief  Provides access to the data contained in the %string.
        *  @param n The index of the character to access.
