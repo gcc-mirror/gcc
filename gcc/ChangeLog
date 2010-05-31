@@ -1,5 +1,16 @@
 2010-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/44338
+	* config/i386/sse.md (fma4i_fmadd<mode>4256, fma4i_fmsub<mode>4256,
+	fma4i_fnmadd<mode>4256, fma4i_fnmsub<mode>4256, fma4i_fmadd<mode>4,
+	fma4i_fmsub<mode>4, fma4i_fnmadd<mode>4, fma4i_fnmsub<mode>4,
+	fma4i_vmfmadd<mode>4, fma4i_vmfmsub<mode>4, fma4i_vmfnmadd<mode>4,
+	fma4i_vmfnmsub<mode>4, fma4i_fmaddsubv8sf4, fma4i_fmaddsubv4df4,
+	fma4i_fmaddsubv4sf4, fma4i_fmaddsubv2df4, fma4i_fmsubaddv8sf4,
+	fma4i_fmsubaddv4df4, fma4i_fmsubaddv4sf4, fma4i_fmsubaddv2df4):
+	Guard only with TARGET_FMA4 instead of TARGET_FMA4 &&
+	TARGET_FUSED_MADD.
+
 	PR middle-end/44337
 	* expr.c (expand_assignment): Don't store anything for out-of-bounds
 	array accesses with non-MEM.

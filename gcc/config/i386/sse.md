@@ -1910,7 +1910,7 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1924,7 +1924,7 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1938,7 +1938,7 @@
 	    (match_operand:FMA4MODEF4 1 "nonimmediate_operand" "%x,x")
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m")))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1953,7 +1953,7 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1967,7 +1967,7 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1981,7 +1981,7 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1995,7 +1995,7 @@
 	    (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "%x,x")
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m")))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2010,7 +2010,7 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2029,7 +2029,7 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2046,7 +2046,7 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2063,7 +2063,7 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2081,7 +2081,7 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfnmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2260,7 +2260,7 @@
 	     (match_dup 3))
 	   (const_int 170))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2281,7 +2281,7 @@
 	     (match_dup 3))
 	   (const_int 10))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2302,7 +2302,7 @@
 	     (match_dup 3))
 	   (const_int 10))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2323,7 +2323,7 @@
 	     (match_dup 3))
 	   (const_int 2))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])
@@ -2344,7 +2344,7 @@
 	     (match_dup 3))
 	   (const_int 85))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2365,7 +2365,7 @@
 	     (match_dup 3))
 	   (const_int 5))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2386,7 +2386,7 @@
 	     (match_dup 3))
 	   (const_int 5))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2407,7 +2407,7 @@
 	     (match_dup 3))
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && TARGET_FUSED_MADD"
+  "TARGET_FMA4"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])
