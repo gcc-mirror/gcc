@@ -4732,4 +4732,16 @@ gimple_decl_printable_name (tree decl, int verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
+/* Return true when STMT is builtins call to CODE.  */
+
+bool
+gimple_call_builtin_p (gimple stmt, enum built_in_function code)
+{
+  tree fndecl;
+  return (is_gimple_call (stmt)
+	  && (fndecl = gimple_call_fndecl (stmt)) != NULL
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (fndecl) == code);
+}
+
 #include "gt-gimple.h"
