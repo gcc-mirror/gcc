@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { delete this; }
 
       virtual void*
-      _M_get_deleter(const std::type_info& __ti)
+      _M_get_deleter(const std::type_info&)
       { return 0; }
 
       _Sp_counted_ptr(const _Sp_counted_ptr&) = delete;
@@ -545,7 +545,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	explicit __shared_ptr(_Tp1* __p) : _M_ptr(__p), _M_refcount(__p)
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	  // __glibcxx_function_requires(_CompleteConcept<_Tp1*>)
+	  static_assert( sizeof(_Tp1) > 0, "incomplete type" );
 	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
 	}
 
@@ -624,7 +624,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	  // TODO requires _Tp1 is complete, delete __r.release() well-formed
+	  static_assert( sizeof(_Tp1) > 0, "incomplete type" );
 	  _Tp1* __tmp = __r.get();
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
