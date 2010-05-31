@@ -999,6 +999,42 @@ gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
 	return GFC_DEP_EQUAL;
     }
 
+  /* Handle cases like x:y:2 vs. x+1:z:4 as GFC_DEP_NODEP.
+     There is no dependency if the remainder of
+     (l_start - r_start) / gcd(l_stride, r_stride) is
+     nonzero.
+     TODO:
+       - Handle cases where x is an expression.
+       - Cases like a(1:4:2) = a(2:3) are still not handled.
+  */
+
+#define IS_CONSTANT_INTEGER(a) ((a) && ((a)->expr_type == EXPR_CONSTANT) \
+			      && (a)->ts.type == BT_INTEGER)
+
+  if (IS_CONSTANT_INTEGER(l_start) && IS_CONSTANT_INTEGER(r_start)
+      && IS_CONSTANT_INTEGER(l_stride) && IS_CONSTANT_INTEGER(r_stride))
+    {
+      mpz_t gcd, tmp;
+      int result;
+
+      mpz_init (gcd);
+      mpz_init (tmp);
+
+      mpz_gcd (gcd, l_stride->value.integer, r_stride->value.integer);
+      mpz_sub (tmp, l_start->value.integer, r_start->value.integer);
+
+      mpz_fdiv_r (tmp, tmp, gcd);
+      result = mpz_cmp_si (tmp, 0L);
+
+      mpz_clear (gcd);
+      mpz_clear (tmp);
+
+      if (result != 0)
+	return GFC_DEP_NODEP;
+    }
+
+#undef IS_CONSTANT_INTEGER
+
   /* Check for forward dependencies x:y vs. x+1:z.  */
   if (l_dir == 1 && r_dir == 1
       && l_start && r_start && gfc_dep_compare_expr (l_start, r_start) == -1

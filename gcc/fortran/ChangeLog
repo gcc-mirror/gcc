@@ -1,3 +1,9 @@
+2010-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36928
+	* dependency.c (gfc_check_section_vs_section):  Check
+	for interleaving array assignments without conflicts.
+
 2010-05-30  Janus Weil  <janus@gcc.gnu.org>
 
 	* gcc/fortran/gfortran.h (CLASS_DATA): New macro for accessing the
