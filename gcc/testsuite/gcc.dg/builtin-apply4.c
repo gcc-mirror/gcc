@@ -1,5 +1,5 @@
 /* PR tree-optimization/20076 */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wmissing-noreturn" } */
 /* { dg-options "-O2 -mno-mmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-do run } */
 
