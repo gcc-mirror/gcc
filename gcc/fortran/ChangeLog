@@ -1,3 +1,8 @@
+2010-05-31  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* fortran/gfortran.texi:  Fix typos in description of variable-format-
+	expressions.
+
 2010-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36928

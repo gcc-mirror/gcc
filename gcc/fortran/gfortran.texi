@@ -1872,12 +1872,12 @@ with the following:
 
 @smallexample
 c     Variable declaration
-      CHARACTER(LEN=20) F
+      CHARACTER(LEN=20) FMT
 c     
 c     Other code here...
 c
       WRITE(FMT,'("(I", I0, ")")') N+1
-      WRITE(6,FM) INT1
+      WRITE(6,FMT) INT1
 @end smallexample
 
 @noindent
