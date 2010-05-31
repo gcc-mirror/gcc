@@ -1,3 +1,16 @@
+2010-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (gimple_call_builtin_p): New function.
+	* gimple.h (gimple_call_builtin_p): Declare.
+	* tree-cfg.c (make_edges): Produce edge from BUILT_IN_RETURN
+	to exit.
+	(execute_warn_function_return): BUILT_IN_RETURN is return.
+	(split_critical_edges): Return edges are not critical.
+	(is_ctrl_altering_stmt): Builtin_in_return is altering.
+	(gimple_verify_flow_info): Handle built_in_return.
+	(execute_warn_function_return): Handle built_in_return.
+	* ipa-pure-const.c (check_call): Ignore builtin_return.
+
 2010-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44337
