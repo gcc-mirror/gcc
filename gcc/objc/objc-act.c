@@ -1666,10 +1666,10 @@ synth_module_prologue (void)
       /* id objc_msgSend_stret (id, SEL, ...); */
       /* id objc_msgSendNonNil_stret (id, SEL, ...); */
       type
-	= build_function_type (objc_object_type,
-			       tree_cons (NULL_TREE, objc_object_type,
-					  tree_cons (NULL_TREE, objc_selector_type,
-						     NULL_TREE)));
+	= build_varargs_function_type_list (objc_object_type,
+                                            objc_object_type,
+                                            objc_selector_type,
+                                            NULL_TREE);
       umsg_decl = add_builtin_function (TAG_MSGSEND,
 					type, 0, NOT_BUILT_IN,
 					NULL, NULL_TREE);
@@ -1710,10 +1710,10 @@ synth_module_prologue (void)
       /* id objc_msgSendSuper (struct objc_super *, SEL, ...); */
       /* id objc_msgSendSuper_stret (struct objc_super *, SEL, ...); */
       type
-	= build_function_type (objc_object_type,
-			       tree_cons (NULL_TREE, objc_super_type,
-					  tree_cons (NULL_TREE, objc_selector_type,
-						     NULL_TREE)));
+	= build_varargs_function_type_list (objc_object_type,
+                                            objc_super_type,
+                                            objc_selector_type,
+                                            NULL_TREE);
       umsg_super_decl = add_builtin_function (TAG_MSGSENDSUPER,
 					      type, 0, NOT_BUILT_IN,
 					      NULL, NULL_TREE);
@@ -1728,19 +1728,18 @@ synth_module_prologue (void)
       /* GNU runtime messenger entry points.  */
 
       /* typedef id (*IMP)(id, SEL, ...); */
-      tree IMP_type
-	= build_pointer_type
-	  (build_function_type (objc_object_type,
-				tree_cons (NULL_TREE, objc_object_type,
-					   tree_cons (NULL_TREE, objc_selector_type,
-						      NULL_TREE))));
+      tree ftype =
+        build_varargs_function_type_list (objc_object_type,
+                                          objc_object_type,
+                                          objc_selector_type,
+                                          NULL_TREE);
+      tree IMP_type = build_pointer_type (ftype);
 
       /* IMP objc_msg_lookup (id, SEL); */
-      type
-        = build_function_type (IMP_type,
-			       tree_cons (NULL_TREE, objc_object_type,
-					  tree_cons (NULL_TREE, objc_selector_type,
-						     OBJC_VOID_AT_END)));
+      type = build_function_type_list (IMP_type,
+                                       objc_object_type,
+                                       objc_selector_type,
+                                       NULL_TREE);
       umsg_decl = add_builtin_function (TAG_MSGSEND,
 					type, 0, NOT_BUILT_IN,
 					NULL, NULL_TREE);
@@ -1748,10 +1747,10 @@ synth_module_prologue (void)
 
       /* IMP objc_msg_lookup_super (struct objc_super *, SEL); */
       type
-        = build_function_type (IMP_type,
-			       tree_cons (NULL_TREE, objc_super_type,
-					  tree_cons (NULL_TREE, objc_selector_type,
-						     OBJC_VOID_AT_END)));
+        = build_function_type_list (IMP_type,
+                                    objc_super_type,
+                                    objc_selector_type,
+                                    NULL_TREE);
       umsg_super_decl = add_builtin_function (TAG_MSGSENDSUPER,
 					      type, 0, NOT_BUILT_IN,
 					      NULL, NULL_TREE);
@@ -1762,9 +1761,9 @@ synth_module_prologue (void)
 
 	 __objc_exec_class (void *); */
       type
-	= build_function_type (void_type_node,
-			       tree_cons (NULL_TREE, ptr_type_node,
-					  OBJC_VOID_AT_END));
+	= build_function_type_list (void_type_node,
+                                    ptr_type_node,
+                                    NULL_TREE);
       execclass_decl = add_builtin_function (TAG_EXECCLASS,
 					     type, 0, NOT_BUILT_IN,
 					     NULL, NULL_TREE);
@@ -1772,10 +1771,9 @@ synth_module_prologue (void)
 
   /* id objc_getClass (const char *); */
 
-  type = build_function_type (objc_object_type,
-				   tree_cons (NULL_TREE,
-					      const_string_type_node,
-					      OBJC_VOID_AT_END));
+  type = build_function_type_list (objc_object_type,
+                                   const_string_type_node,
+                                   NULL_TREE);
 
   objc_get_class_decl
     = add_builtin_function (TAG_GETCLASS, type, 0, NOT_BUILT_IN,
@@ -2399,13 +2397,11 @@ build_module_initializer_routine (void)
 			      PARM_DECL, NULL_TREE, void_type_node));
 #ifdef OBJCPLUS
   objc_start_function (get_identifier (TAG_GNUINIT),
-		       build_function_type (void_type_node,
-					    OBJC_VOID_AT_END),
+		       build_function_type_list (void_type_node, NULL_TREE),
 		       NULL_TREE, NULL_TREE);
 #else
   objc_start_function (get_identifier (TAG_GNUINIT),
-		       build_function_type (void_type_node,
-					    OBJC_VOID_AT_END),
+		       build_function_type_list (void_type_node, NULL_TREE),
 		       NULL_TREE, objc_get_parm_info (0));
 #endif
   body = c_begin_compound_stmt (true);
@@ -4096,26 +4092,24 @@ build_next_objc_exception_stuff (void)
   /* int _setjmp(...); */
   /* If the user includes <setjmp.h>, this shall be superseded by
      'int _setjmp(jmp_buf);' */
-  temp_type = build_function_type (integer_type_node, NULL_TREE);
+  temp_type = build_function_type_list (integer_type_node, NULL_TREE);
   objc_setjmp_decl
     = add_builtin_function (TAG_SETJMP, temp_type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
 
   /* id objc_exception_extract(struct _objc_exception_data *); */
   temp_type
-    = build_function_type (objc_object_type,
-			   tree_cons (NULL_TREE,
-				      build_pointer_type (objc_exception_data_template),
-				      OBJC_VOID_AT_END));
+    = build_function_type_list (objc_object_type,
+                                build_pointer_type (objc_exception_data_template),
+                                NULL_TREE);
   objc_exception_extract_decl
     = add_builtin_function (TAG_EXCEPTIONEXTRACT, temp_type, 0, NOT_BUILT_IN, NULL,
 			    NULL_TREE);
   /* void objc_exception_try_enter(struct _objc_exception_data *); */
   /* void objc_exception_try_exit(struct _objc_exception_data *); */
   temp_type
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE,
-				      build_pointer_type (objc_exception_data_template),
-				      OBJC_VOID_AT_END));
+    = build_function_type_list (void_type_node,
+                                build_pointer_type (objc_exception_data_template),
+                                NULL_TREE);
   objc_exception_try_enter_decl
     = add_builtin_function (TAG_EXCEPTIONTRYENTER, temp_type, 0, NOT_BUILT_IN, NULL,
 			    NULL_TREE);
@@ -4125,10 +4119,8 @@ build_next_objc_exception_stuff (void)
 
   /* int objc_exception_match(id, id); */
   temp_type
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, objc_object_type,
-				      tree_cons (NULL_TREE, objc_object_type,
-						 OBJC_VOID_AT_END)));
+    = build_function_type_list (integer_type_node,
+                                objc_object_type, objc_object_type, NULL_TREE);
   objc_exception_match_decl
     = add_builtin_function (TAG_EXCEPTIONMATCH, temp_type, 0, NOT_BUILT_IN, NULL,
 			    NULL_TREE);
@@ -4137,13 +4129,11 @@ build_next_objc_exception_stuff (void)
   /* id objc_assign_ivar_Fast (id, id, unsigned int)
        __attribute__ ((hard_coded_address (OFFS_ASSIGNIVAR_FAST))); */
   temp_type
-    = build_function_type (objc_object_type,
-			   tree_cons
-			   (NULL_TREE, objc_object_type,
-			    tree_cons (NULL_TREE, objc_object_type,
-				       tree_cons (NULL_TREE,
-						  unsigned_type_node,
-						  OBJC_VOID_AT_END))));
+    = build_function_type_list (objc_object_type,
+                                objc_object_type,
+                                objc_object_type,
+                                unsigned_type_node,
+                                NULL_TREE);
   objc_assign_ivar_decl
     = add_builtin_function (TAG_ASSIGNIVAR, temp_type, 0, NOT_BUILT_IN,
 			    NULL, NULL_TREE);
@@ -4162,10 +4152,10 @@ build_next_objc_exception_stuff (void)
 
   /* id objc_assign_global (id, id *); */
   /* id objc_assign_strongCast (id, id *); */
-  temp_type = build_function_type (objc_object_type,
-		tree_cons (NULL_TREE, objc_object_type,
-		    tree_cons (NULL_TREE, build_pointer_type (objc_object_type),
-			OBJC_VOID_AT_END)));
+  temp_type = build_function_type_list (objc_object_type,
+                                        objc_object_type,
+                                        build_pointer_type (objc_object_type),
+                                        NULL_TREE);
   objc_assign_global_decl
 	= add_builtin_function (TAG_ASSIGNGLOBAL, temp_type, 0, NOT_BUILT_IN, NULL,
 				NULL_TREE);
@@ -4185,9 +4175,9 @@ build_objc_exception_stuff (void)
   /* void objc_exception_throw(id) __attribute__((noreturn)); */
   /* void objc_sync_enter(id); */
   /* void objc_sync_exit(id); */
-  temp_type = build_function_type (void_type_node,
-				   tree_cons (NULL_TREE, objc_object_type,
-					      OBJC_VOID_AT_END));
+  temp_type = build_function_type_list (void_type_node,
+                                        objc_object_type,
+                                        NULL_TREE);
   objc_exception_throw_decl
     = add_builtin_function (TAG_EXCEPTIONTHROW, temp_type, 0, NOT_BUILT_IN, NULL,
 			    noreturn_list);
