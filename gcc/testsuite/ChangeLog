@@ -1,5 +1,8 @@
 2010-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/44337
+	* gcc.dg/pr44337.c: New test.
+
 	PR tree-optimization/44182
 	* g++.dg/debug/pr44182.C: New test.
 
