@@ -1,3 +1,11 @@
+2010-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43820
+	* include/bits/shared_ptr_base.h: Require complete type.
+	* include/tr1/shared_ptr.h: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: New.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: New.
+
 2010-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/basic_string.h (front, back): Add.
