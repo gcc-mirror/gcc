@@ -1,3 +1,8 @@
+2010-05-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases): Handle
+	BUILT_IN_RETURN.
+
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (maybe_hot_edge_p): Calls to functions called once is cold.
