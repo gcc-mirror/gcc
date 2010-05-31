@@ -62,8 +62,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef _Alloc					    allocator_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
       typedef typename _CharT_alloc_type::difference_type   difference_type;
-      typedef typename _CharT_alloc_type::reference	    reference;
-      typedef typename _CharT_alloc_type::const_reference   const_reference;
+      typedef value_type&               	            reference;
+      typedef const value_type&                             const_reference;
       typedef typename _CharT_alloc_type::pointer	    pointer;
       typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, __versa_string>  iterator;
@@ -598,7 +598,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        */
       reference
       front()
-      { return *begin(); }
+      { return operator[](0); }
 
       /**
        *  Returns a read-only (constant) reference to the data at the first
@@ -606,7 +606,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        */
       const_reference
       front() const
-      { return *begin(); }
+      { return operator[](0); }
 
       /**
        *  Returns a read/write reference to the data at the last
@@ -614,7 +614,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        */
       reference
       back()
-      { return *(end() - 1); }
+      { return operator[](this->size() - 1); }
 
       /**
        *  Returns a read-only (constant) reference to the data at the
@@ -622,7 +622,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        */
       const_reference
       back() const
-      { return *(end() - 1); }
+      { return operator[](this->size() - 1); }
 #endif
 
       // Modifiers:
