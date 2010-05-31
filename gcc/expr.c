@@ -4272,8 +4272,19 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				   				   offset));
 	}
 
+      /* No action is needed if the target is not a memory and the field
+	 lies completely outside that target.  This can occur if the source
+	 code contains an out-of-bounds access to a small array.  */
+      if (!MEM_P (to_rtx)
+	  && GET_MODE (to_rtx) != BLKmode
+	  && (unsigned HOST_WIDE_INT) bitpos
+	     >= GET_MODE_BITSIZE (GET_MODE (to_rtx)))
+	{
+	  expand_normal (from);
+	  result = NULL;
+	}
       /* Handle expand_expr of a complex value returning a CONCAT.  */
-      if (GET_CODE (to_rtx) == CONCAT)
+      else if (GET_CODE (to_rtx) == CONCAT)
 	{
 	  if (COMPLEX_MODE_P (TYPE_MODE (TREE_TYPE (from))))
 	    {
