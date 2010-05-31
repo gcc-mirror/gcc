@@ -1,5 +1,9 @@
 2010-05-31  Jan Hubicka  <jh@suse.cz>
 
+	* tree.h (tree_range_check_failed): Declare noreturn.
+
+2010-05-31  Jan Hubicka  <jh@suse.cz>
+
 	* gimple.c (gimple_call_builtin_p): New function.
 	* gimple.h (gimple_call_builtin_p): Declare.
 	* tree-cfg.c (make_edges): Produce edge from BUILT_IN_RETURN
