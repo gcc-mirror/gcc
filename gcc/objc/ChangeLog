@@ -1,3 +1,8 @@
+2010-06-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (build_next_objc_exception_stuff): Give setjmp a
+	varargs type instead of a zero-argument type.
+
 2010-05-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (synth_module_prologue): Use build_function_type_list
