@@ -1133,7 +1133,7 @@ C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
   c-ppoutput.o c-cppbuiltin.o \
   c-objc-common.o c-dump.o c-pch.o c-parser.o $(C_TARGET_OBJS) \
-  c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o
+  c-gimplify.o tree-mudflap.o c-pretty-print.o c-omp.o c-ada-spec.o
 
 # Language-specific object files for C.
 C_OBJS = c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
@@ -1995,7 +1995,7 @@ c-decl.o : c-decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     opts.h $(C_PRAGMA_H) gt-c-decl.h $(CGRAPH_H) $(HASHTAB_H) libfuncs.h \
     $(EXCEPT_H) $(LANGHOOKS_DEF_H) $(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) \
     $(DIAGNOSTIC_CORE_H) $(INPUT_H) langhooks.h tree-mudflap.h \
-    pointer-set.h tree-iterator.h c-lang.h $(PLUGIN_H)
+    pointer-set.h tree-iterator.h c-lang.h $(PLUGIN_H) c-ada-spec.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h output.h $(EXPR_H) \
     $(TOPLEV_H) langhooks.h $(TREE_FLOW_H) tree-iterator.h c-lang.h
@@ -2744,6 +2744,10 @@ tree-pretty-print.o : tree-pretty-print.c $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_PASS_H) value-prof.h output.h tree-pretty-print.h
 tree-diagnostic.o : tree-diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(DIAGNOSTIC_H) tree-diagnostic.h langhooks.h $(LANGHOOKS_DEF_H)
+c-ada-spec.o : c-ada-spec.c c-ada-spec.h $(CONFIG_H) $(SYSTEM_H) \
+   $(TREE_H) $(REAL_H) $(HASHTAB_H) $(TREE_FLOW_H) \
+   $(CPP_ID_DATA_H) $(TM_H) coretypes.h tree-iterator.h tree-pass.h \
+   value-prof.h fixed-value.h output.h
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FLAGS_H) $(TOPLEV_H) $(HASHTAB_H) $(EXPR_H) $(RTL_H) \
    $(GGC_H) $(TM_P_H) langhooks.h $(MD5_H) intl.h $(TARGET_H) \

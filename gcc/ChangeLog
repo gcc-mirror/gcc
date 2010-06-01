@@ -1,3 +1,21 @@
+2010-06-01  Arnaud Charlet  <charlet@adacore.com>
+            Matthew Gingell  <gingell@adacore.com>
+
+	* doc/invoke.texi: Mention -fdump-ada-spec.
+	* tree-dump.c (dump_files): Add ada-spec.
+	(FIRST_AUTO_NUMBERED_DUMP): Bump to 8.
+	* tree-pass.h (tree_dump_index): Add TDI_ada.
+	* gcc.c: Add support for -C without -E and for -fdump-ada-spec.
+	(cpp_unique_options): Do not reject -C or -CC when -E isn't present.
+	(default_compilers) <@c-header>: Allow -fdump-ada-spec on header files.
+	* c-decl.c: Include c-ada-spec.h.
+	(collect_source_ref_cb, collect_all_refs, for_each_global_decl): New
+	functions.
+	(c_write_global_declarations): Add handling of -fdump-ada-spec.
+	* c-lex.c (c_lex_with_flags): Add handling of CPP_COMMENT.
+	* Makefile.in (C_AND_OBJC_OBJS): Add c-ada-spec.o.
+	* c-ada-spec.h, c-ada-spec.c: New files.
+
 2010-06-01  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43853
