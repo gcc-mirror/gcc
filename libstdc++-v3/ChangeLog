@@ -1,3 +1,11 @@
+2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* acinclude.m4, configure.host: Support Bionic C library.
+	* configure: Regenerate.
+	* config/os/bionic/ctype_base.h, config/os/bionic/ctype_inline.h,
+	* config/os/bionic/ctype_noincline.h, config/os/bionic/os_defines.h:
+	New files, based on config/os/newlib/*.
+
 2010-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/43820
