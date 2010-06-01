@@ -1,13 +1,5 @@
 2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
-	* acinclude.m4, configure.host: Support Bionic C library.
-	* configure: Regenerate.
-	* config/os/bionic/ctype_base.h, config/os/bionic/ctype_inline.h,
-	* config/os/bionic/ctype_noincline.h, config/os/bionic/os_defines.h:
-	New files, based on config/os/newlib/*.
-
-2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
-
 	* config/arm/t-linux-androideabi: New.
 	* config.gcc (arm*-*-linux-androideabi): Include multilib configuration.
 
