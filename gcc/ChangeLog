@@ -1,5 +1,14 @@
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
+	* gegenrtl.c: Remove unnecesary prototypes.
+	(gendecl): Remove.
+	(gendef): Produce static inline.
+	(gencode): Remove.
+	(main): Do not decode parameters; generate header only.
+	* Makefile.in (genrtl.c): Remove.
+
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* tree-switch-conversion.c (build_one_array): Make it readonly.
 
 2010-06-01  Richard Guenther  <rguenther@suse.de>
