@@ -744,6 +744,12 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
 	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
+	    # Define multilib configuration for arm-linux-androideabi.
+	    case ${target} in
+	    *-androideabi)
+		tmake_file="$tmake_file arm/t-linux-androideabi"
+		;;
+	    esac
   	    # The BPABI long long divmod functions return a 128-bit value in
 	    # registers r0-r3.  Correctly modeling that requires the use of
 	    # TImode.

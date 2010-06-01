@@ -1,0 +1,10 @@
+MULTILIB_OPTIONS     = march=armv7-a mthumb
+MULTILIB_DIRNAMES    = armv7-a thumb
+MULTILIB_EXCEPTIONS  =
+MULTILIB_MATCHES     =
+MULTILIB_OSDIRNAMES  =
+
+# The "special" multilib can be used to build native applications for Android,
+# as opposed to native shared libraries that are then called via JNI.
+#MULTILIB_OPTIONS    += tno-android-cc
+#MULTILIB_DIRNAMES   += special
