@@ -439,7 +439,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       gcc_unreachable ();
 
     /* CPP_COMMENT will appear when compiling with -C and should be
-       ignored. */
+       ignored.  */
      case CPP_COMMENT:
        goto retry;
 
