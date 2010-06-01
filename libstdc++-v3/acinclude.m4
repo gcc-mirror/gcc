@@ -95,7 +95,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   ## (Right now, this only matters for enable_wchar_t, but nothing prevents
   ## other macros from doing the same.  This should be automated.)  -pme
 
-  # Check for uClibc since Linux platforms use different configuration
+  # Check for C library flavor since Linux platforms use different configuration
   # directories depending on the C library in use.
   AC_EGREP_CPP([_using_uclibc], [
   #include <stdio.h>
@@ -103,6 +103,13 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
     _using_uclibc
   #endif
   ], uclibc=yes, uclibc=no)
+
+  AC_EGREP_CPP([_using_bionic], [
+  #include <stdio.h>
+  #if __BIONIC__
+    _using_bionic
+  #endif
+  ], bionic=yes, bionic=no)
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
