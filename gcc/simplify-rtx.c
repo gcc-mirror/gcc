@@ -4875,7 +4875,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	 a mistake.)  */
       {
 	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte ATTRIBUTE_UNUSED = (((num_elem - 1 - elem) * elem_bitsize)
+	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
 			  / BITS_PER_UNIT);
 	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
 	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
@@ -4979,7 +4979,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
      will already have offset 0.  */
   if (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode))
     {
-      unsigned ibyte ATTRIBUTE_UNUSED = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode)
+      unsigned ibyte = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode)
 			- byte);
       unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
       unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
@@ -5024,7 +5024,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	 a mistake.)  */
       {
 	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte ATTRIBUTE_UNUSED = (((num_elem - 1 - elem) * elem_bitsize)
+	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
 			  / BITS_PER_UNIT);
 	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
 	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;

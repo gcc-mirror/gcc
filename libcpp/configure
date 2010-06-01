@@ -2233,16 +2233,14 @@ $as_echo "$ac_res" >&6; }
 
 } # ac_fn_cxx_check_func
 
-# ac_fn_cxx_check_proto LINENO SYMBOL VAR
-# ---------------------------------------
+# ac_fn_cxx_check_decl LINENO SYMBOL VAR
+# --------------------------------------
 # Tests whether SYMBOL is declared, setting cache variable VAR accordingly.
-ac_fn_cxx_check_proto ()
+ac_fn_cxx_check_decl ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  as_decl_name=`echo $2|sed 's/(.*//'`
-  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
-$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $2 is declared" >&5
+$as_echo_n "checking whether $2 is declared... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
@@ -2252,12 +2250,8 @@ $4
 int
 main ()
 {
-#ifndef $as_decl_name
-#ifdef __cplusplus
-  (void) $as_decl_use;
-#else
-  (void) $as_decl_name;
-#endif
+#ifndef $2
+  (void) $2;
 #endif
 
   ;
@@ -2276,7 +2270,7 @@ eval ac_res=\$$3
 $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
-} # ac_fn_cxx_check_proto
+} # ac_fn_cxx_check_decl
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -5466,7 +5460,7 @@ _ACEOF
 fi
 done
 
-ac_fn_cxx_check_proto "$LINENO" "abort" "ac_cv_have_decl_abort" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "abort" "ac_cv_have_decl_abort" "$ac_includes_default"
 if test "x$ac_cv_have_decl_abort" = x""yes; then :
   ac_have_decl=1
 else
@@ -5476,7 +5470,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_ABORT $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "asprintf" "ac_cv_have_decl_asprintf" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "asprintf" "ac_cv_have_decl_asprintf" "$ac_includes_default"
 if test "x$ac_cv_have_decl_asprintf" = x""yes; then :
   ac_have_decl=1
 else
@@ -5486,8 +5480,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_ASPRINTF $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "basename(char*)" "ac_cv_have_decl_basename_charp_" "$ac_includes_default"
-if test "x$ac_cv_have_decl_basename_charp_" = x""yes; then :
+ac_fn_cxx_check_decl "$LINENO" "basename" "ac_cv_have_decl_basename" "$ac_includes_default"
+if test "x$ac_cv_have_decl_basename" = x""yes; then :
   ac_have_decl=1
 else
   ac_have_decl=0
@@ -5496,7 +5490,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_BASENAME $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "errno" "ac_cv_have_decl_errno" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "errno" "ac_cv_have_decl_errno" "$ac_includes_default"
 if test "x$ac_cv_have_decl_errno" = x""yes; then :
   ac_have_decl=1
 else
@@ -5506,7 +5500,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_ERRNO $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "getopt" "ac_cv_have_decl_getopt" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "getopt" "ac_cv_have_decl_getopt" "$ac_includes_default"
 if test "x$ac_cv_have_decl_getopt" = x""yes; then :
   ac_have_decl=1
 else
@@ -5516,7 +5510,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GETOPT $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "clearerr_unlocked" "ac_cv_have_decl_clearerr_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "clearerr_unlocked" "ac_cv_have_decl_clearerr_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_clearerr_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5526,7 +5520,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_CLEARERR_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "feof_unlocked" "ac_cv_have_decl_feof_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "feof_unlocked" "ac_cv_have_decl_feof_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_feof_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5536,7 +5530,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FEOF_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "ferror_unlocked" "ac_cv_have_decl_ferror_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "ferror_unlocked" "ac_cv_have_decl_ferror_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_ferror_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5546,7 +5540,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FERROR_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fflush_unlocked" "ac_cv_have_decl_fflush_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fflush_unlocked" "ac_cv_have_decl_fflush_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fflush_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5556,7 +5550,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FFLUSH_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fgetc_unlocked" "ac_cv_have_decl_fgetc_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fgetc_unlocked" "ac_cv_have_decl_fgetc_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fgetc_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5566,7 +5560,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FGETC_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fgets_unlocked" "ac_cv_have_decl_fgets_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fgets_unlocked" "ac_cv_have_decl_fgets_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fgets_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5576,7 +5570,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FGETS_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fileno_unlocked" "ac_cv_have_decl_fileno_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fileno_unlocked" "ac_cv_have_decl_fileno_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fileno_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5586,7 +5580,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FILENO_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fprintf_unlocked" "ac_cv_have_decl_fprintf_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fprintf_unlocked" "ac_cv_have_decl_fprintf_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fprintf_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5596,7 +5590,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FPRINTF_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fputc_unlocked" "ac_cv_have_decl_fputc_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fputc_unlocked" "ac_cv_have_decl_fputc_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fputc_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5606,7 +5600,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FPUTC_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fputs_unlocked" "ac_cv_have_decl_fputs_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fputs_unlocked" "ac_cv_have_decl_fputs_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fputs_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5616,7 +5610,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FPUTS_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fread_unlocked" "ac_cv_have_decl_fread_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fread_unlocked" "ac_cv_have_decl_fread_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fread_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5626,7 +5620,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FREAD_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "fwrite_unlocked" "ac_cv_have_decl_fwrite_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "fwrite_unlocked" "ac_cv_have_decl_fwrite_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_fwrite_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5636,7 +5630,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_FWRITE_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "getchar_unlocked" "ac_cv_have_decl_getchar_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "getchar_unlocked" "ac_cv_have_decl_getchar_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_getchar_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5646,7 +5640,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GETCHAR_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "getc_unlocked" "ac_cv_have_decl_getc_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "getc_unlocked" "ac_cv_have_decl_getc_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_getc_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5656,7 +5650,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GETC_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "putchar_unlocked" "ac_cv_have_decl_putchar_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "putchar_unlocked" "ac_cv_have_decl_putchar_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_putchar_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5666,7 +5660,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_PUTCHAR_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "putc_unlocked" "ac_cv_have_decl_putc_unlocked" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "putc_unlocked" "ac_cv_have_decl_putc_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_putc_unlocked" = x""yes; then :
   ac_have_decl=1
 else
@@ -5676,7 +5670,7 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_PUTC_UNLOCKED $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_proto "$LINENO" "vasprintf" "ac_cv_have_decl_vasprintf" "$ac_includes_default"
+ac_fn_cxx_check_decl "$LINENO" "vasprintf" "ac_cv_have_decl_vasprintf" "$ac_includes_default"
 if test "x$ac_cv_have_decl_vasprintf" = x""yes; then :
   ac_have_decl=1
 else
