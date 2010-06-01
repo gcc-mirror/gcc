@@ -231,7 +231,8 @@ execute_free_datastructures (void)
 }
 
 /* Pass: fixup_cfg.  IPA passes, compilation of earlier functions or inlining
-   might have changed some properties, such as marked functions nothrow.
+   might have changed some properties, such as marked functions nothrow,
+   pure, const or noreturn.
    Remove redundant edges and basic blocks, and create new ones if necessary.
 
    This pass can't be executed as stand alone pass from pass manager, because
@@ -267,19 +268,23 @@ execute_fixup_cfg (void)
 	  tree decl = is_gimple_call (stmt)
 		      ? gimple_call_fndecl (stmt)
 		      : NULL;
-
-	  if (decl
-	      && gimple_call_flags (stmt) & (ECF_CONST
-					     | ECF_PURE
-					     | ECF_LOOPING_CONST_OR_PURE))
+	  if (decl)
 	    {
-	      if (gimple_in_ssa_p (cfun))
+	      int flags = gimple_call_flags (stmt);
+	      if (flags & (ECF_CONST | ECF_PURE | ECF_LOOPING_CONST_OR_PURE))
 		{
-		  todo |= TODO_update_ssa | TODO_cleanup_cfg;
-		  mark_symbols_for_renaming (stmt);
-		  update_stmt (stmt);
+		  if (gimple_in_ssa_p (cfun))
+		    {
+		      todo |= TODO_update_ssa | TODO_cleanup_cfg;
+		      mark_symbols_for_renaming (stmt);
+		      update_stmt (stmt);
+		    }
 		}
-	    }
+	      
+	      if (flags & ECF_NORETURN
+		  && fixup_noreturn_call (stmt))
+		todo |= TODO_cleanup_cfg;
+	     }
 
 	  maybe_clean_eh_stmt (stmt);
 	}
@@ -292,6 +297,13 @@ execute_fixup_cfg (void)
     }
   if (count_scale != REG_BR_PROB_BASE)
     compute_function_frequency ();
+
+  /* We just processed all calls.  */
+  if (cfun->gimple_df)
+    {
+      VEC_free (gimple, gc, MODIFIED_NORETURN_CALLS (cfun));
+      MODIFIED_NORETURN_CALLS (cfun) = NULL;
+    }
 
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)

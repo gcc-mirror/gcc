@@ -870,6 +870,7 @@ tree maybe_fold_tmr (tree);
 
 unsigned int execute_free_datastructures (void);
 unsigned int execute_fixup_cfg (void);
+bool fixup_noreturn_call (gimple stmt);
 
 #include "tree-flow-inline.h"
 

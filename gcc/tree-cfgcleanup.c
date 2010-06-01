@@ -538,6 +538,49 @@ remove_forwarder_block (basic_block bb)
   return true;
 }
 
+/* STMT is a call that has been discovered noreturn.  Fixup the CFG
+   and remove LHS.  Return true if something changed.  */
+
+bool
+fixup_noreturn_call (gimple stmt)
+{
+  basic_block bb = gimple_bb (stmt);
+  bool changed = false;
+
+  if (gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
+    return false;
+
+  /* First split basic block if stmt is not last.  */
+  if (stmt != gsi_stmt (gsi_last_bb (bb)))
+    split_block (bb, stmt);
+
+  changed |= remove_fallthru_edge (bb->succs);
+
+  /* If there is LHS, remove it.  */
+  if (gimple_call_lhs (stmt))
+    {
+      tree op = gimple_call_lhs (stmt);
+      gimple_call_set_lhs (stmt, NULL_TREE);
+      /* We need to remove SSA name to avoid checking.
+	 All uses are dominated by the noreturn and thus will
+	 be removed afterwards.  */
+      if (TREE_CODE (op) == SSA_NAME)
+	{
+	  use_operand_p use_p;
+          imm_use_iterator iter;
+	  gimple use_stmt;
+
+          FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, error_mark_node);
+	}
+      update_stmt (stmt);
+      changed = true;
+    }
+  return changed;
+}
+
+
 /* Split basic blocks on calls in the middle of a basic block that are now
    known not to return, and remove the unreachable code.  */
 
@@ -560,13 +603,10 @@ split_bbs_on_noreturn_calls (void)
 	    || bb->index < NUM_FIXED_BLOCKS
 	    || bb->index >= n_basic_blocks
 	    || BASIC_BLOCK (bb->index) != bb
-	    || last_stmt (bb) == stmt
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;
 
-	changed = true;
-	split_block (bb, stmt);
-	remove_fallthru_edge (bb->succs);
+	changed |= fixup_noreturn_call (stmt);
       }
 
   return changed;
