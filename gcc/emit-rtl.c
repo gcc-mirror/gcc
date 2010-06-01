@@ -3856,7 +3856,8 @@ remove_insn (rtx insn)
     }
   else if (get_insns () == insn)
     {
-      PREV_INSN (next) = NULL;
+      if (next)
+        PREV_INSN (next) = NULL;
       set_first_insn (next);
     }
   else

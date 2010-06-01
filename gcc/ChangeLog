@@ -1,3 +1,7 @@
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (remove_insn): Fix thinko in prevoius patch.
+
 2010-06-01  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (build_nt_call_list): Delete.
