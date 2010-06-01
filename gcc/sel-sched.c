@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "rtlhooks-def.h"
 #include "output.h"
+#include "emit-rtl.h"
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"

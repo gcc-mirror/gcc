@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "sparseset.h"
 #include "ira-int.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 static ira_copy_t find_allocno_copy (ira_allocno_t, ira_allocno_t, rtx,
 				     ira_loop_tree_node_t);

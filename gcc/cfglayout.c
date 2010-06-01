@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "vecprim.h"
+#include "emit-rtl.h"
 
 /* Holds the interesting trailing notes for the function.  */
 rtx cfg_layout_function_footer;

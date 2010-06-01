@@ -175,6 +175,7 @@
 #include "target.h"
 #include "df.h"
 #include "vecprim.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef STACK_REGS
 

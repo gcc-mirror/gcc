@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "emit-rtl.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "flags.h"
@@ -40,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "domwalk.h"
+#include "emit-rtl.h"
 
 
 /* This pass does simple forward propagation and simplification when an

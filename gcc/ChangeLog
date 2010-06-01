@@ -1,5 +1,41 @@
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
+	* fwprop.c: Make emit-rtl.h include last.
+	* rtlanal.c: Include emit-rtl.h.
+	* genautomata.c: Output emit-rtl include into insn-automata.c
+	* df-scan.c: Include emit-rtl.h.
+	* haifa-sched.c: Indlude emit-rtl.h.
+	* mode-switching.c: Indlude emit-rtl.h.
+	* graph.c: Indlude emit-rtl.h.
+	* sel-sched.c: Include emit-rtl.h.
+	* sel-sched-ir.c: Include emit-rtl.h.
+	* ira-build.c: Include emit-rtl.h.
+	* emit-rtl.c: (first_insn, last_insn): Remove defines.
+	(get_insns, set_first_insn, get_last_insn, set_last_insn, get_max_uid):
+	Move to emit-rtl.h.
+	(set_new_first_and_last_insn, get_last_insn_anywhere, get_first_nonnote_insn,
+	get_last_nonnote_insn, try_split, make_call_insn_raw, add_insn_after,
+	add_insn_before, remove_insn, delete_insns_since, reorder_insns_nobb,
+	emit_insn_after_1, emit_debug_insn_before, emit_insn, start_sequence,
+	push_to_sequence, push_to_sequence2, push_topmost_sequence, end_sequence,
+	copy_insn): Use accessor functions.
+	* emit-rtl.h (gen_blockage, gen_rtvec, copy_insn_1, copy_insn,
+	 gen_int_mode, emit_copy_of_insn_after, set_reg_attrs_from_value,
+	set_reg_attrs_for_parm, set_reg_attrs_for_decl_rtl, adjust_reg_mode,
+	mem_expr_equal_p): Move here from rtl.h
+	(get_insns, set_first-insn, get_last_insn, set_last_insn, get_max_uid):
+	Move here from emit-rtl.c; make inline.
+	* cfglayout.h: Include emit-rtl.h
+	* rtl.h (gen_blockage, gen_rtvec, copy_insn_1, copy_insn,
+	 gen_int_mode, emit_copy_of_insn_after, set_reg_attrs_from_value,
+	set_reg_attrs_for_parm, set_reg_attrs_for_decl_rtl, adjust_reg_mode,
+	mem_expr_equal_p, get_insns, set_first-insn, get_last_insn, set_last_insn,
+	get_max_uid): Move to emit-rtl.h.
+	* reg-stack.c: Include emit-rtl.h
+	* dce.c: Likewise.
+
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (tree_function_versioning): Update prototype.
 	(cgraph_function_versioning): Update prototype.
 	* cgraphunit.c (cgraph_copy_node_for_versioning): Accept bbs_to_copy

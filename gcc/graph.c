@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "toplev.h"
 #include "graph.h"
+#include "emit-rtl.h"
 
 static const char *const graph_ext[] =
 {
