@@ -1,3 +1,13 @@
+2010-06-01  Arnaud Charlet  <charlet@adacore.com>
+	    Matthew Gingell  <gingell@adacore.com>
+
+	* Make-lang.in (CXX_C_OBJS): Add c-ada-spec.o.
+	* decl2.c: Include langhooks.h and c-ada-spec.h.
+	(cpp_check, collect_source_refs, collect_ada_namespace,
+	collect_all_refs): New functions.
+	(cp_write_global_declarations): Add handling of -fdump-ada-spec.
+	* lang-specs.h: Ditto.
+
 2010-05-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-tree.h (cp_build_function_call_nary): Declare.
