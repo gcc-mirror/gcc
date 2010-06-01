@@ -3367,6 +3367,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	tree decl = gimple_call_fndecl (stmt);
 	tree addr = gimple_call_fn (stmt);
 	tree funtype = TREE_TYPE (addr);
+	bool stdarg = false;
 
 	if (POINTER_TYPE_P (funtype))
 	  funtype = TREE_TYPE (funtype);
@@ -3475,17 +3476,26 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
 	if (!VOID_TYPE_P (TREE_TYPE (funtype)))
 	  cost += estimate_move_cost (TREE_TYPE (funtype));
+
+	if (funtype)
+	  stdarg = stdarg_p (funtype);
+
 	/* Our cost must be kept in sync with
 	   cgraph_estimate_size_after_inlining that does use function
-	   declaration to figure out the arguments.  */
-	if (decl && DECL_ARGUMENTS (decl))
+	   declaration to figure out the arguments.
+
+	   For functions taking variable list of arguments we must
+	   look into call statement intself.  This is safe because
+	   we will get only higher costs and in most cases we will
+	   not inline these anyway.  */
+	if (decl && DECL_ARGUMENTS (decl) && !stdarg)
 	  {
 	    tree arg;
 	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	      if (!VOID_TYPE_P (TREE_TYPE (arg)))
 	        cost += estimate_move_cost (TREE_TYPE (arg));
 	  }
-	else if (funtype && prototype_p (funtype))
+	else if (funtype && prototype_p (funtype) && !stdarg)
 	  {
 	    tree t;
 	    for (t = TYPE_ARG_TYPES (funtype); t && t != void_list_node;
