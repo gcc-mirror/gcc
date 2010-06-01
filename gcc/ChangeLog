@@ -1,5 +1,22 @@
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (tree_function_versioning): Update prototype.
+	(cgraph_function_versioning): Update prototype.
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Accept bbs_to_copy
+	bitmap.
+	(cgraph_function_versioning): Accept new_entry_block and bbs_to_copy. 
+	(cgraph_materialize_clone, save_inline_function_body): Update use of
+	tree_function_versioning.
+	* tree-inline.c (copy_bb): Look for previous copied block to link after;
+	fix debug output.
+	(copy_cfg_body): Accept new_entry_block and bbs_to_copy.
+	(copy_body): Likewise.
+	(expand_call_inline): Update use of copy_body.
+	(tree_function_versioning): Update use of copy body; accept
+	blocks_to_copy and new_entry.
+
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* gegenrtl.c: Remove unnecesary prototypes.
 	(gendecl): Remove.
 	(gendef): Produce static inline.

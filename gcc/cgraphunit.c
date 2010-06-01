@@ -2102,13 +2102,18 @@ update_call_expr (struct cgraph_node *new_version)
    edges which should be redirected to point to
    NEW_VERSION.  ALL the callees edges of OLD_VERSION
    are cloned to the new version node.  Return the new
-   version node.  */
+   version node. 
+
+   If non-NULL BLOCK_TO_COPY determine what basic blocks 
+   was copied to prevent duplications of calls that are dead
+   in the clone.  */
 
 static struct cgraph_node *
 cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 				 tree new_decl,
-				 VEC(cgraph_edge_p,heap) *redirect_callers)
-{
+				 VEC(cgraph_edge_p,heap) *redirect_callers,
+				 bitmap bbs_to_copy)
+ {
    struct cgraph_node *new_version;
    struct cgraph_edge *e;
    unsigned i;
@@ -2128,15 +2133,19 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->count = old_version->count;
 
    for (e = old_version->callees; e; e=e->next_callee)
-     cgraph_clone_edge (e, new_version, e->call_stmt,
-			e->lto_stmt_uid, REG_BR_PROB_BASE,
-			CGRAPH_FREQ_BASE,
-			e->loop_nest, true);
+     if (!bbs_to_copy
+	 || bitmap_bit_p (bbs_to_copy, gimple_bb (e->call_stmt)->index))
+       cgraph_clone_edge (e, new_version, e->call_stmt,
+			  e->lto_stmt_uid, REG_BR_PROB_BASE,
+			  CGRAPH_FREQ_BASE,
+			  e->loop_nest, true);
    for (e = old_version->indirect_calls; e; e=e->next_callee)
-     cgraph_clone_edge (e, new_version, e->call_stmt,
-			e->lto_stmt_uid, REG_BR_PROB_BASE,
-			CGRAPH_FREQ_BASE,
-			e->loop_nest, true);
+     if (!bbs_to_copy
+	 || bitmap_bit_p (bbs_to_copy, gimple_bb (e->call_stmt)->index))
+       cgraph_clone_edge (e, new_version, e->call_stmt,
+			  e->lto_stmt_uid, REG_BR_PROB_BASE,
+			  CGRAPH_FREQ_BASE,
+			  e->loop_nest, true);
    for (i = 0; VEC_iterate (cgraph_edge_p, redirect_callers, i, e); i++)
      {
        /* Redirect calls to the old version node to point to its new
@@ -2159,14 +2168,18 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
     new ones (according to results of prior analysis).
     OLD_VERSION_NODE is the node that is versioned.
     It returns the new version's cgraph node.
-    ARGS_TO_SKIP lists arguments to be omitted from functions
-    */
+    If non-NULL ARGS_TO_SKIP determine function parameters to remove
+    from new version.
+    If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
+    If non_NULL NEW_ENTRY determine new entry BB of the clone.  */
 
 struct cgraph_node *
 cgraph_function_versioning (struct cgraph_node *old_version_node,
 			    VEC(cgraph_edge_p,heap) *redirect_callers,
 			    VEC (ipa_replace_map_p,gc)* tree_map,
 			    bitmap args_to_skip,
+			    bitmap bbs_to_copy,
+			    basic_block new_entry_block,
 			    const char *clone_name)
 {
   tree old_decl = old_version_node->decl;
@@ -2193,10 +2206,11 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
      and update the edges of the new node. */
   new_version_node =
     cgraph_copy_node_for_versioning (old_version_node, new_decl,
-				     redirect_callers);
+				     redirect_callers, bbs_to_copy);
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip);
+  tree_function_versioning (old_decl, new_decl, tree_map, false, args_to_skip,
+			    bbs_to_copy, new_entry_block);
 
   /* Update the new version's properties.
      Make The new version visible only within this translation unit.  Make sure
@@ -2267,7 +2281,8 @@ save_inline_function_body (struct cgraph_node *node)
       }
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL);
+  tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL,
+			    NULL, NULL);
 
   DECL_EXTERNAL (first_clone->decl) = 0;
   DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
@@ -2296,7 +2311,7 @@ cgraph_materialize_clone (struct cgraph_node *node)
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (node->clone_of->decl, node->decl,
   			    node->clone.tree_map, true,
-			    node->clone.args_to_skip);
+			    node->clone.args_to_skip, NULL, NULL);
   if (cgraph_dump_file)
     {
       dump_function_to_file (node->clone_of->decl, cgraph_dump_file, dump_flags);
