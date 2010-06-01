@@ -1362,6 +1362,27 @@ local_pure_const (void)
       && !warn_suggest_attribute_pure
       && skip)
     return 0;
+
+  /* First do NORETURN discovery.  */
+  if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
+      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
+    {
+      if (warn_missing_noreturn
+	  && !lang_hooks.missing_noreturn_ok_p (cfun->decl))
+	warning_at (DECL_SOURCE_LOCATION (cfun->decl), OPT_Wmissing_noreturn,
+		    "function might be possible candidate "
+		    "for attribute %<noreturn%>");
+      if (dump_file)
+        fprintf (dump_file, "Function found to be noreturn: %s\n",
+	         lang_hooks.decl_printable_name (current_function_decl, 2));
+
+      /* Update declaration and reduce profile to executed once.  */
+      TREE_THIS_VOLATILE (current_function_decl) = 1;
+      if (node->frequency > NODE_FREQUENCY_EXECUTED_ONCE)
+        node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
+
+      changed = true;
+    }
   l = analyze_function (node, false);
 
   switch (l->pure_const_state)
