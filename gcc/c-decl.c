@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "pointer-set.h"
 #include "plugin.h"
+#include "c-ada-spec.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -9614,6 +9615,43 @@ c_write_global_declarations_2 (tree globals)
     debug_hooks->global_decl (decl);
 }
 
+/* Callback to collect a source_ref from a DECL.  */
+
+static void
+collect_source_ref_cb (tree decl)
+{
+  if (!DECL_IS_BUILTIN (decl))
+    collect_source_ref (LOCATION_FILE (decl_sloc (decl, false)));
+}
+
+/* Collect all references relevant to SOURCE_FILE.  */
+
+static void
+collect_all_refs (const char *source_file)
+{
+  tree t;
+
+  for (t = all_translation_units; t; t = TREE_CHAIN (t))
+    collect_ada_nodes (BLOCK_VARS (DECL_INITIAL (t)), source_file);
+}
+
+/* Iterate over all global declarations and call CALLBACK.  */
+
+static void
+for_each_global_decl (void (*callback) (tree decl))
+{
+  tree t;
+  tree decls;
+  tree decl;
+
+  for (t = all_translation_units; t; t = TREE_CHAIN (t))
+    { 
+      decls = DECL_INITIAL (t);
+      for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
+	callback (decl);
+    }
+}
+
 /* Preserve the external declarations scope across a garbage collect.  */
 static GTY(()) tree ext_block;
 
@@ -9635,6 +9673,18 @@ c_write_global_declarations (void)
   ext_block = pop_scope ();
   external_scope = 0;
   gcc_assert (!current_scope);
+
+  /* Handle -fdump-ada-spec[-slim]. */
+  if (dump_enabled_p (TDI_ada))
+    {
+      /* Build a table of files to generate specs for */
+      if (get_dump_file_info (TDI_ada)->flags & TDF_SLIM)
+	collect_source_ref (main_input_filename);
+      else
+	for_each_global_decl (collect_source_ref_cb);
+
+      dump_ada_specs (collect_all_refs, NULL);
+    }
 
   if (ext_block)
     {

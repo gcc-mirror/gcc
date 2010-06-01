@@ -164,7 +164,8 @@ in the following sections.
 @gccoptlist{-c  -S  -E  -o @var{file}  -combine  -no-canonical-prefixes  @gol
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
---version -wrapper@@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}}
+--version -wrapper@@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
+-fdump-ada-spec@r{[}-slim@r{]}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -987,7 +988,8 @@ Objective-C++ source code which should not be preprocessed.
 
 @item @var{file}.h
 C, C++, Objective-C or Objective-C++ header file to be turned into a
-precompiled header.
+precompiled header (default), or C, C++ header file to be turned into an
+Ada spec (via the @option{-fdump-ada-spec} switch).
 
 @item @var{file}.cc
 @itemx @var{file}.cp
@@ -1015,7 +1017,7 @@ Objective-C++ source code which should not be preprocessed.
 @itemx @var{file}.HPP
 @itemx @var{file}.h++
 @itemx @var{file}.tcc
-C++ header file to be turned into a precompiled header.
+C++ header file to be turned into a precompiled header or Ada spec.
 
 @item @var{file}.f
 @itemx @var{file}.for
@@ -1369,6 +1371,11 @@ Plugins API.
 @item -fplugin-arg-@var{name}-@var{key}=@var{value}
 Define an argument called @var{key} with a value of @var{value}
 for the plugin called @var{name}.
+
+@item -fdump-ada-spec@r{[}-slim@r{]}
+For C and C++ source and include files, generate corresponding Ada
+specs. @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
+GNAT User's Guide}, which provides detailed documentation on this feature.
 
 @include @value{srcdir}/../libiberty/at-file.texi
 @end table

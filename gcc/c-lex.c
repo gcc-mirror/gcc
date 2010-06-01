@@ -435,9 +435,13 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 
       /* These tokens should not be visible outside cpplib.  */
     case CPP_HEADER_NAME:
-    case CPP_COMMENT:
     case CPP_MACRO_ARG:
       gcc_unreachable ();
+
+    /* CPP_COMMENT will appear when compiling with -C and should be
+       ignored. */
+     case CPP_COMMENT:
+       goto retry;
 
     default:
       *value = NULL_TREE;

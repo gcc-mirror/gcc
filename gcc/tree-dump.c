@@ -781,7 +781,8 @@ static struct dump_file_info dump_files[TDI_end] =
   {".gimple", "tree-gimple", NULL, TDF_TREE, 0, 4},
   {".nested", "tree-nested", NULL, TDF_TREE, 0, 5},
   {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6},
-#define FIRST_AUTO_NUMBERED_DUMP 7
+  {".ads", "ada-spec", NULL, 0, 0, 7},
+#define FIRST_AUTO_NUMBERED_DUMP 8
 
   {NULL, "tree-all", NULL, TDF_TREE, 0, 0},
   {NULL, "rtl-all", NULL, TDF_RTL, 0, 0},
