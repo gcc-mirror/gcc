@@ -3852,23 +3852,6 @@ build_nt (enum tree_code code, ...)
   return t;
 }
 
-/* Similar to build_nt, but for creating a CALL_EXPR object with
-   ARGLIST passed as a list.  */
-
-tree
-build_nt_call_list (tree fn, tree arglist)
-{
-  tree t;
-  int i;
-
-  t = build_vl_exp (CALL_EXPR, list_length (arglist) + 3);
-  CALL_EXPR_FN (t) = fn;
-  CALL_EXPR_STATIC_CHAIN (t) = NULL_TREE;
-  for (i = 0; arglist; arglist = TREE_CHAIN (arglist), i++)
-    CALL_EXPR_ARG (t, i) = TREE_VALUE (arglist);
-  return t;
-}
-
 /* Similar to build_nt, but for creating a CALL_EXPR object with a
    tree VEC.  */
 

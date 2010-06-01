@@ -1,3 +1,8 @@
+2010-06-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (build_nt_call_list): Delete.
+	* tree.c (build_nt_call_list): Delete.
+
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* fwprop.c: Make emit-rtl.h include last.
