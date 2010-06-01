@@ -186,14 +186,28 @@ finish_state (void)
 }
 
 
+/* Return true if we have a function state for NODE.  */
+
+static inline bool
+has_function_state (struct cgraph_node *node)
+{
+  if (!funct_state_vec
+      || VEC_length (funct_state, funct_state_vec) <= (unsigned int)node->uid)
+    return false;
+  return VEC_index (funct_state, funct_state_vec, node->uid) != NULL;
+}
+
 /* Return the function state from NODE.  */
 
 static inline funct_state
 get_function_state (struct cgraph_node *node)
 {
+  static struct funct_state_d varying
+    = { IPA_NEITHER, IPA_NEITHER, true, true, true };
   if (!funct_state_vec
       || VEC_length (funct_state, funct_state_vec) <= (unsigned int)node->uid)
-    return NULL;
+    /* We might want to put correct previously_known state into varying.  */
+    return &varying;
   return VEC_index (funct_state, funct_state_vec, node->uid);
 }
 
@@ -712,10 +726,10 @@ static void
 duplicate_node_data (struct cgraph_node *src, struct cgraph_node *dst,
 	 	     void *data ATTRIBUTE_UNUSED)
 {
-  if (get_function_state (src))
+  if (has_function_state (src))
     {
       funct_state l = XNEW (struct funct_state_d);
-      gcc_assert (!get_function_state (dst));
+      gcc_assert (!has_function_state (dst));
       memcpy (l, get_function_state (src), sizeof (*l));
       set_function_state (dst, l);
     }
@@ -726,7 +740,7 @@ duplicate_node_data (struct cgraph_node *src, struct cgraph_node *dst,
 static void
 remove_node_data (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-  if (get_function_state (node))
+  if (has_function_state (node))
     {
       free (get_function_state (node));
       set_function_state (node, NULL);
@@ -799,7 +813,7 @@ pure_const_write_summary (cgraph_node_set set,
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && get_function_state (node) != NULL)
+      if (node->analyzed && has_function_state (node))
 	count++;
     }
 
@@ -809,7 +823,7 @@ pure_const_write_summary (cgraph_node_set set,
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && get_function_state (node) != NULL)
+      if (node->analyzed && has_function_state (node))
 	{
 	  struct bitpack_d *bp;
 	  funct_state fs;
@@ -1041,8 +1055,8 @@ propagate (void)
 			       pure_const_names[y_l->pure_const_state],
 			       y_l->looping);
 		    }
-		  else if (y_l->pure_const_state > ECF_PURE
-			   && cgraph_edge_cannot_lead_to_return (e))
+		  if (y_l->pure_const_state > ECF_PURE
+		      && cgraph_edge_cannot_lead_to_return (e))
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{	
@@ -1259,7 +1273,8 @@ propagate (void)
 	  free (node->aux);
 	  node->aux = NULL;
 	}
-      if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
+      if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE
+	  && has_function_state (node))
 	free (get_function_state (node));
     }
 

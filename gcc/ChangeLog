@@ -1,3 +1,14 @@
+2010-06-01  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43853
+	* ipa-pure-const.c (get_function_state): Hand back varying state
+	if we do not have one.
+	(has_function_state): New function.
+	(duplicate_node_data): Adjust.
+	(remove_node_data): Likewise.
+	(pure_const_write_summary): Likewise.
+	(propagate): Likewise.  Fix typo.
+
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (verify_stmt): Do not skip could_throw test.
