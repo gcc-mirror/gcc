@@ -1,5 +1,9 @@
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-pure-const.c (local_pure_const): Do NORETURN discovery.
+
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* tree-cfgcleanup.c (fixup_noreturn_call): Break out from ...;
 	remove return value.
 	(split_bbs_on_noreturn_calls) .... here.
