@@ -849,7 +849,8 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fpermissive:
-      global_dc->permissive = flag_permissive = value;
+      flag_permissive = value;
+      global_dc->permissive = value;
       break;
 
     case OPT_fpreprocessed:

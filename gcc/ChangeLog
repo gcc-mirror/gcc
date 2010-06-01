@@ -1,3 +1,10 @@
+2010-06-01  Richard Guenther  <rguenther@suse.de>
+
+	* optabs.c (init_optabs): Guard all accesses to reinit.
+	* ipa-pure-const.c (propagate): Fix another typo.
+	* opts.c (common_handle_option): Split assignment to bool.
+	* c-opts.c (c_common_handle_option): Likewise.
+
 2010-06-01  Arnaud Charlet  <charlet@adacore.com>
             Matthew Gingell  <gingell@adacore.com>
 

@@ -6173,7 +6173,9 @@ void
 init_optabs (void)
 {
   unsigned int i;
+#if GCC_VERSION >= 4000 && HAVE_DESIGNATED_INITIALIZERS
   static bool reinit;
+#endif
 
   libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */
@@ -6670,7 +6672,9 @@ init_optabs (void)
   /* Allow the target to add more libcalls or rename some, etc.  */
   targetm.init_libfuncs ();
 
+#if GCC_VERSION >= 4000 && HAVE_DESIGNATED_INITIALIZERS
   reinit = true;
+#endif
 }
 
 /* Print information about the current contents of the optabs on

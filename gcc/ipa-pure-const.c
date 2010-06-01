@@ -1110,7 +1110,8 @@ propagate (void)
 		}
 	      pure_const_state = MAX (pure_const_state, MIN (edge_state,
 				      w_l->state_previously_known));
-	      looping = MAX (looping, MIN (edge_looping, edge_state));
+	      looping = MAX (looping, MIN (edge_looping,
+					   w_l->looping_previously_known));
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }

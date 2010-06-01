@@ -2182,7 +2182,8 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_pedantic_errors:
-      global_dc->pedantic_errors = flag_pedantic_errors = pedantic = 1;
+      flag_pedantic_errors = pedantic = 1;
+      global_dc->pedantic_errors = 1;
       break;
 
     case OPT_fwhopr:
