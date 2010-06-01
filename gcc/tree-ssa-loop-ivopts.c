@@ -70,14 +70,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
-#include "expr.h"
 #include "tree-pass.h"
 #include "ggc.h"
 #include "insn-config.h"
@@ -91,6 +89,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-affine.h"
 #include "target.h"
+
+/* FIXME: Expressions are expanded to RTL in this pass to determine the
+   cost of different addressing modes.  This should be moved to a TBD
+   interface between the GIMPLE and RTL worlds.  */
+#include "expr.h"
 
 /* The infinite cost.  */
 #define INFTY 10000000

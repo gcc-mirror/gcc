@@ -93,7 +93,6 @@ eight) times the number of the actual switch branches. */
 #include "output.h"
 #include "input.h"
 #include "tree-pass.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "tree-dump.h"
 #include "timevar.h"

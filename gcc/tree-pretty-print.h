@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_PRETTY_PRINT_H
 #define GCC_TREE_PRETTY_PRINT_H
 
+#include "pretty-print.h"
+
 #define pp_tree_identifier(PP, T)                      \
   pp_base_tree_identifier (pp_base (PP), T)
 

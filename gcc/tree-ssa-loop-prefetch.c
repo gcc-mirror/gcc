@@ -25,13 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
-#include "expr.h"
 #include "tree-pass.h"
 #include "insn-config.h"
 #include "recog.h"
@@ -43,6 +41,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-data-ref.h"
+
+
+/* FIXME: Needed for optabs, but this should all be moved to a TBD interface
+   between the GIMPLE and RTL worlds.  */
+#include "expr.h"
 #include "optabs.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during

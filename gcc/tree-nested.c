@@ -31,7 +31,7 @@
 #include "tree-iterator.h"
 #include "tree-flow.h"
 #include "cgraph.h"
-#include "expr.h"
+#include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */
 #include "langhooks.h"
 #include "pointer-set.h"
 

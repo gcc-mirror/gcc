@@ -97,7 +97,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "basic-block.h"
 #include "target.h"
-#include "diagnostic.h"
 #include "gimple-pretty-print.h"
 
 /* FIXME: RTL headers have to be included here for optabs.  */
