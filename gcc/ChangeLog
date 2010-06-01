@@ -1,3 +1,9 @@
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (verify_stmt): Do not skip could_throw test.
+	* passes.c (execute_function_todo): Do not make implicit verify_ssa.
+	(execute_all_ipa_transforms): Do not play with the states.
+
 2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/arm/t-linux-androideabi: New.

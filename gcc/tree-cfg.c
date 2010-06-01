@@ -4003,14 +4003,8 @@ verify_stmt (gimple_stmt_iterator *gsi)
     {
       if (!stmt_could_throw_p (stmt))
 	{
-	  /* During IPA passes, ipa-pure-const sets nothrow flags on calls
-	     and they are updated on statements only after fixup_cfg
-	     is executed at beggining of expansion stage.  */
-	  if (cgraph_state != CGRAPH_STATE_IPA_SSA)
-	    {
-	      error ("statement marked for throw, but doesn%'t");
-	      goto fail;
-	    }
+	  error ("statement marked for throw, but doesn%'t");
+	  goto fail;
 	}
       else if (lp_nr > 0 && !last_in_block && stmt_can_throw_internal (stmt))
 	{
