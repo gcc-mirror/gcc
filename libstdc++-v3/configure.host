@@ -238,6 +238,8 @@ case "${host_os}" in
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
     if [ "$uclibc" = "yes" ]; then
       os_include_dir="os/uclibc"
+    elif [ "$bionic" = "yes" ]; then
+      os_include_dir="os/bionic"
     else
       os_include_dir="os/gnu-linux"
     fi

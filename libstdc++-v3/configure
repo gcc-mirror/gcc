@@ -5186,7 +5186,7 @@ fi
   ## (Right now, this only matters for enable_wchar_t, but nothing prevents
   ## other macros from doing the same.  This should be automated.)  -pme
 
-  # Check for uClibc since Linux platforms use different configuration
+  # Check for C library flavor since Linux platforms use different configuration
   # directories depending on the C library in use.
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -5202,6 +5202,24 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   uclibc=yes
 else
   uclibc=no
+fi
+rm -f conftest*
+
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  #include <stdio.h>
+  #if __BIONIC__
+    _using_bionic
+  #endif
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "_using_bionic" >/dev/null 2>&1; then :
+  bionic=yes
+else
+  bionic=no
 fi
 rm -f conftest*
 
@@ -11442,7 +11460,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11445 "configure"
+#line 11463 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11548,7 +11566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11551 "configure"
+#line 11569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14888,7 +14906,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14891 "configure"
+#line 14909 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15256,7 +15274,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15259 "configure"
+#line 15277 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15293,7 +15311,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15296 "configure"
+#line 15314 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15330,7 +15348,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15333 "configure"
+#line 15351 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15368,7 +15386,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15371 "configure"
+#line 15389 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15444,7 +15462,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15447 "configure"
+#line 15465 "configure"
 int main()
 {
   _Decimal32 d1;
