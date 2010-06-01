@@ -23326,10 +23326,23 @@ Verbose mode: generate version information.
 @findex binding
 
 @noindent
-GNAT now comes with a new experimental binding generator for C and C++
-headers which is intended to do 95% of the tedious work of generating
-Ada specs from C or C++ header files. Note that this still is a work in
-progress, not designed to generate 100% correct Ada specs.
+GNAT now comes with a binding generator for C and C++ headers which is
+intended to do 95% of the tedious work of generating Ada specs from C
+or C++ header files.
+
+Note that this capability is not intended to generate 100% correct Ada specs,
+and will is some cases require manual adjustments, although it can often
+be used out of the box in practice.
+
+Some of the known limitations include:
+
+@itemize @bullet
+@item only very simple character constant macros are translated into Ada
+constants. Function macros (macros with arguments) are partially translated
+as comments, to be completed manually if needed.
+@item some extensions (e.g. vector types) are not supported
+@item pointers to pointers or complex structures are mapped to System.Address
+@end itemize
 
 The code generated is using the Ada 2005 syntax, which makes it
 easier to interface with other languages than previous versions of Ada.
