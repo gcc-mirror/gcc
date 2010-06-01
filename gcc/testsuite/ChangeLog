@@ -1,5 +1,10 @@
 2010-05-31 Jan Hubicka  <jh@suse.cz>
 
+	* testsuite/gcc.dg/lto/noreturn-1_1.c: Remove dg-do annotations.
+	* testsuite/gcc.dg/lto/noreturn-1_0.c: Move it here.
+
+2010-05-31 Jan Hubicka  <jh@suse.cz>
+
 	* testsuite/gcc.dg/lto/noreturn-1_1.c: New testcase.
 	* testsuite/gcc.dg/lto/noreturn-1_0.c: New testcase.
 
