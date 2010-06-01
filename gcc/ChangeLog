@@ -1,5 +1,13 @@
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
+	* tree-cfgcleanup.c (fixup_noreturn_call): Break out from ...;
+	remove return value.
+	(split_bbs_on_noreturn_calls) .... here.
+	* tree-optimize.c (execute_fixup_cfg): Fixup noreturn calls too.
+	* tree-flow.h (fixup_noreturn_call): New.
+
+2010-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* emit-rtl.c (remove_insn): Fix thinko in prevoius patch.
 
 2010-06-01  Nathan Froyd  <froydnj@codesourcery.com>
