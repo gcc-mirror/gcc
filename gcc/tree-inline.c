@@ -1488,11 +1488,17 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
   basic_block copy_basic_block;
   tree decl;
   gcov_type freq;
+  basic_block prev;
+
+  /* Search for previous copied basic block.  */
+  prev = bb->prev_bb;
+  while (!prev->aux)
+    prev = prev->prev_bb;
 
   /* create_basic_block() will append every new block to
      basic_block_info automatically.  */
   copy_basic_block = create_basic_block (NULL, (void *) 0,
-                                         (basic_block) bb->prev_bb->aux);
+                                         (basic_block) prev->aux);
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
 
   /* We are going to rebuild frequencies from scratch.  These values
@@ -1728,7 +1734,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      = CIF_ORIGINALLY_INDIRECT_CALL;
 		  if (dump_file)
 		    {
-		      fprintf (dump_file, "Created new direct edge to %s",
+		      fprintf (dump_file, "Created new direct edge to %s\n",
 			       cgraph_node_name (dest));
 		    }
 		}
@@ -2131,7 +2137,8 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 
 static tree
 copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
-	       basic_block entry_block_map, basic_block exit_block_map)
+	       basic_block entry_block_map, basic_block exit_block_map,
+	       bitmap blocks_to_copy, basic_block new_entry)
 {
   tree callee_fndecl = id->src_fn;
   /* Original cfun for the callee, doesn't change.  */
@@ -2170,31 +2177,45 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 
   /* Use aux pointers to map the original blocks to copy.  */
   FOR_EACH_BB_FN (bb, cfun_to_copy)
-    {
-      basic_block new_bb = copy_bb (id, bb, frequency_scale, count_scale);
-      bb->aux = new_bb;
-      new_bb->aux = bb;
-    }
+    if (!blocks_to_copy || bitmap_bit_p (blocks_to_copy, bb->index))
+      {
+	basic_block new_bb = copy_bb (id, bb, frequency_scale, count_scale);
+	bb->aux = new_bb;
+	new_bb->aux = bb;
+      }
 
   last = last_basic_block;
 
   /* Now that we've duplicated the blocks, duplicate their edges.  */
   FOR_ALL_BB_FN (bb, cfun_to_copy)
-    need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map);
+    if (!blocks_to_copy
+        || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
+      need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map);
 
   if (gimple_in_ssa_p (cfun))
     FOR_ALL_BB_FN (bb, cfun_to_copy)
-      copy_phis_for_bb (bb, id);
+      if (!blocks_to_copy
+	  || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
+	copy_phis_for_bb (bb, id);
+
+  if (new_entry)
+    {
+      edge e;
+      e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
+      e->probability = REG_BR_PROB_BASE;
+      e->count = entry_block_map->count;
+    }
 
   FOR_ALL_BB_FN (bb, cfun_to_copy)
-    {
-      if (need_debug_cleanup
-	  && bb->index != ENTRY_BLOCK
-	  && bb->index != EXIT_BLOCK)
-	maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
-      ((basic_block)bb->aux)->aux = NULL;
-      bb->aux = NULL;
-    }
+    if (bb->aux)
+      {
+	if (need_debug_cleanup
+	    && bb->index != ENTRY_BLOCK
+	    && bb->index != EXIT_BLOCK)
+	  maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
+	((basic_block)bb->aux)->aux = NULL;
+	bb->aux = NULL;
+      }
 
   /* Zero out AUX fields of newly created block during EH edge
      insertion. */
@@ -2317,14 +2338,16 @@ copy_tree_body (copy_body_data *id)
 
 static tree
 copy_body (copy_body_data *id, gcov_type count, int frequency_scale,
-	   basic_block entry_block_map, basic_block exit_block_map)
+	   basic_block entry_block_map, basic_block exit_block_map,
+	   bitmap blocks_to_copy, basic_block new_entry)
 {
   tree fndecl = id->src_fn;
   tree body;
 
   /* If this body has a CFG, walk CFG and copy.  */
   gcc_assert (ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (fndecl)));
-  body = copy_cfg_body (id, count, frequency_scale, entry_block_map, exit_block_map);
+  body = copy_cfg_body (id, count, frequency_scale, entry_block_map, exit_block_map,
+		        blocks_to_copy, new_entry);
   copy_debug_stmts (id);
 
   return body;
@@ -3924,7 +3947,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      duplicate our body before altering anything.  */
   copy_body (id, bb->count,
   	     cg_edge->frequency * REG_BR_PROB_BASE / CGRAPH_FREQ_BASE,
-	     bb, return_block);
+	     bb, return_block, NULL, NULL);
 
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)
@@ -4957,11 +4980,18 @@ update_clone_info (copy_body_data * id)
    tree with another tree while duplicating the function's
    body, TREE_MAP represents the mapping between these
    trees. If UPDATE_CLONES is set, the call_stmt fields
-   of edges of clones of the function will be updated.  */
+   of edges of clones of the function will be updated.  
+
+   If non-NULL ARGS_TO_SKIP determine function parameters to remove
+   from new version.
+   If non-NULL BLOCK_TO_COPY determine what basic blocks to copy.
+   If non_NULL NEW_ENTRY determine new entry BB of the clone.
+*/
 void
 tree_function_versioning (tree old_decl, tree new_decl,
 			  VEC(ipa_replace_map_p,gc)* tree_map,
-			  bool update_clones, bitmap args_to_skip)
+			  bool update_clones, bitmap args_to_skip,
+			  bitmap blocks_to_copy, basic_block new_entry)
 {
   struct cgraph_node *old_version_node;
   struct cgraph_node *new_version_node;
@@ -5113,7 +5143,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   /* Copy the Function's body.  */
   copy_body (&id, old_entry_block->count, REG_BR_PROB_BASE,
-	     ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR);
+	     ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, blocks_to_copy, new_entry);
 
   if (DECL_RESULT (old_decl) != NULL_TREE)
     {
