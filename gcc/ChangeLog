@@ -1,3 +1,14 @@
+2010-06-01  Kai Tietz
+
+        * config/i386.c (ix86_output_addr_vec_elt): Make LPREFIX
+        argument for fprintf.
+        (ix86_output_addr_diff_elt): Likewise.
+        (x86_function_profiler): Likewise.
+        * config/cygming.h (LOCAL_LABEL_PREFIX): Fix
+        for x64 no-underscore.
+        (LPREFIX): Likewise.
+        (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+
 2010-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44338
