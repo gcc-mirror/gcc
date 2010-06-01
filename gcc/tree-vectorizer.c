@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"

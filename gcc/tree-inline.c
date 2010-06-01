@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
-#include "expr.h"
 #include "flags.h"
 #include "params.h"
 #include "input.h"
@@ -41,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "function.h"
 #include "tree-flow.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "except.h"
 #include "debug.h"
@@ -51,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "target.h"
 #include "integrate.h"
+
+#include "rtl.h"	/* FIXME: For asm_str_count.  */
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -4697,7 +4697,7 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
   /* The new variable/label has no RTL, yet.  */
   if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL)
       && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
-    SET_DECL_RTL (copy, NULL_RTX);
+    SET_DECL_RTL (copy, 0);
 
   /* These args would always appear unused, if not for this.  */
   TREE_USED (copy) = 1;

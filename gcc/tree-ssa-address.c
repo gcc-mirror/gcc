@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"

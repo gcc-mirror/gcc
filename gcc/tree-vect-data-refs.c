@@ -28,19 +28,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "target.h"
 #include "basic-block.h"
-#include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "cfgloop.h"
-#include "expr.h"
-#include "optabs.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "toplev.h"
 
+/* Need to include rtl.h, expr.h, etc. for optabs.  */
+#include "expr.h"
+#include "optabs.h"
 
 /* Return the smallest scalar part of STMT.
    This is used to determine the vectype of the stmt. We generally set the

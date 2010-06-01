@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "flags.h"
 #include "regs.h"
-#include "expr.h"
 #include "function.h"
 #include "basic-block.h"
 #include "toplev.h"

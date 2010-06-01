@@ -1,3 +1,98 @@
+2010-06-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gimplify.c: Do not include except.h and optabs.h.
+	(gimplify_body): Do not initialize RTL profiling.
+	* gimple-low.c: Do not include rtl.h, diagnostic.h, langhooks.h,
+	langhooks-def.h, timevar.h, except.h, hashtab.h, and expr.h.
+	* gimple-fold.c: Do not include rtl.h, tm_p.h, ggc.h, basic-block.h,
+	output.h, expr.h, diagnostic.h, timevar.h, value-prof.h, and
+	langhooks.h.
+
+	* tree-pretty-print.h: Include pretty-print.h.
+	* gimple-pretty-print.h: Include pretty-print.h.
+
+	* tree-pretty-print.c: Do not include diagnostic.h.
+	* tree-vrp.c: Likewise.
+	* tree-tailcall.c: Likewise
+	* tree-scalar-evolution.c: Likewise
+	* tree-ssa-dse.c: Likewise
+	* tree-chrec.c: Likewise
+	* tree-ssa-sccvn.c: Likewise
+	* tree-ssa-copyrename.c: Likewise
+	* tree-nomudflap.c: Likewise
+	* tree-call-cdce.c: Likewise
+	* tree-stdarg.c: Likewise
+	* tree-ssa-math-opts.c: Likewise
+	* tree-nrv.c: Likewise
+	* tree-ssa-sink.c: Likewise
+	* tree-browser.c: Likewise
+	* tree-ssa-loop-ivcanon.c: Likewise
+	* tree-ssa-loop.c: Likewise
+	* tree-parloops.c: Likewise
+	* tree-ssa-address.c: Likewise
+	* tree-ssa-ifcombine.c: Likewise
+	* tree-if-conv.c: Likewise
+	* tree-data-ref.c: Likewise
+	* tree-affine.c: Likewise
+	* tree-ssa-phiopt.c: Likewise
+	* tree-ssa-coalesce.c: Likewise
+	* tree-ssa-pre.c: Likewise
+	* tree-ssa-live.c: Likewise
+	* tree-predcom.c: Likewise
+	* tree-ssa-forwprop.c: Likewise
+	* tree-ssa-dce.c: Likewise
+	* tree-ssa-ter.c: Likewise
+	* tree-ssa-loop-prefetch.c: Likewise
+	* tree-optimize.c: Likewise
+	* tree-ssa-phiprop.c: Likewise
+	* tree-object-size.c: Likewise
+	* tree-outof-ssa.c: Likewise
+	* tree-ssa-structalias.c: Likewise
+	* tree-switch-conversion.c: Likewise
+	* tree-ssa-reassoc.c: Likewise
+	* tree-ssa-operands.c: Likewise
+	* tree-vectorizer.c: Likewise
+	* tree-vect-data-refs.c: Likewise
+	* tree-vect-generic.c: Likewise
+	* tree-vect-stmts.c: Likewise
+	* tree-vect-patterns.c: Likewise
+	* tree-vect-slp.c: Likewise
+	* tree-vect-loop.c: Likewise
+	* tree-ssa-loop-ivopts.c: Likewise
+	* tree-ssa-loop-im.c: Likewise
+	* tree-ssa-loop-niter.c: Likewise
+	* tree-ssa-loop-unswitch.c: Likewise
+	* tree-ssa-loop-manip.c: Likewise
+	* tree-ssa-loop-ch.c: Likewise
+	* tree-dump.c: Likewise
+	* tree-complex.c: Likewise
+
+	* tree-into-ssa.c: Do not include diagnostic.h and expr.h.
+	* tree-ssa-uninit.c: Likewise
+	* tree-ssa-threadupdate.c: Likewise
+	* tree-ssa-uncprop.c: Likewise
+	* tree-ssa-ccp.c: Likewise
+	* tree-ssa-dom.c: Likewise
+	* tree-ssa-propagate.c: Likewise
+	* tree-ssa-alias.c: Likewise
+	* tree-dfa.c: Likewise
+	* tree-cfgcleanup.c: Likewise
+	* tree-sra.c: Likewise
+	* tree-ssa-copy.c: Likewise
+	* tree-ssa.c: Likewise
+	* tree-profile.c: Likewise
+	* tree-cfg.c: Likewise
+	* tree-ssa-threadedge.c: Likewise
+	* tree-vect-loop-manip.c: Likewise
+
+	* tree-inline.c: Do not include diagnostic.h and expr.h.
+	Include rtl.h.
+	(copy_decl_for_dup_finish): Do not use NULL_RTX.
+
+	* tree-loop-linear.c: Do not include diagnostic.h, expr.h,
+	and optabs.h.
+	* tree-loop-distribution.c: Likewise.
+
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (local_pure_const): Do NORETURN discovery.
