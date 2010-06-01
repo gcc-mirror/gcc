@@ -1051,7 +1051,6 @@ rhs_regno (const_rtx x)
 }
 
 
-
 /* 1 if RTX is a reg or parallel that is the current function's return
    value.  */
 #define REG_FUNCTION_VALUE_P(RTX)					\
@@ -1551,19 +1550,6 @@ extern int ceil_log2 (unsigned HOST_WIDE_INT);
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (rtx, HOST_WIDE_INT);
 
-/* In emit-rtl.c */
-extern rtx gen_blockage (void);
-extern rtvec gen_rtvec (int, ...);
-extern rtx copy_insn_1 (rtx);
-extern rtx copy_insn (rtx);
-extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
-extern rtx emit_copy_of_insn_after (rtx, rtx);
-extern void set_reg_attrs_from_value (rtx, rtx);
-extern void set_reg_attrs_for_parm (rtx, rtx);
-extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
-extern void adjust_reg_mode (rtx, enum machine_mode);
-extern int mem_expr_equal_p (const_tree, const_tree);
-
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
 #define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
@@ -1613,9 +1599,7 @@ extern rtx convert_memory_address_addr_space (enum machine_mode, rtx,
 					      addr_space_t);
 #define convert_memory_address(to_mode,x) \
 	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
-extern rtx get_insns (void);
 extern const char *get_insn_name (int);
-extern rtx get_last_insn (void);
 extern rtx get_last_insn_anywhere (void);
 extern rtx get_first_nonnote_insn (void);
 extern rtx get_last_nonnote_insn (void);
@@ -2216,7 +2200,6 @@ extern void reset_used_flags (rtx);
 extern void set_used_flags (rtx);
 extern void reorder_insns (rtx, rtx, rtx);
 extern void reorder_insns_nobb (rtx, rtx, rtx);
-extern int get_max_uid (void);
 extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
 extern void force_next_line_note (void);
@@ -2230,8 +2213,6 @@ extern unsigned int unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx);
 extern void unshare_all_rtl_in_chain (rtx);
 extern void verify_rtl_sharing (void);
-extern void set_first_insn (rtx);
-extern void set_last_insn (rtx);
 extern void link_cc0_insns (rtx);
 extern void add_insn (rtx);
 extern void add_insn_before (rtx, rtx, struct basic_block_def *);

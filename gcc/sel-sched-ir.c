@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "langhooks.h"
 #include "rtlhooks-def.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"

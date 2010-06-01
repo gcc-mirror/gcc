@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "df.h"
 #include "tree.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
