@@ -1,6 +1,13 @@
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gnat.dg/socket1.adb: Disable on *-*-solaris2*.
+
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.misc-tests/linkage.exp: Remove mips-sgi-irix6*o32 support.
