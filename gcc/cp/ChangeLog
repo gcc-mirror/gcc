@@ -5,10 +5,9 @@
 	(decl_shadowed_for_var_lookup, decl_shadowed_for_var_insert): Adjust.
 	(init_shadowed_var_for_decl): Adjust initialization.
 
-	PR debug/44367
-	* semantics.c (finalize_nrv): Don't copy DECL_ARTIFICIAL, DECL_IGNORED_P,
-	DECL_SOURCE_LOCATION and DECL_ABSTRACT_ORIGIN from var to result.
-	Set DECL_VALUE_EXPR on var.
+	PR c++/44361
+	* cvt.c (convert_to_void): If implicit is NULL, call mark_rvalue_use
+	instead of calling mark_exp_read only when not an assignment.
 
 	PR debug/44367
 	* semantics.c (finalize_nrv): Don't copy DECL_ARTIFICIAL, DECL_IGNORED_P,
