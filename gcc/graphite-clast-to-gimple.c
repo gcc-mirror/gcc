@@ -478,6 +478,7 @@ gcc_type_for_interval (mpz_t low, mpz_t up, tree old_type)
   bool unsigned_p = true;
   int precision, prec_up, prec_int;
   tree type;
+  enum machine_mode mode;
 
   gcc_assert (value_le (low, up));
 
@@ -490,7 +491,16 @@ gcc_type_for_interval (mpz_t low, mpz_t up, tree old_type)
   prec_int = precision_for_interval (low, up);
   precision = prec_up > prec_int ? prec_up : prec_int;
 
-  type = lang_hooks.types.type_for_size (precision, unsigned_p);
+  if (precision > BITS_PER_WORD)
+    {
+      gloog_error = true;
+      return integer_type_node;
+    }
+
+  mode = smallest_mode_for_size (precision, MODE_INT);
+  precision = GET_MODE_PRECISION (mode);
+  type = build_nonstandard_integer_type (precision, unsigned_p);
+
   if (!type)
     {
       gloog_error = true;
