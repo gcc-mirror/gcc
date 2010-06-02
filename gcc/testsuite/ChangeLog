@@ -1,6 +1,11 @@
 2010-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/44371
+	* gfortran.dg/error_stop_2.f08: Minor update.
+
+2010-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/44371
 	* gfortran.dg/error_stop_1.f08: New test.
 	* gfortran.dg/error_stop_2.f08: New test.
 
