@@ -6,7 +6,7 @@
 2010-06-02  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44295
-	* testsuite/g++.dg/torture/pr44295.C: Neww testcase.
+	* g++.dg/torture/pr44295.C: Neww testcase.
 
 2010-06-02  Jan Hubicka  <jh@suse.cz>
 
@@ -49,17 +49,17 @@
 
 2010-05-31 Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/noreturn-8.c: New testcase.
+	* gcc.dg/noreturn-8.c: New testcase.
 
 2010-05-31 Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/lto/noreturn-1_1.c: Remove dg-do annotations.
-	* testsuite/gcc.dg/lto/noreturn-1_0.c: Move it here.
+	* gcc.dg/lto/noreturn-1_1.c: Remove dg-do annotations.
+	* gcc.dg/lto/noreturn-1_0.c: Move it here.
 
 2010-05-31 Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/lto/noreturn-1_1.c: New testcase.
-	* testsuite/gcc.dg/lto/noreturn-1_0.c: New testcase.
+	* gcc.dg/lto/noreturn-1_1.c: New testcase.
+	* gcc.dg/lto/noreturn-1_0.c: New testcase.
 
 2010-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
@@ -211,9 +211,9 @@
 
 	* lib/target-supports.exp (check_effective_target_int128): New
 	function to check if __int128 types are available for target.
-	* testsuite/c-c++-common/int128-types-1.c: New.
-	* testsuite/c-c++-common/int128-1.c: New.
-	* testsuite/c-c++-common/int128-2.c: New.
+	* c-c++-common/int128-types-1.c: New.
+	* c-c++-common/int128-1.c: New.
+	* c-c++-common/int128-2.c: New.
 	* g++.dg/abi/mangle43.C: New.
 	* g++.dg/init/enum1.C: Handle __int128 case and add -Wno-overflow.
 	* g++.dg/cpp0x/nullptr04.C: Use __SIZE_TYPE__ for getting
@@ -1072,9 +1072,9 @@
 2010-05-14  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/30566
-	* testsuite/g++.dg/warn/Wshadow-4.C: Adjust.
-	* testsuite/g++.dg/warn/Wshadow-5.C: New test.
-	* testsuite/g++.dg/warn/Wshadow-6.C: New test
+	* g++.dg/warn/Wshadow-4.C: Adjust.
+	* g++.dg/warn/Wshadow-5.C: New test.
+	* g++.dg/warn/Wshadow-6.C: New test
 
 2010-05-13  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -2009,7 +2009,7 @@
 2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR 43715
-	* testsuite/lib/plugin-support.exp: Use "-undefined
+	* lib/plugin-support.exp: Use "-undefined
 	dynamic_lookup" on darwin.
 
 2010-04-26  Richard Guenther  <rguenther@suse.de>
@@ -2434,7 +2434,7 @@
 2010-04-14  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/42963
-	* testsuite/gcc.dg/pr42963.c: New testcase.
+	* gcc.dg/pr42963.c: New testcase.
 
 2010-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -3006,9 +3006,9 @@
 	* obj-c++.dg/stubify-2.mm: Change dump file name.
 
 	PR objc++/23613
-	* gcc/testsuite/objc-obj-c++-shared/next-mapping.h (CLASSPTRFIELD):
+	* objc-obj-c++-shared/next-mapping.h (CLASSPTRFIELD):
 	New macro.
-	* gcc/testsuite/obj-c++.dg/isa-field-1.mm: Use new CLASSPTRFIELD macro.
+	* obj-c++.dg/isa-field-1.mm: Use new CLASSPTRFIELD macro.
 	Remove dg-xfail-if.
 
 2010-03-31  Martin Jambor  <mjambor@suse.cz>
@@ -3145,19 +3145,19 @@
 
 2010-03-26  Martin Jambor  <mjambor@suse.cz>
 
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre1.c: Delete trailing
+	* gcc.dg/tree-ssa/loadpre1.c: Delete trailing
 	whitespace, rename main to foo.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre14.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre15.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre16.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre17.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre19.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre20.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre3.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/loadpre5.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-1.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-4.c: Likewise.
-	* gcc/testsuite/gcc.dg/tree-ssa/ssa-pre-6.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre14.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre15.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre16.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre17.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre19.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre20.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre3.c: Likewise.
+	* gcc.dg/tree-ssa/loadpre5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-6.c: Likewise.
 
 2010-03-26  Dodji Seketeli  <dodji@redhat.com>
 
@@ -4886,7 +4886,7 @@
 
 2010-01-27  Stephen Thomas  <stephen.thomas@arm.com>
 
-	* testsuite/gcc.dg/optimize-bswap*.c: Add ARM target
+	* gcc.dg/optimize-bswap*.c: Add ARM target
 
 2010-01-27  Richard Guenther  <rguenther@suse.de>
 
