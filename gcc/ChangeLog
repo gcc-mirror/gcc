@@ -1,5 +1,11 @@
 2010-06-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gcc_type_for_interval): Use
+	smallest_mode_for_size for computing the precision types of new
+	graphite IVs.  Do not call lang_hooks.types.type_for_size.
+
+2010-06-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (predicate_bbs): Do not reset the GIMPLE_DEBUG
 	information.
 	(remove_conditions_and_labels): Reset the GIMPLE_DEBUG information.
