@@ -329,6 +329,25 @@ dump_type (tree t, int flags)
   if (t == NULL_TREE)
     return;
 
+  /* Don't print e.g. "struct mytypedef".  */
+  if (TYPE_P (t) && typedef_variant_p (t))
+    {
+      tree decl = TYPE_NAME (t);
+      if ((flags & TFF_CHASE_TYPEDEF)
+	  || DECL_SELF_REFERENCE_P (decl)
+	  || (!flag_pretty_templates
+	      && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)))
+	t = strip_typedefs (t);
+      else if (same_type_p (t, TREE_TYPE (decl)))
+	t = decl;
+      else
+	{
+	  pp_cxx_cv_qualifier_seq (cxx_pp, t);
+	  pp_cxx_tree_identifier (cxx_pp, TYPE_IDENTIFIER (t));
+	  return;
+	}
+    }
+
   if (TYPE_PTRMEMFUNC_P (t))
     goto offset_type;
 

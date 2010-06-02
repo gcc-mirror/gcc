@@ -1,5 +1,7 @@
 2010-06-02  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/vector9.C: Expect typedef in error message.
+
 	PR c++/9726
 	PR c++/23594
 	PR c++/44333
