@@ -1,3 +1,7 @@
+2010-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* parser.c (cp_parser_mem_initializer_list): Change error text.
+
 2010-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (shadowed_var_for_decl): Change into
