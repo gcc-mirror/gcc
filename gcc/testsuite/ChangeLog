@@ -1,3 +1,7 @@
+2010-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loadpre6.c: Update.
+
 2010-06-02  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/plugin/header_plugin.c: Include cp-tree.h before
