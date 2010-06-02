@@ -1,5 +1,17 @@
 2010-06-01  Jason Merrill  <jason@redhat.com>
 
+	DR 990
+	* call.c (add_list_candidates): Prefer the default constructor.
+	(build_aggr_conv): Treat missing initializers like { }.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* init.c (expand_default_init): Use digest_init for
+	direct aggregate initialization, too.
+
+	* call.c (add_list_candidates): Split out...
+	(build_user_type_conversion_1): ...from here.
+	(build_new_method_call): And here.
+	(implicit_conversion): Propagate LOOKUP_NO_NARROWING.
+
 	PR c++/44358
 	* call.c (build_list_conv): Set list-initialization flags properly.
 

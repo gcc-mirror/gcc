@@ -1,5 +1,9 @@
 2010-06-01  Jason Merrill  <jason@redhat.com>
 
+	DR 990
+	* g++.dg/cpp0x/initlist37.C: New.
+	* g++.dg/cpp0x/initlist38.C: New.
+
 	PR c++/44358
 	* g++.dg/cpp0x/initlist36.C: New.
 
