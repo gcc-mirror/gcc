@@ -1,4 +1,4 @@
-/* Definitions of target machine for GCC, for SPARC running Solaris 2
+/* Definitions of target machine for GCC, for any machine  running Solaris 2
    using the GNU linker.  */
 
 /* Undefine this so that attribute((init_priority)) works.  */

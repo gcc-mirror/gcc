@@ -1,6 +1,16 @@
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-gld.h: Remove SPARC reference.  Rename ...
+	* config/sol2-gld.h: ... here.
+	* config.gcc (sparc*-*-solaris2*): Reflect this.
+	(i[34567]86-*-solaris2*): Use it.
+
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR pch/14940
