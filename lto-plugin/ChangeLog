@@ -1,3 +1,11 @@
+2010-06-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44385
+	Backport from mainline
+	2010-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* lto-plugin.c (write_resolution): Do not assert syms is non-NULL.
+
 2010-04-14  Release Manager
 
 	* GCC 4.5.0 released.

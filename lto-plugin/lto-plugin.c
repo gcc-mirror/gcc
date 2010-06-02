@@ -322,7 +322,6 @@ write_resolution (void)
       struct ld_plugin_symbol *syms = symtab->syms;
       unsigned j;
 
-      assert (syms);
       get_symbols (info->handle, symtab->nsyms, syms);
 
       fprintf (f, "%s %d\n", info->name, info->symtab.nsyms);
