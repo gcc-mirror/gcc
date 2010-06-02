@@ -1,3 +1,10 @@
+2010-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.c (shadowed_var_for_decl): Change into
+	tree_decl_map hashtab from tree_map.
+	(decl_shadowed_for_var_lookup, decl_shadowed_for_var_insert): Adjust.
+	(init_shadowed_var_for_decl): Adjust initialization.
+
 2010-06-02  Jason Merrill  <jason@redhat.com>
 
 	* error.c (dump_type): Improve typedef handling.
