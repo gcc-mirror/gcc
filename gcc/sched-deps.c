@@ -442,15 +442,15 @@ static int cache_size;
 
 static int deps_may_trap_p (const_rtx);
 static void add_dependence_list (rtx, rtx, int, enum reg_note);
-static void add_dependence_list_and_free (struct deps *, rtx,
+static void add_dependence_list_and_free (struct deps_desc *, rtx,
 					  rtx *, int, enum reg_note);
 static void delete_all_dependences (rtx);
 static void fixup_sched_groups (rtx);
 
-static void flush_pending_lists (struct deps *, rtx, int, int);
-static void sched_analyze_1 (struct deps *, rtx, rtx);
-static void sched_analyze_2 (struct deps *, rtx, rtx);
-static void sched_analyze_insn (struct deps *, rtx, rtx);
+static void flush_pending_lists (struct deps_desc *, rtx, int, int);
+static void sched_analyze_1 (struct deps_desc *, rtx, rtx);
+static void sched_analyze_2 (struct deps_desc *, rtx, rtx);
+static void sched_analyze_insn (struct deps_desc *, rtx, rtx);
 
 static bool sched_has_condition_p (const_rtx);
 static int conditions_mutex_p (const_rtx, const_rtx, bool, bool);
@@ -1402,7 +1402,7 @@ add_dependence_list (rtx insn, rtx list, int uncond, enum reg_note dep_type)
    is not readonly.  */
 
 static void
-add_dependence_list_and_free (struct deps *deps, rtx insn, rtx *listp,
+add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
                               int uncond, enum reg_note dep_type)
 {
   rtx list, next;
@@ -1541,7 +1541,7 @@ fixup_sched_groups (rtx insn)
    so that we can do memory aliasing on it.  */
 
 static void
-add_insn_mem_dependence (struct deps *deps, bool read_p,
+add_insn_mem_dependence (struct deps_desc *deps, bool read_p,
 			 rtx insn, rtx mem)
 {
   rtx *insn_list;
@@ -1580,7 +1580,7 @@ add_insn_mem_dependence (struct deps *deps, bool read_p,
    dependencies for a read operation, similarly with FOR_WRITE.  */
 
 static void
-flush_pending_lists (struct deps *deps, rtx insn, int for_read,
+flush_pending_lists (struct deps_desc *deps, rtx insn, int for_read,
 		     int for_write)
 {
   if (for_write)
@@ -1764,7 +1764,7 @@ create_insn_reg_set (int regno, rtx insn)
 
 /* Set up insn register uses for INSN and dependency context DEPS.  */
 static void
-setup_insn_reg_uses (struct deps *deps, rtx insn)
+setup_insn_reg_uses (struct deps_desc *deps, rtx insn)
 {
   unsigned i;
   reg_set_iterator rsi;
@@ -2058,7 +2058,7 @@ static bool can_start_lhs_rhs_p;
 /* Extend reg info for the deps context DEPS given that
    we have just generated a register numbered REGNO.  */
 static void
-extend_deps_reg_info (struct deps *deps, int regno)
+extend_deps_reg_info (struct deps_desc *deps, int regno)
 {
   int max_regno = regno + 1;
 
@@ -2107,7 +2107,7 @@ maybe_extend_reg_info_p (void)
    CLOBBER, PRE_DEC, POST_DEC, PRE_INC, POST_INC or USE.  */
 
 static void
-sched_analyze_reg (struct deps *deps, int regno, enum machine_mode mode,
+sched_analyze_reg (struct deps_desc *deps, int regno, enum machine_mode mode,
 		   enum rtx_code ref, rtx insn)
 {
   /* We could emit new pseudos in renaming.  Extend the reg structures.  */
@@ -2186,7 +2186,7 @@ sched_analyze_reg (struct deps *deps, int regno, enum machine_mode mode,
    destination of X, and reads of everything mentioned.  */
 
 static void
-sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
+sched_analyze_1 (struct deps_desc *deps, rtx x, rtx insn)
 {
   rtx dest = XEXP (x, 0);
   enum rtx_code code = GET_CODE (x);
@@ -2358,7 +2358,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
 static void
-sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
+sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 {
   int i;
   int j;
@@ -2609,7 +2609,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
 static void
-sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
+sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
@@ -3224,7 +3224,7 @@ call_may_noreturn_p (rtx insn)
 
 /* Analyze INSN with DEPS as a context.  */
 void
-deps_analyze_insn (struct deps *deps, rtx insn)
+deps_analyze_insn (struct deps_desc *deps, rtx insn)
 {
   if (sched_deps_info->start_insn)
     sched_deps_info->start_insn (insn);
@@ -3357,7 +3357,7 @@ deps_analyze_insn (struct deps *deps, rtx insn)
 
 /* Initialize DEPS for the new block beginning with HEAD.  */
 void
-deps_start_bb (struct deps *deps, rtx head)
+deps_start_bb (struct deps_desc *deps, rtx head)
 {
   gcc_assert (!deps->readonly);
 
@@ -3378,7 +3378,7 @@ deps_start_bb (struct deps *deps, rtx head)
 /* Analyze every insn between HEAD and TAIL inclusive, creating backward
    dependencies for each insn.  */
 void
-sched_analyze (struct deps *deps, rtx head, rtx tail)
+sched_analyze (struct deps_desc *deps, rtx head, rtx tail)
 {
   rtx insn;
 
@@ -3463,10 +3463,10 @@ sched_free_deps (rtx head, rtx tail, bool resolved_p)
 
 /* Initialize variables for region data dependence analysis.
    When LAZY_REG_LAST is true, do not allocate reg_last array
-   of struct deps immediately.  */
+   of struct deps_desc immediately.  */
 
 void
-init_deps (struct deps *deps, bool lazy_reg_last)
+init_deps (struct deps_desc *deps, bool lazy_reg_last)
 {
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
@@ -3498,7 +3498,7 @@ init_deps (struct deps *deps, bool lazy_reg_last)
 /* Init only reg_last field of DEPS, which was not allocated before as
    we inited DEPS lazily.  */
 void
-init_deps_reg_last (struct deps *deps)
+init_deps_reg_last (struct deps_desc *deps)
 {
   gcc_assert (deps && deps->max_reg > 0);
   gcc_assert (deps->reg_last == NULL);
@@ -3510,7 +3510,7 @@ init_deps_reg_last (struct deps *deps)
 /* Free insn lists found in DEPS.  */
 
 void
-free_deps (struct deps *deps)
+free_deps (struct deps_desc *deps)
 {
   unsigned i;
   reg_set_iterator rsi;
@@ -3559,7 +3559,7 @@ free_deps (struct deps *deps)
 /* Remove INSN from dependence contexts DEPS.  Caution: reg_conditional_sets
    is not handled.  */
 void
-remove_from_deps (struct deps *deps, rtx insn)
+remove_from_deps (struct deps_desc *deps, rtx insn)
 {
   int removed;
   unsigned i;

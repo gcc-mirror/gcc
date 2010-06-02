@@ -1,3 +1,15 @@
+2010-06-02  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* sched-ebb.c: Rename struct deps to struct deps_desc.
+	* ddg.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+
 2010-06-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/2097.md (z10_fhex): Remove insn reservation.
