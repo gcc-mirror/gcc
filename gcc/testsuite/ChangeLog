@@ -1,3 +1,9 @@
+2010-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/44371
+	* gfortran.dg/error_stop_1.f08: New test.
+	* gfortran.dg/error_stop_2.f08: New test.
+
 2010-06-01  Jason Merrill  <jason@redhat.com>
 
 	DR 990
