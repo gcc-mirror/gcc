@@ -1,3 +1,7 @@
+2010-06-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-ada-spec.c: Clean up redundant includes.
+
 2010-06-01  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gimplify.c: Do not include except.h and optabs.h.
