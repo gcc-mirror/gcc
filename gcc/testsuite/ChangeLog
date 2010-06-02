@@ -1,3 +1,10 @@
+2010-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9726
+	PR c++/23594
+	PR c++/44333
+	* g++.dg/tc1/dr101.C: Remove xfails.
+
 2010-06-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/44372
