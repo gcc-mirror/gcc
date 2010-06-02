@@ -10,6 +10,11 @@
 	DECL_SOURCE_LOCATION and DECL_ABSTRACT_ORIGIN from var to result.
 	Set DECL_VALUE_EXPR on var.
 
+	PR debug/44367
+	* semantics.c (finalize_nrv): Don't copy DECL_ARTIFICIAL, DECL_IGNORED_P,
+	DECL_SOURCE_LOCATION and DECL_ABSTRACT_ORIGIN from var to result.
+	Set DECL_VALUE_EXPR on var.
+
 2010-06-02  Jason Merrill  <jason@redhat.com>
 
 	* error.c (dump_type): Improve typedef handling.

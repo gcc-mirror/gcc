@@ -822,22 +822,26 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 tree
 convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 {
-  tree exprv;
-
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
 
-  exprv = expr;
-  while (TREE_CODE (exprv) == COMPOUND_EXPR)
-    exprv = TREE_OPERAND (exprv, 1);
-  if (DECL_P (exprv) || handled_component_p (exprv))
-    /* Expr is not being 'used' here, otherwise we whould have
-       called mark_{rl}value_use use here, which would have in turn
-       called mark_exp_read.  Rather, we call mark_exp_read directly
-       to avoid some warnings when
-       -Wunused-but-set-{variable,parameter} is in effect.  */
-    mark_exp_read (exprv);
+  if (implicit == NULL)
+    mark_exp_read (expr);
+  else
+    {
+      tree exprv = expr;
+
+      while (TREE_CODE (exprv) == COMPOUND_EXPR)
+	exprv = TREE_OPERAND (exprv, 1);
+      if (DECL_P (exprv) || handled_component_p (exprv))
+	/* Expr is not being 'used' here, otherwise we whould have
+	   called mark_{rl}value_use use here, which would have in turn
+	   called mark_exp_read.  Rather, we call mark_exp_read directly
+	   to avoid some warnings when
+	   -Wunused-but-set-{variable,parameter} is in effect.  */
+	mark_exp_read (exprv);
+    }
 
   if (!TREE_TYPE (expr))
     return expr;
