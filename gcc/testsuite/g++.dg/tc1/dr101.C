@@ -17,15 +17,14 @@ namespace Test1 {
 
 namespace Test2 {
 
-  typedef unsigned int X;   // { dg-bogus "X" "" { xfail *-*-* } }
+  typedef unsigned int X;   // { dg-bogus "X" "" }
   extern "C" int f2();
   namespace N {
-    typedef unsigned int X; // { dg-bogus "X" "" { xfail *-*-* } }
+    typedef unsigned int X; // { dg-bogus "X" "" }
     extern "C" int f2();
   }
   using namespace N;
   int i = f2(); // { dg-bogus "" "redeclaration through 'using' should not be ambiguous" }
-  X x;          // { dg-bogus "" "redeclaration through 'using' should not be ambiguous" { xfail *-*-* } }
+  X x;          // { dg-bogus "" "redeclaration through 'using' should not be ambiguous" }
 
 }
-
