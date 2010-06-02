@@ -1,6 +1,18 @@
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR pch/14940
+	* config/host-solaris.c (HOST_HOOKS_GT_PCH_GET_ADDRESS): Redefine
+	to sol_gt_pch_get_address.
+	(TRY_EMPTY_VM_SPACE): Define for all combinations of 32 and
+	64-bit, SPARC and x86.
+	(sol_gt_pch_get_address): New function.
+
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (NO_DBX_BNSYM_ENSYM): Define.

@@ -1,5 +1,5 @@
 /* Solaris host-specific hook definitions.
-   Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,8 +25,47 @@
 #include "hosthooks-def.h"
 
 
+#undef HOST_HOOKS_GT_PCH_GET_ADDRESS
+#define HOST_HOOKS_GT_PCH_GET_ADDRESS sol_gt_pch_get_address
 #undef HOST_HOOKS_GT_PCH_USE_ADDRESS
 #define HOST_HOOKS_GT_PCH_USE_ADDRESS sol_gt_pch_use_address
+
+/* For various ports, try to guess a fixed spot in the vm space
+   that's probably free.  Based on McDougall, Mauro, Solaris Internals, 2nd
+   ed., p.460-461, fig. 9-3, 9-4, 9-5.  */
+#if defined(__sparcv9__)
+/* This low to avoid VA hole on UltraSPARC I/II.  */
+# define TRY_EMPTY_VM_SPACE	0x70000000000
+#elif defined(__sparc__)
+# define TRY_EMPTY_VM_SPACE	0x80000000
+#elif defined(__x86_64__)
+# define TRY_EMPTY_VM_SPACE	0x8000000000000000
+#elif defined(__i386__)
+# define TRY_EMPTY_VM_SPACE	0xB0000000
+#else
+# define TRY_EMPTY_VM_SPACE	0
+#endif
+
+/* Determine a location where we might be able to reliably allocate
+   SIZE bytes.  FD is the PCH file, though we should return with the
+   file unmapped.  */
+
+static void *
+sol_gt_pch_get_address (size_t size, int fd)
+{
+  void *addr;
+
+  addr = mmap ((caddr_t) TRY_EMPTY_VM_SPACE, size, PROT_READ | PROT_WRITE,
+	       MAP_PRIVATE, fd, 0);
+
+  /* If we failed the map, that means there's *no* free space.  */
+  if (addr == (void *) MAP_FAILED)
+    return NULL;
+  /* Unmap the area before returning.  */
+  munmap ((caddr_t) addr, size);
+
+  return addr;
+}
 
 /* Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at 
    mapping the data at BASE, -1 if we couldn't.  */
