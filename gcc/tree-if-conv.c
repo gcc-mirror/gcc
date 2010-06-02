@@ -483,8 +483,8 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
    | else
    |   S2;
 
-   S1 will be predicated with "x", and S2 will be predicated with
-   "!x".  */
+   S1 will be predicated with "x", and
+   S2 will be predicated with "!x".  */
 
 static bool
 predicate_bbs (loop_p loop)
@@ -546,12 +546,9 @@ predicate_bbs (loop_p loop)
 		break;
 	      }
 
-	    case GIMPLE_SWITCH:
+	    default:
 	      /* Not handled yet in if-conversion.  */
 	      return false;
-
-	    default:
-	      gcc_unreachable ();
 	    }
 	}
 

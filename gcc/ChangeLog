@@ -1,3 +1,9 @@
+2010-06-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44363
+	* tree-if-conv.c (predicate_bbs): Do not call gcc_unreachable,
+	return false instead.
+
 2010-06-02  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44295
