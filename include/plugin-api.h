@@ -260,7 +260,8 @@ enum ld_plugin_tag
   LDPT_MESSAGE,
   LDPT_GET_INPUT_FILE,
   LDPT_RELEASE_INPUT_FILE,
-  LDPT_ADD_INPUT_LIBRARY
+  LDPT_ADD_INPUT_LIBRARY,
+  LDPT_OUTPUT_NAME
 };
 
 /* The plugin transfer vector.  */

@@ -1,3 +1,7 @@
+2010-06-01  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h (ld_plugin_tag): Add LDPT_OUTPUT_NAME.
+
 2010-04-26  Pedro Alves  <pedro@codesourcery.com>
 
 	* filenames.h (PATH_SEPARATOR): Delete.
