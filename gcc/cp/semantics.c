@@ -3504,14 +3504,15 @@ finalize_nrv (tree *tp, tree var, tree result)
 {
   struct nrv_data data;
 
-  /* Copy debugging information from VAR to RESULT.  */
+  /* Copy name from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);
-  DECL_ARTIFICIAL (result) = DECL_ARTIFICIAL (var);
-  DECL_IGNORED_P (result) = DECL_IGNORED_P (var);
-  DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (var);
-  DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (var);
   /* Don't forget that we take its address.  */
   TREE_ADDRESSABLE (result) = TREE_ADDRESSABLE (var);
+  /* Finally set DECL_VALUE_EXPR to avoid assigning
+     a stack slot at -O0 for the original var and debug info
+     uses RESULT location for VAR.  */
+  SET_DECL_VALUE_EXPR (var, result);
+  DECL_HAS_VALUE_EXPR_P (var) = 1;
 
   data.var = var;
   data.result = result;
