@@ -1,6 +1,15 @@
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (alpha_assert): Allow for more whitespace in
+	select.
+	* fixincl.x: Regenerate.
+
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2009-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libfortran/41169
