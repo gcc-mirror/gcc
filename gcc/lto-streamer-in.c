@@ -1075,7 +1075,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	  if (TREE_CODE (op) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (op, 0)) == VAR_DECL
 	      && !useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op)),
-					     TREE_TYPE (op)))
+					     TREE_TYPE (TREE_OPERAND (op, 0))))
 	    {
 	      TREE_OPERAND (op, 0)
 		= build1 (VIEW_CONVERT_EXPR, TREE_TYPE (TREE_TYPE (op)),
