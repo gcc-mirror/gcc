@@ -1194,6 +1194,12 @@
 #endif
 
 
+/* Define if your linker supports the *_sol2 emulations. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_SOL2_EMULATION
+#endif
+
+
 /* Define if your linker supports -Bstatic/-Bdynamic option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_STATIC_DYNAMIC
