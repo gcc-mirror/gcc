@@ -1,3 +1,9 @@
+2010-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/pointer.cc: Fix
+	which tests are run.
+	* testsuite/20_util/shared_ptr/cons/pointer.cc: Likewise.
+
 2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* acinclude.m4, configure.host: Support Bionic C library.

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation
+// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,6 @@ main()
 {
   test01();
   test02();
-  test02();
+  test03();
   return 0;
 }
