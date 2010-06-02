@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
    Copyright 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -194,3 +194,10 @@ along with GCC; see the file COPYING3.  If not see
 	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
     }									\
   while (0)
+  
+ /* Solaris/SPARC as uses a non-standard .section/.pushsection syntax.
+    While gas supports it, too, we prefer the standard variant.  */
+ #ifndef USE_GAS
+ #undef PUSHSECTION_FORMAT
+ #define PUSHSECTION_FORMAT	"\t.pushsection\t\"%s\"\n"
+ #endif

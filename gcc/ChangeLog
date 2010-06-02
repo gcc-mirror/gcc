@@ -1,6 +1,23 @@
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sysv4.h (PUSHSECTION_FORMAT): Remove undef.
+	(PUSHSECTION_ASM_OP): Remove.
+	(POPSECTION_ASM_OP): Remove.
+	(PUSHSECTION_FORMAT): Remove.
+	* config/sol2.h (PUSHSECTION_FORMAT): Define.
+	* config/sparc/sol2.h [!USE_GAS] (PUSHSECTION_FORMAT): Redefine.
+	* config/sol2.c (solaris_output_init_fini): Use it.
+
+	2010-03-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (sparc*-*-solaris2*) [$gas=yes]: Add usegas.h to tm_file.
+
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2-gld.h: Remove SPARC reference.  Rename ...

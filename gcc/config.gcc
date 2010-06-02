@@ -1,6 +1,6 @@
 # GCC target-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009 Free Software Foundation, Inc.
+# 2008, 2009, 2010 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -2234,6 +2234,9 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
+	if test x$gas = xyes; then
+		tm_file="usegas.h ${tm_file}"
+	fi
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
 	extra_objs="sol2.o"
@@ -2270,6 +2273,9 @@ sparc-*-solaris2*)
 	fi
 	if test x$gas = xyes; then
 		tm_file="${tm_file} sparc/sol2-gas-bi.h"
+	fi
+	if test x$gas = xyes; then
+		tm_file="usegas.h ${tm_file}"
 	fi
 	tm_file="${tm_file} tm-dwarf2.h"
 	tmake_file="$tmake_file sparc/t-sol2-64"
