@@ -1165,17 +1165,15 @@ process_init_constructor_record (tree type, tree init)
 	     default-initialization, we can't rely on the back end to do it
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
+	  next = build_constructor (init_list_type_node, NULL);
 	  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (field)))
 	    {
-	      next = build_functional_cast (TREE_TYPE (field), NULL_TREE,
-					    tf_warning_or_error);
+	      next = finish_compound_literal (TREE_TYPE (field), next);
 	      /* direct-initialize the target. No temporary is going
 		  to be involved.  */
 	      if (TREE_CODE (next) == TARGET_EXPR)
 		TARGET_EXPR_DIRECT_INIT_P (next) = true;
 	    }
-	  else
-	    next = build_constructor (init_list_type_node, NULL);
 
 	  next = digest_init_r (TREE_TYPE (field), next, true, LOOKUP_IMPLICIT);
 
