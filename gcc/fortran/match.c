@@ -2018,10 +2018,10 @@ gfc_match_stopcode (gfc_statement st)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
-    }
 
-  if (gfc_match_eos () != MATCH_YES)
-    goto syntax;
+      if (gfc_match_eos () != MATCH_YES)
+	goto syntax;
+    }
 
   if (gfc_pure (NULL))
     {
