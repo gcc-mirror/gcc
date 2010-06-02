@@ -295,50 +295,6 @@ extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
    FUNCTION_DECL for `std::terminate'.  */
 extern tree (*lang_protect_cleanup_actions) (void);
 
-
-/* Just because the user configured --with-sjlj-exceptions=no doesn't
-   mean that we can use call frame exceptions.  Detect that the target
-   has appropriate support.  */
-
-#ifndef MUST_USE_SJLJ_EXCEPTIONS
-# if defined (EH_RETURN_DATA_REGNO)			\
-       && (defined (TARGET_UNWIND_INFO)			\
-	   || (DWARF2_UNWIND_INFO			\
-	       && (defined (EH_RETURN_HANDLER_RTX)	\
-		   || defined (HAVE_eh_return))))
-#  define MUST_USE_SJLJ_EXCEPTIONS	0
-# else
-#  define MUST_USE_SJLJ_EXCEPTIONS	1
-# endif
-#endif
-
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-# if CONFIG_SJLJ_EXCEPTIONS == 1
-#  define USING_SJLJ_EXCEPTIONS		1
-# endif
-# if CONFIG_SJLJ_EXCEPTIONS == 0
-#  define USING_SJLJ_EXCEPTIONS		0
-#  if !defined(EH_RETURN_DATA_REGNO)
-    #error "EH_RETURN_DATA_REGNO required"
-#  endif
-#  if ! (defined(TARGET_UNWIND_INFO) || DWARF2_UNWIND_INFO)
-    #error "{DWARF2,TARGET}_UNWIND_INFO required"
-#  endif
-#  if !defined(TARGET_UNWIND_INFO) \
-	&& !(defined(EH_RETURN_HANDLER_RTX) || defined(HAVE_eh_return))
-    #error "EH_RETURN_HANDLER_RTX or eh_return required"
-#  endif
-/* Usually the above error checks will have already triggered an
-   error, but backends may set MUST_USE_SJLJ_EXCEPTIONS for their own
-   reasons.  */
-#  if MUST_USE_SJLJ_EXCEPTIONS
-    #error "Must use SJLJ exceptions but configured not to"
-#  endif
-# endif
-#else
-# define USING_SJLJ_EXCEPTIONS		MUST_USE_SJLJ_EXCEPTIONS
-#endif
-
 struct GTY(()) throw_stmt_node {
   gimple stmt;
   int lp_nr;
