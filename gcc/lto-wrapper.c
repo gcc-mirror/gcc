@@ -40,11 +40,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include <errno.h>
-#include "coretypes.h"
-#include "tm.h"
+#include <signal.h>
+#if ! defined( SIGCHLD ) && defined( SIGCLD )
+#  define SIGCHLD SIGCLD
+#endif
+#include "defaults.h"
 #include "intl.h"
 #include "libiberty.h"
 #include "obstack.h"
+
+#ifndef HAVE_KILL
+#define kill(p,s) raise(s)
+#endif
 
 int debug;				/* true if -save-temps.  */
 int verbose;				/* true if -v.  */
@@ -68,36 +75,45 @@ static char *makefile;
 
 static void maybe_unlink_file (const char *);
 
-/* Delete tempfiles and exit function.  */
+ /* Delete tempfiles.  */
 
 static void
-lto_wrapper_exit (int status)
+lto_wrapper_cleanup (void)
 {
   static bool cleanup_done = false;
-  if (!cleanup_done)
+  unsigned int i;
+
+  if (cleanup_done)
+    return;
+
+  /* Setting cleanup_done prevents an infinite loop if one of the
+     calls to maybe_unlink_file fails. */
+  cleanup_done = true;
+
+  if (ltrans_output_file)
+    maybe_unlink_file (ltrans_output_file);
+  if (flto_out)
+    maybe_unlink_file (flto_out);
+  if (args_name)
+    maybe_unlink_file (args_name);
+  if (makefile)
+    maybe_unlink_file (makefile);
+  for (i = 0; i < nr; ++i)
     {
-      unsigned int i;
-
-      /* Setting cleanup_done prevents an infinite loop if one of the
-         calls to maybe_unlink_file fails. */
-      cleanup_done = true;
-
-      if (ltrans_output_file)
-        maybe_unlink_file (ltrans_output_file);
-      if (flto_out)
-        maybe_unlink_file (flto_out);
-      if (args_name)
-        maybe_unlink_file (args_name);
-      if (makefile)
-	maybe_unlink_file (makefile);
-      for (i = 0; i < nr; ++i)
-	{
-	  maybe_unlink_file (input_names[i]);
-	  if (output_names[i])
-	    maybe_unlink_file (output_names[i]);
-	}
+      maybe_unlink_file (input_names[i]);
+      if (output_names[i])
+	maybe_unlink_file (output_names[i]);
     }
-  exit (status);
+}
+
+static void
+fatal_signal (int signum)
+{
+  signal (signum, SIG_DFL);
+  lto_wrapper_cleanup ();
+  /* Get the same signal again, this time not handled,
+     so its normal effect occurs.  */
+  kill (getpid (), signum);
 }
 
 /* Just die. CMSGID is the error message. */
@@ -113,7 +129,8 @@ fatal (const char * cmsgid, ...)
   fprintf (stderr, "\n");
   va_end (ap);
 
-  lto_wrapper_exit (FATAL_EXIT_CODE);
+  lto_wrapper_cleanup ();
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -131,7 +148,8 @@ fatal_perror (const char *cmsgid, ...)
   fprintf (stderr, ": %s\n", xstrerror (e));
   va_end (ap);
 
-  lto_wrapper_exit (FATAL_EXIT_CODE);
+  lto_wrapper_cleanup ();
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -596,6 +614,24 @@ int
 main (int argc, char *argv[])
 {
   gcc_init_libintl ();
+
+  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
+    signal (SIGINT, fatal_signal);
+#ifdef SIGHUP
+  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
+    signal (SIGHUP, fatal_signal);
+#endif
+  if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
+    signal (SIGTERM, fatal_signal);
+#ifdef SIGPIPE
+  if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
+    signal (SIGPIPE, fatal_signal);
+#endif
+#ifdef SIGCHLD
+  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
+     receive the signal.  A different setting is inheritable */
+  signal (SIGCHLD, SIG_DFL);
+#endif
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
