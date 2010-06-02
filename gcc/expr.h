@@ -34,11 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 /* For GET_MODE_BITSIZE, word_mode */
 #include "machmode.h"
 
-/* The default branch cost is 1.  */
-#ifndef BRANCH_COST
-#define BRANCH_COST(speed_p, predictable_p) 1
-#endif
-
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
    the stack.
@@ -60,37 +55,6 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 /* Allow the compiler to defer stack pops.  See inhibit_defer_pop for
    more information.  */
 #define OK_DEFER_POP (inhibit_defer_pop -= 1)
-
-/* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction sequences, we will do a movmem or libcall instead.  */
-
-#ifndef MOVE_RATIO
-#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
-#define MOVE_RATIO(speed) 2
-#else
-/* If we are optimizing for space (-Os), cut down the default move ratio.  */
-#define MOVE_RATIO(speed) ((speed) ? 15 : 3)
-#endif
-#endif
-
-/* If a clear memory operation would take CLEAR_RATIO or more simple
-   move-instruction sequences, we will do a setmem or libcall instead.  */
-
-#ifndef CLEAR_RATIO
-#if defined (HAVE_setmemqi) || defined (HAVE_setmemhi) || defined (HAVE_setmemsi) || defined (HAVE_setmemdi) || defined (HAVE_setmemti)
-#define CLEAR_RATIO(speed) 2
-#else
-/* If we are optimizing for space, cut down the default clear ratio.  */
-#define CLEAR_RATIO(speed) ((speed) ? 15 :3)
-#endif
-#endif
-
-/* If a memory set (to value other than zero) operation would take
-   SET_RATIO or more simple move-instruction sequences, we will do a movmem
-   or libcall instead.  */
-#ifndef SET_RATIO
-#define SET_RATIO(speed) MOVE_RATIO(speed)
-#endif
 
 enum direction {none, upward, downward};
 
@@ -166,106 +130,6 @@ do {								\
 ((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
  : expand_normal (ARGS_SIZE_TREE (SIZE)))
 
-/* Supply a default definition for FUNCTION_ARG_PADDING:
-   usually pad upward, but pad short args downward on
-   big-endian machines.  */
-
-#define DEFAULT_FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (! BYTES_BIG_ENDIAN							\
-   ? upward								\
-   : (((MODE) == BLKmode						\
-       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT)) \
-       : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)			\
-      ? downward : upward))
-
-#ifndef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE)	\
-  DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
-#endif
-
-/* Supply a default definition for FUNCTION_ARG_BOUNDARY.  Normally, we let
-   FUNCTION_ARG_PADDING, which also pads the length, handle any needed
-   alignment.  */
-
-#ifndef FUNCTION_ARG_BOUNDARY
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
-#endif
-
-/* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
-   Normally move_insn, so Pmode stack pointer.  */
-
-#ifndef STACK_SAVEAREA_MODE
-#define STACK_SAVEAREA_MODE(LEVEL) Pmode
-#endif
-
-/* Supply a default definition of STACK_SIZE_MODE for
-   allocate_dynamic_stack_space.  Normally PLUS/MINUS, so word_mode.  */
-
-#ifndef STACK_SIZE_MODE
-#define STACK_SIZE_MODE word_mode
-#endif
-
-/* Provide default values for the macros controlling stack checking.  */
-
-/* The default is neither full builtin stack checking...  */
-#ifndef STACK_CHECK_BUILTIN
-#define STACK_CHECK_BUILTIN 0
-#endif
-
-/* ...nor static builtin stack checking.  */
-#ifndef STACK_CHECK_STATIC_BUILTIN
-#define STACK_CHECK_STATIC_BUILTIN 0
-#endif
-
-/* The default interval is one page (4096 bytes).  */
-#ifndef STACK_CHECK_PROBE_INTERVAL_EXP
-#define STACK_CHECK_PROBE_INTERVAL_EXP 12
-#endif
-
-/* The default is not to move the stack pointer.  */
-#ifndef STACK_CHECK_MOVING_SP
-#define STACK_CHECK_MOVING_SP 0
-#endif
-
-/* This is a kludge to try to capture the discrepancy between the old
-   mechanism (generic stack checking) and the new mechanism (static
-   builtin stack checking).  STACK_CHECK_PROTECT needs to be bumped
-   for the latter because part of the protection area is effectively
-   included in STACK_CHECK_MAX_FRAME_SIZE for the former.  */
-#ifdef STACK_CHECK_PROTECT
-#define STACK_OLD_CHECK_PROTECT STACK_CHECK_PROTECT
-#else
-#define STACK_OLD_CHECK_PROTECT \
- (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 8 * 1024)
-#endif
-
-/* Minimum amount of stack required to recover from an anticipated stack
-   overflow detection.  The default value conveys an estimate of the amount
-   of stack required to propagate an exception.  */
-#ifndef STACK_CHECK_PROTECT
-#define STACK_CHECK_PROTECT \
- (USING_SJLJ_EXCEPTIONS ? 75 * UNITS_PER_WORD : 12 * 1024)
-#endif
-
-/* Make the maximum frame size be the largest we can and still only need
-   one probe per function.  */
-#ifndef STACK_CHECK_MAX_FRAME_SIZE
-#define STACK_CHECK_MAX_FRAME_SIZE \
-  ((1 << STACK_CHECK_PROBE_INTERVAL_EXP) - UNITS_PER_WORD)
-#endif
-
-/* This is arbitrary, but should be large enough everywhere.  */
-#ifndef STACK_CHECK_FIXED_FRAME_SIZE
-#define STACK_CHECK_FIXED_FRAME_SIZE (4 * UNITS_PER_WORD)
-#endif
-
-/* Provide a reasonable default for the maximum size of an object to
-   allocate in the fixed frame.  We may need to be able to make this
-   controllable by the user at some point.  */
-#ifndef STACK_CHECK_MAX_VAR_SIZE
-#define STACK_CHECK_MAX_VAR_SIZE (STACK_CHECK_MAX_FRAME_SIZE / 100)
-#endif
 
 /* This structure is used to pass around information about exploded
    unary, binary and trinary expressions between expand_expr_real_1 and

@@ -1,3 +1,19 @@
+2010-06-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* mkconfig.sh: Include insn-flags.h and insn-constants.h before
+	defaults.h.
+	* except.h: Move MUST_USE_SJLJ_EXCEPTIONS and USING_SJLJ_EXCEPTIONS
+	to defaults.h
+	* expr.h (BRANCH_COST, MOVE_RATIO, CLEAR_RATIO, SET_RATIO,
+	DEFAULT_FUNCTION_ARG_PADDING, FUNCTION_ARG_PADDING,
+	FUNCTION_ARG_BOUNDARY, STACK_SAVEAREA_MODE, STACK_SIZE_MODE,
+	STACK_CHECK_BUILTIN, STACK_CHECK_STATIC_BUILTIN,
+	STACK_CHECK_PROBE_INTERVAL_EXP, STACK_CHECK_MOVING_SP,
+	STACK_OLD_CHECK_PROTECT, STACK_CHECK_PROTECT,
+	STACK_CHECK_MAX_FRAME_SIZE, STACK_CHECK_FIXED_FRAME_SIZE,
+	STACK_CHECK_MAX_VAR_SIZE): Move target macro defaults to defaults.h.
+	* defaults.h: Updated for above mentioned changes.
+
 2010-06-02  Kai Tietz  <kai.tietz@onevision.com>
 
 	* c-common.c: Remove header include of tm_p.h.
