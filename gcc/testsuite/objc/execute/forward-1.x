@@ -16,9 +16,13 @@ if { ([istarget x86_64-*-linux*] && [check_effective_target_lp64] )
 # For darwin and alpha-linux it fails with -fgnu-runtime,
 # passes with -fnext-runtime.
 
-if { ([istarget x86_64-*-darwin*] && [check_effective_target_lp64] )
+if { [istarget alpha*-*-linux*]
+     || [istarget alpha*-dec-osf*]
+     || ([istarget i?86-*-solaris2*] && [check_effective_target_lp64] )
+     || [istarget mips-sgi-irix*]
      || [istarget powerpc*-*-darwin*]
-     || [istarget alpha*-*-linux*] } {
+     || [istarget sparc*-sun-solaris2*]
+     || ([istarget x86_64-*-darwin*] && [check_effective_target_lp64] ) } {
     set torture_eval_before_execute {
 	global compiler_conditional_xfail_data
 	set compiler_conditional_xfail_data {
