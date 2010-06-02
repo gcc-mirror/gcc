@@ -1,3 +1,9 @@
+2010-06-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44360
+	* parse.c (gfc_fixup_sibling_symbols): Do not "fix" use-associated
+	symbols.
+
 2010-05-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44135
