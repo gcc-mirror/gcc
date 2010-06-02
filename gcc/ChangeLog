@@ -1,3 +1,9 @@
+2010-06-02  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44295
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Do not
+	create new cgraph node to check callee.
+
 2010-06-02  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_gimple_stmt): Fix typo.
