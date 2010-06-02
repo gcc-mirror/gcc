@@ -1,5 +1,9 @@
 2010-06-02  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-in.c (input_gimple_stmt): Fix typo.
+
+2010-06-02  Richard Guenther  <rguenther@suse.de>
+
 	* lto-wrapper.c (lto_wrapper_exit): Rename to ...
 	(lto_wrapper_cleanup): ... this.  Do not exit.
 	(fatal): Adjust.  Exit here.
