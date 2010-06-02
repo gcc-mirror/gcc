@@ -11,6 +11,7 @@
 #include "tm.h"
 
 /* gcc/ headers. */
+#include "cp/cp-tree.h"
 #include "diagnostic.h"
 #include "c-common.h"
 #include "c-pretty-print.h"
@@ -18,7 +19,6 @@
 #include "plugin.h"
 #include "tree-flow.h"
 #include "langhooks.h"
-#include "cp/cp-tree.h"
 #include "cp/cxx-pretty-print.h"
 #include "cp/name-lookup.h"
 
