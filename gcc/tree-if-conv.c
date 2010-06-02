@@ -509,15 +509,7 @@ predicate_bbs (loop_p loop)
 	    case GIMPLE_LABEL:
 	    case GIMPLE_ASSIGN:
 	    case GIMPLE_CALL:
-	      break;
-
 	    case GIMPLE_DEBUG:
-	      /* ??? Should there be conditional GIMPLE_DEBUG_BINDs?  */
-	      if (gimple_debug_bind_p (gsi_stmt (itr)))
-		{
-		  gimple_debug_bind_reset_value (gsi_stmt (itr));
-		  update_stmt (gsi_stmt (itr));
-		}
 	      break;
 
 	    case GIMPLE_COND:
@@ -900,7 +892,8 @@ process_phi_nodes (struct loop *loop)
 }
 
 /* Remove all GIMPLE_CONDs and GIMPLE_LABELs of all the basic blocks
-   other than the exit and latch of the LOOP.  */
+   other than the exit and latch of the LOOP.  Also resets the
+   GIMPLE_DEBUG information.  */
 
 static void
 remove_conditions_and_labels (loop_p loop)
@@ -917,11 +910,26 @@ remove_conditions_and_labels (loop_p loop)
       continue;
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-      if (gimple_code (gsi_stmt (gsi)) == GIMPLE_COND
-          || gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
-        gsi_remove (&gsi, true);
-      else
-        gsi_next (&gsi);
+	switch (gimple_code (gsi_stmt (gsi)))
+	  {
+	  case GIMPLE_COND:
+	  case GIMPLE_LABEL:
+	    gsi_remove (&gsi, true);
+	    break;
+
+	  case GIMPLE_DEBUG:
+	    /* ??? Should there be conditional GIMPLE_DEBUG_BINDs?  */
+	    if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	      {
+		gimple_debug_bind_reset_value (gsi_stmt (gsi));
+		update_stmt (gsi_stmt (gsi));
+	      }
+	    gsi_next (&gsi);
+	    break;
+
+	  default:
+	    gsi_next (&gsi);
+	  }
     }
 }
 
