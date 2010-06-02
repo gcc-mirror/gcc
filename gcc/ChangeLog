@@ -1,3 +1,8 @@
+2010-06-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44377
+	* tree-ssa-structalias.c (find_func_aliases): Fix typo.
+
 2010-06-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/2097.md (z10_fhex): Remove insn reservation.
