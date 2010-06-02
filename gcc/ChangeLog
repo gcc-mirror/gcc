@@ -1,3 +1,15 @@
+2010-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (struct tree_decl_map): New type.
+	(tree_decl_map_eq, tree_decl_map_marked_p): Define.
+	(tree_decl_map_hash): New prototype.
+	(debug_expr_for_decl, value_expr_for_decl): Change into
+	tree_decl_map hashtab from tree_map.
+	(init_ttree): Adjust initialization.
+	(tree_decl_map_hash): New function.
+	(decl_debug_expr_lookup, decl_debug_expr_insert,
+	decl_value_expr_lookup, decl_value_expr_insert): Adjust.
+
 2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_sol2_emulation): Test for GNU ld *_sol2
