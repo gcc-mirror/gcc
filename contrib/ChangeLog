@@ -1,3 +1,7 @@
+2010-06-02  Andrew Haley  <aph@redhat.com>
+
+	* download_prerequisites: New script.
+
 2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* dg-extract-results.sh: Redirect grep output to /dev/null instead

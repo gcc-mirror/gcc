@@ -1,0 +1,38 @@
+#! /bin/sh
+
+# Download some prerequisites needed by gcc.
+# Run this from the top level of the gcc source tree and the gcc
+# build will do the right thing.
+#
+# (C) 2010 Free Software Foundation
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see http://www.gnu.org/licenses/.
+
+MPFR=mpfr-2.4.2
+GMP=gmp-4.3.2
+MPC=mpc-0.8.1
+
+wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPFR.tar.bz2 || exit 1
+tar xjf $MPFR.tar.bz2 || exit 1
+ln -sf $MPFR mpfr || exit 1
+
+wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$GMP.tar.bz2 || exit 1
+tar xjf $GMP.tar.bz2  || exit 1
+ln -sf $GMP gmp || exit 1
+
+wget ftp://gcc.gnu.org/pub/gcc/infrastructure/$MPC.tar.gz || exit 1
+tar xzf $MPC.tar.gz || exit 1
+ln -sf $MPC mpc || exit 1
+
+rm $MPFR.tar.bz2 $GMP.tar.bz2 $MPC.tar.gz || exit 1
