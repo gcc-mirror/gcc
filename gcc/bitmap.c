@@ -42,6 +42,7 @@ struct bitmap_descriptor
   HOST_WIDEST_INT peak;
   HOST_WIDEST_INT current;
   int nsearches;
+  int search_iter;
 };
 
 /* Hashtable mapping bitmap names to descriptors.  */
@@ -556,12 +557,12 @@ bitmap_find_bit (bitmap head, unsigned int bit)
   bitmap_element *element;
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
 
-#ifdef GATHER_STATISTICS
-  head->desc->nsearches++;
-#endif
   if (head->current == 0
       || head->indx == indx)
     return head->current;
+#ifdef GATHER_STATISTICS
+  head->desc->nsearches++;
+#endif
 
   if (head->indx < indx)
     /* INDX is beyond head->indx.  Search from head->current
@@ -569,7 +570,11 @@ bitmap_find_bit (bitmap head, unsigned int bit)
     for (element = head->current;
 	 element->next != 0 && element->indx < indx;
 	 element = element->next)
+#ifdef GATHER_STATISTICS
+      head->desc->search_iter++;
+#else
       ;
+#endif
 
   else if (head->indx / 2 < indx)
     /* INDX is less than head->indx and closer to head->indx than to
@@ -577,7 +582,11 @@ bitmap_find_bit (bitmap head, unsigned int bit)
     for (element = head->current;
 	 element->prev != 0 && element->indx > indx;
 	 element = element->prev)
+#ifdef GATHER_STATISTICS
+      head->desc->search_iter++;
+#else
       ;
+#endif
 
   else
     /* INDX is less than head->indx and closer to 0 than to
@@ -585,7 +594,11 @@ bitmap_find_bit (bitmap head, unsigned int bit)
     for (element = head->first;
 	 element->next != 0 && element->indx < indx;
 	 element = element->next)
+#ifdef GATHER_STATISTICS
+      head->desc->search_iter++;
+#else
       ;
+#endif
 
   /* `element' is the nearest to the one we want.  If it's not the one we
      want, the one we want doesn't exist.  */
@@ -2115,8 +2128,9 @@ print_statistics (void **slot, void *b)
       sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
       s[41] = 0;
       fprintf (stderr, "%-41s %8d %15"HOST_WIDEST_INT_PRINT"d %15"
-	       HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d %10d\n",
-	       s, d->created, d->allocated, d->peak, d->current, d->nsearches);
+	       HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d %10d %10d\n",
+	       s, d->created, d->allocated, d->peak, d->current, d->nsearches,
+	       d->search_iter);
       i->size += d->allocated;
       i->count += d->created;
     }
@@ -2134,8 +2148,8 @@ dump_bitmap_statistics (void)
     return;
 
   fprintf (stderr, "\nBitmap                                     Overall "
-		   "   Allocated        Peak           Leak   searched "
-		   "  per search\n");
+		   "      Allocated            Peak            Leak   searched "
+		   "  search itr\n");
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   info.count = 0;
   info.size = 0;
