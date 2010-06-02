@@ -2055,7 +2055,8 @@ lto-wrapper$(exeext): lto-wrapper.o intl.o $(LIBDEPS)
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o intl.o $(LIBS)
 	mv -f T$@ $@
 
-lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h
+lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) defaults.h intl.h \
+	$(OBSTACK_H)
 
 # A file used by all variants of C.
 

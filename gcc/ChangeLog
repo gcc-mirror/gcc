@@ -1,5 +1,15 @@
 2010-06-02  Richard Guenther  <rguenther@suse.de>
 
+	* lto-wrapper.c (lto_wrapper_exit): Rename to ...
+	(lto_wrapper_cleanup): ... this.  Do not exit.
+	(fatal): Adjust.  Exit here.
+	(fatal_perror): Likewise.
+	(fatal_signal): New function.
+	(main): Set up signal handlers to cleanup temporary files.
+	* Makefile.in (lto-wrapper.o): Adjust dependencies.
+
+2010-06-02  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44377
 	* tree-ssa-structalias.c (find_func_aliases): Fix typo.
 
