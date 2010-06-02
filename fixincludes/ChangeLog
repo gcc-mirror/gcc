@@ -1,3 +1,20 @@
+2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2009-09-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libfortran/41169
+	* inclhack.def (irix_complex): New fix.
+	(solaris_complex): Likewise.
+	* fixincl.x: Regenerate.
+	* tests/base/complex.h [IRIX_COMPLEX_CHECK, SOLARIS_COMPLEX_CHECK]:
+	New tests.
+
+	2009-09-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* inclhack.def (solaris_complex): Remove superfluous backslashes from
+	replacement string.  Replace \+ operator with \{1,\}.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.
