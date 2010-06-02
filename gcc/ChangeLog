@@ -1,3 +1,9 @@
+2010-06-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44291
+	* optabs.c (init_one_libfunc): Use IDENTIFIER_HASH_VALUE.
+	(set_user_assembler_libfunc): Likewise.
+
 2010-06-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* mkconfig.sh: Include insn-flags.h and insn-constants.h before

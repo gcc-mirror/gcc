@@ -6083,7 +6083,7 @@ init_one_libfunc (const char *name)
 
   /* See if we have already created a libfunc decl for this function.  */
   id = get_identifier (name);
-  hash = htab_hash_string (name);
+  hash = IDENTIFIER_HASH_VALUE (id);
   slot = htab_find_slot_with_hash (libfunc_decls, id, hash, INSERT);
   decl = (tree) *slot;
   if (decl == NULL)
@@ -6106,7 +6106,7 @@ set_user_assembler_libfunc (const char *name, const char *asmspec)
   hashval_t hash;
 
   id = get_identifier (name);
-  hash = htab_hash_string (name);
+  hash = IDENTIFIER_HASH_VALUE (id);
   slot = htab_find_slot_with_hash (libfunc_decls, id, hash, NO_INSERT);
   gcc_assert (slot);
   decl = (tree) *slot;
