@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 extern "C" {
-  typedef long unsigned int size_t;
+  typedef __SIZE_TYPE__ size_t;
   typedef struct   {
     } __sigset_t;
   typedef union {

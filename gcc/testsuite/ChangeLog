@@ -1,3 +1,7 @@
+2010-06-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/torture/pr44295.C (size_t): Use __SIZE_TYPE__.
+
 2010-06-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/vector9.C: Expect typedef in error message.
