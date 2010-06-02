@@ -1,3 +1,8 @@
+2010-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44358
+	* g++.dg/cpp0x/initlist36.C: New.
+
 2010-05-31 Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/gcc.dg/noreturn-8.c: New testcase.
