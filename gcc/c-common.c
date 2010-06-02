@@ -52,9 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "expr.h" /* For vector_mode_valid_p */
 
-/* FIXME: Needed for TARGET_ENUM_VA_LIST, which should be a target hook.  */
-#include "tm_p.h"
-
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
 /* The following symbols are subsumed in the c_global_trees array, and

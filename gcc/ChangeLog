@@ -1,3 +1,8 @@
+2010-06-02  Kai Tietz  <kai.tietz@onevision.com>
+
+	* c-common.c: Remove header include of tm_p.h.
+	* Makefile.in (c-common.o): Remove TM_P_H dependency.
+
 2010-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (struct tree_decl_map): New type.
