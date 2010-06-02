@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90-96, 1997, 2000, 2001, 2002, 2007, 2008
+# Copyright (C) 1988, 90-96, 1997, 2000, 2001, 2002, 2007, 2008, 2010
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -40,13 +40,16 @@ if { [isnative] && ![is_remote host] } then {
 		set native_cflags "-n32"
 	    }
 	}
-	if  [istarget "mips-sgi-iris6*o32" ] {
-	    set native_cflags "-32"
-	}
 	if  [istarget "sparc*-sun-solaris2*"] {
 	    set file_string [exec file "linkage-x.o"]
 	    if [ string match "*64*" $file_string ] {
 		set native_cflags "-xarch=v9"
+	    }
+	}
+	if  [istarget "i?86*-*-solaris2*"] {
+	    set file_string [exec file "linkage-x.o"]
+	    if [ string match "*64*" $file_string ] {
+		set native_cflags "-xarch=amd64"
 	    }
 	}
 	if [istarget "s390*-*-linux*"] {
