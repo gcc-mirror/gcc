@@ -1,3 +1,8 @@
+2010-06-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree-vect-slp.c (vect_create_mask_and_perm): Use gimple_build_call
+	instead of gimple_build_call_vec.  Delete unnecessary local variable.
+
 2010-06-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gimplify.c (gimplify_body): Revert "Do not initialize RTL profiling"
