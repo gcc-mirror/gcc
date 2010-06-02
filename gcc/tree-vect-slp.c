@@ -1924,7 +1924,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
   stmt_vec_info next_stmt_info;
   int i, stride;
   tree first_vec, second_vec, data_ref;
-  VEC (tree, heap) *params = NULL;
 
   stride = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
 
@@ -1940,15 +1939,9 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       first_vec = VEC_index (tree, dr_chain, first_vec_indx);
       second_vec = VEC_index (tree, dr_chain, second_vec_indx);
 
-      /* Build argument list for the vectorized call.  */
-      VEC_free (tree, heap, params);
-      params = VEC_alloc (tree, heap, 3);
-      VEC_quick_push (tree, params, first_vec);
-      VEC_quick_push (tree, params, second_vec);
-      VEC_quick_push (tree, params, mask);
-
       /* Generate the permute statement.  */
-      perm_stmt = gimple_build_call_vec (builtin_decl, params);
+      perm_stmt = gimple_build_call (builtin_decl,
+				     3, first_vec, second_vec, mask);
       data_ref = make_ssa_name (perm_dest, perm_stmt);
       gimple_call_set_lhs (perm_stmt, data_ref);
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);
