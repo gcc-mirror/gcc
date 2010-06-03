@@ -31,7 +31,6 @@
 
 #include <list>
 #include <cstdlib>
-#include <cstddef>
 #include <pthread.h>
 
 const int thread_cycles = 10;
@@ -46,9 +45,9 @@ class task_queue
 public:
   task_queue ()
   {
-    pthread_mutex_init (&fooLock, NULL);
-    pthread_cond_init (&fooCond1, NULL);
-    pthread_cond_init (&fooCond2, NULL);
+    pthread_mutex_init (&fooLock, 0);
+    pthread_cond_init (&fooCond1, 0);
+    pthread_cond_init (&fooCond2, 0);
   }
   ~task_queue ()
   {
@@ -116,14 +115,14 @@ main()
       for (int i = 0; i < thread_pairs; i++)
 	{
 	  tq[i] = new task_queue;
-	  pthread_create (&prod[i], NULL, produce, static_cast<void*> (tq[i]));
-	  pthread_create (&cons[i], NULL, consume, static_cast<void*> (tq[i]));
+	  pthread_create (&prod[i], 0, produce, static_cast<void*> (tq[i]));
+	  pthread_create (&cons[i], 0, consume, static_cast<void*> (tq[i]));
 	}
 
       for (int i = 0; i < thread_pairs; i++)
 	{
-	  pthread_join (prod[i], NULL);
-	  pthread_join (cons[i], NULL);
+	  pthread_join (prod[i], 0);
+	  pthread_join (cons[i], 0);
 	  delete tq[i];
 	}
     }

@@ -36,7 +36,6 @@
 #include <cstdio>
 #include <locale>
 #include <limits>
-#include <cstddef>
 
 #ifdef _GLIBCXX_HAVE_IEEEFP_H
 #include <ieeefp.h>
@@ -50,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = setlocale(LC_ALL, 0);
       const size_t __len = strlen(__old) + 1;
       char* __sav = new char[__len];
       memcpy(__sav, __old, __len);
@@ -115,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = setlocale(LC_ALL, 0);
       const size_t __len = strlen(__old) + 1;
       char* __sav = new char[__len];
       memcpy(__sav, __old, __len);
@@ -160,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		   ios_base::iostate& __err, const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = setlocale(LC_ALL, 0);
       const size_t __len = strlen(__old) + 1;
       char* __sav = new char[__len];
       memcpy(__sav, __old, __len);
@@ -212,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   {
     // Currently, the generic model only supports the "C" locale.
     // See http://gcc.gnu.org/ml/libstdc++/2003-02/msg00345.html
-    __cloc = NULL;
+    __cloc = 0;
     if (strcmp(__s, "C"))
       __throw_runtime_error(__N("locale::facet::_S_create_c_locale "
 			    "name not valid"));
@@ -220,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   void
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
-  { __cloc = NULL; }
+  { __cloc = 0; }
 
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale&) throw()

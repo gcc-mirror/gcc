@@ -1,6 +1,7 @@
 // std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(size_t __refs) 
-    : facet(__refs), _M_data(NULL)
+    : facet(__refs), _M_data(0)
     { 
       _M_name_timepunct = _S_get_c_name();
       _M_initialize_timepunct(); 
@@ -56,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, const char* __s, 
 				     size_t __refs) 
-    : facet(__refs), _M_data(NULL)
+    : facet(__refs), _M_data(0)
     {
       if (__builtin_strcmp(__s, _S_get_c_name()) != 0)
 	{

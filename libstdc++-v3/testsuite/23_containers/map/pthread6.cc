@@ -26,7 +26,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <cstddef>
 #include <pthread.h>
 
 const int max_thread_count = 8;
@@ -79,10 +78,10 @@ main (void)
 #endif
 
   for (int i = 0; i < max_thread_count; i++)
-    pthread_create (&tid[i], NULL, thread_main, 0);
+    pthread_create (&tid[i], 0, thread_main, 0);
 
   for (int i = 0; i < max_thread_count; i++)
-    pthread_join (tid[i], NULL);
+    pthread_join (tid[i], 0);
 
   return 0;
 }

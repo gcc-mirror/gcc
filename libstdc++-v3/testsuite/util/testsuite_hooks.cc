@@ -32,7 +32,6 @@
 #include <list>
 #include <string>
 #include <stdexcept>
-#include <cstddef>
 #include <clocale>
 #include <cstdlib>
 #include <locale>
@@ -176,7 +175,7 @@ namespace __gnu_test
 	const func_callback::test_type* tests = l.tests();
 	for (int i = 0; i < l.size(); ++i)
 	  (*tests[i])();
-	string postLC_ALL= setlocale(LC_ALL, NULL);
+	string postLC_ALL= setlocale(LC_ALL, 0);
 	VERIFY( preLC_ALL == postLC_ALL );
       }
     else
