@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -150,7 +150,7 @@ inline PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 get_nearest_smaller_size(size_type n) const
 {
-  const size_t* p_lower = std::lower_bound(detail::g_a_sizes, 
+  const std::size_t* p_lower = std::lower_bound(detail::g_a_sizes, 
 		       detail::g_a_sizes + detail::num_distinct_sizes, n);
 
   if (*p_lower >= n &&  p_lower != detail::g_a_sizes)

@@ -112,12 +112,12 @@ PB_DS_CLASS_C_DEC::
 resize_imp_no_exceptions(size_type new_size, entry_pointer_array a_p_entries_resized, size_type old_size)
 {
   std::fill(a_p_entries_resized, a_p_entries_resized + m_num_e,
-	    entry_pointer(NULL));
+	    entry_pointer(0));
 
   for (size_type pos = 0; pos < old_size; ++pos)
     {
       entry_pointer p_e = m_entries[pos];
-      while (p_e != NULL)
+      while (p_e != 0)
 	p_e = resize_imp_no_exceptions_reassign_pointer(p_e, a_p_entries_resized,  traits_base::m_store_extra_indicator);
     }
 

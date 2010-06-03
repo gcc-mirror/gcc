@@ -1,6 +1,6 @@
 // Allocator details.
 
-// Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	__block->_M_next = reinterpret_cast<_Block_record*>(__c);
 	__block = __block->_M_next;
       }
-    __block->_M_next = NULL;
+    __block->_M_next = 0;
 
     __block = __bin._M_first[__thread_id];
     __bin._M_first[__thread_id] = __block->_M_next;
@@ -206,8 +206,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	_Bin_record& __bin = _M_bin[__n];
 	__v = ::operator new(sizeof(_Block_record*));
 	__bin._M_first = static_cast<_Block_record**>(__v);
-	__bin._M_first[0] = NULL;
-	__bin._M_address = NULL;
+	__bin._M_first[0] = 0;
+	__bin._M_address = 0;
       }
     _M_init = true;
   }
@@ -362,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     //   blocks on global list (and if not add new ones) and
     //   get the first one.
     _Bin_record& __bin = _M_bin[__which];
-    _Block_record* __block = NULL;
+    _Block_record* __block = 0;
     if (__gthread_active_p())
       {
 	// Resync the _M_used counters.
@@ -374,7 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	__atomic_add(&__reclaimed_base[__thread_id], -__reclaimed);
 
 	__gthread_mutex_lock(__bin._M_mutex);
-	if (__bin._M_first[0] == NULL)
+	if (__bin._M_first[0] == 0)
 	  {
 	    void* __v = ::operator new(__options._M_chunk_size);
 	    _Block_address* __address = static_cast<_Block_address*>(__v);
@@ -395,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		__block->_M_next = reinterpret_cast<_Block_record*>(__c);
 		__block = __block->_M_next;
 	      }
-	    __block->_M_next = NULL;
+	    __block->_M_next = 0;
 	  }
 	else
 	  {
@@ -407,7 +407,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      {
 		__bin._M_free[__thread_id] = __bin._M_free[0];
 		__bin._M_free[0] = 0;
-		__bin._M_first[0] = NULL;
+		__bin._M_first[0] = 0;
 	      }
 	    else
 	      {
@@ -417,7 +417,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		while (--__block_count > 0)
 		  __block = __block->_M_next;
 		__bin._M_first[0] = __block->_M_next;
-		__block->_M_next = NULL;
+		__block->_M_next = 0;
 	      }
 	    __gthread_mutex_unlock(__bin._M_mutex);
 	  }
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    __block->_M_next = reinterpret_cast<_Block_record*>(__c);
 	    __block = __block->_M_next;
 	  }
-	__block->_M_next = NULL;
+	__block->_M_next = 0;
       }
       
     __block = __bin._M_first[__thread_id];
@@ -527,7 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		}
 
 	      // Set last record.
-	      _M_thread_freelist[__i - 1]._M_next = NULL;
+	      _M_thread_freelist[__i - 1]._M_next = 0;
 	      _M_thread_freelist[__i - 1]._M_id = __i;
 
 	      if (!freelist._M_thread_freelist_array)
@@ -572,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    std::memset(__v, 0, sizeof(_Block_record*) * __max_threads);    
 	    __bin._M_first = static_cast<_Block_record**>(__v);
 
-	    __bin._M_address = NULL;
+	    __bin._M_address = 0;
 
 	    __v = ::operator new(sizeof(size_t) * __max_threads);
 	    std::memset(__v, 0, sizeof(size_t) * __max_threads);
@@ -606,8 +606,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _Bin_record& __bin = _M_bin[__n];
 	    __v = ::operator new(sizeof(_Block_record*));
 	    __bin._M_first = static_cast<_Block_record**>(__v);
-	    __bin._M_first[0] = NULL;
-	    __bin._M_address = NULL;
+	    __bin._M_first[0] = 0;
+	    __bin._M_address = 0;
 	  }
       }
     _M_init = true;
@@ -722,7 +722,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		}
 
 	      // Set last record.
-	      _M_thread_freelist[__i - 1]._M_next = NULL;
+	      _M_thread_freelist[__i - 1]._M_next = 0;
 	      _M_thread_freelist[__i - 1]._M_id = __i;
 
 	      if (!freelist._M_thread_freelist_array)
@@ -767,7 +767,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    std::memset(__v, 0, sizeof(_Block_record*) * __max_threads);
 	    __bin._M_first = static_cast<_Block_record**>(__v);
 
-	    __bin._M_address = NULL;
+	    __bin._M_address = 0;
 
 	    __v = ::operator new(sizeof(size_t) * __max_threads);
 	    std::memset(__v, 0, sizeof(size_t) * __max_threads);
@@ -800,8 +800,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _Bin_record& __bin = _M_bin[__n];
 	    __v = ::operator new(sizeof(_Block_record*));
 	    __bin._M_first = static_cast<_Block_record**>(__v);
-	    __bin._M_first[0] = NULL;
-	    __bin._M_address = NULL;
+	    __bin._M_first[0] = 0;
+	    __bin._M_address = 0;
 	  }
       }
     _M_init = true;

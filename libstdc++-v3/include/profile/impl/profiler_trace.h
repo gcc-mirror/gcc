@@ -87,8 +87,8 @@ struct __warning_data
   const char* __warning_id;
   const char* __warning_message;
   __warning_data()
-  : __magnitude(0.0), __context(NULL), __warning_id(NULL),
-    __warning_message(NULL) { }
+  : __magnitude(0.0), __context(0), __warning_id(0),
+    __warning_message(0) { }
   __warning_data(float __m, __stack_t __c, const char* __id, 
                  const char* __msg)
   : __magnitude(__m), __context(__c), __warning_id(__id), 
@@ -141,13 +141,13 @@ struct __cost_factor
 
 typedef std::_GLIBCXX_STD_PR::vector<__cost_factor*> __cost_factor_vector;
 
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_hash_func*, _S_hash_func, NULL);
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_hashtable_size*, _S_hashtable_size, NULL);
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_map2umap*, _S_map2umap, NULL);
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_vector_size*, _S_vector_size, NULL);
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_vector_to_list*, _S_vector_to_list, NULL);
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_list_to_slist*, _S_list_to_slist, NULL); 
-_GLIBCXX_PROFILE_DEFINE_DATA(__trace_list_to_vector*, _S_list_to_vector, NULL);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_hash_func*, _S_hash_func, 0);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_hashtable_size*, _S_hashtable_size, 0);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_map2umap*, _S_map2umap, 0);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_vector_size*, _S_vector_size, 0);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_vector_to_list*, _S_vector_to_list, 0);
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_list_to_slist*, _S_list_to_slist, 0); 
+_GLIBCXX_PROFILE_DEFINE_DATA(__trace_list_to_vector*, _S_list_to_vector, 0);
 
 _GLIBCXX_PROFILE_DEFINE_DATA(__cost_factor, __vector_shift_cost_factor, 
                              {"__vector_shift_cost_factor", 1.0});
@@ -177,7 +177,7 @@ _GLIBCXX_PROFILE_DEFINE_DATA(__cost_factor, __umap_find_cost_factor,
                              {"__umap_find_cost_factor", 10.0});
 _GLIBCXX_PROFILE_DEFINE_DATA(__cost_factor, __umap_iterate_cost_factor,
                              {"__umap_iterate_cost_factor", 1.7});
-_GLIBCXX_PROFILE_DEFINE_DATA(__cost_factor_vector*, __cost_factors, NULL);
+_GLIBCXX_PROFILE_DEFINE_DATA(__cost_factor_vector*, __cost_factors, 0);
 
 _GLIBCXX_PROFILE_DEFINE_DATA(const char*, _S_trace_file_name,
                              _GLIBCXX_PROFILE_TRACE_PATH_ROOT);
@@ -249,7 +249,7 @@ __trace_base<__object_info, __stack_info>::__trace_base()
   __object_table.rehash(10000);
   __stack_table.rehash(10000);
   __stack_table_byte_size = 0;
-  __id = NULL;
+  __id = 0;
 }
 
 template <typename __object_info, typename __stack_info>
@@ -277,7 +277,7 @@ __object_info* __trace_base<__object_info, __stack_info>::__get_object_info(
       __object_table.find(__object);
   if (__object_it == __object_table.end()){
     this->__object_table_lock.unlock();
-    return NULL;
+    return 0;
   } else {
     this->__object_table_lock.unlock();
     return &__object_it->second;
@@ -336,7 +336,7 @@ inline size_t __env_to_size_t(const char* __env_var, size_t __default_value)
 {
   char* __env_value = getenv(__env_var);
   if (__env_value) {
-    long int __converted_value = strtol(__env_value, NULL, 10);
+    long int __converted_value = strtol(__env_value, 0, 10);
     if (errno || __converted_value < 0) {
       fprintf(stderr, "Bad value for environment variable '%s'.\n", __env_var);
       abort();

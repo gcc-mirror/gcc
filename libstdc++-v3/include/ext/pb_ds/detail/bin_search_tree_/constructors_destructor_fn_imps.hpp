@@ -92,7 +92,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
     __try
       {
         m_p_head->m_p_parent = recursive_copy_node(other.m_p_head->m_p_parent);
-        if (m_p_head->m_p_parent != NULL)
+        if (m_p_head->m_p_parent != 0)
 	  m_p_head->m_p_parent->m_p_parent = m_p_head;
         m_size = other.m_size;
         initialize_min_max();
@@ -142,7 +142,7 @@ void
 PB_DS_CLASS_C_DEC::
 initialize()
 {
-  m_p_head->m_p_parent = NULL;
+  m_p_head->m_p_parent = 0;
   m_p_head->m_p_left = m_p_head;
   m_p_head->m_p_right = m_p_head;
   m_size = 0;
@@ -153,8 +153,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 recursive_copy_node(const node_pointer p_nd)
 {
-  if (p_nd == NULL)
-    return (NULL);
+  if (p_nd == 0)
+    return (0);
 
   node_pointer p_ret = s_node_allocator.allocate(1);
   __try
@@ -167,7 +167,7 @@ recursive_copy_node(const node_pointer p_nd)
       __throw_exception_again;
     }
 
-  p_ret->m_p_left = p_ret->m_p_right = NULL;
+  p_ret->m_p_left = p_ret->m_p_right = 0;
 
   __try
     {
@@ -180,10 +180,10 @@ recursive_copy_node(const node_pointer p_nd)
       __throw_exception_again;
     }
 
-  if (p_ret->m_p_left != NULL)
+  if (p_ret->m_p_left != 0)
     p_ret->m_p_left->m_p_parent = p_ret;
 
-  if (p_ret->m_p_right != NULL)
+  if (p_ret->m_p_right != 0)
     p_ret->m_p_right->m_p_parent = p_ret;
 
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_ret);)
@@ -195,7 +195,7 @@ void
 PB_DS_CLASS_C_DEC::
 initialize_min_max()
 {
-  if (m_p_head->m_p_parent == NULL)
+  if (m_p_head->m_p_parent == 0)
     {
       m_p_head->m_p_left = m_p_head->m_p_right = m_p_head;
       return;
@@ -203,14 +203,14 @@ initialize_min_max()
 
   {
     node_pointer p_min = m_p_head->m_p_parent;
-    while (p_min->m_p_left != NULL)
+    while (p_min->m_p_left != 0)
       p_min = p_min->m_p_left;
     m_p_head->m_p_left = p_min;
   }
 
   {
     node_pointer p_max = m_p_head->m_p_parent;
-    while (p_max->m_p_right != NULL)
+    while (p_max->m_p_right != 0)
       p_max = p_max->m_p_right;
     m_p_head->m_p_right = p_max;
   }

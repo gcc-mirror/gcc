@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,8 @@ void test02()
 
   // basic_ios& copyfmt(const basic_ios& rhs)
   {
-    std::ios ios_01(NULL);
-    std::ios ios_02(NULL);  
+    std::ios ios_01(0);
+    std::ios ios_02(0);  
     ios_01.exceptions(std::ios_base::eofbit);
     ios_02.exceptions(std::ios_base::eofbit);
     
@@ -49,8 +49,8 @@ void test02()
   }
 
   {
-    std::ios ios_01(NULL);
-    std::ios ios_02(NULL);  
+    std::ios ios_01(0);
+    std::ios ios_02(0);  
     ios_01.clear(std::ios_base::eofbit);
     ios_02.exceptions(std::ios_base::eofbit);
 

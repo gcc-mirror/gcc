@@ -85,7 +85,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   initialize();
   m_size = other.m_size;
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    if (other.m_p_head->m_p_parent == NULL)
+    if (other.m_p_head->m_p_parent == 0)
       {
         _GLIBCXX_DEBUG_ONLY(assert_valid();)
         return;
@@ -143,7 +143,7 @@ PB_DS_CLASS_C_DEC::
 initialize()
 {
   new (m_p_head) head();
-  m_p_head->m_p_parent = NULL;
+  m_p_head->m_p_parent = 0;
   m_p_head->m_p_min = m_p_head;
   m_p_head->m_p_max = m_p_head;
   m_size = 0;
@@ -164,7 +164,7 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 recursive_copy_node(const_node_pointer p_other_nd)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_other_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_other_nd != 0);
   if (p_other_nd->m_type == pat_trie_leaf_node_type)
     {
       const_leaf_pointer p_other_leaf = static_cast<const_leaf_pointer>(p_other_nd);

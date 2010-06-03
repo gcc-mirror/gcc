@@ -31,5 +31,5 @@ void test01()
 }
 
 // { dg-error "here" "" { target *-*-* } 30 }
-// { dg-error "deleted function" "" { target *-*-* } 127 }
+// { dg-error "deleted function" "" { target *-*-* } 126 }
 // { dg-excess-errors "In file included from" }

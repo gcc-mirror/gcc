@@ -1587,12 +1587,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       bool				_M_allocated;
 
-      __numpunct_cache(size_t __refs = 0) : facet(__refs),
-      _M_grouping(NULL), _M_grouping_size(0), _M_use_grouping(false),
-      _M_truename(NULL), _M_truename_size(0), _M_falsename(NULL),
-      _M_falsename_size(0), _M_decimal_point(_CharT()),
-      _M_thousands_sep(_CharT()), _M_allocated(false)
-      { }
+      __numpunct_cache(size_t __refs = 0)
+      : facet(__refs), _M_grouping(0), _M_grouping_size(0),
+	_M_use_grouping(false),
+	_M_truename(0), _M_truename_size(0), _M_falsename(0),
+	_M_falsename_size(0), _M_decimal_point(_CharT()),
+	_M_thousands_sep(_CharT()), _M_allocated(false)
+        { }
 
       ~__numpunct_cache();
 
@@ -1657,7 +1658,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  refs  Refcount to pass to the base class.
        */
       explicit
-      numpunct(size_t __refs = 0) : facet(__refs), _M_data(NULL)
+      numpunct(size_t __refs = 0)
+      : facet(__refs), _M_data(0)
       { _M_initialize_numpunct(); }
 
       /**
@@ -1685,7 +1687,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       explicit
       numpunct(__c_locale __cloc, size_t __refs = 0)
-      : facet(__refs), _M_data(NULL)
+      : facet(__refs), _M_data(0)
       { _M_initialize_numpunct(__cloc); }
 
       /**
@@ -1841,7 +1843,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // For use at construction time only.
       void
-      _M_initialize_numpunct(__c_locale __cloc = NULL);
+      _M_initialize_numpunct(__c_locale __cloc = 0);
     };
 
   template<typename _CharT>

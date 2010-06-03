@@ -1,6 +1,6 @@
 // 1999-08-16 bkoz
 
-// Copyright (C) 1999, 2000, 2002, 2003, 2009 Free Software Foundation
+// Copyright (C) 1999, 2000, 2002, 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@
 void test08()
 {
   bool test __attribute__((unused)) = true;
-  char* pt = NULL;
+  char* pt = 0;
 
   // 2
   std::wostringstream woss;
@@ -40,7 +40,7 @@ void test08()
   VERIFY( woss.good() );
 
   // 3
-  wchar_t* wt = NULL;
+  wchar_t* wt = 0;
   woss.clear();
   woss << wt;
   VERIFY( woss.bad() );

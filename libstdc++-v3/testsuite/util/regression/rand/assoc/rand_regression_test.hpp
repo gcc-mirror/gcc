@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -124,7 +124,7 @@ namespace detail
       };
 
     // XXX RAII, constructor takes bool for display
-    xml_test_rand_regression_formatter* p_fmt = NULL;
+    xml_test_rand_regression_formatter* p_fmt = 0;
     if (disp)
       p_fmt = new xml_test_rand_regression_formatter(sd, n, m, tp, ip, ep, cp, mp);
 

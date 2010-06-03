@@ -74,7 +74,7 @@ public:
   inline
   const_iterator_()
 
-    : m_p_tbl(NULL)
+    : m_p_tbl(0)
   { }
 
   // Increments.

@@ -87,7 +87,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn) :
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
-  std::fill(m_entries, m_entries + m_num_e, (entry_pointer)NULL);
+  std::fill(m_entries, m_entries + m_num_e, (entry_pointer)0);
   Resize_Policy::notify_cleared();
   ranged_hash_fn_base::notify_resized(m_num_e);
   _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
@@ -184,7 +184,7 @@ void
 PB_DS_CLASS_C_DEC::
 initialize()
 {
-  std::fill(m_entries, m_entries + m_num_e, entry_pointer(NULL));
+  std::fill(m_entries, m_entries + m_num_e, entry_pointer(0));
   Resize_Policy::notify_resized(m_num_e);
   Resize_Policy::notify_cleared();
   ranged_hash_fn_base::notify_resized(m_num_e);

@@ -46,10 +46,10 @@ pop()
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
-  if (m_p_max == NULL)
+  if (m_p_max == 0)
     find_max();
 
-  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != 0);
 
   node_pointer p_nd = m_p_max;
 
@@ -57,7 +57,7 @@ pop()
 
   base_type::actual_erase_node(p_nd);
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }
@@ -67,33 +67,33 @@ void
 PB_DS_CLASS_C_DEC::
 remove_parentless_node(node_pointer p_nd)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
-  _GLIBCXX_DEBUG_ASSERT(base_type::parent(p_nd) == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
+  _GLIBCXX_DEBUG_ASSERT(base_type::parent(p_nd) == 0);
 
   node_pointer p_cur_root = p_nd == base_type::m_p_root?
     p_nd->m_p_next_sibling :
     base_type::m_p_root;
 
-  if (p_cur_root != NULL)
-    p_cur_root->m_p_prev_or_parent = NULL;
+  if (p_cur_root != 0)
+    p_cur_root->m_p_prev_or_parent = 0;
 
-  if (p_nd->m_p_prev_or_parent != NULL)
+  if (p_nd->m_p_prev_or_parent != 0)
     p_nd->m_p_prev_or_parent->m_p_next_sibling = p_nd->m_p_next_sibling;
 
-  if (p_nd->m_p_next_sibling != NULL)
+  if (p_nd->m_p_next_sibling != 0)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
 
   node_pointer p_child = p_nd->m_p_l_child;
 
-  if (p_child != NULL)
+  if (p_child != 0)
     {
-      p_child->m_p_prev_or_parent = NULL;
+      p_child->m_p_prev_or_parent = 0;
 
-      while (p_child->m_p_next_sibling != NULL)
+      while (p_child->m_p_next_sibling != 0)
 	p_child = p_child->m_p_next_sibling;
     }
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   base_type::m_p_root = join(p_cur_root, p_child);
 }
@@ -105,7 +105,7 @@ clear()
 {
   base_type::clear();
 
-  m_p_max = NULL;
+  m_p_max = 0;
 }
 
 PB_DS_CLASS_T_DEC
@@ -122,7 +122,7 @@ erase(point_iterator it)
 
   base_type::actual_erase_node(it.m_p_nd);
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }
@@ -148,7 +148,7 @@ erase_if(Pred pred)
 
   size_type ersd = 0;
 
-  while (p_out != NULL)
+  while (p_out != 0)
     {
       ++ersd;
 
@@ -161,19 +161,19 @@ erase_if(Pred pred)
 
   node_pointer p_cur = base_type::m_p_root;
 
-  base_type::m_p_root = NULL;
+  base_type::m_p_root = 0;
 
-  while (p_cur != NULL)
+  while (p_cur != 0)
     {
       node_pointer p_next = p_cur->m_p_next_sibling;
 
-      p_cur->m_p_l_child = p_cur->m_p_prev_or_parent = NULL;
+      p_cur->m_p_l_child = p_cur->m_p_prev_or_parent = 0;
 
       p_cur->m_metadata = 0;
 
       p_cur->m_p_next_sibling = base_type::m_p_root;
 
-      if (base_type::m_p_root != NULL)
+      if (base_type::m_p_root != 0)
 	base_type::m_p_root->m_p_prev_or_parent = p_cur;
 
       base_type::m_p_root = p_cur;
@@ -183,7 +183,7 @@ erase_if(Pred pred)
       p_cur = p_next;
     }
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 

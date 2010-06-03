@@ -46,7 +46,7 @@ lower_bound(const_key_reference r_key) const
   node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (Cmp_Fn::operator()(
 			   PB_DS_V2F(p_nd->m_value),
 			   r_key))
@@ -69,7 +69,7 @@ lower_bound(const_key_reference r_key)
   node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (Cmp_Fn::operator()(
 			   PB_DS_V2F(p_nd->m_value),
 			   r_key))
@@ -92,7 +92,7 @@ upper_bound(const_key_reference r_key) const
   node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (Cmp_Fn::operator()(r_key,
 			   PB_DS_V2F(p_nd->m_value)))
       {
@@ -114,7 +114,7 @@ upper_bound(const_key_reference r_key)
   node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (Cmp_Fn::operator()(r_key,
 			   PB_DS_V2F(p_nd->m_value)))
       {
@@ -138,7 +138,7 @@ find(const_key_reference r_key)
     node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	p_pot = p_nd;
@@ -164,7 +164,7 @@ find(const_key_reference r_key) const
     node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	p_pot = p_nd;

@@ -2,7 +2,7 @@
 
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,8 @@ void test03()
   typedef std::ios_base::iostate iostate;
   locale loc_c = locale::classic();
   locale loc_de = locale("de_DE");
-  std::ios ios_01(NULL);
-  std::ios ios_02(NULL);
+  std::ios ios_01(0);
+  std::ios ios_02(0);
   ios_01.imbue(loc_c);
   ios_02.imbue(loc_de);
   ios_02.setstate(ios_base::badbit);

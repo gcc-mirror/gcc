@@ -46,7 +46,7 @@ pop()
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
     _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
-  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != 0);
 
   node_pointer p_nd = m_p_max;
 
@@ -85,11 +85,11 @@ to_aux_except_max()
 
   p_add = m_p_max->m_p_l_child;
 
-  while (p_add != NULL)
+  while (p_add != 0)
     {
       node_pointer p_next_add = p_add->m_p_next_sibling;
 
-      p_add->m_metadata = p_add->m_p_l_child == NULL?
+      p_add->m_metadata = p_add->m_p_l_child == 0?
 	0 :
 	p_add->m_p_l_child->m_metadata + 1;
 
@@ -100,7 +100,7 @@ to_aux_except_max()
 
   p_add = m_p_max->m_p_next_sibling;
 
-  while (p_add != NULL)
+  while (p_add != 0)
     {
       node_pointer p_next_add = p_add->m_p_next_sibling;
 
@@ -117,7 +117,7 @@ add_to_aux(node_pointer p_nd)
 {
   size_type r = p_nd->m_metadata;
 
-  while (m_a_aux[r] != NULL)
+  while (m_a_aux[r] != 0)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata < rank_bound());
 
@@ -130,7 +130,7 @@ add_to_aux(node_pointer p_nd)
 	  p_nd = m_a_aux[r];
         }
 
-      m_a_aux[r] = NULL;
+      m_a_aux[r] = 0;
 
       ++r;
     }
@@ -159,7 +159,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 make_from_aux()
 {
-  base_type::m_p_root = m_p_max = NULL;
+  base_type::m_p_root = m_p_max = 0;
 
   const size_type rnk_bnd = rank_bound();
 
@@ -167,11 +167,11 @@ make_from_aux()
 
   while (i < rnk_bnd)
     {
-      if (m_a_aux[i] != NULL)
+      if (m_a_aux[i] != 0)
         {
 	  make_root_and_link(m_a_aux[i]);
 
-	  m_a_aux[i] = NULL;
+	  m_a_aux[i] = 0;
         }
 
       ++i;
@@ -186,7 +186,7 @@ PB_DS_CLASS_C_DEC::
 remove_node(node_pointer p_nd)
 {
   node_pointer p_parent = p_nd;
-  while (base_type::parent(p_parent) != NULL)
+  while (base_type::parent(p_parent) != 0)
     p_parent = base_type::parent(p_parent);
 
   base_type::bubble_to_top(p_nd);
@@ -194,10 +194,10 @@ remove_node(node_pointer p_nd)
   m_p_max = p_nd;
 
   node_pointer p_fix = base_type::m_p_root;
-  while (p_fix != NULL&&  p_fix->m_p_next_sibling != p_parent)
+  while (p_fix != 0&&  p_fix->m_p_next_sibling != p_parent)
     p_fix = p_fix->m_p_next_sibling;
 
-  if (p_fix != NULL)
+  if (p_fix != 0)
     p_fix->m_p_next_sibling = p_nd;
 
   remove_max_node();
@@ -210,7 +210,7 @@ clear()
 {
   base_type::clear();
 
-  m_p_max = NULL;
+  m_p_max = 0;
 }
 
 PB_DS_CLASS_T_DEC
@@ -251,7 +251,7 @@ erase_if(Pred pred)
 
   size_type ersd = 0;
 
-  while (p_out != NULL)
+  while (p_out != 0)
     {
       ++ersd;
 
@@ -264,9 +264,9 @@ erase_if(Pred pred)
 
   node_pointer p_cur = base_type::m_p_root;
 
-  m_p_max = base_type::m_p_root = NULL;
+  m_p_max = base_type::m_p_root = 0;
 
-  while (p_cur != NULL)
+  while (p_cur != 0)
     {
       node_pointer p_next = p_cur->m_p_next_sibling;
 

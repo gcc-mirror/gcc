@@ -106,7 +106,7 @@ void
 PB_DS_CLASS_C_DEC::
 clear_imp(node_pointer p_nd)
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return;
 
   clear_imp(p_nd->m_p_left);

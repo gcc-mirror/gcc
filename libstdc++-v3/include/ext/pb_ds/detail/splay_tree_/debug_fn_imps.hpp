@@ -55,7 +55,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_special_imp(const node_pointer p_nd) const
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return;
 
   if (p_nd == base_type::m_p_head)

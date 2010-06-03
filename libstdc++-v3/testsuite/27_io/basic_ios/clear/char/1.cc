@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ void test01()
 
   iostate iostate02, iostate03;
   const iostate iostate01 = std::ios_base::badbit | std::ios_base::eofbit;
-  std::ios ios_01(NULL);
+  std::ios ios_01(0);
 
   // bool fail() const
   VERIFY( ios_01.fail() );

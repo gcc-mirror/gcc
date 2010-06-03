@@ -38,7 +38,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>
+#include <bits/c++config.h>
 #include <exception>
 
 #pragma GCC visibility push(default)

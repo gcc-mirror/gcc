@@ -107,7 +107,7 @@ namespace __gnu_pbds
 
       // Default constructor.
       inline
-      left_child_next_sibling_heap_node_const_point_iterator_() : m_p_nd(NULL)
+      left_child_next_sibling_heap_node_const_point_iterator_() : m_p_nd(0)
       { }
 
       // Copy constructor.
@@ -119,7 +119,7 @@ namespace __gnu_pbds
       inline const_pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return &m_p_nd->m_value;
       }
 
@@ -127,7 +127,7 @@ namespace __gnu_pbds
       inline const_reference
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return m_p_nd->m_value;
       }
 

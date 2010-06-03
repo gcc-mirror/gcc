@@ -30,7 +30,7 @@
 #ifndef _ARRAY_ALLOCATOR_H
 #define _ARRAY_ALLOCATOR_H 1
 
-#include <cstddef>
+#include <bits/c++config.h>
 #include <new>
 #include <bits/functexcept.h>
 #include <tr1/array>
@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         struct rebind
         { typedef array_allocator<_Tp1, _Array1> other; };
 
-      array_allocator(array_type* __array = NULL) throw() 
+      array_allocator(array_type* __array = 0) throw() 
       : _M_array(__array), _M_used(size_type()) { }
 
       array_allocator(const array_allocator& __o)  throw() 
@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       template<typename _Tp1, typename _Array1>
         array_allocator(const array_allocator<_Tp1, _Array1>&) throw()
-	: _M_array(NULL), _M_used(size_type()) { }
+	: _M_array(0), _M_used(size_type()) { }
 
       ~array_allocator() throw() { }
 

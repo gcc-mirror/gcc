@@ -57,7 +57,7 @@
 #ifndef _BACKWARD_HASH_FUN_H
 #define _BACKWARD_HASH_FUN_H 1
 
-#include <cstddef>
+#include <bits/c++config.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

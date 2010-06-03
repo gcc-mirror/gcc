@@ -56,7 +56,7 @@ clear()
     }
 
   _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
-  m_a_values = NULL;
+  m_a_values = 0;
   m_size = 0;
   m_end_it = m_a_values;
   _GLIBCXX_DEBUG_ONLY(assert_valid();)

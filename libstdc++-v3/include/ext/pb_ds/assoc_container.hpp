@@ -41,6 +41,7 @@
 #ifndef PB_DS_ASSOC_CNTNR_HPP
 #define PB_DS_ASSOC_CNTNR_HPP
 
+#include <bits/c++config.h>
 #include <ext/typelist.h>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>

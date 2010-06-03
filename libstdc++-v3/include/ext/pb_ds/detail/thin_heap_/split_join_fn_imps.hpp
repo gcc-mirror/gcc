@@ -61,7 +61,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
   node_pointer p_out = base_type::prune(pred);
 
-  while (p_out != NULL)
+  while (p_out != 0)
     {
       _GLIBCXX_DEBUG_ASSERT(base_type::m_size > 0);
       --base_type::m_size;
@@ -79,11 +79,11 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
     node_pointer p_cur = base_type::m_p_root;
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
-  base_type::m_p_root = NULL;
+  base_type::m_p_root = 0;
 
-  while (p_cur != NULL)
+  while (p_cur != 0)
     {
       node_pointer p_next = p_cur->m_p_next_sibling;
 
@@ -106,7 +106,7 @@ join(PB_DS_CLASS_C_DEC& other)
 
     node_pointer p_other = other.m_p_root;
 
-  while (p_other != NULL)
+  while (p_other != 0)
     {
       node_pointer p_next = p_other->m_p_next_sibling;
 
@@ -117,9 +117,9 @@ join(PB_DS_CLASS_C_DEC& other)
 
   base_type::m_size += other.m_size;
 
-  other.m_p_root = NULL;
+  other.m_p_root = 0;
   other.m_size = 0;
-  other.m_p_max = NULL;
+  other.m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
     _GLIBCXX_DEBUG_ONLY(other.assert_valid();)

@@ -63,7 +63,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

@@ -64,7 +64,7 @@ insert_leaf_imp(const_reference r_value)
   node_pointer p_nd = base_type::m_p_head->m_p_parent;
   node_pointer p_pot = base_type::m_p_head;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), PB_DS_V2F(r_value)))
       {
 	if (!Cmp_Fn::operator()(PB_DS_V2F(r_value), PB_DS_V2F(p_nd->m_value)))
@@ -83,10 +83,10 @@ insert_leaf_imp(const_reference r_value)
   _GLIBCXX_DEBUG_ONLY(base_type::check_key_does_not_exist(PB_DS_V2F(r_value)));
 
   p_nd = p_pot->m_p_left;
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return (std::make_pair(base_type::insert_leaf_new(r_value, p_pot, true), true));
 
-  while (p_nd->m_p_right != NULL)
+  while (p_nd->m_p_right != 0)
     p_nd = p_nd->m_p_right;
 
   return std::make_pair(insert_leaf_new(r_value, p_nd, false), true);

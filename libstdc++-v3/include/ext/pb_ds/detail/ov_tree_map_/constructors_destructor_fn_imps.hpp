@@ -49,9 +49,9 @@ PB_DS_CLASS_C_DEC::s_metadata_alloc;
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME() :
-  m_a_values(NULL),
-  m_a_metadata(NULL),
-  m_end_it(NULL),
+  m_a_values(0),
+  m_a_metadata(0),
+  m_end_it(0),
   m_size(0)
 { _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
@@ -59,9 +59,9 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
   cmp_fn_base(r_cmp_fn),
-  m_a_values(NULL),
-  m_a_metadata(NULL),
-  m_end_it(NULL),
+  m_a_values(0),
+  m_a_metadata(0),
+  m_end_it(0),
   m_size(0)
 { _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
@@ -70,9 +70,9 @@ PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
   cmp_fn_base(r_cmp_fn),
   node_update(r_node_update),
-  m_a_values(NULL),
-  m_a_metadata(NULL),
-  m_end_it(NULL),
+  m_a_values(0),
+  m_a_metadata(0),
+  m_end_it(0),
   m_size(0)
 { _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
@@ -87,9 +87,9 @@ PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #endif 
   cmp_fn_base(other),
   node_update(other),
-  m_a_values(NULL),
-  m_a_metadata(NULL),
-  m_end_it(NULL),
+  m_a_values(0),
+  m_a_metadata(0),
+  m_end_it(0),
   m_size(0)
 {
   copy_from_ordered_range(other.begin(), other.end());

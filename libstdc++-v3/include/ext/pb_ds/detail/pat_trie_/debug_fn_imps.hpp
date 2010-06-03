@@ -45,11 +45,11 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  if (m_p_head->m_p_parent != NULL)
+  if (m_p_head->m_p_parent != 0)
     m_p_head->m_p_parent->assert_valid(this);
   assert_iterators();
   assert_reverse_iterators();
-  if (m_p_head->m_p_parent == NULL)
+  if (m_p_head->m_p_parent == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_min == m_p_head);
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_max == m_p_head);
@@ -99,7 +99,7 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 recursive_count_leafs(const_node_pointer p_nd)
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return (0);
   if (p_nd->m_type == pat_trie_leaf_node_type)
     return (1);

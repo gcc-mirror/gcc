@@ -338,7 +338,7 @@ namespace __gnu_debug
       const _Error_formatter&
       _M_iterator(const _Iterator& __it, const char* __name = 0)  const
       {
-	if (_M_num_parameters < size_t(__max_parameters))
+	if (_M_num_parameters < std::size_t(__max_parameters))
 	  _M_parameters[_M_num_parameters++] = _Parameter(__it, __name,
 							  _Is_iterator());
 	return *this;
@@ -347,7 +347,7 @@ namespace __gnu_debug
     const _Error_formatter&
     _M_integer(long __value, const char* __name = 0) const
     {
-      if (_M_num_parameters < size_t(__max_parameters))
+      if (_M_num_parameters < std::size_t(__max_parameters))
 	_M_parameters[_M_num_parameters++] = _Parameter(__value, __name);
       return *this;
     }
@@ -355,7 +355,7 @@ namespace __gnu_debug
     const _Error_formatter&
     _M_string(const char* __value, const char* __name = 0) const
     {
-      if (_M_num_parameters < size_t(__max_parameters))
+      if (_M_num_parameters < std::size_t(__max_parameters))
 	_M_parameters[_M_num_parameters++] = _Parameter(__value, __name);
       return *this;
     }
@@ -364,7 +364,7 @@ namespace __gnu_debug
       const _Error_formatter&
       _M_sequence(const _Sequence& __seq, const char* __name = 0) const
       {
-	if (_M_num_parameters < size_t(__max_parameters))
+	if (_M_num_parameters < std::size_t(__max_parameters))
 	  _M_parameters[_M_num_parameters++] = _Parameter(__seq, __name,
 							  _Is_sequence());
 	return *this;
@@ -381,7 +381,7 @@ namespace __gnu_debug
     _M_error() const;
 
   private:
-    _Error_formatter(const char* __file, size_t __line)
+    _Error_formatter(const char* __file, std::size_t __line)
     : _M_file(__file), _M_line(__line), _M_num_parameters(0), _M_text(0),
       _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { _M_get_max_length(); }
@@ -402,19 +402,19 @@ namespace __gnu_debug
     enum { __max_parameters = 9 };
 
     const char*         _M_file;
-    size_t              _M_line;
+    std::size_t         _M_line;
     mutable _Parameter  _M_parameters[__max_parameters];
-    mutable size_t      _M_num_parameters;
+    mutable std::size_t _M_num_parameters;
     mutable const char* _M_text;
-    mutable size_t      _M_max_length;
+    mutable std::size_t _M_max_length;
     enum { _M_indent = 4 } ;
-    mutable size_t      _M_column;
+    mutable std::size_t _M_column;
     mutable bool        _M_first_line;
     mutable bool        _M_wordwrap;
 
   public:
     static _Error_formatter
-    _M_at(const char* __file, size_t __line)
+    _M_at(const char* __file, std::size_t __line)
     { return _Error_formatter(__file, __line); }
   };
 } // namespace __gnu_debug

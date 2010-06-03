@@ -43,7 +43,7 @@ void
 PB_DS_CLASS_C_DEC::
 deallocate_links_in_list(entry_pointer p_e)
 {
-  while (p_e != NULL)
+  while (p_e != 0)
     {
       entry_pointer p_dealloc_e = p_e;
       p_e = p_e->m_p_next;

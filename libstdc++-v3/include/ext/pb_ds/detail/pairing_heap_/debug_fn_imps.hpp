@@ -45,8 +45,8 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  _GLIBCXX_DEBUG_ASSERT(base_type::m_p_root == NULL 
-		        || base_type::m_p_root->m_p_next_sibling == NULL);
+  _GLIBCXX_DEBUG_ASSERT(base_type::m_p_root == 0 
+		        || base_type::m_p_root->m_p_next_sibling == 0);
   base_type::assert_valid();
 }
 

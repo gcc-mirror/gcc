@@ -123,7 +123,7 @@ inline typename PB_DS_CLASS_C_DEC::const_node_iterator
 PB_DS_CLASS_C_DEC::
 node_end() const
 {
-  return (const_node_iterator(NULL));
+  return (const_node_iterator(0));
 }
 
 PB_DS_CLASS_T_DEC
@@ -131,6 +131,6 @@ inline typename PB_DS_CLASS_C_DEC::node_iterator
 PB_DS_CLASS_C_DEC::
 node_end()
 {
-  return (node_iterator(NULL));
+  return (node_iterator(0));
 }
 

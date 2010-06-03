@@ -47,7 +47,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
   split_join_branch_bag bag;
   leaf_pointer p_split_lf = split_prep(r_key, other, bag);
-  if (p_split_lf == NULL)
+  if (p_split_lf == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(bag.empty());
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -88,7 +88,7 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
       other.clear();
       _GLIBCXX_DEBUG_ONLY(assert_valid(););
       _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
-      return (NULL);
+      return (0);
     }
 
   if (synth_e_access_traits::cmp_keys(r_key,
@@ -98,7 +98,7 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
       value_swap(other);
       _GLIBCXX_DEBUG_ONLY(assert_valid(););
       _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
-      return (NULL);
+      return (0);
     }
 
   if (!synth_e_access_traits::cmp_keys(r_key,
@@ -106,7 +106,7 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid(););
       _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
-      return (NULL);
+      return (0);
     }
 
   iterator it = lower_bound(r_key);
@@ -134,7 +134,7 @@ rec_split(node_pointer p_nd, const_e_iterator b_it, const_e_iterator e_it, PB_DS
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
     {
-      _GLIBCXX_DEBUG_ASSERT(other.m_p_head->m_p_parent == NULL);
+      _GLIBCXX_DEBUG_ASSERT(other.m_p_head->m_p_parent == 0);
       return (p_nd);
     }
 
@@ -202,27 +202,27 @@ PB_DS_CLASS_C_DEC::
 split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_node::iterator child_b_it, size_type num_children, split_join_branch_bag& r_bag)
 {
 #ifdef _GLIBCXX_DEBUG
-  if (m_p_head->m_p_parent != NULL)
+  if (m_p_head->m_p_parent != 0)
     m_p_head->m_p_parent->assert_valid(this);
 #endif 
 
-  const size_type total_num_children =((m_p_head->m_p_parent == NULL)? 0 : 1) + num_children;
+  const size_type total_num_children =((m_p_head->m_p_parent == 0)? 0 : 1) + num_children;
 
   if (total_num_children == 0)
     {
-      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == NULL);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == 0);
       return;
     }
 
   if (total_num_children == 1)
     {
-      if (m_p_head->m_p_parent != NULL)
+      if (m_p_head->m_p_parent != 0)
         {
 	  _GLIBCXX_DEBUG_ONLY(m_p_head->m_p_parent->assert_valid(this);)
           return;
         }
 
-      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == NULL);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == 0);
       m_p_head->m_p_parent =* child_b_it;
       m_p_head->m_p_parent->m_p_parent = m_p_head;
       apply_update(m_p_head->m_p_parent, (node_update* )this);
@@ -242,7 +242,7 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
       ++child_b_it;
     }
 
-  if (m_p_head->m_p_parent != NULL)
+  if (m_p_head->m_p_parent != 0)
     p_new_root->add_child(m_p_head->m_p_parent, 
 			  pref_begin(m_p_head->m_p_parent),
 			  pref_end(m_p_head->m_p_parent), this);

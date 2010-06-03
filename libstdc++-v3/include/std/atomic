@@ -38,8 +38,8 @@
 # include <bits/c++0x_warning.h>
 #endif
 
+#include <bits/c++config.h>
 #include <bits/atomic_base.h>
-#include <cstddef>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing performance utilities for the C++ library testsuite.
 //
-// Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -50,7 +50,7 @@ extern "C"
   struct mallinfo
   mallinfo(void)
   {
-    struct mallinfo m = { (((size_t) sbrk (0) + 1023) / 1024), 0 };
+    struct mallinfo m = { (((std::size_t) sbrk (0) + 1023) / 1024), 0 };
     return m;
   }
 }
@@ -114,15 +114,15 @@ namespace __gnu_test
 	std::__throw_runtime_error("time_counter::stop");
     }
 
-    size_t
+    std::size_t
     real_time() const
     { return elapsed_end - elapsed_begin; }
 
-    size_t
+    std::size_t
     user_time() const
     { return tms_end.tms_utime - tms_begin.tms_utime; }
 
-    size_t
+    std::size_t
     system_time() const
     { return tms_end.tms_stime - tms_begin.tms_stime; }
   };
@@ -383,7 +383,7 @@ template<typename Container, int Iter>
 
 template<typename Container, int Iter>
   void*
-  do_thread(void* p = NULL)
+  do_thread(void* p = 0)
   {
     do_loop<Container, Iter>();
     return p;
@@ -412,10 +412,10 @@ template<typename Container, int Iter, bool Thread>
 	  pthread_create(&t3, 0, &do_thread<Container, Iter>, 0);
 	  pthread_create(&t4, 0, &do_thread<Container, Iter>, 0);
 	  
-	  pthread_join(t1, NULL);
-	  pthread_join(t2, NULL);
-	  pthread_join(t3, NULL);
-	  pthread_join(t4, NULL);
+	  pthread_join(t1, 0);
+	  pthread_join(t2, 0);
+	  pthread_join(t3, 0);
+	  pthread_join(t4, 0);
 #endif
 	}
       stop_counters(time, resource);

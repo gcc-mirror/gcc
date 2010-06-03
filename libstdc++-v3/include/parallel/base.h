@@ -267,8 +267,8 @@ namespace __gnu_parallel
 
   /** @brief Similar to std::plus, but allows two different types. */
   template<typename _Tp1, typename _Tp2, typename _Result
-	   = __typeof__(*static_cast<_Tp1*>(NULL)
-			+ *static_cast<_Tp2*>(NULL))>
+	   = __typeof__(*static_cast<_Tp1*>(0)
+			+ *static_cast<_Tp2*>(0))>
     struct _Plus : public std::binary_function<_Tp1, _Tp2, _Result>
     {
       _Result
@@ -283,8 +283,8 @@ namespace __gnu_parallel
 
   /** @brief Similar to std::multiplies, but allows two different types. */
   template<typename _Tp1, typename _Tp2, typename _Result
-	   = __typeof__(*static_cast<_Tp1*>(NULL)
-			* *static_cast<_Tp2*>(NULL))>
+	   = __typeof__(*static_cast<_Tp1*>(0)
+			* *static_cast<_Tp2*>(0))>
     struct _Multiplies : public std::binary_function<_Tp1, _Tp2, _Result>
     {
       _Result

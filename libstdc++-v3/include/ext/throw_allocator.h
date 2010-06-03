@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     insert(void* p, size_t size)
     {
-      if (p == NULL)
+      if (!p)
 	{
 	  std::string error("annotate_base::insert null insert!\n");
 	  log_to_string(error, make_entry(p, size));

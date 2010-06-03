@@ -87,7 +87,7 @@ resize_imp(size_type new_size)
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   const size_type old_size = m_num_e;
-  entry_array a_entries_resized = NULL;
+  entry_array a_entries_resized = 0;
 
   // Following line might throw an exception.
   a_entries_resized = s_entry_allocator.allocate(new_size);

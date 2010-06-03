@@ -73,7 +73,7 @@ namespace __gnu_parallel
                                         __leftnew, __rightnew;
 
       // just 0 or 1, but int to allow atomic operations
-      int* __reserved_left = NULL, * __reserved_right = NULL;
+      int* __reserved_left = 0, * __reserved_right = 0;
 
       _DifferenceType __chunk_size = __s.partition_chunk_size;
 

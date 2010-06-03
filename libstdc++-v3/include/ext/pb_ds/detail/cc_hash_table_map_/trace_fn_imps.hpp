@@ -62,7 +62,7 @@ PB_DS_CLASS_C_DEC::
 trace_list(const_entry_pointer p_l) const
 {
   size_type iterated_num_used_e = 0;
-  while (p_l != NULL)
+  while (p_l != 0)
     {
       std::cerr << PB_DS_V2F(p_l->m_value) << " ";
       p_l = p_l->m_p_next;

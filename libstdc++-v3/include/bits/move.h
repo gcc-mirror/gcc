@@ -31,7 +31,6 @@
 #define _MOVE_H 1
 
 #include <bits/c++config.h>
-#include <cstddef>
 #include <bits/concept_check.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

@@ -30,9 +30,8 @@
 #ifndef _BITMAP_ALLOCATOR_H
 #define _BITMAP_ALLOCATOR_H 1
 
-#include <cstddef> // For std::size_t, and ptrdiff_t.
-#include <bits/functexcept.h> // For __throw_bad_alloc().
 #include <utility> // For std::pair.
+#include <bits/functexcept.h> // For __throw_bad_alloc().
 #include <functional> // For greater_equal, and less_equal.
 #include <new> // For operator new.
 #include <debug/debug.h> // _GLIBCXX_DEBUG_ASSERT

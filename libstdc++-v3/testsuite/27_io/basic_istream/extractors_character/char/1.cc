@@ -1,6 +1,6 @@
 // 1999-07-26 bkoz
 
-// Copyright (C) 1999, 2003, 2005, 2009 Free Software Foundation
+// Copyright (C) 1999, 2003, 2005, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ void test01()
 
   std::stringbuf isbuf_01(std::ios_base::in);
   std::stringbuf isbuf_02(str_02, std::ios_base::in);
-  std::istream is_01(NULL);
+  std::istream is_01(0);
   std::istream is_02(&isbuf_02);
 
   std::ios_base::iostate state1, state2, statefail;

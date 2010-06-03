@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2001, 2002, 2003, 2009 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@ void test2()
   fbuf.close();
 
   FILE* file = fopen("tmp_10063-2", "r");
-  setbuf(file, NULL);
+  setbuf(file, 0);
   int c = getc(file);
   VERIFY(c == '0');
   c = getc(file);

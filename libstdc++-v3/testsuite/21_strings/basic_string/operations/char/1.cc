@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ int test01(void)
   // data() for size == 0 is non-NULL.
   VERIFY( empty.size() == 0 );
   const std::string::value_type* p = empty.data();
-  VERIFY( p != NULL );
+  VERIFY( p );
 
   return 0;
 }

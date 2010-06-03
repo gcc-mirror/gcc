@@ -2,7 +2,7 @@
 // Adapted from http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00679.html
 // which was adapted from pthread1.cc by Mike Lu <MLu@dynamicsoft.com>
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -95,12 +95,12 @@ main (void)
 #endif
 
   pthread_t prod;
-  pthread_create (&prod, NULL, produce, NULL);
+  pthread_create (&prod, 0, produce, 0);
   pthread_t cons;
-  pthread_create (&cons, NULL, consume, NULL);
+  pthread_create (&cons, 0, consume, 0);
 
-  pthread_join (prod, NULL);
-  pthread_join (cons, NULL);
+  pthread_join (prod, 0);
+  pthread_join (cons, 0);
 
   return 0;
 }

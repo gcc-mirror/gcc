@@ -81,7 +81,7 @@ cmp_with_other(const Other_Map_Type& other) const
 	const_cast<PB_DS_CLASS_C_DEC& >(*this).
 	find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 
-      if (p_mapped_value == NULL)
+      if (p_mapped_value == 0)
 	return false;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR

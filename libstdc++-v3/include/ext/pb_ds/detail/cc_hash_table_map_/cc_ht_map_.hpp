@@ -374,7 +374,7 @@ namespace __gnu_pbds
 	entry_pointer p_e = m_entries[pos];
 	resize_base::notify_insert_search_start();
 
-	while (p_e != NULL 
+	while (p_e != 0 
 	       && !hash_eq_fn_base::operator()(p_e->m_value.first, r_key))
 	  {
 	    resize_base::notify_insert_search_collision();
@@ -382,7 +382,7 @@ namespace __gnu_pbds
 	  }
 
 	resize_base::notify_insert_search_end();
-	if (p_e != NULL)
+	if (p_e != 0)
 	  {
 	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
 	    return (p_e->m_value.second);
@@ -399,7 +399,7 @@ namespace __gnu_pbds
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_entries[pos_hash_pair.first];
 	resize_base::notify_insert_search_start();
-	while (p_e != NULL && 
+	while (p_e != 0 && 
 	       !hash_eq_fn_base::operator()(p_e->m_value.first, p_e->m_hash, r_key, pos_hash_pair.second))
 	  {
 	    resize_base::notify_insert_search_collision();
@@ -407,7 +407,7 @@ namespace __gnu_pbds
 	  }
 
 	resize_base::notify_insert_search_end();
-	if (p_e != NULL)
+	if (p_e != 0)
 	  {
 	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
 	    return p_e->m_value.second;
@@ -468,7 +468,7 @@ namespace __gnu_pbds
       {
 	entry_pointer p_e = m_entries[ranged_hash_fn_base::operator()(r_key)];
 	resize_base::notify_find_search_start();
-	while (p_e != NULL && 
+	while (p_e != 0 && 
 	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
 	  {
 	    resize_base::notify_find_search_collision();
@@ -478,7 +478,7 @@ namespace __gnu_pbds
 	resize_base::notify_find_search_end();
 
 #ifdef _GLIBCXX_DEBUG
-	if (p_e == NULL)
+	if (p_e == 0)
 	  debug_base::check_key_does_not_exist(r_key);
 	else
 	  debug_base::check_key_exists(r_key);
@@ -492,7 +492,7 @@ namespace __gnu_pbds
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_entries[pos_hash_pair.first];
 	resize_base::notify_find_search_start();
-	while (p_e != NULL && 
+	while (p_e != 0 && 
 	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value),
 					    p_e->m_hash,
 					    r_key, pos_hash_pair.second))
@@ -504,7 +504,7 @@ namespace __gnu_pbds
 	resize_base::notify_find_search_end();
 
 #ifdef _GLIBCXX_DEBUG
-	if (p_e == NULL)
+	if (p_e == 0)
 	  debug_base::check_key_does_not_exist(r_key);
 	else
 	  debug_base::check_key_exists(r_key);
@@ -534,22 +534,22 @@ namespace __gnu_pbds
       inc_it_state(const_pointer& r_p_value, 
 		   std::pair<entry_pointer, size_type>& r_pos) const
       {
-	_GLIBCXX_DEBUG_ASSERT(r_p_value != NULL);
+	_GLIBCXX_DEBUG_ASSERT(r_p_value != 0);
 	r_pos.first = r_pos.first->m_p_next;
-	if (r_pos.first != NULL)
+	if (r_pos.first != 0)
 	  {
 	    r_p_value = &r_pos.first->m_value;
 	    return;
 	  }
 
 	for (++r_pos.second; r_pos.second < m_num_e; ++r_pos.second)
-	  if (m_entries[r_pos.second] != NULL)
+	  if (m_entries[r_pos.second] != 0)
 	    {
 	      r_pos.first = m_entries[r_pos.second];
 	      r_p_value = &r_pos.first->m_value;
 	      return;
 	    }
-	r_p_value = NULL;
+	r_p_value = 0;
       }
 
       void
@@ -557,13 +557,13 @@ namespace __gnu_pbds
 			 std::pair<entry_pointer, size_type>& r_pos) const
       {
 	for (r_pos.second = 0; r_pos.second < m_num_e; ++r_pos.second)
-	  if (m_entries[r_pos.second] != NULL)
+	  if (m_entries[r_pos.second] != 0)
 	    {
 	      r_pos.first = m_entries[r_pos.second];
 	      r_p_value = &r_pos.first->m_value;
 	      return;
 	    }
-	r_p_value = NULL;
+	r_p_value = 0;
       }
 
 #ifdef _GLIBCXX_DEBUG

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -41,6 +41,7 @@
 #ifndef PB_DS_HASH_POLICY_HPP
 #define PB_DS_HASH_POLICY_HPP
 
+#include <bits/c++config.h>
 #include <algorithm>
 #include <vector>
 #include <cmath>
@@ -66,7 +67,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC linear_probe_fn<Size_Type>
 
   // A probe sequence policy using fixed increments.
-  template<typename Size_Type = size_t>
+  template<typename Size_Type = std::size_t>
   class linear_probe_fn
   {
   public:
@@ -90,7 +91,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC quadratic_probe_fn<Size_Type>
 
   // A probe sequence policy using square increments.
-  template<typename Size_Type = size_t>
+  template<typename Size_Type = std::size_t>
   class quadratic_probe_fn
   {
   public:
@@ -114,7 +115,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC direct_mask_range_hashing<Size_Type>
 
   // A mask range-hashing class (uses a bit-mask).
-  template<typename Size_Type = size_t>
+  template<typename Size_Type = std::size_t>
   class direct_mask_range_hashing 
   : public detail::mask_based_range_hashing<Size_Type>
   {
@@ -146,7 +147,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC direct_mod_range_hashing<Size_Type>
 
   // A mod range-hashing class (uses the modulo function).
-  template<typename Size_Type = size_t>
+  template<typename Size_Type = std::size_t>
   class direct_mod_range_hashing 
   : public detail::mod_based_range_hashing<Size_Type>
   {
@@ -180,7 +181,7 @@ namespace __gnu_pbds
 
   // A resize trigger policy based on a load check. It keeps the
   // load factor between some load factors load_min and load_max.
-  template<bool External_Load_Access = false, typename Size_Type = size_t>
+  template<bool External_Load_Access = false, typename Size_Type = std::size_t>
   class hash_load_check_resize_trigger : private PB_DS_SIZE_BASE_C_DEC
   {
   public:
@@ -295,7 +296,7 @@ namespace __gnu_pbds
 
   // A resize trigger policy based on collision checks. It keeps the
   // simulated load factor lower than some given load factor.
-  template<bool External_Load_Access = false, typename Size_Type = size_t>
+  template<bool External_Load_Access = false, typename Size_Type = std::size_t>
   class cc_hash_max_collision_check_resize_trigger
   {
   public:
@@ -396,7 +397,7 @@ namespace __gnu_pbds
 
   // A size policy whose sequence of sizes form an exponential
   // sequence (typically powers of 2.
-  template<typename Size_Type = size_t>
+  template<typename Size_Type = std::size_t>
   class hash_exponential_size_policy
   {
   public:
@@ -438,7 +439,7 @@ namespace __gnu_pbds
   {
   public:
     // Size type.
-    typedef size_t size_type;
+    typedef std::size_t size_type;
 
     // Default constructor, or onstructor taking a start_size The
     // policy will use the sequence of sizes approximately
@@ -472,7 +473,7 @@ namespace __gnu_pbds
   template<typename Size_Policy = hash_exponential_size_policy<>,
 	   typename Trigger_Policy = hash_load_check_resize_trigger<>,
 	   bool External_Size_Access = false,
-	   typename Size_Type = size_t>
+	   typename Size_Type = std::size_t>
   class hash_standard_resize_policy 
   : public Size_Policy, public Trigger_Policy
   {
