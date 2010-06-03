@@ -1,6 +1,14 @@
 2010-06-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2010-05-10  Richard Guenther  <rguenther@suse.de>
+ 
+	* lto-symtab.c (lto_symtab_entry_marked_p): Make entry
+	marked if the entry identifier is marked.
+
+2010-06-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2010-05-16  Richard Guenther  <rguenther@suse.de>
  
 	* var-tracking.c (vars_copy_1): Inline ...
