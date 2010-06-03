@@ -1,3 +1,11 @@
+2010-06-03  Alan Modra  <amodra@gmail.com>
+
+	PR target/44169
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1b): Add label operand.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Pass label
+	rtx to gen_load_toc_v4_PIC_1b.  Tidy.
+	(rs6000_emit_load_toc_table): Likewise.
+
 2010-06-02  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_gimple_stmt): Fix typo.
