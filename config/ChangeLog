@@ -1,3 +1,10 @@
+2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/42798
+	* override.m4 (_AC_CHECK_DECL_BODY, _AC_CHECK_DECLS): Import
+	definitions from git Autoconf.
+
 2010-04-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* elf.m4: Add hppa[12]*-*-hpux* to list of non-elf platforms.
