@@ -1,3 +1,25 @@
+2010-06-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (ipa_reference_local_vars_info_d): Remove
+	calls_read_all and calls_write_all.
+	(get_reference_optimization_summary): Fix formatting.
+	(is_proper_for_analysis): Check that decl is not readonly.
+	(propagate_bits): Check CONST/PURE/noreturn flags.
+	(ipa_init): Move all_module_statics to optimization_summary_obstack.
+	(analyze_function): Ignore indirect edges.
+	(copy_global_bitmap): For all module statics, do nothing.
+	(generate_summary): Do not print calls_read_all/calls_write_all.
+	(read_write_all_from_decl): Take node as argument; check
+	cgraph_node_cannot_return.
+	(propagate): Reorganize read_all/write_all computation;
+	check indirect edges; check ecf flags; use all_module_statics
+	in the results; do not free all_module_statics.
+	(stream_out_bitmap): Handle all_module_statics.
+	(ipa_reference_write_optimization_summary): Likewise; use
+	varpool/cgraph encoders to get boundaries.
+	(ipa_reference_read_optimization_summary): Read in all_module_statics;
+	use it when possible.
+
 2010-06-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/44218
