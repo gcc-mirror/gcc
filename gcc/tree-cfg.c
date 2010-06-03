@@ -1475,6 +1475,23 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
       && name_mappings_registered_p ())
     return false;
 
+  /* When not optimizing, don't merge if we'd lose goto_locus.  */
+  if (!optimize
+      && single_succ_edge (a)->goto_locus != UNKNOWN_LOCATION)
+    {
+      location_t goto_locus = single_succ_edge (a)->goto_locus;
+      gimple_stmt_iterator prev, next;
+      prev = gsi_last_nondebug_bb (a);
+      next = gsi_after_labels (b);
+      if (!gsi_end_p (next) && is_gimple_debug (gsi_stmt (next)))
+	gsi_next_nondebug (&next);
+      if ((gsi_end_p (prev)
+	   || gimple_location (gsi_stmt (prev)) != goto_locus)
+	  && (gsi_end_p (next)
+	      || gimple_location (gsi_stmt (next)) != goto_locus))
+	return false;
+    }
+
   return true;
 }
 
