@@ -1,3 +1,10 @@
+2010-06-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44403
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Preserve pointer qualifiers.
+	(vect_create_data_ref_ptr): Likewise.
+
 2010-06-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/44294
