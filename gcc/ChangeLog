@@ -1,5 +1,10 @@
 2010-06-02  Jan Hubicka  <jh@suse.cz>
 
+	* passes.c (init_optimization_passes): Put ipa reference
+	after ipa pure-const.
+
+2010-06-02  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-reference.c (ipa_reference_local_vars_info_d): Remove
 	calls_read_all and calls_write_all.
 	(get_reference_optimization_summary): Fix formatting.
