@@ -1,3 +1,8 @@
+2010-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/43688
+	* gfortran.dg/pr43688.f90: New.
+
 2010-06-03  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41584
