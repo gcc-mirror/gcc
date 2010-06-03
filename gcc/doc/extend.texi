@@ -10994,6 +10994,10 @@ vector unsigned char vec_vrlb (vector unsigned char,
 
 vector float vec_round (vector float);
 
+vector float vec_recip (vector float, vector float);
+
+vector float vec_rsqrt (vector float);
+
 vector float vec_rsqrte (vector float);
 
 vector float vec_sel (vector float, vector float, vector bool int);
@@ -11922,8 +11926,10 @@ vector double vec_or (vector bool long, vector double);
 vector double vec_perm (vector double,
                         vector double,
                         vector unsigned char);
-vector float vec_rint (vector float);
 vector double vec_rint (vector double);
+vector double vec_recip (vector double, vector double);
+vector double vec_rsqrt (vector double);
+vector double vec_rsqrte (vector double);
 vector double vec_sel (vector double, vector double, vector bool long);
 vector double vec_sel (vector double, vector double, vector unsigned long);
 vector double vec_sub (vector double, vector double);
@@ -11964,9 +11970,19 @@ GCC provides a few other builtins on Powerpc to access certain instructions:
 float __builtin_recipdivf (float, float);
 float __builtin_rsqrtf (float);
 double __builtin_recipdiv (double, double);
+double __builtin_rsqrt (double);
 long __builtin_bpermd (long, long);
 int __builtin_bswap16 (int);
 @end smallexample
+
+The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
+@code{__builtin_rsqrtf} functions generate multiple instructions to
+implement the reciprocal sqrt functionality using reciprocal sqrt
+estimate instructions.
+
+The @code{__builtin_recipdiv}, and @code{__builtin_recipdivf}
+functions generate multiple instructions to implement division using
+the reciprocal estimate instructions.
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
