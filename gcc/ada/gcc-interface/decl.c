@@ -55,10 +55,6 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-#ifndef MAX_FIXED_MODE_SIZE
-#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (DImode)
-#endif
-
 /* Convention_Stdcall should be processed in a specific way on Windows targets
    only.  The macro below is a helper to avoid having to check for a Windows
    specific attribute throughout this unit.  */

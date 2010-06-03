@@ -1,3 +1,9 @@
+2010-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/44294
+	* class.c (layout_class_type): Check MAX_FIXED_MODE_SIZE on
+	bit-field.
+
 2010-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* parser.c (cp_parser_mem_initializer_list): Change error text.
