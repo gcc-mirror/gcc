@@ -3695,8 +3695,8 @@ dataflow_set_equiv_regs (dataflow_set *set)
       rtx canon[NUM_MACHINE_MODES];
 
       /* If the list is empty or one entry, no need to canonicalize
-	 anything.  */
-      if (set->regs[i] == NULL || set->regs[i]->next == NULL)
+	 anything.  */
+      if (set->regs[i] == NULL || set->regs[i]->next == NULL)
 	continue;
 
       memset (canon, 0, sizeof (canon));
