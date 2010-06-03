@@ -1,3 +1,7 @@
+2010-06-04  Fabien Chêne <fabien@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2010-05-25  Sterling Augustine <sterling@tensilica.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself for xtensa port.
