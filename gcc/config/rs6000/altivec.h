@@ -163,6 +163,8 @@
 #define vec_vpkshus __builtin_vec_vpkshus
 #define vec_re __builtin_vec_re
 #define vec_round __builtin_vec_round
+#define vec_recipdiv __builtin_vec_recipdiv
+#define vec_rsqrt __builtin_vec_rsqrt
 #define vec_rsqrte __builtin_vec_rsqrte
 #define vec_vsubfp __builtin_vec_vsubfp
 #define vec_subc __builtin_vec_subc

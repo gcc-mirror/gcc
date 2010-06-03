@@ -1,3 +1,139 @@
+2010-06-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/44218
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete obsolete
+	-mswdiv option.  Add -mrecip, -mrecip=<xxx>, -mrecip-precision
+	options.
+
+	* doc/extend.texi (powerpc builtins): Document vec_recip,
+	vec_rsqrt, vec_rsqrte altivec/vsx builtins.
+
+	* config/rs6000/rs60000-protos.h (rs6000_emit_swdiv): New
+	function.
+	(rs6000_emit_swrsqrt): Ditto.
+	(rs6000_emit_swdivsf): Delete.
+	(rs6000_emit_swdivdf): Ditto.
+	(rs6000_emit_swrsqrtsf): Ditto.
+
+	* config/rs6000/rs6000.c (rs6000_recip_bits): New global to
+	describe the reciprocal estimate support for each type.
+	(recip_options): Map -mrecip=<opt> into option bits.
+	(gen_2arg_fn_t): New typedef for binary rtx gen function.
+	(rs6000_debug_reg_global): If -mdebug=reg, print the state of the
+	reciprocal estimate instructions.
+	(rs6000_init_hard_regno_mode_ok): Key ws constraint off of the
+	debug -mvsx-scalar-memory switch instead of -mvsx-scalar-double.
+	Set up rs6000_recip_bits based on the -mrecip* options.  Print the
+	cost information if -mdebug=cost or -mdebug=reg.
+	(rs6000_override_options): Set -mrecip-precision for power6, and
+	power7 machines.  If -mvsx or -mdfp, enable various options that
+	came in previous instruction set ISAs, unless the option was
+	explicitly disabled by the command line option.  Parse
+	-mrecip=<opt> options.
+	(rs6000_builtin_vectorized_function): Add support for vectorizing
+	the reciprocal estimate builtins and expansions.
+	(rs6000_handle_option): Add -mrecip, -mrecip=<opt> support.
+	(bdesc_2arg): Add reciprocal estimate builtins.
+	(bdesc_1arg): Add reciprocal square root estimate builtins.
+	(rs6000_expand_builtin): Rewrite to use a switch statement,
+	instead of multiple if/then/elses.  Add reciprocal estimate
+	builtins.
+	(rs6000_init_builtins): Create declarations for reciprocal
+	estimate builtins.
+	(rs6000_preferred_reload_class): Simplify VSX preferences, if scalar
+	sized, prefer traditional floating point registers, if integer
+	vector types, prefer altivec registers.  Don't actually look at
+	the memory address any more.
+	(rs6000_builtin_reciprocal): Add new builtin reciprocal estimate
+	builtins.
+	(rs6000_load_constant_and_splat): New helper function to load up
+	the constant for reciprocal estimate instructions.
+	(rs6000_emit_madd): New helper function for generating
+	multiply/add type instructions, based on the current switches.
+	(rs6000_emit_msub): Ditto.
+	(rs6000_emit_mnsub): Ditto.
+	(rs6000_emit_swdiv_high_precision): Replace rs6000_emit_swdivsf to
+	replace a divide with a reciprocal estimate and fixup, adding
+	support for machines with high precision and vectors.
+	(rs6000_emit_swdiv_low_precision): Rewrite rs6000_emit_swdivdf for
+	low precision machines.
+	(rs6000_emit_swdiv): New common function to be called to replace a
+	division with reciprocal estimate and fixup.
+	(rs6000_emit_swrsqrt): Replace rs6000_emit_swrsqrtsf.  Add support
+	for double and vector types.  Add support for high precision
+	machines.
+
+	* config/rs6000/rs6000.h (TARGET_FRES): New macro to say whether
+	the reciprocal estimate instructions can be generated.
+	(TARGET_FRE): Ditto.
+	(TARGET_FRSQRTES): Ditto.
+	(TARGET_FRSQRTE): Ditto.
+	(RS6000_RECIP_*): New macros for reciprocal estimate support.
+
+	* config/rs6000/vector.md (rsqrte<mode>2): New insn for reciprocal
+	square root estimate on vectors.
+	(re<mode>2): New insn for reciprocal division estimate on vectors.
+
+	* config/rs6000/rs6000-buitlins.def (ALTIVEC_BUILTIN_VRSQRTFP):
+	New builtin.
+	(ALTIVEC_BUILTIN_VRECIPFP): Ditto.
+	(ALTIVEC_BUITLIN_VEC_RE): Ditto.
+	(ALTIVEC_BUILTIN_VEC_RSQRT): Ditto.
+	(VSX_BUILTIN_RSQRT_V4SF): Ditto.
+	(VSX_BUITLIN_RSQRT_V2DF): Ditto.
+	(RS6000_BUILTIN_RSQRT): Ditto.
+	(ALTIVEC_BUILTIN_VEC_RSQRTE): Denote that the builtin is a
+	floating point builtin.
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	macros __RECIP__, __RECIPF__, __RSQRTE__, __RSQRTEF__,
+	__RECIP_PRECISION__ based on the command line switches.
+	(altivec_overloaded_builtins): Add reciprocal estimate builtins.
+
+	* config/rs6000/rs6000.opt (-mrecip): Document add support for
+	replacing division instructions with reciprocal estimate and
+	fixup.
+	(-mrecip=<opt>): New option.
+	(-mrecip-precision): Ditto.
+
+	* config/rs6000/vsx.md (UNSPEC_VSX_RSQRTE): Delete.
+	(vsx_rsqrte<mode>2): Use UNSPEC_RSQRT not UNSPEC_VSX_RSQRTE.
+	(vsx_copysignsf3): If -mvsx, use double precision cpsign on single
+	precision scalar.
+
+	* config/rs6000/altivec.md (UNSPEC_RSQRTEFP): Delete.
+	(UNSPEC_VREFP): Ditto.
+	(altivec_vnmsubfp*): Make altivec nmsub mirror the scalar and VSX
+	conterparts with regard to support of -mno-fused-madd and
+	-ffast-math.
+	(altivec_vrsqrtefp): Use common UNSPEC to allow scalar/vector
+	reciprocal estimate instructions to be generated.
+	(altivec_vrefp): Ditto.
+
+	* config/rs6000/rs6000.md (RECIPF): New iterator for reciprocal
+	estimate support.
+	(rreg): New mode attribute for reciprocal estimate support.
+	(recip<mode>3): New insn for division using reciprocal estimate
+	and fixup builtins.
+	(divide define_split): New define_split to convert floating point
+	division to use reciprocal estimate if the user used the
+	appropriate options and the split is run when we can add new
+	pseudo registers for the fixup.
+	(rsqrt<mode>2): New insn for reciprocal square root support.
+	(recipsf3): Move into recip<mode>3.
+	(recipdf3): Ditto.
+	(fres): Use TARGET_FRES.
+	(rsqrtsf2): Move into rsqrt<mode>2.
+	(rsqrtsf_internal1): Use TARGET_FRSQRTSES.
+	(copysignsf3): Add support for VSX.
+	(fred): Use TARGET_FRE.
+	(fred_fpr): Ditto.
+	(rsqrtdf_internal1): New function for frsqrte instruciton.
+
+	* config/rs6000/altivec.h (vec_recipdiv): Define new vector
+	builtin.
+	(vec_rsqrt): Ditto.
+
 2010-06-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44291

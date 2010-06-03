@@ -1,3 +1,16 @@
+2010-06-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/44218
+	* gcc.target/powerpc/recip-1.c: New test for -mrecip support.
+	* gcc.target/powerpc/recip-2.c: Ditto.
+	* gcc.target/powerpc/recip-3.c: Ditto.
+	* gcc.target/powerpc/recip-4.c: Ditto.
+	* gcc.target/powerpc/recip-5.c: Ditto.
+	* gcc.target/powerpc/recip-6.c: Ditto.
+	* gcc.target/powerpc/recip-7.c: Ditto.
+	* gcc.target/powerpc/recip-test.h: Ditto.
+	* gcc.target/powerpc/recip-test2.h: Ditto.
+
 2010-06-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/torture/pr44295.C (size_t): Use __SIZE_TYPE__.

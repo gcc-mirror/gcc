@@ -267,6 +267,20 @@
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "")
 
+(define_expand "rsqrte<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+        (unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "")]
+		      UNSPEC_RSQRT))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "re<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "f")]
+		      UNSPEC_FRES))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
 (define_expand "ftrunc<mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
   	(fix:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]

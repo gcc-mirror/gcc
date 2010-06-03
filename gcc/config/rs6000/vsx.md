@@ -195,7 +195,7 @@
    (UNSPEC_VSX_MSUB		511)
    (UNSPEC_VSX_NMADD		512)
    (UNSPEC_VSX_NMSUB		513)
-   (UNSPEC_VSX_RSQRTE		514)
+   ;; 514 deleted
    (UNSPEC_VSX_TDIV		515)
    (UNSPEC_VSX_TSQRT		516)
    (UNSPEC_VSX_XXPERMDI		517)
@@ -446,10 +446,10 @@
   [(set_attr "type" "<VStype_sqrt>")
    (set_attr "fp_type" "<VSfptype_sqrt>")])
 
-(define_insn "vsx_rsqrte<mode>2"
+(define_insn "*vsx_rsqrte<mode>2"
   [(set (match_operand:VSX_B 0 "vsx_register_operand" "=<VSr>,?wa")
 	(unspec:VSX_B [(match_operand:VSX_B 1 "vsx_register_operand" "<VSr>,wa")]
-		      UNSPEC_VSX_RSQRTE))]
+		      UNSPEC_RSQRT))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "x<VSv>rsqrte<VSs> %x0,%x1"
   [(set_attr "type" "<VStype_simple>")
@@ -861,6 +861,20 @@
   "x<VSv>cpsgn<VSs> %x0,%x2,%x1"
   [(set_attr "type" "<VStype_simple>")
    (set_attr "fp_type" "<VSfptype_simple>")])
+
+;; Special version of copysign for single precision that knows internally
+;; scalar single values are kept as double
+(define_insn "vsx_copysignsf3"
+  [(set (match_operand:SF 0 "vsx_register_operand" "=f")
+	(if_then_else:SF
+	 (ge:SF (match_operand:SF 2 "vsx_register_operand" "f")
+		(match_operand:SF 3 "zero_constant" "j"))
+	 (abs:SF (match_operand:SF 1 "vsx_register_operand" "f"))
+	 (neg:SF (abs:SF (match_dup 1)))))]
+  "VECTOR_UNIT_VSX_P (DFmode)"
+  "xscpsgndp %x0,%x2,%x1"
+  [(set_attr "type" "fp")
+   (set_attr "fp_type" "fp_addsub_d")])
 
 ;; For the conversions, limit the register class for the integer value to be
 ;; the fprs because we don't want to add the altivec registers to movdi/movsi.
