@@ -4743,7 +4743,7 @@ extern tree check_elaborated_type_specifier	(enum tag_types, tree, bool);
 extern void warn_extern_redeclared_static	(tree, tree);
 extern tree cxx_comdat_group			(tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
-extern void initialize_artificial_var		(tree, tree);
+extern void initialize_artificial_var		(tree, VEC(constructor_elt,gc) *);
 extern tree check_var_type			(tree, tree);
 extern tree reshape_init (tree, tree);
 extern tree next_initializable_field (tree);
