@@ -1,3 +1,14 @@
+2010-06-03  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (FL_TUNE): Define.
+	(arm_default_cpu, arm_cpu_select): Remove.
+	(all_cores): Populate core field.
+	(arm_selected_arch, arm_selected_cpu, arm_selected_tune): New.
+	(arm_find_cpu): New function.
+	(arm_handle_option): Lookup cpu/architecture names.
+	(arm_override_options): Cleanup mcpu/march/mtune handling.
+	(arm_file_start): Ditto.
+
 2010-06-03  Alan Modra  <amodra@gmail.com>
 
 	PR target/44169
