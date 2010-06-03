@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,7 +40,6 @@
 #pragma GCC system_header
 
 #include <clocale>
-#include <cstddef>
 
 #define _GLIBCXX_C_LOCALE_GNU 1
 
@@ -71,8 +70,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __gnu_cxx::__uselocale(__cloc);
 #else
-    char* __old = std::setlocale(LC_NUMERIC, NULL);
-    char* __sav = NULL;
+    char* __old = std::setlocale(LC_NUMERIC, 0);
+    char* __sav = 0;
     if (__builtin_strcmp(__old, "C"))
       {
 	const size_t __len = __builtin_strlen(__old) + 1;

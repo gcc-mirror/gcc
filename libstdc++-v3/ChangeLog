@@ -1,5 +1,31 @@
 2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/util/testsuite_iterators.h: Don't include <cstddef>,
+	don't use NULL, use std::size_t and std::ptrdiff_t.
+	* testsuite/18_support/exception/38732.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* config/locale/gnu/codecvt_members.cc: Likewise.
+	* config/locale/gnu/messages_members.cc: Likewise.
+	* config/locale/gnu/c_locale.h: Likewise.
+	* config/locale/gnu/messages_members.h: Likewise.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.
+	* config/locale/gnu/time_members.h: Likewise.
+	* config/locale/generic/c_locale.cc: Likewise.
+	* config/locale/generic/codecvt_members.cc: Likewise.
+	* config/locale/generic/c_locale.h: Likewise.
+	* config/locale/generic/time_members.cc: Likewise.
+	* config/locale/generic/time_members.h: Likewise.
+
+2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/c++config (std::size_t, std::ptrdiff_t,
         std::nullptr_t): Provide typedefs.
 	* include/c_std/cstddef: Don't provide std::size_t and

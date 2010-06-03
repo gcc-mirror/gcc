@@ -3,7 +3,7 @@
 // { dg-options "-pthreads" { target *-*-solaris* } }
 // { dg-require-namedlocale "" }
 
-// Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation
+// Copyright (C) 2004, 2005, 2007, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,10 +55,10 @@ main()
     loc[j] = std::locale(j % 2 ? "en_US" : "fr_FR");  
 
   for (int i = 0; i < max_thread_count; i++)
-    pthread_create(&tid[i], NULL, thread_main, 0);
+    pthread_create(&tid[i], 0, thread_main, 0);
   
   for (int i = 0; i < max_thread_count; i++)
-    pthread_join(tid[i], NULL);
+    pthread_join(tid[i], 0);
 
   return 0;
 }

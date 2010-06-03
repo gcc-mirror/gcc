@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2009 Free Software Foundation
+// Copyright (C) 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ void test03()
   bool test __attribute__((unused)) = true;
   
   wostringstream stream;
-  time_t tt = time(NULL);
+  time_t tt = time(0);
   
   const wchar_t* fmt = L"%c";
   
