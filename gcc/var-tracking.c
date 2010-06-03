@@ -421,7 +421,6 @@ static void attrs_list_union (attrs *, attrs);
 
 static void **unshare_variable (dataflow_set *set, void **slot, variable var,
 				enum var_init_status);
-static int vars_copy_1 (void **, void *);
 static void vars_copy (htab_t, htab_t);
 static tree var_debug_decl (tree);
 static void var_reg_set (dataflow_set *, rtx, enum var_init_status, rtx);
@@ -438,7 +437,6 @@ static void dataflow_set_init (dataflow_set *);
 static void dataflow_set_clear (dataflow_set *);
 static void dataflow_set_copy (dataflow_set *, dataflow_set *);
 static int variable_union_info_cmp_pos (const void *, const void *);
-static int variable_union (void **, void *);
 static void dataflow_set_union (dataflow_set *, dataflow_set *);
 static location_chain find_loc_in_1pdv (rtx, variable, htab_t);
 static bool canon_value_cmp (rtx, rtx);
@@ -446,7 +444,6 @@ static int loc_cmp (rtx, rtx);
 static bool variable_part_different_p (variable_part *, variable_part *);
 static bool onepart_variable_different_p (variable, variable);
 static bool variable_different_p (variable, variable);
-static int dataflow_set_different_1 (void **, void *);
 static bool dataflow_set_different (dataflow_set *, dataflow_set *);
 static void dataflow_set_destroy (dataflow_set *);
 
@@ -1537,34 +1534,23 @@ unshare_variable (dataflow_set *set, void **slot, variable var,
   return slot;
 }
 
-/* Add a variable from *SLOT to hash table DATA and increase its reference
-   count.  */
-
-static int
-vars_copy_1 (void **slot, void *data)
-{
-  htab_t dst = (htab_t) data;
-  variable src;
-  void **dstp;
-
-  src = (variable) *slot;
-  src->refcount++;
-
-  dstp = htab_find_slot_with_hash (dst, src->dv,
-				   dv_htab_hash (src->dv),
-				   INSERT);
-  *dstp = src;
-
-  /* Continue traversing the hash table.  */
-  return 1;
-}
-
 /* Copy all variables from hash table SRC to hash table DST.  */
 
 static void
 vars_copy (htab_t dst, htab_t src)
 {
-  htab_traverse_noresize (src, vars_copy_1, dst);
+  htab_iterator hi;
+  variable var;
+
+  FOR_EACH_HTAB_ELEMENT (src, var, variable, hi)
+    {
+      void **dstp;
+      var->refcount++;
+      dstp = htab_find_slot_with_hash (dst, var->dv,
+				       dv_htab_hash (var->dv),
+				       INSERT);
+      *dstp = var;
+    }
 }
 
 /* Map a decl to its main debug decl.  */
@@ -2066,14 +2052,12 @@ variable_union_info_cmp_pos (const void *n1, const void *n2)
    we keep the newest locations in the beginning.  */
 
 static int
-variable_union (void **slot, void *data)
+variable_union (variable src, dataflow_set *set)
 {
-  variable src, dst;
+  variable dst;
   void **dstp;
-  dataflow_set *set = (dataflow_set *) data;
   int i, j, k;
 
-  src = (variable) *slot;
   dstp = shared_hash_find_slot (set->vars, src->dv);
   if (!dstp || !*dstp)
     {
@@ -2099,8 +2083,8 @@ variable_union (void **slot, void *data)
     {
       location_chain *nodep, dnode, snode;
 
-      gcc_assert (src->n_var_parts == 1);
-      gcc_assert (dst->n_var_parts == 1);
+      gcc_assert (src->n_var_parts == 1
+		  && dst->n_var_parts == 1);
 
       snode = src->var_part[0].loc_chain;
       gcc_assert (snode);
@@ -2449,7 +2433,13 @@ dataflow_set_union (dataflow_set *dst, dataflow_set *src)
       dst->vars = shared_hash_copy (src->vars);
     }
   else
-    htab_traverse (shared_hash_htab (src->vars), variable_union, dst);
+    {
+      htab_iterator hi;
+      variable var;
+
+      FOR_EACH_HTAB_ELEMENT (shared_hash_htab (src->vars), var, variable, hi)
+	variable_union (var, dst);
+    }
 }
 
 /* Whether the value is currently being expanded.  */
@@ -3320,12 +3310,10 @@ canonicalize_vars_star (void **slot, void *data)
    intersection.  */
 
 static int
-variable_merge_over_cur (void **s1slot, void *data)
+variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
 {
-  struct dfset_merge *dsm = (struct dfset_merge *)data;
   dataflow_set *dst = dsm->dst;
   void **dstslot;
-  variable s1var = (variable) *s1slot;
   variable s2var, dvar = NULL;
   decl_or_value dv = s1var->dv;
   bool onepart = dv_onepart_p (dv);
@@ -3336,14 +3324,14 @@ variable_merge_over_cur (void **s1slot, void *data)
   /* If the incoming onepart variable has an empty location list, then
      the intersection will be just as empty.  For other variables,
      it's always union.  */
-  gcc_assert (s1var->n_var_parts);
-  gcc_assert (s1var->var_part[0].loc_chain);
+  gcc_assert (s1var->n_var_parts
+	      && s1var->var_part[0].loc_chain);
 
   if (!onepart)
-    return variable_union (s1slot, dst);
+    return variable_union (s1var, dst);
 
-  gcc_assert (s1var->n_var_parts == 1);
-  gcc_assert (s1var->var_part[0].offset == 0);
+  gcc_assert (s1var->n_var_parts == 1
+	      && s1var->var_part[0].offset == 0);
 
   dvhash = dv_htab_hash (dv);
   if (dv_is_value_p (dv))
@@ -3359,17 +3347,17 @@ variable_merge_over_cur (void **s1slot, void *data)
     }
 
   dsm->src_onepart_cnt--;
-  gcc_assert (s2var->var_part[0].loc_chain);
-  gcc_assert (s2var->n_var_parts == 1);
-  gcc_assert (s2var->var_part[0].offset == 0);
+  gcc_assert (s2var->var_part[0].loc_chain
+	      && s2var->n_var_parts == 1
+	      && s2var->var_part[0].offset == 0);
 
   dstslot = shared_hash_find_slot_noinsert_1 (dst->vars, dv, dvhash);
   if (dstslot)
     {
       dvar = (variable)*dstslot;
-      gcc_assert (dvar->refcount == 1);
-      gcc_assert (dvar->n_var_parts == 1);
-      gcc_assert (dvar->var_part[0].offset == 0);
+      gcc_assert (dvar->refcount == 1
+		  && dvar->n_var_parts == 1
+		  && dvar->var_part[0].offset == 0);
       nodep = &dvar->var_part[0].loc_chain;
     }
   else
@@ -3583,11 +3571,9 @@ variable_merge_over_cur (void **s1slot, void *data)
    variable_merge_over_cur().  */
 
 static int
-variable_merge_over_src (void **s2slot, void *data)
+variable_merge_over_src (variable s2var, struct dfset_merge *dsm)
 {
-  struct dfset_merge *dsm = (struct dfset_merge *)data;
   dataflow_set *dst = dsm->dst;
-  variable s2var = (variable) *s2slot;
   decl_or_value dv = s2var->dv;
   bool onepart = dv_onepart_p (dv);
 
@@ -3614,6 +3600,8 @@ dataflow_set_merge (dataflow_set *dst, dataflow_set *src2)
   struct dfset_merge dsm;
   int i;
   size_t src1_elems, src2_elems;
+  htab_iterator hi;
+  variable var;
 
   src1_elems = htab_elements (shared_hash_htab (src1->vars));
   src2_elems = htab_elements (shared_hash_htab (src2->vars));
@@ -3634,10 +3622,10 @@ dataflow_set_merge (dataflow_set *dst, dataflow_set *src2)
   dsm.cur = src1;
   dsm.src_onepart_cnt = 0;
 
-  htab_traverse (shared_hash_htab (dsm.src->vars), variable_merge_over_src,
-		 &dsm);
-  htab_traverse (shared_hash_htab (dsm.cur->vars), variable_merge_over_cur,
-		 &dsm);
+  FOR_EACH_HTAB_ELEMENT (shared_hash_htab (dsm.src->vars), var, variable, hi)
+    variable_merge_over_src (var, &dsm);
+  FOR_EACH_HTAB_ELEMENT (shared_hash_htab (dsm.cur->vars), var, variable, hi)
+    variable_merge_over_cur (var, &dsm);
 
   if (dsm.src_onepart_cnt)
     dst_can_be_shared = false;
@@ -3855,8 +3843,8 @@ variable_post_merge_new_vals (void **slot, void *info)
 		       att; att = att->next)
 		    if (GET_MODE (att->loc) == GET_MODE (node->loc))
 		      {
-			gcc_assert (att->offset == 0);
-			gcc_assert (dv_is_value_p (att->dv));
+			gcc_assert (att->offset == 0
+				    && dv_is_value_p (att->dv));
 			val_reset (set, att->dv);
 			break;
 		      }
@@ -3922,12 +3910,12 @@ variable_post_merge_perm_vals (void **pslot, void *info)
   decl_or_value dv;
   attrs att;
 
-  gcc_assert (dv_is_value_p (pvar->dv));
-  gcc_assert (pvar->n_var_parts == 1);
+  gcc_assert (dv_is_value_p (pvar->dv)
+	      && pvar->n_var_parts == 1);
   pnode = pvar->var_part[0].loc_chain;
-  gcc_assert (pnode);
-  gcc_assert (!pnode->next);
-  gcc_assert (REG_P (pnode->loc));
+  gcc_assert (pnode
+	      && !pnode->next
+	      && REG_P (pnode->loc));
 
   dv = pvar->dv;
 
@@ -3958,7 +3946,7 @@ variable_post_merge_perm_vals (void **pslot, void *info)
     {
       attrs_list_insert (&set->regs[REGNO (pnode->loc)],
 			 dv, 0, pnode->loc);
-      variable_union (pslot, set);
+      variable_union (pvar, set);
     }
 
   return 1;
@@ -3999,9 +3987,8 @@ find_mem_expr_in_1pdv (tree expr, rtx val, htab_t vars)
   if (!val)
     return NULL;
 
-  gcc_assert (GET_CODE (val) == VALUE);
-
-  gcc_assert (!VALUE_RECURSED_INTO (val));
+  gcc_assert (GET_CODE (val) == VALUE
+	      && !VALUE_RECURSED_INTO (val));
 
   dv = dv_from_value (val);
   var = (variable) htab_find_with_hash (vars, dv, dv_htab_hash (dv));
@@ -4267,10 +4254,6 @@ dataflow_set_clear_at_call (dataflow_set *set)
     }
 }
 
-/* Flag whether two dataflow sets being compared contain different data.  */
-static bool
-dataflow_set_different_value;
-
 static bool
 variable_part_different_p (variable_part *vp1, variable_part *vp2)
 {
@@ -4305,14 +4288,13 @@ onepart_variable_different_p (variable var1, variable var2)
   if (var1 == var2)
     return false;
 
-  gcc_assert (var1->n_var_parts == 1);
-  gcc_assert (var2->n_var_parts == 1);
+  gcc_assert (var1->n_var_parts == 1
+	      && var2->n_var_parts == 1);
 
   lc1 = var1->var_part[0].loc_chain;
   lc2 = var2->var_part[0].loc_chain;
 
-  gcc_assert (lc1);
-  gcc_assert (lc2);
+  gcc_assert (lc1 && lc2);
 
   while (lc1 && lc2)
     {
@@ -4345,8 +4327,8 @@ variable_different_p (variable var1, variable var2)
       /* One-part values have locations in a canonical order.  */
       if (i == 0 && var1->var_part[i].offset == 0 && dv_onepart_p (var1->dv))
 	{
-	  gcc_assert (var1->n_var_parts == 1);
-	  gcc_assert (dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv));
+	  gcc_assert (var1->n_var_parts == 1
+		      && dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv));
 	  return onepart_variable_different_p (var1, var2);
 	}
       if (variable_part_different_p (&var1->var_part[i], &var2->var_part[i]))
@@ -4357,56 +4339,14 @@ variable_different_p (variable var1, variable var2)
   return false;
 }
 
-/* Compare variable *SLOT with the same variable in hash table DATA
-   and set DATAFLOW_SET_DIFFERENT_VALUE if they are different.  */
-
-static int
-dataflow_set_different_1 (void **slot, void *data)
-{
-  htab_t htab = (htab_t) data;
-  variable var1, var2;
-
-  var1 = (variable) *slot;
-  var2 = (variable) htab_find_with_hash (htab, var1->dv,
-					 dv_htab_hash (var1->dv));
-  if (!var2)
-    {
-      dataflow_set_different_value = true;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "dataflow difference found: removal of:\n");
-	  dump_var (var1);
-	}
-
-      /* Stop traversing the hash table.  */
-      return 0;
-    }
-
-  if (variable_different_p (var1, var2))
-    {
-      dataflow_set_different_value = true;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "dataflow difference found: old and new follow:\n");
-	  dump_var (var1);
-	  dump_var (var2);
-	}
-
-      /* Stop traversing the hash table.  */
-      return 0;
-    }
-
-  /* Continue traversing the hash table.  */
-  return 1;
-}
-
 /* Return true if dataflow sets OLD_SET and NEW_SET differ.  */
 
 static bool
 dataflow_set_different (dataflow_set *old_set, dataflow_set *new_set)
 {
+  htab_iterator hi;
+  variable var1;
+
   if (old_set->vars == new_set->vars)
     return false;
 
@@ -4414,14 +4354,38 @@ dataflow_set_different (dataflow_set *old_set, dataflow_set *new_set)
       != htab_elements (shared_hash_htab (new_set->vars)))
     return true;
 
-  dataflow_set_different_value = false;
+  FOR_EACH_HTAB_ELEMENT (shared_hash_htab (old_set->vars), var1, variable, hi)
+    {
+      htab_t htab = shared_hash_htab (new_set->vars);
+      variable var2 = (variable) htab_find_with_hash (htab, var1->dv,
+						      dv_htab_hash (var1->dv));
+      if (!var2)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "dataflow difference found: removal of:\n");
+	      dump_var (var1);
+	    }
+	  return true;
+	}
 
-  htab_traverse (shared_hash_htab (old_set->vars), dataflow_set_different_1,
-		 shared_hash_htab (new_set->vars));
+      if (variable_different_p (var1, var2))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "dataflow difference found: "
+		       "old and new follow:\n");
+	      dump_var (var1);
+	      dump_var (var2);
+	    }
+	  return true;
+	}
+    }
+
   /* No need to traverse the second hashtab, if both have the same number
      of elements and the second one had all entries found in the first one,
      then it can't have any extra entries.  */
-  return dataflow_set_different_value;
+  return false;
 }
 
 /* Free the contents of dataflow set SET.  */
@@ -7452,8 +7416,8 @@ emit_notes_for_differences_1 (void **slot, void *data)
 	{
 	  location_chain lc1, lc2;
 
-	  gcc_assert (old_var->n_var_parts == 1);
-	  gcc_assert (new_var->n_var_parts == 1);
+	  gcc_assert (old_var->n_var_parts == 1
+		      && new_var->n_var_parts == 1);
 	  lc1 = old_var->var_part[0].loc_chain;
 	  lc2 = new_var->var_part[0].loc_chain;
 	  while (lc1

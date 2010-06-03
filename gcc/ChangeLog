@@ -1,3 +1,24 @@
+2010-06-03  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-05-16  Richard Guenther  <rguenther@suse.de>
+ 
+	* var-tracking.c (vars_copy_1): Inline ...
+	(vars_copy): ... here.  Use FOR_EACH_HTAB_ELEMENT.
+	(variable_union): Use FOR_EACH_HTAB_ELEMENT.  Merge asserts.
+	(variable_merge_over_cur): Adjust.  Merge asserts.
+	(variable_merge_over_src): Likewise.
+	(dataflow_set_merge): Use FOR_EACH_HTAB_ELEMENT.
+	(variable_post_merge_new_vals): Merge asserts.
+	(variable_post_merge_perm_vals): Likewise.
+	(find_mem_expr_in_1pdv): Likewise.
+	(dataflow_set_different_value): Remove.
+	(onepart_variable_different_p): Merge asserts.
+	(variable_different_p): Likewise.
+	(dataflow_set_different_1): Inline ...
+	(dataflow_set_different): ... here.  Use FOR_EACH_HTAB_ELEMENT.
+	(emit_notes_for_differences_1): Merge asserts.
+
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
