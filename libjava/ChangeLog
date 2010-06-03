@@ -1,3 +1,7 @@
+2010-06-03  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
 2010-05-29  Mike Stump  <mikestump@comcast.net>
 
 	* configure.ac: Add multilib support for gmp.  Proper -I and -L
