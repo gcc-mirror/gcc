@@ -1,3 +1,10 @@
+2010-06-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/44294
+	* defaults.h (MAX_FIXED_MODE_SIZE): New.
+
+	* stor-layout.c (MAX_FIXED_MODE_SIZE): Removed.
+
 2010-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44375

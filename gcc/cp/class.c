@@ -4976,8 +4976,10 @@ layout_class_type (tree t, tree *virtuals_p)
 	     bits as additional padding.  */
 	  for (itk = itk_char; itk != itk_none; ++itk)
 	    if (integer_types[itk] != NULL_TREE
-		&& INT_CST_LT (DECL_SIZE (field),
-			       TYPE_SIZE (integer_types[itk])))
+		&& (INT_CST_LT (size_int (MAX_FIXED_MODE_SIZE),
+				TYPE_SIZE (integer_types[itk]))
+		    || INT_CST_LT (DECL_SIZE (field),
+				   TYPE_SIZE (integer_types[itk]))))
 	      break;
 
 	  /* ITK now indicates a type that is too large for the

@@ -1165,6 +1165,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CONSTANT_ADDRESS_P(X)   (CONSTANT_P (X) && GET_CODE (X) != CONST_DOUBLE)
 #endif
 
+#ifndef MAX_FIXED_MODE_SIZE
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (DImode)
+#endif
+
 
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
