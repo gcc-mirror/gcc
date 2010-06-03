@@ -2,8 +2,8 @@
 
 #include <new>
     
-void * operator new[](size_t, std::nothrow_t const &) throw()
-{ return NULL; }
+void * operator new[](std::size_t, std::nothrow_t const &) throw()
+{ return 0; }
 
 struct X {
     struct Inner { ~Inner() {} };

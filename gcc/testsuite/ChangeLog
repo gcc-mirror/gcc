@@ -1,3 +1,14 @@
+2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44410
+	* g++.old-deja/g++.jason/new.C: Qualify size_t with std::.
+	* g++.old-deja/g++.other/delete3.C: Likewise.
+	* g++.old-deja/g++.other/new.C: Likewise.
+	* g++.old-deja/g++.law/operators27.C: Likewise.
+	* g++.old-deja/g++.mike/p755.C: Likewise.
+	* g++.dg/eh/new1.C: Likewise.
+	* g++.dg/init/new5.C: Likewise.
+
 2010-06-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unpack_bounds_1.f90:  Remove execute property.
