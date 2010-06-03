@@ -1,3 +1,10 @@
+2010-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44375
+	* tree-cfg.c (gimple_can_merge_blocks_p): For -O0
+	return false if merging the bbs would lead to goto_locus
+	location being lost from the IL.
+
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
