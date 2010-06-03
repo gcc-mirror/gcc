@@ -809,8 +809,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_inline);
-  NEXT_PASS (pass_ipa_reference);
   NEXT_PASS (pass_ipa_pure_const);
+  NEXT_PASS (pass_ipa_reference);
   NEXT_PASS (pass_ipa_type_escape);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_ipa_struct_reorg);
