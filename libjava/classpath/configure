@@ -2312,8 +2312,10 @@ $as_echo "$ac_res" >&6; }
 ac_fn_c_check_decl ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $2 is declared" >&5
-$as_echo_n "checking whether $2 is declared... " >&6; }
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
@@ -2323,8 +2325,12 @@ $4
 int
 main ()
 {
-#ifndef $2
-  (void) $2;
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
 #endif
 
   ;
@@ -11812,7 +11818,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11815 "configure"
+#line 11821 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11918,7 +11924,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11921 "configure"
+#line 11927 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21937,10 +21943,10 @@ fi
     gmplibs=-lgmp
     gmpinc=
     gmplibs="-L$with_gmp/lib $gmplibs"
+    gmpinc="-I$with_gmp/include $gmpinc"
     if test "x$with_gmp_include" != x; then
       gmpinc="-I$with_gmp_include $gmpinc"
     fi
-    gmpinc="-I$with_gmp/include $gmpinc"
     if test "x$with_gmp_lib" != x; then
       gmplibs="-L$with_gmp_lib $gmplibs"
     fi
@@ -23728,7 +23734,7 @@ EOF
 if uudecode$EXEEXT Test.uue; then
         ac_cv_prog_uudecode_base64=yes
 else
-        echo "configure: 23731: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
+        echo "configure: 23737: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
         echo "configure: failed file was:" >&5
         cat Test.uue >&5
         ac_cv_prog_uudecode_base64=no
@@ -23873,7 +23879,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 23876 "configure" */
+/* #line 23882 "configure" */
 package java.lang;
 
 public class Object
@@ -23920,7 +23926,7 @@ JAVA_TEST=Test.java
 CLASS_TEST=Test.class
 TEST=Test
 cat << \EOF > $JAVA_TEST
-/* [#]line 23923 "configure" */
+/* [#]line 23929 "configure" */
 public class Test {
 public static void main (String args[]) {
         System.exit (0);
@@ -24246,7 +24252,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 24249 "configure" */
+/* #line 24255 "configure" */
 package java.lang;
 
 public class Object
@@ -24285,7 +24291,7 @@ fi
   JAVA_TEST=Test.java
   CLASS_TEST=Test.class
   cat << \EOF > $JAVA_TEST
-  /* #line 24288 "configure" */
+  /* #line 24294 "configure" */
   public class Test
   {
     public static void main(String args)

@@ -81,8 +81,8 @@ define(libcpp_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(libcpp_UNLOCKED_FUNCS)
-AC_CHECK_DECLS(m4_split(m4_normalize(abort asprintf basename errno getopt \
-  libcpp_UNLOCKED_FUNCS vasprintf)))
+AC_CHECK_DECLS([abort, asprintf, basename(char *), errno, getopt, vasprintf])
+AC_CHECK_DECLS(m4_split(m4_normalize(libcpp_UNLOCKED_FUNCS)))
 
 # Checks for library functions.
 AC_FUNC_ALLOCA

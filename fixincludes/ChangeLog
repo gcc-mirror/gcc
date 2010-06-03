@@ -1,3 +1,10 @@
+2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/42798
+	* configure.ac: Check for declaration of 'basename(char *)'.
+	* configure: Regenerate.
+
 2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (alpha_wchar): Remove.
