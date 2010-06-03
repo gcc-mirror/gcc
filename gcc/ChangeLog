@@ -1,3 +1,9 @@
+2010-06-03  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if                                                                        
+	set->regs[i] is NULL or has just one entry.
+
 2010-06-03  Alan Modra  <amodra@gmail.com>
 
 	PR target/44169
