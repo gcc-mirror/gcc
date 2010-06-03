@@ -234,14 +234,6 @@ lto_varpool_encoder_deref (lto_varpool_encoder_t encoder, int ref)
 }
 
 
-/* Return number of encoded nodes in ENCODER.  */
-
-static int
-lto_varpool_encoder_size (lto_varpool_encoder_t encoder)
-{
-  return VEC_length (varpool_node_ptr, encoder->nodes);
-}
-
 /* Return TRUE if we should encode initializer of NODE (if any).  */
 
 bool

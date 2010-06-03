@@ -1,3 +1,8 @@
+2010-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (lto_varpool_encoder_size): Remove.
+	* lto-streamer.h (lto_varpool_encoder_size): New inline function.
+
 2010-06-03  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (FL_TUNE): Define.
