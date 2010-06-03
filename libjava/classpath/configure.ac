@@ -273,7 +273,7 @@ AC_ARG_ENABLE([qt-peer],
 AM_CONDITIONAL(CREATE_QT_PEER_LIBRARIES, test "x${COMPILE_QT_PEER}" = xyes)
 
 dnl -----------------------------------------------------------
-dnl Plugin (enabled by default)
+dnl Plugin (disabled by default)
 dnl -----------------------------------------------------------
 AC_ARG_ENABLE([plugin],
               [AS_HELP_STRING(--disable-plugin,compile gcjwebplugin (disabled by --disable-plugin) [default=yes])],
@@ -282,7 +282,7 @@ AC_ARG_ENABLE([plugin],
                 no) COMPILE_PLUGIN=no ;;
                 *) COMPILE_PLUGIN=yes ;;
               esac],
-              [COMPILE_PLUGIN=yes])
+              [COMPILE_PLUGIN=no])
 AM_CONDITIONAL(CREATE_PLUGIN, test "x${COMPILE_PLUGIN}" = xyes)
 
 dnl -----------------------------------------------------------
@@ -1209,4 +1209,8 @@ AC_OUTPUT
 cat ${srcdir}/lib/standard.omit.in > lib/standard.omit
 if test x$use_escher != xtrue; then
    echo gnu/java/awt/peer/x/.*java$ >> lib/standard.omit
+fi
+
+if test "x${COMPILE_PLUGIN}" = "xyes" ; then
+  AC_MSG_WARN([You have enabled the browser plugin.  Please note that this is no longer maintained as part of GNU Classpath; development has moved to the IcedTea project.])
 fi

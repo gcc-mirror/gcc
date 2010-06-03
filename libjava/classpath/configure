@@ -5460,7 +5460,7 @@ if test "${enable_plugin+set}" = set; then :
                 *) COMPILE_PLUGIN=yes ;;
               esac
 else
-  COMPILE_PLUGIN=yes
+  COMPILE_PLUGIN=no
 fi
 
  if test "x${COMPILE_PLUGIN}" = xyes; then
@@ -27819,4 +27819,9 @@ fi
 cat ${srcdir}/lib/standard.omit.in > lib/standard.omit
 if test x$use_escher != xtrue; then
    echo gnu/java/awt/peer/x/.*java$ >> lib/standard.omit
+fi
+
+if test "x${COMPILE_PLUGIN}" = "xyes" ; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You have enabled the browser plugin.  Please note that this is no longer maintained as part of GNU Classpath; development has moved to the IcedTea project." >&5
+$as_echo "$as_me: WARNING: You have enabled the browser plugin.  Please note that this is no longer maintained as part of GNU Classpath; development has moved to the IcedTea project." >&2;}
 fi
