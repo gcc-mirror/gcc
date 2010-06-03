@@ -2342,6 +2342,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   tree vect_ptr_type;
   tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  tree base;
 
   if (loop_vinfo && loop && loop != (gimple_bb (stmt))->loop_father)
     {
@@ -2406,6 +2407,12 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     }
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
+  base = get_base_address (DR_REF (dr));
+  if (base
+      && INDIRECT_REF_P (base))
+    vect_ptr_type
+      = build_qualified_type (vect_ptr_type,
+			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
 
   vec_stmt = fold_convert (vect_ptr_type, addr_base);
   addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
@@ -2498,6 +2505,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  tree base;
 
   if (loop_vinfo)
     {
@@ -2546,6 +2554,12 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 
   /** (1) Create the new vector-pointer variable:  **/
   vect_ptr_type = build_pointer_type (vectype);
+  base = get_base_address (DR_REF (dr));
+  if (base
+      && INDIRECT_REF_P (base))
+    vect_ptr_type
+      = build_qualified_type (vect_ptr_type,
+			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
   vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                     get_name (base_name));
 
