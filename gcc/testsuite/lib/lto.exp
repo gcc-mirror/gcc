@@ -110,6 +110,7 @@ set lto_skip_list $LTO_SKIPS
 
 load_lib dg.exp
 load_lib gcc-dg.exp
+load_lib gcc.exp
 
 # lto-obj -- compile to an object file
 #
@@ -137,7 +138,13 @@ proc lto-obj { source dest optall optfile optstr xfaildata } {
     lappend options "additional_flags=$optall $optfile"
 
     set compiler_conditional_xfail_data $xfaildata
-    set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+
+    # Allow C source files to mix freely with other languages
+    if [ string match "*.c" $source ] then {
+      set comp_output [gcc_target_compile "$source" "$dest" object $options]
+    } else {
+      set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+    }
     # Prune unimportant visibility warnings before checking output.
     set comp_output [lto_prune_warns $comp_output]
     ${tool}_check_compile "$testcase $dest assemble" $optstr $dest $comp_output
