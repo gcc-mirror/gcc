@@ -498,6 +498,14 @@ struct lto_varpool_encoder_d
 };
 typedef struct lto_varpool_encoder_d *lto_varpool_encoder_t;
 
+/* Return number of encoded nodes in ENCODER.  */
+
+static inline int
+lto_varpool_encoder_size (lto_varpool_encoder_t encoder)
+{
+  return VEC_length (varpool_node_ptr, encoder->nodes);
+}
+
 /* Mapping from indices to trees.  */
 struct GTY(()) lto_tree_ref_table
 {
