@@ -38,8 +38,8 @@
  * Contains an implementation struct for this type of heap's node.
  */
 
-#ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NULL_METADATA_HPP
-#define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NULL_METADATA_HPP
+#ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_0_METADATA_HPP
+#define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_0_METADATA_HPP
 
 namespace __gnu_pbds
 {
@@ -52,4 +52,4 @@ namespace __gnu_pbds
   } // namespace detail
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NULL_METADATA_HPP
+#endif // #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_0_METADATA_HPP

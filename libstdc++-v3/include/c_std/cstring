@@ -44,7 +44,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
 #include <string.h>
 
 // Get rid of those macros defined in <string.h> in lieu of real functions.

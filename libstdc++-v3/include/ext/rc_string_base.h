@@ -554,7 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	// NB: Not required, but considered best practice.
 	if (__is_null_pointer(__beg) && __beg != __end)
 	  std::__throw_logic_error(__N("__rc_string_base::"
-				       "_S_construct NULL not valid"));
+				       "_S_construct null not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
 								      __end));

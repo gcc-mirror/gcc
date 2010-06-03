@@ -50,7 +50,7 @@ insert_imp(const_reference r_val, false_type)
   entry_pointer p_e = m_entries[pos];
   resize_base::notify_insert_search_start();
 
-  while (p_e != NULL && !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), 
+  while (p_e != 0 && !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), 
 						     r_key))
     {
       resize_base::notify_insert_search_collision();
@@ -58,7 +58,7 @@ insert_imp(const_reference r_val, false_type)
     }
 
   resize_base::notify_insert_search_end();
-  if (p_e != NULL)
+  if (p_e != 0)
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
       return std::make_pair(&p_e->m_value, false);

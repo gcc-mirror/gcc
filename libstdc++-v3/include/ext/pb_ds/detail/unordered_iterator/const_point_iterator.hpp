@@ -78,7 +78,7 @@ public:
   inline
   const_point_iterator_()
 
-    : m_p_value(NULL)
+    : m_p_value(0)
   { }
 
   // Copy constructor.
@@ -99,7 +99,7 @@ public:
   inline const_pointer
   operator->() const
   {
-    _GLIBCXX_DEBUG_ASSERT(m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_p_value != 0);
 
     return (m_p_value);
   }
@@ -108,7 +108,7 @@ public:
   inline const_reference
   operator*() const
   {
-    _GLIBCXX_DEBUG_ASSERT(m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_p_value != 0);
 
     return (*m_p_value);
   }

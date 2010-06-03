@@ -57,7 +57,7 @@ void
 PB_DS_CLASS_C_DEC::
 trace_node(const_node_pointer p_nd, size_type level)
 {
-  while (p_nd != NULL)
+  while (p_nd != 0)
     {
       for (size_type i = 0; i < level; ++i)
 	std::cerr << ' ';

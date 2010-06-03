@@ -1,6 +1,7 @@
 // 1999-08-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +42,7 @@ test02()
 
   std::stringbuf sbuf_04(str01, std::ios_base::in);
 
-  std::istream is_00(NULL);
+  std::istream is_00(0);
   std::istream is_04(&sbuf_04);
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;
@@ -54,7 +55,7 @@ test02()
   is_00.getline(carray1, 20, '*');
   state2 = is_00.rdstate();
   // make sure failbit was set, since we couldn't extract
-  // from the NULL streambuf...
+  // from the null streambuf...
   VERIFY( state1 != state2 );
   VERIFY( static_cast<bool>(state2 & statefail) );
   

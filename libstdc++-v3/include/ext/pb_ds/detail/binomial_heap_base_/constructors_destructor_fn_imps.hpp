@@ -53,7 +53,7 @@ copy_from_range(It first_it, It last_it)
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_base_() :
-  m_p_max(NULL)
+  m_p_max(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
@@ -62,7 +62,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_base_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn),
-  m_p_max(NULL)
+  m_p_max(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
@@ -71,7 +71,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_base_(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_BASE_C_DEC(other),
-  m_p_max(NULL)
+  m_p_max(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }

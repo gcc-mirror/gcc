@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -186,8 +186,8 @@ namespace __gnu_test
     {
       // Let's not core here...
       Alloc  a;
-      a.deallocate(NULL, 1);
-      a.deallocate(NULL, 10);
+      a.deallocate(0, 1);
+      a.deallocate(0, 10);
       return true;
     }
 

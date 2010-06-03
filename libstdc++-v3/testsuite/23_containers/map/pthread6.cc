@@ -1,7 +1,7 @@
 // 2002-01-23  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 // Adpated from libstdc++/5444 submitted by markus.breuer@materna.de
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -26,6 +26,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cstddef>
 #include <pthread.h>
 
 const int max_thread_count = 8;

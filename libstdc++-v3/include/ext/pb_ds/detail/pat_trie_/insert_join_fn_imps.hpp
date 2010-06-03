@@ -165,7 +165,7 @@ rec_join_prep(const_internal_node_pointer p_l, const_internal_node_pointer p_r,
 	   it != p_r->end(); ++ it)
         {
 	  const_node_pointer p_l_join_child = p_l->get_join_child(*it, this);
-	  if (p_l_join_child != NULL)
+	  if (p_l_join_child != 0)
 	    rec_join_prep(p_l_join_child, * it, r_bag);
         }
       return;
@@ -175,7 +175,7 @@ rec_join_prep(const_internal_node_pointer p_l, const_internal_node_pointer p_r,
       p_r->should_be_mine(p_l->pref_b_it(), p_l->pref_e_it(), 0, this))
     {
       const_node_pointer p_r_join_child = p_r->get_join_child(p_l, this);
-      if (p_r_join_child != NULL)
+      if (p_r_join_child != 0)
 	rec_join_prep(p_r_join_child, p_l, r_bag);
       return;
     }
@@ -184,7 +184,7 @@ rec_join_prep(const_internal_node_pointer p_l, const_internal_node_pointer p_r,
       p_r->should_be_mine(p_l->pref_b_it(), p_l->pref_e_it(), 0, this))
     {
       const_node_pointer p_r_join_child = p_r->get_join_child(p_l, this);
-      if (p_r_join_child != NULL)
+      if (p_r_join_child != 0)
 	rec_join_prep(p_r_join_child, p_l, r_bag);
       return;
     }
@@ -196,8 +196,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 rec_join(node_pointer p_l, node_pointer p_r, size_type checked_ind, split_join_branch_bag& r_bag)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_r != NULL);
-  if (p_l == NULL)
+  _GLIBCXX_DEBUG_ASSERT(p_r != 0);
+  if (p_l == 0)
     {
       apply_update(p_r, (node_update* )this);
       return (p_r);
@@ -245,8 +245,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 rec_join(leaf_pointer p_l, leaf_pointer p_r, split_join_branch_bag& r_bag)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_r != NULL);
-  if (p_l == NULL)
+  _GLIBCXX_DEBUG_ASSERT(p_r != 0);
+  if (p_l == 0)
     return (p_r);
   node_pointer p_ret = insert_branch(p_l, p_r, r_bag);
   _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) == 2);
@@ -264,7 +264,7 @@ rec_join(leaf_pointer p_l, internal_node_pointer p_r, size_type checked_ind,
   const size_type rhs_leafs = recursive_count_leafs(p_r);
 #endif 
 
-  _GLIBCXX_DEBUG_ASSERT(p_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_r != 0);
   node_pointer p_ret = rec_join(p_r, p_l, checked_ind, r_bag);
   _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) == lhs_leafs + rhs_leafs);
   return p_ret;
@@ -275,8 +275,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 rec_join(internal_node_pointer p_l, leaf_pointer p_r, size_type checked_ind, split_join_branch_bag& r_bag)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_l != NULL);
-  _GLIBCXX_DEBUG_ASSERT(p_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_r != 0);
 
 #ifdef _GLIBCXX_DEBUG
   const size_type lhs_leafs = recursive_count_leafs(p_l);
@@ -313,8 +313,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch_bag& r_bag)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_l != NULL);
-  _GLIBCXX_DEBUG_ASSERT(p_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_r != 0);
 
 #ifdef _GLIBCXX_DEBUG
   const size_type lhs_leafs = recursive_count_leafs(p_l);
@@ -378,7 +378,7 @@ PB_DS_CLASS_C_DEC::
 insert(const_reference r_val)
 {
   node_pointer p_lf = find_imp(PB_DS_V2F(r_val));
-  if (p_lf != NULL && p_lf->m_type == pat_trie_leaf_node_type && 
+  if (p_lf != 0 && p_lf->m_type == pat_trie_leaf_node_type && 
       synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_lf)->value()), PB_DS_V2F(r_val)))
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val)));

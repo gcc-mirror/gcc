@@ -32,7 +32,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>
+#include <bits/c++config.h>
 #include <bits/stl_function.h>
 
 namespace std

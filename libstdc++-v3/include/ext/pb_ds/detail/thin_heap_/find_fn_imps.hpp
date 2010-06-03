@@ -46,6 +46,6 @@ top() const
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
     _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
-  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != 0);
   return m_p_max->m_value;
 }

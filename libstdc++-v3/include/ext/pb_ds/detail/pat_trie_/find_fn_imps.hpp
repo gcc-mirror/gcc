@@ -46,7 +46,7 @@ find(const_key_reference r_key)
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   node_pointer p_nd = find_imp(r_key);
 
-  if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
+  if (p_nd == 0 || p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
       return end();
@@ -71,7 +71,7 @@ find(const_key_reference r_key) const
 
   const_node_pointer p_nd = const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(r_key);
 
-  if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
+  if (p_nd == 0 || p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
       return end();
@@ -93,7 +93,7 @@ PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key)
 {
   if (empty())
-    return (NULL);
+    return (0);
 
   typename synth_e_access_traits::const_iterator b_it =
     synth_e_access_traits::begin(r_key);
@@ -101,14 +101,14 @@ find_imp(const_key_reference r_key)
     synth_e_access_traits::end(r_key);
 
   node_pointer p_nd = m_p_head->m_p_parent;
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
 
   while (p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
       node_pointer p_next_nd = static_cast<internal_node_pointer>(p_nd)->get_child_node(b_it,  e_it,  this);
 
-      if (p_next_nd == NULL)
+      if (p_next_nd == 0)
 	return p_nd;
       p_nd = p_next_nd;
     }
@@ -124,7 +124,7 @@ lower_bound_imp(const_key_reference r_key)
     return (m_p_head);
 
   node_pointer p_nd = m_p_head->m_p_parent;
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
 
   typename PB_DS_CLASS_C_DEC::const_e_iterator b_it =
     synth_e_access_traits::begin(r_key);

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -90,7 +90,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
 {
   std::printf("operator new is called \n");
   void* p = std::malloc(size);
-  if (p == NULL)
+  if (!p)
     throw std::bad_alloc();
   __gnu_test::counter::increment();
   return p;
@@ -99,7 +99,7 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
 void operator delete(void* p) throw()
 {
   std::printf("operator delete is called \n");
-  if (p != NULL)
+  if (p)
     {
       std::free(p);
       __gnu_test::counter::decrement();

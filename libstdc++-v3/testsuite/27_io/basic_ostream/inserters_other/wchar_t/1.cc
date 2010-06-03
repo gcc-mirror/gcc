@@ -1,4 +1,4 @@
-// Copyright (C) 2005, 2009 Free Software Foundation
+// Copyright (C) 2005, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ test02()
   // filebuf-> NULL 
   std::wifstream f_in1(name_01);
   std::wofstream f_out1(name_02);
-  std::wstringbuf* strbuf01 = NULL;
+  std::wstringbuf* strbuf01 = 0;
   iostate state01 = f_in1.rdstate();
   f_in1 >> strbuf01;
   iostate state02 = f_in1.rdstate();

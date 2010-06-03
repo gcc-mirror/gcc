@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ std::wstringbuf isbuf_02(str_02, std::ios_base::in);
 std::wstringbuf isbuf_03(str_03, std::ios_base::in);
 std::wstringbuf isbuf_04(str_04, std::ios_base::in);
 
-std::wistream is_01(NULL);
+std::wistream is_01(0);
 std::wistream is_02(&isbuf_02);
 std::wistream is_03(&isbuf_03);
 std::wistream is_04(&isbuf_04);

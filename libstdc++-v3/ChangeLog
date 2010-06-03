@@ -1,3 +1,431 @@
+2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config (std::size_t, std::ptrdiff_t,
+        std::nullptr_t): Provide typedefs.
+	* include/c_std/cstddef: Don't provide std::size_t and
+	std::ptrdiff_t here.
+	* include/c_global/cstddef: Likewise.
+	* src/condition_variable.cc: Don't include <cstddef>,
+	don't use NULL, use std::size_t and std::ptrdiff_t.
+	* src/mt_allocator.cc: Likewise.
+	* src/localename.cc: Likewise.
+	* src/chrono.cc: Likewise.
+	* src/thread.cc: Likewise.
+	* include/debug/formatter.h: Likewise.
+	* include/debug/functions.h: Likewise.
+	* include/std/valarray: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/type_traits: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/iterator: Likewise.
+	* include/std/bitset: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/mutex: Likewise.
+	* include/c_std/cstdlib: Likewise.
+	* include/c_std/cstdio: Likewise.
+	* include/c_std/ctime: Likewise.
+	* include/c_std/cwchar: Likewise.
+	* include/c_std/cstring: Likewise.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/base.h: Likewise.
+	* include/parallel/basic_iterator.h: Likewise.
+	* include/parallel/multiway_mergesort.h
+	* include/parallel/partition.h: Likewise.
+	* include/ext/string_conversions.h: Likewise.
+	* include/ext/pb_ds/assoc_container.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/sample_size_policy.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_policy.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_trigger.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/d: Likewise.etail/cc_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	cmp_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	entry_list_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	cc_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/r_erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/child_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	insert_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	const_child_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/split_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/rotate_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/point_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	r_erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	rotate_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	point_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	gp_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	standard_policies.hpp: Likewise.
+	* include/ext/pb_ds/detail/tree_policy/
+	sample_tree_node_update.hpp: Likewise.
+	* include/ext/pb_ds/detail/basic_tree_policy/
+	null_node_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_node_update.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_e_access_traits.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	null_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/sample_probe_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/
+	sample_ranged_probe_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/sample_range_hashing.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/
+	sample_ranged_hash_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/list_update_policy.hpp: Likewise.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/pb_ds/tree_policy.hpp: Likewise.
+	* include/ext/pb_ds/tag_and_trait.hpp: Likewise.
+	* include/ext/pb_ds/hash_policy.hpp: Likewise.
+	* include/ext/pb_ds/trie_policy.hpp: Likewise.
+	* include/ext/pb_ds/priority_queue.hpp: Likewise.
+	* include/ext/throw_allocator.h: Likewis: Likewise.e.
+	* include/ext/bitmap_allocator.h
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/codecvt_specializations.h: Likewise.
+	* include/ext/functional: Likewise.: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/bits/move.h: Likewise.
+	* include/bits/boost_concept_check.h: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/cstdio: Likewise.
+	* include/c_global/ctime: Likewise.
+	* include/c_global/cwchar: Likewise.
+	* include/c_global/cstring
+	* include/tr1/type_traits: Likewise.
+	* include/backward/hash_fun.h: Likewise.
+	* libsupc++/new: Likewise.
+	* libsupc++/initializer_list: Likewise.
+	* testsuite/27_io/basic_ofstream/pthread2.cc: Likewise.
+	* testsuite/27_io/basic_iostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputc/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/5268.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/5268.cc: Likewise.
+	* testsuite/27_io/objects/char/10.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/locales/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/clear/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/pthread3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/cons/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/
+	wchar_t/01.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/
+	char/01.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/9826.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/8.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	char/8.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1057.cc: Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/2.cc: Likewise.
+	* testsuite/18_support/bad_exception/23591_thread-1.c
+	* testsuite/18_support/new_delete_placement.cc: Likewise.
+	* testsuite/18_support/pthread_guard.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/pthread4.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/5.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/thread/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/thread/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/
+	assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/
+	copy_neg.cc: Likewise.
+	* testsuite/ext/mt_allocator/22309_thread.cc: Likewise.
+	* testsuite/ext/slist/23781.cc: Likewise.
+	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_3.cc: Likewise.
+	* testsuite/22_locale/locale/cons/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/29217.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/2.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/
+	requirements/iterator_null_neg.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/
+	requirements/iterator_null_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/single_value.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Likewise.
+	* testsuite/23_containers/multimap/23781.cc: Likewise.
+	* testsuite/23_containers/set/23781.cc: Likewise.
+	* testsuite/23_containers/multiset/23781.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/list/23781.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/23_containers/map/23781.cc: Likewise.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Likewise.
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/regression/rand/assoc/
+	rand_regression_test.hpp: Likewise.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* testsuite/util/testsuite_io.h: Likewise.
+	* testsuite/util/testsuite_iterators.h: Likewise.
+	* testsuite/util/replacement_memory_operators.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+	* testsuite/util/testsuite_performance.h: Likewise.
+
 2010-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/tr1/2_general_utilities/shared_ptr/cons/pointer.cc: Fix

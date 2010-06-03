@@ -52,7 +52,7 @@ copy_from_range(It first_it, It last_it)
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 thin_heap_() :
-  m_p_max(NULL)
+  m_p_max(0)
 {
   initialize();
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -62,7 +62,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 thin_heap_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn),
-  m_p_max(NULL)
+  m_p_max(0)
 {
   initialize();
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -75,7 +75,7 @@ thin_heap_(const PB_DS_CLASS_C_DEC& other) :
 {
   initialize();
   m_p_max = base_type::m_p_root;
-  for (node_pointer p_nd = base_type::m_p_root; p_nd != NULL; p_nd = p_nd->m_p_next_sibling)
+  for (node_pointer p_nd = base_type::m_p_root; p_nd != 0; p_nd = p_nd->m_p_next_sibling)
     if (Cmp_Fn::operator()(m_p_max->m_value, p_nd->m_value))
       m_p_max = p_nd;
 
@@ -102,5 +102,5 @@ PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 initialize()
-{ std::fill(m_a_aux, m_a_aux + max_rank, static_cast<node_pointer>(NULL)); }
+{ std::fill(m_a_aux, m_a_aux + max_rank, static_cast<node_pointer>(0)); }
 

@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   const std::locale c_loc = std::locale::classic();
 
-  std::ios ios_01(NULL);
+  std::ios ios_01(0);
   std::ios::char_type ct01;
   std::ios::char_type ct02('x');;
 

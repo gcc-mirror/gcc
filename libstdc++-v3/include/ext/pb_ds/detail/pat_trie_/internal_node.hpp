@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -226,7 +226,7 @@ namespace __gnu_pbds
     get_pref_pos(const_e_iterator b_it, const_e_iterator e_it, 
 		 const_e_access_traits_pointer p_traits) const
     {
-      if (static_cast<size_t>(std::distance(b_it, e_it)) <= m_e_ind)
+      if (static_cast<std::size_t>(std::distance(b_it, e_it)) <= m_e_ind)
 	return 0;
       std::advance(b_it, m_e_ind);
       return 1 + p_traits->e_pos(*b_it);
@@ -240,7 +240,7 @@ namespace __gnu_pbds
     {
       std::advance(m_pref_e_it, m_e_ind);
       std::fill(m_a_p_children, m_a_p_children + arr_size,
-		static_cast<node_pointer>(NULL));
+		static_cast<node_pointer>(0));
     }
 
     PB_DS_CLASS_T_DEC
@@ -317,7 +317,7 @@ namespace __gnu_pbds
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
       _GLIBCXX_DEBUG_ASSERT(i < arr_size);
-      _GLIBCXX_DEBUG_ASSERT(m_a_p_children[i] != NULL);
+      _GLIBCXX_DEBUG_ASSERT(m_a_p_children[i] != 0);
       return iterator(m_a_p_children + i, m_a_p_children + i);
     }
 
@@ -345,11 +345,11 @@ namespace __gnu_pbds
       size_type i = get_pref_pos(b_it, e_it, p_traits);
       _GLIBCXX_DEBUG_ASSERT(i < arr_size);
 
-      if (m_a_p_children[i] != NULL)
+      if (m_a_p_children[i] != 0)
 	return m_a_p_children[i];
 
       while (++i < arr_size)
-	if (m_a_p_children[i] != NULL)
+	if (m_a_p_children[i] != 0)
 	  {
 	    if (m_a_p_children[i]->m_type == pat_trie_leaf_node_type)
 	      return m_a_p_children[i];
@@ -370,7 +370,7 @@ namespace __gnu_pbds
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
       _GLIBCXX_DEBUG_ASSERT(i < arr_size);
-      if (m_a_p_children[i] == NULL)
+      if (m_a_p_children[i] == 0)
 	{
 	  m_a_p_children[i] = p_nd;
 	  p_nd->m_p_parent = this;
@@ -423,7 +423,7 @@ namespace __gnu_pbds
       for (; i < arr_size; ++i)
 	if (m_a_p_children[i] == p_nd)
 	  {
-	    m_a_p_children[i] = NULL;
+	    m_a_p_children[i] = 0;
 	    return;
 	  }
       _GLIBCXX_DEBUG_ASSERT(i != arr_size);
@@ -436,7 +436,7 @@ namespace __gnu_pbds
     {
       iterator ret = it;
       ++ret;
-      * it.m_p_p_cur = NULL;
+      * it.m_p_p_cur = 0;
       return ret;
     }
 
@@ -558,7 +558,7 @@ namespace __gnu_pbds
     get_begin_pos() const
     {
       size_type i;
-      for (i = 0; i < arr_size && m_a_p_children[i] == NULL; ++i)
+      for (i = 0; i < arr_size && m_a_p_children[i] == 0; ++i)
 	;
       return i;
     }

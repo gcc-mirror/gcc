@@ -118,7 +118,7 @@ namespace __gnu_pbds
       inline PB_DS_CLASS_C_DEC& 
       operator++()
       {
-	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd != 0);
 	inc();
 	return (*this);
       }
@@ -135,10 +135,10 @@ namespace __gnu_pbds
       void
       inc()
       {
-	if (base_type::m_p_nd->m_p_next_sibling != NULL)
+	if (base_type::m_p_nd->m_p_next_sibling != 0)
 	  {
 	    base_type::m_p_nd = base_type::m_p_nd->m_p_next_sibling;
-	    while (base_type::m_p_nd->m_p_l_child != NULL)
+	    while (base_type::m_p_nd->m_p_l_child != 0)
 	      base_type::m_p_nd = base_type::m_p_nd->m_p_l_child;
 	    return;
 	  }
@@ -147,7 +147,7 @@ namespace __gnu_pbds
 	  {
 	    node_pointer p_next = base_type::m_p_nd;
 	    base_type::m_p_nd = base_type::m_p_nd->m_p_prev_or_parent;
-	    if (base_type::m_p_nd == NULL || base_type::m_p_nd->m_p_l_child == p_next)
+	    if (base_type::m_p_nd == 0 || base_type::m_p_nd->m_p_l_child == p_next)
 	      return;
 	  }
       }

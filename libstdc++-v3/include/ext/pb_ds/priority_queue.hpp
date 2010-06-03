@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -41,6 +41,7 @@
 #ifndef PB_DS_PRIORITY_QUEUE_HPP
 #define PB_DS_PRIORITY_QUEUE_HPP
 
+#include <bits/c++config.h>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/priority_queue_base_dispatch.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
@@ -53,10 +54,13 @@ namespace __gnu_pbds
 	   typename Tag = pairing_heap_tag,
 	   typename Allocator = std::allocator<char> >
   class priority_queue 
-  : public detail::priority_queue_base_dispatch<Value_Type,Cmp_Fn,Tag,Allocator>::type
+  : public detail::priority_queue_base_dispatch<Value_Type,
+						Cmp_Fn,Tag,Allocator>::type
   {
   private:
-    typedef typename detail::priority_queue_base_dispatch<Value_Type,Cmp_Fn,Tag,Allocator>::type base_type;
+    typedef typename
+    detail::priority_queue_base_dispatch<Value_Type, Cmp_Fn,
+					 Tag, Allocator>::type base_type;
 
   public:
     typedef Value_Type 					value_type;

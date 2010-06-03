@@ -145,7 +145,7 @@ namespace __gnu_pbds
     public:
 
       inline
-      pat_trie_const_it_(node_pointer p_nd = NULL) : m_p_nd(p_nd)
+      pat_trie_const_it_(node_pointer p_nd = 0) : m_p_nd(p_nd)
       { }
 
       inline
@@ -245,7 +245,7 @@ namespace __gnu_pbds
 
 	node_pointer p_y = m_p_nd->m_p_parent;
 	while (p_y->m_type != pat_trie_head_node_type && 
-	       get_larger_sibling(m_p_nd) == NULL)
+	       get_larger_sibling(m_p_nd) == 0)
 	  {
 	    m_p_nd = p_y;
 	    p_y = p_y->m_p_parent;
@@ -274,7 +274,7 @@ namespace __gnu_pbds
 
 	node_pointer p_y = m_p_nd->m_p_parent;
 	while (p_y->m_type != pat_trie_head_node_type && 
-	       get_smaller_sibling(m_p_nd) == NULL)
+	       get_smaller_sibling(m_p_nd) == 0)
 	  {
 	    m_p_nd = p_y;
 	    p_y = p_y->m_p_parent;
@@ -300,7 +300,7 @@ namespace __gnu_pbds
 
 	typename Internal_Node::iterator next_it = it;
 	++next_it;
-	return ((next_it == p_parent->end())? NULL :* next_it);
+	return ((next_it == p_parent->end())? 0 :* next_it);
       }
 
       inline static node_pointer
@@ -312,7 +312,7 @@ namespace __gnu_pbds
 	typename Internal_Node::iterator it = p_parent->begin();
 
 	if (*it == p_nd)
-	  return (NULL);
+	  return (0);
 	typename Internal_Node::iterator prev_it;
 	do
 	  {
@@ -324,7 +324,7 @@ namespace __gnu_pbds
 	while (true);
 
 	_GLIBCXX_DEBUG_ASSERT(false);
-	return (NULL);
+	return (0);
       }
 
       inline static leaf_pointer
@@ -397,7 +397,7 @@ namespace __gnu_pbds
       typedef typename Type_Traits::reference reference;
 
       inline
-      pat_trie_it_(node_pointer p_nd = NULL) : PB_DS_CONST_IT_C_DEC((node_pointer)p_nd)
+      pat_trie_it_(node_pointer p_nd = 0) : PB_DS_CONST_IT_C_DEC((node_pointer)p_nd)
       { }
 
       inline

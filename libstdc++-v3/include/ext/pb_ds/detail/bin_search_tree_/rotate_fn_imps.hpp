@@ -47,7 +47,7 @@ rotate_left(node_pointer p_x)
 
   p_x->m_p_right = p_y->m_p_left;
 
-  if (p_y->m_p_left != NULL)
+  if (p_y->m_p_left != 0)
     p_y->m_p_left->m_p_parent = p_x;
 
   p_y->m_p_parent = p_x->m_p_parent;
@@ -78,7 +78,7 @@ rotate_right(node_pointer p_x)
 
   p_x->m_p_left = p_y->m_p_right;
 
-  if (p_y->m_p_right != NULL)
+  if (p_y->m_p_right != 0)
     p_y->m_p_right->m_p_parent = p_x;
 
   p_y->m_p_parent = p_x->m_p_parent;
@@ -131,7 +131,7 @@ apply_update(node_pointer p_nd, Node_Update_*  /*p_update*/)
 {
   node_update::operator()(
 			   node_iterator(p_nd),
-			   const_node_iterator(static_cast<node_pointer>(NULL)));
+			   const_node_iterator(static_cast<node_pointer>(0)));
 }
 
 PB_DS_CLASS_T_DEC

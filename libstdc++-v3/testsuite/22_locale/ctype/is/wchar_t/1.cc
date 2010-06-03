@@ -1,4 +1,5 @@
-// Copyright (C) 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,8 +85,8 @@ void test01()
   std::ctype_base::mask m01[3];
   std::ctype_base::mask m02[13];
   const char_type* cc0 = strlit00;
-  const char_type* cc1 = NULL;
-  const char_type* cc2 = NULL;
+  const char_type* cc1 = 0;
+  const char_type* cc2 = 0;
 
   cc0 = strlit00;
   for (std::size_t i = 0; i < 3; ++i)

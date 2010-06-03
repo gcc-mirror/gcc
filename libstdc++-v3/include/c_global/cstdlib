@@ -41,7 +41,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
 
 #ifndef _GLIBCXX_CSTDLIB
 #define _GLIBCXX_CSTDLIB 1

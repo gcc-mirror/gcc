@@ -118,7 +118,7 @@ namespace __gnu_pbds
 
     public:
       inline
-      ov_tree_node_const_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : m_p_value(const_cast<pointer>(p_nd)), m_p_begin_value(const_cast<pointer>(p_begin_nd)), m_p_end_value(const_cast<pointer>(p_end_nd)), m_p_metadata(p_metadata)
+      ov_tree_node_const_it_(const_pointer p_nd = 0,  const_pointer p_begin_nd = 0,  const_pointer p_end_nd = 0,  const_metadata_pointer p_metadata = 0) : m_p_value(const_cast<pointer>(p_nd)), m_p_begin_value(const_cast<pointer>(p_begin_nd)), m_p_end_value(const_cast<pointer>(p_end_nd)), m_p_metadata(p_metadata)
       { }
 
       inline const_reference
@@ -134,7 +134,7 @@ namespace __gnu_pbds
 	  };
 
 	PB_DS_STATIC_ASSERT(should_have_metadata, has_metadata);
-	_GLIBCXX_DEBUG_ASSERT(m_p_metadata != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_metadata != 0);
 	return *m_p_metadata;
       }
 
@@ -164,8 +164,8 @@ namespace __gnu_pbds
 
 	return (this_type(mid_pointer(m_p_value + 1, m_p_end_value),
 			  m_p_value + 1,
-			  m_p_end_value,(m_p_metadata == NULL) ?
-			  NULL : mid_pointer(m_p_metadata + 1, p_end_metadata)));
+			  m_p_end_value,(m_p_metadata == 0) ?
+			  0 : mid_pointer(m_p_metadata + 1, p_end_metadata)));
       }
 
       inline bool
@@ -241,7 +241,7 @@ namespace __gnu_pbds
 
     public:
       inline
-      ov_tree_node_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : base_type(p_nd,  p_begin_nd,  p_end_nd,  p_metadata)
+      ov_tree_node_it_(const_pointer p_nd = 0,  const_pointer p_begin_nd = 0,  const_pointer p_end_nd = 0,  const_metadata_pointer p_metadata = 0) : base_type(p_nd,  p_begin_nd,  p_end_nd,  p_metadata)
       { }
 
       // Access.
@@ -277,8 +277,8 @@ namespace __gnu_pbds
 
 	return (this_type(base_type::mid_pointer(base_type::m_p_value + 1, base_type::m_p_end_value),
 			  base_type::m_p_value + 1,
-			  base_type::m_p_end_value,(base_type::m_p_metadata == NULL)?
-			  NULL : base_type::mid_pointer(base_type::m_p_metadata + 1, p_end_metadata)));
+			  base_type::m_p_end_value,(base_type::m_p_metadata == 0)?
+			  0 : base_type::mid_pointer(base_type::m_p_metadata + 1, p_end_metadata)));
       }
 
     };

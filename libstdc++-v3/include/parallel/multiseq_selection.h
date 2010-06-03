@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -230,7 +230,7 @@ namespace __gnu_parallel
           __n /= 2;
 
           _SeqNumber __lmax_seq = -1;  // to avoid warning
-          const _ValueType* __lmax = NULL; // impossible to avoid the warning?
+          const _ValueType* __lmax = 0; // impossible to avoid the warning?
           for (_SeqNumber __i = 0; __i < __m; __i++)
             {
               if (__a[__i] > 0)
@@ -332,8 +332,8 @@ namespace __gnu_parallel
       // Compare the keys on both edges of the border.
 
       // Maximum of left edge, minimum of right edge.
-      _ValueType* __maxleft = NULL;
-      _ValueType* __minright = NULL;
+      _ValueType* __maxleft = 0;
+      _ValueType* __minright = 0;
       for (_SeqNumber __i = 0; __i < __m; __i++)
         {
           if (__a[__i] > 0)
@@ -482,7 +482,7 @@ namespace __gnu_parallel
         {
           __n /= 2;
 
-          const _Tp* __lmax = NULL;
+          const _Tp* __lmax = 0;
           for (_SeqNumber __i = 0; __i < __m; ++__i)
             {
               if (__a[__i] > 0)

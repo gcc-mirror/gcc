@@ -233,7 +233,7 @@ namespace __gnu_pbds
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	entry_pointer p_e = find_imp(r_key);
-	return point_iterator(p_e == NULL ? NULL: &p_e->m_value);
+	return point_iterator(p_e == 0 ? 0: &p_e->m_value);
       }
 
       inline const_point_iterator
@@ -241,7 +241,7 @@ namespace __gnu_pbds
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	entry_pointer p_e = find_imp(r_key);
-	return const_point_iterator(p_e == NULL ? NULL: &p_e->m_value);
+	return const_point_iterator(p_e == 0 ? 0: &p_e->m_value);
       }
 
       inline bool
@@ -315,7 +315,7 @@ namespace __gnu_pbds
       inc_it_state(const_pointer& r_p_value, entry_pointer& r_pos) const
       {
 	r_pos = r_pos->m_p_next;
-	r_p_value = (r_pos == NULL) ? NULL : &r_pos->m_value;
+	r_p_value = (r_pos == 0) ? 0 : &r_pos->m_value;
       }
 
       template<typename Metadata>

@@ -46,7 +46,7 @@ PB_DS_CLASS_C_DEC::
 trace() const
 {
   std::cerr << std::endl;
-  if (m_p_head->m_p_parent == NULL)
+  if (m_p_head->m_p_parent == 0)
     return;
   trace_node(m_p_head->m_p_parent, 0);
   std::cerr << std::endl;

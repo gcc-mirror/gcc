@@ -53,8 +53,8 @@ public:
 
 public:
   inline
-  const_iterator(node_pointer_pointer p_p_cur = NULL,  
-		 node_pointer_pointer p_p_end = NULL) 
+  const_iterator(node_pointer_pointer p_p_cur = 0,  
+		 node_pointer_pointer p_p_end = 0) 
   : m_p_p_cur(p_p_cur), m_p_p_end(p_p_end)
   { }
 
@@ -71,7 +71,7 @@ public:
   {
     do
       ++m_p_p_cur;
-    while (m_p_p_cur != m_p_p_end&& * m_p_p_cur == NULL);
+    while (m_p_p_cur != m_p_p_end&& * m_p_p_cur == 0);
     return *this;
   }
 
@@ -101,7 +101,7 @@ protected:
 #ifdef _GLIBCXX_DEBUG
   void
   assert_referencible() const
-  { _GLIBCXX_DEBUG_ASSERT(m_p_p_cur != m_p_p_end&& * m_p_p_cur != NULL); }
+  { _GLIBCXX_DEBUG_ASSERT(m_p_p_cur != m_p_p_end&& * m_p_p_cur != 0); }
 #endif 
 
 public:

@@ -48,8 +48,8 @@ public:
   typedef node_pointer_reference reference;
 
   inline
-  iterator(node_pointer_pointer p_p_cur = NULL,  
-	   node_pointer_pointer p_p_end = NULL) 
+  iterator(node_pointer_pointer p_p_cur = 0,  
+	   node_pointer_pointer p_p_end = 0) 
   : const_iterator(p_p_cur, p_p_end)
   { }
 

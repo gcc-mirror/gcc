@@ -105,7 +105,7 @@ namespace __gnu_pbds
       */
 
       inline
-      bin_search_tree_const_node_it_(const node_pointer p_nd = NULL) : m_p_nd(const_cast<node_pointer>(p_nd))
+      bin_search_tree_const_node_it_(const node_pointer p_nd = 0) : m_p_nd(const_cast<node_pointer>(p_nd))
       { }
 
       // Access.
@@ -197,7 +197,7 @@ namespace __gnu_pbds
       */
 
       inline
-      bin_search_tree_node_it_(const node_pointer p_nd = NULL) : PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC(
+      bin_search_tree_node_it_(const node_pointer p_nd = 0) : PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC(
 													    const_cast<node_pointer>(p_nd))
       { }
 

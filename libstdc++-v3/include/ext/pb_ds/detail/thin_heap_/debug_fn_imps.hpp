@@ -57,7 +57,7 @@ PB_DS_CLASS_C_DEC::
 assert_aux_null() const
 {
   for (size_type i = 0; i < max_rank; ++i)
-    _GLIBCXX_DEBUG_ASSERT(m_a_aux[i] == NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_a_aux[i] == 0);
 }
 
 PB_DS_CLASS_T_DEC
@@ -65,15 +65,15 @@ void
 PB_DS_CLASS_C_DEC::
 assert_max() const
 {
-  if (m_p_max == NULL)
+  if (m_p_max == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(base_type::empty());
       return;
     }
 
   _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
-  _GLIBCXX_DEBUG_ASSERT(base_type::parent(m_p_max) == NULL);
-  _GLIBCXX_DEBUG_ASSERT(m_p_max->m_p_prev_or_parent == NULL);
+  _GLIBCXX_DEBUG_ASSERT(base_type::parent(m_p_max) == 0);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max->m_p_prev_or_parent == 0);
   for (const_iterator it = base_type::begin(); it != base_type::end(); ++it)
     _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
 }
@@ -84,7 +84,7 @@ PB_DS_CLASS_C_DEC::
 assert_node_consistent(const_node_pointer p_nd, bool root) const
 {
   base_type::assert_node_consistent(p_nd, root);
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return;
 
   assert_node_consistent(p_nd->m_p_next_sibling, root);
@@ -92,17 +92,17 @@ assert_node_consistent(const_node_pointer p_nd, bool root) const
   if (!root)
     {
       if (p_nd->m_metadata == 0)
-	_GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling == NULL);
+	_GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling == 0);
       else
 	_GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata + 1);
     }
 
-  if (p_nd->m_p_l_child != NULL)
+  if (p_nd->m_p_l_child != 0)
     _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child->m_metadata + 1 == base_type::degree(p_nd));
 
-  const bool unmarked_valid =(p_nd->m_p_l_child == NULL&&  p_nd->m_metadata == 0) ||(p_nd->m_p_l_child != NULL&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 1);
+  const bool unmarked_valid =(p_nd->m_p_l_child == 0&&  p_nd->m_metadata == 0) ||(p_nd->m_p_l_child != 0&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 1);
 
-  const bool marked_valid =(p_nd->m_p_l_child == NULL&&  p_nd->m_metadata == 1) ||(p_nd->m_p_l_child != NULL&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 2);
+  const bool marked_valid =(p_nd->m_p_l_child == 0&&  p_nd->m_metadata == 1) ||(p_nd->m_p_l_child != 0&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 2);
 
   _GLIBCXX_DEBUG_ASSERT(unmarked_valid || marked_valid);
   if (root)

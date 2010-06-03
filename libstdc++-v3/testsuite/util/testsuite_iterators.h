@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Iterator Wrappers for the C++ library testsuite. 
 //
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -201,7 +201,7 @@ namespace __gnu_test
     bool
     operator==(const input_iterator_wrapper& in) const
     {
-      ITERATOR_VERIFY(SharedInfo != NULL && SharedInfo == in.SharedInfo);
+      ITERATOR_VERIFY(SharedInfo && SharedInfo == in.SharedInfo);
       ITERATOR_VERIFY(ptr>=SharedInfo->first && in.ptr>=SharedInfo->first);
       return ptr == in.ptr;
     }
@@ -274,8 +274,8 @@ namespace __gnu_test
 
     forward_iterator_wrapper()
     {
-      this->ptr = NULL;
-      this->SharedInfo = NULL;
+      this->ptr = 0;
+      this->SharedInfo = 0;
     }
 
     T&

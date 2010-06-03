@@ -61,7 +61,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
   node_pointer p_out = base_type::prune(pred);
 
-  while (p_out != NULL)
+  while (p_out != 0)
     {
       _GLIBCXX_DEBUG_ASSERT(base_type::m_size > 0);
       --base_type::m_size;
@@ -70,13 +70,13 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
       node_pointer p_next = p_out->m_p_next_sibling;
 
-      p_out->m_p_l_child = p_out->m_p_prev_or_parent = NULL;
+      p_out->m_p_l_child = p_out->m_p_prev_or_parent = 0;
 
       p_out->m_metadata = 0;
 
       p_out->m_p_next_sibling = other.m_p_root;
 
-      if (other.m_p_root != NULL)
+      if (other.m_p_root != 0)
 	other.m_p_root->m_p_prev_or_parent = p_out;
 
       other.m_p_root = p_out;
@@ -90,19 +90,19 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
     node_pointer p_cur = base_type::m_p_root;
 
-  base_type::m_p_root = NULL;
+  base_type::m_p_root = 0;
 
-  while (p_cur != NULL)
+  while (p_cur != 0)
     {
       node_pointer p_next = p_cur->m_p_next_sibling;
 
-      p_cur->m_p_l_child = p_cur->m_p_prev_or_parent = NULL;
+      p_cur->m_p_l_child = p_cur->m_p_prev_or_parent = 0;
 
       p_cur->m_metadata = 0;
 
       p_cur->m_p_next_sibling = base_type::m_p_root;
 
-      if (base_type::m_p_root != NULL)
+      if (base_type::m_p_root != 0)
 	base_type::m_p_root->m_p_prev_or_parent = p_cur;
 
       base_type::m_p_root = p_cur;
@@ -112,7 +112,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       p_cur = p_next;
     }
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
@@ -128,7 +128,7 @@ join(PB_DS_CLASS_C_DEC& other)
 
     node_pointer p_other = other.m_p_root;
 
-  if (p_other != NULL)
+  if (p_other != 0)
     do
       {
 	node_pointer p_next = p_other->m_p_next_sibling;
@@ -137,15 +137,15 @@ join(PB_DS_CLASS_C_DEC& other)
 
 	p_other = p_next;
       }
-    while (p_other != NULL);
+    while (p_other != 0);
 
   base_type::m_p_root = join(base_type::m_p_root, other.m_p_root);
   base_type::m_size += other.m_size;
-  m_p_max = NULL;
+  m_p_max = 0;
 
-  other.m_p_root = NULL;
+  other.m_p_root = 0;
   other.m_size = 0;
-  other.m_p_max = NULL;
+  other.m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
@@ -156,15 +156,15 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 join(node_pointer p_lhs, node_pointer p_rhs) const
 {
-  node_pointer p_ret = NULL;
+  node_pointer p_ret = 0;
 
-  node_pointer p_cur = NULL;
+  node_pointer p_cur = 0;
 
-  while (p_lhs != NULL || p_rhs != NULL)
+  while (p_lhs != 0 || p_rhs != 0)
     {
-      if (p_rhs == NULL)
+      if (p_rhs == 0)
         {
-	  if (p_cur == NULL)
+	  if (p_cur == 0)
 	    p_ret = p_cur = p_lhs;
 	  else
             {
@@ -173,11 +173,11 @@ join(node_pointer p_lhs, node_pointer p_rhs) const
 	      p_lhs->m_p_prev_or_parent = p_cur;
             }
 
-	  p_cur = p_lhs = NULL;
+	  p_cur = p_lhs = 0;
         }
-      else if (p_lhs == NULL || p_rhs->m_metadata < p_lhs->m_metadata)
+      else if (p_lhs == 0 || p_rhs->m_metadata < p_lhs->m_metadata)
         {
-	  if (p_cur == NULL)
+	  if (p_cur == 0)
             {
 	      p_ret = p_cur = p_rhs;
 
@@ -196,7 +196,7 @@ join(node_pointer p_lhs, node_pointer p_rhs) const
         }
       else if (p_lhs->m_metadata < p_rhs->m_metadata)
         {
-	  if (p_cur == NULL)
+	  if (p_cur == 0)
 	    p_ret = p_cur = p_lhs;
 	  else
             {
@@ -221,11 +221,11 @@ join(node_pointer p_lhs, node_pointer p_rhs) const
         }
     }
 
-  if (p_cur != NULL)
-    p_cur->m_p_next_sibling = NULL;
+  if (p_cur != 0)
+    p_cur->m_p_next_sibling = 0;
 
-  if (p_ret != NULL)
-    p_ret->m_p_prev_or_parent = NULL;
+  if (p_ret != 0)
+    p_ret->m_p_prev_or_parent = 0;
 
   return p_ret;
 }

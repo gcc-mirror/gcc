@@ -50,9 +50,9 @@ void
 PB_DS_CLASS_C_DEC::
 reallocate_metadata(Node_Update_* , size_type new_size)
 {
-  metadata_pointer a_new_metadata_vec =(new_size == 0) ? NULL : s_metadata_alloc.allocate(new_size);
+  metadata_pointer a_new_metadata_vec =(new_size == 0) ? 0 : s_metadata_alloc.allocate(new_size);
 
-  if (m_a_metadata != NULL)
+  if (m_a_metadata != 0)
     {
       for (size_type i = 0; i < m_size; ++i)
 	m_a_metadata[i].~metadata_type();

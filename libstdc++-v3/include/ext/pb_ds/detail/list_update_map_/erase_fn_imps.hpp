@@ -44,7 +44,7 @@ PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
   _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-  if (m_p_l == NULL)
+  if (m_p_l == 0)
     return false;
 
   if (s_eq_fn(r_key, PB_DS_V2F(m_p_l->m_value)))
@@ -56,7 +56,7 @@ erase(const_key_reference r_key)
     }
 
   entry_pointer p_l = m_p_l;
-  while (p_l->m_p_next != NULL)
+  while (p_l->m_p_next != 0)
     if (s_eq_fn(r_key, PB_DS_V2F(p_l->m_p_next->m_value)))
       {
 	erase_next(p_l);
@@ -83,7 +83,7 @@ erase_if(Pred pred)
 {
   _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
   size_type num_ersd = 0;
-  while (m_p_l != NULL && pred(m_p_l->m_value))
+  while (m_p_l != 0 && pred(m_p_l->m_value))
     {
       entry_pointer p_next = m_p_l->m_p_next;
       ++num_ersd;
@@ -91,11 +91,11 @@ erase_if(Pred pred)
       m_p_l = p_next;
     }
 
-  if (m_p_l == NULL)
+  if (m_p_l == 0)
     return num_ersd;
 
   entry_pointer p_l = m_p_l;
-  while (p_l->m_p_next != NULL)
+  while (p_l->m_p_next != 0)
     {
       if (pred(p_l->m_p_next->m_value))
         {
@@ -115,9 +115,9 @@ void
 PB_DS_CLASS_C_DEC::
 erase_next(entry_pointer p_l)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_l != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l != 0);
   _GLIBCXX_DEBUG_ASSERT(p_l != m_p_l);
-  _GLIBCXX_DEBUG_ASSERT(p_l->m_p_next != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l->m_p_next != 0);
   entry_pointer p_next_l = p_l->m_p_next->m_p_next;
   actual_erase_entry(p_l->m_p_next);
   p_l->m_p_next = p_next_l;

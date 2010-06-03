@@ -43,8 +43,8 @@ inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key) const
 {
-  if (m_p_l == NULL)
-    return NULL;
+  if (m_p_l == 0)
+    return 0;
   if (s_eq_fn(r_key, PB_DS_V2F(m_p_l->m_value)))
     {
       apply_update(m_p_l, s_metadata_type_indicator);
@@ -53,7 +53,7 @@ find_imp(const_key_reference r_key) const
     }
 
   entry_pointer p_l = m_p_l;
-  while (p_l->m_p_next != NULL)
+  while (p_l->m_p_next != 0)
     {
       entry_pointer p_next = p_l->m_p_next;
       if (s_eq_fn(r_key, PB_DS_V2F(p_next->m_value)))
@@ -72,7 +72,7 @@ find_imp(const_key_reference r_key) const
     }
 
   _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
-  return NULL;
+  return 0;
 }
 
 PB_DS_CLASS_T_DEC

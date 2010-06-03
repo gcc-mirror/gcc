@@ -53,15 +53,15 @@ join(PB_DS_CLASS_C_DEC& other)
     }
 
   node_pointer p_target_r = other.leftmost(other.m_p_head);
-  _GLIBCXX_DEBUG_ASSERT(p_target_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r != 0);
   other.splay(p_target_r);
 
   _GLIBCXX_DEBUG_ASSERT(p_target_r == other.m_p_head->m_p_parent);
-  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left == 0);
 
   p_target_r->m_p_left = base_type::m_p_head->m_p_parent;
 
-  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left != 0);
   p_target_r->m_p_left->m_p_parent = p_target_r;
 
   base_type::m_p_head->m_p_parent = p_target_r;
@@ -90,19 +90,19 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
     }
 
   node_pointer p_upper_bound = upper_bound(r_key).m_p_nd;
-  _GLIBCXX_DEBUG_ASSERT(p_upper_bound != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_upper_bound != 0);
 
   splay(p_upper_bound);
   _GLIBCXX_DEBUG_ASSERT(p_upper_bound->m_p_parent == this->m_p_head);
 
   node_pointer p_new_root = p_upper_bound->m_p_left;
-  _GLIBCXX_DEBUG_ASSERT(p_new_root != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_new_root != 0);
 
   base_type::m_p_head->m_p_parent = p_new_root;
   p_new_root->m_p_parent = base_type::m_p_head;
   other.m_p_head->m_p_parent = p_upper_bound;
   p_upper_bound->m_p_parent = other.m_p_head;
-  p_upper_bound->m_p_left = NULL;
+  p_upper_bound->m_p_left = 0;
   apply_update(p_upper_bound, (node_update* )this);
   base_type::split_finish(other);
 

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ void*
 do_something (void *arg)
 {
   static int bar __attribute__((unused)) = get_bar ();
-  return NULL;
+  return 0;
 }
 
 int
@@ -48,10 +48,10 @@ get_foo (void)
 {
   pthread_t new_thread;
 
-  if (pthread_create (&new_thread, NULL, do_something, NULL) != 0)
+  if (pthread_create (&new_thread, 0, do_something, 0) != 0)
     std::abort ();
 
-  if (pthread_join (new_thread, NULL) != 0)
+  if (pthread_join (new_thread, 0) != 0)
     std::abort ();
 
   return 1;
