@@ -1,4 +1,10 @@
 2010-06-03  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if                                                                        
+	set->regs[i] is NULL or has just one entry.
+
+2010-06-03  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (lto_varpool_encoder_size): Remove.
 	* lto-streamer.h (lto_varpool_encoder_size): New inline function.
@@ -546,7 +552,7 @@
 	* tree-inline.c (estimate_num_insns): For stdarg functions look
 	into call statement to count cost of argument passing.
 
-2010-06-01  Kai Tietz
+2010-06-01  Kai Tietz  <kai.tietz@onevision.com>
 
         * config/i386.c (ix86_output_addr_vec_elt): Make LPREFIX
         argument for fprintf.
