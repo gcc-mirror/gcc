@@ -1648,15 +1648,6 @@ begin
                         Linker_Options.Increment_Last;
                         Linker_Options.Table (Linker_Options.Last) :=
                           new String'("-mrtp");
-
-                     --  Pass -fsjlj to the linker if --RTS=sjlj was passed
-
-                     elsif Arg'Length > 9
-                       and then Arg (Arg'First + 6 .. Arg'First + 9) = "sjlj"
-                     then
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table (Linker_Options.Last) :=
-                          new String'("-fsjlj");
                      end if;
                   end if;
                end;
