@@ -1,5 +1,11 @@
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 
+	* tree-into-ssa.c (mark_block_for_update): Avoid redundant call
+	of bitmap_bit_p.
+	* cfganal.c (compute_dominance_frontiers_1): Likewise.
+
+2010-06-03  Jan Hubicka  <jh@suse.cz>
+
 	* df-problems.c (df_create_unused_note, df_note_bb_compute):
 	micro-optimize the checks when to add new note.
 
