@@ -3329,7 +3329,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	   outputs an operand in a special way depending on the letter.
 	   Letters `acln' are implemented directly.
 	   Other letters are passed to `output_operand' so that
-	   the PRINT_OPERAND macro can define them.  */
+	   the TARGET_PRINT_OPERAND hook can define them.  */
 	else if (ISALPHA (*p))
 	  {
 	    int letter = *p++;
@@ -3395,12 +3395,10 @@ output_asm_insn (const char *templ, rtx *operands)
 	    c = *p;
 	  }
 	/* % followed by punctuation: output something for that
-	   punctuation character alone, with no operand.
-	   The PRINT_OPERAND macro decides what is actually done.  */
-#ifdef PRINT_OPERAND_PUNCT_VALID_P
-	else if (PRINT_OPERAND_PUNCT_VALID_P ((unsigned char) *p))
+	   punctuation character alone, with no operand.  The
+	   TARGET_PRINT_OPERAND hook decides what is actually done.  */
+	else if (targetm.asm_out.print_operand_punct_valid_p ((unsigned char) *p))
 	  output_operand (NULL_RTX, *p++);
-#endif
 	else
 	  output_operand_lossage ("invalid %%-code");
 	break;
@@ -3472,14 +3470,13 @@ mark_symbol_refs_as_used (rtx x)
 }
 
 /* Print operand X using machine-dependent assembler syntax.
-   The macro PRINT_OPERAND is defined just to control this function.
    CODE is a non-digit that preceded the operand-number in the % spec,
    such as 'z' if the spec was `%z3'.  CODE is 0 if there was no char
    between the % and the digits.
    When CODE is a non-letter, X is 0.
 
    The meanings of the letters are machine-dependent and controlled
-   by PRINT_OPERAND.  */
+   by TARGET_PRINT_OPERAND.  */
 
 static void
 output_operand (rtx x, int code ATTRIBUTE_UNUSED)
@@ -3490,7 +3487,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   /* X must not be a pseudo reg.  */
   gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
-  PRINT_OPERAND (asm_out_file, x, code);
+  targetm.asm_out.print_operand (asm_out_file, x, code);
 
   if (x == NULL_RTX)
     return;
@@ -3498,16 +3495,15 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   for_each_rtx (&x, mark_symbol_ref_as_used, NULL);
 }
 
-/* Print a memory reference operand for address X
-   using machine-dependent assembler syntax.
-   The macro PRINT_OPERAND_ADDRESS exists just to control this function.  */
+/* Print a memory reference operand for address X using
+   machine-dependent assembler syntax.  */
 
 void
 output_address (rtx x)
 {
   bool changed = false;
   walk_alter_subreg (&x, &changed);
-  PRINT_OPERAND_ADDRESS (asm_out_file, x);
+  targetm.asm_out.print_operand_address (asm_out_file, x);
 }
 
 /* Print an integer constant expression in assembler syntax.

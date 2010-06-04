@@ -491,8 +491,8 @@ addr_const_to_string (char *str, rtx x)
 	  strcat (str, buf1);
 	}
       else
-	/* We can't handle floating point constants; PRINT_OPERAND must
-	   handle them.  */
+	/* We can't handle floating point constants;
+	   TARGET_PRINT_OPERAND must handle them.  */
 	output_operand_lossage ("floating constant misused");
       break;
 

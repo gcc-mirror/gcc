@@ -60,8 +60,6 @@ extern bool legitimate_pic_operand_p (rtx);
 extern int legitimate_pic_address_disp_p (rtx);
 
 extern void print_reg (rtx, int, FILE*);
-extern void print_operand (FILE*, rtx, int);
-extern void print_operand_address (FILE*, rtx);
 extern bool output_addr_const_extra (FILE*, rtx);
 
 extern void split_di (rtx[], int, rtx[], rtx[]);
