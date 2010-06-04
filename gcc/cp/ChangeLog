@@ -1,4 +1,10 @@
 2010-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44412
+	* typeck.c (build_class_member_access_expr): Call mark_exp_read
+	on object for static data members.
+
+2010-06-04  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
 	PR c++/44362
