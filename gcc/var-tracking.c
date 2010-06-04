@@ -2482,16 +2482,21 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 {
   location_chain node;
   enum rtx_code loc_code;
+  location_chain ret = NULL;
+  int unmark_self = 0;
+#ifdef ENABLE_CHECKING
+  static int mark_count;
+#endif
 
   if (!var)
-    return NULL;
+    return ret;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (dv_onepart_p (var->dv));
 #endif
 
   if (!var->n_var_parts)
-    return NULL;
+    return ret;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (var->var_part[0].offset == 0);
@@ -2506,34 +2511,89 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 	    continue;
 	}
       else if (loc == node->loc)
-	return node;
+	{
+	  ret = node;
+	  break;
+	}
       else if (loc_code != VALUE)
 	{
 	  if (rtx_equal_p (loc, node->loc))
-	    return node;
+	    {
+	      ret = node;
+	      break;
+	    }
 	  continue;
 	}
       if (!VALUE_RECURSED_INTO (node->loc))
 	{
 	  decl_or_value dv = dv_from_value (node->loc);
-	  variable var = (variable)
-			 htab_find_with_hash (vars, dv, dv_htab_hash (dv));
+	  variable rvar = (variable)
+	    htab_find_with_hash (vars, dv, dv_htab_hash (dv));
 
-	  if (var)
+	  if (rvar)
 	    {
 	      location_chain where;
-	      VALUE_RECURSED_INTO (node->loc) = true;
-	      if ((where = find_loc_in_1pdv (loc, var, vars)))
+
+	      if (!unmark_self)
 		{
+		  if (dv_is_value_p (var->dv)
+		      && !VALUE_RECURSED_INTO (dv_as_value (var->dv)))
+		    {
+		      unmark_self = 1;
+#ifdef ENABLE_CHECKING
+		      mark_count++;
+#endif
+		      VALUE_RECURSED_INTO (dv_as_value (var->dv)) = true;
+		    }
+		  else
+		    unmark_self = -1;
+		}
+
+#ifdef ENABLE_CHECKING
+	      mark_count++;
+	      /* The recursion count is bounded because we're
+		 searching in a star-canonicalized set, i.e., each
+		 equivalence set of values is arranged so that the
+		 canonical value has all locations and equivalent
+		 values, whereas equivalent values only point back to
+		 the canonical.  So, if we start at the canonical
+		 value, we'll recurse at most into each sibling, so
+		 the recurse limit will be 2.  If we start at a
+		 non-canonical value, we'll recurse into the
+		 canonical, and from there to other siblings, so
+		 recurse limit will be 3.  If we start at a one-part
+		 variable, we add one level of recursion, but we don't
+		 count it.  */
+	      gcc_assert (mark_count <= 3);
+#endif
+	      VALUE_RECURSED_INTO (node->loc) = true;
+	      if ((where = find_loc_in_1pdv (loc, rvar, vars)))
+		{
+#ifdef ENABLE_CHECKING
+		  mark_count--;
+#endif
 		  VALUE_RECURSED_INTO (node->loc) = false;
-		  return where;
+		  ret = where;
+		  break;
 		}
 	      VALUE_RECURSED_INTO (node->loc) = false;
+#ifdef ENABLE_CHECKING
+	      mark_count--;
+#endif
 	    }
 	}
     }
 
-  return NULL;
+  if (unmark_self > 0)
+    {
+      VALUE_RECURSED_INTO (dv_as_value (var->dv)) = false;
+#ifdef ENABLE_CHECKING
+      mark_count--;
+      gcc_assert (mark_count == 0);
+#endif
+    }
+
+  return ret;
 }
 
 /* Hash table iteration argument passed to variable_merge.  */

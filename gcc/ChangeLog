@@ -1,3 +1,10 @@
+2010-06-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Mark initial value before
+	recursing.  Check that recursion is bounded.  Rename inner var
+	to avoid hiding incoming argument.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
