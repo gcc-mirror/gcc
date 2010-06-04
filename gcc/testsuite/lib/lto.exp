@@ -27,7 +27,8 @@ proc lto_prune_warns { text } {
 
     # And any stray location lines.
     regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
-    regsub -all "(^|\n)In file included from :\[^\n\]*" $text "" text
+    regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[ \t\]*from \[^\n\]*" $text "" text
 
     # Sun ld warns about common symbols with differing sizes.  Unlike GNU ld
     # --warn-common (off by default), they cannot be disabled.
@@ -137,6 +138,8 @@ proc lto-obj { source dest optall optfile optstr xfaildata } {
 
     set compiler_conditional_xfail_data $xfaildata
     set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+    # Prune unimportant visibility warnings before checking output.
+    set comp_output [lto_prune_warns $comp_output]
     ${tool}_check_compile "$testcase $dest assemble" $optstr $dest $comp_output
 }
 

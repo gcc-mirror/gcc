@@ -1,6 +1,22 @@
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-05-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/20011009-1.c (COMMENT): Define.
+	(main): Use it.
+	* gcc.target/i386/pr25993.c [__sun__]: Use .globl.
+	* lib/lto.exp (lto_prune_warns): Fix location line regex.
+	Prune another location line format.
+	(lto-obj): Call lto_prune_warns on comp_output.
+
+	2010-05-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr25993.c: Use @function as type specifier.
+
+2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776
