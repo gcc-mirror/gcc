@@ -1,3 +1,10 @@
+2010-06-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Mark initial value before
+	recursing.  Check that recursion is bounded.  Rename inner var
+	to avoid hiding incoming argument.
+
 2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*addqi_2): Do not assert operands[2] == 255
