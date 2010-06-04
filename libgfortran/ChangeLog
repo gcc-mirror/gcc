@@ -1,3 +1,9 @@
+2010-06-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* intrinsics/date_and_time.c:  Replace assert with runtime_error
+	when VALUE is too small.
+
 2010-05-20 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/43851
