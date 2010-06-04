@@ -1,8 +1,12 @@
+2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_4): Check for incdec_operand in QImode.
+
 2010-06-04  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
 	2010-05-25  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR debug/41371
 	* var-tracking.c (find_loc_in_1pdv): Guard asserts with
 	ENABLE_CHECKING.
