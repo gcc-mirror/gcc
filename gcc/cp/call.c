@@ -3631,7 +3631,6 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
   tree arg2_type;
   tree arg3_type;
   tree result = NULL_TREE;
-  tree result_save;
   tree result_type = NULL_TREE;
   bool lvalue_p = true;
   struct z_candidate *candidates = 0;
@@ -4020,12 +4019,10 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
     }
 
  valid_operands:
-  result_save = build3 (COND_EXPR, result_type, arg1, arg2, arg3);
-  result = fold_if_not_in_template (result_save);
-
-  if (cp_unevaluated_operand && TREE_CODE (result) == CALL_EXPR)
-    /* Avoid folding to a CALL_EXPR within decltype (c++/42013).  */
-    result = result_save;
+  result = build3 (COND_EXPR, result_type, arg1, arg2, arg3);
+  if (!cp_unevaluated_operand)
+    /* Avoid folding within decltype (c++/42013) and noexcept.  */
+    result = fold_if_not_in_template (result);
 
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */

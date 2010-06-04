@@ -418,6 +418,7 @@ build_aggr_init_expr (tree type, tree init)
 				      AGGR_INIT_EXPR_ARGP (init));
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
+      TREE_NOTHROW (rval) = TREE_NOTHROW (init);
     }
   else
     rval = init;

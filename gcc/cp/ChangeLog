@@ -1,3 +1,12 @@
+2010-06-04  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_conditional_expr): Never fold in unevaluated context.
+	* tree.c (build_aggr_init_expr): Propagate TREE_NOTHROW.
+	* semantics.c (simplify_aggr_init_expr): Likewise.
+	* typeck.c (merge_types): Call merge_exception_specifiers.
+	* decl.c (duplicate_decls): Check DECL_SOURCE_LOCATION rather than
+	DECL_ANTICIPATED for preferring new type.
+
 2010-06-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++spec.c (lang_specific_driver): Use GCC-specific formats in
