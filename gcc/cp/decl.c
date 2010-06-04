@@ -1286,7 +1286,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       /* Even if the types match, prefer the new declarations type for
 	 built-ins which have not been explicitly declared, for
 	 exception lists, etc...  */
-      else if (DECL_ANTICIPATED (olddecl))
+      else if (DECL_SOURCE_LOCATION (olddecl) == BUILTINS_LOCATION)
 	{
 	  tree type = TREE_TYPE (newdecl);
 	  tree attribs = (*targetm.merge_type_attributes)

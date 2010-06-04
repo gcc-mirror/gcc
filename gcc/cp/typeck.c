@@ -829,26 +829,17 @@ merge_types (tree t1, tree t2)
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (p1 == NULL_TREE || TREE_VALUE (p1) == void_type_node)
-	  {
-	    parms = p2;
-	    raises = TYPE_RAISES_EXCEPTIONS (t2);
-	  }
+	  parms = p2;
 	else if (p2 == NULL_TREE || TREE_VALUE (p2) == void_type_node)
-	  {
-	    parms = p1;
-	    raises = TYPE_RAISES_EXCEPTIONS (t1);
-	  }
+	  parms = p1;
 	else
-	  {
-	    parms = commonparms (p1, p2);
-	    /* In cases where we're merging a real declaration with a
-	       built-in declaration, t1 is the real one.  */
-	    raises = TYPE_RAISES_EXCEPTIONS (t1);
-	  }
+	  parms = commonparms (p1, p2);
 
 	rval = build_function_type (valtype, parms);
 	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
 	rval = apply_memfn_quals (rval, type_memfn_quals (t1));
+	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
+					     TYPE_RAISES_EXCEPTIONS (t2));
 	t1 = build_exception_variant (rval, raises);
 	break;
       }
@@ -858,7 +849,8 @@ merge_types (tree t1, tree t2)
 	/* Get this value the long way, since TYPE_METHOD_BASETYPE
 	   is just the main variant of this.  */
 	tree basetype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t2)));
-	tree raises = TYPE_RAISES_EXCEPTIONS (t1);
+	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
+						  TYPE_RAISES_EXCEPTIONS (t2));
 	tree t3;
 
 	/* If this was a member function type, get back to the
