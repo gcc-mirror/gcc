@@ -1,3 +1,8 @@
+2010-06-04  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (ASM_GENERATE_INTERNAL_LABEL): Prefix
+	by '*'.
+
 2010-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* df.h (df_rd_bb_info, df_md_bb_info, df_lr_bb_info, df_live_bb_info,

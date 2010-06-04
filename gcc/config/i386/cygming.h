@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)  \
-  sprintf ((BUF), "%s%s%ld", LOCAL_LABEL_PREFIX, \
+  sprintf ((BUF), "*%s%s%ld", LOCAL_LABEL_PREFIX, \
 	   (PREFIX), (long)(NUMBER))
 
 #undef LPREFIX
