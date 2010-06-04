@@ -1,8 +1,16 @@
+2010-06-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/44075
+	* gcc/config/rs6000/rs6000.c (struct machine_function): Reorder
+	fields for better packing.  Add lr_save_state.
+	(rs6000_ra_ever_killed): Return lr_save_state if set.
+	(rs6000_emit_eh_reg_restore): Set lr_save_state.
+
 2010-06-03  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
 	2010-05-10  Richard Guenther  <rguenther@suse.de>
- 
+
 	* lto-symtab.c (lto_symtab_entry_marked_p): Make entry
 	marked if the entry identifier is marked.
 
@@ -10,7 +18,7 @@
 
 	Backport from mainline:
 	2010-05-16  Richard Guenther  <rguenther@suse.de>
- 
+
 	* var-tracking.c (vars_copy_1): Inline ...
 	(vars_copy): ... here.  Use FOR_EACH_HTAB_ELEMENT.
 	(variable_union): Use FOR_EACH_HTAB_ELEMENT.  Merge asserts.
@@ -30,7 +38,7 @@
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
-	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if                                                                        
+	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if
 	set->regs[i] is NULL or has just one entry.
 
 2010-06-03  Alan Modra  <amodra@gmail.com>
