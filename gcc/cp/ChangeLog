@@ -1,5 +1,8 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (value_dependent_expression_p) [NOEXCEPT_EXPR]: Avoid
+	using an uninitialized variable.
+
 	* cxx-pretty-print.c (pp_cxx_unary_expression): Handle NOEXCEPT_EXPR.
 	(pp_cxx_expression): Likewise.
 
