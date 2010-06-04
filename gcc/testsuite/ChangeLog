@@ -1,3 +1,19 @@
+2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* lib/lto.exp (lto_prune_vis_warns): New function.
+	(lto-link-and-maybe-run): Call it.
+
+	2010-05-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/lto.exp (lto_prune_vis_warns): Renamed to lto_prune_warns.
+	Log text on entry and exit.
+	Prune Sun ld warnings for common symbols with differing sizes.
+	(lto-link-and-maybe-run): Change caller.
+
 2010-06-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44360
