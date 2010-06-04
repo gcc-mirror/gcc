@@ -1,10 +1,14 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	* cxx-pretty-print.c (pp_cxx_unary_expression): Handle NOEXCEPT_EXPR.
+	(pp_cxx_expression): Likewise.
+
 	Implement noexcept-specification (15.4)
 	* parser.c (cp_parser_exception_specification_opt): Parse it.
 	Give -Wdeprecated warning about throw() specs.
 	* pt.c (tsubst_exception_specification): Handle it.
 	* error.c (dump_exception_spec): Handle it.
+	(dump_expr): Handle NOEXCEPT_EXPR.
 	* cxx-pretty-print.c (pp_cxx_exception_specification): Likewise.
 	* typeck.c (comp_except_specs): Handle compatibility rules.
 	Change exact parm to take an enum.
