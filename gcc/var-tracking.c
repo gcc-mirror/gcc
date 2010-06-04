@@ -2481,39 +2481,57 @@ static location_chain
 find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 {
   location_chain node;
+  enum rtx_code loc_code;
 
   if (!var)
     return NULL;
 
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_onepart_p (var->dv));
+#endif
 
   if (!var->n_var_parts)
     return NULL;
 
+#ifdef ENABLE_CHECKING
   gcc_assert (var->var_part[0].offset == 0);
+#endif
 
+  loc_code = GET_CODE (loc);
   for (node = var->var_part[0].loc_chain; node; node = node->next)
-    if (rtx_equal_p (loc, node->loc))
-      return node;
-    else if (GET_CODE (node->loc) == VALUE
-	     && !VALUE_RECURSED_INTO (node->loc))
-      {
-	decl_or_value dv = dv_from_value (node->loc);
-	variable var = (variable)
-		       htab_find_with_hash (vars, dv, dv_htab_hash (dv));
+    {
+      if (GET_CODE (node->loc) != loc_code)
+	{
+	  if (GET_CODE (node->loc) != VALUE)
+	    continue;
+	}
+      else if (loc == node->loc)
+	return node;
+      else if (loc_code != VALUE)
+	{
+	  if (rtx_equal_p (loc, node->loc))
+	    return node;
+	  continue;
+	}
+      if (!VALUE_RECURSED_INTO (node->loc))
+	{
+	  decl_or_value dv = dv_from_value (node->loc);
+	  variable var = (variable)
+			 htab_find_with_hash (vars, dv, dv_htab_hash (dv));
 
-	if (var)
-	  {
-	    location_chain where;
-	    VALUE_RECURSED_INTO (node->loc) = true;
-	    if ((where = find_loc_in_1pdv (loc, var, vars)))
-	      {
-		VALUE_RECURSED_INTO (node->loc) = false;
-		return where;
-	      }
-	    VALUE_RECURSED_INTO (node->loc) = false;
-	  }
-      }
+	  if (var)
+	    {
+	      location_chain where;
+	      VALUE_RECURSED_INTO (node->loc) = true;
+	      if ((where = find_loc_in_1pdv (loc, var, vars)))
+		{
+		  VALUE_RECURSED_INTO (node->loc) = false;
+		  return where;
+		}
+	      VALUE_RECURSED_INTO (node->loc) = false;
+	    }
+	}
+    }
 
   return NULL;
 }
@@ -2571,6 +2589,33 @@ intersect_loc_chains (rtx val, location_chain *dest, struct dfset_merge *dsm,
   dataflow_set *s1set = dsm->cur;
   dataflow_set *s2set = dsm->src;
   location_chain found;
+
+  if (s2var)
+    {
+      location_chain s2node;
+
+#ifdef ENABLE_CHECKING
+      gcc_assert (dv_onepart_p (s2var->dv));
+#endif
+
+      if (s2var->n_var_parts)
+	{
+#ifdef ENABLE_CHECKING
+	  gcc_assert (s2var->var_part[0].offset == 0);
+#endif
+	  s2node = s2var->var_part[0].loc_chain;
+
+	  for (; s1node && s2node;
+	       s1node = s1node->next, s2node = s2node->next)
+	    if (s1node->loc != s2node->loc)
+	      break;
+	    else if (s1node->loc == val)
+	      continue;
+	    else
+	      insert_into_intersection (dest, s1node->loc,
+					MIN (s1node->init, s2node->init));
+	}
+    }
 
   for (; s1node; s1node = s1node->next)
     {

@@ -1,3 +1,21 @@
+2010-06-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Guard asserts with
+	ENABLE_CHECKING.
+	(intersect_loc_chains): Walk the s2var's loc_chain together
+	with s1node chain as long as the locations are equal, don't
+	call find_loc_in_1pdv in that case.
+
+	2010-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Add a few checks from
+	rtx_equal_p inline.
+
 2010-06-04  Alan Modra  <amodra@gmail.com>
 
 	PR target/44075
