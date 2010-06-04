@@ -2229,6 +2229,7 @@ build_class_member_access_expr (tree object, tree member,
     {
       /* A static data member.  */
       result = member;
+      mark_exp_read (object);
       /* If OBJECT has side-effects, they are supposed to occur.  */
       if (TREE_SIDE_EFFECTS (object))
 	result = build2 (COMPOUND_EXPR, TREE_TYPE (result), object, result);
