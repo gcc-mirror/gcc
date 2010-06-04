@@ -103,7 +103,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 		need_E = 0;
 	      else if (argv[i][1] == 'S' || argv[i][1] == 'c')
 		{
-		  fatal_error ("\"%s\" is not a valid option to the "
+		  fatal_error ("%qs is not a valid option to the "
 			       "preprocessor", argv[i]);
 		  return;
 		}

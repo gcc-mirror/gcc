@@ -1,3 +1,8 @@
+2010-06-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortranspec.c (append_arg, lang_specific_driver): Use
+	GCC-specific formats in diagnostics.
+
 2010-06-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44360

@@ -244,7 +244,7 @@ append_arg (const char *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal_error ("overflowed output arg list for '%s'", arg);
+    fatal_error ("overflowed output arg list for %qs", arg);
 
   g77_newargv[g77_newargc++] = arg;
 }
@@ -402,7 +402,7 @@ For more information about these matters, see the file named COPYING\n\n"));
       if (i + skip < argc)
 	i += skip;
       else
-	fatal_error ("argument to '%s' missing", argv[i]);
+	fatal_error ("argument to %qs missing", argv[i]);
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
@@ -440,7 +440,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 		  i++;
 		}
 	      else
-		fatal_error ("argument to '%s' missing", argv[i]);
+		fatal_error ("argument to %qs missing", argv[i]);
 	    }
 	  else
 	    {
