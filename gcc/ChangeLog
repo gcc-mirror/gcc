@@ -1,3 +1,7 @@
+2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_4): Check for incdec_operand in QImode.
+
 2010-06-04  Alan Modra  <amodra@gmail.com>
 
 	PR target/44075
