@@ -1388,7 +1388,15 @@ dump_parameters (tree parmtypes, int flags)
 static void
 dump_exception_spec (tree t, int flags)
 {
-  if (t)
+  if (t && TREE_PURPOSE (t))
+    {
+      pp_cxx_ws_string (cxx_pp, "noexcept");
+      pp_cxx_whitespace (cxx_pp);
+      pp_cxx_left_paren (cxx_pp);
+      dump_expr (TREE_PURPOSE (t), flags);
+      pp_cxx_right_paren (cxx_pp);
+    }
+  else if (t)
     {
       pp_cxx_ws_string (cxx_pp, "throw");
       pp_cxx_whitespace (cxx_pp);
@@ -2113,6 +2121,14 @@ dump_expr (tree t, int flags)
 	dump_type (TREE_OPERAND (t, 0), flags);
       else
 	dump_expr (TREE_OPERAND (t, 0), flags);
+      pp_cxx_right_paren (cxx_pp);
+      break;
+
+    case NOEXCEPT_EXPR:
+      pp_cxx_ws_string (cxx_pp, "noexcept");
+      pp_cxx_whitespace (cxx_pp);
+      pp_cxx_left_paren (cxx_pp);
+      dump_expr (TREE_OPERAND (t, 0), flags);
       pp_cxx_right_paren (cxx_pp);
       break;
 

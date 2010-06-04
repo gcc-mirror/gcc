@@ -1467,12 +1467,16 @@ cxx_printable_name_translate (tree decl, int v)
 tree
 build_exception_variant (tree type, tree raises)
 {
-  tree v = TYPE_MAIN_VARIANT (type);
-  int type_quals = TYPE_QUALS (type);
+  tree v;
+  int type_quals;
 
-  for (; v; v = TYPE_NEXT_VARIANT (v))
+  if (comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (type), ce_exact))
+    return type;
+
+  type_quals = TYPE_QUALS (type);
+  for (v = TYPE_MAIN_VARIANT (type); v; v = TYPE_NEXT_VARIANT (v))
     if (check_qualified_type (v, type, type_quals)
-	&& comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (v), 1))
+	&& comp_except_specs (raises, TYPE_RAISES_EXCEPTIONS (v), ce_exact))
       return v;
 
   /* Need to build a new variant.  */
@@ -2645,10 +2649,8 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   tree new_type;
 
   new_type = build_type_attribute_variant (type, attributes);
-  if ((TREE_CODE (new_type) == FUNCTION_TYPE
-       || TREE_CODE (new_type) == METHOD_TYPE)
-      && (TYPE_RAISES_EXCEPTIONS (new_type)
-	  != TYPE_RAISES_EXCEPTIONS (type)))
+  if (TREE_CODE (new_type) == FUNCTION_TYPE
+      || TREE_CODE (new_type) == METHOD_TYPE)
     new_type = build_exception_variant (new_type,
 					TYPE_RAISES_EXCEPTIONS (type));
 
@@ -2669,7 +2671,7 @@ cxx_type_hash_eq (const_tree typea, const_tree typeb)
   gcc_assert (TREE_CODE (typea) == FUNCTION_TYPE);
 
   return comp_except_specs (TYPE_RAISES_EXCEPTIONS (typea),
-			    TYPE_RAISES_EXCEPTIONS (typeb), 1);
+			    TYPE_RAISES_EXCEPTIONS (typeb), ce_exact);
 }
 
 /* Apply FUNC to all language-specific sub-trees of TP in a pre-order

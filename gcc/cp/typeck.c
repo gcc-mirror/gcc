@@ -981,29 +981,56 @@ comp_except_types (tree a, tree b, bool exact)
 }
 
 /* Return true if TYPE1 and TYPE2 are equivalent exception specifiers.
-   If EXACT is false, T2 can be stricter than T1 (according to 15.4/7),
-   otherwise it must be exact. Exception lists are unordered, but
-   we've already filtered out duplicates. Most lists will be in order,
-   we should try to make use of that.  */
+   If EXACT is ce_derived, T2 can be stricter than T1 (according to 15.4/5).
+   If EXACT is ce_normal, the compatibility rules in 15.4/3 apply.
+   If EXACT is ce_exact, the specs must be exactly the same. Exception lists
+   are unordered, but we've already filtered out duplicates. Most lists will
+   be in order, we should try to make use of that.  */
 
 bool
-comp_except_specs (const_tree t1, const_tree t2, bool exact)
+comp_except_specs (const_tree t1, const_tree t2, int exact)
 {
   const_tree probe;
   const_tree base;
   int  length = 0;
+  const_tree noexcept_spec = NULL_TREE;
+  const_tree other_spec;
 
   if (t1 == t2)
     return true;
 
+  /* First test noexcept compatibility.  */
+  if (t1 && TREE_PURPOSE (t1))
+    noexcept_spec = t1, other_spec = t2;
+  else if (t2 && TREE_PURPOSE (t2))
+    noexcept_spec = t2, other_spec = t1;
+  if (noexcept_spec)
+    {
+      tree p = TREE_PURPOSE (noexcept_spec);
+      /* Two noexcept-specs are equivalent iff their exprs are.  */
+      if (other_spec && TREE_PURPOSE (other_spec))
+	return cp_tree_equal (p, TREE_PURPOSE (other_spec));
+      /* noexcept(true) is compatible with throw().  */
+      else if (exact < ce_exact && p == boolean_true_node)
+	return nothrow_spec_p (other_spec);
+      /* noexcept(false) is compatible with any throwing
+	 dynamic-exception-spec.  */
+      else if (exact < ce_exact && p == boolean_false_node)
+	return !nothrow_spec_p (other_spec);
+      /* A dependent noexcept-spec is not compatible with any
+	 dynamic-exception-spec.  */
+      else
+	return false;
+    }
+
   if (t1 == NULL_TREE)			   /* T1 is ...  */
-    return t2 == NULL_TREE || !exact;
+    return t2 == NULL_TREE || exact == ce_derived;
   if (!TREE_VALUE (t1))			   /* t1 is EMPTY */
     return t2 != NULL_TREE && !TREE_VALUE (t2);
   if (t2 == NULL_TREE)			   /* T2 is ...  */
     return false;
   if (TREE_VALUE (t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
-    return !exact;
+    return exact == ce_derived;
 
   /* Neither set is ... or EMPTY, make sure each part of T2 is in T1.
      Count how many we find, to determine exactness. For exact matching and
@@ -1018,7 +1045,7 @@ comp_except_specs (const_tree t1, const_tree t2, bool exact)
 
 	  if (comp_except_types (a, b, exact))
 	    {
-	      if (probe == base && exact)
+	      if (probe == base && exact > ce_derived)
 		base = TREE_CHAIN (probe);
 	      length++;
 	      break;
@@ -1027,7 +1054,7 @@ comp_except_specs (const_tree t1, const_tree t2, bool exact)
       if (probe == NULL_TREE)
 	return false;
     }
-  return !exact || base == NULL_TREE || length == list_length (t1);
+  return exact == ce_derived || base == NULL_TREE || length == list_length (t1);
 }
 
 /* Compare the array types T1 and T2.  ALLOW_REDECLARATION is true if

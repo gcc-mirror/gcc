@@ -1104,10 +1104,10 @@ check_redeclaration_exception_specification (tree new_decl,
   if ((pedantic || ! DECL_IN_SYSTEM_HEADER (old_decl))
       && ! DECL_IS_BUILTIN (old_decl)
       && flag_exceptions
-      && !comp_except_specs (new_exceptions, old_exceptions,
-			     /*exact=*/true))
+      && !comp_except_specs (new_exceptions, old_exceptions, ce_normal))
     {
-      error ("declaration of %qF throws different exceptions", new_decl);
+      error ("declaration of %qF has a different exception specifier",
+	     new_decl);
       error ("from previous declaration %q+F", old_decl);
     }
 }
@@ -3433,6 +3433,8 @@ cxx_init_decl_processing (void)
   truthvalue_true_node = boolean_true_node;
 
   empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
+  noexcept_true_spec = build_tree_list (boolean_true_node, NULL_TREE);
+  noexcept_false_spec = build_tree_list (boolean_false_node, NULL_TREE);
 
 #if 0
   record_builtin_type (RID_MAX, NULL, string_type_node);
@@ -3498,29 +3500,37 @@ cxx_init_decl_processing (void)
   current_lang_name = lang_name_cplusplus;
 
   {
-    tree bad_alloc_id;
-    tree bad_alloc_type_node;
-    tree bad_alloc_decl;
     tree newtype, deltype;
     tree ptr_ftype_sizetype;
-
-    push_namespace (std_identifier);
-    bad_alloc_id = get_identifier ("bad_alloc");
-    bad_alloc_type_node = make_class_type (RECORD_TYPE);
-    TYPE_CONTEXT (bad_alloc_type_node) = current_namespace;
-    bad_alloc_decl
-      = create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
-    DECL_CONTEXT (bad_alloc_decl) = current_namespace;
-    pop_namespace ();
+    tree new_eh_spec;
 
     ptr_ftype_sizetype
       = build_function_type (ptr_type_node,
 			     tree_cons (NULL_TREE,
 					size_type_node,
 					void_list_node));
-    newtype = build_exception_variant
-      (ptr_ftype_sizetype, add_exception_specifier
-       (NULL_TREE, bad_alloc_type_node, -1));
+    if (cxx_dialect == cxx98)
+      {
+	tree bad_alloc_id;
+	tree bad_alloc_type_node;
+	tree bad_alloc_decl;
+
+	push_namespace (std_identifier);
+	bad_alloc_id = get_identifier ("bad_alloc");
+	bad_alloc_type_node = make_class_type (RECORD_TYPE);
+	TYPE_CONTEXT (bad_alloc_type_node) = current_namespace;
+	bad_alloc_decl
+	  = create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
+	DECL_CONTEXT (bad_alloc_decl) = current_namespace;
+	pop_namespace ();
+
+	new_eh_spec
+	  = add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1);
+      }
+    else
+      new_eh_spec = noexcept_false_spec;
+
+    newtype = build_exception_variant (ptr_ftype_sizetype, new_eh_spec);
     deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
     push_cp_library_fn (NEW_EXPR, newtype);
     push_cp_library_fn (VEC_NEW_EXPR, newtype);
@@ -12198,7 +12208,7 @@ use_eh_spec_block (tree fn)
 {
   return (flag_exceptions && flag_enforce_eh_specs
 	  && !processing_template_decl
-	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
+	  && !type_throw_all_p (TREE_TYPE (fn))
 	  /* We insert the EH_SPEC_BLOCK only in the original
 	     function; then, it is copied automatically to the
 	     clones.  */

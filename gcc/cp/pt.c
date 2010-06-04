@@ -9838,7 +9838,15 @@ tsubst_exception_specification (tree fntype,
 
   specs = TYPE_RAISES_EXCEPTIONS (fntype);
   new_specs = NULL_TREE;
-  if (specs)
+  if (specs && TREE_PURPOSE (specs))
+    {
+      /* A noexcept-specifier.  */
+      new_specs = tsubst_copy_and_build
+	(TREE_PURPOSE (specs), args, complain, in_decl, /*function_p=*/false,
+	 /*integral_constant_expression_p=*/true);
+      new_specs = build_noexcept_spec (new_specs, complain);
+    }
+  else if (specs)
     {
       if (! TREE_VALUE (specs))
 	new_specs = specs;

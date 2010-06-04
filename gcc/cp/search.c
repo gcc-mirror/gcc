@@ -1867,7 +1867,7 @@ check_final_overrider (tree overrider, tree basefn)
     }
 
   /* Check throw specifier is at least as strict.  */
-  if (!comp_except_specs (base_throw, over_throw, 0))
+  if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
       error ("looser throw specifier for %q+#F", overrider);
       error ("  overriding %q+#F", basefn);
