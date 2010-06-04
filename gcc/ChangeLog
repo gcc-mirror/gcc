@@ -1,3 +1,17 @@
+2010-06-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/darwin-driver.c (darwin_default_min_version): Use
+	* GCC-specific formats in diagnostics.
+	* cppspec.c (lang_specific_driver): Use GCC-specific formats in
+	diagnostics.
+	* gcc.c (translate_options, read_specs, add_sysrooted_prefix,
+	execute, process_command, end_going_arg, do_self_spec, do_spec_1,
+	eval_spec_function, handle_braces, process_brace_body, main,
+	perror_with_name, used_arg, set_multilib_dir, print_multilib_info,
+	getenv_spec_function, compare_version_strings,
+	version_compare_spec_function): Use GCC-specific formats in
+	diagnostics.
+
 2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*addhi_1_lea) <TYPE_INCDEC, default>: Assert

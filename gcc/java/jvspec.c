@@ -400,13 +400,13 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
 
   if (quote)
-    fatal_error ("argument to '%s' missing\n", quote);
+    fatal_error ("argument to %qs missing", quote);
 
   if (saw_D && ! main_class_name)
-    fatal_error ("can't specify '-D' without '--main'\n");
+    fatal_error ("can't specify %<-D%> without %<--main%>");
 
   if (main_class_name && ! verify_class_name (main_class_name))
-    fatal_error ("'%s' is not a valid class name", main_class_name);
+    fatal_error ("%qs is not a valid class name", main_class_name);
 
   num_args = argc + added;
   if (saw_resource)
@@ -582,7 +582,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
       if (strncmp (argv[i], "-fmain=", 7) == 0)
 	{
 	  if (! will_link)
-	    fatal_error ("cannot specify 'main' class when not linking");
+	    fatal_error ("cannot specify %<main%> class when not linking");
 	  --j;
 	  continue;
 	}

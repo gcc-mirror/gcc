@@ -258,7 +258,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
 
   if (quote)
-    fatal_error ("argument to '%s' missing\n", quote);
+    fatal_error ("argument to %qs missing", quote);
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */

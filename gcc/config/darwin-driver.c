@@ -107,8 +107,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   if (sysctl (osversion_name, ARRAY_SIZE (osversion_name), osversion,
 	      &osversion_len, NULL, 0) == -1)
     {
-      warning (0, "sysctl for kern.osversion failed: %s",
-	       xstrerror (errno));
+      warning (0, "sysctl for kern.osversion failed: %m");
       return;
     }
 
@@ -151,7 +150,7 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   return;
   
  parse_failed:
-  warning (0, "couldn't understand kern.osversion `%.*s'",
+  warning (0, "couldn't understand kern.osversion %q.*s",
 	   (int) osversion_len, osversion);
   return;
 }
