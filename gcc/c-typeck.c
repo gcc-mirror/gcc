@@ -4440,13 +4440,15 @@ handle_warn_cast_qual (tree type, tree otype)
 	 && TREE_CODE (in_otype) == POINTER_TYPE);
 
   if (added)
-    warning (OPT_Wcast_qual, "cast adds new qualifiers to function type");
+    warning (OPT_Wcast_qual, "cast adds %q#v qualifier to function type",
+	     added);
 
   if (discarded)
     /* There are qualifiers present in IN_OTYPE that are not present
        in IN_TYPE.  */
     warning (OPT_Wcast_qual,
-	     "cast discards qualifiers from pointer target type");
+	     "cast discards %q#v qualifier from pointer target type",
+	     discarded);
 
   if (added || discarded)
     return;
@@ -4479,9 +4481,10 @@ handle_warn_cast_qual (tree type, tree otype)
       if ((TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype)) != 0
 	  && !is_const)
 	{
+	  int added = TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype);
 	  warning (OPT_Wcast_qual,
-		   ("new qualifiers in middle of multi-level non-const cast "
-		    "are unsafe"));
+		   ("new %qv qualifier in middle of multi-level non-const cast "
+		    "is unsafe"), added);
 	  break;
 	}
       if (is_const)
@@ -5007,6 +5010,36 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       }                                                                  \
   } while (0)
 
+  /* This macro is used to emit diagnostics to ensure that all format
+     strings are complete sentences, visible to gettext and checked at
+     compile time.  It is the same as WARN_FOR_ASSIGNMENT but with an
+     extra parameter to enumerate qualifiers.  */
+
+#define WARN_FOR_QUALIFIERS(LOCATION, OPT, AR, AS, IN, RE, QUALS)        \
+  do {                                                                   \
+    switch (errtype)                                                     \
+      {                                                                  \
+      case ic_argpass:                                                   \
+        if (pedwarn (LOCATION, OPT, AR, parmnum, rname, QUALS))          \
+          inform ((fundecl && !DECL_IS_BUILTIN (fundecl))	         \
+	      	  ? DECL_SOURCE_LOCATION (fundecl) : LOCATION,		 \
+                  "expected %qT but argument is of type %qT",            \
+                  type, rhstype);                                        \
+        break;                                                           \
+      case ic_assign:                                                    \
+        pedwarn (LOCATION, OPT, AS, QUALS);                          \
+        break;                                                           \
+      case ic_init:                                                      \
+        pedwarn (LOCATION, OPT, IN, QUALS);                          \
+        break;                                                           \
+      case ic_return:                                                    \
+        pedwarn (LOCATION, OPT, RE, QUALS);                        	 \
+        break;                                                           \
+      default:                                                           \
+        gcc_unreachable ();                                              \
+      }                                                                  \
+  } while (0)
+
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
@@ -5214,30 +5247,32 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		     vice-versa.  */
 		  if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		      & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		    WARN_FOR_ASSIGNMENT (location, 0,
+		    WARN_FOR_QUALIFIERS (location, 0,
 					 G_("passing argument %d of %qE "
-					    "makes qualified function "
+					    "makes %q#v qualified function "
 					    "pointer from unqualified"),
-					 G_("assignment makes qualified "
+					 G_("assignment makes %q#v qualified "
 					    "function pointer from "
 					    "unqualified"),
-					 G_("initialization makes qualified "
+					 G_("initialization makes %q#v qualified "
 					    "function pointer from "
 					    "unqualified"),
-					 G_("return makes qualified function "
-					    "pointer from unqualified"));
+					 G_("return makes %q#v qualified function "
+					    "pointer from unqualified"),
+					 TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
-		WARN_FOR_ASSIGNMENT (location, 0,
+		WARN_FOR_QUALIFIERS (location, 0,
 				     G_("passing argument %d of %qE discards "
-					"qualifiers from pointer target type"),
-				     G_("assignment discards qualifiers "
+					"%qv qualifier from pointer target type"),
+				     G_("assignment discards %qv qualifier "
 					"from pointer target type"),
-				     G_("initialization discards qualifiers "
+				     G_("initialization discards %qv qualifier "
 					"from pointer target type"),
-				     G_("return discards qualifiers from "
-					"pointer target type"));
+				     G_("return discards %qv qualifier from "
+					"pointer target type"),
+				     TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 
 	      memb = marginal_memb;
 	    }
@@ -5383,15 +5418,16 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		     qualifier are acceptable if the 'volatile' has been added
 		     in by the Objective-C EH machinery.  */
 		  if (!objc_type_quals_match (ttl, ttr))
-		    WARN_FOR_ASSIGNMENT (location, 0,
+		    WARN_FOR_QUALIFIERS (location, 0,
 					 G_("passing argument %d of %qE discards "
-					    "qualifiers from pointer target type"),
-					 G_("assignment discards qualifiers "
+					    "%qv qualifier from pointer target type"),
+					 G_("assignment discards %qv qualifier "
 					    "from pointer target type"),
-					 G_("initialization discards qualifiers "
+					 G_("initialization discards %qv qualifier "
 					    "from pointer target type"),
-					 G_("return discards qualifiers from "
-					    "pointer target type"));
+					 G_("return discards %qv qualifier from "
+					    "pointer target type"),
+					 TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
 		}
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
@@ -5419,16 +5455,17 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 		 where an ordinary one is wanted, but not vice-versa.  */
 	      if (TYPE_QUALS_NO_ADDR_SPACE (ttl)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE (ttr))
-		WARN_FOR_ASSIGNMENT (location, 0,
+		WARN_FOR_QUALIFIERS (location, 0,
 				     G_("passing argument %d of %qE makes "
-					"qualified function pointer "
+					"%q#v qualified function pointer "
 					"from unqualified"),
-				     G_("assignment makes qualified function "
+				     G_("assignment makes %q#v qualified function "
 					"pointer from unqualified"),
-				     G_("initialization makes qualified "
+				     G_("initialization makes %q#v qualified "
 					"function pointer from unqualified"),
-				     G_("return makes qualified function "
-					"pointer from unqualified"));
+				     G_("return makes %q#v qualified function "
+					"pointer from unqualified"),
+				     TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 	    }
 	}
       else

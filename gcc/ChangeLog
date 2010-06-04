@@ -1,3 +1,18 @@
+2010-06-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/25880
+	* c-objc-common.c (c_tree_printer): Handle %V, %v and %#v.
+	* c-format.c (gcc_diag_flag_specs): Add hash.
+	(gcc_cxxdiag_flag_specs): Use gcc_diag_flag_specs directly.
+	(gcc_tdiag_char_table,gcc_cdiag_char_table): Handle %V and %v.
+	* c-pretty-print.c (pp_c_cv_qualifier): Rename as
+	pp_c_cv_qualifiers. Handle qualifiers spelling here.
+	(pp_c_type_qualifier_list): Call the function above.
+	* c-pretty-print.h (pp_c_cv_qualifiers): Declare.
+	* c-typeck.c (handle_warn_cast_qual): Print qualifiers.
+	(WARN_FOR_QUALIFIERS): New macro.
+	(convert_for_assignment): Use it.
+
 2010-06-04  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygming.h (ASM_GENERATE_INTERNAL_LABEL): Prefix

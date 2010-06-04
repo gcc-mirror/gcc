@@ -13,11 +13,11 @@
 typedef void (*fp)(void);
 typedef void (*nrfp)(void) __attribute__((noreturn));
 
-TESTARG(fqa, nrfp, fp); /* { dg-error "passing argument 1 of 'fqaF' makes qualified function pointer from unqualified" } */
-TESTARP(fqb, nrfp, fp); /* { dg-error "passing argument 1 of 'fqbFp.x' makes qualified function pointer from unqualified" } */
-TESTASS(fqc, nrfp, fp); /* { dg-error "assignment makes qualified function pointer from unqualified" } */
-TESTINI(fqd, nrfp, fp); /* { dg-error "initialization makes qualified function pointer from unqualified" } */
-TESTRET(fqe, nrfp, fp); /* { dg-error "return makes qualified function pointer from unqualified" } */
+TESTARG(fqa, nrfp, fp); /* { dg-error "passing argument 1 of 'fqaF' makes '__attribute__..noreturn..' qualified function pointer from unqualified" } */
+TESTARP(fqb, nrfp, fp); /* { dg-error "passing argument 1 of 'fqbFp.x' makes '__attribute__..noreturn..' qualified function pointer from unqualified" } */
+TESTASS(fqc, nrfp, fp); /* { dg-error "assignment makes '__attribute__..noreturn..' qualified function pointer from unqualified" } */
+TESTINI(fqd, nrfp, fp); /* { dg-error "initialization makes '__attribute__..noreturn..' qualified function pointer from unqualified" } */
+TESTRET(fqe, nrfp, fp); /* { dg-error "return makes '__attribute__..noreturn..' qualified function pointer from unqualified" } */
 
 TESTARG(ofqa, fp, nrfp);
 TESTARP(ofqb, fp, nrfp);
@@ -25,11 +25,11 @@ TESTASS(ofqc, fp, nrfp);
 TESTINI(ofqd, fp, nrfp);
 TESTRET(ofqe, fp, nrfp);
 
-TESTARG(qa, char *, const char *); /* { dg-error "passing argument 1 of 'qaF' discards qualifiers from pointer target type" } */
-TESTARP(qb, char *, const char *); /* { dg-error "passing argument 1 of 'qbFp.x' discards qualifiers from pointer target type" } */
-TESTASS(qc, char *, const char *); /* { dg-error "assignment discards qualifiers from pointer target type" } */
-TESTINI(qd, char *, const char *); /* { dg-error "initialization discards qualifiers from pointer target type" } */
-TESTRET(qe, char *, const char *); /* { dg-error "return discards qualifiers from pointer target type" } */
+TESTARG(qa, char *, const char *); /* { dg-error "passing argument 1 of 'qaF' discards 'const' qualifier from pointer target type" } */
+TESTARP(qb, char *, const char *); /* { dg-error "passing argument 1 of 'qbFp.x' discards 'const' qualifier from pointer target type" } */
+TESTASS(qc, char *, const char *); /* { dg-error "assignment discards 'const' qualifier from pointer target type" } */
+TESTINI(qd, char *, const char *); /* { dg-error "initialization discards 'const' qualifier from pointer target type" } */
+TESTRET(qe, char *, const char *); /* { dg-error "return discards 'const' qualifier from pointer target type" } */
 
 TESTARG(oqa, const char *, char *);
 TESTARP(oqb, const char *, char *);

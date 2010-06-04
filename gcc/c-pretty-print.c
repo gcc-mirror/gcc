@@ -170,18 +170,43 @@ pp_c_exclamation (c_pretty_printer *pp)
   pp_base (pp)->padding = pp_none;
 }
 
-/* Print out the external representation of CV-QUALIFIER.  */
+/* Print out the external representation of QUALIFIERS.  */
 
-static void
-pp_c_cv_qualifier (c_pretty_printer *pp, const char *cv)
+void
+pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
 {
   const char *p = pp_last_position_in_text (pp);
+  bool previous = false;
+
+  if (!qualifiers)
+    return;
+
   /* The C programming language does not have references, but it is much
      simpler to handle those here rather than going through the same
      logic in the C++ pretty-printer.  */
   if (p != NULL && (*p == '*' || *p == '&'))
     pp_c_whitespace (pp);
-  pp_c_ws_string (pp, cv);
+
+  if (qualifiers & TYPE_QUAL_CONST)
+    {
+      pp_c_ws_string (pp, func_type ? "__attribute__((const))" : "const");
+      previous = true;
+    }
+
+  if (qualifiers & TYPE_QUAL_VOLATILE)
+    {
+      if (previous)
+        pp_c_whitespace (pp);
+      pp_c_ws_string (pp, func_type ? "__attribute__((noreturn))" : "volatile");
+      previous = true;
+    }
+
+  if (qualifiers & TYPE_QUAL_RESTRICT)
+    {
+      if (previous)
+        pp_c_whitespace (pp);
+      pp_c_ws_string (pp, flag_isoc99 ? "restrict" : "__restrict__");
+    }
 }
 
 /* Pretty-print T using the type-cast notation '( type-name )'.  */
@@ -242,12 +267,8 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
     t = TREE_TYPE (t);
 
   qualifiers = TYPE_QUALS (t);
-  if (qualifiers & TYPE_QUAL_CONST)
-    pp_c_cv_qualifier (pp, "const");
-  if (qualifiers & TYPE_QUAL_VOLATILE)
-    pp_c_cv_qualifier (pp, "volatile");
-  if (qualifiers & TYPE_QUAL_RESTRICT)
-    pp_c_cv_qualifier (pp, flag_isoc99 ? "restrict" : "__restrict__");
+  pp_c_cv_qualifiers (pp, qualifiers,
+		      TREE_CODE (t) == FUNCTION_TYPE);
 
   if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (t)))
     {

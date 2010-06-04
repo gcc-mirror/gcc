@@ -13,14 +13,14 @@ main(void)
 {
   char *A;
 
-  A = "text";		/* { dg-warning "discards qualifiers" "case zero" } */
-  A = one("text"	/* { dg-warning "discards qualifiers" "case one" } */
+  A = "text";		/* { dg-warning "discards 'const' qualifier" "case zero" } */
+  A = one("text"	/* { dg-warning "discards 'const' qualifier" "case one" } */
 	  "text")
 	;
-  A = two("text"	/* { dg-warning "discards qualifiers" "case two" } */
+  A = two("text"	/* { dg-warning "discards 'const' qualifier" "case two" } */
 	  "text")
 	;
-  A = four("text"	/* { dg-warning "discards qualifiers" "case four" } */
+  A = four("text"	/* { dg-warning "discards 'const' qualifier" "case four" } */
 	   "text")
 	;
 

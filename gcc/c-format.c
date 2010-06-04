@@ -421,6 +421,7 @@ static const format_flag_pair gcc_gfc_flag_pairs[] =
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
   { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
   { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
@@ -429,16 +430,7 @@ static const format_flag_spec gcc_diag_flag_specs[] =
 
 #define gcc_tdiag_flag_specs gcc_diag_flag_specs
 #define gcc_cdiag_flag_specs gcc_diag_flag_specs
-
-static const format_flag_spec gcc_cxxdiag_flag_specs[] =
-{
-  { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
-  { '#',  0, 0, N_("'#' flag"),        N_("the '#' printf flag"),              STD_C89 },
-  { 'q',  0, 0, N_("'q' flag"),        N_("the 'q' diagnostic flag"),          STD_C89 },
-  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
-  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, STD_C89 }
-};
+#define gcc_cxxdiag_flag_specs gcc_diag_flag_specs
 
 static const format_flag_spec scanf_flag_specs[] =
 {
@@ -585,7 +577,9 @@ static const format_char_info gcc_tdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "DFKTE", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DFKTEV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+
+  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
@@ -605,7 +599,9 @@ static const format_char_info gcc_cdiag_char_table[] =
   /* Custom conversion specifiers.  */
 
   /* These will require a "tree" at runtime.  */
-  { "DEFKT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DEFKTV", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+
+  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
@@ -626,6 +622,8 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 
   /* These will require a "tree" at runtime.  */
   { "ADEFKTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
+
+  { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
@@ -722,19 +720,19 @@ static const format_kind_info format_types_orig[] =
     'w', 0, 'p', 0, 'L', 0,
     NULL, NULL
   },
-  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL,
+  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+#", NULL,
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
-  { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+", NULL,
+  { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+#", NULL,
     gcc_tdiag_flag_specs, gcc_tdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
-  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q+", NULL,
+  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q+#", NULL,
     gcc_cdiag_flag_specs, gcc_cdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L', 0,

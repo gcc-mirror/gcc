@@ -70,13 +70,13 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cdiag ("%m");
   cxxdiag ("%m");
 
-  tdiag ("%D%F%T", t1, t1, t1);
-  tdiag ("%+D%+F%+T", t1, t1, t1);
-  tdiag ("%q+D%q+F%q+T", t1, t1, t1);
+  tdiag ("%D%F%T%V", t1, t1, t1, t1);
+  tdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  tdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
   tdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
-  cdiag ("%D%F%T", t1, t1, t1);
-  cdiag ("%+D%+F%+T", t1, t1, t1);
-  cdiag ("%q+D%q+F%q+T", t1, t1, t1);
+  cdiag ("%D%F%T%V", t1, t1, t1, t1);
+  cdiag ("%+D%+F%+T%+V", t1, t1, t1, t1);
+  cdiag ("%q+D%q+F%q+T%q+V", t1, t1, t1, t1);
   cdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
   cdiag ("%E", t1);
   cxxdiag ("%A%D%E%F%T%V", t1, t1, t1, t1, t1, t1);
@@ -85,6 +85,10 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cxxdiag ("%+A%+D%+E%+F%+T%+V", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%+#A%+#D%+#E%+#F%+#T%+#V", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%C%L%O%P%Q", i, i, i, i, i);
+
+  tdiag ("%v%qv%#v", i, i, i);
+  cdiag ("%v%qv%#v", i, i, i);
+  cxxdiag ("%v%qv%#v", i, i, i);
 
   /* Bad stuff with extensions.  */
   diag ("%m", i); /* { dg-warning "format" "extra arg" } */
@@ -120,6 +124,14 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%D", t1, t1); /* { dg-warning "format" "extra arg" } */
   cdiag ("%D", t1, t1); /* { dg-warning "format" "extra arg" } */
   cxxdiag ("%D", t1, t1); /* { dg-warning "format" "extra arg" } */
+
+  tdiag ("%V", i); /* { dg-warning "format" "wrong arg" } */
+  cdiag ("%V", i); /* { dg-warning "format" "wrong arg" } */
+  cxxdiag ("%V", i); /* { dg-warning "format" "wrong arg" } */
+
+  tdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
+  cdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
+  cxxdiag ("%v", t1); /* { dg-warning "format" "wrong arg" } */
 
   /* Standard specifiers not accepted in the diagnostic framework.  */
   diag ("%X\n", u); /* { dg-warning "format" "HEX" } */
