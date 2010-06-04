@@ -1,3 +1,19 @@
+2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addhi_1_lea) <TYPE_INCDEC, default>: Assert
+	that operand 0 and operand 1 are equal.
+	(*addqi_1_lea) <TYPE_INCDEC, default>: Ditto.
+	(*add<mode>_2) <TYPE_INCDEC>: Remove assert that operand 0
+	and operand 1 are equal.
+	<default>: Ditto. Remove ??? comment.
+	(*add<mode>_3) <TYPE_INCDEC>: Remove assert that operand 0
+	and operand 1 are equal.
+	<default>: Ditto. Remove ??? comment.
+	(*adddi_4) <default>:  Remove assert that operand 0 and operand 1
+	are equal.
+	(*add<mode>_4) <default>: Ditto.
+	(*add<mode>_5) <TYPE_INCDEC, default>: Ditto.
+
 2010-06-04  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/i386/i386-protos.h (ix86_print_operand): Declare.
@@ -19,8 +35,8 @@
 
 2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (*addqi_2): Do not assert operands[2] == 255
-	for TYPE_INCDEC operands.
+	* config/i386/i386.md (*addqi_2) <TYPE_INCDEC>: Do not assert that
+	operands[2] == 255.
 	(*addqi_3): Ditto.
 	(*addqi_4): Ditto.
 	(*addqi_5): Ditto.
