@@ -1,3 +1,8 @@
+2010-06-04  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/thumb2.md (*thumb2_movdf_soft_insn): Fix alternatives
+	for pool ranges.
+
 2010-06-04  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41584

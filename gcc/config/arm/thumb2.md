@@ -319,8 +319,8 @@
   "
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
-   (set_attr "pool_range" "1020")
-   (set_attr "neg_pool_range" "0")]
+   (set_attr "pool_range" "*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,*,*,0,*")]
 )
 
 (define_insn "*thumb2_cmpsi_shiftsi"
