@@ -1,3 +1,40 @@
+2010-06-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* final.c (output_asm_insn): Call
+	targetm.asm_out.print_operand_punct_valid_p.  Update comments.
+	(output_operand): Call targetm.asm_out.print_operand.  Update comments.
+	(output_address): Call targetm.asm_out.print_operand_address.
+	Update comments.
+	* target.h (struct gcc_target): Add print_operand,
+	print_operand_address, and print_operand_punct_valid_p fields.
+	* targhooks.h (default_print_operand): Declare.
+	(default_print_operand_address): Declare.
+	(default_print_operand_punct_valid_p): Declare.
+	* targhooks.c (default_print_operand): Define.
+	(default_print_operand_address): Define.
+	(default_print_operand_punct_valid_p): Define.
+	* target-def.h (TARGET_PRINT_OPERAND): Define if not defined.
+	(TARGET_PRINT_OPERAND_ADDRESS): Likewise.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Likewise.
+	(TARGET_ASM_OUT): Add TARGET_PRINT_OPERAND,
+	TARGET_PRINT_OPERAND_ADDRESS, and TARGET_PRINT_OPERAND_PUNCT_VALID_P.
+	* vmsdbgout.c (addr_const_to_string): Update comment.
+	* config/i386/i386.c (print_operand): Rename to...
+	(ix86_print_operand): ...this.  Make static.
+	(print_operand_address): Rename to...
+	(ix86_print_operand_address): ...this.  Make static.  Call
+	ix86_print_operand instead of PRINT_OPERAND.
+	(ix86_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND): Define.
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+	* config/i386/i386.h (HI_REGISTER_NAMES): Update comment.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/i386/i386-protos.h (print_operand): Delete prototype.
+	(print_operand_address): Delete prototype.
+
 2010-06-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44403

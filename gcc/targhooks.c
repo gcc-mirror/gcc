@@ -325,6 +325,46 @@ default_unwind_emit (FILE * stream ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Emit to STREAM the assembler syntax for insn operand X.  */
+
+void
+default_print_operand (FILE *stream ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
+		       int code ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND
+  PRINT_OPERAND (stream, x, code);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+/* Emit to STREAM the assembler syntax for an insn operand whose memory
+   address is X.  */
+
+void
+default_print_operand_address (FILE *stream ATTRIBUTE_UNUSED,
+			       rtx x ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND_ADDRESS
+  PRINT_OPERAND_ADDRESS (stream, x);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+/* Return true if CODE is a valid punctuation character for the
+   `print_operand' hook.  */
+
+bool
+default_print_operand_punct_valid_p (unsigned char code ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND_PUNCT_VALID_P
+  return PRINT_OPERAND_PUNCT_VALID_P (code);
+#else
+  return false;
+#endif
+}
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.

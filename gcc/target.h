@@ -277,6 +277,16 @@ struct gcc_target
 
     /* Emit the trampoline template.  This hook may be NULL.  */
     void (*trampoline_template) (FILE *);
+
+    /* Emit a machine-specific insn operand.  */
+    void (*print_operand) (FILE *, rtx, int);
+
+    /* Emit a machine-specific memory address.  */
+    void (*print_operand_address) (FILE *, rtx);
+
+    /* Determine whether CODE is a valid punctuation character for the
+       `print_operand' hook.  */
+    bool (*print_operand_punct_valid_p)(unsigned char code);
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
