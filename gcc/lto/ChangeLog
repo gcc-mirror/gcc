@@ -1,3 +1,9 @@
+2010-06-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41584
+	* lto.c (lto_1_to_1_map): Use the proper file_data for
+	varpool nodes.
+
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (promote_var, promote_fn, lto_wpa_write_files): Dump
