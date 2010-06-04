@@ -1,3 +1,10 @@
+2010-06-04  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/44362
+	* call.c (build_conditional_expr): If both arg2 and arg3 are lvalues
+	with the same type, call mark_lvalue_use on both.
+
 2010-06-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* class.c (struct vtbl_init_data_s): Remove last_init field.

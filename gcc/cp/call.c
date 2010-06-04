@@ -3839,6 +3839,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
+      mark_lvalue_use (arg2);
+      mark_lvalue_use (arg3);
       goto valid_operands;
     }
 
