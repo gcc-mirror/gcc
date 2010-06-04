@@ -1,3 +1,34 @@
+2010-06-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/39871
+	PR rtl-optimization/40615
+	PR rtl-optimization/42500
+	PR rtl-optimization/42502
+	* ira.c (init_reg_equiv_memory_loc: New function.
+	(ira): Call it twice.
+	* reload.h (calculate_elim_costs_all_insns): Declare.
+	* ira-costs.c: Include "reload.h".
+	(regno_equiv_gains): New static variable.
+	(init_costs): Allocate it.
+	(finish_costs): Free it.
+	(ira_costs): Call calculate_elim_costs_all_insns.
+	(find_costs_and_classes): Take estimated elimination costs
+	into account.
+	(ira_adjust_equiv_reg_cost): New function.
+	* ira.h (ira_adjust_equiv_reg_cost): Declare it.
+	* reload1.c (init_eliminable_invariants, free_reg_equiv,
+	elimination_costs_in_insn, note_reg_elim_costly): New static
+	functions.
+	(elim_bb): New static variable.
+	(reload): Move code out of here into init_eliminable_invariants and
+	free_reg_equiv.  Call them.
+	(calculate_elim_costs_all_insns): New function.
+	(eliminate_regs_1): Declare.  Add extra arg FOR_COSTS;
+	all callers changed.  If FOR_COSTS is true, don't call alter_reg,
+	but call note_reg_elim_costly if we turned a valid memory address
+	into an invalid one.
+	* Makefile.in (ira-costs.o): Depend on reload.h.
+
 2010-06-04  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/thumb2.md (*thumb2_movdf_soft_insn): Fix alternatives

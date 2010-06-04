@@ -3149,8 +3149,19 @@ build_insn_chain (void)
   if (dump_file)
     print_insn_chains (dump_file);
 }
-
 
+/* Allocate memory for reg_equiv_memory_loc.  */
+static void
+init_reg_equiv_memory_loc (void)
+{
+  max_regno = max_reg_num ();
+
+  /* And the reg_equiv_memory_loc array.  */
+  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
+  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
+	  sizeof (rtx) * max_regno);
+  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
+}
 
 /* All natural loops.  */
 struct loops ira_loops;
@@ -3255,6 +3266,8 @@ ira (FILE *f)
   record_loop_exits ();
   current_loops = &ira_loops;
 
+  init_reg_equiv_memory_loc ();
+
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
   loops_p = ira_build (optimize
@@ -3315,13 +3328,8 @@ ira (FILE *f)
 #endif
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  max_regno = max_reg_num ();
 
-  /* And the reg_equiv_memory_loc array.  */
-  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
-  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
-	  sizeof (rtx) * max_regno);
-  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
+  init_reg_equiv_memory_loc ();
 
   if (max_regno != max_regno_before_ira)
     {

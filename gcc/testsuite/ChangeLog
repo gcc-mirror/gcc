@@ -1,3 +1,11 @@
+2010-06-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/39871
+	PR rtl-optimization/40615
+	PR rtl-optimization/42500
+	PR rtl-optimization/42502
+	* gcc.target/arm/eliminate.c: New test.
+
 2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44410
