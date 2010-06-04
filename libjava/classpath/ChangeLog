@@ -1,3 +1,8 @@
+2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/check_jni_methods.sh.in: Don't use diff -U.
+	Adapt grep regex, ignore file and problem message.
+
 2010-05-27  Andrew John Hughes  <ahughes@redhat.com>
 
 	* configure.ac:
