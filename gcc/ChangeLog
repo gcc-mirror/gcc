@@ -1,5 +1,9 @@
 2010-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR rtl-optimization/44013
+	* sched-deps.c (add_dependence_list_and_free): Don't free lists
+	when processing debug insns.
+
 	PR debug/41371
 	* var-tracking.c (find_loc_in_1pdv): Mark initial value before
 	recursing.  Check that recursion is bounded.  Rename inner var
