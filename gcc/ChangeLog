@@ -1,3 +1,23 @@
+2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_2): Do not assert operands[2] == 255
+	for TYPE_INCDEC operands.
+	(*addqi_3): Ditto.
+	(*addqi_4): Ditto.
+	(*addqi_5): Ditto.
+	(*addqi_ext_1_rex64): Ditto.
+	(*addqi_ext_1): Ditto.
+
+	(*addqi_4): Check for incdec_operand in QImode.
+
+	(*add<mode>_2): Macroize insn from *add<mode>_2 and *add{qi,hi}_2
+	using SWI mode iterator.
+	(*add<mode>_3): Ditto from *add<mode>_3 and *add{qi,hi}_3.
+	(*add<mode>_4): Macroize insn from *add{qi,hi,si}_4 using SWI124
+	mode iterator.
+	(*add<mode>_5): Macroize insn from *add<mode>_5 and *add{qi,hi}_5
+	using SWI mode iterator.
+
 2010-06-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/25880
@@ -15,8 +35,7 @@
 
 2010-06-04  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/cygming.h (ASM_GENERATE_INTERNAL_LABEL): Prefix
-	by '*'.
+	* config/i386/cygming.h (ASM_GENERATE_INTERNAL_LABEL): Prefix by '*'.
 
 2010-06-04  Jan Hubicka  <jh@suse.cz>
 
@@ -55,12 +74,13 @@
 	df_md_bb_local_compute_process_def, df_md_local_compute, df_md_reset,
 	df_md_transfer_function, df_md_init, df_md_confluence_0,
 	df_md_confluence_n,
-	df_md_top_dump, df_md_bottom_dump): Update.  (struct df_lr_problem_data):
-	Embedd bitmap headers.
+	df_md_top_dump, df_md_bottom_dump): Update.
+	(struct df_lr_problem_data): Embedd bitmap headers.
 
 2010-06-04  Jan Hubicka  <jh@suse.cz>
 
-	* dce.c (dce_process_block): Do not re-scan already marked instructions.
+	* dce.c (dce_process_block): Do not re-scan already marked
+	instructions.
 
 2010-06-04  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -81,8 +101,7 @@
 	(ira_adjust_equiv_reg_cost): New function.
 	* ira.h (ira_adjust_equiv_reg_cost): Declare it.
 	* reload1.c (init_eliminable_invariants, free_reg_equiv,
-	elimination_costs_in_insn, note_reg_elim_costly): New static
-	functions.
+	elimination_costs_in_insn, note_reg_elim_costly): New static functions.
 	(elim_bb): New static variable.
 	(reload): Move code out of here into init_eliminable_invariants and
 	free_reg_equiv.  Call them.
