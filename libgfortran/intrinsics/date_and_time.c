@@ -280,8 +280,12 @@ date_and_time (char *__date, char *__time, char *__zone,
       delta = GFC_DESCRIPTOR_STRIDE(__values,0);
       if (delta == 0)
 	delta = 1;
+      
+      if (unlikely (len < VALUES_SIZE))
+	  runtime_error ("Incorrect extent in VALUE argument to"
+			 " DATE_AND_TIME intrinsic: is %ld, should"
+			 " be >=%ld", (long int) len, (long int) VALUES_SIZE);
 
-      assert (len >= VALUES_SIZE);
       /* Cope with different type kinds.  */
       if (elt_size == 4)
         {
