@@ -1,3 +1,14 @@
+2010-06-04  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/25880
+	* gcc.dg/assign-warn-2.c: Update.
+	* gcc.dg/cpp/line3.c: Update.
+	* gcc.dg/c99-array-lval-8.c: Update.
+	* gcc.dg/cast-qual-2.c: Update.
+	* gcc.dg/c99-arraydecl-3.c:  Update.
+	* gcc.dg/assign-warn-1.c:  Update.
+	* gcc.dg/format/gcc_diag-1.c:  Update.
+
 2010-06-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/39871

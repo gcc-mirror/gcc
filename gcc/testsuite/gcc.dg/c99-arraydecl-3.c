@@ -7,7 +7,7 @@
 void
 f0 (int a[restrict])
 {
-  int **b = &a; /* { dg-error "discards qualifiers" } */
+  int **b = &a; /* { dg-error "discards 'restrict' qualifier" } */
   int *restrict *c = &a;
 }
 
@@ -15,6 +15,6 @@ void
 f1 (a)
      int a[restrict];
 {
-  int **b = &a; /* { dg-error "discards qualifiers" } */
+  int **b = &a; /* { dg-error "discards 'restrict' qualifier" } */
   int *restrict *c = &a;
 }

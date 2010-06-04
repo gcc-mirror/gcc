@@ -79,9 +79,10 @@ c_objc_common_init (void)
    %E: an identifier or expression,
    %F: a function declaration,
    %T: a type.
+   %V: a list of type qualifiers from a tree.
+   %v: an explicit list of type qualifiers
+   %#v: an explicit list of type qualifiers of a function type.
 
-   These format specifiers form a subset of the format specifiers set used
-   by the C++ front-end.
    Please notice when called, the `%' part was already skipped by the
    diagnostic machinery.  */
 static bool
@@ -93,7 +94,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
-  if (precision != 0 || wide || hash)
+  if (precision != 0 || wide)
     return false;
 
   if (*spec == 'K')
@@ -102,10 +103,12 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       return true;
     }
 
-  t = va_arg (*text->args_ptr, tree);
-
-  if (set_locus && text->locus)
-    *text->locus = DECL_SOURCE_LOCATION (t);
+  if (*spec != 'v')
+    {
+      t = va_arg (*text->args_ptr, tree);
+      if (set_locus && text->locus)
+	*text->locus = DECL_SOURCE_LOCATION (t);
+    }
 
   switch (*spec)
     {
@@ -153,6 +156,14 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 	pp_identifier (cpp, IDENTIFIER_POINTER (t));
       else
 	pp_expression (cpp, t);
+      return true;
+
+    case 'V':
+      pp_c_type_qualifier_list (cpp, t);
+      return true;
+
+    case 'v':
+      pp_c_cv_qualifiers (cpp, va_arg (*text->args_ptr, int), hash);
       return true;
 
     default:
