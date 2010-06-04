@@ -462,6 +462,22 @@ DEFINE_VALIDATE_EHDR (32)
 DEFINE_VALIDATE_EHDR (64)
 
 
+#ifndef HAVE_ELF_GETSHDRSTRNDX
+/* elf_getshdrstrndx replacement for systems that lack it, but provide
+   either the gABI conformant or Solaris 2 variant of elf_getshstrndx
+   instead.  */
+
+static int
+elf_getshdrstrndx (Elf *elf, size_t *dst)
+{
+#ifdef HAVE_ELF_GETSHSTRNDX_GABI
+  return elf_getshstrndx (elf, dst);
+#else
+  return elf_getshstrndx (elf, dst) ? 0 : -1;
+#endif
+}
+#endif
+
 /* Validate's ELF_FILE's executable header and, if cached_file_attrs is
    uninitialized, caches the results.  Also records the section header string
    table's section index.  Returns true on success or false on failure.  */

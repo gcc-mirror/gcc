@@ -1,3 +1,12 @@
+2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for elf_getshdrstrndx or elf_getshstrndx
+	separately.
+	* configure: Regenerate.
+
 2010-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (BUILD_CONFIG): Redirect output to /dev/null.

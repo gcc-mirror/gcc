@@ -8429,6 +8429,59 @@ fi
 done
 
 
+save_CPPFLAGS="$CPPFLAGS"
+save_LIBS="$LIBS"
+LIBS="$LIBS $LIBELFLIBS"
+for ac_func in elf_getshdrstrndx
+do :
+  ac_fn_c_check_func "$LINENO" "elf_getshdrstrndx" "ac_cv_func_elf_getshdrstrndx"
+if test "x$ac_cv_func_elf_getshdrstrndx" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ELF_GETSHDRSTRNDX 1
+_ACEOF
+
+else
+  for ac_func in elf_getshstrndx
+do :
+  ac_fn_c_check_func "$LINENO" "elf_getshstrndx" "ac_cv_func_elf_getshstrndx"
+if test "x$ac_cv_func_elf_getshstrndx" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ELF_GETSHSTRNDX 1
+_ACEOF
+ if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error "cannot run test program while cross compiling
+See \`config.log' for more details." "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+#include <libelf.h>
+int main()
+{
+  return elf_getshstrndx (NULL, 0) == 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_ELF_GETSHSTRNDX_GABI 1" >>confdefs.h
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+done
+
+
+fi
+done
+
+LIBS="$save_LIBS"
+CPPFLAGS="$save_CPPFLAGS"
+
 if test x$ac_cv_func_mbstowcs = xyes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether mbstowcs works" >&5
 $as_echo_n "checking whether mbstowcs works... " >&6; }
@@ -17053,7 +17106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17056 "configure"
+#line 17109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17159,7 +17212,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17162 "configure"
+#line 17215 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

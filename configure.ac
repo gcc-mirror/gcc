@@ -1735,7 +1735,6 @@ if test x"$enable_lto" = x"yes" ; then
       elf_nextscn (0, 0);
       elf_strptr (0, 0, 0);
       elf_getident (0, 0);
-      elf_getshdrstrndx (0, 0);
       elf_begin (0, 0, 0);
       elf_ndxscn (0);
       elf_end (0);
@@ -1743,6 +1742,27 @@ if test x"$enable_lto" = x"yes" ; then
       [AC_MSG_RESULT([yes]);],
       [AC_MSG_RESULT([no]); enable_lto=no; libelflibs= ; libelfinc= ]
     )
+
+    # Check for elf_getshdrstrndx or elf_getshstrndx.  The latter's flavor
+    # is determined in gcc/configure.ac.
+    if test x"$enable_lto" = x"yes" ; then
+      AC_MSG_CHECKING([for elf_getshdrstrndx])
+      AC_TRY_LINK(
+        [#include <libelf.h>],[
+	elf_getshdrstrndx (0, 0);
+        ],
+        [AC_MSG_RESULT([yes]);],
+        [AC_MSG_RESULT([no]);
+	 AC_MSG_CHECKING([for elf_getshstrndx])
+         AC_TRY_LINK(
+           [#include <libelf.h>],[
+	   elf_getshstrndx (0, 0);
+           ],
+           [AC_MSG_RESULT([yes]);],
+           [AC_MSG_RESULT([no]); enable_lto=no; libelflibs= ; libelfinc= ]
+         )]
+      )
+    fi
 
     # If we couldn't enable LTO and the user forced it, emit an error.
     if test x"$enable_lto" = x"no" \

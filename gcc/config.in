@@ -826,6 +826,24 @@
 #endif
 
 
+/* Define to 1 if you have the `elf_getshdrstrndx' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHDRSTRNDX
+#endif
+
+
+/* Define to 1 if you have the `elf_getshstrndx' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHSTRNDX
+#endif
+
+
+/* Define if elf_getshstrndx has gABI conformant return values. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHSTRNDX_GABI
+#endif
+
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FCNTL_H
