@@ -3387,8 +3387,8 @@ df_create_unused_note (rtx insn, rtx old, df_ref def,
     }
 #endif
 
-  if (!(bitmap_bit_p (live, dregno)
-	|| (DF_REF_FLAGS (def) & DF_REF_MW_HARDREG)
+  if (!((DF_REF_FLAGS (def) & DF_REF_MW_HARDREG)
+	|| bitmap_bit_p (live, dregno)
 	|| bitmap_bit_p (artificial_uses, dregno)
 	|| df_ignore_stack_reg (dregno)))
     {
@@ -3757,10 +3757,10 @@ df_note_bb_compute (unsigned int bb_index,
 	      else
 		dead_debug_insert_before (&debug, uregno, insn);
 
-	      if ( (!(DF_REF_FLAGS (use) & DF_REF_MW_HARDREG))
+	      if ( (!(DF_REF_FLAGS (use)
+		      & (DF_REF_MW_HARDREG | DF_REF_READ_WRITE)))
 		   && (!bitmap_bit_p (do_not_gen, uregno))
 		   && (!bitmap_bit_p (artificial_uses, uregno))
-		   && (!(DF_REF_FLAGS (use) & DF_REF_READ_WRITE))
 		   && (!df_ignore_stack_reg (uregno)))
 		{
 		  rtx reg = (DF_REF_LOC (use))
