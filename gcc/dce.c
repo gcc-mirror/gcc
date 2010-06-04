@@ -904,19 +904,18 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
       {
-	bool needed = false;
+	bool needed = marked_insn_p (insn);
 
 	/* The insn is needed if there is someone who uses the output.  */
-	for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	  if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-	      || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
-	    {
-	      needed = true;
-	      break;
-	    }
-
-	if (needed)
-	  mark_insn (insn, true);
+	if (!needed)
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
+		|| bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+	      {
+		needed = true;
+		mark_insn (insn, true);
+		break;
+	      }
 
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
@@ -924,7 +923,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 
 	/* On the other hand, we do not allow the dead uses to set
 	   anything in local_live.  */
-	if (marked_insn_p (insn))
+	if (needed)
 	  df_simulate_uses (insn, local_live);
       }
 
