@@ -1,3 +1,8 @@
+2010-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* df-problems.c (df_create_unused_note, df_note_bb_compute):
+	micro-optimize the checks when to add new note.
+
 2010-06-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* final.c (output_asm_insn): Call
