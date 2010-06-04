@@ -420,36 +420,6 @@
     }
 })
 
-;; Return true if the operand contains a @GOT or @GOTOFF reference.
-(define_predicate "pic_symbolic_operand"
-  (match_code "const")
-{
-  op = XEXP (op, 0);
-  if (TARGET_64BIT)
-    {
-      if (GET_CODE (op) == UNSPEC
-	  && XINT (op, 1) == UNSPEC_GOTPCREL)
-	return 1;
-      if (GET_CODE (op) == PLUS
-	  && GET_CODE (XEXP (op, 0)) == UNSPEC
-	  && XINT (XEXP (op, 0), 1) == UNSPEC_GOTPCREL)
-	return 1;
-    }
-  else
-    {
-      if (GET_CODE (op) == UNSPEC)
-	return 1;
-      if (GET_CODE (op) != PLUS
-	  || !CONST_INT_P (XEXP (op, 1)))
-	return 0;
-      op = XEXP (op, 0);
-      if (GET_CODE (op) == UNSPEC
-	  && XINT (op, 1) != UNSPEC_MACHOPIC_OFFSET)
-	return 1;
-    }
-  return 0;
-})
-
 ;; Return true if OP is a symbolic operand that resolves locally.
 (define_predicate "local_symbolic_operand"
   (match_code "const,label_ref,symbol_ref")

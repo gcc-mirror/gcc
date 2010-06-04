@@ -1,3 +1,15 @@
+2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (pic_symbolic_operand): Remove predicate.
+	* config/i386/i386.md (*add<mode>_1): Do not use pic_symbolic_operand
+	predicate in "type" attribute calculation.
+	(*addsi_1_zext): Ditto.
+	(*add<mode>_2): Do not use pic_symbolic_operand in insn predicate.
+	(*addsi_2_zext): Ditto.
+	(*add<mode>_3): Ditto.
+	(*addsi_3_zext): Ditto.
+	(*add<mode>_5): Ditto.
+
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-into-ssa.c (mark_block_for_update): Avoid redundant call
@@ -70,7 +82,7 @@
 2010-06-03  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
-	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if                                                                        
+	* var-tracking.c (dataflow_set_equiv_regs): Shortcut the loop if
 	set->regs[i] is NULL or has just one entry.
 
 2010-06-03  Jan Hubicka  <jh@suse.cz>
@@ -128,14 +140,12 @@
 
 	PR target/44218
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete obsolete
-	-mswdiv option.  Add -mrecip, -mrecip=<xxx>, -mrecip-precision
-	options.
+	-mswdiv option.  Add -mrecip, -mrecip=<xxx>, -mrecip-precision options.
 
 	* doc/extend.texi (powerpc builtins): Document vec_recip,
 	vec_rsqrt, vec_rsqrte altivec/vsx builtins.
 
-	* config/rs6000/rs60000-protos.h (rs6000_emit_swdiv): New
-	function.
+	* config/rs6000/rs60000-protos.h (rs6000_emit_swdiv): New function.
 	(rs6000_emit_swrsqrt): Ditto.
 	(rs6000_emit_swdivsf): Delete.
 	(rs6000_emit_swdivdf): Ditto.
@@ -162,8 +172,7 @@
 	(bdesc_2arg): Add reciprocal estimate builtins.
 	(bdesc_1arg): Add reciprocal square root estimate builtins.
 	(rs6000_expand_builtin): Rewrite to use a switch statement,
-	instead of multiple if/then/elses.  Add reciprocal estimate
-	builtins.
+	instead of multiple if/then/elses.  Add reciprocal estimate builtins.
 	(rs6000_init_builtins): Create declarations for reciprocal
 	estimate builtins.
 	(rs6000_preferred_reload_class): Simplify VSX preferences, if scalar
@@ -186,8 +195,7 @@
 	(rs6000_emit_swdiv): New common function to be called to replace a
 	division with reciprocal estimate and fixup.
 	(rs6000_emit_swrsqrt): Replace rs6000_emit_swrsqrtsf.  Add support
-	for double and vector types.  Add support for high precision
-	machines.
+	for double and vector types.  Add support for high precision machines.
 
 	* config/rs6000/rs6000.h (TARGET_FRES): New macro to say whether
 	the reciprocal estimate instructions can be generated.
@@ -217,8 +225,7 @@
 	(altivec_overloaded_builtins): Add reciprocal estimate builtins.
 
 	* config/rs6000/rs6000.opt (-mrecip): Document add support for
-	replacing division instructions with reciprocal estimate and
-	fixup.
+	replacing division instructions with reciprocal estimate and fixup.
 	(-mrecip=<opt>): New option.
 	(-mrecip-precision): Ditto.
 
@@ -230,8 +237,7 @@
 	* config/rs6000/altivec.md (UNSPEC_RSQRTEFP): Delete.
 	(UNSPEC_VREFP): Ditto.
 	(altivec_vnmsubfp*): Make altivec nmsub mirror the scalar and VSX
-	conterparts with regard to support of -mno-fused-madd and
-	-ffast-math.
+	conterparts with regard to support of -mno-fused-madd and -ffast-math.
 	(altivec_vrsqrtefp): Use common UNSPEC to allow scalar/vector
 	reciprocal estimate instructions to be generated.
 	(altivec_vrefp): Ditto.
@@ -256,8 +262,7 @@
 	(fred_fpr): Ditto.
 	(rsqrtdf_internal1): New function for frsqrte instruciton.
 
-	* config/rs6000/altivec.h (vec_recipdiv): Define new vector
-	builtin.
+	* config/rs6000/altivec.h (vec_recipdiv): Define new vector builtin.
 	(vec_rsqrt): Ditto.
 
 2010-06-03  Richard Guenther  <rguenther@suse.de>
@@ -364,8 +369,7 @@
 	(*mov<mode>_64 TD_TF, *mov<mode>_31 TD_TF, *mov<mode>_64dfp DD_DF,
 	*mov<mode>_64 DD_DF, *mov<mode>_31, mov<mode>): Remove load zero
 	instruction.
-	* config/s390/s390.c: Don't accept fp zeros as valid constants
-	anymore.
+	* config/s390/s390.c: Don't accept fp zeros as valid constants anymore.
 
 2010-06-02  Jan Hubicka  <jh@suse.cz>
 
@@ -478,8 +482,7 @@
 	Include rtl.h.
 	(copy_decl_for_dup_finish): Do not use NULL_RTX.
 
-	* tree-loop-linear.c: Do not include diagnostic.h, expr.h,
-	and optabs.h.
+	* tree-loop-linear.c: Do not include diagnostic.h, expr.h and optabs.h.
 	* tree-loop-distribution.c: Likewise.
 
 2010-06-01  Jan Hubicka  <jh@suse.cz>
@@ -518,25 +521,26 @@
 	* emit-rtl.c: (first_insn, last_insn): Remove defines.
 	(get_insns, set_first_insn, get_last_insn, set_last_insn, get_max_uid):
 	Move to emit-rtl.h.
-	(set_new_first_and_last_insn, get_last_insn_anywhere, get_first_nonnote_insn,
-	get_last_nonnote_insn, try_split, make_call_insn_raw, add_insn_after,
-	add_insn_before, remove_insn, delete_insns_since, reorder_insns_nobb,
-	emit_insn_after_1, emit_debug_insn_before, emit_insn, start_sequence,
-	push_to_sequence, push_to_sequence2, push_topmost_sequence, end_sequence,
-	copy_insn): Use accessor functions.
+	(set_new_first_and_last_insn, get_last_insn_anywhere,
+	get_first_nonnote_insn, get_last_nonnote_insn, try_split,
+	make_call_insn_raw, add_insn_after, add_insn_before, remove_insn,
+	delete_insns_since, reorder_insns_nobb, emit_insn_after_1,
+	emit_debug_insn_before, emit_insn, start_sequence, push_to_sequence,
+	push_to_sequence2, push_topmost_sequence, end_sequence, copy_insn):
+	Use accessor functions.
 	* emit-rtl.h (gen_blockage, gen_rtvec, copy_insn_1, copy_insn,
 	 gen_int_mode, emit_copy_of_insn_after, set_reg_attrs_from_value,
 	set_reg_attrs_for_parm, set_reg_attrs_for_decl_rtl, adjust_reg_mode,
-	mem_expr_equal_p): Move here from rtl.h
+	mem_expr_equal_p): Move here from rtl.h.
 	(get_insns, set_first-insn, get_last_insn, set_last_insn, get_max_uid):
 	Move here from emit-rtl.c; make inline.
-	* cfglayout.h: Include emit-rtl.h
+	* cfglayout.h: Include emit-rtl.h.
 	* rtl.h (gen_blockage, gen_rtvec, copy_insn_1, copy_insn,
 	 gen_int_mode, emit_copy_of_insn_after, set_reg_attrs_from_value,
 	set_reg_attrs_for_parm, set_reg_attrs_for_decl_rtl, adjust_reg_mode,
-	mem_expr_equal_p, get_insns, set_first-insn, get_last_insn, set_last_insn,
-	get_max_uid): Move to emit-rtl.h.
-	* reg-stack.c: Include emit-rtl.h
+	mem_expr_equal_p, get_insns, set_first-insn,
+	get_last_insn, set_last_insn, get_max_uid): Move to emit-rtl.h.
+	* reg-stack.c: Include emit-rtl.h.
 	* dce.c: Likewise.
 
 2010-06-01  Jan Hubicka  <jh@suse.cz>
@@ -545,11 +549,11 @@
 	(cgraph_function_versioning): Update prototype.
 	* cgraphunit.c (cgraph_copy_node_for_versioning): Accept bbs_to_copy
 	bitmap.
-	(cgraph_function_versioning): Accept new_entry_block and bbs_to_copy. 
+	(cgraph_function_versioning): Accept new_entry_block and bbs_to_copy.
 	(cgraph_materialize_clone, save_inline_function_body): Update use of
 	tree_function_versioning.
-	* tree-inline.c (copy_bb): Look for previous copied block to link after;
-	fix debug output.
+	* tree-inline.c (copy_bb): Look for previous copied block to link
+	after; fix debug output.
 	(copy_cfg_body): Accept new_entry_block and bbs_to_copy.
 	(copy_body): Likewise.
 	(expand_call_inline): Update use of copy_body.
@@ -577,7 +581,7 @@
 	* c-opts.c (c_common_handle_option): Likewise.
 
 2010-06-01  Arnaud Charlet  <charlet@adacore.com>
-            Matthew Gingell  <gingell@adacore.com>
+	    Matthew Gingell  <gingell@adacore.com>
 
 	* doc/invoke.texi: Mention -fdump-ada-spec.
 	* tree-dump.c (dump_files): Add ada-spec.
@@ -623,14 +627,13 @@
 
 2010-06-01  Kai Tietz  <kai.tietz@onevision.com>
 
-        * config/i386.c (ix86_output_addr_vec_elt): Make LPREFIX
-        argument for fprintf.
-        (ix86_output_addr_diff_elt): Likewise.
-        (x86_function_profiler): Likewise.
-        * config/cygming.h (LOCAL_LABEL_PREFIX): Fix
-        for x64 no-underscore.
-        (LPREFIX): Likewise.
-        (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* config/i386.c (ix86_output_addr_vec_elt): Make LPREFIX
+	argument for fprintf.
+	(ix86_output_addr_diff_elt): Likewise.
+	(x86_function_profiler): Likewise.
+	* config/cygming.h (LOCAL_LABEL_PREFIX): Fix for x64 no-underscore.
+	(LPREFIX): Likewise.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
 
 2010-05-31  Jakub Jelinek  <jakub@redhat.com>
 
@@ -678,8 +681,7 @@
 2010-05-31  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/44161
-	* config/i386/cygming.h (SUBTARGET_OVERRIDE_OPTIONS): Handle
-	flag_pic.
+	* config/i386/cygming.h (SUBTARGET_OVERRIDE_OPTIONS): Handle flag_pic.
 
 2010-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -688,8 +690,7 @@
 
 2010-05-31  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (find_func_aliases): Handle
-	BUILT_IN_RETURN.
+	* tree-ssa-structalias.c (find_func_aliases): Handle BUILT_IN_RETURN.
 
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
@@ -713,7 +714,7 @@
 	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Ditto.
 	* config/darwin.h (GLOBAL_ASM_OP): Ditto.
 	* config/darwin9.h (ASM_OUTPUT_ALIGNED_COMMON): Ditto.
-	
+
 2010-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_entry): Use
@@ -734,8 +735,7 @@
 
 	* cgraph.h (cgraph_dump_file): Declare.
 	* cgraphunit.c (cgraph_dump_file): Export.
-	* ipa.c (dump_cgraph_node_set, dump_varpool_node_set): Be less
-	verbose.
+	* ipa.c (dump_cgraph_node_set, dump_varpool_node_set): Be less verbose.
 
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
@@ -752,9 +752,8 @@
 	* ipa-pure-const.c (pure_const_names): New static var.
 	(check_call): Handle calls not leading to return.
 	(pure_const_read_summary): Dump info read.
-	(propagate): Dump info about propagation process; ignore side
-	effects of functions not leading to exit; fix handling of
-	pure functions.
+	(propagate): Dump info about propagation process; ignore side effects
+	of functions not leading to exit; fix handling of pure functions.
 
 2010-05-30  Jan Hubicka  <jh@suse.cz>
 
@@ -788,7 +787,7 @@
 	debug_asserts_for, debug_all_asserts): Annotate with DEBUG_FUNCTION.
 	* tree-into-ssa.c (debug_decl_set, debug_defs_stack, debug_currdefs,
 	debug_tree_ssa, debug_tree_ssa_stats, debug_def_blocks,
-	debug_names_replaced_by, debug_update_ssa): Likewise.	
+	debug_names_replaced_by, debug_update_ssa): Likewise.
 	* sbitmap.c (debug_sbitmap): Likewise.
 	* genrecog.c (debug_decision, debug_decision_list): Likewise.
 	* tree-pretty-print.c (debug_generic_expr, debug_generic_stmt,
@@ -986,7 +985,7 @@
 	* cgraph.c (clone_function_name): Take SUFFIX argument; export.
 	(cgraph_create_virtual_clone): Take SUFFIX argument; udpate
 	use of clone_function_name.
-	* cgraph.h (cgraph_create_virtual_clone, 
+	* cgraph.h (cgraph_create_virtual_clone,
 	cgraph_function_versioning): update prototypes.
 	(clone_function_name): Declare.
 	* ipa-cp.c (ipcp_insert_stage): Update call of
@@ -1152,7 +1151,7 @@
 
 2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
 
-        * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
+	* config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
 
 2010-05-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
@@ -1433,7 +1432,7 @@
 2010-05-27  Jon Beniston <jon@beniston.com>
 
 	PR 43726
-	* config/lm32/lm32.h: Remove definition of 
+	* config/lm32/lm32.h: Remove definition of
 	GO_IF_MODE_DEPENDENT_ADDRESS. Update copyright year.
 
 2010-05-27  Eric Botcazou  <ebotcazou@adacore.com>
