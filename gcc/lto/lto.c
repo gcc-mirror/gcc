@@ -599,6 +599,7 @@ lto_1_to_1_map (void)
     {
       if (vnode->alias || !vnode->needed)
 	continue;
+      file_data = vnode->lto_file_data;
       slot = pointer_map_contains (pmap, file_data);
       if (slot)
 	partition = (ltrans_partition) *slot;

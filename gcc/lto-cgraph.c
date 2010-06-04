@@ -1089,6 +1089,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   decl_index = lto_input_uleb128 (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
   node = varpool_node (var_decl);
+  node->lto_file_data = file_data;
 
   bp = lto_input_bitpack (ib);
   node->externally_visible = bp_unpack_value (bp, 1);
