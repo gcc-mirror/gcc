@@ -4820,6 +4820,7 @@ extern tree build_exc_ptr			(void);
 extern tree build_throw				(tree);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
+extern tree finish_noexcept_expr		(tree);
 extern void choose_personality_routine		(enum languages);
 extern tree eh_type_info			(tree);
 extern tree begin_eh_spec_block			(void);

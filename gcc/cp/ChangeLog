@@ -1,5 +1,14 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	Implement noexcept operator (5.3.7)
+	* cp-tree.def (NOEXCEPT_EXPR): New.
+	* except.c (check_noexcept_r, finish_noexcept_expr): New.
+	* cp-tree.h: Declare finish_noexcept_expr.
+	* parser.c (cp_parser_unary_expression): Parse noexcept-expression.
+	* pt.c (tsubst_copy_and_build): And tsubst it.
+	(type_dependent_expression_p): Handle it.
+	(value_dependent_expression_p): Handle it.
+
 	* call.c (build_conditional_expr): Never fold in unevaluated context.
 	* tree.c (build_aggr_init_expr): Propagate TREE_NOTHROW.
 	* semantics.c (simplify_aggr_init_expr): Likewise.

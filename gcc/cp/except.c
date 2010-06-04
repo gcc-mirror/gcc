@@ -998,3 +998,67 @@ check_handlers (tree handlers)
 	  check_handlers_1 (handler, i);
       }
 }
+
+/* walk_tree helper for finish_noexcept_expr.  Returns non-null if the
+   expression *TP causes the noexcept operator to evaluate to false.
+
+   5.3.7 [expr.noexcept]: The result of the noexcept operator is false if
+   in a potentially-evaluated context the expression would contain
+   * a potentially evaluated call to a function, member function,
+     function pointer, or member function pointer that does not have a
+     non-throwing exception-specification (15.4),
+   * a potentially evaluated throw-expression (15.1),
+   * a potentially evaluated dynamic_cast expression dynamic_cast<T>(v),
+     where T is a reference type, that requires a run-time check (5.2.7), or
+   * a potentially evaluated typeid expression (5.2.8) applied to a glvalue
+     expression whose type is a polymorphic class type (10.3).  */
+
+static tree
+check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+		  void *data ATTRIBUTE_UNUSED)
+{
+  tree t = *tp;
+  enum tree_code code = TREE_CODE (t);
+  if (code == CALL_EXPR
+      || code == AGGR_INIT_EXPR)
+    {
+      /* We can only use the exception specification of the called function
+	 for determining the value of a noexcept expression; we can't use
+	 TREE_NOTHROW, as it might have a different value in another
+	 translation unit, creating ODR problems.
+
+         We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
+      tree fn = (code == AGGR_INIT_EXPR
+		 ? AGGR_INIT_EXPR_FN (t) : CALL_EXPR_FN (t));
+      if (TREE_CODE (fn) == ADDR_EXPR)
+	{
+	  /* We do use TREE_NOTHROW for ABI internals like __dynamic_cast,
+	     and for C library functions known not to throw.  */
+	  tree fn2 = TREE_OPERAND (fn, 0);
+	  if (TREE_CODE (fn2) == FUNCTION_DECL
+	      && DECL_EXTERN_C_P (fn2)
+	      && (DECL_ARTIFICIAL (fn2)
+		  || nothrow_libfn_p (fn2)))
+	    return TREE_NOTHROW (fn2) ? NULL_TREE : t;
+	}
+      fn = TREE_TYPE (TREE_TYPE (fn));
+      if (!TYPE_NOTHROW_P (fn))
+	return t;
+    }
+
+  return NULL_TREE;
+}
+
+/* Evaluate noexcept ( EXPR ).  */
+
+tree
+finish_noexcept_expr (tree expr)
+{
+  if (processing_template_decl)
+    return build_min (NOEXCEPT_EXPR, boolean_type_node, expr);
+
+  if (cp_walk_tree_without_duplicates (&expr, check_noexcept_r, 0))
+    return boolean_false_node;
+  else
+    return boolean_true_node;
+}

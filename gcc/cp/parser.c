@@ -5841,6 +5841,51 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  }
 	  break;
 
+	case RID_NOEXCEPT:
+	  {
+	    tree expr;
+	    const char *saved_message;
+	    bool saved_integral_constant_expression_p;
+	    bool saved_non_integral_constant_expression_p;
+	    bool saved_greater_than_is_operator_p;
+
+	    cp_lexer_consume_token (parser->lexer);
+	    cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
+
+	    saved_message = parser->type_definition_forbidden_message;
+	    parser->type_definition_forbidden_message
+	      = G_("types may not be defined in %<noexcept%> expressions");
+
+	    saved_integral_constant_expression_p
+	      = parser->integral_constant_expression_p;
+	    saved_non_integral_constant_expression_p
+	      = parser->non_integral_constant_expression_p;
+	    parser->integral_constant_expression_p = false;
+
+	    saved_greater_than_is_operator_p
+	      = parser->greater_than_is_operator_p;
+	    parser->greater_than_is_operator_p = true;
+
+	    ++cp_unevaluated_operand;
+	    ++c_inhibit_evaluation_warnings;
+	    expr = cp_parser_expression (parser, false, NULL);
+	    --c_inhibit_evaluation_warnings;
+	    --cp_unevaluated_operand;
+
+	    parser->greater_than_is_operator_p
+	      = saved_greater_than_is_operator_p;
+
+	    parser->integral_constant_expression_p
+	      = saved_integral_constant_expression_p;
+	    parser->non_integral_constant_expression_p
+	      = saved_non_integral_constant_expression_p;
+
+	    parser->type_definition_forbidden_message = saved_message;
+
+	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	    return finish_noexcept_expr (expr);
+	  }
+
 	default:
 	  break;
 	}
