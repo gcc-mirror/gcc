@@ -1407,7 +1407,10 @@ add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
 {
   rtx list, next;
 
-  if (deps->readonly)
+  /* We don't want to short-circuit dependencies involving debug
+     insns, because they may cause actual dependencies to be
+     disregarded.  */
+  if (deps->readonly || DEBUG_INSN_P (insn))
     {
       add_dependence_list (insn, *listp, uncond, dep_type);
       return;
