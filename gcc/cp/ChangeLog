@@ -1,5 +1,29 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	Implement noexcept-specification (15.4)
+	* parser.c (cp_parser_exception_specification_opt): Parse it.
+	Give -Wdeprecated warning about throw() specs.
+	* pt.c (tsubst_exception_specification): Handle it.
+	* error.c (dump_exception_spec): Handle it.
+	* cxx-pretty-print.c (pp_cxx_exception_specification): Likewise.
+	* typeck.c (comp_except_specs): Handle compatibility rules.
+	Change exact parm to take an enum.
+	* typeck2.c (merge_exception_specifiers): Handle noexcept.
+	* except.c (nothrow_spec_p, type_noexcept_p): New fns.
+	(type_throw_all_p, build_noexcept_spec): New fns.
+	* cp-tree.h (TYPE_NOTHROW_P, TYPE_NOEXCEPT_P): Use them.
+	(comp_except_specs): Define ce_derived, ce_normal, ce_exact enums.
+	(cp_tree_index): Add CPTI_NOEXCEPT_TRUE_SPEC, CPTI_NOEXCEPT_FALSE_SPEC.
+	(noexcept_true_spec, noexcept_false_spec): New macros.
+	* name-lookup.c (pushdecl_maybe_friend): Adjust.
+	* search.c (check_final_overrider): Adjust.
+	* decl.c (check_redeclaration_exception_specification): Adjust.
+	(use_eh_spec_block): Use type_throw_all_p.
+	(cxx_init_decl_processing): Set noexcept_false_spec,noexcept_true_spec.
+	Give operator new a noexcept-specification in C++0x mode.
+	* tree.c (build_exception_variant, cxx_type_hash_eq): Adjust.
+	(cp_build_type_attribute_variant): Don't test TYPE_RAISES_EXCEPTIONS.
+
 	Implement noexcept operator (5.3.7)
 	* cp-tree.def (NOEXCEPT_EXPR): New.
 	* except.c (check_noexcept_r, finish_noexcept_expr): New.

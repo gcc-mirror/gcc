@@ -17534,12 +17534,49 @@ cp_parser_exception_specification_opt (cp_parser* parser)
 {
   cp_token *token;
   tree type_id_list;
+  const char *saved_message;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
+
+  /* Is it a noexcept-specification?  */
+  if (cp_parser_is_keyword (token, RID_NOEXCEPT))
+    {
+      tree expr;
+      cp_lexer_consume_token (parser->lexer);
+
+      if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+
+	  /* Types may not be defined in an exception-specification.  */
+	  saved_message = parser->type_definition_forbidden_message;
+	  parser->type_definition_forbidden_message
+	    = G_("types may not be defined in an exception-specification");
+
+	  expr = cp_parser_constant_expression (parser, false, NULL);
+
+	  /* Restore the saved message.  */
+	  parser->type_definition_forbidden_message = saved_message;
+
+	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	}
+      else
+	expr = boolean_true_node;
+
+      return build_noexcept_spec (expr, tf_warning_or_error);
+    }
+
   /* If it's not `throw', then there's no exception-specification.  */
   if (!cp_parser_is_keyword (token, RID_THROW))
     return NULL_TREE;
+
+#if 0
+  /* Enable this once a lot of code has transitioned to noexcept?  */
+  if (cxx_dialect == cxx0x && !in_system_header)
+    warning (OPT_Wdeprecated, "dynamic exception specifications are "
+	     "deprecated in C++0x; use %<noexcept%> instead.");
+#endif
 
   /* Consume the `throw'.  */
   cp_lexer_consume_token (parser->lexer);
@@ -17552,8 +17589,6 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   /* If it's not a `)', then there is a type-id-list.  */
   if (token->type != CPP_CLOSE_PAREN)
     {
-      const char *saved_message;
-
       /* Types may not be defined in an exception-specification.  */
       saved_message = parser->type_definition_forbidden_message;
       parser->type_definition_forbidden_message

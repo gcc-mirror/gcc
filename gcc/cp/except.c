@@ -1062,3 +1062,64 @@ finish_noexcept_expr (tree expr)
   else
     return boolean_true_node;
 }
+
+/* Return true iff SPEC is throw() or noexcept(true).  */
+
+bool
+nothrow_spec_p (const_tree spec)
+{
+  if (spec == NULL_TREE
+      || TREE_VALUE (spec) != NULL_TREE
+      || spec == noexcept_false_spec)
+    return false;
+  if (TREE_PURPOSE (spec) == NULL_TREE
+      || spec == noexcept_true_spec)
+    return true;
+  gcc_assert (processing_template_decl
+	      || TREE_PURPOSE (spec) == error_mark_node);
+  return false;
+}
+
+/* For FUNCTION_TYPE or METHOD_TYPE, true if NODE is noexcept.  This is the
+   case for things declared noexcept(true) and, with -fnothrow-opt, for
+   throw() functions.  */
+
+bool
+type_noexcept_p (const_tree type)
+{
+  tree spec = TYPE_RAISES_EXCEPTIONS (type);
+  if (flag_nothrow_opt)
+    return nothrow_spec_p (spec);
+  else
+    return spec == noexcept_true_spec;
+}
+
+/* For FUNCTION_TYPE or METHOD_TYPE, true if NODE can throw any type,
+   i.e. no exception-specification or noexcept(false).  */
+
+bool
+type_throw_all_p (const_tree type)
+{
+  tree spec = TYPE_RAISES_EXCEPTIONS (type);
+  return spec == NULL_TREE || spec == noexcept_false_spec;
+}
+
+/* Create a representation of the noexcept-specification with
+   constant-expression of EXPR.  COMPLAIN is as for tsubst.  */
+
+tree
+build_noexcept_spec (tree expr, int complain)
+{
+  expr = perform_implicit_conversion_flags (boolean_type_node, expr,
+					    complain,
+					    LOOKUP_NORMAL);
+  if (expr == boolean_true_node)
+    return noexcept_true_spec;
+  else if (expr == boolean_false_node)
+    return noexcept_false_spec;
+  else
+    {
+      gcc_assert (processing_template_decl || expr == error_mark_node);
+      return build_tree_list (expr, NULL_TREE);
+    }
+}

@@ -805,7 +805,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 				TYPE_RAISES_EXCEPTIONS (TREE_TYPE (previous));
 		  if (!comp_except_specs (previous_exception_spec,
 					  x_exception_spec,
-					  true))
+					  ce_normal))
 		    {
 		      pedwarn (input_location, 0, "declaration of %q#D with C language linkage",
 			       x);

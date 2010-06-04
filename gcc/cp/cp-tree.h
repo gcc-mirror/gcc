@@ -758,6 +758,8 @@ enum cp_tree_index
     CPTI_LANG_NAME_JAVA,
 
     CPTI_EMPTY_EXCEPT_SPEC,
+    CPTI_NOEXCEPT_TRUE_SPEC,
+    CPTI_NOEXCEPT_FALSE_SPEC,
     CPTI_JCLASS,
     CPTI_TERMINATE,
     CPTI_CALL_UNEXPECTED,
@@ -847,6 +849,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 /* Exception specifier used for throw().  */
 #define empty_except_spec		cp_global_trees[CPTI_EMPTY_EXCEPT_SPEC]
+#define noexcept_true_spec		cp_global_trees[CPTI_NOEXCEPT_TRUE_SPEC]
+#define noexcept_false_spec		cp_global_trees[CPTI_NOEXCEPT_FALSE_SPEC]
 
 /* If non-NULL, a POINTER_TYPE equivalent to (java::lang::Class*).  */
 #define jclass_node			cp_global_trees[CPTI_JCLASS]
@@ -1726,19 +1730,18 @@ struct GTY(()) lang_type {
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
    will be NULL_TREE to indicate a throw specification of `()', or
-   no exceptions allowed.  */
+   no exceptions allowed.  For a noexcept specification, TREE_VALUE
+   is NULL_TREE and TREE_PURPOSE is the constant-expression. */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_LANG_SLOT_1 (NODE)
 
-/* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'.  */
-#define TYPE_NOTHROW_P(NODE) \
-  (TYPE_RAISES_EXCEPTIONS (NODE) \
-   && TREE_VALUE (TYPE_RAISES_EXCEPTIONS (NODE)) == NULL_TREE)
+/* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'
+   or noexcept(true).  */
+#define TYPE_NOTHROW_P(NODE) nothrow_spec_p (TYPE_RAISES_EXCEPTIONS (NODE))
 
 /* For FUNCTION_TYPE or METHOD_TYPE, true if NODE is noexcept.  This is the
    case for things declared noexcept(true) and, with -fnothrow-opt, for
    throw() functions.  */
-#define TYPE_NOEXCEPT_P(NODE) \
-  (flag_nothrow_opt && TYPE_NOTHROW_P(NODE))
+#define TYPE_NOEXCEPT_P(NODE) type_noexcept_p (NODE)
 
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) \
@@ -4821,6 +4824,10 @@ extern tree build_throw				(tree);
 extern int nothrow_libfn_p			(const_tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree);
+extern bool nothrow_spec_p			(const_tree);
+extern bool type_noexcept_p			(const_tree);
+extern bool type_throw_all_p			(const_tree);
+extern tree build_noexcept_spec			(tree, int);
 extern void choose_personality_routine		(enum languages);
 extern tree eh_type_info			(tree);
 extern tree begin_eh_spec_block			(void);
@@ -5348,7 +5355,8 @@ extern tree require_complete_type		(tree);
 extern tree complete_type			(tree);
 extern tree complete_type_or_else		(tree, tree);
 extern int type_unknown_p			(const_tree);
-extern bool comp_except_specs			(const_tree, const_tree, bool);
+enum { ce_derived, ce_normal, ce_exact };
+extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
