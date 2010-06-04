@@ -1,5 +1,45 @@
 2010-06-04  Jan Hubicka  <jh@suse.cz>
 
+	* df.h (df_rd_bb_info, df_md_bb_info, df_lr_bb_info, df_live_bb_info,
+	df_byte_lr_bb_info): Embedd bitmap_head into the structure.
+	(DF_LIVE_IN, DF_LIVE_OUT, DF_LR_IN, DF_LR_OUT, DF_BYTE_LR_IN,
+	DF_BYTE_LR_OUT): Update for embedded bitmaps.
+	* fwprop.c (single_def_use_enter_block): Likewise.
+	* ddg.c (create_ddg_dep_from_intra_loop_link,
+	add_cross_iteration_register_deps, build_inter_loop_deps): Likewise.
+	* loop-iv.c (latch_dominating_def): Likewise.
+	* df-problems.c (df_rd_free_bb_info, df_rd_alloc,
+	df_rd_bb_local_compute_process_def, df_rd_bb_local_compute_process_def,
+	df_rd_init_solution, df_rd_init_solution, df_rd_transfer_function,
+	df_rd_transfer_function, df_rd_top_dump,
+	df_rd_bottom_dump): Update.
+	(df_lr_free_bb_info, df_lr_alloc, df_lr_reset, df_lr_bb_local_compute,
+	df_lr_bb_local_compute, df_lr_bb_local_compute, df_lr_bb_local_compute,
+	df_lr_bb_local_compute, df_lr_local_compute, df_lr_init, df_lr_init,
+	df_lr_confluence_0, df_lr_free, df_lr_top_dump, df_lr_bottom_dump,
+	df_lr_verify_solution_start, df_lr_verify_solution_end,
+	df_lr_verify_transfer_functions, df_lr_verify_transfer_functions,
+	df_live_free_bb_info, df_live_alloc, df_live_reset,
+	df_live_bb_local_compute, df_live_init, df_live_transfer_function,
+	df_live_finalize, df_live_free, df_live_top_dump, df_live_bottom_dump,
+	df_live_verify_solution_start, df_live_verify_solution_end,
+	df_live_verify_transfer_functions, df_chain_create_bb,
+	df_byte_lr_free_bb_info, df_byte_lr_alloc, df_byte_lr_reset,
+	df_byte_lr_bb_local_compute, df_byte_lr_bb_local_compute,
+	df_byte_lr_bb_local_compute, df_byte_lr_bb_local_compute,
+	df_byte_lr_bb_local_compute, df_byte_lr_local_compute, df_byte_lr_init,
+	df_byte_lr_confluence_0, df_byte_lr_confluence_n,
+	df_byte_lr_transfer_function, df_byte_lr_top_dump,
+	df_byte_lr_bottom_dump, df_create_unused_note,
+	df_note_bb_compute, df_md_free_bb_info, df_md_alloc,
+	df_md_bb_local_compute_process_def, df_md_local_compute, df_md_reset,
+	df_md_transfer_function, df_md_init, df_md_confluence_0,
+	df_md_confluence_n,
+	df_md_top_dump, df_md_bottom_dump): Update.  (struct df_lr_problem_data):
+	Embedd bitmap headers.
+
+2010-06-04  Jan Hubicka  <jh@suse.cz>
+
 	* dce.c (dce_process_block): Do not re-scan already marked instructions.
 
 2010-06-04  Bernd Schmidt  <bernds@codesourcery.com>

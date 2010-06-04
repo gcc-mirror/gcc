@@ -626,20 +626,20 @@ struct df
 
 /* Most transformations that wish to use live register analysis will
    use these macros.  This info is the and of the lr and live sets.  */
-#define DF_LIVE_IN(BB) (DF_LIVE_BB_INFO(BB)->in)
-#define DF_LIVE_OUT(BB) (DF_LIVE_BB_INFO(BB)->out)
+#define DF_LIVE_IN(BB) (&DF_LIVE_BB_INFO(BB)->in)
+#define DF_LIVE_OUT(BB) (&DF_LIVE_BB_INFO(BB)->out)
 
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
    be fixed.  */
-#define DF_LR_IN(BB) (DF_LR_BB_INFO(BB)->in)
-#define DF_LR_OUT(BB) (DF_LR_BB_INFO(BB)->out)
+#define DF_LR_IN(BB) (&DF_LR_BB_INFO(BB)->in)
+#define DF_LR_OUT(BB) (&DF_LR_BB_INFO(BB)->out)
 
 /* These macros are used by passes that are not tolerant of
    uninitialized variables.  This intolerance should eventually
    be fixed.  */
-#define DF_BYTE_LR_IN(BB) (DF_BYTE_LR_BB_INFO(BB)->in)
-#define DF_BYTE_LR_OUT(BB) (DF_BYTE_LR_BB_INFO(BB)->out)
+#define DF_BYTE_LR_IN(BB) (&DF_BYTE_LR_BB_INFO(BB)->in)
+#define DF_BYTE_LR_OUT(BB) (&DF_BYTE_LR_BB_INFO(BB)->out)
 
 /* Macros to access the elements within the ref structure.  */
 
@@ -796,13 +796,13 @@ struct df_scan_bb_info
 struct df_rd_bb_info
 {
   /* Local sets to describe the basic blocks.   */
-  bitmap kill;
-  bitmap sparse_kill;
-  bitmap gen;   /* The set of defs generated in this block.  */
+  bitmap_head kill;
+  bitmap_head sparse_kill;
+  bitmap_head gen;   /* The set of defs generated in this block.  */
 
   /* The results of the dataflow problem.  */
-  bitmap in;    /* At the top of the block.  */
-  bitmap out;   /* At the bottom of the block.  */
+  bitmap_head in;    /* At the top of the block.  */
+  bitmap_head out;   /* At the bottom of the block.  */
 };
 
 
@@ -812,13 +812,13 @@ struct df_rd_bb_info
 struct df_md_bb_info
 {
   /* Local sets to describe the basic blocks.  */
-  bitmap gen;    /* Partial/conditional definitions live at BB out.  */
-  bitmap kill;   /* Other definitions that are live at BB out.  */
-  bitmap init;   /* Definitions coming from dominance frontier edges. */
+  bitmap_head gen;    /* Partial/conditional definitions live at BB out.  */
+  bitmap_head kill;   /* Other definitions that are live at BB out.  */
+  bitmap_head init;   /* Definitions coming from dominance frontier edges. */
 
   /* The results of the dataflow problem.  */
-  bitmap in;    /* Just before the block itself. */
-  bitmap out;   /* At the bottom of the block.  */
+  bitmap_head in;    /* Just before the block itself. */
+  bitmap_head out;   /* At the bottom of the block.  */
 };
 
 
@@ -828,13 +828,13 @@ struct df_md_bb_info
 struct df_lr_bb_info
 {
   /* Local sets to describe the basic blocks.  */
-  bitmap def;   /* The set of registers set in this block
-                   - except artificial defs at the top.  */
-  bitmap use;   /* The set of registers used in this block.  */
+  bitmap_head def;   /* The set of registers set in this block
+                        - except artificial defs at the top.  */
+  bitmap_head use;   /* The set of registers used in this block.  */
 
   /* The results of the dataflow problem.  */
-  bitmap in;    /* Just before the block itself. */
-  bitmap out;   /* At the bottom of the block.  */
+  bitmap_head in;    /* Just before the block itself. */
+  bitmap_head out;   /* At the bottom of the block.  */
 };
 
 
@@ -845,13 +845,13 @@ struct df_lr_bb_info
 struct df_live_bb_info
 {
   /* Local sets to describe the basic blocks.  */
-  bitmap kill;  /* The set of registers unset in this block.  Calls,
-		   for instance, unset registers.  */
-  bitmap gen;   /* The set of registers set in this block.  */
+  bitmap_head kill;  /* The set of registers unset in this block.  Calls,
+		        for instance, unset registers.  */
+  bitmap_head gen;   /* The set of registers set in this block.  */
 
   /* The results of the dataflow problem.  */
-  bitmap in;    /* At the top of the block.  */
-  bitmap out;   /* At the bottom of the block.  */
+  bitmap_head in;    /* At the top of the block.  */
+  bitmap_head out;   /* At the bottom of the block.  */
 };
 
 
@@ -861,13 +861,13 @@ indexed by the df_byte_lr_offset array which is indexed by pseudo.  */
 struct df_byte_lr_bb_info
 {
   /* Local sets to describe the basic blocks.  */
-  bitmap def;   /* The set of registers set in this block
-                   - except artificial defs at the top.  */
-  bitmap use;   /* The set of registers used in this block.  */
+  bitmap_head def;   /* The set of registers set in this block
+                        - except artificial defs at the top.  */
+  bitmap_head use;   /* The set of registers used in this block.  */
 
   /* The results of the dataflow problem.  */
-  bitmap in;    /* Just before the block itself. */
-  bitmap out;   /* At the bottom of the block.  */
+  bitmap_head in;    /* Just before the block itself. */
+  bitmap_head out;   /* At the bottom of the block.  */
 };
 
 
