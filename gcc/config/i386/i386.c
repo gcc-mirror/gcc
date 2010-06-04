@@ -11579,7 +11579,7 @@ get_some_local_dynamic_name (void)
    ; -- print a semicolon (after prefixes due to bug in older gas).
  */
 
-static void
+void
 ix86_print_operand (FILE *file, rtx x, int code)
 {
   if (code)

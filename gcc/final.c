@@ -220,7 +220,6 @@ static void output_asm_name (void);
 static void output_alternate_entry_point (FILE *, rtx);
 static tree get_mem_expr_from_op (rtx, int *);
 static void output_asm_operand_names (rtx *, int *, int);
-static void output_operand (rtx, int);
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs (rtx);
 #endif
@@ -3478,7 +3477,7 @@ mark_symbol_refs_as_used (rtx x)
    The meanings of the letters are machine-dependent and controlled
    by TARGET_PRINT_OPERAND.  */
 
-static void
+void
 output_operand (rtx x, int code ATTRIBUTE_UNUSED)
 {
   if (x && GET_CODE (x) == SUBREG)
