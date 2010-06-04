@@ -145,7 +145,7 @@ along with GCC; see the file COPYING3.  If not see
   do								\
     {								\
       fprintf (FILE, "\tcall\t");				\
-      print_operand (FILE, XEXP (DECL_RTL (FN), 0), 'P');	\
+      ix86_print_operand (FILE, XEXP (DECL_RTL (FN), 0), 'P');	\
       fprintf (FILE, "\n");					\
     }								\
   while (0)

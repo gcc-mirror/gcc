@@ -77,6 +77,9 @@ extern rtx final_scan_insn (rtx, FILE *, int, int, int *);
    subreg of.  */
 extern rtx alter_subreg (rtx *);
 
+/* Print an operand using machine-dependent assembler syntax.  */
+extern void output_operand (rtx, int);
+
 /* Report inconsistency between the assembler template and the operands.
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
 extern void output_operand_lossage (const char *, ...) ATTRIBUTE_PRINTF_1;

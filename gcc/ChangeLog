@@ -1,3 +1,11 @@
+2010-06-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/i386/i386-protos.h (ix86_print_operand): Declare.
+	* config/i386/i386.c (ix86_print_operand): Make non-static.
+	* config/i386/sol2.h (ASM_OUTPUT_CALL): Call ix86_print_operand.
+	* output.h (output_operand): Declare.
+	* final.c (output_operand): Make non-static.
+
 2010-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/44013
