@@ -1,3 +1,8 @@
+2010-06-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatlink.adb (gnatlink): Remove support for -fsjlj switch.
+	* gcc-interface/lang-specs.h: Likewise.
+
 2010-06-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/44294
