@@ -349,6 +349,10 @@ extern void mark_home_live (int);
 extern rtx eliminate_regs (rtx, enum machine_mode, rtx);
 extern bool elimination_target_reg_p (rtx);
 
+/* Called from the register allocator to estimate costs of eliminating
+   invariant registers.  */
+extern void calculate_elim_costs_all_insns (void);
+
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);
 
