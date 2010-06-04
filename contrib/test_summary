@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998, 1999, 2000, 2002, 2003, 2004, 2007, 2009
+# (C) 1998, 1999, 2000, 2002, 2003, 2004, 2007, 2009, 2010
 # Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
@@ -75,9 +75,9 @@ for file in $files; do
     [ -f $file ] &&
     anyfile=true &&
     { $anychange ||
-      anychange=`diff -u $file.sent $file 2>/dev/null |
+      anychange=`diff $file.sent $file 2>/dev/null |
 	if test ! -f $file.sent ||
-	   egrep '^[-+](XPASS|FAIL)' >/dev/null; then
+	   egrep '^[<>] (XPASS|FAIL)' >/dev/null; then
 	    echo true
 	else
 	    echo false
