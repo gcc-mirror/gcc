@@ -23,6 +23,7 @@ void f() noexcept
 
 int main()
 {
+  std::set_unexpected (my_unexpected);
   std::set_terminate (my_terminate);
   f();
   return 1;
