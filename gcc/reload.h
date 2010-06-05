@@ -30,12 +30,9 @@ along with GCC; see the file COPYING3.  If not see
   SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
 #endif
 
-/* If MEMORY_MOVE_COST isn't defined, give it a default here.  */
-#ifndef MEMORY_MOVE_COST
-#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
-  (4 + memory_move_secondary_cost ((MODE), (CLASS), (IN)))
-#endif
-extern int memory_move_secondary_cost (enum machine_mode, enum reg_class, int);
+extern int memory_move_cost (enum machine_mode, enum reg_class, bool);
+extern int memory_move_secondary_cost (enum machine_mode, enum reg_class,
+				       bool);
 
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))

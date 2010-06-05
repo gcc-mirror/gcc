@@ -681,12 +681,18 @@ init_fake_stack_mems (void)
     top_of_stack[i] = gen_rtx_MEM ((enum machine_mode) i, stack_pointer_rtx);
 }
 
+/* Compute cost of moving registers to/from memory.  */
+int
+memory_move_cost (enum machine_mode mode, enum reg_class rclass, bool in)
+{
+  return targetm.memory_move_cost (mode, rclass, in);
+}
 
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
 int
 memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
-			    int in)
+			    bool in)
 {
   enum reg_class altclass;
   int partial_cost = 0;
@@ -706,8 +712,8 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
 
   if (rclass == altclass)
     /* This isn't simply a copy-to-temporary situation.  Can't guess
-       what it is, so MEMORY_MOVE_COST really ought not to be calling
-       here in that case.
+       what it is, so TARGET_MEMORY_MOVE_COST really ought not to be
+       calling here in that case.
 
        I'm tempted to put in an assert here, but returning this will
        probably only give poor estimates, which is what we would've

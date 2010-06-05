@@ -791,6 +791,9 @@ struct gcc_target
      for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
+  /* Compute cost of moving registers to/from memory.  */
+  int (* memory_move_cost) (enum machine_mode, enum reg_class, bool);
+
   /* True for MODE if the target expects that registers in this mode will
      be allocated to registers in a small register class.  The compiler is
      allowed to use registers explicitly used in the rtl as spill registers

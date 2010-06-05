@@ -1,3 +1,29 @@
+2010-06-05  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct gcc_target): Add memory_move_cost field.
+	* target-def.h (TARGET_MEMORY_MOVE_COST): New.
+	(TARGET_INITIALIZER): Use TARGET_MEMORY_MOVE_COST.
+	* targhooks.c (default_memory_move_cost): New function.
+	* targhooks.h (default_memory_move_cost): Declare function.
+	* reload.h (memory_move_cost): Declare.
+	(memory_move_secondary_cost): Change type of 'in' argument to bool.
+	* reginfo.c (memory_move_cost): New function.
+	(memory_move_secondary_cost): Change type of 'in' argument to bool.
+	* ira.h (ira_memory_move_cost): Update comment.
+	* ira.c: (ira_memory_move_cost): Update comment.
+	(setup_class_subset_and_memory_move_costs): Replace MEMORY_MOVE_COST
+	with memory_move_cost.
+	* postreload.c (reload_cse_simplify_set): (Ditto.).
+	* reload1.c (choose_reload_regs): (Ditto.).
+	* doc/tm.texi (TARGET_MEMORY_MOVE_COST): New.
+	(MEMORY_MOVE_COST):  Revise documentation.
+
+	* config/i386/i386.h (MEMORY_MOVE_COST): Remove macro.
+	* config/i386/i386-protos.h (int ix86_memory_move_cost): Remove.
+	* config/i386/i386.h (ix86_memory_move_cost): Make static. Change
+	type of 'in' argument to bool.
+	(TARGET_MEMORY_MOVE_COST): Define.
+
 2010-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (propagate): Fix type in handling functions
