@@ -77,8 +77,8 @@ static VEC(gimple,heap) *worklist;
    as necessary.  */
 static sbitmap processed;
 
-/* Vector indicating that last_stmt if a basic block has already been
-   marked as necessary.  */
+/* Vector indicating that the last statement of a basic block has already
+   been marked as necessary.  */
 static sbitmap last_stmt_necessary;
 
 /* Vector indicating that BB contains statements that are live.  */
@@ -197,6 +197,7 @@ find_all_control_dependences (struct edge_list *el)
 
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
+
 static inline void
 mark_stmt_necessary (gimple stmt, bool add_to_worklist)
 {
@@ -365,13 +366,30 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 }
 
 
-/* Make corresponding control dependent edges necessary.  We only
-   have to do this once for each basic block, so we clear the bitmap
-   after we're done.
+/* Mark the last statement of BB as necessary.  */
 
-   When IGNORE_SELF it true, ignore BB from the list of control dependences.  */
 static void
-mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el, bool ignore_self)
+mark_last_stmt_necessary (basic_block bb)
+{
+  gimple stmt = last_stmt (bb);
+
+  SET_BIT (last_stmt_necessary, bb->index);
+  SET_BIT (bb_contains_live_stmts, bb->index);
+
+  /* We actually mark the statement only if it is a control statement.  */
+  if (stmt && is_ctrl_stmt (stmt))
+    mark_stmt_necessary (stmt, true);
+}
+
+
+/* Mark control dependent edges of BB as necessary.  We have to do this only
+   once for each basic block so we set the appropriate bit after we're done.
+
+   When IGNORE_SELF is true, ignore BB in the list of control dependences.  */
+
+static void
+mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
+					bool ignore_self)
 {
   bitmap_iterator bi;
   unsigned edge_number;
@@ -384,7 +402,6 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el, bo
 
   EXECUTE_IF_CONTROL_DEPENDENT (bi, bb->index, edge_number)
     {
-      gimple stmt;
       basic_block cd_bb = INDEX_EDGE_PRED_BB (el, edge_number);
 
       if (ignore_self && cd_bb == bb)
@@ -393,15 +410,10 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el, bo
 	  continue;
 	}
 
-      if (TEST_BIT (last_stmt_necessary, cd_bb->index))
-	continue;
-      SET_BIT (last_stmt_necessary, cd_bb->index);
-      SET_BIT (bb_contains_live_stmts, cd_bb->index);
-
-      stmt = last_stmt (cd_bb);
-      if (stmt && is_ctrl_stmt (stmt))
-	mark_stmt_necessary (stmt, true);
+      if (!TEST_BIT (last_stmt_necessary, cd_bb->index))
+	mark_last_stmt_necessary (cd_bb);
     }
+
   if (!skipped)
     SET_BIT (visited_control_parents, bb->index);
 }
@@ -652,12 +664,12 @@ propagate_necessity (struct edge_list *el)
 
       if (aggressive)
 	{
-	  /* Mark the last statements of the basic blocks that the block
-	     containing STMT is control dependent on, but only if we haven't
+	  /* Mark the last statement of the basic blocks on which the block
+	     containing STMT is control dependent, but only if we haven't
 	     already done so.  */
 	  basic_block bb = gimple_bb (stmt);
 	  if (bb != ENTRY_BLOCK_PTR
-	      && ! TEST_BIT (visited_control_parents, bb->index))
+	      && !TEST_BIT (visited_control_parents, bb->index))
 	    mark_control_dependent_edges_necessary (bb, el, false);
 	}
 
@@ -760,18 +772,11 @@ propagate_necessity (struct edge_list *el)
 		      != get_immediate_dominator (CDI_POST_DOMINATORS, arg_bb))
 		    {
 		      if (!TEST_BIT (last_stmt_necessary, arg_bb->index))
-			{
-			  gimple stmt2;
-			  SET_BIT (last_stmt_necessary, arg_bb->index);
-			  SET_BIT (bb_contains_live_stmts, arg_bb->index);
-
-			  stmt2 = last_stmt (arg_bb);
-			  if (stmt2 && is_ctrl_stmt (stmt2))
-			    mark_stmt_necessary (stmt2, true);
-			}
+			mark_last_stmt_necessary (arg_bb);
 		    }
 		  else if (arg_bb != ENTRY_BLOCK_PTR
-		           && ! TEST_BIT (visited_control_parents, arg_bb->index))
+		           && !TEST_BIT (visited_control_parents,
+					 arg_bb->index))
 		    mark_control_dependent_edges_necessary (arg_bb, el, true);
 		}
 	    }
