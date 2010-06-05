@@ -1,3 +1,26 @@
+2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update.
+
+2010-06-05  Magnus Fromreide  <magfr@lysator.liu.se>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (function): Add nullptr_t support.
+	* include/bits/shared_ptr.h (shared_ptr): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr): Likewise.
+
+2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr): Add nullptr_t support.
+	(__shared_count): Add nullptr_t support and make constructors explicit.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust.
+	* testsuite/20_util/shared_ptr/cons/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/cons/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/assign/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/util/testsuite_abi.h: Work around glibc BZ 9694.

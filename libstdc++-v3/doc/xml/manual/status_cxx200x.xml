@@ -82,7 +82,7 @@ particular release.
       <entry>18.2</entry>
       <entry>Types</entry>
       <entry>Partial</entry>
-      <entry>Missing offsetof, max_align_t, nullptr_t</entry>
+      <entry>Missing offsetof, max_align_t</entry>
     </row>
     <row>
       <entry>18.3</entry>
@@ -519,7 +519,7 @@ particular release.
       <entry>20.7.4.3</entry>
       <entry>Type properties</entry>
       <entry>Partial</entry>
-      <entry>Missing is_system_layout</entry>
+      <entry>Missing is_trivially_copyable, is_literal_type, is_nothrow_constructible</entry>
     </row>
     <row>
       <entry>20.7.5</entry>
@@ -2236,10 +2236,11 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.3.1</entry>
       <entry>Class <code>thread</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry><code>thread::id</code> is not trivially copyable</entry>
     </row>
     <row>
       <entry>30.3.2</entry>
