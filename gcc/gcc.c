@@ -399,6 +399,7 @@ static const char *replace_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
 static const char *include_spec_function (int, const char **);
 static const char *find_file_spec_function (int, const char **);
+static const char *find_plugindir_spec_function (int, const char **);
 static const char *print_asm_header_spec_function (int, const char **);
 static const char *compare_debug_dump_opt_spec_function (int, const char **);
 static const char *compare_debug_self_opt_spec_function (int, const char **);
@@ -862,7 +863,7 @@ static const char *cpp_unique_options =
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
  %{remap} %{g3|ggdb3|gstabs3|gcoff3|gxcoff3|gvms3:-dD}\
- %{!iplugindir*:%{fplugin*:-iplugindir=%:find-file(plugin)}}\
+ %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
  %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{fmudflap:-D_MUDFLAP -include mf-runtime.h}\
  %{fmudflapth:-D_MUDFLAP -D_MUDFLAPTH -include mf-runtime.h}\
@@ -885,7 +886,7 @@ static const char *cpp_debug_options = "%{d*}";
 /* NB: This is shared amongst all front-ends, except for Ada.  */
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
- %{!iplugindir*:%{fplugin*:-iplugindir=%:find-file(plugin)}}\
+ %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
  %1 %{!Q:-quiet} %{!dumpbase:-dumpbase %B} %{d*} %{m*} %{a*}\
  %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b)} \
  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
@@ -1719,6 +1720,7 @@ static const struct spec_function static_spec_functions[] =
   { "version-compare",		version_compare_spec_function },
   { "include",			include_spec_function },
   { "find-file",		find_file_spec_function },
+  { "find-plugindir",		find_plugindir_spec_function },
   { "print-asm-header",		print_asm_header_spec_function },
   { "compare-debug-dump-opt",	compare_debug_dump_opt_spec_function },
   { "compare-debug-self-opt",	compare_debug_self_opt_spec_function },
@@ -8657,11 +8659,11 @@ include_spec_function (int argc, const char **argv)
   return NULL;
 }
 
-/* %:find-file spec function.  This function replace its argument by
+/* %:find-file spec function.  This function replaces its argument by
     the file found thru find_file, that is the -print-file-name gcc
     program option. */
 static const char *
-find_file_spec_function (int argc, const char**argv)
+find_file_spec_function (int argc, const char **argv)
 {
   const char *file;
 
@@ -8670,6 +8672,22 @@ find_file_spec_function (int argc, const char**argv)
 
   file = find_file (argv[0]);
   return file;
+}
+
+
+/* %:find-plugindir spec function.  This function replaces its argument
+    by the -iplugindir=<dir> option.  `dir' is found thru find_file, that
+    is the -print-file-name gcc program option. */
+static const char *
+find_plugindir_spec_function (int argc, const char **argv ATTRIBUTE_UNUSED)
+{
+  const char *option;
+
+  if (argc != 0)
+    abort ();
+
+  option = concat ("-iplugindir=", find_file ("plugin"), NULL);
+  return option;
 }
 
 
