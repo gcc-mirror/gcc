@@ -85,6 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class _Sp_counted_ptr : public _Sp_counted_base<_Lp>
     {
     public:
+      explicit
       _Sp_counted_ptr(_Ptr __p)
       : _M_ptr(__p) { }
 
@@ -106,6 +107,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       _Ptr             _M_ptr;  // copy constructor must not throw
     };
+
+  template<>
+    void
+    _Sp_counted_ptr<nullptr_t, _S_single>::_M_dispose() { }
+
+  template<>
+    void
+    _Sp_counted_ptr<nullptr_t, _S_mutex>::_M_dispose() { }
+
+  template<>
+    void
+    _Sp_counted_ptr<nullptr_t, _S_atomic>::_M_dispose() { }
 
   // Support for custom deleter and/or allocator
   template<typename _Ptr, typename _Deleter, typename _Alloc, _Lock_policy _Lp>
@@ -181,6 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_Base_type;
 
     public:
+      explicit
       _Sp_counted_ptr_inplace(_Alloc __a)
       : _Base_type(static_cast<_Tp*>(0), _Sp_destroy_inplace<_Tp>(), __a)
       , _M_storage()
@@ -237,6 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { }
 
       template<typename _Ptr>
+        explicit
 	__shared_count(_Ptr __p) : _M_pi(0)
 	{
 	  __try
@@ -316,6 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if _GLIBCXX_DEPRECATED
       // Special case for auto_ptr<_Tp> to provide the strong guarantee.
       template<typename _Tp>
+        explicit
 	__shared_count(std::auto_ptr<_Tp>&& __r)
 	: _M_pi(new _Sp_counted_ptr<_Tp*, _Lp>(__r.get()))
 	{ __r.release(); }
@@ -323,6 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // Special case for unique_ptr<_Tp,_Del> to provide the strong guarantee.
       template<typename _Tp, typename _Del>
+        explicit
 	__shared_count(std::unique_ptr<_Tp, _Del>&& __r)
 	: _M_pi(_S_create_from_up(std::move(__r)))
 	{ __r.release(); }
@@ -567,6 +584,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
 	}
 
+      template<typename _Deleter>
+	__shared_ptr(nullptr_t __p, _Deleter __d)
+	: _M_ptr(0), _M_refcount(__p, __d)
+	{ }
+
+      template<typename _Deleter, typename _Alloc>
+	__shared_ptr(nullptr_t __p, _Deleter __d, const _Alloc& __a)
+	: _M_ptr(0), _M_refcount(__p, __d, __a)
+	{ }
+
       template<typename _Tp1>
 	__shared_ptr(const __shared_ptr<_Tp1, _Lp>& __r, _Tp* __p)
 	: _M_ptr(__p), _M_refcount(__r._M_refcount) // never throws
@@ -630,6 +657,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
 	}
 #endif
+
+      /* TODO: use delegating constructor */
+      __shared_ptr(nullptr_t) : _M_ptr(0), _M_refcount() // never throws
+      { }
 
       template<typename _Tp1>
 	__shared_ptr&
