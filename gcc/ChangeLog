@@ -1,3 +1,10 @@
+2010-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44361
+	* c-typeck.c (mark_exp_read): Handle C_MAYBE_CONST_EXPR.
+	* c-parser.c (c_parser_postfix_expression): Call mark_exp_read on
+	statement expression.
+
 2010-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* df-problems.c (seen_in_block, seen_in_insn): Convert to bitmap_head.

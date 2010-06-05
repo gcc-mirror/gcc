@@ -1,3 +1,8 @@
+2010-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44361
+	* c-c++-common/Wunused-var-9.c: New test.
+
 2010-06-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/noexcept06.C: Call set_unexpected.
