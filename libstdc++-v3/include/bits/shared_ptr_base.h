@@ -109,15 +109,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   template<>
-    void
+    inline void
     _Sp_counted_ptr<nullptr_t, _S_single>::_M_dispose() { }
 
   template<>
-    void
+    inline void
     _Sp_counted_ptr<nullptr_t, _S_mutex>::_M_dispose() { }
 
   template<>
-    void
+    inline void
     _Sp_counted_ptr<nullptr_t, _S_atomic>::_M_dispose() { }
 
   // Support for custom deleter and/or allocator
