@@ -1,3 +1,7 @@
+2010-06-04  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/util/testsuite_abi.h: Work around glibc BZ 9694.
+
 2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_iterators.h: Don't include <cstddef>,
