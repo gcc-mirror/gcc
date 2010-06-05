@@ -1,3 +1,13 @@
+2010-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genautomata.c (curr_state_pass_num): Delete.
+	(min_issue_delay_pass_states): Delete.
+	(min_issue_delay): Delete.
+	(initiate_min_issue_delay_pass_states): Delete.
+	(output_min_issue_delay_table): Compute min_issue_delay_vect
+	using a breadth-first search variant.
+	(output_tables): Don't call initiate_min_issue_delay_pass_states.
+
 2010-06-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR boostrap/44421
