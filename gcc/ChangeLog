@@ -1,3 +1,18 @@
+2010-06-05  Jan Hubicka  <jh@suse.cz>
+
+	* df-problems.c (seen_in_block, seen_in_insn): Convert to bitmap_head.
+	(df_rd_problem_data): Convert sparse_invalidated_by_call,
+	dense_invalidated_by_call to bitmap head.
+	(df_rd_alloc, df_rd_bb_local_compute_process_def,
+	df_rd_bb_local_compute, df_rd_confluence_n, df_rd_transfer_function,
+	df_rd_start_dump, df_lr_verify_transfer_functions,
+	df_live_verify_transfer_functions, df_chain_create_bb,
+	df_chain_add_problem, df_byte_lr_check_regs, df_byte_lr_alloc,
+	df_byte_lr_confluence_0, df_byte_lr_confluence_n, df_note_compute,
+	df_simulate_one_insn_forwards, df_md_alloc, df_md_bb_local_compute_process_def,
+	df_md_bb_local_compute_process_def, df_md_local_compute, df_md_transfer_function
+	df_md_free): Update.
+
 2010-06-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/44322
