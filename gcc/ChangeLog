@@ -1,3 +1,10 @@
+2010-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dce.c (mark_last_stmt_necessary): New function.
+	(mark_control_dependent_edges_necessary): Call it instead of marking
+	the last statement manually.
+	(propagate_necessity): Likewise.
+
 2010-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* tree-into-ssa.c (insert_phi_nodes): Use bitmap heads
@@ -39,9 +46,9 @@
 
 2010-06-05  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-pure-const.c (propagate): Fix type in handling functions
-	that can not return; be more cureful about merging the results
-	with previously known.
+	* ipa-pure-const.c (propagate): Fix typo in handling of functions
+	that cannot return.  Be more careful when merging the results with
+	previously known ones.
 
 2010-06-05  Matthias Klose  <doko@ubuntu.com>
 
