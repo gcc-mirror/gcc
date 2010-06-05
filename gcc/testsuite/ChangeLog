@@ -1,3 +1,28 @@
+2010-06-04  Magnus Fromreide  <magfr@lysator.liu.se>
+
+	* g++.dg/cpp0x/nullptr01.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr02.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr03.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr04.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr05.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr06.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr07.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr08.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr09.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr10.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr11.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr12.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr13.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr14.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr15.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr16.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr17.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr18.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr19.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr20.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr21.C: Test nullptr_t variable.
+	* g++.dg/cpp0x/nullptr22.C: Test nullptr_t variable.
+
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/noexcept06.C: New.

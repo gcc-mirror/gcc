@@ -6,4 +6,6 @@
 void fun()
 {
   if( nullptr == 0 );
+  decltype(nullptr) mynull = 0;
+  if( mynull == 0 );
 }

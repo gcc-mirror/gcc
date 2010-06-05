@@ -13,4 +13,8 @@ void f()
   f2(nullptr); // { dg-warning "null argument where non-null required " }
   f3("x", "y", __null); // { dg-warning "missing sentinel in function call" }
   f3("x", "y", nullptr);
+  decltype(nullptr) mynull = 0;
+  f1("%p", mynull);
+  f2(mynull); // { dg-warning "null argument where non-null required " }
+  f3("x", "y", mynull);
 }

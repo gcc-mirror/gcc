@@ -20,4 +20,6 @@ void test_f()
   //
   type_equal<char*>(f(nullptr));
   type_equal<int>(f(0));
+  decltype(nullptr) mynull = 0;
+  type_equal<char*>(f(mynull));
 }

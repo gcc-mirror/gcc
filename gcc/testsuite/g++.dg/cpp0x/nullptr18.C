@@ -16,4 +16,6 @@ bool j(  bool );
 void test_j()
 {
   type_equal<char*>(j(nullptr));
+  decltype(nullptr) mynull = 0;
+  type_equal<char*>(j(mynull));
 }

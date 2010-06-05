@@ -19,4 +19,7 @@ void test_h()
   type_equal<int>(h(0));
   type_equal<nullptr_t>(h(nullptr));
   type_equal<float*>(h((float*)nullptr));
+  nullptr_t mynull = 0;
+  type_equal<nullptr_t>(h(mynull));
+  type_equal<float*>(h((float*)mynull));
 }

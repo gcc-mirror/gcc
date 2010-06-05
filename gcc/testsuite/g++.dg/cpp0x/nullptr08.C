@@ -8,4 +8,6 @@
 void fun()
 {
   assert_true(nullptr ? false : true);
+  decltype(nullptr) mynull = 0;
+  assert_true(mynull ? false : true);
 }
