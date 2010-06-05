@@ -1,3 +1,16 @@
+2010-06-05  Jan Hubicka  <jh@suse.cz>
+
+	* tree-into-ssa.c (insert_phi_nodes): Use bitmap heads
+	for dominance frontiers.
+	(rewrite_into_ssa): Update for bitmap heads in dominance
+	frontiers.
+	(insert_updated_phi_nodes_for): Likewise.
+	(update_ssa): Likewise.
+	* cfganal.c (compute_dominance_frontiers_1): Likewise.
+	(compute_dominance_frontiers): Likewise.
+	(compute_idf): Likewise.
+	* df-problems.c (df_md_local_compute): Likewise.
+
 2010-06-05  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct gcc_target): Add memory_move_cost field.

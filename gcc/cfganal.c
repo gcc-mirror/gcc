@@ -1256,7 +1256,7 @@ dfs_enumerate_from (basic_block bb, int reverse,
 
 
 static void
-compute_dominance_frontiers_1 (bitmap *frontiers)
+compute_dominance_frontiers_1 (bitmap_head *frontiers)
 {
   edge p;
   edge_iterator ei;
@@ -1275,7 +1275,7 @@ compute_dominance_frontiers_1 (bitmap *frontiers)
 	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	      while (runner != domsb)
 		{
-		  if (!bitmap_set_bit (frontiers[runner->index],
+		  if (!bitmap_set_bit (&frontiers[runner->index],
 				       b->index))
 		    break;
 		  runner = get_immediate_dominator (CDI_DOMINATORS,
@@ -1288,7 +1288,7 @@ compute_dominance_frontiers_1 (bitmap *frontiers)
 
 
 void
-compute_dominance_frontiers (bitmap *frontiers)
+compute_dominance_frontiers (bitmap_head *frontiers)
 {
   timevar_push (TV_DOM_FRONTIERS);
 
@@ -1307,7 +1307,7 @@ compute_dominance_frontiers (bitmap *frontiers)
    allocated for the return value.  */
 
 bitmap
-compute_idf (bitmap def_blocks, bitmap *dfs)
+compute_idf (bitmap def_blocks, bitmap_head *dfs)
 {
   bitmap_iterator bi;
   unsigned bb_index, i;
@@ -1340,7 +1340,7 @@ compute_idf (bitmap def_blocks, bitmap *dfs)
 	 we may pull a non-existing block from the work stack.  */
       gcc_assert (bb_index < (unsigned) last_basic_block);
 
-      EXECUTE_IF_AND_COMPL_IN_BITMAP (dfs[bb_index], phi_insertion_points,
+      EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
 	                              0, i, bi)
 	{
 	  /* Use a safe push because if there is a definition of VAR
