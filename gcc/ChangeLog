@@ -1,3 +1,10 @@
+2010-06-05  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc.c (cc1_options, cpp_unique_options): Use find-plugindir spec
+	function to add the -iplugindir option.
+	(find_plugindir_spec_function): Add new declaration and function.
+	(static_spec_func): Use it for "find-plugindir".
+
 2010-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44361
