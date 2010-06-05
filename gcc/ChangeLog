@@ -53,7 +53,7 @@
 2010-06-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/darwin-driver.c (darwin_default_min_version): Use
-	* GCC-specific formats in diagnostics.
+	GCC-specific formats in diagnostics.
 	* cppspec.c (lang_specific_driver): Use GCC-specific formats in
 	diagnostics.
 	* gcc.c (translate_options, read_specs, add_sysrooted_prefix,
