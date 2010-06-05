@@ -1,3 +1,10 @@
+2010-06-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43895
+	* trans-array.c (structure_alloc_comps): Dereference scalar
+	'decl' if it is a REFERENCE_TYPE. Tidy expressions containing
+	TREE_TYPE (decl).
+
 2010-06-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortranspec.c (append_arg, lang_specific_driver): Use
