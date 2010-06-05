@@ -26,12 +26,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "toplev.h"
 
-#include "c-format.h"
+#include "c-family/c-format.h"
 #include "intl.h"
 
 #include "cpplib.h"
-#include "c-pragma.h"
-#include "c-common.h"
+#include "c-family/c-pragma.h"
+#include "c-family/c-common.h"
 
 /* cmn_err only accepts "l" and "ll".  */
 static const format_length_info cmn_err_length_specs[] =

@@ -1,0 +1,31 @@
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c: Moved to here from parent directory. 
+	* c-common.def: Likewise.
+	* c-common.h: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-format.c: Likewise.
+	* c-format.h : Likewise.
+	* c-gimplify.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-omp.c: Likewise.
+	* c.opt: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* c-semantics.c: Likewise.
+	* stub-objc.c: Likewise.
+
+	* c-common.c: Include gt-c-family-c-common.h.
+	* c-pragma.c: Include gt-c-family-c-pragma.h.
+
+Copyright (C) 2010 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

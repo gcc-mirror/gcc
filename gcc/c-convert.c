@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "c-tree.h"
 #include "langhooks.h"
 #include "toplev.h"

@@ -42,18 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cpplib.h"
 #include "target.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "tree-inline.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "tree-dump.h"
 #include "intl.h"
 #include "gimple.h"
 #include "pointer-set.h"
 #include "splay-tree.h"
 #include "langhooks.h"
-#include "c-ada-spec.h"
+#include "c-family/c-ada-spec.h"
 
 extern cpp_reader *parse_in;
 

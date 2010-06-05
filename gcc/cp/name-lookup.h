@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CP_NAME_LOOKUP_H
 #define GCC_CP_NAME_LOOKUP_H
 
-#include "c-common.h"
+#include "c-family/c-common.h"
 
 /* The type of dictionary used to map names to types declared at
    a given scope.  */

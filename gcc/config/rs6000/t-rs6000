@@ -32,7 +32,7 @@ rs6000.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c \
     $(srcdir)/config/rs6000/rs6000-protos.h \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPPLIB_H) \
-    $(TM_P_H) c-pragma.h errors.h coretypes.h $(TM_H)
+    $(TM_P_H) $(C_PRAGMA_H) errors.h coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/rs6000/rs6000-c.c
 

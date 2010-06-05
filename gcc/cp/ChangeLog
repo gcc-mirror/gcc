@@ -1,3 +1,23 @@
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* typeck.c: Update include path for moved files.
+	* decl.c: Likewise.
+	* rtti.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* cp-lang.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* cxx-pretty-print.h: Likewise.
+	* decl2.c: Likewise.
+	* parser.c: Likewise.
+	* cp-objcp-common.c: Likewise.
+	* cp-tree.h: Likewise.
+	* name-lookup.c: Likewise.
+	* lex.c: Likewise.
+	* name-lookup.h: Likewise.
+	* config-lang.in: Update paths in gtfiles for files in c-family/.
+	* Make-lang.in: Likewise.
+
 2010-06-04  Magnus Fromreide  <magfr@lysator.liu.se>
 
 	* cvt.c (cp_convert_to_pointer): Use null_ptr_cst_p.

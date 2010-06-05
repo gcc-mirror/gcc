@@ -1,3 +1,9 @@
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-act.c: Update include path for moved files.
+	* objc-lang.c: Likewise.
+	* config-lang.in: Update paths in gtfiles for files in c-family/.
+
 2010-06-01  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (build_next_objc_exception_stuff): Give setjmp a

@@ -25,12 +25,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
 #include "cpplib.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 
 static bool ix86_pragma_target_parse (tree, tree);
 static void ix86_target_macros_internal

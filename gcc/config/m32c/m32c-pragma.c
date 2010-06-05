@@ -26,7 +26,7 @@
 #include "tree.h"
 #include "rtl.h"
 #include "toplev.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "cpplib.h"
 #include "hard-reg-set.h"
 #include "output.h"

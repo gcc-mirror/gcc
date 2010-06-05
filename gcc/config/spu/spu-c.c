@@ -20,8 +20,8 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-common.h"
-#include "c-pragma.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 #include "tm_p.h"
 #include "langhooks.h"
 

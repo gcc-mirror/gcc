@@ -53,8 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-lang.h"
 #endif
 
-#include "c-common.h"
-#include "c-pragma.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 #include "flags.h"
 #include "langhooks.h"
 #include "objc-act.h"

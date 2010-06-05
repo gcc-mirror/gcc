@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CXX_PRETTY_PRINT_H
 #define GCC_CXX_PRETTY_PRINT_H
 
-#include "c-pretty-print.h"
+#include "c-family/c-pretty-print.h"
 
 #undef pp_c_base
 #define pp_c_base(PP) (&(PP)->c_base)

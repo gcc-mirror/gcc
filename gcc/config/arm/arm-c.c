@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "tree.h"
 #include "output.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 
 
 /* Output C specific EABI object attributes.  These can not be done in

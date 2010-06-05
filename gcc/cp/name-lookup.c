@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "diagnostic-core.h"
 #include "debug.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 
 /* The bindings for a particular name in a particular scope.  */
 

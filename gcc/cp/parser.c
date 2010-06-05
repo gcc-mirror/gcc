@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "cp-tree.h"
 #include "intl.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "decl.h"
 #include "flags.h"
 #include "diagnostic-core.h"
@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "target.h"
 #include "cgraph.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "plugin.h"
 
 

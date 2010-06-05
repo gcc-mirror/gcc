@@ -26,7 +26,7 @@
 #include "tm_p.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 
 /* Not included in avr.c since this requires C front end.  */
 

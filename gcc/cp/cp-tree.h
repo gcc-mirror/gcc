@@ -42,7 +42,7 @@ c-common.h, not after.
 #endif
 #include "toplev.h"
 #include "diagnostic.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 
 #include "name-lookup.h"
 
