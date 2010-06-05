@@ -5938,6 +5938,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   gfc_loopinfo loop;
   stmtblock_t fnblock;
   stmtblock_t loopbody;
+  tree decl_type;
   tree tmp;
   tree comp;
   tree dcmp;
@@ -5951,21 +5952,28 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
   gfc_init_block (&fnblock);
 
-  if (POINTER_TYPE_P (TREE_TYPE (decl)) && rank != 0)
+  decl_type = TREE_TYPE (decl);
+
+  if ((POINTER_TYPE_P (decl_type) && rank != 0)
+	|| (TREE_CODE (decl_type) == REFERENCE_TYPE && rank == 0))
+
     decl = build_fold_indirect_ref_loc (input_location,
 				    decl);
 
+  /* Just in case in gets dereferenced.  */
+  decl_type = TREE_TYPE (decl);
+
   /* If this an array of derived types with allocatable components
      build a loop and recursively call this function.  */
-  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	|| GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+  if (TREE_CODE (decl_type) == ARRAY_TYPE
+	|| GFC_DESCRIPTOR_TYPE_P (decl_type))
     {
       tmp = gfc_conv_array_data (decl);
       var = build_fold_indirect_ref_loc (input_location,
 				     tmp);
 	
       /* Get the number of elements - 1 and set the counter.  */
-      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+      if (GFC_DESCRIPTOR_TYPE_P (decl_type))
 	{
 	  /* Use the descriptor for an allocatable array.  Since this
 	     is a full array reference, we only need the descriptor
@@ -5981,7 +5989,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       else
 	{
 	  /*  Otherwise use the TYPE_DOMAIN information.  */
-	  tmp =  array_type_nelts (TREE_TYPE (decl));
+	  tmp =  array_type_nelts (decl_type);
 	  tmp = fold_convert (gfc_array_index_type, tmp);
 	}
 
@@ -5998,7 +6006,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
         {
 	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (dest)))
 	    {
-	      tmp = gfc_duplicate_allocatable (dest, decl, TREE_TYPE(decl), rank);
+	      tmp = gfc_duplicate_allocatable (dest, decl, decl_type, rank);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	  tmp = build_fold_indirect_ref_loc (input_location,
