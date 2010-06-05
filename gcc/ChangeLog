@@ -1,3 +1,10 @@
+2010-06-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR boostrap/44421
+	* df-problems.c (df_lr_bb_local_compute): Updated for embedded
+	bitmaps.
+	(df_byte_lr_bb_local_compute): Likewise.
+
 2010-06-03  Jason Merrill  <jason@redhat.com>
 
 	Implement noexcept operator (5.3.7)

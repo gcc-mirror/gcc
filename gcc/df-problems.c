@@ -903,7 +903,7 @@ df_lr_bb_local_compute (unsigned int bb_index)
       df_ref use = *use_rec;
       /* Add use to set of uses in this BB.  */
       if (DF_REF_FLAGS (use) & DF_REF_AT_TOP)
-	bitmap_set_bit (bb_info->use, DF_REF_REGNO (use));
+	bitmap_set_bit (&bb_info->use, DF_REF_REGNO (use));
     }
 #endif
 
@@ -2712,7 +2712,7 @@ df_byte_lr_bb_local_compute (unsigned int bb_index)
 	  unsigned int uregno = DF_REF_REGNO (use);
 	  unsigned int start = problem_data->regno_start[uregno];
 	  unsigned int len = problem_data->regno_len[uregno];
-	  bitmap_set_range (bb_info->use, start, len);
+	  bitmap_set_range (&bb_info->use, start, len);
 	}
     }
 #endif
