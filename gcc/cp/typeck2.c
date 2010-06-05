@@ -1721,17 +1721,14 @@ merge_exception_specifiers (tree list, tree add)
 {
   if (!list || !add)
     return NULL_TREE;
-  /* A noexcept(true) spec takes precedence over a throw() spec.
+  /* For merging noexcept(true) and throw(), take the more recent one (LIST).
      A throw(type-list) spec takes precedence over a noexcept(false) spec.
      Any other noexcept-spec should only be merged with an equivalent one.
-     So the !TREE_VALUE code is correct for the latter two cases.  */
-  else if (list == noexcept_true_spec
-	   || add == noexcept_true_spec)
-    return noexcept_true_spec;
-  else if (!TREE_VALUE (list))
-    return add;
+     So the !TREE_VALUE code below is correct for all cases.  */
   else if (!TREE_VALUE (add))
     return list;
+  else if (!TREE_VALUE (list))
+    return add;
   else
     {
       tree orig_list = list;

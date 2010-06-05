@@ -1,5 +1,8 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/noexcept06.C: New.
+	* g++.dg/cpp0x/noexcept07.C: New.
+
 	* g++.dg/cpp0x/noexcept01.C: New.
 	* g++.dg/cpp0x/noexcept02.C: New.
 	* g++.dg/cpp0x/noexcept03.C: New.

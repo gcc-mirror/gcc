@@ -1,5 +1,8 @@
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
+	* typeck2.c (merge_exception_specifiers): Adjust merging of
+	throw() and noexcept(true).
+
 	* pt.c (value_dependent_expression_p) [NOEXCEPT_EXPR]: Avoid
 	using an uninitialized variable.
 
