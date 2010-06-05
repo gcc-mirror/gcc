@@ -41,9 +41,9 @@ main()
   return 0;
 }
 
-// { dg-warning "note" "" { target *-*-* } 281 }
-// { dg-warning "note" "" { target *-*-* } 407 }
-// { dg-warning "note" "" { target *-*-* } 831 }
+// { dg-warning "note" "" { target *-*-* } 324 }
+// { dg-warning "note" "" { target *-*-* } 423 }
+// { dg-warning "note" "" { target *-*-* } 862 }
 // { dg-warning "note" "" { target *-*-* } 511 }
 // { dg-warning "note" "" { target *-*-* } 1005 }
 // { dg-warning "note" "" { target *-*-* } 340 }

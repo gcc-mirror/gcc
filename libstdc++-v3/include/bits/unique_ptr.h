@@ -81,7 +81,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class unique_ptr
     {
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
-      typedef _Tp* unique_ptr::*             __unspecified_pointer_type;
 
       // use SFINAE to determine whether _Del::pointer exists
       class _Pointer
@@ -126,6 +125,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { static_assert(!std::is_reference<deleter_type>::value, 
 		      "rvalue deleter bound to reference"); }
 
+      unique_ptr(nullptr_t)
+      : _M_t(pointer(), deleter_type())
+      { }
+
       // Move constructors.
       unique_ptr(unique_ptr&& __u) 
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
@@ -157,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         }
 
       unique_ptr&
-      operator=(__unspecified_pointer_type) 
+      operator=(nullptr_t)
       {
 	reset();
 	return *this;
@@ -234,7 +237,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class unique_ptr<_Tp[], _Tp_Deleter>
     {
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
-      typedef _Tp* unique_ptr::*             __unspecified_pointer_type;
 
     public:
       typedef _Tp*               pointer;
@@ -263,6 +265,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value, 
 		      "rvalue deleter bound to reference"); }
+
+      /* TODO: use delegating constructor */
+      unique_ptr(nullptr_t)
+      : _M_t(pointer(), deleter_type())
+      { }
 
       // Move constructors.
       unique_ptr(unique_ptr&& __u) 
@@ -295,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         }
 
       unique_ptr&
-      operator=(__unspecified_pointer_type)
+      operator=(nullptr_t)
       {
 	reset();
 	return *this;
@@ -338,7 +345,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	using std::swap;
 	swap(std::get<0>(_M_t), __p);
-	if (__p != pointer())
+	if (__p != nullptr)
+	  get_deleter()(__p);
+      }
+
+      void
+      reset(nullptr_t)
+      {
+	pointer __p = get();
+	std::get<0>(_M_t) = pointer();
+	if (__p != nullptr)
 	  get_deleter()(__p);
       }
 

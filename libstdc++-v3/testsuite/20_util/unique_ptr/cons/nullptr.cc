@@ -1,7 +1,6 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,22 +17,36 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// 20.9.10 Class template unique_ptr [unique.ptr]
+
 #include <memory>
+#include <testsuite_hooks.h>
 
-struct A
-{
-};
+struct A { };
 
-struct B : A
+void
+test01()
 {
-  virtual ~B() { }
-};
+  bool test __attribute__((unused)) = true;
 
-void test01()
-{
-  std::unique_ptr<B[]> up;
-  up.reset(new A[3]);
+  std::unique_ptr<A> p = nullptr;
+
+  VERIFY( p.get() == nullptr );
 }
 
-// { dg-error "used here" "" { target *-*-* } 35 } 
-// { dg-error "deleted function" "" { target *-*-* } 363 }
+void
+test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::unique_ptr<A[]> p = nullptr;
+
+  VERIFY( p.get() == nullptr );
+}
+
+int main()
+{
+  test01();
+  test02();
+  return 0;
+}

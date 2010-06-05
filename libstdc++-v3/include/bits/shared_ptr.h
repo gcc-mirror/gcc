@@ -123,6 +123,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	shared_ptr(_Tp1* __p, _Deleter __d) : __shared_ptr<_Tp>(__p, __d) { }
 
       /**
+       *  @brief  Construct a %shared_ptr that owns a null pointer
+       *          and the deleter @a __d.
+       *  @param  __p  A null pointer constant.
+       *  @param  __d  A deleter.
+       *  @post   use_count() == 1 && get() == __p
+       *  @throw  std::bad_alloc, in which case @a __d(__p) is called.
+       *
+       *  Requirements: _Deleter's copy constructor and destructor must
+       *  not throw
+       *
+       *  The last owner will call __d(__p)
+       */
+      template<typename _Deleter>
+	shared_ptr(nullptr_t __p, _Deleter __d)
+        : __shared_ptr<_Tp>(__p, __d) { }
+
+      /**
        *  @brief  Construct a %shared_ptr that owns the pointer @a __p
        *          and the deleter @a __d.
        *  @param  __p  A pointer.
@@ -139,6 +156,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       template<typename _Tp1, typename _Deleter, typename _Alloc>
 	shared_ptr(_Tp1* __p, _Deleter __d, const _Alloc& __a)
+	: __shared_ptr<_Tp>(__p, __d, __a) { }
+
+      /**
+       *  @brief  Construct a %shared_ptr that owns a null pointer
+       *          and the deleter @a __d.
+       *  @param  __p  A null pointer constant.
+       *  @param  __d  A deleter.
+       *  @param  __a  An allocator.
+       *  @post   use_count() == 1 && get() == __p
+       *  @throw  std::bad_alloc, in which case @a __d(__p) is called.
+       *
+       *  Requirements: _Deleter's copy constructor and destructor must
+       *  not throw _Alloc's copy constructor and destructor must not
+       *  throw.
+       *
+       *  The last owner will call __d(__p)
+       */
+      template<typename _Deleter, typename _Alloc>
+	shared_ptr(nullptr_t __p, _Deleter __d, const _Alloc& __a)
 	: __shared_ptr<_Tp>(__p, __d, __a) { }
 
       // Aliasing constructor
@@ -211,6 +247,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1, typename _Del>
 	shared_ptr(std::unique_ptr<_Tp1, _Del>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
+
+      /**
+       *  @brief  Construct an empty %shared_ptr.
+       *  @param  __p  A null pointer constant.
+       *  @post   use_count() == 0 && get() == nullptr
+       */
+      shared_ptr(nullptr_t __p) : __shared_ptr<_Tp>(__p) { }
 
       template<typename _Tp1>
 	shared_ptr&
