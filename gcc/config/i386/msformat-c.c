@@ -25,12 +25,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "langhooks.h"
-#include "c-format.h"
+#include "c-family/c-format.h"
 #include "alloc-pool.h"
 
 /* Mingw specific format attributes ms_printf, ms_scanf, and ms_strftime.  */

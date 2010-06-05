@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_TREE_H
 #define GCC_C_TREE_H
 
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "toplev.h"
 #include "diagnostic.h"
 

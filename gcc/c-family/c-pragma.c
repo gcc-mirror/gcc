@@ -1333,4 +1333,4 @@ init_pragma (void)
   invoke_plugin_callbacks (PLUGIN_PRAGMAS, NULL);
 }
 
-#include "gt-c-pragma.h"
+#include "gt-c-family-c-pragma.h"

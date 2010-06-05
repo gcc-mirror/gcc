@@ -45,7 +45,7 @@
 #include "cgraph.h"
 #include "ggc.h"
 #include "except.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"	/* ??? */
 #include "integrate.h"
 #include "tm_p.h"
 #include "target.h"

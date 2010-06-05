@@ -9463,4 +9463,4 @@ make_tree_vector_copy (const VEC(tree,gc) *orig)
   return ret;
 }
 
-#include "gt-c-common.h"
+#include "gt-c-family-c-common.h"

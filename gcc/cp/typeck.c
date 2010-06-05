@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "target.h"
 #include "convert.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "params.h"
 
 static tree pfn_from_ptrmemfunc (tree);

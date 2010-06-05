@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "convert.h"
 #include "target.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 
 /* C++ returns type information to the user in struct type_info
    objects. We also use type information to implement dynamic_cast and

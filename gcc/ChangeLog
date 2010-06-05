@@ -1,3 +1,69 @@
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c: Move to c-family/.
+	* c-common.def: Likewise.
+	* c-common.h: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-format.c: Likewise.
+	* c-format.h : Likewise.
+	* c-gimplify.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-omp.c: Likewise.
+	* c.opt: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* c-semantics.c: Likewise.
+	* stub-objc.c: Likewise.
+
+	* gengtype.c (get_file_langdir): Special-case files in c-family/.
+	(get_output_file_with_visibility): Fix name for c-common.h.
+	* c-config-lang.in: Update paths in gtfiles for files in c-family/.
+
+	* c-tree.h: Update include path for moved files.
+	* c-lang.c: Likewise.
+	* c-lang.h: Likewise.
+	* c-parser.c: Likewise.
+	* c-convert.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-objc-common.c: Likewise.
+	* configure.ac: Make sure c-family/ exists in the build directory.
+	* configure: Regenerate.
+	* Makefile.in: Update paths for moved files.  Regroup files per
+	location and update dependencies.  Move generated_files down after
+	ALL_GTFILES_H.
+
+	* config/spu/spu-c.c: Update paths for moved files.
+	* config/mep/mep-pragma.c: Likewise.
+	* config/darwin-c.c: Likewise.
+	* config/i386/msformat-c.c: Likewise.
+	* config/i386/i386-c.c: Likewise.
+	* config/avr/avr-c.c: Likewise.
+	* config/sol2-c.c: Likewise.
+	* config/ia64/ia64-c.c: Likewise.
+	* config/rs6000/rs6000-c.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm-c.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/v850/v850-c.c: Likewise.
+
+	* config/t-darwin: Fix dependencies for moved files.
+	* config/t-sol2: Fix dependencies for moved files.
+	* config/mep/t-mep: Fix dependencies for moved files.
+	* config/ia64/t-ia64: Fix dependencies for moved files.
+	* config/rs6000/t-rs6000: Fix dependencies for moved files.
+	* config/v850/t-v850: Fix dependencies for moved files.
+	* config/v850/t-v850e: Fix dependencies for moved files.
+
+	* config/m32c/m32c-pragma.c
+
+	* po/exgettext: Look in c-family/ also.
+
 2010-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dce.c (mark_last_stmt_necessary): New function.

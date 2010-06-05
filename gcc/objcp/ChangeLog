@@ -1,3 +1,8 @@
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objcp-lang.c: Update include path for moved files.
+	* config-lang.in: Update paths in gtfiles for files in c-family/.
+
 2010-05-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objcp-decl.c: Do not include tm.h, rtl.h, expr.h, c-common.h,
