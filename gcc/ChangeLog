@@ -1,3 +1,9 @@
+2010-06-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (propagate): Fix type in handling functions
+	that can not return; be more cureful about merging the results
+	with previously known.
+
 2010-06-05  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc.c (cc1_options, cpp_unique_options): Use find-plugindir spec
