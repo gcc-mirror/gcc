@@ -4174,20 +4174,18 @@ initiate_excl_sets (void)
 static reserv_sets_t
 get_excl_set (reserv_sets_t in_set)
 {
-  int excl_char_num;
-  int chars_num;
-  int i;
+  int el;
+  unsigned int i;
   int start_unit_num;
   int unit_num;
 
-  chars_num = els_in_cycle_reserv * sizeof (set_el_t);
-  memset (excl_set, 0, chars_num);
-  for (excl_char_num = 0; excl_char_num < chars_num; excl_char_num++)
-    if (((unsigned char *) in_set) [excl_char_num])
-      for (i = CHAR_BIT - 1; i >= 0; i--)
-	if ((((unsigned char *) in_set) [excl_char_num] >> i) & 1)
+  memset (excl_set, 0, els_in_cycle_reserv * sizeof (set_el_t));
+  for (el = 0; el < els_in_cycle_reserv; el++)
+    if (in_set[el])
+      for (i = 0; i < CHAR_BIT * sizeof (set_el_t); i++)
+	if ((in_set[el] >> i) & 1)
 	  {
-	    start_unit_num = excl_char_num * CHAR_BIT + i;
+	    start_unit_num = el * CHAR_BIT * sizeof (set_el_t) + i;
 	    if (start_unit_num >= description->units_num)
 	      return excl_set;
 	    for (unit_num = 0; unit_num < els_in_cycle_reserv; unit_num++)
@@ -4286,21 +4284,19 @@ check_presence_pattern_sets (reserv_sets_t checked_set,
 			     reserv_sets_t original_set,
 			     int final_p)
 {
-  int char_num;
-  int chars_num;
-  int i;
+  int el;
+  unsigned int i;
   int start_unit_num;
   int unit_num;
   int presence_p;
   pattern_reserv_t pat_reserv;
 
-  chars_num = els_in_cycle_reserv * sizeof (set_el_t);
-  for (char_num = 0; char_num < chars_num; char_num++)
-    if (((unsigned char *) original_set) [char_num])
-      for (i = CHAR_BIT - 1; i >= 0; i--)
-	if ((((unsigned char *) original_set) [char_num] >> i) & 1)
+  for (el = 0; el < els_in_cycle_reserv; el++)
+    if (original_set[el])
+      for (i = 0; i < CHAR_BIT * sizeof (set_el_t); i++)
+	if ((original_set[el] >> i) & 1)
 	  {
-	    start_unit_num = char_num * CHAR_BIT + i;
+	    start_unit_num = el * CHAR_BIT * sizeof (set_el_t) + i;
 	    if (start_unit_num >= description->units_num)
 	      break;
 	    if ((final_p
@@ -4335,20 +4331,18 @@ check_absence_pattern_sets (reserv_sets_t checked_set,
 			    reserv_sets_t original_set,
 			    int final_p)
 {
-  int char_num;
-  int chars_num;
-  int i;
+  int el;
+  unsigned int i;
   int start_unit_num;
   int unit_num;
   pattern_reserv_t pat_reserv;
 
-  chars_num = els_in_cycle_reserv * sizeof (set_el_t);
-  for (char_num = 0; char_num < chars_num; char_num++)
-    if (((unsigned char *) original_set) [char_num])
-      for (i = CHAR_BIT - 1; i >= 0; i--)
-	if ((((unsigned char *) original_set) [char_num] >> i) & 1)
+  for (el = 0; el < els_in_cycle_reserv; el++)
+    if (original_set[el])
+      for (i = 0; i < CHAR_BIT * sizeof (set_el_t); i++)
+	if ((original_set[el] >> i) & 1)
 	  {
-	    start_unit_num = char_num * CHAR_BIT + i;
+	    start_unit_num = el * CHAR_BIT * sizeof (set_el_t) + i;
 	    if (start_unit_num >= description->units_num)
 	      break;
 	    for (pat_reserv = (final_p

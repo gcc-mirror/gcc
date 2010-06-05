@@ -1,5 +1,11 @@
 2010-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	genautomata.c (get_excl_set): Do work per element, not per char.
+	(check_presence_pattern_sets): Similar.
+	(check_absence_pattern_sets): Similar.
+
+2010-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* genautomata.c (curr_state_pass_num): Delete.
 	(min_issue_delay_pass_states): Delete.
 	(min_issue_delay): Delete.
