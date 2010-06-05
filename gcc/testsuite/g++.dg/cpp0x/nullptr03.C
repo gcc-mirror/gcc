@@ -3,4 +3,7 @@
 
 // Test assignment to int
 
-const int n = nullptr;     // { dg-error "cannot convert " }
+const int n1 = nullptr;     // { dg-error "cannot convert " }
+decltype(nullptr) mynull = 0;
+const int n2 = mynull;      // { dg-error "cannot convert " }
+

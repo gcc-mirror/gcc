@@ -10,4 +10,6 @@ char* const cp1 = nullptr;
 void fun()
 {
   assert_true(cp1 == nullptr);
+  decltype(nullptr) mynull = 0;
+  assert_true(cp1 == mynull);
 }

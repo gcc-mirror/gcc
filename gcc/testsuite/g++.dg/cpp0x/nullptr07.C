@@ -9,4 +9,7 @@ void fun()
   if( n == nullptr ); // { dg-error "invalid operands of types " }
   const int m = 1;
   if( m == nullptr ); // { dg-error "invalid operands of types " }
+  decltype(nullptr) mynull = 0;
+  if( n == mynull ); // { dg-error "invalid operands of types " }
+  if( m == mynull ); // { dg-error "invalid operands of types " }
 }

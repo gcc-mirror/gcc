@@ -18,4 +18,7 @@ void test_g()
   //
   g(nullptr);               // { dg-error "no matching function for call to " }
   type_equal<float*>(g((float*)nullptr));
+  decltype(nullptr) mynull = 0;
+  g(mynull);                // { dg-error "no matching function for call to " }
+  type_equal<float*>(g((float*)mynull));
 }

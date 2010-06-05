@@ -1,3 +1,8 @@
+2010-06-04  Magnus Fromreide  <magfr@lysator.liu.se>
+
+	* cvt.c (cp_convert_to_pointer): Use null_ptr_cst_p.
+	* typeck.c (build_ptrmemfunc): Likewise.
+
 2010-06-04  Jason Merrill  <jason@redhat.com>
 
 	* typeck2.c (merge_exception_specifiers): Adjust merging of

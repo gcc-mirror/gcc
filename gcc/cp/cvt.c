@@ -196,7 +196,7 @@ cp_convert_to_pointer (tree type, tree expr)
       return error_mark_node;
     }
 
-  if (integer_zerop (expr))
+  if (null_ptr_cst_p (expr))
     {
       if (TYPE_PTRMEMFUNC_P (type))
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,

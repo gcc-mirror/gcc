@@ -18,4 +18,6 @@ void test_i()
 {
   // Overload to bool, not int
   type_equal<bool>(i(nullptr));
+  decltype(nullptr) mynull = 0;
+  type_equal<bool>(i(mynull));
 }
