@@ -4390,7 +4390,7 @@ df_md_local_compute (bitmap all_blocks)
   unsigned int bb_index, df_bb_index;
   bitmap_iterator bi1, bi2;
   basic_block bb;
-  bitmap *frontiers;
+  bitmap_head *frontiers;
 
   bitmap_initialize (&seen_in_insn, &bitmap_default_obstack);
 
@@ -4401,9 +4401,9 @@ df_md_local_compute (bitmap all_blocks)
 
   bitmap_clear (&seen_in_insn);
 
-  frontiers = XNEWVEC (bitmap, last_basic_block);
+  frontiers = XNEWVEC (bitmap_head, last_basic_block);
   FOR_ALL_BB (bb)
-    frontiers[bb->index] = BITMAP_ALLOC (NULL);
+    bitmap_initialize (&frontiers[bb->index], &bitmap_default_obstack);
 
   compute_dominance_frontiers (frontiers);
 
@@ -4411,7 +4411,7 @@ df_md_local_compute (bitmap all_blocks)
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi1)
     {
       bitmap kill = &df_md_get_bb_info (bb_index)->kill;
-      EXECUTE_IF_SET_IN_BITMAP (frontiers[bb_index], 0, df_bb_index, bi2)
+      EXECUTE_IF_SET_IN_BITMAP (&frontiers[bb_index], 0, df_bb_index, bi2)
 	{
 	  basic_block bb = BASIC_BLOCK (df_bb_index);
 	  if (bitmap_bit_p (all_blocks, df_bb_index))
@@ -4421,7 +4421,7 @@ df_md_local_compute (bitmap all_blocks)
     }
 
   FOR_ALL_BB (bb)
-    BITMAP_FREE (frontiers[bb->index]);
+    bitmap_clear (&frontiers[bb->index]);
   free (frontiers);
 }
 
