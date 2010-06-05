@@ -1,3 +1,11 @@
+2010-06-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/44322
+	* c-typeck.c (build_unary_op): Merge qualifiers into pointer
+	target type for ADDR_EXPR; require no changes to qualifiers except
+	for function types.
+	* c-tree.h (c_build_type_variant): Remove.
+
 2010-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	genautomata.c (get_excl_set): Do work per element, not per char.

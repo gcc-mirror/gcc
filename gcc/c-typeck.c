@@ -3744,14 +3744,24 @@ build_unary_op (location_t location,
       argtype = TREE_TYPE (arg);
 
       /* If the lvalue is const or volatile, merge that into the type
-	 to which the address will point.  Note that you can't get a
-	 restricted pointer by taking the address of something, so we
-	 only have to deal with `const' and `volatile' here.  */
+	 to which the address will point.  This should only be needed
+	 for function types.  */
       if ((DECL_P (arg) || REFERENCE_CLASS_P (arg))
 	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg)))
-	  argtype = c_build_type_variant (argtype,
-					  TREE_READONLY (arg),
-					  TREE_THIS_VOLATILE (arg));
+	{
+	  int orig_quals = TYPE_QUALS (strip_array_types (argtype));
+	  int quals = orig_quals;
+
+	  if (TREE_READONLY (arg))
+	    quals |= TYPE_QUAL_CONST;
+	  if (TREE_THIS_VOLATILE (arg))
+	    quals |= TYPE_QUAL_VOLATILE;
+
+	  gcc_assert (quals == orig_quals
+		      || TREE_CODE (argtype) == FUNCTION_TYPE);
+
+	  argtype = c_build_qualified_type (argtype, quals);
+	}
 
       if (!c_mark_addressable (arg))
 	return error_mark_node;
