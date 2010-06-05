@@ -7488,72 +7488,6 @@ output_trans_table (automaton_t automaton)
   VEC_free (vect_el_t, heap, transition_vect);
 }
 
-/* The current number of passing states to find minimal issue delay
-   value for an ainsn and state.  */
-static int curr_state_pass_num;
-
-/* This recursive function passes states to find minimal issue delay
-   value for AINSN.  The state being visited is STATE.  The function
-   returns minimal issue delay value for AINSN in STATE or -1 if we
-   enter into a loop.  */
-static int
-min_issue_delay_pass_states (state_t state, ainsn_t ainsn)
-{
-  arc_t arc;
-  int min_insn_issue_delay, insn_issue_delay;
-
-  if (state->state_pass_num == curr_state_pass_num
-      || state->min_insn_issue_delay != -1)
-    /* We've entered into a loop or already have the correct value for
-       given state and ainsn.  */
-    return state->min_insn_issue_delay;
-  state->state_pass_num = curr_state_pass_num;
-  min_insn_issue_delay = -1;
-  for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
-    if (arc->insn == ainsn)
-      {
-	min_insn_issue_delay = 0;
-	break;
-      }
-    else
-      {
-        insn_issue_delay = min_issue_delay_pass_states (arc->to_state, ainsn);
-	if (insn_issue_delay != -1)
-	  {
-	    if (arc->insn->insn_reserv_decl
-		== DECL_INSN_RESERV (advance_cycle_insn_decl))
-	      insn_issue_delay++;
-	    if (min_insn_issue_delay == -1
-		|| min_insn_issue_delay > insn_issue_delay)
-	      {
-		min_insn_issue_delay = insn_issue_delay;
-		if (insn_issue_delay == 0)
-		  break;
-	      }
-	  }
-      }
-  return min_insn_issue_delay;
-}
-
-/* The function searches minimal issue delay value for AINSN in STATE.
-   The function can return negative value if we can not issue AINSN.  We
-   will report about it later.  */
-static int
-min_issue_delay (state_t state, ainsn_t ainsn)
-{
-  curr_state_pass_num++;
-  state->min_insn_issue_delay = min_issue_delay_pass_states (state, ainsn);
-  return state->min_insn_issue_delay;
-}
-
-/* The function initiates code for finding minimal issue delay values.
-   It should be called only once.  */
-static void
-initiate_min_issue_delay_pass_states (void)
-{
-  curr_state_pass_num = 0;
-}
-
 /* Form and output vectors representing minimal issue delay table of
    AUTOMATON.  The table is state x ainsn -> minimal issue delay of
    the ainsn.  */
@@ -7562,11 +7496,11 @@ output_min_issue_delay_table (automaton_t automaton)
 {
   vla_hwint_t min_issue_delay_vect;
   vla_hwint_t compressed_min_issue_delay_vect;
-  vect_el_t min_delay;
   ainsn_t ainsn;
-  size_t i, min_issue_delay_len;
-  size_t compressed_min_issue_delay_len;
+  size_t i;
+  size_t min_issue_delay_len, compressed_min_issue_delay_len;
   size_t cfactor;
+  int changed;
 
   /* Create vect of pointers to states ordered by num of transitions
      from the state (state with the maximum num is the first).  */
@@ -7577,27 +7511,86 @@ output_min_issue_delay_table (automaton_t automaton)
 			 * automaton->insn_equiv_classes_num);
   min_issue_delay_vect = VEC_alloc (vect_el_t, heap, min_issue_delay_len);
   for (i = 0; i < min_issue_delay_len; i++)
-    VEC_quick_push (vect_el_t, min_issue_delay_vect, 0);
+    VEC_quick_push (vect_el_t, min_issue_delay_vect, -1);
 
   automaton->max_min_delay = 0;
-  for (ainsn = automaton->ainsn_list; ainsn != NULL; ainsn = ainsn->next_ainsn)
+
+  do
+    {
+      size_t state_no;
+
+      changed = 0;
+
+      for (state_no = 0; state_no < VEC_length (state_t, output_states_vect);
+           state_no++)
+	{
+	  state_t s = VEC_index (state_t, output_states_vect, state_no);
+	  arc_t arc;
+
+	  for (arc = first_out_arc (s); arc; arc = next_out_arc (arc))
+	    {
+	      int k;
+
+	      size_t asn = s->order_state_num
+	                   * automaton->insn_equiv_classes_num
+	                   + arc->insn->insn_equiv_class_num;
+
+	      if (VEC_index (vect_el_t, min_issue_delay_vect, asn))
+		{
+		  VEC_replace (vect_el_t, min_issue_delay_vect, asn, 0);
+		  changed = 1;
+		}
+
+	      for (k = 0; k < automaton->insn_equiv_classes_num; k++)
+		{
+		  size_t n0, n1;
+		  vect_el_t delay0, delay1;
+
+		  n0 = s->order_state_num
+		       * automaton->insn_equiv_classes_num
+		       + k;
+		  n1 = arc->to_state->order_state_num
+		       * automaton->insn_equiv_classes_num
+		       + k;
+		  delay0 = VEC_index (vect_el_t, min_issue_delay_vect, n0);
+		  delay1 = VEC_index (vect_el_t, min_issue_delay_vect, n1);
+		  if (delay1 != -1)
+		    {
+		      if (arc->insn->insn_reserv_decl
+		          == DECL_INSN_RESERV (advance_cycle_insn_decl))
+			delay1++;
+		      if (delay1 < delay0 || delay0 == -1)
+			{
+			  VEC_replace (vect_el_t, min_issue_delay_vect, n0, delay1);
+			  changed = 1;
+			}
+		    }
+		}
+	    }
+	}
+    }
+  while (changed);
+
+  automaton->max_min_delay = 0;
+
+  for (ainsn = automaton->ainsn_list; ainsn; ainsn = ainsn->next_ainsn)
     if (ainsn->first_ainsn_with_given_equivalence_num)
       {
 	for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
-	  VEC_index (state_t, output_states_vect, i)->min_insn_issue_delay = -1;
-	for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
 	  {
 	    state_t s = VEC_index (state_t, output_states_vect, i);
-            min_delay = min_issue_delay (s, ainsn);
-	    if (automaton->max_min_delay < min_delay)
-	      automaton->max_min_delay = min_delay;
-	    VEC_replace (vect_el_t, min_issue_delay_vect,
-			 s->order_state_num
-			 * automaton->insn_equiv_classes_num
-			 + ainsn->insn_equiv_class_num,
-			 min_delay);
+	    size_t np = s->order_state_num
+	                * automaton->insn_equiv_classes_num
+	                + ainsn->insn_equiv_class_num;
+	    vect_el_t x = VEC_index (vect_el_t, min_issue_delay_vect, np);
+
+	    if (automaton->max_min_delay < x)
+	      automaton->max_min_delay = x;
+	    if (x == -1)
+	      VEC_replace (vect_el_t, min_issue_delay_vect, np, 0);
 	  }
       }
+
   fprintf (output_file, "/* Vector of min issue delay of insns.  */\n");
   fprintf (output_file, "static const ");
   output_range_type (output_file, 0, automaton->max_min_delay);
@@ -7749,7 +7742,6 @@ output_tables (void)
 {
   automaton_t automaton;
 
-  initiate_min_issue_delay_pass_states ();
   for (automaton = description->first_automaton;
        automaton != NULL;
        automaton = automaton->next_automaton)
