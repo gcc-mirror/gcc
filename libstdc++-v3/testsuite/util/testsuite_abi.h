@@ -19,6 +19,8 @@
 
 // Benjamin Kosnik  <bkoz@redhat.com>
 
+// Include stddef now to work around glibc BZ 9694
+#include <stddef.h>
 #include <string>
 #include <stdexcept>
 #include <vector>
