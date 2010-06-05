@@ -1088,4 +1088,18 @@ default_have_conditional_execution (void)
 #endif
 }
 
+/* Compute cost of moving registers to/from memory.  */
+
+int
+default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  enum reg_class rclass ATTRIBUTE_UNUSED,
+			  bool in ATTRIBUTE_UNUSED)
+{
+#ifndef MEMORY_MOVE_COST
+    return (4 + memory_move_secondary_cost (mode, rclass, in));
+#else
+    return MEMORY_MOVE_COST (mode, rclass, in);
+#endif
+}
+
 #include "gt-targhooks.h"

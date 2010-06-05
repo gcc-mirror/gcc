@@ -468,6 +468,10 @@
 #define TARGET_ADDRESS_COST default_address_cost
 #define TARGET_CONST_ANCHOR 0
 
+#ifndef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST default_memory_move_cost
+#endif
+
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS hook_void_void
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
@@ -1017,6 +1021,7 @@
   TARGET_ADDR_SPACE_HOOKS,			\
   TARGET_SCALAR_MODE_SUPPORTED_P,		\
   TARGET_VECTOR_MODE_SUPPORTED_P,               \
+  TARGET_MEMORY_MOVE_COST, 			\
   TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P,	\
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\

@@ -6501,7 +6501,7 @@ choose_reload_regs (struct insn_chain *chain)
 			     if copying it to the desired class is cheap
 			     enough.  */
 			  || ((REGISTER_MOVE_COST (mode, last_class, rclass)
-			       < MEMORY_MOVE_COST (mode, rclass, 1))
+			       < memory_move_cost (mode, rclass, true))
 			      && (secondary_reload_class (1, rclass, mode,
 							  last_reg)
 				  == NO_REGS)

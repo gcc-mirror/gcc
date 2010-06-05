@@ -6178,7 +6178,34 @@ secondary register in the conventional way but the default base value of
 4 is not correct for your machine, define this macro to add some other
 value to the result of that function.  The arguments to that function
 are the same as to this macro.
+
+These macros are obsolete, new ports should use the target hook
+@code{TARGET_MEMORY_MOVE_COST} instead.
 @end defmac
+
+@deftypefn {Target Hook} int TARGET_MEMORY_MOVE_COST (enum machine_mode @var{mode}, enum reg_class @var{regclass}, bool @var{in})
+This target hook should return the cost of moving data of mode @var{mode}
+between a register of class @var{class} and memory; @var{in} is @code{false}
+if the value is to be written to memory, @code{true} if it is to be read in.
+This cost is relative to those in @code{REGISTER_MOVE_COST}.  If moving
+between registers and memory is more expensive than between two registers,
+you should add this target hook to express the relative cost.
+
+If you do not add this target hook, GCC uses a default cost of 4 plus
+the cost of copying via a secondary reload register, if one is
+needed.  If your machine requires a secondary reload register to copy
+between memory and a register of @var{class} but the reload mechanism is
+more complex than copying via an intermediate, use this target hook to
+reflect the actual cost of the move.
+
+GCC defines the function @code{memory_move_secondary_cost} if
+secondary reloads are needed.  It computes the costs due to copying via
+a secondary register.  If your machine copies from memory using a
+secondary register in the conventional way but the default base value of
+4 is not correct for your machine, use this target hook to add some other
+value to the result of that function.  The arguments to that function
+are the same as to this target hook.
+@end deftypefn
 
 @defmac BRANCH_COST (@var{speed_p}, @var{predictable_p})
 A C expression for the cost of a branch instruction.  A value of 1 is the

@@ -58,7 +58,7 @@ extern HARD_REG_SET ira_no_alloc_regs;
    mode or when the conflict table is too big.  */
 extern bool ira_conflicts_p;
 
-/* Array analogous to macro MEMORY_MOVE_COST.  */
+/* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
 extern short ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
 
 /* Array of number of hard registers of given class which are
