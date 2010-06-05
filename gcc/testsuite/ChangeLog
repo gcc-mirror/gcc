@@ -1,3 +1,8 @@
+2010-06-05  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/44322
+	* gcc.dg/c99-restrict-4.c: New test.
+
 2010-06-04  Magnus Fromreide  <magfr@lysator.liu.se>
 
 	* g++.dg/cpp0x/nullptr01.C: Test nullptr_t variable.
