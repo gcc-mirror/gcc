@@ -1055,7 +1055,7 @@ propagate (void)
 			       pure_const_names[y_l->pure_const_state],
 			       y_l->looping);
 		    }
-		  if (y_l->pure_const_state > ECF_PURE
+		  if (y_l->pure_const_state > IPA_PURE
 		      && cgraph_edge_cannot_lead_to_return (e))
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1108,10 +1108,17 @@ propagate (void)
 		      edge_looping = true;
 		    }
 		}
+
+	      /* Merge the results with what we already know.
+		 When we found function to be NEITHER, but we know
+		 it is looping pure const, be sure to set the looping flag. */
 	      pure_const_state = MAX (pure_const_state, MIN (edge_state,
 				      w_l->state_previously_known));
-	      looping = MAX (looping, MIN (edge_looping,
-					   w_l->looping_previously_known));
+	      if (edge_state > w_l->state_previously_known)
+		looping = MAX (looping, w_l->looping_previously_known);
+	      else
+		looping = MAX (looping, MIN (edge_looping,
+					     w_l->looping_previously_known));
 	      if (pure_const_state == IPA_NEITHER)
 	        break;
 	    }
@@ -1134,7 +1141,10 @@ propagate (void)
 
 	  if (w_l->state_previously_known != IPA_NEITHER
 	      && this_state > w_l->state_previously_known)
-            this_state = w_l->state_previously_known;
+	    {
+              this_state = w_l->state_previously_known;
+	      this_looping |= w_l->looping_previously_known;
+	    }
 	  if (!this_looping && self_recursive_p (w))
 	    this_looping = true;
 	  if (!w_l->looping_previously_known)
