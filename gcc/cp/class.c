@@ -3092,6 +3092,14 @@ check_field_decls (tree t, tree *access_decls,
       if (! zero_init_p (type))
 	CLASSTYPE_NON_ZERO_INIT_P (t) = 1;
 
+      /* We set DECL_C_BIT_FIELD in grokbitfield.
+	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
+      if (! DECL_C_BIT_FIELD (x) || ! check_bitfield_decl (x))
+	check_field_decl (x, t,
+			  cant_have_const_ctor_p,
+			  no_const_asn_ref_p,
+			  &any_default_members);
+
       /* If any field is const, the structure type is pseudo-const.  */
       if (CP_TYPE_CONST_P (type))
 	{
@@ -3120,14 +3128,6 @@ check_field_decls (tree t, tree *access_decls,
       if (constructor_name_p (DECL_NAME (x), t)
 	  && TYPE_HAS_USER_CONSTRUCTOR (t))
 	permerror (input_location, "field %q+#D with same name as class", x);
-
-      /* We set DECL_C_BIT_FIELD in grokbitfield.
-	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if (! DECL_C_BIT_FIELD (x) || ! check_bitfield_decl (x))
-	check_field_decl (x, t,
-			  cant_have_const_ctor_p,
-			  no_const_asn_ref_p,
-			  &any_default_members);
     }
 
   /* Effective C++ rule 11: if a class has dynamic memory held by pointers,
