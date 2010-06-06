@@ -1,5 +1,14 @@
 2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/Makefile.am, doc/Makefile.in (xml_sources_extra): Add
+	fdl-1.3.xml.
+	* doc/xml/manual/intro.xml: Update FDL link.
+	* doc/xml/manual/spine.xml: Update FDL include.
+	* doc/xml/gnu/fdl-1.3.xml: Add.
+	* doc/html/*: Regenerate.
+
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/ext/pointer.h (_Pointer_adapter::operator++): Remove
 	name of unused parameter.
 
