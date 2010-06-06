@@ -2,7 +2,8 @@
 
 	* stor-layout.c (self_referential_size): Set UNKNOWN_LOCATION on the
 	newly built CALL_EXPR.
-	* tree-profile.c (tree_profiling): Return 0 for built-in stuff.
+	* tree-profile.c (tree_profiling): Don't profile functions produced
+	for built-in stuff.
 
 2010-06-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
