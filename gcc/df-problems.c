@@ -925,10 +925,10 @@ df_lr_local_compute (bitmap all_blocks ATTRIBUTE_UNUSED)
   unsigned int bb_index;
   bitmap_iterator bi;
 
-  bitmap_clear (df->hardware_regs_used);
+  bitmap_clear (&df->hardware_regs_used);
 
   /* The all-important stack pointer must always be live.  */
-  bitmap_set_bit (df->hardware_regs_used, STACK_POINTER_REGNUM);
+  bitmap_set_bit (&df->hardware_regs_used, STACK_POINTER_REGNUM);
 
   /* Before reload, there are a few registers that must be forced
      live everywhere -- which might not already be the case for
@@ -937,20 +937,20 @@ df_lr_local_compute (bitmap all_blocks ATTRIBUTE_UNUSED)
     {
       /* Any reference to any pseudo before reload is a potential
 	 reference of the frame pointer.  */
-      bitmap_set_bit (df->hardware_regs_used, FRAME_POINTER_REGNUM);
+      bitmap_set_bit (&df->hardware_regs_used, FRAME_POINTER_REGNUM);
 
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
       if (fixed_regs[ARG_POINTER_REGNUM])
-	bitmap_set_bit (df->hardware_regs_used, ARG_POINTER_REGNUM);
+	bitmap_set_bit (&df->hardware_regs_used, ARG_POINTER_REGNUM);
 #endif
 
       /* Any constant, or pseudo with constant equivalences, may
 	 require reloading from memory using the pic register.  */
       if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
 	  && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
-	bitmap_set_bit (df->hardware_regs_used, PIC_OFFSET_TABLE_REGNUM);
+	bitmap_set_bit (&df->hardware_regs_used, PIC_OFFSET_TABLE_REGNUM);
     }
 
   EXECUTE_IF_SET_IN_BITMAP (df_lr->out_of_date_transfer_functions, 0, bb_index, bi)
@@ -995,7 +995,7 @@ df_lr_confluence_0 (basic_block bb)
 {
   bitmap op1 = &df_lr_get_bb_info (bb->index)->out;
   if (bb != EXIT_BLOCK_PTR)
-    bitmap_copy (op1, df->hardware_regs_used);
+    bitmap_copy (op1, &df->hardware_regs_used);
 }
 
 
@@ -1015,7 +1015,7 @@ df_lr_confluence_n (edge e)
   else
     bitmap_ior_into (op1, op2);
 
-  bitmap_ior_into (op1, df->hardware_regs_used);
+  bitmap_ior_into (op1, &df->hardware_regs_used);
 }
 
 
@@ -2547,7 +2547,7 @@ df_byte_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
     }
 
   df_byte_lr_expand_bitmap (&problem_data->hardware_regs_used,
-			    df->hardware_regs_used);
+			    &df->hardware_regs_used);
   df_byte_lr_expand_bitmap (&problem_data->invalidated_by_call,
 			    regs_invalidated_by_call_regset);
 
@@ -3979,9 +3979,9 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
   /* These regs are considered always live so if they end up dying
      because of some def, we need to bring the back again.  */
   if (bb_has_eh_pred (bb))
-    bitmap_ior_into (live, df->eh_block_artificial_uses);
+    bitmap_ior_into (live, &df->eh_block_artificial_uses);
   else
-    bitmap_ior_into (live, df->regular_block_artificial_uses);
+    bitmap_ior_into (live, &df->regular_block_artificial_uses);
 }
 
 

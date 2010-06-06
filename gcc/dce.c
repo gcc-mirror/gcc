@@ -960,8 +960,8 @@ fast_dce (bool byte_level)
      df_simulate_fixup_sets has the disadvantage of calling
      bb_has_eh_pred once per insn, so we cache the information
      here.  */
-  bitmap au = df->regular_block_artificial_uses;
-  bitmap au_eh = df->eh_block_artificial_uses;
+  bitmap au = &df->regular_block_artificial_uses;
+  bitmap au_eh = &df->eh_block_artificial_uses;
   int i;
 
   prescan_insns_for_dce (true);
