@@ -467,6 +467,10 @@ tree_profiling (void)
       || cfun->after_tree_profile)
     return 0;
 
+  /* Don't profile functions produced for builtin stuff.  */
+  if (DECL_SOURCE_LOCATION (current_function_decl) == BUILTINS_LOCATION)
+    return 0;
+
   /* Re-set global shared temporary variable for edge-counters.  */
   gcov_type_tmp_var = NULL_TREE;
 

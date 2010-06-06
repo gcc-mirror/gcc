@@ -342,7 +342,7 @@ self_referential_size (tree size)
   VEC_safe_push (tree, gc, size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
-  return build_function_call_expr (input_location, fndecl, arg_list);
+  return build_function_call_expr (UNKNOWN_LOCATION, fndecl, arg_list);
 }
 
 /* Take, queue and compile all the size functions.  It is essential that
