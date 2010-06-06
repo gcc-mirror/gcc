@@ -1,5 +1,10 @@
 2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/ext/pointer.h (_Pointer_adapter::operator++): Remove
+	name of unused parameter.
+
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/40296
 	* libsupc++/exception_ptr.h (exception_ptr::exception_ptr): Replace
 	__safe_bool constructor with nullptr_t constructor in C++0x mode.
