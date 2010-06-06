@@ -1,3 +1,8 @@
+2010-06-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/20000
+        * c-decl.c (grokdeclarator): Delete warning.
+
 2010-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_size): Set UNKNOWN_LOCATION on the

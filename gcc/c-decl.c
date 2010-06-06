@@ -5901,12 +5901,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	  pedwarn (loc, OPT_pedantic,
 		   "ISO C forbids qualified function types");
 
-	/* GNU C interprets a volatile-qualified function type to indicate
-	   that the function does not return.  */
-	if ((type_quals & TYPE_QUAL_VOLATILE)
-	    && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
-	  warning_at (loc, 0, "%<noreturn%> function returns non-void value");
-
 	/* Every function declaration is an external reference
 	   (DECL_EXTERNAL) except for those which are not at file
 	   scope and are explicitly declared "auto".  This is
