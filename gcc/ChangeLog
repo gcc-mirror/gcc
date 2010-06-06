@@ -2,7 +2,7 @@
 
 	PR bootstrap/44427
 	PR bootstrap/44428
-	genautomata.c (SET_BIT, CLEAR_BIT, TEST_BIT): Make these macros
+	* genautomata.c (SET_BIT, CLEAR_BIT, TEST_BIT): Make these macros
 	endianness-independent.
 
 2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
