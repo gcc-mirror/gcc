@@ -141,9 +141,10 @@
 	df_live_verify_transfer_functions, df_chain_create_bb,
 	df_chain_add_problem, df_byte_lr_check_regs, df_byte_lr_alloc,
 	df_byte_lr_confluence_0, df_byte_lr_confluence_n, df_note_compute,
-	df_simulate_one_insn_forwards, df_md_alloc, df_md_bb_local_compute_process_def,
-	df_md_bb_local_compute_process_def, df_md_local_compute, df_md_transfer_function
-	df_md_free): Update.
+	df_simulate_one_insn_forwards, df_md_alloc,
+	df_md_bb_local_compute_process_def,
+	df_md_bb_local_compute_process_def, df_md_local_compute,
+	df_md_transfer_function df_md_free): Update.
 
 2010-06-05  Joseph Myers  <joseph@codesourcery.com>
 
@@ -155,7 +156,7 @@
 
 2010-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	genautomata.c (get_excl_set): Do work per element, not per char.
+	* genautomata.c (get_excl_set): Do work per element, not per char.
 	(check_presence_pattern_sets): Similar.
 	(check_absence_pattern_sets): Similar.
 
@@ -976,7 +977,7 @@
 2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/arm/t-linux-androideabi: New.
-	* config.gcc (arm*-*-linux-androideabi): Include multilib configuration.
+	* config.gcc (arm*-*-linux-androideabi): Include multilib config.
 
 2010-06-01  Jan Hubicka  <jh@suse.cz>
 
