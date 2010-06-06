@@ -10818,4 +10818,21 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
   return binfo;
 }
 
+/* Returns true if X is a typedef decl.  */
+
+bool
+is_typedef_decl (tree x)
+{
+  return (x && TREE_CODE (x) == TYPE_DECL
+          && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
+}
+
+/* Returns true iff TYPE is a type variant created for a typedef. */
+
+bool
+typedef_variant_p (tree type)
+{
+  return is_typedef_decl (TYPE_NAME (type));
+}
+
 #include "gt-tree.h"

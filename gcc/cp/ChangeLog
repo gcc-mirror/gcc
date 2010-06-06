@@ -1,3 +1,12 @@
+2010-05-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/44188
+	* cp-tree.h (typedef_variant_p): Move this declaration to
+	gcc/tree.h.
+	* tree.c (typedef_variant_p): Move this definition to gcc/tree.c.
+	* decl.c (grokdeclarator): Do not rename debug info of an
+	anonymous tagged type named by a typedef.
+
 2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
 	
 	PR c++/44086

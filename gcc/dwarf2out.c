@@ -6202,6 +6202,7 @@ static void gen_type_die (tree, dw_die_ref);
 static void gen_block_die (tree, dw_die_ref, int);
 static void decls_for_scope (tree, dw_die_ref, int);
 static int is_redundant_typedef (const_tree);
+static bool is_naming_typedef_decl (const_tree);
 static inline dw_die_ref get_context_die (tree);
 static void gen_namespace_die (tree, dw_die_ref);
 static void gen_decl_die (tree, tree, dw_die_ref);
@@ -6213,6 +6214,8 @@ static struct dwarf_file_data * lookup_filename (const char *);
 static void retry_incomplete_types (void);
 static void gen_type_die_for_member (tree, tree, dw_die_ref);
 static void gen_generic_params_dies (tree);
+static void gen_tagged_type_die (tree, dw_die_ref, enum debug_info_usage);
+static void gen_type_die_with_usage (tree, dw_die_ref, enum debug_info_usage);
 static void splice_child_die (dw_die_ref, dw_die_ref);
 static int file_info_cmp (const void *, const void *);
 static dw_loc_list_ref new_loc_list (dw_loc_descr_ref, const char *,
@@ -19426,10 +19429,36 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 	  equate_type_number_to_die (TREE_TYPE (decl), type_die);
 	}
       else
-	type = TREE_TYPE (decl);
+	{
+	  type = TREE_TYPE (decl);
+
+	  if (is_naming_typedef_decl (TYPE_NAME (type)))
+	    /* 
+	       Here, we are in the case of decl being a typedef naming
+	       an anonymous type, e.g:
+	             typedef struct {...} foo;
+	       In that case TREE_TYPE (decl) is not a typedef variant
+	       type and TYPE_NAME of the anonymous type is set to the
+	       TYPE_DECL of the typedef. This construct is emitted by
+	       the C++ FE.
+
+	       TYPE is the anonymous struct named by the typedef
+	       DECL. As we need the DW_AT_type attribute of the
+	       DW_TAG_typedef to point to the DIE of TYPE, let's
+	       generate that DIE right away. add_type_attribute
+	       called below will then pick (via lookup_type_die) that
+	       anonymous struct DIE.  */
+	    gen_tagged_type_die (type, context_die, DINFO_USAGE_DIR_USE);
+	}
 
       add_type_attribute (type_die, type, TREE_READONLY (decl),
 			  TREE_THIS_VOLATILE (decl), context_die);
+
+      if (is_naming_typedef_decl (decl))
+	/* We want that all subsequent calls to lookup_type_die with
+	   TYPE in argument yield the DW_TAG_typedef we have just
+	   created.  */
+	equate_type_number_to_die (type, type_die);
     }
 
   if (DECL_ABSTRACT (decl))
@@ -19439,13 +19468,78 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
     add_pubtype (decl, type_die);
 }
 
+/* Generate a DIE for a struct, class, enum or union type.  */
+
+static void
+gen_tagged_type_die (tree type,
+		     dw_die_ref context_die,
+		     enum debug_info_usage usage)
+{
+  int need_pop;
+
+  if (type == NULL_TREE
+      || !is_tagged_type (type))
+    return;
+
+  /* If this is a nested type whose containing class hasn't been written
+     out yet, writing it out will cover this one, too.  This does not apply
+     to instantiations of member class templates; they need to be added to
+     the containing class as they are generated.  FIXME: This hurts the
+     idea of combining type decls from multiple TUs, since we can't predict
+     what set of template instantiations we'll get.  */
+  if (TYPE_CONTEXT (type)
+      && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
+      && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
+    {
+      gen_type_die_with_usage (TYPE_CONTEXT (type), context_die, usage);
+
+      if (TREE_ASM_WRITTEN (type))
+	return;
+
+      /* If that failed, attach ourselves to the stub.  */
+      push_decl_scope (TYPE_CONTEXT (type));
+      context_die = lookup_type_die (TYPE_CONTEXT (type));
+      need_pop = 1;
+    }
+  else if (TYPE_CONTEXT (type) != NULL_TREE
+	   && (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL))
+    {
+      /* If this type is local to a function that hasn't been written
+	 out yet, use a NULL context for now; it will be fixed up in
+	 decls_for_scope.  */
+      context_die = lookup_decl_die (TYPE_CONTEXT (type));
+      need_pop = 0;
+    }
+  else
+    {
+      context_die = declare_in_namespace (type, context_die);
+      need_pop = 0;
+    }
+
+  if (TREE_CODE (type) == ENUMERAL_TYPE)
+    {
+      /* This might have been written out by the call to
+	 declare_in_namespace.  */
+      if (!TREE_ASM_WRITTEN (type))
+	gen_enumeration_type_die (type, context_die);
+    }
+  else
+    gen_struct_or_union_type_die (type, context_die, usage);
+
+  if (need_pop)
+    pop_decl_scope ();
+
+  /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
+     it up if it is ever completed.  gen_*_type_die will set it for us
+     when appropriate.  */
+}
+
 /* Generate a type description DIE.  */
 
 static void
 gen_type_die_with_usage (tree type, dw_die_ref context_die,
 				enum debug_info_usage usage)
 {
-  int need_pop;
   struct array_descr_info info;
 
   if (type == NULL_TREE || type == error_mark_node)
@@ -19453,8 +19547,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 
   /* If TYPE is a typedef type variant, let's generate debug info
      for the parent typedef which TYPE is a type of.  */
-  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
+  if (typedef_variant_p (type))
     {
       if (TREE_ASM_WRITTEN (type))
 	return;
@@ -19469,6 +19562,21 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	context_die = get_context_die (DECL_CONTEXT (TYPE_NAME (type)));
 
       TREE_ASM_WRITTEN (type) = 1;
+
+      gen_decl_die (TYPE_NAME (type), NULL, context_die);
+      return;
+    }
+
+  /* If type is an anonymous tagged type named by a typedef, let's
+     generate debug info for the typedef.  */
+  if (is_naming_typedef_decl (TYPE_NAME (type)))
+    {
+      /* Use the DIE of the containing namespace as the parent DIE of
+         the type description DIE we want to generate.  */
+      if (DECL_CONTEXT (TYPE_NAME (type))
+	  && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL)
+	context_die = get_context_die (DECL_CONTEXT (TYPE_NAME (type)));
+      
       gen_decl_die (TYPE_NAME (type), NULL, context_die);
       return;
     }
@@ -19556,57 +19664,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      /* If this is a nested type whose containing class hasn't been written
-	 out yet, writing it out will cover this one, too.  This does not apply
-	 to instantiations of member class templates; they need to be added to
-	 the containing class as they are generated.  FIXME: This hurts the
-	 idea of combining type decls from multiple TUs, since we can't predict
-	 what set of template instantiations we'll get.  */
-      if (TYPE_CONTEXT (type)
-	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
-	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
-	{
-	  gen_type_die_with_usage (TYPE_CONTEXT (type), context_die, usage);
-
-	  if (TREE_ASM_WRITTEN (type))
-	    return;
-
-	  /* If that failed, attach ourselves to the stub.  */
-	  push_decl_scope (TYPE_CONTEXT (type));
-	  context_die = lookup_type_die (TYPE_CONTEXT (type));
-	  need_pop = 1;
-	}
-      else if (TYPE_CONTEXT (type) != NULL_TREE
-	       && (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL))
-	{
-	  /* If this type is local to a function that hasn't been written
-	     out yet, use a NULL context for now; it will be fixed up in
-	     decls_for_scope.  */
-	  context_die = lookup_decl_die (TYPE_CONTEXT (type));
-	  need_pop = 0;
-	}
-      else
-	{
-	  context_die = declare_in_namespace (type, context_die);
-	  need_pop = 0;
-	}
-
-      if (TREE_CODE (type) == ENUMERAL_TYPE)
-	{
-	  /* This might have been written out by the call to
-	     declare_in_namespace.  */
-	  if (!TREE_ASM_WRITTEN (type))
-	    gen_enumeration_type_die (type, context_die);
-	}
-      else
-	gen_struct_or_union_type_die (type, context_die, usage);
-
-      if (need_pop)
-	pop_decl_scope ();
-
-      /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
-	 it up if it is ever completed.  gen_*_type_die will set it for us
-	 when appropriate.  */
+      gen_tagged_type_die (type, context_die, usage);
       return;
 
     case VOID_TYPE:
@@ -19812,6 +19870,35 @@ is_redundant_typedef (const_tree decl)
     return 1;
 
   return 0;
+}
+
+/* Return TRUE if TYPE is a typedef that names a type for linkage
+   purposes. This kind of typedefs is produced by the C++ FE for
+   constructs like:
+
+   typedef struct {...} foo;
+
+   In that case, there is no typedef variant type produced for foo.
+   Rather, the TREE_TYPE of the TYPE_DECL of foo is the anonymous
+   struct type.  */
+
+static bool
+is_naming_typedef_decl (const_tree decl)
+{
+  if (decl == NULL_TREE
+      || TREE_CODE (decl) != TYPE_DECL
+      || !is_tagged_type (TREE_TYPE (decl))
+      || is_redundant_typedef (decl)
+      /* It looks like Ada produces TYPE_DECLs that are very similar
+         to C++ naming typedefs but that have different
+         semantics. Let's be specific to c++ for now.  */
+      || !is_cxx ())
+    return FALSE;
+
+  return (DECL_ORIGINAL_TYPE (decl) == NULL_TREE
+	  && TYPE_NAME (TREE_TYPE (decl)) == decl
+	  && (TYPE_STUB_DECL (TREE_TYPE (decl))
+	      != TYPE_NAME (TREE_TYPE (decl))));
 }
 
 /* Returns the DIE for a context.  */

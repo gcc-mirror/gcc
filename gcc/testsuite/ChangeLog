@@ -1,3 +1,8 @@
+2010-05-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/44188
+	* g++.dg/debug/dwarf2/typedef3.C: New test.
+
 2010-06-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/20000
