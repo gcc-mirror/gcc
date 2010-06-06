@@ -1056,14 +1056,6 @@ strip_typedefs (tree t)
   return cp_build_qualified_type (result, cp_type_quals (t));
 }
 
-/* Returns true iff TYPE is a type variant created for a typedef. */
-
-bool
-typedef_variant_p (tree type)
-{
-  return is_typedef_decl (TYPE_NAME (type));
-}
-
 /* Setup a TYPE_DECL node as a typedef representation.
    See comments of set_underlying_type in c-common.c.  */
 
