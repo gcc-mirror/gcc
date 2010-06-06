@@ -1,3 +1,16 @@
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/40296
+	* libsupc++/exception_ptr.h (exception_ptr::exception_ptr): Replace
+	__safe_bool constructor with nullptr_t constructor in C++0x mode.
+	(exception_ptr::operator bool): Add explicit conversion to bool.
+	(swap(exception_ptr&, exception_ptr&)): Add.
+	(exception_ptr::_M_safe_bool_dummy): Only declare for old ABI.
+	* libsupc++/eh_ptr.cc (exception_ptr::_M_safe_bool_dummy): Move
+	next to other functions retained for ABI compatibility.
+	* testsuite/18_support/exception_ptr/requirements.cc: New.
+	* testsuite/18_support/exception_ptr/requirements_neg.cc: New.
+
 2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_counted_ptr::_M_dispose): Make
