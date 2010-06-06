@@ -131,7 +131,7 @@
 
 <!-- Appendix E -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="../gnu/fdl-1.2.xml">
+	    parse="xml" href="../gnu/fdl-1.3.xml">
 </xi:include>
 
 </part>
