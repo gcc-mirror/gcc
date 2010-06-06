@@ -564,22 +564,22 @@ struct df
 
   int num_problems_defined;
 
-  bitmap hardware_regs_used;     /* The set of hardware registers used.  */
+  bitmap_head hardware_regs_used;     /* The set of hardware registers used.  */
   /* The set of hard regs that are in the artificial uses at the end
      of a regular basic block.  */
-  bitmap regular_block_artificial_uses;
+  bitmap_head regular_block_artificial_uses;
   /* The set of hard regs that are in the artificial uses at the end
      of a basic block that has an EH pred.  */
-  bitmap eh_block_artificial_uses;
+  bitmap_head eh_block_artificial_uses;
   /* The set of hardware registers live on entry to the function.  */
   bitmap entry_block_defs;
   bitmap exit_block_uses;        /* The set of hardware registers used in exit block.  */
 
   /* Insns to delete, rescan or reprocess the notes at next
      df_rescan_all or df_process_deferred_rescans. */
-  bitmap insns_to_delete;
-  bitmap insns_to_rescan;
-  bitmap insns_to_notes_rescan;
+  bitmap_head insns_to_delete;
+  bitmap_head insns_to_rescan;
+  bitmap_head insns_to_notes_rescan;
   int *postorder;                /* The current set of basic blocks
                                     in reverse postorder.  */
   int *postorder_inverted;       /* The current set of basic blocks

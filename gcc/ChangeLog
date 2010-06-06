@@ -1,3 +1,23 @@
+2010-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* df-core.c (df_set_blocks): Use bitmap_head instead of bitmap.
+	(df_compact_blocks): Likewise.
+	* df.h (struct df): Turn hardware_regs_used,
+	regular_block_artificial_uses, eh_block_artificial_uses,
+	insns_to_delete, insns_to_rescan, insns_to_notes_rescan into
+	bitmap_head.
+	* df-problems.c (df_lr_local_compute, df_lr_confluence_0,
+	df_byte_lr_alloc, df_simulate_fixup_sets): Update.
+	* df-scan.c (df_scan_free_internal, df_scan_alloc, df_scan_start_dump,
+	df_scan_blocks, df_insn_delete, df_insn_rescan,
+	df_insn_rescan_debug_internal, df_insn_rescan_all,
+	df_process_deferred_rescans, df_process_deferred_rescans,
+	df_notes_rescan, df_get_call_refs, df_get_call_refs,
+	regs_invalidated_by_call_regset, df_get_call_refs, df_bb_refs_collect,
+	df_record_entry_block_defs, df_record_exit_block_uses,
+	df_update_exit_block_uses, df_bb_verify, df_entry_block_bitmap_verify,
+	df_scan_verify): Update.
+
 2010-05-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/44188
