@@ -3314,15 +3314,18 @@ finish_alt_states (void)
 /* Set bit number bitno in the bit string.  The macro is not side
    effect proof.  */
 #define SET_BIT(bitstring, bitno)					  \
-  (((char *) (bitstring)) [(bitno) / CHAR_BIT] |= 1 << (bitno) % CHAR_BIT)
+  ((bitstring)[(bitno) / (sizeof (*(bitstring)) * CHAR_BIT)] |=		  \
+	(HOST_WIDE_INT)1 << (bitno) % (sizeof (*(bitstring)) * CHAR_BIT))
 
 #define CLEAR_BIT(bitstring, bitno)					  \
-  (((char *) (bitstring)) [(bitno) / CHAR_BIT] &= ~(1 << (bitno) % CHAR_BIT))
+  ((bitstring)[(bitno) / (sizeof (*(bitstring)) * CHAR_BIT)] &=		  \
+	~((HOST_WIDE_INT)1 << (bitno) % (sizeof (*(bitstring)) * CHAR_BIT)))
 
 /* Test if bit number bitno in the bitstring is set.  The macro is not
    side effect proof.  */
-#define TEST_BIT(bitstring, bitno)                                        \
-  (((char *) (bitstring)) [(bitno) / CHAR_BIT] >> (bitno) % CHAR_BIT & 1)
+#define TEST_BIT(bitstring, bitno)					  \
+  ((bitstring)[(bitno) / (sizeof (*(bitstring)) * CHAR_BIT)] >>		  \
+	(bitno) % (sizeof (*(bitstring)) * CHAR_BIT) & 1)
 
 
 
