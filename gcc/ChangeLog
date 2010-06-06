@@ -1,3 +1,9 @@
+2010-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (self_referential_size): Set UNKNOWN_LOCATION on the
+	newly built CALL_EXPR.
+	* tree-profile.c (tree_profiling): Return 0 for built-in stuff.
+
 2010-06-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR bootstrap/44427
