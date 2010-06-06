@@ -2367,13 +2367,7 @@ cleanup_cfg (int mode)
 	    break;
 	  else if ((mode & CLEANUP_CROSSJUMP)
 		   && crossjumps_occured)
-	    {
-	      /* Fast DCE is expensive, we really want to be sure we don't
-		 re-run it just because crossjumping cascade.  */
-	      while (try_optimize_cfg (mode))
-		delete_unreachable_blocks ();
-	      run_fast_dce ();
-	    }
+	    run_fast_dce ();
 	}
       else
 	break;
