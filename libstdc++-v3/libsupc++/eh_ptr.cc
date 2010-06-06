@@ -102,16 +102,17 @@ std::__exception_ptr::exception_ptr::_M_get() const throw()
 
 
 void
-std::__exception_ptr::exception_ptr::_M_safe_bool_dummy() throw () { }
-
-
-void
 std::__exception_ptr::exception_ptr::swap(exception_ptr &other) throw()
 {
   void *tmp = _M_exception_object;
   _M_exception_object = other._M_exception_object;
   other._M_exception_object = tmp;
 }
+
+
+// Retained for compatibility with CXXABI_1.3.
+void
+std::__exception_ptr::exception_ptr::_M_safe_bool_dummy() throw () { }
 
 
 // Retained for compatibility with CXXABI_1.3.
