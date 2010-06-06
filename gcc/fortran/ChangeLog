@@ -1,4 +1,17 @@
 2010-06-05  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43945
+	* resolve.c (get_declared_from_expr): Move to before
+	resolve_typebound_generic_call.  Make new_ref and class_ref
+	ignorable if set to NULL.
+	(resolve_typebound_generic_call): Once we have resolved the
+	generic call, check that the specific instance is that which
+	is bound to the declared type.
+	(resolve_typebound_function,resolve_typebound_subroutine): Avoid
+	freeing 'class_ref->next' twice.
+
+2010-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43895
 	* trans-array.c (structure_alloc_comps): Dereference scalar
