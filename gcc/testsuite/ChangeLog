@@ -1,3 +1,9 @@
+2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/44086
+	* g++.dg/init/pr44086.C: New.
+	* g++.dg/cpp0x/decltype4.C: Adjust.
+
 2010-06-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43945

@@ -1,3 +1,10 @@
+2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
+	
+	PR c++/44086
+	* class.c (check_field_decls): Move the call to
+	check_bitfield_decl before trying to set the
+	CLASSTYPE_READONLY_FIELDS_NEED_INIT flag.
+
 2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* typeck.c: Update include path for moved files.
