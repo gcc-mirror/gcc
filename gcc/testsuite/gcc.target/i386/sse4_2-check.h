@@ -5,6 +5,13 @@
 
 static void sse4_2_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  sse4_2_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
 
   /* Run SSE4.2 test only if host has SSE4.2 support.  */
   if (ecx & bit_SSE4_2)
-    sse4_2_test ();
+    do_test ();
 
   return 0;
 }
