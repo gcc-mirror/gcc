@@ -439,6 +439,8 @@ analyze_function (struct cgraph_node *fn)
           bitmap_set_bit (local->statics_read, DECL_UID (var));
 	  break;
 	case IPA_REF_STORE:
+	  if (ipa_ref_cannot_lead_to_return (ref))
+	    break;
           bitmap_set_bit (local->statics_written, DECL_UID (var));
 	  break;
 	case IPA_REF_ADDR:

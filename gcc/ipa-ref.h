@@ -88,4 +88,5 @@ void ipa_dump_references (FILE *, struct ipa_ref_list *);
 void ipa_dump_refering (FILE *, struct ipa_ref_list *);
 void ipa_clone_references (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
 void ipa_clone_refering (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
+bool ipa_ref_cannot_lead_to_return (struct ipa_ref *);
 

@@ -512,8 +512,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 
    FIXME: This can not be done in between gimplify and omp_expand since
    readonly flag plays role on what is shared and what is not.  Currently we do
-   this transformation as part of ipa-reference pass, but it would make sense
-   to do it before early optimizations.  */
+   this transformation as part of whole program visibility and re-do at
+   ipa-reference pass (to take into account clonning), but it would
+   make sense to do it before early optimizations.  */
 
 void
 ipa_discover_readonly_nonaddressable_vars (void)
@@ -825,6 +826,8 @@ whole_program_function_and_variable_visibility (void)
 	  fprintf (dump_file, " %s", varpool_node_name (vnode));
       fprintf (dump_file, "\n\n");
     }
+  if (optimize)
+    ipa_discover_readonly_nonaddressable_vars ();
   return 0;
 }
 

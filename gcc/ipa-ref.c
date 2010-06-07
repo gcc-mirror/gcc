@@ -233,3 +233,11 @@ ipa_clone_refering (struct cgraph_node *dest_node,
 			  dest_node, dest_varpool_node,
 			  ref->use, ref->stmt);
 }
+
+/* Return true when execution of REF can load to return from
+   function. */
+bool
+ipa_ref_cannot_lead_to_return (struct ipa_ref *ref)
+{
+  return cgraph_node_cannot_return (ipa_ref_refering_node (ref));
+}
