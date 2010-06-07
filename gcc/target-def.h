@@ -417,7 +417,8 @@
   default_builtin_vectorized_conversion
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN 0
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD 0
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST 0
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  default_builtin_vectorization_cost
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE \
   default_builtin_vector_alignment_reachable
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM 0

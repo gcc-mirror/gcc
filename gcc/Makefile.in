@@ -2704,7 +2704,7 @@ tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) \
    $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(RECOG_H) $(OPTABS_H) \
    $(TOPLEV_H) $(SCEV_H) $(TREE_VECTORIZER_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   gimple-pretty-print.h $(TARGET_H)
 tree-vect-loop-manip.o: tree-vect-loop-manip.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(TOPLEV_H) \

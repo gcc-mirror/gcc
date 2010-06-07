@@ -209,7 +209,7 @@ static rtx spu_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
 static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
-static int spu_builtin_vectorization_cost (bool);
+static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt);
 static bool spu_vector_alignment_reachable (const_tree, bool);
 static tree spu_builtin_vec_perm (tree, tree *);
 static enum machine_mode spu_addr_space_pointer_mode (addr_space_t);
@@ -6695,17 +6695,36 @@ spu_builtin_mask_for_load (void)
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int 
-spu_builtin_vectorization_cost (bool runtime_test)
+spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
 {
-  /* If the branch of the runtime test is taken - i.e. - the vectorized
-     version is skipped - this incurs a misprediction cost (because the
-     vectorized version is expected to be the fall-through).  So we subtract
-     the latency of a mispredicted branch from the costs that are incurred
-     when the vectorized version is executed.  */
-  if (runtime_test)
-    return -19;
-  else
-    return 0;
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+      case vector_stmt:
+      case vector_load:
+      case vector_store:
+      case vec_to_scalar:
+      case scalar_to_vec:
+      case cond_branch_not_taken:
+      case vec_perm:
+        return 1;
+
+      case scalar_store:
+        return 10;
+
+      case scalar_load:
+        /* Load + rotate.  */
+        return 2;
+
+      case unaligned_load:
+        return 2;
+
+      case cond_branch_taken:
+        return 6;
+
+      default:
+        gcc_unreachable ();
+    }
 }
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)

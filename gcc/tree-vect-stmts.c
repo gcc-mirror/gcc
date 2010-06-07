@@ -553,9 +553,9 @@ cost_for_stmt (gimple stmt)
   switch (STMT_VINFO_TYPE (stmt_info))
   {
   case load_vec_info_type:
-    return TARG_SCALAR_LOAD_COST;
+    return targetm.vectorize.builtin_vectorization_cost (scalar_load);
   case store_vec_info_type:
-    return TARG_SCALAR_STORE_COST;
+    return targetm.vectorize.builtin_vectorization_cost (scalar_store);
   case op_vec_info_type:
   case condition_vec_info_type:
   case assignment_vec_info_type:
@@ -565,7 +565,7 @@ cost_for_stmt (gimple stmt)
   case type_demotion_vec_info_type:
   case type_conversion_vec_info_type:
   case call_vec_info_type:
-    return TARG_SCALAR_STMT_COST;
+    return targetm.vectorize.builtin_vectorization_cost (scalar_stmt);
   case undef_vec_info_type:
   default:
     gcc_unreachable ();
@@ -589,13 +589,15 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   if (PURE_SLP_STMT (stmt_info))
     return;
 
-  inside_cost = ncopies * TARG_VEC_STMT_COST;
+  inside_cost = ncopies 
+    * targetm.vectorize.builtin_vectorization_cost (vector_stmt);
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
   for (i = 0; i < 2; i++)
     {
       if (dt[i] == vect_constant_def || dt[i] == vect_external_def)
-	outside_cost += TARG_SCALAR_TO_VEC_COST;
+	outside_cost 
+          += targetm.vectorize.builtin_vectorization_cost (vector_stmt);
     }
 
   if (vect_print_dump_info (REPORT_COST))
@@ -643,7 +645,8 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     return;
 
   if (dt == vect_constant_def || dt == vect_external_def)
-    outside_cost = TARG_SCALAR_TO_VEC_COST;
+    outside_cost 
+      = targetm.vectorize.builtin_vectorization_cost (scalar_to_vec);
 
   /* Strided access?  */
   if (DR_GROUP_FIRST_DR (stmt_info) && !slp_node)
@@ -658,7 +661,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     {
       /* Uses a high and low interleave operation for each needed permute.  */
       inside_cost = ncopies * exact_log2(group_size) * group_size
-             * TARG_VEC_STMT_COST;
+             * targetm.vectorize.builtin_vectorization_cost (vector_stmt);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_store_cost: strided group_size = %d .",
@@ -667,7 +670,8 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Costs of the stores.  */
-  inside_cost += ncopies * TARG_VEC_STORE_COST;
+  inside_cost += ncopies 
+    * targetm.vectorize.builtin_vectorization_cost (vector_store);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_store_cost: inside_cost = %d, "
@@ -722,7 +726,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     {
       /* Uses an even and odd extract operations for each needed permute.  */
       inside_cost = ncopies * exact_log2(group_size) * group_size
-	* TARG_VEC_STMT_COST;
+	* targetm.vectorize.builtin_vectorization_cost (vector_stmt);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",
@@ -735,7 +739,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     {
     case dr_aligned:
       {
-        inside_cost += ncopies * TARG_VEC_LOAD_COST;
+        inside_cost += ncopies 
+          * targetm.vectorize.builtin_vectorization_cost (vector_load);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
@@ -745,7 +750,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     case dr_unaligned_supported:
       {
         /* Here, we assign an additional cost for the unaligned load.  */
-        inside_cost += ncopies * TARG_VEC_UNALIGNED_LOAD_COST;
+        inside_cost += ncopies 
+        * targetm.vectorize.builtin_vectorization_cost (unaligned_load);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: unaligned supported by "
@@ -755,13 +761,16 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       }
     case dr_explicit_realign:
       {
-        inside_cost += ncopies * (2*TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
+        inside_cost += ncopies * (2 
+         * targetm.vectorize.builtin_vectorization_cost (vector_load) 
+           + targetm.vectorize.builtin_vectorization_cost (vector_stmt));
 
         /* FIXME: If the misalignment remains fixed across the iterations of
            the containing loop, the following cost should be added to the
            outside costs.  */
         if (targetm.vectorize.builtin_mask_for_load)
-          inside_cost += TARG_VEC_STMT_COST;
+          inside_cost 
+            += targetm.vectorize.builtin_vectorization_cost (vector_stmt);
 
         break;
       }
@@ -780,13 +789,16 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
 
         if ((!DR_GROUP_FIRST_DR (stmt_info)) || group_size > 1 || slp_node)
           {
-            outside_cost = 2*TARG_VEC_STMT_COST;
+            outside_cost = 2 
+              * targetm.vectorize.builtin_vectorization_cost (vector_stmt);
             if (targetm.vectorize.builtin_mask_for_load)
-              outside_cost += TARG_VEC_STMT_COST;
+              outside_cost 
+                += targetm.vectorize.builtin_vectorization_cost (vector_stmt);
           }
 
-        inside_cost += ncopies * (TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
-
+        inside_cost += ncopies 
+          * (targetm.vectorize.builtin_vectorization_cost (vector_load)
+             + targetm.vectorize.builtin_vectorization_cost (vector_stmt));
         break;
       }
 
