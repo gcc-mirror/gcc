@@ -1120,8 +1120,11 @@ df_lr_top_dump (basic_block bb, FILE *file)
   if (df_lr->problem_data)
     {
       problem_data = (struct df_lr_problem_data *)df_lr->problem_data;
-      fprintf (file, ";;  old in  \t");
-      df_print_regset (file, &problem_data->in[bb->index]);
+      if (problem_data->in)
+	{
+      	  fprintf (file, ";;  old in  \t");
+      	  df_print_regset (file, &problem_data->in[bb->index]);
+	}
     }
   fprintf (file, ";; lr  use \t");
   df_print_regset (file, &bb_info->use);
@@ -1145,8 +1148,11 @@ df_lr_bottom_dump (basic_block bb, FILE *file)
   if (df_lr->problem_data)
     {
       problem_data = (struct df_lr_problem_data *)df_lr->problem_data;
-      fprintf (file, ";;  old out  \t");
-      df_print_regset (file, &problem_data->out[bb->index]);
+      if (problem_data->out)
+	{
+          fprintf (file, ";;  old out  \t");
+          df_print_regset (file, &problem_data->out[bb->index]);
+	}
     }
 }
 
