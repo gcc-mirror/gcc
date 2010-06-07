@@ -47,12 +47,12 @@
 	PR c++/44188
 	* g++.dg/debug/dwarf2/typedef3.C: New test.
 
-2010-06-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+2010-06-06  Manuel LÃ³pez-IbÃ¡Ã±ez  <manu@gcc.gnu.org>
 
 	PR c/20000
         * c-c++-common/pr20000.c: New.
 
-2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
+2010-06-05  Fabien ChÃªne  <fabien@gcc.gnu.org>
 
 	PR c++/44086
 	* g++.dg/init/pr44086.C: New.
