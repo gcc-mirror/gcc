@@ -1728,6 +1728,9 @@ Target supports @option{-freorder-blocks-and-partition}.
 @item fstack_protector
 Target supports @option{-fstack-protector}.
 
+@item gas
+Target uses GNU @command{as}.
+
 @item gc_sections
 Target supports @option{--gc-sections}.
 

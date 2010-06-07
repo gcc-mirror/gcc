@@ -1,5 +1,10 @@
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other
+	attributes): Document gas.
+
+2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	Backport from mainline:
 	2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
