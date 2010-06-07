@@ -24833,6 +24833,36 @@ $as_echo "$as_me: WARNING: --build-id is not supported by your linker; --enable-
   fi
 fi
 
+# In binutils 2.21, GNU ld gained support for new emulations fully
+# supporting the Solaris 2 ABI.  Detect their presence in the linker used.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker *_sol2 emulation support" >&5
+$as_echo_n "checking linker *_sol2 emulation support... " >&6; }
+if test "${gcc_cv_ld_sol2_emulation+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_ld_sol2_emulation=no
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a \
+       "$gcc_cv_gld_minor_version" -ge 21 -o \
+       "$gcc_cv_gld_major_version" -gt 2 \
+       && test $in_tree_ld_is_elf = yes; then
+      gcc_cv_ld_sol2_emulation=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    if $gcc_cv_ld -V 2>/dev/null | sed -e '1,/Supported emulations/d;q' | \
+       grep _sol2 > /dev/null; then
+      gcc_cv_ld_sol2_emulation=yes
+    fi
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_sol2_emulation" >&5
+$as_echo "$gcc_cv_ld_sol2_emulation" >&6; }
+if test x"$gcc_cv_ld_sol2_emulation" = xyes; then
+
+$as_echo "#define HAVE_LD_SOL2_EMULATION 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker --sysroot support" >&5
 $as_echo_n "checking linker --sysroot support... " >&6; }
 if test "${gcc_cv_ld_sysroot+set}" = set; then :
