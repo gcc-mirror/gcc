@@ -5140,9 +5140,10 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 	    {
               /* Note that gsi_insert_seq_before and gsi_remove do not
                  scan operands, unlike some other sequence mutators.  */
-	      gsi_insert_seq_before_without_update (&iter,
-                                                    gimple_wce_cleanup (wce),
-                                                    GSI_SAME_STMT);
+	      if (!gimple_wce_cleanup_eh_only (wce))
+		gsi_insert_seq_before_without_update (&iter,
+						      gimple_wce_cleanup (wce),
+						      GSI_SAME_STMT);
 	      gsi_remove (&iter, true);
 	      break;
 	    }

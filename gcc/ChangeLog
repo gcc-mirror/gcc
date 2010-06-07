@@ -1,3 +1,9 @@
+2010-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_cleanup_point_expr): For empty body
+	and EH-only cleanup drop the cleanup instead of inserting it
+	unconditionally.
+
 2010-06-07  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Update
