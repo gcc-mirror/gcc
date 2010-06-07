@@ -938,7 +938,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_frecursive:
-      gfc_option.flag_recursive = 1;
+      gfc_option.flag_recursive = value;
       break;
 
     case OPT_falign_commons:
