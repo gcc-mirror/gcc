@@ -4,6 +4,13 @@
 
 static void fma4_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  fma4_test ();
+}
+
 int
 main ()
 {
@@ -14,7 +21,7 @@ main ()
 
   /* Run FMA4 test only if host has FMA4 support.  */
   if (ecx & bit_FMA4)
-    fma4_test ();
+    do_test ();
 
   exit (0);
 }

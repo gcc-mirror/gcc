@@ -5,6 +5,13 @@
 
 static void mmx_3dnow_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  mmx_3dnow_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
 
   /* Run 3DNow! test only if host has 3DNow! support.  */
   if (edx & bit_3DNOW)
-    mmx_3dnow_test ();
+    do_test ();
 
   return 0;
 }

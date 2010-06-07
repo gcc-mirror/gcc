@@ -1,3 +1,39 @@
+2010-06-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	Backport from mainline:
+	PR target/44159
+	* gcc.target/i386/abi-2.c: Check sysv abi here.
+	* gcc.target/i386/aes-avx-check.h: Call test in noinline
+	function to avoid failures by different ABIs.
+	* gcc.target/i386/aes-check.h: Likewise.
+	* gcc.target/i386/avx-check.h: Likewise.
+	* gcc.target/i386/fma4-check.h: Likewise.
+	* gcc.target/i386/mmx-3dnow-check.h: Likewise.
+	* gcc.target/i386/mmx-check.h: Likewise.
+	* gcc.target/i386/pclmul-avx-check.h: Likewise.
+	* gcc.target/i386/pclmul-check.h: Likewise.
+	* gcc.target/i386/sse-check.h: Likewise.
+	* gcc.target/i386/sse2-check.h: Likewise.
+	* gcc.target/i386/sse3-check.h: Likewise.
+	* gcc.target/i386/sse4_1-check.h: Likewise.
+	* gcc.target/i386/sse4_2-check.h: Likewise.
+	* gcc.target/i386/sse4a-check.h: Likewise.
+	* gcc.target/i386/ssse3-check.h: Likewise.
+	* gcc.target/i386/xop-check.h: Likewise.
+	* gcc.target/i386/pr27971.c: Fix for LLP64.
+	* gcc.target/i386/pr39139.c: Likewise.
+	* gcc.target/i386/pr39315-check.c: Likewise.
+	* gcc.target/i386/vararg-1.c: Likewise.
+	* gcc.target/i386/vararg-2.c: Likewise.
+	Additional add dg-compile to avoid failure due
+	missing foo symbol.
+
+        * gcc.dg/compound-literal-1.c: Fix for llp64.
+        * gcc.dg/pr32370.c: Likewise.
+        * gcc.dg/pr37561.c: Likewise.
+        * gcc.dg/pr41340.c: Likewise.
+        * gcc.dg/pr41551.c: Likewise.
+
 2010-06-07  Iain Sandoe <iains@gcc.gnu.org>
 
 	Backport from mainline:
