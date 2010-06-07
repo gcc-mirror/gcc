@@ -6,6 +6,13 @@
 
 static void pclmul_avx_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  pclmul_avx_test ();
+}
+
 int
 main ()
 {
@@ -17,7 +24,7 @@ main ()
   /* Run PCLMUL + AVX test only if host has PCLMUL + AVX support.  */
   if ((ecx & (bit_AVX | bit_PCLMUL)) == (bit_AVX | bit_PCLMUL))
     {
-      pclmul_avx_test ();
+      do_test ();
 #ifdef DEBUG
       printf ("PASSED\n");
 #endif

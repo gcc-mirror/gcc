@@ -5,6 +5,13 @@
 
 static void sse4a_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  sse4a_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
 
   /* Run SSE4a test only if host has SSE4a support.  */
   if (ecx & bit_SSE4a)
-    sse4a_test ();
+    do_test ();
 
   return 0;
 }
