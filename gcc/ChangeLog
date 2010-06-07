@@ -1,3 +1,9 @@
+2010-06-07  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44454
+	(df_lr_top_dump, df_lr_bottom_dump): Check that in/out bitmaps
+	are allocated.
+
 2010-06-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_build_builtin_va_list): Set tree type
