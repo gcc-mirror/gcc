@@ -1,5 +1,15 @@
 2010-06-07  Jan Hubicka  <jh@suse.cz>
 
+	* df-problems.c (df_lr_problem_data): Add lr_bitmaps.
+	(df_lr_alloc): Initialize problem data; move bitmaps to
+	lr_bitmaps obstack.
+	(df_lr_finalize): Free problem data; do not bother to free bitmaps.
+	(df_lr_verify_solution_start): Do not initialize problem data;
+	allocate bitmaps in lr_bitmaps.
+	(df_lr_verify_solution_end): Do not free problem data.
+
+2010-06-07  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_edge_cannot_lead_to_return): Also check
 	if caller is noreturn.
 	* ipa-reference.c (analyze_function): Use ipa_ref_cannot_lead_to_return
