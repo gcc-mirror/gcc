@@ -7,8 +7,8 @@
 	* decl.c (grokdeclarator): Do not rename debug info of an
 	anonymous tagged type named by a typedef.
 
-2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
-	
+2010-06-05  Fabien ChÃªne  <fabien@gcc.gnu.org>
+
 	PR c++/44086
 	* class.c (check_field_decls): Move the call to
 	check_bitfield_decl before trying to set the
