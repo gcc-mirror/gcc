@@ -6723,9 +6723,10 @@ lookup_template_class (tree d1,
 
       /* Note this use of the partial instantiation so we can check it
 	 later in maybe_process_partial_specialization.  */
-      DECL_TEMPLATE_INSTANTIATIONS (templ)
-	= tree_cons (arglist, t,
-		     DECL_TEMPLATE_INSTANTIATIONS (templ));
+      if (use_partial_inst_tmpl)
+	DECL_TEMPLATE_INSTANTIATIONS (templ)
+	  = tree_cons (arglist, t,
+		       DECL_TEMPLATE_INSTANTIATIONS (templ));
 
       if (TREE_CODE (t) == ENUMERAL_TYPE && !is_dependent_type)
 	/* Now that the type has been registered on the instantiations

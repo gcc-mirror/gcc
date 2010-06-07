@@ -1,3 +1,8 @@
+2010-06-07  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (lookup_template_class): Don't mess with
+	DECL_TEMPLATE_INSTANTIATIONS except for partial instantiations.
+
 2010-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44444
