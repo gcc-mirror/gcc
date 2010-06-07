@@ -1,5 +1,10 @@
 2010-06-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/44444
+	* expr.c (mark_exp_read): Handle INDIRECT_REF.
+	* cvt.c (convert_to_void): Handle INDIRECT_REF like
+	handled_component_p.
+
 	PR c++/44443
 	* decl.c (initialize_local_var): If TREE_USED is set on the type,
 	set also DECL_READ_P on the decl.

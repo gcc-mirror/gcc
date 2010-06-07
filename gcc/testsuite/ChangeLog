@@ -1,5 +1,8 @@
 2010-06-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/44444
+	* g++.dg/warn/Wunused-var-12.C: New test.
+
 	PR c++/44443
 	* c-c++-common/Wunused-var-11.c: New test.
 
