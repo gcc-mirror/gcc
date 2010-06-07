@@ -44,11 +44,11 @@
 	Additional add dg-compile to avoid failure due
 	missing foo symbol.
 
-        * gcc.dg/compound-literal-1.c: Fix for llp64.
-        * gcc.dg/pr32370.c: Likewise.
-        * gcc.dg/pr37561.c: Likewise.
-        * gcc.dg/pr41340.c: Likewise.
-        * gcc.dg/pr41551.c: Likewise.
+	* gcc.dg/compound-literal-1.c: Fix for llp64.
+	* gcc.dg/pr32370.c: Likewise.
+	* gcc.dg/pr37561.c: Likewise.
+	* gcc.dg/pr41340.c: Likewise.
+	* gcc.dg/pr41551.c: Likewise.
 
 2010-05-25  Dodji Seketeli  <dodji@redhat.com>
 
@@ -58,7 +58,7 @@
 2010-06-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/20000
-        * c-c++-common/pr20000.c: New.
+	* c-c++-common/pr20000.c: New.
 
 2010-06-05  Fabien Chêne  <fabien@gcc.gnu.org>
 

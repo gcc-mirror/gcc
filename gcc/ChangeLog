@@ -1,3 +1,18 @@
+2010-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>_1): Remove alternative 2.
+	<TYPE_LEA>: Split instruction.
+	<default>: Remove alternative 2 handling.
+	(*addsi_1_zext) <TYPE_LEA>: Split instruction.
+	(add lea splitter): Generate SImode lea for mode sizes <= SImode.
+	(add_zext lea splitter): Use ix86_lea_for_add_ok in insn predicate.
+
+	(*movsi_1) <TYPE_LEA>: Use %a modifier to output operand 1.
+	(ashift_zext lea splitter): Use DImode for multiplication.
+
+	* config/i386/i386.c (ix86_expand_epilogue): Do not use ix86_gen_add
+	to generate addition.
+
 2010-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (fira-verbose): Use Var.
@@ -9,8 +24,7 @@
 	flag_detailed_statistics, flag_remove_unreachable_functions):
 	Remove.
 	* toplev.c (flag_detailed_statistics, flag_signed_char,
-	flag_short_enums, flag_pcc_struct_return, flag_ira_verbose):
-	Remove.
+	flag_short_enums, flag_pcc_struct_return, flag_ira_verbose): Remove.
 	(DEFAULT_PCC_STRUCT_RETURN): Move definition to defaults.h.
 	* toplev.h (flag_crossjumping, flag_if_conversion,
 	flag_if_conversion2, flag_keep_static_consts, flag_peel_loops,
@@ -95,7 +109,7 @@
 	and above and defer till target is known.
 	(optimization_options): Turn on zee pass if TARGET_64BIT is set and
 	turn off otherwise.
-	
+
 2010-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* df-core.c (df_set_blocks): Use bitmap_head instead of bitmap.
@@ -136,7 +150,7 @@
 2010-06-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/20000
-        * c-decl.c (grokdeclarator): Delete warning.
+	* c-decl.c (grokdeclarator): Delete warning.
 
 2010-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -327,8 +341,7 @@
 2010-06-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR boostrap/44421
-	* df-problems.c (df_lr_bb_local_compute): Updated for embedded
-	bitmaps.
+	* df-problems.c (df_lr_bb_local_compute): Updated for embedded bitmaps.
 	(df_byte_lr_bb_local_compute): Likewise.
 
 2010-06-03  Jason Merrill  <jason@redhat.com>
@@ -358,11 +371,11 @@
 	(*addqi_1_lea) <TYPE_INCDEC, default>: Ditto.
 	(*add<mode>_2) <TYPE_INCDEC>: Remove assert that operand 0
 	and operand 1 are equal.
-	<default>: Ditto. Remove ??? comment.
+	<default>: Ditto.  Remove ??? comment.
 	(*add<mode>_3) <TYPE_INCDEC>: Remove assert that operand 0
 	and operand 1 are equal.
-	<default>: Ditto. Remove ??? comment.
-	(*adddi_4) <default>:  Remove assert that operand 0 and operand 1
+	<default>: Ditto.  Remove ??? comment.
+	(*adddi_4) <default>: Remove assert that operand 0 and operand 1
 	are equal.
 	(*add<mode>_4) <default>: Ditto.
 	(*add<mode>_5) <TYPE_INCDEC, default>: Ditto.
