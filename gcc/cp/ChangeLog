@@ -1,5 +1,11 @@
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (COMPLETE_OR_OPEN_TYPE_P): New macro.
+	* init.c (build_offset_ref): Use it.
+	* pt.c (maybe_process_partial_specialization): Use it.
+	(instantiate_class_template): Use it.
+	* search.c (lookup_base): Use it.
+
 	* pt.c (lookup_template_class): Don't mess with
 	DECL_TEMPLATE_INSTANTIATIONS except for partial instantiations.
 

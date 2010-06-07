@@ -1520,8 +1520,7 @@ build_offset_ref (tree type, tree member, bool address_p)
   /* Callers should call mark_used before this point.  */
   gcc_assert (!DECL_P (member) || TREE_USED (member));
 
-  if (!COMPLETE_TYPE_P (complete_type (type))
-      && !TYPE_BEING_DEFINED (type))
+  if (!COMPLETE_OR_OPEN_TYPE_P (complete_type (type)))
     {
       error ("incomplete type %qT does not have member %qD", type, member);
       return error_mark_node;

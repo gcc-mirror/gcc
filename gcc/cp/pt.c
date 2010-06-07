@@ -891,7 +891,7 @@ maybe_process_partial_specialization (tree type)
 		  *slot = GGC_NEW (spec_entry);
 		  **slot = elt;
 		}
-	      else if (COMPLETE_TYPE_P (inst) || TYPE_BEING_DEFINED (inst))
+	      else if (COMPLETE_OR_OPEN_TYPE_P (inst))
 		/* But if we've had an implicit instantiation, that's a
 		   problem ([temp.expl.spec]/6).  */
 		error ("specialization %qT after instantiation %qT",
@@ -7700,8 +7700,7 @@ instantiate_class_template (tree type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TYPE_BEING_DEFINED (type)
-      || COMPLETE_TYPE_P (type)
+  if (COMPLETE_OR_OPEN_TYPE_P (type)
       || uses_template_parms (type))
     return type;
 
@@ -7796,8 +7795,7 @@ instantiate_class_template (tree type)
      instantiate it, and that lookup should instantiate the enclosing
      class.  */
   gcc_assert (!DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (pattern))
-	      || COMPLETE_TYPE_P (TYPE_CONTEXT (type))
-	      || TYPE_BEING_DEFINED (TYPE_CONTEXT (type)));
+	      || COMPLETE_OR_OPEN_TYPE_P (TYPE_CONTEXT (type)));
 
   base_list = NULL_TREE;
   if (BINFO_N_BASE_BINFOS (pbinfo))
