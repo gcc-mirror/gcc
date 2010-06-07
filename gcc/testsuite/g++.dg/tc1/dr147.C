@@ -54,3 +54,13 @@ struct D: C::C
 {
   D(): C::C() { }
 };
+
+// And if lookup doesn't find the injected-class-name, we aren't naming the
+// constructor (c++/44401).
+
+struct E
+{
+  int E;
+};
+
+int E::*p = &E::E;
