@@ -41,6 +41,8 @@
 
 2010-06-07  Jan Hubicka  <jh@suse.cz>
 
+	* df-core.c (df_analyze_problem): Do verification after allocation.
+
 	* df-problems.c (df_lr_problem_data): Add lr_bitmaps.
 	(df_lr_alloc): Initialize problem data; move bitmaps to
 	lr_bitmaps obstack.
