@@ -3,7 +3,6 @@
 	PR rtl-optimization/44404
 	* auto-inc-dec.c (find_inc): Use reg_overlap_mentioned_p instead
 	of count_occurrences to see if it's safe to modify mem_insn.insn.
-	gcc/testsuite/
 
 2010-06-07  Richard Guenther  <rguenther@suse.de>
 
