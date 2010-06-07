@@ -734,6 +734,8 @@ struct df_lr_problem_data
 {
   bitmap_head *in;
   bitmap_head *out;
+  /* An obstack for the bitmaps we need for this problem.  */
+  bitmap_obstack lr_bitmaps;
 };
 
 
@@ -775,12 +777,24 @@ df_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   unsigned int bb_index;
   bitmap_iterator bi;
+  struct df_lr_problem_data *problem_data;
 
   if (!df_lr->block_pool)
     df_lr->block_pool = create_alloc_pool ("df_lr_block pool",
 					   sizeof (struct df_lr_bb_info), 50);
 
   df_grow_bb_info (df_lr);
+  if (df_lr->problem_data)
+    problem_data = (struct df_lr_problem_data *) df_lr->problem_data;
+  else
+    {
+      problem_data = XNEW (struct df_lr_problem_data);
+      df_lr->problem_data = problem_data;
+
+      problem_data->out = NULL;
+      problem_data->in = NULL;
+      bitmap_obstack_initialize (&problem_data->lr_bitmaps);
+    }
 
   EXECUTE_IF_SET_IN_BITMAP (df_lr->out_of_date_transfer_functions, 0, bb_index, bi)
     {
@@ -794,10 +808,10 @@ df_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 	{
 	  bb_info = (struct df_lr_bb_info *) pool_alloc (df_lr->block_pool);
 	  df_lr_set_bb_info (bb_index, bb_info);
-	  bitmap_initialize (&bb_info->use, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->def, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->in, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->out, &bitmap_default_obstack);
+	  bitmap_initialize (&bb_info->use, &problem_data->lr_bitmaps);
+	  bitmap_initialize (&bb_info->def, &problem_data->lr_bitmaps);
+	  bitmap_initialize (&bb_info->in, &problem_data->lr_bitmaps);
+	  bitmap_initialize (&bb_info->out, &problem_data->lr_bitmaps);
 	}
     }
 
@@ -1073,24 +1087,17 @@ df_lr_finalize (bitmap all_blocks)
 static void
 df_lr_free (void)
 {
+  struct df_lr_problem_data *problem_data
+    = (struct df_lr_problem_data *) df_lr->problem_data;
   if (df_lr->block_info)
     {
-      unsigned int i;
-      for (i = 0; i < df_lr->block_info_size; i++)
-	{
-	  struct df_lr_bb_info *bb_info = df_lr_get_bb_info (i);
-	  if (bb_info)
-	    {
-	      bitmap_clear (&bb_info->use);
-	      bitmap_clear (&bb_info->def);
-	      bitmap_clear (&bb_info->in);
-	      bitmap_clear (&bb_info->out);
-	    }
-	}
       free_alloc_pool (df_lr->block_pool);
 
       df_lr->block_info_size = 0;
       free (df_lr->block_info);
+      bitmap_obstack_release (&problem_data->lr_bitmaps);
+      free (df_lr->problem_data);
+      df_lr->problem_data = NULL;
     }
 
   BITMAP_FREE (df_lr->out_of_date_transfer_functions);
@@ -1153,23 +1160,19 @@ df_lr_verify_solution_start (void)
   basic_block bb;
   struct df_lr_problem_data *problem_data;
   if (df_lr->solutions_dirty)
-    {
-      df_lr->problem_data = NULL;
-      return;
-    }
+    return;
 
   /* Set it true so that the solution is recomputed.  */
   df_lr->solutions_dirty = true;
 
-  problem_data = XNEW (struct df_lr_problem_data);
-  df_lr->problem_data = problem_data;
+  problem_data = (struct df_lr_problem_data *)df_lr->problem_data;
   problem_data->in = XNEWVEC (bitmap_head, last_basic_block);
   problem_data->out = XNEWVEC (bitmap_head, last_basic_block);
 
   FOR_ALL_BB (bb)
     {
-      bitmap_initialize (&problem_data->in[bb->index], &bitmap_default_obstack);
-      bitmap_initialize (&problem_data->out[bb->index], &bitmap_default_obstack);
+      bitmap_initialize (&problem_data->in[bb->index], &problem_data->lr_bitmaps);
+      bitmap_initialize (&problem_data->out[bb->index], &problem_data->lr_bitmaps);
       bitmap_copy (&problem_data->in[bb->index], DF_LR_IN (bb));
       bitmap_copy (&problem_data->out[bb->index], DF_LR_OUT (bb));
     }
@@ -1185,10 +1188,10 @@ df_lr_verify_solution_end (void)
   struct df_lr_problem_data *problem_data;
   basic_block bb;
 
-  if (df_lr->problem_data == NULL)
-    return;
-
   problem_data = (struct df_lr_problem_data *)df_lr->problem_data;
+
+  if (!problem_data->out)
+    return;
 
   if (df_lr->solutions_dirty)
     /* Do not check if the solution is still dirty.  See the comment
@@ -1215,8 +1218,8 @@ df_lr_verify_solution_end (void)
 
   free (problem_data->in);
   free (problem_data->out);
-  free (problem_data);
-  df_lr->problem_data = NULL;
+  problem_data->in = NULL;
+  problem_data->out = NULL;
 }
 
 

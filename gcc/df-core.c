@@ -1084,14 +1084,14 @@ df_analyze_problem (struct dataflow *dflow,
 {
   timevar_push (dflow->problem->tv_id);
 
+  /* (Re)Allocate the datastructures necessary to solve the problem.  */
+  if (dflow->problem->alloc_fun)
+    dflow->problem->alloc_fun (blocks_to_consider);
+
 #ifdef ENABLE_DF_CHECKING
   if (dflow->problem->verify_start_fun)
     dflow->problem->verify_start_fun ();
 #endif
-
-  /* (Re)Allocate the datastructures necessary to solve the problem.  */
-  if (dflow->problem->alloc_fun)
-    dflow->problem->alloc_fun (blocks_to_consider);
 
   /* Set up the problem and compute the local information.  */
   if (dflow->problem->local_compute_fun)
