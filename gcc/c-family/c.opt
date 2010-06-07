@@ -54,7 +54,7 @@ C ObjC C++ ObjC++ Joined Separate
 -D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
-C ObjC C++ ObjC++ Undocumented
+C ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
 C ObjC C++ ObjC++ Joined Separate
@@ -438,7 +438,7 @@ C++ ObjC++ Var(warn_sign_promo) Warning
 Warn when overload promotes from unsigned to signed
 
 Wstrict-null-sentinel
-C++ ObjC++ Warning
+C++ ObjC++ Warning Var(warn_strict_null_sentinel)
 Warn about uncasted NULL used as sentinel
 
 Wstrict-prototypes
@@ -526,7 +526,7 @@ C ObjC C++ ObjC++ Joined
 ; Documented in common.opt.  FIXME - what about -dI, -dD, -dN and -dD?
 
 faccess-control
-C++ ObjC++
+C++ ObjC++ Var(flag_access_control) Init(1)
 Enforce class member access control semantics
 
 fall-virtual
@@ -537,18 +537,18 @@ C++ ObjC++
 Change when template instances are emitted
 
 fasm
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword
 
 fbuiltin
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_no_builtin, 0)
 Recognize built-in functions
 
 fbuiltin-
 C ObjC C++ ObjC++ Joined
 
 fcheck-new
-C++ ObjC++
+C++ ObjC++ Var(flag_check_new)
 Check the return value of new
 
 fcond-mismatch
@@ -556,7 +556,7 @@ C ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types
 
 fconserve-space
-C++ ObjC++
+C++ ObjC++ Var(flag_conserve_space)
 Reduce the size of object files
 
 fconstant-string-class=
@@ -569,7 +569,7 @@ C++ ObjC++ Var(flag_deduce_init_list) Init(1)
 
 fdefault-inline
 C++ ObjC++
-Inline member functions by default
+Does nothing.  Preserved for backward compatibility.
 
 fdirectives-only
 C ObjC C++ ObjC++
@@ -580,10 +580,10 @@ C ObjC C++ ObjC++
 Permit '$' as an identifier character
 
 felide-constructors
-C++ ObjC++
+C++ ObjC++ Var(flag_elide_constructors) Init(1)
 
 fenforce-eh-specs
-C++ ObjC++
+C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)
 Generate code to check exception specifications
 
 fenum-int-equiv
@@ -606,7 +606,7 @@ fexternal-templates
 C++ ObjC++
 
 ffor-scope
-C++ ObjC++
+C++ ObjC++ Var(flag_new_for_scope) Init(1)
 Scope of for-init-statement variables is local to the loop
 
 ffreestanding
@@ -614,7 +614,7 @@ C ObjC C++ ObjC++
 Do not assume that standard C libraries and \"main\" exist
 
 fgnu-keywords
-C++ ObjC++
+C++ ObjC++ Var(flag_no_gnu_keywords, 0)
 Recognize GNU-defined keywords
 
 fgnu-runtime
@@ -643,15 +643,15 @@ C++ ObjC++
 Enable support for huge objects
 
 fimplement-inlines
-C++ ObjC++
+C++ ObjC++ Var(flag_implement_inlines) Init(1)
 Export functions even if they can be inlined
 
 fimplicit-inline-templates
-C++ ObjC++
+C++ ObjC++ Var(flag_implicit_inline_templates) Init(1)
 Emit implicit instantiations of inline templates
 
 fimplicit-templates
-C++ ObjC++
+C++ ObjC++ Var(flag_implicit_templates) Init(1)
 Emit implicit instantiations of templates
 
 ffriend-injection
@@ -662,11 +662,11 @@ flabels-ok
 C++ ObjC++
 
 flax-vector-conversions
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fms-extensions
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions
 
 fname-mangling-version-
@@ -680,11 +680,11 @@ ObjC ObjC++
 Generate code for NeXT (Apple Mac OS X) runtime environment
 
 fnil-receivers
-ObjC ObjC++
+ObjC ObjC++ Var(flag_nil_receivers) Init(1)
 Assume that receivers of Objective-C messages may be nil
 
 fnonansi-builtins
-C++ ObjC++
+C++ ObjC++ Var(flag_no_nonansi_builtin, 0)
 
 fnonnull-objects
 C++ ObjC++
@@ -728,7 +728,7 @@ Recognize C++ keywords like \"compl\" and \"xor\"
 
 foptional-diags
 C++ ObjC++
-Enable optional diagnostics
+Does nothing.  Preserved for backward compatibility.
 
 fpch-deps
 C ObjC C++ ObjC++
@@ -746,11 +746,11 @@ C ObjC C++ ObjC++
 Treat the input file as already preprocessed
 
 fpretty-templates
-C++ ObjC++
+C++ ObjC++ Var(flag_pretty_templates) Init(1)
 -fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments
 
 freplace-objc-classes
-ObjC ObjC++
+ObjC ObjC++ Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime
 
 frepo
@@ -758,34 +758,34 @@ C++ ObjC++
 Enable automatic template instantiation
 
 frtti
-C++ ObjC++ Optimization
+C++ ObjC++ Optimization Var(flag_rtti) Init(1)
 Generate run time type descriptor information
 
 fshort-double
-C ObjC C++ ObjC++ Optimization
+C ObjC C++ ObjC++ Optimization Var(flag_short_double)
 Use the same size for double as for float
 
 fshort-enums
-C ObjC C++ ObjC++ Optimization
+C ObjC C++ ObjC++ Optimization Var(flag_short_enums)
 Use the narrowest integer type possible for enumeration types
 
 fshort-wchar
-C ObjC C++ ObjC++ Optimization
+C ObjC C++ ObjC++ Optimization Var(flag_short_wchar)
 Force the underlying type for \"wchar_t\" to be \"unsigned short\"
 
 fsigned-bitfields
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_signed_bitfields) Init(1)
 When \"signed\" or \"unsigned\" is not given make the bitfield signed
 
 fsigned-char
-C ObjC C++ ObjC++ LTO
+C ObjC C++ ObjC++ LTO Var(flag_signed_char)
 Make \"char\" signed by default
 
 fsquangle
 C++ ObjC++
 
 fstats
-C++ ObjC++
+C++ ObjC++ Var(flag_detailed_statistics)
 Display statistics accumulated during compilation
 
 fstrict-enums
@@ -810,23 +810,23 @@ fthis-is-variable
 C++ ObjC++
 
 fthreadsafe-statics
-C++ ObjC++ Optimization
+C++ ObjC++ Optimization Var(flag_threadsafe_statics) Init(1)
 -fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics
 
 funsigned-bitfields
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_signed_bitfields, 0) VarExists
 When \"signed\" or \"unsigned\" is not given make the bitfield unsigned
 
 funsigned-char
-C ObjC C++ ObjC++ LTO
+C ObjC C++ ObjC++ LTO Var(flag_signed_char, 0) VarExists
 Make \"char\" unsigned by default
 
 fuse-cxa-atexit
-C++ ObjC++
+C++ ObjC++ Var(flag_use_cxa_atexit) Init(DEFAULT_USE_CXA_ATEXIT)
 Use __cxa_atexit to register destructors
 
 fuse-cxa-get-exception-ptr
-C++ ObjC++
+C++ ObjC++ Var(flag_use_cxa_get_exception_ptr) Init(2)
 Use __cxa_get_exception_ptr in exception handling
 
 fvisibility-inlines-hidden
@@ -846,7 +846,7 @@ C++ ObjC++
 Implement vtables using thunks
 
 fweak
-C++ ObjC++
+C++ ObjC++ Var(flag_weak) Init(1)
 Emit common-like symbols as weak symbols
 
 fwide-exec-charset=
@@ -854,7 +854,7 @@ C ObjC C++ ObjC++ Joined RejectNegative
 -fwide-exec-charset=<cset>	Convert all wide strings and character constants to character set <cset>
 
 fworking-directory
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_working_directory) Init(-1)
 Generate a #line directive pointing at the current working directory
 
 fxref
@@ -862,11 +862,11 @@ C++ ObjC++
 Emit cross referencing information
 
 fzero-link
-ObjC ObjC++
+ObjC ObjC++ Var(flag_zero_link)
 Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode
 
 gen-decls
-ObjC ObjC++
+ObjC ObjC++ Var(flag_gen_declaration)
 Dump declarations to a .decl file
 
 femit-struct-debug-baseonly
@@ -1046,7 +1046,7 @@ C ObjC C++ ObjC++
 -trigraphs	Support ISO C trigraphs
 
 undef
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Var(flag_undef)
 Do not predefine system-specific and GCC-specific macros
 
 v

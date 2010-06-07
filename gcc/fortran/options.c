@@ -902,7 +902,7 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fshort_enums:
-      flag_short_enums = 1;
+      /* Handled in language-independent code.  */
       break;
 
     case OPT_fconvert_little_endian:

@@ -208,10 +208,6 @@ tree current_function_decl;
    if none.  */
 const char * current_function_func_begin_label;
 
-/* Nonzero means to collect statistics which might be expensive
-   and to print them when we are done.  */
-int flag_detailed_statistics = 0;
-
 /* A random sequence of characters, unless overridden by user.  */
 static const char *flag_random_seed;
 
@@ -221,28 +217,6 @@ static const char *flag_random_seed;
 unsigned local_tick;
 
 /* -f flags.  */
-
-/* Nonzero means `char' should be signed.  */
-
-int flag_signed_char;
-
-/* Nonzero means give an enum type only as many bytes as it needs.  A value
-   of 2 means it has not yet been initialized.  */
-
-int flag_short_enums;
-
-/* Nonzero if structures and unions should be returned in memory.
-
-   This should only be defined if compatibility with another compiler or
-   with an ABI is needed, because it results in slower code.  */
-
-#ifndef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
-#endif
-
-/* Nonzero for -fpcc-struct-return: return values the same way PCC does.  */
-
-int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
@@ -280,10 +254,6 @@ enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
 
 enum ira_algorithm flag_ira_algorithm = IRA_ALGORITHM_CB;
 enum ira_region flag_ira_region = IRA_REGION_MIXED;
-
-/* Set the default value for -fira-verbose.  */
-
-unsigned int flag_ira_verbose = 5;
 
 /* Set the default for excess precision.  */
 

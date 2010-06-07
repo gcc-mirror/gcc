@@ -480,32 +480,6 @@ extern bool has_c_linkage (const_tree decl);
 
 /* Switches common to the C front ends.  */
 
-/* Nonzero if prepreprocessing only.  */
-
-extern int flag_preprocess_only;
-
-/* Zero means that faster, ...NonNil variants of objc_msgSend...
-   calls will be used in ObjC; passing nil receivers to such calls
-   will most likely result in crashes.  */
-extern int flag_nil_receivers;
-
-/* Nonzero means that we will allow new ObjC exception syntax (@throw,
-   @try, etc.) in source code.  */
-extern int flag_objc_exceptions;
-
-/* Nonzero means that we generate NeXT setjmp based exceptions.  */
-extern int flag_objc_sjlj_exceptions;
-
-/* Nonzero means that code generation will be altered to support
-   "zero-link" execution.  This currently affects ObjC only, but may
-   affect other languages in the future.  */
-extern int flag_zero_link;
-
-/* Nonzero means emit an '__OBJC, __image_info' for the current translation
-   unit.  It will inform the ObjC runtime that class definition(s) herein
-   contained are to replace one(s) previously loaded.  */
-extern int flag_replace_objc_classes;
-
 /* Nonzero means don't output line number information.  */
 
 extern char flag_no_line_commands;
@@ -537,48 +511,6 @@ extern const char *pch_file;
    user's namespace.  */
 
 extern int flag_iso;
-
-/* Nonzero if -undef was given.  It suppresses target built-in macros
-   and assertions.  */
-
-extern int flag_undef;
-
-/* Nonzero means don't recognize the non-ANSI builtin functions.  */
-
-extern int flag_no_builtin;
-
-/* Nonzero means don't recognize the non-ANSI builtin functions.
-   -ansi sets this.  */
-
-extern int flag_no_nonansi_builtin;
-
-/* Nonzero means give `double' the same size as `float'.  */
-
-extern int flag_short_double;
-
-/* Nonzero means give `wchar_t' the same size as `short'.  */
-
-extern int flag_short_wchar;
-
-/* Nonzero means allow implicit conversions between vectors with
-   differing numbers of subparts and/or differing element types.  */
-extern int flag_lax_vector_conversions;
-
-/* Nonzero means allow Microsoft extensions without warnings or errors.  */
-extern int flag_ms_extensions;
-
-/* Nonzero means don't recognize the keyword `asm'.  */
-
-extern int flag_no_asm;
-
-/* Nonzero means give string constants the type `const char *', as mandated
-   by the standard.  */
-
-extern int flag_const_strings;
-
-/* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
-
-extern int flag_signed_bitfields;
 
 /* Warn about #pragma directives that are not recognized.  */
 
@@ -617,11 +549,6 @@ extern int flag_hosted;
 /* ObjC language option variables.  */
 
 
-/* Open and close the file for outputting class declarations, if
-   requested (ObjC).  */
-
-extern int flag_gen_declaration;
-
 /* Tells the compiler that this is a special run.  Do not perform any
    compiling, instead we are to test some platform dependent features
    and output a C header file with appropriate definitions.  */
@@ -636,64 +563,10 @@ extern const char *constant_string_class_name;
 /* C++ language option variables.  */
 
 
-/* Nonzero means don't recognize any extension keywords.  */
-
-extern int flag_no_gnu_keywords;
-
-/* Nonzero means do emit exported implementations of functions even if
-   they can be inlined.  */
-
-extern int flag_implement_inlines;
-
-/* Nonzero means that implicit instantiations will be emitted if needed.  */
-
-extern int flag_implicit_templates;
-
-/* Nonzero means that implicit instantiations of inline templates will be
-   emitted if needed, even if instantiations of non-inline templates
-   aren't.  */
-
-extern int flag_implicit_inline_templates;
-
 /* Nonzero means generate separate instantiation control files and
    juggle them at link time.  */
 
 extern int flag_use_repository;
-
-/* Nonzero if we want to issue diagnostics that the standard says are not
-   required.  */
-
-extern int flag_optional_diags;
-
-/* Nonzero means we should attempt to elide constructors when possible.  */
-
-extern int flag_elide_constructors;
-
-/* Nonzero means that member functions defined in class scope are
-   inline by default.  */
-
-extern int flag_default_inline;
-
-/* Controls whether compiler generates 'type descriptor' that give
-   run-time type information.  */
-
-extern int flag_rtti;
-
-/* Nonzero if we want to conserve space in the .o files.  We do this
-   by putting uninitialized data and runtime initialized data into
-   .common instead of .data at the expense of not flagging multiple
-   definitions.  */
-
-extern int flag_conserve_space;
-
-/* Nonzero if we want to obey access control semantics.  */
-
-extern int flag_access_control;
-
-/* Nonzero if we want to check the return value of new and avoid calling
-   constructors if it is a null pointer.  */
-
-extern int flag_check_new;
 
 /* The supported C++ dialects.  */
 
@@ -707,61 +580,6 @@ enum cxx_dialect {
 
 /* The C++ dialect being used. C++98 is the default.  */
 extern enum cxx_dialect cxx_dialect;
-
-/* Nonzero if we want the new ISO rules for pushing a new scope for `for'
-   initialization variables.
-   0: Old rules, set by -fno-for-scope.
-   2: New ISO rules, set by -ffor-scope.
-   1: Try to implement new ISO rules, but with backup compatibility
-   (and warnings).  This is the default, for now.  */
-
-extern int flag_new_for_scope;
-
-/* Nonzero if we want to emit defined symbols with common-like linkage as
-   weak symbols where possible, in order to conform to C++ semantics.
-   Otherwise, emit them as local symbols.  */
-
-extern int flag_weak;
-
-/* 0 means we want the preprocessor to not emit line directives for
-   the current working directory.  1 means we want it to do it.  -1
-   means we should decide depending on whether debugging information
-   is being emitted or not.  */
-
-extern int flag_working_directory;
-
-/* Nonzero to use __cxa_atexit, rather than atexit, to register
-   destructors for local statics and global objects.  */
-
-extern int flag_use_cxa_atexit;
-
-/* Nonzero to use __cxa_get_exception_ptr in the C++ exception-handling
-   logic.  */
-
-extern int flag_use_cxa_get_exception_ptr;
-
-/* Nonzero means to implement standard semantics for exception
-   specifications, calling unexpected if an exception is thrown that
-   doesn't match the specification.  Zero means to treat them as
-   assertions and optimize accordingly, but not check them.  */
-
-extern int flag_enforce_eh_specs;
-
-/* Nonzero (the default) means to generate thread-safe code for
-   initializing local statics.  */
-
-extern int flag_threadsafe_statics;
-
-/* Nonzero if we want to pretty-print template specializations as the
-   template signature followed by the arguments.  */
-
-extern int flag_pretty_templates;
-
-/* Warn about using __null (as NULL in C++) as sentinel.  For code compiled
-   with GCC this doesn't matter as __null is guaranteed to have the right
-   size.  */
-
-extern int warn_strict_null_sentinel;
 
 /* Maximum template instantiation depth.  This limit is rather
    arbitrary, but it exists to limit the time it takes to notice

@@ -1169,6 +1169,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (DImode)
 #endif
 
+/* Nonzero if structures and unions should be returned in memory.
+
+   This should only be defined if compatibility with another compiler or
+   with an ABI is needed, because it results in slower code.  */
+
+#ifndef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 1
+#endif
 
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions

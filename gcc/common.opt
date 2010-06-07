@@ -757,7 +757,7 @@ Common Report Var(flag_ira_share_spill_slots) Init(1)
 Share stack slots for spilled pseudo-registers.
 
 fira-verbose=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(flag_ira_verbose) Init(5)
 -fira-verbose=<number>	Control IRA's level of diagnostic messages.
 
 fivopts
@@ -893,7 +893,7 @@ Common RejectNegative Joined UInteger Optimization
 -fpack-struct=<number>	Set initial maximum structure member alignment
 
 fpcc-struct-return
-Common Report Var(flag_pcc_struct_return,1) VarExists
+Common Report Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN)
 Return small aggregates in memory, not registers
 
 fpeel-loops

@@ -150,19 +150,6 @@ extern int flag_print_asm_name;
 
 /* Now the symbols that are set with `-f' switches.  */
 
-/* Nonzero means `char' should be signed.  */
-
-extern int flag_signed_char;
-
-/* Nonzero means give an enum type only as many bytes as it needs.  A value
-   of 2 means it has not yet been initialized.  */
-
-extern int flag_short_enums;
-
-/* Nonzero for -fpcc-struct-return: return values the same way PCC does.  */
-
-extern int flag_pcc_struct_return;
-
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
    2 means C99-like requirements for complex multiply and divide.  */
@@ -234,8 +221,6 @@ enum ira_region
 
 extern enum ira_region flag_ira_region;
 
-extern unsigned int flag_ira_verbose;
-
 /* The options for excess precision.  */
 enum excess_precision
 {
@@ -290,14 +275,6 @@ enum graph_dump_types
   vcg
 };
 extern enum graph_dump_types graph_dump_format;
-
-/* Nonzero means to collect statistics which might be expensive
-   and to print them when we are done.  */
-extern int flag_detailed_statistics;
-
-/* Nonzero means that we defer emitting functions until they are actually
-   used.  */
-extern int flag_remove_unreachable_functions;
 
 /* Nonzero if we should track variables.  */
 extern int flag_var_tracking;
