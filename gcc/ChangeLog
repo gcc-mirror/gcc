@@ -1,3 +1,20 @@
+2010-06-07  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_edge_cannot_lead_to_return): Also check
+	if caller is noreturn.
+	* ipa-reference.c (analyze_function): Use ipa_ref_cannot_lead_to_return
+	* ipa-ref.h (ipa_ref_cannot_lead_to_return): New function.
+	* ipa-ref.c (ipa_ref_cannot_lead_to_return): New function.
+	* ipa-pure-const.c (check_decl): Add IPA parameter.
+	(state_from_flags): New function.
+	(better_state, worse_state): New functions.
+	(check_call): When in IPA mode, do not care about callees.
+	(check_load, check_store): Update.
+	(check_ipa_load, check_ipa_store): New.
+	(check_stmt): When in IPA mode, use IPA checkers.
+	(analyze_function): Use state_from_flags.
+	(propagate): Check indirect edges and references.
+
 2010-06-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR rtl-optimization/44404

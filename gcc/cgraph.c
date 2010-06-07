@@ -2606,6 +2606,8 @@ cgraph_node_cannot_return (struct cgraph_node *node)
 bool
 cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
 {
+  if (cgraph_node_cannot_return (e->caller))
+    return true;
   if (e->indirect_unknown_callee)
     {
       int flags = e->indirect_info->ecf_flags;
