@@ -476,6 +476,36 @@ default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Default vectorizer cost model values.  */
+
+int
+default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
+{
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+      case scalar_load:
+      case scalar_store:
+      case vector_stmt:
+      case vector_load:
+      case vector_store:
+      case vec_to_scalar:
+      case scalar_to_vec:
+      case cond_branch_not_taken:
+      case vec_perm:
+        return 1;
+
+      case unaligned_load:
+        return 2;
+
+      case cond_branch_taken:
+        return 3;
+
+      default:
+        gcc_unreachable ();
+    }
+}
+
 /* Reciprocal.  */
 
 tree

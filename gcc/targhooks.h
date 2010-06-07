@@ -77,6 +77,8 @@ extern tree default_builtin_vectorized_function (tree, tree, tree);
 
 extern tree default_builtin_vectorized_conversion (unsigned int, tree, tree);
 
+extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt);
+
 extern tree default_builtin_reciprocal (unsigned int, bool, bool);
 
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);

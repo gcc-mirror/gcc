@@ -110,6 +110,23 @@ struct asm_int_op
   const char *ti;
 };
 
+/* Types of costs for vectorizer cost model.  */
+enum vect_cost_for_stmt
+{
+  scalar_stmt,
+  scalar_load,
+  scalar_store,
+  vector_stmt,
+  vector_load,
+  unaligned_load,
+  vector_store,
+  vec_to_scalar,
+  scalar_to_vec,
+  cond_branch_not_taken,
+  cond_branch_taken,
+  vec_perm
+};
+
 /* The target structure.  This holds all the backend hooks.  */
 
 struct gcc_target
@@ -505,9 +522,9 @@ struct gcc_target
     tree (* builtin_mul_widen_even) (tree);
     tree (* builtin_mul_widen_odd) (tree);
 
-    /* Returns the cost to be added to the overheads involved with
-       executing the vectorized version of a loop.  */
-    int (*builtin_vectorization_cost) (bool);
+    /* Cost of different vector/scalar statements in vectorization cost
+       model.  */ 
+    int (* builtin_vectorization_cost) (enum vect_cost_for_stmt);
 
     /* Return true if vector alignment is reachable (by peeling N
        iterations) for the given type.  */

@@ -645,7 +645,9 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       if (permutation)
         {
           VEC_safe_push (slp_tree, heap, *loads, *node);
-          *inside_cost += TARG_VEC_PERMUTE_COST * group_size;
+          *inside_cost 
+            += targetm.vectorize.builtin_vectorization_cost (vec_perm) 
+               * group_size;
         }
 
       return true;

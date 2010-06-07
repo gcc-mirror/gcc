@@ -5742,9 +5742,8 @@ preserved (e.g.@: used only by a reduction computation). Otherwise, the
 @code{widen_mult_hi/lo} idioms will be used.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST (bool @var{runtime_test})
-Returns the cost to be added to the overhead involved with executing 
-the vectorized version of a loop.
+@deftypefn {Target Hook} int TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST (enum vect_cost_for_stmt @var{type_of_cost})
+Returns cost of different scalar or vector statements for vectorization cost model.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})

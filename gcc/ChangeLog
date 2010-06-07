@@ -1,3 +1,32 @@
+2010-06-07  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Update
+	documentation.
+	* targhooks.c (default_builtin_vectorization_cost): New function.
+	* targhooks.h (default_builtin_vectorization_cost): Declare.
+	* target.h (enum vect_cost_for_stmt): Define.
+	(builtin_vectorization_cost): Change argument and comment.
+	* tree-vectorizer.h: Remove cost model macros.
+	* tree-vect-loop.c: Include target.h.
+	(vect_get_cost): New function.
+	(vect_estimate_min_profitable_iters): Replace cost model macros with
+	calls to vect_get_cost.
+	(vect_model_reduction_cost, vect_model_induction_cost): Likewise.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Add
+	default implementation.
+	* tree-vect-stmts.c (cost_for_stmt): Replace cost model macros with
+	calls to target hook builtin_vectorization_cost.
+	(vect_model_simple_cost, vect_model_store_cost, vect_model_load_cost):
+	Likewise.
+	* Makefile.in (tree-vect-loop.o): Add dependency on TARGET_H.
+	* config/spu/spu.c (spu_builtin_vectorization_cost): Replace with new
+	implementation to return costs.
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Likewise.
+	* config/spu/spu.h: Remove vectorizer cost model macros.
+	* config/i386/i386.h: Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree): Replace cost model macro with
+	a call to target hook builtin_vectorization_cost.
+
 2010-06-06  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/44319

@@ -29296,27 +29296,51 @@ static const struct attribute_spec ix86_attribute_table[] =
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int
-ix86_builtin_vectorization_cost (bool runtime_test)
+ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
 {
-  /* If the branch of the runtime test is taken - i.e. - the vectorized
-     version is skipped - this incurs a misprediction cost (because the
-     vectorized version is expected to be the fall-through).  So we subtract
-     the latency of a mispredicted branch from the costs that are incured
-     when the vectorized version is executed.
-
-     TODO: The values in individual target tables have to be tuned or new
-     fields may be needed. For eg. on K8, the default branch path is the
-     not-taken path. If the taken path is predicted correctly, the minimum
-     penalty of going down the taken-path is 1 cycle. If the taken-path is
-     not predicted correctly, then the minimum penalty is 10 cycles.  */
-
-  if (runtime_test)
+  switch (type_of_cost)
     {
-      return (-(ix86_cost->cond_taken_branch_cost));
+      case scalar_stmt:
+        return ix86_cost->scalar_stmt_cost;
+
+      case scalar_load:
+        return ix86_cost->scalar_load_cost;
+
+      case scalar_store:
+        return ix86_cost->scalar_store_cost;
+
+      case vector_stmt:
+        return ix86_cost->vec_stmt_cost;
+
+      case vector_load:
+        return ix86_cost->vec_align_load_cost;
+
+      case vector_store:
+        return ix86_cost->vec_store_cost;
+
+      case vec_to_scalar:
+        return ix86_cost->vec_to_scalar_cost;
+
+      case scalar_to_vec:
+        return ix86_cost->scalar_to_vec_cost;
+
+      case unaligned_load:
+        return ix86_cost->vec_unalign_load_cost;
+
+      case cond_branch_taken:
+        return ix86_cost->cond_taken_branch_cost;
+
+      case cond_branch_not_taken:
+        return ix86_cost->cond_not_taken_branch_cost;
+
+      case vec_perm:
+        return 1;
+
+      default:
+        gcc_unreachable ();
     }
-  else
-    return 0;
 }
+
 
 /* Implement targetm.vectorize.builtin_vec_perm.  */
 
