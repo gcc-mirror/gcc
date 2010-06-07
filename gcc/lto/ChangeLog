@@ -1,3 +1,8 @@
+2010-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-lang.c (flag_no_builtin, flag_no_nonansi_builtin): Remove.
+	(lto_handle_option): Don't set flag_signed_char here.
+
 2010-06-04  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41584

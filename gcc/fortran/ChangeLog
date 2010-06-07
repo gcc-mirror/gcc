@@ -1,3 +1,8 @@
+2010-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (fshort-enums): Define using Var and VarExists.
+	* options.c (gfc_handle_option): Don't set flag_short_enums here.
+
 2010-06-05  Paul Thomas  <pault@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 

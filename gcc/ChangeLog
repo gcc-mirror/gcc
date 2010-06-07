@@ -1,3 +1,25 @@
+2010-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (fira-verbose): Use Var.
+	(fpcc-struct-return): Use Init instead of VarExists.
+	* defaults.h (DEFAULT_PCC_STRUCT_RETURN): Move definition from
+	toplev.c.
+	* flags.h (flag_signed_char, flag_short_enums,
+	flag_pcc_struct_return, flag_ira_verbose,
+	flag_detailed_statistics, flag_remove_unreachable_functions):
+	Remove.
+	* toplev.c (flag_detailed_statistics, flag_signed_char,
+	flag_short_enums, flag_pcc_struct_return, flag_ira_verbose):
+	Remove.
+	(DEFAULT_PCC_STRUCT_RETURN): Move definition to defaults.h.
+	* toplev.h (flag_crossjumping, flag_if_conversion,
+	flag_if_conversion2, flag_keep_static_consts, flag_peel_loops,
+	flag_rerun_cse_after_loop, flag_thread_jumps, flag_tracer,
+	flag_unroll_loops, flag_unroll_all_loops, flag_unswitch_loops,
+	flag_cprop_registers, time_report, flag_ira_loop_pressure,
+	flag_ira_coalesce, flag_ira_move_spills,
+	flag_ira_share_save_slots, flag_ira_share_spill_slots): Remove.
+
 2010-06-07  Jan Hubicka  <jh@suse.cz>
 
 	* df-problems.c (df_lr_problem_data): Add lr_bitmaps.
