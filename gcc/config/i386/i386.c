@@ -2891,6 +2891,8 @@ override_options (bool main_args_p)
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)
     {
+      if (flag_zee == 2)
+        flag_zee = 1;
       /* Mach-O doesn't support omitting the frame pointer for now.  */
       if (flag_omit_frame_pointer == 2)
 	flag_omit_frame_pointer = (TARGET_MACHO ? 0 : 1);
@@ -2901,6 +2903,8 @@ override_options (bool main_args_p)
     }
   else
     {
+      if (flag_zee == 2)
+        flag_zee = 0;
       if (flag_omit_frame_pointer == 2)
 	flag_omit_frame_pointer = 0;
       if (flag_asynchronous_unwind_tables == 2)
@@ -4390,10 +4394,6 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
     flag_schedule_insns = 0;
 #endif
 
-  /* For -O2 and beyond, turn on -fzee for x86_64 target. */
-  if (level > 1 && TARGET_64BIT)
-    flag_zee = 1;
-
   if (TARGET_MACHO)
     /* The Darwin libraries never set errno, so we might as well
        avoid calling them when that's the only reason we would.  */
@@ -4405,6 +4405,11 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
      specifying them, we will set the defaults in override_options.  */
   if (optimize >= 1)
     flag_omit_frame_pointer = 2;
+
+  /* For -O2 and beyond, turn on -fzee for x86_64 target. */
+  if (level > 1)
+    flag_zee = 2;
+
   flag_pcc_struct_return = 2;
   flag_asynchronous_unwind_tables = 2;
   flag_vect_cost_model = 1;

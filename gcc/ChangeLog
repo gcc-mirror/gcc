@@ -1,3 +1,11 @@
+2010-06-06  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/44319
+	* config/i386/i386.c (override_options): Turn zee pass on for level 2
+	and above and defer till target is known.
+	(optimization_options): Turn on zee pass if TARGET_64BIT is set and
+	turn off otherwise.
+	
 2010-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* df-core.c (df_set_blocks): Use bitmap_head instead of bitmap.
