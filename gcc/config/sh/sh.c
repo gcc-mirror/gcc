@@ -7636,13 +7636,15 @@ static tree
 sh_build_builtin_va_list (void)
 {
   tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
-  tree record;
+  tree record, type_decl;
 
   if (TARGET_SH5 || (! TARGET_SH2E && ! TARGET_SH4)
       || TARGET_HITACHI || sh_cfun_attr_renesas_p ())
     return ptr_type_node;
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  type_decl = build_decl (BUILTINS_LOCATION,
+			  TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
   f_next_o = build_decl (BUILTINS_LOCATION,
 			 FIELD_DECL, get_identifier ("__va_next_o"),
@@ -7668,6 +7670,8 @@ sh_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_next_fp_limit) = record;
   DECL_FIELD_CONTEXT (f_next_stack) = record;
 
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_next_o;
   TREE_CHAIN (f_next_o) = f_next_o_limit;
   TREE_CHAIN (f_next_o_limit) = f_next_fp;

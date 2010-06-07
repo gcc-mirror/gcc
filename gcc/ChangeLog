@@ -1,3 +1,8 @@
+2010-06-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_build_builtin_va_list): Set tree type
+	name of RECORD.
+
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other
