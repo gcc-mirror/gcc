@@ -5508,6 +5508,8 @@ initialize_local_var (tree decl, tree init)
 
   /* Compute and store the initial value.  */
   already_used = TREE_USED (decl) || TREE_USED (type);
+  if (TREE_USED (type))
+    DECL_READ_P (decl) = 1;
 
   /* Generate a cleanup, if necessary.  */
   cleanup = cxx_maybe_build_cleanup (decl);
