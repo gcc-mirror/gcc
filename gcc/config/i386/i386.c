@@ -12856,7 +12856,7 @@ ix86_output_addr_vec_elt (FILE *file, int value)
   gcc_assert (!TARGET_64BIT);
 #endif
 
-  fprintf (file, "%s" LPREFIX "%d\n", directive, value);
+  fprintf (file, "%s%s%d\n", directive, LPREFIX, value);
 }
 
 void
@@ -12872,21 +12872,21 @@ ix86_output_addr_diff_elt (FILE *file, int value, int rel)
 #endif
   /* We can't use @GOTOFF for text labels on VxWorks; see gotoff_operand.  */
   if (TARGET_64BIT || TARGET_VXWORKS_RTP)
-    fprintf (file, "%s" LPREFIX "%d-" LPREFIX "%d\n",
-	     directive, value, rel);
+    fprintf (file, "%s%s%d-%s%d\n",
+	     directive, LPREFIX, value, LPREFIX, rel);
   else if (HAVE_AS_GOTOFF_IN_DATA)
-    fprintf (file, ASM_LONG LPREFIX "%d@GOTOFF\n", value);
+    fprintf (file, ASM_LONG "%s%d@GOTOFF\n", LPREFIX, value);
 #if TARGET_MACHO
   else if (TARGET_MACHO)
     {
-      fprintf (file, ASM_LONG LPREFIX "%d-", value);
+      fprintf (file, ASM_LONG "%s%d-", LPREFIX, value);
       machopic_output_function_base_name (file);
       putc ('\n', file);
     }
 #endif
   else
-    asm_fprintf (file, ASM_LONG "%U%s+[.-" LPREFIX "%d]\n",
-		 GOT_SYMBOL_NAME, value);
+    asm_fprintf (file, ASM_LONG "%U%s+[.-%s%d]\n",
+		 GOT_SYMBOL_NAME, LPREFIX, value);
 }
 
 /* Generate either "mov $0, reg" or "xor reg, reg", as appropriate
@@ -26353,7 +26353,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleaq\t" LPREFIX "P%d(%%rip),%%r11\n", labelno);
+      fprintf (file, "\tleaq\t%sP%d(%%rip),%%r11\n", LPREFIX, labelno);
 #endif
 
       if (DEFAULT_ABI == SYSV_ABI && flag_pic)
@@ -26364,16 +26364,16 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   else if (flag_pic)
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tleal\t" LPREFIX "P%d@GOTOFF(%%ebx),%%" PROFILE_COUNT_REGISTER "\n",
-	       labelno);
+      fprintf (file, "\tleal\t%sP%d@GOTOFF(%%ebx),%%" PROFILE_COUNT_REGISTER "\n",
+	       LPREFIX, labelno);
 #endif
       fputs ("\tcall\t*" MCOUNT_NAME "@GOT(%ebx)\n", file);
     }
   else
     {
 #ifndef NO_PROFILE_COUNTERS
-      fprintf (file, "\tmovl\t$" LPREFIX "P%d,%%" PROFILE_COUNT_REGISTER "\n",
-	       labelno);
+      fprintf (file, "\tmovl\t$%sP%d,%%" PROFILE_COUNT_REGISTER "\n",
+	       LPREFIX, labelno);
 #endif
       fputs ("\tcall\t" MCOUNT_NAME "\n", file);
     }

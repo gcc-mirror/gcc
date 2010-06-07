@@ -42,6 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 #if ! defined (USE_MINGW64_LEADING_UNDERSCORES)
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX (TARGET_64BIT ? "" : "_")
+
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX (TARGET_64BIT ? "." : "")
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)  \
+  sprintf ((BUF), "*%s%s%ld", LOCAL_LABEL_PREFIX, \
+	   (PREFIX), (long)(NUMBER))
+
+#undef LPREFIX
+#define LPREFIX (TARGET_64BIT ? ".L" : "L")
+
 #endif
 
 #undef DBX_REGISTER_NUMBER
