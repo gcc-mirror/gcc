@@ -1,6 +1,15 @@
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/ext/new_allocator/deallocate_global.cc: Require
+	__cxa_atexit.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Likewise.
+
+2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/32499
