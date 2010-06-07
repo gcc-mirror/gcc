@@ -1,3 +1,9 @@
+2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/fp-int-convert-float128-timode.c: Skip on
+	i?86-*-solaris2*.
+	* gcc.dg/torture/fp-int-convert-float128.c: Likewise.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
