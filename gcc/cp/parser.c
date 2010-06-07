@@ -18003,6 +18003,14 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	  if (dependent_p)
 	    pushed_scope = push_scope (parser->scope);
 
+	  /* If the PARSER->SCOPE is a template specialization, it
+	     may be instantiated during name lookup.  In that case,
+	     errors may be issued.  Even if we rollback the current
+	     tentative parse, those errors are valid.  */
+	  decl = lookup_qualified_name (parser->scope, name,
+					tag_type != none_type,
+					/*complain=*/true);
+
 	  /* 3.4.3.1: In a lookup in which the constructor is an acceptable
 	     lookup result and the nested-name-specifier nominates a class C:
 	       * if the name specified after the nested-name-specifier, when
@@ -18018,17 +18026,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     shall be used only in the declarator-id of a declaration that
 	     names a constructor or in a using-declaration.  */
 	  if (tag_type == none_type
-	      && CLASS_TYPE_P (parser->scope)
-	      && constructor_name_p (name, parser->scope))
-	    name = ctor_identifier;
-
-	  /* If the PARSER->SCOPE is a template specialization, it
-	     may be instantiated during name lookup.  In that case,
-	     errors may be issued.  Even if we rollback the current
-	     tentative parse, those errors are valid.  */
-	  decl = lookup_qualified_name (parser->scope, name,
-					tag_type != none_type,
-					/*complain=*/true);
+	      && DECL_SELF_REFERENCE_P (decl)
+	      && same_type_p (DECL_CONTEXT (decl), parser->scope))
+	    decl = lookup_qualified_name (parser->scope, ctor_identifier,
+					  tag_type != none_type,
+					  /*complain=*/true);
 
 	  /* If we have a single function from a using decl, pull it out.  */
 	  if (TREE_CODE (decl) == OVERLOAD

@@ -1,3 +1,8 @@
+2010-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44401
+	* g++.dg/tc1/dr147.C: Test case of member with same name as class.
+
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_gas): New proc.
