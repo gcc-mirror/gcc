@@ -1,5 +1,9 @@
 2010-06-07  Tobias Burnus  <burnus@net-b.de>
 
+	* options.c (gfc_handle_option): Fix -fno-recursive.
+
+2010-06-07  Tobias Burnus  <burnus@net-b.de>
+
 	* gfc-internals.texi (copyrights-gfortran): Fix copyright year format.
 	* gfortran.texi (copyrights-gfortran): Ditto.
 
