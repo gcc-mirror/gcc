@@ -3575,6 +3575,29 @@ EOF
     ;;
 esac
 
+# In binutils 2.21, GNU ld gained support for new emulations fully
+# supporting the Solaris 2 ABI.  Detect their presence in the linker used.
+AC_CACHE_CHECK(linker *_sol2 emulation support,
+  gcc_cv_ld_sol2_emulation,
+  [gcc_cv_ld_sol2_emulation=no
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a \
+       "$gcc_cv_gld_minor_version" -ge 21 -o \
+       "$gcc_cv_gld_major_version" -gt 2 \
+       && test $in_tree_ld_is_elf = yes; then
+      gcc_cv_ld_sol2_emulation=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    if $gcc_cv_ld -V 2>/dev/null | sed -e '1,/Supported emulations/d;q' | \
+       grep _sol2 > /dev/null; then
+      gcc_cv_ld_sol2_emulation=yes
+    fi
+  fi])
+if test x"$gcc_cv_ld_sol2_emulation" = xyes; then
+  AC_DEFINE(HAVE_LD_SOL2_EMULATION, 1,
+  [Define if your linker supports the *_sol2 emulations.])
+fi
+
 AC_CACHE_CHECK(linker --sysroot support,
   gcc_cv_ld_sysroot,
   [gcc_cv_ld_sysroot=no

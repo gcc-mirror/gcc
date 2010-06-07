@@ -1,3 +1,21 @@
+2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-06-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_sol2_emulation): Test for GNU ld *_sol2
+	linker emulations.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/i386/sol2-10.h [TARGET_GNU_LD] (I386_EMULATION): Define.
+	(X86_64_EMULATION): Define.
+	(TARGET_LD_EMULATION): Use them.
+
+	* config/sparc/sol2-gld-bi.h (SPARC32_EMULATION): Define.
+	(SPARC64_EMULATION): Define.
+	(LINK_ARCH_SPEC): Use them.
+
 2010-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*addqi_4): Check for incdec_operand in QImode.
