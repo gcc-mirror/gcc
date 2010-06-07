@@ -1,3 +1,12 @@
+2010-06-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR objc++/23716
+	* objc-act.c (build_module_initializer_routine): Make the argument
+	to objc_start_function NULL_TREE when compiling ObjC++.
+
 2010-04-14  Release Manager
 
 	* GCC 4.5.0 released.
