@@ -206,8 +206,12 @@ enum dwarf_tag
 
     /* SGI/MIPS Extensions.  */
     DW_TAG_MIPS_loop = 0x4081,
+
     /* HP extensions.  See: ftp://ftp.hp.com/pub/lang/tools/WDB/wdb-4.0.tar.gz .  */
     DW_TAG_HP_array_descriptor = 0x4090,
+    DW_TAG_HP_Bliss_field      = 0x4091,
+    DW_TAG_HP_Bliss_field_set  = 0x4092,
+
     /* GNU extensions.  */
     DW_TAG_format_label = 0x4101,	/* For FORTRAN 77 and Fortran 90.  */
     DW_TAG_function_template = 0x4102,	/* For C++.  */
@@ -390,6 +394,8 @@ enum dwarf_attribute
     /* HP extensions.  */
     DW_AT_HP_block_index         = 0x2000,
     DW_AT_HP_unmodifiable        = 0x2001, /* Same as DW_AT_MIPS_fde.  */
+    DW_AT_HP_prologue            = 0x2005, /* Same as DW_AT_MIPS_loop_unroll.  */
+    DW_AT_HP_epilogue            = 0x2008, /* Same as DW_AT_MIPS_stride.  */
     DW_AT_HP_actuals_stmt_list   = 0x2010,
     DW_AT_HP_proc_per_section    = 0x2011,
     DW_AT_HP_raw_data_ptr        = 0x2012,
@@ -402,6 +408,13 @@ enum dwarf_attribute
     DW_AT_HP_all_variables_modifiable = 0x2019,
     DW_AT_HP_linkage_name        = 0x201a,
     DW_AT_HP_prof_flags          = 0x201b,  /* In comp unit of procs_info for -g.  */
+    DW_AT_HP_unit_name           = 0x201f,
+    DW_AT_HP_unit_size           = 0x2020,
+    DW_AT_HP_widened_byte_size   = 0x2021,
+    DW_AT_HP_definition_points   = 0x2022,
+    DW_AT_HP_default_location    = 0x2023,
+    DW_AT_HP_is_result_param     = 0x2029,
+
     /* GNU extensions.  */
     DW_AT_sf_names   = 0x2101,
     DW_AT_src_info   = 0x2102,
@@ -646,13 +659,22 @@ enum dwarf_type
     DW_ATE_hi_user = 0xff,
 
     /* HP extensions.  */
-    DW_ATE_HP_float80            = 0x80, /* Floating-point (80 bit).  */
-    DW_ATE_HP_complex_float80    = 0x81, /* Complex floating-point (80 bit).  */
-    DW_ATE_HP_float128           = 0x82, /* Floating-point (128 bit).  */
-    DW_ATE_HP_complex_float128   = 0x83, /* Complex floating-point (128 bit).  */
-    DW_ATE_HP_floathpintel       = 0x84, /* Floating-point (82 bit IA64).  */
-    DW_ATE_HP_imaginary_float80  = 0x85,
-    DW_ATE_HP_imaginary_float128 = 0x86
+    DW_ATE_HP_float80             = 0x80, /* Floating-point (80 bit).  */
+    DW_ATE_HP_complex_float80     = 0x81, /* Complex floating-point (80 bit).  */
+    DW_ATE_HP_float128            = 0x82, /* Floating-point (128 bit).  */
+    DW_ATE_HP_complex_float128    = 0x83, /* Complex fp (128 bit).  */
+    DW_ATE_HP_floathpintel        = 0x84, /* Floating-point (82 bit IA64).  */
+    DW_ATE_HP_imaginary_float80   = 0x85,
+    DW_ATE_HP_imaginary_float128  = 0x86,
+    DW_ATE_HP_VAX_float           = 0x88, /* F or G floating.  */
+    DW_ATE_HP_VAX_float_d         = 0x89, /* D floating.  */
+    DW_ATE_HP_packed_decimal      = 0x8a, /* Cobol.  */
+    DW_ATE_HP_zoned_decimal       = 0x8b, /* Cobol.  */
+    DW_ATE_HP_edited              = 0x8c, /* Cobol.  */
+    DW_ATE_HP_signed_fixed        = 0x8d, /* Cobol.  */
+    DW_ATE_HP_unsigned_fixed      = 0x8e, /* Cobol.  */
+    DW_ATE_HP_VAX_complex_float   = 0x8f, /* F or G floating complex.  */
+    DW_ATE_HP_VAX_complex_float_d = 0x90  /* D floating complex.  */
   };
 
 /* Decimal sign encodings.  */
@@ -785,6 +807,7 @@ enum dwarf_line_number_x_ops
     DW_LNE_HP_negate_function_exit     = 0x18,
     DW_LNE_HP_negate_front_end_logical = 0x19,
     DW_LNE_HP_define_proc              = 0x20,
+    DW_LNE_HP_source_file_correlation  = 0x80,
 
     DW_LNE_lo_user = 0x80,
     DW_LNE_hi_user = 0xff
@@ -875,7 +898,13 @@ enum dwarf_source_language
     /* MIPS.  */
     DW_LANG_Mips_Assembler = 0x8001,
     /* UPC.  */
-    DW_LANG_Upc = 0x8765
+    DW_LANG_Upc = 0x8765,
+    /* HP extensions.  */
+    DW_LANG_HP_Bliss     = 0x8003,
+    DW_LANG_HP_Basic91   = 0x8004,
+    DW_LANG_HP_Pascal91  = 0x8005,
+    DW_LANG_HP_IMacro    = 0x8006,
+    DW_LANG_HP_Assembler = 0x8007
   };
 
 /* Names and codes for macro information.  */

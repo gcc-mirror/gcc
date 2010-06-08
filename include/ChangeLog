@@ -1,3 +1,21 @@
+2010-06-08  Tristan Gingold  <gingold@adacore.com>
+
+	* dwarf2.h (enum dwarf_tag): Add DW_TAG_HP_Bliss_field and
+	DW_TAG_HP_Bliss_field_set.
+	(enum dwarf_attribute): Add DW_AT_HP_prologue, DW_AT_HP_epilogue,
+	DW_AT_HP_unit_name, DW_AT_HP_unit_size, DW_AT_HP_widened_byte_size,
+	DW_AT_HP_definition_points, DW_AT_HP_default_location and
+	DW_AT_HP_is_result_param.
+	(enum dwarf_type): Add DW_ATE_HP_VAX_float, DW_ATE_HP_VAX_float_d,
+	DW_ATE_HP_packed_decimal, DW_ATE_HP_zoned_decimal, DW_ATE_HP_edited,
+	DW_ATE_HP_signed_fixed, DW_ATE_HP_unsigned_fixed,
+	DW_ATE_HP_VAX_complex_float and DW_ATE_HP_VAX_complex_float_d.
+	(enum dwarf_line_number_x_ops): Add
+	DW_LNE_HP_source_file_correlation.
+	(enum dwarf_source_language): Add DW_LANG_HP_Bliss,
+	DW_LANG_HP_Basic91, DW_LANG_HP_Pascal91, DW_LANG_HP_IMacro,
+	DW_LANG_HP_Assembler.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* splay-tree.h: Update copyright years.
