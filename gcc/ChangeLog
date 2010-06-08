@@ -1,3 +1,9 @@
+2010-06-08  Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	* fold-const.c (fold_comparison): Remove redundant parenthesis.
+	* tree-inline.c (expand_call_inline): Pass translated return value of
+	cgraph_inline_failed_string to diagnostic function.
+
 2010-06-08  Andrew Pinski <pinskia@gmail.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 

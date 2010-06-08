@@ -8651,9 +8651,9 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  && (TREE_CODE (lhs) != INTEGER_CST
 	      || !TREE_OVERFLOW (lhs)))
 	{
-	  fold_overflow_warning (("assuming signed overflow does not occur "
+	  fold_overflow_warning ("assuming signed overflow does not occur "
 				  "when changing X +- C1 cmp C2 to "
-				  "X cmp C1 +- C2"),
+				  "X cmp C1 +- C2",
 				 WARN_STRICT_OVERFLOW_COMPARISON);
 	  return fold_build2_loc (loc, code, type, variable, lhs);
 	}
