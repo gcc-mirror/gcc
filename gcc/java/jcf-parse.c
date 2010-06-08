@@ -1906,8 +1906,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       if (magic == 0xcafebabe)
 	{
 	  CLASS_FILE_P (node) = 1;
-	  current_jcf = GGC_NEW (JCF);
-	  JCF_ZERO (current_jcf);
+	  current_jcf = ggc_alloc_cleared_JCF ();
 	  current_jcf->read_state = finput;
 	  current_jcf->filbuf = jcf_filbuf_from_stdio;
 	  jcf_parse (current_jcf);
@@ -1924,8 +1923,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
       else if (magic == (JCF_u4)ZIPMAGIC)
 	{
-	  main_jcf = GGC_NEW (JCF);
-	  JCF_ZERO (main_jcf);
+	  main_jcf = ggc_alloc_cleared_JCF ();
 	  main_jcf->read_state = finput;
 	  main_jcf->filbuf = jcf_filbuf_from_stdio;
 	  linemap_add (line_table, LC_ENTER, false, filename, 0);
@@ -2181,8 +2179,7 @@ process_zip_dir (FILE *finput)
 
       class_name = compute_class_name (zdir);
       file_name  = XNEWVEC (char, zdir->filename_length+1);
-      jcf = GGC_NEW (JCF);
-      JCF_ZERO (jcf);
+      jcf = ggc_alloc_cleared_JCF ();
 
       strncpy (file_name, class_name_in_zip_dir, zdir->filename_length);
       file_name [zdir->filename_length] = '\0';

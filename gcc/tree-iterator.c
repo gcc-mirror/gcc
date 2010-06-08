@@ -1,5 +1,5 @@
 /* Iterator routines for manipulating GENERIC and GIMPLE tree statements.
-   Copyright (C) 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -130,7 +130,7 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
     }
   else
     {
-      head = GGC_NEW (struct tree_statement_list_node);
+      head = ggc_alloc_tree_statement_list_node ();
       head->prev = NULL;
       head->next = NULL;
       head->stmt = t;
@@ -206,7 +206,7 @@ tsi_link_after (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
     }
   else
     {
-      head = GGC_NEW (struct tree_statement_list_node);
+      head = ggc_alloc_tree_statement_list_node ();
       head->prev = NULL;
       head->next = NULL;
       head->stmt = t;

@@ -1,3 +1,12 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* splay-tree.h: Update copyright years.
+	(splay_tree_s): Document fields.
+	(splay_tree_new_typed_alloc): New.
+
+	* hashtab.h: Update copyright years.
+	(htab_create_typed_alloc): New.
+
 2010-06-01  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_tag): Add LDPT_OUTPUT_NAME.

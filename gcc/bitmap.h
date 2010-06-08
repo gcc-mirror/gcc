@@ -77,7 +77,7 @@ typedef struct GTY(()) bitmap_head_def {
   bitmap_element *current;	/* Last element looked at.  */
   unsigned int indx;		/* Index of last element looked at.  */
   bitmap_obstack *obstack;	/* Obstack to allocate elements from.
-				   If NULL, then use ggc_alloc.  */
+				   If NULL, then use GGC allocation.  */
 #ifdef GATHER_STATISTICS
   struct bitmap_descriptor GTY((skip)) *desc;
 #endif

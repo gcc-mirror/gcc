@@ -86,7 +86,7 @@ c_parse_init (void)
   if (!c_dialect_objc ())
     mask |= D_OBJC | D_CXX_OBJC;
 
-  ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
+  ridpointers = ggc_alloc_cleared_vec_tree ((int) RID_MAX);
   for (i = 0; i < num_c_common_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table
@@ -8882,7 +8882,7 @@ c_parse_file (void)
   if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
     c_parser_pragma_pch_preprocess (&tparser);
 
-  the_parser = GGC_NEW (c_parser);
+  the_parser = ggc_alloc_c_parser ();
   *the_parser = tparser;
 
   /* Initialize EH, if we've been told to do so.  */

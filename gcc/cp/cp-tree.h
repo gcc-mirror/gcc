@@ -1333,7 +1333,7 @@ struct GTY(()) lang_type_ptrmem {
   tree record;
 };
 
-struct GTY(()) lang_type {
+struct GTY((variable_size)) lang_type {
   union lang_type_u
   {
     struct lang_type_header GTY((skip (""))) h;
@@ -1884,7 +1884,7 @@ struct GTY(()) lang_decl_parm {
    union rather than a struct containing a union as its only field, but
    tree.h declares it as a struct.  */
 
-struct GTY(()) lang_decl {
+struct GTY((variable_size)) lang_decl {
   union GTY((desc ("%h.base.selector"))) lang_decl_u {
     struct lang_decl_base GTY ((default)) base;
     struct lang_decl_min GTY((tag ("0"))) min;
@@ -3271,8 +3271,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   do {									\
     if (TYPE_LANG_SPECIFIC (NODE) == NULL)				\
       {									\
-	TYPE_LANG_SPECIFIC (NODE) = GGC_CNEWVAR				\
-	 (struct lang_type, sizeof (struct lang_type_ptrmem));		\
+	TYPE_LANG_SPECIFIC (NODE) = ggc_alloc_cleared_lang_type		\
+	 (sizeof (struct lang_type_ptrmem));				\
 	TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.h.is_lang_type_class = 0;	\
       }									\
     TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.record = (VALUE);		\

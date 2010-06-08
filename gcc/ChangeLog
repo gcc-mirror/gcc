@@ -1,3 +1,401 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* doc/tm.texi (Per-Function Data): Do not reference ggc_alloc.
+
+	* doc/gty.texi (GTY Options): Document typed GC allocation and
+	variable_size GTY option.
+
+	* ggc-internal.h: New.
+
+	* ggc.h: Update copyright year.
+	(digit_string): Move to stringpool.c.
+	(ggc_mark_stringpool, ggc_purge_stringpool, ggc_mark_roots)
+	(gt_pch_save_stringpool, gt_pch_fixup_stringpool)
+	(gt_pach_restore_stringpool, gt_pch_p_S, gt_pch_note_object)
+	(init_ggc_pch, ggc_pch_count_object, ggc_pch_total_size)
+	(ggc_pch_this_base, ggc_pch_alloc_object, ggc_pch_prepare_write)
+	(ggc_pch_write_object, ggc_pch_finish, ggc_pch_read)
+	(ggc_force_collect, ggc_get_size, ggc_statistics)
+	(ggc_print_common_statistics): Move to ggc-internal.h.
+	(digit_vector, new_ggc_zone, destroy_ggc_zone, ggc_alloc_stat)
+	(ggc_alloc, ggc_alloc_cleared, ggc_realloc, ggc_calloc, GGC_NEW)
+	(GGC_CNEW, GGC_NEWVEC, GGC_CNEWVEC, GGC_NEWVAR, ggc_alloc_rtvec)
+	(ggc_alloc_tree, gt_pch_save, ggc_min_expand_heuristic)
+	(ggc_min_heapsize_heuristic, ggc_alloc_zone)
+	(ggc_alloc_zone_pass_stat): Remove.
+	(ggc_internal_alloc_stat, ggc_internal_alloc)
+	(ggc_internal_cleared_alloc_stat): New.
+	(GGC_RESIZEVEC, GGC_RESIZEVAR): Redefine.
+	(ggc_internal_vec_alloc_stat)
+	(ggc_internal_cleared_vec_alloc_stat)
+	(ggc_internal_vec_alloc_stat, ggc_internal_cleared_vec_alloc)
+	(ggc_alloc_atomic_stat, ggc_alloc_atomic)
+	(ggc_alloc_cleared_atomic, ggc_cleared_alloc_htab_ignore_args)
+	(ggc_cleared_alloc_ptr_array_two_args): New.
+	(htab_create_ggc, splay_tree_new_ggc): Redefine.
+	(ggc_splay_alloc): Change the type of the first argument to
+	enum gt_types_enum.
+	(ggc_alloc_string): Make macro.
+	(ggc_alloc_string_stat): New.
+	(ggc_strdup): Redefine.
+	(rtl_zone, tree_zone, tree_id_zone): Declare unconditionally.
+	(ggc_alloc_rtvec_sized): New.
+	(ggc_alloc_zone_stat): Rename to ggc_internal_alloc_zone_stat.
+	(ggc_internal_alloc_zone_pass_stat, ggc_internal_alloc_zone_stat)
+	(ggc_internal_cleared_alloc_zone_stat)
+	(ggc_internal_zone_alloc_stat)
+	(ggc_internal_zone_cleared_alloc_stat)
+	(ggc_internal_zone_vec_alloc_stat)
+	(ggc_alloc_zone_rtx_def_stat)
+	(ggc_alloc_zone_tree_node_stat)
+	(ggc_alloc_zone_cleared_tree_node_stat)
+	(ggc_alloc_cleared_gimple_statement_d_stat): New.
+
+	* ggc-common.c: Include ggc-internal.h.
+	(ggc_internal_cleared_alloc_stat): Rename from
+	ggc_alloc_cleared_stat.
+	(ggc_realloc_stat): Use ggc_internal_alloc_stat.
+	(ggc_calloc): Remove.
+	(ggc_cleared_alloc_htab_ignore_args): New.
+	(ggc_cleared_alloc_ptr_array_two_args): New.
+	(ggc_splay_alloc): Add obj_type parameter.
+	(init_ggc_heuristics): Formatting fixes.
+
+	* ggc-none.c: Update copyright year.
+	(ggc_alloc_stat): Rename to ggc_alloc_stat.
+	(ggc_alloc_cleared_stat): Rename to
+	ggc_internal_cleared_alloc_stat.
+	(struct alloc_zone, rtl_zone, tree_zone, tree_id_zone): New.
+
+	* ggc-page.c: Update copyright year.  Include ggc-internal.h.
+	Remove references to ggc_alloc in comments.
+	(ggc_alloc_typed_stat): Call ggc_internal_alloc_stat.
+	(ggc_alloc_stat): Rename to ggc_internal_alloc_stat.
+	(new_ggc_zone, destroy_ggc_zone): Remove.
+	(struct alloc_zone, rtl_zone, tree_zone, tree_id_zone): New.
+
+	* ggc-zone.c: Include ggc-internal.h.  Remove references to
+	ggc_alloc in comments.
+	(ggc_alloc_zone_stat): ggc_internal_alloc_zone_stat.
+	(ggc_internal_alloc_zone_pass_stat): New.
+	(ggc_internal_cleared_alloc_zone_stat): New.
+	(ggc_alloc_typed_stat): Use ggc_internal_alloc_zone_pass_stat.
+	(ggc_alloc_stat): Rename ggc_internal_alloc_stat.
+	(new_ggc_zone, destroy_ggc_zone): Remove.
+
+	* stringpool.c: Update copyright year.  Include ggc-internal.h
+	(digit_vector): Make static.
+	(digit_string): Moved from ggc.h.
+	(stringpool_ggc_alloc): Use ggc_alloc_atomic.
+	(ggc_alloc_string): Rename to ggc_alloc_string_stat.
+
+	* Makefile.in (GGC_INTERNAL_H): New.
+	(ggc_common.o, ggc-page.o, ggc-zone.o, stringpool.o): Add
+	$(GGC_INTERNAL_H) to dependencies.
+
+	* gentype.c: Update copyright year.
+	(walk_type): Accept variable_size GTY option.
+	(USED_BY_TYPED_GC_P): New macro.
+	(write_enum_defn): Use USED_BY_TYPED_GC_P.  Do not output
+	whitespace at the end of strings.
+	(get_type_specifier, variable_size_p): New functions.
+	(alloc_quantity, alloc_zone): New enums.
+	(write_typed_alloc_def): New function.
+	(write_typed_struct_alloc_def): Likewise.
+	(write_typed_typed_typedef_alloc_def): Likewise.
+	(write_typed_alloc_defns): Likewise.
+	(output_typename, write_splay_tree_allocator_def): Likewise.
+	(write_splay_tree_allocators): Likewise.
+	(main): Call write_typed_alloc_defns and
+	write_splay_tree_allocators.
+
+	* lto-streamer.h (lto_file_decl_data_ptr): New.
+
+	* passes.c (order): Define using cgraph_node_ptr.
+
+	* strinpool.c (struct string_pool_data): Declare nested_ptr using
+	ht_identifier_ptr.
+
+	* gimple.h (union gimple_statement_d): Likewise.
+
+	* rtl.h (struct rtx_def): Likewise.
+	(struct rtvec_def): Likewise.
+
+	* tree.h (union tree_node): Likewise.
+
+	* tree-ssa-operands.h (struct ssa_operand_memory_d): Likewise.
+
+	* cfgloop.c (record_loop_exits): Use htab_create_ggc.
+
+	* tree-scalar-evolution.c (scev_initialize): Likewise.
+
+	* alias.c (record_alias_subset): Update splay_tree_new_ggc call.
+
+	* dwarf2asm.c (dw2_force_const_mem): Likewise.
+
+	* omp-low.c (lower_omp_critical): Likewise.
+
+	* bitmap.h (struct bitmap_head_def): Update comment to not
+	reference ggc_alloc.
+
+	* config/pa/pa.c (get_deferred_label): Use GGC_RESIZEVEC.
+
+	* ira.c (fix_reg_equiv_init): Use GGC_RESIZEVEC.
+
+	* ipa-prop.c (duplicate_ggc_array): Rename to
+	duplicate_ipa_jump_func_array.  Use typed GC allocation.
+	(ipa_edge_duplication_hook): Call duplicate_ipa_jump_func_array.
+
+	* gimple.c (gimple_alloc_stat): Use
+	ggc_alloc_cleared_gimple_statement_d_stat.
+
+	* varasm.c (create_block_symbol): Use ggc_alloc_zone_rtx_def.
+
+	* tree.c (make_node_stat): Use
+	ggc_alloc_zone_cleared_tree_node_stat.
+	(make_tree_vec_stat): Likewise.
+	(build_vl_exp_stat): Likewise.
+	(copy_node_stat): Use ggc_alloc_zone_tree_node_stat.
+	(make_tree_binfo_stat): Likewise.
+	(tree_cons_stat): Likewise.
+
+	* rtl.c (rtx_alloc_stat): Use ggc_alloc_zone_rtx_def_stat.
+	(shallow_copy_rtx_stat): Likewise.
+	(make_node_stat): Likewise.
+
+	* lto-symtab.c: Fix comment.
+
+	* tree-cfg.c (create_bb): Update comment to not reference
+	ggc_alloc_cleared.
+	* tree-ssa-structalias.c (struct heapvar_for_stmt): Fix param_is
+	value.
+
+	* varpool.c (varpool_node): Use typed GC allocation.
+	(varpool_extra_name_alias): Likewise.
+
+	* varasm.c (emutls_decl): Likewise.
+	(get_unnamed_section): Likewise.
+	(get_noswitch_section): Likewise.
+	(get_section): Likewise.
+	(get_block_for_section): Likewise.
+	(build_constant_desc): Likewise.
+	(create_constant_pool): Likewise.
+	(force_const_mem): Likewise.
+
+	* tree.c (build_vl_exp_stat): Likewise.
+	(build_real): Likewise.
+	(build_string): Likewise.
+	(decl_debug_expr_insert): Likewise.
+	(decl_value_expr_insert): Likewise.
+	(type_hash_add): Likewise.
+	(build_omp_clause): Likewise.
+
+	* tree-ssanames.c (duplicate_ssa_name_ptr_info): Likewise.
+
+	* tree-ssa.c (init_tree_ssa): Likewise.
+
+	* tree-ssa-structalias.c (heapvar_insert): Likewise.
+
+	* tree-ssa-operands.c (ssa_operand_alloc): Likewise.
+
+	* tree-ssa-loop-niter.c (record_estimate): Likewise.
+
+	* tree-ssa-alias.c (get_ptr_info): Likewise.
+
+	* tree-scalar-evolution.c (new_scev_info_str): Likewise.
+
+	* tree-phinodes.c (allocate_phi_node): Likewise.
+
+	* tree-iterator.c (tsi_link_before): Likewise.
+	(tsi_link_after): Likewise.
+
+	* tree-eh.c (add_stmt_to_eh_lp_fn): Likewise.
+
+	* tree-dfa.c (create_var_ann): Likewise.
+
+	* tree-cfg.c (create_bb): Likewise.
+
+	* toplev.c (alloc_for_identifier_to_locale): Likewise.
+	(general_init): Likewise.
+
+	* stringpool.c (stringpool_ggc_alloc): Likewise.
+	(gt_pch_save_stringpool): Likewise.
+
+	* sese.c (if_region_set_false_region): Likewise.
+
+	* passes.c (do_per_function_toporder): Likewise.
+
+	* optabs.c (set_optab_libfunc): Likewise.
+	(set_conv_libfunc): Likewise.
+
+	* lto-symtab.c (lto_symtab_register_decl): Likewise.
+
+	* lto-streamer-in.c (lto_input_eh_catch_list): Likewise.
+	(input_eh_region): Likewise.
+	(input_eh_lp): Likewise.
+	(make_new_block): Likewise.
+	(unpack_ts_real_cst_value_fields): Likewise.
+
+	* lto-section-in.c (lto_new_in_decl_state): Likewise.
+
+	* lto-cgraph.c (input_node_opt_summary): Likewise.
+
+	* loop-init.c (loop_optimizer_init): Likewise.
+
+	* lambda.h (lambda_vector_new): Likewise.
+
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Likewise.
+
+	* ira.c (update_equiv_regs): Likewise.
+
+	* ipa.c (cgraph_node_set_new): Likewise.
+	(cgraph_node_set_add): Likewise.
+	(varpool_node_set_new): Likewise.
+	(varpool_node_set_add): Likewise.
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Likewise.
+	(duplicate_ipa_jump_func_array): Likewise.
+	(ipa_read_node_info): Likewise.
+
+	* ipa-cp.c (ipcp_create_replace_map): Likewise.
+
+	* integrate.c (get_hard_reg_initial_val): Likewise.
+
+	* gimple.c (gimple_alloc_stat): Likewise.
+	(gimple_build_omp_for): Likewise.
+	(gimple_seq_alloc): Likewise.
+	(gimple_copy): Likewise.
+
+	* gimple-iterator.c (gsi_insert_before_without_update): Likewise.
+	(gsi_insert_after_without_update): Likewise.
+
+	* function.c (add_frame_space): Likewise.
+	(insert_temp_slot_address): Likewise.
+	(assign_stack_temp_for_type): Likewise.
+	(allocate_struct_function): Likewise.
+	(types_used_by_var_decl_insert): Likewise.
+
+	* except.c (init_eh_for_function): Likewise.
+	(gen_eh_region): Likewise.
+	(gen_eh_region_catch): Likewise.
+	(gen_eh_landing_pad): Likewise.
+	(add_call_site): Likewise.
+
+	* emit-rtl.c (get_mem_attrs): Likewise.
+	(get_reg_attrs): Likewise.
+	(start_sequence): Likewise.
+	(init_emit): Likewise.
+
+	* dwarf2out.c (new_cfi): Likewise.
+	(queue_reg_save): Likewise.
+	(dwarf2out_frame_init): Likewise.
+	(new_loc_descr): Likewise.
+	(find_AT_string): Likewise.
+	(new_die): Likewise.
+	(add_var_loc_to_decl): Likewise.
+	(clone_die): Likewise.
+	(clone_as_declaration): Likewise.
+	(break_out_comdat_types): Likewise.
+	(new_loc_list): Likewise.
+	(loc_descriptor): Likewise.
+	(add_loc_descr_to_each): Likewise.
+	(add_const_value_attribute): Likewise.
+	(tree_add_const_value_attribute): Likewise.
+	(add_comp_dir_attribute): Likewise.
+	(add_name_and_src_coords_attributes): Likewise.
+	(lookup_filename): Likewise.
+	(store_vcall_insn): Likewise.
+	(dwarf2out_init): Likewise.
+
+	* dbxout.c (dbxout_init): Likewise.
+
+	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
+
+	* config/sparc/sparc.c (sparc_init_machine_status): Likewise.
+
+	* config/score/score7.c (score7_output_external): Likewise.
+
+	* config/score/score3.c (score3_output_external): Likewise.
+
+	* config/s390/s390.c (s390_init_machine_status): Likewise.
+
+	* config/rs6000/rs6000.c (builtin_function_type): Likewise.
+	(rs6000_init_machine_status): Likewise.
+	(output_toc): Likewise.
+
+	* config/pa/pa.c (pa_init_machine_status): Likewise.
+	(get_deferred_plabel): Likewise.
+
+	* config/moxie/moxie.c (moxie_init_machine_status): Likewise.
+
+	* config/mmix/mmix.c (mmix_init_machine_status): Likewise.
+
+	* config/mips/mips.c (mflip_mips16_use_mips16_p): Likewise.
+
+	* config/mep/mep.c (mep_init_machine_status): Likewise.
+	(mep_note_pragma_flag): Likewise.
+
+	* config/m32c/m32c.c (m32c_init_machine_status): Likewise.
+
+	* config/iq2000/iq2000.c (iq2000_init_machine_status): Likewise.
+
+	* config/ia64/ia64.c (ia64_init_machine_status): Likewise.
+
+	* config/i386/winnt.c (i386_pe_record_external_function): Likewise.
+	(i386_pe_maybe_record_exported_symbol): Likewise.
+
+	* config/i386/i386.c (get_dllimport_decl): Likewise.
+	(ix86_init_machine_status): Likewise.
+	(assign_386_stack_local): Likewise.
+
+	* config/frv/frv.c (frv_init_machine_status): Likewise.
+
+	* config/darwin.c (machopic_indirection_name): Likewise.
+
+	* config/cris/cris.c (cris_init_machine_status): Likewise.
+
+	* config/bfin/bfin.c (bfin_init_machine_status): Likewise.
+
+	* config/avr/avr.c (avr_init_machine_status): Likewise.
+
+	* config/arm/arm.c (arm_init_machine_status): Likewise.
+
+	* config/alpha/alpha.c (alpha_init_machine_status): Likewise.
+	(alpha_need_linkage): Likewise.
+	(alpha_use_linkage): Likewise.
+
+	* cgraph.c (cgraph_allocate_node): Likewise.
+	(cgraph_create_edge_1): Likewise.
+	(cgraph_create_indirect_edge): Likewise.
+	(cgraph_add_asm_node): Likewise.
+
+	* cfgrtl.c (init_rtl_bb_info): Likewise.
+
+	* cfgloop.c (alloc_loop): Likewise.
+	(rescan_loop_exit): Likewise.
+
+	* cfg.c (init_flow): Likewise.
+	(alloc_block): Likewise.
+	(unchecked_make_edge): Likewise.
+
+	* c-parser.c (c_parse_init): Likewise.
+	(c_parse_file): Likewise.
+
+	* c-decl.c (bind): Likewise.
+	(record_inline_static): Likewise.
+	(push_scope): Likewise.
+	(make_label): Likewise.
+	(lookup_label_for_goto): Likewise.
+	(finish_struct): Likewise.
+	(finish_enum): Likewise.
+	(c_push_function_context): Likewise.
+
+	* bitmap.c (bitmap_element_allocate): Likewise.
+	(bitmap_gc_alloc_stat): Likewise.
+
+	* alias.c (record_alias_subset): Likewise.
+	(init_alias_analysis): Likewise.
+
 2010-06-08  Shujing Zhao  <pearly.zhao@oracle.com>
 	
 	* fold-const.c (fold_comparison): Remove redundant parenthesis.

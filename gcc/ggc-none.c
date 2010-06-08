@@ -1,5 +1,5 @@
 /* Null garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005, 2007
+   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005, 2007, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -40,13 +40,13 @@ ggc_alloc_typed_stat (enum gt_types_enum ARG_UNUSED (gte), size_t size
 }
 
 void *
-ggc_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
 {
   return xmalloc (size);
 }
 
 void *
-ggc_alloc_cleared_stat (size_t size MEM_STAT_DECL)
+ggc_internal_cleared_alloc_stat (size_t size MEM_STAT_DECL)
 {
   return xcalloc (size, 1);
 }
@@ -62,3 +62,12 @@ ggc_free (void *p)
 {
   free (p);
 }
+
+struct alloc_zone
+{
+  int dummy;
+};
+
+struct alloc_zone rtl_zone;
+struct alloc_zone tree_zone;
+struct alloc_zone tree_id_zone;

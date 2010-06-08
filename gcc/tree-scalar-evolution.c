@@ -314,7 +314,7 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 {
   struct scev_info_str *res;
 
-  res = GGC_NEW (struct scev_info_str);
+  res = ggc_alloc_scev_info_str ();
   res->var = var;
   res->chrec = chrec_not_analyzed_yet;
   res->instantiated_below = instantiated_below;
@@ -3017,12 +3017,9 @@ scev_initialize (void)
   loop_iterator li;
   struct loop *loop;
 
-  scalar_evolution_info = htab_create_alloc (100,
-					     hash_scev_info,
-					     eq_scev_info,
-					     del_scev_info,
-					     ggc_calloc,
-					     ggc_free);
+
+  scalar_evolution_info = htab_create_ggc (100, hash_scev_info, eq_scev_info,
+					   del_scev_info);
 
   initialize_scalar_evolutions_analyzer ();
 

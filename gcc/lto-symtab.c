@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
-#include "ggc.h"	/* lambda.h needs this */
+#include "ggc.h"
 #include "lambda.h"	/* gcd */
 #include "hashtab.h"
 #include "plugin-api.h"
@@ -152,7 +152,7 @@ lto_symtab_register_decl (tree decl,
   if (TREE_CODE (decl) == FUNCTION_DECL)
     gcc_assert (!DECL_ABSTRACT (decl));
 
-  new_entry = GGC_CNEW (struct lto_symtab_entry_def);
+  new_entry = ggc_alloc_cleared_lto_symtab_entry_def ();
   new_entry->id = DECL_ASSEMBLER_NAME (decl);
   new_entry->decl = decl;
   new_entry->resolution = resolution;

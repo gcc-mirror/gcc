@@ -763,13 +763,12 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
   DECL_CONTEXT (fndecl) = this_class;
 
   DECL_LANG_SPECIFIC (fndecl)
-    = GGC_CNEW (struct lang_decl);
+    = ggc_alloc_cleared_lang_decl(sizeof (struct lang_decl));
   DECL_LANG_SPECIFIC (fndecl)->desc = LANG_DECL_FUNC;
 
   /* Initialize the static initializer test table.  */
-  
-  DECL_FUNCTION_INIT_TEST_TABLE (fndecl) = 
-    java_treetreehash_create (10, 1);
+
+  DECL_FUNCTION_INIT_TEST_TABLE (fndecl) = java_treetreehash_create (10);
 
   /* Initialize the initialized (static) class table. */
   if (access_flags & ACC_STATIC)
@@ -3144,7 +3143,7 @@ java_treetreehash_new (htab_t ht, tree t)
   e = htab_find_slot_with_hash (ht, t, hv, INSERT);
   if (*e == NULL)
     {
-      tthe = (struct treetreehash_entry *) (*ht->alloc_f) (1, sizeof (*tthe));
+      tthe = ggc_alloc_cleared_treetreehash_entry ();
       tthe->key = t;
       *e = tthe;
     }
@@ -3154,14 +3153,10 @@ java_treetreehash_new (htab_t ht, tree t)
 }
 
 htab_t
-java_treetreehash_create (size_t size, int gc)
+java_treetreehash_create (size_t size)
 {
-  if (gc)
-    return htab_create_ggc (size, java_treetreehash_hash,
-			    java_treetreehash_compare, NULL);
-  else
-    return htab_create_alloc (size, java_treetreehash_hash,
-			      java_treetreehash_compare, free, xcalloc, free);
+  return htab_create_ggc (size, java_treetreehash_hash,
+			  java_treetreehash_compare, NULL);
 }
 
 /* Break down qualified IDENTIFIER into package and class-name components.

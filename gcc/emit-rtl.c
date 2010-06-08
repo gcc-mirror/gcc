@@ -341,7 +341,7 @@ get_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
   slot = htab_find_slot (mem_attrs_htab, &attrs, INSERT);
   if (*slot == 0)
     {
-      *slot = ggc_alloc (sizeof (mem_attrs));
+      *slot = ggc_alloc_mem_attrs ();
       memcpy (*slot, &attrs, sizeof (mem_attrs));
     }
 
@@ -390,7 +390,7 @@ get_reg_attrs (tree decl, int offset)
   slot = htab_find_slot (reg_attrs_htab, &attrs, INSERT);
   if (*slot == 0)
     {
-      *slot = ggc_alloc (sizeof (reg_attrs));
+      *slot = ggc_alloc_reg_attrs ();
       memcpy (*slot, &attrs, sizeof (reg_attrs));
     }
 
@@ -5240,7 +5240,7 @@ start_sequence (void)
       free_sequence_stack = tem->next;
     }
   else
-    tem = GGC_NEW (struct sequence_stack);
+    tem = ggc_alloc_sequence_stack ();
 
   tem->next = seq_stack;
   tem->first = get_insns ();
@@ -5555,8 +5555,7 @@ init_emit (void)
   crtl->emit.regno_pointer_align
     = XCNEWVEC (unsigned char, crtl->emit.regno_pointer_align_length);
 
-  regno_reg_rtx
-    = GGC_NEWVEC (rtx, crtl->emit.regno_pointer_align_length);
+  regno_reg_rtx = ggc_alloc_vec_rtx (crtl->emit.regno_pointer_align_length);
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,

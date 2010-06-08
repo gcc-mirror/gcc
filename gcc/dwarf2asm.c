@@ -816,7 +816,9 @@ dw2_force_const_mem (rtx x, bool is_public)
   if (! indirect_pool)
     /* We use strcmp, rather than just comparing pointers, so that the
        sort order will not depend on the host system.  */
-    indirect_pool = splay_tree_new_ggc (splay_tree_compare_strings);
+    indirect_pool = splay_tree_new_ggc (splay_tree_compare_strings,
+					ggc_alloc_splay_tree_str_tree_node_splay_tree_s,
+					ggc_alloc_splay_tree_str_tree_node_splay_tree_node_s);
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
 

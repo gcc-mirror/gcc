@@ -1,3 +1,38 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* jcf-reader.c (jcf_parse_constant_pool): Use typed GC allocation.
+
+	* jcf-parse.c (java_parse_file): Likewise.
+	(process_zip_dir): Likewise.
+
+	* java-tree.h (MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC): Likewise.
+	(MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Likewise.
+
+	* expr.c (add_type_assertion): Likewise.
+
+	* decl.c (make_binding_level): Likewise.
+	(java_dup_lang_specific_decl): Likewise.
+
+	* constants.c (set_constant_entry): Likewise.
+	(cpool_for_class): Likewise.
+
+	* class.c (add_method_1): Likewise.
+	(java_treetreehash_new): Likewise.
+
+	* java-tree.h (struct lang_type): Add variable_size GTY option.
+	(struct lang_decl): Likewise.
+
+	* jch.h (struct cpool_entry): Likewise.
+
+	* java-tree.h (java_treetreehash_create): Remove parameter ggc.
+
+	* except.c (prepare_eh_table_type): Update
+	java_treetreehash_create call.
+
+	* class.c (add_method_1): Update java_treetreehash_create call.
+	(java_treetreehash_create): Remove parameter gc.  Use
+	htab_create_ggc.
+
 2010-06-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* jvspec.c (lang_specific_driver): Use GCC-specific formats in

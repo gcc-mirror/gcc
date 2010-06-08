@@ -3458,7 +3458,7 @@ extern tree build_target_option_node (void);
    for various types of node.  */
 
 union GTY ((ptr_alias (union lang_tree_node),
-		      desc ("tree_node_structure (&%h)"))) tree_node {
+	    desc ("tree_node_structure (&%h)"), variable_size)) tree_node {
   struct tree_base GTY ((tag ("TS_BASE"))) base;
   struct tree_common GTY ((tag ("TS_COMMON"))) common;
   struct tree_int_cst GTY ((tag ("TS_INT_CST"))) int_cst;

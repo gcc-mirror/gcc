@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "hashtab.h"
 #include "ggc.h"
+#include "ggc-internal.h"
 #include "toplev.h"
 #include "params.h"
 #include "hosthooks.h"
@@ -193,9 +194,9 @@ ggc_mark_roots (void)
 
 /* Allocate a block of memory, then clear it.  */
 void *
-ggc_alloc_cleared_stat (size_t size MEM_STAT_DECL)
+ggc_internal_cleared_alloc_stat (size_t size MEM_STAT_DECL)
 {
-  void *buf = ggc_alloc_stat (size PASS_MEM_STAT);
+  void *buf = ggc_internal_alloc_stat (size PASS_MEM_STAT);
   memset (buf, 0, size);
   return buf;
 }
@@ -208,7 +209,7 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
   size_t old_size;
 
   if (x == NULL)
-    return ggc_alloc_stat (size PASS_MEM_STAT);
+    return ggc_internal_alloc_stat (size PASS_MEM_STAT);
 
   old_size = ggc_get_size (x);
 
@@ -230,7 +231,7 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
       return x;
     }
 
-  r = ggc_alloc_stat (size PASS_MEM_STAT);
+  r = ggc_internal_alloc_stat (size PASS_MEM_STAT);
 
   /* Since ggc_get_size returns the size of the pool, not the size of the
      individually allocated object, we'd access parts of the old object
@@ -246,19 +247,30 @@ ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
   return r;
 }
 
-/* Like ggc_alloc_cleared, but performs a multiplication.  */
 void *
-ggc_calloc (size_t s1, size_t s2)
+ggc_cleared_alloc_htab_ignore_args (size_t c ATTRIBUTE_UNUSED,
+				    size_t n ATTRIBUTE_UNUSED)
 {
-  return ggc_alloc_cleared (s1 * s2);
+  gcc_assert (c * n == sizeof (struct htab));
+  return ggc_alloc_cleared_htab ();
+}
+
+/* TODO: once we actually use type information in GGC, create a new tag
+   gt_gcc_ptr_array and use it for pointer arrays.  */
+void *
+ggc_cleared_alloc_ptr_array_two_args (size_t c, size_t n)
+{
+  gcc_assert (sizeof (PTR *) == n);
+  return ggc_internal_cleared_vec_alloc (sizeof (PTR *), c);
 }
 
 /* These are for splay_tree_new_ggc.  */
 void *
-ggc_splay_alloc (int sz, void *nl)
+ggc_splay_alloc (enum gt_types_enum obj_type ATTRIBUTE_UNUSED, int sz,
+		 void *nl)
 {
   gcc_assert (!nl);
-  return ggc_alloc (sz);
+  return ggc_internal_alloc (sz);
 }
 
 void
@@ -516,7 +528,7 @@ gt_pch_save (FILE *f)
 
   /* Prepare the objects for writing, determine addresses and such.  */
   state.f = f;
-  state.d = init_ggc_pch();
+  state.d = init_ggc_pch ();
   state.count = 0;
   htab_traverse (saving_htab, call_count, &state);
 
@@ -825,7 +837,7 @@ ggc_min_heapsize_heuristic (void)
      the limit, whichever is larger.  If GCC does hit the data limit,
      compilation will fail, so this tries to be conservative.  */
   limit_kbytes = MAX (0, limit_kbytes - MAX (limit_kbytes / 4, 20 * 1024));
-  limit_kbytes = (limit_kbytes * 100) / (110 + ggc_min_expand_heuristic());
+  limit_kbytes = (limit_kbytes * 100) / (110 + ggc_min_expand_heuristic ());
   phys_kbytes = MIN (phys_kbytes, limit_kbytes);
 
   phys_kbytes = MAX (phys_kbytes, 4 * 1024);
@@ -839,8 +851,8 @@ void
 init_ggc_heuristics (void)
 {
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
-  set_param_value ("ggc-min-expand", ggc_min_expand_heuristic());
-  set_param_value ("ggc-min-heapsize", ggc_min_heapsize_heuristic());
+  set_param_value ("ggc-min-expand", ggc_min_expand_heuristic ());
+  set_param_value ("ggc-min-heapsize", ggc_min_heapsize_heuristic ());
 #endif
 }
 

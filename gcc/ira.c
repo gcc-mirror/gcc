@@ -1791,8 +1791,7 @@ fix_reg_equiv_init (void)
 
   if (reg_equiv_init_size < max_regno)
     {
-      reg_equiv_init
-	= (rtx *) ggc_realloc (reg_equiv_init, max_regno * sizeof (rtx));
+      reg_equiv_init = GGC_RESIZEVEC (rtx, reg_equiv_init, max_regno);
       while (reg_equiv_init_size < max_regno)
 	reg_equiv_init[reg_equiv_init_size++] = NULL_RTX;
       for (i = FIRST_PSEUDO_REGISTER; i < reg_equiv_init_size; i++)
@@ -2371,7 +2370,7 @@ update_equiv_regs (void)
   recorded_label_ref = 0;
 
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  reg_equiv_init = GGC_CNEWVEC (rtx, max_regno);
+  reg_equiv_init = ggc_alloc_cleared_vec_rtx (max_regno);
   reg_equiv_init_size = max_regno;
 
   init_alias_analysis ();

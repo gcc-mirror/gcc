@@ -442,7 +442,7 @@ cgraph_allocate_node (void)
     }
   else
     {
-      node = GGC_CNEW (struct cgraph_node);
+      node = ggc_alloc_cleared_cgraph_node ();
       node->uid = cgraph_max_uid++;
     }
 
@@ -970,7 +970,7 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
     }
   else
     {
-      edge = GGC_NEW (struct cgraph_edge);
+      edge = ggc_alloc_cgraph_edge ();
       edge->uid = cgraph_edge_max_uid++;
     }
 
@@ -1045,7 +1045,7 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
   edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
 
-  edge->indirect_info = GGC_CNEW (struct cgraph_indirect_call_info);
+  edge->indirect_info = ggc_alloc_cleared_cgraph_indirect_call_info ();
   edge->indirect_info->param_index = -1;
   edge->indirect_info->ecf_flags = ecf_flags;
 
@@ -1973,7 +1973,7 @@ cgraph_add_asm_node (tree asm_str)
 {
   struct cgraph_asm_node *node;
 
-  node = GGC_CNEW (struct cgraph_asm_node);
+  node = ggc_alloc_cleared_cgraph_asm_node ();
   node->asm_str = asm_str;
   node->order = cgraph_order++;
   node->next = NULL;

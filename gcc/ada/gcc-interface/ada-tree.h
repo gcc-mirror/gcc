@@ -32,32 +32,37 @@ union GTY((desc ("0"),
 		       desc ("tree_node_structure (&%h)"))) generic;
 };
 
-/* Ada uses the lang_decl and lang_type fields to hold a tree.  */
-struct GTY(()) lang_type { tree t; };
-struct GTY(()) lang_decl { tree t; };
+/* Ada uses the lang_decl and lang_type fields to hold a tree.
+   FIXME: the variable_size annotation here is needed because these types are
+   variable-sized in some other frontends.  Due to gengtype deficiency the GTY
+   options of such types have to agree across all frontends. */
+struct GTY((variable_size)) lang_type { tree t; };
+struct GTY((variable_size)) lang_decl { tree t; };
 
 /* Macros to get and set the tree in TYPE_LANG_SPECIFIC.  */
 #define GET_TYPE_LANG_SPECIFIC(NODE) \
   (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t : NULL_TREE)
 
-#define SET_TYPE_LANG_SPECIFIC(NODE, X)			    \
-do {							    \
-  tree tmp = (X);					    \
-  if (!TYPE_LANG_SPECIFIC (NODE))			    \
-    TYPE_LANG_SPECIFIC (NODE) = GGC_NEW (struct lang_type); \
-  TYPE_LANG_SPECIFIC (NODE)->t = tmp;			    \
+#define SET_TYPE_LANG_SPECIFIC(NODE, X)		       \
+do {						       \
+  tree tmp = (X);				       \
+  if (!TYPE_LANG_SPECIFIC (NODE))		       \
+    TYPE_LANG_SPECIFIC (NODE) = ggc_alloc_lang_type    \
+      (sizeof (struct lang_type));		       \
+  TYPE_LANG_SPECIFIC (NODE)->t = tmp;		       \
 } while (0)
 
 /* Macros to get and set the tree in DECL_LANG_SPECIFIC.  */
 #define GET_DECL_LANG_SPECIFIC(NODE) \
   (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->t : NULL_TREE)
 
-#define SET_DECL_LANG_SPECIFIC(NODE, X)			    \
-do {							    \
-  tree tmp = (X);					    \
-  if (!DECL_LANG_SPECIFIC (NODE))			    \
-    DECL_LANG_SPECIFIC (NODE) = GGC_NEW (struct lang_decl); \
-  DECL_LANG_SPECIFIC (NODE)->t = tmp;			    \
+#define SET_DECL_LANG_SPECIFIC(NODE, X)		       \
+do {						       \
+  tree tmp = (X);				       \
+  if (!DECL_LANG_SPECIFIC (NODE))		       \
+    DECL_LANG_SPECIFIC (NODE) = ggc_alloc_lang_decl    \
+      (sizeof (struct lang_decl));		       \
+  DECL_LANG_SPECIFIC (NODE)->t = tmp;		       \
 } while (0)
 
 

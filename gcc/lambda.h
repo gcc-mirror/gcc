@@ -238,7 +238,7 @@ static inline void print_lambda_vector (FILE *, lambda_vector, int);
 static inline lambda_vector
 lambda_vector_new (int size)
 {
-  return GGC_CNEWVEC (int, size);
+  return (lambda_vector) ggc_alloc_cleared_atomic (sizeof (int) * size);
 }
 
 

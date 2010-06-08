@@ -752,7 +752,7 @@ enum gimple_statement_structure_enum {
 /* Define the overall contents of a gimple tuple.  It may be any of the
    structures declared above for various types of tuples.  */
 
-union GTY ((desc ("gimple_statement_structure (&%h)"))) gimple_statement_d {
+union GTY ((desc ("gimple_statement_structure (&%h)"), variable_size)) gimple_statement_d {
   struct gimple_statement_base GTY ((tag ("GSS_BASE"))) gsbase;
   struct gimple_statement_with_ops GTY ((tag ("GSS_WITH_OPS"))) gsops;
   struct gimple_statement_with_memory_ops_base GTY ((tag ("GSS_WITH_MEM_OPS_BASE"))) gsmembase;

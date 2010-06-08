@@ -145,7 +145,7 @@ gimple_alloc_stat (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
   }
 #endif
 
-  stmt = (gimple) ggc_alloc_cleared_stat (size PASS_MEM_STAT);
+  stmt = ggc_alloc_cleared_gimple_statement_d_stat (size PASS_MEM_STAT);
   gimple_set_code (stmt, code);
   gimple_set_num_ops (stmt, num_ops);
 
@@ -824,7 +824,8 @@ gimple_build_omp_for (gimple_seq body, tree clauses, size_t collapse,
     gimple_omp_set_body (p, body);
   gimple_omp_for_set_clauses (p, clauses);
   p->gimple_omp_for.collapse = collapse;
-  p->gimple_omp_for.iter = GGC_CNEWVEC (struct gimple_omp_for_iter, collapse);
+  p->gimple_omp_for.iter
+      = ggc_alloc_cleared_vec_gimple_omp_for_iter (collapse);
   if (pre_body)
     gimple_omp_for_set_pre_body (p, pre_body);
 
@@ -1074,7 +1075,7 @@ gimple_seq_alloc (void)
     }
   else
     {
-      seq = (gimple_seq) ggc_alloc_cleared (sizeof (*seq));
+      seq = ggc_alloc_cleared_gimple_seq_d ();
 #ifdef GATHER_STATISTICS
       gimple_alloc_counts[(int) gimple_alloc_kind_seq]++;
       gimple_alloc_sizes[(int) gimple_alloc_kind_seq] += sizeof (*seq);
@@ -2122,8 +2123,8 @@ gimple_copy (gimple stmt)
 	  t = unshare_expr (gimple_omp_for_clauses (stmt));
 	  gimple_omp_for_set_clauses (copy, t);
 	  copy->gimple_omp_for.iter
-	    = GGC_NEWVEC (struct gimple_omp_for_iter,
-			  gimple_omp_for_collapse (stmt));
+	    = ggc_alloc_vec_gimple_omp_for_iter
+	    (gimple_omp_for_collapse (stmt));
 	  for (i = 0; i < gimple_omp_for_collapse (stmt); i++)
 	    {
 	      gimple_omp_for_set_cond (copy, i,

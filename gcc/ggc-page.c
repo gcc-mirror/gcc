@@ -1,6 +1,6 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "flags.h"
 #include "ggc.h"
+#include "ggc-internal.h"
 #include "timevar.h"
 #include "params.h"
 #include "tree-flow.h"
@@ -437,9 +438,9 @@ static struct globals
 #ifdef GATHER_STATISTICS
   struct
   {
-    /* Total memory allocated with ggc_alloc.  */
+    /* Total GC-allocated memory.  */
     unsigned long long total_allocated;
-    /* Total overhead for memory to be allocated with ggc_alloc.  */
+    /* Total overhead for GC-allocated memory.  */
     unsigned long long total_overhead;
 
     /* Total allocations and overhead for sizes less than 32, 64 and 128.
@@ -689,7 +690,7 @@ alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
   G.bytes_mapped += size;
 
   /* Pretend we don't have access to the allocated pages.  We'll enable
-     access to smaller pieces of the area in ggc_alloc.  Discard the
+     access to smaller pieces of the area in ggc_internal_alloc.  Discard the
      handle to avoid handle leak.  */
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (page, size));
 
@@ -1074,13 +1075,13 @@ void *
 ggc_alloc_typed_stat (enum gt_types_enum type ATTRIBUTE_UNUSED, size_t size
 		      MEM_STAT_DECL)
 {
-  return ggc_alloc_stat (size PASS_MEM_STAT);
+  return ggc_internal_alloc_stat (size PASS_MEM_STAT);
 }
 
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
-ggc_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
 {
   size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;
@@ -1603,20 +1604,6 @@ init_ggc (void)
   G.by_depth_max = INITIAL_PTE_COUNT;
   G.by_depth = XNEWVEC (page_entry *, G.by_depth_max);
   G.save_in_use = XNEWVEC (unsigned long *, G.by_depth_max);
-}
-
-/* Start a new GGC zone.  */
-
-struct alloc_zone *
-new_ggc_zone (const char *name ATTRIBUTE_UNUSED)
-{
-  return NULL;
-}
-
-/* Destroy a GGC zone.  */
-void
-destroy_ggc_zone (struct alloc_zone *zone ATTRIBUTE_UNUSED)
-{
 }
 
 /* Merge the SAVE_IN_USE_P and IN_USE_P arrays in P so that IN_USE_P
@@ -2383,3 +2370,12 @@ ggc_pch_read (FILE *f, void *addr)
   /* Update the statistics.  */
   G.allocated = G.allocated_last_gc = offs - (char *)addr;
 }
+
+struct alloc_zone
+{
+  int dummy;
+};
+
+struct alloc_zone rtl_zone;
+struct alloc_zone tree_zone;
+struct alloc_zone tree_id_zone;

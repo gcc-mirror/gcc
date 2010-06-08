@@ -233,7 +233,7 @@ struct GTY(()) object_block {
 /* RTL expression ("rtx").  */
 
 struct GTY((chain_next ("RTX_NEXT (&%h)"),
-		    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
+	    chain_prev ("RTX_PREV (&%h)"), variable_size)) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
 
@@ -352,7 +352,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-struct GTY(()) rtvec_def {
+struct GTY((variable_size)) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };

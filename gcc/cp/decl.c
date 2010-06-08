@@ -2449,7 +2449,7 @@ make_label_decl (tree id, int local_p)
   /* Record this label on the list of labels used in this function.
      We do this before calling make_label_decl so that we get the
      IDENTIFIER_LABEL_VALUE before the new label is declared.  */
-  ent = GGC_CNEW (struct named_label_entry);
+  ent = ggc_alloc_cleared_named_label_entry ();
   ent->label_decl = decl;
 
   slot = htab_find_slot (named_labels, ent, INSERT);
@@ -2669,7 +2669,7 @@ check_goto (tree decl)
 	  && ent->uses->names_in_scope == current_binding_level->names)
 	return;
 
-      new_use = GGC_NEW (struct named_label_use_entry);
+      new_use = ggc_alloc_named_label_use_entry ();
       new_use->binding_level = current_binding_level;
       new_use->names_in_scope = current_binding_level->names;
       new_use->o_goto_locus = input_location;
@@ -12016,7 +12016,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   /* Initialize the language data structures.  Whenever we start
      a new function, we destroy temporaries in the usual way.  */
-  cfun->language = GGC_CNEW (struct language_function);
+  cfun->language = ggc_alloc_cleared_language_function ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   current_binding_level = bl;
 
@@ -12317,7 +12317,7 @@ save_function_data (tree decl)
   gcc_assert (!DECL_PENDING_INLINE_P (decl));
 
   /* Make a copy.  */
-  f = GGC_NEW (struct language_function);
+  f = ggc_alloc_language_function ();
   memcpy (f, cp_function_chain, sizeof (struct language_function));
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 

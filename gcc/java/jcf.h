@@ -66,7 +66,7 @@ jcf_open_exact_case (const char* filename, int oflag);
 struct JCF;
 typedef int (*jcf_filbuf_t) (struct JCF*, int needed);
 
-union GTY(()) cpool_entry {
+union GTY((variable_size)) cpool_entry {
   jword GTY ((tag ("0"))) w;
   tree GTY ((tag ("1"))) t;
 };

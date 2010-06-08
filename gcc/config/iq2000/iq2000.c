@@ -1385,11 +1385,7 @@ iq2000_va_start (tree valist, rtx nextarg)
 static struct machine_function *
 iq2000_init_machine_status (void)
 {
-  struct machine_function *f;
-
-  f = GGC_CNEW (struct machine_function);
-
-  return f;
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */

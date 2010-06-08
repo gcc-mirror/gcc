@@ -243,8 +243,7 @@ static const enum reg_class reg_class_tab[]={
 static struct machine_function *
 avr_init_machine_status (void)
 {
-  return ((struct machine_function *) 
-          ggc_alloc_cleared (sizeof (struct machine_function)));
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Return register class for register R.  */

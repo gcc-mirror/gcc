@@ -1,3 +1,13 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* c-pragma.c (push_alignment): Use typed GC allocation.
+	(handle_pragma_push_options): Likewise.
+
+	* c-common.c (parse_optimize_options): Likewise.
+
+	* c-common.h (struct sorted_fields_type): Add variable_size GTY
+	option.
+
 2010-06-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (flag_preprocess_only, flag_undef, flag_no_builtin,

@@ -81,7 +81,8 @@ tree objc_eh_personality (void);
 #define SIZEOF_OBJC_TYPE_LANG_SPECIFIC sizeof (struct lang_type)
 #define ALLOC_OBJC_TYPE_LANG_SPECIFIC(NODE)				\
   do {									\
-    TYPE_LANG_SPECIFIC (NODE) = GGC_CNEW (struct lang_type);		\
+    TYPE_LANG_SPECIFIC (NODE)						\
+      = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));	\
   } while (0)
 
 #define TYPE_HAS_OBJC_INFO(TYPE)				\

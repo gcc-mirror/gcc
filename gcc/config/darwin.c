@@ -429,7 +429,7 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
     }
   else
     {
-      p = (machopic_indirection *) ggc_alloc (sizeof (machopic_indirection));
+      p = ggc_alloc_machopic_indirection ();
       p->symbol = sym_ref;
       p->ptr_name = xstrdup (buffer);
       p->stub_p = stub_p;
