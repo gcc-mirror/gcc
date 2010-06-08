@@ -1,3 +1,8 @@
+2010-06-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR plugins/44459:
+	* gcc-plugin.h: Encapsulate all declarations in extern "C".
+
 2010-06-08  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (single_succ_edge, single_pred_edge, ei_container,
