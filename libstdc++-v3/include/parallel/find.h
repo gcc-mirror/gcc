@@ -168,9 +168,7 @@ namespace __gnu_parallel
    *  @param __selector _Functionality (e. g. std::find_if(), std::equal(),...)
    *  @return Place of finding in both sequences.
    *  @see __gnu_parallel::_Settings::find_sequential_search_size
-   *  @see __gnu_parallel::_Settings::find_initial_block_size
-   *  @see __gnu_parallel::_Settings::find_maximum_block_size
-   *  @see __gnu_parallel::_Settings::find_increasing_factor
+   *  @see __gnu_parallel::_Settings::find_scale_factor
    *
    *  There are two main differences between the growing blocks and
    *  the constant-size blocks variants.
@@ -218,6 +216,8 @@ namespace __gnu_parallel
       omp_lock_t __result_lock;
       omp_init_lock(&__result_lock);
 
+      const float __scale_factor = __s.find_scale_factor;
+
       _ThreadIndex __num_threads = __get_max_threads();
 #     pragma omp parallel shared(__result) num_threads(__num_threads)
       {
@@ -227,7 +227,8 @@ namespace __gnu_parallel
 	// Not within first __k elements -> start parallel.
 	_ThreadIndex __iam = omp_get_thread_num();
 
-	_DifferenceType __block_size = __s.find_initial_block_size;
+	_DifferenceType __block_size =
+	  std::max<_DifferenceType>(1, __scale_factor * __next_block_start);
 	_DifferenceType __start = __fetch_and_add<_DifferenceType>
 	  (&__next_block_start, __block_size);
 
@@ -265,15 +266,14 @@ namespace __gnu_parallel
 		omp_unset_lock(&__result_lock);
 	      }
 
-	    __block_size = std::min<_DifferenceType>
-	      (__block_size * __s.find_increasing_factor,
-	       __s.find_maximum_block_size);
+	    _DifferenceType __block_size =
+	     std::max<_DifferenceType>(1, __scale_factor * __next_block_start);
 
 	    // Get new block, update pointer to next block.
 	    __start = __fetch_and_add<_DifferenceType>(&__next_block_start,
 						       __block_size);
-	    __stop = (__length < (__start + __block_size)
-		      ? __length : (__start + __block_size));
+	    __stop =
+	      std::min<_DifferenceType>(__length, __start + __block_size);
 	  }
       } //parallel
 
