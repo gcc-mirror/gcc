@@ -246,9 +246,9 @@ namespace std
     : public integral_constant<bool, __has_trivial_copy(_Tp)>
     { };
 
-  /// has_trivial_assign
+  /// has_trivial_copy_assign
   template<typename _Tp>
-    struct has_trivial_assign
+    struct has_trivial_copy_assign
     : public integral_constant<bool, __has_trivial_assign(_Tp)>
     { };
 
@@ -270,9 +270,9 @@ namespace std
     : public integral_constant<bool, __has_nothrow_copy(_Tp)>
     { };
 
-  /// has_nothrow_assign
+  /// has_nothrow_copy_assign
   template<typename _Tp>
-    struct has_nothrow_assign
+    struct has_nothrow_copy_assign
     : public integral_constant<bool, __has_nothrow_assign(_Tp)>
     { };
 
