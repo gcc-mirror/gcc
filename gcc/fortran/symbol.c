@@ -567,7 +567,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     }
 
   conf (is_protected, intrinsic)
-  conf (is_protected, external)
   conf (is_protected, in_common)
 
   conf (asynchronous, intrinsic)
@@ -587,7 +586,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (procedure, dimension)
   conf (procedure, codimension)
   conf (procedure, intrinsic)
-  conf (procedure, is_protected)
   conf (procedure, target)
   conf (procedure, value)
   conf (procedure, volatile_)

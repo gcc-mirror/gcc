@@ -1,3 +1,9 @@
+2010-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44446
+	* symbol.c (check_conflict): Move protected--external/procedure check ...
+	* resolve.c (resolve_select_type): ... to the resolution stage.
+
 2010-06-07  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (gfc_handle_option): Fix -fno-recursive.
