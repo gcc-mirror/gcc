@@ -6,7 +6,7 @@
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
 void *p = (__SIZE_TYPE__)(void *)0; /* { dg-error "without a cast" } */
-struct s { void *a; } q = { (__SIZE_TYPE__)(void *)0 }; /* { dg-error "without a cast" } */
+struct s { void *a; } q = { (__SIZE_TYPE__)(void *)0 }; /* { dg-error "without a cast|near initialization" } */
 void *
 f (void)
 {

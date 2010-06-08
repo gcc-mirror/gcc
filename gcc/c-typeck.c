@@ -5011,7 +5011,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
         pedwarn (LOCATION, OPT, AS);                                     \
         break;                                                           \
       case ic_init:                                                      \
-        pedwarn (LOCATION, OPT, IN);                                     \
+        pedwarn_init (LOCATION, OPT, IN);                                \
         break;                                                           \
       case ic_return:                                                    \
         pedwarn (LOCATION, OPT, RE);                                 	 \
@@ -5785,15 +5785,16 @@ print_spelling (char *buffer)
 }
 
 /* Issue an error message for a bad initializer component.
-   MSGID identifies the message.
+   GMSGID identifies the message.
    The component name is taken from the spelling stack.  */
 
 void
-error_init (const char *msgid)
+error_init (const char *gmsgid)
 {
   char *ofwhat;
 
-  error ("%s", _(msgid));
+  /* The gmsgid may be a format string with %< and %>. */
+  error (gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     error ("(near initialization for %qs)", ofwhat);
@@ -5801,15 +5802,16 @@ error_init (const char *msgid)
 
 /* Issue a pedantic warning for a bad initializer component.  OPT is
    the option OPT_* (from options.h) controlling this warning or 0 if
-   it is unconditionally given.  MSGID identifies the message.  The
+   it is unconditionally given.  GMSGID identifies the message.  The
    component name is taken from the spelling stack.  */
 
 void
-pedwarn_init (location_t location, int opt, const char *msgid)
+pedwarn_init (location_t location, int opt, const char *gmsgid)
 {
   char *ofwhat;
-
-  pedwarn (location, opt, "%s", _(msgid));
+  
+  /* The gmsgid may be a format string with %< and %>. */
+  pedwarn (location, opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     pedwarn (location, opt, "(near initialization for %qs)", ofwhat);
@@ -5818,15 +5820,16 @@ pedwarn_init (location_t location, int opt, const char *msgid)
 /* Issue a warning for a bad initializer component.
 
    OPT is the OPT_W* value corresponding to the warning option that
-   controls this warning.  MSGID identifies the message.  The
+   controls this warning.  GMSGID identifies the message.  The
    component name is taken from the spelling stack.  */
 
 static void
-warning_init (int opt, const char *msgid)
+warning_init (int opt, const char *gmsgid)
 {
   char *ofwhat;
 
-  warning (opt, "%s", _(msgid));
+  /* The gmsgid may be a format string with %< and %>. */
+  warning (opt, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     warning (opt, "(near initialization for %qs)", ofwhat);
