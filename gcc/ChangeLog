@@ -1,3 +1,19 @@
+2010-06-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+        * config/mips/mips-protos.h (mips_print_operand): Delete.
+	(mips_print_operand_address): Delete.
+	* config/mips/mips.h (mips_print_operand_punct): Delete.
+	(PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/mips/mips.c (mips_print_operand_punct): Make static.
+	(mips_print_operand_address): Make static.
+	(mips_print_operand): Make static.  Call
+	mips_print_operand_punct_valid_p.
+	(mips_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+
 2010-06-07  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44454

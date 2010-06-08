@@ -2704,10 +2704,6 @@ typedef struct mips_args {
 
 #define ALL_COP_ADDITIONAL_REGISTER_NAMES
 
-#define PRINT_OPERAND mips_print_operand
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) mips_print_operand_punct[CODE]
-#define PRINT_OPERAND_ADDRESS mips_print_operand_address
-
 #define DBR_OUTPUT_SEQEND(STREAM)					\
 do									\
   {									\
@@ -3060,7 +3056,6 @@ struct mips_asm_switch {
 
 extern const enum reg_class mips_regno_to_class[];
 extern bool mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-extern bool mips_print_operand_punct[256];
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern struct mips_asm_switch mips_noreorder;
