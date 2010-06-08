@@ -1261,23 +1261,27 @@ eliminate_redundant_comparison (enum tree_code opcode,
       rcode = gimple_assign_rhs_code (def2);
       if (TREE_CODE_CLASS (rcode) != tcc_comparison)
 	continue;
-      if (operand_equal_p (op1, gimple_assign_rhs1 (def2), 0)
-	  && operand_equal_p (op2, gimple_assign_rhs2 (def2), 0))
-	;
-      else if (operand_equal_p (op1, gimple_assign_rhs2 (def2), 0)
-	       && operand_equal_p (op2, gimple_assign_rhs1 (def2), 0))
-	rcode = swap_tree_comparison (rcode);
-      else
-	continue;
 
       /* If we got here, we have a match.  See if we can combine the
 	 two comparisons.  */
-      t = combine_comparisons (UNKNOWN_LOCATION,
-			       (opcode == BIT_IOR_EXPR
-				? TRUTH_OR_EXPR : TRUTH_AND_EXPR),
-			       lcode, rcode, TREE_TYPE (curr->op), op1, op2);
+      if (opcode == BIT_IOR_EXPR)
+	t = maybe_fold_or_comparisons (lcode, op1, op2,
+				       rcode, gimple_assign_rhs1 (def2),
+				       gimple_assign_rhs2 (def2));
+      else
+	t = maybe_fold_and_comparisons (lcode, op1, op2,
+					rcode, gimple_assign_rhs1 (def2),
+					gimple_assign_rhs2 (def2));
       if (!t)
 	continue;
+
+      /* maybe_fold_and_comparisons and maybe_fold_or_comparisons
+	 always give us a boolean_type_node value back.  If the original
+	 BIT_AND_EXPR or BIT_IOR_EXPR was of a wider integer type,
+	 we need to convert.  */
+      if (!useless_type_conversion_p (TREE_TYPE (curr->op), TREE_TYPE (t)))
+	t = fold_convert (TREE_TYPE (curr->op), t);
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Equivalence: ");
@@ -1303,7 +1307,7 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	  VEC_ordered_remove (operand_entry_t, *ops, currindex);
 	  add_to_ops_vec (ops, t);
 	}
-      else if (TREE_CODE (t) != lcode)
+      else if (!operand_equal_p (t, curr->op, 0))
 	{
 	  tree tmpvar;
 	  gimple sum;

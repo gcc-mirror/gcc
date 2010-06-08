@@ -366,21 +366,16 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 
   /* See if we have two comparisons that we can merge into one.  */
   else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
-	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison
-	   && operand_equal_p (gimple_cond_lhs (inner_cond),
-			       gimple_cond_lhs (outer_cond), 0)
-	   && operand_equal_p (gimple_cond_rhs (inner_cond),
-			       gimple_cond_rhs (outer_cond), 0))
+	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison)
     {
-      enum tree_code code1 = gimple_cond_code (inner_cond);
-      enum tree_code code2 = gimple_cond_code (outer_cond);
       tree t;
 
-      if (!(t = combine_comparisons (UNKNOWN_LOCATION,
-	      			     TRUTH_ANDIF_EXPR, code1, code2,
-				     boolean_type_node,
-				     gimple_cond_lhs (outer_cond),
-				     gimple_cond_rhs (outer_cond))))
+      if (!(t = maybe_fold_and_comparisons (gimple_cond_code (inner_cond),
+					    gimple_cond_lhs (inner_cond),
+					    gimple_cond_rhs (inner_cond),
+					    gimple_cond_code (outer_cond),
+					    gimple_cond_lhs (outer_cond),
+					    gimple_cond_rhs (outer_cond))))
 	return false;
       t = canonicalize_cond_expr_cond (t);
       if (!t)
@@ -518,22 +513,17 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
   /* See if we have two comparisons that we can merge into one.
      This happens for C++ operator overloading where for example
      GE_EXPR is implemented as GT_EXPR || EQ_EXPR.  */
-  else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
-	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison
-	   && operand_equal_p (gimple_cond_lhs (inner_cond),
-			       gimple_cond_lhs (outer_cond), 0)
-	   && operand_equal_p (gimple_cond_rhs (inner_cond),
-			       gimple_cond_rhs (outer_cond), 0))
+    else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
+	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison)
     {
-      enum tree_code code1 = gimple_cond_code (inner_cond);
-      enum tree_code code2 = gimple_cond_code (outer_cond);
       tree t;
 
-      if (!(t = combine_comparisons (UNKNOWN_LOCATION,
-	      			     TRUTH_ORIF_EXPR, code1, code2,
-				     boolean_type_node,
-				     gimple_cond_lhs (outer_cond),
-				     gimple_cond_rhs (outer_cond))))
+      if (!(t = maybe_fold_or_comparisons (gimple_cond_code (inner_cond),
+					   gimple_cond_lhs (inner_cond),
+					   gimple_cond_rhs (inner_cond),
+					   gimple_cond_code (outer_cond),
+					   gimple_cond_lhs (outer_cond),
+					   gimple_cond_rhs (outer_cond))))
 	return false;
       t = canonicalize_cond_expr_cond (t);
       if (!t)
