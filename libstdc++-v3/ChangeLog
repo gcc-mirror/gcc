@@ -1,3 +1,9 @@
+2010-06-08  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/partial_sum.h
+        (__parallel_partial_sum_linear):
+        Correctly calculate part lengths for partial_sum_dilation!=1.
+
 2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44417
