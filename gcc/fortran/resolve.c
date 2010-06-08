@@ -11311,6 +11311,19 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
+  if (sym->attr.is_protected && !sym->attr.proc_pointer
+      && (sym->attr.procedure || sym->attr.external))
+    {
+      if (sym->attr.external)
+	gfc_error ("PROTECTED attribute conflicts with EXTERNAL attribute "
+	           "at %L", &sym->declared_at);
+      else
+	gfc_error ("PROCEDURE attribute conflicts with PROTECTED attribute "
+	           "at %L", &sym->declared_at);
+
+      return;
+    }
+
   if (sym->attr.flavor == FL_DERIVED && resolve_fl_derived (sym) == FAILURE)
     return;
 
