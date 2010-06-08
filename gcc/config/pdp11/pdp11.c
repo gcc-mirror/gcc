@@ -1,6 +1,6 @@
 /* Subroutines for gcc2 for pdp11.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -151,6 +151,9 @@ static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool pdp11_rtx_costs (rtx, int, int, int *, bool);
 static bool pdp11_return_in_memory (const_tree, const_tree);
+static rtx pdp11_function_value (const_tree, const_tree, bool);
+static rtx pdp11_libcall_value (enum machine_mode, const_rtx);
+static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
 
 /* Initialize the GCC target structure.  */
@@ -184,6 +187,13 @@ static void pdp11_trampoline_init (rtx, tree, rtx);
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY pdp11_return_in_memory
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE pdp11_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE pdp11_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P pdp11_function_value_regno_p
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT pdp11_trampoline_init
@@ -1742,6 +1752,40 @@ pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
      libraries for non-floating point....  */
   return (TYPE_MODE (type) == DImode
 	  || (TYPE_MODE (type) == DFmode && ! TARGET_AC0));
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE.
+
+   On the pdp11 the value is found in R0 (or ac0??? not without FPU!!!! )  */
+
+static rtx
+pdp11_function_value (const_tree valtype, 
+ 		      const_tree fntype_or_decl ATTRIBUTE_UNUSED,
+ 		      bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype),
+		      BASE_RETURN_VALUE_REG(TYPE_MODE(valtype)));
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+pdp11_libcall_value (enum machine_mode mode,
+                     const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return  gen_rtx_REG (mode, BASE_RETURN_VALUE_REG(mode));
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.
+
+   On the pdp, the first "output" reg is the only register thus used.
+
+   maybe ac0 ? - as option someday!  */
+
+static bool
+pdp11_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 0) || (TARGET_AC0 && (regno == 8));
 }
 
 /* Worker function for TARGET_TRAMPOLINE_INIT.

@@ -1,3 +1,12 @@
+2010-06-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/pdp11/pdp11.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
+	LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P): Remove macros.
+	* config/pdp11/pdp11.c (moxie_function_value, moxie_libcall_value,
+	moxie_function_value_regno_p): New functions.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+
 2010-06-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Don't special case for
