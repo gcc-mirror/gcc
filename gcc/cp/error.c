@@ -115,7 +115,7 @@ init_error (void)
 static void
 dump_scope (tree scope, int flags)
 {
-  int f = ~TFF_RETURN_TYPE & (flags & (TFF_SCOPE | TFF_CHASE_TYPEDEF));
+  int f = flags & (TFF_SCOPE | TFF_CHASE_TYPEDEF);
 
   if (scope == NULL_TREE)
     return;
@@ -865,6 +865,7 @@ dump_simple_decl (tree t, tree type, int flags)
       pp_maybe_space (cxx_pp);
     }
   if (! (flags & TFF_UNQUALIFIED_NAME)
+      && TREE_CODE (t) != PARM_DECL
       && (!DECL_INITIAL (t)
 	  || TREE_CODE (DECL_INITIAL (t)) != TEMPLATE_PARM_INDEX))
     dump_scope (CP_DECL_CONTEXT (t), flags);
@@ -1355,6 +1356,7 @@ static void
 dump_parameters (tree parmtypes, int flags)
 {
   int first = 1;
+  flags &= ~TFF_SCOPE;
   pp_cxx_left_paren (cxx_pp);
 
   for (first = 1; parmtypes != void_list_node;
