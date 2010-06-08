@@ -728,6 +728,9 @@
 
 2010-06-05  Jan Hubicka  <jh@suse.cz>
 
+	* basic-block.h (compute_dominance_frontiers): Updated.
+	(compute_idf): Likewise.
+
 	* tree-into-ssa.c (insert_phi_nodes): Use bitmap heads
 	for dominance frontiers.
 	(rewrite_into_ssa): Update for bitmap heads in dominance
