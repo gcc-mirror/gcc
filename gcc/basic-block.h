@@ -554,7 +554,9 @@ single_pred_p (const_basic_block bb)
 static inline edge
 single_succ_edge (const_basic_block bb)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (single_succ_p (bb));
+#endif
   return EDGE_SUCC (bb, 0);
 }
 
@@ -564,7 +566,9 @@ single_succ_edge (const_basic_block bb)
 static inline edge
 single_pred_edge (const_basic_block bb)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (single_pred_p (bb));
+#endif
   return EDGE_PRED (bb, 0);
 }
 
@@ -596,7 +600,9 @@ typedef struct {
 static inline VEC(edge,gc) *
 ei_container (edge_iterator i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i.container);
+#endif
   return *i.container;
 }
 
@@ -647,7 +653,9 @@ ei_one_before_end_p (edge_iterator i)
 static inline void
 ei_next (edge_iterator *i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i->index < EDGE_COUNT (ei_container (*i)));
+#endif
   i->index++;
 }
 
@@ -655,7 +663,9 @@ ei_next (edge_iterator *i)
 static inline void
 ei_prev (edge_iterator *i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i->index > 0);
+#endif
   i->index--;
 }
 

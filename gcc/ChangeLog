@@ -1,3 +1,8 @@
+2010-06-08  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (single_succ_edge, single_pred_edge, ei_container,
+	ei_next, ei_prev): Do sanity checking with ENABLE_CHECKING only.
+
 2010-06-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR tree-optimization/39874
