@@ -8676,10 +8676,12 @@ ix86_expand_epilogue (int style)
       int param_ptr_offset = (call_used_regs[REGNO (crtl->drap_reg)]
 			      ? 0 : UNITS_PER_WORD);
       gcc_assert (stack_realign_drap);
-      emit_insn ((*ix86_gen_add3) (stack_pointer_rtx,
-				   crtl->drap_reg,
-				   GEN_INT (-(UNITS_PER_WORD
-					      + param_ptr_offset))));
+      emit_insn (gen_rtx_SET
+		 (VOIDmode, stack_pointer_rtx,
+		  gen_rtx_PLUS (Pmode,
+				crtl->drap_reg,
+				GEN_INT (-(UNITS_PER_WORD
+					   + param_ptr_offset)))));
       if (!call_used_regs[REGNO (crtl->drap_reg)])
 	emit_insn ((*ix86_gen_pop1) (crtl->drap_reg));
       
