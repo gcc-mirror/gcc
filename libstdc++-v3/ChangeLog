@@ -1,5 +1,18 @@
 2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/44417
+	* include/c_std/cwctype: Provide a workaround for bug glibc
+	BZ 9694 affecting glibc 2.9 and older.
+	* include/c_global/cwctype: Likewise.
+	* testsuite/util/testsuite_abi.h: Remove temporary workaround.
+	* testsuite/util/testsuite_allocator.h: Use everywhere std::size_t
+	and std::ptrdiff_t, don't include <cstddef>.
+
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	error_code.cc: Minor tweak, prefer <cwchar> to <wchar.h>.
+
+2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/ext/pb_ds/detail/trie_policy/order_statistics_imp.hpp:
 	Avoid -Wall warnings.
 	* testsuite/27_io/ios_base/failure/what-3.cc: Likewise.
