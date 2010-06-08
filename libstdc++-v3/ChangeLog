@@ -1,5 +1,14 @@
 2010-06-08  Johannes Singler  <singler@kit.edu>
 
+        * include/parallel/find.h
+        (__find_template(.., growing_blocks_tag)): Make block size
+        proportional to current position.
+        * include/parallel/settings.h (_Settings): Introduce new tuning
+        parameter find_scale_factor to the end of the struct, defaults to
+        0.01f.
+
+2010-06-08  Johannes Singler  <singler@kit.edu>
+
         * include/parallel/partial_sum.h
         (__parallel_partial_sum_linear):
         Correctly calculate part lengths for partial_sum_dilation!=1.
