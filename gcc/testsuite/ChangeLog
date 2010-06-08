@@ -1,3 +1,8 @@
+2010-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/ext/attr-alias-1.C: New.
+	* g++.dg/ext/attr-alias-2.C: New.
+
 2010-06-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44446

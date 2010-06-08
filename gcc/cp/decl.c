@@ -90,6 +90,7 @@ static void check_function_type (tree, tree);
 static void finish_constructor_body (void);
 static void begin_destructor_body (void);
 static void finish_destructor_body (void);
+static void record_key_method_defined (tree);
 static tree create_array_type_for_decl (tree, tree, tree);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
@@ -4129,6 +4130,7 @@ start_decl (const cp_declarator *declarator,
   tree context;
   bool was_public;
   int flags;
+  bool alias;
 
   *pushed_scope_p = NULL_TREE;
 
@@ -4190,6 +4192,10 @@ start_decl (const cp_declarator *declarator,
       if (toplevel_bindings_p ())
 	TREE_STATIC (decl) = 1;
     }
+  alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) != 0;
+  
+  if (alias && TREE_CODE (decl) == FUNCTION_DECL)
+    record_key_method_defined (decl);
 
   /* If this is a typedef that names the class for linkage purposes
      (7.1.3p8), apply any attributes directly to the type.  */
@@ -4292,7 +4298,9 @@ start_decl (const cp_declarator *declarator,
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
-      if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl))
+      if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl)
+	  /* Aliases are definitions. */
+	  && !alias)
 	permerror (input_location, "declaration of %q#D outside of class is not definition",
 		   decl);
 
@@ -12502,6 +12510,22 @@ outer_curly_brace_block (tree fndecl)
   return block;
 }
 
+/* If FNDECL is a class's key method, add the class to the list of
+   keyed classes that should be emitted.  */
+
+static void
+record_key_method_defined (tree fndecl)
+{
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+      && DECL_VIRTUAL_P (fndecl)
+      && !processing_template_decl)
+    {
+      tree fnclass = DECL_CONTEXT (fndecl);
+      if (fndecl == CLASSTYPE_KEY_METHOD (fnclass))
+	keyed_classes = tree_cons (NULL_TREE, fnclass, keyed_classes);
+    }
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
@@ -12528,14 +12552,7 @@ finish_function (int flags)
   gcc_assert (!defer_mark_used_calls);
   defer_mark_used_calls = true;
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
-      && DECL_VIRTUAL_P (fndecl)
-      && !processing_template_decl)
-    {
-      tree fnclass = DECL_CONTEXT (fndecl);
-      if (fndecl == CLASSTYPE_KEY_METHOD (fnclass))
-	keyed_classes = tree_cons (NULL_TREE, fnclass, keyed_classes);
-    }
+  record_key_method_defined (fndecl);
 
   nested = function_depth > 1;
   fntype = TREE_TYPE (fndecl);
