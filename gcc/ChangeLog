@@ -1,6 +1,19 @@
+2010-06-08  Andrew Pinski <pinskia@gmail.com>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/37724
+	* c-typeck.c (convert_for_assignment): Call pedwarn_init if the
+	implicit bad conversions is initialization.
+	(error_init): Use gmsgid instead of msgid for argument name and change
+	the call for error.
+	(pedwarn_init): Use gmsgid instead of msgid for argument name and
+	change the call for pedwarn.
+	(warning_init): Use gmsgid instead of msgid for argument name and
+	change the call for warning.
+
 2010-06-07  Nathan Froyd  <froydnj@codesourcery.com>
 
-        * config/mips/mips-protos.h (mips_print_operand): Delete.
+	* config/mips/mips-protos.h (mips_print_operand): Delete.
 	(mips_print_operand_address): Delete.
 	* config/mips/mips.h (mips_print_operand_punct): Delete.
 	(PRINT_OPERAND): Delete.

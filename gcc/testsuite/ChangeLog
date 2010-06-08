@@ -1,3 +1,11 @@
+2010-06-08  Andrew Pinski <pinskia@gmail.com>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	PR c/37724
+	* gcc.dg/c90-const-expr-10.c: Adjust.
+	* gcc.dg/c99-const-expr-10.c: Adjust.
+	* gcc.dg/init-bad-7.c: New.
+
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_gas): New proc.
