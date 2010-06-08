@@ -1,5 +1,10 @@
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44366
+	* g++.dg/cpp0x/decltype23.C: New.
+
+2010-06-07  Jason Merrill  <jason@redhat.com>
+
 	PR c++/44401
 	* g++.dg/tc1/dr147.C: Test case of member with same name as class.
 

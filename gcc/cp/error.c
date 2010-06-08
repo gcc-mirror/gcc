@@ -840,6 +840,7 @@ dump_simple_decl (tree t, tree type, int flags)
       pp_maybe_space (cxx_pp);
     }
   if (! (flags & TFF_UNQUALIFIED_NAME)
+      && TREE_CODE (t) != PARM_DECL
       && (!DECL_INITIAL (t)
 	  || TREE_CODE (DECL_INITIAL (t)) != TEMPLATE_PARM_INDEX))
     dump_scope (CP_DECL_CONTEXT (t), flags);

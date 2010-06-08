@@ -1,5 +1,11 @@
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44366
+	* error.c (dump_simple_decl): Don't print the scope of a
+	PARM_DECL.
+
+2010-06-07  Jason Merrill  <jason@redhat.com>
+
 	PR c++/44401
 	* parser.c (cp_parser_lookup_name): Fix naming the constructor.
 
