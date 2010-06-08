@@ -4812,6 +4812,9 @@ tree maybe_fold_offset_to_address (location_t, tree, tree, tree);
 tree maybe_fold_stmt_addition (location_t, tree, tree, tree);
 tree get_symbol_constant_value (tree);
 bool may_propagate_address_into_dereference (tree, tree);
-
+extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree, 
+					enum tree_code, tree, tree);
+extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
+				       enum tree_code, tree, tree);
 
 #endif  /* GCC_GIMPLE_H */

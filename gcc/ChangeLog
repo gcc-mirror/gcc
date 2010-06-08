@@ -1,3 +1,20 @@
+2010-06-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR tree-optimization/39874
+	PR middle-end/28685
+	* gimple.h (maybe_fold_and_comparisons, maybe_fold_or_comparisons):
+	Declare.
+	* gimple-fold.c (canonicalize_bool, same_bool_comparison_p,
+	same_bool_result_p): New.
+	(and_var_with_comparison, and_var_with_comparison_1,
+	and_comparisons_1, and_comparisons, maybe_fold_and_comparisons): New.
+	(or_var_with_comparison, or_var_with_comparison_1,
+	or_comparisons_1, or_comparisons, maybe_fold_or_comparisons): New.
+	* tree-ssa-reassoc.c (eliminate_redundant_comparison): Use
+	maybe_fold_and_comparisons or maybe_fold_or_comparisons instead
+	of combine_comparisons.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif, ifcombine_iforif): Likewise.
+
 2010-06-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/pdp11/pdp11.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
