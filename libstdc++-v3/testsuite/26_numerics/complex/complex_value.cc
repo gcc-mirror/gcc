@@ -3,7 +3,7 @@
 // 2000-11-20
 // Benjamin Kosnik bkoz@redhat.com
 
-// Copyright (C) 2000, 2003, 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003, 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,27 +34,27 @@ void test01()
  complex_type a(cd1, cd2);
  double d;
  d = a.real();
- VERIFY( d == cd1);
+ VERIFY( d == cd1 );
 
  d = a.imag();
- VERIFY(d == cd2);
+ VERIFY( d == cd2 );
 
  complex_type c(cd1, cd2);
  double d6 = abs(c);
- VERIFY( d6 >= 0);
+ VERIFY( d6 >= 0 );
 
  double d7 = arg(c);
  double d8 = atan2(c.imag(), c.real());
- VERIFY( d7 == d8);
+ VERIFY( d7 == d8 );
 
  double d9 = norm(c);
  double d10 = d6 * d6;
- VERIFY(d9 - d10 == 0);
+ VERIFY( d9 - d10 == 0 );
 
- complex_type e = conj(c);
+ complex_type e __attribute__((unused)) = conj(c);
  
  complex_type f = polar(c.imag(), 0.0);
- VERIFY(f.real() != 0);
+ VERIFY( f.real() != 0 );
 }
 
 

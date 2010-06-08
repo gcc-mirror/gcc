@@ -1012,7 +1012,6 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_clear));
 
 	// Run tests.
-	auto i = _M_functions.begin();
 	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
 	  {
 	    function_type& f = *i;
@@ -1163,7 +1162,6 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_rehash));
 
 	// Run tests.
-	auto i = _M_functions.begin();
 	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
 	  {
 	    function_type& f = *i;

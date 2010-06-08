@@ -1,6 +1,6 @@
 // 2001-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,6 +59,9 @@ void test01()
   // wchar_t* wmemchr(      wchar_t* s, wchar_t c, size_t n);
   cc1 = std::wmemchr(ccarray1, L'a', 3);
   c1 = std::wmemchr(carray, L'a', 3);
+
+  cc1 = cc1; // Suppress unused warnings.
+  c1 = c1;
 }
 
 int main()

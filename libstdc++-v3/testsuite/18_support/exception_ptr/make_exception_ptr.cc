@@ -21,7 +21,7 @@
 #include <exception>
 #include <testsuite_hooks.h>
 
-bool test01()
+void test01()
 {
   bool test __attribute__((unused)) = true;
 

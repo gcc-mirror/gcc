@@ -1,6 +1,6 @@
 // 2003-11-09 Paolo Carlini <pcarlini@suse.de>
 
-// Copyright (C) 2003, 2009 Free Software Foundation
+// Copyright (C) 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@ void test01()
   ostringstream oss;
   const money_put<char>& mon_put = use_facet<money_put<char> >(oss.getloc()); 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, ' ', amount);
+  mon_put.put(oss.rdbuf(), true, oss, ' ', amount);
   string result = oss.str();
   VERIFY( result == "11" );
 }

@@ -1,6 +1,6 @@
 // 2004-09-23 Chris Jefferson <chris@bubblescope.net>
 
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,8 +36,10 @@ main()
   VERIFY(tuple_size<test_pair_type>::value == 2);
   // Test if tuple_element::type returns the correct type
   blank_class blank;
-  tuple_element<0, pair<blank_class, int> >::type blank2 = blank;
-  tuple_element<1, pair<int ,blank_class> >::type blank3 = blank;
+  tuple_element<0, pair<blank_class, int> >::type
+    blank2 __attribute__((unused)) = blank;
+  tuple_element<1, pair<int ,blank_class> >::type
+    blank3 __attribute__((unused)) = blank;
   pair<int,int> test_pair(1, 2);
   VERIFY(get<0>(test_pair) == 1);
   VERIFY(get<1>(test_pair) == 2);

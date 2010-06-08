@@ -37,9 +37,7 @@ test01()
   std::wistream is_00(0);
   std::wistream is_03(&isbuf_03);
   std::wistream is_04(&isbuf_04);
-  std::ios_base::iostate state1, state2, statefail, stateeof;
-  statefail = std::ios_base::failbit;
-  stateeof = std::ios_base::eofbit;
+  std::ios_base::iostate state1, state2;
 
   wchar_t carray[60] = L"";
 

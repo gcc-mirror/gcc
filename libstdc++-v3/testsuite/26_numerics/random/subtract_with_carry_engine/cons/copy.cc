@@ -29,6 +29,7 @@ test01()
 
   const auto f(e);
   auto g(f);
+  g = g; // Suppress unused warning.
 }
 
 int main()

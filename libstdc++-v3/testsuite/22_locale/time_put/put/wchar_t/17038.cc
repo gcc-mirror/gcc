@@ -2,7 +2,7 @@
 
 // 2004-08-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,7 @@ void test01()
   const time_put<wchar_t>& tim_put =
     use_facet<time_put<wchar_t> >(oss.getloc()); 
 
-  iterator_type os_it01 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'c');
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'c');
   wstring result1 = oss.str();
 
   wchar_t time_buffer[128];

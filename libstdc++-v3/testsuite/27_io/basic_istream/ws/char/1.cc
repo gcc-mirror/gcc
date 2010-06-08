@@ -1,6 +1,7 @@
 // 1999-07-22 bkoz
 
-// Copyright (C) 1994, 1999, 2001, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1999, 2001, 2003, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +34,6 @@ void test01(void)
   std::string str02(str_lit01);
   std::string str04;
   std::string str05;
-  std::ios_base::iostate flag3, flag4, flag5;
 
   // template<_CharT, _Traits>
   //  basic_istream<_CharT, _Traits>& ws(basic_istream<_Char, _Traits>& is)
@@ -60,9 +60,6 @@ void test01(void)
   VERIFY( str05 == "barbara" );
   VERIFY( str05 == str04 );
 
-  flag3 = std::ios_base::eofbit;
-  flag4 = std::ios_base::badbit;
-  flag5 = std::ios_base::failbit;
   VERIFY( !iss01.fail() );
   VERIFY( !iss02.fail() );
   VERIFY( !iss01.eof() );

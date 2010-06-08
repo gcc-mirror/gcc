@@ -2,7 +2,8 @@
 
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,12 +65,12 @@ void test02()
 
   // test sign of more than one digit, say hong kong.
   oss.str(empty);
-  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
+  mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
   wstring result5 = oss.str();
   VERIFY( result5 == L"HK$7,200,000,000.00" );
 
   oss.str(empty);
-  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, L' ', digits2);
+  mon_put.put(oss.rdbuf(), true, oss, L' ', digits2);
   wstring result6 = oss.str();
   VERIFY( result6 == L"(HKD 100,000,000,000.00)" );
 
@@ -78,7 +79,7 @@ void test02()
   oss.str(empty);
   const money_put<wchar_t>& mon_put2 =
     use_facet<money_put<wchar_t> >(oss.getloc()); 
-  iterator_type os_it07 = mon_put2.put(oss.rdbuf(), true, oss, L' ', digits4);
+  mon_put2.put(oss.rdbuf(), true, oss, L' ', digits4);
   wstring result7 = oss.str();
   VERIFY( result7 == L"1" );
 
@@ -87,7 +88,7 @@ void test02()
   oss.str(empty);
   const money_put<wchar_t>& mon_put3 =
     use_facet<money_put<wchar_t> >(oss.getloc()); 
-  iterator_type os_it08 = mon_put3.put(oss.rdbuf(), true, oss, L' ', digits4);
+  mon_put3.put(oss.rdbuf(), true, oss, L' ', digits4);
   wstring result8 = oss.str();
   VERIFY( result8 == L"(HKD .01)" );
 
@@ -95,7 +96,7 @@ void test02()
 
   // test bunk input
   oss.str(empty);
-  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, L' ', digits3);
+  mon_put.put(oss.rdbuf(), true, oss, L' ', digits3);
   wstring result9 = oss.str();
   VERIFY( result9 == L"" );
 }

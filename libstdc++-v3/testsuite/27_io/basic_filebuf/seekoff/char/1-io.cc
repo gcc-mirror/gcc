@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ void test05()
   typedef filebuf::off_type 	off_type;
 
   bool test __attribute__((unused)) = true;
-  streamsize 			strmsz_1, strmsz_2;
+  streamsize 			strmsz_1;
 
   int_type c1;
   int_type c2;
@@ -66,7 +66,7 @@ void test05()
     //beg
     strmsz_1 = fb.in_avail(); 
     pt_1 = fb.pubseekoff(2, ios_base::beg);
-    strmsz_2 = fb.in_avail(); 
+    fb.in_avail(); 
     off_1 = off_type(pt_1);
     VERIFY( off_1 > 0 );
     c1 = fb.snextc(); //current in pointer +1

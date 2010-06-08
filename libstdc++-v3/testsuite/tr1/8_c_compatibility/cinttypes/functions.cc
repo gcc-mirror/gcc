@@ -2,7 +2,7 @@
 
 // 2006-01-30  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,6 +52,10 @@ void test01()
   ret = std::tr1::wcstoimax(ws, wendptr, base);
   uret = std::tr1::wcstoumax(ws, wendptr, base);
 #endif
+
+  ret = ret; // Suppress unused warnings.
+  dret = dret;
+  uret = uret;
 
 #endif
 }
