@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
    Copyright (C) 1994, 1995, 1996, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -449,31 +449,6 @@ extern int current_first_parm_offset;
    otherwise, FUNC is 0.  */
 #define BASE_RETURN_VALUE_REG(MODE) \
  ((MODE) == DFmode ? 8 : 0) 
-
-/* On the pdp11 the value is found in R0 (or ac0??? 
-not without FPU!!!! ) */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
-
-/* and the called function leaves it in the first register.
-   Difference only on machines with register windows.  */
-
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, BASE_RETURN_VALUE_REG(MODE))
-
-/* 1 if N is a possible register number for a function value
-   as seen by the caller.
-   On the pdp, the first "output" reg is the only register thus used. 
-
-maybe ac0 ? - as option someday! */
-
-#define FUNCTION_VALUE_REGNO_P(N) (((N) == 0) || (TARGET_AC0 && (N) == 8))
 
 /* 1 if N is a possible register number for function argument passing.
    - not used on pdp */
