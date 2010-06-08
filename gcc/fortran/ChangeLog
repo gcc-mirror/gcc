@@ -1,3 +1,17 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* trans-types.c (gfc_get_nodesc_array_type): Use typed GC
+	allocation.
+	(gfc_get_array_type_bounds): Likewise.
+
+	* trans-decl.c (gfc_allocate_lang_decl): Likewise.
+	(gfc_find_module): Likewise.
+
+	* f95-lang.c (pushlevel): Likewise.
+
+	* trans.h (struct lang_type): Add variable_size GTY option.
+	(struct lang_decl): Likewise.
+
 2010-06-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44446

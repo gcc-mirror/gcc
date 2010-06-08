@@ -1,3 +1,52 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* typeck2.c (abstract_virtuals_error): Use typed GC allocation.
+
+	* pt.c (maybe_process_partial_specialization): Likewise.
+	(register_specialization): Likewise.
+	(add_pending_template): Likewise.
+	(lookup_template_class): Likewise.
+	(push_tinst_level): Likewise.
+
+	* parser.c (cp_lexer_new_main): Likewise.
+	(cp_lexer_new_from_tokens): Likewise.
+	(cp_token_cache_new): Likewise.
+	(cp_parser_context_new): Likewise.
+	(cp_parser_new): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_template_id): Likewise.
+
+	* name-lookup.c (binding_entry_make): Likewise.
+	(binding_table_construct): Likewise.
+	(binding_table_new): Likewise.
+	(cxx_binding_make): Likewise.
+	(pushdecl_maybe_friend): Likewise.
+	(begin_scope): Likewise.
+	(push_to_top_level): Likewise.
+
+	* lex.c (init_reswords): Likewise.
+	(retrofit_lang_decl): Likewise.
+	(cxx_dup_lang_specific_decl): Likewise.
+	(copy_lang_type): Likewise.
+	(cxx_make_type): Likewise.
+
+	* decl.c (make_label_decl): Likewise.
+	(check_goto): Likewise.
+	(start_preparsed_function): Likewise.
+	(save_function_data): Likewise.
+
+	* cp-tree.h (TYPE_SET_PTRMEMFUNC_TYPE): Likewise.
+
+	* cp-objcp-common.c (decl_shadowed_for_var_insert): Likewise.
+
+	* class.c (finish_struct_1): Likewise.
+
+	* cp-tree.h (struct lang_type): Add variable_size GTY option.
+	(struct lang_decl): Likewise.
+
+	* parser.c (cp_parser_new): Update comment to not reference
+	ggc_alloc.
+
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44366

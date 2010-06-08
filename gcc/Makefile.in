@@ -914,6 +914,7 @@ RESOURCE_H = resource.h hard-reg-set.h $(DF_H)
 DDG_H = ddg.h sbitmap.h $(DF_H)
 GCC_H = gcc.h version.h $(DIAGNOSTIC_CORE_H)
 GGC_H = ggc.h gtype-desc.h statistics.h
+GGC_INTERNAL_H = ggc-internal.h $(GGC_H)
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h $(INSN_ADDR_H)
 INSN_ADDR_H = $(srcdir)/insn-addr.h vecprim.h
@@ -2246,20 +2247,21 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 	$(GGC_H) $(HASHTAB_H) $(TOPLEV_H) $(PARAMS_H) hosthooks.h	\
-	$(HOSTHOOKS_DEF_H) $(VEC_H) $(PLUGIN_H) $(TIMEVAR_H)
+	$(HOSTHOOKS_DEF_H) $(VEC_H) $(PLUGIN_H) $(GGC_INTERNAL_H) $(TIMEVAR_H)
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-	$(FLAGS_H) $(TOPLEV_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H) $(TREE_FLOW_H) $(PLUGIN_H)
+	$(FLAGS_H) $(TOPLEV_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H) \
+	$(TREE_FLOW_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
 
 ggc-zone.o: ggc-zone.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 	$(TREE_H) $(FLAGS_H) $(TOPLEV_H) $(GGC_H) $(TIMEVAR_H) $(TM_P_H) \
-	$(PARAMS_H) $(BITMAP_H) $(PLUGIN_H)
+	$(PARAMS_H) $(BITMAP_H) $(PLUGIN_H) $(GGC_INTERNAL_H)
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(BCONFIG_H)
 
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(GGC_H) gt-stringpool.h $(CPPLIB_H) $(SYMTAB_H)
+	$(TREE_H) $(GGC_H) $(GGC_INTERNAL_H) gt-stringpool.h $(CPPLIB_H) $(SYMTAB_H)
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(FLAGS_H) convert.h $(TOPLEV_H) langhooks.h

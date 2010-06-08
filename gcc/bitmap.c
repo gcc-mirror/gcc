@@ -230,7 +230,7 @@ bitmap_element_allocate (bitmap head)
 	  /*  Inner list was just a singleton.  */
 	  bitmap_ggc_free = element->prev;
       else
-	element = GGC_NEW (bitmap_element);
+	element = ggc_alloc_bitmap_element_def ();
     }
 
 #ifdef GATHER_STATISTICS
@@ -375,7 +375,7 @@ bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL)
 {
   bitmap map;
 
-  map = GGC_NEW (struct bitmap_head_def);
+  map = ggc_alloc_bitmap_head_def ();
   bitmap_initialize_stat (map, NULL PASS_MEM_STAT);
 #ifdef GATHER_STATISTICS
   register_overhead (map, sizeof (bitmap_head));

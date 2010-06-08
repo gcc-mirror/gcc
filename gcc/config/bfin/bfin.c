@@ -2634,11 +2634,7 @@ bfin_handle_option (size_t code, const char *arg, int value)
 static struct machine_function *
 bfin_init_machine_status (void)
 {
-  struct machine_function *f;
-
-  f = GGC_CNEW (struct machine_function);
-
-  return f;
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Implement the macro OVERRIDE_OPTIONS.  */

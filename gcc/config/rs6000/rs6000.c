@@ -12569,7 +12569,7 @@ builtin_function_type (enum machine_mode mode_ret, enum machine_mode mode_arg0,
   found = htab_find_slot (builtin_hash_table, &h, INSERT);
   if (*found == NULL)
     {
-      h2 = GGC_NEW (struct builtin_hash_struct);
+      h2 = ggc_alloc_builtin_hash_struct ();
       *h2 = h;
       *found = (void *)h2;
       args = void_list_node;
@@ -14465,7 +14465,7 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
 static struct machine_function *
 rs6000_init_machine_status (void)
 {
-  return GGC_CNEW (machine_function);
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* These macros test for integers and extract the low-order bits.  */
@@ -21194,7 +21194,7 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	toc_hash_table = htab_create_ggc (1021, toc_hash_function,
 					  toc_hash_eq, NULL);
 
-      h = GGC_NEW (struct toc_hash_struct);
+      h = ggc_alloc_toc_hash_struct ();
       h->key = x;
       h->key_mode = mode;
       h->labelno = labelno;

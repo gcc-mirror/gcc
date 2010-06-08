@@ -976,7 +976,7 @@ objc_volatilize_decl (tree decl)
 
       if (!*loc)
 	{
-	  *loc = ggc_alloc (sizeof (key));
+	  *loc = ggc_alloc_volatilized_type ();
 	  ((struct volatilized_type *) *loc)->type = t;
 	}
 
@@ -1986,7 +1986,7 @@ objc_build_string_object (tree string)
     {
       tree var;
       VEC(constructor_elt,gc) *v = NULL;
-      *loc = desc = GGC_NEW (struct string_descriptor);
+      *loc = desc = ggc_alloc_string_descriptor ();
       desc->literal = string;
 
       /* GNU:    (NXConstantString *) & ((__builtin_ObjCString) { NULL, string, length })  */
@@ -6843,10 +6843,8 @@ hash_func (tree sel_name)
 static void
 hash_init (void)
 {
-  nst_method_hash_list
-    = (hash *) ggc_alloc_cleared (SIZEHASHTABLE * sizeof (hash));
-  cls_method_hash_list
-    = (hash *) ggc_alloc_cleared (SIZEHASHTABLE * sizeof (hash));
+  nst_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
+  cls_method_hash_list = ggc_alloc_cleared_vec_hash (SIZEHASHTABLE);
 
   /* Initialize the hash table used to hold the constant string objects.  */
   string_htab = htab_create_ggc (31, string_hash,
@@ -6868,7 +6866,7 @@ hash_enter (hash *hashlist, tree method)
   hash obj;
   int slot = hash_func (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
 
-  obj = (hash) ggc_alloc (sizeof (struct hashed_entry));
+  obj = ggc_alloc_hashed_entry ();
   obj->list = 0;
   obj->next = hashlist[slot];
   obj->key = method;
@@ -6898,7 +6896,7 @@ hash_add_attr (hash entry, tree value)
 {
   attr obj;
 
-  obj = (attr) ggc_alloc (sizeof (struct hashed_attribute));
+  obj = ggc_alloc_hashed_attribute ();
   obj->next = entry->list;
   obj->value = value;
 
@@ -7096,7 +7094,7 @@ add_class (tree class_name, tree name)
 			      INSERT);
   if (!*slot)
     {
-      *slot = (struct interface_tuple *) ggc_alloc_cleared (sizeof (struct interface_tuple));
+      *slot = ggc_alloc_cleared_interface_tuple ();
       (*slot)->id = name;
     }
   (*slot)->class_name = class_name;
@@ -7735,7 +7733,7 @@ continue_class (tree klass)
       uprivate_record = CLASS_STATIC_TEMPLATE (implementation_template);
       objc_instance_type = build_pointer_type (uprivate_record);
 
-      imp_entry = (struct imp_entry *) ggc_alloc (sizeof (struct imp_entry));
+      imp_entry = ggc_alloc_imp_entry ();
 
       imp_entry->next = imp_list;
       imp_entry->imp_context = klass;

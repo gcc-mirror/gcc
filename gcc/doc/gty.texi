@@ -149,20 +149,17 @@ option is a fragment of C code that calculates the length.
 The second case is when a structure or a global variable contains a
 pointer to an array, like this:
 @smallexample
-tree *
-  GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
+struct gimple_omp_for_iter * GTY((length ("%h.collapse"))) iter;
 @end smallexample
-In this case, @code{regno_decl} has been allocated by writing something like
+In this case, @code{iter} has been allocated by writing something like
 @smallexample
-  x->regno_decl =
-    ggc_alloc (x->regno_pointer_align_length * sizeof (tree));
+  x->iter = ggc_alloc_cleared_vec_gimple_omp_for_iter (collapse);
 @end smallexample
-and the @code{length} provides the length of the field.
+and the @code{collapse} provides the length of the field.
 
 This second use of @code{length} also works on global variables, like:
 @verbatim
-  static GTY((length ("reg_base_value_size")))
-    rtx *reg_base_value;
+static GTY((length("reg_known_value_size"))) rtx *reg_known_value;
 @end verbatim
 
 @findex skip
@@ -352,6 +349,30 @@ PCH cannot handle data structures that depend on the absolute values
 of pointers.  @code{reorder} functions can be expensive.  When
 possible, it is better to depend on properties of the data, like an ID
 number or the hash of a string instead.
+
+@findex variable_size
+@item variable_size
+
+The type machinery expects the types to be of constant size.  When this
+is not true, for example, with structs that have array fields or unions,
+the type machinery cannot tell how many bytes need to be allocated at 
+each allocation.  The @code{variable_size} is used to mark such types.
+The type machinery then provides allocators that take a parameter 
+indicating an exact size of object being allocated.  
+
+For example,
+@smallexample
+struct GTY((variable_size)) sorted_fields_type @{
+  int len;
+  tree GTY((length ("%h.len"))) elts[1];
+@};
+@end smallexample
+
+Then the objects of @code{struct sorted_fields_type} are allocated in GC 
+memory as follows:
+@smallexample
+  field_vec = ggc_alloc_sorted_fields_type (size);
+@end smallexample
 
 @findex special
 @item special ("@var{name}")

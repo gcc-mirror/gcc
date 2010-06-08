@@ -45,7 +45,7 @@ loop_optimizer_init (unsigned flags)
   struct loops *loops;
 
   gcc_assert (!current_loops);
-  loops = GGC_CNEW (struct loops);
+  loops = ggc_alloc_cleared_loops ();
 
   /* Find the loops.  */
 

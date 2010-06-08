@@ -605,6 +605,8 @@ struct GTY(()) lto_file_decl_data
   htab_t GTY((skip)) renaming_hash_table;
 };
 
+typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
+
 struct lto_char_ptr_base
 {
   char *ptr;

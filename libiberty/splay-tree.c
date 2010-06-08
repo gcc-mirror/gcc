@@ -1,5 +1,6 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2009,
+   2010 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -265,13 +266,53 @@ splay_tree_new_with_allocator (splay_tree_compare_fn compare_fn,
                                splay_tree_deallocate_fn deallocate_fn,
                                void *allocate_data)
 {
-  splay_tree sp = (splay_tree) (*allocate_fn) (sizeof (struct splay_tree_s),
-                                               allocate_data);
+  return
+    splay_tree_new_typed_alloc (compare_fn, delete_key_fn, delete_value_fn,
+				allocate_fn, allocate_fn, deallocate_fn,
+				allocate_data);
+}
+
+/*
+
+@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc
+(splay_tree_compare_fn @var{compare_fn},
+splay_tree_delete_key_fn @var{delete_key_fn},
+splay_tree_delete_value_fn @var{delete_value_fn},
+splay_tree_allocate_fn @var{tree_allocate_fn},
+splay_tree_allocate_fn @var{node_allocate_fn},
+splay_tree_deallocate_fn @var{deallocate_fn},
+void * @var{allocate_data})
+
+This function creates a splay tree that uses two different allocators
+@var{tree_allocate_fn} and @var{node_allocate_fn} to use for allocating the
+tree itself and its nodes respectively.  This is useful when variables of
+different types need to be allocated with different allocators.
+
+The splay tree will use @var{compare_fn} to compare nodes,
+@var{delete_key_fn} to deallocate keys, and @var{delete_value_fn} to
+deallocate values.
+
+@end deftypefn
+
+*/
+
+splay_tree
+splay_tree_new_typed_alloc (splay_tree_compare_fn compare_fn,
+			    splay_tree_delete_key_fn delete_key_fn,
+			    splay_tree_delete_value_fn delete_value_fn,
+			    splay_tree_allocate_fn tree_allocate_fn,
+			    splay_tree_allocate_fn node_allocate_fn,
+			    splay_tree_deallocate_fn deallocate_fn,
+			    void * allocate_data)
+{
+  splay_tree sp = (splay_tree) (*tree_allocate_fn)
+    (sizeof (struct splay_tree_s), allocate_data);
+
   sp->root = 0;
   sp->comp = compare_fn;
   sp->delete_key = delete_key_fn;
   sp->delete_value = delete_value_fn;
-  sp->allocate = allocate_fn;
+  sp->allocate = node_allocate_fn;
   sp->deallocate = deallocate_fn;
   sp->allocate_data = allocate_data;
 
@@ -313,10 +354,10 @@ splay_tree_insert (splay_tree sp, splay_tree_key key, splay_tree_value value)
     {
       /* Create a new node, and insert it at the root.  */
       splay_tree_node node;
-      
+
       node = ((splay_tree_node)
-              (*sp->allocate) (sizeof (struct splay_tree_node_s),
-                               sp->allocate_data));
+	      (*sp->allocate) (sizeof (struct splay_tree_node_s),
+			       sp->allocate_data));
       node->key = key;
       node->value = value;
       

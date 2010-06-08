@@ -2521,7 +2521,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
      list.  */
   if (upper)
     {
-      struct nb_iter_bound *elt = GGC_NEW (struct nb_iter_bound);
+      struct nb_iter_bound *elt = ggc_alloc_nb_iter_bound ();
 
       elt->bound = i_bound;
       elt->stmt = at_stmt;

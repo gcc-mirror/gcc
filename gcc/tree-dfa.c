@@ -134,7 +134,7 @@ create_var_ann (tree t)
 	      || TREE_CODE (t) == PARM_DECL
 	      || TREE_CODE (t) == RESULT_DECL);
 
-  ann = GGC_CNEW (struct var_ann_d);
+  ann = ggc_alloc_cleared_var_ann_d ();
   *DECL_VAR_ANN_PTR (t) = ann;
 
   return ann;

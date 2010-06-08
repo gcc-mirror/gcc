@@ -924,7 +924,7 @@ used to initialize the @code{machine} of that structure.
 
 @code{struct machine_function} structures are expected to be freed by GC@.
 Generally, any memory that they reference must be allocated by using
-@code{ggc_alloc}, including the structure itself.
+GC allocation, including the structure itself.
 @end deftypevar
 
 @node Storage Layout

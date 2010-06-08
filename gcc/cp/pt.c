@@ -888,7 +888,7 @@ maybe_process_partial_specialization (tree type)
 
 		  slot = (spec_entry **)
 		    htab_find_slot (type_specializations, &elt, INSERT);
-		  *slot = GGC_NEW (spec_entry);
+		  *slot = ggc_alloc_spec_entry ();
 		  **slot = elt;
 		}
 	      else if (COMPLETE_OR_OPEN_TYPE_P (inst))
@@ -1401,7 +1401,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   if (!optimize_specialization_lookup_p (tmpl))
     {
       gcc_assert (tmpl && args && spec);
-      *slot = GGC_NEW (spec_entry);
+      *slot = ggc_alloc_spec_entry ();
       **slot = elt;
       if (TREE_CODE (spec) == FUNCTION_DECL && DECL_NAMESPACE_SCOPE_P (spec)
 	  && PRIMARY_TEMPLATE_P (tmpl)
@@ -6155,7 +6155,7 @@ add_pending_template (tree d)
   if (level)
     push_tinst_level (d);
 
-  pt = GGC_NEW (struct pending_template);
+  pt = ggc_alloc_pending_template ();
   pt->next = NULL;
   pt->tinst = current_tinst_level;
   if (last_pending_template)
@@ -6718,7 +6718,7 @@ lookup_template_class (tree d1,
       elt.spec = t;
       slot = (spec_entry **) htab_find_slot_with_hash (type_specializations,
 						       &elt, hash, INSERT);
-      *slot = GGC_NEW (spec_entry);
+      *slot = ggc_alloc_spec_entry ();
       **slot = elt;
 
       /* Note this use of the partial instantiation so we can check it
@@ -7076,7 +7076,7 @@ push_tinst_level (tree d)
       return 0;
     }
 
-  new_level = GGC_NEW (struct tinst_level);
+  new_level = ggc_alloc_tinst_level ();
   new_level->decl = d;
   new_level->locus = input_location;
   new_level->in_system_header_p = in_system_header;

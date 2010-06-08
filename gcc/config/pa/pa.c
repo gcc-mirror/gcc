@@ -558,7 +558,7 @@ pa_init_builtins (void)
 static struct machine_function *
 pa_init_machine_status (void)
 {
-  return GGC_CNEW (machine_function);
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* If FROM is a probable pointer register, mark TO as a probable
@@ -5375,13 +5375,11 @@ get_deferred_plabel (rtx symbol)
       tree id;
 
       if (deferred_plabels == 0)
-	deferred_plabels = (struct deferred_plabel *)
-	  ggc_alloc (sizeof (struct deferred_plabel));
+	deferred_plabels =  ggc_alloc_deferred_plabel ();
       else
-	deferred_plabels = (struct deferred_plabel *)
-	  ggc_realloc (deferred_plabels,
-		       ((n_deferred_plabels + 1)
-			* sizeof (struct deferred_plabel)));
+        deferred_plabels = GGC_RESIZEVEC (struct deferred_plabel,
+                                          deferred_plabels,
+                                          n_deferred_plabels + 1);
 
       i = n_deferred_plabels++;
       deferred_plabels[i].internal_label = gen_label_rtx ();

@@ -139,7 +139,7 @@ varpool_node (tree decl)
     htab_find_slot (varpool_hash, &key, INSERT);
   if (*slot)
     return *slot;
-  node = GGC_CNEW (struct varpool_node);
+  node = ggc_alloc_cleared_varpool_node ();
   node->decl = decl;
   node->order = cgraph_order++;
   node->next = varpool_nodes;
@@ -651,7 +651,7 @@ varpool_extra_name_alias (tree alias, tree decl)
   if (*slot)
     return false;
 
-  alias_node = GGC_CNEW (struct varpool_node);
+  alias_node = ggc_alloc_cleared_varpool_node ();
   alias_node->decl = alias;
   alias_node->alias = 1;
   alias_node->extra_name = decl_node;

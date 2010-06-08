@@ -7684,7 +7684,7 @@ parse_optimize_options (tree args, bool attr_p)
 		  next_p = NULL;
 		}
 
-	      r = q = (char *) ggc_alloc (len2 + 3);
+	      r = q = (char *) ggc_alloc_atomic (len2 + 3);
 
 	      /* If the user supplied -Oxxx or -fxxx, only allow -Oxxx or -fxxx
 		 options.  */

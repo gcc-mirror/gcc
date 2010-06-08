@@ -1114,7 +1114,7 @@ uid_ssaname_map_hash (const void *item)
 void
 init_tree_ssa (struct function *fn)
 {
-  fn->gimple_df = GGC_CNEW (struct gimple_df);
+  fn->gimple_df = ggc_alloc_cleared_gimple_df ();
   fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash,
 				     		    uid_decl_map_eq, NULL);
   fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash,

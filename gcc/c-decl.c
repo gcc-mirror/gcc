@@ -590,7 +590,7 @@ bind (tree name, tree decl, struct c_scope *scope, bool invisible,
       binding_freelist = b->prev;
     }
   else
-    b = GGC_NEW (struct c_binding);
+    b = ggc_alloc_c_binding ();
 
   b->shadowed = 0;
   b->decl = decl;
@@ -704,7 +704,7 @@ void
 record_inline_static (location_t loc, tree func, tree decl,
 		      enum c_inline_static_type type)
 {
-  struct c_inline_static *csi = GGC_NEW (struct c_inline_static);
+  struct c_inline_static *csi = ggc_alloc_c_inline_static ();
   csi->location = loc;
   csi->function = func;
   csi->static_decl = decl;
@@ -928,7 +928,7 @@ push_scope (void)
 	  scope_freelist = scope->outer;
 	}
       else
-	scope = GGC_CNEW (struct c_scope);
+	scope = ggc_alloc_cleared_c_scope ();
 
       /* The FLOAT_CONST_DECIMAL64 pragma applies to nested scopes.  */
       if (current_scope)
@@ -3007,7 +3007,7 @@ make_label (location_t location, tree name, bool defining,
   DECL_CONTEXT (label) = current_function_decl;
   DECL_MODE (label) = VOIDmode;
 
-  label_vars = GGC_NEW (struct c_label_vars);
+  label_vars = ggc_alloc_c_label_vars ();
   label_vars->shadowed = NULL;
   set_spot_bindings (&label_vars->label_bindings, defining);
   label_vars->decls_in_scope = make_tree_vector ();
@@ -3105,7 +3105,7 @@ lookup_label_for_goto (location_t loc, tree name)
     {
       struct c_goto_bindings *g;
 
-      g = GGC_NEW (struct c_goto_bindings);
+      g = ggc_alloc_c_goto_bindings ();
       g->loc = loc;
       set_spot_bindings (&g->goto_bindings, true);
       VEC_safe_push (c_goto_bindings_p, gc, label_vars->gotos, g);
@@ -6987,9 +6987,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  ensure that this lives as long as the rest of the struct decl.
 	  All decls in an inline function need to be saved.  */
 
-	space = GGC_CNEW (struct lang_type);
-	space2 = GGC_NEWVAR (struct sorted_fields_type,
-			     sizeof (struct sorted_fields_type) + len * sizeof (tree));
+	space = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
+	space2 = ggc_alloc_sorted_fields_type
+	  (sizeof (struct sorted_fields_type) + len * sizeof (tree));
 
 	len = 0;
 	space->s = space2;
@@ -7270,7 +7270,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Record the min/max values so that we can warn about bit-field
      enumerations that are too small for the values.  */
-  lt = GGC_CNEW (struct lang_type);
+  lt = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
   lt->enum_min = minnode;
   lt->enum_max = maxnode;
   TYPE_LANG_SPECIFIC (enumtype) = lt;
@@ -8293,7 +8293,7 @@ void
 c_push_function_context (void)
 {
   struct language_function *p;
-  p = GGC_NEW (struct language_function);
+  p = ggc_alloc_language_function ();
   cfun->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;

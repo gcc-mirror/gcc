@@ -1390,8 +1390,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   type = make_node (ARRAY_TYPE);
 
   GFC_ARRAY_TYPE_P (type) = 1;
-  TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
-    ggc_alloc_cleared (sizeof (struct lang_type));
+  TYPE_LANG_SPECIFIC (type)
+      = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
 
   known_stride = (packed != PACKED_NO);
   known_offset = 1;
@@ -1631,8 +1631,8 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   TYPE_NAME (fat_type) = get_identifier (name);
 
   GFC_DESCRIPTOR_TYPE_P (fat_type) = 1;
-  TYPE_LANG_SPECIFIC (fat_type) = (struct lang_type *)
-    ggc_alloc_cleared (sizeof (struct lang_type));
+  TYPE_LANG_SPECIFIC (fat_type)
+    = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
 
   GFC_TYPE_ARRAY_RANK (fat_type) = dimen;
   GFC_TYPE_ARRAY_DTYPE (fat_type) = NULL_TREE;

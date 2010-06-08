@@ -404,7 +404,7 @@ gsi_insert_before_without_update (gimple_stmt_iterator *i, gimple stmt,
 {
   gimple_seq_node n;
 
-  n = GGC_NEW (struct gimple_seq_node_d);
+  n = ggc_alloc_gimple_seq_node_d ();
   n->prev = n->next = NULL;
   n->stmt = stmt;
   gsi_insert_seq_nodes_before (i, n, n, m);
@@ -439,7 +439,7 @@ gsi_insert_after_without_update (gimple_stmt_iterator *i, gimple stmt,
 {
   gimple_seq_node n;
 
-  n = GGC_NEW (struct gimple_seq_node_d);
+  n = ggc_alloc_gimple_seq_node_d ();
   n->prev = n->next = NULL;
   n->stmt = stmt;
   gsi_insert_seq_nodes_after (i, n, n, m);

@@ -1004,7 +1004,7 @@ dbxout_init (const char *input_file_name)
   const char *mapped_name;
 
   typevec_len = 100;
-  typevec = GGC_CNEWVEC (struct typeinfo, typevec_len);
+  typevec = ggc_alloc_cleared_vec_typeinfo (typevec_len);
 
   /* stabstr_ob contains one string, which will be just fine with
      1-byte alignment.  */

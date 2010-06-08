@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "flags.h"
 #include "ggc.h"
+#include "ggc-internal.h"
 #include "timevar.h"
 #include "params.h"
 #include "bitmap.h"
@@ -417,9 +418,9 @@ struct alloc_zone
 #ifdef GATHER_STATISTICS
   struct
   {
-    /* Total memory allocated with ggc_alloc.  */
+    /* Total GC-allocated memory.  */
     unsigned long long total_allocated;
-    /* Total overhead for memory to be allocated with ggc_alloc.  */
+    /* Total overhead for GC-allocated memory.  */
     unsigned long long total_overhead;
 
     /* Total allocations and overhead for sizes less than 32, 64 and 128.
@@ -860,7 +861,7 @@ alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size, struct alloc_zone *zone)
   zone->bytes_mapped += size;
 
   /* Pretend we don't have access to the allocated pages.  We'll enable
-     access to smaller pieces of the area in ggc_alloc.  Discard the
+     access to smaller pieces of the area in ggc_internal_alloc.  Discard the
      handle to avoid handle leak.  */
   VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (page, size));
 
@@ -1089,8 +1090,8 @@ free_chunk (char *ptr, size_t size, struct alloc_zone *zone)
 /* Allocate a chunk of memory of at least ORIG_SIZE bytes, in ZONE.  */
 
 void *
-ggc_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
-		     MEM_STAT_DECL)
+ggc_internal_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
+			      MEM_STAT_DECL)
 {
   size_t bin;
   size_t csize;
@@ -1352,6 +1353,19 @@ ggc_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
   return result;
 }
 
+#define ggc_internal_alloc_zone_pass_stat(s,z)          \
+    ggc_internal_alloc_zone_stat (s,z PASS_MEM_STAT)
+
+void *
+ggc_internal_cleared_alloc_zone_stat (size_t orig_size,
+				      struct alloc_zone *zone MEM_STAT_DECL)
+{
+  void * result = ggc_internal_alloc_zone_pass_stat (orig_size, zone);
+  memset (result, 0, orig_size);
+  return result;
+}
+
+
 /* Allocate a SIZE of chunk memory of GTE type, into an appropriate zone
    for that type.  */
 
@@ -1362,25 +1376,25 @@ ggc_alloc_typed_stat (enum gt_types_enum gte, size_t size
   switch (gte)
     {
     case gt_ggc_e_14lang_tree_node:
-      return ggc_alloc_zone_pass_stat (size, &tree_zone);
+      return ggc_internal_alloc_zone_pass_stat (size, &tree_zone);
 
     case gt_ggc_e_7rtx_def:
-      return ggc_alloc_zone_pass_stat (size, &rtl_zone);
+      return ggc_internal_alloc_zone_pass_stat (size, &rtl_zone);
 
     case gt_ggc_e_9rtvec_def:
-      return ggc_alloc_zone_pass_stat (size, &rtl_zone);
+      return ggc_internal_alloc_zone_pass_stat (size, &rtl_zone);
 
     default:
-      return ggc_alloc_zone_pass_stat (size, &main_zone);
+      return ggc_internal_alloc_zone_pass_stat (size, &main_zone);
     }
 }
 
-/* Normal ggc_alloc simply allocates into the main zone.  */
+/* Normal GC allocation simply allocates into the main zone.  */
 
 void *
-ggc_alloc_stat (size_t size MEM_STAT_DECL)
+ggc_internal_alloc_stat (size_t size MEM_STAT_DECL)
 {
-  return ggc_alloc_zone_pass_stat (size, &main_zone);
+  return ggc_internal_alloc_zone_pass_stat (size, &main_zone);
 }
 
 /* Poison the chunk.  */
@@ -1713,31 +1727,6 @@ new_ggc_zone_1 (struct alloc_zone *new_zone, const char * name)
   new_zone->name = name;
   new_zone->next_zone = G.zones->next_zone;
   G.zones->next_zone = new_zone;
-}
-
-struct alloc_zone *
-new_ggc_zone (const char * name)
-{
-  struct alloc_zone *new_zone = XCNEW (struct alloc_zone);
-  new_ggc_zone_1 (new_zone, name);
-  return new_zone;
-}
-
-/* Destroy a GGC zone.  */
-void
-destroy_ggc_zone (struct alloc_zone * dead_zone)
-{
-  struct alloc_zone *z;
-
-  for (z = G.zones; z && z->next_zone != dead_zone; z = z->next_zone)
-    /* Just find that zone.  */
-    continue;
-
-  /* We should have found the zone in the list.  Anything else is fatal.  */
-  gcc_assert (z);
-
-  /* z is dead, baby. z is dead.  */
-  z->dead = true;
 }
 
 /* Free all empty pages and objects within a page for a given zone  */
@@ -2488,6 +2477,12 @@ ggc_pch_read (FILE *f, void *addr)
 
   /* We've just read in a PCH file.  So, every object that used to be
      allocated is now free.  */
+#ifdef 0 && GATHER_STATISTICS
+  zone_allocate_marks ();
+  ggc_prune_overhead_list ();
+  zone_free_marks ();
+#endif
+
   for (zone = G.zones; zone; zone = zone->next_zone)
     {
       struct small_page_entry *page, *next_page;

@@ -1,3 +1,27 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* gcc-interface/utils.c (init_gnat_to_gnu): Use typed GC
+	allocation.
+	(init_dummy_type): Likewise.
+	(gnat_pushlevel): Likewise.
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(start_stmt_group): Likewise.
+	(extract_encoding): Likewise.
+	(decode_name): Likewise.
+
+	* gcc-interface/misc.c (gnat_printable_name): Likewise.
+
+	* gcc-interface/decl.c (annotate_value): Likewise.
+
+	* gcc-interface/ada-tree.h (struct lang_type): Add variable_size
+	GTY option.
+	(struct lang_decl): Likewise.
+	(SET_TYPE_LANG_SPECIFIC): Use typed GC allocation.
+	(SET_DECL_LANG_SPECIFIC): Likewise.
+
 2010-06-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatlink.adb (gnatlink): Remove support for -fsjlj switch.

@@ -1,3 +1,16 @@
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* objc-act.h (ALLOC_OBJC_TYPE_LANG_SPECIFIC): Use typed GC
+	allocation.
+
+	* objc-act.c (objc_volatilize_decl): Likewise.
+	(objc_build_string_object): Likewise.
+	(hash_init): Likewise.
+	(hash_enter): Likewise.
+	(hash_add_attr): Likewise.
+	(add_class): Likewise.
+	(start_class): Likewise.
+
 2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objc-act.c: Update include path for moved files.

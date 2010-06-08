@@ -1703,7 +1703,7 @@ remove_iv (gimple iv_stmt)
    TRANSFORM is the matrix transform that was applied to OLD_LOOPNEST to get
    NEW_LOOPNEST.  */
 
-void
+void 
 lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 				 VEC(tree,heap) *old_ivs,
 				 VEC(tree,heap) *invariants,
@@ -2131,7 +2131,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, gimple stmt, tree x,
       gsi_insert_before (firstbsi, setstmt, GSI_SAME_STMT);
       update_stmt (setstmt);
       SET_USE (use_p, var);
-      h = GGC_NEW (struct tree_map);
+      h = ggc_alloc_tree_map ();
       h->hash = in.hash;
       h->base.from = use;
       h->to = var;

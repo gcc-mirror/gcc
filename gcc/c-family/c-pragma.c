@@ -77,7 +77,7 @@ push_alignment (int alignment, tree id)
 {
   align_stack * entry;
 
-  entry = GGC_NEW (align_stack);
+  entry = ggc_alloc_align_stack ();
 
   entry->alignment  = alignment;
   entry->id	    = id;
@@ -914,7 +914,7 @@ handle_pragma_push_options (cpp_reader *ARG_UNUSED(dummy))
       return;
     }
 
-  p = GGC_NEW (opt_stack);
+  p = ggc_alloc_opt_stack ();
   p->prev = options_stack;
   options_stack = p;
 

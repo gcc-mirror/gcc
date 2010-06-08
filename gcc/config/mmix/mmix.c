@@ -263,7 +263,7 @@ mmix_init_expanders (void)
 static struct machine_function *
 mmix_init_machine_status (void)
 {
-  return GGC_CNEW (struct machine_function);
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* DATA_ALIGNMENT.

@@ -435,11 +435,7 @@ m32c_override_options (void)
 static struct machine_function *
 m32c_init_machine_status (void)
 {
-  struct machine_function *machine;
-  machine =
-    (machine_function *) ggc_alloc_cleared (sizeof (machine_function));
-
-  return machine;
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Implements INIT_EXPANDERS.  We just set up to call the above

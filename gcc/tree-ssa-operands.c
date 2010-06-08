@@ -320,9 +320,10 @@ ssa_operand_alloc (unsigned size)
 	  gcc_unreachable ();
 	}
 
-      ptr = (struct ssa_operand_memory_d *)
-	      ggc_alloc (sizeof (void *)
-			 + gimple_ssa_operands (cfun)->ssa_operand_mem_size);
+
+      ptr = ggc_alloc_ssa_operand_memory_d (sizeof (void *)
+                        + gimple_ssa_operands (cfun)->ssa_operand_mem_size);
+
       ptr->next = gimple_ssa_operands (cfun)->operand_memory;
       gimple_ssa_operands (cfun)->operand_memory = ptr;
       gimple_ssa_operands (cfun)->operand_memory_index = 0;

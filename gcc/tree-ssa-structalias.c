@@ -197,8 +197,7 @@
    keep the set of called functions for indirect calls.
 
    And probably more.  */
-
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct heapvar_map)))
 htab_t heapvar_for_stmt;
 
 static bool use_field_sensitive = true;
@@ -379,7 +378,7 @@ heapvar_insert (tree from, unsigned HOST_WIDE_INT offset, tree to)
   struct heapvar_map *h;
   void **loc;
 
-  h = GGC_NEW (struct heapvar_map);
+  h = ggc_alloc_heapvar_map ();
   h->map.base.from = from;
   h->offset = offset;
   h->map.hash = heapvar_map_hash (h);

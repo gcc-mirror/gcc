@@ -1570,7 +1570,7 @@ input_node_opt_summary (struct cgraph_node *node,
     {
       int parm_num;
       tree parm;
-      struct ipa_replace_map *map = GGC_NEW (struct ipa_replace_map);
+      struct ipa_replace_map *map = ggc_alloc_ipa_replace_map ();
 
       VEC_safe_push (ipa_replace_map_p, gc, node->clone.tree_map, map);
       for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm_num;

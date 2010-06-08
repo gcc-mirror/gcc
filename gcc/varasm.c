@@ -378,7 +378,7 @@ emutls_decl (tree decl)
 		       VAR_DECL, get_emutls_object_name (name),
 		       get_emutls_object_type ());
 
-      h = GGC_NEW (struct tree_map);
+      h = ggc_alloc_tree_map ();
       h->hash = in.hash;
       h->base.from = decl;
       h->to = to;
@@ -553,7 +553,7 @@ get_unnamed_section (unsigned int flags, void (*callback) (const void *),
 {
   section *sect;
 
-  sect = GGC_NEW (section);
+  sect = ggc_alloc_section ();
   sect->unnamed.common.flags = flags | SECTION_UNNAMED;
   sect->unnamed.callback = callback;
   sect->unnamed.data = data;
@@ -570,7 +570,7 @@ get_noswitch_section (unsigned int flags, noswitch_section_callback callback)
 {
   section *sect;
 
-  sect = GGC_NEW (section);
+  sect = ggc_alloc_section ();
   sect->noswitch.common.flags = flags | SECTION_NOSWITCH;
   sect->noswitch.callback = callback;
 
@@ -591,7 +591,7 @@ get_section (const char *name, unsigned int flags, tree decl)
   flags |= SECTION_NAMED;
   if (*slot == NULL)
     {
-      sect = GGC_NEW (section);
+      sect = ggc_alloc_section ();
       sect->named.common.flags = flags;
       sect->named.name = ggc_strdup (name);
       sect->named.decl = decl;
@@ -640,8 +640,7 @@ get_block_for_section (section *sect)
   block = (struct object_block *) *slot;
   if (block == NULL)
     {
-      block = (struct object_block *)
-	ggc_alloc_cleared (sizeof (struct object_block));
+      block = ggc_alloc_cleared_object_block ();
       block->sect = sect;
       *slot = block;
     }
@@ -661,7 +660,7 @@ create_block_symbol (const char *label, struct object_block *block,
 
   /* Create the extended SYMBOL_REF.  */
   size = RTX_HDR_SIZE + sizeof (struct block_symbol);
-  symbol = (rtx) ggc_alloc_zone (size, &rtl_zone);
+  symbol = ggc_alloc_zone_rtx_def (size, &rtl_zone);
 
   /* Initialize the normal SYMBOL_REF fields.  */
   memset (symbol, 0, size);
@@ -3324,7 +3323,7 @@ build_constant_desc (tree exp)
   int labelno;
   tree decl;
 
-  desc = GGC_NEW (struct constant_descriptor_tree);
+  desc = ggc_alloc_constant_descriptor_tree ();
   desc->value = copy_constant (exp);
 
   /* Propagate marked-ness to copied constant.  */
@@ -3724,7 +3723,7 @@ create_constant_pool (void)
 {
   struct rtx_constant_pool *pool;
 
-  pool = GGC_NEW (struct rtx_constant_pool);
+  pool = ggc_alloc_rtx_constant_pool ();
   pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
 					  const_desc_rtx_eq, NULL);
   pool->first = NULL;
@@ -3790,7 +3789,7 @@ force_const_mem (enum machine_mode mode, rtx x)
     return copy_rtx (desc->mem);
 
   /* Otherwise, create a new descriptor.  */
-  desc = GGC_NEW (struct constant_descriptor_rtx);
+  desc = ggc_alloc_constant_descriptor_rtx ();
   *slot = desc;
 
   /* Align the location counter as required by EXP's data type.  */
