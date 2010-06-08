@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,7 +35,7 @@ void test06(void)
   // seekg
   {
     istringstream iss(num1);
-    istream::pos_type pos1 = iss.tellg();
+    iss.tellg();
     int asNum = 0;
     iss >> asNum;
     VERIFY( test = iss.eof() );

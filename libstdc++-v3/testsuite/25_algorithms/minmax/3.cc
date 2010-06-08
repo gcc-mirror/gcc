@@ -2,7 +2,7 @@
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,8 +41,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::pair<int, int> z = std::minmax({1, 2, 3, 4, 5, 6, 7, 8},
-				      compare_counter());
+  std::minmax({1, 2, 3, 4, 5, 6, 7, 8}, compare_counter());
 
   // If N is the number of arguments in the minmax function call, 
   // 25.3.7 specifies that at most 3N/2 comparisons are allowed.

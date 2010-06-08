@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2004, 2009 Free Software Foundation
+// Copyright (C) 2003, 2004, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@ void test01()
 
   // Wrapped in pos_type is EOF.
   soff = -1;
+  soff = soff; // Suppress unused warning.
 }
 
 int main(void)

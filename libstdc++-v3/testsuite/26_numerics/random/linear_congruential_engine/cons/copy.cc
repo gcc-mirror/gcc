@@ -28,7 +28,8 @@ test01()
   std::linear_congruential_engine<unsigned long, 48271, 0, 2147483647> e(1);
 
   const auto f(e);
-  auto g(f);  
+  auto g(f);
+  g = g; // Suppress unused warning.
 }
 
 int main()

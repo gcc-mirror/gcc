@@ -1,6 +1,6 @@
 // 2002-06-28 pme
 
-// Copyright (C) 2002, 2004, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,12 +28,10 @@ test03()
 {
   int data[] = {1, 2, 3};
   std::priority_queue<int> pq;
-  std::size_t size = pq.size();
 
   for (int i = 0; i < 3; ++i)
     pq.push(data[i]);
 
-  size = pq.size();
   pq.top();
   for (int i = 0; i < 2; ++i)
     pq.pop();

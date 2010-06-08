@@ -2,7 +2,7 @@
 
 // 2006-02-03  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,8 @@ void test01(int dummy, ...)
   wchar_t** endptr1 = 0;
   float fret;
   fret = std::tr1::wcstof(nptr1, endptr1);
+
+  fret = fret; // Suppress unused warning.
 #endif
 
 #if _GLIBCXX_HAVE_VFWSCANF
@@ -44,6 +46,8 @@ void test01(int dummy, ...)
   const wchar_t* format1 = 0;
   int ret1;
   ret1 = std::tr1::vfwscanf(stream, format1, arg);
+
+  ret1 = ret1; // Suppress unused warning.
 #endif
 
 #if _GLIBCXX_HAVE_VSWSCANF
@@ -51,12 +55,16 @@ void test01(int dummy, ...)
   const wchar_t* format2 = 0;
   int ret2;
   ret2 = std::tr1::vswscanf(s, format2, arg);
+
+  ret2 = ret2; // Suppress unused warning.
 #endif
 
 #if _GLIBCXX_HAVE_VWSCANF
   const wchar_t* format3 = 0;
   int ret3;
   ret3 = std::tr1::vwscanf(format3, arg);
+
+  ret3 = ret3; // Suppress unused warning.
 #endif
 
 #if _GLIBCXX_USE_C99
@@ -71,6 +79,10 @@ void test01(int dummy, ...)
   unsigned long long ullret;
   llret = std::tr1::wcstoll(nptr2, endptr2, base);
   ullret = std::tr1::wcstoull(nptr2, endptr2, base);
+
+  ldret = ldret; // Suppress unused warnings.
+  llret = llret;
+  ullret = ullret;
 
 #endif
 }

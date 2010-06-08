@@ -23,6 +23,6 @@
 
 int main()
 {
-  std::atomic_address a = { { NULL } };
+  std::atomic_address a __attribute__((unused)) = { { NULL } };
   return 0;
 }

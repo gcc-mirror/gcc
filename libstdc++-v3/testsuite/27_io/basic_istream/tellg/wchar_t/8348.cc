@@ -32,7 +32,7 @@ void test06(void)
   // tellg
   {
     wistringstream iss(num1);
-    wistream::pos_type pos1 = iss.tellg();
+    iss.tellg();
     int asNum = 0;
     iss >> asNum;
     VERIFY( test = iss.eof() );
@@ -44,7 +44,7 @@ void test06(void)
   // seekg
   {
     wistringstream iss(num1);
-    wistream::pos_type pos1 = iss.tellg();
+    iss.tellg();
     int asNum = 0;
     iss >> asNum;
     VERIFY( test = iss.eof() );

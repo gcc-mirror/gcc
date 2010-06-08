@@ -1,6 +1,6 @@
 // 2001-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,6 +60,9 @@ void test01()
   // void* memchr(      void* s, int c, size_t n);
   cv = std::memchr(cv, 'a', 3);
   v = std::memchr(v, 'a', 3);
+
+  cc1 = cc1; // Suppress unused warnings.
+  c1 = c1;
 }
 
 int main()

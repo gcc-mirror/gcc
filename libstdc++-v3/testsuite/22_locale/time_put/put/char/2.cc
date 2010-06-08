@@ -2,7 +2,7 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -47,27 +47,27 @@ void test02()
   oss.imbue(loc_de);
   const time_put<char>& tim_put = use_facet<time_put<char> >(oss.getloc()); 
 
-  iterator_type os_it02 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
   string result2 = oss.str();
   VERIFY( result2 == "Son" || result2 == "So" );
 
   oss.str(empty); // "%d.%m.%Y"
-  iterator_type os_it23 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
   string result23 = oss.str(); // "04.04.1971"
   VERIFY( result23 == "04.04.1971" );
 
   oss.str(empty); // "%T"
-  iterator_type os_it24 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
   string result24 = oss.str(); // "12:00:00"
   VERIFY( result24 == "12:00:00" );
 
   oss.str(empty);
-  iterator_type os_it33 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
   string result33 = oss.str(); // "04.04.1971"
   VERIFY( result33 == "04.04.1971" );
 
   oss.str(empty);
-  iterator_type os_it34 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
   string result34 = oss.str(); // "12:00:00"
   VERIFY( result34 == "12:00:00" );
 }

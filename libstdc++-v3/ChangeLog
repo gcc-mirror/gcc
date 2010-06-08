@@ -1,3 +1,181 @@
+2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pb_ds/detail/trie_policy/order_statistics_imp.hpp:
+	Avoid -Wall warnings.
+	* testsuite/27_io/ios_base/failure/what-3.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/1.cc: Likewise.
+	* testsuite/27_io/types/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Likewise.
+	* testsuite/27_io/fpos/mbstate_t/4_neg.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/2.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/3.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/19_diagnostics/logic_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Likewise.
+	* testsuite/24_iterators/front_insert_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/back_insert_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/insert_iterator/2.cc: Likewise.
+	* testsuite/18_support/exception_ptr/make_exception_ptr.cc: Likewise.
+	* testsuite/21_strings/c_strings/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/c_strings/wchar_t/2.cc: Likewise.
+	* testsuite/21_strings/c_strings/char/1.cc: Likewise.
+	* testsuite/21_strings/c_strings/char/2.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/complex/complex_value.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/overloads.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++.cc: Likewise.
+	* testsuite/26_numerics/slice_array/array_assignment.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/12971.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype_base/mask.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	discard_block/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	linear_congruential/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	mersenne_twister/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	xor_combine/requirements/constants.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cfenv/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cctype/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cmath/templates.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwctype/functions.cc: Likewise.
+	* testsuite/tr1/6_containers/utility/pair.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	increment_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	bitwise_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	decrement_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/cons/1.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/23_containers/priority_queue/members/7161.cc
+	* testsuite/23_containers/set/dr130.cc: Likewise.
+	* testsuite/23_containers/list/pthread5.cc: Likewise.
+	* testsuite/23_containers/map/dr130.cc: Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+	* testsuite/20_util/clocks/1.cc: Likewise.
+
 2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/Makefile.am, doc/Makefile.in (xml_sources_extra): Add

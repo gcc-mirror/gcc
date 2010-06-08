@@ -40,9 +40,7 @@ test01()
   std::istream is_00(0);
   std::istream is_03(&isbuf_03);
   std::istream is_04(&isbuf_04);
-  std::ios_base::iostate state1, state2, statefail, stateeof;
-  statefail = std::ios_base::failbit;
-  stateeof = std::ios_base::eofbit;
+  std::ios_base::iostate state1, state2;
 
   char carray[60] = "";
 

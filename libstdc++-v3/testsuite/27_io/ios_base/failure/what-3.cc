@@ -1,6 +1,6 @@
 // 2001-02-26 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,6 +34,8 @@ void allocate_on_stack(void)
   __extension__ char array[num];
   for (size_t i = 0; i < num; i++) 
     array[i]=0;
+  for (size_t i = 0; i < num; i++) 
+    array[i]=array[i]; // Suppress unused warning.
 }
 
 void test04()

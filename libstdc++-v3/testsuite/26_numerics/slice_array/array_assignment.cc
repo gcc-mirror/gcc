@@ -1,6 +1,6 @@
 // 20010613 gdr
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,8 +16,6 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
-
 
 // This is DR-253.  Test for accessible assignment-operators.
 #include <valarray>
@@ -36,7 +34,7 @@ int main()
   VERIFY(v[3] == 1 && w[3] == 1);
   VERIFY(v[6] == 1 && w[6] == 1);
 
-  std::slice_array<int> t = v[slice(0, 10, 1)];
+  std::slice_array<int> t __attribute__((unused)) = v[slice(0, 10, 1)];
   
   return 0;
 }

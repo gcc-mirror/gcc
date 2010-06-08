@@ -2,7 +2,7 @@
 
 // 2006-02-07  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,8 +55,16 @@ void test01()
   ldret = std::tr1::strtold(s, endptr);
 
   ret = std::tr1::abs(i);
+
+  ret = ret; // Suppress unused warning.
+  uret = uret;
+  fret = fret;
+  ldret = ldret;
+
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   dret = std::tr1::div(numer, denom);
+
+  dret = dret;
 #endif
 
 #endif

@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ void test05()
 
   streamsize 			strmsz_1, strmsz_2;
   char carray2[8192] = "";
-  int_type 			c2, c4;
+  int_type 			c2;
   
   // streamsize sgetn(char_type *s, streamsize n)
   // streamsize xsgetn(char_type *s, streamsize n)
@@ -63,7 +63,7 @@ void test05()
     strmsz_2 = fb_02.sgetn(carray2, strmsz_1 + 5);
     VERIFY( strmsz_1 == -1 );
     VERIFY( strmsz_2 == 0 );
-    c4 = fb_02.sgetc(); 
+    fb_02.sgetc(); 
     VERIFY( fb_02.unbuffered() );
     VERIFY( !fb_02.read_position() );
   }

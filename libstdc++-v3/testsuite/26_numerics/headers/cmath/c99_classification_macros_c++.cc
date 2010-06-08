@@ -70,6 +70,7 @@ template <typename _Tp>
     res = std::islessequal(f1,f2);
     res = std::islessgreater(f1, f2);
     res = std::isunordered(f1, f2);
+    res = res; // Suppress unused warning.
   }
 #endif
 

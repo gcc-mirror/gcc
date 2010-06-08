@@ -28,7 +28,7 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 521 }
+// { dg-error "used here" "" { target *-*-* } 522 }
 // { dg-error "deleted function" "" { target *-*-* } 230 }
 // { dg-error "deleted function" "" { target *-*-* } 248 }
 // { dg-error "deleted function" "" { target *-*-* } 266 }

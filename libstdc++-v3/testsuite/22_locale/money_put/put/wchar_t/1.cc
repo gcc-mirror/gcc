@@ -2,7 +2,8 @@
 
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,12 +54,12 @@ void test01()
   const money_put<wchar_t>& mon_put =
     use_facet<money_put<wchar_t> >(oss.getloc()); 
 
-  iterator_type os_it01 = mon_put.put(oss.rdbuf(), true, oss, L' ', digits1);
+  mon_put.put(oss.rdbuf(), true, oss, L' ', digits1);
   wstring result1 = oss.str();
   VERIFY( result1 == L"7.200.000.000,00 " );
 
   oss.str(empty);
-  iterator_type os_it02 = mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
+  mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
   wstring result2 = oss.str();
   VERIFY( result2 == L"7.200.000.000,00 " );
 
@@ -69,12 +70,12 @@ void test01()
   oss.setf(ios_base::showbase);
 
   oss.str(empty);
-  iterator_type os_it03 = mon_put.put(oss.rdbuf(), true, oss, L' ', digits1);
+  mon_put.put(oss.rdbuf(), true, oss, L' ', digits1);
   wstring result3 = oss.str();
   VERIFY( result3 == L"7.200.000.000,00 EUR " );
 
   oss.str(empty);
-  iterator_type os_it04 = mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
+  mon_put.put(oss.rdbuf(), false, oss, L' ', digits1);
   wstring result4 = oss.str();
   VERIFY( result4 == L"7.200.000.000,00 \x20ac" );
 
@@ -89,14 +90,14 @@ void test01()
   // test various fill strategies
   oss.str(empty);
   oss.width(20);
-  iterator_type os_it10 = mon_put.put(oss.rdbuf(), true, oss, L'*', digits2);
+  mon_put.put(oss.rdbuf(), true, oss, L'*', digits2);
   wstring result10 = oss.str();
   VERIFY( result10 == L"***************-,01*" );
 
   oss.str(empty);
   oss.width(20);
   oss.setf(ios_base::internal);
-  iterator_type os_it11 = mon_put.put(oss.rdbuf(), true, oss, L'*', digits2);
+  mon_put.put(oss.rdbuf(), true, oss, L'*', digits2);
   wstring result11 = oss.str();
   VERIFY( result11 == L"-,01****************" );
 }

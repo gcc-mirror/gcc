@@ -1,7 +1,7 @@
 // { dg-do compile }
 // 1999-08-24 bkoz
 
-// Copyright (C) 1999, 2000, 2003, 2009 Free Software Foundation
+// Copyright (C) 1999, 2000, 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,8 @@ test01()
   res = m01 | m02;
   res = m01 ^ m02;
   res = ~m01;
+  res = res; // Suppress unused warning.
+
   m01 &= m02;
   m01 |= m02;
   m01 ^= m02;
