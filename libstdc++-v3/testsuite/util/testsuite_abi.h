@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -16,11 +17,8 @@
 // along with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 // Benjamin Kosnik  <bkoz@redhat.com>
 
-// Include stddef now to work around glibc BZ 9694
-#include <stddef.h>
 #include <string>
 #include <stdexcept>
 #include <vector>

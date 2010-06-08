@@ -45,8 +45,14 @@
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HAVE_WCTYPE_H
-#include <wctype.h>
+
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 10
+// Work around glibc BZ 9694
+#include <stddef.h>
 #endif
+
+#include <wctype.h>
+#endif // _GLIBCXX_HAVE_WCTYPE_H
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
