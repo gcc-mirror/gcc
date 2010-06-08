@@ -6377,23 +6377,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       return true;
 
     case MINUS:
-      if (TARGET_THUMB2)
-	{
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	    {
-	      if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
-		*total = COSTS_N_INSNS (1);
-	      else
-		*total = COSTS_N_INSNS (20);
-	    }
-	  else
-	    *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-	  /* Thumb2 does not have RSB, so all arguments must be
-	     registers (subtracting a constant is canonicalized as
-	     addition of the negated constant).  */
-	  return false;
-	}
-
       if (mode == DImode)
 	{
 	  *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
