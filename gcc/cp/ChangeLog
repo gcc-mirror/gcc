@@ -1,3 +1,9 @@
+2010-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (record_key_method_defined): New, broken out of ...
+	(finish_function): ... here.  Call it.	
+	(start_decl): Treat aliases as definitions.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* typeck2.c (abstract_virtuals_error): Use typed GC allocation.
