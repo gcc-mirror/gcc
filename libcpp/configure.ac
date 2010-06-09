@@ -45,6 +45,10 @@ ZW_CREATE_DEPDIR
 if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
 ZW_PROG_COMPILER_DEPENDENCIES([CC])
 else
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([[int i;]], [],
+		  [AC_MSG_ERROR([C++ compiler missing or inoperational])])
+AC_LANG_POP([C++])
 ZW_PROG_COMPILER_DEPENDENCIES([CXX])
 fi
 
