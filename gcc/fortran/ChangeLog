@@ -1,3 +1,8 @@
+2010-06-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44430
+	* dump-parse-tree.c (show_symbol): Avoid infinite loop.
+
 2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* fortran/symbol.c (check_conflict):  Remove an invalid conflict check.
