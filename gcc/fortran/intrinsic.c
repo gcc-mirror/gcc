@@ -1353,7 +1353,7 @@ add_functions (void)
   make_generic ("bit_size", GFC_ISYM_BIT_SIZE, GFC_STD_F95);
 
   add_sym_2 ("btest", GFC_ISYM_BTEST, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
-	     gfc_check_btest, gfc_simplify_btest, gfc_resolve_btest,
+	     gfc_check_bitfcn, gfc_simplify_btest, gfc_resolve_btest,
 	     i, BT_INTEGER, di, REQUIRED, pos, BT_INTEGER, di, REQUIRED);
 
   make_generic ("btest", GFC_ISYM_BTEST, GFC_STD_F95);
@@ -1739,7 +1739,7 @@ add_functions (void)
   make_generic ("iargc", GFC_ISYM_IARGC, GFC_STD_GNU);
 
   add_sym_2 ("ibclr", GFC_ISYM_IBCLR, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ibclr, gfc_simplify_ibclr, gfc_resolve_ibclr,
+	     gfc_check_bitfcn, gfc_simplify_ibclr, gfc_resolve_ibclr,
 	     i, BT_INTEGER, di, REQUIRED, pos, BT_INTEGER, di, REQUIRED);
 
   make_generic ("ibclr", GFC_ISYM_IBCLR, GFC_STD_F95);
@@ -1752,7 +1752,7 @@ add_functions (void)
   make_generic ("ibits", GFC_ISYM_IBITS, GFC_STD_F95);
 
   add_sym_2 ("ibset", GFC_ISYM_IBSET, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_ibset, gfc_simplify_ibset, gfc_resolve_ibset,
+	     gfc_check_bitfcn, gfc_simplify_ibset, gfc_resolve_ibset,
 	     i, BT_INTEGER, di, REQUIRED, pos, BT_INTEGER, di, REQUIRED);
 
   make_generic ("ibset", GFC_ISYM_IBSET, GFC_STD_F95);

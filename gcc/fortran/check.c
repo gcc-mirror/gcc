@@ -214,6 +214,80 @@ array_check (gfc_expr *e, int n)
 }
 
 
+/* If expr is a constant, then check to ensure that it is greater than
+   of equal to zero.  */
+
+static gfc_try
+nonnegative_check (const char *arg, gfc_expr *expr)
+{
+  int i;
+
+  if (expr->expr_type == EXPR_CONSTANT)
+    {
+      gfc_extract_int (expr, &i);
+      if (i < 0)
+	{
+	  gfc_error ("'%s' at %L must be nonnegative", arg, &expr->where);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
+
+/* If expr2 is constant, then check that the value is less than
+   bit_size(expr1).  */
+
+static gfc_try
+less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
+	       gfc_expr *expr2)
+{
+  int i2, i3;
+
+  if (expr2->expr_type == EXPR_CONSTANT)
+    {
+      gfc_extract_int (expr2, &i2);
+      i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
+      if (i2 >= gfc_integer_kinds[i3].bit_size)
+	{
+	  gfc_error ("'%s' at %L must be less than BIT_SIZE('%s')",
+		     arg2, &expr2->where, arg1);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
+
+/* If expr2 and expr3 are constants, then check that the value is less than
+   or equal to bit_size(expr1).  */
+
+static gfc_try
+less_than_bitsize2 (const char *arg1, gfc_expr *expr1, const char *arg2,
+	       gfc_expr *expr2, const char *arg3, gfc_expr *expr3)
+{
+  int i2, i3;
+
+  if (expr2->expr_type == EXPR_CONSTANT && expr3->expr_type == EXPR_CONSTANT)
+    {
+      gfc_extract_int (expr2, &i2);
+      gfc_extract_int (expr3, &i3);
+      i2 += i3;
+      i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
+      if (i2 > gfc_integer_kinds[i3].bit_size)
+	{
+	  gfc_error ("'%s + %s' at %L must be less than or equal "
+		     "to BIT_SIZE('%s')",
+		     arg2, arg3, &expr2->where, arg1);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
 /* Make sure two expressions have the same type.  */
 
 static gfc_try
@@ -709,11 +783,18 @@ gfc_check_besn (gfc_expr *n, gfc_expr *x)
 
 
 gfc_try
-gfc_check_btest (gfc_expr *i, gfc_expr *pos)
+gfc_check_bitfcn (gfc_expr *i, gfc_expr *pos)
 {
   if (type_check (i, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
+
   if (type_check (pos, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("pos", pos) == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize1 ("i", i, "pos", pos) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1319,19 +1400,6 @@ gfc_check_iand (gfc_expr *i, gfc_expr *j)
 
 
 gfc_try
-gfc_check_ibclr (gfc_expr *i, gfc_expr *pos)
-{
-  if (type_check (i, 0, BT_INTEGER) == FAILURE)
-    return FAILURE;
-
-  if (type_check (pos, 1, BT_INTEGER) == FAILURE)
-    return FAILURE;
-
-  return SUCCESS;
-}
-
-
-gfc_try
 gfc_check_ibits (gfc_expr *i, gfc_expr *pos, gfc_expr *len)
 {
   if (type_check (i, 0, BT_INTEGER) == FAILURE)
@@ -1343,17 +1411,13 @@ gfc_check_ibits (gfc_expr *i, gfc_expr *pos, gfc_expr *len)
   if (type_check (len, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
 
-  return SUCCESS;
-}
-
-
-gfc_try
-gfc_check_ibset (gfc_expr *i, gfc_expr *pos)
-{
-  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+  if (nonnegative_check ("pos", pos) == FAILURE)
     return FAILURE;
 
-  if (type_check (pos, 1, BT_INTEGER) == FAILURE)
+  if (nonnegative_check ("len", len) == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize2 ("i", i, "pos", pos, "len", len) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -3436,6 +3500,22 @@ gfc_check_mvbits (gfc_expr *from, gfc_expr *frompos, gfc_expr *len,
     return FAILURE;
 
   if (type_check (topos, 4, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("frompos", frompos) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("topos", topos) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("len", len) == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize2 ("from", from, "frompos", frompos, "len", len)
+      == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize2 ("to", to, "topos", topos, "len", len) == FAILURE)
     return FAILURE;
 
   return SUCCESS;

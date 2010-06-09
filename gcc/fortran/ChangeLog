@@ -1,3 +1,18 @@
+2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* fortran/intrinsic.c (add_functions): Change gfc_check_btest,
+	gfc_check_ibclr, and gfc_check_ibset to gfc_check_bitfcn.
+	* fortran/intrinsic.h: Remove prototypes for gfc_check_btest,
+	gfc_check_ibclr, and gfc_check_ibset.  Add prototype for
+	gfc_check_bitfcn.
+	* fortran/check.c (nonnegative_check, less_than_bitsize1, 
+	less_than_bitsize2): New functions.
+	(gfc_check_btest): Renamed to gfc_check_bitfcn.  Use
+	nonnegative_check and less_than_bitsize1.
+	(gfc_check_ibclr, gfc_check_ibset): Removed.
+	(gfc_check_ibits,gfc_check_mvbits): Use nonnegative_check and
+	less_than_bitsize1.
+
 2010-06-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44360
