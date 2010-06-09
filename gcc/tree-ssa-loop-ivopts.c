@@ -2936,6 +2936,20 @@ get_computation (struct loop *loop, struct iv_use *use, struct iv_cand *cand)
   return get_computation_at (loop, use, cand, use->stmt);
 }
 
+/* Adjust the cost COST for being in loop setup rather than loop body.
+   If we're optimizing for space, the loop setup overhead is constant;
+   if we're optimizing for speed, amortize it over the per-iteration cost.  */
+static unsigned
+adjust_setup_cost (struct ivopts_data *data, unsigned cost)
+{
+  if (cost == INFTY)
+    return cost;
+  else if (optimize_loop_for_speed_p (data->current_loop))
+    return cost / AVG_LOOP_NITER (data->current_loop);
+  else
+    return cost;
+}
+
 /* Returns cost of addition in MODE.  */
 
 static unsigned
@@ -3848,8 +3862,8 @@ get_computation_cost_at (struct ivopts_data *data,
   /* Symbol + offset should be compile-time computable so consider that they
       are added once to the variable, if present.  */
   if (var_present && (symbol_present || offset))
-    cost.cost += add_cost (TYPE_MODE (ctype), speed)
-		 / AVG_LOOP_NITER (data->current_loop);
+    cost.cost += adjust_setup_cost (data,
+				    add_cost (TYPE_MODE (ctype), speed));
 
   /* Having offset does not affect runtime cost in case it is added to
      symbol, but it increases complexity.  */
@@ -4114,7 +4128,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       elim_cost = force_var_cost (data, bound, &depends_on_elim);
       /* The bound is a loop invariant, so it will be only computed
 	 once.  */
-      elim_cost.cost /= AVG_LOOP_NITER (data->current_loop);
+      elim_cost.cost = adjust_setup_cost (data, elim_cost.cost);
     }
   else
     elim_cost = infinite_cost;
@@ -4361,7 +4375,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
   cost_base = force_var_cost (data, base, NULL);
   cost_step = add_cost (TYPE_MODE (TREE_TYPE (base)), data->speed);
 
-  cost = cost_step + cost_base.cost / AVG_LOOP_NITER (current_loop);
+  cost = cost_step + adjust_setup_cost (data, cost_base.cost);
 
   /* Prefer the original ivs unless we may gain something by replacing it.
      The reason is to make debugging simpler; so this is not relevant for
