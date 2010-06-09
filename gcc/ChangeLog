@@ -1,5 +1,12 @@
 2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (single_pred_cond): Renamed
+	single_pred_cond_non_loop_exit.  Return NULL for loop exit edges.
+	(build_sese_conditions_before): Renamed call to single_pred_cond.
+	(build_sese_conditions_after): Same.
+
+2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h: Fix comments and indentation.
 	* graphite-sese-to-poly.c: Same.
 	(build_sese_conditions_before): Compute stmt and gbb only when needed.

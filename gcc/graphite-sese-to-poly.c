@@ -1379,21 +1379,28 @@ struct bsc
   sese region;
 };
 
-/* Returns non NULL when BB has a single predecessor and the last
-   statement of that predecessor is a COND_EXPR.  */
+/* Returns a COND_EXPR statement when BB has a single predecessor, the
+   edge between BB and its predecessor is not a loop exit edge, and
+   the last statement of the single predecessor is a COND_EXPR.  */
 
 static gimple
-single_pred_cond (basic_block bb)
+single_pred_cond_non_loop_exit (basic_block bb)
 {
   if (single_pred_p (bb))
     {
       edge e = single_pred_edge (bb);
       basic_block pred = e->src;
-      gimple stmt = last_stmt (pred);
+      gimple stmt;
+
+      if (loop_depth (pred->loop_father) > loop_depth (bb->loop_father))
+	return NULL;
+
+      stmt = last_stmt (pred);
 
       if (stmt && gimple_code (stmt) == GIMPLE_COND)
 	return stmt;
     }
+
   return NULL;
 }
 
@@ -1413,7 +1420,7 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
   if (!bb_in_sese_p (bb, data->region))
     return;
 
-  stmt = single_pred_cond (bb);
+  stmt = single_pred_cond_non_loop_exit (bb);
 
   if (stmt)
     {
@@ -1450,7 +1457,7 @@ build_sese_conditions_after (struct dom_walk_data *dw_data,
   if (!bb_in_sese_p (bb, data->region))
     return;
 
-  if (single_pred_cond (bb))
+  if (single_pred_cond_non_loop_exit (bb))
     {
       VEC_pop (gimple, *conditions);
       VEC_pop (gimple, *cases);
