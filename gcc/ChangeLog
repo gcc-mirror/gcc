@@ -1,3 +1,9 @@
+2010-06-09  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/44067
+	* config/rs6000/rs6000.md (DIFD): Do not split dpfp values for
+	e500v2 target.
+
 2010-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movsi_1) <TYPE_LEA>: Use %a modifier
