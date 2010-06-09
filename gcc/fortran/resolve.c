@@ -6065,6 +6065,7 @@ resolve_deallocate_expr (gfc_expr *e)
     bad:
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);
+      return FAILURE;
     }
 
   if (check_intent_in && sym->attr.intent == INTENT_IN)
@@ -6196,7 +6197,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_array_ref *ar;
-  gfc_symbol *sym;
+  gfc_symbol *sym = NULL;
   gfc_alloc *a;
   gfc_component *c;
   gfc_expr *init_e;
