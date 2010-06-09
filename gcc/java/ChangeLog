@@ -1,3 +1,7 @@
+2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcj.texi: Move to GFDL version 1.3.  Fix copyright years.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* jcf-reader.c (jcf_parse_constant_pool): Use typed GC allocation.

@@ -1,3 +1,7 @@
+2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi: Move to GFDL version 1.3.  Update copyright years.
+
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
