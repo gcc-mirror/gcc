@@ -5415,6 +5415,9 @@ resolve_typebound_function (gfc_expr* e)
   if (st == NULL)
     return resolve_compcall (e, NULL);
 
+  if (resolve_ref (e) == FAILURE)
+    return FAILURE;
+
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, e);
 
@@ -5486,6 +5489,9 @@ resolve_typebound_subroutine (gfc_code *code)
   st = code->expr1->symtree;
   if (st == NULL)
     return resolve_typebound_call (code, NULL);
+
+  if (resolve_ref (code->expr1) == FAILURE)
+    return FAILURE;
 
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, code->expr1);
