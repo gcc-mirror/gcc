@@ -1,3 +1,9 @@
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
+        * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
+
 2010-06-09  Edmar Wienskoski  <edmar@freescale.com>
 
 	PR target/44067
