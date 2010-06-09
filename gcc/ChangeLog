@@ -125,8 +125,8 @@
 
 	* config/pdp11/pdp11.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
 	LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P): Remove macros.
-	* config/pdp11/pdp11.c (moxie_function_value, moxie_libcall_value,
-	moxie_function_value_regno_p): New functions.
+	* config/pdp11/pdp11.c (pdp11_function_value, pdp11_libcall_value,
+	pdp11_function_value_regno_p): New functions.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
 	TARGET_FUNCTION_VALUE_REGNO_P): Define.
 
