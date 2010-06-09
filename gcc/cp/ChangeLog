@@ -1,5 +1,15 @@
 2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* cp-tree.h (struct saved_scope): Change decl_ns_list field type
+	to a VEC.
+	* decl2.c (cp_write_global_declarations): Adjust for new type of
+	decl_namespace_list.
+	* name-lookup.c (current_decl_namespace): Likewise.
+	(push_decl_namespace): Likewise.
+	(pop_decl_namespace): Likewise.
+
+2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* call.c (build_java_interface_fn_ref): Call build_function_type_list
 	instead of build_function_type.
 	* decl.c (cxx_init_decl_processing): Likewise.
