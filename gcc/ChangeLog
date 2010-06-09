@@ -1,3 +1,23 @@
+2010-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (varpool_first_static_initializer,
+	varpool_next_static_initializer): Make checking only when
+	checking enabled.
+	* tree-vectorizer.h (vinfo_for_stmt): Remove check.
+	(set_vinfo_for_stmt, get_earlier_stmt, is_loop_header_bb_p): Change
+	gcc_assert to gcc_checking_assert.
+	* tree-flow-inline.h (gimple_vop, get_var_ann, relink_imm_use, phi_nodes
+	set_phi_nodes, phi_arg_index_from_use, op_iter_next_use,
+	op_iter_next_def, op_iter_next_tree, op_iter_init, op_iter_init_use,
+	op_iter_init_phiuse, op_iter_init_phidef, array_ref_contains_indirect_ref,
+	ref_contains_array_ref): Use gcc_checking_assert.
+	* emit-rtl.h (set_first_insn, set_last_insn): Likewise.
+	* tree-ssa-live.h (var_to_partition, var_to_partition_to_var,
+	partition_is_global, live_on_entry, live_on_exit,
+	live_merge_and_clear): Likewise.
+	* system.h (gcc_checking_assert): New macro.
+	* gimple.h (set_bb_seq): Use gcc_checking_assert.
+
 2010-06-09  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (TAGS): Collect tags info from c-family.

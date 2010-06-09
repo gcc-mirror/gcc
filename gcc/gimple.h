@@ -246,7 +246,7 @@ bb_seq (const_basic_block bb)
 static inline void
 set_bb_seq (basic_block bb, gimple_seq seq)
 {
-  gcc_assert (!(bb->flags & BB_RTL));
+  gcc_checking_assert (!(bb->flags & BB_RTL));
   bb->il.gimple->seq = seq;
 }
 
