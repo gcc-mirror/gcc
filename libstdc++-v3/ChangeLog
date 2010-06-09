@@ -1,3 +1,9 @@
+2010-06-09  Khem Raj  <raj.khem@gmail.com>
+
+	PR libstdc++/44461
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Use .pushsection/.popsection
+	to emit inline assembly into .text section.
+
 2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

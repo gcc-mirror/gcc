@@ -157,22 +157,26 @@ __gnu_end_cleanup(void)
 // Assembly wrapper to call __gnu_end_cleanup without clobbering r1-r3.
 // Also push r4 to preserve stack alignment.
 #ifdef __thumb__
-asm (".global __cxa_end_cleanup\n"
+asm ("  .pushsection .text.__cxa_end_cleanup\n"
+"	.global __cxa_end_cleanup\n"
 "	.type __cxa_end_cleanup, \"function\"\n"
 "	.thumb_func\n"
 "__cxa_end_cleanup:\n"
 "	push\t{r1, r2, r3, r4}\n"
 "	bl\t__gnu_end_cleanup\n"
 "	pop\t{r1, r2, r3, r4}\n"
-"	bl\t_Unwind_Resume @ Never returns\n");
+"	bl\t_Unwind_Resume @ Never returns\n"
+"	.popsection\n");
 #else
-asm (".global __cxa_end_cleanup\n"
+asm ("  .pushsection .text.__cxa_end_cleanup\n"
+"	.global __cxa_end_cleanup\n"
 "	.type __cxa_end_cleanup, \"function\"\n"
 "__cxa_end_cleanup:\n"
 "	stmfd\tsp!, {r1, r2, r3, r4}\n"
 "	bl\t__gnu_end_cleanup\n"
 "	ldmfd\tsp!, {r1, r2, r3, r4}\n"
-"	bl\t_Unwind_Resume @ Never returns\n");
+"	bl\t_Unwind_Resume @ Never returns\n"
+"	.popsection\n");
 #endif
 
 #endif
