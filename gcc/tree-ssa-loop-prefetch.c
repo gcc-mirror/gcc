@@ -228,13 +228,13 @@ struct mem_ref_group
 
 /* Do not generate a prefetch if the unroll factor is significantly less
    than what is required by the prefetch.  This is to avoid redundant
-   prefetches.  For example, if prefetch_mod is 16 and unroll_factor is
-   1, this means prefetching requires unrolling the loop 16 times, but
-   the loop is not going to be unrolled.  In this case (ratio = 16),
+   prefetches.  For example, when prefetch_mod is 16 and unroll_factor is
+   2, prefetching requires unrolling the loop 16 times, but
+   the loop is actually unrolled twice.  In this case (ratio = 8),
    prefetching is not likely to be beneficial.  */
 
 #ifndef PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO
-#define PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO 8
+#define PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO 4
 #endif
 
 /* The memory reference.  */
