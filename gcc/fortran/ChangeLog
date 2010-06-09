@@ -1,3 +1,8 @@
+2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/43040
+	* f95-lang.c (gfc_init_builtin_functions): Remove comment.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* trans-types.c (gfc_get_nodesc_array_type): Use typed GC
