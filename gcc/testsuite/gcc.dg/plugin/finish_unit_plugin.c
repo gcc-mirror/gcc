@@ -12,6 +12,7 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "cgraph.h"
 
 int plugin_is_GPL_compatible;
 

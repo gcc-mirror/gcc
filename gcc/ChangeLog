@@ -1,3 +1,12 @@
+2010-06-09  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR testsuite/42843
+	* gcc-plugin.h (int plugin_is_GPL_compatible): Declare as extern "C".
+	* doc/plugins.texi (Plugin license check): Update information
+	on type of plugin_is_GPL_compatible.
+	* Makefile.in (PLUGINCC): Define as $(COMPILER).
+	(PLUGINCFLAGS): Define as $(COMPILER_FLAGS).
+
 2010-06-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/arm/arm.c (thumb2_reorg): New function.
@@ -13,7 +22,7 @@
 
 2010-06-09  Joern Rennecke  <joern.rennecke@embecosm.com>
 
-	PR plugins/44459:
+	PR plugins/44459
 	* gcc-plugin.h: Encapsulate all declarations in extern "C".
 
 2010-06-08  Jan Hubicka  <jh@suse.cz>

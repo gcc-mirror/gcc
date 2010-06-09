@@ -50,8 +50,10 @@ fatal error: plugin <name> is not licensed under a GPL-compatible license
 compilation terminated
 @end smallexample
 
-The type of the symbol is irrelevant.  The compiler merely asserts that
-it exists in the global scope.  Something like this is enough:
+The declared type of the symbol should be int, to match a forward declaration
+in @file{gcc-plugin.h} that suppresses C++ mangling.  It does not need to be in
+any allocated section, though.  The compiler merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
 
 @smallexample
 int plugin_is_GPL_compatible;

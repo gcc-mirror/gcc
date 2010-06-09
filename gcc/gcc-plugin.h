@@ -151,4 +151,15 @@ extern const char* default_plugin_dir_name (void);
 }
 #endif
 
+/* In case the C++ compiler does name mangling for globals, declare
+   plugin_is_GPL_compatible extern "C" so that a later definition
+   in a plugin file will have this linkage.  */
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern int plugin_is_GPL_compatible;
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* GCC_PLUGIN_H */
