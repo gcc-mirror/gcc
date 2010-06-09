@@ -18,7 +18,6 @@ SUBROUTINE pr27866c4
   integer(kind=4) :: i4
   i4 = 2.3              ! { dg-warning "conversion" }
   i1 = 500              ! { dg-error "overflow" }
-                        ! { dg-warning "conversion" "" { target *-*-* } 20 }
   a = 2**26-1           ! assignment INTEGER(4) to REAL(4) - no warning
   b = 1d999             ! { dg-error "overflow" }
 

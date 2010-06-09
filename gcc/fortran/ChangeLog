@@ -1,3 +1,8 @@
+2010-06-09  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/44359
+	* intrinsic.c (gfc_convert_type_warn): Further improve -Wconversion.
+
 2010-06-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44430
