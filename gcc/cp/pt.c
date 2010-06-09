@@ -3875,10 +3875,10 @@ process_partial_specialization (tree decl)
 
      or some such would have been OK.  */
   tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
-  tpd.parms = (int *) alloca (sizeof (int) * ntparms);
+  tpd.parms = XALLOCAVEC (int, ntparms);
   memset (tpd.parms, 0, sizeof (int) * ntparms);
 
-  tpd.arg_uses_template_parms = (int *) alloca (sizeof (int) * nargs);
+  tpd.arg_uses_template_parms = XALLOCAVEC (int, nargs);
   memset (tpd.arg_uses_template_parms, 0, sizeof (int) * nargs);
   for (i = 0; i < nargs; ++i)
     {
@@ -3993,12 +3993,11 @@ process_partial_specialization (tree decl)
                   if (!tpd2.parms)
                     {
                       /* We haven't yet initialized TPD2.  Do so now.  */
-                      tpd2.arg_uses_template_parms 
-                        = (int *) alloca (sizeof (int) * nargs);
+                      tpd2.arg_uses_template_parms = XALLOCAVEC (int, nargs);
                       /* The number of parameters here is the number in the
                          main template, which, as checked in the assertion
                          above, is NARGS.  */
-                      tpd2.parms = (int *) alloca (sizeof (int) * nargs);
+                      tpd2.parms = XALLOCAVEC (int, nargs);
                       tpd2.level = 
                         TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
                     }
@@ -8525,7 +8524,7 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree orig_t = t;
   int len = TREE_VEC_LENGTH (t);
   int need_new = 0, i, expanded_len_adjust = 0, out;
-  tree *elts = (tree *) alloca (len * sizeof (tree));
+  tree *elts = XALLOCAVEC (tree, len);
 
   for (i = 0; i < len; i++)
     {
