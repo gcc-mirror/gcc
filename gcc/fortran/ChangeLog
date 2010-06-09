@@ -1,5 +1,9 @@
 2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* fortran/symbol.c (check_conflict):  Remove an invalid conflict check.
+
+2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* fortran/intrinsic.c (add_functions): Change gfc_check_btest,
 	gfc_check_ibclr, and gfc_check_ibset to gfc_check_bitfcn.
 	* fortran/intrinsic.h: Remove prototypes for gfc_check_btest,
