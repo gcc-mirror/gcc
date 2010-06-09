@@ -89,7 +89,7 @@ static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		int precision, bool wide, bool set_locus, bool hash)
 {
-  tree t;
+  tree t = NULL_TREE;
   tree name;
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
