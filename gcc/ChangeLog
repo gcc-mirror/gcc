@@ -1,3 +1,17 @@
+2010-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* bitmap.c (bitmap_and): Walk array forward.
+	(bitmap_and_compl_into): Likewise.
+	(bitmap_xor): Likewise.
+	(bitmap_xor_into):  Likewise.
+	(bitmap_equal_p): Likewise.
+	(bitmap_intersect_p): Likewise.
+	(bitmap_intersect_compl_p): Likewise.
+	(bitmap_ior_and_into): Likewise.
+	(bitmap_elt_copy): Likewise.
+	(bitmap_and_compl): Likewise.
+	(bitmap_elt_ior): Likewise.
+
 2010-06-09  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* opts-common.c (prune_options): Ensure replacement argv array

@@ -908,7 +908,7 @@ bitmap_and (bitmap dst, const_bitmap a, const_bitmap b)
 	    dst_elt = bitmap_elt_insert_after (dst, dst_prev, a_elt->indx);
 	  else
 	    dst_elt->indx = a_elt->indx;
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] & b_elt->bits[ix];
 
@@ -960,7 +960,7 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	  unsigned ix;
 	  BITMAP_WORD ior = 0;
 
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] & b_elt->bits[ix];
 
@@ -992,7 +992,7 @@ bitmap_elt_copy (bitmap dst, bitmap_element *dst_elt, bitmap_element *dst_prev,
     {
       unsigned ix;
 
-      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+      for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	if (src_elt->bits[ix] != dst_elt->bits[ix])
 	  {
 	    dst_elt->bits[ix] = src_elt->bits[ix];
@@ -1056,7 +1056,7 @@ bitmap_and_compl (bitmap dst, const_bitmap a, const_bitmap b)
 
 	  if (!changed && dst_elt && dst_elt->indx == a_elt->indx)
 	    {
-	      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	      for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 		{
 		  BITMAP_WORD r = a_elt->bits[ix] & ~b_elt->bits[ix];
 
@@ -1082,7 +1082,7 @@ bitmap_and_compl (bitmap dst, const_bitmap a, const_bitmap b)
 		  new_element = false;
 		}
 
-	      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	      for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 		{
 		  BITMAP_WORD r = a_elt->bits[ix] & ~b_elt->bits[ix];
 
@@ -1159,7 +1159,7 @@ bitmap_and_compl_into (bitmap a, const_bitmap b)
 	  unsigned ix;
 	  BITMAP_WORD ior = 0;
 
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD cleared = a_elt->bits[ix] & b_elt->bits[ix];
 	      BITMAP_WORD r = a_elt->bits[ix] ^ cleared;
@@ -1453,7 +1453,7 @@ bitmap_compl_and_into (bitmap a, const_bitmap b)
 	  unsigned ix;
 	  BITMAP_WORD ior = 0;
 
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD cleared = a_elt->bits[ix] & b_elt->bits[ix];
 	      BITMAP_WORD r = b_elt->bits[ix] ^ cleared;
@@ -1494,7 +1494,7 @@ bitmap_elt_ior (bitmap dst, bitmap_element *dst_elt, bitmap_element *dst_prev,
 
       if (!changed && dst_elt && dst_elt->indx == a_elt->indx)
 	{
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] | b_elt->bits[ix];
 	      if (r != dst_elt->bits[ix])
@@ -1511,7 +1511,7 @@ bitmap_elt_ior (bitmap dst, bitmap_element *dst_elt, bitmap_element *dst_prev,
 	    dst_elt = bitmap_elt_insert_after (dst, dst_prev, a_elt->indx);
 	  else
 	    dst_elt->indx = a_elt->indx;
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] | b_elt->bits[ix];
 	      dst_elt->bits[ix] = r;
@@ -1650,7 +1650,7 @@ bitmap_xor (bitmap dst, const_bitmap a, const_bitmap b)
 	    dst_elt = bitmap_elt_insert_after (dst, dst_prev, a_elt->indx);
 	  else
 	    dst_elt->indx = a_elt->indx;
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] ^ b_elt->bits[ix];
 
@@ -1735,7 +1735,7 @@ bitmap_xor_into (bitmap a, const_bitmap b)
 	  BITMAP_WORD ior = 0;
 	  bitmap_element *next = a_elt->next;
 
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] ^ b_elt->bits[ix];
 
@@ -1772,7 +1772,7 @@ bitmap_equal_p (const_bitmap a, const_bitmap b)
     {
       if (a_elt->indx != b_elt->indx)
 	return false;
-      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+      for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	if (a_elt->bits[ix] != b_elt->bits[ix])
 	  return false;
     }
@@ -1797,7 +1797,7 @@ bitmap_intersect_p (const_bitmap a, const_bitmap b)
 	b_elt = b_elt->next;
       else
 	{
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    if (a_elt->bits[ix] & b_elt->bits[ix])
 	      return true;
 	  a_elt = a_elt->next;
@@ -1824,7 +1824,7 @@ bitmap_intersect_compl_p (const_bitmap a, const_bitmap b)
 	b_elt = b_elt->next;
       else
 	{
-	  for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    if (a_elt->bits[ix] & ~b_elt->bits[ix])
 	      return true;
 	  a_elt = a_elt->next;
@@ -1880,7 +1880,7 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b, const_bitmap k
 
 	  BITMAP_WORD ior = 0;
 	  tmp_elt.indx = b_elt->indx;
-          for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
             {
               BITMAP_WORD r = b_elt->bits[ix] & ~kill_elt->bits[ix];
               ior |= r;
@@ -1998,7 +1998,7 @@ bitmap_ior_and_into (bitmap a, const_bitmap b, const_bitmap c)
 
       overall = 0;
       and_elt.indx = b_elt->indx;
-      for (ix = BITMAP_ELEMENT_WORDS; ix--;)
+      for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	{
 	  and_elt.bits[ix] = b_elt->bits[ix] & c_elt->bits[ix];
 	  overall |= and_elt.bits[ix];
