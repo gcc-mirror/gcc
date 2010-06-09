@@ -207,8 +207,8 @@ throw_bad_cast (void)
 {
   tree fn = get_identifier ("__cxa_bad_cast");
   if (!get_global_value_if_present (fn, &fn))
-    fn = push_throw_library_fn (fn, build_function_type (ptr_type_node,
-							 void_list_node));
+    fn = push_throw_library_fn (fn, build_function_type_list (ptr_type_node,
+							      NULL_TREE));
 
   return build_cxx_call (fn, 0, NULL);
 }
@@ -225,7 +225,7 @@ throw_bad_typeid (void)
       tree t;
 
       t = build_reference_type (const_type_info_type_node);
-      t = build_function_type (t, void_list_node);
+      t = build_function_type_list (t, NULL_TREE);
       fn = push_throw_library_fn (fn, t);
     }
 
@@ -729,12 +729,10 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		(cp_build_qualified_type
 		 (tinfo_ptr, TYPE_QUAL_CONST));
 	      name = "__dynamic_cast";
-	      tmp = tree_cons
-		(NULL_TREE, const_ptr_type_node, tree_cons
-		 (NULL_TREE, tinfo_ptr, tree_cons
-		  (NULL_TREE, tinfo_ptr, tree_cons
-		   (NULL_TREE, ptrdiff_type_node, void_list_node))));
-	      tmp = build_function_type (ptr_type_node, tmp);
+	      tmp = build_function_type_list (ptr_type_node,
+					      const_ptr_type_node,
+					      tinfo_ptr, tinfo_ptr,
+					      ptrdiff_type_node, NULL_TREE);
 	      dcast_fn = build_library_fn_ptr (name, tmp);
 	      DECL_PURE_P (dcast_fn) = 1;
 	      pop_abi_namespace ();

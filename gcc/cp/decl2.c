@@ -2725,8 +2725,8 @@ start_objects (int method_type, int initp)
 
   fndecl = build_lang_decl (FUNCTION_DECL,
 			    get_file_function_name (type),
-			    build_function_type (void_type_node,
-						 void_list_node));
+			    build_function_type_list (void_type_node,
+						      NULL_TREE));
   start_preparsed_function (fndecl, /*attrs=*/NULL_TREE, SF_PRE_PARSED);
 
   TREE_PUBLIC (current_function_decl) = 0;
@@ -2818,7 +2818,6 @@ static splay_tree priority_info_map;
 static tree
 start_static_storage_duration_function (unsigned count)
 {
-  tree parm_types;
   tree type;
   tree body;
   char id[sizeof (SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
@@ -2827,11 +2826,9 @@ start_static_storage_duration_function (unsigned count)
      SSDF_IDENTIFIER_<number>.  */
   sprintf (id, "%s_%u", SSDF_IDENTIFIER, count);
 
-  /* Create the parameters.  */
-  parm_types = void_list_node;
-  parm_types = tree_cons (NULL_TREE, integer_type_node, parm_types);
-  parm_types = tree_cons (NULL_TREE, integer_type_node, parm_types);
-  type = build_function_type (void_type_node, parm_types);
+  type = build_function_type_list (void_type_node,
+				   integer_type_node, integer_type_node,
+				   NULL_TREE);
 
   /* Create the FUNCTION_DECL itself.  */
   ssdf_decl = build_lang_decl (FUNCTION_DECL,

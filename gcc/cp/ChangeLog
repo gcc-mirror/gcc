@@ -1,5 +1,22 @@
 2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* call.c (build_java_interface_fn_ref): Call build_function_type_list
+	instead of build_function_type.
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(declare_global_var): Likewise.
+	(get_atexit_node): Likewise.
+	(expand_static_init): Likewise.
+	* decl2.c (start_objects): Likewise.
+	(start_static_storage_duration_function): Likewise.
+	* except.c (init_exception_processing): Likewise.
+	(build_exc_ptr): Likewise.
+	(build_throw): Likewise.
+	* rtti.c (throw_bad_cast): Likewise.
+	(throw_bad_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+
+2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* call.c (build_call_n): Call XALLOCAVEC instead of alloca.
 	(build_op_delete_call): Likewise.
 	(build_over_call): Likewise.

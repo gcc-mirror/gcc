@@ -6008,14 +6008,11 @@ build_java_interface_fn_ref (tree fn, tree instance)
 
   if (!java_iface_lookup_fn)
     {
-      tree endlink = build_void_list_node ();
-      tree t = tree_cons (NULL_TREE, ptr_type_node,
-			  tree_cons (NULL_TREE, ptr_type_node,
-				     tree_cons (NULL_TREE, java_int_type_node,
-						endlink)));
+      tree ftype = build_function_type_list (ptr_type_node,
+					     ptr_type_node, ptr_type_node,
+					     java_int_type_node, NULL_TREE);
       java_iface_lookup_fn
-	= add_builtin_function ("_Jv_LookupInterfaceMethodIdx",
-				build_function_type (ptr_type_node, t),
+	= add_builtin_function ("_Jv_LookupInterfaceMethodIdx", ftype,
 				0, NOT_BUILT_IN, NULL, NULL_TREE);
     }
 
