@@ -499,7 +499,7 @@ bitmap_elt_insert_after (bitmap head, bitmap_element *elt, unsigned int indx)
     }
   else
     {
-      gcc_assert (head->current);
+      gcc_checking_assert (head->current);
       node->next = elt->next;
       if (node->next)
 	node->next->prev = node;
@@ -780,7 +780,7 @@ bitmap_first_set_bit (const_bitmap a)
   BITMAP_WORD word;
   unsigned ix;
 
-  gcc_assert (elt);
+  gcc_checking_assert (elt);
   bit_no = elt->indx * BITMAP_ELEMENT_ALL_BITS;
   for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
     {
@@ -815,7 +815,7 @@ bitmap_first_set_bit (const_bitmap a)
   if (!(word & 0x1))
     word >>= 1, bit_no += 1;
 
- gcc_assert (word & 1);
+ gcc_checking_assert (word & 1);
 #endif
  return bit_no;
 }
@@ -831,7 +831,7 @@ bitmap_last_set_bit (const_bitmap a)
   BITMAP_WORD word;
   int ix;
 
-  gcc_assert (elt);
+  gcc_checking_assert (elt);
   while (elt->next)
     elt = elt->next;
   bit_no = elt->indx * BITMAP_ELEMENT_ALL_BITS;
@@ -869,7 +869,7 @@ bitmap_last_set_bit (const_bitmap a)
     word >>= 1, bit_no += 1;
 #endif
 
- gcc_assert (word & 1);
+ gcc_checking_assert (word & 1);
  return bit_no;
 }
 
@@ -975,8 +975,8 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	}
     }
   bitmap_elt_clear_from (a, a_elt);
-  gcc_assert (!a->current == !a->first);
-  gcc_assert (!a->current || a->indx == a->current->indx);
+  gcc_assert (!a->current == !a->first
+	      && (!a->current || a->indx == a->current->indx));
 }
 
 
@@ -1175,8 +1175,8 @@ bitmap_and_compl_into (bitmap a, const_bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
-  gcc_assert (!a->current == !a->first);
-  gcc_assert (!a->current || a->indx == a->current->indx);
+  gcc_assert (!a->current == !a->first
+	      && (!a->current || a->indx == a->current->indx));
   return changed != 0;
 }
 
@@ -1207,7 +1207,7 @@ bitmap_set_range (bitmap head, unsigned int start, unsigned int count)
       bitmap_element_link (head, elt);
     }
 
-  gcc_assert (elt->indx == first_index);
+  gcc_checking_assert (elt->indx == first_index);
   elt_prev = elt->prev;
   for (i = first_index; i <= last_index; i++)
     {
@@ -1470,8 +1470,8 @@ bitmap_compl_and_into (bitmap a, const_bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
-  gcc_assert (!a->current == !a->first);
-  gcc_assert (!a->current || a->indx == a->current->indx);
+  gcc_assert (!a->current == !a->first
+	      && (!a->current || a->indx == a->current->indx));
   return;
 }
 
@@ -1528,7 +1528,7 @@ bitmap_elt_ior (bitmap dst, bitmap_element *dst_elt, bitmap_element *dst_prev,
       else
 	src = b_elt;
 
-      gcc_assert (src);
+      gcc_checking_assert (src);
       changed = bitmap_elt_copy (dst, dst_elt, dst_prev, src, changed);
     }
   return changed;
