@@ -1617,6 +1617,8 @@ make_reg_eh_region_note_nothrow_nononlocal (rtx insn)
 bool
 insn_could_throw_p (const_rtx insn)
 {
+  if (!flag_exceptions)
+    return false;
   if (CALL_P (insn))
     return true;
   if (INSN_P (insn) && cfun->can_throw_non_call_exceptions)

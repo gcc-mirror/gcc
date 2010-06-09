@@ -1,7 +1,11 @@
+2010-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr42461.c: New test.
+
 2010-06-09  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/44347
-        * gfortran.dg/selected_real_kind_1.f90: New.
+	PR fortran/44347
+	* gfortran.dg/selected_real_kind_1.f90: New.
 
 2010-06-09  Daniel Franke  <franke.daniel@gmail.com>
 
