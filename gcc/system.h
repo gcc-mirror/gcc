@@ -601,6 +601,12 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
+#ifdef ENABLE_CHECKING
+#define gcc_checking_assert(EXPR) gcc_assert (EXPR)
+#else
+#define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
+#endif
+
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING

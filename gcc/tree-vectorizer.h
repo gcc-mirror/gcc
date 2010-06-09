@@ -567,7 +567,6 @@ vinfo_for_stmt (gimple stmt)
   if (uid == 0)
     return NULL;
 
-  gcc_assert (uid <= VEC_length (vec_void_p, stmt_vec_info_vec));
   return (stmt_vec_info) VEC_index (vec_void_p, stmt_vec_info_vec, uid - 1);
 }
 
@@ -577,7 +576,7 @@ set_vinfo_for_stmt (gimple stmt, stmt_vec_info info)
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
-      gcc_assert (info);
+      gcc_checking_assert (info);
       uid = VEC_length (vec_void_p, stmt_vec_info_vec) + 1;
       gimple_set_uid (stmt, uid);
       VEC_safe_push (vec_void_p, heap, stmt_vec_info_vec, (vec_void_p) info);
@@ -603,8 +602,8 @@ get_earlier_stmt (gimple stmt1, gimple stmt2)
   if (uid1 == 0 || uid2 == 0)
     return NULL;
 
-  gcc_assert (uid1 <= VEC_length (vec_void_p, stmt_vec_info_vec));
-  gcc_assert (uid2 <= VEC_length (vec_void_p, stmt_vec_info_vec));
+  gcc_checking_assert (uid1 <= VEC_length (vec_void_p, stmt_vec_info_vec)
+		       && uid2 <= VEC_length (vec_void_p, stmt_vec_info_vec));
 
   if (uid1 < uid2)
     return stmt1;
@@ -632,7 +631,7 @@ is_loop_header_bb_p (basic_block bb)
 {
   if (bb == (bb->loop_father)->header)
     return true;
-  gcc_assert (EDGE_COUNT (bb->preds) == 1);
+  gcc_checking_assert (EDGE_COUNT (bb->preds) == 1);
   return false;
 }
 
