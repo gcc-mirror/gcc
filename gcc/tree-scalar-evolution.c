@@ -2172,9 +2172,19 @@ instantiate_scev_name (basic_block instantiate_below,
       else
 	res = chrec;
 
-      if (res == NULL_TREE
-	  || !dominated_by_p (CDI_DOMINATORS, instantiate_below,
-			      gimple_bb (SSA_NAME_DEF_STMT (res))))
+      /* When there is no loop_closed_phi_def, it means that the
+	 variable is not used after the loop: try to still compute the
+	 value of the variable when exiting the loop.  */
+      if (res == NULL_TREE)
+	{
+	  loop_p loop = loop_containing_stmt (SSA_NAME_DEF_STMT (chrec));
+	  res = analyze_scalar_evolution (loop, chrec);
+	  res = compute_overall_effect_of_inner_loop (loop, res);
+	  res = instantiate_scev_r (instantiate_below, evolution_loop, res,
+				    fold_conversions, cache, size_expr);
+	}
+      else if (!dominated_by_p (CDI_DOMINATORS, instantiate_below,
+				gimple_bb (SSA_NAME_DEF_STMT (res))))
 	res = chrec_dont_know;
     }
 
