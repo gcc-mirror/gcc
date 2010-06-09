@@ -1,3 +1,25 @@
+2010-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.h (gcc_gimple_checking_assert): New macro.
+ 	(gimple_set_def_ops, gimple_set_use_ops,
+ 	gimple_set_vuse, gimple_set_vdef,
+ 	gimple_omp_subcode, gimple_omp_set_subcode, gimple_ops, gimple_op,
+ 	gimple_op_ptr, gimple_op_ptr, gimple_set_op, gimple_bind_set_block,
+ 	gimple_asm_input_op, gimple_asm_input_op_ptr, gimple_asm_set_input_op,
+ 	gimple_asm_output_op, gimple_asm_output_op_ptr,
+ 	gimple_asm_set_output_op, gimple_asm_clobber_op, 
+ 	gimple_asm_set_clobber_op, gimple_asm_label_op,
+ 	gimple_asm_set_label_op, gimple_try_set_kind, gimple_try_catch_is_cleanup
+ 	gimple_try_set_catch_is_cleanup, gimple_phi_arg, 
+ 	gimple_switch_num_labels, gimple_switch_set_index, gimple_switch_label,
+ 	gimple_switch_set_label, gimple_omp_for_index, gimple_omp_for_index_ptr,
+ 	gimple_omp_for_set_index, gimple_omp_for_initial, gimple_omp_for_initial_ptr,
+ 	gimple_omp_for_set_initial, gimple_omp_for_final, gimple_omp_for_final_ptr,
+ 	gimple_omp_for_set_final, gimple_omp_for_incr, gimple_omp_for_incr_ptr,
+ 	gimple_omp_for_set_incr, gimple_omp_for_set_cond, gimple_omp_for_cond): Make
+ 	checking conditional with ENABLE_GIMPLE_CHECKING.
+ 	(gimple_phi_set_arg): Likewise; replace memcpy by assignment.
+
 2010-06-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* tree-ssa-loop-ivopts.c (adjust_setup_cost): New function.
