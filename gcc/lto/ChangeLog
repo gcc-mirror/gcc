@@ -1,3 +1,8 @@
+2010-06-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto.c (lto_resolution_read):  Pre-initialize local variable r.
+	* lto-coff.c (coff_write_object_file): Add braces to if.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* lto.c (lto_read_in_decl_state): Use typed GC allocation.
