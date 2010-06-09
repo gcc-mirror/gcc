@@ -1,3 +1,9 @@
+2010-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.oliva/dwarf2.C: Don't xfail on i386-pc-solaris*.
+	* g++.old-deja/g++.oliva/dwarf3.C: Likewise.
+	* g++.old-deja/g++.other/init19.C: Don't xfail on *-*-solaris2*.
+
 2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* testsuite/gfortran.dg/mvbits_9.f90: New test.
