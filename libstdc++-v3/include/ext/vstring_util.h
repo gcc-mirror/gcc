@@ -1,7 +1,6 @@
 // Versatile string utility -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,10 +50,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       typedef typename _Alloc::template rebind<_CharT>::other _CharT_alloc_type;
 
-      typedef _Traits					    traits_type;
+      typedef _Traits					    traits_type;      
       typedef typename _Traits::char_type		    value_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
-      typedef typename _CharT_alloc_type::difference_type   difference_type;
+      typedef typename _CharT_alloc_type::difference_type   difference_type;      
       typedef typename _CharT_alloc_type::pointer	    pointer;
       typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
 
@@ -165,8 +164,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       static int
       _S_compare(size_type __n1, size_type __n2)
       {
-	const difference_type __d = __n1 - __n2;
-	return __d == 0 ? 0 : (__d > 0 ? 1 : -1);
+	const difference_type __d = difference_type(__n1 - __n2);
+
+	if (__d > __numeric_traits_integer<int>::__max)
+	  return __numeric_traits_integer<int>::__max;
+	else if (__d < __numeric_traits_integer<int>::__min)
+	  return __numeric_traits_integer<int>::__min;
+	else
+	  return int(__d);
       }
     };
 
