@@ -1,3 +1,10 @@
+2010-06-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* tree-ssa-loop-ivopts.c (adjust_setup_cost): New function.
+	(get_computation_cost_at): Use it.
+	(determine_use_iv_cost_condition): Likewise.
+	(determine_iv_cost): Likewise.
+
 2010-06-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-niter.c (simplify_replace_tree): Do not
