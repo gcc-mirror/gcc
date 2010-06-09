@@ -755,8 +755,6 @@ gfc_init_builtin_functions (void)
 
 #include "mathbuiltins.def"
 
-  /* We define these separately as the fortran versions have different
-     semantics (they return an integer type) */
   gfc_define_builtin ("__builtin_roundl", mfunc_longdouble[0], 
 		      BUILT_IN_ROUNDL, "roundl", true);
   gfc_define_builtin ("__builtin_round", mfunc_double[0], 
