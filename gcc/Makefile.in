@@ -4999,7 +4999,7 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	etags -o TAGS.sub *.h *.c; \
+	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c; \
 	etags --include TAGS.sub $$incs)
 
 # -----------------------------------------------------

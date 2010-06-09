@@ -1,3 +1,7 @@
+2010-06-09  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (TAGS): Collect tags info from c-family.
+
 2010-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.h (gcc_gimple_checking_assert): New macro.
