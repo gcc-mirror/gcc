@@ -1,3 +1,10 @@
+2010-06-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44432
+	* configure.ac: Before using ZW_PROG_COMPILER_DEPENDENCIES for C++,
+	check that C++ compiler works.
+	* configure: Regenerate.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* include/symtab.h (ht_identifier_ptr): New.
