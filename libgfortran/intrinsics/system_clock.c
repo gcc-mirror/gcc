@@ -56,6 +56,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
   GFC_INTEGER_4 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
+#undef TCK
 #define TCK 1000
   struct timeval tp1;
 
@@ -117,6 +118,7 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
   GFC_INTEGER_8 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
+#undef TCK
 #define TCK 1000000
   struct timeval tp1;
 

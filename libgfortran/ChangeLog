@@ -1,3 +1,8 @@
+2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4, system_clock_8):
+	Undefine TCK.
+
 2010-06-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/34670
