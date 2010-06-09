@@ -1,3 +1,14 @@
+2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/fdl.texi: Move to GFDL version 1.3.
+
+	* doc/cpp.texi: Move to GFDL version 1.3.
+	* doc/gcc.texi: Move to GFDL version 1.3.  Fix copyright years.
+	* doc/gccint.texi: Move to GFDL version 1.3.
+	* doc/gcov.texi: Move to GFDL version 1.3.  Update copyright years.
+	* doc/install.texi: Move to GFDL version 1.3.  Fix copyright years.
+	* doc/invoke.texi: Move to GFDL version 1.3.
+
 2010-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (propagate_pure_const, propagate_noreturn):
