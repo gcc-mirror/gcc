@@ -1,5 +1,14 @@
 2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* mk-kinds-h.sh: Define GFC_REAL_*_LITERAL_SUFFIX and
+	GFC_REAL_*_LITERAL macros for each kind.
+	* intrinsics/cpu_time.c (cpu_time_4, cpu_time_8, cpu_time_10,
+	cpu_time_16): Use them.
+	* intrinsics/random.c (rnumber_4, rnumber_8, rnumber_10,
+	rnumber_16): Likewise.
+
+2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* intrinsics/system_clock.c (system_clock_4, system_clock_8):
 	Undefine TCK.
 
