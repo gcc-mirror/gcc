@@ -1,3 +1,7 @@
+2010-06-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* c-objc-common.c (c_tree_printer): Pre-intialize t by NULL_TREE.
+
 2010-06-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44423
