@@ -513,6 +513,10 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   if (step == NULL_TREE)
     return false;
 
+  /* Limit non-constant step prefetching only to the innermost loops.  */
+  if (!cst_and_fits_in_hwi (step) && loop->inner != NULL)
+    return false;
+
   /* Now we know that REF = &BASE + STEP * iter + DELTA, where DELTA and STEP
      are integer constants.  */
   agrp = find_or_create_group (refs, base, step);
