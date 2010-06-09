@@ -1,3 +1,11 @@
+2010-06-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* testsuite/gfortran.dg/mvbits_9.f90: New test.
+	* testsuite/gfortran.dg/ibset_1.f90: Ditto.
+	* testsuite/gfortran.dg/ibits_1.f90: Ditto.
+	* testsuite/gfortran.dg/btest_1.f90: Ditto.
+	* testsuite/gfortran.dg/ibclr_1.f90: Ditto.
+
 2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/torture/fp-int-convert-float128-timode.c: Skip on
