@@ -1374,6 +1374,10 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
   if (!expr)
     return NULL_TREE;
 
+  /* Do not bother to replace constants.  */
+  if (CONSTANT_CLASS_P (old))
+    return expr;
+
   if (expr == old
       || operand_equal_p (expr, old, 0))
     return unshare_expr (new_tree);
