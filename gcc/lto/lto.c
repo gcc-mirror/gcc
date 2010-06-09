@@ -317,7 +317,7 @@ lto_resolution_read (FILE *resolution, lto_file *file)
       int t;
       unsigned index;
       char r_str[27];
-      enum ld_plugin_symbol_resolution r;
+      enum ld_plugin_symbol_resolution r = (enum ld_plugin_symbol_resolution) 0;
       unsigned int j;
       unsigned int lto_resolution_str_len =
 	sizeof (lto_resolution_str) / sizeof (char *);
