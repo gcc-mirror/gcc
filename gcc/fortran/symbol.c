@@ -545,7 +545,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (data, function);
   conf (data, result);
   conf (data, allocatable);
-  conf (data, use_assoc);
 
   conf (value, pointer)
   conf (value, allocatable)
