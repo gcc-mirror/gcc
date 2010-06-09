@@ -1,6 +1,13 @@
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Backport from mainline:
+	2010-04-28  Mike Stump  <mikestump@comcast.net>
+	* config/i386/darwin.h (CC1_SPEC): Ignore -mdynamic-no-pic for
+	now.
+
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	Backport from mainline:
 	2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
         * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
 

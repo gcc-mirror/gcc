@@ -26,19 +26,34 @@ load_lib torture-options.exp
 dg-init
 
 torture-init
+
 set-torture-options $DG_TORTURE_OPTIONS
 
 set old_dg_do_what_default "${dg-do-what-default}"
 
+global torture_without_loops
+set mytorture [concat [list {-O0 -g}] $torture_without_loops]
+
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.m]] {
+
+    # We don't try to use the loop-optimizing options, since they are highly
+    # unlikely to make any difference to PCH.  However, we do want to
+    # add -O0 -g, since users who want PCH usually want debugging and quick
+    # compiles.
+    dg-flags-pch $subdir $test "-fgnu-runtime" $mytorture ".h"
+}
+
+if [istarget "*-*-darwin*" ] {
+  foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.m]] {
     global torture_without_loops
 
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.  However, we do want to
     # add -O0 -g, since users who want PCH usually want debugging and quick
     # compiles.
-    dg-pch $subdir $test [concat [list {-O0 -g}] $torture_without_loops] ".h"
+    dg-flags-pch $subdir $test "-fnext-runtime" $mytorture ".h"
+  }
 }
 
 set dg-do-what-default "$old_dg_do_what_default"

@@ -16,7 +16,7 @@
 
 load_lib copy-file.exp
 
-proc dg-pch { subdir test options suffix } {
+proc dg-flags-pch { subdir test otherflags options suffix } {
     global runtests dg-do-what-default
 
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -33,13 +33,13 @@ proc dg-pch { subdir test options suffix } {
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.
     foreach flags $options {
-	verbose "Testing $nshort, $flags" 1
+	verbose "Testing $nshort, $otherflags $flags" 1
 
 	# For the header files, the default is to precompile.
 	set dg-do-what-default precompile
 	catch { file_on_host delete "$bname$suffix" }
 	gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-	dg-test -keep-output "./$bname$suffix" $flags ""
+	dg-test -keep-output "./$bname$suffix" "$otherflags $flags" ""
 
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile
@@ -50,23 +50,23 @@ proc dg-pch { subdir test options suffix } {
 	    # Ensure that the PCH file is used, not the original header.
 	    file_on_host delete "$bname$suffix"
 
-	    dg-test -keep-output $test "$flags -I." ""
+	    dg-test -keep-output $test "$otherflags $flags -I." ""
 	    file_on_host delete "$bname$suffix.gch"
 	    if { !$have_errs } {
 		if { [ file_on_host exists "$bname.s" ] } {
 		    remote_upload host "$bname.s" "$bname.s-gch"
 		    remote_download host "$bname.s-gch"
 		    gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-		    dg-test -keep-output $test $flags "-I."
+		    dg-test -keep-output $test "$otherflags $flags -I." ""
 		    remote_upload host "$bname.s"
 		    set tmp [ diff "$bname.s" "$bname.s-gch" ]
 		    if { $tmp == 0 } {
 			verbose -log "assembly file '$bname.s', '$bname.s-gch' comparison error"
-			fail "$nshort $flags assembly comparison"
+			fail "$nshort $otherflags $flags assembly comparison"
 		    } elseif { $tmp == 1 } {
-			pass "$nshort $flags assembly comparison"
+			pass "$nshort $otherflags $flags assembly comparison"
 		    } else {
-			fail "$nshort $flags assembly comparison"
+			fail "$nshort $otherflags $flags assembly comparison"
 		    }
 		    file_on_host delete "$bname$suffix"
 		    file_on_host delete "$bname.s"
@@ -85,4 +85,8 @@ proc dg-pch { subdir test options suffix } {
 	    }
 	}
     }
+}
+
+proc dg-pch { subdir test options suffix } {
+  return [dg-flags-pch $subdir $test "" $options $suffix]
 }

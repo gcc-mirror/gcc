@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
+  %<mdynamic-no-pic " /* For now, we just ignore this flag */ " \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"

@@ -46,28 +46,55 @@ proc objc-set-runtime-options { dowhat args } {
 	    lappend options $args
 	}
 	verbose "options $options"
-	set test_obj "trivial.exe"
-	set comp_output [objc_target_compile \
-	"$srcdir/$subdir/trivial.m" $test_obj executable $options]
-
-	# If we get any error, then we failed.
-	if ![string match "" $comp_output] then {
-	    remote_file build delete $test_obj
-	    continue;
-	}
 	if [info exists dowhat] {
-	    if { $dowhat == "execute" } {
-		set result [objc_load "$tmpdir/$test_obj" "" ""]
-		set status [lindex $result 0]
-		set output [lindex $result 1]
-		if { $status != "pass" } {
-		    remote_file build delete $test_obj
-		    verbose -log "trivial execute failed with $status $output"
-		    continue;
-		}
+          switch $dowhat {
+	    "compile" {
+	      set compile_type "assembly"
+	      set output_file "trivial.s"
+	      set comp_output [objc_target_compile \
+	        "$srcdir/$subdir/trivial.m" "$output_file" "$compile_type" $options]
+
+	      remote_file build delete $output_file
+	      # If we get any error, then we failed.
+	      if ![string match "" $comp_output] then {
+	        continue;
+	      }
 	    }
+	    "execute" {
+	      set test_obj "trivial.exe"
+	      set comp_output [objc_target_compile \
+	        "$srcdir/$subdir/trivial.m" $test_obj "executable" $options]
+
+	      # If we get any error, then we failed.
+	      if ![string match "" $comp_output] then {
+	        remote_file build delete $test_obj
+	        continue;
+	      }
+	      set result [objc_load "$tmpdir/$test_obj" "" ""]
+	      set status [lindex $result 0]
+	      set output [lindex $result 1]
+	      remote_file build delete $test_obj
+	      if { $status != "pass" } {
+	        verbose -log "trivial execute failed with $status $output"
+	        continue;
+	      }
+	    }
+	    default {
+	      perror "$dowhat: not a valid objc-torture action"
+	      return ""
+	    }
+	  }
+	} else {
+	  set test_obj "trivial.exe"
+	  set comp_output [objc_target_compile \
+	  "$srcdir/$subdir/trivial.m" $test_obj executable $options]
+
+	  # If we get any error, then we failed.
+	  remote_file build delete $test_obj
+	  if ![string match "" $comp_output] then {
+	      continue;
+	  }
 	}
-	remote_file build delete $test_obj
 	lappend OBJC_RUNTIME_OPTIONS $type
     }
 

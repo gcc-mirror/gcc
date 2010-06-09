@@ -1,3 +1,44 @@
+2010-06-09  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
+	PR ObjC++/23616
+	* obj-c++.dg/try-catch-2.mm: Adjust xfail.
+	* obj-c++.dg/try-catch-9.mm: Ditto.
+
+	2010-05-28  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/44125
+	* objc.dg/const-str-9.m: Remove static.
+
+	2010-05-06  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/35165
+	* obj-c++.dg/cxx-ivars-2.mm: Restore running of testcase.
+
+	2010-05-04  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/35165
+	* encode-8.mm: Restore running of testcase, skip for gnu-runtime.
+
+	2010-04-26  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR testsuite/35165
+	* obj-c++.dg/stubify-2.mm: Restrict to ilp32 targets.  Require
+	Darwin8/OSX10.4 - compatible code generation.
+	Use scan-rtl-dump.
+	* obj-c++.dg/stubify-1.mm: Ditto.
+	* lib/objc-torture.exp: Do not require link success for
+	"trivial.m" in the runtime checks when dowhat = 'compile'.
+	* lib/dg-pch.exp: (dg-flags-pch): New Proc.
+	* objc.dg/stubify-1.m:  Restrict to ilp32 targets.  Require
+	Darwin8/OSX10.4 - compatible code generation.
+	* objc.dg/stubify-2.m: Ditto.
+	* objc.dg/symtab-1.m: Match '.quad' for m64 code.
+	* objc.dg/next-runtime-1.m: Ditto.
+	* objc.dg/stret-2.m: Restrict to ilp32 targets.
+	* objc.dg/pch/pch.exp: Apply tests to both Gnu and NeXT
+	runtimes on Darwin.
+	
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44366

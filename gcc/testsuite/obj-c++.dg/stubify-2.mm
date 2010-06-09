@@ -2,7 +2,9 @@
 /* Testcase extracted from TextEdit:Document.m.  */
 
 /* { dg-do compile { target *-*-darwin* } } */
-/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump" } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-mdynamic-no-pic -fdump-rtl-jump -mmacosx-version-min=10.4" } */
 
 typedef struct objc_object { } *id ;
 int x = 41 ;
@@ -27,5 +29,5 @@ extern int bogonic (int, int, int) ;
 @end
 
 /* Any symbol_ref of an un-stubified objc_msgSend is an error; look
-   for "objc_msgSend" in quotes, without the $stub suffix.  */
-/* { dg-final { scan-file-not stubify-2.mm.147r.jump "symbol_ref.*\"objc_msgSend\"" } } */
+   for "objc_msgSend" in quotes, without the $stub suffix. */
+/* { dg-final {  scan-rtl-dump-not "symbol_ref.*\"objc_msgSend\"" "jump" } } */
