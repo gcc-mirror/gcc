@@ -1,3 +1,11 @@
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* tls.m4 (GCC_CHECK_TLS): Add volatile qualifier to the test 
+	references.  Move the main () test reference ahead of 
+	pthread_create().  Add a comment to explain the requirements
+	of the test.
+
 2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
