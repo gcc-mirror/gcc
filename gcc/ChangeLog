@@ -1,5 +1,11 @@
 2010-06-09  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-pure-const.c (propagate_pure_const, propagate_noreturn):
+	Break out from ...
+	(propagate) ... here; swap the order.
+
+2010-06-09  Jan Hubicka  <jh@suse.cz>
+
 	* bitmap.c (bitmap_elt_insert_after, bitmap_first_set_bit,
 	bitmap_first_set_bit, bitmap_last_set_bit, bitmap_last_set_bit,
 	bitmap_and_into, bitmap_and_compl_into, bitmap_set_range,

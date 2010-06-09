@@ -1021,14 +1021,11 @@ self_recursive_p (struct cgraph_node *node)
   return false;
 }
 
+/* Produce transitive closure over the callgraph and compute pure/const
+   attributes.  */
 
-/* Produce the global information by preforming a transitive closure
-   on the local information that was produced by generate_summary.
-   Note that there is no function_transform pass since this only
-   updates the function_decl.  */
-
-static unsigned int
-propagate (void)
+static void
+propagate_pure_const (void)
 {
   struct cgraph_node *node;
   struct cgraph_node *w;
@@ -1038,9 +1035,6 @@ propagate (void)
   int i;
   struct ipa_dfs_info * w_info;
 
-  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
-  cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
-  cgraph_remove_node_removal_hook (node_removal_hook_holder);
   order_pos = ipa_utils_reduced_inorder (order, true, false, NULL);
   if (dump_file)
     {
@@ -1301,12 +1295,31 @@ propagate (void)
 	  node->aux = NULL;
 	}
     }
+
+  free (order);
+}
+
+/* Produce transitive closure over the callgraph and compute nothrow
+   attributes.  */
+
+static void
+propagate_nothrow (void)
+{
+  struct cgraph_node *node;
+  struct cgraph_node *w;
+  struct cgraph_node **order =
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  int order_pos;
+  int i;
+  struct ipa_dfs_info * w_info;
+
   order_pos = ipa_utils_reduced_inorder (order, true, false, ignore_edge);
   if (dump_file)
     {
       dump_cgraph (dump_file);
       ipa_utils_print_order(dump_file, "reduced for nothrow", order, order_pos);
     }
+
   /* Propagate the local information thru the call graph to produce
      the global information.  All the nodes within a cycle will have
      the same info so we collapse cycles first.  Then we can do the
@@ -1387,12 +1400,33 @@ propagate (void)
 	  free (node->aux);
 	  node->aux = NULL;
 	}
-      if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE
-	  && has_function_state (node))
-	free (get_function_state (node));
     }
 
   free (order);
+}
+
+
+/* Produce the global information by preforming a transitive closure
+   on the local information that was produced by generate_summary.  */
+
+static unsigned int
+propagate (void)
+{
+  struct cgraph_node *node;
+
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
+  cgraph_remove_node_removal_hook (node_removal_hook_holder);
+
+  /* Nothrow makes more function to not lead to return and improve
+     later analysis.  */
+  propagate_nothrow ();
+  propagate_pure_const ();
+
+  /* Cleanup. */
+  for (node = cgraph_nodes; node; node = node->next)
+    if (has_function_state (node))
+      free (get_function_state (node));
   VEC_free (funct_state, heap, funct_state_vec);
   finish_state ();
   return 0;
