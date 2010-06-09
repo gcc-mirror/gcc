@@ -896,7 +896,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 struct GTY(()) saved_scope {
   VEC(cxx_saved_binding,gc) *old_bindings;
   tree old_namespace;
-  tree decl_ns_list;
+  VEC(tree,gc) *decl_ns_list;
   tree class_name;
   tree class_type;
   tree access_specifier;
