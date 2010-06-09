@@ -1,3 +1,10 @@
+2010-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* bitmap.c (bitmap_elt_insert_after, bitmap_first_set_bit,
+	bitmap_first_set_bit, bitmap_last_set_bit, bitmap_last_set_bit,
+	bitmap_and_into, bitmap_and_compl_into, bitmap_set_range,
+	bitmap_compl_and_into, bitmap_elt_ior): Use checking asserts.
+
 2010-06-09  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-ssa-loop-prefetch.c (gather_memory_references_ref):
