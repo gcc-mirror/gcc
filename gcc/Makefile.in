@@ -331,10 +331,10 @@ LTO_BINARY_READER = @LTO_BINARY_READER@
 LTO_USE_LIBELF = @LTO_USE_LIBELF@
 
 # Compiler needed for plugin support
-PLUGINCC = @CC@
+PLUGINCC = $(COMPILER)
 
 # Flags needed for plugin support
-PLUGINCFLAGS = @CFLAGS@
+PLUGINCFLAGS = $(COMPILER_FLAGS)
 
 # Libs and linker options needed for plugin support
 PLUGINLIBS = @pluginlibs@

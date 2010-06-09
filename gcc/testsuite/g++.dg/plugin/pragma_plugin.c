@@ -13,6 +13,7 @@
 #include "cpplib.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "toplev.h"
 
 int plugin_is_GPL_compatible;
 
