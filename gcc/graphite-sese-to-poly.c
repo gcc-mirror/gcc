@@ -1328,8 +1328,7 @@ add_condition_to_pbb (poly_bb_p pbb, gimple stmt, enum tree_code code)
 	(&right, left);
       add_condition_to_domain (left, stmt, pbb, LT_EXPR);
       add_condition_to_domain (right, stmt, pbb, GT_EXPR);
-      ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (left,
-							       right);
+      ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (left, right);
       ppl_delete_Pointset_Powerset_C_Polyhedron (right);
     }
   else
@@ -1344,12 +1343,11 @@ add_conditions_to_domain (poly_bb_p pbb)
   unsigned int i;
   gimple stmt;
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  VEC (gimple, heap) *conditions = GBB_CONDITIONS (gbb);
 
-  if (VEC_empty (gimple, conditions))
+  if (VEC_empty (gimple, GBB_CONDITIONS (gbb)))
     return;
 
-  for (i = 0; VEC_iterate (gimple, conditions, i, stmt); i++)
+  for (i = 0; VEC_iterate (gimple, GBB_CONDITIONS (gbb), i, stmt); i++)
     switch (gimple_code (stmt))
       {
       case GIMPLE_COND:
@@ -1357,7 +1355,7 @@ add_conditions_to_domain (poly_bb_p pbb)
 	    enum tree_code code = gimple_cond_code (stmt);
 
 	    /* The conditions for ELSE-branches are inverted.  */
-	    if (VEC_index (gimple, gbb->condition_cases, i) == NULL)
+	    if (!VEC_index (gimple, GBB_CONDITION_CASES (gbb), i))
 	      code = invert_tree_comparison (code, false);
 
 	    add_condition_to_pbb (pbb, stmt, code);
@@ -1409,11 +1407,13 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
   struct bsc *data = (struct bsc *) dw_data->global_data;
   VEC (gimple, heap) **conditions = data->conditions;
   VEC (gimple, heap) **cases = data->cases;
-  gimple_bb_p gbb = gbb_from_bb (bb);
-  gimple stmt = single_pred_cond (bb);
+  gimple_bb_p gbb;
+  gimple stmt;
 
   if (!bb_in_sese_p (bb, data->region))
     return;
+
+  stmt = single_pred_cond (bb);
 
   if (stmt)
     {
@@ -1426,6 +1426,8 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
       else
 	VEC_safe_push (gimple, heap, *cases, NULL);
     }
+
+  gbb = gbb_from_bb (bb);
 
   if (gbb)
     {
@@ -2924,6 +2926,7 @@ scop_canonicalize_loops (scop_p scop)
 /* Can all ivs be represented by a signed integer?
    As CLooG might generate negative values in its expressions, signed loop ivs
    are required in the backend. */
+
 static bool
 scop_ivs_can_be_represented (scop_p scop)
 {
@@ -2941,7 +2944,7 @@ scop_ivs_can_be_represented (scop_p scop)
       if (!loop->single_iv)
 	continue;
 
-      type = TREE_TYPE(loop->single_iv);
+      type = TREE_TYPE (loop->single_iv);
       precision = TYPE_PRECISION (type);
 
       if (TYPE_UNSIGNED (type)

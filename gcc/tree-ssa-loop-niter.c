@@ -875,11 +875,11 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
      -step + 1 <= (iv1->base - iv0->base) <= MAX - step + 1
 
      (where MAX is the maximum value of the unsigned variant of TYPE, and
-     the computations in this formula are performed in full precision
-     (without overflows).
+     the computations in this formula are performed in full precision,
+     i.e., without overflows).
 
      Usually, for loops with exit condition iv0->base + step * i < iv1->base,
-     we have a condition of form iv0->base - step < iv1->base before the loop,
+     we have a condition of the form iv0->base - step < iv1->base before the loop,
      and for loops iv0->base < iv1->base - step * i the condition
      iv0->base < iv1->base + step, due to loop header copying, which enable us
      to prove the lower bound.

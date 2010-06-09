@@ -388,6 +388,7 @@ number_of_write_pdrs (poly_bb_p pbb)
 }
 
 /* The basic block of the PBB.  */
+
 static inline basic_block
 pbb_bb (poly_bb_p pbb)
 {
