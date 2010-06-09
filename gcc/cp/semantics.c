@@ -1219,7 +1219,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
       tree operand;
       int i;
 
-      oconstraints = (const char **) alloca (noutputs * sizeof (char *));
+      oconstraints = XALLOCAVEC (const char *, noutputs);
 
       string = resolve_asm_operand_names (string, output_operands,
 					  input_operands, labels);

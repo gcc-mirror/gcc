@@ -981,7 +981,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
     return NULL;
 
   nargs = list_length (DECL_ARGUMENTS (fn));
-  argarray = (tree *) alloca (nargs * sizeof (tree));
+  argarray = XALLOCAVEC (tree, nargs);
 
   defparm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
   if (arg2)

@@ -1,3 +1,13 @@
+2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* call.c (build_call_n): Call XALLOCAVEC instead of alloca.
+	(build_op_delete_call): Likewise.
+	(build_over_call): Likewise.
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Likewise.
+	* pt.c (process_partial_specialization): Likewise.
+	(tsubst_template_args): Likewise.
+	* semantics.c (finish_asm_stmt): Likewise.
+
 2010-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (record_key_method_defined): New, broken out of ...
