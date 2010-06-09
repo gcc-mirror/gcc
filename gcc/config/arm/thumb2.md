@@ -1082,29 +1082,6 @@
   }"
 )
 
-;; Peepholes and insns for 16-bit flag clobbering instructions.
-;; The conditional forms of these instructions do not clobber CC.
-;; However by the time peepholes are run it is probably too late to do
-;; anything useful with this information.
-(define_peephole2
-  [(set (match_operand:SI          0 "low_register_operand" "")
-        (match_operator:SI 3 "thumb_16bit_operator"
-	 [(match_operand:SI 1  "low_register_operand" "")
-	  (match_operand:SI 2 "low_register_operand" "")]))]
-  "TARGET_THUMB2
-   && (rtx_equal_p(operands[0], operands[1])
-       || GET_CODE(operands[3]) == PLUS
-       || GET_CODE(operands[3]) == MINUS)
-   && peep2_regno_dead_p(0, CC_REGNUM)"
-  [(parallel
-    [(set (match_dup 0)
-	  (match_op_dup 3
-	   [(match_dup 1)
-	    (match_dup 2)]))
-     (clobber (reg:CC CC_REGNUM))])]
-  ""
-)
-
 (define_insn "*thumb2_alusi3_short"
   [(set (match_operand:SI          0 "s_register_operand" "=l")
         (match_operator:SI 3 "thumb_16bit_operator"
