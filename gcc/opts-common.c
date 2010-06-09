@@ -132,6 +132,10 @@ prune_options (int *argcp, char ***argvp)
 {
   int argc = *argcp;
   int *options = XNEWVEC (int, argc);
+  /* We will only return this replacement argv if we remove at least
+     one argument, so it does not need to be size (argc + 1) to
+     make room for the terminating NULL because we will always have
+     freed up at least one slot when we end up using it at all.  */
   char **argv = XNEWVEC (char *, argc);
   int i, arg_count, need_prune = 0;
   const struct cl_option *option;
@@ -225,6 +229,9 @@ keep:
     {
       *argcp = arg_count;
       *argvp = argv;
+      /* Add NULL-termination.  Guaranteed not to overflow because
+	 arg_count here can only be less than argc.  */
+      argv[arg_count] = 0;
     }
   else
     {

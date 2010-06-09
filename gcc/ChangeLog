@@ -1,3 +1,8 @@
+2010-06-09  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* opts-common.c (prune_options): Ensure replacement argv array
+	is correctly terminated by a NULL entry.
+
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Backport from mainline:
