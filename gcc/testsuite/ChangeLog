@@ -1,5 +1,10 @@
 2010-06-09  Daniel Franke  <franke.daniel@gmail.com>
 
+        PR fortran/44347
+        * gfortran.dg/selected_real_kind_1.f90: New.
+
+2010-06-09  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/44359
 	* gfortran.dg/warn_conversion.f90: Removed check for redundant
 	warning.
