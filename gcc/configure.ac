@@ -1643,7 +1643,7 @@ tmake_file="${tmake_file_}"
 out_object_file=`basename $out_file .c`.o
 
 tm_file_list="options.h"
-tm_include_list="options.h"
+tm_include_list="options.h insn-constants.h"
 for f in $tm_file; do
   case $f in
     ./* )

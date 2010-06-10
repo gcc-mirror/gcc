@@ -816,8 +816,8 @@ BCONFIG_H = bconfig.h $(build_xm_file_list)
 CONFIG_H  = config.h  $(host_xm_file_list)
 TCONFIG_H = tconfig.h $(xm_file_list)
 TM_P_H    = tm_p.h    $(tm_p_file_list)
-GTM_H     = tm.h      $(tm_file_list)
-TM_H      = $(GTM_H) insn-constants.h insn-flags.h options.h
+GTM_H     = tm.h      $(tm_file_list) insn-constants.h
+TM_H      = $(GTM_H) insn-flags.h options.h
 
 # Variables for version information.
 BASEVER     := $(srcdir)/BASE-VER  # 4.x.y

@@ -1,5 +1,13 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* configure.ac (tm_include_list): Add insn-constants.h.
+	* configure: Regenerate.
+	* Makefile.in (GTM_H): Move insn-constants.h here from...
+	(TM_H): ...here.
+	* mkconfig.sh: Remove special handling for insn-constants.h.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (BUILD_RTL): Move build/read-md.o to...
 	(BUILD_MD): ...this new variable.
 	(simple_generated_rtl_h, simple_generated_rtl_c): New variables
