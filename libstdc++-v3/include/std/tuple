@@ -341,7 +341,8 @@ namespace std
 
       template<typename _U1, typename _U2>
         tuple(pair<_U1, _U2>&& __in)
-	: _Inherited(std::move(__in.first), std::move(__in.second)) { }
+	: _Inherited(std::forward<_U1>(__in.first),
+		     std::forward<_U2>(__in.second)) { }
 
       tuple&
       operator=(const tuple& __in)

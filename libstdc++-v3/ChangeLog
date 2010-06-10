@@ -1,3 +1,13 @@
+2010-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44487
+	* include/bits/stl_pair.h (pair(pair&&)): Remove.
+	(pair(pair<_U1, _U2>&&): Use forward, consistently with Bullet 5
+	of LWG 1326.
+	* include/std/tuple (tuple(pair<_U1, _U2>&&)): Likewise.
+	* testsuite/20_util/pair/44487.cc: Add.
+	* testsuite/20_util/tuple/cons/44487.cc: Likewise.
+
 2010-06-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
