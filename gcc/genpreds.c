@@ -1393,7 +1393,7 @@ main (int argc, char **argv)
   progname = argv[0];
   if (argc <= 1)
     fatal ("no input file name");
-  if (init_md_reader_args_cb (argc, argv, parse_option) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args_cb (argc, argv, parse_option))
     return FATAL_EXIT_CODE;
 
   while ((defn = read_md_rtx (&pattern_lineno, &next_insn_code)) != 0)

@@ -9467,7 +9467,7 @@ main (int argc, char **argv)
 
   progname = "genautomata";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   initiate_automaton_gen (argc, argv);

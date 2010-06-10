@@ -1,5 +1,74 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (build/genmddeps.o): Depend on $(READ_MD_H).
+	* genmddeps.c: Include read-md.h.
+	(main): Call init_rtx_reader_args instead of init_md_reader_args.
+	* genattr.c (main): Likewise.
+	* genattrtab.c (main): Likewise.
+	* genautomata.c (main): Likewise.
+	* gencodes.c (main): Likewise.
+	* genconditions.c (main): Likewise.
+	* genconfig.c (main): Likewise.
+	* genconstants.c (main): Likewise.
+	* genemit.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genflags.c (main): Likewise.
+	* genopinit.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genpeep.c (main): Likewise.
+	* genrecog.c (main): Likewise.
+	* genpreds.c (main): Likewise.
+	* gensupport.h (in_fname): Move to read-md.h.
+	(init_md_reader_args_cb): Rename to...
+	(init_rtx_reader_args_cb): ...this and return a bool.
+	(init_md_reader_args): Rename to...
+	(init_rtx_reader_args): ...this and return a bool.
+	(include_callback): Move to read-md.h.
+	* gensupport.c (in_fname, include_callback, base_dir, max_include_len)
+	(file_name_list, first_dir_md_include): Move to read-md.c
+	(first_bracket_include): Delete unused variable.
+	(last_dir_md_include): Move to read-md.c.
+	(process_include): Delete, moving code to read-md.c:handle_include.
+	(process_rtx): Don't handle INCLUDE.
+	(save_string): Delete.
+	(rtx_handle_directive): New function.
+	(init_md_reader_args_cb): Rename to...
+	(init_rtx_reader_args_cb): ...this and return a boolean success value.
+	Use read_md_args.
+	(init_md_reader_args): Rename to...
+	(init_rtx_reader_args): ...this and return a boolean success value.
+	* rtl.def (INCLUDE): Delete.
+	* rtl.h (read_rtx): Remove "int *" argument.  Add "const char *"
+	argument.
+	* read-rtl.c (read_conditions): Don't gobble ')' here.
+	(read_mapping): Likewise.
+	(read_rtx): Remove LINENO argument.  Add RTX_NAME argument.
+	Handle top-level non-rtx constructs here rather than in read_rtx_1.
+	Store the whole queue in *X.  Remove call to init_md_reader.
+	(read_rtx_1): Rename to...
+	(read_rtx_code): ...this.  Call read_nested_rtx to read subrtxes.
+	Don't handle top-level non-rtx constructs here.  Don't handle (nil)
+	here.
+	(read_nested_rtx): New function.  Handle (nil) here rather than
+	in read_rtx_code.
+	(read_rtx_variadic): Call read_nested_rtx to read subrtxes.  Don't
+	gobble ')' here.
+	* read-md.h (directive_handler_t): New type.
+	(in_fname, include_callback): Moved from read-md.h.
+	(read_constants, init_md_reader): Delete.
+	(read_md_files): Declare.
+	* read-md.c (file_name_list, in_fname, base_dir, first_dir_md_include)
+	(last_dir_md_include_ptr, include_callback, max_include_len): Moved
+	from gensupport.c.
+	(read_constants): Rename to...
+	(handle_constants): ...this.  Don't gobble ')' here.
+	(handle_include, handle_file, handle_toplevel_file)
+	(parse_include): New functions, mostly taken from gensupport.c.
+	(init_md_reader): Subsume into...
+	(read_md_files): ...this new function.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* read-md.h (read_char): Increment read_md_lineno after reading '\n'.
 	(unread_char): Decrement read_md_lineno after putting back '\n'.
 	* read-md.c (fatal_with_file_and_line): Push back any characters

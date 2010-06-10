@@ -34,6 +34,12 @@ struct ptr_loc {
   int lineno;
 };
 
+/* A singly-linked list of filenames.  */
+struct file_name_list {
+  struct file_name_list *next;
+  const char *fname;
+};
+
 /* Obstack used for allocating MD strings.  */
 struct obstack string_obstack;
 
@@ -62,9 +68,31 @@ const char *read_md_filename;
 /* The current line number in READ_MD_FILE.  */
 int read_md_lineno;
 
+/* The name of the toplevel file that indirectly included READ_MD_FILE.  */
+const char *in_fname;
+
+/* The directory part of IN_FNAME.  NULL if IN_FNAME is a bare filename.  */
+static char *base_dir;
+
+/* The first directory to search.  */
+static struct file_name_list *first_dir_md_include;
+
+/* A pointer to the null terminator of the md include chain.  */
+static struct file_name_list **last_dir_md_include_ptr = &first_dir_md_include;
+
+/* This callback will be invoked whenever an md include directive is
+   processed.  To be used for creation of the dependency file.  */
+void (*include_callback) (const char *);
+
+/* The current maximum length of directory names in the search path
+   for include files.  (Altered as we get more of them.)  */
+static size_t max_include_len;
+
 /* A table of md_constant structures, hashed by name.  Null if no
    constant expansion should occur.  */
 static htab_t md_constants;
+
+static void handle_file (directive_handler_t);
 
 /* Given an object that starts with a char * name field, return a hash
    code for its name.  */
@@ -597,8 +625,8 @@ scan_comma_elt (const char **pstr)
 /* Process a define_constants directive, starting with the optional space
    after the "define_constants".  */
 
-void
-read_constants (void)
+static void
+handle_constants (void)
 {
   int c;
   htab_t defs;
@@ -648,9 +676,6 @@ read_constants (void)
 	fatal_expected_char (')', c);
     }
   md_constants = defs;
-  c = read_skip_spaces ();
-  if (c != ')')
-    fatal_expected_char (')', c);
 }
 
 /* For every constant definition, call CALLBACK with two arguments:
@@ -664,14 +689,264 @@ traverse_md_constants (htab_trav callback, void *info)
     htab_traverse (md_constants, callback, info);
 }
 
-/* Initialize this file's static data.  */
+/* Process an "include" directive, starting with the optional space
+   after the "include".  Read in the file and use HANDLE_DIRECTIVE
+   to process each unknown directive.  LINENO is the line number on
+   which the "include" occured.  */
 
-void
-init_md_reader (void)
+static void
+handle_include (int lineno, directive_handler_t handle_directive)
 {
+  const char *filename;
+  const char *old_filename;
+  int old_lineno;
+  char *pathname;
+  FILE *input_file, *old_file;
+
+  filename = read_string (false);
+  input_file = NULL;
+
+  /* If the specified file name is absolute, skip the include stack.  */
+  if (!IS_ABSOLUTE_PATH (filename))
+    {
+      struct file_name_list *stackp;
+
+      /* Search the directory path, trying to open the file.  */
+      for (stackp = first_dir_md_include; stackp; stackp = stackp->next)
+	{
+	  static const char sep[2] = { DIR_SEPARATOR, '\0' };
+
+	  pathname = concat (stackp->fname, sep, filename, NULL);
+	  input_file = fopen (pathname, "r");
+	  if (input_file != NULL)
+	    break;
+	  free (pathname);
+	}
+    }
+
+  /* If we haven't managed to open the file yet, try combining the
+     filename with BASE_DIR.  */
+  if (input_file == NULL)
+    {
+      if (base_dir)
+	pathname = concat (base_dir, filename, NULL);
+      else
+	pathname = xstrdup (filename);
+      input_file = fopen (pathname, "r");
+    }
+
+  if (input_file == NULL)
+    {
+      free (pathname);
+      error_with_line (lineno, "include file `%s' not found", filename);
+      return;
+    }
+
+  /* Save the old cursor.  Note that the LINENO argument to this
+     function is the beginning of the include statement, while
+     read_md_lineno has already been advanced.  */
+  old_file = read_md_file;
+  old_filename = read_md_filename;
+  old_lineno = read_md_lineno;
+
+  if (include_callback)
+    include_callback (pathname);
+
+  read_md_file = input_file;
+  read_md_filename = pathname;
+  handle_file (handle_directive);
+
+  /* Restore the old cursor.  */
+  read_md_file = old_file;
+  read_md_filename = old_filename;
+  read_md_lineno = old_lineno;
+
+  /* Do not free the pathname.  It is attached to the various rtx
+     queue elements.  */
+}
+
+/* Process the current file, assuming that read_md_file and
+   read_md_filename are valid.  Use HANDLE_DIRECTIVE to handle
+   unknown directives.  */
+
+static void
+handle_file (directive_handler_t handle_directive)
+{
+  struct md_name directive;
+  int c, lineno;
+
+  read_md_lineno = 1;
+  while ((c = read_skip_spaces ()) != EOF)
+    {
+      lineno = read_md_lineno;
+      if (c != '(')
+	fatal_expected_char ('(', c);
+
+      read_name (&directive);
+      if (strcmp (directive.string, "define_constants") == 0)
+	handle_constants ();
+      else if (strcmp (directive.string, "include") == 0)
+	handle_include (lineno, handle_directive);
+      else
+	handle_directive (lineno, directive.string);
+
+      c = read_skip_spaces ();
+      if (c != ')')
+	fatal_expected_char (')', c);
+    }
+  fclose (read_md_file);
+}
+
+/* Like handle_file, but for top-level files.  Set up in_fname and
+   base_dir accordingly.  */
+
+static void
+handle_toplevel_file (directive_handler_t handle_directive)
+{
+  char *lastsl;
+
+  in_fname = read_md_filename;
+  lastsl = strrchr (in_fname, '/');
+  if (lastsl != NULL)
+    base_dir = xstrndup (in_fname, lastsl - in_fname + 1);
+  else
+    base_dir = NULL;
+
+  handle_file (handle_directive);
+}
+
+/* Parse a -I option with argument ARG.  */
+
+static void
+parse_include (const char *arg)
+{
+  struct file_name_list *dirtmp;
+
+  dirtmp = XNEW (struct file_name_list);
+  dirtmp->next = 0;
+  dirtmp->fname = arg;
+  *last_dir_md_include_ptr = dirtmp;
+  last_dir_md_include_ptr = &dirtmp->next;
+  if (strlen (dirtmp->fname) > max_include_len)
+    max_include_len = strlen (dirtmp->fname);
+}
+
+/* The main routine for reading .md files.  Try to process all the .md
+   files specified on the command line and return true if no error occured.
+
+   ARGC and ARGV are the arguments to main.
+
+   PARSE_OPT, if nonnull, is passed all unknown command-line arguments.
+   It should return true if it recognizes the argument or false if a
+   generic error should be reported.
+
+   The parser calls HANDLE_DIRECTIVE for each unknown directive.
+   See the comment above the directive_handler_t definition for
+   details about the callback's interface.  */
+
+bool
+read_md_files (int argc, char **argv, bool (*parse_opt) (const char *),
+	       directive_handler_t handle_directive)
+{
+  int i;
+  bool no_more_options;
+  bool already_read_stdin;
+  int num_files;
+
+  /* Initialize global data.  */
   obstack_init (&string_obstack);
   ptr_locs = htab_create (161, leading_ptr_hash, leading_ptr_eq_p, 0);
   obstack_init (&ptr_loc_obstack);
   joined_conditions = htab_create (161, leading_ptr_hash, leading_ptr_eq_p, 0);
   obstack_init (&joined_conditions_obstack);
+
+  /* Unlock the stdio streams.  */
+  unlock_std_streams ();
+
+  /* First we loop over all the options.  */
+  for (i = 1; i < argc; i++)
+    if (argv[i][0] == '-')
+      {
+	/* An argument consisting of exactly one dash is a request to
+	   read stdin.  This will be handled in the second loop.  */
+	if (argv[i][1] == '\0')
+	  continue;
+
+	/* An argument consisting of just two dashes causes option
+	   parsing to cease.  */
+	if (argv[i][1] == '-' && argv[i][2] == '\0')
+	  break;
+
+	if (argv[i][1] == 'I')
+	  {
+	    if (argv[i][2] != '\0')
+	      parse_include (argv[i] + 2);
+	    else if (++i < argc)
+	      parse_include (argv[i]);
+	    else
+	      fatal ("directory name missing after -I option");
+	    continue;
+	  }
+
+	/* The program may have provided a callback so it can
+	   accept its own options.  */
+	if (parse_opt && parse_opt (argv[i]))
+	  continue;
+
+	fatal ("invalid option `%s'", argv[i]);
+      }
+
+  /* Now loop over all input files.  */
+  num_files = 0;
+  no_more_options = false;
+  already_read_stdin = false;
+  for (i = 1; i < argc; i++)
+    {
+      if (argv[i][0] == '-')
+	{
+	  if (argv[i][1] == '\0')
+	    {
+	      /* Read stdin.  */
+	      if (already_read_stdin)
+		fatal ("cannot read standard input twice");
+
+	      read_md_file = stdin;
+	      read_md_filename = "<stdin>";
+	      handle_toplevel_file (handle_directive);
+	      already_read_stdin = true;
+	      continue;
+	    }
+	  else if (argv[i][1] == '-' && argv[i][2] == '\0')
+	    {
+	      /* No further arguments are to be treated as options.  */
+	      no_more_options = true;
+	      continue;
+	    }
+	  else if (!no_more_options)
+	    continue;
+	}
+
+      /* If we get here we are looking at a non-option argument, i.e.
+	 a file to be processed.  */
+      read_md_filename = argv[i];
+      read_md_file = fopen (read_md_filename, "r");
+      if (read_md_file == 0)
+	{
+	  perror (read_md_filename);
+	  return false;
+	}
+      handle_toplevel_file (handle_directive);
+      num_files++;
+    }
+
+  /* If we get to this point without having seen any files to process,
+     read the standard input now.  */
+  if (num_files == 0 && !already_read_stdin)
+    {
+      read_md_file = stdin;
+      read_md_filename = "<stdin>";
+      handle_toplevel_file (handle_directive);
+    }
+
+  return !have_error;
 }

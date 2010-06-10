@@ -833,7 +833,7 @@ main (int argc, char **argv)
 
   progname = "genemit";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Assign sequential codes to all entries in the machine description
