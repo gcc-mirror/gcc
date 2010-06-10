@@ -20,6 +20,26 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "obstack.h"
+#include "hashtab.h"
+
+/* Holds one symbol or number in the .md file.  */
+struct md_name {
+  /* The name as it appeared in the .md file.  Names are syntactically
+     limited to the length of this buffer.  */
+  char buffer[256];
+
+  /* The name that should actually be used by the generator programs.
+     This is an expansion of NAME, after things like constant substitution.  */
+  char *string;
+};
+
+/* This structure represents a constant defined by define_constant.
+   NAME is the name of the constant and VALUE is the string it
+   expands to.  */
+struct md_constant {
+  char *name;
+  char *value;
+};
 
 extern FILE *read_md_file;
 extern int read_md_lineno;
@@ -42,6 +62,8 @@ unread_char (int ch)
   ungetc (ch, read_md_file);
 }
 
+extern hashval_t leading_string_hash (const void *);
+extern int leading_string_eq_p (const void *, const void *);
 extern void copy_md_ptr_loc (const void *, const void *);
 extern void print_md_ptr_loc (const void *);
 extern const char *join_c_conditions (const char *, const char *);
@@ -52,8 +74,11 @@ extern void fatal_with_file_and_line (const char *, ...)
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
 extern int read_skip_spaces (void);
+extern void read_name (struct md_name *);
 extern char *read_quoted_string (void);
 extern char *read_string (int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
+extern void read_constants (void);
+extern void traverse_md_constants (htab_trav, void *);
 extern void init_md_reader (void);
