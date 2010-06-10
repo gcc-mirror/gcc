@@ -1,3 +1,17 @@
+2010-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* df-problems.c (df_live_problem_data): Add live_bitmaps.
+	(df_live_alloc): Initialize problem data and live_osbtacks.
+	(df_live_finalize): Remove obstack, problem data; do not
+	clear all bitmaps.
+	(df_live_top_dump, df_live_bottom_dump): Do not dump old
+	data when not allocated.
+	(df_live_verify_solution_start): Do not allocate problem data.
+	(df_live_verify_solution_end): Check if out is allocated.
+	(struct df_md_problem_data): New structure.
+	(df_md_alloc): Allocate problem data.
+	(df_md_free): Free problem data; do not clear bitmaps.
+
 2010-06-10  Jan Beulich  <jbeulich@novell.com>
 
 	* configure.ac: Replace $() with ${} when intending to expand
