@@ -1,5 +1,29 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (build/read-md.o): Depend on errors.h.
+	* read-md.h (error_with_line): Declare.
+	* read-md.c: Include errors.h.
+	(message_with_line_1): New function, extracted from...
+	(message_with_line): ...here.
+	(error_with_line): New function.
+	* genattrtab.c: If a call to message_with_line is followed by
+	"have_error = 1;", replace both statements with a call to
+	error_with_line.
+	* genoutput.c: Likewise.
+	* genpreds.c: Likewise.
+	* genrecog.c: If a call to message_with_line is followed by
+	"error_count++;", replace both statements with a call to
+	error_with_line.
+	(errorcount): Delete.
+	(main): Don't check it.
+	* gensupport.c: If a call to message_with_line is followed by
+	"errors = 1;", replace both statements with a call to error_with_line.
+	(errors): Delete.
+	(process_define_cond_exec): Check have_error instead of errors.
+	(init_md_reader_args_cb): Likewise.  Don't set errors.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* read-md.h (read_md_file): Declare.
 	(read_char, unread_char): New functions.
 	(fatal_with_file_and_line, fatal_expected_char, read_skip_spaces)

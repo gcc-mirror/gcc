@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "hashtab.h"
+#include "errors.h"
 #include "read-md.h"
 
 /* Associates PTR (which can be a string, etc.) with the file location
@@ -174,6 +175,17 @@ print_c_condition (const char *cond)
     }
 }
 
+/* A vfprintf-like function for reporting an error against line LINENO
+   of the current MD file.  */
+
+static void ATTRIBUTE_PRINTF(2,0)
+message_with_line_1 (int lineno, const char *msg, va_list ap)
+{
+  fprintf (stderr, "%s:%d: ", read_md_filename, lineno);
+  vfprintf (stderr, msg, ap);
+  fputc ('\n', stderr);
+}
+
 /* A printf-like function for reporting an error against line LINENO
    in the current MD file.  */
 
@@ -183,12 +195,21 @@ message_with_line (int lineno, const char *msg, ...)
   va_list ap;
 
   va_start (ap, msg);
-
-  fprintf (stderr, "%s:%d: ", read_md_filename, lineno);
-  vfprintf (stderr, msg, ap);
-  fputc ('\n', stderr);
-
+  message_with_line_1 (lineno, msg, ap);
   va_end (ap);
+}
+
+/* Like message_with_line, but treat the condition as an error.  */
+
+void
+error_with_line (int lineno, const char *msg, ...)
+{
+  va_list ap;
+
+  va_start (ap, msg);
+  message_with_line_1 (lineno, msg, ap);
+  va_end (ap);
+  have_error = 1;
 }
 
 /* A printf-like function for reporting an error against the current

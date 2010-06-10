@@ -67,9 +67,8 @@ validate_exp (rtx exp, const char *name, int lineno)
 	  {
 	    if (!ISDIGIT (*p) && !ISLOWER (*p))
 	      {
-		message_with_line (lineno, "%s: invalid character in path "
-				   "string '%s'", name, XSTR (exp, 1));
-		have_error = 1;
+		error_with_line (lineno, "%s: invalid character in path "
+				 "string '%s'", name, XSTR (exp, 1));
 		return true;
 	      }
 	  }
@@ -82,10 +81,9 @@ validate_exp (rtx exp, const char *name, int lineno)
       return false;
 
     default:
-      message_with_line (lineno,
-			 "%s: cannot use '%s' in a predicate expression",
-			 name, GET_RTX_NAME (GET_CODE (exp)));
-      have_error = 1;
+      error_with_line (lineno,
+		       "%s: cannot use '%s' in a predicate expression",
+		       name, GET_RTX_NAME (GET_CODE (exp)));
       return true;
     }
 }
@@ -119,10 +117,9 @@ process_define_predicate (rtx defn, int lineno)
   return;
 
  bad_name:
-  message_with_line (lineno,
-		     "%s: predicate name must be a valid C function name",
-		     XSTR (defn, 0));
-  have_error = 1;
+  error_with_line (lineno,
+		   "%s: predicate name must be a valid C function name",
+		   XSTR (defn, 0));
   return;
 }
 
@@ -765,12 +762,11 @@ add_constraint (const char *name, const char *regclass,
   if (!ISALPHA (name[0]) && name[0] != '_')
     {
       if (name[1] == '\0')
-	message_with_line (lineno, "constraint name '%s' is not "
-			   "a letter or underscore", name);
+	error_with_line (lineno, "constraint name '%s' is not "
+			 "a letter or underscore", name);
       else
-	message_with_line (lineno, "constraint name '%s' does not begin "
-			   "with a letter or underscore", name);
-      have_error = 1;
+	error_with_line (lineno, "constraint name '%s' does not begin "
+			 "with a letter or underscore", name);
       return;
     }
   for (p = name; *p; p++)
@@ -780,11 +776,10 @@ add_constraint (const char *name, const char *regclass,
 	  need_mangled_name = true;
 	else
 	  {
-	    message_with_line (lineno,
-			       "constraint name '%s' must be composed of "
-			       "letters, digits, underscores, and "
-			       "angle brackets", name);
-	    have_error = 1;
+	    error_with_line (lineno,
+			     "constraint name '%s' must be composed of "
+			     "letters, digits, underscores, and "
+			     "angle brackets", name);
 	    return;
 	  }
       }
@@ -792,13 +787,12 @@ add_constraint (const char *name, const char *regclass,
   if (strchr (generic_constraint_letters, name[0]))
     {
       if (name[1] == '\0')
-	message_with_line (lineno, "constraint letter '%s' cannot be "
-			   "redefined by the machine description", name);
+	error_with_line (lineno, "constraint letter '%s' cannot be "
+			 "redefined by the machine description", name);
       else
-	message_with_line (lineno, "constraint name '%s' cannot be defined by "
-			   "the machine description, as it begins with '%c'",
-			   name, name[0]);
-      have_error = 1;
+	error_with_line (lineno, "constraint name '%s' cannot be defined by "
+			 "the machine description, as it begins with '%c'",
+			 name, name[0]);
       return;
     }
 
@@ -817,25 +811,22 @@ add_constraint (const char *name, const char *regclass,
 
       if (!strcmp ((*iter)->name, name))
 	{
-	  message_with_line (lineno, "redefinition of constraint '%s'", name);
+	  error_with_line (lineno, "redefinition of constraint '%s'", name);
 	  message_with_line ((*iter)->lineno, "previous definition is here");
-	  have_error = 1;
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, (*iter)->namelen))
 	{
-	  message_with_line (lineno, "defining constraint '%s' here", name);
+	  error_with_line (lineno, "defining constraint '%s' here", name);
 	  message_with_line ((*iter)->lineno, "renders constraint '%s' "
 			     "(defined here) a prefix", (*iter)->name);
-	  have_error = 1;
 	  return;
 	}
       else if (!strncmp ((*iter)->name, name, namelen))
 	{
-	  message_with_line (lineno, "constraint '%s' is a prefix", name);
+	  error_with_line (lineno, "constraint '%s' is a prefix", name);
 	  message_with_line ((*iter)->lineno, "of constraint '%s' "
 			     "(defined here)", (*iter)->name);
-	  have_error = 1;
 	  return;
 	}
     }
@@ -856,43 +847,36 @@ add_constraint (const char *name, const char *regclass,
 		     GET_RTX_NAME (appropriate_code)))
 	{
 	  if (name[1] == '\0')
-	    message_with_line (lineno, "constraint letter '%c' is reserved "
-			       "for %s constraints",
-			       name[0], GET_RTX_NAME (appropriate_code));
+	    error_with_line (lineno, "constraint letter '%c' is reserved "
+			     "for %s constraints",
+			     name[0], GET_RTX_NAME (appropriate_code));
 	  else
-	    message_with_line (lineno, "constraint names beginning with '%c' "
-			       "(%s) are reserved for %s constraints",
-			       name[0], name,
-			       GET_RTX_NAME (appropriate_code));
-
-	  have_error = 1;
+	    error_with_line (lineno, "constraint names beginning with '%c' "
+			     "(%s) are reserved for %s constraints",
+			     name[0], name, GET_RTX_NAME (appropriate_code));
 	  return;
 	}
 
       if (is_memory)
 	{
 	  if (name[1] == '\0')
-	    message_with_line (lineno, "constraint letter '%c' cannot be a "
-			       "memory constraint", name[0]);
+	    error_with_line (lineno, "constraint letter '%c' cannot be a "
+			     "memory constraint", name[0]);
 	  else
-	    message_with_line (lineno, "constraint name '%s' begins with '%c', "
-			       "and therefore cannot be a memory constraint",
-			       name, name[0]);
-
-	  have_error = 1;
+	    error_with_line (lineno, "constraint name '%s' begins with '%c', "
+			     "and therefore cannot be a memory constraint",
+			     name, name[0]);
 	  return;
 	}
       else if (is_address)
 	{
 	  if (name[1] == '\0')
-	    message_with_line (lineno, "constraint letter '%c' cannot be a "
-			       "memory constraint", name[0]);
+	    error_with_line (lineno, "constraint letter '%c' cannot be a "
+			     "memory constraint", name[0]);
 	  else
-	    message_with_line (lineno, "constraint name '%s' begins with '%c', "
-			       "and therefore cannot be a memory constraint",
-			       name, name[0]);
-
-	  have_error = 1;
+	    error_with_line (lineno, "constraint name '%s' begins with '%c', "
+			     "and therefore cannot be a memory constraint",
+			     name, name[0]);
 	  return;
 	}
     }

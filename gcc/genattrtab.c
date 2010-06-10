@@ -886,19 +886,17 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case CONST_INT:
       if (attr && ! attr->is_numeric)
 	{
-	  message_with_line (attr->lineno,
-			     "CONST_INT not valid for non-numeric attribute %s",
-			     attr->name);
-	  have_error = 1;
+	  error_with_line (attr->lineno,
+			   "CONST_INT not valid for non-numeric attribute %s",
+			   attr->name);
 	  break;
 	}
 
       if (INTVAL (exp) < 0)
 	{
-	  message_with_line (attr->lineno,
-			     "negative numeric value specified for attribute %s",
-			     attr->name);
-	  have_error = 1;
+	  error_with_line (attr->lineno,
+			   "negative numeric value specified for attribute %s",
+			   attr->name);
 	  break;
 	}
       break;
@@ -913,10 +911,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  for (; *p; p++)
 	    if (! ISDIGIT (*p))
 	      {
-		message_with_line (attr ? attr->lineno : 0,
-				   "non-numeric value for numeric attribute %s",
-				   attr ? attr->name : "internal");
-		have_error = 1;
+		error_with_line (attr ? attr->lineno : 0,
+				 "non-numeric value for numeric attribute %s",
+				 attr ? attr->name : "internal");
 		break;
 	      }
 	  break;
@@ -928,12 +925,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  break;
 
       if (av == NULL)
-	{
-	  message_with_line (attr->lineno,
-			     "unknown value `%s' for `%s' attribute",
-			     XSTR (exp, 0), attr ? attr->name : "internal");
-	  have_error = 1;
-	}
+	error_with_line (attr->lineno,
+			 "unknown value `%s' for `%s' attribute",
+			 XSTR (exp, 0), attr ? attr->name : "internal");
       break;
 
     case IF_THEN_ELSE:
@@ -951,10 +945,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case MOD:
       if (attr && !attr->is_numeric)
 	{
-	  message_with_line (attr->lineno,
-			     "invalid operation `%s' for non-numeric attribute value",
-			     GET_RTX_NAME (GET_CODE (exp)));
-	  have_error = 1;
+	  error_with_line (attr->lineno,
+			   "invalid operation `%s' for non-numeric"
+			   " attribute value", GET_RTX_NAME (GET_CODE (exp)));
 	  break;
 	}
       /* Fall through.  */
@@ -977,9 +970,8 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case COND:
       if (XVECLEN (exp, 0) % 2 != 0)
 	{
-	  message_with_line (attr->lineno,
-			     "first operand of COND must have even length");
-	  have_error = 1;
+	  error_with_line (attr->lineno,
+			   "first operand of COND must have even length");
 	  break;
 	}
 
@@ -999,27 +991,18 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (exp, 0), 0);
 	if (attr2 == NULL)
-	  {
-	    message_with_line (attr ? attr->lineno : 0,
-			       "unknown attribute `%s' in ATTR",
-			       XSTR (exp, 0));
-	    have_error = 1;
-	  }
+	  error_with_line (attr ? attr->lineno : 0,
+			   "unknown attribute `%s' in ATTR",
+			   XSTR (exp, 0));
 	else if (attr && attr->is_const && ! attr2->is_const)
-	  {
-	    message_with_line (attr->lineno,
-		"non-constant attribute `%s' referenced from `%s'",
-		XSTR (exp, 0), attr->name);
-	    have_error = 1;
-	  }
+	  error_with_line (attr->lineno,
+			   "non-constant attribute `%s' referenced from `%s'",
+			   XSTR (exp, 0), attr->name);
 	else if (attr
 		 && attr->is_numeric != attr2->is_numeric)
-	  {
-	    message_with_line (attr->lineno,
-		"numeric attribute mismatch calling `%s' from `%s'",
-		XSTR (exp, 0), attr->name);
-	    have_error = 1;
-	  }
+	  error_with_line (attr->lineno,
+			   "numeric attribute mismatch calling `%s' from `%s'",
+			   XSTR (exp, 0), attr->name);
       }
       break;
 
@@ -1030,10 +1013,9 @@ check_attr_value (rtx exp, struct attr_desc *attr)
       return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
 
     default:
-      message_with_line (attr ? attr->lineno : 0,
-			 "invalid operation `%s' for attribute value",
-			 GET_RTX_NAME (GET_CODE (exp)));
-      have_error = 1;
+      error_with_line (attr ? attr->lineno : 0,
+		       "invalid operation `%s' for attribute value",
+		       GET_RTX_NAME (GET_CODE (exp)));
       break;
     }
 
@@ -1052,9 +1034,8 @@ convert_set_attr_alternative (rtx exp, struct insn_def *id)
 
   if (XVECLEN (exp, 1) != num_alt)
     {
-      message_with_line (id->lineno,
-			 "bad number of entries in SET_ATTR_ALTERNATIVE");
-      have_error = 1;
+      error_with_line (id->lineno,
+		       "bad number of entries in SET_ATTR_ALTERNATIVE");
       return NULL_RTX;
     }
 
@@ -1133,8 +1114,7 @@ check_defs (void)
 	    case SET:
 	      if (GET_CODE (XEXP (value, 0)) != ATTR)
 		{
-		  message_with_line (id->lineno, "bad attribute set");
-		  have_error = 1;
+		  error_with_line (id->lineno, "bad attribute set");
 		  value = NULL_RTX;
 		}
 	      break;
@@ -1148,9 +1128,8 @@ check_defs (void)
 	      break;
 
 	    default:
-	      message_with_line (id->lineno, "invalid attribute code %s",
-				 GET_RTX_NAME (GET_CODE (value)));
-	      have_error = 1;
+	      error_with_line (id->lineno, "invalid attribute code %s",
+			       GET_RTX_NAME (GET_CODE (value)));
 	      value = NULL_RTX;
 	    }
 	  if (value == NULL_RTX)
@@ -1158,9 +1137,8 @@ check_defs (void)
 
 	  if ((attr = find_attr (&XSTR (XEXP (value, 0), 0), 0)) == NULL)
 	    {
-	      message_with_line (id->lineno, "unknown attribute %s",
-				 XSTR (XEXP (value, 0), 0));
-	      have_error = 1;
+	      error_with_line (id->lineno, "unknown attribute %s",
+			       XSTR (XEXP (value, 0), 0));
 	      continue;
 	    }
 
@@ -2937,10 +2915,9 @@ gen_attr (rtx exp, int lineno)
   attr = find_attr (&XSTR (exp, 0), 1);
   if (attr->default_val)
     {
-      message_with_line (lineno, "duplicate definition for attribute %s",
-			 attr->name);
+      error_with_line (lineno, "duplicate definition for attribute %s",
+		       attr->name);
       message_with_line (attr->lineno, "previous definition");
-      have_error = 1;
       return;
     }
   attr->lineno = lineno;
@@ -2966,22 +2943,15 @@ gen_attr (rtx exp, int lineno)
     {
       attr->is_const = 1;
       if (attr->is_numeric)
-	{
-	  message_with_line (lineno,
-			     "constant attributes may not take numeric values");
-	  have_error = 1;
-	}
+	error_with_line (lineno,
+			 "constant attributes may not take numeric values");
 
       /* Get rid of the CONST node.  It is allowed only at top-level.  */
       XEXP (exp, 2) = XEXP (XEXP (exp, 2), 0);
     }
 
   if (! strcmp_check (attr->name, length_str) && ! attr->is_numeric)
-    {
-      message_with_line (lineno,
-			 "`length' attribute must take numeric values");
-      have_error = 1;
-    }
+    error_with_line (lineno, "`length' attribute must take numeric values");
 
   /* Set up the default value.  */
   XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
@@ -3115,9 +3085,9 @@ gen_delay (rtx def, int lineno)
 
   if (XVECLEN (def, 1) % 3 != 0)
     {
-      message_with_line (lineno,
-			 "number of elements in DEFINE_DELAY must be multiple of three");
-      have_error = 1;
+      error_with_line (lineno,
+		       "number of elements in DEFINE_DELAY must"
+		       " be multiple of three");
       return;
     }
 
