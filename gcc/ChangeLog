@@ -1,5 +1,38 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (BUILD_RTL): Move build/read-md.o to...
+	(BUILD_MD): ...this new variable.
+	(simple_generated_rtl_h, simple_generated_rtl_c): New variables
+	that include the old contents of simple_generated_h and
+	simple_generated_c.
+	(simple_generated_h, simple_generated_c): Include them.  Add
+	insn-constants.h.
+	(s-%): Make simple_generated_{h,c} stamps depend on $(MD_DEPS)
+	and simple_generated_rtl_{h,c} stamps depend on insn-conditions.md.
+	Remove these dependencies from the main rule and include
+	insn-conditions.md in the command line only if it appears
+	in the dependency list.
+	(insn-constants.h, s-constants): Delete.
+	(build/genconstants.o): Don't depend on $(RTL_BASE_H), $(GTM_H)
+	or gensupport.h.
+	(build/genmddeps.o): Likewise.
+	(genprogrtl): New variable that contains everything from genprogmd
+	except mddeps and constants.
+	(genprogmd): Redefine in terms of genprogrtl.  Make these programs
+	depend on $(BUILD_MD)
+	(genprog): New variable.  Make these programs depend on
+	$(BUILD_ERRORS).
+	* genmddeps.c: Don't include tm.h, rtl.h or gensupport.h.
+	(main): Use read_md_files instead of init_rtx_reader_args.
+	* genconstants.c: As for genmddeps.c.
+	* read-md.h (read_skip_construct): Declare.
+	* read-md.c (read_skip_construct): New function.
+	(handle_file): Allow a null handle_directive, skipping the
+	construct if so.
+	(parse_include): Update the comment accordingly.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (build/genmddeps.o): Depend on $(READ_MD_H).
 	* genmddeps.c: Include read-md.h.
 	(main): Call init_rtx_reader_args instead of init_md_reader_args.

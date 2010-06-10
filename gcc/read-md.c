@@ -575,6 +575,55 @@ read_string (int star_if_braced)
   return stringbuf;
 }
 
+/* Skip the rest of a construct that started at line LINENO and that
+   is currently nested by DEPTH levels of parentheses.  */
+
+void
+read_skip_construct (int depth, int lineno)
+{
+  struct md_name name;
+  int c;
+
+  do
+    {
+      c = read_skip_spaces ();
+      if (c == EOF)
+	{
+	  error_with_line (lineno, "unterminated construct");
+	  exit (1);
+	}
+      switch (c)
+	{
+	case '(':
+	  depth++;
+	  break;
+
+	case ')':
+	  depth--;
+	  break;
+
+	case ':':
+	case '[':
+	case ']':
+	case '/':
+	  break;
+
+	case '\"':
+	case '{':
+	  unread_char (c);
+	  read_string (false);
+	  break;
+
+	default:
+	  unread_char (c);
+	  read_name (&name);
+	  break;
+	}
+    }
+  while (depth > 0);
+  unread_char (c);
+}
+
 /* Given a string, return the number of comma-separated elements in it.
    Return 0 for the null string.  */
 
@@ -787,8 +836,10 @@ handle_file (directive_handler_t handle_directive)
 	handle_constants ();
       else if (strcmp (directive.string, "include") == 0)
 	handle_include (lineno, handle_directive);
-      else
+      else if (handle_directive)
 	handle_directive (lineno, directive.string);
+      else
+	read_skip_construct (1, lineno);
 
       c = read_skip_spaces ();
       if (c != ')')
@@ -840,7 +891,8 @@ parse_include (const char *arg)
    It should return true if it recognizes the argument or false if a
    generic error should be reported.
 
-   The parser calls HANDLE_DIRECTIVE for each unknown directive.
+   If HANDLE_DIRECTIVE is nonnull, the parser calls it for each
+   unknown directive, otherwise it just skips such directives.
    See the comment above the directive_handler_t definition for
    details about the callback's interface.  */
 
