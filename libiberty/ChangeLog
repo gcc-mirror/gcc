@@ -1,3 +1,20 @@
+2010-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43838
+	* cp-demangle.c (struct d_print_info): Add flush_count field.
+	(d_print_init): Initialize it to 0.
+	(d_print_flush): Increment it.
+	(d_print_comp): If needed flush before appending ", ".  Only
+	decrement dpi->len if no flushes happened during the recursive
+	call.
+	* testsuite/demangle-expected: Add a test for this.
+
+2009-06-16  Nick Clifton  <nickc@redhat.com>
+
+	PR 10197
+	* testsuite/test-demangle.c: Rename getline to get_line to avoid
+	conflicts with system function of the same name.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.

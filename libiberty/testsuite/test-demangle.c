@@ -1,5 +1,5 @@
 /* Demangler test program,
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
    Written by Zack Weinberg <zack@codesourcery.com
 
    This file is part of GNU libiberty.
@@ -46,7 +46,7 @@ static unsigned int lineno;
 #define LINELEN 80
 
 static void
-getline(buf)
+get_line(buf)
      struct line *buf;
 {
   char *data = buf->data;
@@ -196,12 +196,12 @@ main(argc, argv)
     {
       const char *inp;
       
-      getline (&format);
+      get_line (&format);
       if (feof (stdin))
 	break;
 
-      getline (&input);
-      getline (&expect);
+      get_line (&input);
+      get_line (&expect);
 
       inp = protect_end (input.data);
 
@@ -322,7 +322,7 @@ main(argc, argv)
 
       if (no_params)
 	{
-	  getline (&expect);
+	  get_line (&expect);
 	  result = cplus_demangle (inp, DMGL_ANSI|DMGL_TYPES);
 
 	  if (result
