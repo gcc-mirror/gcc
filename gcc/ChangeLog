@@ -1,5 +1,21 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* read-rtl.c (md_name): New structure.
+	(read_name): Take an md_name instead of a buffer pointer.
+	Use the "string" field instead of strcpy when expanding constants.
+	(read_constants): Remove the tmp_char argument.  Update the calls
+	to read_name, using two local name buffers instead of the tmp_char
+	argument.  Merge the constant-creation code.
+	(read_conditions): Remove the tmp_char argument.  Update the calls
+	to read_name, using a local name buffer instead of the tmp_char
+	argument.
+	(read_mapping): Replace tmp_char variable with a local name buffer.
+	Update the calls to read_name.
+	(read_rtx_1): Likewise.  Update the calls to read_constants and
+	read_conditions.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (build/read-md.o): Depend on errors.h.
 	* read-md.h (error_with_line): Declare.
 	* read-md.c: Include errors.h.
