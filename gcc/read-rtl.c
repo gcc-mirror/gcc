@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "obstack.h"
 #include "hashtab.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 static htab_t md_constants;
@@ -79,14 +80,6 @@ struct iterator_group {
   void (*apply_iterator) (rtx, int);
 };
 
-/* Associates PTR (which can be a string, etc.) with the file location
-   specified by FILENAME and LINENO.  */
-struct ptr_loc {
-  const void *ptr;
-  const char *filename;
-  int lineno;
-};
-
 /* A structure used to pass data from read_rtx to apply_iterator_traverse
    via htab_traverse.  */
 struct iterator_traverse_data {
@@ -105,9 +98,6 @@ struct iterator_traverse_data {
 #define BELLWETHER_CODE(CODE) \
   ((CODE) < NUM_RTX_CODE ? CODE : bellwether_codes[CODE - NUM_RTX_CODE])
 
-static void fatal_with_file_and_line (FILE *, const char *, ...)
-  ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
-static void fatal_expected_char (FILE *, int, int) ATTRIBUTE_NORETURN;
 static int find_mode (const char *, FILE *);
 static bool uses_mode_iterator_p (rtx, int);
 static void apply_mode_iterator (rtx, int);
@@ -127,14 +117,6 @@ static struct map_value **add_map_value (struct map_value **,
 					 int, const char *);
 static void initialize_iterators (void);
 static void read_name (char *, FILE *);
-static hashval_t leading_ptr_hash (const void *);
-static int leading_ptr_eq_p (const void *, const void *);
-static void set_rtx_ptr_loc (const void *, const char *, int);
-static const struct ptr_loc *get_rtx_ptr_loc (const void *);
-static char *read_string (FILE *, int);
-static char *read_quoted_string (FILE *);
-static char *read_braced_string (FILE *);
-static void read_escape (FILE *);
 static hashval_t def_hash (const void *);
 static int def_name_eq_p (const void *, const void *);
 static void read_constants (FILE *infile, char *tmp_char);
@@ -151,80 +133,6 @@ static struct iterator_group modes, codes;
 
 /* Index I is the value of BELLWETHER_CODE (I + NUM_RTX_CODE).  */
 static enum rtx_code *bellwether_codes;
-
-/* Obstack used for allocating RTL strings.  */
-static struct obstack string_obstack;
-
-/* A table of ptr_locs, hashed on the PTR field.  */
-static htab_t ptr_locs;
-
-/* An obstack for the above.  Plain xmalloc is a bit heavyweight for a
-   small structure like ptr_loc.  */
-static struct obstack ptr_loc_obstack;
-
-/* A hash table of triples (A, B, C), where each of A, B and C is a condition
-   and A is equivalent to "B && C".  This is used to keep track of the source
-   of conditions that are made up of separate rtx strings (such as the split
-   condition of a define_insn_and_split).  */
-static htab_t joined_conditions;
-
-/* An obstack for allocating joined_conditions entries.  */
-static struct obstack joined_conditions_obstack;
-
-/* Subroutines of read_rtx.  */
-
-/* The current line number for the file.  */
-int read_rtx_lineno = 1;
-
-/* The filename for error reporting.  */
-const char *read_rtx_filename = "<unknown>";
-
-static void
-fatal_with_file_and_line (FILE *infile, const char *msg, ...)
-{
-  char context[64];
-  size_t i;
-  int c;
-  va_list ap;
-
-  va_start (ap, msg);
-
-  fprintf (stderr, "%s:%d: ", read_rtx_filename, read_rtx_lineno);
-  vfprintf (stderr, msg, ap);
-  putc ('\n', stderr);
-
-  /* Gather some following context.  */
-  for (i = 0; i < sizeof (context)-1; ++i)
-    {
-      c = getc (infile);
-      if (c == EOF)
-	break;
-      if (c == '\r' || c == '\n')
-	break;
-      context[i] = c;
-    }
-  context[i] = '\0';
-
-  fprintf (stderr, "%s:%d: following context is `%s'\n",
-	   read_rtx_filename, read_rtx_lineno, context);
-
-  va_end (ap);
-  exit (1);
-}
-
-/* Dump code after printing a message.  Used when read_rtx finds
-   invalid data.  */
-
-static void
-fatal_expected_char (FILE *infile, int expected_c, int actual_c)
-{
-  if (actual_c == EOF)
-    fatal_with_file_and_line (infile, "expected character `%c', found EOF",
-			      expected_c);
-  else
-    fatal_with_file_and_line (infile, "expected character `%c', found `%c'",
-			      expected_c, actual_c);
-}
 
 /* Implementations of the iterator_group callbacks for modes.  */
 
@@ -711,173 +619,6 @@ initialize_iterators (void)
     }
 }
 
-/* Return a hash value for the pointer pointed to by DEF.  */
-
-static hashval_t
-leading_ptr_hash (const void *def)
-{
-  return htab_hash_pointer (*(const void *const *) def);
-}
-
-/* Return true if DEF1 and DEF2 are pointers to the same pointer.  */
-
-static int
-leading_ptr_eq_p (const void *def1, const void *def2)
-{
-  return *(const void *const *) def1 == *(const void *const *) def2;
-}
-
-/* Associate PTR with the file position given by FILENAME and LINENO.  */
-
-static void
-set_rtx_ptr_loc (const void *ptr, const char *filename, int lineno)
-{
-  struct ptr_loc *loc;
-
-  loc = (struct ptr_loc *) obstack_alloc (&ptr_loc_obstack,
-					  sizeof (struct ptr_loc));
-  loc->ptr = ptr;
-  loc->filename = filename;
-  loc->lineno = lineno;
-  *htab_find_slot (ptr_locs, loc, INSERT) = loc;
-}
-
-/* Return the position associated with pointer PTR.  Return null if no
-   position was set.  */
-
-static const struct ptr_loc *
-get_rtx_ptr_loc (const void *ptr)
-{
-  return (const struct ptr_loc *) htab_find (ptr_locs, &ptr);
-}
-
-/* Associate NEW_PTR with the same file position as OLD_PTR.  */
-
-void
-copy_rtx_ptr_loc (const void *new_ptr, const void *old_ptr)
-{
-  const struct ptr_loc *loc = get_rtx_ptr_loc (old_ptr);
-  if (loc != 0)
-    set_rtx_ptr_loc (new_ptr, loc->filename, loc->lineno);
-}
-
-/* If PTR is associated with a known file position, print a #line
-   directive for it.  */
-
-void
-print_rtx_ptr_loc (const void *ptr)
-{
-  const struct ptr_loc *loc = get_rtx_ptr_loc (ptr);
-  if (loc != 0)
-    printf ("#line %d \"%s\"\n", loc->lineno, loc->filename);
-}
-
-/* Return a condition that satisfies both COND1 and COND2.  Either string
-   may be null or empty.  */
-
-const char *
-join_c_conditions (const char *cond1, const char *cond2)
-{
-  char *result;
-  const void **entry;
-
-  if (cond1 == 0 || cond1[0] == 0)
-    return cond2;
-
-  if (cond2 == 0 || cond2[0] == 0)
-    return cond1;
-
-  if (strcmp (cond1, cond2) == 0)
-    return cond1;
-
-  result = concat ("(", cond1, ") && (", cond2, ")", NULL);
-  obstack_ptr_grow (&joined_conditions_obstack, result);
-  obstack_ptr_grow (&joined_conditions_obstack, cond1);
-  obstack_ptr_grow (&joined_conditions_obstack, cond2);
-  entry = XOBFINISH (&joined_conditions_obstack, const void **);
-  *htab_find_slot (joined_conditions, entry, INSERT) = entry;
-  return result;
-}
-
-/* Print condition COND, wrapped in brackets.  If COND was created by
-   join_c_conditions, recursively invoke this function for the original
-   conditions and join the result with "&&".  Otherwise print a #line
-   directive for COND if its original file position is known.  */
-
-void
-print_c_condition (const char *cond)
-{
-  const char **halves = (const char **) htab_find (joined_conditions, &cond);
-  if (halves != 0)
-    {
-      printf ("(");
-      print_c_condition (halves[1]);
-      printf (" && ");
-      print_c_condition (halves[2]);
-      printf (")");
-    }
-  else
-    {
-      putc ('\n', stdout);
-      print_rtx_ptr_loc (cond);
-      printf ("(%s)", cond);
-    }
-}
-
-/* Read chars from INFILE until a non-whitespace char
-   and return that.  Comments, both Lisp style and C style,
-   are treated as whitespace.
-   Tools such as genflags use this function.  */
-
-int
-read_skip_spaces (FILE *infile)
-{
-  int c;
-
-  while (1)
-    {
-      c = getc (infile);
-      switch (c)
-	{
-	case '\n':
-	  read_rtx_lineno++;
-	  break;
-
-	case ' ': case '\t': case '\f': case '\r':
-	  break;
-
-	case ';':
-	  do
-	    c = getc (infile);
-	  while (c != '\n' && c != EOF);
-	  read_rtx_lineno++;
-	  break;
-
-	case '/':
-	  {
-	    int prevc;
-	    c = getc (infile);
-	    if (c != '*')
-	      fatal_expected_char (infile, '*', c);
-
-	    prevc = 0;
-	    while ((c = getc (infile)) && c != EOF)
-	      {
-		if (c == '\n')
-		   read_rtx_lineno++;
-	        else if (prevc == '*' && c == '/')
-		  break;
-	        prevc = c;
-	      }
-	  }
-	  break;
-
-	default:
-	  return c;
-	}
-    }
-}
-
 /* Read an rtx code name into the buffer STR[].
    It is terminated by any of the punctuation chars of rtx printed syntax.  */
 
@@ -928,165 +669,6 @@ read_name (char *str, FILE *infile)
       if (p != str)
 	strcpy (str, p);
     }
-}
-
-/* Subroutine of the string readers.  Handles backslash escapes.
-   Caller has read the backslash, but not placed it into the obstack.  */
-static void
-read_escape (FILE *infile)
-{
-  int c = getc (infile);
-
-  switch (c)
-    {
-      /* Backslash-newline is replaced by nothing, as in C.  */
-    case '\n':
-      read_rtx_lineno++;
-      return;
-
-      /* \" \' \\ are replaced by the second character.  */
-    case '\\':
-    case '"':
-    case '\'':
-      break;
-
-      /* Standard C string escapes:
-	 \a \b \f \n \r \t \v
-	 \[0-7] \x
-	 all are passed through to the output string unmolested.
-	 In normal use these wind up in a string constant processed
-	 by the C compiler, which will translate them appropriately.
-	 We do not bother checking that \[0-7] are followed by up to
-	 two octal digits, or that \x is followed by N hex digits.
-	 \? \u \U are left out because they are not in traditional C.  */
-    case 'a': case 'b': case 'f': case 'n': case 'r': case 't': case 'v':
-    case '0': case '1': case '2': case '3': case '4': case '5': case '6':
-    case '7': case 'x':
-      obstack_1grow (&string_obstack, '\\');
-      break;
-
-      /* \; makes stuff for a C string constant containing
-	 newline and tab.  */
-    case ';':
-      obstack_grow (&string_obstack, "\\n\\t", 4);
-      return;
-
-      /* pass anything else through, but issue a warning.  */
-    default:
-      fprintf (stderr, "%s:%d: warning: unrecognized escape \\%c\n",
-	       read_rtx_filename, read_rtx_lineno, c);
-      obstack_1grow (&string_obstack, '\\');
-      break;
-    }
-
-  obstack_1grow (&string_obstack, c);
-}
-
-
-/* Read a double-quoted string onto the obstack.  Caller has scanned
-   the leading quote.  */
-static char *
-read_quoted_string (FILE *infile)
-{
-  int c;
-
-  while (1)
-    {
-      c = getc (infile); /* Read the string  */
-      if (c == '\n')
-	read_rtx_lineno++;
-      else if (c == '\\')
-	{
-	  read_escape (infile);
-	  continue;
-	}
-      else if (c == '"' || c == EOF)
-	break;
-
-      obstack_1grow (&string_obstack, c);
-    }
-
-  obstack_1grow (&string_obstack, 0);
-  return XOBFINISH (&string_obstack, char *);
-}
-
-/* Read a braced string (a la Tcl) onto the string obstack.  Caller
-   has scanned the leading brace.  Note that unlike quoted strings,
-   the outermost braces _are_ included in the string constant.  */
-static char *
-read_braced_string (FILE *infile)
-{
-  int c;
-  int brace_depth = 1;  /* caller-processed */
-  unsigned long starting_read_rtx_lineno = read_rtx_lineno;
-
-  obstack_1grow (&string_obstack, '{');
-  while (brace_depth)
-    {
-      c = getc (infile); /* Read the string  */
-
-      if (c == '\n')
-	read_rtx_lineno++;
-      else if (c == '{')
-	brace_depth++;
-      else if (c == '}')
-	brace_depth--;
-      else if (c == '\\')
-	{
-	  read_escape (infile);
-	  continue;
-	}
-      else if (c == EOF)
-	fatal_with_file_and_line
-	  (infile, "missing closing } for opening brace on line %lu",
-	   starting_read_rtx_lineno);
-
-      obstack_1grow (&string_obstack, c);
-    }
-
-  obstack_1grow (&string_obstack, 0);
-  return XOBFINISH (&string_obstack, char *);
-}
-
-/* Read some kind of string constant.  This is the high-level routine
-   used by read_rtx.  It handles surrounding parentheses, leading star,
-   and dispatch to the appropriate string constant reader.  */
-
-static char *
-read_string (FILE *infile, int star_if_braced)
-{
-  char *stringbuf;
-  int saw_paren = 0;
-  int c, old_lineno;
-
-  c = read_skip_spaces (infile);
-  if (c == '(')
-    {
-      saw_paren = 1;
-      c = read_skip_spaces (infile);
-    }
-
-  old_lineno = read_rtx_lineno;
-  if (c == '"')
-    stringbuf = read_quoted_string (infile);
-  else if (c == '{')
-    {
-      if (star_if_braced)
-	obstack_1grow (&string_obstack, '*');
-      stringbuf = read_braced_string (infile);
-    }
-  else
-    fatal_with_file_and_line (infile, "expected `\"' or `{', found `%c'", c);
-
-  if (saw_paren)
-    {
-      c = read_skip_spaces (infile);
-      if (c != ')')
-	fatal_expected_char (infile, ')', c);
-    }
-
-  set_rtx_ptr_loc (stringbuf, read_rtx_filename, old_lineno);
-  return stringbuf;
 }
 
 /* Provide a version of a function to read a long long if the system does
@@ -1401,14 +983,9 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
   /* Do one-time initialization.  */
   if (queue_head == 0)
     {
+      init_md_reader ();
       initialize_iterators ();
-      obstack_init (&string_obstack);
       queue_head = rtx_alloc (EXPR_LIST);
-      ptr_locs = htab_create (161, leading_ptr_hash, leading_ptr_eq_p, 0);
-      obstack_init (&ptr_loc_obstack);
-      joined_conditions = htab_create (161, leading_ptr_hash,
-				       leading_ptr_eq_p, 0);
-      obstack_init (&joined_conditions_obstack);
     }
 
   if (queue_next == 0)

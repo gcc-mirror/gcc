@@ -113,6 +113,15 @@ typedef const struct edge_def *const_edge;
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;
+
+#define obstack_chunk_alloc	((void *(*) (long)) xmalloc)
+#define obstack_chunk_free	((void (*) (void *)) free)
+#define OBSTACK_CHUNK_SIZE	0
+#define gcc_obstack_init(OBSTACK)			\
+  _obstack_begin ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
+		  obstack_chunk_alloc,			\
+		  obstack_chunk_free)
+
 #else
 
 struct _dont_use_rtx_here_;

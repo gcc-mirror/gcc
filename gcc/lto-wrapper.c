@@ -39,12 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
 #include <errno.h>
 #include <signal.h>
 #if ! defined( SIGCHLD ) && defined( SIGCLD )
 #  define SIGCHLD SIGCLD
 #endif
-#include "defaults.h"
 #include "intl.h"
 #include "libiberty.h"
 #include "obstack.h"

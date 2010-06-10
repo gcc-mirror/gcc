@@ -109,9 +109,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "gensupport.h"
 #include "obstack.h"
 #include "errors.h"
+#include "read-md.h"
+#include "gensupport.h"
 
 /* Flags for make_internal_attr's `special' parameter.  */
 #define ATTR_NONE		0
