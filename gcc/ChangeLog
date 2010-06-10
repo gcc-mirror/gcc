@@ -1,3 +1,8 @@
+2010-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove TYPE_NEEDS_CONSTRUCTING
+	sanity check.
+
 2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/include/fdl.texi: Move to GFDL version 1.3.
