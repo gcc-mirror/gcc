@@ -759,10 +759,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	flag_implicit_templates = 0;
       break;
 
-    case OPT_fshow_column:
-      cpp_opts->show_column = value;
-      break;
-
     case OPT_ftabstop_:
       /* It is documented that we silently ignore silly values.  */
       if (value >= 1 && value <= 100)

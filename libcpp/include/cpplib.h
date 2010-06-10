@@ -1,6 +1,6 @@
 /* Definitions for CPP library.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2008, 2009
+   2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -388,9 +388,6 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
-
-  /* Print column number in error messages.  */
-  unsigned char show_column;
 
   /* Nonzero means handle C++ alternate operator names.  */
   unsigned char operator_names;
