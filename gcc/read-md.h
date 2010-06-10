@@ -92,6 +92,7 @@ extern int read_skip_spaces (void);
 extern void read_name (struct md_name *);
 extern char *read_quoted_string (void);
 extern char *read_string (int);
+extern void read_skip_construct (int, int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
 extern void traverse_md_constants (htab_trav, void *);

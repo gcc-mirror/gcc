@@ -28,11 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
 #include "errors.h"
 #include "read-md.h"
-#include "gensupport.h"
 
 /* Called via traverse_md_constants; emit a #define for
    the current constant definition.  */
@@ -52,7 +49,7 @@ main (int argc, char **argv)
 {
   progname = "genconstants";
 
-  if (!init_rtx_reader_args (argc, argv))
+  if (!read_md_files (argc, argv, NULL, NULL))
     return (FATAL_EXIT_CODE);
 
   /* Initializing the MD reader has the side effect of loading up
