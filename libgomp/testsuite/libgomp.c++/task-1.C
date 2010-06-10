@@ -20,7 +20,7 @@ f1 (int i, int j, int k)
 }
 
 int v1 = 1, v2 = 2, v5 = 5;
-int err;
+int e;
 
 void
 f2 (void)
@@ -35,12 +35,12 @@ f2 (void)
       #pragma omp task
 	{
 	  if (++v1 != 8 || ++v2 != 3 || ++v3 != 4 || ++v4 != 5 || ++v5 != 6)
-	    err = 1;
+	    e = 1;
 	}
       #pragma omp taskwait
       if (v1 != 7 || v2 != 2 || v3 != 3 || v4 != 4 || v5 != 6)
 	abort ();
-      if (err)
+      if (e)
 	abort ();
     }
   }

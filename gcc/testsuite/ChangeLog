@@ -1,3 +1,12 @@
+2010-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.mike/eh16.C: Rename err to e.
+	* g++.old-deja/g++.mike/eh17.C: Likewise.
+	* g++.old-deja/g++.mike/p5571.C: Likewise.
+
 2010-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.oliva/dwarf2.C: Don't xfail on i386-pc-solaris*.
