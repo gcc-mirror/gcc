@@ -1,3 +1,39 @@
+2010-06-10  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.h (enum gfc_statement): Add ST_ASSOCIATE, ST_END_ASSOCIATE.
+	(struct gfc_symbol): New field `assoc'.
+	(struct gfc_association_list): New struct.
+	(struct gfc_code): New struct `block' in union, move `ns' there
+	and add association list.
+	(gfc_free_association_list): New method.
+	(gfc_has_vector_subscript): Made public;
+	* match.h (gfc_match_associate): New method.
+	* parse.h (enum gfc_compile_state): Add COMP_ASSOCIATE.
+	* decl.c (gfc_match_end): Handle ST_END_ASSOCIATE.
+	* interface.c (gfc_has_vector_subscript): Made public.
+	(compare_actual_formal): Rename `has_vector_subscript' accordingly.
+	* match.c (gfc_match_associate): New method.
+	(gfc_match_select_type): Change reference to gfc_code's `ns' field.
+	* primary.c (match_variable): Don't allow names associated to expr here.
+	* parse.c (decode_statement): Try matching ASSOCIATE statement.
+	(case_exec_markers, case_end): Add ASSOCIATE statement.
+	(gfc_ascii_statement): Hande ST_ASSOCIATE and ST_END_ASSOCIATE.
+	(parse_associate): New method.
+	(parse_executable): Handle ST_ASSOCIATE.
+	(parse_block_construct): Change reference to gfc_code's `ns' field.
+	* resolve.c (resolve_select_type): Ditto.
+	(resolve_code): Ditto.
+	(resolve_block_construct): Ditto and add comment.
+	(resolve_select_type): Set association list in generated BLOCK to NULL.
+	(resolve_symbol): Resolve associate names.
+	* st.c (gfc_free_statement): Change reference to gfc_code's `ns' field
+	and free association list.
+	(gfc_free_association_list): New method.
+	* symbol.c (gfc_new_symbol): NULL new field `assoc'.
+	* trans-stmt.c (gfc_trans_block_construct): Change reference to
+	gfc_code's `ns' field.
+
 2010-06-10  Kai Tietz  <kai.tietz@onevision.com>
 
 	* error.c (error_print): Pre-initialize loc by NULL.

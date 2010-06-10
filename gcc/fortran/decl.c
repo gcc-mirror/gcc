@@ -5483,14 +5483,23 @@ gfc_match_end (gfc_statement *st)
   block_name = gfc_current_block () == NULL
 	     ? NULL : gfc_current_block ()->name;
 
-  if (state == COMP_BLOCK && !strcmp (block_name, "block@"))
-    block_name = NULL;
-
-  if (state == COMP_CONTAINS || state == COMP_DERIVED_CONTAINS)
+  switch (state)
     {
+    case COMP_ASSOCIATE:
+    case COMP_BLOCK:
+      if (!strcmp (block_name, "block@"))
+	block_name = NULL;
+      break;
+
+    case COMP_CONTAINS:
+    case COMP_DERIVED_CONTAINS:
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
 		 ? NULL : gfc_state_stack->previous->sym->name;
+      break;
+
+    default:
+      break;
     }
 
   switch (state)
@@ -5536,6 +5545,12 @@ gfc_match_end (gfc_statement *st)
     case COMP_DERIVED_CONTAINS:
       *st = ST_END_TYPE;
       target = " type";
+      eos_ok = 0;
+      break;
+
+    case COMP_ASSOCIATE:
+      *st = ST_END_ASSOCIATE;
+      target = " associate";
       eos_ok = 0;
       break;
 
@@ -5622,7 +5637,7 @@ gfc_match_end (gfc_statement *st)
 
       if (*st != ST_ENDDO && *st != ST_ENDIF && *st != ST_END_SELECT
 	  && *st != ST_END_FORALL && *st != ST_END_WHERE && *st != ST_END_BLOCK
-	  && *st != ST_END_CRITICAL)
+	  && *st != ST_END_ASSOCIATE && *st != ST_END_CRITICAL)
 	return MATCH_YES;
 
       if (!block_name)

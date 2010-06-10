@@ -2512,6 +2512,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   /* Clear the ptrs we may need.  */
   p->common_block = NULL;
   p->f2k_derived = NULL;
+  p->assoc = NULL;
   
   return p;
 }

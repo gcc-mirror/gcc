@@ -7158,7 +7158,7 @@ resolve_select_type (gfc_code *code)
   gfc_namespace *ns;
   int error = 0;
 
-  ns = code->ext.ns;
+  ns = code->ext.block.ns;
   gfc_resolve (ns);
 
   /* Check for F03:C813.  */
@@ -7245,6 +7245,7 @@ resolve_select_type (gfc_code *code)
   else
     ns->code->next = new_st;
   code->op = EXEC_BLOCK;
+  code->ext.block.assoc = NULL;
   code->expr1 = code->expr2 =  NULL;
   code->block = NULL;
 
@@ -7988,10 +7989,11 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 static void
 resolve_block_construct (gfc_code* code)
 {
-  /* Eventually, we may want to do some checks here or handle special stuff.
-     But so far the only thing we can do is resolving the local namespace.  */
+  /* For an ASSOCIATE block, the associations (and their targets) are already
+     resolved during gfc_resolve_symbol.  */
 
-  gfc_resolve (code->ext.ns);
+  /* Resolve the BLOCK's namespace.  */
+  gfc_resolve (code->ext.block.ns);
 }
 
 
@@ -8312,7 +8314,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	      gfc_resolve_omp_do_blocks (code, ns);
 	      break;
 	    case EXEC_SELECT_TYPE:
-	      gfc_current_ns = code->ext.ns;
+	      gfc_current_ns = code->ext.block.ns;
 	      gfc_resolve_blocks (code->block, gfc_current_ns);
 	      gfc_current_ns = ns;
 	      break;
@@ -8476,7 +8478,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_BLOCK:
-	  gfc_resolve (code->ext.ns);
+	  gfc_resolve (code->ext.block.ns);
 	  break;
 
 	case EXEC_DO:
@@ -11341,13 +11343,24 @@ resolve_symbol (gfc_symbol *sym)
      can.  */
   mp_flag = (sym->result != NULL && sym->result != sym);
 
-
   /* Make sure that the intrinsic is consistent with its internal 
      representation. This needs to be done before assigning a default 
      type to avoid spurious warnings.  */
   if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
       && resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
     return;
+
+  /* For associate names, resolve corresponding expression and make sure
+     they get their type-spec set this way.  */
+  if (sym->assoc)
+    {
+      gcc_assert (sym->attr.flavor == FL_VARIABLE);
+      if (gfc_resolve_expr (sym->assoc->target) != SUCCESS)
+	return;
+
+      sym->ts = sym->assoc->target->ts;
+      gcc_assert (sym->ts.type != BT_UNKNOWN);
+    }
 
   /* Assign default type to symbols that need one and don't have one.  */
   if (sym->ts.type == BT_UNKNOWN)

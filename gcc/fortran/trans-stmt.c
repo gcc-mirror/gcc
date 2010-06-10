@@ -850,7 +850,7 @@ gfc_trans_block_construct (gfc_code* code)
   stmtblock_t body;
   tree tmp;
 
-  ns = code->ext.ns;
+  ns = code->ext.block.ns;
   gcc_assert (ns);
   sym = ns->proc_name;
   gcc_assert (sym);
