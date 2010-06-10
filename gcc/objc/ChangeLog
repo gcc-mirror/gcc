@@ -1,3 +1,11 @@
+2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
+	PR objc++/32052
+	* objc-act.c (encode_aggregate_within): Encode structure tags
+	with template args for ObjC++.
+
 2010-06-07  Iain Sandoe <iains@gcc.gnu.org>
 
 	Backport from mainline:

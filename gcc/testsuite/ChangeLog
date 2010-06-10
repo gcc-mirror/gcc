@@ -1,3 +1,16 @@
+2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
+	PR objc++/32052
+	* obj-c++.dg/encode-2.mm: Remove XFAIL. Add test for anonymous
+	structure and nested declarations.
+	* obj-c++.dg/encode-3.mm:  Remove XFAIL. Add test for anonymous
+	structure and nested declarations.  Reduce header clutter and
+	use _exit() rather than abort().
+	* objc.dg/encode-10.m: New.
+	* objc.dg/encode-11.m: New.
+
 2010-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.oliva/dwarf2.C: Don't xfail on i386-pc-solaris*.
