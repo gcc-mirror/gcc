@@ -5,19 +5,11 @@
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
 
 #define K 1000000
-int a[K], b[K];
+int a[K];
 
 void test(int *p)
 {
   unsigned i;
-
-  /* Nontemporal store should be used for a.  */
-  for (i = 0; i < K; i++)
-    a[i] = 0;
-
-  /* Nontemporal store should be used for a, nontemporal prefetch for b.  */
-  for (i = 0; i < K; i++)
-    a[i] = b[i];
 
   /* Nontemporal store should not be used here (only write and read temporal
      prefetches).  */
@@ -44,18 +36,14 @@ void test(int *p)
 }
 
 /* { dg-final { scan-tree-dump-times "Issued prefetch" 5 "aprefetch" } } */
-/* { dg-final { scan-tree-dump-times "Issued nontemporal prefetch" 3 "aprefetch" } } */
-/* { dg-final { scan-tree-dump-times "a nontemporal store" 2 "aprefetch" } } */
+/* { dg-final { scan-tree-dump-times "Issued nontemporal prefetch" 2 "aprefetch" } } */
+/* { dg-final { scan-tree-dump-times "a nontemporal store" 0 "aprefetch" } } */
 
-/* { dg-final { scan-tree-dump-times "builtin_prefetch" 8 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "=\\{nt\\}" 18 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "__builtin_ia32_mfence" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "builtin_prefetch" 7 "optimized" } } */
 
 /* { dg-final { scan-assembler-times "prefetchw" 5 } } */
 /* { dg-final { scan-assembler-times "prefetcht" 1 } } */
-/* { dg-final { scan-assembler-times "prefetchnta" 2 } } */
-/* { dg-final { scan-assembler-times "movnti" 18 } } */
-/* { dg-final { scan-assembler-times "mfence" 2 } } */
+/* { dg-final { scan-assembler-times "prefetchnta" 1 } } */
 
 /* { dg-final { cleanup-tree-dump "aprefetch" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

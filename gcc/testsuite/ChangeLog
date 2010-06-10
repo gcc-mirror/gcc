@@ -1,3 +1,17 @@
+2010-06-10  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR middle-end/44185
+	* gcc.dg/tree-ssa/prefetch-7.c: take the loops that will generate
+	non-temporal stores out of the tests to form new test cases.  As a
+	result, no non-temporal store should be generated in this case.
+
+	* gcc.dg/tree-ssa/prefetch-8.c: New.  Test from original
+	prefetch-7.c that generate one non-temporal store.
+
+	* gcc.dg/tree-ssa/prefetch-9.c: New.  Test from original
+	prefetch-7.c that generate one non-temporal store and one
+	one-temporal prefetch.
+
 2010-06-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44258
