@@ -545,6 +545,13 @@ objc_init (void)
 	 structure-returning methods.  */
       default_constant_string_class_name = "NXConstantString";
       flag_typed_selectors = 1;
+      /* GNU runtime does not need the compiler to change code
+         in order to do GC. */
+      if (flag_objc_gc)
+	{
+	  warning_at (0, 0, "%<-fobjc-gc%> is ignored for %<-fgnu-runtime%>");
+	  flag_objc_gc=0;
+	}
     }
 
   init_objc ();

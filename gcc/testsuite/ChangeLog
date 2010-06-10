@@ -1,6 +1,16 @@
 2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
 
 	Backport from mainline:
+	2010-04-07  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR objc/35996
+	* objc.dg/objc-gc-4.m: Run for all targets, prune new warning.
+	* obj-c++.dg/objc-gc-3.mm: Ditto.
+	2010-04-30  Iain Sandoe <iains@gcc.gnu.org>
+
+2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
 	2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
 	PR objc++/32052
 	* obj-c++.dg/encode-2.mm: Remove XFAIL. Add test for anonymous

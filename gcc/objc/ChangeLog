@@ -1,6 +1,13 @@
 2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
 
 	Backport from mainline:
+	PR objc/35996
+	* objc-act.c (objc_init): Warn that -fobjc-gc is ignored for
+	-fgnu-runtime and set flag_objc_gc to zero.
+
+2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
+
+	Backport from mainline:
 	2010-04-30  Iain Sandoe  <iains@gcc.gnu.org>
 	PR objc++/32052
 	* objc-act.c (encode_aggregate_within): Encode structure tags
