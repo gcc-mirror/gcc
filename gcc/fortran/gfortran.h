@@ -205,11 +205,12 @@ arith;
 /* Statements.  */
 typedef enum
 {
-  ST_ARITHMETIC_IF, ST_ALLOCATE, ST_ATTR_DECL, ST_BACKSPACE,
-  ST_BLOCK, ST_BLOCK_DATA,
+  ST_ARITHMETIC_IF, ST_ALLOCATE, ST_ATTR_DECL, ST_ASSOCIATE,
+  ST_BACKSPACE, ST_BLOCK, ST_BLOCK_DATA,
   ST_CALL, ST_CASE, ST_CLOSE, ST_COMMON, ST_CONTINUE, ST_CONTAINS, ST_CYCLE,
   ST_DATA, ST_DATA_DECL, ST_DEALLOCATE, ST_DO, ST_ELSE, ST_ELSEIF,
-  ST_ELSEWHERE, ST_END_BLOCK, ST_END_BLOCK_DATA, ST_ENDDO, ST_IMPLIED_ENDDO,
+  ST_ELSEWHERE, ST_END_ASSOCIATE, ST_END_BLOCK, ST_END_BLOCK_DATA,
+  ST_ENDDO, ST_IMPLIED_ENDDO,
   ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
   ST_END_INTERFACE, ST_END_MODULE, ST_END_PROGRAM, ST_END_SELECT,
   ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE, ST_ENTRY, ST_EQUIVALENCE,
@@ -1201,6 +1202,9 @@ typedef struct gfc_symbol
   char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
   /* Store a reference to the common_block, if this symbol is in one.  */
   struct gfc_common_head *common_block;
+
+  /* Link to corresponding association-list if this is an associate name.  */
+  struct gfc_association_list *assoc;
 }
 gfc_symbol;
 
@@ -1974,6 +1978,25 @@ typedef struct gfc_forall_iterator
 gfc_forall_iterator;
 
 
+/* Linked list to store associations in an ASSOCIATE statement.  */
+
+typedef struct gfc_association_list
+{
+  struct gfc_association_list *next; 
+
+  /* Whether this is association to a variable that can be changed; otherwise,
+     it's association to an expression and the name may not be used as
+     lvalue.  */
+  unsigned variable:1;
+
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symtree *st; /* Symtree corresponding to name.  */
+  gfc_expr *target;
+}
+gfc_association_list;
+#define gfc_get_association_list() XCNEW (gfc_association_list)
+
+
 /* Executable statements that fill gfc_code structures.  */
 typedef enum
 {
@@ -2026,6 +2049,13 @@ typedef struct gfc_code
     }
     alloc;
 
+    struct
+    {
+      gfc_namespace *ns;
+      gfc_association_list *assoc;
+    }
+    block;
+
     gfc_open *open;
     gfc_close *close;
     gfc_filepos *filepos;
@@ -2040,7 +2070,6 @@ typedef struct gfc_code
     const char *omp_name;
     gfc_namelist *omp_namelist;
     bool omp_bool;
-    gfc_namespace *ns;
   }
   ext;		/* Points to additional structures required by statement */
 
@@ -2647,6 +2676,7 @@ gfc_code *gfc_get_code (void);
 gfc_code *gfc_append_code (gfc_code *, gfc_code *);
 void gfc_free_statement (gfc_code *);
 void gfc_free_statements (gfc_code *);
+void gfc_free_association_list (gfc_association_list *);
 
 /* resolve.c */
 gfc_try gfc_resolve_expr (gfc_expr *);
@@ -2719,6 +2749,7 @@ void gfc_set_current_interface_head (gfc_interface *);
 gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
 bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
 bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
+int gfc_has_vector_subscript (gfc_expr*);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

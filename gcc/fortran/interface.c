@@ -1821,8 +1821,8 @@ get_expr_storage_size (gfc_expr *e)
    which has a vector subscript. If it has, one is returned,
    otherwise zero.  */
 
-static int
-has_vector_subscript (gfc_expr *e)
+int
+gfc_has_vector_subscript (gfc_expr *e)
 {
   int i;
   gfc_ref *ref;
@@ -2134,7 +2134,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if ((f->sym->attr.intent == INTENT_OUT
 	   || f->sym->attr.intent == INTENT_INOUT
 	   || f->sym->attr.volatile_)
-          && has_vector_subscript (a->expr))
+	  && gfc_has_vector_subscript (a->expr))
 	{
 	  if (where)
 	    gfc_error ("Array-section actual argument with vector subscripts "

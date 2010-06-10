@@ -116,7 +116,8 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_BLOCK:
-      gfc_free_namespace (p->ext.ns);
+      gfc_free_namespace (p->ext.block.ns);
+      gfc_free_association_list (p->ext.block.assoc);
       break;
 
     case EXEC_COMPCALL:
@@ -231,3 +232,15 @@ gfc_free_statements (gfc_code *p)
     }
 }
 
+
+/* Free an association list (of an ASSOCIATE statement).  */
+
+void
+gfc_free_association_list (gfc_association_list* assoc)
+{
+  if (!assoc)
+    return;
+
+  gfc_free_association_list (assoc->next);
+  gfc_free (assoc);
+}

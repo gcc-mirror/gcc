@@ -1,3 +1,11 @@
+2010-06-10  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.dg/associate_1.f03: New test.
+	* gfortran.dg/associate_2.f95: New test.
+	* gfortran.dg/associate_3.f03: New test.
+	* gfortran.dg/associate_4.f08: New test.
+
 2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/selected_char_kind_4.f90: New test.

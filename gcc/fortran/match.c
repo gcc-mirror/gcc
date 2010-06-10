@@ -1797,6 +1797,98 @@ gfc_match_block (void)
 }
 
 
+/* Match an ASSOCIATE statement.  */
+
+match
+gfc_match_associate (void)
+{
+  if (gfc_match_label () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match (" associate") != MATCH_YES)
+    return MATCH_NO;
+
+  /* Match the association list.  */
+  if (gfc_match_char ('(') != MATCH_YES)
+    {
+      gfc_error ("Expected association list at %C");
+      return MATCH_ERROR;
+    }
+  new_st.ext.block.assoc = NULL;
+  while (true)
+    {
+      gfc_association_list* newAssoc = gfc_get_association_list ();
+      gfc_association_list* a;
+
+      /* Match the next association.  */
+      if (gfc_match (" %n => %e", newAssoc->name, &newAssoc->target)
+	    != MATCH_YES)
+	{
+	  gfc_error ("Expected association at %C");
+	  goto assocListError;
+	}
+
+      /* Check that the current name is not yet in the list.  */
+      for (a = new_st.ext.block.assoc; a; a = a->next)
+	if (!strcmp (a->name, newAssoc->name))
+	  {
+	    gfc_error ("Duplicate name '%s' in association at %C",
+		       newAssoc->name);
+	    goto assocListError;
+	  }
+
+      /* The target expression must not be coindexed.  */
+      if (gfc_is_coindexed (newAssoc->target))
+	{
+	  gfc_error ("Association target at %C must not be coindexed");
+	  goto assocListError;
+	}
+
+      /* The target is a variable (and may be used as lvalue) if it's an
+	 EXPR_VARIABLE and does not have vector-subscripts.  */
+      newAssoc->variable = (newAssoc->target->expr_type == EXPR_VARIABLE
+			    && !gfc_has_vector_subscript (newAssoc->target));
+
+      /* Put it into the list.  */
+      newAssoc->next = new_st.ext.block.assoc;
+      new_st.ext.block.assoc = newAssoc;
+
+      /* Try next one or end if closing parenthesis is found.  */
+      gfc_gobble_whitespace ();
+      if (gfc_peek_char () == ')')
+	break;
+      if (gfc_match_char (',') != MATCH_YES)
+	{
+	  gfc_error ("Expected ')' or ',' at %C");
+	  return MATCH_ERROR;
+	}
+
+      continue;
+
+assocListError:
+      gfc_free (newAssoc);
+      goto error;
+    }
+  if (gfc_match_char (')') != MATCH_YES)
+    {
+      /* This should never happen as we peek above.  */
+      gcc_unreachable ();
+    }
+
+  if (gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("Junk after ASSOCIATE statement at %C");
+      goto error;
+    }
+
+  return MATCH_YES;
+
+error:
+  gfc_free_association_list (new_st.ext.block.assoc);
+  return MATCH_ERROR;
+}
+
+
 /* Match a DO statement.  */
 
 match
@@ -4361,7 +4453,7 @@ gfc_match_select_type (void)
   new_st.op = EXEC_SELECT_TYPE;
   new_st.expr1 = expr1;
   new_st.expr2 = expr2;
-  new_st.ext.ns = gfc_current_ns;
+  new_st.ext.block.ns = gfc_current_ns;
 
   select_type_push (expr1->symtree->n.sym);
 

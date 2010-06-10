@@ -292,7 +292,7 @@ decode_statement (void)
   gfc_undo_symbols ();
   gfc_current_locus = old_locus;
 
-  /* Check for the IF, DO, SELECT, WHERE, FORALL, CRITICAL, and BLOCK
+  /* Check for the IF, DO, SELECT, WHERE, FORALL, CRITICAL, BLOCK and ASSOCIATE
      statements, which might begin with a block label.  The match functions for
      these statements are unusual in that their keyword is not seen before
      the matcher is called.  */
@@ -314,6 +314,7 @@ decode_statement (void)
 
   match (NULL, gfc_match_do, ST_DO);
   match (NULL, gfc_match_block, ST_BLOCK);
+  match (NULL, gfc_match_associate, ST_ASSOCIATE);
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
@@ -949,7 +950,7 @@ next_statement (void)
 /* Statements that mark other executable statements.  */
 
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
-  case ST_IF_BLOCK: case ST_BLOCK: \
+  case ST_IF_BLOCK: case ST_BLOCK: case ST_ASSOCIATE: \
   case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
   case ST_OMP_PARALLEL: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
@@ -970,7 +971,7 @@ next_statement (void)
 
 #define case_end case ST_END_BLOCK_DATA: case ST_END_FUNCTION: \
 		 case ST_END_PROGRAM: case ST_END_SUBROUTINE: \
-		 case ST_END_BLOCK
+		 case ST_END_BLOCK: case ST_END_ASSOCIATE
 
 
 /* Push a new state onto the stack.  */
@@ -1155,6 +1156,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_ALLOCATE:
       p = "ALLOCATE";
       break;
+    case ST_ASSOCIATE:
+      p = "ASSOCIATE";
+      break;
     case ST_ATTR_DECL:
       p = _("attribute declaration");
       break;
@@ -1214,6 +1218,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_ELSEWHERE:
       p = "ELSEWHERE";
+      break;
+    case ST_END_ASSOCIATE:
+      p = "END ASSOCIATE";
       break;
     case ST_END_BLOCK:
       p = "END BLOCK";
@@ -3160,13 +3167,100 @@ parse_block_construct (void)
   my_ns = gfc_build_block_ns (gfc_current_ns);
 
   new_st.op = EXEC_BLOCK;
-  new_st.ext.ns = my_ns;
+  new_st.ext.block.ns = my_ns;
+  new_st.ext.block.assoc = NULL;
   accept_statement (ST_BLOCK);
 
   push_state (&s, COMP_BLOCK, my_ns->proc_name);
   gfc_current_ns = my_ns;
 
   parse_progunit (ST_NONE);
+
+  gfc_current_ns = gfc_current_ns->parent;
+  pop_state ();
+}
+
+
+/* Parse an ASSOCIATE construct.  This is essentially a BLOCK construct
+   behind the scenes with compiler-generated variables.  */
+
+static void
+parse_associate (void)
+{
+  gfc_namespace* my_ns;
+  gfc_state_data s;
+  gfc_statement st;
+  gfc_association_list* a;
+  gfc_code* assignTail;
+
+  gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ASSOCIATE construct at %C");
+
+  my_ns = gfc_build_block_ns (gfc_current_ns);
+
+  new_st.op = EXEC_BLOCK;
+  new_st.ext.block.ns = my_ns;
+  gcc_assert (new_st.ext.block.assoc);
+
+  /* Add all associations to expressions as BLOCK variables, and create
+     assignments to them giving their values.  */
+  gfc_current_ns = my_ns;
+  assignTail = NULL;
+  for (a = new_st.ext.block.assoc; a; a = a->next)
+    if (!a->variable)
+      {
+	gfc_code* newAssign;
+
+	if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
+	  gcc_unreachable ();
+
+	/* Note that in certain cases, the target-expression's type is not yet
+	   known and so we have to adapt the symbol's ts also during resolution
+	   for these cases.  */
+	a->st->n.sym->ts = a->target->ts;
+	a->st->n.sym->attr.flavor = FL_VARIABLE;
+	a->st->n.sym->assoc = a;
+	gfc_set_sym_referenced (a->st->n.sym);
+
+	/* Create the assignment to calculate the expression and set it.  */
+	newAssign = gfc_get_code ();
+	newAssign->op = EXEC_ASSIGN;
+	newAssign->loc = gfc_current_locus;
+	newAssign->expr1 = gfc_get_variable_expr (a->st);
+	newAssign->expr2 = a->target;
+
+	/* Hang it in.  */
+	if (assignTail)
+	  assignTail->next = newAssign;
+	else
+	  gfc_current_ns->code = newAssign;
+	assignTail = newAssign;
+      }
+    else
+      {
+	gfc_error ("Association to variables is not yet supported at %C");
+	return;
+      }
+  gcc_assert (assignTail);
+
+  accept_statement (ST_ASSOCIATE);
+  push_state (&s, COMP_ASSOCIATE, my_ns->proc_name);
+
+loop:
+  st = parse_executable (ST_NONE);
+  switch (st)
+    {
+    case ST_NONE:
+      unexpected_eof ();
+
+    case_end:
+      accept_statement (st);
+      assignTail->next = gfc_state_stack->head;
+      break;
+
+    default:
+      unexpected_statement (st);
+      goto loop;
+    }
 
   gfc_current_ns = gfc_current_ns->parent;
   pop_state ();
@@ -3542,8 +3636,6 @@ parse_executable (gfc_statement st)
 	  case ST_END_SUBROUTINE:
 
 	  case ST_DO:
-	  case ST_CRITICAL:
-	  case ST_BLOCK:
 	  case ST_FORALL:
 	  case ST_WHERE:
 	  case ST_SELECT_CASE:
@@ -3571,6 +3663,10 @@ parse_executable (gfc_statement st)
 
 	case ST_BLOCK:
 	  parse_block_construct ();
+	  break;
+
+	case ST_ASSOCIATE:
+	  parse_associate ();
 	  break;
 
 	case ST_IF_BLOCK:
