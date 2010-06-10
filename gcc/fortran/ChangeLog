@@ -1,3 +1,9 @@
+2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/43032
+	* intrinsic.texi (FLUSH): Note the difference between FLUSH and
+	POSIX's fsync(), and how to call the latter from Fortran code.
+
 2010-06-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44457
