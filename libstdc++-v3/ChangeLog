@@ -1,3 +1,9 @@
+2010-06-10  Suresh Gumpula  <suresh.gumpula@amd.com>
+
+	PR libstdc++/43918
+	* config/os/djgpp/error_constants.h: New.
+	* configure.host: Use it.
+
 2010-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (tuple(const tuple&)): Define explicitly-defaulted.
