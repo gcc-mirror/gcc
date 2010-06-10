@@ -117,7 +117,7 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
   const struct c_test *test = * (const struct c_test **) slot;
   const char *p;
 
-  print_rtx_ptr_loc (test->expr);
+  print_md_ptr_loc (test->expr);
   fputs ("  { \"", stdout);
   for (p = test->expr; *p; p++)
     {
