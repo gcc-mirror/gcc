@@ -193,7 +193,7 @@ namespace std
     { };
 
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval();
+    typename add_rvalue_reference<_Tp>::type declval() noexcept;
 
   template<typename _Tp, typename... _Args>
     class __is_constructible_helper
@@ -232,6 +232,28 @@ namespace std
     : public integral_constant<bool,
 			       __is_constructible_helper<_Tp,
 							 _Args...>::__value>
+    { };
+
+  template<bool, typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper
+    { static const bool __value = false; };
+
+  template<typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper<true, _Tp, _Args...>
+    { static const bool __value = noexcept(_Tp(declval<_Args>()...)); };
+
+  template<typename _Tp, typename _Arg>
+    struct __is_nt_constructible_helper<true, _Tp, _Arg>
+    {
+      static const bool __value = noexcept(static_cast<_Tp>(declval<_Arg>()));
+    };
+
+  /// is_nothrow_constructible
+  template<typename _Tp, typename... _Args>
+    struct is_nothrow_constructible
+    : public integral_constant<bool,
+	  __is_nt_constructible_helper<is_constructible<_Tp, _Args...>::value,
+				       _Tp, _Args...>::__value>
     { };
 
   /// has_trivial_default_constructor
@@ -649,7 +671,7 @@ namespace std
 
   template<typename _Tp>
     inline typename add_rvalue_reference<_Tp>::type
-    declval()
+    declval() noexcept
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
