@@ -33,7 +33,7 @@ struct ptr_loc {
   int lineno;
 };
 
-/* Obstack used for allocating RTL strings.  */
+/* Obstack used for allocating MD strings.  */
 struct obstack string_obstack;
 
 /* A table of ptr_locs, hashed on the PTR field.  */
@@ -45,7 +45,7 @@ static struct obstack ptr_loc_obstack;
 
 /* A hash table of triples (A, B, C), where each of A, B and C is a condition
    and A is equivalent to "B && C".  This is used to keep track of the source
-   of conditions that are made up of separate rtx strings (such as the split
+   of conditions that are made up of separate MD strings (such as the split
    condition of a define_insn_and_split).  */
 static htab_t joined_conditions;
 
@@ -53,10 +53,10 @@ static htab_t joined_conditions;
 static struct obstack joined_conditions_obstack;
 
 /* The current line number for the file.  */
-int read_rtx_lineno = 1;
+int read_md_lineno = 1;
 
 /* The filename for error reporting.  */
-const char *read_rtx_filename = "<unknown>";
+const char *read_md_filename = "<unknown>";
 
 /* Return a hash value for the pointer pointed to by DEF.  */
 
@@ -77,7 +77,7 @@ leading_ptr_eq_p (const void *def1, const void *def2)
 /* Associate PTR with the file position given by FILENAME and LINENO.  */
 
 static void
-set_rtx_ptr_loc (const void *ptr, const char *filename, int lineno)
+set_md_ptr_loc (const void *ptr, const char *filename, int lineno)
 {
   struct ptr_loc *loc;
 
@@ -93,7 +93,7 @@ set_rtx_ptr_loc (const void *ptr, const char *filename, int lineno)
    position was set.  */
 
 static const struct ptr_loc *
-get_rtx_ptr_loc (const void *ptr)
+get_md_ptr_loc (const void *ptr)
 {
   return (const struct ptr_loc *) htab_find (ptr_locs, &ptr);
 }
@@ -101,20 +101,20 @@ get_rtx_ptr_loc (const void *ptr)
 /* Associate NEW_PTR with the same file position as OLD_PTR.  */
 
 void
-copy_rtx_ptr_loc (const void *new_ptr, const void *old_ptr)
+copy_md_ptr_loc (const void *new_ptr, const void *old_ptr)
 {
-  const struct ptr_loc *loc = get_rtx_ptr_loc (old_ptr);
+  const struct ptr_loc *loc = get_md_ptr_loc (old_ptr);
   if (loc != 0)
-    set_rtx_ptr_loc (new_ptr, loc->filename, loc->lineno);
+    set_md_ptr_loc (new_ptr, loc->filename, loc->lineno);
 }
 
 /* If PTR is associated with a known file position, print a #line
    directive for it.  */
 
 void
-print_rtx_ptr_loc (const void *ptr)
+print_md_ptr_loc (const void *ptr)
 {
-  const struct ptr_loc *loc = get_rtx_ptr_loc (ptr);
+  const struct ptr_loc *loc = get_md_ptr_loc (ptr);
   if (loc != 0)
     printf ("#line %d \"%s\"\n", loc->lineno, loc->filename);
 }
@@ -166,7 +166,7 @@ print_c_condition (const char *cond)
   else
     {
       putc ('\n', stdout);
-      print_rtx_ptr_loc (cond);
+      print_md_ptr_loc (cond);
       printf ("(%s)", cond);
     }
 }
@@ -181,7 +181,7 @@ message_with_line (int lineno, const char *msg, ...)
 
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
+  fprintf (stderr, "%s:%d: ", read_md_filename, lineno);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
 
@@ -201,7 +201,7 @@ fatal_with_file_and_line (FILE *infile, const char *msg, ...)
 
   va_start (ap, msg);
 
-  fprintf (stderr, "%s:%d: ", read_rtx_filename, read_rtx_lineno);
+  fprintf (stderr, "%s:%d: ", read_md_filename, read_md_lineno);
   vfprintf (stderr, msg, ap);
   putc ('\n', stderr);
 
@@ -218,7 +218,7 @@ fatal_with_file_and_line (FILE *infile, const char *msg, ...)
   context[i] = '\0';
 
   fprintf (stderr, "%s:%d: following context is `%s'\n",
-	   read_rtx_filename, read_rtx_lineno, context);
+	   read_md_filename, read_md_lineno, context);
 
   va_end (ap);
   exit (1);
@@ -253,7 +253,7 @@ read_skip_spaces (FILE *infile)
       switch (c)
 	{
 	case '\n':
-	  read_rtx_lineno++;
+	  read_md_lineno++;
 	  break;
 
 	case ' ': case '\t': case '\f': case '\r':
@@ -263,7 +263,7 @@ read_skip_spaces (FILE *infile)
 	  do
 	    c = getc (infile);
 	  while (c != '\n' && c != EOF);
-	  read_rtx_lineno++;
+	  read_md_lineno++;
 	  break;
 
 	case '/':
@@ -277,7 +277,7 @@ read_skip_spaces (FILE *infile)
 	    while ((c = getc (infile)) && c != EOF)
 	      {
 		if (c == '\n')
-		   read_rtx_lineno++;
+		   read_md_lineno++;
 	        else if (prevc == '*' && c == '/')
 		  break;
 	        prevc = c;
@@ -303,7 +303,7 @@ read_escape (FILE *infile)
     {
       /* Backslash-newline is replaced by nothing, as in C.  */
     case '\n':
-      read_rtx_lineno++;
+      read_md_lineno++;
       return;
 
       /* \" \' \\ are replaced by the second character.  */
@@ -336,7 +336,7 @@ read_escape (FILE *infile)
       /* pass anything else through, but issue a warning.  */
     default:
       fprintf (stderr, "%s:%d: warning: unrecognized escape \\%c\n",
-	       read_rtx_filename, read_rtx_lineno, c);
+	       read_md_filename, read_md_lineno, c);
       obstack_1grow (&string_obstack, '\\');
       break;
     }
@@ -356,7 +356,7 @@ read_quoted_string (FILE *infile)
     {
       c = getc (infile); /* Read the string  */
       if (c == '\n')
-	read_rtx_lineno++;
+	read_md_lineno++;
       else if (c == '\\')
 	{
 	  read_escape (infile);
@@ -381,7 +381,7 @@ read_braced_string (FILE *infile)
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
-  unsigned long starting_read_rtx_lineno = read_rtx_lineno;
+  unsigned long starting_read_md_lineno = read_md_lineno;
 
   obstack_1grow (&string_obstack, '{');
   while (brace_depth)
@@ -389,7 +389,7 @@ read_braced_string (FILE *infile)
       c = getc (infile); /* Read the string  */
 
       if (c == '\n')
-	read_rtx_lineno++;
+	read_md_lineno++;
       else if (c == '{')
 	brace_depth++;
       else if (c == '}')
@@ -402,7 +402,7 @@ read_braced_string (FILE *infile)
       else if (c == EOF)
 	fatal_with_file_and_line
 	  (infile, "missing closing } for opening brace on line %lu",
-	   starting_read_rtx_lineno);
+	   starting_read_md_lineno);
 
       obstack_1grow (&string_obstack, c);
     }
@@ -429,7 +429,7 @@ read_string (FILE *infile, int star_if_braced)
       c = read_skip_spaces (infile);
     }
 
-  old_lineno = read_rtx_lineno;
+  old_lineno = read_md_lineno;
   if (c == '"')
     stringbuf = read_quoted_string (infile);
   else if (c == '{')
@@ -448,7 +448,7 @@ read_string (FILE *infile, int star_if_braced)
 	fatal_expected_char (infile, ')', c);
     }
 
-  set_rtx_ptr_loc (stringbuf, read_rtx_filename, old_lineno);
+  set_md_ptr_loc (stringbuf, read_md_filename, old_lineno);
   return stringbuf;
 }
 

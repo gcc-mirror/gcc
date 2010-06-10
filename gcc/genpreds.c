@@ -184,7 +184,7 @@ write_predicate_subfunction (struct pred_data *p)
   printf ("static inline int\n"
 	  "%s_1 (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)\n",
 	  p->name);
-  print_rtx_ptr_loc (p->c_block);
+  print_md_ptr_loc (p->c_block);
   if (p->c_block[0] == '{')
     fputs (p->c_block, stdout);
   else

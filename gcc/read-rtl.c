@@ -319,7 +319,7 @@ apply_iterator_to_string (const char *string, struct mapping *iterator, int valu
     {
       obstack_grow (&string_obstack, base, strlen (base) + 1);
       copy = XOBFINISH (&string_obstack, char *);
-      copy_rtx_ptr_loc (copy, string);
+      copy_md_ptr_loc (copy, string);
       return copy;
     }
   return string;
@@ -647,7 +647,7 @@ read_name (char *str, FILE *infile)
   if (p == str)
     fatal_with_file_and_line (infile, "missing name or number");
   if (c == '\n')
-    read_rtx_lineno++;
+    read_md_lineno++;
 
   *p = 0;
 
@@ -999,7 +999,7 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
 	return false;
       ungetc (c, infile);
 
-      queue_lineno = read_rtx_lineno;
+      queue_lineno = read_md_lineno;
       mode_maps = 0;
       from_file = read_rtx_1 (infile, &mode_maps);
       if (from_file == 0)
@@ -1229,14 +1229,14 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 		  || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
 	    {
 	      char line_name[20];
-	      const char *fn = (read_rtx_filename ? read_rtx_filename : "rtx");
+	      const char *fn = (read_md_filename ? read_md_filename : "rtx");
 	      const char *slash;
 	      for (slash = fn; *slash; slash ++)
 		if (*slash == '/' || *slash == '\\' || *slash == ':')
 		  fn = slash + 1;
 	      obstack_1grow (&string_obstack, '*');
 	      obstack_grow (&string_obstack, fn, strlen (fn));
-	      sprintf (line_name, ":%d", read_rtx_lineno);
+	      sprintf (line_name, ":%d", read_md_lineno);
 	      obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
 	      stringbuf = XOBFINISH (&string_obstack, char *);
 	    }

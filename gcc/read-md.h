@@ -21,12 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "obstack.h"
 
-extern int read_rtx_lineno;
-extern const char *read_rtx_filename;
+extern int read_md_lineno;
+extern const char *read_md_filename;
 extern struct obstack string_obstack;
 
-extern void copy_rtx_ptr_loc (const void *, const void *);
-extern void print_rtx_ptr_loc (const void *);
+extern void copy_md_ptr_loc (const void *, const void *);
+extern void print_md_ptr_loc (const void *);
 extern const char *join_c_conditions (const char *, const char *);
 extern void print_c_condition (const char *);
 extern void message_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;

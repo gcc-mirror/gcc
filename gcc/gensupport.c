@@ -230,11 +230,11 @@ process_include (rtx desc, int lineno)
 
   /* Save old cursor; setup new for the new file.  Note that "lineno" the
      argument to this function is the beginning of the include statement,
-     while read_rtx_lineno has already been advanced.  */
-  old_filename = read_rtx_filename;
-  old_lineno = read_rtx_lineno;
-  read_rtx_filename = pathname;
-  read_rtx_lineno = 1;
+     while read_md_lineno has already been advanced.  */
+  old_filename = read_md_filename;
+  old_lineno = read_md_lineno;
+  read_md_filename = pathname;
+  read_md_lineno = 1;
 
   if (include_callback)
     include_callback (pathname);
@@ -246,8 +246,8 @@ process_include (rtx desc, int lineno)
   /* Do not free pathname.  It is attached to the various rtx queue
      elements.  */
 
-  read_rtx_filename = old_filename;
-  read_rtx_lineno = old_lineno;
+  read_md_filename = old_filename;
+  read_md_lineno = old_lineno;
 
   fclose (input_file);
 }
@@ -260,15 +260,15 @@ process_rtx (rtx desc, int lineno)
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
-      queue_pattern (desc, &define_insn_tail, read_rtx_filename, lineno);
+      queue_pattern (desc, &define_insn_tail, read_md_filename, lineno);
       break;
 
     case DEFINE_COND_EXEC:
-      queue_pattern (desc, &define_cond_exec_tail, read_rtx_filename, lineno);
+      queue_pattern (desc, &define_cond_exec_tail, read_md_filename, lineno);
       break;
 
     case DEFINE_ATTR:
-      queue_pattern (desc, &define_attr_tail, read_rtx_filename, lineno);
+      queue_pattern (desc, &define_attr_tail, read_md_filename, lineno);
       break;
 
     case DEFINE_PREDICATE:
@@ -277,7 +277,7 @@ process_rtx (rtx desc, int lineno)
     case DEFINE_REGISTER_CONSTRAINT:
     case DEFINE_MEMORY_CONSTRAINT:
     case DEFINE_ADDRESS_CONSTRAINT:
-      queue_pattern (desc, &define_pred_tail, read_rtx_filename, lineno);
+      queue_pattern (desc, &define_pred_tail, read_md_filename, lineno);
       break;
 
     case INCLUDE:
@@ -309,7 +309,7 @@ process_rtx (rtx desc, int lineno)
 	split_cond = XSTR (desc, 4);
 	if (split_cond[0] == '&' && split_cond[1] == '&')
 	  {
-	    copy_rtx_ptr_loc (split_cond + 2, split_cond);
+	    copy_md_ptr_loc (split_cond + 2, split_cond);
 	    split_cond = join_c_conditions (XSTR (desc, 2), split_cond + 2);
 	  }
 	XSTR (split, 1) = split_cond;
@@ -323,16 +323,16 @@ process_rtx (rtx desc, int lineno)
 
 	/* Queue them.  */
 	insn_elem
-	  = queue_pattern (desc, &define_insn_tail, read_rtx_filename,
+	  = queue_pattern (desc, &define_insn_tail, read_md_filename,
 			   lineno);
 	split_elem
-	  = queue_pattern (split, &other_tail, read_rtx_filename, lineno);
+	  = queue_pattern (split, &other_tail, read_md_filename, lineno);
 	insn_elem->split = split_elem;
 	break;
       }
 
     default:
-      queue_pattern (desc, &other_tail, read_rtx_filename, lineno);
+      queue_pattern (desc, &other_tail, read_md_filename, lineno);
       break;
     }
 }
@@ -865,7 +865,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	  XVECEXP (split, 2, i) = pattern;
 	}
       /* Add the new split to the queue.  */
-      queue_pattern (split, &other_tail, read_rtx_filename,
+      queue_pattern (split, &other_tail, read_md_filename,
 		     insn_elem->split->lineno);
     }
 }
@@ -988,8 +988,8 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 		fatal ("cannot read standard input twice");
 
 	      base_dir = NULL;
-	      read_rtx_filename = in_fname = "<stdin>";
-	      read_rtx_lineno = 1;
+	      read_md_filename = in_fname = "<stdin>";
+	      read_md_lineno = 1;
 	      input_file = stdin;
 	      already_read_stdin = true;
 
@@ -1018,8 +1018,8 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
       else
 	base_dir = NULL;
 
-      read_rtx_filename = in_fname;
-      read_rtx_lineno = 1;
+      read_md_filename = in_fname;
+      read_md_lineno = 1;
       input_file = fopen (in_fname, "r");
       if (input_file == 0)
 	{
@@ -1037,8 +1037,8 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   if (!in_fname)
     {
       base_dir = NULL;
-      read_rtx_filename = in_fname = "<stdin>";
-      read_rtx_lineno = 1;
+      read_md_filename = in_fname = "<stdin>";
+      read_md_lineno = 1;
       input_file = stdin;
 
       while (read_rtx (input_file, &desc, &lineno))
@@ -1086,7 +1086,7 @@ read_md_rtx (int *lineno, int *seqnr)
   elem = *queue;
   *queue = elem->next;
   desc = elem->data;
-  read_rtx_filename = elem->filename;
+  read_md_filename = elem->filename;
   *lineno = elem->lineno;
   *seqnr = sequence_num;
 

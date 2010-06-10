@@ -399,7 +399,7 @@ gen_insn (rtx insn, int lineno)
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
-  printf ("/* %s:%d */\n", read_rtx_filename, lineno);
+  printf ("/* %s:%d */\n", read_md_filename, lineno);
 
   /* Find out how many operands this function has.  */
   operands = max_operand_vec (insn, 1);
@@ -514,7 +514,7 @@ gen_expand (rtx expand)
 
       /* Output the special code to be executed before the sequence
 	 is generated.  */
-      print_rtx_ptr_loc (XSTR (expand, 3));
+      print_md_ptr_loc (XSTR (expand, 3));
       printf ("%s\n", XSTR (expand, 3));
 
       /* Output code to copy the arguments back out of `operands'
@@ -643,7 +643,7 @@ gen_split (rtx split)
 
   if (XSTR (split, 3))
     {
-      print_rtx_ptr_loc (XSTR (split, 3));
+      print_md_ptr_loc (XSTR (split, 3));
       printf ("%s\n", XSTR (split, 3));
     }
 
@@ -888,17 +888,17 @@ from the machine description file `md'.  */\n\n");
 	  break;
 
 	case DEFINE_EXPAND:
-	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  printf ("/* %s:%d */\n", read_md_filename, line_no);
 	  gen_expand (desc);
 	  break;
 
 	case DEFINE_SPLIT:
-	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  printf ("/* %s:%d */\n", read_md_filename, line_no);
 	  gen_split (desc);
 	  break;
 
 	case DEFINE_PEEPHOLE2:
-	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  printf ("/* %s:%d */\n", read_md_filename, line_no);
 	  gen_split (desc);
 	  break;
 

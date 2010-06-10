@@ -1,5 +1,28 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* read-md.h (read_rtx_lineno): Rename to...
+	(read_md_lineno): ...this.
+	(read_rtx_filename): Rename to...
+	(read_md_filename): ...this.
+	(copy_rtx_ptr_loc): Rename to...
+	(copy_md_ptr_loc): ...this.
+	(print_rtx_ptr_loc): Rename to...
+	(print_md_ptr_loc): ...this.
+	* read-md.c: Likewise.  Update references after renaming.
+	(string_obstack): Replace RTL with MD in comment.
+	(set_rtx_ptr_loc): Rename to...
+	(set_md_ptr_loc): ...this.
+	(get_rtx_ptr_loc): Rename to...
+	(get_md_ptr_loc): ...this.
+	* genconditions.c: Update references after renaming.
+	* genemit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpreds.c: Likewise.
+	* gensupport.c: Likewise.
+	* read-rtl.c: Likewise.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (READ_MD_H): New variable.
 	(BUILD_RTL): Add build/read-md.o.
 	(lto-wrapper.o): Depend on coretypes.h instead of defaults.h.

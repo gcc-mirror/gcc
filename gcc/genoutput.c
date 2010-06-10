@@ -673,7 +673,7 @@ process_template (struct data *d, const char *template_code)
       printf ("output_%d (rtx *operands ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
 	      d->code_number);
       puts ("{");
-      print_rtx_ptr_loc (template_code);
+      print_md_ptr_loc (template_code);
       puts (template_code + 1);
       puts ("}");
     }
@@ -861,7 +861,7 @@ gen_insn (rtx insn, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
-  d->filename = read_rtx_filename;
+  d->filename = read_md_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
@@ -906,7 +906,7 @@ gen_peephole (rtx peep, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
-  d->filename = read_rtx_filename;
+  d->filename = read_md_filename;
   d->lineno = lineno;
   d->name = 0;
 
@@ -945,7 +945,7 @@ gen_expand (rtx insn, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
-  d->filename = read_rtx_filename;
+  d->filename = read_md_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
@@ -990,7 +990,7 @@ gen_split (rtx split, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
-  d->filename = read_rtx_filename;
+  d->filename = read_md_filename;
   d->lineno = lineno;
   d->name = 0;
 
