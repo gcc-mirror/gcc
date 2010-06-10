@@ -2361,7 +2361,7 @@ extern void traverse_md_constants (int (*) (void **, void *), void *);
 struct md_constant { char *name, *value; };
 
 /* In read-rtl.c */
-extern bool read_rtx (FILE *, rtx *, int *);
+extern bool read_rtx (rtx *, int *);
 
 /* In alias.c */
 extern rtx canon_rtx (rtx);

@@ -194,7 +194,7 @@ process_include (rtx desc, int lineno)
   const char *old_filename;
   int old_lineno;
   char *pathname;
-  FILE *input_file;
+  FILE *input_file, *old_file;
 
   /* If specified file name is absolute, skip the include stack.  */
   if (! IS_ABSOLUTE_PATH (filename))
@@ -231,8 +231,10 @@ process_include (rtx desc, int lineno)
   /* Save old cursor; setup new for the new file.  Note that "lineno" the
      argument to this function is the beginning of the include statement,
      while read_md_lineno has already been advanced.  */
+  old_file = read_md_file;
   old_filename = read_md_filename;
   old_lineno = read_md_lineno;
+  read_md_file = input_file;
   read_md_filename = pathname;
   read_md_lineno = 1;
 
@@ -240,12 +242,13 @@ process_include (rtx desc, int lineno)
     include_callback (pathname);
 
   /* Read the entire file.  */
-  while (read_rtx (input_file, &desc, &lineno))
+  while (read_rtx (&desc, &lineno))
     process_rtx (desc, lineno);
 
   /* Do not free pathname.  It is attached to the various rtx queue
      elements.  */
 
+  read_md_file = old_file;
   read_md_filename = old_filename;
   read_md_lineno = old_lineno;
 
@@ -902,7 +905,6 @@ save_string (const char *s, int len)
 int
 init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 {
-  FILE *input_file;
   int c, i, lineno;
   char *lastsl;
   rtx desc;
@@ -988,14 +990,14 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 		fatal ("cannot read standard input twice");
 
 	      base_dir = NULL;
+	      read_md_file = stdin;
 	      read_md_filename = in_fname = "<stdin>";
 	      read_md_lineno = 1;
-	      input_file = stdin;
 	      already_read_stdin = true;
 
-	      while (read_rtx (input_file, &desc, &lineno))
+	      while (read_rtx (&desc, &lineno))
 		process_rtx (desc, lineno);
-	      fclose (input_file);
+	      fclose (read_md_file);
 	      continue;
 	    }
 	  else if (argv[i][1] == '-' && argv[i][2] == '\0')
@@ -1018,18 +1020,18 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
       else
 	base_dir = NULL;
 
-      read_md_filename = in_fname;
-      read_md_lineno = 1;
-      input_file = fopen (in_fname, "r");
-      if (input_file == 0)
+      read_md_file = fopen (in_fname, "r");
+      if (read_md_file == 0)
 	{
 	  perror (in_fname);
 	  return FATAL_EXIT_CODE;
 	}
+      read_md_filename = in_fname;
+      read_md_lineno = 1;
 
-      while (read_rtx (input_file, &desc, &lineno))
+      while (read_rtx (&desc, &lineno))
 	process_rtx (desc, lineno);
-      fclose (input_file);
+      fclose (read_md_file);
     }
 
   /* If we get to this point without having seen any files to process,
@@ -1037,13 +1039,13 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   if (!in_fname)
     {
       base_dir = NULL;
+      read_md_file = stdin;
       read_md_filename = in_fname = "<stdin>";
       read_md_lineno = 1;
-      input_file = stdin;
 
-      while (read_rtx (input_file, &desc, &lineno))
+      while (read_rtx (&desc, &lineno))
 	process_rtx (desc, lineno);
-      fclose (input_file);
+      fclose (read_md_file);
     }
 
   /* Process define_cond_exec patterns.  */

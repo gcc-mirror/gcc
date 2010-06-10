@@ -1,5 +1,34 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* read-md.h (read_md_file): Declare.
+	(read_char, unread_char): New functions.
+	(fatal_with_file_and_line, fatal_expected_char, read_skip_spaces)
+	(read_quoted_string, read_string): Remove FILE * argument.
+	* read-md.c (read_md_file): New variable.
+	(read_md_filename, read_md_lineno): Update comments and remove
+	unnecessary initialization.
+	(fatal_with_file_and_line, fatal_expected_char, read_skip_spaces)
+	(read_escape, read_quoted_string, read_braced_string, read_string):
+	Remove FILE * argument.  Update calls accordingly, using read_char
+	and unread_char instead of getc and ungetc.
+	* rtl.h (read_rtx): Remove FILE * argument.
+	* read-rtl.c (iterator_group): Remove FILE * argument from
+	"find_builtin".
+	(iterator_traverse_data): Remove "infile" field.
+	(find_mode, find_code, apply_mode_maps, apply_iterator_to_rtx)
+	(add_mapping, read_name, read_constants, read_conditions)
+	(validate_const_int, find_iterator, read_mapping, check_code_iterator)
+	(read_rtx, read_rtx_1, read_rtx_variadic): Remove FILE * argument.
+	Remove file arguments from all calls, using read_char and unread_char
+	instead of getc and ungetc.
+	* gensupport.c (process_include): Preserve read_md_file around
+	the include.  Set read_md_file to the handle of the included file.
+	Update call to read_rtx.
+	(init_md_reader_args_cb): Set read_md_file to the handle of the file
+	and remove local FILE *.  Update calls to read_rtx.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* read-md.h (read_rtx_lineno): Rename to...
 	(read_md_lineno): ...this.
 	(read_rtx_filename): Rename to...

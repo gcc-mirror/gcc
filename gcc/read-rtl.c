@@ -70,8 +70,8 @@ struct iterator_group {
   int num_builtins;
 
   /* Treat the given string as the name of a standard mode or code and
-     return its integer value.  Use the given file for error reporting.  */
-  int (*find_builtin) (const char *, FILE *);
+     return its integer value.  */
+  int (*find_builtin) (const char *);
 
   /* Return true if the given rtx uses the given mode or code.  */
   bool (*uses_iterator_p) (rtx, int);
@@ -87,8 +87,6 @@ struct iterator_traverse_data {
   rtx queue;
   /* Attributes seen for modes.  */
   struct map_value *mode_maps;
-  /* Input file.  */
-  FILE *infile;
   /* The last unknown attribute used as a mode.  */
   const char *unknown_mode_attr;
 };
@@ -98,35 +96,35 @@ struct iterator_traverse_data {
 #define BELLWETHER_CODE(CODE) \
   ((CODE) < NUM_RTX_CODE ? CODE : bellwether_codes[CODE - NUM_RTX_CODE])
 
-static int find_mode (const char *, FILE *);
+static int find_mode (const char *);
 static bool uses_mode_iterator_p (rtx, int);
 static void apply_mode_iterator (rtx, int);
-static int find_code (const char *, FILE *);
+static int find_code (const char *);
 static bool uses_code_iterator_p (rtx, int);
 static void apply_code_iterator (rtx, int);
 static const char *apply_iterator_to_string (const char *, struct mapping *, int);
 static rtx apply_iterator_to_rtx (rtx, struct mapping *, int,
-				  struct map_value *, FILE *, const char **);
+				  struct map_value *, const char **);
 static bool uses_iterator_p (rtx, struct mapping *);
 static const char *add_condition_to_string (const char *, const char *);
 static void add_condition_to_rtx (rtx, const char *);
 static int apply_iterator_traverse (void **, void *);
 static struct mapping *add_mapping (struct iterator_group *, htab_t t,
-				    const char *, FILE *);
+				    const char *);
 static struct map_value **add_map_value (struct map_value **,
 					 int, const char *);
 static void initialize_iterators (void);
-static void read_name (char *, FILE *);
+static void read_name (char *);
 static hashval_t def_hash (const void *);
 static int def_name_eq_p (const void *, const void *);
-static void read_constants (FILE *infile, char *tmp_char);
-static void read_conditions (FILE *infile, char *tmp_char);
-static void validate_const_int (FILE *, const char *);
-static int find_iterator (struct iterator_group *, const char *, FILE *);
-static struct mapping *read_mapping (struct iterator_group *, htab_t, FILE *);
-static void check_code_iterator (struct mapping *, FILE *);
-static rtx read_rtx_1 (FILE *, struct map_value **);
-static rtx read_rtx_variadic (FILE *, struct map_value **, rtx);
+static void read_constants (char *tmp_char);
+static void read_conditions (char *tmp_char);
+static void validate_const_int (const char *);
+static int find_iterator (struct iterator_group *, const char *);
+static struct mapping *read_mapping (struct iterator_group *, htab_t);
+static void check_code_iterator (struct mapping *);
+static rtx read_rtx_1 (struct map_value **);
+static rtx read_rtx_variadic (struct map_value **, rtx);
 
 /* The mode and code iterator structures.  */
 static struct iterator_group modes, codes;
@@ -137,7 +135,7 @@ static enum rtx_code *bellwether_codes;
 /* Implementations of the iterator_group callbacks for modes.  */
 
 static int
-find_mode (const char *name, FILE *infile)
+find_mode (const char *name)
 {
   int i;
 
@@ -145,7 +143,7 @@ find_mode (const char *name, FILE *infile)
     if (strcmp (GET_MODE_NAME (i), name) == 0)
       return i;
 
-  fatal_with_file_and_line (infile, "unknown mode `%s'", name);
+  fatal_with_file_and_line ("unknown mode `%s'", name);
 }
 
 static bool
@@ -163,7 +161,7 @@ apply_mode_iterator (rtx x, int mode)
 /* Implementations of the iterator_group callbacks for codes.  */
 
 static int
-find_code (const char *name, FILE *infile)
+find_code (const char *name)
 {
   int i;
 
@@ -171,7 +169,7 @@ find_code (const char *name, FILE *infile)
     if (strcmp (GET_RTX_NAME (i), name) == 0)
       return i;
 
-  fatal_with_file_and_line (infile, "unknown rtx code `%s'", name);
+  fatal_with_file_and_line ("unknown rtx code `%s'", name);
 }
 
 static bool
@@ -252,13 +250,12 @@ mode_attr_index (struct map_value **mode_maps, const char *string)
 /* Apply MODE_MAPS to the top level of X, expanding cases where an
    attribute is used for a mode.  ITERATOR is the current iterator we are
    expanding, and VALUE is the value to which we are expanding it.
-   INFILE is used for error messages.  This sets *UNKNOWN to true if
-   we find a mode attribute which has not yet been defined, and does
-   not change it otherwise.  */
+   This sets *UNKNOWN to true if we find a mode attribute which has not
+   yet been defined, and does not change it otherwise.  */
 
 static void
 apply_mode_maps (rtx x, struct map_value *mode_maps, struct mapping *iterator,
-		 int value, FILE *infile, const char **unknown)
+		 int value, const char **unknown)
 {
   unsigned int offset;
   int indx;
@@ -277,7 +274,7 @@ apply_mode_maps (rtx x, struct map_value *mode_maps, struct mapping *iterator,
 
 	  v = map_attr_string (pm->string, iterator, value);
 	  if (v)
-	    PUT_MODE (x, (enum machine_mode) find_mode (v->string, infile));
+	    PUT_MODE (x, (enum machine_mode) find_mode (v->string));
 	  else
 	    *unknown = pm->string;
 	  return;
@@ -327,13 +324,12 @@ apply_iterator_to_string (const char *string, struct mapping *iterator, int valu
 
 /* Return a copy of ORIGINAL in which all uses of ITERATOR have been
    replaced by VALUE.  MODE_MAPS holds information about attribute
-   strings used for modes.  INFILE is used for error messages.  This
-   sets *UNKNOWN_MODE_ATTR to the value of an unknown mode attribute,
-   and does not change it otherwise.  */
+   strings used for modes.  This sets *UNKNOWN_MODE_ATTR to the value of
+   an unknown mode attribute, and does not change it otherwise.  */
 
 static rtx
 apply_iterator_to_rtx (rtx original, struct mapping *iterator, int value,
-		       struct map_value *mode_maps, FILE *infile,
+		       struct map_value *mode_maps,
 		       const char **unknown_mode_attr)
 {
   struct iterator_group *group;
@@ -356,7 +352,7 @@ apply_iterator_to_rtx (rtx original, struct mapping *iterator, int value,
     group->apply_iterator (x, value);
 
   if (mode_maps)
-    apply_mode_maps (x, mode_maps, iterator, value, infile, unknown_mode_attr);
+    apply_mode_maps (x, mode_maps, iterator, value, unknown_mode_attr);
 
   /* Change each string and recursively change each rtx.  */
   format_ptr = GET_RTX_FORMAT (bellwether_code);
@@ -374,8 +370,7 @@ apply_iterator_to_rtx (rtx original, struct mapping *iterator, int value,
 
       case 'e':
 	XEXP (x, i) = apply_iterator_to_rtx (XEXP (x, i), iterator, value,
-					     mode_maps, infile,
-					     unknown_mode_attr);
+					     mode_maps, unknown_mode_attr);
 	break;
 
       case 'V':
@@ -386,7 +381,6 @@ apply_iterator_to_rtx (rtx original, struct mapping *iterator, int value,
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      XVECEXP (x, i, j) = apply_iterator_to_rtx (XVECEXP (original, i, j),
 							 iterator, value, mode_maps,
-							 infile,
 							 unknown_mode_attr);
 	  }
 	break;
@@ -505,7 +499,7 @@ apply_iterator_traverse (void **slot, void *data)
 	for (v = iterator->values; v != 0; v = v->next)
 	  {
 	    x = apply_iterator_to_rtx (original, iterator, v->number,
-				       mtd->mode_maps, mtd->infile,
+				       mtd->mode_maps,
 				       &mtd->unknown_mode_attr);
 	    add_condition_to_rtx (x, v->string);
 	    if (v != iterator->values)
@@ -524,12 +518,10 @@ apply_iterator_traverse (void **slot, void *data)
 }
 
 /* Add a new "mapping" structure to hashtable TABLE.  NAME is the name
-   of the mapping, GROUP is the group to which it belongs, and INFILE
-   is the file that defined the mapping.  */
+   of the mapping and GROUP is the group to which it belongs.  */
 
 static struct mapping *
-add_mapping (struct iterator_group *group, htab_t table,
-	     const char *name, FILE *infile)
+add_mapping (struct iterator_group *group, htab_t table, const char *name)
 {
   struct mapping *m;
   void **slot;
@@ -542,7 +534,7 @@ add_mapping (struct iterator_group *group, htab_t table,
 
   slot = htab_find_slot (table, m, INSERT);
   if (*slot != 0)
-    fatal_with_file_and_line (infile, "`%s' already defined", name);
+    fatal_with_file_and_line ("`%s' already defined", name);
 
   *slot = m;
   return m;
@@ -590,8 +582,8 @@ initialize_iterators (void)
   codes.uses_iterator_p = uses_code_iterator_p;
   codes.apply_iterator = apply_code_iterator;
 
-  lower = add_mapping (&modes, modes.attrs, "mode", 0);
-  upper = add_mapping (&modes, modes.attrs, "MODE", 0);
+  lower = add_mapping (&modes, modes.attrs, "mode");
+  upper = add_mapping (&modes, modes.attrs, "MODE");
   lower_ptr = &lower->values;
   upper_ptr = &upper->values;
   for (i = 0; i < MAX_MACHINE_MODE; i++)
@@ -604,8 +596,8 @@ initialize_iterators (void)
       lower_ptr = add_map_value (lower_ptr, i, copy);
     }
 
-  lower = add_mapping (&codes, codes.attrs, "code", 0);
-  upper = add_mapping (&codes, codes.attrs, "CODE", 0);
+  lower = add_mapping (&codes, codes.attrs, "code");
+  upper = add_mapping (&codes, codes.attrs, "CODE");
   lower_ptr = &lower->values;
   upper_ptr = &upper->values;
   for (i = 0; i < NUM_RTX_CODE; i++)
@@ -623,12 +615,12 @@ initialize_iterators (void)
    It is terminated by any of the punctuation chars of rtx printed syntax.  */
 
 static void
-read_name (char *str, FILE *infile)
+read_name (char *str)
 {
   char *p;
   int c;
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
 
   p = str;
   while (1)
@@ -638,14 +630,14 @@ read_name (char *str, FILE *infile)
       if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
 	  || c == '(' || c == '[')
 	{
-	  ungetc (c, infile);
+	  unread_char (c);
 	  break;
 	}
       *p++ = c;
-      c = getc (infile);
+      c = read_char ();
     }
   if (p == str)
-    fatal_with_file_and_line (infile, "missing name or number");
+    fatal_with_file_and_line ("missing name or number");
   if (c == '\n')
     read_md_lineno++;
 
@@ -731,39 +723,37 @@ def_name_eq_p (const void *def1, const void *def2)
 		   *(const char *const *) def2);
 }
 
-/* INFILE is a FILE pointer to read text from.  TMP_CHAR is a buffer suitable
-   to read a name or number into.  Process a define_constants directive,
-   starting with the optional space after the "define_constants".  */
+/* TMP_CHAR is a buffer suitable to read a name or number into.  Process
+   a define_constants directive, starting with the optional space after
+   the "define_constants".  */
 static void
-read_constants (FILE *infile, char *tmp_char)
+read_constants (char *tmp_char)
 {
   int c;
   htab_t defs;
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != '[')
-    fatal_expected_char (infile, '[', c);
+    fatal_expected_char ('[', c);
   defs = md_constants;
   if (! defs)
     defs = htab_create (32, def_hash, def_name_eq_p, (htab_del) 0);
   /* Disable constant expansion during definition processing.  */
   md_constants = 0;
-  while ( (c = read_skip_spaces (infile)) != ']')
+  while ( (c = read_skip_spaces ()) != ']')
     {
       struct md_constant *def;
       void **entry_ptr;
 
       if (c != '(')
-	fatal_expected_char (infile, '(', c);
+	fatal_expected_char ('(', c);
       def = XNEW (struct md_constant);
       def->name = tmp_char;
-      read_name (tmp_char, infile);
+      read_name (tmp_char);
       entry_ptr = htab_find_slot (defs, def, INSERT);
       if (! *entry_ptr)
 	def->name = xstrdup (tmp_char);
-      c = read_skip_spaces (infile);
-      ungetc (c, infile);
-      read_name (tmp_char, infile);
+      read_name (tmp_char);
       if (! *entry_ptr)
 	{
 	  def->value = xstrdup (tmp_char);
@@ -773,18 +763,17 @@ read_constants (FILE *infile, char *tmp_char)
 	{
 	  def = (struct md_constant *) *entry_ptr;
 	  if (strcmp (def->value, tmp_char))
-	    fatal_with_file_and_line (infile,
-				      "redefinition of %s, was %s, now %s",
+	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
 				      def->name, def->value, tmp_char);
 	}
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c != ')')
-	fatal_expected_char (infile, ')', c);
+	fatal_expected_char (')', c);
     }
   md_constants = defs;
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != ')')
-    fatal_expected_char (infile, ')', c);
+    fatal_expected_char (')', c);
 }
 
 /* For every constant definition, call CALLBACK with two arguments:
@@ -797,9 +786,8 @@ traverse_md_constants (htab_trav callback, void *info)
     htab_traverse (md_constants, callback, info);
 }
 
-/* INFILE is a FILE pointer to read text from.  TMP_CHAR is a buffer
-   suitable to read a name or number into.  Process a
-   define_conditions directive, starting with the optional space after
+/* TMP_CHAR is a buffer suitable to read a name or number into.  Process
+   a define_conditions directive, starting with the optional space after
    the "define_conditions".  The directive looks like this:
 
      (define_conditions [
@@ -813,44 +801,44 @@ traverse_md_constants (htab_trav callback, void *info)
    slipped in at the beginning of the sequence of MD files read by
    most of the other generators.  */
 static void
-read_conditions (FILE *infile, char *tmp_char)
+read_conditions (char *tmp_char)
 {
   int c;
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != '[')
-    fatal_expected_char (infile, '[', c);
+    fatal_expected_char ('[', c);
 
-  while ( (c = read_skip_spaces (infile)) != ']')
+  while ( (c = read_skip_spaces ()) != ']')
     {
       char *expr;
       int value;
 
       if (c != '(')
-	fatal_expected_char (infile, '(', c);
+	fatal_expected_char ('(', c);
 
-      read_name (tmp_char, infile);
-      validate_const_int (infile, tmp_char);
+      read_name (tmp_char);
+      validate_const_int (tmp_char);
       value = atoi (tmp_char);
 
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c != '"')
-	fatal_expected_char (infile, '"', c);
-      expr = read_quoted_string (infile);
+	fatal_expected_char ('"', c);
+      expr = read_quoted_string ();
 
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c != ')')
-	fatal_expected_char (infile, ')', c);
+	fatal_expected_char (')', c);
 
       add_c_test (expr, value);
     }
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != ')')
-    fatal_expected_char (infile, ')', c);
+    fatal_expected_char (')', c);
 }
 
 static void
-validate_const_int (FILE *infile, const char *string)
+validate_const_int (const char *string)
 {
   const char *cp;
   int valid = 1;
@@ -866,35 +854,35 @@ validate_const_int (FILE *infile, const char *string)
     if (! ISDIGIT (*cp))
       valid = 0;
   if (!valid)
-    fatal_with_file_and_line (infile, "invalid decimal constant \"%s\"\n", string);
+    fatal_with_file_and_line ("invalid decimal constant \"%s\"\n", string);
 }
 
 /* Search GROUP for a mode or code called NAME and return its numerical
-   identifier.  INFILE is the file that contained NAME.  */
+   identifier.  */
 
 static int
-find_iterator (struct iterator_group *group, const char *name, FILE *infile)
+find_iterator (struct iterator_group *group, const char *name)
 {
   struct mapping *m;
 
   m = (struct mapping *) htab_find (group->iterators, &name);
   if (m != 0)
     return m->index + group->num_builtins;
-  return group->find_builtin (name, infile);
+  return group->find_builtin (name);
 }
 
 /* Finish reading a declaration of the form:
 
        (define... <name> [<value1> ... <valuen>])
 
-   from INFILE, where each <valuei> is either a bare symbol name or a
+   from the MD file, where each <valuei> is either a bare symbol name or a
    "(<name> <string>)" pair.  The "(define..." part has already been read.
 
    Represent the declaration as a "mapping" structure; add it to TABLE
    (which belongs to GROUP) and return it.  */
 
 static struct mapping *
-read_mapping (struct iterator_group *group, htab_t table, FILE *infile)
+read_mapping (struct iterator_group *group, htab_t table)
 {
   char tmp_char[256];
   struct mapping *m;
@@ -903,44 +891,44 @@ read_mapping (struct iterator_group *group, htab_t table, FILE *infile)
   int number, c;
 
   /* Read the mapping name and create a structure for it.  */
-  read_name (tmp_char, infile);
-  m = add_mapping (group, table, tmp_char, infile);
+  read_name (tmp_char);
+  m = add_mapping (group, table, tmp_char);
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != '[')
-    fatal_expected_char (infile, '[', c);
+    fatal_expected_char ('[', c);
 
   /* Read each value.  */
   end_ptr = &m->values;
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   do
     {
       if (c != '(')
 	{
 	  /* A bare symbol name that is implicitly paired to an
 	     empty string.  */
-	  ungetc (c, infile);
-	  read_name (tmp_char, infile);
+	  unread_char (c);
+	  read_name (tmp_char);
 	  string = "";
 	}
       else
 	{
 	  /* A "(name string)" pair.  */
-	  read_name (tmp_char, infile);
-	  string = read_string (infile, false);
-	  c = read_skip_spaces (infile);
+	  read_name (tmp_char);
+	  string = read_string (false);
+	  c = read_skip_spaces ();
 	  if (c != ')')
-	    fatal_expected_char (infile, ')', c);
+	    fatal_expected_char (')', c);
 	}
-      number = group->find_builtin (tmp_char, infile);
+      number = group->find_builtin (tmp_char);
       end_ptr = add_map_value (end_ptr, number, string);
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
     }
   while (c != ']');
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != ')')
-    fatal_expected_char (infile, ')', c);
+    fatal_expected_char (')', c);
 
   return m;
 }
@@ -949,7 +937,7 @@ read_mapping (struct iterator_group *group, htab_t table, FILE *infile)
    same format.  Initialize the iterator's entry in bellwether_codes.  */
 
 static void
-check_code_iterator (struct mapping *iterator, FILE *infile)
+check_code_iterator (struct mapping *iterator)
 {
   struct map_value *v;
   enum rtx_code bellwether;
@@ -957,7 +945,7 @@ check_code_iterator (struct mapping *iterator, FILE *infile)
   bellwether = (enum rtx_code) iterator->values->number;
   for (v = iterator->values->next; v != 0; v = v->next)
     if (strcmp (GET_RTX_FORMAT (bellwether), GET_RTX_FORMAT (v->number)) != 0)
-      fatal_with_file_and_line (infile, "code iterator `%s' combines "
+      fatal_with_file_and_line ("code iterator `%s' combines "
 				"different rtx formats", iterator->name);
 
   bellwether_codes = XRESIZEVEC (enum rtx_code, bellwether_codes,
@@ -965,8 +953,8 @@ check_code_iterator (struct mapping *iterator, FILE *infile)
   bellwether_codes[iterator->index] = bellwether;
 }
 
-/* Read an rtx in printed representation from INFILE and store its
-   core representation in *X.  Also store the line number of the
+/* Read an rtx in printed representation from the MD file and store
+   its core representation in *X.  Also store the line number of the
    opening '(' in *LINENO.  Return true on success or false if the
    end of file has been reached.
 
@@ -974,7 +962,7 @@ check_code_iterator (struct mapping *iterator, FILE *infile)
    the utilities gen*.c that construct C code from machine descriptions.  */
 
 bool
-read_rtx (FILE *infile, rtx *x, int *lineno)
+read_rtx (rtx *x, int *lineno)
 {
   static rtx queue_head, queue_next;
   static int queue_lineno;
@@ -994,14 +982,14 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
       struct iterator_traverse_data mtd;
       rtx from_file;
 
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c == EOF)
 	return false;
-      ungetc (c, infile);
+      unread_char (c);
 
       queue_lineno = read_md_lineno;
       mode_maps = 0;
-      from_file = read_rtx_1 (infile, &mode_maps);
+      from_file = read_rtx_1 (&mode_maps);
       if (from_file == 0)
 	return false;  /* This confuses a top level (nil) with end of
 			  file, but a top level (nil) would have
@@ -1013,13 +1001,11 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
 
       mtd.queue = queue_next;
       mtd.mode_maps = mode_maps;
-      mtd.infile = infile;
       mtd.unknown_mode_attr = mode_maps ? mode_maps->string : NULL;
       htab_traverse (modes.iterators, apply_iterator_traverse, &mtd);
       htab_traverse (codes.iterators, apply_iterator_traverse, &mtd);
       if (mtd.unknown_mode_attr)
-	fatal_with_file_and_line (infile,
-				  "undefined attribute '%s' used for mode",
+	fatal_with_file_and_line ("undefined attribute '%s' used for mode",
 				  mtd.unknown_mode_attr);
     }
 
@@ -1030,11 +1016,11 @@ read_rtx (FILE *infile, rtx *x, int *lineno)
   return true;
 }
 
-/* Subroutine of read_rtx that reads one construct from INFILE but
+/* Subroutine of read_rtx that reads one construct from the MD file but
    doesn't apply any iterators.  */
 
 static rtx
-read_rtx_1 (FILE *infile, struct map_value **mode_maps)
+read_rtx_1 (struct map_value **mode_maps)
 {
   int i;
   RTX_CODE real_code, bellwether_code;
@@ -1056,55 +1042,54 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
     };
 
  again:
-  c = read_skip_spaces (infile); /* Should be open paren.  */
+  c = read_skip_spaces (); /* Should be open paren.  */
 
   if (c == EOF)
     return 0;
 
   if (c != '(')
-    fatal_expected_char (infile, '(', c);
+    fatal_expected_char ('(', c);
 
-  read_name (tmp_char, infile);
+  read_name (tmp_char);
   if (strcmp (tmp_char, "nil") == 0)
     {
       /* (nil) stands for an expression that isn't there.  */
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c != ')')
-	fatal_expected_char (infile, ')', c);
+	fatal_expected_char (')', c);
       return 0;
     }
   if (strcmp (tmp_char, "define_constants") == 0)
     {
-      read_constants (infile, tmp_char);
+      read_constants (tmp_char);
       goto again;
     }
   if (strcmp (tmp_char, "define_conditions") == 0)
     {
-      read_conditions (infile, tmp_char);
+      read_conditions (tmp_char);
       goto again;
     }
   if (strcmp (tmp_char, "define_mode_attr") == 0)
     {
-      read_mapping (&modes, modes.attrs, infile);
+      read_mapping (&modes, modes.attrs);
       goto again;
     }
   if (strcmp (tmp_char, "define_mode_iterator") == 0)
     {
-      read_mapping (&modes, modes.iterators, infile);
+      read_mapping (&modes, modes.iterators);
       goto again;
     }
   if (strcmp (tmp_char, "define_code_attr") == 0)
     {
-      read_mapping (&codes, codes.attrs, infile);
+      read_mapping (&codes, codes.attrs);
       goto again;
     }
   if (strcmp (tmp_char, "define_code_iterator") == 0)
     {
-      check_code_iterator (read_mapping (&codes, codes.iterators, infile),
-			   infile);
+      check_code_iterator (read_mapping (&codes, codes.iterators));
       goto again;
     }
-  real_code = (enum rtx_code) find_iterator (&codes, tmp_char, infile);
+  real_code = (enum rtx_code) find_iterator (&codes, tmp_char);
   bellwether_code = BELLWETHER_CODE (real_code);
 
   /* If we end up with an insn expression then we free this space below.  */
@@ -1115,22 +1100,22 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
   /* If what follows is `: mode ', read it and
      store the mode in the rtx.  */
 
-  i = read_skip_spaces (infile);
+  i = read_skip_spaces ();
   if (i == ':')
     {
       unsigned int mode;
 
-      read_name (tmp_char, infile);
+      read_name (tmp_char);
       if (tmp_char[0] != '<' || tmp_char[strlen (tmp_char) - 1] != '>')
-	mode = find_iterator (&modes, tmp_char, infile);
+	mode = find_iterator (&modes, tmp_char);
       else
 	mode = mode_attr_index (mode_maps, tmp_char);
       PUT_MODE (return_rtx, (enum machine_mode) mode);
       if (GET_MODE (return_rtx) != mode)
-	fatal_with_file_and_line (infile, "mode too large");
+	fatal_with_file_and_line ("mode too large");
     }
   else
-    ungetc (i, infile);
+    unread_char (i);
 
   for (i = 0; format_ptr[i] != 0; i++)
     switch (format_ptr[i])
@@ -1142,14 +1127,14 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 
       case 'e':
       case 'u':
-	XEXP (return_rtx, i) = read_rtx_1 (infile, mode_maps);
+	XEXP (return_rtx, i) = read_rtx_1 (mode_maps);
 	break;
 
       case 'V':
 	/* 'V' is an optional vector: if a closeparen follows,
 	   just store NULL for this element.  */
-	c = read_skip_spaces (infile);
-	ungetc (c, infile);
+	c = read_skip_spaces ();
+	unread_char (c);
 	if (c == ')')
 	  {
 	    XVEC (return_rtx, i) = 0;
@@ -1164,19 +1149,19 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	  int list_counter = 0;
 	  rtvec return_vec = NULL_RTVEC;
 
-	  c = read_skip_spaces (infile);
+	  c = read_skip_spaces ();
 	  if (c != '[')
-	    fatal_expected_char (infile, '[', c);
+	    fatal_expected_char ('[', c);
 
 	  /* Add expressions to a list, while keeping a count.  */
 	  obstack_init (&vector_stack);
-	  while ((c = read_skip_spaces (infile)) && c != ']')
+	  while ((c = read_skip_spaces ()) && c != ']')
 	    {
 	      if (c == EOF)
-		fatal_expected_char (infile, ']', c);
-	      ungetc (c, infile);
+		fatal_expected_char (']', c);
+	      unread_char (c);
 	      list_counter++;
-	      obstack_ptr_grow (&vector_stack, read_rtx_1 (infile, mode_maps));
+	      obstack_ptr_grow (&vector_stack, read_rtx_1 (mode_maps));
 	    }
 	  if (list_counter > 0)
 	    {
@@ -1185,8 +1170,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 		      list_counter * sizeof (rtx));
 	    }
 	  else if (format_ptr[i] == 'E')
-	    fatal_with_file_and_line (infile,
-				      "vector must have at least one element");
+	    fatal_with_file_and_line ("vector must have at least one element");
 	  XVEC (return_rtx, i) = return_vec;
 	  obstack_free (&vector_stack, NULL);
 	  /* close bracket gotten */
@@ -1200,8 +1184,8 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	  char *stringbuf;
 	  int star_if_braced;
 
-	  c = read_skip_spaces (infile);
-	  ungetc (c, infile);
+	  c = read_skip_spaces ();
+	  unread_char (c);
 	  if (c == ')')
 	    {
 	      /* 'S' fields are optional and should be NULL if no string
@@ -1217,7 +1201,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	     written with a brace block instead of a string constant.  */
 	  star_if_braced = (format_ptr[i] == 'T');
 
-	  stringbuf = read_string (infile, star_if_braced);
+	  stringbuf = read_string (star_if_braced);
 
 	  /* For insn patterns, we want to provide a default name
 	     based on the file and line, like "*foo.md:12", if the
@@ -1249,8 +1233,8 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	break;
 
       case 'w':
-	read_name (tmp_char, infile);
-	validate_const_int (infile, tmp_char);
+	read_name (tmp_char);
+	validate_const_int (tmp_char);
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 	tmp_wide = atoi (tmp_char);
 #else
@@ -1271,8 +1255,8 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 
       case 'i':
       case 'n':
-	read_name (tmp_char, infile);
-	validate_const_int (infile, tmp_char);
+	read_name (tmp_char);
+	validate_const_int (tmp_char);
 	tmp_int = atoi (tmp_char);
 	XINT (return_rtx, i) = tmp_int;
 	break;
@@ -1281,16 +1265,16 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 	gcc_unreachable ();
       }
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c != ')')
     {
       /* Syntactic sugar for AND and IOR, allowing Lisp-like
 	 arbitrary number of arguments for them.  */
       if (c == '(' && (GET_CODE (return_rtx) == AND
 		       || GET_CODE (return_rtx) == IOR))
-	return read_rtx_variadic (infile, mode_maps, return_rtx);
+	return read_rtx_variadic (mode_maps, return_rtx);
       else
-	fatal_expected_char (infile, ')', c);
+	fatal_expected_char (')', c);
     }
 
   return return_rtx;
@@ -1303,29 +1287,29 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
    is just past the leading parenthesis of x3.  Only works
    for THINGs which are dyadic expressions, e.g. AND, IOR.  */
 static rtx
-read_rtx_variadic (FILE *infile, struct map_value **mode_maps, rtx form)
+read_rtx_variadic (struct map_value **mode_maps, rtx form)
 {
   char c = '(';
   rtx p = form, q;
 
   do
     {
-      ungetc (c, infile);
+      unread_char (c);
 
       q = rtx_alloc (GET_CODE (p));
       PUT_MODE (q, GET_MODE (p));
 
       XEXP (q, 0) = XEXP (p, 1);
-      XEXP (q, 1) = read_rtx_1 (infile, mode_maps);
+      XEXP (q, 1) = read_rtx_1 (mode_maps);
 
       XEXP (p, 1) = q;
       p = q;
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
     }
   while (c == '(');
 
   if (c != ')')
-    fatal_expected_char (infile, ')', c);
+    fatal_expected_char (')', c);
 
   return form;
 }
