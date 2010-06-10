@@ -238,8 +238,7 @@ namespace std
         tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
-      tuple(const tuple& __in)
-      : _Inherited(static_cast<const _Inherited&>(__in)) { }
+      tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
@@ -321,8 +320,7 @@ namespace std
         tuple(_U1&& __a1, _U2&& __a2)
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
-      tuple(const tuple& __in)
-      : _Inherited(static_cast<const _Inherited&>(__in)) { }
+      tuple(const tuple&) = default;
 
       tuple(tuple&& __in)
       : _Inherited(static_cast<_Inherited&&>(__in)) { }
