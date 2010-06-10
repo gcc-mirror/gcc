@@ -883,7 +883,7 @@ case "${host}" in
       fi
     ;;
     *-*-darwin[[912]]*)
-      SYSTEMSPEC="-allow_stack_execute"
+      SYSTEMSPEC="%{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
     ;;
     *)
       SYSTEMSPEC=
