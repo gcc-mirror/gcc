@@ -1,3 +1,9 @@
+2010-06-10  Jan Beulich  <jbeulich@novell.com>
+
+	* configure.ac: Replace $() with ${} when intending to expand
+	variables rather than invoking commands.
+	* configure: Re-generate.
+
 2010-06-09  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* opts-common.c (prune_options): Ensure replacement argv array

@@ -7548,7 +7548,7 @@ test -n "$BISON" || BISON="$MISSING bison"
 # NM
 if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c \
   && test -d ../binutils ; then
-  NM='$(objdir)/../binutils/nm-new'
+  NM='${objdir}/../binutils/nm-new'
 else
   # Extract the first word of "nm", so it can be a program name with args.
 set dummy nm; ac_word=$2
@@ -7593,7 +7593,7 @@ fi
 # AR
 if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c \
   && test -d ../binutils ; then
-  AR='$(objdir)/../binutils/ar'
+  AR='${objdir}/../binutils/ar'
 else
   # Extract the first word of "ar", so it can be a program name with args.
 set dummy ar; ac_word=$2
