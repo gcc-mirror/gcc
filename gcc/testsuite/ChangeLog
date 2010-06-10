@@ -6,7 +6,6 @@
 	PR objc/35996
 	* objc.dg/objc-gc-4.m: Run for all targets, prune new warning.
 	* obj-c++.dg/objc-gc-3.mm: Ditto.
-	2010-04-30  Iain Sandoe <iains@gcc.gnu.org>
 
 2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
 
