@@ -1,5 +1,18 @@
 2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/38273
+	* gfortran.texi: Document that Cray pointers cannot be function
+	results.
+
+2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36234
+	* gfortran.texi: Document lack of support for syntax
+	"complex FUNCTION name*16()", and existence of alternative
+	legacy syntax "complex*16 FUNCTION name()".
+
+2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/43032
 	* intrinsic.texi (FLUSH): Note the difference between FLUSH and
 	POSIX's fsync(), and how to call the latter from Fortran code.

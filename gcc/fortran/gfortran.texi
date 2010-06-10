@@ -1515,10 +1515,10 @@ to Cray pointers and pointees.  Pointees may not have the
 @code{ALLOCATABLE}, @code{INTENT}, @code{OPTIONAL}, @code{DUMMY},
 @code{TARGET}, @code{INTRINSIC}, or @code{POINTER} attributes. Pointers
 may not have the @code{DIMENSION}, @code{POINTER}, @code{TARGET},
-@code{ALLOCATABLE}, @code{EXTERNAL}, or @code{INTRINSIC} attributes.
-Pointees may not occur in more than one pointer statement.  A pointee
-cannot be a pointer.  Pointees cannot occur in equivalence, common, or
-data statements.
+@code{ALLOCATABLE}, @code{EXTERNAL}, or @code{INTRINSIC} attributes, nor
+may they be function results. Pointees may not occur in more than one
+pointer statement.  A pointee cannot be a pointer.  Pointees cannot occur
+in equivalence, common, or data statements.
 
 A Cray pointer may also point to a function or a subroutine.  For
 example, the following excerpt is valid:
@@ -1719,7 +1719,8 @@ code that uses them running with the GNU Fortran compiler.
 @c * TYPE and ACCEPT I/O Statements::
 @c * .XOR. operator::
 @c * CARRIAGECONTROL, DEFAULTFILE, DISPOSE and RECORDTYPE I/O specifiers::
-@c * Omitted arguments in procedure call:
+@c * Omitted arguments in procedure call::
+* Alternate complex function syntax::
 @end menu
 
 
@@ -1892,6 +1893,18 @@ c
       WRITE(FMT,*) N+1
       WRITE(6,"(I" // ADJUSTL(FMT) // ")") INT1
 @end smallexample
+
+
+@node Alternate complex function syntax
+@subsection Alternate complex function syntax
+@cindex Complex function
+
+Some Fortran compilers, including @command{g77}, let the user declare
+complex functions with the syntax @code{COMPLEX FUNCTION name*16()}, as
+well as @code{COMPLEX*16 FUNCTION name()}. Both are non-standard, legacy
+extensions. @command{gfortran} accepts the latter form, which is more
+common, but not the former.
+
 
 
 @c ---------------------------------------------------------------------
