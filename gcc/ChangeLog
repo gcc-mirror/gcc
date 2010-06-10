@@ -1,3 +1,10 @@
+2010-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41371
+	* var-tracking.c (find_loc_in_1pdv): Remove recursion, only
+	tail-recurse into canonical node.  Fast-forward over
+	non-canonical VALUEs.
+
 2010-06-10  Jan Beulich  <jbeulich@novell.com>
 
 	* configure.ac: Replace $() with ${} when intending to expand
