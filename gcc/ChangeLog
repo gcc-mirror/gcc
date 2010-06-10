@@ -1,5 +1,12 @@
 2010-06-10  Martin Jambor  <mjambor@suse.cz>
 
+	* Makefile.in (tree-sra.o): Add DBGCNT_H to dependencies.
+	* dbgcnt.def (tree_sra): New counter.
+	* tree-sra.c: Include dbgcnt.h.
+	(gate_intra_sra): Check tree_sra debug counter.
+
+2010-06-10  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/44258
 	* tree-sra.c (build_access_subtree): Return false iff there is a
 	partial overlap.
