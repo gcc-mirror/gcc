@@ -1,3 +1,9 @@
+2010-06-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/44457
+	* interface.c (compare_actual_formal): Reject actual arguments with
+	array subscript passed to ASYNCHRONOUS dummys.
+
 2010-06-10  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936
