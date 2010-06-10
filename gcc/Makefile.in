@@ -1164,6 +1164,7 @@ OBJS-common = \
 	insn-peep.o \
 	insn-preds.o \
 	insn-recog.o \
+	insn-enums.o \
 	$(GGC) \
 	alias.o \
 	alloc-pool.o \
@@ -3534,6 +3535,7 @@ insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)	\
   dfp.h $(FLAGS_H) output.h insn-config.h hard-reg-set.h $(RECOG_H)	\
   $(RESOURCE_H) reload.h $(TOPLEV_H) $(REGS_H) tm-constrs.h $(GGC_H)	\
   $(BASIC_BLOCK_H) $(INTEGRATE_H)
+insn-enums.o : insn-enums.c $(CONFIG_H) $(SYSTEM_H)
 insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(TM_H) $(RTL_H) $(TOPLEV_H) insn-config.h $(RECOG_H)
 insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	$(TM_H) \
@@ -3573,7 +3575,7 @@ simple_rtl_generated_c	= insn-attrtab.c insn-automata.c insn-emit.c \
 
 simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
 
-simple_generated_c	= $(simple_rtl_generated_c)
+simple_generated_c	= $(simple_rtl_generated_c) insn-enums.c
 
 $(simple_generated_h:insn-%.h=s-%) \
 $(simple_generated_c:insn-%.c=s-%): s-%: $(MD_DEPS)
@@ -3817,6 +3819,8 @@ build/genconstants.o : genconstants.c $(BCONFIG_H) $(SYSTEM_H)		\
   coretypes.h errors.h $(READ_MD_H)
 build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
+build/genenums.o : genenums.c $(BCONFIG_H) $(SYSTEM_H)			\
+  coretypes.h errors.h $(READ_MD_H)
 build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h	\
   vecprim.h
@@ -3859,7 +3863,7 @@ genprogrtl = attr attrtab automata codes conditions config emit \
 $(genprogrtl:%=build/gen%$(build_exeext)): $(BUILD_RTL)
 
 # All these programs use the MD reader ($(BUILD_MD)).
-genprogmd = $(genprogrtl) mddeps constants
+genprogmd = $(genprogrtl) mddeps constants enums
 $(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_MD)
 
 # All generator programs need to report errors
