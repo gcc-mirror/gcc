@@ -1,7 +1,8 @@
 // -*- C++ -*-
 // Testing utilities for the tr1 testsuite.
 //
-// Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -127,7 +128,38 @@ namespace __gnu_test
   {
     ExplicitClass(double&);
     explicit ExplicitClass(int&);
+    ExplicitClass(double&, int&, double&);
   };
+
+  struct NothrowExplicitClass
+  {
+    NothrowExplicitClass(double&) throw();
+    explicit NothrowExplicitClass(int&) throw();
+    NothrowExplicitClass(double&, int&, double&) throw();
+  };
+
+  struct ThrowExplicitClass
+  {
+    ThrowExplicitClass(double&) throw(int);
+    explicit ThrowExplicitClass(int&) throw(int);
+    ThrowExplicitClass(double&, int&, double&) throw(int);
+  };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct NoexceptExplicitClass
+  {
+    NoexceptExplicitClass(double&) noexcept(true);
+    explicit NoexceptExplicitClass(int&) noexcept(true);
+    NoexceptExplicitClass(double&, int&, double&) noexcept(true);
+  };
+
+  struct ExceptExplicitClass
+  {
+    ExceptExplicitClass(double&) noexcept(false);
+    explicit ExceptExplicitClass(int&) noexcept(false);
+    ExceptExplicitClass(double&, int&, double&) noexcept(false);
+  };
+#endif
 
   struct NType   // neither trivial nor standard-layout
   {
