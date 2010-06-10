@@ -715,9 +715,6 @@ DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
    descriptions.  */
 #ifdef GENERATOR_FILE
 
-/* Include a secondary machine-description file at this point.  */
-DEF_RTL_EXPR(INCLUDE, "include", "s", RTX_EXTRA)
-
 /* Pattern-matching operators:  */
 
 /* Use the function named by the second arg (the string)

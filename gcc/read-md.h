@@ -41,10 +41,18 @@ struct md_constant {
   char *value;
 };
 
+/* A callback that handles a single .md-file directive, up to but not
+   including the closing ')'.  It takes two arguments: the line number on
+   which the directive started, and the name of the directive.  The next
+   unread character is the optional space after the directive name.  */
+typedef void (*directive_handler_t) (int, const char *);
+
+extern const char *in_fname;
 extern FILE *read_md_file;
 extern int read_md_lineno;
 extern const char *read_md_filename;
 extern struct obstack string_obstack;
+extern void (*include_callback) (const char *);
 
 /* Read the next character from the MD file.  */
 
@@ -86,6 +94,6 @@ extern char *read_quoted_string (void);
 extern char *read_string (int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
-extern void read_constants (void);
 extern void traverse_md_constants (htab_trav, void *);
-extern void init_md_reader (void);
+extern bool read_md_files (int, char **, bool (*) (const char *),
+			   directive_handler_t);

@@ -117,7 +117,8 @@ static void validate_const_int (const char *);
 static int find_iterator (struct iterator_group *, const char *);
 static struct mapping *read_mapping (struct iterator_group *, htab_t);
 static void check_code_iterator (struct mapping *);
-static rtx read_rtx_1 (struct map_value **);
+static rtx read_rtx_code (const char *, struct map_value **);
+static rtx read_nested_rtx (struct map_value **);
 static rtx read_rtx_variadic (struct map_value **, rtx);
 
 /* The mode and code iterator structures.  */
@@ -691,9 +692,6 @@ read_conditions (void)
 
       add_c_test (expr, value);
     }
-  c = read_skip_spaces ();
-  if (c != ')')
-    fatal_expected_char (')', c);
 }
 
 static void
@@ -785,10 +783,6 @@ read_mapping (struct iterator_group *group, htab_t table)
     }
   while (c != ']');
 
-  c = read_skip_spaces ();
-  if (c != ')')
-    fatal_expected_char (')', c);
-
   return m;
 }
 
@@ -812,74 +806,76 @@ check_code_iterator (struct mapping *iterator)
   bellwether_codes[iterator->index] = bellwether;
 }
 
-/* Read an rtx in printed representation from the MD file and store
-   its core representation in *X.  Also store the line number of the
-   opening '(' in *LINENO.  Return true on success or false if the
-   end of file has been reached.
-
-   read_rtx is not used in the compiler proper, but rather in
-   the utilities gen*.c that construct C code from machine descriptions.  */
+/* Read an rtx-related declaration from the MD file, given that it
+   starts with directive name RTX_NAME.  Return true if it expands to
+   one or more rtxes (as defined by rtx.def).  When returning true,
+   store the list of rtxes as an EXPR_LIST in *X.  */
 
 bool
-read_rtx (rtx *x, int *lineno)
+read_rtx (const char *rtx_name, rtx *x)
 {
-  static rtx queue_head, queue_next;
-  static int queue_lineno;
-  int c;
+  static rtx queue_head;
+  struct map_value *mode_maps;
+  struct iterator_traverse_data mtd;
 
   /* Do one-time initialization.  */
   if (queue_head == 0)
     {
-      init_md_reader ();
       initialize_iterators ();
       queue_head = rtx_alloc (EXPR_LIST);
     }
 
-  if (queue_next == 0)
+  /* Handle various rtx-related declarations that aren't themselves
+     encoded as rtxes.  */
+  if (strcmp (rtx_name, "define_conditions") == 0)
     {
-      struct map_value *mode_maps;
-      struct iterator_traverse_data mtd;
-      rtx from_file;
-
-      c = read_skip_spaces ();
-      if (c == EOF)
-	return false;
-      unread_char (c);
-
-      queue_lineno = read_md_lineno;
-      mode_maps = 0;
-      from_file = read_rtx_1 (&mode_maps);
-      if (from_file == 0)
-	return false;  /* This confuses a top level (nil) with end of
-			  file, but a top level (nil) would have
-			  crashed our caller anyway.  */
-
-      queue_next = queue_head;
-      XEXP (queue_next, 0) = from_file;
-      XEXP (queue_next, 1) = 0;
-
-      mtd.queue = queue_next;
-      mtd.mode_maps = mode_maps;
-      mtd.unknown_mode_attr = mode_maps ? mode_maps->string : NULL;
-      htab_traverse (modes.iterators, apply_iterator_traverse, &mtd);
-      htab_traverse (codes.iterators, apply_iterator_traverse, &mtd);
-      if (mtd.unknown_mode_attr)
-	fatal_with_file_and_line ("undefined attribute '%s' used for mode",
-				  mtd.unknown_mode_attr);
+      read_conditions ();
+      return false;
+    }
+  if (strcmp (rtx_name, "define_mode_attr") == 0)
+    {
+      read_mapping (&modes, modes.attrs);
+      return false;
+    }
+  if (strcmp (rtx_name, "define_mode_iterator") == 0)
+    {
+      read_mapping (&modes, modes.iterators);
+      return false;
+    }
+  if (strcmp (rtx_name, "define_code_attr") == 0)
+    {
+      read_mapping (&codes, codes.attrs);
+      return false;
+    }
+  if (strcmp (rtx_name, "define_code_iterator") == 0)
+    {
+      check_code_iterator (read_mapping (&codes, codes.iterators));
+      return false;
     }
 
-  *x = XEXP (queue_next, 0);
-  *lineno = queue_lineno;
-  queue_next = XEXP (queue_next, 1);
+  mode_maps = 0;
+  XEXP (queue_head, 0) = read_rtx_code (rtx_name, &mode_maps);
+  XEXP (queue_head, 1) = 0;
 
+  mtd.queue = queue_head;
+  mtd.mode_maps = mode_maps;
+  mtd.unknown_mode_attr = mode_maps ? mode_maps->string : NULL;
+  htab_traverse (modes.iterators, apply_iterator_traverse, &mtd);
+  htab_traverse (codes.iterators, apply_iterator_traverse, &mtd);
+  if (mtd.unknown_mode_attr)
+    fatal_with_file_and_line ("undefined attribute '%s' used for mode",
+			      mtd.unknown_mode_attr);
+
+  *x = queue_head;
   return true;
 }
 
-/* Subroutine of read_rtx that reads one construct from the MD file but
-   doesn't apply any iterators.  */
+/* Subroutine of read_rtx and read_nested_rtx.  CODE_NAME is the name of
+   either an rtx code or a code iterator.  Parse the rest of the rtx and
+   return it.  MODE_MAPS is as for iterator_traverse_data.  */
 
 static rtx
-read_rtx_1 (struct map_value **mode_maps)
+read_rtx_code (const char *code_name, struct map_value **mode_maps)
 {
   int i;
   RTX_CODE real_code, bellwether_code;
@@ -897,55 +893,7 @@ read_rtx_1 (struct map_value **mode_maps)
       rtx value;		/* Value of this node.  */
     };
 
- again:
-  c = read_skip_spaces (); /* Should be open paren.  */
-
-  if (c == EOF)
-    return 0;
-
-  if (c != '(')
-    fatal_expected_char ('(', c);
-
-  read_name (&name);
-  if (strcmp (name.string, "nil") == 0)
-    {
-      /* (nil) stands for an expression that isn't there.  */
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
-      return 0;
-    }
-  if (strcmp (name.string, "define_constants") == 0)
-    {
-      read_constants ();
-      goto again;
-    }
-  if (strcmp (name.string, "define_conditions") == 0)
-    {
-      read_conditions ();
-      goto again;
-    }
-  if (strcmp (name.string, "define_mode_attr") == 0)
-    {
-      read_mapping (&modes, modes.attrs);
-      goto again;
-    }
-  if (strcmp (name.string, "define_mode_iterator") == 0)
-    {
-      read_mapping (&modes, modes.iterators);
-      goto again;
-    }
-  if (strcmp (name.string, "define_code_attr") == 0)
-    {
-      read_mapping (&codes, codes.attrs);
-      goto again;
-    }
-  if (strcmp (name.string, "define_code_iterator") == 0)
-    {
-      check_code_iterator (read_mapping (&codes, codes.iterators));
-      goto again;
-    }
-  real_code = (enum rtx_code) find_iterator (&codes, name.string);
+  real_code = (enum rtx_code) find_iterator (&codes, code_name);
   bellwether_code = BELLWETHER_CODE (real_code);
 
   /* If we end up with an insn expression then we free this space below.  */
@@ -983,7 +931,7 @@ read_rtx_1 (struct map_value **mode_maps)
 
       case 'e':
       case 'u':
-	XEXP (return_rtx, i) = read_rtx_1 (mode_maps);
+	XEXP (return_rtx, i) = read_nested_rtx (mode_maps);
 	break;
 
       case 'V':
@@ -1017,7 +965,7 @@ read_rtx_1 (struct map_value **mode_maps)
 		fatal_expected_char (']', c);
 	      unread_char (c);
 	      list_counter++;
-	      obstack_ptr_grow (&vector_stack, read_rtx_1 (mode_maps));
+	      obstack_ptr_grow (&vector_stack, read_nested_rtx (mode_maps));
 	    }
 	  if (list_counter > 0)
 	    {
@@ -1122,16 +1070,40 @@ read_rtx_1 (struct map_value **mode_maps)
       }
 
   c = read_skip_spaces ();
+  /* Syntactic sugar for AND and IOR, allowing Lisp-like
+     arbitrary number of arguments for them.  */
+  if (c == '('
+      && (GET_CODE (return_rtx) == AND
+	  || GET_CODE (return_rtx) == IOR))
+    return read_rtx_variadic (mode_maps, return_rtx);
+
+  unread_char (c);
+  return return_rtx;
+}
+
+/* Read a nested rtx construct from the MD file and return it.
+   MODE_MAPS is as for iterator_traverse_data.  */
+
+static rtx
+read_nested_rtx (struct map_value **mode_maps)
+{
+  struct md_name name;
+  int c;
+  rtx return_rtx;
+
+  c = read_skip_spaces ();
+  if (c != '(')
+    fatal_expected_char ('(', c);
+
+  read_name (&name);
+  if (strcmp (name.string, "nil") == 0)
+    return_rtx = NULL;
+  else
+    return_rtx = read_rtx_code (name.string, mode_maps);
+
+  c = read_skip_spaces ();
   if (c != ')')
-    {
-      /* Syntactic sugar for AND and IOR, allowing Lisp-like
-	 arbitrary number of arguments for them.  */
-      if (c == '(' && (GET_CODE (return_rtx) == AND
-		       || GET_CODE (return_rtx) == IOR))
-	return read_rtx_variadic (mode_maps, return_rtx);
-      else
-	fatal_expected_char (')', c);
-    }
+    fatal_expected_char (')', c);
 
   return return_rtx;
 }
@@ -1156,16 +1128,13 @@ read_rtx_variadic (struct map_value **mode_maps, rtx form)
       PUT_MODE (q, GET_MODE (p));
 
       XEXP (q, 0) = XEXP (p, 1);
-      XEXP (q, 1) = read_rtx_1 (mode_maps);
+      XEXP (q, 1) = read_nested_rtx (mode_maps);
 
       XEXP (p, 1) = q;
       p = q;
       c = read_skip_spaces ();
     }
   while (c == '(');
-
-  if (c != ')')
-    fatal_expected_char (')', c);
-
+  unread_char (c);
   return form;
 }

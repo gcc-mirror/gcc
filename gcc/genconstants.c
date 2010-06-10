@@ -52,7 +52,7 @@ main (int argc, char **argv)
 {
   progname = "genconstants";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Initializing the MD reader has the side effect of loading up

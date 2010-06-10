@@ -35,12 +35,6 @@ int target_flags;
 
 int insn_elision = 1;
 
-const char *in_fname;
-
-/* This callback will be invoked whenever an rtl include directive is
-   processed.  To be used for creation of the dependency file.  */
-void (*include_callback) (const char *);
-
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
@@ -51,8 +45,6 @@ static const char *predicable_true;
 static const char *predicable_false;
 
 static htab_t condition_table;
-
-static char *base_dir = NULL;
 
 /* We initially queue all patterns, process the define_insn and
    define_cond_exec patterns, then return them one at a time.  */
@@ -82,22 +74,6 @@ static struct queue_elem **other_tail = &other_queue;
 static struct queue_elem *queue_pattern (rtx, struct queue_elem ***,
 					 const char *, int);
 
-/* Current maximum length of directory names in the search path
-   for include files.  (Altered as we get more of them.)  */
-
-size_t max_include_len;
-
-struct file_name_list
-  {
-    struct file_name_list *next;
-    const char *fname;
-  };
-
-struct file_name_list *first_dir_md_include = 0;  /* First dir to search */
-        /* First dir to search for <file> */
-struct file_name_list *first_bracket_include = 0;
-struct file_name_list *last_dir_md_include = 0;        /* Last in chain */
-
 static void remove_constraints (rtx);
 static void process_rtx (rtx, int);
 
@@ -114,8 +90,6 @@ static const char *alter_output_for_insn (struct queue_elem *,
 					  int, int);
 static void process_one_cond_exec (struct queue_elem *);
 static void process_define_cond_exec (void);
-static void process_include (rtx, int);
-static char *save_string (const char *, int);
 static void init_predicate_table (void);
 static void record_insn_name (int, const char *);
 
@@ -183,76 +157,6 @@ remove_constraints (rtx part)
       }
 }
 
-/* Process an include file assuming that it lives in gcc/config/{target}/
-   if the include looks like (include "file").  */
-
-static void
-process_include (rtx desc, int lineno)
-{
-  const char *filename = XSTR (desc, 0);
-  const char *old_filename;
-  int old_lineno;
-  char *pathname;
-  FILE *input_file, *old_file;
-
-  /* If specified file name is absolute, skip the include stack.  */
-  if (! IS_ABSOLUTE_PATH (filename))
-    {
-      struct file_name_list *stackp;
-
-      /* Search directory path, trying to open the file.  */
-      for (stackp = first_dir_md_include; stackp; stackp = stackp->next)
-	{
-	  static const char sep[2] = { DIR_SEPARATOR, '\0' };
-
-	  pathname = concat (stackp->fname, sep, filename, NULL);
-	  input_file = fopen (pathname, "r");
-	  if (input_file != NULL)
-	    goto success;
-	  free (pathname);
-	}
-    }
-
-  if (base_dir)
-    pathname = concat (base_dir, filename, NULL);
-  else
-    pathname = xstrdup (filename);
-  input_file = fopen (pathname, "r");
-  if (input_file == NULL)
-    {
-      free (pathname);
-      error_with_line (lineno, "include file `%s' not found", filename);
-      return;
-    }
- success:
-
-  /* Save old cursor; setup new for the new file.  Note that "lineno" the
-     argument to this function is the beginning of the include statement,
-     while read_md_lineno has already been advanced.  */
-  old_file = read_md_file;
-  old_filename = read_md_filename;
-  old_lineno = read_md_lineno;
-  read_md_file = input_file;
-  read_md_filename = pathname;
-  read_md_lineno = 1;
-
-  if (include_callback)
-    include_callback (pathname);
-
-  /* Read the entire file.  */
-  while (read_rtx (&desc, &lineno))
-    process_rtx (desc, lineno);
-
-  /* Do not free pathname.  It is attached to the various rtx queue
-     elements.  */
-
-  read_md_file = old_file;
-  read_md_filename = old_filename;
-  read_md_lineno = old_lineno;
-
-  fclose (input_file);
-}
-
 /* Process a top level rtx in some way, queuing as appropriate.  */
 
 static void
@@ -279,10 +183,6 @@ process_rtx (rtx desc, int lineno)
     case DEFINE_MEMORY_CONSTRAINT:
     case DEFINE_ADDRESS_CONSTRAINT:
       queue_pattern (desc, &define_pred_tail, read_md_filename, lineno);
-      break;
-
-    case INCLUDE:
-      process_include (desc, lineno);
       break;
 
     case DEFINE_INSN_AND_SPLIT:
@@ -868,178 +768,46 @@ process_define_cond_exec (void)
   for (elem = define_cond_exec_queue; elem ; elem = elem->next)
     process_one_cond_exec (elem);
 }
+
+/* A read_md_files callback for reading an rtx.  */
 
-static char *
-save_string (const char *s, int len)
+static void
+rtx_handle_directive (int lineno, const char *rtx_name)
 {
-  char *result = XNEWVEC (char, len + 1);
+  rtx queue, x;
 
-  memcpy (result, s, len);
-  result[len] = 0;
-  return result;
+  if (read_rtx (rtx_name, &queue))
+    for (x = queue; x; x = XEXP (x, 1))
+      process_rtx (XEXP (x, 0), lineno);
 }
 
-
 /* The entry point for initializing the reader.  */
 
-int
-init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
+bool
+init_rtx_reader_args_cb (int argc, char **argv,
+			 bool (*parse_opt) (const char *))
 {
-  int c, i, lineno;
-  char *lastsl;
-  rtx desc;
-  bool no_more_options;
-  bool already_read_stdin;
-
-  /* Unlock the stdio streams.  */
-  unlock_std_streams ();
-
-  /* First we loop over all the options.  */
-  for (i = 1; i < argc; i++)
-    {
-      if (argv[i][0] != '-')
-	continue;
-
-      c = argv[i][1];
-      switch (c)
-	{
-	case 'I':		/* Add directory to path for includes.  */
-	  {
-	    struct file_name_list *dirtmp;
-
-	    dirtmp = XNEW (struct file_name_list);
-	    dirtmp->next = 0;	/* New one goes on the end */
-	    if (first_dir_md_include == 0)
-	      first_dir_md_include = dirtmp;
-	    else
-	      last_dir_md_include->next = dirtmp;
-	    last_dir_md_include = dirtmp;	/* Tail follows the last one */
-	    if (argv[i][1] == 'I' && argv[i][2] != 0)
-	      dirtmp->fname = argv[i] + 2;
-	    else if (i + 1 == argc)
-	      fatal ("directory name missing after -I option");
-	    else
-	      dirtmp->fname = argv[++i];
-	    if (strlen (dirtmp->fname) > max_include_len)
-	      max_include_len = strlen (dirtmp->fname);
-	  }
-	  break;
-
-	case '\0':
-	  /* An argument consisting of exactly one dash is a request to
-	     read stdin.  This will be handled in the second loop.  */
-	  continue;
-
-	case '-':
-	  /* An argument consisting of just two dashes causes option
-	     parsing to cease.  */
-	  if (argv[i][2] == '\0')
-	    goto stop_parsing_options;
-
-	default:
-	  /* The program may have provided a callback so it can
-	     accept its own options.  */
-	  if (parse_opt && parse_opt (argv[i]))
-	    break;
-
-	  fatal ("invalid option `%s'", argv[i]);
-	}
-    }
-
- stop_parsing_options:
-
   /* Prepare to read input.  */
   condition_table = htab_create (500, hash_c_test, cmp_c_test, NULL);
   init_predicate_table ();
   obstack_init (rtl_obstack);
   sequence_num = 0;
-  no_more_options = false;
-  already_read_stdin = false;
 
-
-  /* Now loop over all input files.  */
-  for (i = 1; i < argc; i++)
-    {
-      if (argv[i][0] == '-')
-	{
-	  if (argv[i][1] == '\0')
-	    {
-	      /* Read stdin.  */
-	      if (already_read_stdin)
-		fatal ("cannot read standard input twice");
-
-	      base_dir = NULL;
-	      read_md_file = stdin;
-	      read_md_filename = in_fname = "<stdin>";
-	      read_md_lineno = 1;
-	      already_read_stdin = true;
-
-	      while (read_rtx (&desc, &lineno))
-		process_rtx (desc, lineno);
-	      fclose (read_md_file);
-	      continue;
-	    }
-	  else if (argv[i][1] == '-' && argv[i][2] == '\0')
-	    {
-	      /* No further arguments are to be treated as options.  */
-	      no_more_options = true;
-	      continue;
-	    }
-	  else if (!no_more_options)
-	    continue;
-	}
-
-      /* If we get here we are looking at a non-option argument, i.e.
-	 a file to be processed.  */
-
-      in_fname = argv[i];
-      lastsl = strrchr (in_fname, '/');
-      if (lastsl != NULL)
-	base_dir = save_string (in_fname, lastsl - in_fname + 1 );
-      else
-	base_dir = NULL;
-
-      read_md_file = fopen (in_fname, "r");
-      if (read_md_file == 0)
-	{
-	  perror (in_fname);
-	  return FATAL_EXIT_CODE;
-	}
-      read_md_filename = in_fname;
-      read_md_lineno = 1;
-
-      while (read_rtx (&desc, &lineno))
-	process_rtx (desc, lineno);
-      fclose (read_md_file);
-    }
-
-  /* If we get to this point without having seen any files to process,
-     read standard input now.  */
-  if (!in_fname)
-    {
-      base_dir = NULL;
-      read_md_file = stdin;
-      read_md_filename = in_fname = "<stdin>";
-      read_md_lineno = 1;
-
-      while (read_rtx (&desc, &lineno))
-	process_rtx (desc, lineno);
-      fclose (read_md_file);
-    }
+  read_md_files (argc, argv, parse_opt, rtx_handle_directive);
 
   /* Process define_cond_exec patterns.  */
   if (define_cond_exec_queue != NULL)
     process_define_cond_exec ();
 
-  return have_error ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+  return !have_error;
 }
 
 /* Programs that don't have their own options can use this entry point
    instead.  */
-int
-init_md_reader_args (int argc, char **argv)
+bool
+init_rtx_reader_args (int argc, char **argv)
 {
-  return init_md_reader_args_cb (argc, argv, 0);
+  return init_rtx_reader_args_cb (argc, argv, 0);
 }
 
 /* The entry point for reading a single rtx from an md file.  */
