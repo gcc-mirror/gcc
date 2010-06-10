@@ -1,3 +1,8 @@
+2010-06-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44258
+	* gcc.dg/tree-ssa/pr44258.c: New test.
+
 2010-06-10  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936
