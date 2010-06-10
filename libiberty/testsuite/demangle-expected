@@ -3951,6 +3951,9 @@ decltype (({parm#1}.(operator-))()) h<A>(A)
 --format=gnu-v3
 _Z1fDn
 f(decltype(nullptr))
+--format=gnu-v3
+_ZN5aaaaa6bbbbbb5cccccIN23ddddddddddddddddddddddd3eeeENS2_4ffff16ggggggggggggggggENS0_9hhhhhhhhhES6_S6_S6_S6_S6_S6_S6_EE
+aaaaa::bbbbbb::ccccc<ddddddddddddddddddddddd::eee, ddddddddddddddddddddddd::ffff::gggggggggggggggg, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh>
 #
 # Ada (GNAT) tests.
 #
