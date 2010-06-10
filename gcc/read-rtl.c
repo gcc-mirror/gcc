@@ -35,6 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 
 static htab_t md_constants;
 
+/* Holds one symbol or number in the .md file.  */
+struct md_name {
+  /* The name as it appeared in the .md file.  Names are syntactically
+     limited to the length of this buffer.  */
+  char buffer[256];
+
+  /* The name that should actually be used by the generator programs.
+     This is an expansion of NAME, after things like constant substitution.  */
+  char *string;
+};
+
 /* One element in a singly-linked list of (integer, string) pairs.  */
 struct map_value {
   struct map_value *next;
@@ -114,11 +125,11 @@ static struct mapping *add_mapping (struct iterator_group *, htab_t t,
 static struct map_value **add_map_value (struct map_value **,
 					 int, const char *);
 static void initialize_iterators (void);
-static void read_name (char *);
+static void read_name (struct md_name *);
 static hashval_t def_hash (const void *);
 static int def_name_eq_p (const void *, const void *);
-static void read_constants (char *tmp_char);
-static void read_conditions (char *tmp_char);
+static void read_constants (void);
+static void read_conditions (void);
 static void validate_const_int (const char *);
 static int find_iterator (struct iterator_group *, const char *);
 static struct mapping *read_mapping (struct iterator_group *, htab_t);
@@ -611,21 +622,22 @@ initialize_iterators (void)
     }
 }
 
-/* Read an rtx code name into the buffer STR[].
-   It is terminated by any of the punctuation chars of rtx printed syntax.  */
+/* Read an rtx code name into NAME.  It is terminated by any of the
+   punctuation chars of rtx printed syntax.  */
 
 static void
-read_name (char *str)
+read_name (struct md_name *name)
 {
-  char *p;
   int c;
+  size_t i;
 
   c = read_skip_spaces ();
 
-  p = str;
+  i = 0;
   while (1)
     {
-      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r' || c == EOF)
+      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r'
+	  || c == EOF)
 	break;
       if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
 	  || c == '(' || c == '[')
@@ -633,33 +645,37 @@ read_name (char *str)
 	  unread_char (c);
 	  break;
 	}
-      *p++ = c;
+
+      if (i == sizeof (name->buffer) - 1)
+	fatal_with_file_and_line ("name too long");
+      name->buffer[i++] = c;
+
       c = read_char ();
     }
-  if (p == str)
+
+  if (i == 0)
     fatal_with_file_and_line ("missing name or number");
   if (c == '\n')
     read_md_lineno++;
 
-  *p = 0;
+  name->buffer[i] = 0;
+  name->string = name->buffer;
 
   if (md_constants)
     {
       /* Do constant expansion.  */
       struct md_constant *def;
 
-      p = str;
       do
 	{
 	  struct md_constant tmp_def;
 
-	  tmp_def.name = p;
+	  tmp_def.name = name->string;
 	  def = (struct md_constant *) htab_find (md_constants, &tmp_def);
 	  if (def)
-	    p = def->value;
-	} while (def);
-      if (p != str)
-	strcpy (str, p);
+	    name->string = def->value;
+	}
+      while (def);
     }
 }
 
@@ -723,11 +739,10 @@ def_name_eq_p (const void *def1, const void *def2)
 		   *(const char *const *) def2);
 }
 
-/* TMP_CHAR is a buffer suitable to read a name or number into.  Process
-   a define_constants directive, starting with the optional space after
-   the "define_constants".  */
+/* Process a define_constants directive, starting with the optional space
+   after the "define_constants".  */
 static void
-read_constants (char *tmp_char)
+read_constants (void)
 {
   int c;
   htab_t defs;
@@ -735,37 +750,42 @@ read_constants (char *tmp_char)
   c = read_skip_spaces ();
   if (c != '[')
     fatal_expected_char ('[', c);
+
   defs = md_constants;
   if (! defs)
     defs = htab_create (32, def_hash, def_name_eq_p, (htab_del) 0);
+
   /* Disable constant expansion during definition processing.  */
   md_constants = 0;
   while ( (c = read_skip_spaces ()) != ']')
     {
-      struct md_constant *def;
+      struct md_name name, value;
+      struct md_constant *def, tmp_def;
       void **entry_ptr;
 
       if (c != '(')
 	fatal_expected_char ('(', c);
-      def = XNEW (struct md_constant);
-      def->name = tmp_char;
-      read_name (tmp_char);
-      entry_ptr = htab_find_slot (defs, def, INSERT);
-      if (! *entry_ptr)
-	def->name = xstrdup (tmp_char);
-      read_name (tmp_char);
-      if (! *entry_ptr)
+
+      read_name (&name);
+      read_name (&value);
+
+      tmp_def.name = name.string;
+      entry_ptr = htab_find_slot (defs, &tmp_def, INSERT);
+      if (*entry_ptr)
 	{
-	  def->value = xstrdup (tmp_char);
-	  *entry_ptr = def;
+	  def = (struct md_constant *) *entry_ptr;
+	  if (strcmp (def->value, value.string) != 0)
+	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
+				      def->name, def->value, value.string);
 	}
       else
 	{
-	  def = (struct md_constant *) *entry_ptr;
-	  if (strcmp (def->value, tmp_char))
-	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
-				      def->name, def->value, tmp_char);
+	  def = XNEW (struct md_constant);
+	  def->name = xstrdup (name.string);
+	  def->value = xstrdup (value.string);
+	  *entry_ptr = def;
 	}
+
       c = read_skip_spaces ();
       if (c != ')')
 	fatal_expected_char (')', c);
@@ -786,9 +806,8 @@ traverse_md_constants (htab_trav callback, void *info)
     htab_traverse (md_constants, callback, info);
 }
 
-/* TMP_CHAR is a buffer suitable to read a name or number into.  Process
-   a define_conditions directive, starting with the optional space after
-   the "define_conditions".  The directive looks like this:
+/* Process a define_conditions directive, starting with the optional
+   space after the "define_conditions".  The directive looks like this:
 
      (define_conditions [
         (number "string")
@@ -801,7 +820,7 @@ traverse_md_constants (htab_trav callback, void *info)
    slipped in at the beginning of the sequence of MD files read by
    most of the other generators.  */
 static void
-read_conditions (char *tmp_char)
+read_conditions (void)
 {
   int c;
 
@@ -811,15 +830,16 @@ read_conditions (char *tmp_char)
 
   while ( (c = read_skip_spaces ()) != ']')
     {
+      struct md_name name;
       char *expr;
       int value;
 
       if (c != '(')
 	fatal_expected_char ('(', c);
 
-      read_name (tmp_char);
-      validate_const_int (tmp_char);
-      value = atoi (tmp_char);
+      read_name (&name);
+      validate_const_int (name.string);
+      value = atoi (name.string);
 
       c = read_skip_spaces ();
       if (c != '"')
@@ -884,15 +904,15 @@ find_iterator (struct iterator_group *group, const char *name)
 static struct mapping *
 read_mapping (struct iterator_group *group, htab_t table)
 {
-  char tmp_char[256];
+  struct md_name name;
   struct mapping *m;
   struct map_value **end_ptr;
   const char *string;
   int number, c;
 
   /* Read the mapping name and create a structure for it.  */
-  read_name (tmp_char);
-  m = add_mapping (group, table, tmp_char);
+  read_name (&name);
+  m = add_mapping (group, table, name.string);
 
   c = read_skip_spaces ();
   if (c != '[')
@@ -908,19 +928,19 @@ read_mapping (struct iterator_group *group, htab_t table)
 	  /* A bare symbol name that is implicitly paired to an
 	     empty string.  */
 	  unread_char (c);
-	  read_name (tmp_char);
+	  read_name (&name);
 	  string = "";
 	}
       else
 	{
 	  /* A "(name string)" pair.  */
-	  read_name (tmp_char);
+	  read_name (&name);
 	  string = read_string (false);
 	  c = read_skip_spaces ();
 	  if (c != ')')
 	    fatal_expected_char (')', c);
 	}
-      number = group->find_builtin (tmp_char);
+      number = group->find_builtin (name.string);
       end_ptr = add_map_value (end_ptr, number, string);
       c = read_skip_spaces ();
     }
@@ -1025,10 +1045,7 @@ read_rtx_1 (struct map_value **mode_maps)
   int i;
   RTX_CODE real_code, bellwether_code;
   const char *format_ptr;
-  /* tmp_char is a buffer used for reading decimal integers
-     and names of rtx types and machine modes.
-     Therefore, 256 must be enough.  */
-  char tmp_char[256];
+  struct md_name name;
   rtx return_rtx;
   int c;
   int tmp_int;
@@ -1050,8 +1067,8 @@ read_rtx_1 (struct map_value **mode_maps)
   if (c != '(')
     fatal_expected_char ('(', c);
 
-  read_name (tmp_char);
-  if (strcmp (tmp_char, "nil") == 0)
+  read_name (&name);
+  if (strcmp (name.string, "nil") == 0)
     {
       /* (nil) stands for an expression that isn't there.  */
       c = read_skip_spaces ();
@@ -1059,37 +1076,37 @@ read_rtx_1 (struct map_value **mode_maps)
 	fatal_expected_char (')', c);
       return 0;
     }
-  if (strcmp (tmp_char, "define_constants") == 0)
+  if (strcmp (name.string, "define_constants") == 0)
     {
-      read_constants (tmp_char);
+      read_constants ();
       goto again;
     }
-  if (strcmp (tmp_char, "define_conditions") == 0)
+  if (strcmp (name.string, "define_conditions") == 0)
     {
-      read_conditions (tmp_char);
+      read_conditions ();
       goto again;
     }
-  if (strcmp (tmp_char, "define_mode_attr") == 0)
+  if (strcmp (name.string, "define_mode_attr") == 0)
     {
       read_mapping (&modes, modes.attrs);
       goto again;
     }
-  if (strcmp (tmp_char, "define_mode_iterator") == 0)
+  if (strcmp (name.string, "define_mode_iterator") == 0)
     {
       read_mapping (&modes, modes.iterators);
       goto again;
     }
-  if (strcmp (tmp_char, "define_code_attr") == 0)
+  if (strcmp (name.string, "define_code_attr") == 0)
     {
       read_mapping (&codes, codes.attrs);
       goto again;
     }
-  if (strcmp (tmp_char, "define_code_iterator") == 0)
+  if (strcmp (name.string, "define_code_iterator") == 0)
     {
       check_code_iterator (read_mapping (&codes, codes.iterators));
       goto again;
     }
-  real_code = (enum rtx_code) find_iterator (&codes, tmp_char);
+  real_code = (enum rtx_code) find_iterator (&codes, name.string);
   bellwether_code = BELLWETHER_CODE (real_code);
 
   /* If we end up with an insn expression then we free this space below.  */
@@ -1105,11 +1122,11 @@ read_rtx_1 (struct map_value **mode_maps)
     {
       unsigned int mode;
 
-      read_name (tmp_char);
-      if (tmp_char[0] != '<' || tmp_char[strlen (tmp_char) - 1] != '>')
-	mode = find_iterator (&modes, tmp_char);
+      read_name (&name);
+      if (name.string[0] != '<' || name.string[strlen (name.string) - 1] != '>')
+	mode = find_iterator (&modes, name.string);
       else
-	mode = mode_attr_index (mode_maps, tmp_char);
+	mode = mode_attr_index (mode_maps, name.string);
       PUT_MODE (return_rtx, (enum machine_mode) mode);
       if (GET_MODE (return_rtx) != mode)
 	fatal_with_file_and_line ("mode too large");
@@ -1233,20 +1250,20 @@ read_rtx_1 (struct map_value **mode_maps)
 	break;
 
       case 'w':
-	read_name (tmp_char);
-	validate_const_int (tmp_char);
+	read_name (&name);
+	validate_const_int (name.string);
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	tmp_wide = atoi (tmp_char);
+	tmp_wide = atoi (name.string);
 #else
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-	tmp_wide = atol (tmp_char);
+	tmp_wide = atol (name.string);
 #else
 	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
 	   But prefer not to use our hand-rolled function above either.  */
 #if defined(HAVE_ATOLL) || !defined(HAVE_ATOQ)
-	tmp_wide = atoll (tmp_char);
+	tmp_wide = atoll (name.string);
 #else
-	tmp_wide = atoq (tmp_char);
+	tmp_wide = atoq (name.string);
 #endif
 #endif
 #endif
@@ -1255,9 +1272,9 @@ read_rtx_1 (struct map_value **mode_maps)
 
       case 'i':
       case 'n':
-	read_name (tmp_char);
-	validate_const_int (tmp_char);
-	tmp_int = atoi (tmp_char);
+	read_name (&name);
+	validate_const_int (name.string);
+	tmp_int = atoi (name.string);
 	XINT (return_rtx, i) = tmp_int;
 	break;
 
