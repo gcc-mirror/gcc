@@ -471,7 +471,7 @@ error_print (const char *type, const char *format0, va_list argp)
   locus *l1, *l2, *loc;
   const char *format;
 
-  l1 = l2 = NULL;
+  loc = l1 = l2 = NULL;
 
   have_l1 = 0;
   pos = -1;

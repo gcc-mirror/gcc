@@ -845,11 +845,13 @@ resolve_omp_clauses (gfc_code *code)
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE && list != OMP_LIST_LASTPRIVATE)
       for (n = omp_clauses->lists[list]; n; n = n->next)
-	if (n->sym->mark)
-	  gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		     n->sym->name, &code->loc);
-	else
-	  n->sym->mark = 1;
+	{
+	  if (n->sym->mark)
+	    gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		       n->sym->name, &code->loc);
+	  else
+	    n->sym->mark = 1;
+	}
 
   gcc_assert (OMP_LIST_LASTPRIVATE == OMP_LIST_FIRSTPRIVATE + 1);
   for (list = OMP_LIST_FIRSTPRIVATE; list <= OMP_LIST_LASTPRIVATE; list++)
@@ -862,22 +864,24 @@ resolve_omp_clauses (gfc_code *code)
 	}
 
   for (n = omp_clauses->lists[OMP_LIST_FIRSTPRIVATE]; n; n = n->next)
-    if (n->sym->mark)
-      gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		 n->sym->name, &code->loc);
-    else
-      n->sym->mark = 1;
-
+    {
+      if (n->sym->mark)
+	gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		   n->sym->name, &code->loc);
+      else
+	n->sym->mark = 1;
+    }
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
     n->sym->mark = 0;
 
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
-    if (n->sym->mark)
-      gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		 n->sym->name, &code->loc);
-    else
-      n->sym->mark = 1;
-
+    {
+      if (n->sym->mark)
+	gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		   n->sym->name, &code->loc);
+      else
+	n->sym->mark = 1;
+    }
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
