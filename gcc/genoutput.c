@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 /* No instruction can have more operands than this.  Sorry for this

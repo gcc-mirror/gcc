@@ -29,9 +29,6 @@ extern int init_md_reader_args_cb (int, char **, bool (*)(const char *));
 extern int init_md_reader_args (int, char **);
 extern rtx read_md_rtx (int *, int *);
 
-extern void message_with_line (int, const char *, ...)
-     ATTRIBUTE_PRINTF_2;
-
 /* Set this to 0 to disable automatic elision of insn patterns which
    can never be used in this configuration.  See genconditions.c.
    Must be set before calling init_md_reader.  */
@@ -59,9 +56,6 @@ extern hashval_t hash_c_test (const void *);
 extern int cmp_c_test (const void *, const void *);
 extern void traverse_c_tests (htab_trav, void *);
 #endif
-
-extern int n_comma_elts	(const char *);
-extern const char *scan_comma_elt (const char **);
 
 /* Predicate handling: helper functions and data structures.  */
 

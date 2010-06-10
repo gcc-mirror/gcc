@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "errors.h"
 #include "obstack.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 /* Given a predicate expression EXP, from form NAME at line LINENO,

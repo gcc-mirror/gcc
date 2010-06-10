@@ -33,6 +33,7 @@
 #include "rtl.h"
 #include "errors.h"
 #include "hashtab.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 /* so we can include except.h in the generated file.  */

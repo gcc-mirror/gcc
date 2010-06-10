@@ -29,9 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <iconv.h>
 #endif
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free  free
-
 /* A pointer to the formatted diagnostic message.  */
 #define pp_formatted_text_data(PP) \
    ((const char *) obstack_base (pp_base (PP)->buffer->obstack))

@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 /* Obstack to remember insns with.  */

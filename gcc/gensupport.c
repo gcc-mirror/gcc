@@ -26,6 +26,7 @@
 #include "obstack.h"
 #include "errors.h"
 #include "hashtab.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 
@@ -119,20 +120,6 @@ static char *save_string (const char *, int);
 static void init_predicate_table (void);
 static void record_insn_name (int, const char *);
 
-void
-message_with_line (int lineno, const char *msg, ...)
-{
-  va_list ap;
-
-  va_start (ap, msg);
-
-  fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
-  vfprintf (stderr, msg, ap);
-  fputc ('\n', stderr);
-
-  va_end (ap);
-}
-
 /* Make a version of gen_rtx_CONST_INT so that GEN_INT can be used in
    the gensupport programs.  */
 
@@ -1225,53 +1212,6 @@ traverse_c_tests (htab_trav callback, void *info)
 {
   if (condition_table)
     htab_traverse (condition_table, callback, info);
-}
-
-
-/* Given a string, return the number of comma-separated elements in it.
-   Return 0 for the null string.  */
-int
-n_comma_elts (const char *s)
-{
-  int n;
-
-  if (*s == '\0')
-    return 0;
-
-  for (n = 1; *s; s++)
-    if (*s == ',')
-      n++;
-
-  return n;
-}
-
-/* Given a pointer to a (char *), return a pointer to the beginning of the
-   next comma-separated element in the string.  Advance the pointer given
-   to the end of that element.  Return NULL if at end of string.  Caller
-   is responsible for copying the string if necessary.  White space between
-   a comma and an element is ignored.  */
-
-const char *
-scan_comma_elt (const char **pstr)
-{
-  const char *start;
-  const char *p = *pstr;
-
-  if (*p == ',')
-    p++;
-  while (ISSPACE(*p))
-    p++;
-
-  if (*p == '\0')
-    return NULL;
-
-  start = p;
-
-  while (*p != ',' && *p != '\0')
-    p++;
-
-  *pstr = p;
-  return start;
 }
 
 /* Helper functions for define_predicate and define_special_predicate

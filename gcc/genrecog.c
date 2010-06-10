@@ -56,6 +56,7 @@
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \

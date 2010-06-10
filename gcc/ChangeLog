@@ -1,3 +1,47 @@
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* Makefile.in (READ_MD_H): New variable.
+	(BUILD_RTL): Add build/read-md.o.
+	(lto-wrapper.o): Depend on coretypes.h instead of defaults.h.
+	(build/gensupport.o, build/read-rtl.o, build/genattr.o)
+	(build/genattrtab.o, build/genconditions.o build/genemit.o)
+	(build/genextract.o, build/genflags.o, build/genoutput.o)
+	(build/genpreds.o, build/genrecog.o): Depend on $(READ_MD_H).
+	(build/read-md.o): New rule.
+	* defaults.h (obstack_chunk_alloc, obstack_chunk_free)
+	(OBSTACK_CHUNK_SIZE, gcc_obstack_init): Move to...
+	* coretypes.h: ...here.
+	* lto-wrapper.c: Include coretypes.h instead of defaults.h.
+	* pretty-print.c (obstack_chunk_alloc, obstack_chunk_free): Delete.
+	* genattr.c: Include read-md.h.
+	* genattrtab.c: Likewise.
+	* genconditions.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* genflags.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpreds.c: Likewise.
+	* genrecog.c: Likewise.
+	* rtl.h (read_skip_spaces, copy_rtx_ptr_loc, print_rtx_ptr_loc)
+	(join_c_conditions, print_c_condition, read_rtx_filename)
+	(read_rtx_lineno): Move to read-md.h.
+	* read-rtl.c: Include read-md.h.
+	(ptr_loc, string_obstack, ptr_locs, ptr_loc_obstack)
+	(joined_conditions, joined_conditions_obstack, read_rtx_lineno)
+	(read_rtx_filename, fatal_with_file_and_line, fatal_expected_char)
+	(leading_ptr_hash, leading_ptr_eq_p, set_rtx_ptr_loc, get_rtx_ptr_loc)
+	(copy_rtx_ptr_loc, print_rtx_ptr_loc, join_c_conditions)
+	(print_c_condition, read_skip_spaces, read_escape, read_quoted_string)
+	(read_braced_string, read_string): Move to read-md.c.
+	(read_rtx): Move some initialization to init_md_reader and call
+	init_md_reader here.
+	* gensupport.h (message_with_line, n_comma_elts, scan_comma_elt):
+	Move to read-md.h.
+	* gensupport.c: Include read-md.h.
+	(message_with_line, n_comma_elts, scan_comma_elt): Move to
+	read-md.c.
+	* read-md.h, read-md.c: New files.
+
 2010-06-10  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/moxie/moxie.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
