@@ -1,3 +1,8 @@
+2010-06-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/44457
+	* gfortran.dg/asynchronous_3.f03
+
 2010-06-10  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR middle-end/44185
