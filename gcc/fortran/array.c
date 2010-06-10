@@ -64,7 +64,7 @@ gfc_copy_array_ref (gfc_array_ref *src)
 static match
 match_subscript (gfc_array_ref *ar, int init, bool match_star)
 {
-  match m;
+  match m = MATCH_ERROR;
   bool star = false;
   int i;
 
