@@ -1,3 +1,7 @@
+2010-06-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	* override.m4: Remove obsolete (<2.64) definitions.
+
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
