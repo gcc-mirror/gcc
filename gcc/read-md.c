@@ -259,7 +259,10 @@ fatal_with_file_and_line (const char *msg, ...)
       if (c == EOF)
 	break;
       if (c == '\r' || c == '\n')
-	break;
+	{
+	  unread_char (c);
+	  break;
+	}
       context[i] = c;
     }
   context[i] = '\0';
@@ -298,18 +301,13 @@ read_skip_spaces (void)
       c = read_char ();
       switch (c)
 	{
-	case '\n':
-	  read_md_lineno++;
-	  break;
-
-	case ' ': case '\t': case '\f': case '\r':
+	case ' ': case '\t': case '\f': case '\r': case '\n':
 	  break;
 
 	case ';':
 	  do
 	    c = read_char ();
 	  while (c != '\n' && c != EOF);
-	  read_md_lineno++;
 	  break;
 
 	case '/':
@@ -317,14 +315,15 @@ read_skip_spaces (void)
 	    int prevc;
 	    c = read_char ();
 	    if (c != '*')
-	      fatal_expected_char ('*', c);
+	      {
+		unread_char (c);
+		fatal_with_file_and_line ("stray '/' in file");
+	      }
 
 	    prevc = 0;
 	    while ((c = read_char ()) && c != EOF)
 	      {
-		if (c == '\n')
-		   read_md_lineno++;
-	        else if (prevc == '*' && c == '/')
+		if (prevc == '*' && c == '/')
 		  break;
 	        prevc = c;
 	      }
@@ -370,8 +369,6 @@ read_name (struct md_name *name)
 
   if (i == 0)
     fatal_with_file_and_line ("missing name or number");
-  if (c == '\n')
-    read_md_lineno++;
 
   name->buffer[i] = 0;
   name->string = name->buffer;
@@ -406,7 +403,6 @@ read_escape (void)
     {
       /* Backslash-newline is replaced by nothing, as in C.  */
     case '\n':
-      read_md_lineno++;
       return;
 
       /* \" \' \\ are replaced by the second character.  */
@@ -458,9 +454,7 @@ read_quoted_string (void)
   while (1)
     {
       c = read_char (); /* Read the string  */
-      if (c == '\n')
-	read_md_lineno++;
-      else if (c == '\\')
+      if (c == '\\')
 	{
 	  read_escape ();
 	  continue;
@@ -491,9 +485,7 @@ read_braced_string (void)
     {
       c = read_char (); /* Read the string  */
 
-      if (c == '\n')
-	read_md_lineno++;
-      else if (c == '{')
+      if (c == '{')
 	brace_depth++;
       else if (c == '}')
 	brace_depth--;
