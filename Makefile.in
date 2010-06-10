@@ -57763,6 +57763,14 @@ configure-stage3-gcc: maybe-all-stage3-gold
 configure-stage4-gcc: maybe-all-stage4-gold
 configure-stageprofile-gcc: maybe-all-stageprofile-gold
 configure-stagefeedback-gcc: maybe-all-stagefeedback-gold
+configure-gcc: maybe-all-libelf
+
+configure-stage1-gcc: maybe-all-stage1-libelf
+configure-stage2-gcc: maybe-all-stage2-libelf
+configure-stage3-gcc: maybe-all-stage3-libelf
+configure-stage4-gcc: maybe-all-stage4-libelf
+configure-stageprofile-gcc: maybe-all-stageprofile-libelf
+configure-stagefeedback-gcc: maybe-all-stagefeedback-libelf
 all-gcc: all-libiberty
 
 all-stage1-gcc: all-stage1-libiberty
@@ -57819,14 +57827,6 @@ all-stage3-gcc: maybe-all-stage3-cloog
 all-stage4-gcc: maybe-all-stage4-cloog
 all-stageprofile-gcc: maybe-all-stageprofile-cloog
 all-stagefeedback-gcc: maybe-all-stagefeedback-cloog
-all-gcc: maybe-all-libelf
-
-all-stage1-gcc: maybe-all-stage1-libelf
-all-stage2-gcc: maybe-all-stage2-libelf
-all-stage3-gcc: maybe-all-stage3-libelf
-all-stage4-gcc: maybe-all-stage4-libelf
-all-stageprofile-gcc: maybe-all-stageprofile-libelf
-all-stagefeedback-gcc: maybe-all-stagefeedback-libelf
 all-gcc: maybe-all-build-texinfo
 
 all-stage1-gcc: maybe-all-build-texinfo

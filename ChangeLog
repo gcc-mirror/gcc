@@ -1,3 +1,8 @@
+2010-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.def (configure-gcc): Depend on all-libelf.
+	* Makefile.in: Rebuild.
+
 2010-06-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
