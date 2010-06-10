@@ -70,12 +70,33 @@ moxie_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
    We always return values in register $r0 for moxie.  */
 
-rtx
+static rtx
 moxie_function_value (const_tree valtype, 
 		      const_tree fntype_or_decl ATTRIBUTE_UNUSED,
 		      bool outgoing ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (TYPE_MODE (valtype), MOXIE_R0);
+}
+
+/* Define how to find the value returned by a library function.
+
+   We always return values in register $r0 for moxie.  */
+
+static rtx
+moxie_libcall_value (enum machine_mode mode,
+                     const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, MOXIE_R0);
+}
+
+/* Handle TARGET_FUNCTION_VALUE_REGNO_P.
+
+   We always return values in register $r0 for moxie.  */
+
+static bool
+moxie_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == MOXIE_R0);
 }
 
 /* Emit an error message when we're in an asm, and a fatal error for
@@ -530,6 +551,10 @@ moxie_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    node node representing a data type.  */
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE moxie_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE moxie_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P moxie_function_value_regno_p
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
