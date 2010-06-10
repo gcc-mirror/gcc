@@ -35,12 +35,40 @@ along with GCC; see the file COPYING3.  If not see
    the current constant definition.  */
 
 static int
-print_md_constant (void **slot, void *info)
+print_md_constant (void **slot, void *info ATTRIBUTE_UNUSED)
 {
   struct md_constant *def = (struct md_constant *) *slot;
-  FILE *file = (FILE *) info;
 
-  fprintf (file, "#define %s %s\n", def->name, def->value);
+  if (!def->parent_enum)
+    printf ("#define %s %s\n", def->name, def->value);
+  return 1;
+}
+
+/* Called via traverse_enums.  Emit an enum definition for
+   enum_type *SLOT.  */
+
+static int
+print_enum_type (void **slot, void *info ATTRIBUTE_UNUSED)
+{
+  struct enum_type *def;
+  struct enum_value *value;
+  char *value_name;
+
+  def = (struct enum_type *) *slot;
+  printf ("\nenum %s {", def->name);
+  for (value = def->values; value; value = value->next)
+    {
+      printf ("\n  %s = %s", value->def->name, value->def->value);
+      if (value->next)
+	putc (',', stdout);
+    }
+  printf ("\n};\n");
+
+  /* Define NUM_<enum>_VALUES to be the largest enum value + 1.  */
+  value_name = ACONCAT (("num_", def->name, "_values", NULL));
+  upcase_string (value_name);
+  printf ("#define %s %d\n", value_name, def->num_values);
+
   return 1;
 }
 
@@ -60,7 +88,8 @@ main (int argc, char **argv)
   puts ("#ifndef GCC_INSN_CONSTANTS_H");
   puts ("#define GCC_INSN_CONSTANTS_H\n");
 
-  traverse_md_constants (print_md_constant, stdout);
+  traverse_md_constants (print_md_constant, 0);
+  traverse_enum_types (print_enum_type, 0);
 
   puts ("\n#endif /* GCC_INSN_CONSTANTS_H */");
 

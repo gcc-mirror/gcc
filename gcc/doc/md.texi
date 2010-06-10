@@ -7902,6 +7902,88 @@ You could write:
 
 The constants that are defined with a define_constant are also output
 in the insn-codes.h header file as #defines.
+
+@cindex enumerations
+@findex define_c_enum
+You can also use the machine description file to define enumerations.
+Like the constants defined by @code{define_constant}, these enumerations
+are visible to both the machine description file and the main C code.
+
+The syntax is as follows:
+
+@smallexample
+(define_c_enum "@var{name}" [
+  @var{value0}
+  @var{value1}
+  @dots{}
+  @var{valuen}
+])
+@end smallexample
+
+This definition causes the equivalent of the following C code to appear
+in @file{insn-constants.h}:
+
+@smallexample
+enum @var{name} @{
+  @var{value0} = 0,
+  @var{value1} = 1,
+  @dots{}
+  @var{valuen} = @var{n}
+@};
+#define NUM_@var{cname}_VALUES (@var{n} + 1)
+@end smallexample
+
+where @var{cname} is the capitalized form of @var{name}.
+It also makes each @var{valuei} available in the machine description
+file, just as if it had been declared with:
+
+@smallexample
+(define_constants [(@var{valuei} @var{i})])
+@end smallexample
+
+Each @var{valuei} is usually an upper-case identifier and usually
+begins with @var{cname}.
+
+You can split the enumeration definition into as many statements as
+you like.  The above example is directly equivalent to:
+
+@smallexample
+(define_c_enum "@var{name}" [@var{value0}])
+(define_c_enum "@var{name}" [@var{value1}])
+@dots{}
+(define_c_enum "@var{name}" [@var{valuen}])
+@end smallexample
+
+Splitting the enumeration helps to improve the modularity of each
+individual @code{.md} file.  For example, if a port defines its
+synchronization instructions in a separate @file{sync.md} file,
+it is convenient to define all synchronization-specific enumeration
+values in @file{sync.md} rather than in the main @file{.md} file.
+
+@findex define_enum
+Another way of defining an enumeration is to use @code{define_enum}:
+
+@smallexample
+(define_enum "@var{name}" [
+  @var{value0}
+  @var{value1}
+  @dots{}
+  @var{valuen}
+])
+@end smallexample
+
+This directive implies:
+
+@smallexample
+(define_c_enum "@var{name}" [
+  @var{cname}_@var{cvalue0}
+  @var{cname}_@var{cvalue1}
+  @dots{}
+  @var{cname}_@var{cvaluen}
+])
+@end smallexample
+
+where @var{cvaluei} is the capitalized form of @var{valuei}.
 @end ifset
 @ifset INTERNALS
 @node Iterators

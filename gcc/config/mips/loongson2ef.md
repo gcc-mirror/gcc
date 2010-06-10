@@ -17,6 +17,13 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_c_enum "unspec" [
+  UNSPEC_LOONGSON_ALU1_TURN_ENABLED_INSN
+  UNSPEC_LOONGSON_ALU2_TURN_ENABLED_INSN
+  UNSPEC_LOONGSON_FALU1_TURN_ENABLED_INSN
+  UNSPEC_LOONGSON_FALU2_TURN_ENABLED_INSN
+])
+
 ;; Automaton for integer instructions.
 (define_automaton "ls2_alu")
 
