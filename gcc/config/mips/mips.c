@@ -504,11 +504,11 @@ struct mips_asm_switch mips_noat = { "at", 0 };
 static bool mips_branch_likely;
 
 /* The current instruction-set architecture.  */
-enum processor_type mips_arch;
+enum processor mips_arch;
 const struct mips_cpu_info *mips_arch_info;
 
 /* The processor that we should tune the code for.  */
-enum processor_type mips_tune;
+enum processor mips_tune;
 const struct mips_cpu_info *mips_tune_info;
 
 /* The ISA level associated with mips_arch.  */
@@ -797,7 +797,8 @@ static const struct mips_rtx_cost_data mips_rtx_cost_optimize_size = {
 };
 
 /* Costs to use when optimizing for speed, indexed by processor.  */
-static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
+static const struct mips_rtx_cost_data
+  mips_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
   { /* R3000 */
     COSTS_N_INSNS (2),            /* fp_add */
     COSTS_N_INSNS (4),            /* fp_mult_sf */

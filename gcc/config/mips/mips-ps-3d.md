@@ -17,6 +17,30 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_c_enum "unspec" [
+  UNSPEC_MOVE_TF_PS
+  UNSPEC_C
+
+  ;; MIPS64/MIPS32R2 alnv.ps
+  UNSPEC_ALNV_PS
+
+  ;; MIPS-3D instructions
+  UNSPEC_CABS
+
+  UNSPEC_ADDR_PS
+  UNSPEC_CVT_PW_PS
+  UNSPEC_CVT_PS_PW
+  UNSPEC_MULR_PS
+  UNSPEC_ABS_PS
+
+  UNSPEC_RSQRT1
+  UNSPEC_RSQRT2
+  UNSPEC_RECIP1
+  UNSPEC_RECIP2
+  UNSPEC_SINGLE_CC
+  UNSPEC_SCC
+])
+
 (define_insn "*movcc_v2sf_<mode>"
   [(set (match_operand:V2SF 0 "register_operand" "=f,f")
 	(if_then_else:V2SF

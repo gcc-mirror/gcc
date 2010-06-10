@@ -92,6 +92,9 @@ static size_t max_include_len;
    constant expansion should occur.  */
 static htab_t md_constants;
 
+/* A table of enum_type structures, hashed by name.  */
+static htab_t enum_types;
+
 static void handle_file (directive_handler_t);
 
 /* Given an object that starts with a char * name field, return a hash
@@ -671,6 +674,52 @@ scan_comma_elt (const char **pstr)
   return start;
 }
 
+/* Convert STRING to uppercase.  */
+
+void
+upcase_string (char *string)
+{
+  int i;
+
+  for (i = 0; string[i]; i++)
+    string[i] = TOUPPER (string[i]);
+}
+
+/* Add a NAME = VALUE definition to md_constants-style hash table DEFS,
+   where both NAME and VALUE are malloc()ed strings.  PARENT_ENUM is the
+   enum to which NAME belongs, or null if NAME is a stand-alone constant.  */
+
+static struct md_constant *
+add_constant (htab_t defs, char *name, char *value,
+	      struct enum_type *parent_enum)
+{
+  struct md_constant *def, tmp_def;
+  void **entry_ptr;
+
+  tmp_def.name = name;
+  entry_ptr = htab_find_slot (defs, &tmp_def, INSERT);
+  if (*entry_ptr)
+    {
+      def = (struct md_constant *) *entry_ptr;
+      if (strcmp (def->value, value) != 0)
+	fatal_with_file_and_line ("redefinition of `%s', was `%s', now `%s'",
+				  def->name, def->value, value);
+      else if (parent_enum || def->parent_enum)
+	fatal_with_file_and_line ("redefinition of `%s'", def->name);
+      free (name);
+      free (value);
+    }
+  else
+    {
+      def = XNEW (struct md_constant);
+      def->name = name;
+      def->value = value;
+      def->parent_enum = parent_enum;
+      *entry_ptr = def;
+    }
+  return def;
+}
+
 /* Process a define_constants directive, starting with the optional space
    after the "define_constants".  */
 
@@ -680,45 +729,23 @@ handle_constants (void)
   int c;
   htab_t defs;
 
-  defs = md_constants;
-  if (! defs)
-    defs = htab_create (32, leading_string_hash,
-			leading_string_eq_p, (htab_del) 0);
-
   c = read_skip_spaces ();
   if (c != '[')
     fatal_expected_char ('[', c);
 
   /* Disable constant expansion during definition processing.  */
+  defs = md_constants;
   md_constants = 0;
   while ( (c = read_skip_spaces ()) != ']')
     {
       struct md_name name, value;
-      struct md_constant *def, tmp_def;
-      void **entry_ptr;
 
       if (c != '(')
 	fatal_expected_char ('(', c);
 
       read_name (&name);
       read_name (&value);
-
-      tmp_def.name = name.string;
-      entry_ptr = htab_find_slot (defs, &tmp_def, INSERT);
-      if (*entry_ptr)
-	{
-	  def = (struct md_constant *) *entry_ptr;
-	  if (strcmp (def->value, value.string) != 0)
-	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
-				      def->name, def->value, value.string);
-	}
-      else
-	{
-	  def = XNEW (struct md_constant);
-	  def->name = xstrdup (name.string);
-	  def->value = xstrdup (value.string);
-	  *entry_ptr = def;
-	}
+      add_constant (defs, xstrdup (name.string), xstrdup (value.string), 0);
 
       c = read_skip_spaces ();
       if (c != ')')
@@ -734,8 +761,100 @@ handle_constants (void)
 void
 traverse_md_constants (htab_trav callback, void *info)
 {
-  if (md_constants)
-    htab_traverse (md_constants, callback, info);
+  htab_traverse (md_constants, callback, info);
+}
+
+/* Return a malloc()ed decimal string that represents number NUMBER.  */
+
+static char *
+decimal_string (int number)
+{
+  /* A safe overestimate.  +1 for sign, +1 for null terminator.  */
+  char buffer[sizeof (int) * CHAR_BIT + 1 + 1];
+
+  sprintf (buffer, "%d", number);
+  return xstrdup (buffer);
+}
+
+/* Process a define_enum or define_c_enum directive, starting with
+   the optional space after the "define_enum".  LINENO is the line
+   number on which the directive started and MD_P is true if the
+   directive is a define_enum rather than a define_c_enum.  */
+
+static void
+handle_enum (int lineno, bool md_p)
+{
+  char *enum_name, *value_name;
+  struct md_name name;
+  struct enum_type *def;
+  struct enum_value *ev;
+  void **slot;
+  int c;
+
+  enum_name = read_string (false);
+  slot = htab_find_slot (enum_types, &enum_name, INSERT);
+  if (*slot)
+    {
+      def = (struct enum_type *) *slot;
+      if (def->md_p != md_p)
+	error_with_line (lineno, "redefining `%s' as a different type of enum",
+			 enum_name);
+    }
+  else
+    {
+      def = XNEW (struct enum_type);
+      def->name = enum_name;
+      def->md_p = md_p;
+      def->values = 0;
+      def->tail_ptr = &def->values;
+      def->num_values = 0;
+      *slot = def;
+    }
+
+  c = read_skip_spaces ();
+  if (c != '[')
+    fatal_expected_char ('[', c);
+
+  while ((c = read_skip_spaces ()) != ']')
+    {
+      if (c == EOF)
+	{
+	  error_with_line (lineno, "unterminated construct");
+	  exit (1);
+	}
+      unread_char (c);
+      read_name (&name);
+
+      ev = XNEW (struct enum_value);
+      ev->next = 0;
+      if (md_p)
+	{
+	  value_name = concat (def->name, "_", name.string, NULL);
+	  upcase_string (value_name);
+	  ev->name = xstrdup (name.string);
+	}
+      else
+	{
+	  value_name = xstrdup (name.string);
+	  ev->name = value_name;
+	}
+      ev->def = add_constant (md_constants, value_name,
+			      decimal_string (def->num_values), def);
+
+      *def->tail_ptr = ev;
+      def->tail_ptr = &ev->next;
+      def->num_values++;
+    }
+}
+
+/* For every enum definition, call CALLBACK with two arguments:
+   a pointer to the constant definition and INFO.  Stop when CALLBACK
+   returns zero.  */
+
+void
+traverse_enum_types (htab_trav callback, void *info)
+{
+  htab_traverse (enum_types, callback, info);
 }
 
 /* Process an "include" directive, starting with the optional space
@@ -834,6 +953,10 @@ handle_file (directive_handler_t handle_directive)
       read_name (&directive);
       if (strcmp (directive.string, "define_constants") == 0)
 	handle_constants ();
+      else if (strcmp (directive.string, "define_enum") == 0)
+	handle_enum (lineno, true);
+      else if (strcmp (directive.string, "define_c_enum") == 0)
+	handle_enum (lineno, false);
       else if (strcmp (directive.string, "include") == 0)
 	handle_include (lineno, handle_directive);
       else if (handle_directive)
@@ -911,6 +1034,10 @@ read_md_files (int argc, char **argv, bool (*parse_opt) (const char *),
   obstack_init (&ptr_loc_obstack);
   joined_conditions = htab_create (161, leading_ptr_hash, leading_ptr_eq_p, 0);
   obstack_init (&joined_conditions_obstack);
+  md_constants = htab_create (31, leading_string_hash,
+			      leading_string_eq_p, (htab_del) 0);
+  enum_types = htab_create (31, leading_string_hash,
+			    leading_string_eq_p, (htab_del) 0);
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();

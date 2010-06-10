@@ -33,12 +33,49 @@ struct md_name {
   char *string;
 };
 
-/* This structure represents a constant defined by define_constant.
-   NAME is the name of the constant and VALUE is the string it
-   expands to.  */
+/* This structure represents a constant defined by define_constant,
+   define_enum, or such-like.  */
 struct md_constant {
+  /* The name of the constant.  */
   char *name;
+
+  /* The string to which the constants expands.  */
   char *value;
+
+  /* If the constant is associated with a enumeration, this field
+     points to that enumeration, otherwise it is null.  */
+  struct enum_type *parent_enum;
+};
+
+/* This structure represents one value in an enum_type.  */
+struct enum_value {
+  /* The next value in the enum, or null if this is the last.  */
+  struct enum_value *next;
+
+  /* The name of the value as it appears in the .md file.  */
+  char *name;
+
+  /* The definition of the related C value.  */
+  struct md_constant *def;
+};
+
+/* This structure represents an enum defined by define_enum or the like.  */
+struct enum_type {
+  /* The C name of the enumeration.  */
+  char *name;
+
+  /* True if this is an md-style enum (DEFINE_ENUM) rather than
+     a C-style enum (DEFINE_C_ENUM).  */
+  bool md_p;
+
+  /* The values of the enumeration.  There is always at least one.  */
+  struct enum_value *values;
+
+  /* A pointer to the null terminator in VALUES.  */
+  struct enum_value **tail_ptr;
+
+  /* The number of enumeration values.  */
+  unsigned int num_values;
 };
 
 /* A callback that handles a single .md-file directive, up to but not
@@ -95,6 +132,8 @@ extern char *read_string (int);
 extern void read_skip_construct (int, int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
+extern void upcase_string (char *);
 extern void traverse_md_constants (htab_trav, void *);
+extern void traverse_enum_types (htab_trav, void *);
 extern bool read_md_files (int, char **, bool (*) (const char *),
 			   directive_handler_t);
