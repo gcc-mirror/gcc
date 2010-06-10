@@ -1,6 +1,15 @@
 2010-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr32000-2.c: Add missing include and exclude
+	lists to dg-skip-if.
+	* gcc.target/i386/stackalign/return-3.c: Likewise.
+
+2010-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.mike/eh16.C: Rename err to e.
