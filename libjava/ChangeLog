@@ -1,3 +1,9 @@
+2010-06-10  Peter O'Gorman  <peter@pogma.com>
+
+	* configure.ac: Set SYSTEMSPEC so that -allow_stack_execute is not
+	passed to the linker for -dynamiclib or -bundle on darwin.
+	* configure: Regenerate. 
+
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
