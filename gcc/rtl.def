@@ -1198,6 +1198,12 @@ DEF_RTL_EXPR(DEFINE_INSN_RESERVATION, "define_insn_reservation", "sies", RTX_EXT
    3rd operand: expression for the default value of the attribute.  */
 DEF_RTL_EXPR(DEFINE_ATTR, "define_attr", "sse", RTX_EXTRA)
 
+/* Definition of an insn attribute that uses an existing enumerated type.
+   1st operand: name of the attribute
+   2nd operand: the name of the enumerated type
+   3rd operand: expression for the default value of the attribute.  */
+DEF_RTL_EXPR(DEFINE_ENUM_ATTR, "define_enum_attr", "sse", RTX_EXTRA)
+
 /* Marker for the name of an attribute.  */
 DEF_RTL_EXPR(ATTR, "attr", "s", RTX_EXTRA)
 

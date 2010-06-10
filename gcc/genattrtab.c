@@ -171,6 +171,7 @@ struct attr_value
 struct attr_desc
 {
   char *name;			/* Name of attribute.  */
+  const char *enum_name;	/* Enum name for DEFINE_ENUM_NAME.  */
   struct attr_desc *next;	/* Next attribute.  */
   struct attr_value *first_value; /* First value of this attribute.  */
   struct attr_value *default_val; /* Default value for this attribute.  */
@@ -1901,11 +1902,13 @@ make_alternative_compare (int mask)
    computation.  If a test condition involves an address, we leave the EQ_ATTR
    intact because addresses are only valid for the `length' attribute.
 
-   EXP is the EQ_ATTR expression and VALUE is the value of that attribute
-   for the insn corresponding to INSN_CODE and INSN_INDEX.  */
+   EXP is the EQ_ATTR expression and ATTR is the attribute to which
+   it refers.  VALUE is the value of that attribute for the insn
+   corresponding to INSN_CODE and INSN_INDEX.  */
 
 static rtx
-evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
+evaluate_eq_attr (rtx exp, struct attr_desc *attr, rtx value,
+		  int insn_code, int insn_index)
 {
   rtx orexp, andexp;
   rtx right;
@@ -1923,16 +1926,12 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
     case SYMBOL_REF:
       {
-	char *p;
-	char string[256];
+	const char *prefix;
+	char *string, *p;
 
 	gcc_assert (GET_CODE (exp) == EQ_ATTR);
-	gcc_assert (strlen (XSTR (exp, 0)) + strlen (XSTR (exp, 1)) + 2
-		    <= 256);
-
-	strcpy (string, XSTR (exp, 0));
-	strcat (string, "_");
-	strcat (string, XSTR (exp, 1));
+	prefix = attr->enum_name ? attr->enum_name : attr->name;
+	string = ACONCAT ((prefix, "_", XSTR (exp, 1), NULL));
 	for (p = string; *p; p++)
 	  *p = TOUPPER (*p);
 
@@ -1966,7 +1965,7 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 	  right = insert_right_side (AND, andexp, this_cond,
 				     insn_code, insn_index);
 	  right = insert_right_side (AND, right,
-				     evaluate_eq_attr (exp,
+				     evaluate_eq_attr (exp, attr,
 						       XVECEXP (value, 0,
 								i + 1),
 						       insn_code, insn_index),
@@ -1982,7 +1981,7 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
       /* Handle the default case.  */
       right = insert_right_side (AND, andexp,
-				 evaluate_eq_attr (exp, XEXP (value, 1),
+				 evaluate_eq_attr (exp, attr, XEXP (value, 1),
 						   insn_code, insn_index),
 				 insn_code, insn_index);
       newexp = insert_right_side (IOR, orexp, right, insn_code, insn_index);
@@ -2732,7 +2731,8 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	  if (av)
 	    {
 	    got_av:
-	      x = evaluate_eq_attr (exp, av->value, insn_code, insn_index);
+	      x = evaluate_eq_attr (exp, attr, av->value,
+				    insn_code, insn_index);
 	      x = SIMPLIFY_TEST_EXP (x, insn_code, insn_index);
 	      if (attr_rtx_cost(x) < 20)
 		return x;
@@ -2900,13 +2900,30 @@ clear_struct_flag (rtx x)
     }
 }
 
-/* Create table entries for DEFINE_ATTR.  */
+/* Add attribute value NAME to the beginning of ATTR's list.  */
+
+static void
+add_attr_value (struct attr_desc *attr, const char *name)
+{
+  struct attr_value *av;
+
+  av = oballoc (struct attr_value);
+  av->value = attr_rtx (CONST_STRING, name);
+  av->next = attr->first_value;
+  attr->first_value = av;
+  av->first_insn = NULL;
+  av->num_insns = 0;
+  av->has_asm_insn = 0;
+}
+
+/* Create table entries for DEFINE_ATTR or DEFINE_ENUM_ATTR.  */
 
 static void
 gen_attr (rtx exp, int lineno)
 {
+  struct enum_type *et;
+  struct enum_value *ev;
   struct attr_desc *attr;
-  struct attr_value *av;
   const char *name_ptr;
   char *p;
 
@@ -2922,21 +2939,23 @@ gen_attr (rtx exp, int lineno)
     }
   attr->lineno = lineno;
 
-  if (*XSTR (exp, 1) == '\0')
+  if (GET_CODE (exp) == DEFINE_ENUM_ATTR)
+    {
+      attr->enum_name = XSTR (exp, 1);
+      et = lookup_enum_type (XSTR (exp, 1));
+      if (!et || !et->md_p)
+	error_with_line (lineno, "No define_enum called `%s' defined",
+			 attr->name);
+      for (ev = et->values; ev; ev = ev->next)
+	add_attr_value (attr, ev->name);
+    }
+  else if (*XSTR (exp, 1) == '\0')
     attr->is_numeric = 1;
   else
     {
       name_ptr = XSTR (exp, 1);
       while ((p = next_comma_elt (&name_ptr)) != NULL)
-	{
-	  av = oballoc (struct attr_value);
-	  av->value = attr_rtx (CONST_STRING, p);
-	  av->next = attr->first_value;
-	  attr->first_value = av;
-	  av->first_insn = NULL;
-	  av->num_insns = 0;
-	  av->has_asm_insn = 0;
-	}
+	add_attr_value (attr, p);
     }
 
   if (GET_CODE (XEXP (exp, 2)) == CONST)
@@ -3319,8 +3338,8 @@ write_test_expr (rtx exp, int flags)
       /* Now is the time to expand the value of a constant attribute.  */
       if (attr->is_const)
 	{
-	  write_test_expr (evaluate_eq_attr (exp, attr->default_val->value,
-					     -2, -2),
+	  write_test_expr (evaluate_eq_attr (exp, attr,
+					     attr->default_val->value, -2, -2),
 			   flags);
 	}
       else
@@ -3612,7 +3631,9 @@ write_attr_get (struct attr_desc *attr)
 
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
-  if (!attr->is_numeric)
+  if (attr->enum_name)
+    printf ("enum %s\n", attr->enum_name);
+  else if (!attr->is_numeric)
     printf ("enum attr_%s\n", attr->name);
   else
     printf ("int\n");
@@ -3869,7 +3890,7 @@ write_attr_valueq (struct attr_desc *attr, const char *s)
     }
   else
     {
-      write_upcase (attr->name);
+      write_upcase (attr->enum_name ? attr->enum_name : attr->name);
       printf ("_");
       write_upcase (s);
     }
@@ -4133,6 +4154,7 @@ find_attr (const char **name_p, int create)
 
   attr = oballoc (struct attr_desc);
   attr->name = DEF_ATTR_STRING (name);
+  attr->enum_name = 0;
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->is_const = attr->is_special = 0;
   attr->next = attrs[index];
@@ -4459,6 +4481,7 @@ from the machine description file `md'.  */\n\n");
 	  break;
 
 	case DEFINE_ATTR:
+	case DEFINE_ENUM_ATTR:
 	  gen_attr (desc, lineno);
 	  break;
 

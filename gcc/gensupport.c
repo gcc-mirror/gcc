@@ -173,6 +173,7 @@ process_rtx (rtx desc, int lineno)
       break;
 
     case DEFINE_ATTR:
+    case DEFINE_ENUM_ATTR:
       queue_pattern (desc, &define_attr_tail, read_md_filename, lineno);
       break;
 
