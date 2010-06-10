@@ -1,3 +1,11 @@
+2010-06-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR boostrap/44470
+	* config/i386/i386.md (*add<mode>_1): Revert revision 160394.
+	(*addsi_1_zext) <TYPE_LEA>: Likewise.
+	(add lea splitter): Likewise.
+	(add_zext lea splitter): Likewise.
+
 2010-06-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (fshow-column): Don't mark as C ObjC C++ ObjC++.
