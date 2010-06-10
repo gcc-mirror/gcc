@@ -1,5 +1,20 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/md.texi: Document the "unspec" and "unspecv" enum names.
+	* Makefile.in (OBJS-common): Include insn-enums.o.
+	(insn-enums.o): New rule.
+	(simple_generated_c): Add insn-enums.c.
+	(build/genenums.o): New rule.
+	(genprogmd): Add "enums".
+	* genconstants.c (print_enum_type): Declare a C string array
+	for each enum.
+	* genenums.c: New file.
+	* print-rtl.c (print_rtx): If defined, use the "unspecv" enum
+	for UNSPEC_VOLATILE.  If defined, use the "unspec" enum for both
+	UNSPEC and (as a fallback) for UNSPEC_VOLATILE.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/md.texi (define_enum_attr): Document.
 	* rtl.def (DEFINE_ENUM_ATTR): New rtx.
 	* read-md.h (lookup_enum_type): Declare.

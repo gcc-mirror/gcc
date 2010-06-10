@@ -411,6 +411,21 @@ print_rtx (const_rtx in_rtx)
 	    if (NOTE_KIND (in_rtx) == NOTE_INSN_DELETED_LABEL)
 	      fprintf (outfile, " %d",  XINT (in_rtx, i));
 	  }
+#if !defined(GENERATOR_FILE) && NUM_UNSPECV_VALUES > 0
+	else if (i == 1
+		 && GET_CODE (in_rtx) == UNSPEC_VOLATILE
+		 && XINT (in_rtx, 1) >= 0
+		 && XINT (in_rtx, 1) < NUM_UNSPECV_VALUES)
+	  fprintf (outfile, " %s", unspecv_strings[XINT (in_rtx, 1)]);
+#endif
+#if !defined(GENERATOR_FILE) && NUM_UNSPEC_VALUES > 0
+	else if (i == 1
+		 && (GET_CODE (in_rtx) == UNSPEC
+		     || GET_CODE (in_rtx) == UNSPEC_VOLATILE)
+		 && XINT (in_rtx, 1) >= 0
+		 && XINT (in_rtx, 1) < NUM_UNSPEC_VALUES)
+	  fprintf (outfile, " %s", unspec_strings[XINT (in_rtx, 1)]);
+#endif
 	else
 	  {
 	    int value = XINT (in_rtx, i);

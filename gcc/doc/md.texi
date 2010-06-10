@@ -7997,6 +7997,37 @@ synchronization instructions in a separate @file{sync.md} file,
 it is convenient to define all synchronization-specific enumeration
 values in @file{sync.md} rather than in the main @file{.md} file.
 
+Some enumeration names have special significance to GCC:
+
+@table @code
+@item unspecv
+@findex unspec_volatile
+If an enumeration called @code{unspecv} is defined, GCC will use it
+when printing out @code{unspec_volatile} expressions.  For example:
+
+@smallexample
+(define_c_enum "unspecv" [
+  UNSPECV_BLOCKAGE
+])
+@end smallexample
+
+causes GCC to print @samp{(unspec_volatile @dots{} 0)} as:
+
+@smallexample
+(unspec_volatile ... UNSPECV_BLOCKAGE)
+@end smallexample
+
+@item unspec
+@findex unspec
+If an enumeration called @code{unspec} is defined, GCC will use
+it when printing out @code{unspec} expressions.  GCC will also use
+it when printing out @code{unspec_volatile} expressions unless an
+@code{unspecv} enumeration is also defined.  You can therefore
+decide whether to keep separate enumerations for volatile and
+non-volatile expressions or whether to use the same enumeration
+for both.
+@end table
+
 @findex define_enum
 @anchor{define_enum}
 Another way of defining an enumeration is to use @code{define_enum}:
