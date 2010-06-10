@@ -1,3 +1,8 @@
+2010-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Remove show_column.
+	* init.c (cpp_create_reader, post_options): Don't set show_column.
+
 2010-06-09  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR bootstrap/44432

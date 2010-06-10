@@ -1,3 +1,7 @@
+2010-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (fshow-column): Don't mark as C ObjC C++ ObjC++.
+
 2010-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* df-problems.c (df_live_problem_data): Add live_bitmaps.
