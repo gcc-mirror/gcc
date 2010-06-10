@@ -1361,6 +1361,8 @@ struct df_live_problem_data
 {
   bitmap_head *in;
   bitmap_head *out;
+  /* An obstack for the bitmaps we need for this problem.  */
+  bitmap_obstack live_bitmaps;
 };
 
 /* Scratch var used by transfer functions.  This is used to implement
@@ -1406,12 +1408,24 @@ df_live_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   unsigned int bb_index;
   bitmap_iterator bi;
+  struct df_live_problem_data *problem_data;
 
   if (!df_live->block_pool)
     df_live->block_pool = create_alloc_pool ("df_live_block pool",
 					   sizeof (struct df_live_bb_info), 100);
+  if (df_live->problem_data)
+    problem_data = (struct df_live_problem_data *) df_live->problem_data;
+  else
+    {
+      problem_data = XNEW (struct df_live_problem_data);
+      df_live->problem_data = problem_data;
+
+      problem_data->out = NULL;
+      problem_data->in = NULL;
+      bitmap_obstack_initialize (&problem_data->live_bitmaps);
+    }
   if (!df_live_scratch)
-    df_live_scratch = BITMAP_ALLOC (NULL);
+    df_live_scratch = BITMAP_ALLOC (&problem_data->live_bitmaps);
 
   df_grow_bb_info (df_live);
 
@@ -1427,10 +1441,10 @@ df_live_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 	{
 	  bb_info = (struct df_live_bb_info *) pool_alloc (df_live->block_pool);
 	  df_live_set_bb_info (bb_index, bb_info);
-	  bitmap_initialize (&bb_info->kill, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->gen, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->in, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->out, &bitmap_default_obstack);
+	  bitmap_initialize (&bb_info->kill, &problem_data->live_bitmaps);
+	  bitmap_initialize (&bb_info->gen, &problem_data->live_bitmaps);
+	  bitmap_initialize (&bb_info->in, &problem_data->live_bitmaps);
+	  bitmap_initialize (&bb_info->out, &problem_data->live_bitmaps);
 	}
     }
   df_live->optional_p = (optimize <= 1);
@@ -1622,25 +1636,14 @@ df_live_finalize (bitmap all_blocks)
 static void
 df_live_free (void)
 {
+  struct df_live_problem_data *problem_data
+    = (struct df_live_problem_data *) df_live->problem_data;
   if (df_live->block_info)
     {
-      unsigned int i;
-
-      for (i = 0; i < df_live->block_info_size; i++)
-	{
-	  struct df_live_bb_info *bb_info = df_live_get_bb_info (i);
-	  if (bb_info)
-	    {
-	      bitmap_clear (&bb_info->gen);
-	      bitmap_clear (&bb_info->kill);
-	      bitmap_clear (&bb_info->in);
-	      bitmap_clear (&bb_info->out);
-	    }
-	}
-
       free_alloc_pool (df_live->block_pool);
       df_live->block_info_size = 0;
       free (df_live->block_info);
+      bitmap_obstack_release (&problem_data->live_bitmaps);
 
       if (df_live_scratch)
 	BITMAP_FREE (df_live_scratch);
@@ -1666,8 +1669,11 @@ df_live_top_dump (basic_block bb, FILE *file)
   if (df_live->problem_data)
     {
       problem_data = (struct df_live_problem_data *)df_live->problem_data;
-      fprintf (file, ";;  old in  \t");
-      df_print_regset (file, &problem_data->in[bb->index]);
+      if (problem_data->in)
+	{
+	  fprintf (file, ";;  old in  \t");
+	  df_print_regset (file, &problem_data->in[bb->index]);
+	}
     }
   fprintf (file, ";; live  gen \t");
   df_print_regset (file, &bb_info->gen);
@@ -1692,8 +1698,11 @@ df_live_bottom_dump (basic_block bb, FILE *file)
   if (df_live->problem_data)
     {
       problem_data = (struct df_live_problem_data *)df_live->problem_data;
-      fprintf (file, ";;  old out  \t");
-      df_print_regset (file, &problem_data->out[bb->index]);
+      if (problem_data->out)
+	{
+	  fprintf (file, ";;  old out  \t");
+	  df_print_regset (file, &problem_data->out[bb->index]);
+	}
     }
 }
 
@@ -1707,23 +1716,19 @@ df_live_verify_solution_start (void)
   basic_block bb;
   struct df_live_problem_data *problem_data;
   if (df_live->solutions_dirty)
-    {
-      df_live->problem_data = NULL;
-      return;
-    }
+    return;
 
   /* Set it true so that the solution is recomputed.  */
   df_live->solutions_dirty = true;
 
-  problem_data = XNEW (struct df_live_problem_data);
-  df_live->problem_data = problem_data;
+  problem_data = (struct df_live_problem_data *)df_live->problem_data;
   problem_data->in = XNEWVEC (bitmap_head, last_basic_block);
   problem_data->out = XNEWVEC (bitmap_head, last_basic_block);
 
   FOR_ALL_BB (bb)
     {
-      bitmap_initialize (&problem_data->in[bb->index], &bitmap_default_obstack);
-      bitmap_initialize (&problem_data->out[bb->index], &bitmap_default_obstack);
+      bitmap_initialize (&problem_data->in[bb->index], &problem_data->live_bitmaps);
+      bitmap_initialize (&problem_data->out[bb->index], &problem_data->live_bitmaps);
       bitmap_copy (&problem_data->in[bb->index], DF_LIVE_IN (bb));
       bitmap_copy (&problem_data->out[bb->index], DF_LIVE_OUT (bb));
     }
@@ -1739,10 +1744,9 @@ df_live_verify_solution_end (void)
   struct df_live_problem_data *problem_data;
   basic_block bb;
 
-  if (df_live->problem_data == NULL)
-    return;
-
   problem_data = (struct df_live_problem_data *)df_live->problem_data;
+  if (!problem_data->out)
+    return;
 
   FOR_ALL_BB (bb)
     {
@@ -4199,6 +4203,13 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
     propagating the information to BB3's successors.
    ---------------------------------------------------------------------------*/
 
+/* Private data used to verify the solution for this problem.  */
+struct df_md_problem_data
+{
+  /* An obstack for the bitmaps we need for this problem.  */
+  bitmap_obstack md_bitmaps;
+};
+
 /* Scratch var used by transfer functions.  This is used to do md analysis
    only for live registers.  */
 static bitmap_head df_md_scratch;
@@ -4240,13 +4251,22 @@ df_md_alloc (bitmap all_blocks)
 {
   unsigned int bb_index;
   bitmap_iterator bi;
+  struct df_md_problem_data *problem_data;
 
   if (!df_md->block_pool)
     df_md->block_pool = create_alloc_pool ("df_md_block pool",
                                            sizeof (struct df_md_bb_info), 50);
 
   df_grow_bb_info (df_md);
-  bitmap_initialize (&df_md_scratch, &bitmap_default_obstack);
+  if (df_md->problem_data)
+    problem_data = (struct df_md_problem_data *) df_md->problem_data;
+  else
+    {
+      problem_data = XNEW (struct df_md_problem_data);
+      df_md->problem_data = problem_data;
+      bitmap_obstack_initialize (&problem_data->md_bitmaps);
+    }
+  bitmap_initialize (&df_md_scratch, &problem_data->md_bitmaps);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
@@ -4263,11 +4283,11 @@ df_md_alloc (bitmap all_blocks)
         {
           bb_info = (struct df_md_bb_info *) pool_alloc (df_md->block_pool);
           df_md_set_bb_info (bb_index, bb_info);
-	  bitmap_initialize (&bb_info->init, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->gen, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->kill, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->in, &bitmap_default_obstack);
-	  bitmap_initialize (&bb_info->out, &bitmap_default_obstack);
+	  bitmap_initialize (&bb_info->init, &problem_data->md_bitmaps);
+	  bitmap_initialize (&bb_info->gen, &problem_data->md_bitmaps);
+	  bitmap_initialize (&bb_info->kill, &problem_data->md_bitmaps);
+	  bitmap_initialize (&bb_info->in, &problem_data->md_bitmaps);
+	  bitmap_initialize (&bb_info->out, &problem_data->md_bitmaps);
         }
     }
 
@@ -4520,21 +4540,10 @@ df_md_confluence_n (edge e)
 static void
 df_md_free (void)
 {
-  unsigned int i;
-  for (i = 0; i < df_md->block_info_size; i++)
-    {
-      struct df_md_bb_info *bb_info = df_md_get_bb_info (i);
-      if (bb_info)
-	{
-	  bitmap_clear (&bb_info->kill);
-	  bitmap_clear (&bb_info->gen);
-	  bitmap_clear (&bb_info->init);
-	  bitmap_clear (&bb_info->in);
-	  bitmap_clear (&bb_info->out);
-	}
-    }
+  struct df_md_problem_data *problem_data
+    = (struct df_md_problem_data *) df_md->problem_data;
 
-  bitmap_clear (&df_md_scratch);
+  bitmap_obstack_release (&problem_data->md_bitmaps);
   free_alloc_pool (df_md->block_pool);
 
   df_md->block_info_size = 0;
