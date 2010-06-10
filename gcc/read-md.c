@@ -847,6 +847,14 @@ handle_enum (int lineno, bool md_p)
     }
 }
 
+/* Try to find the definition of the given enum.  Return null on failure.  */
+
+struct enum_type *
+lookup_enum_type (const char *name)
+{
+  return (struct enum_type *) htab_find (enum_types, &name);
+}
+
 /* For every enum definition, call CALLBACK with two arguments:
    a pointer to the constant definition and INFO.  Stop when CALLBACK
    returns zero.  */

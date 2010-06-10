@@ -1,5 +1,28 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/md.texi (define_enum_attr): Document.
+	* rtl.def (DEFINE_ENUM_ATTR): New rtx.
+	* read-md.h (lookup_enum_type): Declare.
+	* read-md.c (lookup_enum_type): New function.
+	* genattr.c (gen_attr, main): Handle DEFINE_ENUM_ATTR.
+	* genattrtab.c (attr_desc): Add an enum_name field.
+	(evaluate_eq_attr): Take the associated attribute as argument.
+	Get the enum prefix from the enum_name field, if defined.
+	Use ACONCAT rather than a fixed-length buffer.  Update recursive calls.
+	(simplify_test_exp): Pass attr to evaluate_eq_attr.
+	(add_attr_value): New function, split out from...
+	(gen_attr): ...here.  Handle DEFINE_ENUM_ATTR.
+	(write_test_expr): Pass attr to evaluate_eq_attr.
+	(write_attr_get): Use the enum_name as the enum tag, if defined.
+	(write_attr_valueq): Use the enum_name as a prefix, if defined.
+	(find_attr): Initialize enum_name.
+	(main): Handle DEFINE_ENUM_ATTR.
+	* gensupport.c (process_rtx): Likewise.
+	* config/mips/mips.h (mips_tune_attr): Delete.
+	* config/mips/mips.md (cpu): Use define_attr_enum.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/md.texi (define_c_enum, define_enum): Document.
 	* read-md.h (md_constant): Add a parent_enum field.
 	(enum_value, enum_type): New structures.

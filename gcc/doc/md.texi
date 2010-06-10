@@ -6700,9 +6700,46 @@ distances. @xref{Insn Lengths}.
 The @code{enabled} attribute can be defined to prevent certain
 alternatives of an insn definition from being used during code
 generation. @xref{Disable Insn Alternatives}.
-
 @end table
 
+@findex define_enum_attr
+@anchor{define_enum_attr}
+Another way of defining an attribute is to use:
+
+@smallexample
+(define_enum_attr "@var{attr}" "@var{enum}" @var{default})
+@end smallexample
+
+This works in just the same way as @code{define_attr}, except that
+the list of values is taken from a separate enumeration called
+@var{enum} (@pxref{define_enum}).  This form allows you to use
+the same list of values for several attributes without having to
+repeat the list each time.  For example:
+
+@smallexample
+(define_enum "processor" [
+  model_a
+  model_b
+  @dots{}
+])
+(define_enum_attr "arch" "processor"
+  (const (symbol_ref "target_arch")))
+(define_enum_attr "tune" "processor"
+  (const (symbol_ref "target_tune")))
+@end smallexample
+
+defines the same attributes as:
+
+@smallexample
+(define_attr "arch" "model_a,model_b,@dots{}"
+  (const (symbol_ref "target_arch")))
+(define_attr "tune" "model_a,model_b,@dots{}"
+  (const (symbol_ref "target_tune")))
+@end smallexample
+
+but without duplicating the processor list.  The second example defines two
+separate C enums (@code{attr_arch} and @code{attr_tune}) whereas the first
+defines a single C enum (@code{processor}).
 @end ifset
 @ifset INTERNALS
 @node Expressions
@@ -7961,6 +7998,7 @@ it is convenient to define all synchronization-specific enumeration
 values in @file{sync.md} rather than in the main @file{.md} file.
 
 @findex define_enum
+@anchor{define_enum}
 Another way of defining an enumeration is to use @code{define_enum}:
 
 @smallexample
@@ -7983,7 +8021,11 @@ This directive implies:
 ])
 @end smallexample
 
+@findex define_enum_attr
 where @var{cvaluei} is the capitalized form of @var{valuei}.
+However, unlike @code{define_c_enum}, the enumerations defined
+by @code{define_enum} can be used in attribute specifications
+(@pxref{define_enum_attr}).
 @end ifset
 @ifset INTERNALS
 @node Iterators

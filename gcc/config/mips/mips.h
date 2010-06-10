@@ -3035,10 +3035,6 @@ extern enum mips_code_readable_setting mips_code_readable;
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)	\
   mips_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-/* This is necessary to avoid a warning about comparing different enum
-   types.  */
-#define mips_tune_attr ((enum attr_cpu) mips_tune)
-
 /* As on most targets, we want the .eh_frame section to be read-only where
    possible.  And as on most targets, this means two things:
 

@@ -135,5 +135,6 @@ extern const char *scan_comma_elt (const char **);
 extern void upcase_string (char *);
 extern void traverse_md_constants (htab_trav, void *);
 extern void traverse_enum_types (htab_trav, void *);
+extern struct enum_type *lookup_enum_type (const char *);
 extern bool read_md_files (int, char **, bool (*) (const char *),
 			   directive_handler_t);
