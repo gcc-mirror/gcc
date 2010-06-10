@@ -62,6 +62,29 @@ const char *read_md_filename;
 /* The current line number in READ_MD_FILE.  */
 int read_md_lineno;
 
+/* A table of md_constant structures, hashed by name.  Null if no
+   constant expansion should occur.  */
+static htab_t md_constants;
+
+/* Given an object that starts with a char * name field, return a hash
+   code for its name.  */
+
+hashval_t
+leading_string_hash (const void *def)
+{
+  return htab_hash_string (*(const char *const *) def);
+}
+
+/* Given two objects that start with char * name fields, return true if
+   they have the same name.  */
+
+int
+leading_string_eq_p (const void *def1, const void *def2)
+{
+  return strcmp (*(const char *const *) def1,
+		 *(const char *const *) def2) == 0;
+}
+
 /* Return a hash value for the pointer pointed to by DEF.  */
 
 static hashval_t
@@ -314,6 +337,63 @@ read_skip_spaces (void)
     }
 }
 
+/* Read an rtx code name into NAME.  It is terminated by any of the
+   punctuation chars of rtx printed syntax.  */
+
+void
+read_name (struct md_name *name)
+{
+  int c;
+  size_t i;
+
+  c = read_skip_spaces ();
+
+  i = 0;
+  while (1)
+    {
+      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r'
+	  || c == EOF)
+	break;
+      if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
+	  || c == '(' || c == '[')
+	{
+	  unread_char (c);
+	  break;
+	}
+
+      if (i == sizeof (name->buffer) - 1)
+	fatal_with_file_and_line ("name too long");
+      name->buffer[i++] = c;
+
+      c = read_char ();
+    }
+
+  if (i == 0)
+    fatal_with_file_and_line ("missing name or number");
+  if (c == '\n')
+    read_md_lineno++;
+
+  name->buffer[i] = 0;
+  name->string = name->buffer;
+
+  if (md_constants)
+    {
+      /* Do constant expansion.  */
+      struct md_constant *def;
+
+      do
+	{
+	  struct md_constant tmp_def;
+
+	  tmp_def.name = name->string;
+	  def = (struct md_constant *) htab_find (md_constants, &tmp_def);
+	  if (def)
+	    name->string = def->value;
+	}
+      while (def);
+    }
+}
+
 /* Subroutine of the string readers.  Handles backslash escapes.
    Caller has read the backslash, but not placed it into the obstack.  */
 
@@ -520,6 +600,76 @@ scan_comma_elt (const char **pstr)
 
   *pstr = p;
   return start;
+}
+
+/* Process a define_constants directive, starting with the optional space
+   after the "define_constants".  */
+
+void
+read_constants (void)
+{
+  int c;
+  htab_t defs;
+
+  defs = md_constants;
+  if (! defs)
+    defs = htab_create (32, leading_string_hash,
+			leading_string_eq_p, (htab_del) 0);
+
+  c = read_skip_spaces ();
+  if (c != '[')
+    fatal_expected_char ('[', c);
+
+  /* Disable constant expansion during definition processing.  */
+  md_constants = 0;
+  while ( (c = read_skip_spaces ()) != ']')
+    {
+      struct md_name name, value;
+      struct md_constant *def, tmp_def;
+      void **entry_ptr;
+
+      if (c != '(')
+	fatal_expected_char ('(', c);
+
+      read_name (&name);
+      read_name (&value);
+
+      tmp_def.name = name.string;
+      entry_ptr = htab_find_slot (defs, &tmp_def, INSERT);
+      if (*entry_ptr)
+	{
+	  def = (struct md_constant *) *entry_ptr;
+	  if (strcmp (def->value, value.string) != 0)
+	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
+				      def->name, def->value, value.string);
+	}
+      else
+	{
+	  def = XNEW (struct md_constant);
+	  def->name = xstrdup (name.string);
+	  def->value = xstrdup (value.string);
+	  *entry_ptr = def;
+	}
+
+      c = read_skip_spaces ();
+      if (c != ')')
+	fatal_expected_char (')', c);
+    }
+  md_constants = defs;
+  c = read_skip_spaces ();
+  if (c != ')')
+    fatal_expected_char (')', c);
+}
+
+/* For every constant definition, call CALLBACK with two arguments:
+   a pointer a pointer to the constant definition and INFO.
+   Stop when CALLBACK returns zero.  */
+
+void
+traverse_md_constants (htab_trav callback, void *info)
+{
+  if (md_constants)
+    htab_traverse (md_constants, callback, info);
 }
 
 /* Initialize this file's static data.  */

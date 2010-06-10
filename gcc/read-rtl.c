@@ -33,19 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-md.h"
 #include "gensupport.h"
 
-static htab_t md_constants;
-
-/* Holds one symbol or number in the .md file.  */
-struct md_name {
-  /* The name as it appeared in the .md file.  Names are syntactically
-     limited to the length of this buffer.  */
-  char buffer[256];
-
-  /* The name that should actually be used by the generator programs.
-     This is an expansion of NAME, after things like constant substitution.  */
-  char *string;
-};
-
 /* One element in a singly-linked list of (integer, string) pairs.  */
 struct map_value {
   struct map_value *next;
@@ -125,10 +112,6 @@ static struct mapping *add_mapping (struct iterator_group *, htab_t t,
 static struct map_value **add_map_value (struct map_value **,
 					 int, const char *);
 static void initialize_iterators (void);
-static void read_name (struct md_name *);
-static hashval_t def_hash (const void *);
-static int def_name_eq_p (const void *, const void *);
-static void read_constants (void);
 static void read_conditions (void);
 static void validate_const_int (const char *);
 static int find_iterator (struct iterator_group *, const char *);
@@ -579,15 +562,17 @@ initialize_iterators (void)
   char *copy, *p;
   int i;
 
-  modes.attrs = htab_create (13, def_hash, def_name_eq_p, 0);
-  modes.iterators = htab_create (13, def_hash, def_name_eq_p, 0);
+  modes.attrs = htab_create (13, leading_string_hash, leading_string_eq_p, 0);
+  modes.iterators = htab_create (13, leading_string_hash,
+				 leading_string_eq_p, 0);
   modes.num_builtins = MAX_MACHINE_MODE;
   modes.find_builtin = find_mode;
   modes.uses_iterator_p = uses_mode_iterator_p;
   modes.apply_iterator = apply_mode_iterator;
 
-  codes.attrs = htab_create (13, def_hash, def_name_eq_p, 0);
-  codes.iterators = htab_create (13, def_hash, def_name_eq_p, 0);
+  codes.attrs = htab_create (13, leading_string_hash, leading_string_eq_p, 0);
+  codes.iterators = htab_create (13, leading_string_hash,
+				 leading_string_eq_p, 0);
   codes.num_builtins = NUM_RTX_CODE;
   codes.find_builtin = find_code;
   codes.uses_iterator_p = uses_code_iterator_p;
@@ -619,63 +604,6 @@ initialize_iterators (void)
 
       lower_ptr = add_map_value (lower_ptr, i, GET_RTX_NAME (i));
       upper_ptr = add_map_value (upper_ptr, i, copy);
-    }
-}
-
-/* Read an rtx code name into NAME.  It is terminated by any of the
-   punctuation chars of rtx printed syntax.  */
-
-static void
-read_name (struct md_name *name)
-{
-  int c;
-  size_t i;
-
-  c = read_skip_spaces ();
-
-  i = 0;
-  while (1)
-    {
-      if (c == ' ' || c == '\n' || c == '\t' || c == '\f' || c == '\r'
-	  || c == EOF)
-	break;
-      if (c == ':' || c == ')' || c == ']' || c == '"' || c == '/'
-	  || c == '(' || c == '[')
-	{
-	  unread_char (c);
-	  break;
-	}
-
-      if (i == sizeof (name->buffer) - 1)
-	fatal_with_file_and_line ("name too long");
-      name->buffer[i++] = c;
-
-      c = read_char ();
-    }
-
-  if (i == 0)
-    fatal_with_file_and_line ("missing name or number");
-  if (c == '\n')
-    read_md_lineno++;
-
-  name->buffer[i] = 0;
-  name->string = name->buffer;
-
-  if (md_constants)
-    {
-      /* Do constant expansion.  */
-      struct md_constant *def;
-
-      do
-	{
-	  struct md_constant tmp_def;
-
-	  tmp_def.name = name->string;
-	  def = (struct md_constant *) htab_find (md_constants, &tmp_def);
-	  if (def)
-	    name->string = def->value;
-	}
-      while (def);
     }
 }
 
@@ -716,95 +644,6 @@ atoll (const char *p)
   return tmp_wide;
 }
 #endif
-
-/* Given an object that starts with a char * name field, return a hash
-   code for its name.  */
-static hashval_t
-def_hash (const void *def)
-{
-  unsigned result, i;
-  const char *string = *(const char *const *) def;
-
-  for (result = i = 0; *string++ != '\0'; i++)
-    result += ((unsigned char) *string << (i % CHAR_BIT));
-  return result;
-}
-
-/* Given two objects that start with char * name fields, return true if
-   they have the same name.  */
-static int
-def_name_eq_p (const void *def1, const void *def2)
-{
-  return ! strcmp (*(const char *const *) def1,
-		   *(const char *const *) def2);
-}
-
-/* Process a define_constants directive, starting with the optional space
-   after the "define_constants".  */
-static void
-read_constants (void)
-{
-  int c;
-  htab_t defs;
-
-  c = read_skip_spaces ();
-  if (c != '[')
-    fatal_expected_char ('[', c);
-
-  defs = md_constants;
-  if (! defs)
-    defs = htab_create (32, def_hash, def_name_eq_p, (htab_del) 0);
-
-  /* Disable constant expansion during definition processing.  */
-  md_constants = 0;
-  while ( (c = read_skip_spaces ()) != ']')
-    {
-      struct md_name name, value;
-      struct md_constant *def, tmp_def;
-      void **entry_ptr;
-
-      if (c != '(')
-	fatal_expected_char ('(', c);
-
-      read_name (&name);
-      read_name (&value);
-
-      tmp_def.name = name.string;
-      entry_ptr = htab_find_slot (defs, &tmp_def, INSERT);
-      if (*entry_ptr)
-	{
-	  def = (struct md_constant *) *entry_ptr;
-	  if (strcmp (def->value, value.string) != 0)
-	    fatal_with_file_and_line ("redefinition of %s, was %s, now %s",
-				      def->name, def->value, value.string);
-	}
-      else
-	{
-	  def = XNEW (struct md_constant);
-	  def->name = xstrdup (name.string);
-	  def->value = xstrdup (value.string);
-	  *entry_ptr = def;
-	}
-
-      c = read_skip_spaces ();
-      if (c != ')')
-	fatal_expected_char (')', c);
-    }
-  md_constants = defs;
-  c = read_skip_spaces ();
-  if (c != ')')
-    fatal_expected_char (')', c);
-}
-
-/* For every constant definition, call CALLBACK with two arguments:
-   a pointer a pointer to the constant definition and INFO.
-   Stops when CALLBACK returns zero.  */
-void
-traverse_md_constants (htab_trav callback, void *info)
-{
-  if (md_constants)
-    htab_traverse (md_constants, callback, info);
-}
 
 /* Process a define_conditions directive, starting with the optional
    space after the "define_conditions".  The directive looks like this:
