@@ -52,11 +52,14 @@ static htab_t joined_conditions;
 /* An obstack for allocating joined_conditions entries.  */
 static struct obstack joined_conditions_obstack;
 
-/* The current line number for the file.  */
-int read_md_lineno = 1;
+/* The file we are reading.  */
+FILE *read_md_file;
 
-/* The filename for error reporting.  */
-const char *read_md_filename = "<unknown>";
+/* The filename of READ_MD_FILE.  */
+const char *read_md_filename;
+
+/* The current line number in READ_MD_FILE.  */
+int read_md_lineno;
 
 /* Return a hash value for the pointer pointed to by DEF.  */
 
@@ -189,10 +192,10 @@ message_with_line (int lineno, const char *msg, ...)
 }
 
 /* A printf-like function for reporting an error against the current
-   position in the MD file, which is associated with INFILE.  */
+   position in the MD file.  */
 
 void
-fatal_with_file_and_line (FILE *infile, const char *msg, ...)
+fatal_with_file_and_line (const char *msg, ...)
 {
   char context[64];
   size_t i;
@@ -208,7 +211,7 @@ fatal_with_file_and_line (FILE *infile, const char *msg, ...)
   /* Gather some following context.  */
   for (i = 0; i < sizeof (context)-1; ++i)
     {
-      c = getc (infile);
+      c = read_char ();
       if (c == EOF)
 	break;
       if (c == '\r' || c == '\n')
@@ -225,31 +228,30 @@ fatal_with_file_and_line (FILE *infile, const char *msg, ...)
 }
 
 /* Report that we found character ACTUAL when we expected to find
-   character EXPECTED.  INFILE is the file handle associated
-   with the current file.  */
+   character EXPECTED.  */
 
 void
-fatal_expected_char (FILE *infile, int expected, int actual)
+fatal_expected_char (int expected, int actual)
 {
   if (actual == EOF)
-    fatal_with_file_and_line (infile, "expected character `%c', found EOF",
+    fatal_with_file_and_line ("expected character `%c', found EOF",
 			      expected);
   else
-    fatal_with_file_and_line (infile, "expected character `%c', found `%c'",
+    fatal_with_file_and_line ("expected character `%c', found `%c'",
 			      expected, actual);
 }
 
-/* Read chars from INFILE until a non-whitespace char and return that.
+/* Read chars from the MD file until a non-whitespace char and return that.
    Comments, both Lisp style and C style, are treated as whitespace.  */
 
 int
-read_skip_spaces (FILE *infile)
+read_skip_spaces (void)
 {
   int c;
 
   while (1)
     {
-      c = getc (infile);
+      c = read_char ();
       switch (c)
 	{
 	case '\n':
@@ -261,7 +263,7 @@ read_skip_spaces (FILE *infile)
 
 	case ';':
 	  do
-	    c = getc (infile);
+	    c = read_char ();
 	  while (c != '\n' && c != EOF);
 	  read_md_lineno++;
 	  break;
@@ -269,12 +271,12 @@ read_skip_spaces (FILE *infile)
 	case '/':
 	  {
 	    int prevc;
-	    c = getc (infile);
+	    c = read_char ();
 	    if (c != '*')
-	      fatal_expected_char (infile, '*', c);
+	      fatal_expected_char ('*', c);
 
 	    prevc = 0;
-	    while ((c = getc (infile)) && c != EOF)
+	    while ((c = read_char ()) && c != EOF)
 	      {
 		if (c == '\n')
 		   read_md_lineno++;
@@ -295,9 +297,9 @@ read_skip_spaces (FILE *infile)
    Caller has read the backslash, but not placed it into the obstack.  */
 
 static void
-read_escape (FILE *infile)
+read_escape (void)
 {
-  int c = getc (infile);
+  int c = read_char ();
 
   switch (c)
     {
@@ -348,18 +350,18 @@ read_escape (FILE *infile)
    the leading quote.  */
 
 char *
-read_quoted_string (FILE *infile)
+read_quoted_string (void)
 {
   int c;
 
   while (1)
     {
-      c = getc (infile); /* Read the string  */
+      c = read_char (); /* Read the string  */
       if (c == '\n')
 	read_md_lineno++;
       else if (c == '\\')
 	{
-	  read_escape (infile);
+	  read_escape ();
 	  continue;
 	}
       else if (c == '"' || c == EOF)
@@ -377,7 +379,7 @@ read_quoted_string (FILE *infile)
    the outermost braces _are_ included in the string constant.  */
 
 static char *
-read_braced_string (FILE *infile)
+read_braced_string (void)
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
@@ -386,7 +388,7 @@ read_braced_string (FILE *infile)
   obstack_1grow (&string_obstack, '{');
   while (brace_depth)
     {
-      c = getc (infile); /* Read the string  */
+      c = read_char (); /* Read the string  */
 
       if (c == '\n')
 	read_md_lineno++;
@@ -396,12 +398,12 @@ read_braced_string (FILE *infile)
 	brace_depth--;
       else if (c == '\\')
 	{
-	  read_escape (infile);
+	  read_escape ();
 	  continue;
 	}
       else if (c == EOF)
 	fatal_with_file_and_line
-	  (infile, "missing closing } for opening brace on line %lu",
+	  ("missing closing } for opening brace on line %lu",
 	   starting_read_md_lineno);
 
       obstack_1grow (&string_obstack, c);
@@ -416,36 +418,36 @@ read_braced_string (FILE *infile)
    and dispatch to the appropriate string constant reader.  */
 
 char *
-read_string (FILE *infile, int star_if_braced)
+read_string (int star_if_braced)
 {
   char *stringbuf;
   int saw_paren = 0;
   int c, old_lineno;
 
-  c = read_skip_spaces (infile);
+  c = read_skip_spaces ();
   if (c == '(')
     {
       saw_paren = 1;
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
     }
 
   old_lineno = read_md_lineno;
   if (c == '"')
-    stringbuf = read_quoted_string (infile);
+    stringbuf = read_quoted_string ();
   else if (c == '{')
     {
       if (star_if_braced)
 	obstack_1grow (&string_obstack, '*');
-      stringbuf = read_braced_string (infile);
+      stringbuf = read_braced_string ();
     }
   else
-    fatal_with_file_and_line (infile, "expected `\"' or `{', found `%c'", c);
+    fatal_with_file_and_line ("expected `\"' or `{', found `%c'", c);
 
   if (saw_paren)
     {
-      c = read_skip_spaces (infile);
+      c = read_skip_spaces ();
       if (c != ')')
-	fatal_expected_char (infile, ')', c);
+	fatal_expected_char (')', c);
     }
 
   set_md_ptr_loc (stringbuf, read_md_filename, old_lineno);

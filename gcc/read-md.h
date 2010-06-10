@@ -21,21 +21,38 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "obstack.h"
 
+extern FILE *read_md_file;
 extern int read_md_lineno;
 extern const char *read_md_filename;
 extern struct obstack string_obstack;
+
+/* Read the next character from the MD file.  */
+
+static inline int
+read_char (void)
+{
+  return getc (read_md_file);
+}
+
+/* Put back CH, which was the last character read from the MD file.  */
+
+static inline void
+unread_char (int ch)
+{
+  ungetc (ch, read_md_file);
+}
 
 extern void copy_md_ptr_loc (const void *, const void *);
 extern void print_md_ptr_loc (const void *);
 extern const char *join_c_conditions (const char *, const char *);
 extern void print_c_condition (const char *);
 extern void message_with_line (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void fatal_with_file_and_line (FILE *, const char *, ...)
-  ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
-extern void fatal_expected_char (FILE *, int, int) ATTRIBUTE_NORETURN;
-extern int read_skip_spaces (FILE *);
-extern char *read_quoted_string (FILE *);
-extern char *read_string (FILE *, int);
+extern void fatal_with_file_and_line (const char *, ...)
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fatal_expected_char (int, int) ATTRIBUTE_NORETURN;
+extern int read_skip_spaces (void);
+extern char *read_quoted_string (void);
+extern char *read_string (int);
 extern int n_comma_elts (const char *);
 extern const char *scan_comma_elt (const char **);
 extern void init_md_reader (void);
