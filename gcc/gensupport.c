@@ -45,7 +45,6 @@ static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
 static int sequence_num;
-static int errors;
 
 static int predicable_default;
 static const char *predicable_true;
@@ -222,8 +221,7 @@ process_include (rtx desc, int lineno)
   if (input_file == NULL)
     {
       free (pathname);
-      message_with_line (lineno, "include file `%s' not found", filename);
-      errors = 1;
+      error_with_line (lineno, "include file `%s' not found", filename);
       return;
     }
  success:
@@ -369,9 +367,8 @@ is_predicable (struct queue_elem *elem)
 	case SET_ATTR_ALTERNATIVE:
 	  if (strcmp (XSTR (sub, 0), "predicable") == 0)
 	    {
-	      message_with_line (elem->lineno,
-				 "multiple alternatives for `predicable'");
-	      errors = 1;
+	      error_with_line (elem->lineno,
+			       "multiple alternatives for `predicable'");
 	      return 0;
 	    }
 	  break;
@@ -390,9 +387,8 @@ is_predicable (struct queue_elem *elem)
 	  /* ??? It would be possible to handle this if we really tried.
 	     It's not easy though, and I'm not going to bother until it
 	     really proves necessary.  */
-	  message_with_line (elem->lineno,
-			     "non-constant value for `predicable'");
-	  errors = 1;
+	  error_with_line (elem->lineno,
+			   "non-constant value for `predicable'");
 	  return 0;
 
 	default:
@@ -409,9 +405,7 @@ is_predicable (struct queue_elem *elem)
      to do this.  Delay this until we've got the basics solid.  */
   if (strchr (value, ',') != NULL)
     {
-      message_with_line (elem->lineno,
-			 "multiple alternatives for `predicable'");
-      errors = 1;
+      error_with_line (elem->lineno, "multiple alternatives for `predicable'");
       return 0;
     }
 
@@ -421,10 +415,8 @@ is_predicable (struct queue_elem *elem)
   if (strcmp (value, predicable_false) == 0)
     return 0;
 
-  message_with_line (elem->lineno,
-		     "unknown value `%s' for `predicable' attribute",
-		     value);
-  errors = 1;
+  error_with_line (elem->lineno,
+		   "unknown value `%s' for `predicable' attribute", value);
   return 0;
 }
 
@@ -443,9 +435,8 @@ identify_predicable_attribute (void)
     if (strcmp (XSTR (elem->data, 0), "predicable") == 0)
       goto found;
 
-  message_with_line (define_cond_exec_queue->lineno,
-		     "attribute `predicable' not defined");
-  errors = 1;
+  error_with_line (define_cond_exec_queue->lineno,
+		   "attribute `predicable' not defined");
   return;
 
  found:
@@ -454,9 +445,7 @@ identify_predicable_attribute (void)
   p_true = strchr (p_false, ',');
   if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
-      message_with_line (elem->lineno,
-			 "attribute `predicable' is not a boolean");
-      errors = 1;
+      error_with_line (elem->lineno, "attribute `predicable' is not a boolean");
       if (p_false)
         free (p_false);
       return;
@@ -473,17 +462,14 @@ identify_predicable_attribute (void)
       break;
 
     case CONST:
-      message_with_line (elem->lineno,
-			 "attribute `predicable' cannot be const");
-      errors = 1;
+      error_with_line (elem->lineno, "attribute `predicable' cannot be const");
       if (p_false)
 	free (p_false);
       return;
 
     default:
-      message_with_line (elem->lineno,
-			 "attribute `predicable' must have a constant default");
-      errors = 1;
+      error_with_line (elem->lineno,
+		       "attribute `predicable' must have a constant default");
       if (p_false)
 	free (p_false);
       return;
@@ -495,10 +481,8 @@ identify_predicable_attribute (void)
     predicable_default = 0;
   else
     {
-      message_with_line (elem->lineno,
-			 "unknown value `%s' for `predicable' attribute",
-			 value);
-      errors = 1;
+      error_with_line (elem->lineno,
+		       "unknown value `%s' for `predicable' attribute", value);
       if (p_false)
 	free (p_false);
     }
@@ -592,10 +576,8 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 
 	if (n_alternatives (c) != 1)
 	  {
-	    message_with_line (lineno,
-			       "too many alternatives for operand %d",
-			       XINT (pattern, 0));
-	    errors = 1;
+	    error_with_line (lineno, "too many alternatives for operand %d",
+			     XINT (pattern, 0));
 	    return NULL;
 	  }
 
@@ -783,9 +765,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 
       if (XVECLEN (ce_elem->data, 0) != 1)
 	{
-	  message_with_line (ce_elem->lineno,
-			     "too many patterns in predicate");
-	  errors = 1;
+	  error_with_line (ce_elem->lineno, "too many patterns in predicate");
 	  return;
 	}
 
@@ -882,7 +862,7 @@ process_define_cond_exec (void)
   struct queue_elem *elem;
 
   identify_predicable_attribute ();
-  if (errors)
+  if (have_error)
     return;
 
   for (elem = define_cond_exec_queue; elem ; elem = elem->next)
@@ -972,7 +952,6 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   condition_table = htab_create (500, hash_c_test, cmp_c_test, NULL);
   init_predicate_table ();
   obstack_init (rtl_obstack);
-  errors = 0;
   sequence_num = 0;
   no_more_options = false;
   already_read_stdin = false;
@@ -1052,7 +1031,7 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
   if (define_cond_exec_queue != NULL)
     process_define_cond_exec ();
 
-  return errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
+  return have_error ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE;
 }
 
 /* Programs that don't have their own options can use this entry point
