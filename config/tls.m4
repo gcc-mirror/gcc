@@ -38,11 +38,16 @@ AC_DEFUN([GCC_CHECK_TLS], [
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
+ 	  dnl Test for an old glibc bug that violated the __thread property.
+	  dnl Use volatile to ensure the compiler won't optimize away pointer
+	  dnl accesses it might otherwise assume to be redundant, or reorder 
+	  dnl them and reuse storage, which might lead to them pointing to
+	  dnl the same location.
 	  AC_RUN_IFELSE(
 	    [AC_LANG_PROGRAM(
 	       [#include <pthread.h>
 		__thread int a;
-		static int *a_in_other_thread;
+		static int *volatile a_in_other_thread;
 		static void *
 		thread_func (void *arg)
 		{
@@ -51,11 +56,11 @@ AC_DEFUN([GCC_CHECK_TLS], [
 		}],
 	       [pthread_t thread;
 		void *thread_retval;
-		int *a_in_main_thread;
+		int *volatile a_in_main_thread;
+		a_in_main_thread = &a;
 		if (pthread_create (&thread, (pthread_attr_t *)0,
 				    thread_func, (void *)0))
 		  return 0;
-		a_in_main_thread = &a;
 		if (pthread_join (thread, &thread_retval))
 		  return 0;
 		return (a_in_other_thread == a_in_main_thread);])],

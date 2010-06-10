@@ -1,3 +1,8 @@
+2010-06-10  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* configure: Regenerate.
+
 2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Redirect grep stdout, stderr to /dev/null instead

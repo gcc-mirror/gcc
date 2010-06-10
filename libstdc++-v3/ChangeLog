@@ -1,3 +1,8 @@
+2010-06-10  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* configure: Regenerate.
+
 2010-05-31  Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/22_locale/codecvt/unshift/char/1.cc (test01): Clarify
