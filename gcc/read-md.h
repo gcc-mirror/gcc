@@ -51,7 +51,12 @@ extern struct obstack string_obstack;
 static inline int
 read_char (void)
 {
-  return getc (read_md_file);
+  int ch;
+
+  ch = getc (read_md_file);
+  if (ch == '\n')
+    read_md_lineno++;
+  return ch;
 }
 
 /* Put back CH, which was the last character read from the MD file.  */
@@ -59,6 +64,8 @@ read_char (void)
 static inline void
 unread_char (int ch)
 {
+  if (ch == '\n')
+    read_md_lineno--;
   ungetc (ch, read_md_file);
 }
 

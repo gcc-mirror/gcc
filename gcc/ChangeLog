@@ -1,5 +1,18 @@
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* read-md.h (read_char): Increment read_md_lineno after reading '\n'.
+	(unread_char): Decrement read_md_lineno after putting back '\n'.
+	* read-md.c (fatal_with_file_and_line): Push back any characters
+	that we decide not to add to the context.
+	(read_skip_spaces): Don't increment read_md_lineno here.  Avoid using
+	fatal_expected_char in cases where '/' ends a line (for example).
+	(read_name): Don't increment read_md_lineno here.
+	(read_escape): Likewise.
+	(read_quoted_string): Likewise.
+	(read_braced_string): Likewise.
+
+2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (READ_MD_H): Add $(HASHTAB_H).
 	(build/genconstants.o): Depend on $(READ_MD_H) gensupport.h.
 	* genconstants.c: Include read-md.h.
