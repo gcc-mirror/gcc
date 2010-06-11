@@ -1,3 +1,9 @@
+2010-06-11  Sandra Loosemore  <sandra@codesourcery.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Return again the
+	computed cost.
+
 2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (unspec): New define_c_enum.
