@@ -179,11 +179,26 @@ compatible.
     <listitem><para>gcc-3.3.1: libgcc_s.so.1</para></listitem>
     <listitem><para>gcc-3.3.2: libgcc_s.so.1</para></listitem>
     <listitem><para>gcc-3.3.3: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: on m68k-linux and
-    hppa-linux this is either libgcc_s.so.1 (when configuring
-    <code>--with-sjlj-exceptions</code>) or libgcc_s.so.2. For all
-    others, this is libgcc_s.so.1.  </para>
-    </listitem>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: libgcc_s.so.1</para></listitem>
+    </itemizedlist>
+
+    <para>For m68k-linux the versions differ as follows: </para>
+
+    <itemizedlist>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: libgcc_s.so.1
+    when configuring <code>--with-sjlj-exceptions</code>, or
+    libgcc_s.so.2 </para> </listitem>
+    </itemizedlist>
+
+    <para>For hppa-linux the versions differ as follows: </para>
+
+    <itemizedlist>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-1].x: either libgcc_s.so.1
+    when configuring <code>--with-sjlj-exceptions</code>, or
+    libgcc_s.so.2 </para> </listitem>
+    <listitem><para>gcc-4.[2-5].x: either libgcc_s.so.3 when configuring
+    <code>--with-sjlj-exceptions</code>) or libgcc_s.so.4
+    </para> </listitem>
     </itemizedlist>
 
   </listitem>
