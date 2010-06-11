@@ -2081,7 +2081,7 @@ c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c-family/c-cppbuiltin.o : c-family/c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TM_H) $(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) \
 	$(FLAGS_H) $(TOPLEV_H) output.h $(EXCEPT_H) $(TREE_H) $(TARGET_H) \
-	$(TM_P_H) $(BASEVER) debug.h
+	$(TM_P_H) $(BASEVER) debug.h $(CPP_ID_DATA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		-DBASEVER=$(BASEVER_s) $< $(OUTPUT_OPTION)
 

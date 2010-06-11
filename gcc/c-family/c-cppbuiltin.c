@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
 #include "target.h"
+#include "cpp-id-data.h"
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -946,6 +947,50 @@ builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
   cpp_define (parse_in, buf);
 }
 
+/* builtin_define_with_hex_fp_value is very expensive, so the following
+   array and function allows it to be done lazily when __DBL_MAX__
+   etc. is first used.  */
+
+static struct
+{
+  const char *hex_str;
+  cpp_macro *macro;
+  enum machine_mode mode;
+  int digits;
+  const char *fp_suffix;
+} lazy_hex_fp_values[12];
+static int lazy_hex_fp_value_count;
+
+static bool
+lazy_hex_fp_value (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		   cpp_hashnode *node)
+{
+  REAL_VALUE_TYPE real;
+  char dec_str[64], buf1[256];
+  unsigned int idx;
+  if (node->value.builtin < BT_FIRST_USER
+      || (int) node->value.builtin >= BT_FIRST_USER + lazy_hex_fp_value_count)
+    return false;
+
+  idx = node->value.builtin - BT_FIRST_USER;
+  real_from_string (&real, lazy_hex_fp_values[idx].hex_str);
+  real_to_decimal_for_mode (dec_str, &real, sizeof (dec_str),
+			    lazy_hex_fp_values[idx].digits, 0,
+			    lazy_hex_fp_values[idx].mode);
+
+  sprintf (buf1, "%s%s", dec_str, lazy_hex_fp_values[idx].fp_suffix);
+  node->flags &= ~(NODE_BUILTIN | NODE_USED);
+  node->value.macro = lazy_hex_fp_values[idx].macro;
+  for (idx = 0; idx < node->value.macro->count; idx++)
+    if (node->value.macro->exp.tokens[idx].type == CPP_NUMBER)
+      break;
+  gcc_assert (idx < node->value.macro->count);
+  node->value.macro->exp.tokens[idx].val.str.len = strlen (buf1);
+  node->value.macro->exp.tokens[idx].val.str.text
+    = (const unsigned char *) xstrdup (buf1);
+  return true;
+}
+
 /* Pass an object-like macro a hexadecimal floating-point value.  */
 static void
 builtin_define_with_hex_fp_value (const char *macro,
@@ -956,6 +1001,29 @@ builtin_define_with_hex_fp_value (const char *macro,
 {
   REAL_VALUE_TYPE real;
   char dec_str[64], buf1[256], buf2[256];
+
+  /* This is very expensive, so if possible expand them lazily.  */
+  if (lazy_hex_fp_value_count < 12
+      && flag_dump_macros == 0
+      && !cpp_get_options (parse_in)->traditional)
+    {
+      struct cpp_hashnode *node;
+      if (lazy_hex_fp_value_count == 0)
+	cpp_get_callbacks (parse_in)->user_builtin_macro = lazy_hex_fp_value;
+      sprintf (buf2, fp_cast, "1.1");
+      sprintf (buf1, "%s=%s", macro, buf2);
+      cpp_define (parse_in, buf1);
+      node = C_CPP_HASHNODE (get_identifier (macro));
+      lazy_hex_fp_values[lazy_hex_fp_value_count].hex_str = xstrdup (hex_str);
+      lazy_hex_fp_values[lazy_hex_fp_value_count].mode = TYPE_MODE (type);
+      lazy_hex_fp_values[lazy_hex_fp_value_count].digits = digits;
+      lazy_hex_fp_values[lazy_hex_fp_value_count].fp_suffix = fp_suffix;
+      lazy_hex_fp_values[lazy_hex_fp_value_count].macro = node->value.macro;
+      node->flags |= NODE_BUILTIN;
+      node->value.builtin = BT_FIRST_USER + lazy_hex_fp_value_count;
+      lazy_hex_fp_value_count++;
+      return;
+    }
 
   /* Hex values are really cool and convenient, except that they're
      not supported in strict ISO C90 mode.  First, the "p-" sequence

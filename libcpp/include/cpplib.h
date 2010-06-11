@@ -509,6 +509,9 @@ struct cpp_callbacks
   /* Called whenever a macro is expanded or tested.
      Second argument is the location of the start of the current expansion.  */
   void (*used) (cpp_reader *, source_location, cpp_hashnode *);
+
+  /* Callback that can change a user builtin into normal macro.  */
+  bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *);
 };
 
 #ifdef VMS
@@ -599,7 +602,9 @@ enum cpp_builtin_type
   BT_STDC,			/* `__STDC__' */
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
-  BT_COUNTER			/* `__COUNTER__' */
+  BT_COUNTER,			/* `__COUNTER__' */
+  BT_FIRST_USER,		/* User defined builtin macros.  */
+  BT_LAST_USER = BT_FIRST_USER + 31
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -726,7 +731,7 @@ extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
-						  const cpp_hashnode *);
+						  cpp_hashnode *);
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
