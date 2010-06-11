@@ -1062,6 +1062,11 @@ decode_options (unsigned int argc, const char **argv)
 	       "is disabled.");
       flag_toplevel_reorder = 0;
     }
+
+  /* -Wmissing-noreturn is alias for -Wsuggest-attribute=noreturn.  */
+  if (warn_missing_noreturn)
+    warn_suggest_attribute_noreturn = true;
+    
   /* Unless the user has asked for section anchors, we disable toplevel
      reordering at -O0 to disable transformations that might be surprising
      to end users and to get -fno-toplevel-reorder tested.  */

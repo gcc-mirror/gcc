@@ -1,3 +1,8 @@
+2010-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* testsuite/gcc.dg/noreturn-7.c: Update.
+	* testsuite/gcc.dg/noreturn-4.c: Update.
+
 2010-06-10  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix MIPS bootstrap

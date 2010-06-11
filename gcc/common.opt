@@ -192,6 +192,10 @@ Wsuggest-attribute=pure
 Common Var(warn_suggest_attribute_pure) Warning
 Warn about functions which might be candidates for __attribute__((pure))
 
+Wsuggest-attribute=noreturn
+Common Var(warn_suggest_attribute_noreturn) Warning
+Warn about functions which might be candidates for __attribute__((noreturn))
+
 Wswitch
 Common Var(warn_switch) Warning
 Warn about enumerated switches, with no default, missing a case

@@ -4,7 +4,7 @@
 extern void exit (int) __attribute__ ((__noreturn__));
 
 int
-main (void) /* { dg-warning "function might be possible candidate for attribute 'noreturn'" "warn for main" } */
+main (void) /* { dg-warning "function might be candidate for attribute 'noreturn'" "warn for main" } */
 {
   exit (0);
 }

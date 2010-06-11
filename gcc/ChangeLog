@@ -1,3 +1,17 @@
+2010-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (Wsuggest-attribute): Document.
+	(Wmissing-noreturn): Remove.
+	* ipa-pure-const.c (warn_function_noreturn): New function.
+	* opts.c (decode_options): Set warn_suggest_attribute_noreturn on
+	warn_missing_noreturn.
+	* common.opt (Wsuggest-attribute=noreturn): New.
+	* tree-flow.h (warn_function_noreturn): Declare.
+	* tree-cfg.c (execute_warn_function_noreturn): Use
+	warn_function_noreturn.
+	(gate_warn_function_noreturn): New.
+	(pass_warn_function_noreturn): Update.
+
 2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-typeck.c (handle_warn_cast_qual): Add loc

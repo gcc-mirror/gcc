@@ -177,6 +177,16 @@ warn_function_const (tree decl, bool known_finite)
     = suggest_attribute (OPT_Wsuggest_attribute_const, decl,
 			 known_finite, warned_about, "const");
 }
+
+void
+warn_function_noreturn (tree decl)
+{
+  static struct pointer_set_t *warned_about;
+  if (!lang_hooks.missing_noreturn_ok_p (decl))
+    warned_about 
+      = suggest_attribute (OPT_Wsuggest_attribute_noreturn, decl,
+			   true, warned_about, "noreturn");
+}
 /* Init the function state.  */
 
 static void
@@ -1514,11 +1524,7 @@ local_pure_const (void)
   if (!skip && !TREE_THIS_VOLATILE (current_function_decl)
       && EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 0)
     {
-      if (warn_missing_noreturn
-	  && !lang_hooks.missing_noreturn_ok_p (cfun->decl))
-	warning_at (DECL_SOURCE_LOCATION (cfun->decl), OPT_Wmissing_noreturn,
-		    "function might be possible candidate "
-		    "for attribute %<noreturn%>");
+      warn_function_noreturn (cfun->decl);
       if (dump_file)
         fprintf (dump_file, "Function found to be noreturn: %s\n",
 	         lang_hooks.decl_printable_name (current_function_decl, 2));
