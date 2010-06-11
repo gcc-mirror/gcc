@@ -1,5 +1,11 @@
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-pure-const.c (special_builtlin_state): New function.
+	(check_call): Use it instead of special casign BUILT_IN_RETURN.
+	(propagate_pure_const): Use it.
+
+2010-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* df-problems.c (df_live_scratch): Convert to bitmap_head.
 	(df_live_alloc): Initialize df_live_scratch when initializing
 	problem_data.
