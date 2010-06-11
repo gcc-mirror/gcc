@@ -689,16 +689,12 @@ namespace std
   struct _Swallow_assign
   {
     template<class _Tp>
-      _Swallow_assign&
-      operator=(const _Tp&)
+      const _Swallow_assign&
+      operator=(const _Tp&) const
       { return *this; }
   };
 
-  // TODO: Put this in some kind of shared file.
-  namespace
-  {
-    _Swallow_assign ignore;
-  }; // anonymous namespace
+  const _Swallow_assign ignore{};
 
   /**
    * Stores a tuple of indices. Used by bind() to extract the elements
