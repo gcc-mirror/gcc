@@ -1,3 +1,39 @@
+2010-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* mathbuiltins.def: Add builtins that do not directly correspond
+	to a Fortran intrinsic, with new macro OTHER_BUILTIN.
+	* f95-lang.c (gfc_init_builtin_functions): Define OTHER_BUILTIN.
+	* trans-intrinsic.c (gfc_intrinsic_map_t): Remove
+	code_{r,c}{4,8,10,16} fields. Add
+	{,complex}{float,double,long_double}_built_in fields.
+	(gfc_intrinsic_map): Adjust definitions of DEFINE_MATH_BUILTIN,
+	DEFINE_MATH_BUILTIN_C and LIB_FUNCTION accordingly. Add
+	definition of OTHER_BUILTIN.
+	(real_compnt_info): Remove unused struct.
+	(builtin_decl_for_precision, builtin_decl_for_float_kind): New
+	functions.
+	(build_round_expr): Call builtin_decl_for_precision instead of
+	series of if-else.
+	(gfc_conv_intrinsic_aint): Call builtin_decl_for_float_kind
+	instead of a switch.
+	(gfc_build_intrinsic_lib_fndecls): Match
+	{real,complex}{4,8,10,16}decl into the C-style built_in_decls.
+	(gfc_get_intrinsic_lib_fndecl): Do not hardcode floating-point
+	kinds.
+	(gfc_conv_intrinsic_lib_function): Go through all the extended
+	gfc_intrinsic_map.
+	(gfc_trans_same_strlen_check): Call builtin_decl_for_float_kind
+	instead of a switch.
+	(gfc_conv_intrinsic_abs): Likewise.
+	(gfc_conv_intrinsic_mod): Likewise.
+	(gfc_conv_intrinsic_sign): Likewise.
+	(gfc_conv_intrinsic_fraction): Likewise.
+	(gfc_conv_intrinsic_nearest): Likewise.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_scale): Likewise.
+	(gfc_conv_intrinsic_set_exponent): Likewise.
+
 2010-06-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42051
