@@ -1,3 +1,9 @@
+2010-06-10  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix bootstap on mips
+	* dwarf2out.c (is_naming_typedef_dec): Built-in TYPE_DECLs cannot
+	be naming typedefs.
+
 2010-06-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* system.h (helper_const_non_const_cast): New inline for
