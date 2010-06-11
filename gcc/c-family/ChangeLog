@@ -1,3 +1,8 @@
+2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+        * c-common.c (conversion_warning): Warn at expression
+	location.
+
 2010-06-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-opts.c (c_common_handle_option): Don't handle

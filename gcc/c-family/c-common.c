@@ -1838,6 +1838,8 @@ conversion_warning (tree type, tree expr)
   int i;
   const int expr_num_operands = TREE_OPERAND_LENGTH (expr);
   tree expr_type = TREE_TYPE (expr);
+  location_t loc = EXPR_HAS_LOCATION (expr)
+    ? EXPR_LOCATION (expr) : input_location;
 
   if (!warn_conversion && !warn_sign_conversion)
     return;
@@ -1869,8 +1871,8 @@ conversion_warning (tree type, tree expr)
 	 can hold the values 0 and -1) doesn't lose information - but
 	 it does change the value.  */
       if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
-	warning (OPT_Wconversion,
-                 "conversion to %qT from boolean expression", type);
+	warning_at (loc, OPT_Wconversion,
+		    "conversion to %qT from boolean expression", type);
       return;
 
     case REAL_CST:
@@ -1891,11 +1893,11 @@ conversion_warning (tree type, tree expr)
         {
           if (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)
 	      && tree_int_cst_sgn (expr) < 0)
-	    warning (OPT_Wsign_conversion,
-		     "negative integer implicitly converted to unsigned type");
+	    warning_at (loc, OPT_Wsign_conversion, "negative integer"
+			" implicitly converted to unsigned type");
           else if (!TYPE_UNSIGNED (type) && TYPE_UNSIGNED (expr_type))
-	    warning (OPT_Wsign_conversion,  "conversion of unsigned constant "
-		     "value to negative integer");
+	    warning_at (loc, OPT_Wsign_conversion, "conversion of unsigned"
+			" constant value to negative integer");
 	  else
 	    give_warning = true;
         }
@@ -1920,9 +1922,9 @@ conversion_warning (tree type, tree expr)
         }
 
       if (give_warning)
-        warning (OPT_Wconversion,
-                 "conversion to %qT alters %qT constant value",
-                 type, expr_type);
+        warning_at (loc, OPT_Wconversion,
+		    "conversion to %qT alters %qT constant value",
+		    type, expr_type);
 
       return;
 
@@ -2013,9 +2015,9 @@ conversion_warning (tree type, tree expr)
 		      unsigned but expr is signed, then negative values
 		      will be changed.  */
 		   || (TYPE_UNSIGNED (type) && !TYPE_UNSIGNED (expr_type)))
-	    warning (OPT_Wsign_conversion, "conversion to %qT from %qT "
-		     "may change the sign of the result",
-		     type, expr_type);
+	    warning_at (loc, OPT_Wsign_conversion, "conversion to %qT from %qT "
+			"may change the sign of the result",
+			type, expr_type);
         }
 
       /* Warn for integer types converted to real types if and only if
@@ -2049,9 +2051,9 @@ conversion_warning (tree type, tree expr)
 
 
       if (give_warning)
-        warning (OPT_Wconversion,
-                 "conversion to %qT from %qT may alter its value",
-                 type, expr_type);
+        warning_at (loc, OPT_Wconversion,
+		    "conversion to %qT from %qT may alter its value",
+		    type, expr_type);
     }
 }
 
