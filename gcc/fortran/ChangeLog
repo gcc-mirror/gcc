@@ -1,3 +1,8 @@
+2010-06-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44207
+	* resolve.c (conformable_arrays): Handle allocatable components.
+
 2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38273

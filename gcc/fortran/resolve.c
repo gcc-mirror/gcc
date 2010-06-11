@@ -6146,8 +6146,11 @@ gfc_expr_to_initialize (gfc_expr *e)
 static gfc_try
 conformable_arrays (gfc_expr *e1, gfc_expr *e2)
 {
+  gfc_ref *tail;
+  for (tail = e2->ref; tail && tail->next; tail = tail->next);
+  
   /* First compare rank.  */
-  if (e2->ref && e1->rank != e2->ref->u.ar.as->rank)
+  if (tail && e1->rank != tail->u.ar.as->rank)
     {
       gfc_error ("Source-expr at %L must be scalar or have the "
 		 "same rank as the allocate-object at %L",
@@ -6164,15 +6167,15 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
 
       for (i = 0; i < e1->rank; i++)
 	{
-	  if (e2->ref->u.ar.end[i])
+	  if (tail->u.ar.end[i])
 	    {
-	      mpz_set (s, e2->ref->u.ar.end[i]->value.integer);
-	      mpz_sub (s, s, e2->ref->u.ar.start[i]->value.integer);
+	      mpz_set (s, tail->u.ar.end[i]->value.integer);
+	      mpz_sub (s, s, tail->u.ar.start[i]->value.integer);
 	      mpz_add_ui (s, s, 1);
 	    }
 	  else
 	    {
-	      mpz_set (s, e2->ref->u.ar.start[i]->value.integer);
+	      mpz_set (s, tail->u.ar.start[i]->value.integer);
 	    }
 
 	  if (mpz_cmp (e1->shape[i], s) != 0)
