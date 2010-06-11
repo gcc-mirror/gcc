@@ -1,5 +1,10 @@
 2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/44268
+	* doc/xml/manual/abi.xml: Fix libgcc version for hppa-linux.
+
+2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/tuple (_Swallow_assign::operator=): Add const.
 	(ignore): Replace anonymous namespace member with const instance.
 
