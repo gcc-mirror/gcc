@@ -1368,7 +1368,7 @@ struct df_live_problem_data
 /* Scratch var used by transfer functions.  This is used to implement
    an optimization to reduce the amount of space used to compute the
    combined lr and live analysis.  */
-static bitmap df_live_scratch;
+static bitmap_head df_live_scratch;
 
 /* Set basic block info.  */
 
@@ -1423,9 +1423,8 @@ df_live_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
       problem_data->out = NULL;
       problem_data->in = NULL;
       bitmap_obstack_initialize (&problem_data->live_bitmaps);
+      bitmap_initialize (&df_live_scratch, &problem_data->live_bitmaps);
     }
-  if (!df_live_scratch)
-    df_live_scratch = BITMAP_ALLOC (&problem_data->live_bitmaps);
 
   df_grow_bb_info (df_live);
 
@@ -1595,12 +1594,12 @@ df_live_transfer_function (int bb_index)
   /* We need to use a scratch set here so that the value returned from this
      function invocation properly reflects whether the sets changed in a
      significant way; i.e. not just because the lr set was anded in.  */
-  bitmap_and (df_live_scratch, gen, &bb_lr_info->out);
+  bitmap_and (&df_live_scratch, gen, &bb_lr_info->out);
   /* No register may reach a location where it is not used.  Thus
      we trim the rr result to the places where it is used.  */
   bitmap_and_into (in, &bb_lr_info->in);
 
-  return bitmap_ior_and_compl (out, df_live_scratch, in, kill);
+  return bitmap_ior_and_compl (out, &df_live_scratch, in, kill);
 }
 
 
@@ -1643,10 +1642,10 @@ df_live_free (void)
       free_alloc_pool (df_live->block_pool);
       df_live->block_info_size = 0;
       free (df_live->block_info);
+      bitmap_clear (&df_live_scratch);
       bitmap_obstack_release (&problem_data->live_bitmaps);
-
-      if (df_live_scratch)
-	BITMAP_FREE (df_live_scratch);
+      free (problem_data);
+      df_live->problem_data = NULL;
     }
   BITMAP_FREE (df_live->out_of_date_transfer_functions);
   free (df_live);
@@ -4545,6 +4544,8 @@ df_md_free (void)
 
   bitmap_obstack_release (&problem_data->md_bitmaps);
   free_alloc_pool (df_md->block_pool);
+  free (problem_data);
+  df_md->problem_data = NULL;
 
   df_md->block_info_size = 0;
   free (df_md->block_info);
