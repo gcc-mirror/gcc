@@ -834,6 +834,20 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 /* GCC 4.0.x has a bug where it may ICE on this expression,
    so does GCC 3.4.x (PR17436).  */
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
+#elif defined(__GNUC__)
+static inline char *
+helper_const_non_const_cast (const char *p)
+{
+  union {
+    const char *const_c;
+    char *c;
+  } val;
+  val.const_c = p;
+  return val.c;
+}
+
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) \
+	((TOTYPE) helper_const_non_const_cast ((const char *) (FROMTYPE) (X)))
 #else
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((TOTYPE)(FROMTYPE)(X))
 #endif

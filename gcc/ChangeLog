@@ -1,3 +1,10 @@
+2010-06-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* system.h (helper_const_non_const_cast): New inline for
+	gcc version <= 4.0.
+	(CONST_CAST2): For gcc version <= 4.0 use
+	new helper to do const/non-const casting.
+
 2010-06-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/md.texi: Document the "unspec" and "unspecv" enum names.
