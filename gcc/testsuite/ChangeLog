@@ -1,3 +1,9 @@
+2010-06-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/43896
+	* gfortran.dg/class_23.f03: New test.
+
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/pure-const-2.c: New testcase.
