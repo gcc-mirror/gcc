@@ -1164,6 +1164,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					 std::forward<_Args>(__args)...);
     }
 
+  /// std::hash specialization for __shared_ptr.
+  template<typename _Tp, _Lock_policy _Lp>
+    struct hash<__shared_ptr<_Tp, _Lp>>
+    : public std::unary_function<__shared_ptr<_Tp, _Lp>, size_t>
+    {
+      size_t
+      operator()(const __shared_ptr<_Tp, _Lp>& __s) const
+      { return std::hash<_Tp*>()(__s.get()); }
+    };
+
 _GLIBCXX_END_NAMESPACE
 
 #endif // _SHARED_PTR_BASE_H

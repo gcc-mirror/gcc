@@ -1,3 +1,11 @@
+2010-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (hash<shared_ptr>): Add.
+	* include/bits/shared_ptr_base.h (hash<__shared_ptr>): Likewise.
+	* include/bits/unique_ptr.h (hash<unique_ptr>): Likewise.
+	* testsuite/20_util/shared_ptr/hash/1.cc: New.
+	* testsuite/20_util/unique_ptr/hash/1.cc: Likewise.
+
 2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/appendix_contributing.xml: Indent code examples
