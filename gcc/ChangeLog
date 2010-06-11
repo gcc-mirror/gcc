@@ -1,3 +1,9 @@
+2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-typeck.c (handle_warn_cast_qual): Add loc
+	parameter. Improve warning message.
+	(build_c_cast): Pass location to handle_warn_cast_qual.
+
 2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (pro_epilogue_adjust_stack_1) <TYPE_ALU>: Assert
