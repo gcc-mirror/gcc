@@ -1,8 +1,16 @@
+2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44481
+	* config/i386/i386.md (UNSPEC_PARITY): New unspec.
+	(paritydi2_cmp): Use UNSPEC_PARITY unspec insted of parity RTX.
+	(partiysi2_cmp): Ditto.
+	(*partiyhi2_cmp): Ditto.
+	(*parityqi2_cmp): Remove.
+
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
-	* bitmap.h (+bmp_iter_next_bit): New.
-	(bmp_iter_set, bmp_iter_and, bmp_iter_and_compl):
-	Use it.
+	* bitmap.h (bmp_iter_next_bit): New.
+	(bmp_iter_set, bmp_iter_and, bmp_iter_and_compl): Use it.
 
 2010-06-11  Sandra Loosemore  <sandra@codesourcery.com>
             Eric Botcazou  <ebotcazou@adacore.com>
