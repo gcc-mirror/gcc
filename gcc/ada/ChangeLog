@@ -1,3 +1,7 @@
+2010-06-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc-interface/utils.c (update_pointer_to): Initialize last.
+
 2010-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h: Fix formatting nits.

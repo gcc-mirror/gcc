@@ -3461,7 +3461,7 @@ update_pointer_to (tree old_type, tree new_type)
     {
       tree new_ptr = TYPE_MAIN_VARIANT (TYPE_POINTER_TO (new_type));
       tree new_obj_rec = TYPE_OBJECT_RECORD_TYPE (new_type);
-      tree array_field, bounds_field, new_ref, last;
+      tree array_field, bounds_field, new_ref, last = NULL_TREE;
 
       gcc_assert (TYPE_IS_FAT_POINTER_P (ptr));
 
