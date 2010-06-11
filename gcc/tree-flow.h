@@ -872,6 +872,9 @@ unsigned int execute_free_datastructures (void);
 unsigned int execute_fixup_cfg (void);
 bool fixup_noreturn_call (gimple stmt);
 
+/* In ipa-pure-const.c  */
+void warn_function_noreturn (tree);
+
 #include "tree-flow-inline.h"
 
 void swap_tree_operands (gimple, tree *, tree *);
