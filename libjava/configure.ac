@@ -932,9 +932,17 @@ esac
 AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
   [saved_ldflags="$LDFLAGS"
    LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
+   # The IRIX 6 ld doesn't recognize --no-merge-exidx-entries, but only
+   # warns about unknown options, which breaks the testsuite.  So enable
+   # AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
+   # it off again.  As a workaround, save and restore werror flag like
+   # AC_PATH_XTRA.
+   ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag=$ac_[]_AC_LANG_ABBREV[]_werror_flag
+   AC_LANG_WERROR
    AC_LINK_IFELSE([int main(void){ return 0;} ],
 		      [eval "libgcj_cv_exidx=yes"],
 		      [eval "libgcj_cv_exidx=no"])
+   ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
    LDFLAGS="${saved_ldflags}"]
 )
 if test "${libgcj_cv_exidx}" = "yes"; then

@@ -1,3 +1,13 @@
+2010-06-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/44216
+	* configure.ac (libgcj_cv_exidx): Enable AC_LANG_WERROR.
+	Save and restore werror flag.
+	* configure: Regenerate.
+
 2010-06-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
