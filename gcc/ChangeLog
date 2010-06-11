@@ -1,3 +1,8 @@
+2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (unspec): New define_c_enum.
+	(unspecv): Ditto.
+
 2010-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-family/c-cppbuiltin.c: Include cpp-id-data.h.
@@ -33,7 +38,7 @@
 	clean_predicate_lists.
 
 2010-10-11  Paul Brook  <paul@codesourcery.com>
- 
+
 	* doc/invoke.texi: Document ARM -mcpu=cortex-m4.
 	* config/arm/arm.c (all_architectures): Change v7e-m default to
 	cortexm4.
