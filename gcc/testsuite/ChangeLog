@@ -1,3 +1,8 @@
+2010-06-10  Dodji Seketeli  <dodji@redhat.com>
+
+	Fix MIPS bootstrap
+	* g++.dg/other/typedef4.C: New test.
+
 2010-06-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44207
