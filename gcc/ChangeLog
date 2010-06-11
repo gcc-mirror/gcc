@@ -1,3 +1,11 @@
+2010-10-11  Paul Brook  <paul@codesourcery.com>
+ 
+	* doc/invoke.texi: Document ARM -mcpu=cortex-m4.
+	* config/arm/arm.c (all_architectures): Change v7e-m default to
+	cortexm4.
+	* config/arm/arm-cores.def: Add cortex-m4.
+	* config/arm/arm-tune.md: Regenerate.
+
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (special_builtlin_state): New function.
