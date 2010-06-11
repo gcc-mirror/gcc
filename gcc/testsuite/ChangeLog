@@ -1,7 +1,11 @@
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/noreturn-7.c: Update.
-	* testsuite/gcc.dg/noreturn-4.c: Update.
+	* gcc.dg/ipa/pure-const-2.c: New testcase.
+
+2010-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/noreturn-7.c: Update.
+	* gcc.dg/noreturn-4.c: Update.
 
 2010-06-10  Dodji Seketeli  <dodji@redhat.com>
 
