@@ -1,3 +1,7 @@
+2010-06-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* override.m4 (AC_LANG_WERROR): Redefine to autoconf 2.62 version.
+
 2010-04-29  Release Manager
 
 	* GCC 4.4.4 released.

@@ -249,3 +249,13 @@ m4_define([m4_wrap], [m4_ifdef([_$0_text],
   [m4_define([_$0_text], [$1])m4_builtin([m4wrap],
     [m4_default(m4_defn([_$0_text])m4_undefine([_$0_text]))])])])
 ])
+
+# AC_LANG_WERROR
+# ------------------
+# This is the same code as in 2.59, but sets the werror_flag to default to
+# empty as expected by the rest of the code.
+m4_version_prereq([2.62],, [
+AC_DEFUN([AC_LANG_WERROR],
+[m4_divert_text([DEFAULTS], [ac_[]_AC_LANG_ABBREV[]_werror_flag=])
+ac_[]_AC_LANG_ABBREV[]_werror_flag=yes])# AC_LANG_WERROR
+])
