@@ -1,4 +1,4 @@
-2010-06-07  Eric Botcazou  <ebotcazou@adacore.com>
+2010-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr42461.c: Compile at -O2 instead of -O.
 
