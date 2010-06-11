@@ -1,5 +1,12 @@
 2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/appendix_contributing.xml: Indent code examples
+	to match original C++STYLE document. Fix typos and syntax errors.
+	Add some basic docbook markup.
+	* doc/html/*: Regenerate.
+
+2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/44268
 	* doc/xml/manual/abi.xml: Fix libgcc version for hppa-linux.
 
