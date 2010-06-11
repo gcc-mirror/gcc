@@ -5387,7 +5387,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
     {
       arg = digest_init (type, arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
-					"default argument", fn, parmnum,
+					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
     }
   else
@@ -5401,7 +5401,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
       if (!CONSTANT_CLASS_P (arg))
 	arg = unshare_expr (arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
-					"default argument", fn, parmnum,
+					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
       arg = convert_for_arg_passing (type, arg);
     }

@@ -727,10 +727,9 @@ store_init_value (tree decl, tree init, int flags)
   else if (TREE_CODE (init) == TREE_LIST
 	   && TREE_TYPE (init) != unknown_type_node)
     {
-      if (TREE_CODE (decl) == RESULT_DECL)
-	init = build_x_compound_expr_from_list (init,
-						"return value initializer");
-      else if (TREE_CODE (init) == TREE_LIST
+      gcc_assert (TREE_CODE (decl) != RESULT_DECL);
+
+      if (TREE_CODE (init) == TREE_LIST
 	       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	{
 	  error ("cannot initialize arrays using this syntax");
@@ -738,7 +737,7 @@ store_init_value (tree decl, tree init, int flags)
 	}
       else
 	/* We get here with code like `int a (2);' */
-	init = build_x_compound_expr_from_list (init, "initializer");
+	init = build_x_compound_expr_from_list (init, ELK_INIT);
     }
 
   /* End of special C++ code.  */
@@ -909,7 +908,7 @@ digest_init_r (tree type, tree init, bool nested, int flags)
       if (cxx_dialect != cxx98 && nested)
 	check_narrowing (type, init);
       init = convert_for_initialization (0, type, init, flags,
-					 "initialization", NULL_TREE, 0,
+					 ICR_INIT, NULL_TREE, 0,
 					 tf_warning_or_error);
       exp = &init;
 
@@ -963,7 +962,7 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 
       return convert_for_initialization (NULL_TREE, type, init,
 					 flags,
-					 "initialization", NULL_TREE, 0,
+					 ICR_INIT, NULL_TREE, 0,
                                          tf_warning_or_error);
     }
 }
@@ -1596,7 +1595,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	return cp_convert (type, integer_zero_node);
 
       /* This must build a C cast.  */
-      parms = build_x_compound_expr_from_list (parms, "functional cast");
+      parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST);
       return cp_build_c_cast (type, parms, complain);
     }
 

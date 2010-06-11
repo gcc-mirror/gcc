@@ -526,7 +526,7 @@ perform_member_init (tree member, tree init)
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work
 	   in that case.  */
-	init = build_x_compound_expr_from_list (init, "member initializer");
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT);
 
       if (init)
 	finish_expr_stmt (cp_build_modify_expr (decl, INIT_EXPR, init,

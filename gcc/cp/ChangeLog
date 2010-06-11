@@ -1,3 +1,19 @@
+2010-06-11  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* cp-tree.h (expr_list_kind): New type.
+	(impl_conv_rhs): New type.
+	(build_x_compound_expr_from_list, convert_for_initialization): Adjust
+	prototype.
+	(typeck.c (convert_arguments): Use impl_conv_rhs and emit the
+	diagnostics for easy translation. Change caller.
+	(convert_for_initialization): Use impl_conv_rhs and change caller.
+	(build_x_compound_expr_from_list): Use expr_list_kind and emit the
+	diagnostics for easy translation. Change caller.
+	* decl.c (bad_spec_place): New enum.
+	(bad_specifiers): Use it and emit the diagnostics for easy
+	translation. Change caller.
+	* pt.c (coerce_template_parms): Put the diagnostics in full sentence.
+
 2010-06-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-tree.h (struct saved_scope): Change decl_ns_list field type
@@ -1736,3 +1752,4 @@ Copyright (C) 2010 Free Software Foundation, Inc.
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.
+

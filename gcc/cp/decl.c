@@ -56,6 +56,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "plugin.h"
 
+/* Possible cases of bad specifiers type used by bad_specifiers. */
+enum bad_spec_place {
+  BSP_VAR,    /* variable */
+  BSP_PARM,   /* parameter */
+  BSP_TYPE,   /* type */
+  BSP_FIELD   /* field */
+};
+
 static tree grokparms (tree parmlist, tree *);
 static const char *redeclaration_error_message (tree, tree);
 
@@ -71,7 +79,7 @@ static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
 static tree build_library_fn_1 (tree, enum tree_code, tree);
 static int member_function_or_else (tree, tree, enum overload_flags);
-static void bad_specifiers (tree, const char *, int, int, int, int,
+static void bad_specifiers (tree, enum bad_spec_place, int, int, int, int,
 			    int);
 static void check_for_uninitialized_const_var (tree);
 static hashval_t typename_hash (const void *);
@@ -4450,7 +4458,7 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
     }
 
   if (TREE_CODE (init) == TREE_LIST)
-    init = build_x_compound_expr_from_list (init, "initializer");
+    init = build_x_compound_expr_from_list (init, ELK_INIT);
 
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
@@ -5671,7 +5679,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  return;
 	}
       if (TREE_CODE (init) == TREE_LIST)
-	init = build_x_compound_expr_from_list (init, "initializer");
+	init = build_x_compound_expr_from_list (init, ELK_INIT);
       if (describable_type (init))
 	{
 	  type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
@@ -6592,21 +6600,54 @@ member_function_or_else (tree ctype, tree cur_type, enum overload_flags flags)
 
 static void
 bad_specifiers (tree object,
-		const char* type,
+		enum bad_spec_place type,
 		int virtualp,
 		int quals,
 		int inlinep,
 		int friendp,
 		int raises)
 {
-  if (virtualp)
-    error ("%qD declared as a %<virtual%> %s", object, type);
-  if (inlinep)
-    error ("%qD declared as an %<inline%> %s", object, type);
-  if (quals)
-    error ("%<const%> and %<volatile%> function specifiers on "
-	   "%qD invalid in %s declaration",
-	   object, type);
+  switch (type)
+    {
+      case BSP_VAR:
+	if (virtualp)
+	  error ("%qD declared as a %<virtual%> variable", object);
+	if (inlinep)
+	  error ("%qD declared as an %<inline%> variable", object);
+	if (quals)
+	  error ("%<const%> and %<volatile%> function specifiers on "
+	         "%qD invalid in variable declaration", object);
+	break;
+      case BSP_PARM:
+	if (virtualp)
+	  error ("%qD declared as a %<virtual%> parameter", object);
+	if (inlinep)
+	  error ("%qD declared as an %<inline%> parameter", object);
+	if (quals)
+	  error ("%<const%> and %<volatile%> function specifiers on "
+	  	 "%qD invalid in parameter declaration", object);
+	break;
+      case BSP_TYPE:
+	if (virtualp)
+	  error ("%qD declared as a %<virtual%> type", object);
+	if (inlinep)
+	  error ("%qD declared as an %<inline%> type", object);
+	if (quals)
+	  error ("%<const%> and %<volatile%> function specifiers on "
+	  	 "%qD invalid in type declaration", object);
+	break;
+      case BSP_FIELD:
+	if (virtualp)
+	  error ("%qD declared as a %<virtual%> field", object);
+	if (inlinep)
+	  error ("%qD declared as an %<inline%> field", object);
+	if (quals)
+	  error ("%<const%> and %<volatile%> function specifiers on "
+	  	 "%qD invalid in field declaration", object);
+	break;
+      default:
+        gcc_unreachable();
+    }
   if (friendp)
     error ("%q+D declared as a friend", object);
   if (raises
@@ -9128,7 +9169,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
 
-      bad_specifiers (decl, "type", virtualp,
+      bad_specifiers (decl, BSP_TYPE, virtualp,
 		      memfn_quals != TYPE_UNQUALIFIED,
 		      inlinep, friendp, raises != NULL_TREE);
 
@@ -9314,7 +9355,7 @@ grokdeclarator (const cp_declarator *declarator,
       {
 	decl = cp_build_parm_decl (unqualified_id, type);
 
-	bad_specifiers (decl, "parameter", virtualp,
+	bad_specifiers (decl, BSP_PARM, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,
 			inlinep, friendp, raises != NULL_TREE);
       }
@@ -9592,7 +9633,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 	      }
 
-	    bad_specifiers (decl, "field", virtualp,
+	    bad_specifiers (decl, BSP_FIELD, virtualp,
 			    memfn_quals != TYPE_UNQUALIFIED,
 			    inlinep, friendp, raises != NULL_TREE);
 	  }
@@ -9715,7 +9756,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    initialized,
 			    (type_quals & TYPE_QUAL_CONST) != 0,
 			    ctype ? ctype : in_namespace);
-	bad_specifiers (decl, "variable", virtualp,
+	bad_specifiers (decl, BSP_VAR, virtualp,
 			memfn_quals != TYPE_UNQUALIFIED,
 			inlinep, friendp, raises != NULL_TREE);
 
