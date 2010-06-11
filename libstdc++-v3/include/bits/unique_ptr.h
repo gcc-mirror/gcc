@@ -233,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [unique.ptr.runtime]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
-  template<typename _Tp, typename _Tp_Deleter> 
+  template<typename _Tp, typename _Tp_Deleter>
     class unique_ptr<_Tp[], _Tp_Deleter>
     {
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
@@ -443,6 +443,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator>=(const unique_ptr<_Tp, _Tp_Deleter>& __x,
 	       const unique_ptr<_Up, _Up_Deleter>& __y)
     { return !(__x.get() < __y.get()); }
+
+  /// std::hash specialization for unique_ptr.
+  template<typename _Tp, typename _Tp_Deleter>
+    struct hash<unique_ptr<_Tp, _Tp_Deleter>>
+    : public std::unary_function<unique_ptr<_Tp, _Tp_Deleter>, size_t>
+    {
+      size_t
+      operator()(const unique_ptr<_Tp, _Tp_Deleter>& __u) const
+      {
+	typedef unique_ptr<_Tp, _Tp_Deleter> _UP;
+	return std::hash<typename _UP::pointer>()(__u.get());
+      }
+    };
 
   // @} group pointer_abstractions
 
