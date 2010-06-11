@@ -1,3 +1,29 @@
+2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44483
+	* tree-if-conv.c (bb_predicate_s): New struct.
+	(bb_predicate_p): New.
+	(bb_has_predicate): New.
+	(bb_predicate): New.
+	(set_bb_predicate): New.
+	(bb_predicate_gimplified_stmts): New.
+	(set_bb_predicate_gimplified_stmts): New.
+	(add_bb_predicate_gimplified_stmts): New.
+	(init_bb_predicate): New.
+	(free_bb_predicate): New.
+	(is_predicated): Use bb_predicate.
+	(add_to_predicate_list): Use bb_predicate and set_bb_predicate.
+	(predicate_bbs): Same.  Gimplify the condition of the basic blocks
+	before processing their successors.
+	(clean_predicate_lists): Removed.
+	(find_phi_replacement_condition): Use bb_predicate.
+	(process_phi_nodes): Renamed ifconvert_phi_nodes.  Avoid useless
+	computations.
+	(insert_gimplified_predicates): New.
+	(combine_blocks): Call insert_gimplified_predicates.
+	(tree_if_conversion): Call free_bb_predicate instead of
+	clean_predicate_lists.
+
 2010-10-11  Paul Brook  <paul@codesourcery.com>
  
 	* doc/invoke.texi: Document ARM -mcpu=cortex-m4.
