@@ -102,6 +102,106 @@ along with GCC; see the file COPYING3.  If not see
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
 
+/* Structure used to predicate basic blocks.  This is attached to the
+   ->aux field of the BBs in the loop to be if-converted.  */
+typedef struct bb_predicate_s {
+
+  /* The condition under which this basic block is executed.  */
+  tree predicate;
+
+  /* PREDICATE is gimplified, and the sequence of statements is
+     recorded here, in order to avoid the duplication of computations
+     that occur in previous conditions.  See PR44483.  */
+  gimple_seq predicate_gimplified_stmts;
+} *bb_predicate_p;
+
+/* Returns true when the basic block BB has a predicate.  */
+
+static inline bool
+bb_has_predicate (basic_block bb)
+{
+  return bb->aux != NULL;
+}
+
+/* Returns the gimplified predicate for basic block BB.  */
+
+static inline tree
+bb_predicate (basic_block bb)
+{
+  return ((bb_predicate_p) bb->aux)->predicate;
+}
+
+/* Sets the gimplified predicate COND for basic block BB.  */
+
+static inline void
+set_bb_predicate (basic_block bb, tree cond)
+{
+  ((bb_predicate_p) bb->aux)->predicate = cond;
+}
+
+/* Returns the sequence of statements of the gimplification of the
+   predicate for basic block BB.  */
+
+static inline gimple_seq
+bb_predicate_gimplified_stmts (basic_block bb)
+{
+  return ((bb_predicate_p) bb->aux)->predicate_gimplified_stmts;
+}
+
+/* Sets the sequence of statements STMTS of the gimplification of the
+   predicate for basic block BB.  */
+
+static inline void
+set_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
+{
+  ((bb_predicate_p) bb->aux)->predicate_gimplified_stmts = stmts;
+}
+
+/* Adds the sequence of statements STMTS to the sequence of statements
+   of the predicate for basic block BB.  */
+
+static inline void
+add_bb_predicate_gimplified_stmts (basic_block bb, gimple_seq stmts)
+{
+  gimple_seq_add_seq
+    (&(((bb_predicate_p) bb->aux)->predicate_gimplified_stmts), stmts);
+}
+
+/* Initializes to TRUE the predicate of basic block BB.  */
+
+static inline void
+init_bb_predicate (basic_block bb)
+{
+  bb->aux = XNEW (struct bb_predicate_s);
+  set_bb_predicate_gimplified_stmts (bb, NULL);
+  set_bb_predicate (bb, NULL_TREE);
+}
+
+/* Free the predicate of basic block BB.  */
+
+static inline void
+free_bb_predicate (basic_block bb)
+{
+  gimple_seq stmts;
+
+  if (!bb_has_predicate (bb))
+    return;
+
+  /* Release the SSA_NAMEs created for the gimplification of the
+     predicate.  */
+  stmts = bb_predicate_gimplified_stmts (bb);
+  if (stmts)
+    {
+      gimple_stmt_iterator i;
+
+      for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
+	free_stmt_operands (gsi_stmt (i));
+    }
+
+  free (bb->aux);
+  bb->aux = NULL;
+}
+
 /* Create a new temp variable of type TYPE.  Add GIMPLE_ASSIGN to assign EXP
    to the new variable.  */
 
@@ -145,7 +245,7 @@ is_true_predicate (tree cond)
 static inline bool
 is_predicated (basic_block bb)
 {
-  return !is_true_predicate ((tree) bb->aux);
+  return !is_true_predicate (bb_predicate (bb));
 }
 
 /* Add condition NEW_COND to the predicate list of basic block BB.  */
@@ -153,12 +253,12 @@ is_predicated (basic_block bb)
 static inline void
 add_to_predicate_list (basic_block bb, tree new_cond)
 {
-  tree cond = (tree) bb->aux;
+  tree cond = bb_predicate (bb);
 
-  bb->aux = is_true_predicate (cond) ? new_cond :
-    fold_build2_loc (EXPR_LOCATION (cond),
-		     TRUTH_OR_EXPR, boolean_type_node,
-		     cond, new_cond);
+  set_bb_predicate (bb, is_true_predicate (cond) ? new_cond :
+		    fold_build2_loc (EXPR_LOCATION (cond),
+				     TRUTH_OR_EXPR, boolean_type_node,
+				     cond, new_cond));
 }
 
 /* Add the condition COND to the previous condition PREV_COND, and add
@@ -471,7 +571,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
 /* Returns true when the analysis of the predicates for all the basic
    blocks in LOOP succeeded.
 
-   predicate_bbs first clears the ->aux fields of the basic blocks.
+   predicate_bbs first allocates the predicates of the basic blocks.
    These fields are then initialized with the tree expressions
    representing the predicates under which a basic block is executed
    in the LOOP.  As the loop->header is executed at each iteration, it
@@ -492,13 +592,32 @@ predicate_bbs (loop_p loop)
   unsigned int i;
 
   for (i = 0; i < loop->num_nodes; i++)
-    ifc_bbs[i]->aux = NULL;
+    init_bb_predicate (ifc_bbs[i]);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
-      basic_block bb = ifc_bbs [i];
-      tree cond = (tree) bb->aux;
+      basic_block bb = ifc_bbs[i];
+      tree cond;
       gimple_stmt_iterator itr;
+
+      /* The loop latch is always executed and has no extra conditions
+	 to be processed: skip it.  */
+      if (bb == loop->latch)
+	{
+	  set_bb_predicate (loop->latch, boolean_true_node);
+	  set_bb_predicate_gimplified_stmts (loop->latch, NULL);
+	  continue;
+	}
+
+      cond = bb_predicate (bb);
+      if (cond
+	  && bb != loop->header)
+	{
+	  gimple_seq stmts;
+
+	  cond = force_gimple_operand (cond, &stmts, true, NULL_TREE);
+	  add_bb_predicate_gimplified_stmts (bb, stmts);
+	}
 
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
 	{
@@ -522,10 +641,9 @@ predicate_bbs (loop_p loop)
 					  gimple_cond_lhs (stmt),
 					  gimple_cond_rhs (stmt));
 
+		/* Add new condition into destination's predicate list.  */
 		extract_true_false_edges_from_block (gimple_bb (stmt),
 						     &true_edge, &false_edge);
-
-		/* Add new condition into destination's predicate list.  */
 
 		/* If C is true, then TRUE_EDGE is taken.  */
 		add_to_dst_predicate_list (loop, true_edge, cond, c);
@@ -561,7 +679,9 @@ predicate_bbs (loop_p loop)
     }
 
   /* The loop header is always executed.  */
-  loop->header->aux = boolean_true_node;
+  set_bb_predicate (loop->header, boolean_true_node);
+  gcc_assert (bb_predicate_gimplified_stmts (loop->header) == NULL
+	      && bb_predicate_gimplified_stmts (loop->latch) == NULL);
 
   return true;
 }
@@ -679,27 +799,12 @@ if_convertible_loop_p (struct loop *loop)
   return true;
 }
 
-/* During if-conversion, the bb->aux field is used to hold a predicate
-   list.  This function cleans for all the basic blocks in the given
-   LOOP their predicate list.  */
-
-static void
-clean_predicate_lists (struct loop *loop)
-{
-  unsigned int i;
-  basic_block *bbs = get_loop_body (loop);
-
-  for (i = 0; i < loop->num_nodes; i++)
-    bbs[i]->aux = NULL;
-
-  free (bbs);
-}
-
-/* Basic block BB has two predecessors.  Using predecessor's bb->aux
-   field, set appropriate condition COND for the PHI node replacement.
-   Return true block whose phi arguments are selected when cond is
-   true.  LOOP is the loop containing the if-converted region, GSI is
-   the place to insert the code for the if-conversion.  */
+/* Basic block BB has two predecessors.  Using predecessor's bb
+   predicate, set an appropriate condition COND for the PHI node
+   replacement.  Return the true block whose phi arguments are
+   selected when cond is true.  LOOP is the loop containing the
+   if-converted region, GSI is the place to insert the code for the
+   if-conversion.  */
 
 static basic_block
 find_phi_replacement_condition (struct loop *loop,
@@ -738,7 +843,7 @@ find_phi_replacement_condition (struct loop *loop,
         See PR23115.  */
 
   /* Select condition that is not TRUTH_NOT_EXPR.  */
-  tmp_cond = (tree) (first_edge->src)->aux;
+  tmp_cond = bb_predicate (first_edge->src);
   gcc_assert (tmp_cond);
 
   if (TREE_CODE (tmp_cond) == TRUTH_NOT_EXPR)
@@ -756,7 +861,7 @@ find_phi_replacement_condition (struct loop *loop,
       || dominated_by_p (CDI_DOMINATORS,
 			 second_edge->src, first_edge->src))
     {
-      *cond = (tree) (second_edge->src)->aux;
+      *cond = bb_predicate (second_edge->src);
 
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
 	*cond = invert_truthvalue (*cond);
@@ -765,7 +870,7 @@ find_phi_replacement_condition (struct loop *loop,
 	first_edge = second_edge;
     }
   else
-    *cond = (tree) (first_edge->src)->aux;
+    *cond = bb_predicate (first_edge->src);
 
   /* Gimplify the condition: the vectorizer prefers to have gimple
      values as conditions.  Various targets use different means to
@@ -851,11 +956,11 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
     }
 }
 
-/* Process phi nodes for the given LOOP.  Replace phi nodes with
-   conditional modify expressions.  */
+/* Replaces in LOOP all the phi nodes other than those in the
+   LOOP->header block with conditional modify expressions.  */
 
 static void
-process_phi_nodes (struct loop *loop)
+ifconvert_phi_nodes (struct loop *loop)
 {
   basic_block bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -873,12 +978,13 @@ process_phi_nodes (struct loop *loop)
 	continue;
 
       phi_gsi = gsi_start_phis (bb);
-      gsi = gsi_after_labels (bb);
+      if (gsi_end_p (phi_gsi))
+	continue;
 
       /* BB has two predecessors.  Using predecessor's aux field, set
 	 appropriate condition for the PHI node replacement.  */
-      if (!gsi_end_p (phi_gsi))
-	true_bb = find_phi_replacement_condition (loop, bb, &cond, &gsi);
+      gsi = gsi_after_labels (bb);
+      true_bb = find_phi_replacement_condition (loop, bb, &cond, &gsi);
 
       while (!gsi_end_p (phi_gsi))
 	{
@@ -887,7 +993,37 @@ process_phi_nodes (struct loop *loop)
 	  release_phi_node (phi);
 	  gsi_next (&phi_gsi);
 	}
+
       set_phi_nodes (bb, NULL);
+    }
+}
+
+/* Insert in each basic block of LOOP the statements produced by the
+   gimplification of the predicates.  */
+
+static void
+insert_gimplified_predicates (loop_p loop)
+{
+  unsigned int i;
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs[i];
+      gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
+
+      if (stmts)
+	{
+	  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+
+	  if (gsi_end_p (gsi)
+	      || gimple_code (gsi_stmt (gsi)) == GIMPLE_COND)
+	    gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+	  else
+	    gsi_insert_seq_after (&gsi, stmts, GSI_SAME_STMT);
+
+	  /* Once the sequence is code generated, set it to NULL.  */
+	  set_bb_predicate_gimplified_stmts (bb, NULL);
+	}
     }
 }
 
@@ -903,7 +1039,7 @@ remove_conditions_and_labels (loop_p loop)
 
   for (i = 0; i < loop->num_nodes; i++)
     {
-      basic_block bb = ifc_bbs [i];
+      basic_block bb = ifc_bbs[i];
 
       if (bb_with_exit_edge_p (loop, bb)
         || bb == loop->latch)
@@ -946,9 +1082,8 @@ combine_blocks (struct loop *loop)
   edge_iterator ei;
 
   remove_conditions_and_labels (loop);
-
-  /* Process phi nodes to prepare blocks for merge.  */
-  process_phi_nodes (loop);
+  insert_gimplified_predicates (loop);
+  ifconvert_phi_nodes (loop);
 
   /* Merge basic blocks: first remove all the edges in the loop,
      except for those from the exit block.  */
@@ -1052,9 +1187,13 @@ tree_if_conversion (struct loop *loop)
   combine_blocks (loop);
 
  cleanup:
-  clean_predicate_lists (loop);
   if (ifc_bbs)
     {
+      unsigned int i;
+
+      for (i = 0; i < loop->num_nodes; i++)
+	free_bb_predicate (ifc_bbs[i]);
+
       free (ifc_bbs);
       ifc_bbs = NULL;
     }

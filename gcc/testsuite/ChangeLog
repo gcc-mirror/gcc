@@ -1,3 +1,8 @@
+2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44483
+	* gcc.dg/tree-ssa/pr44483.c: New.
+
 2010-06-11  Paul Brook  <paul@codesourcery.com>
  
 	* g++.dg/other/arm-neon-1.C: New test.
