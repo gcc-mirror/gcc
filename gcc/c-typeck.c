@@ -4413,12 +4413,13 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
 
 /* Issue -Wcast-qual warnings when appropriate.  TYPE is the type to
    which we are casting.  OTYPE is the type of the expression being
-   cast.  Both TYPE and OTYPE are pointer types.  -Wcast-qual appeared
-   on the command line.  Named address space qualifiers are not handled
-   here, because they result in different warnings.  */
+   cast.  Both TYPE and OTYPE are pointer types.  LOC is the location
+   of the cast.  -Wcast-qual appeared on the command line.  Named
+   address space qualifiers are not handled here, because they result
+   in different warnings.  */
 
 static void
-handle_warn_cast_qual (tree type, tree otype)
+handle_warn_cast_qual (location_t loc, tree type, tree otype)
 {
   tree in_type = type;
   tree in_otype = otype;
@@ -4451,15 +4452,15 @@ handle_warn_cast_qual (tree type, tree otype)
 	 && TREE_CODE (in_otype) == POINTER_TYPE);
 
   if (added)
-    warning (OPT_Wcast_qual, "cast adds %q#v qualifier to function type",
-	     added);
+    warning_at (loc, OPT_Wcast_qual,
+		"cast adds %q#v qualifier to function type", added);
 
   if (discarded)
     /* There are qualifiers present in IN_OTYPE that are not present
        in IN_TYPE.  */
-    warning (OPT_Wcast_qual,
-	     "cast discards %q#v qualifier from pointer target type",
-	     discarded);
+    warning_at (loc, OPT_Wcast_qual,
+		"cast discards %q#v qualifier from pointer target type",
+		discarded);
 
   if (added || discarded)
     return;
@@ -4492,10 +4493,10 @@ handle_warn_cast_qual (tree type, tree otype)
       if ((TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype)) != 0
 	  && !is_const)
 	{
-	  int added = TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype);
-	  warning (OPT_Wcast_qual,
-		   ("new %qv qualifier in middle of multi-level non-const cast "
-		    "is unsafe"), added);
+	  warning_at (loc, OPT_Wcast_qual,
+		      "to be safe all intermediate pointers in cast from "
+                      "%qT to %qT must be %<const%> qualified",
+		      otype, type);
 	  break;
 	}
       if (is_const)
@@ -4599,7 +4600,7 @@ build_c_cast (location_t loc, tree type, tree expr)
       if (warn_cast_qual
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE)
-	handle_warn_cast_qual (type, otype);
+	handle_warn_cast_qual (loc, type, otype);
 
       /* Warn about conversions between pointers to disjoint
 	 address spaces.  */
