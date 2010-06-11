@@ -1,3 +1,10 @@
+2010-06-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/43896
+	* trans-expr.c (gfc_conv_derived_to_class): Handle array-valued
+	functions with CLASS formal arguments.
+
 2010-06-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44207

@@ -2492,12 +2492,14 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
   ss = gfc_walk_expr (e);
   if (ss == gfc_ss_terminator)
     {
+      parmse->ss = NULL;
       gfc_conv_expr_reference (parmse, e);
       tmp = fold_convert (TREE_TYPE (ctree), parmse->expr);
       gfc_add_modify (&parmse->pre, ctree, tmp);
     }
   else
     {
+      parmse->ss = ss;
       gfc_conv_expr (parmse, e);
       gfc_add_modify (&parmse->pre, ctree, parmse->expr);
     }
