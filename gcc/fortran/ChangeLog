@@ -1,5 +1,9 @@
 2010-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_build_intrinsic_lib_fndecls): Fix comment.
+
+2010-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* mathbuiltins.def: Add builtins that do not directly correspond
 	to a Fortran intrinsic, with new macro OTHER_BUILTIN.
 	* f95-lang.c (gfc_init_builtin_functions): Define OTHER_BUILTIN.

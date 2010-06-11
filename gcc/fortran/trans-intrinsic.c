@@ -583,7 +583,7 @@ gfc_build_intrinsic_lib_fndecls (void)
       if (m->complex_long_double_built_in != END_BUILTINS)
 	m->complex10_decl = built_in_decls[m->complex_long_double_built_in];
 
-      /* For now, we assume that if real(kind=10) exists, it is long double.
+      /* For now, we assume that if real(kind=16) exists, it is long double.
 	 Later, we will deal with __float128 and break this assumption.  */
       if (m->long_double_built_in != END_BUILTINS)
 	m->real16_decl = built_in_decls[m->long_double_built_in];
