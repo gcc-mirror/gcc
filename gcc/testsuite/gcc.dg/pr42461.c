@@ -2,7 +2,7 @@
 /* Reported by Patrick Pelissier <patrick.pelissier@gmail.com> */
 
 /* { dg-do link } */
-/* { dg-options "-O" } */
+/* { dg-options "-O2" } */
 
 extern int link_failure (int) __attribute__ ((pure));
 
