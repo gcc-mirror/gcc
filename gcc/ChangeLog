@@ -1,5 +1,15 @@
 2010-06-11  Jan Hubicka  <jh@suse.cz>
 
+	* df-problems.c (df_live_scratch): Convert to bitmap_head.
+	(df_live_alloc): Initialize df_live_scratch when initializing
+	problem_data.
+	(df_live_transfer_function): Update uses of df_live_scratch.
+	(df_live_free): Free problem_data; clear df_live_scratch before
+	releasing the obstack.
+	(df_md_free): Free problem data.
+
+2010-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* doc/invoke.texi (Wsuggest-attribute): Document.
 	(Wmissing-noreturn): Remove.
 	* ipa-pure-const.c (warn_function_noreturn): New function.
