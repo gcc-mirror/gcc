@@ -1,3 +1,11 @@
+2010-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-family/c-cppbuiltin.c: Include cpp-id-data.h.
+	(lazy_hex_fp_values, lazy_hex_fp_value_count): New variables.
+	(lazy_hex_fp_value): New function.
+	(builtin_define_with_hex_fp_value): Provide definitions lazily.
+	* Makefile.in (c-family/c-cppbuiltin.o): Depend on $(CPP_ID_DATA_H).
+
 2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/44483

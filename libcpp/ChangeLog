@@ -1,3 +1,17 @@
+2010-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add user_builtin_macro
+	callback.
+	(enum cpp_builtin_type): Add BT_FIRST_USER and BT_LAST_USER.
+	(cpp_macro_definition): Remove const qual from second argument.
+	* macro.c (enter_macro_context): Call user_builtin_macro callback for
+	NODE_BUILTIN !NODE_USED macros.
+	(warn_of_redefinition): Likewise.  Remove const qual from second
+	argument.
+	(cpp_macro_definition): Likewise.
+	* pch.c (write_macdef, save_macros): Call user_builtin_macro callback
+	for NODE_BUILTIN !NODE_USED macros.
+
 2010-06-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Remove show_column.
