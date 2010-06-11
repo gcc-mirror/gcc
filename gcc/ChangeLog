@@ -1,3 +1,10 @@
+2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (pro_epilogue_adjust_stack_1) <TYPE_ALU>: Assert
+	that operand 0 == operand 1.  Use x86_maybe_negate_const_int to output
+	insn mnemonic.
+	(pro_epilogue_adjust_stack_rex64) <TYPE_ALU>: Ditto.
+
 2010-06-10  Dodji Seketeli  <dodji@redhat.com>
 
 	Fix bootstap on mips
@@ -469,8 +476,7 @@
 	* gensupport.h (message_with_line, n_comma_elts, scan_comma_elt):
 	Move to read-md.h.
 	* gensupport.c: Include read-md.h.
-	(message_with_line, n_comma_elts, scan_comma_elt): Move to
-	read-md.c.
+	(message_with_line, n_comma_elts, scan_comma_elt): Move to read-md.c.
 	* read-md.h, read-md.c: New files.
 
 2010-06-10  Anatoly Sokolov  <aesok@post.ru>
@@ -541,8 +547,8 @@
 2010-06-10  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/44460
-	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove TYPE_NEEDS_CONSTRUCTING
-	sanity check.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Remove
+	TYPE_NEEDS_CONSTRUCTING sanity check.
 
 2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -576,9 +582,9 @@
 
 2010-06-09  Changpeng Fang  <changpeng.fang@amd.com>
 
-        * tree-ssa-loop-prefetch.c (PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO) :
-        Change the PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO threshold value from
-        8 to 4.  Minor change of the related comments.
+	* tree-ssa-loop-prefetch.c (PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO) :
+	Change the PREFETCH_MOD_TO_UNROLL_FACTOR_RATIO threshold value from
+	8 to 4.  Minor change of the related comments.
 
 2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -634,11 +640,12 @@
 	* tree-vectorizer.h (vinfo_for_stmt): Remove check.
 	(set_vinfo_for_stmt, get_earlier_stmt, is_loop_header_bb_p): Change
 	gcc_assert to gcc_checking_assert.
-	* tree-flow-inline.h (gimple_vop, get_var_ann, relink_imm_use, phi_nodes
-	set_phi_nodes, phi_arg_index_from_use, op_iter_next_use,
+	* tree-flow-inline.h (gimple_vop, get_var_ann, relink_imm_use,
+	phi_nodes, set_phi_nodes, phi_arg_index_from_use, op_iter_next_use,
 	op_iter_next_def, op_iter_next_tree, op_iter_init, op_iter_init_use,
-	op_iter_init_phiuse, op_iter_init_phidef, array_ref_contains_indirect_ref,
-	ref_contains_array_ref): Use gcc_checking_assert.
+	op_iter_init_phiuse, op_iter_init_phidef,
+	array_ref_contains_indirect_ref, ref_contains_array_ref): Use
+	gcc_checking_assert.
 	* emit-rtl.h (set_first_insn, set_last_insn): Likewise.
 	* tree-ssa-live.h (var_to_partition, var_to_partition_to_var,
 	partition_is_global, live_on_entry, live_on_exit,
@@ -653,24 +660,26 @@
 2010-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.h (gcc_gimple_checking_assert): New macro.
- 	(gimple_set_def_ops, gimple_set_use_ops,
- 	gimple_set_vuse, gimple_set_vdef,
- 	gimple_omp_subcode, gimple_omp_set_subcode, gimple_ops, gimple_op,
- 	gimple_op_ptr, gimple_op_ptr, gimple_set_op, gimple_bind_set_block,
- 	gimple_asm_input_op, gimple_asm_input_op_ptr, gimple_asm_set_input_op,
- 	gimple_asm_output_op, gimple_asm_output_op_ptr,
- 	gimple_asm_set_output_op, gimple_asm_clobber_op, 
- 	gimple_asm_set_clobber_op, gimple_asm_label_op,
- 	gimple_asm_set_label_op, gimple_try_set_kind, gimple_try_catch_is_cleanup
- 	gimple_try_set_catch_is_cleanup, gimple_phi_arg, 
- 	gimple_switch_num_labels, gimple_switch_set_index, gimple_switch_label,
- 	gimple_switch_set_label, gimple_omp_for_index, gimple_omp_for_index_ptr,
- 	gimple_omp_for_set_index, gimple_omp_for_initial, gimple_omp_for_initial_ptr,
- 	gimple_omp_for_set_initial, gimple_omp_for_final, gimple_omp_for_final_ptr,
- 	gimple_omp_for_set_final, gimple_omp_for_incr, gimple_omp_for_incr_ptr,
- 	gimple_omp_for_set_incr, gimple_omp_for_set_cond, gimple_omp_for_cond): Make
- 	checking conditional with ENABLE_GIMPLE_CHECKING.
- 	(gimple_phi_set_arg): Likewise; replace memcpy by assignment.
+	(gimple_set_def_ops, gimple_set_use_ops,
+	gimple_set_vuse, gimple_set_vdef,
+	gimple_omp_subcode, gimple_omp_set_subcode, gimple_ops, gimple_op,
+	gimple_op_ptr, gimple_op_ptr, gimple_set_op, gimple_bind_set_block,
+	gimple_asm_input_op, gimple_asm_input_op_ptr, gimple_asm_set_input_op,
+	gimple_asm_output_op, gimple_asm_output_op_ptr,
+	gimple_asm_set_output_op, gimple_asm_clobber_op,
+	gimple_asm_set_clobber_op, gimple_asm_label_op,
+	gimple_asm_set_label_op, gimple_try_set_kind,
+	gimple_try_catch_is_cleanup, gimple_try_set_catch_is_cleanup,
+	gimple_phi_arg, gimple_switch_num_labels, gimple_switch_set_index,
+	gimple_switch_label, gimple_switch_set_label, gimple_omp_for_index,
+	gimple_omp_for_index_ptr, gimple_omp_for_set_index,
+	gimple_omp_for_initial, gimple_omp_for_initial_ptr,
+	gimple_omp_for_set_initial, gimple_omp_for_final,
+	gimple_omp_for_final_ptr, gimple_omp_for_set_final,
+	gimple_omp_for_incr, gimple_omp_for_incr_ptr, gimple_omp_for_set_incr,
+	gimple_omp_for_set_cond, gimple_omp_for_cond): Make checking
+	conditional with ENABLE_GIMPLE_CHECKING.
+	(gimple_phi_set_arg): Likewise; replace memcpy by assignment.
 
 2010-06-09  Sandra Loosemore  <sandra@codesourcery.com>
 
@@ -927,8 +936,7 @@
 
 	* tree-cfg.c (create_bb): Update comment to not reference
 	ggc_alloc_cleared.
-	* tree-ssa-structalias.c (struct heapvar_for_stmt): Fix param_is
-	value.
+	* tree-ssa-structalias.c (struct heapvar_for_stmt): Fix param_is value.
 
 	* varpool.c (varpool_node): Use typed GC allocation.
 	(varpool_extra_name_alias): Likewise.
@@ -1157,7 +1165,7 @@
 	(init_alias_analysis): Likewise.
 
 2010-06-08  Shujing Zhao  <pearly.zhao@oracle.com>
-	
+
 	* fold-const.c (fold_comparison): Remove redundant parenthesis.
 	* tree-inline.c (expand_call_inline): Pass translated return value of
 	cgraph_inline_failed_string to diagnostic function.
@@ -1230,8 +1238,7 @@
 	toplev.c.
 	* flags.h (flag_signed_char, flag_short_enums,
 	flag_pcc_struct_return, flag_ira_verbose,
-	flag_detailed_statistics, flag_remove_unreachable_functions):
-	Remove.
+	flag_detailed_statistics, flag_remove_unreachable_functions): Remove.
 	* toplev.c (flag_detailed_statistics, flag_signed_char,
 	flag_short_enums, flag_pcc_struct_return, flag_ira_verbose): Remove.
 	(DEFAULT_PCC_STRUCT_RETURN): Move definition to defaults.h.
@@ -1276,7 +1283,7 @@
 
 	PR rtl-optimization/44404
 	* auto-inc-dec.c (find_inc): Use reg_overlap_mentioned_p instead
-	of count_occurrences to see if it's safe to modify mem_insn.insn.
+	of count_occurrences to see if it's safe to modify mem_insn.
 
 2010-06-07  Richard Guenther  <rguenther@suse.de>
 
@@ -1457,8 +1464,7 @@
 
 	* tree-into-ssa.c (insert_phi_nodes): Use bitmap heads
 	for dominance frontiers.
-	(rewrite_into_ssa): Update for bitmap heads in dominance
-	frontiers.
+	(rewrite_into_ssa): Update for bitmap heads in dominance frontiers.
 	(insert_updated_phi_nodes_for): Likewise.
 	(update_ssa): Likewise.
 	* cfganal.c (compute_dominance_frontiers_1): Likewise.
@@ -2744,10 +2750,10 @@
 
 2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
 
- 	* c-lex.c: Do not include c-tree.h.
- 	* c-pretty-print.c: Likewise.
- 	* c-opts.c: Likewise.
- 	* c-gimplify.c: Likewise.
+	* c-lex.c: Do not include c-tree.h.
+	* c-pretty-print.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-gimplify.c: Likewise.
 	* c-common.c: Likewise.
 	* c-dump.c: Likewise.  Include c-common.h.
 
@@ -8172,7 +8178,7 @@
 	(next_operand_entry_id): New static variable.
 	(sort_by_operand_rank): Stabilize qsort comparator by using unique IDs.
 	(add_to_ops_vec): Assigned unique ID to operand entry.
- 	(struct oecount_s): New field ID.
+	(struct oecount_s): New field ID.
 	(oecount_cmp): Stabilize qsort comparotor by using unique IDs.
 	(undistribute_ops_list): Assign unique IDs to oecounts.
 	(init_reassoc): reset next_operand_entry_id.
