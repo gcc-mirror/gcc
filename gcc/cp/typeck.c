@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree pfn_from_ptrmemfunc (tree);
 static tree delta_from_ptrmemfunc (tree);
-static tree convert_for_assignment (tree, tree, const char *, tree, int,
+static tree convert_for_assignment (tree, tree, impl_conv_rhs, tree, int,
 				    tsubst_flags_t, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree, 
@@ -3493,7 +3493,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 	    {
 	      parmval = convert_for_initialization
 		(NULL_TREE, type, val, flags,
-		 "argument passing", fndecl, i, complain);
+		 ICR_ARGPASS, fndecl, i, complain);
 	      parmval = convert_for_arg_passing (type, parmval);
 	    }
 
@@ -5486,14 +5486,30 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2,
 /* Given a list of expressions, return a compound expression
    that performs them all and returns the value of the last of them.  */
 
-tree build_x_compound_expr_from_list (tree list, const char *msg)
+tree
+build_x_compound_expr_from_list (tree list, expr_list_kind exp)
 {
   tree expr = TREE_VALUE (list);
 
   if (TREE_CHAIN (list))
     {
-      if (msg)
-	permerror (input_location, "%s expression list treated as compound expression", msg);
+      switch (exp)
+	{
+	  case ELK_INIT:
+	    permerror (input_location, "expression list treated as compound "
+				       "expression in initializer");
+	    break;
+	  case ELK_MEM_INIT:
+	    permerror (input_location, "expression list treated as compound "
+				       "expression in mem-initializer");
+	    break;
+	  case ELK_FUNC_CAST:
+	    permerror (input_location, "expression list treated as compound "
+				       "expression in functional cast");
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (expr, TREE_VALUE (list), 
@@ -6767,10 +6783,10 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     /* Calls with INIT_EXPR are all direct-initialization, so don't set
        LOOKUP_ONLYCONVERTING.  */
     newrhs = convert_for_initialization (lhs, olhstype, newrhs, LOOKUP_NORMAL,
-					 "initialization", NULL_TREE, 0,
+					 ICR_INIT, NULL_TREE, 0,
                                          complain);
   else
-    newrhs = convert_for_assignment (olhstype, newrhs, "assignment",
+    newrhs = convert_for_assignment (olhstype, newrhs, ICR_ASSIGN,
 				     NULL_TREE, 0, complain, LOOKUP_IMPLICIT);
 
   if (!same_type_p (lhstype, olhstype))
@@ -7177,7 +7193,7 @@ delta_from_ptrmemfunc (tree t)
 
 static tree
 convert_for_assignment (tree type, tree rhs,
-			const char *errtype, tree fndecl, int parmnum,
+			impl_conv_rhs errtype, tree fndecl, int parmnum,
 			tsubst_flags_t complain, int flags)
 {
   tree rhstype;
@@ -7214,23 +7230,25 @@ convert_for_assignment (tree type, tree rhs,
   if (c_dialect_objc ())
     {
       int parmno;
+      tree selector;
       tree rname = fndecl;
 
-      if (!strcmp (errtype, "assignment"))
-	parmno = -1;
-      else if (!strcmp (errtype, "initialization"))
-	parmno = -2;
-      else
-	{
-	  tree selector = objc_message_selector ();
-
-	  parmno = parmnum;
-
-	  if (selector && parmno > 1)
-	    {
-	      rname = selector;
-	      parmno -= 1;
-	    }
+      switch (errtype)
+        {
+	  case ICR_ASSIGN:
+	    parmno = -1;
+	    break;
+	  case ICR_INIT:
+	    parmno = -2;
+	    break;
+	  default:
+	    selector = objc_message_selector ();
+	    parmno = parmnum;
+	    if (selector && parmno > 1)
+	      {
+		rname = selector;
+		parmno -= 1;
+	      }
 	}
 
       if (objc_compare_types (type, rhstype, parmno, rname))
@@ -7267,8 +7285,35 @@ convert_for_assignment (tree type, tree rhs,
 		error ("cannot convert %qT to %qT for argument %qP to %qD",
 		       rhstype, type, parmnum, fndecl);
 	      else
-		error ("cannot convert %qT to %qT in %s", rhstype, type,
-		       errtype);
+		switch (errtype)
+		  {
+		    case ICR_DEFAULT_ARGUMENT:
+		      error ("cannot convert %qT to %qT in default argument",
+			     rhstype, type);
+		      break;
+		    case ICR_ARGPASS:
+		      error ("cannot convert %qT to %qT in argument passing",
+			     rhstype, type);
+		      break;
+		    case ICR_CONVERTING:
+		      error ("cannot convert %qT to %qT",
+			     rhstype, type);
+		      break;
+		    case ICR_INIT:
+		      error ("cannot convert %qT to %qT in initialization",
+			     rhstype, type);
+		      break;
+		    case ICR_RETURN:
+		      error ("cannot convert %qT to %qT in return",
+			     rhstype, type);
+		      break;
+		    case ICR_ASSIGN:
+		      error ("cannot convert %qT to %qT in assignment",
+			     rhstype, type);
+		      break;
+		    default:
+		      gcc_unreachable();
+		  }
 	    }
 	  return error_mark_node;
 	}
@@ -7280,9 +7325,42 @@ convert_for_assignment (tree type, tree rhs,
 	  && coder == codel
 	  && check_missing_format_attribute (type, rhstype)
 	  && (complain & tf_warning))
-	warning (OPT_Wmissing_format_attribute,
-		 "%s might be a candidate for a format attribute",
-		 errtype);
+	switch (errtype)
+	  {
+	    case ICR_ARGPASS:
+	    case ICR_DEFAULT_ARGUMENT:
+	      if (fndecl)
+		warning (OPT_Wmissing_format_attribute,
+			 "parameter %d of %qD might be a candidate "
+			 "for a format attribute", parmnum, fndecl);
+	      else
+		warning (OPT_Wmissing_format_attribute,
+			 "parameter might be a candidate "
+			 "for a format attribute");
+	      break;
+	    case ICR_CONVERTING:
+	      warning (OPT_Wmissing_format_attribute,
+		       "target of conversion might be might be a candidate "
+		       "for a format attribute");
+	      break;
+	    case ICR_INIT:
+	      warning (OPT_Wmissing_format_attribute,
+		       "target of initialization might be a candidate "
+		       "for a format attribute");
+	      break;
+	    case ICR_RETURN:
+	      warning (OPT_Wmissing_format_attribute,
+		       "return type might be a candidate "
+		       "for a format attribute");
+	      break;
+	    case ICR_ASSIGN:
+	      warning (OPT_Wmissing_format_attribute,
+		       "left-hand side of assignment might be a candidate "
+		       "for a format attribute");
+	      break;
+	    default:
+	      gcc_unreachable();
+	  }
     }
 
   /* If -Wparentheses, warn about a = b = c when a has type bool and b
@@ -7324,7 +7402,7 @@ convert_for_assignment (tree type, tree rhs,
 
 tree
 convert_for_initialization (tree exp, tree type, tree rhs, int flags,
-			    const char *errtype, tree fndecl, int parmnum,
+			    impl_conv_rhs errtype, tree fndecl, int parmnum,
                             tsubst_flags_t complain)
 {
   enum tree_code codel = TREE_CODE (type);
@@ -7715,7 +7793,7 @@ check_return_expr (tree retval, bool *no_warning)
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */
       retval = convert_for_initialization
-	(NULL_TREE, functype, retval, flags, "return", NULL_TREE, 0,
+	(NULL_TREE, functype, retval, flags, ICR_RETURN, NULL_TREE, 0,
          tf_warning_or_error);
       retval = convert (valtype, retval);
 

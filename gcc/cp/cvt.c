@@ -481,7 +481,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
   else
     {
       rval = convert_for_initialization (NULL_TREE, type, expr, flags,
-					 "converting", 0, 0,
+					 ICR_CONVERTING, 0, 0,
                                          tf_warning_or_error);
       if (rval == NULL_TREE || rval == error_mark_node)
 	return rval;

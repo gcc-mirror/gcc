@@ -418,6 +418,23 @@ typedef enum readonly_error_kind
   REK_DECREMENT
 } readonly_error_kind;
 
+/* Possible cases of expression list used by build_x_compound_expr_from_list. */
+typedef enum expr_list_kind {
+  ELK_INIT,		/* initializer */
+  ELK_MEM_INIT,		/* member initializer */
+  ELK_FUNC_CAST		/* functional cast */
+} expr_list_kind; 
+
+/* Possible cases of implicit bad rhs conversions. */
+typedef enum impl_conv_rhs {
+  ICR_DEFAULT_ARGUMENT, /* default argument */
+  ICR_CONVERTING,       /* converting */
+  ICR_INIT,             /* initialization */
+  ICR_ARGPASS,          /* argument passing */
+  ICR_RETURN,           /* return */
+  ICR_ASSIGN            /* assignment */
+} impl_conv_rhs;
+
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -5400,7 +5417,7 @@ extern tree cp_build_unary_op                   (enum tree_code, tree, int,
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(tree, tree, tree, 
                                                  tsubst_flags_t);
-extern tree build_x_compound_expr_from_list	(tree, const char *);
+extern tree build_x_compound_expr_from_list	(tree, expr_list_kind);
 extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
 extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
@@ -5415,7 +5432,7 @@ extern tree build_x_modify_expr			(tree, enum tree_code, tree,
 extern tree cp_build_modify_expr		(tree, enum tree_code, tree,
 						 tsubst_flags_t);
 extern tree convert_for_initialization		(tree, tree, tree, int,
-						 const char *, tree, int,
+						 impl_conv_rhs, tree, int,
                                                  tsubst_flags_t);
 extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);

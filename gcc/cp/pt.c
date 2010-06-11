@@ -5921,15 +5921,15 @@ coerce_template_parms (tree parms,
     {
       if (complain & tf_error)
 	{
-          const char *or_more = "";
           if (variadic_p)
             {
-              or_more = " or more";
               --nparms;
+	      error ("wrong number of template arguments "
+		     "(%d, should be %d or more)", nargs, nparms);
             }
-
-	  error ("wrong number of template arguments (%d, should be %d%s)",
-                 nargs, nparms, or_more);
+	  else
+	     error ("wrong number of template arguments "
+		    "(%d, should be %d)", nargs, nparms);
 
 	  if (in_decl)
 	    error ("provided for %q+D", in_decl);
