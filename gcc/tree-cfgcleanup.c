@@ -568,23 +568,9 @@ fixup_noreturn_call (gimple stmt)
           imm_use_iterator iter;
 	  gimple use_stmt;
 
-	  /* All statements using the OP are unreachable or PHI
-	     statements where the edge correspoing to OP use is unreachable.
-	     We need to remove all normal statements so fixup_cfg will not
-	     try to update them and keep all PHIs but remove use of the SSA
-	     name or verifier will complain.  */
           FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
-	    {
-	      if (gimple_code (use_stmt) == GIMPLE_PHI)
-		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		  SET_USE (use_p, error_mark_node);
-	      else
-		{
-		  gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-		  gsi_remove (&gsi, true);
-		}
-	    }
-	  release_ssa_name (op);
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, error_mark_node);
 	}
       update_stmt (stmt);
       changed = true;
