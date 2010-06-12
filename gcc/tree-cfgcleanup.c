@@ -560,7 +560,7 @@ fixup_noreturn_call (gimple stmt)
       tree op = gimple_call_lhs (stmt);
       gimple_call_set_lhs (stmt, NULL_TREE);
 
-      /* We need to remove SSA name to avoid checking.
+      /* We need to remove SSA name to avoid checking errors.
 	 All uses are dominated by the noreturn and thus will
 	 be removed afterwards.
 	 We proactively remove affected non-PHI statements to avoid
