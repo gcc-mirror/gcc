@@ -399,6 +399,7 @@ are write-only operations.
 
 static void *df_get_bb_info (struct dataflow *, unsigned int);
 static void df_set_bb_info (struct dataflow *, unsigned int, void *);
+static void df_clear_bb_info (struct dataflow *, unsigned int);
 #ifdef DF_DEBUG_CFG
 static void df_set_clean_cfg (void);
 #endif
@@ -523,11 +524,8 @@ df_set_blocks (bitmap blocks)
 		      if (bb)
 			{
 			  void *bb_info = df_get_bb_info (dflow, bb_index);
-			  if (bb_info)
-			    {
-			      dflow->problem->free_bb_fun (bb, bb_info);
-			      df_set_bb_info (dflow, bb_index, NULL);
-			    }
+			  dflow->problem->free_bb_fun (bb, bb_info);
+			  df_clear_bb_info (dflow, bb_index);
 			}
 		    }
 		}
@@ -1294,7 +1292,8 @@ df_get_bb_info (struct dataflow *dflow, unsigned int index)
     return NULL;
   if (index >= dflow->block_info_size)
     return NULL;
-  return (struct df_scan_bb_info *) dflow->block_info[index];
+  return (void *)((char *)dflow->block_info
+		  + index * dflow->problem->block_info_elt_size);
 }
 
 
@@ -1305,7 +1304,22 @@ df_set_bb_info (struct dataflow *dflow, unsigned int index,
 		void *bb_info)
 {
   gcc_assert (dflow->block_info);
-  dflow->block_info[index] = bb_info;
+  memcpy ((char *)dflow->block_info
+	  + index * dflow->problem->block_info_elt_size,
+	  bb_info, dflow->problem->block_info_elt_size);
+}
+
+
+/* Clear basic block info.  */
+
+static void
+df_clear_bb_info (struct dataflow *dflow, unsigned int index)
+{
+  gcc_assert (dflow->block_info);
+  gcc_assert (dflow->block_info_size > index);
+  memset ((char *)dflow->block_info
+	  + index * dflow->problem->block_info_elt_size,
+	  0, dflow->problem->block_info_elt_size);
 }
 
 
@@ -1378,6 +1392,29 @@ df_set_bb_dirty_nonlr (basic_block bb)
     }
 }
 
+/* Grow the bb_info array.  */
+
+void
+df_grow_bb_info (struct dataflow *dflow)
+{
+  unsigned int new_size = last_basic_block + 1;
+  if (dflow->block_info_size < new_size)
+    {
+      new_size += new_size / 4;
+      dflow->block_info
+         = (void *)XRESIZEVEC (char, (char *)dflow->block_info,
+			       new_size
+			       * dflow->problem->block_info_elt_size);
+      memset ((char *)dflow->block_info
+	      + dflow->block_info_size
+	      * dflow->problem->block_info_elt_size,
+	      0,
+	      (new_size - dflow->block_info_size)
+	      * dflow->problem->block_info_elt_size);
+      dflow->block_info_size = new_size;
+    }
+}
+
 
 /* Clear the dirty bits.  This is called from places that delete
    blocks.  */
@@ -1392,6 +1429,7 @@ df_clear_bb_dirty (basic_block bb)
 	bitmap_clear_bit (dflow->out_of_date_transfer_functions, bb->index);
     }
 }
+
 /* Called from the rtl_compact_blocks to reorganize the problems basic
    block info.  */
 
@@ -1400,10 +1438,8 @@ df_compact_blocks (void)
 {
   int i, p;
   basic_block bb;
-  void **problem_temps;
-  int size = last_basic_block * sizeof (void *);
+  void *problem_temps;
   bitmap_head tmp;
-  problem_temps = XNEWVAR (void *, size);
 
   bitmap_initialize (&tmp, &df_bitmap_obstack);
   for (p = 0; p < df->num_problems_defined; p++)
@@ -1433,6 +1469,8 @@ df_compact_blocks (void)
       /* Now shuffle the block info for the problem.  */
       if (dflow->problem->free_bb_fun)
 	{
+	  int size = last_basic_block * dflow->problem->block_info_elt_size;
+	  problem_temps = XNEWVAR (char, size);
 	  df_grow_bb_info (dflow);
 	  memcpy (problem_temps, dflow->block_info, size);
 
@@ -1442,22 +1480,15 @@ df_compact_blocks (void)
 	  i = NUM_FIXED_BLOCKS;
 	  FOR_EACH_BB (bb)
 	    {
-	      df_set_bb_info (dflow, i, problem_temps[bb->index]);
-	      problem_temps[bb->index] = NULL;
+	      df_set_bb_info (dflow, i,
+			      (char *)problem_temps
+			      + bb->index * dflow->problem->block_info_elt_size);
 	      i++;
 	    }
-	  memset (dflow->block_info + i, 0,
-		  (last_basic_block - i) *sizeof (void *));
-
-	  /* Free any block infos that were not copied (and NULLed).
-	     These are from orphaned blocks.  */
-	  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
-	    {
-	      basic_block bb = BASIC_BLOCK (i);
-	      if (problem_temps[i] && bb)
-		dflow->problem->free_bb_fun
-		  (bb, problem_temps[i]);
-	    }
+	  memset ((char *)dflow->block_info
+		  + i * dflow->problem->block_info_elt_size, 0,
+		  (last_basic_block - i)
+		  * dflow->problem->block_info_elt_size);
 	}
     }
 
@@ -1481,8 +1512,6 @@ df_compact_blocks (void)
     }
 
   bitmap_clear (&tmp);
-
-  free (problem_temps);
 
   i = NUM_FIXED_BLOCKS;
   FOR_EACH_BB (bb)
@@ -1525,7 +1554,6 @@ df_bb_replace (int old_index, basic_block new_block)
       if (dflow->block_info)
 	{
 	  df_grow_bb_info (dflow);
-	  gcc_assert (df_get_bb_info (dflow, old_index) == NULL);
 	  df_set_bb_info (dflow, old_index,
 			  df_get_bb_info (dflow, new_block_index));
 	}
@@ -1561,7 +1589,7 @@ df_bb_delete (int bb_index)
 	  if (bb_info)
 	    {
 	      dflow->problem->free_bb_fun (bb, bb_info);
-	      df_set_bb_info (dflow, bb_index, NULL);
+	      df_clear_bb_info (dflow, bb_index);
 	    }
 	}
     }

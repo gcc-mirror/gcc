@@ -277,6 +277,7 @@ struct df_problem {
   df_verify_solution_start verify_start_fun;
   df_verify_solution_end verify_end_fun;
   struct df_problem *dependent_problem;
+  unsigned int block_info_elt_size;
 
   /* The timevar id associated with this pass.  */
   timevar_id_t tv_id;
@@ -294,7 +295,7 @@ struct dataflow
 
   /* Array indexed by bb->index, that contains basic block problem and
      solution specific information.  */
-  void **block_info;
+  void *block_info;
   unsigned int block_info_size;
 
   /* The pool to allocate the block_info from. */
@@ -1037,7 +1038,7 @@ static inline struct df_scan_bb_info *
 df_scan_get_bb_info (unsigned int index)
 {
   if (index < df_scan->block_info_size)
-    return (struct df_scan_bb_info *) df_scan->block_info[index];
+    return &((struct df_scan_bb_info *) df_scan->block_info)[index];
   else
     return NULL;
 }
@@ -1046,7 +1047,7 @@ static inline struct df_rd_bb_info *
 df_rd_get_bb_info (unsigned int index)
 {
   if (index < df_rd->block_info_size)
-    return (struct df_rd_bb_info *) df_rd->block_info[index];
+    return &((struct df_rd_bb_info *) df_rd->block_info)[index];
   else
     return NULL;
 }
@@ -1055,7 +1056,7 @@ static inline struct df_lr_bb_info *
 df_lr_get_bb_info (unsigned int index)
 {
   if (index < df_lr->block_info_size)
-    return (struct df_lr_bb_info *) df_lr->block_info[index];
+    return &((struct df_lr_bb_info *) df_lr->block_info)[index];
   else
     return NULL;
 }
@@ -1064,7 +1065,7 @@ static inline struct df_md_bb_info *
 df_md_get_bb_info (unsigned int index)
 {
   if (index < df_md->block_info_size)
-    return (struct df_md_bb_info *) df_md->block_info[index];
+    return &((struct df_md_bb_info *) df_md->block_info)[index];
   else
     return NULL;
 }
@@ -1073,7 +1074,7 @@ static inline struct df_live_bb_info *
 df_live_get_bb_info (unsigned int index)
 {
   if (index < df_live->block_info_size)
-    return (struct df_live_bb_info *) df_live->block_info[index];
+    return &((struct df_live_bb_info *) df_live->block_info)[index];
   else
     return NULL;
 }
@@ -1082,7 +1083,7 @@ static inline struct df_byte_lr_bb_info *
 df_byte_lr_get_bb_info (unsigned int index)
 {
   if (index < df_byte_lr->block_info_size)
-    return (struct df_byte_lr_bb_info *) df_byte_lr->block_info[index];
+    return &((struct df_byte_lr_bb_info *) df_byte_lr->block_info)[index];
   else
     return NULL;
 }

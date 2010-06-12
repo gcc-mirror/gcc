@@ -1,5 +1,59 @@
 2010-06-12  Jan Hubicka  <jh@suse.cz>
 
+	* df-core.c (df_clear_bb_info): New function.
+	(df_set_blocks): bb_info is always allocated.
+	(df_get_bb_info): Use block_info_elt_size.
+	(df_set_bb_info): Likewise.
+	(df_compact_blocks): Update for new block_info.
+	(grow_bb_info): New function.
+	* df-problems.c (df_grow_bb_info): Move to df-core.c
+	(df_rd_set_bb_info): Remove.
+	(df_rd_free_bb_info): Do not free block pool.
+	(df_rd_alloc): Do not create pool, use check for
+	obstack presence instead of NULL pointer for new blocks.
+	(df_rd_free): DO not free alloc pool; clear block_info.
+	(problem_RD): Add size of block info structure.
+	(df_lr_set_bb_info): Remove.
+	(df_lr_free_bb_info): Do not free block pool.
+	(df_lr_alloc): Do not create pool, use check for
+	obstack presence instead of NULL pointer for new blocks.
+	(df_lr_free): DO not free alloc pool; clear block_info.
+	(problem_LR): Add size of block info structure.
+	(df_live_set_bb_info): Remove.
+	(df_live_free_bb_info): Do not free block pool.
+	(df_live_alloc): Do not create pool, use check for
+	obstack presence instead of NULL pointer for new blocks.
+	(df_live_free): DO not free alloc pool; clear block_info.
+	(problem_LIVE): Add size of block info structure.
+	(problem_CHAIN): Add size of block info structure.
+	(df_byte_lr_set_bb_info): Remove.
+	(df_byte_lr_free_bb_info): Do not free block pool.
+	(df_byte_lr_alloc): Do not create pool, use check for
+	obstack presence instead of NULL pointer for new blocks.
+	(df_byte_lr_free): DO not free alloc pool; clear block_info.
+	(problem_BYTE_LR): Add size of block info structure.
+	(problem_NOTE): Add size of block info structure.
+	(df_byte_MD_set_bb_info): Remove.
+	(df_byte_MD_free_bb_info): Do not free block pool.
+	(df_byte_MD_alloc): Do not create pool, use check for
+	obstack presence instead of NULL pointer for new blocks.
+	(df_byte_MD_free): DO not free alloc pool; clear block_info.
+	(problem_BD): Add size of block info structure.
+	* df-scan.c (df_scan_free_internal): Free block pool.
+	(df_scan_set_bb_info): Remove.
+	(df_scan_free_bb_info): Check for artificial_defs instead
+	of bb_info being non-NULL.
+	(df_scan_alloc): DO not create df_scan_block pool.
+	(problem_SCAN): Set size of block info.
+	(df_bb_refs_record): Do not allocate bb_info.
+	* df.h (df_problem): Add block_info_elt_size.
+	(struct dataflow): Change block_info to void *.
+	(df_scan_get_bb_info, df_rd_get_bb_info, df_lr_get_bb_info,
+	df_md_get_bb_info, df_live_get_bb_info, df_byte_lr_get_bb_info): Return
+	in-line structures.
+
+2010-06-12  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimize/44485
 	* tree-cfgcleanup.c (fixup_noreturn_call): Remove basic blocks containing
 	use of return value of noreturn function.
