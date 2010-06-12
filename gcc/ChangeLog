@@ -1,3 +1,15 @@
+2010-06-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts-common.c: Include options.h.
+	(integral_argument): Move from opts.c.
+	(decode_cmdline_option): New.  Based on read_cmdline_option.
+	* opts.c (integral_argument): Move to opts-common.c.
+	(read_cmdline_option): Move most contents to
+	decode_cmdline_option.  Use %qs in diagnostics.
+	* opts.h (CL_ERR_DISABLED, CL_ERR_MISSING_ARG, CL_ERR_WRONG_LANG,
+	CL_ERR_UINT_ARG, struct cl_decoded_option, integral_argument,
+	decode_cmdline_option): New.
+
 2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44481

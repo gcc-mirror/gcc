@@ -381,22 +381,6 @@ static void complain_wrong_lang (const char *, const struct cl_option *,
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
 
-/* If ARG is a non-negative integer made up solely of digits, return its
-   value, otherwise return -1.  */
-static int
-integral_argument (const char *arg)
-{
-  const char *p = arg;
-
-  while (*p && ISDIGIT (*p))
-    p++;
-
-  if (*p == '\0')
-    return atoi (arg);
-
-  return -1;
-}
-
 /* Return a malloced slash-separated list of languages in MASK.  */
 static char *
 write_langs (unsigned int mask)
@@ -536,131 +520,61 @@ handle_option (int opt_index, int value, const char *arg,
 static unsigned int
 read_cmdline_option (const char **argv, unsigned int lang_mask)
 {
-  size_t opt_index;
-  const char *opt, *arg = 0;
-  char *dup = 0;
-  int value = 1;
-  unsigned int result = 0;
+  struct cl_decoded_option decoded;
+  unsigned int result;
+  const char *opt;
   const struct cl_option *option;
 
   opt = argv[0];
 
-  opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
-  if (opt_index == cl_options_count
-      && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
-      && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
+  result = decode_cmdline_option (argv, lang_mask, &decoded);
+  if (decoded.opt_index == cl_options_count)
     {
-      /* Drop the "no-" from negative switches.  */
-      size_t len = strlen (opt) - 3;
-
-      dup = XNEWVEC (char, len + 1);
-      dup[0] = '-';
-      dup[1] = opt[1];
-      memcpy (dup + 2, opt + 5, len - 2 + 1);
-      opt = dup;
-      value = 0;
-      opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
-      if (opt_index == cl_options_count && opt[1] == 'W')
-	{
-	  /* We don't generate warnings for unknown -Wno-* options
-             unless we issue diagnostics.  */
+      if (opt[1] == 'W' && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
+	/* We don't generate warnings for unknown -Wno-* options
+	   unless we issue diagnostics.  */
 	  postpone_unknown_option_warning (argv[0]);
-	  result = 1;
-	  goto done;
-	}
+      else
+	error ("unrecognized command line option %qs", opt);
+      return result;
     }
 
-  if (opt_index == cl_options_count)
-    goto done;
+  option = &cl_options[decoded.opt_index];
 
-  option = &cl_options[opt_index];
-
-  /* Reject negative form of switches that don't take negatives as
-     unrecognized.  */
-  if (!value && (option->flags & CL_REJECT_NEGATIVE))
-    goto done;
-
-  /* We've recognized this switch.  */
-  result = 1;
-
-  /* Check to see if the option is disabled for this configuration.  */
-  if (option->flags & CL_DISABLED)
+  if (decoded.errors & CL_ERR_DISABLED)
     {
       error ("command line option %qs"
 	     " is not supported by this configuration", opt);
       goto done;
     }
 
-  /* Sort out any argument the switch takes.  */
-  if (option->flags & CL_JOINED)
-    {
-      /* Have arg point to the original switch.  This is because
-	 some code, such as disable_builtin_function, expects its
-	 argument to be persistent until the program exits.  */
-      arg = argv[0] + cl_options[opt_index].opt_len + 1;
-      if (!value)
-	arg += strlen ("no-");
-
-      if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
-	{
-	  if (option->flags & CL_SEPARATE)
-	    {
-	      arg = argv[1];
-	      result = 2;
-	    }
-	  else
-	    /* Missing argument.  */
-	    arg = NULL;
-	}
-    }
-  else if (option->flags & CL_SEPARATE)
-    {
-      arg = argv[1];
-      result = 2;
-    }
-
-  /* Now we've swallowed any potential argument, complain if this
-     is a switch for a different front end.  */
-  if (!(option->flags & (lang_mask | CL_COMMON | CL_TARGET)))
+  if (decoded.errors & CL_ERR_WRONG_LANG)
     {
       complain_wrong_lang (argv[0], option, lang_mask);
       goto done;
     }
-  else if ((option->flags & CL_TARGET)
-	   && (option->flags & CL_LANG_ALL)
-	   && !(option->flags & lang_mask))
+
+  if (decoded.errors & CL_ERR_MISSING_ARG)
     {
-      /* Complain for target flag language mismatches if any languages
-	 are specified.  */
-      complain_wrong_lang (argv[0], option, lang_mask);
+      if (!lang_hooks.missing_argument (opt, decoded.opt_index))
+	error ("missing argument to %qs", opt);
       goto done;
     }
 
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+  if (decoded.errors & CL_ERR_UINT_ARG)
     {
-      if (!lang_hooks.missing_argument (opt, opt_index))
-	error ("missing argument to \"%s\"", opt);
+      error ("argument to %qs should be a non-negative integer",
+	     option->opt_text);
       goto done;
     }
 
-  /* If the switch takes an integer, convert it.  */
-  if (arg && (option->flags & CL_UINTEGER))
-    {
-      value = integral_argument (arg);
-      if (value == -1)
-	{
-	  error ("argument to \"%s\" should be a non-negative integer",
-		 option->opt_text);
-	  goto done;
-	}
-    }
+  gcc_assert (!decoded.errors);
 
-  if (!handle_option (opt_index, value, arg, lang_mask, DK_UNSPECIFIED))
-    result = 0;
+  if (!handle_option (decoded.opt_index, decoded.value, decoded.arg,
+		      lang_mask, DK_UNSPECIFIED))
+    error ("unrecognized command line option %qs", opt);
 
  done:
-  if (dup)
-    free (dup);
   return result;
 }
 
@@ -780,12 +694,6 @@ read_cmdline_options (unsigned int argc, const char **argv, unsigned int lang_ma
 	}
 
       n = read_cmdline_option (argv + i, lang_mask);
-
-      if (!n)
-	{
-	  n = 1;
-	  error ("unrecognized command line option \"%s\"", opt);
-	}
     }
 }
 
