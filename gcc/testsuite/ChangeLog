@@ -1,3 +1,8 @@
+2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44481
+	* gcc.target/i386/pr44481.c: New test.
+
 2010-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
@@ -854,7 +859,7 @@
 
 	PR fortran/43228
 	* gfortran.dg/namelist_61.f90: New test.
-	
+
 2010-03-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/target-supports-dg.exp (check-flags): Provide defaults for
@@ -890,7 +895,7 @@
 	Backport:
 	2009-10-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* lib/target-supports.exp (add_options_for_bind_pic_locally): New.
-	
+
 	2009-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* g++.dg/ipa/iinline-1.C: Use dg-add-options bind_pic_locally.
 	* g++.dg/other/first-global.C: Likewise.
@@ -904,7 +909,7 @@
 	* gcc.dg/ipa/ipa-5.c: Likewise.
 	* gcc.dg/ipa/ipa-7.c: Likewise.
 	* gcc.dg/ipa/ipacost-2.c: Likewise.
-	
+
 	2010-02-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* gcc.dg/tree-ssa/inline-4.c: Bind pic locally.
 

@@ -1,3 +1,12 @@
+2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44481
+	* config/i386/i386.md (UNSPEC_PARITY): New unspec.
+	(paritydi2_cmp): Use UNSPEC_PARITY unspec insted of parity RTX.
+	(partiysi2_cmp): Ditto.
+	(*partiyhi2_cmp): Ditto.
+	(*parityqi2_cmp): Remove.
+
 2010-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movsi_1) <TYPE_LEA>: Use %a modifier
