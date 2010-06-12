@@ -1,3 +1,9 @@
+2010-06-12  Kai Tietz
+
+	PR ada/43731
+	* gcc-interface/Makefile.in: Add rules for multilib x86/x64
+	mingw targets.
+
 2010-06-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc-interface/utils.c (update_pointer_to): Initialize last.
