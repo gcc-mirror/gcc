@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "coretypes.h"
 #include "opts.h"
+#include "options.h"
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -105,6 +106,138 @@ find_opt (const char *input, int lang_mask)
 
   /* Return the best wrong match, or cl_options_count if none.  */
   return match_wrong_lang;
+}
+
+/* If ARG is a non-negative integer made up solely of digits, return its
+   value, otherwise return -1.  */
+
+int
+integral_argument (const char *arg)
+{
+  const char *p = arg;
+
+  while (*p && ISDIGIT (*p))
+    p++;
+
+  if (*p == '\0')
+    return atoi (arg);
+
+  return -1;
+}
+
+/* Decode the switch beginning at ARGV for the language indicated by
+   LANG_MASK, into the structure *DECODED.  Returns the number of
+   switches consumed.  */
+
+unsigned int
+decode_cmdline_option (const char **argv, unsigned int lang_mask,
+		       struct cl_decoded_option *decoded)
+{
+  size_t opt_index;
+  const char *opt, *arg = 0;
+  char *dup = 0;
+  int value = 1;
+  unsigned int result = 1;
+  const struct cl_option *option;
+  int errors = 0;
+
+  opt = argv[0];
+
+  opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
+  if (opt_index == cl_options_count
+      && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
+      && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
+    {
+      /* Drop the "no-" from negative switches.  */
+      size_t len = strlen (opt) - 3;
+
+      dup = XNEWVEC (char, len + 1);
+      dup[0] = '-';
+      dup[1] = opt[1];
+      memcpy (dup + 2, opt + 5, len - 2 + 1);
+      opt = dup;
+      value = 0;
+      opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
+    }
+
+  if (opt_index == cl_options_count)
+    goto done;
+
+  option = &cl_options[opt_index];
+
+  /* Reject negative form of switches that don't take negatives as
+     unrecognized.  */
+  if (!value && (option->flags & CL_REJECT_NEGATIVE))
+    {
+      opt_index = cl_options_count;
+      goto done;
+    }
+
+  /* Check to see if the option is disabled for this configuration.  */
+  if (option->flags & CL_DISABLED)
+    errors |= CL_ERR_DISABLED;
+
+  /* Sort out any argument the switch takes.  */
+  if (option->flags & CL_JOINED)
+    {
+      /* Have arg point to the original switch.  This is because
+	 some code, such as disable_builtin_function, expects its
+	 argument to be persistent until the program exits.  */
+      arg = argv[0] + cl_options[opt_index].opt_len + 1;
+      if (!value)
+	arg += strlen ("no-");
+
+      if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
+	{
+	  if (option->flags & CL_SEPARATE)
+	    {
+	      arg = argv[1];
+	      result = 2;
+	      if (arg == NULL)
+		result = 1;
+	    }
+	  else
+	    /* Missing argument.  */
+	    arg = NULL;
+	}
+    }
+  else if (option->flags & CL_SEPARATE)
+    {
+      arg = argv[1];
+      result = 2;
+      if (arg == NULL)
+	result = 1;
+    }
+
+  /* Check if this is a switch for a different front end.  */
+  if (!(option->flags & (lang_mask | CL_COMMON | CL_TARGET)))
+    errors |= CL_ERR_WRONG_LANG;
+  else if ((option->flags & CL_TARGET)
+	   && (option->flags & CL_LANG_ALL)
+	   && !(option->flags & lang_mask))
+    /* Complain for target flag language mismatches if any languages
+       are specified.  */
+      errors |= CL_ERR_WRONG_LANG;
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+    errors |= CL_ERR_MISSING_ARG;
+
+  /* If the switch takes an integer, convert it.  */
+  if (arg && (option->flags & CL_UINTEGER))
+    {
+      value = integral_argument (arg);
+      if (value == -1)
+	errors |= CL_ERR_UINT_ARG;
+    }
+
+ done:
+  if (dup)
+    free (dup);
+  decoded->opt_index = opt_index;
+  decoded->arg = arg;
+  decoded->value = value;
+  decoded->errors = errors;
+  return result;
 }
 
 /* Return true if NEXT_OPT_IDX cancels OPT_IDX.  Return false if the
