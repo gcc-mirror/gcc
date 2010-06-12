@@ -400,8 +400,12 @@ mips-sgi-irix[56]*)
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="{$tmake_file} mips/t-crtfm"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="{$tmake_file} mips/t-crtfm"
 	;;
 mips*-*-openbsd*)
 	;;

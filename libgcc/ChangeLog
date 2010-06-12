@@ -1,3 +1,9 @@
+2010-06-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.host (mips64*-*-linux*, mips*-*-linux*): Add mips/t-crtfm
+	to tmake_file.  Add crtfastmath.o to extra_parts.
+	* config/mips/t-crtfm: New.
+
 2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config.host (sparc64-*-rtems*): New target.
