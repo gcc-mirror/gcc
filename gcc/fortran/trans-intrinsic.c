@@ -1329,7 +1329,7 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   args = (tree *) alloca (sizeof (tree) * num_args);
 
   var = gfc_create_var (pchar_type_node, "pstr");
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, var);
@@ -1370,7 +1370,7 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
   args = (tree *) alloca (sizeof (tree) * num_args);
 
   var = gfc_create_var (pchar_type_node, "pstr");
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, var);
@@ -4623,7 +4623,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 
   var = gfc_create_var (gfc_get_pchar_type (expr->ts.kind), "pstr");
   addr = gfc_build_addr_expr (ppvoid_type_node, var);
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, len);
