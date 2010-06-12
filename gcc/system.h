@@ -1,7 +1,7 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009
+   2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -768,7 +768,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	SMALL_ARG_MAX ASM_OUTPUT_SHARED_BSS ASM_OUTPUT_SHARED_COMMON	   \
 	ASM_OUTPUT_SHARED_LOCAL ASM_MAKE_LABEL_LINKONCE			   \
 	STACK_CHECK_PROBE_INTERVAL STACK_CHECK_PROBE_LOAD		   \
-	ORDER_REGS_FOR_LOCAL_ALLOC
+	ORDER_REGS_FOR_LOCAL_ALLOC FUNCTION_OUTGOING_VALUE
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

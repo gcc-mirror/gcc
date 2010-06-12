@@ -673,11 +673,6 @@ default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
       && !DECL_P (fn_decl_or_type))
     fn_decl_or_type = NULL;
 
-#ifdef FUNCTION_OUTGOING_VALUE
-  if (outgoing)
-    return FUNCTION_OUTGOING_VALUE (ret_type, fn_decl_or_type);
-#endif
-
 #ifdef FUNCTION_VALUE
   return FUNCTION_VALUE (ret_type, fn_decl_or_type);
 #else
