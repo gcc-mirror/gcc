@@ -1,3 +1,9 @@
+2010-06-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/44485
+	* tree-cfgcleanup.c (fixup_noreturn_call): Remove basic blocks containing
+	use of return value of noreturn function.
+
 2010-06-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* targhooks.c (default_function_value): Don't use
