@@ -173,7 +173,7 @@ Common Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-aliasing=
-Common Joined UInteger Var(warn_strict_aliasing) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_aliasing) Init(-1) Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-overflow
@@ -181,7 +181,7 @@ Common Warning
 Warn about optimizations that assume that signed overflow is undefined
 
 Wstrict-overflow=
-Common Joined UInteger Var(warn_strict_overflow) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_overflow) Init(-1) Warning
 Warn about optimizations that assume that signed overflow is undefined
 
 Wsuggest-attribute=const
@@ -305,7 +305,7 @@ Common Separate
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
-Common Joined UInteger Var(flag_abi_version) Init(2)
+Common Joined RejectNegative UInteger Var(flag_abi_version) Init(2)
 
 falign-functions
 Common Report Var(align_functions,0) Optimization UInteger
@@ -794,7 +794,7 @@ Enable link-time optimization.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined UInteger Var(flag_lto_compression_level) Init(-1)
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
 
 flto-report
@@ -1338,7 +1338,7 @@ Common Report Var(flag_tree_loop_optimize) Init(1) Optimization
 Enable loop optimizations on tree level
 
 ftree-parallelize-loops=
-Common Report Joined UInteger Var(flag_tree_parallelize_loops) Init(1)
+Common Report Joined RejectNegative UInteger Var(flag_tree_parallelize_loops) Init(1)
 Enable automatic parallelization of loops
 
 ftree-phiprop
