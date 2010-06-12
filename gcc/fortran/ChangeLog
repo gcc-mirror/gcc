@@ -1,3 +1,11 @@
+2010-06-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Fix
+	return type.
+	* trans-intrinsic.c (gfc_conv_intrinsic_fdate): Fix argument type.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+
 2010-06-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40117
