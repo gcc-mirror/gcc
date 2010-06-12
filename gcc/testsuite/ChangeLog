@@ -1,5 +1,9 @@
 2010-06-11  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/opts-1.c: New test.
+
+2010-06-11  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/funroll-loops-all.c: Update expected error.
 
 2010-06-11  Uros Bizjak  <ubizjak@gmail.com>
