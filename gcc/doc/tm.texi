@@ -4445,11 +4445,6 @@ This macro has been deprecated.  Use @code{TARGET_FUNCTION_VALUE} for
 a new target instead.
 @end defmac
 
-@defmac FUNCTION_OUTGOING_VALUE (@var{valtype}, @var{func})
-This macro has been deprecated.  Use @code{TARGET_FUNCTION_VALUE} for
-a new target instead.
-@end defmac
-
 @defmac LIBCALL_VALUE (@var{mode})
 A C expression to create an RTX representing the place where a library
 function returns a value of mode @var{mode}.
