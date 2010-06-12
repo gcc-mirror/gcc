@@ -1,3 +1,8 @@
+2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/44347
+	* gfortran.dg/selected_real_kind_1.f90: New.
+
 2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44481

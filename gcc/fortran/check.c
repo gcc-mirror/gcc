@@ -2835,11 +2835,23 @@ gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r)
       return FAILURE;
     }
 
-  if (p != NULL && type_check (p, 0, BT_INTEGER) == FAILURE)
-    return FAILURE;
+  if (p)
+    {
+      if (type_check (p, 0, BT_INTEGER) == FAILURE)
+	return FAILURE;
 
-  if (r != NULL && type_check (r, 1, BT_INTEGER) == FAILURE)
-    return FAILURE;
+      if (scalar_check (p, 0) == FAILURE)
+	return FAILURE;
+    }
+
+  if (r)
+    {
+      if (type_check (r, 1, BT_INTEGER) == FAILURE)
+	return FAILURE;
+
+      if (scalar_check (r, 1) == FAILURE)
+	return FAILURE;
+    }
 
   return SUCCESS;
 }

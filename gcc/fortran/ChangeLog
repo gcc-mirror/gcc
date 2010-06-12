@@ -1,3 +1,9 @@
+2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/44347
+	* check.c (gfc_check_selected_real_kind): Verify that the
+	actual arguments are scalar.
+
 2010-06-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44430
