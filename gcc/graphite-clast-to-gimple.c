@@ -469,11 +469,10 @@ precision_for_interval (mpz_t low, mpz_t up)
   return precision;
 }
 
-/* Return a type that could represent the integer value VAL, or
-   otherwise return NULL_TREE.  */
+/* Return a type that could represent the integer value VAL.  */
 
 static tree
-gcc_type_for_interval (mpz_t low, mpz_t up, tree old_type)
+gcc_type_for_interval (mpz_t low, mpz_t up)
 {
   bool unsigned_p = true;
   int precision, prec_up, prec_int;
@@ -482,14 +481,12 @@ gcc_type_for_interval (mpz_t low, mpz_t up, tree old_type)
 
   gcc_assert (value_le (low, up));
 
-  /* Preserve the signedness of the old IV.  */
-  if ((old_type && !TYPE_UNSIGNED (old_type))
-      || value_neg_p (low))
+  if (value_neg_p (low))
     unsigned_p = false;
 
   prec_up = precision_for_value (up);
   prec_int = precision_for_interval (low, up);
-  precision = prec_up > prec_int ? prec_up : prec_int;
+  precision = MAX (prec_up, prec_int);
 
   if (precision > BITS_PER_WORD)
     {
@@ -516,7 +513,7 @@ gcc_type_for_interval (mpz_t low, mpz_t up, tree old_type)
 static tree
 gcc_type_for_value (mpz_t val)
 {
-  return gcc_type_for_interval (val, val, NULL_TREE);
+  return gcc_type_for_interval (val, val);
 }
 
 /* Return the type for the clast_term T used in STMT.  */
@@ -726,11 +723,10 @@ compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
 }
 
 /* Compute the type for the induction variable at LEVEL for the
-   statement PBB, based on the transformed schedule of PBB.  OLD_TYPE
-   is the type of the old induction variable for that loop.  */
+   statement PBB, based on the transformed schedule of PBB.  */
 
 static tree
-compute_type_for_level_1 (poly_bb_p pbb, int level, tree old_type)
+compute_type_for_level (poly_bb_p pbb, int level)
 {
   mpz_t low, up;
   tree type;
@@ -739,37 +735,11 @@ compute_type_for_level_1 (poly_bb_p pbb, int level, tree old_type)
   value_init (up);
 
   compute_bounds_for_level (pbb, level, low, up);
-  type = gcc_type_for_interval (low, up, old_type);
+  type = gcc_type_for_interval (low, up);
 
   value_clear (low);
   value_clear (up);
   return type;
-}
-
-/* Compute the type for the induction variable at LEVEL for the
-   statement PBB, based on the transformed schedule of PBB.  */
-
-static tree
-compute_type_for_level (poly_bb_p pbb, int level)
-{
-  tree oldiv = pbb_to_depth_to_oldiv (pbb, level);
-  tree type = TREE_TYPE (oldiv);
-
-  if (type && POINTER_TYPE_P (type))
-    {
-#ifdef ENABLE_CHECKING
-      tree ctype = compute_type_for_level_1 (pbb, level, type);
-
-      /* In the case of a pointer type, check that after the loop
-	 transform, the lower and the upper bounds of the type fit the
-	 oldiv pointer type.  */
-      gcc_assert (TYPE_PRECISION (type) >= TYPE_PRECISION (ctype)
-		  && integer_zerop (lower_bound_in_type (ctype, ctype)));
-#endif
-      return type;
-    }
-
-  return compute_type_for_level_1 (pbb, level, type);
 }
 
 /* Walks a CLAST and returns the first statement in the body of a
