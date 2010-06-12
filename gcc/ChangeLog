@@ -1,3 +1,7 @@
+2010-06-12  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/arm.c (thumb2_reorg): Fix errors in previous change.
+
 2010-06-12  Jan Hubicka  <jh@suse.cz>
 
 	* df-core.c (df_clear_bb_info): New function.

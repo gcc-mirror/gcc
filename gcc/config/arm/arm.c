@@ -11457,13 +11457,12 @@ thumb2_reorg (void)
 		  rtx dst = XEXP (pat, 0);
 		  rtx src = XEXP (pat, 1);
 		  rtx op0 = XEXP (src, 0);
-		  rtx op1 = XEXP (src, 1);
 		  if (rtx_equal_p (dst, op0)
 		      || GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
 		    {
 		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
 		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
-		      rtx vec = gen_rtvec (2, pat, clobber);
+		      rtvec vec = gen_rtvec (2, pat, clobber);
 		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
 		      INSN_CODE (insn) = -1;
 		    }
