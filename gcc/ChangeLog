@@ -1,3 +1,12 @@
+2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44481
+	* config/i386/i386.md (UNSPEC_PARITY): New unspec.
+	(paritydi2_cmp): Use UNSPEC_PARITY unspec insted of parity RTX.
+	(partiysi2_cmp): Ditto.
+	(*partiyhi2_cmp): Ditto.
+	(*parityqi2_cmp): Remove.
+
 2010-06-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41371
@@ -28,7 +37,7 @@
 
 	Backport from mainline:
 	2010-05-28  Iain Sandoe  <iains@gcc.gnu.org>
-        * config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
+	* config.gcc (*-*-darwin*): Adjust t-make fragments for Darwin.
 
 2010-06-09  Edmar Wienskoski  <edmar@freescale.com>
 

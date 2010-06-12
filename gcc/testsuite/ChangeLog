@@ -1,3 +1,8 @@
+2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44481
+	* gcc.target/i386/pr44481.c: New test.
+
 2010-06-10  Iain Sandoe <iains@gcc.gnu.org>
 
 	Backport from mainline:
@@ -74,7 +79,7 @@
 	* objc.dg/stret-2.m: Restrict to ilp32 targets.
 	* objc.dg/pch/pch.exp: Apply tests to both Gnu and NeXT
 	runtimes on Darwin.
-	
+
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44366
@@ -120,11 +125,11 @@
 	Additional add dg-compile to avoid failure due
 	missing foo symbol.
 
-        * gcc.dg/compound-literal-1.c: Fix for llp64.
-        * gcc.dg/pr32370.c: Likewise.
-        * gcc.dg/pr37561.c: Likewise.
-        * gcc.dg/pr41340.c: Likewise.
-        * gcc.dg/pr41551.c: Likewise.
+	* gcc.dg/compound-literal-1.c: Fix for llp64.
+	* gcc.dg/pr32370.c: Likewise.
+	* gcc.dg/pr37561.c: Likewise.
+	* gcc.dg/pr41340.c: Likewise.
+	* gcc.dg/pr41551.c: Likewise.
 
 2010-06-07  Iain Sandoe <iains@gcc.gnu.org>
 
@@ -1068,7 +1073,7 @@
 
 2010-04-06  Dodji Seketeli  <dodji@redhat.com>
 
-	* g++.dg/debug/dwarf2/redeclaration-1.C: Moved from 
+	* g++.dg/debug/dwarf2/redeclaration-1.C: Moved from
 	c-c++-common/dwarf2/redeclaration-1.C
 
 2010-04-06  Jakub Jelinek  <jakub@redhat.com>
@@ -1095,7 +1100,7 @@
 	* gcc.c-torture/execute/pr43629.c: New testcase.
 
 2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
-            Dominique d'Humieres  <dominiq@lps.ens.fr>
+	Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/43605
 	* gfortran.dg/ftell_3.f90: Enhance test case by reading more.
@@ -1124,7 +1129,7 @@
 
 	PR tree-optimization/43141
 	* gcc.dg/guality/pr43141.c: New test.
-	
+
 2010-04-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp/_Pragma1.C: Skip on alpha*-dec-osf*.
@@ -1437,13 +1442,13 @@
 	* objc/execute/class_self-2.m: Include <stdlib.h>.
 	* objc/execute/forward-1.x: Do not XFAIL for 32bit powerpc-darwin.
 	* objc.dg/desig-init-1.m: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT 
+	Protocol1.h) and next-mapping.h as required. XFAIL run if NeXT
 	and 64bit. Use new NeXT interface as required.
 	* objc.dg/special/unclaimed-category-1.m: Ditto.
 	* objc.dg/special/unclaimed-category-1.h: Ditto.
 	* objc.dg/special/unclaimed-category-1a.m: Ditto.
 	* objc.dg/func-ptr-1.m: Ditto.
-	* objc.dg/stret-1.m: Ditto.	
+	* objc.dg/stret-1.m: Ditto.
 	* objc.dg/encode-2.m: Ditto.
 	* objc.dg/category-1.m: Ditto.
 	* objc.dg/encode-3.m: Ditto.
@@ -1463,10 +1468,10 @@
 	* objc.dg/call-super-1.m: Ditto.
 	* objc.dg/type-size-2.m: Ditto.
 	* objc.dg/method-10.m: Ditto.
-	* objc.dg/defs.m: Ditto.	
+	* objc.dg/defs.m: Ditto.
 	* objc.dg/const-str-3.m: Ditto.
 	* objc.dg/try-catch-6.m: Use shared wrapper headers (Object1.h,
-	Protocol1.h) and next-mapping.h as required. Use new NeXT 
+	Protocol1.h) and next-mapping.h as required. Use new NeXT
 	interface as required.
 	* objc.dg/super-class-4.m: Ditto.
 	* objc.dg/comp-types-8.m: Ditto.
