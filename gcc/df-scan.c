@@ -266,7 +266,6 @@ df_scan_free_internal (void)
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
 
-  free_alloc_pool (df_scan->block_pool);
   free_alloc_pool (problem_data->ref_base_pool);
   free_alloc_pool (problem_data->ref_artificial_pool);
   free_alloc_pool (problem_data->ref_regular_pool);
@@ -280,17 +279,6 @@ df_scan_free_internal (void)
 }
 
 
-/* Set basic block info.  */
-
-static void
-df_scan_set_bb_info (unsigned int index,
-		     struct df_scan_bb_info *bb_info)
-{
-  df_grow_bb_info (df_scan);
-  df_scan->block_info[index] = (void *) bb_info;
-}
-
-
 /* Free basic block info.  */
 
 static void
@@ -298,7 +286,9 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
 {
   struct df_scan_bb_info *bb_info = (struct df_scan_bb_info *) vbb_info;
   unsigned int bb_index = bb->index;
-  if (bb_info)
+
+  /* See if bb_info is initialized.  */
+  if (bb_info->artificial_defs)
     {
       rtx insn;
       FOR_BB_INSNS (bb, insn)
@@ -312,13 +302,15 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
 	bb_info = df_scan_get_bb_info (bb_index);
 
       /* Get rid of any artificial uses or defs.  */
-      df_ref_chain_delete_du_chain (bb_info->artificial_defs);
-      df_ref_chain_delete_du_chain (bb_info->artificial_uses);
-      df_ref_chain_delete (bb_info->artificial_defs);
-      df_ref_chain_delete (bb_info->artificial_uses);
-      bb_info->artificial_defs = NULL;
-      bb_info->artificial_uses = NULL;
-      pool_free (df_scan->block_pool, bb_info);
+      if (bb_info->artificial_defs)
+	{
+	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
+	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
+	  df_ref_chain_delete (bb_info->artificial_defs);
+	  df_ref_chain_delete (bb_info->artificial_uses);
+	  bb_info->artificial_defs = NULL;
+	  bb_info->artificial_uses = NULL;
+	}
     }
 }
 
@@ -338,11 +330,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
      everything apart.  */
   if (df_scan->problem_data)
     df_scan_free_internal ();
-
-  df_scan->block_pool
-    = create_alloc_pool ("df_scan_block pool",
-			 sizeof (struct df_scan_bb_info),
-			 block_size);
 
   problem_data = XNEW (struct df_scan_problem_data);
   df_scan->problem_data = problem_data;
@@ -383,11 +370,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
     {
       unsigned int bb_index = bb->index;
       struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb_index);
-      if (!bb_info)
-	{
-	  bb_info = (struct df_scan_bb_info *) pool_alloc (df_scan->block_pool);
-	  df_scan_set_bb_info (bb_index, bb_info);
-	}
       bb_info->artificial_defs = NULL;
       bb_info->artificial_uses = NULL;
     }
@@ -539,6 +521,7 @@ static struct df_problem problem_SCAN =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
+  sizeof (struct df_scan_bb_info),/* Size of entry of block_info array.  */
   TV_DF_SCAN,                 /* Timing variable.  */
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
@@ -3698,23 +3681,12 @@ df_bb_refs_record (int bb_index, bool scan_insns)
   basic_block bb = BASIC_BLOCK (bb_index);
   rtx insn;
   int luid = 0;
-  struct df_scan_bb_info *bb_info;
   struct df_collection_rec collection_rec;
 
   if (!df)
     return;
 
-  bb_info = df_scan_get_bb_info (bb_index);
-
-  /* Need to make sure that there is a record in the basic block info. */
-  if (!bb_info)
-    {
-      bb_info = (struct df_scan_bb_info *) pool_alloc (df_scan->block_pool);
-      df_scan_set_bb_info (bb_index, bb_info);
-      bb_info->artificial_defs = NULL;
-      bb_info->artificial_uses = NULL;
-    }
-
+  df_grow_bb_info (df_scan);
   collection_rec.def_vec = VEC_alloc (df_ref, stack, 128);
   collection_rec.use_vec = VEC_alloc (df_ref, stack, 32);
   collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
