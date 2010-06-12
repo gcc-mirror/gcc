@@ -1,3 +1,10 @@
+2010-06-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40117
+	* gfortran.dg/typebound_proc_4.f03: Modified error message.
+	* gfortran.dg/typebound_proc_14.f03: New.
+	* gfortran.dg/typebound_proc_15.f03: New.
+
 2010-06-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/opts-1.c: New test.
