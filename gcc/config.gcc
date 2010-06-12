@@ -1750,6 +1750,7 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 			tm_defines="${tm_defines} MIPS_ISA_DEFAULT=65"
 			;;
 	esac
+	extra_parts="$extra_parts crtfastmath.o"
 	gnu_ld=yes
 	gas=yes
 	test x$with_llsc != x || with_llsc=yes
@@ -1764,6 +1765,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         mipsisa32*)
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
+	extra_parts="$extra_parts crtfastmath.o"
 	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-openbsd*)
