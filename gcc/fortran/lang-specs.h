@@ -28,7 +28,7 @@
 			     %{O*} %{undef}"
 
 /* Options that f951 should know about, even if not preprocessing.  */
-#define CPP_FORWARD_OPTIONS "%{i*} %{I*}"
+#define CPP_FORWARD_OPTIONS "%{i*} %{I*} %{M*}"
 
 #define F951_CPP_OPTIONS    "%{!nocpp: -cpp %g.f90 %{E} %(cpp_unique_options) \
 			     %{E|M|MM:%(cpp_debug_options) " CPP_ONLY_OPTIONS \
