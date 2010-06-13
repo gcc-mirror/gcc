@@ -140,13 +140,13 @@ namespace __gnu_parallel
 
   /** @brief Equivalent to std::min. */
   template<typename _Tp>
-    const _Tp&
+    inline const _Tp&
     min(const _Tp& __a, const _Tp& __b)
     { return (__a < __b) ? __a : __b; }
 
   /** @brief Equivalent to std::max. */
   template<typename _Tp>
-    const _Tp&
+    inline const _Tp&
     max(const _Tp& __a, const _Tp& __b)
     { return (__a > __b) ? __a : __b; }
 
@@ -300,7 +300,7 @@ namespace __gnu_parallel
   /** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
    *  If features the usual random-access iterator functionality.
    *  @param _Tp Sequence _M_value type.
-   *  @param _DifferenceType Sequence difference type.
+   *  @param _DifferenceTp Sequence difference type.
    */
   template<typename _Tp, typename _DifferenceTp>
     class _PseudoSequenceIterator
@@ -353,7 +353,7 @@ namespace __gnu_parallel
       the same element.
       *  The copies are not stored explicitly, of course.
       *  @param _Tp Sequence _M_value type.
-      *  @param _DifferenceType Sequence difference type.
+      *  @param _DifferenceTp Sequence difference type.
       */
   template<typename _Tp, typename _DifferenceTp>
     class _PseudoSequence

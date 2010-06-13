@@ -1,3 +1,9 @@
+2010-06-13  Paolo Carlini <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (min, max): Mark inline.
+	* include/parallel/set_operations.h (__parallel_set_operation):
+	Uglify the Operation template parameter.
+
 2010-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/shared_ptr.h (hash<shared_ptr>): Add.
