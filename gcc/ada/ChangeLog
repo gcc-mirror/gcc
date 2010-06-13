@@ -1,3 +1,9 @@
+2010-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gnat_rm.texi: Move to GFDL version 1.3.
+	* gnat-style.texi: Ditto.
+	* gnat_ugn.texi: Ditto.
+
 2010-06-12  Kai Tietz
 
 	PR ada/43731
