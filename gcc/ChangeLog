@@ -1,3 +1,11 @@
+2010-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline:
+	2009-09-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config.gcc (*-*-freebsd*): Enable default_use_cxa_atexit
+	to match the system compiler's configuration at inflection point.
+
 2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44481
