@@ -1,3 +1,9 @@
+2010-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libiberty.texi: Remove reference to GCC 3 and 2001 (thrice).
+	Update copyright years.
+	Move to GFDL 1.3.
+
 2010-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43838
