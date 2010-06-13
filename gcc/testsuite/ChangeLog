@@ -1,3 +1,10 @@
+2010-06-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/plugin/header_plugin.c: Add "c-family/" to c-common.h
+	and c-pretty-print.h.
+
+	* g++.dg/plugin/pragma_plugin.c: Add "c-family/" to c-pragma.h.
+
 2010-06-13  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.dg/whole_file_18.f90: Updated error message.

@@ -13,8 +13,8 @@
 /* gcc/ headers. */
 #include "cp/cp-tree.h"
 #include "diagnostic.h"
-#include "c-common.h"
-#include "c-pretty-print.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pretty-print.h"
 #include "tree-iterator.h"
 #include "plugin.h"
 #include "tree-flow.h"

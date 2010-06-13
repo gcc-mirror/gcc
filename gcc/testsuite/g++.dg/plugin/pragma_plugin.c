@@ -9,7 +9,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "function.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "cpplib.h"
 #include "tree-pass.h"
 #include "intl.h"
