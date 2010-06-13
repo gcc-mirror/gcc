@@ -1,3 +1,9 @@
+2010-06-13  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* typeck.c (convert_for_assignment): Fix comment. Change message
+	format from %d to %qP.
+	(convert_for_initialization): Fix comment. 
+
 2010-06-11  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* cp-tree.h (expr_list_kind): New type.
