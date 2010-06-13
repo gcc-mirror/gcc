@@ -1087,7 +1087,11 @@ lto_fixup_type (tree t, void *data)
       else
 	LTO_FIXUP_SUBTREE (TYPE_CONTEXT (t));
     }
-  LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE (TYPE_CANONICAL (t));
+
+  /* TYPE_CANONICAL does not need to be fixed up, instead it should
+     always point to ourselves at this time as we never fixup
+     non-canonical ones.  */
+  gcc_assert (TYPE_CANONICAL (t) == t);
 
   /* The following re-creates proper variant lists while fixing up
      the variant leaders.  We do not stream TYPE_NEXT_VARIANT so the

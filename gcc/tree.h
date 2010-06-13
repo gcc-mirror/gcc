@@ -2090,26 +2090,34 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type.mode = (MODE))
 
-/* The "canonical" type for this type node, which can be used to
-   compare the type for equality with another type. If two types are
+/* The "canonical" type for this type node, which is used by frontends to
+   compare the type for equality with another type.  If two types are
    equal (based on the semantics of the language), then they will have
    equivalent TYPE_CANONICAL entries.
 
-   As a special case, if TYPE_CANONICAL is NULL_TREE, then it cannot
-   be used for comparison against other types. Instead, the type is
+   As a special case, if TYPE_CANONICAL is NULL_TREE, and thus
+   TYPE_STRUCTURAL_EQUALITY_P is true, then it cannot
+   be used for comparison against other types.  Instead, the type is
    said to require structural equality checks, described in
-   TYPE_STRUCTURAL_EQUALITY_P. */
+   TYPE_STRUCTURAL_EQUALITY_P.
+
+   For unqualified aggregate and function types the middle-end relies on
+   TYPE_CANONICAL to tell whether two variables can be assigned
+   to each other without a conversion.  The middle-end also makes sure
+   to assign the same alias-sets to the type partition with equal
+   TYPE_CANONICAL of their unqualified variants.  */
 #define TYPE_CANONICAL(NODE) (TYPE_CHECK (NODE)->type.canonical)
 /* Indicates that the type node requires structural equality
-   checks. The compiler will need to look at the composition of the
+   checks.  The compiler will need to look at the composition of the
    type to determine whether it is equal to another type, rather than
-   just comparing canonical type pointers. For instance, we would need
+   just comparing canonical type pointers.  For instance, we would need
    to look at the return and parameter types of a FUNCTION_TYPE
-   node. */
+   node.  */
 #define TYPE_STRUCTURAL_EQUALITY_P(NODE) (TYPE_CANONICAL (NODE) == NULL_TREE)
 /* Sets the TYPE_CANONICAL field to NULL_TREE, indicating that the
-   type node requires structural equality. */
+   type node requires structural equality.  */
 #define SET_TYPE_STRUCTURAL_EQUALITY(NODE) (TYPE_CANONICAL (NODE) = NULL_TREE)
+
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 #define TYPE_IBIT(NODE) (GET_MODE_IBIT (TYPE_MODE (NODE)))
 #define TYPE_FBIT(NODE) (GET_MODE_FBIT (TYPE_MODE (NODE)))

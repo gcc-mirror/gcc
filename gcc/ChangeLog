@@ -1,3 +1,17 @@
+2010-06-13  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-in.c (lto_input_ts_type_tree_pointers):
+	Do not stream but initialize TYPE_CANONICAL to NULL.
+	(lto_output_ts_type_tree_pointers): Do not stream TYPE_CANONICAL.
+	* gimple.c (gimple_types_compatible_p): Disregard
+	TYPE_STRUCTURAL_EQUALITY_P.
+	(gimple_register_type): Use TYPE_CANONICAL as cache.
+	* lto-streamer.c (lto_record_common_node): Zero TYPE_CANONICAL
+	before registering common types.
+	* config/i386/i386.c (ix86_function_arg_boundary): Do not
+	use TYPE_CANONICAL, instead use TYPE_MAIN_VARIANT.
+	* tree.h (TYPE_CANONICAL): Clarify documentation.
+
 2010-06-13  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,

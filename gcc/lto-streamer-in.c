@@ -2192,7 +2192,8 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
   if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_BINFO (expr) = lto_input_tree (ib, data_in);
   TYPE_CONTEXT (expr) = lto_input_tree (ib, data_in);
-  TYPE_CANONICAL (expr) = lto_input_tree (ib, data_in);
+  /* TYPE_CANONICAL gets re-computed during type merging.  */
+  TYPE_CANONICAL (expr) = NULL_TREE;
   TYPE_STUB_DECL (expr) = lto_input_tree (ib, data_in);
 }
 
