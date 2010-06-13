@@ -5,7 +5,7 @@
 !
       PROGRAM MAIN
       REAL A
-      CALL SUB(A)             ! { dg-error "must have an explicit interface" }
+      CALL SUB(A)             ! { dg-error "requires an explicit interface" }
       END PROGRAM
 
       SUBROUTINE SUB(A,I)

@@ -1,3 +1,7 @@
+2010-06-13  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/whole_file_18.f90: Updated error message.
+
 2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
 
         * gfortran.dg/whole_file_20.f03: New.
