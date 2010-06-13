@@ -24,6 +24,12 @@ bool gfc_cpp_enabled (void);
 
 bool gfc_cpp_preprocess_only (void);
 
+bool gfc_cpp_makedep (void);
+
+void gfc_cpp_add_dep (const char *name, bool system);
+
+void gfc_cpp_add_target (const char *name);
+
 const char *gfc_cpp_temporary_file (void);
 
 
