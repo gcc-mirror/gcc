@@ -927,7 +927,7 @@ bitmap_and (bitmap dst, const_bitmap a, const_bitmap b)
   /* Ensure that dst->current is valid.  */
   dst->current = dst->first;
   bitmap_elt_clear_from (dst, dst_elt);
-  gcc_assert (!dst->current == !dst->first);
+  gcc_checking_assert (!dst->current == !dst->first);
   if (dst->current)
     dst->indx = dst->current->indx;
 }
@@ -975,8 +975,8 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	}
     }
   bitmap_elt_clear_from (a, a_elt);
-  gcc_assert (!a->current == !a->first
-	      && (!a->current || a->indx == a->current->indx));
+  gcc_checking_assert (!a->current == !a->first
+		       && (!a->current || a->indx == a->current->indx));
 }
 
 
@@ -1119,7 +1119,7 @@ bitmap_and_compl (bitmap dst, const_bitmap a, const_bitmap b)
       changed = true;
       bitmap_elt_clear_from (dst, dst_elt);
     }
-  gcc_assert (!dst->current == !dst->first);
+  gcc_checking_assert (!dst->current == !dst->first);
   if (dst->current)
     dst->indx = dst->current->indx;
 
@@ -1175,8 +1175,8 @@ bitmap_and_compl_into (bitmap a, const_bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
-  gcc_assert (!a->current == !a->first
-	      && (!a->current || a->indx == a->current->indx));
+  gcc_checking_assert (!a->current == !a->first
+		       && (!a->current || a->indx == a->current->indx));
   return changed != 0;
 }
 
@@ -1470,8 +1470,8 @@ bitmap_compl_and_into (bitmap a, const_bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
-  gcc_assert (!a->current == !a->first
-	      && (!a->current || a->indx == a->current->indx));
+  gcc_checking_assert (!a->current == !a->first
+		       && (!a->current || a->indx == a->current->indx));
   return;
 }
 
@@ -1576,7 +1576,7 @@ bitmap_ior (bitmap dst, const_bitmap a, const_bitmap b)
       changed = true;
       bitmap_elt_clear_from (dst, dst_elt);
     }
-  gcc_assert (!dst->current == !dst->first);
+  gcc_checking_assert (!dst->current == !dst->first);
   if (dst->current)
     dst->indx = dst->current->indx;
   return changed;
@@ -1615,7 +1615,7 @@ bitmap_ior_into (bitmap a, const_bitmap b)
       a_elt = *a_prev_pnext;
     }
 
-  gcc_assert (!a->current == !a->first);
+  gcc_checking_assert (!a->current == !a->first);
   if (a->current)
     a->indx = a->current->indx;
   return changed;
@@ -1693,7 +1693,7 @@ bitmap_xor (bitmap dst, const_bitmap a, const_bitmap b)
   /* Ensure that dst->current is valid.  */
   dst->current = dst->first;
   bitmap_elt_clear_from (dst, dst_elt);
-  gcc_assert (!dst->current == !dst->first);
+  gcc_checking_assert (!dst->current == !dst->first);
   if (dst->current)
     dst->indx = dst->current->indx;
 }
@@ -1750,7 +1750,7 @@ bitmap_xor_into (bitmap a, const_bitmap b)
 	  a_elt = next;
 	}
     }
-  gcc_assert (!a->current == !a->first);
+  gcc_checking_assert (!a->current == !a->first);
   if (a->current)
     a->indx = a->current->indx;
 }
@@ -1932,7 +1932,7 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b, const_bitmap k
       changed = true;
       bitmap_elt_clear_from (dst, dst_elt);
     }
-  gcc_assert (!dst->current == !dst->first);
+  gcc_checking_assert (!dst->current == !dst->first);
   if (dst->current)
     dst->indx = dst->current->indx;
 
@@ -2028,7 +2028,7 @@ bitmap_ior_and_into (bitmap a, const_bitmap b, const_bitmap c)
     }
 
  done:
-  gcc_assert (!a->current == !a->first);
+  gcc_checking_assert (!a->current == !a->first);
   if (a->current)
     a->indx = a->current->indx;
   return changed;

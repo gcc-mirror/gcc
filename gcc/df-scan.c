@@ -1554,7 +1554,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       if (include_uses)
@@ -1566,7 +1566,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       if (include_eq_uses)
@@ -1578,7 +1578,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       ref_info->count[regno] = count;
@@ -2593,8 +2593,8 @@ df_install_ref (df_ref this_ref,
       df->hard_regs_live_count[regno]++;
     }
 
-  gcc_assert (DF_REF_NEXT_REG (this_ref) == NULL
-	      && DF_REF_PREV_REG (this_ref) == NULL);
+  gcc_checking_assert (DF_REF_NEXT_REG (this_ref) == NULL
+		       && DF_REF_PREV_REG (this_ref) == NULL);
 
   DF_REF_NEXT_REG (this_ref) = head;
 
@@ -2789,19 +2789,19 @@ df_ref_create_structure (enum df_ref_class cl,
     {
     case DF_REF_BASE:
       this_ref = (df_ref) pool_alloc (problem_data->ref_base_pool);
-      gcc_assert (loc == NULL);
+      gcc_checking_assert (loc == NULL);
       break;
 
     case DF_REF_ARTIFICIAL:
       this_ref = (df_ref) pool_alloc (problem_data->ref_artificial_pool);
       this_ref->artificial_ref.bb = bb;
-      gcc_assert (loc == NULL);
+      gcc_checking_assert (loc == NULL);
       break;
 
     case DF_REF_REGULAR:
       this_ref = (df_ref) pool_alloc (problem_data->ref_regular_pool);
       this_ref->regular_ref.loc = loc;
-      gcc_assert (loc);
+      gcc_checking_assert (loc);
       break;
 
     case DF_REF_EXTRACT:
@@ -2810,7 +2810,7 @@ df_ref_create_structure (enum df_ref_class cl,
       DF_REF_EXTRACT_OFFSET (this_ref) = offset;
       DF_REF_EXTRACT_MODE (this_ref) = mode;
       this_ref->regular_ref.loc = loc;
-      gcc_assert (loc);
+      gcc_checking_assert (loc);
       break;
     }
 
@@ -2880,7 +2880,7 @@ df_ref_record (enum df_ref_class cl,
 {
   unsigned int regno;
 
-  gcc_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
+  gcc_checking_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
 
   regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
   if (regno < FIRST_PSEUDO_REGISTER)
