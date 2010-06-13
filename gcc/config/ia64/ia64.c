@@ -207,6 +207,9 @@ static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (const_tree, const_tree);
+static rtx ia64_function_value (const_tree, const_tree, bool);
+static rtx ia64_libcall_value (enum machine_mode, const_rtx);
+static bool ia64_function_value_regno_p (const unsigned int);
 static bool ia64_rtx_costs (rtx, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
@@ -481,6 +484,13 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
 #endif
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE ia64_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE ia64_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P ia64_function_value_regno_p
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX ia64_struct_value_rtx
@@ -4637,13 +4647,20 @@ ia64_return_in_memory (const_tree valtype, const_tree fntype ATTRIBUTE_UNUSED)
 
 /* Return rtx for register that holds the function return value.  */
 
-rtx
-ia64_function_value (const_tree valtype, const_tree func)
+static rtx
+ia64_function_value (const_tree valtype,
+		     const_tree fn_decl_or_type,
+		     bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
   int unsignedp;
+  const_tree func = fn_decl_or_type;
 
+  if (fn_decl_or_type
+      && !DECL_P (fn_decl_or_type))
+    func = NULL;
+  
   mode = TYPE_MODE (valtype);
   hfa_mode = hfa_element_mode (valtype, 0);
 
@@ -4719,6 +4736,28 @@ ia64_function_value (const_tree valtype, const_tree func)
 
       return gen_rtx_REG (mode, GR_RET_FIRST);
     }
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+ia64_libcall_value (enum machine_mode mode,
+		    const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode,
+		      (((GET_MODE_CLASS (mode) == MODE_FLOAT
+			 || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+			&& (mode) != TFmode)
+		       ? FR_RET_FIRST : GR_RET_FIRST));
+}
+
+/* Worker function for FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+ia64_function_value_regno_p (const unsigned int regno)
+{
+  return ((regno >= GR_RET_FIRST && regno <= GR_RET_LAST)
+          || (regno >= FR_RET_FIRST && regno <= FR_RET_LAST));
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.

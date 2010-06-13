@@ -1,3 +1,14 @@
+2010-06-13  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/ia64/ia64.h (FUNCTION_VALUE_REGNO_P, FUNCTION_VALUE,
+	LIBCALL_VALUE): Remove macros.
+	* config/ia64/ia64-protos.h (ia64_function_value): Remove.
+	* config/ia64/ia64.c (TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(ia64_libcall_value, ia64_function_value_regno_p): New functions.
+	(ia64_function_value): Make static. Handle receiving the function
+	type in 'fn_decl_or_type' argunent. Add 'outgoing' argument.
+
 2010-06-12  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (cse_extended_basic_block): Move optimize_bb_for_speed_p
