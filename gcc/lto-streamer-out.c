@@ -986,7 +986,8 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
   if (RECORD_OR_UNION_TYPE_P (expr))
     lto_output_tree_or_ref (ob, TYPE_BINFO (expr), ref_p);
   lto_output_tree_or_ref (ob, TYPE_CONTEXT (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_CANONICAL (expr), ref_p);
+  /* TYPE_CANONICAL is re-computed during type merging, so no need
+     to stream it here.  */
   lto_output_tree_or_ref (ob, TYPE_STUB_DECL (expr), ref_p);
 }
 

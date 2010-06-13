@@ -6398,10 +6398,9 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
   int align;
   if (type)
     {
-      /* Since canonical type is used for call, we convert it to
-	 canonical type if needed.  */
-      if (!TYPE_STRUCTURAL_EQUALITY_P (type))
-	type = TYPE_CANONICAL (type);
+      /* Since the main variant type is used for call, we convert it to
+	 the main variant type.  */
+      type = TYPE_MAIN_VARIANT (type);
       align = TYPE_ALIGN (type);
     }
   else
