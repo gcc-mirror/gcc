@@ -1146,31 +1146,6 @@ do {									\
 #define FUNCTION_ARG_REGNO_P(REGNO) \
 (((REGNO) >= AR_ARG_FIRST && (REGNO) < (AR_ARG_FIRST + MAX_ARGUMENT_SLOTS)) \
  || ((REGNO) >= FR_ARG_FIRST && (REGNO) < (FR_ARG_FIRST + MAX_ARGUMENT_SLOTS)))
-
-/* How Scalar Function Values are Returned */
-
-/* A C expression to create an RTX representing the place where a function
-   returns a value of data type VALTYPE.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  ia64_function_value (VALTYPE, FUNC)
-
-/* A C expression to create an RTX representing the place where a library
-   function returns a value of mode MODE.  */
-
-#define LIBCALL_VALUE(MODE) \
-  gen_rtx_REG (MODE,							\
-	       (((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) &&	\
-		      (MODE) != TFmode)	\
-		? FR_RET_FIRST : GR_RET_FIRST))
-
-/* A C expression that is nonzero if REGNO is the number of a hard register in
-   which the values of called function may come back.  */
-
-#define FUNCTION_VALUE_REGNO_P(REGNO)				\
-  (((REGNO) >= GR_RET_FIRST && (REGNO) <= GR_RET_LAST)		\
-   || ((REGNO) >= FR_RET_FIRST && (REGNO) <= FR_RET_LAST))
 
 
 /* How Large Values are Returned */

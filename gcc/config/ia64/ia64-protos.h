@@ -69,7 +69,6 @@ extern rtx ia64_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			      tree, int, int);
 extern rtx ia64_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern rtx ia64_va_arg (tree, tree);
-extern rtx ia64_function_value (const_tree, const_tree);
 #endif /* RTX_CODE */
 
 extern void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
