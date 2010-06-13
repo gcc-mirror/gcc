@@ -23,4 +23,4 @@ const char *enc3 = @encode(anonymous);
 
 /* { dg-final { scan-assembler "{Vec<float>=ffi}" } }  */
 /* { dg-final { scan-assembler "{Vec<double>=ddi}" } }  */
-/* { dg-final { scan-assembler "{?={Vec<double>=ddi}{Vec<float>=ffi}fd{Vec<char>=cci}i}" } }  */
+/* { dg-final { scan-assembler "{?={Vec<double>=ddi}{Vec<float>=ffi}fd{Vec<char>=cci}i}" { xfail "*-*-*" } } } PR44518 */

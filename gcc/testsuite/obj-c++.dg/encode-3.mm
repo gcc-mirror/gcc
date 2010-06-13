@@ -1,5 +1,5 @@
 /* { dg-do run } */
-
+/* { dg-do run { xfail { "*-*-*" } } } PR44518 */
 extern "C" {
 extern void abort (void);
 extern int strcmp (const char *, const char *);

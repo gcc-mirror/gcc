@@ -1,3 +1,9 @@
+2010-06-13  Iain Sandoe <iains@gcc.gnu.org>
+
+	PR testsuite/44518
+	* obj-c++.dg/encode-2.mm: XFAIL new test for all targets.
+	* obj-c++.dg/encode-3.mm: Restore XFAIL run for all targets.
+	
 2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44347
