@@ -1,3 +1,21 @@
+2010-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* bitmap.c (bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_compl_and_into, bitmap_ior,
+	bitmap_ior_into, bitmap_xor, bitmap_xor_into,
+	bitmap_ior_and_compl, bitmap_ior_and_compl): Turn internal datastructure
+	checks into checking asserts.
+	* rtlanal.c (find_reg_note): Use gcc_checking_assert.
+	* tree-ssa-sccvn.c (VN_INFO): Likewise.
+	* df-scan.c (df_reorganize_refs_by_reg_by_reg, df_install_ref,
+	df_ref_create_structure): Likewise.
+	* alloc-pool.c (create_alloc_pool, empty_alloc_pool, pool_alloc,
+	pool_free): Use gcc_checking_assert.
+	* alias.c (get_alias_set): Likewise.
+	* var-tracking.c (variable_htab_free, shared_hash_copy,
+	canonicalize_values_mark, variable_merge_over_cur): Likewise.
+	* lto-streamer.c (bp_unpack_value): Likewise.
+
 2010-06-13  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (lto_input_ts_type_tree_pointers):

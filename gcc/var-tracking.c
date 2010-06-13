@@ -1167,7 +1167,7 @@ variable_htab_free (void *elem)
   variable var = (variable) elem;
   location_chain node, next;
 
-  gcc_assert (var->refcount > 0);
+  gcc_checking_assert (var->refcount > 0);
 
   var->refcount--;
   if (var->refcount > 0)
@@ -1370,7 +1370,7 @@ shared_hash_copy (shared_hash vars)
 static void
 shared_hash_destroy (shared_hash vars)
 {
-  gcc_assert (vars->refcount > 0);
+  gcc_checking_assert (vars->refcount > 0);
   if (--vars->refcount == 0)
     {
       htab_delete (vars->htab);
@@ -3066,7 +3066,7 @@ canonicalize_values_mark (void **slot, void *data)
   if (!dv_is_value_p (dv))
     return 1;
 
-  gcc_assert (var->n_var_parts == 1);
+  gcc_checking_assert (var->n_var_parts == 1);
 
   val = dv_as_value (dv);
 
@@ -3109,7 +3109,7 @@ canonicalize_values_star (void **slot, void *data)
   if (!dv_onepart_p (dv))
     return 1;
 
-  gcc_assert (var->n_var_parts == 1);
+  gcc_checking_assert (var->n_var_parts == 1);
 
   if (dv_is_value_p (dv))
     {
@@ -3299,8 +3299,8 @@ canonicalize_values_star (void **slot, void *data)
 
   /* Variable may have been unshared.  */
   var = (variable)*slot;
-  gcc_assert (var->n_var_parts && var->var_part[0].loc_chain->loc == cval
-	      && var->var_part[0].loc_chain->next == NULL);
+  gcc_checking_assert (var->n_var_parts && var->var_part[0].loc_chain->loc == cval
+		       && var->var_part[0].loc_chain->next == NULL);
 
   if (VALUE_RECURSED_INTO (cval))
     goto restart_with_cval;
@@ -3389,14 +3389,14 @@ variable_merge_over_cur (variable s1var, struct dfset_merge *dsm)
   /* If the incoming onepart variable has an empty location list, then
      the intersection will be just as empty.  For other variables,
      it's always union.  */
-  gcc_assert (s1var->n_var_parts
-	      && s1var->var_part[0].loc_chain);
+  gcc_checking_assert (s1var->n_var_parts
+		       && s1var->var_part[0].loc_chain);
 
   if (!onepart)
     return variable_union (s1var, dst);
 
-  gcc_assert (s1var->n_var_parts == 1
-	      && s1var->var_part[0].offset == 0);
+  gcc_checking_assert (s1var->n_var_parts == 1
+		       && s1var->var_part[0].offset == 0);
 
   dvhash = dv_htab_hash (dv);
   if (dv_is_value_p (dv))

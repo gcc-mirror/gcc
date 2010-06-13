@@ -713,7 +713,7 @@ get_alias_set (tree t)
   t = TYPE_CANONICAL (t);
   /* Canonical types shouldn't form a tree nor should the canonical
      type require structural equality checks.  */
-  gcc_assert (!TYPE_STRUCTURAL_EQUALITY_P (t) && TYPE_CANONICAL (t) == t);
+  gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t) && TYPE_CANONICAL (t) == t);
 
   /* If this is a type with a known alias set, return it.  */
   if (TYPE_ALIAS_SET_KNOWN_P (t))
@@ -1136,7 +1136,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
 
-  gcc_assert (regno < VEC_length (rtx, reg_base_value));
+  gcc_checking_assert (regno < VEC_length (rtx, reg_base_value));
 
   /* If this spans multiple hard registers, then we must indicate that every
      register has an unusable value.  */

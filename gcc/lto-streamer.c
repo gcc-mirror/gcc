@@ -382,7 +382,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
   unsigned ix;
 
   /* We cannot decode more bits than BITS_PER_BITPACK_WORD.  */
-  gcc_assert (nbits > 0 && nbits <= BITS_PER_BITPACK_WORD);
+  gcc_checking_assert (nbits > 0 && nbits <= BITS_PER_BITPACK_WORD);
 
   /* Compute which word contains the next NBITS.  */
   ix = bp_get_next_word (bp, nbits);
