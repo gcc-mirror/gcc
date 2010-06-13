@@ -7186,10 +7186,11 @@ delta_from_ptrmemfunc (tree t)
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment to
-   an lvalue of type TYPE.  ERRTYPE is a string to use in error
-   messages: "assignment", "return", etc.  If FNDECL is non-NULL, we
-   are doing the conversion in order to pass the PARMNUMth argument of
-   FNDECL.  */
+   an lvalue of type TYPE.  ERRTYPE indicates what kind of error the
+   implicit conversion is.  If FNDECL is non-NULL, we are doing the
+   conversion in order to pass the PARMNUMth argument of FNDECL.
+   If FNDECL is NULL, we are doing the conversion in function pointer
+   argument passing, conversion in initialization, etc. */
 
 static tree
 convert_for_assignment (tree type, tree rhs,
@@ -7331,7 +7332,7 @@ convert_for_assignment (tree type, tree rhs,
 	    case ICR_DEFAULT_ARGUMENT:
 	      if (fndecl)
 		warning (OPT_Wmissing_format_attribute,
-			 "parameter %d of %qD might be a candidate "
+			 "parameter %qP of %qD might be a candidate "
 			 "for a format attribute", parmnum, fndecl);
 	      else
 		warning (OPT_Wmissing_format_attribute,
@@ -7386,7 +7387,7 @@ convert_for_assignment (tree type, tree rhs,
 
 /* Convert RHS to be of type TYPE.
    If EXP is nonzero, it is the target of the initialization.
-   ERRTYPE is a string to use in error messages.
+   ERRTYPE indicates what kind of error the implicit conversion is.
 
    Two major differences between the behavior of
    `convert_for_assignment' and `convert_for_initialization'
