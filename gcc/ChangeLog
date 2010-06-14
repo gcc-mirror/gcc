@@ -1,3 +1,8 @@
+2010-06-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.c (m68k_delegitimize_address): Don't do
+	anything if the argument is not a MEM.
+
 2010-06-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/43650
