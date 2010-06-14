@@ -1753,13 +1753,14 @@ package body Sem_Res is
          then
             Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
+            --  Could use comments on what is going on here ???
+
             Get_First_Interp (Name (Arg), I, It);
             while Present (It.Nam) loop
                Error_Msg_Sloc := Sloc (It.Nam);
 
                if Nkind (Parent (It.Nam)) = N_Full_Type_Declaration then
                   Error_Msg_N ("interpretation (inherited) #!", Arg);
-
                else
                   Error_Msg_N ("interpretation #!", Arg);
                end if;
