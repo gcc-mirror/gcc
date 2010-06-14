@@ -1124,6 +1124,8 @@ setup_insn_reg_pressure_info (rtx insn)
   struct reg_use_data *use;
   static int death[N_REG_CLASSES];
 
+  gcc_checking_assert (!DEBUG_INSN_P (insn));
+
   excess_cost_change = 0;
   for (i = 0; i < ira_reg_class_cover_size; i++)
     death[ira_reg_class_cover[i]] = 0;
@@ -1500,7 +1502,8 @@ ready_sort (struct ready_list *ready)
   if (sched_pressure_p)
     {
       for (i = 0; i < ready->n_ready; i++)
-	setup_insn_reg_pressure_info (first[i]);
+	if (!DEBUG_INSN_P (first[i]))
+	  setup_insn_reg_pressure_info (first[i]);
     }
   SCHED_SORT (first, ready->n_ready);
 }
@@ -1563,6 +1566,8 @@ update_register_pressure (rtx insn)
 {
   struct reg_use_data *use;
   struct reg_set_data *set;
+
+  gcc_checking_assert (!DEBUG_INSN_P (insn));
 
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     if (dying_use_p (use) && bitmap_bit_p (curr_reg_live, use->regno))
@@ -1684,7 +1689,7 @@ schedule_insn (rtx insn)
       fputc ('\n', sched_dump);
     }
 
-  if (sched_pressure_p)
+  if (sched_pressure_p && !DEBUG_INSN_P (insn))
     update_reg_and_insn_max_reg_pressure (insn);
 
   /* Scheduling instruction should have all its dependencies resolved and

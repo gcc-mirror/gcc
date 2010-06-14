@@ -1,3 +1,11 @@
+2010-06-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/43656
+	* haifa-sched.c (setup_insn_reg_pressure_info,
+	update_register_pressure): Reject debug insns.
+	(ready_sort): Don't setup reg pressure for debug insns.
+	(schedule_insn): Don't update reg pressure for debug insns.
+
 2010-06-14  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.c (cached_bp): Remove.
