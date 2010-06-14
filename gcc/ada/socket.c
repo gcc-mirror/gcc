@@ -50,21 +50,7 @@
  */
 typedef char *__netdb_char_ptr __attribute__ (( mode (SI) ));
 typedef __netdb_char_ptr *__netdb_char_ptr_ptr __attribute__ (( mode (SI) ));
-# define NEED_STRUCT_xxxENT
 
-#elif defined (__vxworks)
-/*
- * For VxWorks we emulate getXXXbyYYY using the proprietary VxWorks API.
- */
-typedef char *__netdb_char_ptr;
-typedef __netdb_char_ptr *__netdb_char_ptr_ptr;
-# define NEED_STRUCT_xxxENT
-
-#else
-# undef NEED_STRUCT_xxxENT
-#endif
-
-#ifdef NEED_STRUCT_xxxENT
 struct hostent {
   __netdb_char_ptr     h_name;
   __netdb_char_ptr_ptr h_aliases;
@@ -125,7 +111,7 @@ extern int __gnat_hostent_h_addrtype (struct hostent *);
 extern int __gnat_hostent_h_length (struct hostent *);
 extern char * __gnat_hostent_h_addr (struct hostent *, int);
 
-#if defined (__vxworks) || defined (_WIN32)
+#ifndef HAVE_INET_PTON
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
 

@@ -1,3 +1,12 @@
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c: Fix wrong condition in #ifdef
+	* g-socket.adb, g-sothco.ads: Functions imported from socket.c that
+	take or return char* values can't use Interfaces.C.Strings.chars_ptr,
+	because on VMS this type is a 32-bit pointer which is not compatible
+	with the default for C pointers for code compiled with gcc on that
+	platform.
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util (Is_VMS_Operator): New predicate to determine whether an
