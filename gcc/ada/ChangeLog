@@ -1,3 +1,7 @@
+2010-06-14  Olivier Hainque  <hainque@adacore.com>
+
+	* initialize.c (VxWorks section): Update comments.
+
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* a-convec.adb, sem_prag.adb, checks.adb: Minor reformatting
