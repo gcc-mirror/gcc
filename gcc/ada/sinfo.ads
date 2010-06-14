@@ -1723,6 +1723,12 @@ package Sinfo is
    --    Original_Node here because of the case of nested instantiations where
    --    the substituted node can be copied.
 
+   --  Withed_Body (Node1-Sem)
+   --    Present in N_With_Clause nodes. Set if the unit in whose context
+   --    the with_clause appears instantiates a generic contained in the
+   --    library unit of the with_clause and as a result loads its body.
+   --    Used for a more precise unit traversal for CodePeer.
+
    --  Zero_Cost_Handling (Flag5-Sem)
    --    This flag is set in all handled sequence of statement and exception
    --    handler nodes if exceptions are to be handled using the zero-cost
@@ -5530,6 +5536,7 @@ package Sinfo is
 
       --  N_With_Clause
       --  Sloc points to first token of library unit name
+      --  Withed_Body (Node1-Sem)
       --  Name (Node2)
       --  Next_Implicit_With (Node3-Sem)
       --  Library_Unit (Node4-Sem)
@@ -8522,6 +8529,9 @@ package Sinfo is
    function Was_Originally_Stub
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Withed_Body
+     (N : Node_Id) return Node_Id;    -- Node1
+
    function Zero_Cost_Handling
      (N : Node_Id) return Boolean;    -- Flag5
 
@@ -9439,6 +9449,9 @@ package Sinfo is
 
    procedure Set_Was_Originally_Stub
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Withed_Body
+     (N : Node_Id; Val : Node_Id);            -- Node1
 
    procedure Set_Zero_Cost_Handling
      (N : Node_Id; Val : Boolean := True);    -- Flag5
@@ -11441,6 +11454,7 @@ package Sinfo is
    pragma Inline (Variants);
    pragma Inline (Visible_Declarations);
    pragma Inline (Was_Originally_Stub);
+   pragma Inline (Withed_Body);
    pragma Inline (Zero_Cost_Handling);
 
    pragma Inline (Set_ABE_Is_Certain);
@@ -11743,6 +11757,7 @@ package Sinfo is
    pragma Inline (Set_Variants);
    pragma Inline (Set_Visible_Declarations);
    pragma Inline (Set_Was_Originally_Stub);
+   pragma Inline (Set_Withed_Body);
    pragma Inline (Set_Zero_Cost_Handling);
 
    N_Simple_Return_Statement : constant Node_Kind := N_Return_Statement;

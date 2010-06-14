@@ -1803,9 +1803,15 @@ package body Sem is
                Spec := Library_Unit (Clause);
                Body_CU := Library_Unit (Spec);
 
+               --  If we are processing the spec of the main unit, load bodies
+               --  only if the with_clause indicates that it forced the loading
+               --  of the body for a generic instantiation.
+
                if Present (Body_CU)
                  and then Body_CU /= Cunit (Main_Unit)
                  and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
+                 and then (Nkind (Unit (Comp)) /= N_Package_Declaration
+                    or else Present (Withed_Body (Clause)))
                then
                   Body_U := Get_Cunit_Unit_Number (Body_CU);
 

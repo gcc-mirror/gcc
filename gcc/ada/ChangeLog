@@ -1,3 +1,20 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Withed_Body): New attribute of a with_clause.
+	Indicates that there is an instantiation in the current unit that
+	loaded the body of the unit denoted by the with_clause.
+	* sem_ch12.adb (Mark_Context): When instanting a generic body, check
+	whether a with_clause in the current context denotes the unit that
+	holds the generic declaration, and mark the with_clause accordingly.
+	(Instantiate_Package_Body): call Mark_Context.
+	* sem.adb (Process_Bodies_In_Context): Use Withed_Body to determine
+	whether a given body should be traversed before the spec of the main
+	unit.
+
+2010-06-14  Ed Falis  <falis@adacore.com>
+
+	* sysdep.c: Fix 653 build against vThreads headers
+
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Minor reformatting.
