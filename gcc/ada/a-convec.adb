@@ -103,10 +103,12 @@ package body Ada.Containers.Vectors is
          --  end of the range of Int.
 
          if Index_Type'First <= 0 then
+
             --  Compute the potential Last index value in the normal way, using
             --  Int as the type in which to perform intermediate
             --  calculations. Int is a 64-bit type, and Count_Type is a 32-bit
             --  type, so no overflow can occur.
+
             J := Int (Index_Type'First - 1) + N;
 
             if J > Int (Index_Type'Last) then
@@ -120,6 +122,7 @@ package body Ada.Containers.Vectors is
             --  greater than Index_Type'Last (as we do above), we work
             --  backwards by computing the potential First index value, and
             --  then checking whether that value is less than Index_Type'First.
+
             J := Int (Index_Type'Last) - N + 1;
 
             if J < Int (Index_Type'First) then
@@ -129,6 +132,7 @@ package body Ada.Containers.Vectors is
             --  We have determined that Length would not create a Last index
             --  value outside of the range of Index_Type, so we can now safely
             --  compute its value.
+
             J := Int (Index_Type'First - 1) + N;
          end if;
 

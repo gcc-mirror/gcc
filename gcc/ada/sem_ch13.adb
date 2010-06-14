@@ -1026,13 +1026,19 @@ package body Sem_Ch13 is
                   --  check till after code generation to take full advantage
                   --  of the annotation done by the back end. This entry is
                   --  only made if the address clause comes from source.
+                  --  If the entity has a generic type, the check will be
+                  --  performed in the instance if the actual type justfies it,
+                  --  and we do not insert the clause in the table to prevent
+                  --  spurious warnings.
 
                   if Address_Clause_Overlay_Warnings
                     and then Comes_From_Source (N)
                     and then Present (O_Ent)
                     and then Is_Object (O_Ent)
                   then
-                     Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
+                     if not Is_Generic_Type (Etype (U_Ent)) then
+                        Address_Clause_Checks.Append ((N, U_Ent, O_Ent, Off));
+                     end if;
 
                      --  If variable overlays a constant view, and we are
                      --  warning on overlays, then mark the variable as

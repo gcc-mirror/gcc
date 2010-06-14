@@ -459,8 +459,7 @@ package GNAT.Sockets is
 
    type Family_Type is (Family_Inet, Family_Inet6);
    --  Address family (or protocol family) identifies the communication domain
-   --  and groups protocols with similar address formats. IPv6 will soon be
-   --  supported.
+   --  and groups protocols with similar address formats.
 
    type Mode_Type is (Socket_Stream, Socket_Datagram);
    --  Stream sockets provide connection-oriented byte streams. Datagram
