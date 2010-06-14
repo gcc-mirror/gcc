@@ -232,6 +232,11 @@ procedure GNATCmd is
    --  STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric (GNAT
    --  METRIC).
 
+   function Mapping_File return Path_Name_Type;
+   --  Create and return the path name of a mapping file. Used for gnatstub
+   --  (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric
+   --  (GNAT METRIC).
+
    procedure Delete_Temp_Config_Files;
    --  Delete all temporary config files. The caller is responsible for
    --  ensuring that Keep_Temporary_Files is False.
@@ -888,6 +893,22 @@ procedure GNATCmd is
 
       return 0;
    end Index;
+
+   ------------------
+   -- Mapping_File --
+   ------------------
+
+   function Mapping_File return Path_Name_Type is
+      Result : Path_Name_Type;
+
+   begin
+      Prj.Env.Create_Mapping_File
+        (Project  => Project,
+         Language => Name_Ada,
+         In_Tree  => Project_Tree,
+         Name     => Result);
+      return Result;
+   end Mapping_File;
 
    ------------------
    -- Process_Link --
@@ -2156,6 +2177,7 @@ begin
 
             declare
                CP_File : constant Path_Name_Type := Configuration_Pragmas_File;
+               M_File  : constant Path_Name_Type := Mapping_File;
 
             begin
                if CP_File /= No_Path then
@@ -2168,6 +2190,11 @@ begin
                      Add_To_Carg_Switches
                        (new String'("-gnatec=" & Get_Name_String (CP_File)));
                   end if;
+               end if;
+
+               if M_File /= No_Path then
+                  Add_To_Carg_Switches
+                    (new String'("-gnatem=" & Get_Name_String (M_File)));
                end if;
             end;
          end if;

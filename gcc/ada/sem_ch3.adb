@@ -11283,6 +11283,7 @@ package body Sem_Ch3 is
       Set_Is_Public                  (Full, Is_Public               (Priv));
       Set_Is_Pure                    (Full, Is_Pure                 (Priv));
       Set_Is_Tagged_Type             (Full, Is_Tagged_Type          (Priv));
+      Set_Has_Pragma_Unmodified      (Full, Has_Pragma_Unmodified   (Priv));
       Set_Has_Pragma_Unreferenced    (Full, Has_Pragma_Unreferenced (Priv));
       Set_Has_Pragma_Unreferenced_Objects
                                      (Full, Has_Pragma_Unreferenced_Objects
@@ -11318,10 +11319,10 @@ package body Sem_Ch3 is
             Access_Types_To_Process (Freeze_Node (Priv)));
       end if;
 
-      --  Swap the two entities. Now Privat is the full type entity and
-      --  Full is the private one. They will be swapped back at the end
-      --  of the private part. This swapping ensures that the entity that
-      --  is visible in the private part is the full declaration.
+      --  Swap the two entities. Now Privat is the full type entity and Full is
+      --  the private one. They will be swapped back at the end of the private
+      --  part. This swapping ensures that the entity that is visible in the
+      --  private part is the full declaration.
 
       Exchange_Entities (Priv, Full);
       Append_Entity (Full, Scope (Full));
@@ -12810,13 +12811,12 @@ package body Sem_Ch3 is
             if Need_Search
               or else
                 (Present (Generic_Actual)
-                   and then Present (Act_Subp)
-                   and then not Primitive_Names_Match (Subp, Act_Subp))
+                  and then Present (Act_Subp)
+                  and then not Primitive_Names_Match (Subp, Act_Subp))
             then
                pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual));
 
-               --  Remember that we need searching for all the pending
-               --  primitives
+               --  Remember that we need searching for all pending primitives
 
                Need_Search := True;
 
@@ -12840,8 +12840,9 @@ package body Sem_Ch3 is
                      Act_Subp := Node (Act_Elmt);
 
                      exit when Primitive_Names_Match (Subp, Act_Subp)
-                       and then Type_Conformant (Subp, Act_Subp,
-                                  Skip_Controlling_Formals => True)
+                       and then Type_Conformant
+                                  (Subp, Act_Subp,
+                                   Skip_Controlling_Formals => True)
                        and then No (Interface_Alias (Act_Subp));
 
                      Next_Elmt (Act_Elmt);
@@ -12870,7 +12871,7 @@ package body Sem_Ch3 is
               and then Is_Interface (Find_Dispatching_Type (Alias_Subp))
               and then not
                 (Nkind (Parent (Alias_Subp)) = N_Procedure_Specification
-                   and then Null_Present (Parent (Alias_Subp)))
+                  and then Null_Present (Parent (Alias_Subp)))
             then
                Derive_Subprogram
                  (New_Subp     => New_Subp,

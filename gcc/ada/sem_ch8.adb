@@ -3426,33 +3426,47 @@ package body Sem_Ch8 is
    ------------------
 
    procedure End_Use_Type (N : Node_Id) is
+      Elmt    : Elmt_Id;
       Id      : Entity_Id;
       Op_List : Elist_Id;
-      Elmt    : Elmt_Id;
+      Op      : Entity_Id;
       T       : Entity_Id;
+
+      function May_Be_Used_Primitive_Of (T : Entity_Id) return Boolean;
+      --  An operator may be primitive in several types, if they are declared
+      --  in the same scope as the operator. To determine the use-visiblity of
+      --  the operator in such cases we must examine all types in the profile.
+
+      ------------------------------
+      -- May_Be_Used_Primitive_Of --
+      ------------------------------
+
+      function May_Be_Used_Primitive_Of (T : Entity_Id) return Boolean is
+      begin
+         return Scope (Op) = Scope (T)
+           and then (In_Use (T) or else Is_Potentially_Use_Visible (T));
+      end May_Be_Used_Primitive_Of;
+
+   --  Start of processing for End_Use_Type
 
    begin
       Id := First (Subtype_Marks (N));
       while Present (Id) loop
 
-         --  A call to rtsfind may occur while analyzing a use_type clause,
+         --  A call to Rtsfind may occur while analyzing a use_type clause,
          --  in which case the type marks are not resolved yet, and there is
          --  nothing to remove.
 
-         if not Is_Entity_Name (Id)
-           or else No (Entity (Id))
-         then
+         if not Is_Entity_Name (Id) or else No (Entity (Id)) then
             goto Continue;
          end if;
 
          T := Entity (Id);
 
-         if T = Any_Type
-           or else From_With_Type (T)
-         then
+         if T = Any_Type or else From_With_Type (T) then
             null;
 
-         --  Note that the use_Type clause may mention a subtype of the type
+         --  Note that the use_type clause may mention a subtype of the type
          --  whose primitive operations have been made visible. Here as
          --  elsewhere, it is the base type that matters for visibility.
 
@@ -3468,8 +3482,30 @@ package body Sem_Ch8 is
 
             Elmt := First_Elmt (Op_List);
             while Present (Elmt) loop
-               if Nkind (Node (Elmt)) = N_Defining_Operator_Symbol then
-                  Set_Is_Potentially_Use_Visible (Node (Elmt), False);
+               Op := Node (Elmt);
+
+               if Nkind (Op) = N_Defining_Operator_Symbol then
+                  declare
+                     T_First : constant Entity_Id :=
+                                 Base_Type (Etype (First_Formal (Op)));
+                     T_Res   : constant Entity_Id := Base_Type (Etype (Op));
+                     T_Next  : Entity_Id;
+
+                  begin
+                     if Present (Next_Formal (First_Formal (Op))) then
+                        T_Next :=
+                          Base_Type (Etype (Next_Formal (First_Formal (Op))));
+                     else
+                        T_Next := T_First;
+                     end if;
+
+                     if not May_Be_Used_Primitive_Of (T_First)
+                       and then not May_Be_Used_Primitive_Of (T_Next)
+                       and then not May_Be_Used_Primitive_Of (T_Res)
+                     then
+                        Set_Is_Potentially_Use_Visible (Op, False);
+                     end if;
+                  end;
                end if;
 
                Next_Elmt (Elmt);

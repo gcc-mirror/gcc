@@ -40,7 +40,6 @@ with Interfaces.C.Strings;
 
 with GNAT.Sockets.Thin_Common;          use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;                 use GNAT.Sockets.Thin;
-with GNAT.Sockets.Thin.Task_Safe_NetDB; use GNAT.Sockets.Thin.Task_Safe_NetDB;
 
 with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
@@ -49,6 +48,7 @@ pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
+with System.Task_Lock;
 
 package body GNAT.Sockets is
 
@@ -59,6 +59,7 @@ package body GNAT.Sockets is
    ENOERROR : constant := 0;
 
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
+   Need_Netdb_Lock   : constant Boolean := SOSC.Need_Netdb_Lock /= 0;
    --  The network database functions gethostbyname, gethostbyaddr,
    --  getservbyname and getservbyport can either be guaranteed task safe by
    --  the operating system, or else return data through a user-provided buffer
@@ -155,13 +156,20 @@ package body GNAT.Sockets is
    function Is_IP_Address (Name : String) return Boolean;
    --  Return true when Name is an IP address in standard dot notation
 
+   procedure Netdb_Lock;
+   pragma Inline (Netdb_Lock);
+   procedure Netdb_Unlock;
+   pragma Inline (Netdb_Unlock);
+   --  Lock/unlock operation used to protect netdb access for platforms that
+   --  require such protection.
+
    function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr;
    procedure To_Inet_Addr
      (Addr   : In_Addr;
       Result : out Inet_Addr_Type);
    --  Conversion functions
 
-   function To_Host_Entry (E : Hostent) return Host_Entry_Type;
+   function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type;
    --  Conversion function
 
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type;
@@ -891,13 +899,19 @@ package body GNAT.Sockets is
       Err    : aliased C.int;
 
    begin
-      if Safe_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
+      Netdb_Lock;
+      if C_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
                              Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
+         Netdb_Unlock;
          Raise_Host_Error (Integer (Err));
       end if;
 
-      return To_Host_Entry (Res);
+      return H : constant Host_Entry_Type :=
+                   To_Host_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Host_By_Address;
 
    ----------------------
@@ -920,13 +934,19 @@ package body GNAT.Sockets is
          Err    : aliased C.int;
 
       begin
-         if Safe_Gethostbyname
+         Netdb_Lock;
+         if C_Gethostbyname
            (HN, Res'Access, Buf'Address, Buflen, Err'Access) /= 0
          then
+            Netdb_Unlock;
             Raise_Host_Error (Integer (Err));
          end if;
 
-         return To_Host_Entry (Res);
+         return H : constant Host_Entry_Type :=
+                      To_Host_Entry (Res'Unchecked_Access)
+         do
+            Netdb_Unlock;
+         end return;
       end;
    end Get_Host_By_Name;
 
@@ -965,13 +985,19 @@ package body GNAT.Sockets is
       Res    : aliased Servent;
 
    begin
-      if Safe_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
+      Netdb_Lock;
+      if C_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
+         Netdb_Unlock;
          raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res'Unchecked_Access);
+      return S : constant Service_Entry_Type :=
+                   To_Service_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Service_By_Name;
 
    -------------------------
@@ -988,16 +1014,22 @@ package body GNAT.Sockets is
       Res    : aliased Servent;
 
    begin
-      if Safe_Getservbyport
+      Netdb_Lock;
+      if C_Getservbyport
         (C.int (Short_To_Network (C.unsigned_short (Port))), SP,
          Res'Access, Buf'Address, Buflen) /= 0
       then
+         Netdb_Unlock;
          raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res'Unchecked_Access);
+      return S : constant Service_Entry_Type :=
+                   To_Service_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Service_By_Port;
 
    ---------------------
@@ -1437,6 +1469,28 @@ package body GNAT.Sockets is
          Item.Last := Socket_Type (Last);
       end if;
    end Narrow;
+
+   ----------------
+   -- Netdb_Lock --
+   ----------------
+
+   procedure Netdb_Lock is
+   begin
+      if Need_Netdb_Lock then
+         System.Task_Lock.Lock;
+      end if;
+   end Netdb_Lock;
+
+   ------------------
+   -- Netdb_Unlock --
+   ------------------
+
+   procedure Netdb_Unlock is
+   begin
+      if Need_Netdb_Lock then
+         System.Task_Lock.Unlock;
+      end if;
+   end Netdb_Unlock;
 
    --------------------------------
    -- Normalize_Empty_Socket_Set --
@@ -2273,54 +2327,52 @@ package body GNAT.Sockets is
    -- To_Host_Entry --
    -------------------
 
-   function To_Host_Entry (E : Hostent) return Host_Entry_Type is
+   function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type is
       use type C.size_t;
+      use C.Strings;
 
-      Official : constant String :=
-                  C.Strings.Value (E.H_Name);
+      Aliases_Count, Addresses_Count : Natural;
 
-      Aliases : constant Chars_Ptr_Array :=
-                  Chars_Ptr_Pointers.Value (E.H_Aliases);
-      --  H_Aliases points to a list of name aliases. The list is terminated by
-      --  a NULL pointer.
-
-      Addresses : constant In_Addr_Access_Array :=
-                    In_Addr_Access_Pointers.Value (E.H_Addr_List);
-      --  H_Addr_List points to a list of binary addresses (in network byte
-      --  order). The list is terminated by a NULL pointer.
-      --
-      --  H_Length is not used because it is currently only set to 4.
+      --  H_Length is not used because it is currently only set to 4
       --  H_Addrtype is always AF_INET
 
-      Result : Host_Entry_Type
-                 (Aliases_Length   => Aliases'Length - 1,
-                  Addresses_Length => Addresses'Length - 1);
-      --  The last element is a null pointer
-
-      Source : C.size_t;
-      Target : Natural;
-
    begin
-      Result.Official := To_Name (Official);
-
-      Source := Aliases'First;
-      Target := Result.Aliases'First;
-      while Target <= Result.Aliases_Length loop
-         Result.Aliases (Target) :=
-           To_Name (C.Strings.Value (Aliases (Source)));
-         Source := Source + 1;
-         Target := Target + 1;
+      Aliases_Count := 0;
+      while Hostent_H_Alias (E, C.int (Aliases_Count)) /= Null_Ptr loop
+         Aliases_Count := Aliases_Count + 1;
       end loop;
 
-      Source := Addresses'First;
-      Target := Result.Addresses'First;
-      while Target <= Result.Addresses_Length loop
-         To_Inet_Addr (Addresses (Source).all, Result.Addresses (Target));
-         Source := Source + 1;
-         Target := Target + 1;
+      Addresses_Count := 0;
+      while Hostent_H_Addr (E, C.int (Addresses_Count)) /= Null_Ptr loop
+         Addresses_Count := Addresses_Count + 1;
       end loop;
 
-      return Result;
+      return Result : Host_Entry_Type
+                        (Aliases_Length   => Aliases_Count,
+                         Addresses_Length => Addresses_Count)
+      do
+         Result.Official := To_Name (Value (Hostent_H_Name (E)));
+
+         for J in Result.Aliases'Range loop
+            Result.Aliases (J) :=
+              To_Name (Value (Hostent_H_Alias
+                                (E, C.int (J - Result.Aliases'First))));
+         end loop;
+
+         for J in Result.Addresses'Range loop
+            declare
+               Addr : In_Addr;
+               function To_Address is
+                 new Ada.Unchecked_Conversion (chars_ptr, System.Address);
+               for Addr'Address use
+                 To_Address (Hostent_H_Addr
+                               (E, C.int (J - Result.Addresses'First)));
+               pragma Import (Ada, Addr);
+            begin
+               To_Inet_Addr (Addr, Result.Addresses (J));
+            end;
+         end loop;
+      end return;
    end To_Host_Entry;
 
    ----------------
@@ -2394,40 +2446,30 @@ package body GNAT.Sockets is
    ----------------------
 
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type is
+      use C.Strings;
       use type C.size_t;
 
-      Official : constant String := C.Strings.Value (Servent_S_Name (E));
-
-      Aliases : constant Chars_Ptr_Array :=
-                  Chars_Ptr_Pointers.Value (Servent_S_Aliases (E));
-      --  S_Aliases points to a list of name aliases. The list is
-      --  terminated by a NULL pointer.
-
-      Protocol : constant String := C.Strings.Value (Servent_S_Proto (E));
-
-      Result : Service_Entry_Type (Aliases_Length => Aliases'Length - 1);
-      --  The last element is a null pointer
-
-      Source : C.size_t;
-      Target : Natural;
+      Aliases_Count : Natural;
 
    begin
-      Result.Official := To_Name (Official);
-
-      Source := Aliases'First;
-      Target := Result.Aliases'First;
-      while Target <= Result.Aliases_Length loop
-         Result.Aliases (Target) :=
-           To_Name (C.Strings.Value (Aliases (Source)));
-         Source := Source + 1;
-         Target := Target + 1;
+      Aliases_Count := 0;
+      while Servent_S_Alias (E, C.int (Aliases_Count)) /= Null_Ptr loop
+         Aliases_Count := Aliases_Count + 1;
       end loop;
 
-      Result.Port :=
-        Port_Type (Network_To_Short (C.unsigned_short (Servent_S_Port (E))));
+      return Result : Service_Entry_Type (Aliases_Length   => Aliases_Count) do
+         Result.Official := To_Name (Value (Servent_S_Name (E)));
 
-      Result.Protocol := To_Name (Protocol);
-      return Result;
+         for J in Result.Aliases'Range loop
+            Result.Aliases (J) :=
+              To_Name (Value (Servent_S_Alias
+                                (E, C.int (J - Result.Aliases'First))));
+         end loop;
+
+         Result.Protocol := To_Name (Value (Servent_S_Proto (E)));
+         Result.Port :=
+           Port_Type (Network_To_Short (Servent_S_Port (E)));
+      end return;
    end To_Service_Entry;
 
    ---------------
