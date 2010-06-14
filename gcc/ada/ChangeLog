@@ -1,3 +1,17 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util (Is_VMS_Operator): New predicate to determine whether an
+	operator is an intrinsic operator declared in the DEC system extension.
+	* sem_res.adb (Resolve_Logical_Op): operation is legal on signed types
+	if the operator is a VMS intrinsic.
+	* sem_eval.adb (Eval_Logical_Op): Operation is legal and be
+	constant-folded if the operands are signed and the operator is a VMS
+	intrinsic.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* g-socket.adb, gnatcmd.adb: Minor reformatting
+
 2010-06-14  Pascal Obry  <obry@adacore.com>
 
 	* s-finimp.adb: Fix typo.

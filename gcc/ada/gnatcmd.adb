@@ -900,7 +900,6 @@ procedure GNATCmd is
 
    function Mapping_File return Path_Name_Type is
       Result : Path_Name_Type;
-
    begin
       Prj.Env.Create_Mapping_File
         (Project  => Project,

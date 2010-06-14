@@ -800,6 +800,10 @@ package Sem_Util is
    --  object that is accessed directly, as opposed to the other CIL objects
    --  that are accessed through managed pointers.
 
+   function Is_VMS_Operator (Op : Entity_Id) return Boolean;
+   --  Determine whether an operator is one of the intrinsics defined
+   --  in the DEC system extension.
+
    function Is_Delegate (T : Entity_Id) return Boolean;
    --  Returns true if type T represents a delegate. A Delegate is the CIL
    --  object used to represent access-to-subprogram types. This is only
