@@ -260,7 +260,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 {
   unsigned int uid;
   intptr_t ref;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   if (edge->indirect_unknown_callee)
     lto_output_uleb128_stream (ob->main_stream, LTO_cgraph_indirect_edge);
@@ -280,32 +280,31 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 
   lto_output_sleb128_stream (ob->main_stream, edge->count);
 
-  bp = bitpack_create ();
+  bp = bitpack_create (ob->main_stream);
   uid = flag_wpa ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt);
-  bp_pack_value (bp, uid, HOST_BITS_PER_INT);
-  bp_pack_value (bp, edge->inline_failed, HOST_BITS_PER_INT);
-  bp_pack_value (bp, edge->frequency, HOST_BITS_PER_INT);
-  bp_pack_value (bp, edge->loop_nest, 30);
-  bp_pack_value (bp, edge->indirect_inlining_edge, 1);
-  bp_pack_value (bp, edge->call_stmt_cannot_inline_p, 1);
-  bp_pack_value (bp, edge->can_throw_external, 1);
+  bp_pack_value (&bp, uid, HOST_BITS_PER_INT);
+  bp_pack_value (&bp, edge->inline_failed, HOST_BITS_PER_INT);
+  bp_pack_value (&bp, edge->frequency, HOST_BITS_PER_INT);
+  bp_pack_value (&bp, edge->loop_nest, 30);
+  bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
+  bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
+  bp_pack_value (&bp, edge->can_throw_external, 1);
   if (edge->indirect_unknown_callee)
     {
       int flags = edge->indirect_info->ecf_flags;
-      bp_pack_value (bp, (flags & ECF_CONST) != 0, 1);
-      bp_pack_value (bp, (flags & ECF_PURE) != 0, 1);
-      bp_pack_value (bp, (flags & ECF_NORETURN) != 0, 1);
-      bp_pack_value (bp, (flags & ECF_MALLOC) != 0, 1);
-      bp_pack_value (bp, (flags & ECF_NOTHROW) != 0, 1);
-      bp_pack_value (bp, (flags & ECF_RETURNS_TWICE) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_CONST) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_PURE) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_NORETURN) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_MALLOC) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_NOTHROW) != 0, 1);
+      bp_pack_value (&bp, (flags & ECF_RETURNS_TWICE) != 0, 1);
       /* Flags that should not appear on indirect calls.  */
       gcc_assert (!(flags & (ECF_LOOPING_CONST_OR_PURE
 			     | ECF_MAY_BE_ALLOCA
 			     | ECF_SIBCALL
 			     | ECF_NOVOPS)));
     }
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  lto_output_bitpack (&bp);
 }
 
 /* Return if LIST contain references from other partitions.  */
@@ -404,7 +403,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		 varpool_node_set vset)
 {
   unsigned int tag;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   bool boundary_p;
   intptr_t ref;
   bool in_other_partition = false;
@@ -458,30 +457,6 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->decl);
   lto_output_sleb128_stream (ob->main_stream, node->count);
 
-  bp = bitpack_create ();
-  bp_pack_value (bp, node->local.local, 1);
-  bp_pack_value (bp, node->local.externally_visible, 1);
-  bp_pack_value (bp, node->local.finalized, 1);
-  bp_pack_value (bp, node->local.inlinable, 1);
-  bp_pack_value (bp, node->local.versionable, 1);
-  bp_pack_value (bp, node->local.disregard_inline_limits, 1);
-  bp_pack_value (bp, node->local.redefined_extern_inline, 1);
-  bp_pack_value (bp, node->local.vtable_method, 1);
-  bp_pack_value (bp, node->needed, 1);
-  bp_pack_value (bp, node->address_taken, 1);
-  bp_pack_value (bp, node->abstract_and_needed, 1);
-  bp_pack_value (bp, tag == LTO_cgraph_analyzed_node
-		 && !DECL_EXTERNAL (node->decl)
-		 && (reachable_from_other_partition_p (node, set)
-		     || referenced_from_other_partition_p (&node->ref_list, set, vset)), 1);
-  bp_pack_value (bp, node->lowered, 1);
-  bp_pack_value (bp, in_other_partition, 1);
-  bp_pack_value (bp, node->alias, 1);
-  bp_pack_value (bp, node->finalized_by_frontend, 1);
-  bp_pack_value (bp, node->frequency, 2);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
-
   if (tag == LTO_cgraph_analyzed_node)
     {
       lto_output_sleb128_stream (ob->main_stream,
@@ -513,6 +488,29 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   else
     ref = LCC_NOT_FOUND;
   lto_output_sleb128_stream (ob->main_stream, ref);
+
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, node->local.local, 1);
+  bp_pack_value (&bp, node->local.externally_visible, 1);
+  bp_pack_value (&bp, node->local.finalized, 1);
+  bp_pack_value (&bp, node->local.inlinable, 1);
+  bp_pack_value (&bp, node->local.versionable, 1);
+  bp_pack_value (&bp, node->local.disregard_inline_limits, 1);
+  bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
+  bp_pack_value (&bp, node->local.vtable_method, 1);
+  bp_pack_value (&bp, node->needed, 1);
+  bp_pack_value (&bp, node->address_taken, 1);
+  bp_pack_value (&bp, node->abstract_and_needed, 1);
+  bp_pack_value (&bp, tag == LTO_cgraph_analyzed_node
+		 && !DECL_EXTERNAL (node->decl)
+		 && (reachable_from_other_partition_p (node, set)
+		     || referenced_from_other_partition_p (&node->ref_list, set, vset)), 1);
+  bp_pack_value (&bp, node->lowered, 1);
+  bp_pack_value (&bp, in_other_partition, 1);
+  bp_pack_value (&bp, node->alias, 1);
+  bp_pack_value (&bp, node->finalized_by_frontend, 1);
+  bp_pack_value (&bp, node->frequency, 2);
+  lto_output_bitpack (&bp);
 
   if (node->same_body)
     {
@@ -561,17 +559,17 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
 		         cgraph_node_set set, varpool_node_set vset)
 {
   bool boundary_p = !varpool_node_in_set_p (node, vset) && node->analyzed;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   struct varpool_node *alias;
   int count = 0;
   int ref;
 
   lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->decl);
-  bp = bitpack_create ();
-  bp_pack_value (bp, node->externally_visible, 1);
-  bp_pack_value (bp, node->force_output, 1);
-  bp_pack_value (bp, node->finalized, 1);
-  bp_pack_value (bp, node->alias, 1);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, node->externally_visible, 1);
+  bp_pack_value (&bp, node->force_output, 1);
+  bp_pack_value (&bp, node->finalized, 1);
+  bp_pack_value (&bp, node->alias, 1);
   gcc_assert (!node->alias || !node->extra_name);
   gcc_assert (node->finalized || !node->analyzed);
   gcc_assert (node->needed);
@@ -580,22 +578,21 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
      labels and share them across LTRANS partitions.  */
   if (DECL_IN_CONSTANT_POOL (node->decl))
     {
-      bp_pack_value (bp, 0, 1);  /* used_from_other_parition.  */
-      bp_pack_value (bp, 0, 1);  /* in_other_partition.  */
+      bp_pack_value (&bp, 0, 1);  /* used_from_other_parition.  */
+      bp_pack_value (&bp, 0, 1);  /* in_other_partition.  */
     }
   else
     {
-      bp_pack_value (bp, node->analyzed
+      bp_pack_value (&bp, node->analyzed
 		     && referenced_from_other_partition_p (&node->ref_list,
 							   set, vset), 1);
-      bp_pack_value (bp, boundary_p, 1);  /* in_other_partition.  */
+      bp_pack_value (&bp, boundary_p, 1);  /* in_other_partition.  */
     }
   /* Also emit any extra name aliases.  */
   for (alias = node->extra_name; alias; alias = alias->next)
     count++;
-  bp_pack_value (bp, count != 0, 1);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp_pack_value (&bp, count != 0, 1);
+  lto_output_bitpack (&bp);
   if (node->same_comdat_group && !boundary_p)
     {
       ref = lto_varpool_encoder_lookup (varpool_encoder, node->same_comdat_group);
@@ -621,11 +618,11 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 		lto_cgraph_encoder_t encoder,
 		lto_varpool_encoder_t varpool_encoder)
 {
-  struct bitpack_d *bp = bitpack_create ();
-  bp_pack_value (bp, ref->refered_type, 1);
-  bp_pack_value (bp, ref->use, 2);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  struct bitpack_d bp;
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, ref->refered_type, 1);
+  bp_pack_value (&bp, ref->use, 2);
+  lto_output_bitpack (&bp);
   if (ref->refered_type == IPA_REF_CGRAPH)
     {
       int nref = lto_cgraph_encoder_lookup (encoder, ipa_ref_node (ref));
@@ -981,7 +978,7 @@ input_node (struct lto_file_decl_data *file_data,
 {
   tree fn_decl;
   struct cgraph_node *node;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   int stack_size = 0;
   unsigned decl_index;
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
@@ -1006,7 +1003,6 @@ input_node (struct lto_file_decl_data *file_data,
     node = cgraph_node (fn_decl);
 
   node->count = lto_input_sleb128 (ib);
-  bp = lto_input_bitpack (ib);
 
   if (tag == LTO_cgraph_analyzed_node)
     {
@@ -1020,7 +1016,6 @@ input_node (struct lto_file_decl_data *file_data,
     }
 
   ref2 = lto_input_sleb128 (ib);
-  same_body_count = lto_input_uleb128 (ib);
 
   /* Make sure that we have not read this node before.  Nodes that
      have already been read will have their tag stored in the 'aux'
@@ -1030,10 +1025,10 @@ input_node (struct lto_file_decl_data *file_data,
     internal_error ("bytecode stream: found multiple instances of cgraph "
 		    "node %d", node->uid);
 
-  input_overwrite_node (file_data, node, tag, bp, stack_size, self_time,
+  bp = lto_input_bitpack (ib);
+  input_overwrite_node (file_data, node, tag, &bp, stack_size, self_time,
   			time_inlining_benefit, self_size,
 			size_inlining_benefit);
-  bitpack_delete (bp);
 
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->global.inlined_to = (cgraph_node_ptr) (intptr_t) ref;
@@ -1041,6 +1036,7 @@ input_node (struct lto_file_decl_data *file_data,
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->same_comdat_group = (cgraph_node_ptr) (intptr_t) ref2;
 
+  same_body_count = lto_input_uleb128 (ib);
   while (same_body_count-- > 0)
     {
       tree alias_decl;
@@ -1081,7 +1077,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   int decl_index;
   tree var_decl;
   struct varpool_node *node;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   bool aliases_p;
   int count;
   int ref = LCC_NOT_FOUND;
@@ -1092,17 +1088,16 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->lto_file_data = file_data;
 
   bp = lto_input_bitpack (ib);
-  node->externally_visible = bp_unpack_value (bp, 1);
-  node->force_output = bp_unpack_value (bp, 1);
-  node->finalized = bp_unpack_value (bp, 1);
-  node->alias = bp_unpack_value (bp, 1);
+  node->externally_visible = bp_unpack_value (&bp, 1);
+  node->force_output = bp_unpack_value (&bp, 1);
+  node->finalized = bp_unpack_value (&bp, 1);
+  node->alias = bp_unpack_value (&bp, 1);
   node->analyzed = node->finalized; 
-  node->used_from_other_partition = bp_unpack_value (bp, 1);
-  node->in_other_partition = bp_unpack_value (bp, 1);
-  aliases_p = bp_unpack_value (bp, 1);
+  node->used_from_other_partition = bp_unpack_value (&bp, 1);
+  node->in_other_partition = bp_unpack_value (&bp, 1);
+  aliases_p = bp_unpack_value (&bp, 1);
   if (node->finalized)
     varpool_mark_needed_node (node);
-  bitpack_delete (bp);
   ref = lto_input_sleb128 (ib);
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->same_comdat_group = (struct varpool_node *) (intptr_t) ref;
@@ -1131,14 +1126,13 @@ input_ref (struct lto_input_block *ib,
 {
   struct cgraph_node *node = NULL;
   struct varpool_node *varpool_node = NULL;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   enum ipa_ref_type type;
   enum ipa_ref_use use;
 
   bp = lto_input_bitpack (ib);
-  type = (enum ipa_ref_type) bp_unpack_value (bp, 1);
-  use = (enum ipa_ref_use) bp_unpack_value (bp, 2);
-  bitpack_delete (bp);
+  type = (enum ipa_ref_type) bp_unpack_value (&bp, 1);
+  use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
   if (type == IPA_REF_CGRAPH)
     node = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
   else
@@ -1163,7 +1157,7 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   int freq;
   unsigned int nest;
   cgraph_inline_failed_t inline_failed;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   enum ld_plugin_symbol_resolution caller_resolution;
   int ecf_flags = 0;
 
@@ -1183,11 +1177,11 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   count = (gcov_type) lto_input_sleb128 (ib);
 
   bp = lto_input_bitpack (ib);
-  stmt_id = (unsigned int) bp_unpack_value (bp, HOST_BITS_PER_INT);
-  inline_failed = (cgraph_inline_failed_t) bp_unpack_value (bp,
+  stmt_id = (unsigned int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
+  inline_failed = (cgraph_inline_failed_t) bp_unpack_value (&bp,
 							    HOST_BITS_PER_INT);
-  freq = (int) bp_unpack_value (bp, HOST_BITS_PER_INT);
-  nest = (unsigned) bp_unpack_value (bp, 30);
+  freq = (int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
+  nest = (unsigned) bp_unpack_value (&bp, 30);
 
   /* If the caller was preempted, don't create the edge.
      ???  Should we ever have edges from a preempted caller?  */
@@ -1201,28 +1195,27 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   else
     edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
 
-  edge->indirect_inlining_edge = bp_unpack_value (bp, 1);
+  edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
   edge->lto_stmt_uid = stmt_id;
   edge->inline_failed = inline_failed;
-  edge->call_stmt_cannot_inline_p = bp_unpack_value (bp, 1);
-  edge->can_throw_external = bp_unpack_value (bp, 1);
+  edge->call_stmt_cannot_inline_p = bp_unpack_value (&bp, 1);
+  edge->can_throw_external = bp_unpack_value (&bp, 1);
   if (indirect)
     {
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_CONST;
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_PURE;
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_NORETURN;
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_MALLOC;
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_NOTHROW;
-      if (bp_unpack_value (bp, 1))
+      if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_RETURNS_TWICE;
       edge->indirect_info->ecf_flags = ecf_flags;
     }
-  bitpack_delete (bp);
 }
 
 
@@ -1470,7 +1463,7 @@ output_node_opt_summary (struct output_block *ob,
   unsigned int index;
   bitmap_iterator bi;
   struct ipa_replace_map *map;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   int i;
 
   lto_output_uleb128_stream (ob->main_stream,
@@ -1497,11 +1490,10 @@ output_node_opt_summary (struct output_block *ob,
       gcc_assert (parm);
       lto_output_uleb128_stream (ob->main_stream, parm_num);
       lto_output_tree (ob, map->new_tree, true);
-      bp = bitpack_create ();
-      bp_pack_value (bp, map->replace_p, 1);
-      bp_pack_value (bp, map->ref_p, 1);
-      lto_output_bitpack (ob->main_stream, bp);
-      bitpack_delete (bp);
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, map->replace_p, 1);
+      bp_pack_value (&bp, map->ref_p, 1);
+      lto_output_bitpack (&bp);
     }
 }
 
@@ -1547,7 +1539,7 @@ input_node_opt_summary (struct cgraph_node *node,
   int i;
   int count;
   int bit;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   count = lto_input_uleb128 (ib_main);
   if (count)
@@ -1580,9 +1572,8 @@ input_node_opt_summary (struct cgraph_node *node,
       map->old_tree = NULL;
       map->new_tree = lto_input_tree (ib_main, data_in);
       bp = lto_input_bitpack (ib_main);
-      map->replace_p = bp_unpack_value (bp, 1);
-      map->ref_p = bp_unpack_value (bp, 1);
-      bitpack_delete (bp);
+      map->replace_p = bp_unpack_value (&bp, 1);
+      map->ref_p = bp_unpack_value (&bp, 1);
     }
 }
 
