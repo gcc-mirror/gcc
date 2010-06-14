@@ -318,8 +318,8 @@ procedure GNATCmd is
       --  there is a -files= switch.
 
       for Index in 1 .. Last_Switches.Last loop
-         if Last_Switches.Table (Index).all'Length > 7 and then
-           Last_Switches.Table (Index) (1 .. 7) = "-files="
+         if Last_Switches.Table (Index).all'Length > 7
+           and then Last_Switches.Table (Index) (1 .. 7) = "-files="
          then
             Add_Sources := False;
             exit;
@@ -353,13 +353,13 @@ procedure GNATCmd is
          end if;
       end loop;
 
-      --  If all arguments are switchesand there is no switch -files=, add the
-      --  path names of all the sources of the main project.
+      --  If all arguments are switches and there is no switch -files=, add
+      --  the path names of all the sources of the main project.
 
       if Add_Sources then
 
-         --  For gnatcheck, gnatpp and gnatmetric , create a temporary file and
-         --  put the list of sources in it.
+         --  For gnatcheck, gnatpp and gnatmetric , create a temporary file
+         --  and put the list of sources in it.
 
          if The_Command = Check  or else
             The_Command = Pretty or else

@@ -4848,8 +4848,13 @@ package body Sem_Ch12 is
       --  To detect this case we have to rescan the list of formals, which
       --  is usually short enough to ignore the resulting inefficiency.
 
+      -----------------------------
+      -- Denotes_Previous_Actual --
+      -----------------------------
+
       function Denotes_Previous_Actual (Typ : Entity_Id) return Boolean is
          Prev : Entity_Id;
+
       begin
          Prev := First_Entity (Instance);
          while Present (Prev) loop
@@ -4859,12 +4864,15 @@ package body Sem_Ch12 is
               and then Entity (Subtype_Indication (Parent (Prev))) = Typ
             then
                return True;
+
             elsif Prev = E then
                return False;
+
             else
                Next_Entity (Prev);
             end if;
          end loop;
+
          return False;
       end Denotes_Previous_Actual;
 
@@ -5874,7 +5882,7 @@ package body Sem_Ch12 is
 
          --  If we are not instantiating, then this is where we load and
          --  analyze subunits, i.e. at the point where the stub occurs. A
-         --  more permissible system might defer this analysis to the point
+         --  more permissive system might defer this analysis to the point
          --  of instantiation, but this seems to complicated for now.
 
          if not Instantiating then
@@ -10480,8 +10488,16 @@ package body Sem_Ch12 is
                Collect_Previous_Instances
                  (Private_Declarations (Specification (Decl)));
 
+            --  Previous non-generic bodies may contain instances as well
+
             elsif Nkind (Decl) = N_Package_Body
               and then Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
+            then
+               Collect_Previous_Instances (Declarations (Decl));
+
+            elsif Nkind (Decl) = N_Subprogram_Body
+              and then not Acts_As_Spec (Decl)
+              and then not Is_Generic_Subprogram (Corresponding_Spec (Decl))
             then
                Collect_Previous_Instances (Declarations (Decl));
             end if;
@@ -12023,18 +12039,17 @@ package body Sem_Ch12 is
                elsif Nkind (N2) = N_Explicit_Dereference then
 
                   --  An identifier is rewritten as a dereference if it is the
-                  --  prefix in an implicit dereference.
-
-                  --  Check whether corresponding entity in prefix is global
+                  --  prefix in an implicit dereference (call or attribute).
+                  --  The analysis of an instantiation will expand the node
+                  --  again, so we preserve the original tree but link it to
+                  --  the resolved entity in case it is global.
 
                   if Is_Entity_Name (Prefix (N2))
                     and then Present (Entity (Prefix (N2)))
                     and then Is_Global (Entity (Prefix (N2)))
                   then
-                     Rewrite (N,
-                       Make_Explicit_Dereference (Loc,
-                          Prefix =>
-                            New_Occurrence_Of (Entity (Prefix (N2)), Loc)));
+                     Set_Associated_Node (N, Prefix (N2));
+
                   elsif Nkind (Prefix (N2)) = N_Function_Call
                     and then Is_Global (Entity (Name (Prefix (N2))))
                   then
