@@ -736,6 +736,9 @@ package body Prj.Nmsc is
       Id.Dep_Name            := Dependency_Name
                                   (File_Name, Lang_Id.Config.Dependency_Kind);
       Id.Naming_Exception    := Naming_Exception;
+      Id.Object              := Object_Name
+                                  (File_Name, Config.Object_File_Suffix);
+      Id.Switches            := Switches_Name (File_Name);
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
       --  is not null.
@@ -765,11 +768,6 @@ package body Prj.Nmsc is
          --  Note that this updates Unit information as well
 
          Override_Kind (Id, Kind);
-      end if;
-
-      if Is_Compilable (Id) and then Config.Object_Generated then
-         Id.Object   := Object_Name (File_Name, Config.Object_File_Suffix);
-         Id.Switches := Switches_Name (File_Name);
       end if;
 
       if Path /= No_Path_Information then
@@ -7488,6 +7486,45 @@ package body Prj.Nmsc is
       Initialize (Data, Tree => Tree, Flags => Flags);
       Check_All_Projects (Root_Project, Data, Imported_First => True);
       Free (Data);
+
+      --  Adjust language configs for projects that are extended
+
+      declare
+         List : Project_List;
+         Proj : Project_Id;
+         Exte : Project_Id;
+         Lang : Language_Ptr;
+         Elng : Language_Ptr;
+
+      begin
+         List := Tree.Projects;
+         while List /= null loop
+            Proj := List.Project;
+            Exte := Proj;
+            while Exte.Extended_By /= No_Project loop
+               Exte := Exte.Extended_By;
+            end loop;
+
+            if Exte /= Proj then
+               Lang := Proj.Languages;
+
+               if Lang /= No_Language_Index then
+                  loop
+                     Elng := Get_Language_From_Name
+                       (Exte, Get_Name_String (Lang.Name));
+                     exit when Elng /= No_Language_Index;
+                     Exte := Exte.Extends;
+                  end loop;
+
+                  if Elng /= Lang then
+                     Lang.Config := Elng.Config;
+                  end if;
+               end if;
+            end if;
+
+            List := List.Next;
+         end loop;
+      end;
    end Process_Naming_Scheme;
 
 end Prj.Nmsc;

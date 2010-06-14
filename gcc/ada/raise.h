@@ -29,7 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-
 /* C counterparts of what System.Standard_Library defines.  */
 
 typedef unsigned Exception_Code;

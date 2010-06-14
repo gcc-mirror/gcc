@@ -1,3 +1,23 @@
+2010-06-14  Pascal Obry  <obry@adacore.com>
+
+	* s-finimp.adb: Fix typo.
+	* raise.h: Remove duplicate blank line.
+
+2010-06-14  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Sources): Always set the object file and the
+	switches file names, as the configuration of the language may change
+	in an extending project.
+	(Process_Naming_Scheme): For sources of projects that are extended, set
+	the configuration of the language from the highest extending project
+	where the language is declared.
+
+2010-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Resolve_Call): For infinite recursion check, test
+	whether the called subprogram is inherited from a containing subprogram.
+	(Same_Or_Aliased_Subprograms): New function
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (End_Use_Type): Before indicating that an operator is not
