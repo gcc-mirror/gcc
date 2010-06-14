@@ -6182,6 +6182,17 @@ package body Sem_Ch4 is
             Save_Interps (Subprog, Node_To_Replace);
          else
             Analyze (Node_To_Replace);
+
+            --  If the operation has been rewritten into a call, which may
+            --  get subsequently an explicit dereference, preserve the
+            --  type on the original node (selected component or indexed
+            --  component) for subsequent legality tests, e.g. Is_Variable.
+            --  which examines the original node.
+
+            if Nkind (Node_To_Replace) = N_Function_Call then
+               Set_Etype
+                 (Original_Node (Node_To_Replace), Etype (Node_To_Replace));
+            end if;
          end if;
       end Complete_Object_Operation;
 

@@ -1084,12 +1084,32 @@ package body Checks is
       Cond      : Node_Id;
       T_Typ     : Entity_Id;
 
+      function Denotes_Explicit_Dereference (Obj : Node_Id) return Boolean;
+      --  A heap object with an indefinite subtype is constrained by its
+      --  initial value, and assigning to it requires a constraint_check.
+      --  The target may be an explicit dereference, or a renaming of one.
+
       function Is_Aliased_Unconstrained_Component return Boolean;
       --  It is possible for an aliased component to have a nominal
       --  unconstrained subtype (through instantiation). If this is a
       --  discriminated component assigned in the expansion of an aggregate
       --  in an initialization, the check must be suppressed. This unusual
       --  situation requires a predicate of its own.
+
+      ----------------------------------
+      -- Denotes_Explicit_Dereference --
+      ----------------------------------
+
+      function Denotes_Explicit_Dereference (Obj : Node_Id) return Boolean is
+      begin
+         return
+           Nkind (Obj) = N_Explicit_Dereference
+             or else
+               (Is_Entity_Name (Obj)
+                 and then Present (Renamed_Object (Entity (Obj)))
+                and then Nkind (Renamed_Object (Entity (Obj)))
+                  = N_Explicit_Dereference);
+      end Denotes_Explicit_Dereference;
 
       ----------------------------------------
       -- Is_Aliased_Unconstrained_Component --
@@ -1164,7 +1184,7 @@ package body Checks is
       --  Ada 2005 (AI-363): For Ada 2005, we limit the building of the actual
       --  subtype to the parameter and dereference cases, since other aliased
       --  objects are unconstrained (unless the nominal subtype is explicitly
-      --  constrained). (But we also need to test for renamings???)
+      --  constrained).
 
       if Present (Lhs)
         and then (Present (Param_Entity (Lhs))
@@ -1174,7 +1194,7 @@ package body Checks is
                              and then not Is_Aliased_Unconstrained_Component)
                    or else (Ada_Version >= Ada_05
                              and then not Is_Constrained (T_Typ)
-                             and then Nkind (Lhs) = N_Explicit_Dereference
+                             and then Denotes_Explicit_Dereference (Lhs)
                              and then Nkind (Original_Node (Lhs)) /=
                                         N_Function_Call))
       then
