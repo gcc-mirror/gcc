@@ -1,3 +1,54 @@
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads (Check_Policy_List): Add some clarifying comments
+	* sem_prag.adb (Analyze_Pragma, case Check): Set Pragma_Enabled flag
+	on rewritten Assert pragma.
+
+2010-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): Add a special check for
+	controlled operations, so that they will be treated as overriding even
+	if the overridden subprogram is marked Is_Hidden, as long as the
+	overridden subprogram's parent subprogram is not hidden.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Entry for gnatw.d no longer specific for while loops
+	* einfo.adb (First_Exit_Statement): New attribute for E_Loop
+	* einfo.ads (First_Exit_Statement): New attribute for E_Loop
+	* sem_ch5.adb (Analyze_Loop_Statement): Check_Infinite_Loop_Warning has
+	new calling sequence to include test for EXIT WHEN.
+	(Analyze_Exit_Statement): Chain EXIT statement into exit statement chain
+	* sem_warn.ads, sem_warn.adb (Check_Infinite_Loop_Warning): Now handles
+	EXIT WHEN case.
+	* sinfo.adb (Next_Exit_Statement): New attribute of N_Exit_Statement
+	node.
+	* sinfo.ads (N_Pragma): Correct comment on Sloc field (points to
+	PRAGMA, not to pragma identifier).
+	(Next_Exit_Statement): New attribute of N_Exit_Statement node
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Short_Circuit): Fix sloc of "assertion/check
+	would fail" msg.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch2.adb (Scan_Pragma_Argument_Association): Clarify message for
+	missing pragma argument identifier.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb (Ekind_In): New functions
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): Optimize 2**N in stand alone context
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb (Usage): Redo documentation of -gnatwa.
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Find_Type): The attribute 'class cannot be applied to

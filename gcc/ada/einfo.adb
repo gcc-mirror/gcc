@@ -79,6 +79,7 @@ package body Einfo is
    --    Normalized_First_Bit            Uint8
    --    Postcondition_Proc              Node8
    --    Return_Applies_To               Node8
+   --    First_Exit_Statement            Node8
 
    --    Class_Wide_Type                 Node9
    --    Current_Value                   Node9
@@ -1052,6 +1053,12 @@ package body Einfo is
    begin
       return Node17 (Id);
    end First_Entity;
+
+   function First_Exit_Statement (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      return Node8 (Id);
+   end First_Exit_Statement;
 
    function First_Index (Id : E) return N is
    begin
@@ -3491,6 +3498,12 @@ package body Einfo is
    begin
       Set_Node17 (Id, V);
    end Set_First_Entity;
+
+   procedure Set_First_Exit_Statement (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      Set_Node8 (Id, V);
+   end Set_First_Exit_Statement;
 
    procedure Set_First_Index (Id : E; V : N) is
    begin
@@ -7235,6 +7248,9 @@ package body Einfo is
 
          when Type_Kind                                    =>
             Write_Str ("Associated_Node_For_Itype");
+
+         when E_Loop                                       =>
+            Write_Str ("First_Exit_Statement");
 
          when E_Package                                    =>
             Write_Str ("Dependent_Instances");

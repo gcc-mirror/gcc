@@ -1209,6 +1209,11 @@ package body Sem_Ch5 is
          Check_Unset_Reference (Cond);
       end if;
 
+      --  Chain exit statement to associated loop entity
+
+      Set_Next_Exit_Statement  (N, First_Exit_Statement (Scope_Id));
+      Set_First_Exit_Statement (Scope_Id, N);
+
       --  Since the exit may take us out of a loop, any previous assignment
       --  statement is not useless, so clear last assignment indications. It
       --  is OK to keep other current values, since if the exit statement
@@ -2060,8 +2065,12 @@ package body Sem_Ch5 is
       End_Scope;
       Kill_Current_Values;
 
-      --  Check for infinite loop. We skip this check for generated code, since
-      --  it justs waste time and makes debugging the routine called harder.
+      --  Check for infinite loop. Skip check for generated code, since it
+      --  justs waste time and makes debugging the routine called harder.
+
+      --  Note that we have to wait till the body of the loop is fully analyzed
+      --  before making this call, since Check_Infinite_Loop_Warning relies on
+      --  being able to use semantic visibility information to find references.
 
       if Comes_From_Source (N) then
          Check_Infinite_Loop_Warning (N);

@@ -224,7 +224,10 @@ package Opt is
    --  GNAT
    --  This points to the list of N_Pragma nodes for Check_Policy pragmas
    --  that are linked through the Next_Pragma fields, with the list being
-   --  terminated by Empty. The order is most recently processed first.
+   --  terminated by Empty. The order is most recently processed first. Note
+   --  that Push_Scope and Pop_Scope in Sem_Ch8 save and restore the value
+   --  of this variable, implementing the required scope control for pragmas
+   --  appearing a declarative part.
 
    Check_Readonly_Files : Boolean := False;
    --  GNATMAKE

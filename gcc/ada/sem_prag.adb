@@ -5771,8 +5771,13 @@ package body Sem_Prag is
             end if;
 
             Check_Arg_Is_Identifier (Arg1);
+
+            --  Indicate if pragma is enabled. The Original_Node reference here
+            --  is to deal with pragma Assert rewritten as a Check pragma.
+
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
             Set_Pragma_Enabled (N, Check_On);
+            Set_Pragma_Enabled (Original_Node (N), Check_On);
 
             --  If expansion is active and the check is not enabled then we
             --  rewrite the Check as:

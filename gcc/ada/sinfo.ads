@@ -1395,6 +1395,12 @@ package Sinfo is
    --    scope are chained, and this field is used as the forward pointer for
    --    this list. See Einfo for further details.
 
+   --  Next_Exit_Statement (Node3-Sem)
+   --    Present in N_Exit_Statement nodes. The exit statements for a loop are
+   --    chained (in reverse order of appearence) from the First_Exit_Statement
+   --    field of the E_Loop entity for the loop. Next_Exit_Statement points to
+   --    the next entry on this chain (Empty = end of list).
+
    --  Next_Implicit_With (Node3-Sem)
    --    Present in N_With_Clause. Part of a chain of with_clauses generated
    --    in rtsfind to indicate implicit dependencies on predefined units. Used
@@ -1980,7 +1986,7 @@ package Sinfo is
       --  which are explicitly documented.
 
       --  N_Pragma
-      --  Sloc points to pragma identifier
+      --  Sloc points to PRAGMA
       --  Next_Pragma (Node1-Sem)
       --  Pragma_Argument_Associations (List2) (set to No_List if none)
       --  Debug_Statement (Node3) (set to Empty if not Debug, Assert)
@@ -4040,6 +4046,13 @@ package Sinfo is
       --  Is_Null_Loop (Flag16)
       --  Suppress_Loop_Warnings (Flag17)
 
+      --  Note: the parser fills in the Identifier field if there is an
+      --  explicit loop identifier. Otherwise the parser leaves this field
+      --  set to Empty, and then the semantic processing for a loop statement
+      --  creates an identifier, setting the Has_Created_Identifier flag to
+      --  True. So after semantic anlaysis, the Identifier is always set,
+      --  referencing an identifier whose entity has an Ekind of E_Loop.
+
       --------------------------
       -- 5.5 Iteration Scheme --
       --------------------------
@@ -4128,7 +4141,8 @@ package Sinfo is
       --  N_Exit_Statement
       --  Sloc points to EXIT
       --  Name (Node2) (set to Empty if no loop name present)
-      --  Condition (Node1) (set to Empty if no when part present)
+      --  Condition (Node1) (set to Empty if no WHEN part present)
+      --  Next_Exit_Statement (Node3-Sem): Next exit on chain
 
       -------------------------
       -- 5.9  Goto Statement --
@@ -8247,6 +8261,9 @@ package Sinfo is
    function Next_Entity
      (N : Node_Id) return Node_Id;    -- Node2
 
+   function Next_Exit_Statement
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Next_Implicit_With
      (N : Node_Id) return Node_Id;    -- Node3
 
@@ -9167,6 +9184,9 @@ package Sinfo is
 
    procedure Set_Next_Entity
      (N : Node_Id; Val : Node_Id);            -- Node2
+
+   procedure Set_Next_Exit_Statement
+     (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Next_Implicit_With
      (N : Node_Id; Val : Node_Id);            -- Node3
@@ -11360,6 +11380,7 @@ package Sinfo is
    pragma Inline (Name);
    pragma Inline (Names);
    pragma Inline (Next_Entity);
+   pragma Inline (Next_Exit_Statement);
    pragma Inline (Next_Implicit_With);
    pragma Inline (Next_Named_Actual);
    pragma Inline (Next_Pragma);
@@ -11664,6 +11685,7 @@ package Sinfo is
    pragma Inline (Set_Name);
    pragma Inline (Set_Names);
    pragma Inline (Set_Next_Entity);
+   pragma Inline (Set_Next_Exit_Statement);
    pragma Inline (Set_Next_Implicit_With);
    pragma Inline (Set_Next_Named_Actual);
    pragma Inline (Set_Next_Pragma);

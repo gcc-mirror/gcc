@@ -234,10 +234,11 @@ package body Sem_Warn is
    --  within the body of the loop.
 
    procedure Check_Infinite_Loop_Warning (Loop_Statement : Node_Id) is
-      Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+      Expression : Node_Id := Empty;
+      --  Set to WHILE or EXIT WHEN condition to be tested
 
       Ref : Node_Id := Empty;
-      --  Reference in iteration scheme to variable that might not be modified
+      --  Reference in Expression to variable that might not be modified
       --  in loop, indicating a possible infinite loop.
 
       Var : Entity_Id := Empty;
@@ -267,9 +268,9 @@ package body Sem_Warn is
 
       function Test_Ref (N : Node_Id) return Traverse_Result;
       --  Test for reference to variable in question. Returns Abandon if
-      --  matching reference found.
+      --  matching reference found. Used in instantiation of No_Ref_Found.
 
-      function Find_Ref is new Traverse_Func (Test_Ref);
+      function No_Ref_Found is new Traverse_Func (Test_Ref);
       --  Function to traverse body of procedure. Returns Abandon if matching
       --  reference found.
 
@@ -465,9 +466,9 @@ package body Sem_Warn is
 
       function Test_Ref (N : Node_Id) return Traverse_Result is
       begin
-         --  Waste of time to look at iteration scheme
+         --  Waste of time to look at the expression we are testing
 
-         if N = Iter then
+         if N = Expression then
             return Skip;
 
          --  Direct reference to variable in question
@@ -547,20 +548,86 @@ package body Sem_Warn is
    --  Start of processing for Check_Infinite_Loop_Warning
 
    begin
-      --  We need a while iteration with no condition actions. Condition
-      --  actions just make things too complicated to get the warning right.
+      --  Skip processing if debug flag gnatd.w is set
 
-      if No (Iter)
-        or else No (Condition (Iter))
-        or else Present (Condition_Actions (Iter))
-        or else Debug_Flag_Dot_W
-      then
+      if Debug_Flag_Dot_W then
+         return;
+      end if;
+
+      --  Case of WHILE loop
+
+      declare
+         Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+
+      begin
+         if Present (Iter) and then Present (Condition (Iter)) then
+
+            --  Skip processing for while iteration with conditions actions,
+            --  since they make it too complicated to get the warning right.
+
+            if Present (Condition_Actions (Iter)) then
+               return;
+            end if;
+
+            --  Capture WHILE condition
+
+            Expression := Condition (Iter);
+         end if;
+      end;
+
+      --  Check chain of EXIT statements, we only process loops that have a
+      --  single exit condition (either a single EXIT WHEN statement, or a
+      --  WHILE loop not containing any EXIT WHEN statements).
+
+      declare
+         Ident     : constant Node_Id := Identifier (Loop_Statement);
+         Exit_Stmt : Node_Id;
+
+      begin
+         --  If we don't have a proper chain set, ignore call entirely. This
+         --  happens because of previous errors.
+
+         if No (Entity (Ident))
+           or else Ekind (Entity (Ident)) /= E_Loop
+         then
+            return;
+         end if;
+
+         --  Otherwise prepare to scan list of EXIT statements
+
+         Exit_Stmt := First_Exit_Statement (Entity (Ident));
+         while Present (Exit_Stmt) loop
+
+            --  Check for EXIT WHEN
+
+            if Present (Condition (Exit_Stmt)) then
+
+               --  Quit processing if EXIT WHEN in WHILE loop, or more than
+               --  one EXIT WHEN statement present in the loop.
+
+               if Present (Expression) then
+                  return;
+
+               --  Otherwise capture condition from EXIT WHEN statement
+
+               else
+                  Expression := Condition (Exit_Stmt);
+               end if;
+            end if;
+
+            Exit_Stmt := Next_Exit_Statement (Exit_Stmt);
+         end loop;
+      end;
+
+      --  Return if no condition to test
+
+      if No (Expression) then
          return;
       end if;
 
       --  Initial conditions met, see if condition is of right form
 
-      Find_Var (Condition (Iter));
+      Find_Var (Expression);
 
       --  Nothing to do if local variable from source not found. If it's a
       --  renaming, it is probably renaming something too complicated to deal
@@ -608,7 +675,7 @@ package body Sem_Warn is
       --  We have a variable reference of the right form, now we scan the loop
       --  body to see if it looks like it might not be modified
 
-      if Find_Ref (Loop_Statement) = OK then
+      if No_Ref_Found (Loop_Statement) = OK then
          Error_Msg_NE
            ("?variable& is not modified in loop body!", Ref, Var);
          Error_Msg_N
@@ -3432,9 +3499,7 @@ package body Sem_Warn is
             Sloc_Range (Orig, Start, Dummy);
             Atrue := Test_Result;
 
-            if Present (Parent (C))
-              and then Nkind (Parent (C)) = N_Op_Not
-            then
+            if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not then
                Atrue := not Atrue;
             end if;
 

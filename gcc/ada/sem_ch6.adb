@@ -4420,8 +4420,24 @@ package body Sem_Ch6 is
          end;
       end if;
 
+      --  If there is an overridden subprogram, then check that there is not
+      --  a "not overriding" indicator, and mark the subprogram as overriding.
+      --  This is not done if the overridden subprogram is marked as hidden,
+      --  which can occur for the case of inherited controlled operations
+      --  (see Derive_Subprogram), unless the inherited subprogram's parent
+      --  subprogram is not itself hidden. (Note: This condition could probably
+      --  be simplified, leaving out the testing for the specific controlled
+      --  cases, but it seems safer and clearer this way, and echoes similar
+      --  special-case tests of this kind in other places.)
+
       if Present (Overridden_Subp)
-        and then not Is_Hidden (Overridden_Subp)
+        and then (not Is_Hidden (Overridden_Subp)
+                   or else
+                     ((Chars (Overridden_Subp) = Name_Initialize
+                         or else Chars (Overridden_Subp) = Name_Adjust
+                         or else Chars (Overridden_Subp) = Name_Finalize)
+                       and then Present (Alias (Overridden_Subp))
+                       and then not Is_Hidden (Alias (Overridden_Subp))))
       then
          if Must_Not_Override (Spec) then
             Error_Msg_Sloc := Sloc (Overridden_Subp);
