@@ -37,7 +37,7 @@ package Ada.Environment_Variables is
    --  environment variable with the given name and value, then
    --  Constraint_Error is propagated.
    --  It is implementation defined whether there exist values for which the
-   --  call Set(Name, Value) has the same effect as Clear (Name).
+   --  call Set (Name, Value) has the same effect as Clear (Name).
 
    procedure Clear (Name : String);
    --  If the external execution environment supports environment variables,

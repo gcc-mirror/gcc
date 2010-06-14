@@ -68,9 +68,10 @@ package Lib.Xref is
    --        col is the column number of the referenced entity
 
    --        level is a single character that separates the col and
-   --        entity fields. It is an asterisk for a top level library
+   --        entity fields. It is an asterisk (*) for a top level library
    --        entity that is publicly visible, as well for an entity declared
-   --        in the visible part of a generic package, and space otherwise.
+   --        in the visible part of a generic package, the plus sign (+) for
+   --        a C/C++ static entity, and space otherwise.
 
    --        entity is the name of the referenced entity, with casing in
    --        the canonical casing for the source file where it is defined.

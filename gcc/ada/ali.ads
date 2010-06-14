@@ -811,6 +811,11 @@ package ALI is
      Tref_Derived, --  Derived type typeref (points to parent type)
      Tref_Type);   --  All other cases
 
+   type Visibility_Kind is
+     (Global, --  Library level entity
+      Static, --  Static C/C++ entity
+      Other); --  Local and other entity
+
    --  The following table records entities for which xrefs are recorded
 
    type Xref_Entity_Record is record
@@ -824,8 +829,8 @@ package ALI is
       Col : Pos;
       --  Column number of definition
 
-      Lib : Boolean;
-      --  True if entity is library level entity
+      Visibility : Visibility_Kind;
+      --  Visiblity of entity
 
       Entity : Name_Id;
       --  Name of entity
