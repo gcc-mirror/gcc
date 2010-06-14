@@ -1,3 +1,7 @@
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Minor reformatting.
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body): Do not check conformance when
