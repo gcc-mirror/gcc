@@ -209,9 +209,9 @@ procedure GNATCmd is
 
    procedure Check_Files;
    --  For GNAT LIST, GNAT PRETTY, GNAT METRIC, and GNAT STACK, check if a
-   --  project file is specified, without any file arguments. If it is the
-   --  case, invoke the GNAT tool with the proper list of files, derived from
-   --  the sources of the project.
+   --  project file is specified, without any file arguments and without a
+   --  switch -files=. If it is the case, invoke the GNAT tool with the proper
+   --  list of files, derived from the sources of the project.
 
    function Check_Project
      (Project      : Project_Id;
@@ -314,10 +314,17 @@ procedure GNATCmd is
       Success     : Boolean;
 
    begin
-      --  Check if there is at least one argument that is not a switch
+      --  Check if there is at least one argument that is not a switch or if
+      --  there is a -files= switch.
 
       for Index in 1 .. Last_Switches.Last loop
-         if Last_Switches.Table (Index) (1) /= '-' then
+         if Last_Switches.Table (Index).all'Length > 7 and then
+           Last_Switches.Table (Index) (1 .. 7) = "-files="
+         then
+            Add_Sources := False;
+            exit;
+
+         elsif Last_Switches.Table (Index) (1) /= '-' then
             if Index = 1
               or else
                 (The_Command = Check
@@ -346,8 +353,8 @@ procedure GNATCmd is
          end if;
       end loop;
 
-      --  If all arguments were switches, add the path names of all the sources
-      --  of the main project.
+      --  If all arguments are switchesand there is no switch -files=, add the
+      --  path names of all the sources of the main project.
 
       if Add_Sources then
 

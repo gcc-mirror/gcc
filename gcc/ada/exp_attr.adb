@@ -3586,8 +3586,7 @@ package body Exp_Attr is
                             Attribute_Name => Name_First,
                             Prefix => New_Occurrence_Of (Ptyp, Loc))))),
 
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, 1)));
+                Right_Opnd => Make_Integer_Literal (Loc, 1)));
 
             Analyze_And_Resolve (N, Typ);
 
@@ -3707,7 +3706,7 @@ package body Exp_Attr is
 
                   Rewrite (N,
                     Make_Assignment_Statement (Loc,
-                      Name => Lhs,
+                      Name       => Lhs,
                       Expression => Rhs));
 
                   Analyze (N);
@@ -3785,9 +3784,7 @@ package body Exp_Attr is
       --  the context of a _Postcondition function with a _Result parameter.
 
       when Attribute_Result =>
-         Rewrite (N,
-           Make_Identifier (Loc,
-            Chars => Name_uResult));
+         Rewrite (N, Make_Identifier (Loc, Chars => Name_uResult));
          Analyze_And_Resolve (N, Typ);
 
       -----------
