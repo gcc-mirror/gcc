@@ -10489,6 +10489,9 @@ package body Sem_Util is
                end loop;
             end;
 
+            --  For a class wide subtype, we also need debug information
+            --  for the equivalent type.
+
             if Ekind (T) = E_Class_Wide_Subtype then
                Set_Debug_Info_Needed_If_Not_Set (Equivalent_Type (T));
             end if;
