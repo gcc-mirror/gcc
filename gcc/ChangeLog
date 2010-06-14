@@ -1,3 +1,8 @@
+2010-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.md (*mov<mode>_64 DD_DF, mov<mode>): Properly
+	adjust z10prop set_attr.
+
 2010-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* bitmap.c (bitmap_and, bitmap_and_into, bitmap_and_compl,
