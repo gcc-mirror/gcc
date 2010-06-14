@@ -1074,9 +1074,13 @@ package body Sem_Ch6 is
          return;
       end if;
 
-      --  If error analyzing prefix, then set Any_Type as result and return
+      --  If there is an error analyzing the name (which may have been
+      --  rewritten if the original call was in prefix notation) then error
+      --  has been emitted already, mark node and return.
 
-      if Etype (P) = Any_Type then
+      if Error_Posted (N)
+        or else Etype (Name (N)) = Any_Type
+      then
          Set_Etype (N, Any_Type);
          return;
       end if;

@@ -1,3 +1,29 @@
+2010-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_ugn.texi: Minor typo fixes and wording changes
+
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_One_Call): If the call has been rewritten from a
+	prefixed form, do not re-analyze first actual, which may need an
+	implicit dereference.
+	* sem_ch6.adb (Analyze_Procedure_Call): If the call is given in
+	prefixed notation, the analysis will rewrite the node, and possible
+	errors appear in the rewritten name of the node.
+	* sem_res.adb: If a call is ambiguous because its first parameter is
+	an overloaded call, report list of candidates, to clarify ambiguity of
+	enclosing call.
+
+2010-06-14  Doug Rupp  <rupp@adacore.com>
+
+	* s-auxdec-vms-alpha.adb: New package body implementing legacy
+	VAX instructions with Asm insertions.
+	* s-auxdec-vms_64.ads: Inline VAX queue functions
+	* s-stoele.adb: Resolve some ambiguities in To_Addresss with s-suxdec
+	that show up only on VMS.
+	* gcc-interface/Makefile.in: Provide translation for
+	s-auxdec-vms-alpha.adb.
+
 2010-06-14  Olivier Hainque  <hainque@adacore.com>
 
 	* initialize.c (VxWorks section): Update comments.

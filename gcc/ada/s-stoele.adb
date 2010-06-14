@@ -37,6 +37,10 @@ package body System.Storage_Elements is
 
    pragma Suppress (All_Checks);
 
+   --  Conversion to/from address
+
+   --  Note full qualification below of To_Address to avoid ambiguities on VMS.
+
    function To_Address is
      new Ada.Unchecked_Conversion (Storage_Offset, Address);
    function To_Offset  is
@@ -61,22 +65,26 @@ package body System.Storage_Elements is
 
    function "+" (Left : Address; Right : Storage_Offset) return Address is
    begin
-      return To_Address (To_Integer (Left) + To_Integer (To_Address (Right)));
+      return System.Storage_Elements.To_Address
+        (To_Integer (Left) + To_Integer (To_Address (Right)));
    end "+";
 
    function "+" (Left : Storage_Offset; Right : Address) return Address is
    begin
-      return To_Address (To_Integer (To_Address (Left)) + To_Integer (Right));
+      return System.Storage_Elements.To_Address
+        (To_Integer (To_Address (Left)) + To_Integer (Right));
    end "+";
 
    function "-" (Left : Address; Right : Storage_Offset) return Address is
    begin
-      return To_Address (To_Integer (Left) - To_Integer (To_Address (Right)));
+      return System.Storage_Elements.To_Address
+        (To_Integer (Left) - To_Integer (To_Address (Right)));
    end "-";
 
    function "-" (Left, Right : Address) return Storage_Offset is
    begin
-      return To_Offset (To_Address (To_Integer (Left) - To_Integer (Right)));
+      return To_Offset (System.Storage_Elements.To_Address
+                         (To_Integer (Left) - To_Integer (Right)));
    end "-";
 
    function "mod"

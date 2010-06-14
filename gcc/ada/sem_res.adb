@@ -1669,6 +1669,10 @@ package body Sem_Res is
       --  Try and fix up a literal so that it matches its expected type. New
       --  literals are manufactured if necessary to avoid cascaded errors.
 
+      procedure Report_Ambiguous_Argument;
+      --  Additional diagnostics when an ambiguous call has an ambiguous
+      --  argument (typically a controlling actual).
+
       procedure Resolution_Failed;
       --  Called when attempt at resolving current expression fails
 
@@ -1732,6 +1736,38 @@ package body Sem_Res is
             Patch_Up_Value (High_Bound (N), Typ);
          end if;
       end Patch_Up_Value;
+
+      -------------------------------
+      -- Report_Ambiguous_Argument --
+      -------------------------------
+
+      procedure Report_Ambiguous_Argument is
+         Arg : constant Node_Id := First (Parameter_Associations (N));
+         I   : Interp_Index;
+         It  : Interp;
+
+      begin
+         if Nkind (Arg) = N_Function_Call
+           and then Is_Entity_Name (Name (Arg))
+           and then Is_Overloaded (Name (Arg))
+         then
+            Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
+
+            Get_First_Interp (Name (Arg), I, It);
+            while Present (It.Nam) loop
+               Error_Msg_Sloc := Sloc (It.Nam);
+
+               if Nkind (Parent (It.Nam)) = N_Full_Type_Declaration then
+                  Error_Msg_N ("interpretation (inherited) #!", Arg);
+
+               else
+                  Error_Msg_N ("interpretation #!", Arg);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Report_Ambiguous_Argument;
 
       -----------------------
       -- Resolution_Failed --
@@ -2036,6 +2072,13 @@ package body Sem_Res is
                         else
                            Error_Msg_N -- CODEFIX
                              ("\\possible interpretation#!", N);
+                        end if;
+
+                        if Nkind_In
+                          (N, N_Procedure_Call_Statement, N_Function_Call)
+                          and then Present (Parameter_Associations (N))
+                        then
+                           Report_Ambiguous_Argument;
                         end if;
                      end if;
 
