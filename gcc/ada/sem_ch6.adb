@@ -2086,6 +2086,15 @@ package body Sem_Ch6 is
             then
                Conformant := True;
 
+            --  Conversely, the spec may have been generated for specless body
+            --  with an inline pragma.
+
+            elsif Comes_From_Source (N)
+              and then not Comes_From_Source (Spec_Id)
+              and then Has_Pragma_Inline (Spec_Id)
+            then
+               Conformant := True;
+
             else
                Check_Conformance
                  (Body_Id, Spec_Id,
