@@ -1113,8 +1113,12 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	    }
 
 	  /* No point propagating into a stmt whose result is not used,
-	     but instead we might be able to remove a trivially dead stmt.  */
-	  if (gimple_get_lhs (stmt)
+	     but instead we might be able to remove a trivially dead stmt.
+	     Don't do this when called from VRP, since the SSA_NAME which
+	     is going to be released could be still referenced in VRP
+	     ranges.  */
+	  if (!use_ranges_p
+	      && gimple_get_lhs (stmt)
 	      && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
 	      && has_zero_uses (gimple_get_lhs (stmt))
 	      && !stmt_could_throw_p (stmt)

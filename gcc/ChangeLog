@@ -1,3 +1,9 @@
+2010-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44508
+	* tree-ssa-propagate.c (substitute_and_fold): Don't do DCE
+	when called from tree-vrp.c.
+
 2010-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Backport from mainline:
