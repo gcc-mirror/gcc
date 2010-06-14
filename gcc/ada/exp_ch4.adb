@@ -47,6 +47,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -5066,7 +5067,7 @@ package body Exp_Ch4 is
         and then Is_Power_Of_2_For_Shift (Ropnd)
 
       --  We cannot do this transformation in configurable run time mode if we
-      --  have 64-bit --  integers and long shifts are not available.
+      --  have 64-bit integers and long shifts are not available.
 
         and then
           (Esize (Ltyp) <= 32
@@ -5912,6 +5913,9 @@ package body Exp_Ch4 is
       --  the flag Is_Natural_Power_Of_2_for_Shift set, then the expansion
       --  of the higher level node converts it into a shift.
 
+      --  Another case is 2 ** N in any other context. We simply convert
+      --  this to 1 * 2 ** N, and then the above transformation applies.
+
       --  Note: this transformation is not applicable for a modular type with
       --  a non-binary modulus in the multiplication case, since we get a wrong
       --  result if the shift causes an overflow before the modular reduction.
@@ -5922,33 +5926,45 @@ package body Exp_Ch4 is
         and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
         and then Is_Unsigned_Type (Exptyp)
         and then not Ovflo
-        and then Nkind (Parent (N)) in N_Binary_Op
       then
-         declare
-            P : constant Node_Id := Parent (N);
-            L : constant Node_Id := Left_Opnd (P);
-            R : constant Node_Id := Right_Opnd (P);
+         --  First the multiply and divide cases
 
-         begin
-            if (Nkind (P) = N_Op_Multiply
-                 and then not Non_Binary_Modulus (Typ)
-                 and then
-                   ((Is_Integer_Type (Etype (L)) and then R = N)
-                       or else
-                    (Is_Integer_Type (Etype (R)) and then L = N))
-                 and then not Do_Overflow_Check (P))
+         if Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply) then
+            declare
+               P : constant Node_Id := Parent (N);
+               L : constant Node_Id := Left_Opnd (P);
+               R : constant Node_Id := Right_Opnd (P);
 
-              or else
-                (Nkind (P) = N_Op_Divide
-                  and then Is_Integer_Type (Etype (L))
-                  and then Is_Unsigned_Type (Etype (L))
-                  and then R = N
-                  and then not Do_Overflow_Check (P))
-            then
-               Set_Is_Power_Of_2_For_Shift (N);
-               return;
-            end if;
-         end;
+            begin
+               if (Nkind (P) = N_Op_Multiply
+                   and then not Non_Binary_Modulus (Typ)
+                   and then
+                     ((Is_Integer_Type (Etype (L)) and then R = N)
+                         or else
+                      (Is_Integer_Type (Etype (R)) and then L = N))
+                   and then not Do_Overflow_Check (P))
+                 or else
+                  (Nkind (P) = N_Op_Divide
+                     and then Is_Integer_Type (Etype (L))
+                     and then Is_Unsigned_Type (Etype (L))
+                     and then R = N
+                     and then not Do_Overflow_Check (P))
+               then
+                  Set_Is_Power_Of_2_For_Shift (N);
+                  return;
+               end if;
+            end;
+
+         --  Now the other cases
+
+         elsif not Non_Binary_Modulus (Typ) then
+            Rewrite (N,
+              Make_Op_Multiply (Loc,
+                Left_Opnd  => Make_Integer_Literal (Loc, 1),
+                Right_Opnd => Relocate_Node (N)));
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end if;
       end if;
 
       --  Fall through if exponentiation must be done using a runtime routine
@@ -8745,6 +8761,12 @@ package body Exp_Ch4 is
 
       if Compile_Time_Known_Value (Left) then
 
+         --  Mark SCO for left condition as compile time known
+
+         if Generate_SCO and then Comes_From_Source (Left) then
+            Set_SCO_Condition (Left, Expr_Value_E (Left) = Standard_True);
+         end if;
+
          --  Rewrite True AND THEN Right / False OR ELSE Right to Right.
          --  Any actions associated with Right will be executed unconditionally
          --  and can thus be inserted into the tree unconditionally.
@@ -8829,6 +8851,12 @@ package body Exp_Ch4 is
       --  No actions present, check for cases of right argument True/False
 
       if Compile_Time_Known_Value (Right) then
+
+         --  Mark SCO for left condition as compile time known
+
+         if Generate_SCO and then Comes_From_Source (Right) then
+            Set_SCO_Condition (Right, Expr_Value_E (Right) = Standard_True);
+         end if;
 
          --  Change (Left and then True), (Left or else False) to Left.
          --  Note that we know there are no actions associated with the right

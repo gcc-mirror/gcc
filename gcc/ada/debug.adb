@@ -113,7 +113,7 @@ package body Debug is
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u
    --  d.v  Enable OK_To_Reorder_Components in variant records
-   --  d.w  Do not check for infinite while loops
+   --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
    --  d.z
@@ -548,7 +548,7 @@ package body Debug is
    --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have at least one discriminant (v = variant).
 
-   --  d.w  This flag turns off the scanning of while loops to detect possible
+   --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.
 
    --  d.x  No exception handlers in generated code. This causes exception

@@ -543,8 +543,12 @@ package Atree is
    --  Tests given Id for inequality with the Empty node. This allows notations
    --  like "if Present (Statement)" as opposed to "if Statement /= Empty".
 
-   --  Node_Kind tests, like the functions in Sinfo, but the first argument is
-   --  a Node_Id, and the tested field is Nkind (N).
+   ---------------------
+   -- Node_Kind Tests --
+   ---------------------
+
+   --  These are like the functions in Sinfo, but the first argument is a
+   --  Node_Id, and the tested field is Nkind (N).
 
    function Nkind_In
      (N  : Node_Id;
@@ -615,6 +619,70 @@ package Atree is
       V9 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
+   --  Inline all above functions
+
+   -----------------------
+   -- Entity_Kind_Tests --
+   -----------------------
+
+   --  Utility functions to test whether an Entity_Kind value, either given
+   --  directly as the first argument, or the Ekind field of an Entity give
+   --  as the first argument, matches any of the given list of Entity_Kind
+   --  values. Return True if any match, False if no match.
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind) return Boolean;
+
+   pragma Inline (Ekind_In);
    --  Inline all above functions
 
    -----------------------------

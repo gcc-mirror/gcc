@@ -2021,6 +2021,14 @@ package body Sinfo is
       return Node2 (N);
    end Next_Entity;
 
+   function Next_Exit_Statement
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exit_Statement);
+      return Node3 (N);
+   end Next_Exit_Statement;
+
    function Next_Implicit_With
      (N : Node_Id) return Node_Id is
    begin
@@ -4906,6 +4914,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Defining_Operator_Symbol);
       Set_Node2 (N, Val); -- semantic field, no parent set
    end Set_Next_Entity;
+
+   procedure Set_Next_Exit_Statement
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Exit_Statement);
+      Set_Node3 (N, Val); -- semantic field, no parent set
+   end Set_Next_Exit_Statement;
 
    procedure Set_Next_Implicit_With
       (N : Node_Id; Val : Node_Id) is

@@ -1116,6 +1116,13 @@ package Einfo is
 --       Points to a list of associated entities using the Next_Entity field
 --       as a chain pointer with Empty marking the end of the list.
 
+--    First_Exit_Statement (Node8)
+--       Present in E_Loop entity. The exit statements for a loop are chained
+--       (in reverse order of appearence) using this field to point to the
+--       first entry in the chain (last exit statement in the loop). The
+--       entries are chained through the Next_Exit_Statement field of the
+--       N_Exit_Statement node with Empty marking the end of the list.
+
 --    First_Formal (synthesized)
 --       Applies to subprograms and subprogram types, and also in entries
 --       and entry families. Returns first formal of the subprogram or entry.
@@ -5063,6 +5070,7 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Loop
+   --    First_Exit_Statement                (Node8)
    --    Has_Exit                            (Flag47)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
@@ -5743,6 +5751,7 @@ package Einfo is
    function Finalization_Chain_Entity           (Id : E) return E;
    function Finalize_Storage_Only               (Id : E) return B;
    function First_Entity                        (Id : E) return E;
+   function First_Exit_Statement                (Id : E) return N;
    function First_Index                         (Id : E) return N;
    function First_Literal                       (Id : E) return E;
    function First_Optional_Parameter            (Id : E) return E;
@@ -6291,6 +6300,7 @@ package Einfo is
    procedure Set_Finalization_Chain_Entity       (Id : E; V : E);
    procedure Set_Finalize_Storage_Only           (Id : E; V : B := True);
    procedure Set_First_Entity                    (Id : E; V : E);
+   procedure Set_First_Exit_Statement            (Id : E; V : N);
    procedure Set_First_Index                     (Id : E; V : N);
    procedure Set_First_Literal                   (Id : E; V : E);
    procedure Set_First_Optional_Parameter        (Id : E; V : E);
@@ -6945,6 +6955,7 @@ package Einfo is
    pragma Inline (Can_Use_Internal_Rep);
    pragma Inline (Finalization_Chain_Entity);
    pragma Inline (First_Entity);
+   pragma Inline (First_Exit_Statement);
    pragma Inline (First_Index);
    pragma Inline (First_Literal);
    pragma Inline (First_Optional_Parameter);
@@ -7376,6 +7387,7 @@ package Einfo is
    pragma Inline (Set_Can_Use_Internal_Rep);
    pragma Inline (Set_Finalization_Chain_Entity);
    pragma Inline (Set_First_Entity);
+   pragma Inline (Set_First_Exit_Statement);
    pragma Inline (Set_First_Index);
    pragma Inline (Set_First_Literal);
    pragma Inline (Set_First_Optional_Parameter);

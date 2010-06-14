@@ -7846,15 +7846,15 @@ package body Sem_Res is
                   then
                      null;
                   else
-                     --  Issue warning. Note that we don't want to make this
-                     --  an unconditional warning, because if the assert is
-                     --  within deleted code we do not want the warning. But
-                     --  we do not want the deletion of the IF/AND-THEN to
-                     --  take this message with it. We achieve this by making
-                     --  sure that the expanded code points to the Sloc of
-                     --  the expression, not the original pragma.
+                     --  Issue warning. We do not want the deletion of the
+                     --  IF/AND-THEN to take this message with it. We achieve
+                     --  this by making sure that the expanded code points to
+                     --  the Sloc of the expression, not the original pragma.
 
-                     Error_Msg_N ("?assertion would fail at run-time", Orig);
+                     Error_Msg_N
+                       ("?assertion would fail at run-time!",
+                        Expression
+                          (First (Pragma_Argument_Associations (Orig))));
                   end if;
                end;
 
@@ -7877,7 +7877,10 @@ package body Sem_Res is
                   then
                      null;
                   else
-                     Error_Msg_N ("?check would fail at run-time", Orig);
+                     Error_Msg_N
+                       ("?check would fail at run-time!",
+                        Expression
+                          (Last (Pragma_Argument_Associations (Orig))));
                   end if;
                end;
             end if;
