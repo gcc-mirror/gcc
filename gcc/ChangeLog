@@ -1,3 +1,31 @@
+2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+  Backport from mainline:
+  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* configure.ac (gcc_cv_as_section_has_align): Set if installed
+	binutils supports extended .section directive needed by LTO, or
+	warn if older binutils found.
+	(LTO_BINARY_READER): New AC_SUBST'd variable.
+	(LTO_USE_LIBELF): Likewise.
+	* config.gcc (lto_binary_reader): New target-specific configure
+	variable.
+	* Makefile.in (LTO_BINARY_READER): Import AC_SUBST'd autoconf var.
+	(LTO_USE_LIBELF): Likewise.
+	* configure: Regenerate.
+	* collect2.c (is_elf): Rename from this ...
+	(is_elf_or_coff): ... to this, and recognize and allow i386 COFF
+	 object files in addition to ELF-formatted ones.
+	(scan_prog_file): Caller updated.  Also allow for LTO info marker
+	symbol to be prefixed or not by an extra underscore.
+	* config/i386/t-cygming (winnt.o): Also depend on LTO_STREAMER_H.
+	* config/i386/winnt.c: Also #include lto-streamer.h
+	(i386_pe_asm_named_section): Specify 1-byte section alignment for
+	LTO named sections.
+	(i386_pe_asm_output_aligned_decl_common): Add comment.
+	(i386_pe_maybe_record_exported_symbol): Allow decl arg to be NULL.
+
 2010-06-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44481

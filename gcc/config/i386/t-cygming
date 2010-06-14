@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2005, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -30,7 +30,7 @@ LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
 
 winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
-  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H)
+  $(TM_P_H) toplev.h $(HASHTAB_H) $(GGC_H) $(LTO_STREAMER_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt.c
 

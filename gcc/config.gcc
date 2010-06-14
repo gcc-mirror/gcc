@@ -200,6 +200,8 @@ default_use_cxa_atexit=no
 target_gtfiles=
 need_64bit_hwint=
 need_64bit_isa=
+# Selects the object file format reader/writer used by LTO.
+lto_binary_reader=lto-elf
 
 # Don't carry these over build->host->target.  Please.
 xm_file=
@@ -1351,6 +1353,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 		thread_file='posix'
 	fi
 	use_gcc_stdint=wrap
+	lto_binary_reader=lto-coff
 	;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
@@ -1418,6 +1421,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	default_use_cxa_atexit=yes
 	use_gcc_stdint=wrap
+	lto_binary_reader=lto-coff
 	case ${enable_threads} in
 	  "" | yes | win32)	  thread_file='win32'
 	  tmake_file="${tmake_file} i386/t-gthr-win32"

@@ -2552,19 +2552,21 @@ write_aix_file (FILE *stream, struct id *list)
    be in ELF format.  */
 
 static bool
-is_elf (const char *prog_name)
+is_elf_or_coff (const char *prog_name)
 {
   FILE *f;
   char buf[4];
   static char magic[4] = { 0x7f, 'E', 'L', 'F' };
+  static char coffmag[2] = { 0x4c, 0x01 };
 
-  f = fopen (prog_name, "r");
+  f = fopen (prog_name, "rb");
   if (f == NULL)
     return false;
   if (fread (buf, sizeof (buf), 1, f) != 1)
     buf[0] = 0;
   fclose (f);
-  return memcmp (buf, magic, sizeof (magic)) == 0;
+  return memcmp (buf, magic, sizeof (magic)) == 0
+	|| memcmp (buf, coffmag, sizeof (coffmag)) == 0;
 }
 
 /* Generic version to scan the name list of the loaded program for
@@ -2591,10 +2593,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   if (which_pass == PASS_SECOND)
     return;
 
-  /* LTO objects must be in ELF format.  This check prevents
+  /* LTO objects must be in a known format.  This check prevents
      us from accepting an archive containing LTO objects, which
      gcc cannnot currently handle.  */
-  if (which_pass == PASS_LTOINFO && !is_elf (prog_name))
+  if (which_pass == PASS_LTOINFO && !is_elf_or_coff (prog_name))
     return;
 
   /* If we do not have an `nm', complain.  */
@@ -2674,9 +2676,9 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
           /* Look for the LTO info marker symbol, and add filename to
              the LTO objects list if found.  */
           for (p = buf; (ch = *p) != '\0' && ch != '\n'; p++)
-            if (ch == ' '
-		&& (strncmp (p + 1, "__gnu_lto_v1", 12) == 0)
-		&& ISSPACE (p[13]))
+            if (ch == ' '  && p[1] == '_' && p[2] == '_'
+		&& (strncmp (p + (p[3] == '_' ? 2 : 1), "__gnu_lto_v1", 12) == 0)
+		&& ISSPACE (p[p[3] == '_' ? 14 : 13]))
               {
                 add_lto_object (&lto_objects, prog_name);
 

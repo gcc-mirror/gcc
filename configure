@@ -5996,95 +5996,7 @@ fi
 
 
 
-
-
-target_elf=no
-case $target in
-  *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
-  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
-  alpha*-dec-osf* | *-interix*)
-    target_elf=no
-    ;;
-  *)
-    target_elf=yes
-    ;;
-esac
-
-if test $target_elf = yes; then :
-
-else
-  if test x"$default_enable_lto" = x"yes" ; then
-  enable_lto=no
-else
-  if test x"$enable_lto" = x"yes"; then
-    as_fn_error "LTO support requires an ELF target." "$LINENO" 5
-  fi
-fi
-default_enable_lto=no
-fi
-
-
-if test x"$enable_lto" = x"yes" ; then
-  # Make sure that libelf.h and gelf.h are available.
-
-# Check whether --with-libelf was given.
-if test "${with_libelf+set}" = set; then :
-  withval=$with_libelf;
-fi
-
-
-
-# Check whether --with-libelf_include was given.
-if test "${with_libelf_include+set}" = set; then :
-  withval=$with_libelf_include;
-fi
-
-
-
-# Check whether --with-libelf_lib was given.
-if test "${with_libelf_lib+set}" = set; then :
-  withval=$with_libelf_lib;
-fi
-
-
-  saved_CFLAGS="$CFLAGS"
-  saved_CPPFLAGS="$CPPFLAGS"
-  saved_LIBS="$LIBS"
-
-  case $with_libelf in
-    "")
-      libelflibs="-lelf"
-      libelfinc="-I/usr/include/libelf"
-      ;;
-    *)
-      libelflibs="-L$with_libelf/lib -lelf"
-      libelfinc="-I$with_libelf/include -I$with_libelf/include/libelf"
-      LIBS="$libelflibs $LIBS"
-      ;;
-  esac
-
-  if test "x$with_libelf_include" != x; then
-    libelfinc="-I$with_libelf_include"
-  fi
-
-  if test "x$with_libelf_lib" != x; then
-    libelflibs="-L$with_libelf_lib -lelf"
-    LIBS="$libelflibs $LIBS"
-  fi
-
-  if test "x$with_libelf$with_libelf_include$with_libelf_lib" = x \
-     && test -d ${srcdir}/libelf; then
-    libelflibs='-L$$r/$(HOST_SUBDIR)/libelf/lib -lelf '
-    libelfinc='-D__LIBELF_INTERNAL__ -I$$r/$(HOST_SUBDIR)/libelf/lib -I$$s/libelf/lib'
-    LIBS="$libelflibs $LIBS"
-
- else
-
-  CFLAGS="$CFLAGS $libelfinc"
-  CPPFLAGS="$CPPFLAGS $libelfinc"
-  LIBS="$LIBS $libelflibs"
-
-  ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -6482,7 +6394,83 @@ fi
 done
 
 
-for ac_header in libelf.h
+
+
+
+target_elf=no
+case $target in
+  *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
+  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
+  alpha*-dec-osf* | *-interix*)
+    target_elf=no
+    ;;
+  *)
+    target_elf=yes
+    ;;
+esac
+
+if test $target_elf = yes; then :
+  if test x"$enable_lto" = x"yes" ; then
+  # Make sure that libelf.h and gelf.h are available.
+
+# Check whether --with-libelf was given.
+if test "${with_libelf+set}" = set; then :
+  withval=$with_libelf;
+fi
+
+
+
+# Check whether --with-libelf_include was given.
+if test "${with_libelf_include+set}" = set; then :
+  withval=$with_libelf_include;
+fi
+
+
+
+# Check whether --with-libelf_lib was given.
+if test "${with_libelf_lib+set}" = set; then :
+  withval=$with_libelf_lib;
+fi
+
+
+  saved_CFLAGS="$CFLAGS"
+  saved_CPPFLAGS="$CPPFLAGS"
+  saved_LIBS="$LIBS"
+
+  case $with_libelf in
+    "")
+      libelflibs="-lelf"
+      libelfinc="-I/usr/include/libelf"
+      ;;
+    *)
+      libelflibs="-L$with_libelf/lib -lelf"
+      libelfinc="-I$with_libelf/include -I$with_libelf/include/libelf"
+      LIBS="$libelflibs $LIBS"
+      ;;
+  esac
+
+  if test "x$with_libelf_include" != x; then
+    libelfinc="-I$with_libelf_include"
+  fi
+
+  if test "x$with_libelf_lib" != x; then
+    libelflibs="-L$with_libelf_lib -lelf"
+    LIBS="$libelflibs $LIBS"
+  fi
+
+  if test "x$with_libelf$with_libelf_include$with_libelf_lib" = x \
+     && test -d ${srcdir}/libelf; then
+    libelflibs='-L$$r/$(HOST_SUBDIR)/libelf/lib -lelf '
+    libelfinc='-D__LIBELF_INTERNAL__ -I$$r/$(HOST_SUBDIR)/libelf/lib -I$$s/libelf/lib'
+    LIBS="$libelflibs $LIBS"
+
+ else
+
+  CFLAGS="$CFLAGS $libelfinc"
+  CPPFLAGS="$CPPFLAGS $libelfinc"
+  LIBS="$LIBS $libelflibs"
+
+  for ac_header in libelf.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "libelf.h" "ac_cv_header_libelf_h" "$ac_includes_default"
 if test "x$ac_cv_header_libelf_h" = x""yes; then :
@@ -6667,6 +6655,27 @@ to specify its location." "$LINENO" 5
 
 
 fi
+else
+  if test x"$default_enable_lto" = x"yes" ; then
+    # On non-ELF platforms, LTO must be explicitly enabled.
+    enable_lto=no
+  else
+  # Apart from ELF platforms, only Windows supports LTO so far.  It
+  # would also be nice to check the binutils support, but we don't
+  # have gcc_GAS_CHECK_FEATURE available here.  For now, we'll just
+  # warn during gcc/ subconfigure; unless you're bootstrapping with
+  # -flto it won't be needed until after installation anyway.
+    case $target in
+      *-cygwin*|*-mingw*) ;;
+      *) if test x"$enable_lto" = x"yes"; then
+	as_fn_error "LTO support is not enabled for this target." "$LINENO" 5
+        fi
+      ;;
+    esac
+  fi
+  default_enable_lto=no
+fi
+
 
 
 # By default, C is the only stage 1 language.

@@ -1636,17 +1636,8 @@ AC_ARG_ENABLE(lto,
 enable_lto=$enableval,
 enable_lto=yes; default_enable_lto=yes)
 
-ACX_ELF_TARGET_IFELSE([],
-if test x"$default_enable_lto" = x"yes" ; then
-  enable_lto=no
-else
-  if test x"$enable_lto" = x"yes"; then
-    AC_MSG_ERROR([LTO support requires an ELF target.])
-  fi
-fi
-default_enable_lto=no)
 
-if test x"$enable_lto" = x"yes" ; then
+ACX_ELF_TARGET_IFELSE([if test x"$enable_lto" = x"yes" ; then
   # Make sure that libelf.h and gelf.h are available.
   AC_ARG_WITH(libelf, [  --with-libelf=PATH       Specify prefix directory for the installed libelf package
                           Equivalent to --with-libelf-include=PATH/include
@@ -1782,7 +1773,24 @@ to specify its location.])
   # Flags needed for libelf.
   AC_SUBST(libelflibs)
   AC_SUBST(libelfinc)
-fi
+fi],[if test x"$default_enable_lto" = x"yes" ; then
+    # On non-ELF platforms, LTO must be explicitly enabled.
+    enable_lto=no
+  else
+  # Apart from ELF platforms, only Windows supports LTO so far.  It
+  # would also be nice to check the binutils support, but we don't
+  # have gcc_GAS_CHECK_FEATURE available here.  For now, we'll just
+  # warn during gcc/ subconfigure; unless you're bootstrapping with
+  # -flto it won't be needed until after installation anyway.
+    case $target in
+      *-cygwin*|*-mingw*) ;;
+      *) if test x"$enable_lto" = x"yes"; then
+	AC_MSG_ERROR([LTO support is not enabled for this target.])
+        fi
+      ;;
+    esac
+  fi
+  default_enable_lto=no])
 
 
 # By default, C is the only stage 1 language.

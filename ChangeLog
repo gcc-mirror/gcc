@@ -1,3 +1,15 @@
+2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+  Backport from mainline:
+  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* configure.ac (--enable-lto): Refactor handling so libelf tests
+	are only performed inside then-clause of ACX_ELF_TARGET_IFELSE,
+	and allow LTO to be explicitly enabled on non-ELF platforms that
+	are known to support it inside else-clause.
+	* configure: Regenerate.
+
 2010-06-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.def (configure-gcc): Depend on all-libelf.

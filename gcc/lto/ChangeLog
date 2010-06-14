@@ -1,3 +1,49 @@
+2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+  Backport from mainline:
+  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* Make-lang.in (LTO_OBJS): Use LTO_BINARY_READER instead of
+	hardcoding 'lto-elf.o'.
+	($(LTO_EXE)): Use LTO_USE_LIBELF instead of hardcoding '-lelf'.
+	* lto-coff.h: New file.
+	* lto-coff.c: Likewise.
+
+  2010-04-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* lto.h (lto_elf_file_open): Rename prototype from this ...
+	(lto_obj_file_open): ... to this.
+	(lto_elf_file_close): Likewise ...
+	(lto_obj_file_close): ... and likewise.
+	(lto_elf_build_section_table): Likewise ...
+	(lto_obj_build_section_table): ... and likewise.
+	(lto_elf_begin_section): Likewise ...
+	(lto_obj_begin_section): ... and likewise.
+	(lto_elf_append_data): Likewise ...
+	(lto_obj_append_data): ... and likewise.
+	(lto_elf_end_section): Likewise ...
+	(lto_obj_end_section): ... and likewise.
+	* lto.c (lto_file_read): Update references to the above.
+	(lto_wpa_write_files): Likewise.
+	(lto_read_all_file_options): Likewise.
+	(read_cgraph_and_symbols): Likewise.
+	* lto-lang.c (LANG_HOOKS_BEGIN_SECTION): Likewise.
+	(LANG_HOOKS_APPEND_DATA): Likewise.
+	(LANG_HOOKS_END_SECTION): Likewise.
+	* lto-elf.c (lto_elf_file_open): Rename from this ...
+	(lto_obj_file_open): ... to this, updating any references.
+	(lto_elf_file_close): Likewise ...
+	(lto_obj_file_close): ... and likewise.
+	(lto_elf_build_section_table): Likewise ...
+	(lto_obj_build_section_table): ... and likewise.
+	(lto_elf_begin_section): Likewise ...
+	(lto_obj_begin_section): ... and likewise.
+	(lto_elf_append_data): Likewise ...
+	(lto_obj_append_data): ... and likewise.
+	(lto_elf_end_section): Likewise ...
+	(lto_obj_end_section): ... and likewise.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

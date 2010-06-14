@@ -325,6 +325,10 @@ LIBELFINC = @LIBELFINC@
 # Set to 'yes' if the LTO front end is enabled.
 enable_lto = @enable_lto@
 
+# Set according to LTO object file format.
+LTO_BINARY_READER = @LTO_BINARY_READER@
+LTO_USE_LIBELF = @LTO_USE_LIBELF@
+
 # Compiler needed for plugin support
 PLUGINCC = @CC@
 

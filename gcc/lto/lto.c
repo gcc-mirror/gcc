@@ -378,7 +378,7 @@ lto_file_read (lto_file *file, FILE *resolution_file)
 
   file_data = XCNEW (struct lto_file_decl_data);
   file_data->file_name = file->filename;
-  file_data->section_hash_table = lto_elf_build_section_table (file);
+  file_data->section_hash_table = lto_obj_build_section_table (file);
   file_data->renaming_hash_table = lto_create_renaming_table ();
 
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
@@ -1044,9 +1044,9 @@ lto_wpa_write_files (void)
       if (cgraph_node_set_needs_ltrans_p (set))
 	{
 	  /* Write all the nodes in SET to TEMP_FILENAME.  */
-	  file = lto_elf_file_open (temp_filename, true);
+	  file = lto_obj_file_open (temp_filename, true);
 	  if (!file)
-	    fatal_error ("lto_elf_file_open() failed");
+	    fatal_error ("lto_obj_file_open() failed");
 
 	  lto_set_current_out_file (file);
 	  lto_new_extern_inline_states ();
@@ -1058,7 +1058,7 @@ lto_wpa_write_files (void)
 	  lto_delete_extern_inline_states ();
 
 	  lto_set_current_out_file (NULL);
-	  lto_elf_file_close (file);
+	  lto_obj_file_close (file);
 	}
     }
 
@@ -1781,17 +1781,17 @@ lto_read_all_file_options (void)
   for (i = 0; i < num_in_fnames; i++)
     {
       struct lto_file_decl_data *file_data;
-      lto_file *file = lto_elf_file_open (in_fnames[i], false);
+      lto_file *file = lto_obj_file_open (in_fnames[i], false);
       if (!file)
 	break;
 
       file_data = XCNEW (struct lto_file_decl_data);
       file_data->file_name = file->filename;
-      file_data->section_hash_table = lto_elf_build_section_table (file);
+      file_data->section_hash_table = lto_obj_build_section_table (file);
 
       lto_read_file_options (file_data);
 
-      lto_elf_file_close (file);
+      lto_obj_file_close (file);
       htab_delete (file_data->section_hash_table);
       free (file_data);
     }
@@ -1846,7 +1846,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     {
       struct lto_file_decl_data *file_data = NULL;
 
-      current_lto_file = lto_elf_file_open (fnames[i], false);
+      current_lto_file = lto_obj_file_open (fnames[i], false);
       if (!current_lto_file)
 	break;
 
@@ -1856,7 +1856,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       all_file_decl_data[last_file_ix++] = file_data;
 
-      lto_elf_file_close (current_lto_file);
+      lto_obj_file_close (current_lto_file);
       current_lto_file = NULL;
     }
 

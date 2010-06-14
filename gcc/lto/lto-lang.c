@@ -1158,11 +1158,11 @@ static void lto_init_ts (void)
 #define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE lto_format_attribute_table
 
 #undef LANG_HOOKS_BEGIN_SECTION
-#define LANG_HOOKS_BEGIN_SECTION lto_elf_begin_section
+#define LANG_HOOKS_BEGIN_SECTION lto_obj_begin_section
 #undef LANG_HOOKS_APPEND_DATA
-#define LANG_HOOKS_APPEND_DATA lto_elf_append_data
+#define LANG_HOOKS_APPEND_DATA lto_obj_append_data
 #undef LANG_HOOKS_END_SECTION
-#define LANG_HOOKS_END_SECTION lto_elf_end_section
+#define LANG_HOOKS_END_SECTION lto_obj_end_section
 
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS lto_init_ts
