@@ -4763,6 +4763,25 @@ package body Sem_Res is
       Scop    : Entity_Id;
       Rtype   : Entity_Id;
 
+      function Same_Or_Aliased_Subprograms
+        (S : Entity_Id;
+         E : Entity_Id) return Boolean;
+      --  Returns True if the subprogram entity S is the same as E or else
+      --  S is an alias of E.
+
+      function Same_Or_Aliased_Subprograms
+        (S : Entity_Id;
+         E : Entity_Id) return Boolean
+      is
+         Subp_Alias : constant Entity_Id := Alias (S);
+
+      begin
+         return S = E
+           or else (Present (Subp_Alias) and then Subp_Alias = E);
+      end Same_Or_Aliased_Subprograms;
+
+   --  Start of processing for Resolve_Call
+
    begin
       --  The context imposes a unique interpretation with type Typ on a
       --  procedure or function call. Find the entity of the subprogram that
@@ -5095,7 +5114,7 @@ package body Sem_Res is
          --  Issue warning for possible infinite recursion in the absence
          --  of the No_Recursion restriction.
 
-         if Nam = Scop
+         if Same_Or_Aliased_Subprograms (Nam, Scop)
            and then not Restriction_Active (No_Recursion)
            and then Check_Infinite_Recursion (N)
          then
@@ -5112,7 +5131,7 @@ package body Sem_Res is
 
          else
             Scope_Loop : while Scop /= Standard_Standard loop
-               if Nam = Scop then
+               if Same_Or_Aliased_Subprograms (Nam, Scop) then
 
                   --  Although in general case, recursion is not statically
                   --  checkable, the case of calling an immediately containing

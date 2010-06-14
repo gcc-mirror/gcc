@@ -332,10 +332,10 @@ package body System.Finalization_Implementation is
       P : Finalizable_Ptr := L;
       Q : Finalizable_Ptr;
 
-      type Fake_Exception_Occurence is record
+      type Fake_Exception_Occurrence is record
          Id : Exception_Id;
       end record;
-      type Ptr is access all Fake_Exception_Occurence;
+      type Ptr is access all Fake_Exception_Occurrence;
 
       function To_Ptr is new
         Ada.Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
