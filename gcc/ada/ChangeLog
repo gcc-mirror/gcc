@@ -1,5 +1,26 @@
 2010-06-14  Gary Dismukes  <dismukes@adacore.com>
 
+	* sem_ch4.adb: Fix typo.
+
+2010-06-14  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* s-oscons-tmplt.c (IOV_MAX): redefine on Tru64 and VMS since the
+	vector IO doesn't work at default value properly.
+
+2010-06-14  Doug Rupp  <rupp@adacore.com>
+
+	* s-stoele.adb: Remove unnecessary qualification of To_Address for VMS.
+
+2010-06-14  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Do not invoke the tool with all the
+	sources of the project if a switch -files= is used.
+
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb: Minor reformatting
+2010-06-14  Gary Dismukes  <dismukes@adacore.com>
+
 	* gnat_ugn.texi: Minor typo fixes and wording changes
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>

@@ -98,6 +98,22 @@ pragma Style_Checks ("M32766");
 #include <limits.h>
 #include <fcntl.h>
 
+#if defined (__alpha__) && defined (__osf__)
+/** Tru64 is unable to do vector IO operations with default value of IOV_MAX,
+ ** so its value is redefined to a small one which is known to work properly.
+ **/
+#undef IOV_MAX
+#define IOV_MAX 16
+#endif
+
+#if defined (__VMS)
+/** VMS is unable to do vector IO operations with default value of IOV_MAX,
+ ** so its value is redefined to a small one which is known to work properly.
+ **/
+#undef IOV_MAX
+#define IOV_MAX 16
+#endif
+
 #if ! (defined (__vxworks) || defined (__VMS) || defined (__MINGW32__) || \
        defined (__nucleus__))
 # define HAVE_TERMIOS
