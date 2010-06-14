@@ -1,3 +1,13 @@
+2010-06-14  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* tree-ssa-loop-prefetch.c (nothing_to_prefetch_p): New.  Return
+	true if no prefetch is going to be generated for a given group.
+	(estimate_prefetch_count): Use prefetch_mod and unroll_factor to
+	estimate the prefetch_count.
+	(loop_prefetch_arrays): Call nothing_to_prefetch_p; estimate the
+	prefetch count by considering the unroll_factor and prefetch_mod
+	for is_loop_prefetching_profitable.
+
 2010-06-14  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (m68k_delegitimize_address): Don't do
