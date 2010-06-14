@@ -578,6 +578,13 @@ private
       Mechanism       => (Reference, Value, Value, Reference, Reference));
    pragma Inline_Always (Or_Atomic);
 
+   --  Inline the VAX Queue Funtions
+
+   pragma Inline_Always (Insqhi);
+   pragma Inline_Always (Remqhi);
+   pragma Inline_Always (Insqti);
+   pragma Inline_Always (Remqti);
+
    --  Provide proper unchecked conversion definitions for transfer
    --  functions. Note that we need this level of indirection because
    --  the formal parameter name is X and not Source (and this is indeed

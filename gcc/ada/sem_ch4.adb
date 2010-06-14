@@ -923,7 +923,21 @@ package body Sem_Ch4 is
                end if;
             end if;
 
-            Analyze_One_Call (N, Nam_Ent, False, Success);
+            --  If the call has been rewritten from a prefixed call, the first
+            --  parameter has been analyzed, but may need a subsequent
+            --  dereference, so skip its analysis now.
+
+            if N /= Original_Node (N)
+              and then Nkind (Original_Node (N)) = Nkind (N)
+              and then Nkind (Name (N)) /= Nkind (Name (Original_Node (N)))
+              and then Present (Parameter_Associations (N))
+              and then Present (Etype (First (Parameter_Associations (N))))
+            then
+               Analyze_One_Call
+                 (N, Nam_Ent, False, Success, Skip_First => True);
+            else
+               Analyze_One_Call (N, Nam_Ent, False, Success);
+            end if;
 
             --  If the interpretation succeeds, mark the proper type of the
             --  prefix (any valid candidate will do). If not, remove the
@@ -6080,7 +6094,7 @@ package body Sem_Ch4 is
          First_Actual : Node_Id;
 
       begin
-         --  Place the name of the operation, with its interpretations,
+         --  Place the name of the operation, with its innterpretations,
          --  on the rewritten call.
 
          Set_Name (Call_Node, Subprog);
@@ -6180,6 +6194,7 @@ package body Sem_Ch4 is
 
          if Is_Overloaded (Subprog) then
             Save_Interps (Subprog, Node_To_Replace);
+
          else
             Analyze (Node_To_Replace);
 
@@ -6788,7 +6803,7 @@ package body Sem_Ch4 is
               and then Present (First_Formal (Prim_Op))
               and then Valid_First_Argument_Of (Prim_Op)
               and then
-                 (Nkind (Call_Node) = N_Function_Call)
+                (Nkind (Call_Node) = N_Function_Call)
                    = (Ekind (Prim_Op) = E_Function)
             then
                --  Ada 2005 (AI-251): If this primitive operation corresponds

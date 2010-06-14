@@ -16675,9 +16675,9 @@ The additional @command{gnatpp} switches are defined in this subsection.
 @item ^-files @var{filename}^/FILES=@var{output_file}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
 Take the argument source files from the specified file. This file should be an
-ordinary textual file containing file names separated by spaces or
-line breaks. You can use this switch more then once in the same call to
-@command{gnatpp}. You also can combine this switch with explicit list of
+ordinary text file containing file names separated by spaces or
+line breaks. You can use this switch more than once in the same call to
+@command{gnatpp}. You also can combine this switch with an explicit list of
 files.
 
 @item ^-v^/VERBOSE^
@@ -17358,7 +17358,7 @@ Do not generate the output in text form (implies @option{^-x^/XML^})
 
 @cindex @option{^-d^/DIRECTORY^} (@command{gnatmetric})
 @item ^-d @var{output_dir}^/DIRECTORY=@var{output_dir}^
-Put textual files with detailed metrics into @var{output_dir}
+Put text files with detailed metrics into @var{output_dir}
 
 @cindex @option{^-o^/SUFFIX_DETAILS^} (@command{gnatmetric})
 @item ^-o @var{file_suffix}^/SUFFIX_DETAILS=@var{file_suffix}^
@@ -17935,7 +17935,7 @@ Additional @command{gnatmetric} switches are as follows:
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
 Take the argument source files from the specified file. This file should be an
 ordinary text file containing file names separated by spaces or
-line breaks. You can use this switch more then once in the same call to
+line breaks. You can use this switch more than once in the same call to
 @command{gnatmetric}. You also can combine this switch with
 an explicit list of files.
 
