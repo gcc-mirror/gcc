@@ -1,3 +1,18 @@
+2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_prag.adb (Check_Duplicated_Export_Name): Remove check for
+	CLI_Target as this prevents proper detection of exported names
+	duplicates when the exported language is different to CIL.
+	(Process_Interface_Name): Add check for CIL convention exports,
+	replacing the old one from Check_Duplicated_Export_Name.
+
+2010-06-14  Matthew Heaney  <heaney@adacore.com>
+
+	* a-coinve.adb, a-convec.adb (operator "&"): Check both that new length
+	and new last satisfy constraints.
+	(Delete_Last): prevent overflow for subtraction of index values
+	(To_Vector): prevent overflow for addition of index values
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Complete_Object_Operation): After analyzing the

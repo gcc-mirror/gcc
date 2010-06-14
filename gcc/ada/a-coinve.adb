@@ -117,22 +117,63 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       declare
-         N           : constant Int'Base := Int (LN) + Int (RN);
-         Last_As_Int : Int'Base;
+         N : constant Int'Base := Int (LN) + Int (RN);
+         J : Int'Base;
 
       begin
-         if Int (No_Index) > Int'Last - N then
+         --  There are two constraints we need to satisfy. The first constraint
+         --  is that a container cannot have more than Count_Type'Last
+         --  elements, so we must check the sum of the combined lengths. (It
+         --  would be rare for vectors to have such a large number of elements,
+         --  so we would normally expect this first check to succeed.) The
+         --  second constraint is that the new Last index value cannot exceed
+         --  Index_Type'Last.
+
+         if N > Count_Type'Pos (Count_Type'Last) then
             raise Constraint_Error with "new length is out of range";
          end if;
 
-         Last_As_Int := Int (No_Index) + N;
+         --  We now check whether the new length would create a Last index
+         --  value greater than Index_Type'Last. This calculation requires
+         --  care, because overflow can occur when Index_Type'First is near the
+         --  end of the range of Int.
 
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
+         if Index_Type'First <= 0 then
+
+            --  Compute the potential Last index value in the normal way, using
+            --  Int as the type in which to perform intermediate
+            --  calculations. Int is a 64-bit type, and Count_Type is a 32-bit
+            --  type, so no overflow can occur.
+
+            J := Int (Index_Type'First - 1) + N;
+
+            if J > Int (Index_Type'Last) then
+               raise Constraint_Error with "new length is out of range";
+            end if;
+
+         else
+            --  If Index_Type'First is within N of Int'Last, then overflow
+            --  would occur if we simply computed Last directly. So instead of
+            --  computing Last, and then determining whether its value is
+            --  greater than Index_Type'Last (as we do above), we work
+            --  backwards by computing the potential First index value, and
+            --  then checking whether that value is less than Index_Type'First.
+
+            J := Int (Index_Type'Last) - N + 1;
+
+            if J < Int (Index_Type'First) then
+               raise Constraint_Error with "new length is out of range";
+            end if;
+
+            --  We have determined that Length would not create a Last index
+            --  value outside of the range of Index_Type, so we can now safely
+            --  compute its value.
+
+            J := Int (Index_Type'First - 1) + N;
          end if;
 
          declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
+            Last : constant Index_Type := Index_Type (J);
 
             LE : Elements_Array renames
                    Left.Elements.EA (Index_Type'First .. Left.Last);
@@ -189,10 +230,8 @@ package body Ada.Containers.Indefinite_Vectors is
    end "&";
 
    function "&" (Left : Vector; Right : Element_Type) return Vector is
-      LN : constant Count_Type := Length (Left);
-
    begin
-      if LN = 0 then
+      if Left.Is_Empty then
          declare
             Elements : Elements_Access := new Elements_Type (Index_Type'First);
 
@@ -209,70 +248,65 @@ package body Ada.Containers.Indefinite_Vectors is
          end;
       end if;
 
+      --  We must satisfy two constraints: the new length cannot exceed
+      --  Count_Type'Last, and the new Last index cannot exceed
+      --  Index_Type'Last.
+
+      if Left.Length = Count_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
+      if Left.Last >= Index_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
       declare
-         Last_As_Int : Int'Base;
+         Last : constant Index_Type := Left.Last + 1;
+
+         LE : Elements_Array renames
+                 Left.Elements.EA (Index_Type'First .. Left.Last);
+
+         Elements : Elements_Access :=
+                       new Elements_Type (Last);
 
       begin
-         if Int (Index_Type'First) > Int'Last - Int (LN) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         Last_As_Int := Int (Index_Type'First) + Int (LN);
-
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            LE : Elements_Array renames
-                   Left.Elements.EA (Index_Type'First .. Left.Last);
-
-            Elements : Elements_Access :=
-                        new Elements_Type (Last);
-
-         begin
-            for I in LE'Range loop
-               begin
-                  if LE (I) /= null then
-                     Elements.EA (I) := new Element_Type'(LE (I).all);
-                  end if;
-
-               exception
-                  when others =>
-                     for J in Index_Type'First .. I - 1 loop
-                        Free (Elements.EA (J));
-                     end loop;
-
-                     Free (Elements);
-                     raise;
-               end;
-            end loop;
-
+         for I in LE'Range loop
             begin
-               Elements.EA (Last) := new Element_Type'(Right);
+               if LE (I) /= null then
+                  Elements.EA (I) := new Element_Type'(LE (I).all);
+               end if;
 
             exception
                when others =>
-                  for J in Index_Type'First .. Last - 1 loop
+                  for J in Index_Type'First .. I - 1 loop
                      Free (Elements.EA (J));
                   end loop;
 
                   Free (Elements);
                   raise;
             end;
+         end loop;
 
-            return (Controlled with Elements, Last, 0, 0);
+         begin
+            Elements.EA (Last) := new Element_Type'(Right);
+
+         exception
+            when others =>
+               for J in Index_Type'First .. Last - 1 loop
+                  Free (Elements.EA (J));
+               end loop;
+
+               Free (Elements);
+               raise;
          end;
+
+         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
    function "&" (Left : Element_Type; Right : Vector) return Vector is
-      RN : constant Count_Type := Length (Right);
-
    begin
-      if RN = 0 then
+      if Right.Is_Empty then
          declare
             Elements : Elements_Access := new Elements_Type (Index_Type'First);
 
@@ -289,61 +323,58 @@ package body Ada.Containers.Indefinite_Vectors is
          end;
       end if;
 
+      --  We must satisfy two constraints: the new length cannot exceed
+      --  Count_Type'Last, and the new Last index cannot exceed
+      --  Index_Type'Last.
+
+      if Right.Length = Count_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
+      if Right.Last >= Index_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
       declare
-         Last_As_Int : Int'Base;
+         Last : constant Index_Type := Right.Last + 1;
+
+         RE : Elements_Array renames
+                Right.Elements.EA (Index_Type'First .. Right.Last);
+
+         Elements : Elements_Access :=
+                      new Elements_Type (Last);
+
+         I : Index_Type'Base := Index_Type'First;
 
       begin
-         if Int (Index_Type'First) > Int'Last - Int (RN) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         Last_As_Int := Int (Index_Type'First) + Int (RN);
-
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            RE : Elements_Array renames
-                   Right.Elements.EA (Index_Type'First .. Right.Last);
-
-            Elements : Elements_Access :=
-                         new Elements_Type (Last);
-
-            I : Index_Type'Base := Index_Type'First;
-
          begin
+            Elements.EA (I) := new Element_Type'(Left);
+         exception
+            when others =>
+               Free (Elements);
+               raise;
+         end;
+
+         for RI in RE'Range loop
+            I := I + 1;
+
             begin
-               Elements.EA (I) := new Element_Type'(Left);
+               if RE (RI) /= null then
+                  Elements.EA (I) := new Element_Type'(RE (RI).all);
+               end if;
+
             exception
                when others =>
+                  for J in Index_Type'First .. I - 1 loop
+                     Free (Elements.EA (J));
+                  end loop;
+
                   Free (Elements);
                   raise;
             end;
+         end loop;
 
-            for RI in RE'Range loop
-               I := I + 1;
-
-               begin
-                  if RE (RI) /= null then
-                     Elements.EA (I) := new Element_Type'(RE (RI).all);
-                  end if;
-
-               exception
-                  when others =>
-                     for J in Index_Type'First .. I - 1 loop
-                        Free (Elements.EA (J));
-                     end loop;
-
-                     Free (Elements);
-                     raise;
-               end;
-            end loop;
-
-            return (Controlled with Elements, Last, 0, 0);
-         end;
+         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
@@ -2498,73 +2529,145 @@ package body Ada.Containers.Indefinite_Vectors is
    ---------------
 
    function To_Vector (Length : Count_Type) return Vector is
+      Index    : Int'Base;
+      Last     : Index_Type;
+      Elements : Elements_Access;
+
    begin
       if Length = 0 then
          return Empty_Vector;
       end if;
 
-      declare
-         First       : constant Int := Int (Index_Type'First);
-         Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : Index_Type;
-         Elements    : Elements_Access;
+      --  We create a vector object with a capacity that matches the specified
+      --  Length. We do not allow the vector capacity (the length of the
+      --  internal array) to exceed the number of values in Index_Type'Range
+      --  (otherwise, there would be no way to refer to those components via an
+      --  index), so we must check whether the specified Length would create a
+      --  Last index value greater than Index_Type'Last. This calculation
+      --  requires care, because overflow can occur when Index_Type'First is
+      --  near the end of the range of Int.
 
-      begin
-         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+      if Index_Type'First <= 0 then
+         --  Compute the potential Last index value in the normal way, using
+         --  Int as the type in which to perform intermediate calculations. Int
+         --  is a 64-bit type, and Count_Type is a 32-bit type, so no overflow
+         --  can occur.
+         Index := Int (Index_Type'First - 1) + Int (Length);
+
+         if Index > Int (Index_Type'Last) then
             raise Constraint_Error with "Length is out of range";
          end if;
 
-         Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type (Last);
+      else
+         --  If Index_Type'First is within Length of Int'Last, then overflow
+         --  would occur if we simply computed Last directly. So instead of
+         --  computing Last, and then determining whether its value is greater
+         --  than Index_Type'Last, we work backwards by computing the potential
+         --  First index value, and then checking whether that value is less
+         --  than Index_Type'First.
+         Index := Int (Index_Type'Last) - Int (Length) + 1;
 
-         return (Controlled with Elements, Last, 0, 0);
-      end;
+         if Index < Int (Index_Type'First) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+         --  We have determined that Length would not create a Last index value
+         --  outside of the range of Index_Type, so we can now safely compute
+         --  its value.
+         Index := Int (Index_Type'First - 1) + Int (Length);
+      end if;
+
+      Last := Index_Type (Index);
+      Elements := new Elements_Type (Last);
+
+      return Vector'(Controlled with Elements, Last, 0, 0);
    end To_Vector;
 
    function To_Vector
      (New_Item : Element_Type;
       Length   : Count_Type) return Vector
    is
+      Index    : Int'Base;
+      Last     : Index_Type;
+      Elements : Elements_Access;
+
    begin
       if Length = 0 then
          return Empty_Vector;
       end if;
 
-      declare
-         First       : constant Int := Int (Index_Type'First);
-         Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : Index_Type'Base;
-         Elements    : Elements_Access;
+      --  We create a vector object with a capacity that matches the specified
+      --  Length.  We do not allow the vector capacity (the length of the
+      --  internal array) to exceed the number of values in Index_Type'Range
+      --  (otherwise, there would be no way to refer to those components via an
+      --  index), so we must check whether the specified Length would create a
+      --  Last index value greater than Index_Type'Last. This calculation
+      --  requires care, because overflow can occur when Index_Type'First is
+      --  near the end of the range of Int.
 
-      begin
-         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+      if Index_Type'First <= 0 then
+         --  Compute the potential Last index value in the normal way, using
+         --  Int as the type in which to perform intermediate calculations. Int
+         --  is a 64-bit type, and Count_Type is a 32-bit type, so no overflow
+         --  can occur.
+         Index := Int (Index_Type'First - 1) + Int (Length);
+
+         if Index > Int (Index_Type'Last) then
             raise Constraint_Error with "Length is out of range";
          end if;
 
-         Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type (Last);
+      else
+         --  If Index_Type'First is within Length of Int'Last, then overflow
+         --  would occur if we simply computed Last directly. So instead of
+         --  computing Last, and then determining whether its value is greater
+         --  than Index_Type'Last, we work backwards by computing the potential
+         --  First index value, and then checking whether that value is less
+         --  than Index_Type'First.
+         Index := Int (Index_Type'Last) - Int (Length) + 1;
 
-         Last := Index_Type'First;
+         if Index < Int (Index_Type'First) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
 
-         begin
-            loop
-               Elements.EA (Last) := new Element_Type'(New_Item);
-               exit when Last = Elements.Last;
-               Last := Last + 1;
+         --  We have determined that Length would not create a Last index value
+         --  outside of the range of Index_Type, so we can now safely compute
+         --  its value.
+         Index := Int (Index_Type'First - 1) + Int (Length);
+      end if;
+
+      Last := Index_Type (Index);
+      Elements := new Elements_Type (Last);
+
+      --  We use Last as the index of the loop used to populate the internal
+      --  array with items. In general, we prefer to initialize the loop index
+      --  immediately prior to entering the loop. However, Last is also used in
+      --  the exception handler (it reclaims elements that have been allocated,
+      --  before propagating the exception), and the initialization of Last
+      --  after entering the block containing the handler confuses some static
+      --  analysis tools, with respect to whether Last has been properly
+      --  initialized when the handler executes. So here we initialize our loop
+      --  variable earlier than we prefer, before entering the block, so there
+      --  is no ambiguity.
+      Last := Index_Type'First;
+
+      begin
+         loop
+            Elements.EA (Last) := new Element_Type'(New_Item);
+            exit when Last = Elements.Last;
+            Last := Last + 1;
+         end loop;
+
+      exception
+         when others =>
+            for J in Index_Type'First .. Last - 1 loop
+               Free (Elements.EA (J));
             end loop;
 
-         exception
-            when others =>
-               for J in Index_Type'First .. Last - 1 loop
-                  Free (Elements.EA (J));
-               end loop;
-
-               Free (Elements);
-               raise;
-         end;
-
-         return (Controlled with Elements, Last, 0, 0);
+            Free (Elements);
+            raise;
       end;
+
+      return (Controlled with Elements, Last, 0, 0);
    end To_Vector;
 
    --------------------

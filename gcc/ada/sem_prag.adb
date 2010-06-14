@@ -1154,14 +1154,6 @@ package body Sem_Prag is
          String_Val : constant String_Id := Strval (Nam);
 
       begin
-         --  We allow duplicated export names in CIL, as they are always
-         --  enclosed in a namespace that differentiates them, and overloaded
-         --  entities are supported by the VM.
-
-         if VM_Target = CLI_Target then
-            return;
-         end if;
-
          --  We are only interested in the export case, and in the case of
          --  generics, it is the instance, not the template, that is the
          --  problem (the template will generate a warning in any case).
@@ -4140,7 +4132,14 @@ package body Sem_Prag is
 
          Set_Encoded_Interface_Name
            (Get_Base_Subprogram (Subprogram_Def), Link_Nam);
-         Check_Duplicated_Export_Name (Link_Nam);
+
+         --  We allow duplicated export names in CIL, as they are always
+         --  enclosed in a namespace that differentiates them, and overloaded
+         --  entities are supported by the VM.
+
+         if Convention (Subprogram_Def) /= Convention_CIL then
+            Check_Duplicated_Export_Name (Link_Nam);
+         end if;
       end Process_Interface_Name;
 
       -----------------------------------------
