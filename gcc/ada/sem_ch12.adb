@@ -8596,6 +8596,7 @@ package body Sem_Ch12 is
            (Inst_Node, Specification (Gen_Decl), Body_Optional);
          Gen_Body_Id := Corresponding_Body (Gen_Decl);
       end if;
+
       Mark_Context (Act_Decl, Gen_Decl);
 
       --  Establish global variable for sloc adjustment and for error recovery

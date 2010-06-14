@@ -541,7 +541,7 @@ package Lib.Xref is
    --    d     decimal fixed-point object      decimal fixed-point type
    --    e     non-Boolean enumeration object  non_Boolean enumeration type
    --    f     floating-point object           floating-point type
-   --    g     (unused)                        (unused)
+   --    g     C/C++ macro                     C/C++ fun-like macro
    --    h     Interface (Ada 2005)            Abstract type
    --    i     signed integer object           signed integer type
    --    j     (unused)                        (unused)
@@ -551,7 +551,7 @@ package Lib.Xref is
    --    n     enumeration literal             named number
    --    o     ordinary fixed-point object     ordinary fixed-point type
    --    p     access object                   access type
-   --    q     label on block                  (unused)
+   --    q     label on block                  C/C++ include file
    --    r     record object                   record type
    --    s     string object                   string type
    --    t     task object                     task type
@@ -560,7 +560,7 @@ package Lib.Xref is
    --    w     protected object                protected type
    --    x     abstract procedure              exception
    --    y     abstract function               entry or entry family
-   --    z     generic formal parameter        C/C++ macro
+   --    z     generic formal parameter        (unused)
 
    --------------------------------------
    -- Handling of Imported Subprograms --

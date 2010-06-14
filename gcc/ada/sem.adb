@@ -1811,7 +1811,7 @@ package body Sem is
                  and then Body_CU /= Cunit (Main_Unit)
                  and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
                  and then (Nkind (Unit (Comp)) /= N_Package_Declaration
-                    or else Present (Withed_Body (Clause)))
+                             or else Present (Withed_Body (Clause)))
                then
                   Body_U := Get_Cunit_Unit_Number (Body_CU);
 
