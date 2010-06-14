@@ -1892,7 +1892,7 @@ package body Sem_Elab is
       elsif In_Task_Activation then
          return;
 
-      --  Nothing to do if call is within a generic unit.
+      --  Nothing to do if call is within a generic unit
 
       elsif Inside_A_Generic then
          return;

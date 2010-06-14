@@ -4466,7 +4466,10 @@ package body Exp_Ch3 is
          --  it will be assigned subsequently. In particular, there is no point
          --  in applying Initialize_Scalars to such a temporary.
 
-         elsif Needs_Simple_Initialization (Typ)
+         elsif Needs_Simple_Initialization
+                 (Typ,
+                  Initialize_Scalars
+                    and then not Has_Following_Address_Clause (N))
            and then not Is_Internal (Def_Id)
            and then not Has_Init_Expression (N)
          then
@@ -8145,7 +8148,14 @@ package body Exp_Ch3 is
    -- Needs_Simple_Initialization --
    ---------------------------------
 
-   function Needs_Simple_Initialization (T : Entity_Id) return Boolean is
+   function Needs_Simple_Initialization
+     (T           : Entity_Id;
+      Consider_IS : Boolean := True) return Boolean
+   is
+      Consider_IS_NS : constant Boolean :=
+                         Normalize_Scalars
+                           or (Initialize_Scalars and Consider_IS);
+
    begin
       --  Check for private type, in which case test applies to the underlying
       --  type of the private type.
@@ -8167,7 +8177,7 @@ package body Exp_Ch3 is
       --  types.
 
       elsif Is_Access_Type (T)
-        or else (Init_Or_Norm_Scalars and then (Is_Scalar_Type (T)))
+        or else (Consider_IS_NS and then (Is_Scalar_Type (T)))
       then
          return True;
 
@@ -8176,7 +8186,7 @@ package body Exp_Ch3 is
       --  expanding an aggregate (since in the latter case they will be
       --  filled with appropriate initializing values before they are used).
 
-      elsif Init_Or_Norm_Scalars
+      elsif Consider_IS_NS
         and then
           (Root_Type (T) = Standard_String
              or else Root_Type (T) = Standard_Wide_String

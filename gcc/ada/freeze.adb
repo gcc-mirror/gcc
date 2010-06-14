@@ -5659,16 +5659,18 @@ package body Freeze is
 
       --  We only give the warning for non-imported entities of a type for
       --  which a non-null base init proc is defined, or for objects of access
-      --  types with implicit null initialization, or when Initialize_Scalars
+      --  types with implicit null initialization, or when Normalize_Scalars
       --  applies and the type is scalar or a string type (the latter being
       --  tested for because predefined String types are initialized by inline
-      --  code rather than by an init_proc).
+      --  code rather than by an init_proc). Note that we do not give the
+      --  warning for Initialize_Scalars, since we suppressed initialization
+      --  in this case.
 
       if Present (Expr)
         and then not Is_Imported (Ent)
         and then (Has_Non_Null_Base_Init_Proc (Typ)
                     or else Is_Access_Type (Typ)
-                    or else (Init_Or_Norm_Scalars
+                    or else (Normalize_Scalars
                               and then (Is_Scalar_Type (Typ)
                                          or else Is_String_Type (Typ))))
       then

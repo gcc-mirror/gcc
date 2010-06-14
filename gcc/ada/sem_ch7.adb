@@ -2032,6 +2032,10 @@ package body Sem_Ch7 is
             end if;
 
             Set_Has_Discriminants (Priv, Has_Discriminants (Full));
+            if Has_Discriminants (Full) then
+               Set_Discriminant_Constraint (Priv,
+                 Discriminant_Constraint (Full));
+            end if;
          end if;
       end Preserve_Full_Attributes;
 

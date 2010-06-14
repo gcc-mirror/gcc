@@ -126,14 +126,18 @@ package Exp_Ch3 is
    --  then tags components located at variable positions of Target are
    --  initialized.
 
-   function Needs_Simple_Initialization (T : Entity_Id) return Boolean;
+   function Needs_Simple_Initialization
+     (T           : Entity_Id;
+      Consider_IS : Boolean := True) return Boolean;
    --  Certain types need initialization even though there is no specific
    --  initialization routine. In this category are access types (which need
    --  initializing to null), packed array types whose implementation is a
    --  modular type, and all scalar types if Normalize_Scalars is set, as well
    --  as private types whose underlying type is present and meets any of these
    --  criteria. Finally, descendants of String and Wide_String also need
-   --  initialization in Initialize/Normalize_Scalars mode.
+   --  initialization in Initialize/Normalize_Scalars mode. Consider_IS is
+   --  normally True. If it is False, the Initialize_Scalars is not considered
+   --  in determining whether simple initialization is needed.
 
    function Get_Simple_Init_Val
      (T    : Entity_Id;

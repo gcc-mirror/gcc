@@ -2030,10 +2030,13 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Mark presence of postcondition proc in current scope
+      --  Mark presence of postcondition procedure in current scope and mark
+      --  the procedure itself as needing debug info. The latter is important
+      --  when analyzing decision coverage (for example, for MC/DC coverage).
 
       if Chars (Body_Id) = Name_uPostconditions then
          Set_Has_Postconditions (Current_Scope);
+         Set_Debug_Info_Needed (Body_Id);
       end if;
 
       --  Place subprogram on scope stack, and make formals visible. If there

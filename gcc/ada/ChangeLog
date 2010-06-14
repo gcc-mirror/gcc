@@ -1,5 +1,42 @@
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
+	* opt.ads, sem.adb, sem_elab.adb: Minor reformatting
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb (Has_Address_Clause): Moved to Exp_Util, and there it
+	is renamed as Has_Following_Address_Clause.
+	* exp_ch3.adb (Needs_Simple_Initialization): Add Consider_IS argument
+	to allow the caller to avoid Initialize_Scalars having an effect.
+	(Expand_N_Object_Declaration): Do not do Initialize_Scalars stuff for
+	scalars with an address clause specified.
+	* exp_ch3.ads (Needs_Simple_Initialization): Add Consider_IS argument
+	to allow the caller to avoid Initialize_Scalars having an effect.
+	* exp_util.adb (Has_Following_Address_Clause): Moved here from Exp_Aggr
+	(where it was called Has_Address_Clause).
+	* exp_util.ads (Has_Following_Address_Clause): Moved here from Exp_Aggr
+	(where it was called Has_Address_Clause).
+	* freeze.adb (Warn_Overlay): Suppress message about overlaying causing
+	problems for Initialize_Scalars (since we no longer initialize objects
+	with an address clause.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Set Loc of generated code from
+	condition.
+
+2010-06-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set Debug_Info_Needed
+	on the entity of an implicitly generated postcondition procedure.
+
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb (Preserve_Full_Attributes): Propagate
+	Discriminant_Constraint elist from full view to private view.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
 	* sem_res.adb: Minor reformatting
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
