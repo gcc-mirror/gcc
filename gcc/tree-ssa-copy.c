@@ -856,7 +856,7 @@ fini_copy_prop (void)
 	duplicate_ssa_name_ptr_info (tmp[i].value, SSA_NAME_PTR_INFO (var));
     }
 
-  substitute_and_fold (tmp, NULL);
+  substitute_and_fold (tmp, NULL, true);
 
   free (cached_last_copy_of);
   free (copy_of);

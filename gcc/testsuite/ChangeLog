@@ -1,3 +1,8 @@
+2010-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44508
+	* gcc.dg/tree-ssa/pr21086.c: Adjust.
+
 2010-06-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/44507

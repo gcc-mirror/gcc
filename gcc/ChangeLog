@@ -1,3 +1,16 @@
+2010-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44508
+	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE
+	argument.
+	* tree-ssa-propagate.c (substitute_and_fold): If !DO_DCE,
+	don't eliminate trivially dead stmts.
+	* tree-vrp.c (vrp_finalize): Pass false as last argument
+	to substitute_and_fold.
+	* tree-ssa-copy.c (fini_copy_prop): Pass true as last argument
+	to substitute_and_fold.
+	* tree-ssa-ccp.c (ccp_finalize): Likewise.
+
 2010-06-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/44507
@@ -6,8 +19,8 @@
 
 2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
-  Backport from mainline:
-  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+	Backport from mainline:
+	2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776
 	* configure.ac (gcc_cv_as_section_has_align): Set if installed

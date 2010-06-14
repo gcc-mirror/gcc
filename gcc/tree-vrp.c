@@ -7322,7 +7322,7 @@ vrp_finalize (void)
       single_val_range = NULL;
     }
 
-  substitute_and_fold (single_val_range, vrp_fold_stmt);
+  substitute_and_fold (single_val_range, vrp_fold_stmt, false);
 
   if (warn_array_bounds)
     check_all_array_refs ();
