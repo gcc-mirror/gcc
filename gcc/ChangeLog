@@ -1,5 +1,14 @@
 2010-06-14  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/43650
+	PR debug/44181
+	PR debug/44247
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Skip
+	debug stmts.
+	(canonicalize_loop_ivs): Likewise.
+
+2010-06-14  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/43656
 	* haifa-sched.c (setup_insn_reg_pressure_info,
 	update_register_pressure): Reject debug insns.
