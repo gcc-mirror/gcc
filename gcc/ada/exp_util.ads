@@ -444,6 +444,11 @@ package Exp_Util is
    --  Determine whether a record type has anonymous access discriminants with
    --  a controlled designated type.
 
+   function Has_Following_Address_Clause (D : Node_Id) return Boolean;
+   --  D is the node for an object declaration. This function searches the
+   --  current declarative part to look for an address clause for the object
+   --  being declared, and returns True if one is found.
+
    function Homonym_Number (Subp : Entity_Id) return Nat;
    --  Here subp is the entity for a subprogram. This routine returns the
    --  homonym number used to disambiguate overloaded subprograms in the same

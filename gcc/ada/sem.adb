@@ -1936,7 +1936,6 @@ package body Sem is
 
             if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
                Child := Cunit_Entity (Main_Unit);
-
                while Is_Child_Unit (Child) loop
                   Parent_CU :=
                     Cunit (Get_Cunit_Entity_Unit_Number (Scope (Child)));

@@ -183,8 +183,8 @@ package Opt is
 
    Bind_For_Library : Boolean := False;
    --  GNATBIND
-   --  Set to True if the binder needs to generate a file designed for
-   --  building a library. May be set to True by Gnatbind.Scan_Bind_Arg.
+   --  Set to True if the binder needs to generate a file designed for building
+   --  a library. May be set to True by Gnatbind.Scan_Bind_Arg.
 
    Bind_Only : Boolean := False;
    --  GNATMAKE, GPRMAKE, GPRBUILD

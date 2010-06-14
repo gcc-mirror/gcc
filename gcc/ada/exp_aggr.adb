@@ -4122,12 +4122,6 @@ package body Exp_Aggr is
       --  array sub-aggregate we start the computation from. Dim is the
       --  dimension corresponding to the sub-aggregate.
 
-      function Has_Address_Clause (D : Node_Id) return Boolean;
-      --  If the aggregate is the expression in an object declaration, it
-      --  cannot be expanded in place. This function does a lookahead in the
-      --  current declarative part to find an address clause for the object
-      --  being declared.
-
       function In_Place_Assign_OK return Boolean;
       --  Simple predicate to determine whether an aggregate assignment can
       --  be done in place, because none of the new values can depend on the
@@ -4433,35 +4427,6 @@ package body Exp_Aggr is
             end if;
          end if;
       end Compute_Others_Present;
-
-      ------------------------
-      -- Has_Address_Clause --
-      ------------------------
-
-      function Has_Address_Clause (D : Node_Id) return Boolean is
-         Id   : constant Entity_Id := Defining_Identifier (D);
-         Decl : Node_Id;
-
-      begin
-         Decl := Next (D);
-         while Present (Decl) loop
-            if Nkind (Decl) = N_At_Clause
-               and then Chars (Identifier (Decl)) = Chars (Id)
-            then
-               return True;
-
-            elsif Nkind (Decl) = N_Attribute_Definition_Clause
-               and then Chars (Decl) = Name_Address
-               and then Chars (Name (Decl)) = Chars (Id)
-            then
-               return True;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         return False;
-      end Has_Address_Clause;
 
       ------------------------
       -- In_Place_Assign_OK --
@@ -5162,6 +5127,8 @@ package body Exp_Aggr is
          Build_Activation_Chain_Entity (N);
       end if;
 
+      --  Should document these individual tests ???
+
       if not Has_Default_Init_Comps (N)
          and then Comes_From_Source (Parent (N))
          and then Nkind (Parent (N)) = N_Object_Declaration
@@ -5170,7 +5137,13 @@ package body Exp_Aggr is
          and then N = Expression (Parent (N))
          and then not Is_Bit_Packed_Array (Typ)
          and then not Has_Controlled_Component (Typ)
-         and then not Has_Address_Clause (Parent (N))
+
+      --  If the aggregate is the expression in an object declaration, it
+      --  cannot be expanded in place. Lookahead in the current declarative
+      --  part to find an address clause for the object being declared. If
+      --  one is present, we cannot build in place. Unclear comment???
+
+         and then not Has_Following_Address_Clause (Parent (N))
       then
          Tmp := Defining_Identifier (Parent (N));
          Set_No_Initialization (Parent (N));
