@@ -5624,7 +5624,19 @@ package body Sem_Ch8 is
                   --  It is legal to denote the class type of an incomplete
                   --  type. The full type will have to be tagged, of course.
                   --  In Ada 2005 this usage is declared obsolescent, so we
-                  --  warn accordingly.
+                  --  warn accordingly. This usage is only legal if the type
+                  --  is completed in the current scope, and not for a limited
+                  --  view of a type.
+
+                  if not Is_Tagged_Type (T)
+                    and then Ada_Version >= Ada_05
+                  then
+                     if From_With_Type (T) then
+                        Error_Msg_N
+                          ("prefix of Class attribute must be tagged", N);
+                        Set_Etype (N, Any_Type);
+                        Set_Entity (N, Any_Type);
+                        return;
 
                   --  ??? This test is temporarily disabled (always False)
                   --  because it causes an unwanted warning on GNAT sources
@@ -5632,14 +5644,13 @@ package body Sem_Ch8 is
                   --  Feature). Once this issue is cleared in the sources, it
                   --  can be enabled.
 
-                  if not Is_Tagged_Type (T)
-                    and then Ada_Version >= Ada_05
-                    and then Warn_On_Obsolescent_Feature
-                    and then False
-                  then
-                     Error_Msg_N
-                       ("applying 'Class to an untagged incomplete type"
-                         & " is an obsolescent feature  (RM J.11)", N);
+                     elsif Warn_On_Obsolescent_Feature
+                       and then False
+                     then
+                        Error_Msg_N
+                          ("applying 'Class to an untagged incomplete type"
+                           & " is an obsolescent feature  (RM J.11)", N);
+                     end if;
                   end if;
 
                   Set_Is_Tagged_Type (T);
