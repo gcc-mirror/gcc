@@ -4940,9 +4940,8 @@ extern bool fold_builtin_next_arg (tree, bool);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree build_function_call_expr (location_t, tree, tree);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
-#define build_call_expr(...)\
-   build_call_expr_loc (UNKNOWN_LOCATION, __VA_ARGS__)
 extern tree build_call_expr_loc (location_t, tree, int, ...);
+extern tree build_call_expr (tree, int, ...);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree c_strlen (tree, int);
 extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);

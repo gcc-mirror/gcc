@@ -1,5 +1,16 @@
 2010-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/44426
+	* tree.h (build_call_expr): Don't define as vararg macro, instead
+	add a prototype.
+	* builtins.c (build_call_nofold): Remove.
+	(expand_builtin_int_roundingfn, expand_builtin_pow,
+	expand_builtin_mempcpy_args, expand_builtin_stpcpy,
+	expand_builtin_memset_args, expand_builtin_strcmp,
+	expand_builtin_strncmp, expand_builtin_memory_chk): Use
+	build_call_nofold_loc instead of build_call_nofold.
+	(build_call_expr): New function.
+
 	PR tree-optimization/44508
 	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE
 	argument.
