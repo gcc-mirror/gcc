@@ -1,3 +1,8 @@
+2010-06-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/44507
+	* gcc.dg/vect/pr44507.c: New test.
+
 2010-06-13  Iain Sandoe <iains@gcc.gnu.org>
 
 	PR testsuite/44518

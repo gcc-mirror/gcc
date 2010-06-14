@@ -2748,11 +2748,14 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
               *adjustment_def = init_val;
           }
 
-        if (code == MULT_EXPR || code == BIT_AND_EXPR)
+        if (code == MULT_EXPR)
           {
             real_init_val = dconst1;
             int_init_val = 1;
           }
+
+        if (code == BIT_AND_EXPR)
+          int_init_val = -1;
 
         if (SCALAR_FLOAT_TYPE_P (scalar_type))
           def_for_init = build_real (scalar_type, real_init_val);

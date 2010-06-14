@@ -1,3 +1,9 @@
+2010-06-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/44507
+	* tree-vect-loop.c (get_initial_def_for_reduction): Use -1
+	to build initial vector for BIT_AND_EXPR.
+
 2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
   Backport from mainline:
