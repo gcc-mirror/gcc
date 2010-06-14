@@ -951,15 +951,16 @@ builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
    array and function allows it to be done lazily when __DBL_MAX__
    etc. is first used.  */
 
-static struct
+struct GTY(()) lazy_hex_fp_value_struct
 {
   const char *hex_str;
   cpp_macro *macro;
   enum machine_mode mode;
   int digits;
   const char *fp_suffix;
-} lazy_hex_fp_values[12];
-static int lazy_hex_fp_value_count;
+};
+static GTY(()) struct lazy_hex_fp_value_struct lazy_hex_fp_values[12];
+static GTY(()) int lazy_hex_fp_value_count;
 
 static bool
 lazy_hex_fp_value (cpp_reader *pfile ATTRIBUTE_UNUSED,
@@ -987,7 +988,7 @@ lazy_hex_fp_value (cpp_reader *pfile ATTRIBUTE_UNUSED,
   gcc_assert (idx < node->value.macro->count);
   node->value.macro->exp.tokens[idx].val.str.len = strlen (buf1);
   node->value.macro->exp.tokens[idx].val.str.text
-    = (const unsigned char *) xstrdup (buf1);
+    = (const unsigned char *) ggc_strdup (buf1);
   return true;
 }
 
@@ -1014,7 +1015,8 @@ builtin_define_with_hex_fp_value (const char *macro,
       sprintf (buf1, "%s=%s", macro, buf2);
       cpp_define (parse_in, buf1);
       node = C_CPP_HASHNODE (get_identifier (macro));
-      lazy_hex_fp_values[lazy_hex_fp_value_count].hex_str = xstrdup (hex_str);
+      lazy_hex_fp_values[lazy_hex_fp_value_count].hex_str
+	= ggc_strdup (hex_str);
       lazy_hex_fp_values[lazy_hex_fp_value_count].mode = TYPE_MODE (type);
       lazy_hex_fp_values[lazy_hex_fp_value_count].digits = digits;
       lazy_hex_fp_values[lazy_hex_fp_value_count].fp_suffix = fp_suffix;
@@ -1173,3 +1175,5 @@ builtin_define_type_minmax (const char *min_macro, const char *max_macro,
       cpp_define (parse_in, buf);
     }
 }
+
+#include "gt-c-family-c-cppbuiltin.h"
