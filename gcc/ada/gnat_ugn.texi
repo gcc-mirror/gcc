@@ -10756,7 +10756,7 @@ Each @var{filename} is the name (including the extension) of a source
 file to process. ``Wildcards'' are allowed, and
 the file name may contain path information.
 
-@samp{-cargs @var{gcc_switches}} is a list of switches for
+@samp{@var{gcc_switches}} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatelim} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
@@ -16164,7 +16164,7 @@ The @command{gnatpp} command has the form
 @smallexample
 @c $ gnatpp @ovar{switches} @var{filename}
 @c Expanding @ovar macro inline (explanation in macro def comments)
-$ gnatpp @r{[}@var{switches}@r{]} @var{filename}
+$ gnatpp @r{[}@var{switches}@r{]} @var{filename} @r{[}-cargs @var{gcc_switches}@r{]}
 @end smallexample
 
 @noindent
@@ -16180,6 +16180,13 @@ output source file
 reformat; ``wildcards'' or several file names on the same gnatpp command are
 allowed.  The file name may contain path information; it does not have to
 follow the GNAT file naming rules
+
+@item
+@samp{@var{gcc_switches}} is a list of switches for
+@command{gcc}. They will be passed on to all compiler invocations made by
+@command{gnatelim} to generate the ASIS trees. Here you can provide
+@option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
+use the @option{-gnatec} switch to set the configuration file etc.
 @end itemize
 
 @menu
@@ -17289,7 +17296,7 @@ Including both a @option{-files} switch and one or more
 @var{filename} arguments is permitted.
 
 @item
-@samp{-cargs @var{gcc_switches}} is a list of switches for
+@samp{@var{gcc_switches}} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatmetric} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
@@ -23206,7 +23213,7 @@ option @option{^--no-exception^/NO_EXCEPTION^} (see below).
 @smallexample
 @c $ gnatstub @ovar{switches} @var{filename} @ovar{directory}
 @c Expanding @ovar macro inline (explanation in macro def comments)
-$ gnatstub @r{[}@var{switches}@r{]} @var{filename} @r{[}@var{directory}@r{]}
+$ gnatstub @r{[}@var{switches}@r{]} @var{filename} @r{[}@var{directory}@r{]} @r{[}-cargs @var{gcc_switches}@r{]}
 @end smallexample
 
 @noindent
@@ -23233,6 +23240,12 @@ with the @file{.adb} suffix.
 indicates the directory in which the body stub is to be placed (the default
 is the
 current directory)
+
+@item @samp{@var{gcc_switches}} is a list of switches for
+@command{gcc}. They will be passed on to all compiler invocations made by
+@command{gnatelim} to generate the ASIS trees. Here you can provide
+@option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
+use the @option{-gnatec} switch to set the configuration file etc.
 
 @item switches
 is an optional sequence of switches as described in the next section

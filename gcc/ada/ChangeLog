@@ -1,5 +1,40 @@
 2010-06-14  Sergey Rybin  <rybin@adacore.com>
 
+	* gnat_ugn.texi: Add description of '-cargs gcc_switches' to gnatstub
+	and gnatppa.
+
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Expand_Short_Circuit_Operator): New subprogram,
+	factoring duplicated code between...
+	(Expand_N_And_Than, Expand_N_Or_Else): Remove duplicated code.
+	* a-envvar.ads: Minor reformatting
+
+2010-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.adb, ali.ads, lib-xref.ads: Document new '+' letter for C/C++
+	static entities.
+	(Scan_ALI): Take into account new Visibility field.
+	(Visibility_Kind): New type.
+	(Xref_Entity_Record): Replace Lib field by Visibility.
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-06-14  Pascal Obry  <obry@adacore.com>
+
+	* raise.h: Remove unused defintions.
+
+2010-06-14  Bob Duff  <duff@adacore.com>
+
+	* par-ch10.adb (P_Subunit): If the next token after "separate(X)" is
+	Tok_Not or Tok_Overriding, call P_Subprogram. We had previously given
+	the incorrect error "proper body expected".
+	* par-ch6.adb (P_Subprogram): Suppress "overriding indicator not
+	allowed here" error in case of subunits, which was triggered by the
+	above change to P_Subunit.
+
+2010-06-14  Sergey Rybin  <rybin@adacore.com>
+
 	* gnat_ugn.texi, vms_data.ads: Update gnatelim doc.
 
 2010-06-14  Thomas Quinot  <quinot@adacore.com>

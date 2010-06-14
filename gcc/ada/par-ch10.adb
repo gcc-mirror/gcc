@@ -1028,7 +1028,11 @@ package body Ch10 is
 
       Ignore (Tok_Semicolon);
 
-      if Token = Tok_Function or else Token = Tok_Procedure then
+      if Token = Tok_Function
+        or else Token = Tok_Not
+        or else Token = Tok_Overriding
+        or else Token = Tok_Procedure
+      then
          Body_Node := P_Subprogram (Pf_Pbod);
 
       elsif Token = Tok_Package then

@@ -2190,10 +2190,19 @@ package body ALI is
                --  Start of processing for Read_Refs_For_One_Entity
 
                begin
-                  XE.Line   := Get_Nat;
-                  XE.Etype  := Getc;
-                  XE.Col    := Get_Nat;
-                  XE.Lib    := (Getc = '*');
+                  XE.Line  := Get_Nat;
+                  XE.Etype := Getc;
+                  XE.Col   := Get_Nat;
+
+                  case Getc is
+                     when '*' =>
+                        XE.Visibility := Global;
+                     when '+' =>
+                        XE.Visibility := Static;
+                     when others =>
+                        XE.Visibility := Other;
+                  end case;
+
                   XE.Entity := Get_Name;
 
                   --  Handle the information about generic instantiations

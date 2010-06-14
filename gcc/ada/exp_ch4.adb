@@ -127,6 +127,9 @@ package body Exp_Ch4 is
    --  Common expansion processing for Boolean operators (And, Or, Xor) for the
    --  case of array type arguments.
 
+   procedure Expand_Short_Circuit_Operator (N : Node_Id);
+   --  Common expansion processing for short-circuit boolean operators
+
    function Expand_Composite_Equality
      (Nod    : Node_Id;
       Typ    : Entity_Id;
@@ -3900,113 +3903,8 @@ package body Exp_Ch4 is
    -- Expand_N_And_Then --
    -----------------------
 
-   --  Expand into conditional expression if Actions present, and also deal
-   --  with optimizing case of arguments being True or False.
-
-   procedure Expand_N_And_Then (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (N);
-      Left    : constant Node_Id    := Left_Opnd (N);
-      Right   : constant Node_Id    := Right_Opnd (N);
-      Actlist : List_Id;
-
-   begin
-      --  Deal with non-standard booleans
-
-      if Is_Boolean_Type (Typ) then
-         Adjust_Condition (Left);
-         Adjust_Condition (Right);
-         Set_Etype (N, Standard_Boolean);
-      end if;
-
-      --  Check for cases where left argument is known to be True or False
-
-      if Compile_Time_Known_Value (Left) then
-
-         --  If left argument is True, change (True and then Right) to Right.
-         --  Any actions associated with Right will be executed unconditionally
-         --  and can thus be inserted into the tree unconditionally.
-
-         if Expr_Value_E (Left) = Standard_True then
-            if Present (Actions (N)) then
-               Insert_Actions (N, Actions (N));
-            end if;
-
-            Rewrite (N, Right);
-
-         --  If left argument is False, change (False and then Right) to False.
-         --  In this case we can forget the actions associated with Right,
-         --  since they will never be executed.
-
-         else pragma Assert (Expr_Value_E (Left) = Standard_False);
-            Kill_Dead_Code (Right);
-            Kill_Dead_Code (Actions (N));
-            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-         end if;
-
-         Adjust_Result_Type (N, Typ);
-         return;
-      end if;
-
-      --  If Actions are present, we expand
-
-      --     left and then right
-
-      --  into
-
-      --     if left then right else false end
-
-      --  with the actions becoming the Then_Actions of the conditional
-      --  expression. This conditional expression is then further expanded
-      --  (and will eventually disappear)
-
-      if Present (Actions (N)) then
-         Actlist := Actions (N);
-         Rewrite (N,
-            Make_Conditional_Expression (Loc,
-              Expressions => New_List (
-                Left,
-                Right,
-                New_Occurrence_Of (Standard_False, Loc))));
-
-         --  If the right part of the expression is a function call then it can
-         --  be part of the expansion of the predefined equality operator of a
-         --  tagged type and we may need to adjust its SCIL dispatching node.
-
-         if Generate_SCIL
-           and then Nkind (Right) = N_Function_Call
-         then
-            Adjust_SCIL_Node (N, Right);
-         end if;
-
-         Set_Then_Actions (N, Actlist);
-         Analyze_And_Resolve (N, Standard_Boolean);
-         Adjust_Result_Type (N, Typ);
-         return;
-      end if;
-
-      --  No actions present, check for cases of right argument True/False
-
-      if Compile_Time_Known_Value (Right) then
-
-         --  Change (Left and then True) to Left. Note that we know there are
-         --  no actions associated with the True operand, since we just checked
-         --  for this case above.
-
-         if Expr_Value_E (Right) = Standard_True then
-            Rewrite (N, Left);
-
-         --  Change (Left and then False) to False, making sure to preserve any
-         --  side effects associated with the Left operand.
-
-         else pragma Assert (Expr_Value_E (Right) = Standard_False);
-            Remove_Side_Effects (Left);
-            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-         end if;
-      end if;
-
-      Adjust_Result_Type (N, Typ);
-   end Expand_N_And_Then;
+   procedure Expand_N_And_Then (N : Node_Id)
+     renames Expand_Short_Circuit_Operator;
 
    -------------------------------------
    -- Expand_N_Conditional_Expression --
@@ -7168,104 +7066,8 @@ package body Exp_Ch4 is
    -- Expand_N_Or_Else --
    ----------------------
 
-   --  Expand into conditional expression if Actions present, and also
-   --  deal with optimizing case of arguments being True or False.
-
-   procedure Expand_N_Or_Else (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Typ     : constant Entity_Id  := Etype (N);
-      Left    : constant Node_Id    := Left_Opnd (N);
-      Right   : constant Node_Id    := Right_Opnd (N);
-      Actlist : List_Id;
-
-   begin
-      --  Deal with non-standard booleans
-
-      if Is_Boolean_Type (Typ) then
-         Adjust_Condition (Left);
-         Adjust_Condition (Right);
-         Set_Etype (N, Standard_Boolean);
-      end if;
-
-      --  Check for cases where left argument is known to be True or False
-
-      if Compile_Time_Known_Value (Left) then
-
-         --  If left argument is False, change (False or else Right) to Right.
-         --  Any actions associated with Right will be executed unconditionally
-         --  and can thus be inserted into the tree unconditionally.
-
-         if Expr_Value_E (Left) = Standard_False then
-            if Present (Actions (N)) then
-               Insert_Actions (N, Actions (N));
-            end if;
-
-            Rewrite (N, Right);
-
-         --  If left argument is True, change (True and then Right) to True. In
-         --  this case we can forget the actions associated with Right, since
-         --  they will never be executed.
-
-         else pragma Assert (Expr_Value_E (Left) = Standard_True);
-            Kill_Dead_Code (Right);
-            Kill_Dead_Code (Actions (N));
-            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-         end if;
-
-         Adjust_Result_Type (N, Typ);
-         return;
-      end if;
-
-      --  If Actions are present, we expand
-
-      --     left or else right
-
-      --  into
-
-      --     if left then True else right end
-
-      --  with the actions becoming the Else_Actions of the conditional
-      --  expression. This conditional expression is then further expanded
-      --  (and will eventually disappear)
-
-      if Present (Actions (N)) then
-         Actlist := Actions (N);
-         Rewrite (N,
-            Make_Conditional_Expression (Loc,
-              Expressions => New_List (
-                Left,
-                New_Occurrence_Of (Standard_True, Loc),
-                Right)));
-
-         Set_Else_Actions (N, Actlist);
-         Analyze_And_Resolve (N, Standard_Boolean);
-         Adjust_Result_Type (N, Typ);
-         return;
-      end if;
-
-      --  No actions present, check for cases of right argument True/False
-
-      if Compile_Time_Known_Value (Right) then
-
-         --  Change (Left or else False) to Left. Note that we know there are
-         --  no actions associated with the True operand, since we just checked
-         --  for this case above.
-
-         if Expr_Value_E (Right) = Standard_False then
-            Rewrite (N, Left);
-
-         --  Change (Left or else True) to True, making sure to preserve any
-         --  side effects associated with the Left operand.
-
-         else pragma Assert (Expr_Value_E (Right) = Standard_True);
-            Remove_Side_Effects (Left);
-            Rewrite
-              (N, New_Occurrence_Of (Standard_True, Loc));
-         end if;
-      end if;
-
-      Adjust_Result_Type (N, Typ);
-   end Expand_N_Or_Else;
+   procedure Expand_N_Or_Else (N : Node_Id)
+     renames Expand_Short_Circuit_Operator;
 
    -----------------------------------
    -- Expand_N_Qualified_Expression --
@@ -8908,6 +8710,145 @@ package body Exp_Ch4 is
 
       return Result;
    end Expand_Record_Equality;
+
+   -----------------------------------
+   -- Expand_Short_Circuit_Operator --
+   -----------------------------------
+
+   --  Expand into conditional expression if Actions present, and also deal
+   --  with optimizing case of arguments being True or False.
+
+   procedure Expand_Short_Circuit_Operator (N : Node_Id) is
+      Loc     : constant Source_Ptr := Sloc (N);
+      Typ     : constant Entity_Id  := Etype (N);
+      Kind    : constant Node_Kind  := Nkind (N);
+      Left    : constant Node_Id    := Left_Opnd (N);
+      Right   : constant Node_Id    := Right_Opnd (N);
+      Actlist : List_Id;
+
+      Shortcut_Value : constant Boolean := Nkind (N) = N_Or_Else;
+      Shortcut_Ent   : constant Entity_Id := Boolean_Literals (Shortcut_Value);
+      --  If Left = Shortcut_Value then Right need not be evaluated
+
+      Expr_If_Left_True, Expr_If_Left_False : Node_Id;
+
+   begin
+      --  Deal with non-standard booleans
+
+      if Is_Boolean_Type (Typ) then
+         Adjust_Condition (Left);
+         Adjust_Condition (Right);
+         Set_Etype (N, Standard_Boolean);
+      end if;
+
+      --  Check for cases where left argument is known to be True or False
+
+      if Compile_Time_Known_Value (Left) then
+
+         --  Rewrite True AND THEN Right / False OR ELSE Right to Right.
+         --  Any actions associated with Right will be executed unconditionally
+         --  and can thus be inserted into the tree unconditionally.
+
+         if Expr_Value_E (Left) /= Shortcut_Ent then
+            if Present (Actions (N)) then
+               Insert_Actions (N, Actions (N));
+            end if;
+
+            Rewrite (N, Right);
+
+         --  Rewrite False AND THEN Right / True OR ELSE Right to Left.
+         --  In this case we can forget the actions associated with Right,
+         --  since they will never be executed.
+
+         else
+            Kill_Dead_Code (Right);
+            Kill_Dead_Code (Actions (N));
+            Rewrite (N, New_Occurrence_Of (Shortcut_Ent, Loc));
+         end if;
+
+         Adjust_Result_Type (N, Typ);
+         return;
+      end if;
+
+      --  If Actions are present, we expand
+
+      --     left AND THEN right
+      --     left OR ELSE right
+
+      --  into
+
+      --     if left then right else false end
+      --     if left then true else right end
+
+      --  with the actions for the right operand being transferred to the
+      --  approriate actions list of the conditional expression. This
+      --  conditional expression is then further expanded (and will eventually
+      --  disappear).
+
+      if Present (Actions (N)) then
+         Actlist := Actions (N);
+
+         if Kind = N_And_Then then
+            Expr_If_Left_True  := Right;
+            Expr_If_Left_False := New_Occurrence_Of (Standard_False, Loc);
+
+         else
+            Expr_If_Left_True  := New_Occurrence_Of (Standard_True, Loc);
+            Expr_If_Left_False := Right;
+         end if;
+
+         Rewrite (N,
+            Make_Conditional_Expression (Loc,
+              Expressions => New_List (
+                Left,
+                Expr_If_Left_True,
+                Expr_If_Left_False)));
+
+         --  If the right part of an AND THEN is a function call then it can
+         --  be part of the expansion of the predefined equality operator of a
+         --  tagged type and we may need to adjust its SCIL dispatching node.
+
+         if Generate_SCIL
+           and then Kind = N_And_Then
+           and then Nkind (Right) = N_Function_Call
+         then
+            Adjust_SCIL_Node (N, Right);
+         end if;
+
+         if Kind = N_And_Then then
+            Set_Then_Actions (N, Actlist);
+         else
+            Set_Else_Actions (N, Actlist);
+         end if;
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+         Adjust_Result_Type (N, Typ);
+         return;
+      end if;
+
+      --  No actions present, check for cases of right argument True/False
+
+      if Compile_Time_Known_Value (Right) then
+
+         --  Change (Left and then True), (Left or else False) to Left.
+         --  Note that we know there are no actions associated with the right
+         --  operand, since we just checked for this case above.
+
+         if Expr_Value_E (Right) /= Shortcut_Ent then
+            Rewrite (N, Left);
+
+         --  Change (Left and then False), (Left or else True) to Right,
+         --  making sure to preserve any side effects associated with the Left
+         --  operand.
+
+         else
+            Remove_Side_Effects (Left);
+            Rewrite (N, New_Occurrence_Of (Shortcut_Ent, Loc));
+         end if;
+      end if;
+
+      Adjust_Result_Type (N, Typ);
+   end Expand_Short_Circuit_Operator;
 
    -------------------------------------
    -- Fixup_Universal_Fixed_Operation --
