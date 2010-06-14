@@ -3750,10 +3750,10 @@ package body Sem_Ch3 is
       if Present (Generic_Parent_Type (N))
         and then
           (Nkind
-             (Parent (Generic_Parent_Type (N))) /= N_Formal_Type_Declaration
+            (Parent (Generic_Parent_Type (N))) /= N_Formal_Type_Declaration
             or else Nkind
               (Formal_Type_Definition (Parent (Generic_Parent_Type (N))))
-                /=  N_Formal_Private_Type_Definition)
+                /= N_Formal_Private_Type_Definition)
       then
          if Is_Tagged_Type (Id) then
 
@@ -7356,6 +7356,27 @@ package body Sem_Ch3 is
                   Exclude_Parents => True);
 
                Set_Interfaces (Derived_Type, Ifaces_List);
+
+               --  If the derived type is the anonymous type created for
+               --  a declaration whose parent has a constraint, propagate
+               --  the interface list to the source type. This must be done
+               --  prior to the completion of the analysis of the source type
+               --  because the components in the extension may contain current
+               --  instances whose legality depends on some ancestor.
+
+               if Is_Itype (Derived_Type) then
+                  declare
+                     Def : constant Node_Id :=
+                       Associated_Node_For_Itype (Derived_Type);
+                  begin
+                     if Present (Def)
+                       and then Nkind (Def) = N_Full_Type_Declaration
+                     then
+                        Set_Interfaces
+                          (Defining_Identifier (Def), Ifaces_List);
+                     end if;
+                  end;
+               end if;
             end;
          end if;
 

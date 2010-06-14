@@ -1,3 +1,14 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): if derived type is an
+	anonymous base generated when the parent is a constrained discriminated
+	type, propagate interface list to first subtype because it may appear
+	in a current instance within the extension part of the derived type
+	declaration, and its own subtype declaration has not been elaborated
+	yet.
+	* exp_disp.adb (Build_Interface_Thunk): Use base type of formal to
+	determine whether it has the controlling type.
+
 2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
 
 	* exp_ch11.adb (Expand_N_Raise_Statement): Make sure that the explicit

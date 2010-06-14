@@ -1528,14 +1528,19 @@ package body Exp_Disp is
       Formal        := First (Formals);
       while Present (Formal) loop
 
-         --  Handle concurrent types
+         --  Handle concurrent types.
 
          if Ekind (Target_Formal) = E_In_Parameter
            and then Ekind (Etype (Target_Formal)) = E_Anonymous_Access_Type
          then
             Ftyp := Directly_Designated_Type (Etype (Target_Formal));
          else
-            Ftyp := Etype (Target_Formal);
+
+            --  if the parent is a constrained discriminated type. the
+            --  primitive operation will have been defined on a first subtype.
+            --  for proper matching with controlling type, use base type.
+
+            Ftyp := Base_Type (Etype (Target_Formal));
          end if;
 
          if Is_Concurrent_Type (Ftyp) then
