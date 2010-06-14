@@ -900,6 +900,7 @@ package body GNAT.Sockets is
 
    begin
       Netdb_Lock;
+
       if C_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
                              Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
@@ -935,6 +936,7 @@ package body GNAT.Sockets is
 
       begin
          Netdb_Lock;
+
          if C_Gethostbyname
            (HN, Res'Access, Buf'Address, Buflen, Err'Access) /= 0
          then
@@ -986,6 +988,7 @@ package body GNAT.Sockets is
 
    begin
       Netdb_Lock;
+
       if C_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
          Netdb_Unlock;
          raise Service_Error with "Service not found";
@@ -1015,6 +1018,7 @@ package body GNAT.Sockets is
 
    begin
       Netdb_Lock;
+
       if C_Getservbyport
         (C.int (Short_To_Network (C.unsigned_short (Port))), SP,
          Res'Access, Buf'Address, Buflen) /= 0

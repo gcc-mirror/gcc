@@ -7045,6 +7045,17 @@ package body Sem_Util is
         and then Get_Name_String (Chars (T)) = "valuetype";
    end Is_Value_Type;
 
+   ---------------------
+   -- Is_VMS_Operator --
+   ---------------------
+
+   function Is_VMS_Operator (Op : Entity_Id) return Boolean is
+   begin
+      return Ekind (Op) = E_Function
+        and then Is_Intrinsic_Subprogram (Op)
+        and then Scope (Op) = System_Aux_Id;
+   end Is_VMS_Operator;
+
    -----------------
    -- Is_Delegate --
    -----------------

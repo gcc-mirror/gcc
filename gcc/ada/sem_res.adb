@@ -4769,12 +4769,15 @@ package body Sem_Res is
       --  Returns True if the subprogram entity S is the same as E or else
       --  S is an alias of E.
 
+      ---------------------------------
+      -- Same_Or_Aliased_Subprograms --
+      ---------------------------------
+
       function Same_Or_Aliased_Subprograms
         (S : Entity_Id;
          E : Entity_Id) return Boolean
       is
          Subp_Alias : constant Entity_Id := Alias (S);
-
       begin
          return S = E
            or else (Present (Subp_Alias) and then Subp_Alias = E);
@@ -6762,13 +6765,18 @@ package body Sem_Res is
          B_Typ := Base_Type (Typ);
       end if;
 
+      --  OK if this is a VMS-specific intrinsic operation
+
+      if Is_VMS_Operator (Entity (N)) then
+         null;
+
       --  The following test is required because the operands of the operation
       --  may be literals, in which case the resulting type appears to be
       --  compatible with a signed integer type, when in fact it is compatible
       --  only with modular types. If the context itself is universal, the
       --  operation is illegal.
 
-      if not Valid_Boolean_Arg (Typ) then
+      elsif not Valid_Boolean_Arg (Typ) then
          Error_Msg_N ("invalid context for logical operation", N);
          Set_Etype (N, Any_Type);
          return;
@@ -7312,9 +7320,12 @@ package body Sem_Res is
          B_Typ := Base_Type (Typ);
       end if;
 
+      if Is_VMS_Operator (Entity (N)) then
+         null;
+
       --  Straightforward case of incorrect arguments
 
-      if not Valid_Boolean_Arg (Typ) then
+      elsif not Valid_Boolean_Arg (Typ) then
          Error_Msg_N ("invalid operand type for operator&", N);
          Set_Etype (N, Any_Type);
          return;

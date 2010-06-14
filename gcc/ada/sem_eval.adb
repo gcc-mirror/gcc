@@ -2069,7 +2069,12 @@ package body Sem_Eval is
          Right_Int : constant Uint := Expr_Value (Right);
 
       begin
-         if Is_Modular_Integer_Type (Etype (N)) then
+
+         --  VMS includes bitwise operations on signed types.
+
+         if Is_Modular_Integer_Type (Etype (N))
+           or else Is_VMS_Operator (Entity (N))
+         then
             declare
                Left_Bits  : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
                Right_Bits : Bits (0 .. UI_To_Int (Esize (Etype (N))) - 1);
