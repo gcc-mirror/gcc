@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 
 with Hostparm;
 with Osint.C;  use Osint.C;
+with Stringt;  use Stringt;
 
 package body Lib.Util is
 
@@ -39,7 +40,7 @@ package body Lib.Util is
 
    Info_Buffer_Col : Natural := 1;
    --  Column number of next character to be written.
-   --  Can be different from Info_Buffer_Len + 1
+   --  Can be different from Info_Buffer_Len + 1.
    --  because of tab characters written by Write_Info_Tab.
 
    ---------------------
@@ -133,6 +134,23 @@ package body Lib.Util is
 
    procedure Write_Info_Initiate (Key : Character) renames Write_Info_Char;
 
+   --------------------
+   -- Write_Info_Int --
+   --------------------
+
+   procedure Write_Info_Int (N : Int) is
+   begin
+      if N >= 0 then
+         Write_Info_Nat (N);
+
+      --  Negative numbers, use Write_Info_Uint to avoid problems with largest
+      --  negative number.
+
+      else
+         Write_Info_Uint (UI_From_Int (N));
+      end if;
+   end Write_Info_Int;
+
    ---------------------
    -- Write_Info_Name --
    ---------------------
@@ -168,6 +186,45 @@ package body Lib.Util is
 
       Write_Info_Char (Character'Val (N mod 10 + Character'Pos ('0')));
    end Write_Info_Nat;
+
+   ---------------------
+   -- Write_Info_Slit --
+   ---------------------
+
+   procedure Write_Info_Slit (S : String_Id) is
+      C : Character;
+
+   begin
+      Write_Info_Str ("""");
+
+      for J in 1 .. String_Length (S) loop
+         C := Get_Character (Get_String_Char (S, J));
+
+         if C in Character'Val (16#20#) .. Character'Val (16#7E#)
+           and then C /= '{'
+         then
+            Write_Info_Char (C);
+
+            if C = '"' then
+               Write_Info_Char (C);
+            end if;
+
+         else
+            declare
+               Hex : constant array (0 .. 15) of Character :=
+                       "0123456789ABCDEF";
+
+            begin
+               Write_Info_Char ('{');
+               Write_Info_Char (Hex (Character'Pos (C) / 16));
+               Write_Info_Char (Hex (Character'Pos (C) mod 16));
+               Write_Info_Char ('}');
+            end;
+         end if;
+      end loop;
+
+      Write_Info_Char ('"');
+   end Write_Info_Slit;
 
    --------------------
    -- Write_Info_Str --
@@ -225,7 +282,16 @@ package body Lib.Util is
 
       Info_Buffer_Len := 0;
       Info_Buffer_Col := 1;
-
    end Write_Info_Terminate;
+
+   ---------------------
+   -- Write_Info_Uint --
+   ---------------------
+
+   procedure Write_Info_Uint (N : Uint) is
+   begin
+      UI_Image (N, Decimal);
+      Write_Info_Str (UI_Image_Buffer (1 .. UI_Image_Length));
+   end Write_Info_Uint;
 
 end Lib.Util;

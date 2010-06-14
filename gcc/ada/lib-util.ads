@@ -23,6 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Uintp; use Uintp;
+
 package Lib.Util is
 
    --  This package implements a buffered write of library information
@@ -52,12 +54,19 @@ package Lib.Util is
    procedure Write_Info_Nat (N : Nat);
    --  Adds image of N to Info_Buffer with no leading or trailing blanks
 
+   procedure Write_Info_Int (N : Int);
+   --  Adds image of N to Info_Buffer with no leading or trailing blanks. A
+   --  minus sign is prepended for negative values.
+
    procedure Write_Info_Name (Name : Name_Id);
    procedure Write_Info_Name (Name : File_Name_Type);
    procedure Write_Info_Name (Name : Unit_Name_Type);
    --  Adds characters of Name to Info_Buffer. Note that in all cases, the
    --  name is written literally from the names table entry without modifying
    --  the case, using simply Get_Name_String.
+
+   procedure Write_Info_Slit (S : String_Id);
+   --  Write string literal value in format required for L/N lines in ali file
 
    procedure Write_Info_Str (Val : String);
    --  Adds characters of Val to Info_Buffer surrounded by quotes
@@ -69,5 +78,9 @@ package Lib.Util is
 
    procedure Write_Info_Terminate;
    --  Terminate current info line and output lines built in Info_Buffer
+
+   procedure Write_Info_Uint (N : Uint);
+   --  Adds decimal image of N to Info_Buffer with no leading or trailing
+   --  blanks. A minus sign is prepended for negative values.
 
 end Lib.Util;

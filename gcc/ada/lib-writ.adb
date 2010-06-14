@@ -592,42 +592,90 @@ package body Lib.Writ is
 
          for J in 1 .. Linker_Option_Lines.Last loop
             declare
-               S : constant Linker_Option_Entry :=
-                     Linker_Option_Lines.Table (J);
-               C : Character;
-
+               S : Linker_Option_Entry renames Linker_Option_Lines.Table (J);
             begin
                if S.Unit = Unit_Num then
                   Write_Info_Initiate ('L');
-                  Write_Info_Str (" """);
+                  Write_Info_Char (' ');
+                  Write_Info_Slit (S.Option);
+                  Write_Info_EOL;
+               end if;
+            end;
+         end loop;
 
-                  for J in 1 .. String_Length (S.Option) loop
-                     C := Get_Character (Get_String_Char (S.Option, J));
+         --  Output notes
 
-                     if C in Character'Val (16#20#) .. Character'Val (16#7E#)
-                       and then C /= '{'
-                     then
-                        Write_Info_Char (C);
+         for J in 1 .. Notes.Last loop
+            declare
+               N : constant Node_Id          := Notes.Table (J).Pragma_Node;
+               L : constant Source_Ptr       := Sloc (N);
+               U : constant Unit_Number_Type := Notes.Table (J).Unit;
+               C : Character;
 
-                        if C = '"' then
-                           Write_Info_Char (C);
+            begin
+               if U = Unit_Num then
+                  Write_Info_Initiate ('N');
+                  Write_Info_Char (' ');
+
+                  case Chars (Pragma_Identifier (N)) is
+                     when Name_Annotate =>
+                        C := 'A';
+                     when Name_Comment =>
+                        C := 'C';
+                     when Name_Ident =>
+                        C := 'I';
+                     when Name_Title =>
+                        C := 'T';
+                     when Name_Subtitle =>
+                        C := 'S';
+                     when others =>
+                        raise Program_Error;
+                  end case;
+
+                  Write_Info_Char (C);
+                  Write_Info_Int (Int (Get_Logical_Line_Number (L)));
+                  Write_Info_Char (':');
+                  Write_Info_Int (Int (Get_Column_Number (L)));
+
+                  declare
+                     A : Node_Id;
+
+                  begin
+                     A := First (Pragma_Argument_Associations (N));
+                     while Present (A) loop
+                        Write_Info_Char (' ');
+
+                        if Chars (A) /= No_Name then
+                           Write_Info_Name (Chars (A));
+                           Write_Info_Char (':');
                         end if;
 
-                     else
                         declare
-                           Hex : constant array (0 .. 15) of Character :=
-                                   "0123456789ABCDEF";
+                           Expr : constant Node_Id := Expression (A);
 
                         begin
-                           Write_Info_Char ('{');
-                           Write_Info_Char (Hex (Character'Pos (C) / 16));
-                           Write_Info_Char (Hex (Character'Pos (C) mod 16));
-                           Write_Info_Char ('}');
-                        end;
-                     end if;
-                  end loop;
+                           if Nkind (Expr) = N_Identifier then
+                              Write_Info_Name (Chars (Expr));
 
-                  Write_Info_Char ('"');
+                           elsif Nkind (Expr) = N_Integer_Literal
+                             and then Is_Static_Expression (Expr)
+                           then
+                              Write_Info_Uint (Intval (Expr));
+
+                           elsif Nkind (Expr) = N_String_Literal
+                             and then Is_Static_Expression (Expr)
+                           then
+                              Write_Info_Slit (Strval (Expr));
+
+                           else
+                              Write_Info_Str ("<expr>");
+                           end if;
+                        end;
+
+                        Next (A);
+                     end loop;
+                  end;
+
                   Write_Info_EOL;
                end if;
             end;

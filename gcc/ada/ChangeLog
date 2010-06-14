@@ -1,3 +1,22 @@
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb (Scan_ALI): Implement reading and storing of N lines
+	(Known_ALI_Lines): Add entry for 'N' (notes)
+	* ali.ads (Notes): New table to store Notes information
+	* alloc.ads: Add entries for Notes table
+	* lib-util.adb (Write_Info_Int): New procedure
+	(Write_Info_Slit): New procedure
+	(Write_Info_Uint): New procedure
+	* lib-util.ads (Write_Info_Int): New procedure
+	(Write_Info_Slit): New procedure
+	(Write_Info_Uint): New procedure
+	* lib-writ.adb (Write_Unit_Information): Output N (notes) lines
+	* lib-writ.ads: Update documentation for N (Notes) lines
+	* lib.adb (Store_Note): New procedure
+	* lib.ads (Notes): New table
+	(Store_Note): New procedure
+	* sem_prag.adb: Call Store_Note for affected pragmas
+
 2010-06-14  Thomas Quinot  <quinot@adacore.com>
 
 	* socket.c: Fix wrong condition in #ifdef

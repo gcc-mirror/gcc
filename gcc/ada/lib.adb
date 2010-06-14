@@ -858,6 +858,7 @@ package body Lib is
    procedure Initialize is
    begin
       Linker_Option_Lines.Init;
+      Notes.Init;
       Load_Stack.Init;
       Units.Init;
       Compilation_Switches.Init;
@@ -984,10 +985,17 @@ package body Lib is
 
    procedure Store_Linker_Option_String (S : String_Id) is
    begin
-      Linker_Option_Lines.Increment_Last;
-      Linker_Option_Lines.Table (Linker_Option_Lines.Last) :=
-        (Option => S, Unit => Current_Sem_Unit);
+      Linker_Option_Lines.Append ((Option => S, Unit => Current_Sem_Unit));
    end Store_Linker_Option_String;
+
+   ----------------
+   -- Store_Note --
+   ----------------
+
+   procedure Store_Note (N : Node_Id) is
+   begin
+      Notes.Append ((Pragma_Node => N, Unit => Current_Sem_Unit));
+   end Store_Note;
 
    -------------------------------
    -- Synchronize_Serial_Number --

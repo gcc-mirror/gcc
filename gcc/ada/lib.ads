@@ -574,6 +574,10 @@ package Lib is
    --  This procedure is called to register the string from a pragma
    --  Linker_Option. The argument is the Id of the string to register.
 
+   procedure Store_Note (N : Node_Id);
+   --  This procedure is called to register a pragma N for which a notes
+   --  entry is required.
+
    procedure Initialize;
    --  Initialize internal tables
 
@@ -732,6 +736,21 @@ private
      Table_Initial        => Alloc.Linker_Option_Lines_Initial,
      Table_Increment      => Alloc.Linker_Option_Lines_Increment,
      Table_Name           => "Linker_Option_Lines");
+
+   --  The following table stores references to pragmas that generate Notes
+
+   type Notes_Entry is record
+      Pragma_Node : Node_Id;
+      Unit        : Unit_Number_Type;
+   end record;
+
+   package Notes is new Table.Table (
+     Table_Component_Type => Notes_Entry,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 1,
+     Table_Initial        => Alloc.Notes_Initial,
+     Table_Increment      => Alloc.Notes_Increment,
+     Table_Name           => "Notes");
 
    --  The following table records the compilation switches used to compile
    --  the main unit. The table includes only switches. It excludes -o

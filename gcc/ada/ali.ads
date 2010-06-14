@@ -605,8 +605,6 @@ package ALI is
       --  table.
    end record;
 
-   --  Declare the Linker_Options Table
-
    --  The indexes of active entries in this table range from 1 to the
    --  value of Linker_Options.Last. The zero'th element is for sort call.
 
@@ -617,6 +615,44 @@ package ALI is
      Table_Initial        => 200,
      Table_Increment      => 400,
      Table_Name           => "Linker_Options");
+
+   -----------------
+   -- Notes Table --
+   -----------------
+
+   --  The notes table records entries from N lines
+
+   type Notes_Record is record
+      Pragma_Type : Character;
+      --  'A', 'C', 'I', 'S', 'T' for Annotate/Comment/Ident/Subtitle/Title
+
+      Pragma_Line : Nat;
+      --  Line number of pragma
+
+      Pragma_Col : Nat;
+      --  Column number of pragma
+
+      Unit : Unit_Id;
+      --  Unit_Id for the entry
+
+      Pragma_Args : Name_Id;
+      --  Pragma arguments. No_Name if no arguments, otherwise a single
+      --  name table entry consisting of all the characters on the notes
+      --  line from the first non-blank character following the source
+      --  location to the last character on the line.
+   end record;
+
+   --  The indexes of active entries in this table range from 1 to the
+   --  value of Linker_Options.Last. The zero'th element is for convenience
+   --  if the table needs to be sorted.
+
+   package Notes is new Table.Table (
+     Table_Component_Type => Notes_Record,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 200,
+     Table_Increment      => 400,
+     Table_Name           => "Notes");
 
    -------------------------------------------
    -- External Version Reference Hash Table --

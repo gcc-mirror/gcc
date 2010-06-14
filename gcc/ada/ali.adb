@@ -49,6 +49,7 @@ package body ALI is
       'U'    => True,   -- unit
       'W'    => True,   -- with
       'L'    => True,   -- linker option
+      'N'    => True,   -- notes
       'E'    => True,   -- external
       'D'    => True,   -- dependency
       'X'    => True,   -- xref
@@ -89,14 +90,16 @@ package body ALI is
       Withs.Init;
       Sdep.Init;
       Linker_Options.Init;
+      Notes.Init;
       Xref_Section.Init;
       Xref_Entity.Init;
       Xref.Init;
       Version_Ref.Reset;
 
-      --  Add dummy zero'th item in Linker_Options for the sort function
+      --  Add dummy zero'th item in Linker_Options and Notes for sort calls
 
       Linker_Options.Increment_Last;
+      Notes.Increment_Last;
 
       --  Initialize global variables recording cumulative options in all
       --  ALI files that are read for a given processing run in gnatbind.
@@ -1862,6 +1865,45 @@ package body ALI is
             Linker_Options.Table (Linker_Options.Last).Original_Pos :=
               Linker_Options.Last;
          end if;
+
+         --  If there are notes present, scan them
+
+         Notes_Loop : loop
+            Check_Unknown_Line;
+            exit Notes_Loop when C /= 'N';
+
+            if Ignore ('N') then
+               Skip_Line;
+
+            else
+               Checkc (' ');
+
+               Notes.Increment_Last;
+               Notes.Table (Notes.Last).Pragma_Type := Getc;
+               Notes.Table (Notes.Last).Pragma_Line := Get_Nat;
+               Checkc (':');
+               Notes.Table (Notes.Last).Pragma_Col  := Get_Nat;
+               Notes.Table (Notes.Last).Unit        := Units.Last;
+
+               if At_Eol then
+                  Notes.Table (Notes.Last).Pragma_Args := No_Name;
+
+               else
+                  Checkc (' ');
+
+                  Name_Len := 0;
+                  while not At_Eol loop
+                     Add_Char_To_Name_Buffer (Getc);
+                  end loop;
+
+                  Notes.Table (Notes.Last).Pragma_Args := Name_Enter;
+               end if;
+
+               Skip_Eol;
+            end if;
+
+            C := Getc;
+         end loop Notes_Loop;
       end loop U_Loop;
 
       --  End loop through units for one ALI file
