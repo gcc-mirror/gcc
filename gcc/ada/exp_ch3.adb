@@ -593,7 +593,7 @@ package body Exp_Ch3 is
       ------------------------
 
       function Init_One_Dimension (N : Int) return List_Id is
-         Index      : Entity_Id;
+         Index : Entity_Id;
 
       begin
          --  If the component does not need initializing, then there is nothing

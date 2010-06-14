@@ -14799,9 +14799,9 @@ to @command{gnatmake} that the binder generated file should be compiled
 @noindent
 A number of GNAT tools, other than @command{^gnatmake^gnatmake^}
 can benefit from project files:
-@command{^gnatbind^gnatbind^},
-@command{^gnatcheck^gnatcheck^}),
-@command{^gnatclean^gnatclean^}),
+(@command{^gnatbind^gnatbind^},
+@command{^gnatcheck^gnatcheck^},
+@command{^gnatclean^gnatclean^},
 @command{^gnatelim^gnatelim^},
 @command{^gnatfind^gnatfind^},
 @command{^gnatlink^gnatlink^},
@@ -14809,7 +14809,7 @@ can benefit from project files:
 @command{^gnatmetric^gnatmetric^},
 @command{^gnatpp^gnatpp^},
 @command{^gnatstub^gnatstub^},
-and @command{^gnatxref^gnatxref^}. However, none of these tools can be invoked
+and @command{^gnatxref^gnatxref^}). However, none of these tools can be invoked
 directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
 They must be invoked through the @command{gnat} driver.
 
@@ -15085,8 +15085,8 @@ found in the package corresponding to the tool:
 except @code{^Switches^Switches^ ("main.adb")}
 for @code{^gnatlink^gnatlink^}.
 It is also possible to invoke some of the tools,
-@code{^gnatcheck^gnatcheck^}),
-@code{^gnatmetric^gnatmetric^}),
+(@code{^gnatcheck^gnatcheck^},
+@code{^gnatmetric^gnatmetric^},
 and @code{^gnatpp^gnatpp^})
 on a set of project units thanks to the combination of the switches
 @option{-P}, @option{-U} and possibly the main unit when one is interested
@@ -15106,7 +15106,10 @@ gnat metric -Pproj -U main_unit
 @end smallexample
 will compute the metrics for the closure of units rooted at
 @code{main_unit}. This last possibility relies implicitly
-on @command{gnatbind}'s option @option{-R}.
+on @command{gnatbind}'s option @option{-R}. But if the argument files for the
+tool invoked by the the @command{gnat} driver are explicitly  specified
+either directly or through the tool @option{-files} option, then the tool
+is called only for these explicitly specified files.
 
 @c **********************
 @node An Extended Example

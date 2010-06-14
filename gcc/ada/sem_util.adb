@@ -543,8 +543,8 @@ package body Sem_Util is
                           and then Is_Constrained (Root_Type (T)))
            and then not Has_Unknown_Discriminants (T)
          then
-            --  If the type of the dereference is already constrained, it
-            --  is an actual subtype.
+            --  If the type of the dereference is already constrained, it is an
+            --  actual subtype.
 
             if Is_Array_Type (Etype (N))
               and then Is_Constrained (Etype (N))

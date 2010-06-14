@@ -1,3 +1,19 @@
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, sem_util.adb, exp_ch3.adb: Minor reformatting
+
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Save_References): If an identifier has been rewritten
+	during analysis as an explicit dereference, keep the reference implicit
+	in the generic, but preserve the entity if global. This prevents
+	malformed generic trees in the presence of some nested generics.
+
+2010-06-14  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: For the GNAT driver, clarify the effect of calling the
+	tool with '-files=' option. Also fix some small errors (wrong brackets)
+
 2010-06-14  Vincent Celier  <celier@adacore.com>
 
 	* gnatbind.adb: Call Scan_ALI with Directly_Scanned set to True for all
