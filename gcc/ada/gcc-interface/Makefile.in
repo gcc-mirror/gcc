@@ -380,7 +380,7 @@ MLIB_TGT = mlib-tgt
 # to LIBGNAT_TARGET_PAIRS.
 
 GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
-  g-soliop$(objext) g-sothco$(objext) g-sttsne$(objext)
+  g-soliop$(objext) g-sothco$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socket.adb<g-socket-dummy.adb \
@@ -388,8 +388,7 @@ DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socthi.adb<g-socthi-dummy.adb \
   g-socthi.ads<g-socthi-dummy.ads \
   g-sothco.adb<g-sothco-dummy.adb \
-  g-sothco.ads<g-sothco-dummy.ads \
-  g-sttsne.ads<g-sttsne-dummy.ads
+  g-sothco.ads<g-sothco-dummy.ads
 
 # On platform where atomic increment/decrement operations are supported
 # special version of Ada.Strings.Unbounded package can be used.
@@ -440,8 +439,6 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb \
   system.ads<system-vxworks-m68k.ads
@@ -485,8 +482,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb \
   $(ATOMICS_TARGET_PAIRS)
@@ -606,9 +601,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<g-socthi-vxworks.ads \
     g-socthi.adb<g-socthi-vxworks.adb \
-    g-stsifd.adb<g-stsifd-sockets.adb \
-    g-sttsne.adb<g-sttsne-vxworks.adb \
-    g-sttsne.ads<g-sttsne-locking.ads
+    g-stsifd.adb<g-stsifd-sockets.adb
   endif
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
@@ -724,9 +717,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
     LIBGNAT_TARGET_PAIRS += \
     g-socthi.ads<g-socthi-vxworks.ads \
     g-socthi.adb<g-socthi-vxworks.adb \
-    g-stsifd.adb<g-stsifd-sockets.adb \
-    g-sttsne.adb<g-sttsne-vxworks.adb \
-    g-sttsne.ads<g-sttsne-locking.ads
+    g-stsifd.adb<g-stsifd-sockets.adb
   endif
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
@@ -762,8 +753,6 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb \
   system.ads<system-vxworks-sparcv9.ads   \
@@ -803,8 +792,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb
 
@@ -896,8 +883,6 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb \
   system.ads<system-vxworks-arm.ads
@@ -936,8 +921,6 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
   g-stsifd.adb<g-stsifd-sockets.adb \
-  g-sttsne.adb<g-sttsne-vxworks.adb \
-  g-sttsne.ads<g-sttsne-locking.ads \
   g-trasym.ads<g-trasym-unimplemented.ads \
   g-trasym.adb<g-trasym-unimplemented.adb \
   system.ads<system-vxworks-mips.ads
@@ -1398,8 +1381,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
     a-numaux.ads<a-numaux-x86.ads \
     a-intnam.ads<a-intnam-lynxos.ads \
     g-bytswa.adb<g-bytswa-x86.adb \
-    g-sttsne.adb<g-sttsne-locking.adb \
-    g-sttsne.ads<g-sttsne-locking.ads \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
     s-osinte.adb<s-osinte-lynxos.adb \
@@ -1416,8 +1397,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
   else
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-lynxos.ads \
-    g-sttsne.adb<g-sttsne-locking.adb \
-    g-sttsne.ads<g-sttsne-locking.ads \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
     s-osinte.adb<s-osinte-lynxos.adb \
@@ -1543,8 +1522,6 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     g-socthi.ads<g-socthi-vms.ads \
     g-socthi.adb<g-socthi-vms.adb \
     g-stsifd.adb<g-stsifd-sockets.adb \
-    g-sttsne.adb<g-sttsne-locking.adb \
-    g-sttsne.ads<g-sttsne-locking.ads \
     i-c.ads<i-c-vms_64.ads \
     i-cstrin.ads<i-cstrin-vms_64.ads \
     i-cstrin.adb<i-cstrin-vms_64.adb \

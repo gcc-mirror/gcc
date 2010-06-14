@@ -200,17 +200,39 @@ package GNAT.Sockets.Thin_Common is
    pragma Inline (Set_Address);
    --  Set Sin.Sin_Addr to Address
 
+   ------------------
+   -- Host entries --
+   ------------------
+
+   type Hostent is new
+     System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_struct_hostent);
+   for Hostent'Alignment use 8;
+   --  Host entry. This is an opaque type used only via the following
+   --  accessor functions, because 'struct hostent' has different layouts on
+   --  different platforms.
+
+   type Hostent_Access is access all Hostent;
+   pragma Convention (C, Hostent_Access);
+   --  Access to host entry
+
+   function Hostent_H_Name
+     (E : Hostent_Access) return C.Strings.chars_ptr;
+
+   function Hostent_H_Alias
+     (E : Hostent_Access; I : C.int) return C.Strings.chars_ptr;
+
+   function Hostent_H_Addrtype
+     (E : Hostent_Access) return C.int;
+
+   function Hostent_H_Length
+     (E : Hostent_Access) return C.int;
+
+   function Hostent_H_Addr
+     (E : Hostent_Access; Index : C.int) return C.Strings.chars_ptr;
+
    ---------------------
    -- Service entries --
    ---------------------
-
-   type Chars_Ptr_Array is array (C.size_t range <>) of
-     aliased C.Strings.chars_ptr;
-
-   package Chars_Ptr_Pointers is
-      new C.Pointers (C.size_t, C.Strings.chars_ptr, Chars_Ptr_Array,
-                      C.Strings.Null_Ptr);
-   --  Arrays of C (char *)
 
    type Servent is new
      System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_struct_servent);
@@ -226,48 +248,60 @@ package GNAT.Sockets.Thin_Common is
    function Servent_S_Name
      (E : Servent_Access) return C.Strings.chars_ptr;
 
-   function Servent_S_Aliases
-     (E : Servent_Access) return Chars_Ptr_Pointers.Pointer;
+   function Servent_S_Alias
+     (E : Servent_Access; Index : C.int) return C.Strings.chars_ptr;
 
    function Servent_S_Port
-     (E : Servent_Access) return C.int;
+     (E : Servent_Access) return C.unsigned_short;
 
    function Servent_S_Proto
      (E : Servent_Access) return C.Strings.chars_ptr;
 
-   procedure Servent_Set_S_Name
-     (E      : Servent_Access;
-      S_Name : C.Strings.chars_ptr);
-
-   procedure Servent_Set_S_Aliases
-     (E         : Servent_Access;
-      S_Aliases : Chars_Ptr_Pointers.Pointer);
-
-   procedure Servent_Set_S_Port
-     (E      : Servent_Access;
-      S_Port : C.int);
-
-   procedure Servent_Set_S_Proto
-     (E       : Servent_Access;
-      S_Proto : C.Strings.chars_ptr);
-
    ------------------
-   -- Host entries --
+   -- NetDB access --
    ------------------
 
-   type Hostent is record
-      H_Name      : C.Strings.chars_ptr;
-      H_Aliases   : Chars_Ptr_Pointers.Pointer;
-      H_Addrtype  : SOSC.H_Addrtype_T;
-      H_Length    : SOSC.H_Length_T;
-      H_Addr_List : In_Addr_Access_Pointers.Pointer;
-   end record;
-   pragma Convention (C, Hostent);
-   --  Host entry
+   --  There are three possible situations for the following NetDB access
+   --  functions:
+   --    - inherently thread safe (case of data returned in a thread specific
+   --      buffer);
+   --    - thread safe using user-provided buffer;
+   --    - thread unsafe.
+   --
+   --  In the first and third cases, the Buf and Buflen are ignored. In the
+   --  second case, the caller must provide a buffer large enough to accomodate
+   --  the returned data. In the third case, the caller must ensure that these
+   --  functions are called within a critical section.
 
-   type Hostent_Access is access all Hostent;
-   pragma Convention (C, Hostent_Access);
-   --  Access to host entry
+   function C_Gethostbyname
+     (Name     : C.char_array;
+      Ret      : not null access Hostent;
+      Buf      : System.Address;
+      Buflen   : C.int;
+      H_Errnop : not null access C.int) return C.int;
+
+   function C_Gethostbyaddr
+     (Addr      : System.Address;
+      Addr_Len  : C.int;
+      Addr_Type : C.int;
+      Ret       : not null access Hostent;
+      Buf       : System.Address;
+      Buflen    : C.int;
+      H_Errnop  : not null access C.int) return C.int;
+
+   function C_Getservbyname
+     (Name     : C.char_array;
+      Proto    : C.char_array;
+      Ret      : not null access Servent;
+      Buf      : System.Address;
+      Buflen   : C.int) return C.int;
+
+   function C_Getservbyport
+     (Port     : C.int;
+      Proto    : C.char_array;
+      Ret      : not null access Servent;
+      Buf      : System.Address;
+      Buflen   : C.int) return C.int;
 
    ------------------------------------
    -- Scatter/gather vector handling --
@@ -362,12 +396,20 @@ private
    pragma Import (C, C_Ioctl, "__gnat_socket_ioctl");
    pragma Import (C, Inet_Pton, SOSC.Inet_Pton_Linkname);
 
-   pragma Import (C, Servent_S_Name, "__gnat_servent_s_name");
-   pragma Import (C, Servent_S_Aliases, "__gnat_servent_s_aliases");
-   pragma Import (C, Servent_S_Port, "__gnat_servent_s_port");
+   pragma Import (C, C_Gethostbyname, "__gnat_gethostbyname");
+   pragma Import (C, C_Gethostbyaddr, "__gnat_gethostbyaddr");
+   pragma Import (C, C_Getservbyname, "__gnat_getservbyname");
+   pragma Import (C, C_Getservbyport, "__gnat_getservbyport");
+
+   pragma Import (C, Servent_S_Name,  "__gnat_servent_s_name");
+   pragma Import (C, Servent_S_Alias, "__gnat_servent_s_alias");
+   pragma Import (C, Servent_S_Port,  "__gnat_servent_s_port");
    pragma Import (C, Servent_S_Proto, "__gnat_servent_s_proto");
-   pragma Import (C, Servent_Set_S_Name, "__gnat_servent_set_s_name");
-   pragma Import (C, Servent_Set_S_Aliases, "__gnat_servent_set_s_aliases");
-   pragma Import (C, Servent_Set_S_Port, "__gnat_servent_set_s_port");
-   pragma Import (C, Servent_Set_S_Proto, "__gnat_servent_set_s_proto");
+
+   pragma Import (C, Hostent_H_Name,     "__gnat_hostent_h_name");
+   pragma Import (C, Hostent_H_Alias,    "__gnat_hostent_h_alias");
+   pragma Import (C, Hostent_H_Addrtype, "__gnat_hostent_h_addrtype");
+   pragma Import (C, Hostent_H_Length,   "__gnat_hostent_h_length");
+   pragma Import (C, Hostent_H_Addr,     "__gnat_hostent_h_addr");
+
 end GNAT.Sockets.Thin_Common;

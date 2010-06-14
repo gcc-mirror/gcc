@@ -1231,24 +1231,11 @@ CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set");
 
+#define SIZEOF_struct_hostent (sizeof (struct hostent))
+CND(SIZEOF_struct_hostent, "struct hostent");
+
 #define SIZEOF_struct_servent (sizeof (struct servent))
 CND(SIZEOF_struct_servent, "struct servent");
-/*
-
-   --  Fields of struct hostent
-*/
-
-#ifdef __MINGW32__
-# define h_addrtype_t "short"
-# define h_length_t   "short"
-#else
-# define h_addrtype_t "int"
-# define h_length_t   "int"
-#endif
-
-TXT("   subtype H_Addrtype_T is Interfaces.C." h_addrtype_t ";")
-TXT("   subtype H_Length_T   is Interfaces.C." h_length_t ";")
-
 /*
 
    --  Fields of struct msghdr
@@ -1271,6 +1258,7 @@ TXT("   subtype Msg_Iovlen_T is Interfaces.C." msg_iovlen_t ";")
 */
 
 CND(Need_Netdb_Buffer, "Need buffer for Netdb ops")
+CND(Need_Netdb_Lock,   "Need lock for Netdb ops")
 CND(Has_Sockaddr_Len,  "Sockaddr has sa_len field")
 
 /**

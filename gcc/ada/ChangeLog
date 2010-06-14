@@ -1,3 +1,35 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (End_Use_Type): Before indicating that an operator is not
+	use-visible, check whether it is a primitive for more than one type.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Copy_And_Swap): Copy Has_Pragma_Unmodified flag.
+
+	* sem_ch7.adb (Preserve_Full_Attributes): Preserve
+	Has_Pragma_Unmodified flag.
+
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sttsne-locking.adb, g-sttsne-locking.ads, g-sttsne.ads,
+	g-sttsne-vxworks.adb, g-sttsne-dummy.ads: Removed. Mutual exclusion is
+	now done in GNAT.Sockets if necessary.
+	* gsocket.h, g-socket.adb, g-sothco.ads (GNAT.Sockets.Get_XXX_By_YYY):
+	Ensure mutual exclusion for netdb operations if the target platform
+	requires it.
+	(GNAT.Sockets.Thin_Common): New binding for getXXXbyYYY, treating struct
+	hostent as an opaque type to improve portability.
+	* s-oscons-tmplt.c, socket.c: For the case of Vxworks, emulate
+	gethostbyYYY using proprietary VxWorks API so that a uniform interface
+	is available for the Ada side.
+	* gcc-interface/Makefile.in: Remove g-sttsne-*
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-06-14  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Mapping_File): New function.
+
 2010-06-14  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Derive_Subprograms): Remove over-restrictive assertion.

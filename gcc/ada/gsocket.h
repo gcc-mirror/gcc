@@ -194,34 +194,37 @@
 #include <netdb.h>
 #endif
 
-/*
- * Handling of gethostbyname, gethostbyaddr, getservbyname and getservbyport
- * =========================================================================
- *
- * The default implementation of GNAT.Sockets.Thin requires that these
- * operations be either thread safe, or that a reentrant version getXXXbyYYY_r
- * be provided. In both cases, socket.c provides a __gnat_safe_getXXXbyYYY
- * function with the same signature as getXXXbyYYY_r. If the operating
- * system version of getXXXbyYYY is thread safe, the provided auxiliary
- * buffer argument is unused and ignored.
- *
- * Target specific versions of GNAT.Sockets.Thin for platforms that can't
- * fulfill these requirements must provide their own protection mechanism
- * in Safe_GetXXXbyYYY, and if they require GNAT.Sockets to provide a buffer
- * to this effect, then we need to set Need_Netdb_Buffer here (case of
- * VxWorks and VMS).
- */
-
-#if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || defined (__osf__) || defined (_WIN32) || defined (__APPLE__)
+#if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || \
+    defined (__osf__) || defined (_WIN32) || defined (__APPLE__)
 # define HAVE_THREAD_SAFE_GETxxxBYyyy 1
-#elif defined (sgi) || defined (linux) || defined (__GLIBC__) || (defined (sun) && defined (__SVR4) && !defined (__vxworks)) || defined(__rtems__)
+
+#elif defined (sgi) || defined (linux) || defined (__GLIBC__) || \
+     (defined (sun) && defined (__SVR4) && !defined (__vxworks)) || \
+      defined(__rtems__)
 # define HAVE_GETxxxBYyyy_R 1
 #endif
 
-#if defined (HAVE_GETxxxBYyyy_R) || !defined (HAVE_THREAD_SAFE_GETxxxBYyyy)
+/*
+ * Properties of the unerlying NetDB library:
+ *   Need_Netdb_Buffer __gnat_getXXXbyYYY expects a caller-supplied buffer
+ *   Need_Netdb_Lock   __gnat_getXXXbyYYY expects the caller to ensure
+ *                     mutual exclusion
+ *
+ * See "Handling of gethostbyname, gethostbyaddr, getservbyname and
+ * getservbyport" in socket.c for details.
+ */
+
+#if defined (HAVE_GETxxxBYyyy_R)
 # define Need_Netdb_Buffer 1
+# define Need_Netdb_Lock 0
+
 #else
 # define Need_Netdb_Buffer 0
+# if !defined (HAVE_THREAD_SAFE_GETxxxBYyyy)
+#  define Need_Netdb_Lock 1
+# else
+#  define Need_Netdb_Lock 0
+# endif
 #endif
 
 #if defined (__FreeBSD__) || defined (__vxworks) || defined(__rtems__)
