@@ -1107,8 +1107,8 @@ package body Checks is
              or else
                (Is_Entity_Name (Obj)
                  and then Present (Renamed_Object (Entity (Obj)))
-                and then Nkind (Renamed_Object (Entity (Obj)))
-                  = N_Explicit_Dereference);
+                 and then Nkind (Renamed_Object (Entity (Obj))) =
+                                              N_Explicit_Dereference);
       end Denotes_Explicit_Dereference;
 
       ----------------------------------------

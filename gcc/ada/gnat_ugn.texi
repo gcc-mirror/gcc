@@ -107,6 +107,13 @@ Texts.  A copy of the license is included in the section entitled
 @macro ovar{varname}
 @r{[}@var{\varname\}@r{]}@c
 @end macro
+@c Status as of November 2009:
+@c Unfortunately texi2pdf and texi2html treat the trailing "@c"
+@c differently, and faulty output is produced by one or the other
+@c depending on whether the "@c" is present or absent.
+@c As a result, the @ovar macro is not used, and all invocations
+@c of the @ovar macro have been expanded inline.
+
 
 @settitle @value{EDITION} User's Guide @value{PLATFORM}
 @dircategory GNU Ada tools
@@ -597,6 +604,8 @@ Platform-Specific Information for the Run-Time Libraries
 * Linux-Specific Considerations::
 * AIX-Specific Considerations::
 * Irix-Specific Considerations::
+* RTX-Specific Considerations::
+* HP-UX-Specific Considerations::
 
 Example of Binder Output File
 
@@ -3873,7 +3882,9 @@ without generating code, then use the @option{-gnatc} switch.
 The basic command for compiling a file containing an Ada unit is
 
 @smallexample
-$ gcc -c @ovar{switches} @file{file name}
+@c $ gcc -c @ovar{switches} @file{file name}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gcc -c @r{[}@var{switches}@r{]} @file{file name}
 @end smallexample
 
 @noindent
@@ -4419,7 +4430,9 @@ Inhibit the search of the default location for the GNAT Run Time
 Library (RTL) ALI files.
 
 @ifclear vms
-@item -O@ovar{n}
+@c @item -O@ovar{n}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+@item -O@r{[}@var{n}@r{]}
 @cindex @option{-O} (@command{gcc})
 @var{n} controls the optimization level.
 
@@ -7187,7 +7200,9 @@ Shows the storage pool associated with a @code{free} statement.
 Used to list an equivalent declaration for an internally generated
 type that is referenced elsewhere in the listing.
 
-@item freeze @var{type-name} @ovar{actions}
+@c @item freeze @var{type-name} @ovar{actions}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+@item freeze @var{type-name} @r{[}@var{actions}@r{]}
 Shows the point at which @var{type-name} is frozen, with possible
 associated actions to be performed at the freeze point.
 
@@ -7886,7 +7901,9 @@ to be read by the @command{gnatlink} utility used to link the Ada application.
 The form of the @code{gnatbind} command is
 
 @smallexample
-$ gnatbind @ovar{switches} @var{mainprog}@r{[}.ali@r{]} @ovar{switches}
+@c $ gnatbind @ovar{switches} @var{mainprog}@r{[}.ali@r{]} @ovar{switches}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatbind @r{[}@var{switches}@r{]} @var{mainprog}@r{[}.ali@r{]} @r{[}@var{switches}@r{]}
 @end smallexample
 
 @noindent
@@ -8865,8 +8882,12 @@ driver (see @ref{The GNAT Driver and Project Files}).
 The form of the @command{gnatlink} command is
 
 @smallexample
-$ gnatlink @ovar{switches} @var{mainprog}@r{[}.ali@r{]}
-           @ovar{non-Ada objects} @ovar{linker options}
+@c $ gnatlink @ovar{switches} @var{mainprog}@r{[}.ali@r{]}
+@c            @ovar{non-Ada objects} @ovar{linker options}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatlink @r{[}@var{switches}@r{]} @var{mainprog}@r{[}.ali@r{]}
+           @r{[}@var{non-Ada objects}@r{]} @r{[}@var{linker options}@r{]}
+
 @end smallexample
 
 @noindent
@@ -9144,8 +9165,11 @@ dependencies, they will always be tracked exactly correctly by
 The usual form of the @command{gnatmake} command is
 
 @smallexample
-$ gnatmake @ovar{switches} @var{file_name}
-      @ovar{file_names} @ovar{mode_switches}
+@c $ gnatmake @ovar{switches} @var{file_name}
+@c       @ovar{file_names} @ovar{mode_switches}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatmake @r{[}@var{switches}@r{]} @var{file_name}
+      @r{[}@var{file_names}@r{]} @r{[}@var{mode_switches}@r{]}
 @end smallexample
 
 @noindent
@@ -10715,7 +10739,7 @@ Note that @code{gnatelim} needs neither object nor ALI files.
 @code{gnatelim} has the following command-line interface:
 
 @smallexample
-$ gnatelim @ovar{options} name
+$ gnatelim [@var{options}] name
 @end smallexample
 
 @noindent
@@ -11119,8 +11143,11 @@ in which GNAT processes the ACVC tests.
 The @code{gnatchop} command has the form:
 
 @smallexample
+@c $ gnatchop switches @var{file name} @r{[}@var{file name} @dots{}@r{]}
+@c      @ovar{directory}
+@c Expanding @ovar macro inline (explanation in macro def comments)
 $ gnatchop switches @var{file name} @r{[}@var{file name} @dots{}@r{]}
-      @ovar{directory}
+      @r{[}@var{directory}@r{]}
 @end smallexample
 
 @noindent
@@ -11546,8 +11573,11 @@ set of files.
 The usual form of the @code{gnatname} command is
 
 @smallexample
-$ gnatname @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}
-      @r{[}--and @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}@r{]}
+@c $ gnatname @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}
+@c       @r{[}--and @ovar{switches} @var{naming_pattern} @ovar{naming_patterns}@r{]}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatname @r{[}@var{switches}@r{]} @var{naming_pattern} @r{[}@var{naming_patterns}@r{]}
+      @r{[}--and @r{[}@var{switches}@r{]} @var{naming_pattern} @r{[}@var{naming_patterns}@r{]}@r{]}
 @end smallexample
 
 @noindent
@@ -15403,7 +15433,9 @@ use the @code{gnat} driver (see @ref{The GNAT Driver and Project Files}).
 @noindent
 The command invocation for @code{gnatxref} is:
 @smallexample
-$ gnatxref @ovar{switches} @var{sourcefile1} @r{[}@var{sourcefile2} @dots{}@r{]}
+@c $ gnatxref @ovar{switches} @var{sourcefile1} @r{[}@var{sourcefile2} @dots{}@r{]}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatxref @r{[}@var{switches}@r{]} @var{sourcefile1} @r{[}@var{sourcefile2} @dots{}@r{]}
 @end smallexample
 
 @noindent
@@ -15535,8 +15567,11 @@ you can say @samp{gnatxref ^-ag^/ALL_FILES/IGNORE_LOCALS^} instead of
 The command line for @code{gnatfind} is:
 
 @smallexample
-$ gnatfind @ovar{switches} @var{pattern}@r{[}:@var{sourcefile}@r{[}:@var{line}@r{[}:@var{column}@r{]]]}
-      @r{[}@var{file1} @var{file2} @dots{}]
+@c $ gnatfind @ovar{switches} @var{pattern}@r{[}:@var{sourcefile}@r{[}:@var{line}@r{[}:@var{column}@r{]]]}
+@c       @r{[}@var{file1} @var{file2} @dots{}]
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatfind @r{[}@var{switches}@r{]} @var{pattern}@r{[}:@var{sourcefile}@r{[}:@var{line}@r{[}:@var{column}@r{]]]}
+      @r{[}@var{file1} @var{file2} @dots{}@r{]}
 @end smallexample
 
 @noindent
@@ -16122,7 +16157,9 @@ call @command{gnatpp} through the @command{gnat} driver
 The @command{gnatpp} command has the form
 
 @smallexample
-$ gnatpp @ovar{switches} @var{filename}
+@c $ gnatpp @ovar{switches} @var{filename}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatpp @r{[}@var{switches}@r{]} @var{filename}
 @end smallexample
 
 @noindent
@@ -17224,7 +17261,9 @@ through the @command{gnat} driver.
 The @command{gnatmetric} command has the form
 
 @smallexample
-$ gnatmetric @ovar{switches} @{@var{filename}@} @r{[}-cargs @var{gcc_switches}@r{]}
+@c $ gnatmetric @ovar{switches} @{@var{filename}@} @r{[}-cargs @var{gcc_switches}@r{]}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatmetric @r{[}@var{switches}@r{]} @{@var{filename}@} @r{[}-cargs @var{gcc_switches}@r{]}
 @end smallexample
 
 @noindent
@@ -18006,7 +18045,9 @@ The @code{gnatkr} command has the form
 
 @ifclear vms
 @smallexample
-$ gnatkr @var{name} @ovar{length}
+@c $ gnatkr @var{name} @ovar{length}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatkr @var{name} @r{[}@var{length}@r{]}
 @end smallexample
 @end ifclear
 
@@ -18194,7 +18235,9 @@ all characters need to be in the ASCII set (no accented letters).
 To call @code{gnatprep} use
 
 @smallexample
-$ gnatprep @ovar{switches} @var{infile} @var{outfile} @ovar{deffile}
+@c $ gnatprep @ovar{switches} @var{infile} @var{outfile} @ovar{deffile}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatprep @r{[}@var{switches}@r{]} @var{infile} @var{outfile} @r{[}@var{deffile}@r{]}
 @end smallexample
 
 @noindent
@@ -20170,7 +20213,9 @@ Solaris and Windows NT/2000/XP (x86).
 The @code{gnatmem} command has the form
 
 @smallexample
-   $ gnatmem @ovar{switches} user_program
+@c    $ gnatmem @ovar{switches} user_program
+@c Expanding @ovar macro inline (explanation in macro def comments)
+      $ gnatmem @r{[}@var{switches}@r{]} @var{user_program}
 @end smallexample
 
 @noindent
@@ -20698,7 +20743,11 @@ driver (see @ref{The GNAT Driver and Project Files}).
 Invoking @command{gnatcheck} on the command line has the form:
 
 @smallexample
-$ gnatcheck @ovar{switches}  @{@var{filename}@}
+@c $ gnatcheck @ovar{switches}  @{@var{filename}@}
+@c       @r{[}^-files^/FILES^=@{@var{arg_list_filename}@}@r{]}
+@c       @r{[}-cargs @var{gcc_switches}@r{]} -rules @var{rule_options}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatcheck @r{[}@var{switches}@r{]}  @{@var{filename}@}
       @r{[}^-files^/FILES^=@{@var{arg_list_filename}@}@r{]}
       @r{[}-cargs @var{gcc_switches}@r{]} -rules @var{rule_options}
 @end smallexample
@@ -23157,7 +23206,9 @@ option @option{^--no-exception^/NO_EXCEPTION^} (see below).
 @command{gnatstub} has the command-line interface of the form
 
 @smallexample
-$ gnatstub @ovar{switches} @var{filename} @ovar{directory}
+@c $ gnatstub @ovar{switches} @var{filename} @ovar{directory}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatstub @r{[}@var{switches}@r{]} @var{filename} @r{[}@var{directory}@r{]}
 @end smallexample
 
 @noindent
@@ -23689,7 +23740,9 @@ be able to click on any identifier and go to its declaration.
 
 The command line is as follow:
 @smallexample
-$ perl gnathtml.pl @ovar{^switches^options^} @var{ada-files}
+@c $ perl gnathtml.pl @ovar{^switches^options^} @var{ada-files}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ perl gnathtml.pl @r{[}@var{^switches^options^}@r{]} @var{ada-files}
 @end smallexample
 
 @noindent
@@ -23795,7 +23848,9 @@ is. The syntax of this line is:
 Alternatively, you may run the script using the following command line:
 
 @smallexample
-$ perl gnathtml.pl @ovar{switches} @var{files}
+@c $ perl gnathtml.pl @ovar{switches} @var{files}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ perl gnathtml.pl @r{[}@var{switches}@r{]} @var{files}
 @end smallexample
 
 @ifset vms
@@ -26919,6 +26974,7 @@ information about several specific platforms.
 * AIX-Specific Considerations::
 * Irix-Specific Considerations::
 * RTX-Specific Considerations::
+* HP-UX-Specific Considerations::
 @end menu
 
 @node Summary of Run-Time Configurations
@@ -27281,6 +27337,42 @@ performance can be optimized with RTSS applications taking precedent
 over all Windows applications (@emph{rts-rtx-rtss}).
 
 @end itemize
+
+@node HP-UX-Specific Considerations
+@section HP-UX-Specific Considerations
+@cindex HP-UX Scheduling
+
+@noindent
+On HP-UX, appropriate privileges are required to change the scheduling
+parameters of a task. The calling process must have appropriate
+privileges or be a member of a group having @code{PRIV_RTSCHED} access to
+successfully change the scheduling parameters.
+
+By default, GNAT uses the @code{SCHED_HPUX} policy. To have access to the
+priority range 0-31 either the @code{FIFO_Within_Priorities} or the
+@code{Round_Robin_Within_Priorities} scheduling policies need to be set.
+
+To specify the @code{FIFO_Within_Priorities} scheduling policy you can use
+one of the following:
+
+@itemize @bullet
+@item
+@code{pragma Time_Slice (0.0)}
+@cindex pragma Time_Slice
+@item
+the corresponding binder option @option{-T0}
+@cindex @option{-T0} option
+@item
+@code{pragma Task_Dispatching_Policy (FIFO_Within_Priorities)}
+@cindex pragma Task_Dispatching_Policy
+@end itemize
+
+@noindent
+To specify the @code{Round_Robin_Within_Priorities}, scheduling policy
+you should use @code{pragma Time_Slice} with a
+value greater than @code{0.0}, or use the corresponding @option{-T}
+binder option, or set the @code{pragma Task_Dispatching_Policy
+(Round_Robin_Within_Priorities)}.
 
 @c *******************************
 @node Example of Binder Output File
@@ -33270,7 +33362,9 @@ static import library for the DLL and the actual DLL. The form of the
 
 @smallexample
 @cartouche
-$ gnatdll @ovar{switches} @var{list-of-files} @r{[}-largs @var{opts}@r{]}
+@c $ gnatdll @ovar{switches} @var{list-of-files} @r{[}-largs @var{opts}@r{]}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ gnatdll @r{[}@var{switches}@r{]} @var{list-of-files} @r{[}-largs @var{opts}@r{]}
 @end cartouche
 @end smallexample
 
@@ -33286,7 +33380,9 @@ missing, only the static import library is generated.
 You may specify any of the following switches to @code{gnatdll}:
 
 @table @code
-@item -a@ovar{address}
+@c @item -a@ovar{address}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+@item -a@r{[}@var{address}@r{]}
 @cindex @option{-a} (@code{gnatdll})
 Build a non-relocatable DLL at @var{address}. If @var{address} is not
 specified the default address @var{0x11000000} will be used. By default,
@@ -33489,7 +33585,9 @@ common @code{dlltool} switches. The form of the @code{dlltool} command
 is
 
 @smallexample
-$ dlltool @ovar{switches}
+@c $ dlltool @ovar{switches}
+@c Expanding @ovar macro inline (explanation in macro def comments)
+$ dlltool @r{[}@var{switches}@r{]}
 @end smallexample
 
 @noindent

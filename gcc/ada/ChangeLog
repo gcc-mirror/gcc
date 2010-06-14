@@ -1,3 +1,29 @@
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
+	* a-convec.adb, sem_prag.adb, checks.adb: Minor reformatting
+
+2010-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c: Code clean up.
+
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case Address): Do
+	not insert address clause in table for later validation if type of
+	entity is generic, to prevent possible spurious errors. 
+
+	* sem_ch8.adb: Code clean up.
+
+2010-06-14  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Expanded @ovar macro inline to solve problem with
+	texi2pdf and texi2html.
+	Document how to change scheduling properties on HP-UX.
+
+2010-06-14  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Remove misleading comments.
+
 2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sem_prag.adb (Check_Duplicated_Export_Name): Remove check for

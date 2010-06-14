@@ -7162,11 +7162,11 @@ package body Sem_Ch8 is
                --  we compare the scope depth of its scope with that of the
                --  current instance. However, a generic actual of a subprogram
                --  instance is declared in the wrapper package but will not be
-               --  hidden by a use-visible entity. Similarly, a generic actual
-               --  will not be hidden by an entity declared in another generic
-               --  actual, which can only have been use-visible in the generic.
-               --  Is this condition complete, and can the following complex
-               --  test be simplified ???
+               --  hidden by a use-visible entity. similarly, an entity that is
+               --  declared in an enclosing instance will not be hidden by an
+               --  an entity declared in a generic actual, which can only have
+               --  been use-visible in the generic and will not have hidden the
+               --  entity in the generic parent.
 
                --  If Id is called Standard, the predefined package with the
                --  same name is in the homonym chain. It has to be ignored
@@ -7181,8 +7181,8 @@ package body Sem_Ch8 is
                  and then (Scope (Prev) /= Standard_Standard
                             or else Sloc (Prev) > Standard_Location)
                then
-                  if Ekind (Prev) = E_Package
-                    and then Present (Associated_Formal_Package (Prev))
+                  if In_Open_Scopes (Scope (Prev))
+                    and then Is_Generic_Instance (Scope (Prev))
                     and then Present (Associated_Formal_Package (P))
                   then
                      null;
