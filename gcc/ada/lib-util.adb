@@ -40,8 +40,13 @@ package body Lib.Util is
 
    Info_Buffer_Col : Natural := 1;
    --  Column number of next character to be written.
-   --  Can be different from Info_Buffer_Len + 1.
-   --  because of tab characters written by Write_Info_Tab.
+   --  Can be different from Info_Buffer_Len + 1 because of tab characters
+   --  written by Write_Info_Tab.
+
+   procedure Write_Info_Hex_Byte (J : Natural);
+   --  Place two hex digits representing the value J (which is in the range
+   --  0-255) in Info_Buffer, incrementing Info_Buffer_Len by 2. The digits
+   --  are output using lower case letters.
 
    ---------------------
    -- Write_Info_Char --
@@ -59,20 +64,6 @@ package body Lib.Util is
    --------------------------
 
    procedure Write_Info_Char_Code (Code : Char_Code) is
-
-      procedure Write_Info_Hex_Byte (J : Natural);
-      --  Write single hex digit
-
-      procedure Write_Info_Hex_Byte (J : Natural) is
-         Hexd : constant String := "0123456789abcdef";
-
-      begin
-         Write_Info_Char (Hexd (J / 16 + 1));
-         Write_Info_Char (Hexd (J mod 16 + 1));
-      end Write_Info_Hex_Byte;
-
-   --  Start of processing for Write_Info_Char_Code
-
    begin
       --  00 .. 7F
 
@@ -127,6 +118,17 @@ package body Lib.Util is
          Info_Buffer_Col := 1;
       end if;
    end Write_Info_EOL;
+
+   -------------------------
+   -- Write_Info_Hex_Byte --
+   -------------------------
+
+   procedure Write_Info_Hex_Byte (J : Natural) is
+      Hexd : constant array (0 .. 15) of Character := "0123456789abcdef";
+   begin
+      Write_Info_Char (Hexd (J / 16));
+      Write_Info_Char (Hexd (J mod 16));
+   end Write_Info_Hex_Byte;
 
    -------------------------
    -- Write_Info_Initiate --
@@ -210,16 +212,9 @@ package body Lib.Util is
             end if;
 
          else
-            declare
-               Hex : constant array (0 .. 15) of Character :=
-                       "0123456789ABCDEF";
-
-            begin
-               Write_Info_Char ('{');
-               Write_Info_Char (Hex (Character'Pos (C) / 16));
-               Write_Info_Char (Hex (Character'Pos (C) mod 16));
-               Write_Info_Char ('}');
-            end;
+            Write_Info_Char ('{');
+            Write_Info_Hex_Byte (Character'Pos (C));
+            Write_Info_Char ('}');
          end if;
       end loop;
 
