@@ -12814,7 +12814,6 @@ package body Sem_Ch3 is
                    and then not Primitive_Names_Match (Subp, Act_Subp))
             then
                pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual));
-               pragma Assert (Is_Interface (Parent_Base));
 
                --  Remember that we need searching for all the pending
                --  primitives
