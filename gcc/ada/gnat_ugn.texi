@@ -347,6 +347,7 @@ Performance Considerations
 Reducing Size of Ada Executables with gnatelim
 * About gnatelim::
 * Running gnatelim::
+* Processing Precompiled Libraries::
 * Correcting the List of Eliminate Pragmas::
 * Making Your Executables Smaller::
 * Summary of the gnatelim Usage Cycle::
@@ -10694,6 +10695,7 @@ program.
 @menu
 * About gnatelim::
 * Running gnatelim::
+* Processing Precompiled Libraries::
 * Correcting the List of Eliminate Pragmas::
 * Making Your Executables Smaller::
 * Summary of the gnatelim Usage Cycle::
@@ -10717,20 +10719,24 @@ because the compiler will not generate the code for 'eliminated' subprograms.
 @xref{Pragma Eliminate,,, gnat_rm, GNAT Reference Manual}, for more
 information about this pragma.
 
-@code{gnatelim} needs as its input data the name of the main subprogram
-and a bind file for a main subprogram.
+@code{gnatelim} needs as its input data the name of the main subprogram.
 
-To create a bind file for @code{gnatelim}, run @code{gnatbind} for
-the main subprogram. @code{gnatelim} can work with both Ada and C
-bind files; when both are present, it uses the Ada bind file.
-The following commands will build the program and create the bind file:
+If a set of source files is specified as @code{gnatelim} arguments, it
+treats these files as a complete set of sources making up a program to
+analyse, and analyses only these sources.
+
+After a full successful build of the main subprogram @code{gnatelim} can be
+called without  specifying sources to analyse, in this case it computes
+the source closure of the main unit from the @file{ALI} files.
+
+The following command will create the set of @file{ALI} files needed for
+@code{gnatelim}:
 
 @smallexample
 $ gnatmake ^-c Main_Prog^/ACTIONS=COMPILE MAIN_PROG^
-$ gnatbind main_prog
 @end smallexample
 
-Note that @code{gnatelim} needs neither object nor ALI files.
+Note that @code{gnatelim} does not need object files.
 
 @node Running gnatelim
 @subsection Running @code{gnatelim}
@@ -10739,22 +10745,59 @@ Note that @code{gnatelim} needs neither object nor ALI files.
 @code{gnatelim} has the following command-line interface:
 
 @smallexample
-$ gnatelim [@var{options}] name
+$ gnatelim [@var{switches}] ^-main^?MAIN^=@var{main_unit_name} @{@var{filename}@} @r{[}-cargs @var{gcc_switches}@r{]}
 @end smallexample
 
 @noindent
-@code{name} should be a name of a source file that contains the main subprogram
-of a program (partition).
+@var{main_unit_name} should be a name of a source file that contains the main
+subprogram of a program (partition).
+
+Each @var{filename} is the name (including the extension) of a source
+file to process. ``Wildcards'' are allowed, and
+the file name may contain path information.
+
+@samp{-cargs @var{gcc_switches}} is a list of switches for
+@command{gcc}. They will be passed on to all compiler invocations made by
+@command{gnatelim} to generate the ASIS trees. Here you can provide
+@option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
+use the @option{-gnatec} switch to set the configuration file etc.
 
 @code{gnatelim} has the following switches:
 
 @table @option
 @c !sort!
+@item ^-files^/FILES^=@var{filename}
+@cindex @option{^-files^/FILES^} (@code{gnatelim})
+Take the argument source files from the specified file. This file should be an
+ordinary text file containing file names separated by spaces or
+line breaks. You can use this switch more than once in the same call to
+@command{gnatelim}. You also can combine this switch with
+an explicit list of files.
+
+@item ^-log^/LOG^
+@cindex @option{^-log^/LOG^} (@command{gnatelim})
+Duplicate all the output sent to @file{stderr} into a log file. The log file
+is named @file{gnatelim.log} and is located in the current directory.
+
+@item ^-log^/LOGFILE^=@var{filename}
+@cindex @option{^-log^/LOGFILE^} (@command{gnatelim})
+Duplicate all the output sent to @file{stderr} into a specified log file.
+
+@cindex @option{^-o^/OUTPUT^} (@command{gnatelim})
+@item ^-o^/OUTPUT^=@var{report_file}
+Put @command{gnatelim} output into a specified file. If this file already exists,
+it is overridden. If this switch is not used, @command{gnatelim} outputs its results
+into @file{stderr}
+
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatelim})
 Quiet mode: by default @code{gnatelim} outputs to the standard error
 stream the number of program units left to be processed. This option turns
 this trace off.
+
+@cindex @option{^-t^/TIME^} (@command{gnatelim})
+@item ^-t^/TIME^
+Print out execution time.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@command{gnatelim})
@@ -10763,67 +10806,24 @@ comments to the standard output stream. Also, in addition to the number of
 program units left @code{gnatelim} will output the name of the current unit
 being processed.
 
-@item ^-a^/ALL^
-@cindex @option{^-a^/ALL^} (@command{gnatelim})
-Also look for subprograms from the GNAT run time that can be eliminated. Note
-that when @file{gnat.adc} is produced using this switch, the entire program
-must be recompiled with switch @option{^-a^/ALL_FILES^} to @command{gnatmake}.
-
-@item ^-I^/INCLUDE_DIRS=^@var{dir}
-@cindex @option{^-I^/INCLUDE_DIRS^} (@command{gnatelim})
-When looking for source files also look in directory @var{dir}. Specifying
-@option{^-I-^/INCLUDE_DIRS=-^} instructs @code{gnatelim} not to look for
-sources in the current directory.
-
-@item ^-b^/BIND_FILE=^@var{bind_file}
-@cindex @option{^-b^/BIND_FILE^} (@command{gnatelim})
-Specifies @var{bind_file} as the bind file to process. If not set, the name
-of the bind file is computed from the full expanded Ada name
-of a main subprogram.
-
-@item ^-C^/CONFIG_FILE=^@var{config_file}
-@cindex @option{^-C^/CONFIG_FILE^} (@command{gnatelim})
-Specifies a file @var{config_file} that contains configuration pragmas. The
-file must be specified with full path.
-
-@item ^--GCC^/COMPILER^=@var{compiler_name}
-@cindex @option{^-GCC^/COMPILER^} (@command{gnatelim})
-Instructs @code{gnatelim} to use specific @command{gcc} compiler instead of one
-available on the path.
-
-@item ^--GNATMAKE^/GNATMAKE^=@var{gnatmake_name}
-@cindex @option{^--GNATMAKE^/GNATMAKE^} (@command{gnatelim})
-Instructs @code{gnatelim} to use specific @command{gnatmake} instead of one
-available on the path.
+@item ^-wq^/WARNINGS=QUIET^
+@cindex @option{^-wq^/WARNINGS=QUIET^} (@command{gnatelim})
+Quet warning mode - some warnings are suppressed. In particular warnings that
+indicate that the analysed set of sources is incomplete to make up a
+partition and that some subprogram bodies are missing are not generated.
 @end table
 
-@noindent
-@code{gnatelim} sends its output to the standard output stream, and all the
-tracing and debug information is sent to the standard error stream.
-In order to produce a proper GNAT configuration file
-@file{gnat.adc}, redirection must be used:
-
-@smallexample
-@ifset vms
-$ PIPE GNAT ELIM MAIN_PROG.ADB > GNAT.ADC
-@end ifset
-@ifclear vms
-$ gnatelim main_prog.adb > gnat.adc
-@end ifclear
-@end smallexample
-
-@ifclear vms
-@noindent
-or
-
-@smallexample
-$ gnatelim main_prog.adb >> gnat.adc
-@end smallexample
+@node Processing Precompiled Libraries
+@subsection Processing Precompiled Libraries
 
 @noindent
-in order to append the @code{gnatelim} output to the existing contents of
-@file{gnat.adc}.
-@end ifclear
+If some program uses a precompiled Ada library, it can be processed by
+@code{gnatelim} in a usual way. @code{gnatelim} will newer generate an
+Eliminate pragma for a subprogram if the body of this subprogram has not
+been analysed, this is a typical case for subprograms from precompiled
+libraries. Switch @option{^-wq^/WARNINGS=QUIET^} may be used to suppress
+warnings about missing source files and non-analyzed subprogram bodies
+that can be generated when processing precompiled Ada libraries.
 
 @node Correcting the List of Eliminate Pragmas
 @subsection Correcting the List of Eliminate Pragmas
@@ -10834,22 +10834,23 @@ subprograms that are actually called in the program. In this case, the
 compiler will generate an error message of the form:
 
 @smallexample
-file.adb:106:07: cannot call eliminated subprogram "My_Prog"
+main.adb:4:08: cannot reference subprogram "P" eliminated at elim.out:5
 @end smallexample
 
 @noindent
 You will need to manually remove the wrong @code{Eliminate} pragmas from
-the @file{gnat.adc} file. You should recompile your program
-from scratch after that, because you need a consistent @file{gnat.adc} file
-during the entire compilation.
+the configuration file indicated in the error message. You should recompile
+your program from scratch after that, because you need a consistent
+configuration file(s) during the entire compilation.
 
 @node Making Your Executables Smaller
 @subsection Making Your Executables Smaller
 
 @noindent
 In order to get a smaller executable for your program you now have to
-recompile the program completely with the new @file{gnat.adc} file
-created by @code{gnatelim} in your current directory:
+recompile the program completely with the configuration file containing
+pragmas Eliminate generated by gnatelim. If these pragmas are placed in
+@file{gnat.adc} file located in your current directory, just do:
 
 @smallexample
 $ gnatmake ^-f main_prog^/FORCE_COMPILE MAIN_PROG^
@@ -10863,10 +10864,10 @@ with the set of pragmas @code{Eliminate} that you have obtained with
 
 Be aware that the set of @code{Eliminate} pragmas is specific to each
 program. It is not recommended to merge sets of @code{Eliminate}
-pragmas created for different programs in one @file{gnat.adc} file.
+pragmas created for different programs in one configuration file.
 
 @node Summary of the gnatelim Usage Cycle
-@subsection Summary of the gnatelim Usage Cycle
+@subsection Summary of the @code{gnatelim} Usage Cycle
 
 @noindent
 Here is a quick summary of the steps to be taken in order to reduce
@@ -10876,15 +10877,16 @@ to produce the debugging information, to set search path, etc.
 
 @enumerate
 @item
-Produce a bind file
+Create a complete set of @file{ALI} files (if the program has not been
+built already)
 
 @smallexample
 $ gnatmake ^-c main_prog^/ACTIONS=COMPILE MAIN_PROG^
-$ gnatbind main_prog
 @end smallexample
 
 @item
-Generate a list of @code{Eliminate} pragmas
+Generate a list of @code{Eliminate} pragmas in default configuration file
+@file{gnat.adc} in the current directory
 @smallexample
 @ifset vms
 $ PIPE GNAT ELIM MAIN_PROG > GNAT.ADC
@@ -16675,7 +16677,7 @@ with @option{^-pipe^/STANDARD_OUTPUT^} option.
 The additional @command{gnatpp} switches are defined in this subsection.
 
 @table @option
-@item ^-files @var{filename}^/FILES=@var{output_file}^
+@item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
 Take the argument source files from the specified file. This file should be an
 ordinary text file containing file names separated by spaces or
@@ -20897,13 +20899,6 @@ a trace of sources being processed.
 Set name of report file file to @var{report_file} .
 
 @end table
-
-@noindent
-Note that if any of the options @option{^-s1^/COMPILER_STYLE^},
-@option{^-s2^/BY_RULES^} or
-@option{^-s3^/BY_FILES_BY_RULES^} is specified,
-then the  @command{gnatcheck} report file will only contain sections
-explicitly denoted by these options.
 
 @node gnatcheck Rule Options
 @section @command{gnatcheck} Rule Options

@@ -834,43 +834,20 @@ package VMS_Data is
    --
    --   Duplicate all the output sent to Stderr into a log file.
 
-   S_Check_Sections : aliased constant S := "/SECTIONS="                   &
-                                            "DEFAULT "                     &
-                                               "-s123 "                    &
-                                            "COMPILER_STYLE "              &
-                                               "-s1 "                      &
-                                            "BY_RULES "                    &
-                                               "-s2 "                      &
-                                            "BY_FILES_BY_RULES "           &
-                                               "-s3";
-   --        /SECTIONS[=section-option, section-option, ...]
-   --
-   --   Specify what sections should be included into the report file.
-   --   By default, all three section (diagnoses in the format corresponding
-   --   to compiler error and warning messages, diagnoses grouped by rules and
-   --   then - by files, diagnoses grouped by files and then - by rules) are
-   --   included in the report file.
-   --
-   --   section-option may be one of the following:
-   --
-   --      COMPILER_STYLE      Include diagnostics in compile-style format
-   --                          (diagnoses are grouped by files, for each file
-   --                          they are ordered according to the references
-   --                          into the source)
-   --      BY_RULES            Include diagnostics grouped first by rules and
-   --                          then by files
-   --      BY_FILES_BY_RULES   Include diagnostics grouped first by files and
-   --                          then by rules
-   --
-   --   If one of these options is specified, then the report file contains
-   --   only sections set by these options
-
    S_Check_Short  : aliased constant S := "/SHORT "                        &
                                             "-s";
    --        /NOSHORT (D)
    --        /SHORT
    --
    --   Generate a short form of the report file.
+
+   S_Check_Include : aliased constant S := "/INCLUDE_FILE=@"               &
+                                            "--include-file=@";
+
+   --        /INCLUDE_FILE=filename
+   --
+   --   Add the content of the specified text file to the generated report
+   --   file.
 
    S_Check_Subdirs : aliased constant S := "/SUBDIRS=<"                    &
                                              "--subdirs=>";
@@ -896,24 +873,24 @@ package VMS_Data is
    --   Specify the name of the output file.
 
    Check_Switches : aliased constant Switches :=
-                      (S_Check_Add      'Access,
-                       S_Check_All      'Access,
-                       S_Diagnosis      'Access,
-                       S_Check_Ext      'Access,
-                       S_Check_Files    'Access,
-                       S_Check_Follow   'Access,
-                       S_Check_Help     'Access,
-                       S_Check_Locs     'Access,
-                       S_Check_Mess     'Access,
-                       S_Check_Project  'Access,
-                       S_Check_Quiet    'Access,
-                       S_Check_Time     'Access,
-                       S_Check_Log      'Access,
-                       S_Check_Sections 'Access,
-                       S_Check_Short    'Access,
-                       S_Check_Subdirs  'Access,
-                       S_Check_Verb     'Access,
-                       S_Check_Out      'Access);
+                      (S_Check_Add    'Access,
+                       S_Check_All    'Access,
+                       S_Diagnosis    'Access,
+                       S_Check_Ext    'Access,
+                       S_Check_Files  'Access,
+                       S_Check_Follow 'Access,
+                       S_Check_Help   'Access,
+                       S_Check_Locs   'Access,
+                       S_Check_Mess   'Access,
+                       S_Check_Project'Access,
+                       S_Check_Quiet  'Access,
+                       S_Check_Time   'Access,
+                       S_Check_Log    'Access,
+                       S_Check_Short  'Access,
+                       S_Check_Include'Access,
+                       S_Check_Subdirs'Access,
+                       S_Check_Verb   'Access,
+                       S_Check_Out    'Access);
 
    ----------------------------
    -- Switches for GNAT CHOP --
@@ -3624,7 +3601,7 @@ package VMS_Data is
    --   gnatelim. The source directories to be searched will be communicated
    --   to gnatelim through logical name ADA_PRJ_INCLUDE_FILE.
 
-   S_Elim_Quiet  : aliased constant S := "/QUIET "                         &
+   S_Elim_Quiet   : aliased constant S := "/QUIET "                        &
                                             "-q";
    --        /NOQUIET (D)
    --        /QUIET
@@ -3632,6 +3609,48 @@ package VMS_Data is
    --   Quiet mode: by default GNAT ELIM outputs to the standard error stream
    --   the number of program units left to be processed. This option turns
    --   this trace off.
+
+   S_Elim_Files   : aliased constant S := "/FILES=@"                       &
+                                         "-files=@";
+
+   --      /FILES=filename
+   --
+   --   Take as arguments the files that are listed in the specified
+   --   text file.
+
+   S_Elim_Log     : aliased constant S := "/LOG "                          &
+                                          "-l";
+   --        /NOLOG (D)
+   --        /LOG
+   --
+   --   Duplicate all the output sent to Stderr into a default log file.
+
+   S_Elim_Logfile : aliased constant S := "/LOGFILE=@ "                    &
+                                          "-l@";
+
+   --      /LOGFILE=logfilename
+   --
+   --   Duplicate all the output sent to Stderr into a specified log file.
+
+   S_Elim_Main    : aliased constant S := "/MAIN=@ "                       &
+                                          "-main=@";
+
+   --      /MAIN=filename
+   --
+   --   Specify the main subprogram of the partition to analyse.
+
+   S_Elim_Out     : aliased constant S := "/OUTPUT=@"                     &
+                                             "-o@";
+   --        /OUTPUT=filename
+   --
+   --   Specify the name of the output file.
+
+   S_Elim_Time    : aliased constant S := "/TIME "                        &
+                                            "-t";
+   --        /NOTIME (D)
+   --        /TIME
+   --
+   --   Print out execution time
 
    S_Elim_Search : aliased constant S := "/SEARCH=*"                       &
                                             "-I*";
@@ -3657,6 +3676,19 @@ package VMS_Data is
    --   program units left, GNAT ELIM will output the name of the current unit
    --   being processed.
 
+   S_Elim_Warn   : aliased constant S := "/WARNINGS="                      &
+                                           "NORMAL "                       &
+                                               "-wn "                      &
+                                           "QUIET "                        &
+                                                "-ws";
+
+   --      /WARNINGS[=(keyword[,...])]
+   --
+   --   The following keywords are supported:
+   --
+   --        NORMAL (D)    Print warning all the messages.
+   --        QUIET         Some warning messages are suppressed
+
    Elim_Switches : aliased constant Switches :=
                      (S_Elim_Add     'Access,
                       S_Elim_All     'Access,
@@ -3665,14 +3697,21 @@ package VMS_Data is
                       S_Elim_Config  'Access,
                       S_Elim_Current 'Access,
                       S_Elim_Ext     'Access,
+                      S_Elim_Files   'Access,
                       S_Elim_Follow  'Access,
                       S_Elim_GNATMAKE'Access,
+                      S_Elim_Log     'Access,
+                      S_Elim_Logfile 'Access,
+                      S_Elim_Main    'Access,
                       S_Elim_Mess    'Access,
+                      S_Elim_Out     'Access,
                       S_Elim_Project 'Access,
                       S_Elim_Quiet   'Access,
                       S_Elim_Search  'Access,
                       S_Elim_Subdirs 'Access,
-                      S_Elim_Verb    'Access);
+                      S_Elim_Time    'Access,
+                      S_Elim_Verb    'Access,
+                      S_Elim_Warn    'Access);
 
    ----------------------------
    -- Switches for GNAT FIND --
