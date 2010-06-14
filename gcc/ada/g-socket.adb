@@ -175,6 +175,10 @@ package body GNAT.Sockets is
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type;
    --  Conversion function
 
+   function Value (S : System.Address) return String;
+   --  Same as Interfaces.C.Strings.Value but taking a System.Address (on VMS,
+   --  chars_ptr is a 32-bit pointer, and here we need a 64-bit version).
+
    function To_Timeval (Val : Timeval_Duration) return Timeval;
    --  Separate Val in seconds and microseconds
 
@@ -1318,7 +1322,6 @@ package body GNAT.Sockets is
       use Interfaces.C.Strings;
 
       Img    : aliased char_array := To_C (Image);
-      Cp     : constant chars_ptr := To_Chars_Ptr (Img'Unchecked_Access);
       Addr   : aliased C.int;
       Res    : C.int;
       Result : Inet_Addr_Type;
@@ -1331,7 +1334,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      Res := Inet_Pton (SOSC.AF_INET, Cp, Addr'Address);
+      Res := Inet_Pton (SOSC.AF_INET, Img'Address, Addr'Address);
 
       if Res < 0 then
          Raise_Socket_Error (Socket_Errno);
@@ -2342,12 +2345,12 @@ package body GNAT.Sockets is
 
    begin
       Aliases_Count := 0;
-      while Hostent_H_Alias (E, C.int (Aliases_Count)) /= Null_Ptr loop
+      while Hostent_H_Alias (E, C.int (Aliases_Count)) /= Null_Address loop
          Aliases_Count := Aliases_Count + 1;
       end loop;
 
       Addresses_Count := 0;
-      while Hostent_H_Addr (E, C.int (Addresses_Count)) /= Null_Ptr loop
+      while Hostent_H_Addr (E, C.int (Addresses_Count)) /= Null_Address loop
          Addresses_Count := Addresses_Count + 1;
       end loop;
 
@@ -2366,11 +2369,8 @@ package body GNAT.Sockets is
          for J in Result.Addresses'Range loop
             declare
                Addr : In_Addr;
-               function To_Address is
-                 new Ada.Unchecked_Conversion (chars_ptr, System.Address);
                for Addr'Address use
-                 To_Address (Hostent_H_Addr
-                               (E, C.int (J - Result.Addresses'First)));
+                 Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
                pragma Import (Ada, Addr);
             begin
                To_Inet_Addr (Addr, Result.Addresses (J));
@@ -2457,7 +2457,7 @@ package body GNAT.Sockets is
 
    begin
       Aliases_Count := 0;
-      while Servent_S_Alias (E, C.int (Aliases_Count)) /= Null_Ptr loop
+      while Servent_S_Alias (E, C.int (Aliases_Count)) /= Null_Address loop
          Aliases_Count := Aliases_Count + 1;
       end loop;
 
@@ -2509,6 +2509,25 @@ package body GNAT.Sockets is
 
       return (S, uS);
    end To_Timeval;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (S : System.Address) return String is
+      Str : String (1 .. Positive'Last);
+      for Str'Address use S;
+      pragma Import (Ada, Str);
+
+      Terminator : Positive := Str'First;
+
+   begin
+      while Str (Terminator) /= ASCII.NUL loop
+         Terminator := Terminator + 1;
+      end loop;
+
+      return Str (1 .. Terminator - 1);
+   end Value;
 
    -----------
    -- Write --

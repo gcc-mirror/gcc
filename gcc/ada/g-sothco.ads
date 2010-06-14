@@ -38,7 +38,6 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 with Interfaces.C.Pointers;
-with Interfaces.C.Strings;
 
 package GNAT.Sockets.Thin_Common is
 
@@ -215,11 +214,16 @@ package GNAT.Sockets.Thin_Common is
    pragma Convention (C, Hostent_Access);
    --  Access to host entry
 
+   --  Note: the hostent and servent accessors that return char*
+   --  values are compiled with GCC, and on VMS they always return
+   --  64-bit pointers, so we can't use C.Strings.chars_ptr, which
+   --  on VMS is 32 bits.
+
    function Hostent_H_Name
-     (E : Hostent_Access) return C.Strings.chars_ptr;
+     (E : Hostent_Access) return System.Address;
 
    function Hostent_H_Alias
-     (E : Hostent_Access; I : C.int) return C.Strings.chars_ptr;
+     (E : Hostent_Access; I : C.int) return System.Address;
 
    function Hostent_H_Addrtype
      (E : Hostent_Access) return C.int;
@@ -228,7 +232,7 @@ package GNAT.Sockets.Thin_Common is
      (E : Hostent_Access) return C.int;
 
    function Hostent_H_Addr
-     (E : Hostent_Access; Index : C.int) return C.Strings.chars_ptr;
+     (E : Hostent_Access; Index : C.int) return System.Address;
 
    ---------------------
    -- Service entries --
@@ -246,16 +250,16 @@ package GNAT.Sockets.Thin_Common is
    --  Access to service entry
 
    function Servent_S_Name
-     (E : Servent_Access) return C.Strings.chars_ptr;
+     (E : Servent_Access) return System.Address;
 
    function Servent_S_Alias
-     (E : Servent_Access; Index : C.int) return C.Strings.chars_ptr;
+     (E : Servent_Access; Index : C.int) return System.Address;
 
    function Servent_S_Port
      (E : Servent_Access) return C.unsigned_short;
 
    function Servent_S_Proto
-     (E : Servent_Access) return C.Strings.chars_ptr;
+     (E : Servent_Access) return System.Address;
 
    ------------------
    -- NetDB access --
@@ -378,7 +382,7 @@ package GNAT.Sockets.Thin_Common is
 
    function Inet_Pton
      (Af  : C.int;
-      Cp  : C.Strings.chars_ptr;
+      Cp  : System.Address;
       Inp : System.Address) return C.int;
 
    function C_Ioctl
