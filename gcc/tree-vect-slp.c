@@ -1662,13 +1662,16 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
              break;
 
           case MULT_EXPR:
-          case BIT_AND_EXPR:
              if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (op)))
                neutral_op = build_real (TREE_TYPE (op), dconst1);
              else
                neutral_op = build_int_cst (TREE_TYPE (op), 1);
 
              break;
+
+          case BIT_AND_EXPR:
+            neutral_op = build_int_cst (TREE_TYPE (op), -1);
+            break;
 
           default:
              neutral_op = NULL;

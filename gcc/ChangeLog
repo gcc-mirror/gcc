@@ -1,3 +1,10 @@
+2010-06-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/44507 
+	* tree-vect-loop.c (get_initial_def_for_reduction): Use -1
+	to build initial vector for BIT_AND_EXPR.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+
 2010-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.md (*mov<mode>_64 DD_DF, mov<mode>): Properly
