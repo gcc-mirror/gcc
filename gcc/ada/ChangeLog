@@ -1,3 +1,8 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Type): The attribute 'class cannot be applied to
+	an untagged incomplete type that is a limited view.
+
 2010-06-14  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Add description of '-cargs gcc_switches' to gnatstub
