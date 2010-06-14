@@ -135,7 +135,7 @@ package body System.Aux_DEC is
    ---------------------------------
 
    --  It would be nice to replace these with intrinsics, but that does
-   --  not work yet (the back end would be ok, but GNAT itself objects)
+   --  not work yet (the back end would be ok, but GNAT itself objects) ???
 
    type BU is mod 2 ** Unsigned_Byte'Size;
    --  Unsigned type of same length as Unsigned_Byte
@@ -168,7 +168,7 @@ package body System.Aux_DEC is
    ---------------------------------
 
    --  It would be nice to replace these with intrinsics, but that does
-   --  not work yet (the back end would be ok, but GNAT itself objects)
+   --  not work yet (the back end would be ok, but GNAT itself objects) ???
 
    type WU is mod 2 ** Unsigned_Word'Size;
    --  Unsigned type of same length as Unsigned_Word
@@ -201,7 +201,7 @@ package body System.Aux_DEC is
    -------------------------------------
 
    --  It would be nice to replace these with intrinsics, but that does
-   --  not work yet (the back end would be ok, but GNAT itself objects)
+   --  not work yet (the back end would be ok, but GNAT itself objects) ???
 
    type LWU is mod 2 ** Unsigned_Longword'Size;
    --  Unsigned type of same length as Unsigned_Longword
@@ -234,7 +234,7 @@ package body System.Aux_DEC is
    -------------------------------
 
    --  It would be nice to replace these with intrinsics, but that does
-   --  not work yet (the back end would be ok, but GNAT itself objects)
+   --  not work yet (the back end would be ok, but GNAT itself objects) ???
 
    type U32 is mod 2 ** Unsigned_32'Size;
    --  Unsigned type of same length as Unsigned_32
@@ -267,7 +267,7 @@ package body System.Aux_DEC is
    -------------------------------------
 
    --  It would be nice to replace these with intrinsics, but that does
-   --  not work yet (the back end would be ok, but GNAT itself objects)
+   --  not work yet (the back end would be ok, but GNAT itself objects) ???
 
    type QWU is mod 2 ** 64;  -- 64 = Unsigned_Quadword'Size
    --  Unsigned type of same length as Unsigned_Quadword
@@ -306,7 +306,12 @@ package body System.Aux_DEC is
       use ASCII;
       Clr_Bit : Boolean := Bit;
       Old_Bit : Boolean;
+
    begin
+      --  All these ASM sequences should be commented. I suggest definining
+      --  a constant called E which is LF & HT and then you have more space
+      --  for line by line comments ???
+
       System.Machine_Code.Asm
         (
          "lda $16, %2"      & LF & HT &
@@ -328,10 +333,10 @@ package body System.Aux_DEC is
          "mb"               & LF & HT &
          "xor %1, 1, %1"    & LF & HT &
          "trapb",
-         Outputs => (Boolean'Asm_Output ("=m", Clr_Bit),
-                     Boolean'Asm_Output ("=r", Old_Bit)),
-         Inputs => Boolean'Asm_Input ("m", Clr_Bit),
-         Clobber => "$1, $16, $17, $18",
+         Outputs  => (Boolean'Asm_Output ("=m", Clr_Bit),
+                      Boolean'Asm_Output ("=r", Old_Bit)),
+         Inputs   => Boolean'Asm_Input ("m", Clr_Bit),
+         Clobber  => "$1, $16, $17, $18",
          Volatile => True);
 
          Bit := Clr_Bit;
@@ -347,6 +352,7 @@ package body System.Aux_DEC is
       use ASCII;
       Clr_Bit : Boolean := Bit;
       Succ, Old_Bit : Boolean;
+
    begin
       System.Machine_Code.Asm
         (
@@ -374,12 +380,12 @@ package body System.Aux_DEC is
          "mb"               & LF & HT &
          "xor %1, 1, %1"    & LF & HT &
          "trapb",
-         Outputs => (Boolean'Asm_Output ("=m", Clr_Bit),
-                     Boolean'Asm_Output ("=r", Old_Bit),
-                     Boolean'Asm_Output ("=r", Succ)),
-         Inputs => (Boolean'Asm_Input ("m", Clr_Bit),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$16, $17, $18, $19",
+         Outputs  => (Boolean'Asm_Output ("=m", Clr_Bit),
+                      Boolean'Asm_Output ("=r", Old_Bit),
+                      Boolean'Asm_Output ("=r", Succ)),
+         Inputs   => (Boolean'Asm_Input ("m", Clr_Bit),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$16, $17, $18, $19",
          Volatile => True);
 
          Bit := Clr_Bit;
@@ -398,7 +404,10 @@ package body System.Aux_DEC is
       use ASCII;
       Set_Bit : Boolean := Bit;
       Old_Bit : Boolean;
+
    begin
+      --  Don't we need comments on these long asm sequences???
+
       System.Machine_Code.Asm
         (
          "lda $16, %2"      & LF & HT &
@@ -419,10 +428,10 @@ package body System.Aux_DEC is
          "beq $1, 1b"       & LF & HT &
          "mb"               & LF & HT &
          "trapb",
-         Outputs => (Boolean'Asm_Output ("=m", Set_Bit),
-                     Boolean'Asm_Output ("=r", Old_Bit)),
-         Inputs => Boolean'Asm_Input ("m", Set_Bit),
-         Clobber => "$1, $16, $17, $18",
+         Outputs  => (Boolean'Asm_Output ("=m", Set_Bit),
+                      Boolean'Asm_Output ("=r", Old_Bit)),
+         Inputs   => Boolean'Asm_Input ("m", Set_Bit),
+         Clobber  => "$1, $16, $17, $18",
          Volatile => True);
 
          Bit := Set_Bit;
@@ -438,6 +447,7 @@ package body System.Aux_DEC is
       use ASCII;
       Set_Bit : Boolean := Bit;
       Succ, Old_Bit : Boolean;
+
    begin
       System.Machine_Code.Asm
         (
@@ -464,12 +474,12 @@ package body System.Aux_DEC is
          "3:"               & LF & HT &
          "mb"               & LF & HT &
          "trapb",
-         Outputs => (Boolean'Asm_Output ("=m", Set_Bit),
-                     Boolean'Asm_Output ("=r", Old_Bit),
-                     Boolean'Asm_Output ("=r", Succ)),
-         Inputs => (Boolean'Asm_Input ("m", Set_Bit),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$16, $17, $18, $19",
+         Outputs  => (Boolean'Asm_Output ("=m", Set_Bit),
+                      Boolean'Asm_Output ("=r", Old_Bit),
+                      Boolean'Asm_Output ("=r", Succ)),
+         Inputs   => (Boolean'Asm_Input ("m", Set_Bit),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$16, $17, $18, $19",
          Volatile => True);
 
          Bit := Set_Bit;
@@ -488,6 +498,7 @@ package body System.Aux_DEC is
    is
       use ASCII;
       Overflowed : Boolean := False;
+
    begin
       System.Machine_Code.Asm
         (
@@ -527,12 +538,12 @@ package body System.Aux_DEC is
          "lda $16, -1"         & LF & HT &
          "cmovne $0, $16, %1"  & LF & HT &
          "2:",
-         Outputs => (Aligned_Word'Asm_Output ("=m", Augend),
-                     Integer'Asm_Output ("=r", Sign),
-                     Boolean'Asm_Output ("=r", Overflowed)),
-         Inputs => (Short_Integer'Asm_Input ("r", Addend),
-                    Aligned_Word'Asm_Input ("m", Augend)),
-         Clobber => "$0, $1, $16, $17, $18, $19, $20, $21",
+         Outputs  => (Aligned_Word'Asm_Output ("=m", Augend),
+                      Integer'Asm_Output ("=r", Sign),
+                      Boolean'Asm_Output ("=r", Overflowed)),
+         Inputs   => (Short_Integer'Asm_Input ("r", Addend),
+                      Aligned_Word'Asm_Input ("m", Augend)),
+         Clobber  => "$0, $1, $16, $17, $18, $19, $20, $21",
          Volatile => True);
 
          if Overflowed then
@@ -549,6 +560,7 @@ package body System.Aux_DEC is
       Amount : Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -559,10 +571,10 @@ package body System.Aux_DEC is
          "stl_c $0, %1"    & LF & HT &
          "beq $0, 1b"      & LF & HT &
          "mb",
-         Outputs => Aligned_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", Amount)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", Amount)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end Add_Atomic;
 
@@ -574,6 +586,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -594,13 +607,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Integer'Asm_Output ("=m", To),
-                     Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", Amount),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
+                      Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", Amount),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end Add_Atomic;
 
@@ -609,6 +622,7 @@ package body System.Aux_DEC is
       Amount : Long_Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -619,10 +633,10 @@ package body System.Aux_DEC is
          "stq_c $0, %1"    & LF & HT &
          "beq $0, 1b"      & LF & HT &
          "mb",
-         Outputs => Aligned_Long_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", Amount)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Long_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", Amount)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end Add_Atomic;
 
@@ -634,6 +648,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -654,13 +669,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Long_Integer'Asm_Output ("=m", To),
-                     Long_Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", Amount),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
+                      Long_Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", Amount),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end Add_Atomic;
 
@@ -673,6 +688,7 @@ package body System.Aux_DEC is
       From : Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -683,10 +699,10 @@ package body System.Aux_DEC is
          "stl_c $0, %1"   & LF & HT &
          "beq $0, 1b"     & LF & HT &
          "mb",
-         Outputs => Aligned_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", From)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", From)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end And_Atomic;
 
@@ -698,6 +714,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -718,13 +735,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Integer'Asm_Output ("=m", To),
-                     Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", From),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
+                      Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", From),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end And_Atomic;
 
@@ -733,6 +750,7 @@ package body System.Aux_DEC is
       From : Long_Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -743,10 +761,10 @@ package body System.Aux_DEC is
          "stq_c $0, %1"   & LF & HT &
          "beq $0, 1b"     & LF & HT &
          "mb",
-         Outputs => Aligned_Long_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", From)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Long_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", From)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end And_Atomic;
 
@@ -758,6 +776,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -778,13 +797,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Long_Integer'Asm_Output ("=m", To),
-                     Long_Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", From),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
+                      Long_Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", From),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end And_Atomic;
 
@@ -797,6 +816,7 @@ package body System.Aux_DEC is
       From : Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -807,10 +827,10 @@ package body System.Aux_DEC is
          "stl_c $0, %1"   & LF & HT &
          "beq $0, 1b"     & LF & HT &
          "mb",
-         Outputs => Aligned_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", From)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", From)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end Or_Atomic;
 
@@ -822,6 +842,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -842,13 +863,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Integer'Asm_Output ("=m", To),
-                     Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Integer'Asm_Input ("m", To),
-                    Integer'Asm_Input ("rJ", From),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Integer'Asm_Output ("=m", To),
+                      Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Integer'Asm_Input ("m", To),
+                      Integer'Asm_Input ("rJ", From),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end Or_Atomic;
 
@@ -857,6 +878,7 @@ package body System.Aux_DEC is
       From : Long_Integer)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -867,10 +889,10 @@ package body System.Aux_DEC is
          "stq_c $0, %1"   & LF & HT &
          "beq $0, 1b"     & LF & HT &
          "mb",
-         Outputs => Aligned_Long_Integer'Asm_Output ("=m", To),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", From)),
-         Clobber => "$0, $1",
+         Outputs  => Aligned_Long_Integer'Asm_Output ("=m", To),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", From)),
+         Clobber  => "$0, $1",
          Volatile => True);
    end Or_Atomic;
 
@@ -882,6 +904,7 @@ package body System.Aux_DEC is
       Success_Flag : out Boolean)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -902,13 +925,13 @@ package body System.Aux_DEC is
          "bgt $17, 1b"      & LF & HT &
          "br 3b"            & LF & HT &
          "4:",
-         Outputs => (Aligned_Long_Integer'Asm_Output ("=m", To),
-                     Long_Integer'Asm_Output ("=m", Old_Value),
-                     Boolean'Asm_Output ("=m", Success_Flag)),
-         Inputs => (Aligned_Long_Integer'Asm_Input ("m", To),
-                    Long_Integer'Asm_Input ("rJ", From),
-                    Natural'Asm_Input ("rJ", Retry_Count)),
-         Clobber => "$0, $1, $17",
+         Outputs  => (Aligned_Long_Integer'Asm_Output ("=m", To),
+                      Long_Integer'Asm_Output ("=m", Old_Value),
+                      Boolean'Asm_Output ("=m", Success_Flag)),
+         Inputs   => (Aligned_Long_Integer'Asm_Input ("m", To),
+                      Long_Integer'Asm_Input ("rJ", From),
+                      Natural'Asm_Input ("rJ", Retry_Count)),
+         Clobber  => "$0, $1, $17",
          Volatile => True);
    end Or_Atomic;
 
@@ -919,9 +942,10 @@ package body System.Aux_DEC is
    procedure Insqhi
      (Item   : Address;
       Header : Address;
-      Status : out Insq_Status) is
-
+      Status : out Insq_Status)
+   is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -930,10 +954,10 @@ package body System.Aux_DEC is
          "mb"               & LF & HT &
          "call_pal 0x87"    & LF & HT &
          "mb",
-         Outputs => Insq_Status'Asm_Output ("=v", Status),
-         Inputs => (Address'Asm_Input ("rJ", Item),
-                    Address'Asm_Input ("rJ", Header)),
-         Clobber => "$16, $17",
+         Outputs  => Insq_Status'Asm_Output ("=v", Status),
+         Inputs   => (Address'Asm_Input ("rJ", Item),
+                      Address'Asm_Input ("rJ", Header)),
+         Clobber  => "$16, $17",
          Volatile => True);
    end Insqhi;
 
@@ -947,6 +971,7 @@ package body System.Aux_DEC is
       Status : out Remq_Status)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -955,10 +980,10 @@ package body System.Aux_DEC is
          "call_pal 0x93"    & LF & HT &
          "mb"               & LF & HT &
          "bis $31, $1, %1",
-         Outputs => (Remq_Status'Asm_Output ("=v", Status),
-                     Address'Asm_Output ("=r", Item)),
-         Inputs => Address'Asm_Input ("rJ", Header),
-         Clobber => "$1, $16",
+         Outputs  => (Remq_Status'Asm_Output ("=v", Status),
+                      Address'Asm_Output ("=r", Item)),
+         Inputs   => Address'Asm_Input ("rJ", Header),
+         Clobber  => "$1, $16",
          Volatile => True);
    end Remqhi;
 
@@ -969,9 +994,10 @@ package body System.Aux_DEC is
    procedure Insqti
      (Item   : Address;
       Header : Address;
-      Status : out Insq_Status) is
-
+      Status : out Insq_Status)
+   is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -980,10 +1006,10 @@ package body System.Aux_DEC is
          "mb"               & LF & HT &
          "call_pal 0x88"    & LF & HT &
          "mb",
-         Outputs => Insq_Status'Asm_Output ("=v", Status),
-         Inputs => (Address'Asm_Input ("rJ", Item),
-                    Address'Asm_Input ("rJ", Header)),
-         Clobber => "$16, $17",
+         Outputs  => Insq_Status'Asm_Output ("=v", Status),
+         Inputs   => (Address'Asm_Input ("rJ", Item),
+                      Address'Asm_Input ("rJ", Header)),
+         Clobber  => "$16, $17",
          Volatile => True);
    end Insqti;
 
@@ -997,6 +1023,7 @@ package body System.Aux_DEC is
       Status : out Remq_Status)
    is
       use ASCII;
+
    begin
       System.Machine_Code.Asm
         (
@@ -1005,10 +1032,10 @@ package body System.Aux_DEC is
          "call_pal 0x94"    & LF & HT &
          "mb"               & LF & HT &
          "bis $31, $1, %1",
-         Outputs => (Remq_Status'Asm_Output ("=v", Status),
-                     Address'Asm_Output ("=r", Item)),
-         Inputs => Address'Asm_Input ("rJ", Header),
-         Clobber => "$1, $16",
+         Outputs  => (Remq_Status'Asm_Output ("=v", Status),
+                      Address'Asm_Output ("=r", Item)),
+         Inputs   => Address'Asm_Input ("rJ", Header),
+         Clobber  => "$1, $16",
          Volatile => True);
    end Remqti;
 
