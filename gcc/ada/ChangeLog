@@ -1,5 +1,16 @@
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
+	* sem_res.adb: Minor reformatting
+
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb: New version of unit traversal.
+
+	* sem_elab.adb (Check_Internal_Call): Do not place a call appearing
+	within a generic unit in the table of delayed calls.
+
+2010-06-14  Robert Dewar  <dewar@adacore.com>
+
 	* gnatcmd.adb, sem_util.adb, exp_ch3.adb: Minor reformatting
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
