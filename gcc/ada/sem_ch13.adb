@@ -1027,9 +1027,9 @@ package body Sem_Ch13 is
                   --  of the annotation done by the back end. This entry is
                   --  only made if the address clause comes from source.
                   --  If the entity has a generic type, the check will be
-                  --  performed in the instance if the actual type justfies it,
-                  --  and we do not insert the clause in the table to prevent
-                  --  spurious warnings.
+                  --  performed in the instance if the actual type justifies
+                  --  it, and we do not insert the clause in the table to
+                  --  prevent spurious warnings.
 
                   if Address_Clause_Overlay_Warnings
                     and then Comes_From_Source (N)
