@@ -1,3 +1,9 @@
+2010-06-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Backport from mainline
+	* config/m68k/m68k.c (m68k_delegitimize_address): Don't do
+	anything if the argument is not a MEM.
+
 2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

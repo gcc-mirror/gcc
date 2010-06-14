@@ -4625,16 +4625,17 @@ m68k_output_dwarf_dtprel (FILE *file, int size, rtx x)
    and turn them back into a direct symbol reference.  */
 
 static rtx
-m68k_delegitimize_address (rtx x)
+m68k_delegitimize_address (rtx orig_x)
 {
-  rtx orig_x = delegitimize_mem_from_attrs (x);
-  rtx y;
+  rtx x, y;
   rtx addend = NULL_RTX;
   rtx result;
 
-  x = orig_x;
-  if (MEM_P (x))
-    x = XEXP (x, 0);
+  orig_x = delegitimize_mem_from_attrs (orig_x);
+  if (! MEM_P (orig_x))
+    return orig_x;
+
+  x = XEXP (orig_x, 0);
 
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 1)) == CONST
