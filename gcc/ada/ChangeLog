@@ -1,3 +1,10 @@
+2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Do not output any debug
+	declaration for VMs, as those are useless and might lead to duplicated
+	local variable names in the generated code.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads, sem.adb, sem_elab.adb: Minor reformatting
