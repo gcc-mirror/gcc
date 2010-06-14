@@ -475,6 +475,12 @@ package body Sem_Ch12 is
    --  of generic formals of a generic package declared with a box or with
    --  partial parametrization.
 
+   procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id);
+   --  If the generic unit comes from a different unit, indicate that the
+   --  unit that contains the instance depends on the body that contains
+   --  the generic body. Used to determine a more precise dependency graph
+   --  for use by CodePeer.
+
    procedure Set_Instance_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
@@ -8590,6 +8596,7 @@ package body Sem_Ch12 is
            (Inst_Node, Specification (Gen_Decl), Body_Optional);
          Gen_Body_Id := Corresponding_Body (Gen_Decl);
       end if;
+      Mark_Context (Act_Decl, Gen_Decl);
 
       --  Establish global variable for sloc adjustment and for error recovery
 
@@ -10381,6 +10388,28 @@ package body Sem_Ch12 is
                      N_Formal_Subprogram_Declaration);
       end if;
    end Is_Generic_Formal;
+
+   ------------------
+   -- Mark_Context --
+   ------------------
+
+   procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id) is
+      Inst_CU : constant Unit_Number_Type := Get_Source_Unit (Inst_Decl);
+      Gen_CU  : constant Unit_Number_Type := Get_Source_Unit (Gen_Decl);
+      Clause  : Node_Id;
+
+   begin
+      Clause := First (Context_Items (Cunit (Inst_CU)));
+      while Present (Clause) loop
+         if Nkind (Clause) = N_With_Clause
+           and then  Library_Unit (Clause) = Cunit (Gen_CU)
+         then
+            Set_Withed_Body (Clause, Cunit (Gen_CU));
+         end if;
+
+         Next (Clause);
+      end loop;
+   end Mark_Context;
 
    ---------------------
    -- Is_In_Main_Unit --

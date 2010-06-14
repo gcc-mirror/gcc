@@ -34,7 +34,7 @@
 
 #ifdef __vxworks
 #include "ioLib.h"
-#if ! defined (__VXWORKSMILS__)
+#if ! defined (VTHREADS)
 #include "dosFsLib.h"
 #endif
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
@@ -987,7 +987,7 @@ __gnat_is_file_not_found_error (int errno_val) {
       /* In the case of VxWorks, we also have to take into account various
        * filesystem-specific variants of this error.
        */
-#if ! defined (__VXWORKSMILS__)
+#if ! defined (VTHREADS)
       case S_dosFsLib_FILE_NOT_FOUND:
 #endif
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
