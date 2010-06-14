@@ -2969,12 +2969,9 @@ package body Bindgen is
    -- Gen_Versions_Ada --
    ----------------------
 
-   --  This routine generates two sets of lines. The first set has the form:
+   --  This routine generates lines such as:
 
    --    unnnnn : constant Integer := 16#hhhhhhhh#;
-
-   --  The second set has the form
-
    --    pragma Export (C, unnnnn, unam);
 
    --  for each unit, where unam is the unit name suffixed by either B or
@@ -2999,57 +2996,44 @@ package body Bindgen is
    --  Start of processing for Gen_Versions_Ada
 
    begin
-      if Bind_For_Library then
-
-         --  When building libraries, the version number of each unit can
-         --  not be computed, since the binder does not know the full list
-         --  of units. Therefore, the 'Version and 'Body_Version
-         --  attributes cannot supported in this case.
-
-         return;
-      end if;
-
       WBI ("");
 
       WBI ("   type Version_32 is mod 2 ** 32;");
       for U in Units.First .. Units.Last loop
-         Increment_Ubuf;
-         WBI ("   " & Ubuf & " : constant Version_32 := 16#" &
-              Units.Table (U).Version & "#;");
-      end loop;
+         if not Units.Table (U).SAL_Interface and then
+           ((not Bind_For_Library) or else Units.Table (U).Directly_Scanned)
+         then
+            Increment_Ubuf;
+            WBI ("   " & Ubuf & " : constant Version_32 := 16#" &
+                 Units.Table (U).Version & "#;");
+            Set_String ("   pragma Export (C, ");
+            Set_String (Ubuf);
+            Set_String (", """);
 
-      WBI ("");
-      Ubuf := "u00000";
+            Get_Name_String (Units.Table (U).Uname);
 
-      for U in Units.First .. Units.Last loop
-         Increment_Ubuf;
-         Set_String ("   pragma Export (C, ");
-         Set_String (Ubuf);
-         Set_String (", """);
+            for K in 1 .. Name_Len loop
+               if Name_Buffer (K) = '.' then
+                  Set_Char ('_');
+                  Set_Char ('_');
 
-         Get_Name_String (Units.Table (U).Uname);
+               elsif Name_Buffer (K) = '%' then
+                  exit;
 
-         for K in 1 .. Name_Len loop
-            if Name_Buffer (K) = '.' then
-               Set_Char ('_');
-               Set_Char ('_');
+               else
+                  Set_Char (Name_Buffer (K));
+               end if;
+            end loop;
 
-            elsif Name_Buffer (K) = '%' then
-               exit;
-
+            if Name_Buffer (Name_Len) = 's' then
+               Set_Char ('S');
             else
-               Set_Char (Name_Buffer (K));
+               Set_Char ('B');
             end if;
-         end loop;
 
-         if Name_Buffer (Name_Len) = 's' then
-            Set_Char ('S');
-         else
-            Set_Char ('B');
+            Set_String (""");");
+            Write_Statement_Buffer;
          end if;
-
-         Set_String (""");");
-         Write_Statement_Buffer;
       end loop;
 
    end Gen_Versions_Ada;
@@ -3067,43 +3051,37 @@ package body Bindgen is
 
    procedure Gen_Versions_C is
    begin
-      if Bind_For_Library then
-
-         --  When building libraries, the version number of each unit can
-         --  not be computed, since the binder does not know the full list
-         --  of units. Therefore, the 'Version and 'Body_Version
-         --  attributes cannot supported.
-
-         return;
-      end if;
-
       for U in Units.First .. Units.Last loop
-         Set_String ("unsigned ");
+         if not Units.Table (U).SAL_Interface and then
+           ((not Bind_For_Library) or else Units.Table (U).Directly_Scanned)
+         then
+            Set_String ("unsigned ");
 
-         Get_Name_String (Units.Table (U).Uname);
+            Get_Name_String (Units.Table (U).Uname);
 
-         for K in 1 .. Name_Len loop
-            if Name_Buffer (K) = '.' then
-               Set_String ("__");
+            for K in 1 .. Name_Len loop
+               if Name_Buffer (K) = '.' then
+                  Set_String ("__");
 
-            elsif Name_Buffer (K) = '%' then
-               exit;
+               elsif Name_Buffer (K) = '%' then
+                  exit;
 
+               else
+                  Set_Char (Name_Buffer (K));
+               end if;
+            end loop;
+
+            if Name_Buffer (Name_Len) = 's' then
+               Set_Char ('S');
             else
-               Set_Char (Name_Buffer (K));
+               Set_Char ('B');
             end if;
-         end loop;
 
-         if Name_Buffer (Name_Len) = 's' then
-            Set_Char ('S');
-         else
-            Set_Char ('B');
+            Set_String (" = 0x");
+            Set_String (Units.Table (U).Version);
+            Set_Char   (';');
+            Write_Statement_Buffer;
          end if;
-
-         Set_String (" = 0x");
-         Set_String (Units.Table (U).Version);
-         Set_Char   (';');
-         Write_Statement_Buffer;
       end loop;
 
    end Gen_Versions_C;

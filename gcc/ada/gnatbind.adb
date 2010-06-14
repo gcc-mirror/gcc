@@ -671,11 +671,12 @@ begin
 
          begin
             Id := Scan_ALI
-                    (F             => Main_Lib_File,
-                     T             => Text,
-                     Ignore_ED     => False,
-                     Err           => False,
-                     Ignore_Errors => Debug_Flag_I);
+                    (F                => Main_Lib_File,
+                     T                => Text,
+                     Ignore_ED        => False,
+                     Err              => False,
+                     Ignore_Errors    => Debug_Flag_I,
+                     Directly_Scanned => True);
          end;
 
          Free (Text);

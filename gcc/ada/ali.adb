@@ -119,14 +119,15 @@ package body ALI is
    --------------
 
    function Scan_ALI
-     (F             : File_Name_Type;
-      T             : Text_Buffer_Ptr;
-      Ignore_ED     : Boolean;
-      Err           : Boolean;
-      Read_Xref     : Boolean := False;
-      Read_Lines    : String  := "";
-      Ignore_Lines  : String  := "X";
-      Ignore_Errors : Boolean := False) return ALI_Id
+     (F                : File_Name_Type;
+      T                : Text_Buffer_Ptr;
+      Ignore_ED        : Boolean;
+      Err              : Boolean;
+      Read_Xref        : Boolean := False;
+      Read_Lines       : String  := "";
+      Ignore_Lines     : String  := "X";
+      Ignore_Errors    : Boolean := False;
+      Directly_Scanned : Boolean := False) return ALI_Id
    is
       P         : Text_Ptr := T'First;
       Line      : Logical_Line_Number := 1;
@@ -1415,6 +1416,7 @@ package body ALI is
             UL.First_Arg                := First_Arg;
             UL.Elab_Position            := 0;
             UL.SAL_Interface            := ALIs.Table (Id).SAL_Interface;
+            UL.Directly_Scanned         := Directly_Scanned;
             UL.Body_Needed_For_SAL      := False;
             UL.Elaborate_Body_Desirable := False;
             UL.Optimize_Alignment       := 'O';
