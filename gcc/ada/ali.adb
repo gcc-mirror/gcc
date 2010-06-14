@@ -205,7 +205,7 @@ package body ALI is
       --
       --    If Ignore_Special is False (normal case), the scan is terminated by
       --    a typeref bracket or an equal sign except for the special case of
-      --    an operator name starting with a double quite which is terminated
+      --    an operator name starting with a double quote which is terminated
       --    by another double quote.
       --
       --  It is an error to set both Ignore_Spaces and Ignore_Special to True.

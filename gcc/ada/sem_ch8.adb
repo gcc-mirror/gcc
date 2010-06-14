@@ -4785,11 +4785,17 @@ package body Sem_Ch8 is
                                 ("\use fully qualified name starting with"
                                   & " Standard to make& visible", N, H);
                               Error_Msg_Qual_Level := 0;
-                              exit;
+                              goto Done;
                            end if;
 
                            Next_Entity (Id);
                         end loop;
+
+                        --  If not found,  standard error message.
+
+                        Error_Msg_NE ("& not declared in&", N, Selector);
+
+                        <<Done>> null;
                      end;
 
                   else

@@ -1,3 +1,21 @@
+2010-06-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprograms): Remove over-restrictive assertion.
+
+2010-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* ali.adb: Fix typo.
+	* s-auxdec-vms-alpha.adb, scng.ads: Minor reformatting
+
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Make Mark_Context transitive, and apply to subprogram
+	instances.
+
+	* sem_ch8.adb (Find_Expanded_Name): If a candidate compilation unit in
+	the context does not have a homonym of the selector, emit default
+	error message.
+
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* sem.adb, sem_ch12.adb, sem_util.adb: Minor reformatting and

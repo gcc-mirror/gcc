@@ -8875,6 +8875,7 @@ package body Sem_Ch12 is
 
       if Present (Gen_Body_Id) then
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
+         Mark_Context (Inst_Node, Gen_Decl);
 
          if Nkind (Gen_Body) = N_Subprogram_Body_Stub then
 
@@ -10410,6 +10411,27 @@ package body Sem_Ch12 is
 
          Next (Clause);
       end loop;
+
+      --  If the instance appears within another instantiated unit, check
+      --  whether it appears in the main unit, and indicate the need for
+      --  the body of the enclosing instance as well.
+
+      if In_Extended_Main_Code_Unit (Inst_Decl)
+        and then Instantiation_Location (Sloc (Inst_Decl)) /= No_Location
+        and then Present (Library_Unit (Cunit (Main_Unit)))
+        and then Cunit (Inst_CU) /= Library_Unit (Cunit (Main_Unit))
+      then
+         Clause := First (Context_Items (Library_Unit (Cunit (Main_Unit))));
+         while Present (Clause) loop
+            if Nkind (Clause) = N_With_Clause
+              and then  Library_Unit (Clause) = Cunit (Gen_CU)
+            then
+               Set_Withed_Body (Clause, Cunit (Gen_CU));
+            end if;
+
+            Next (Clause);
+         end loop;
+      end if;
    end Mark_Context;
 
    ---------------------
