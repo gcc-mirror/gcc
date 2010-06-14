@@ -2274,13 +2274,13 @@ package body Prj.Proc is
           Is_Extending_All (From_Project_Node, From_Project_Node_Tree)
       then
          declare
-            Object_Dir : constant Path_Name_Type :=
-                           Project.Object_Directory.Name;
+            Object_Dir : constant Path_Information :=
+                           Project.Object_Directory;
          begin
             Prj := In_Tree.Projects;
             while Prj /= null loop
                if Prj.Project.Virtual then
-                  Prj.Project.Object_Directory.Name := Object_Dir;
+                  Prj.Project.Object_Directory := Object_Dir;
                end if;
                Prj := Prj.Next;
             end loop;
