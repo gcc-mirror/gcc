@@ -1,3 +1,46 @@
+2010-06-14  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer.c (cached_bp): Remove.
+	(bitpack_delete): Likewise.
+	(bitpack_create): Likewise.
+	(bp_get_next_word): Likewise.
+	(bp_pack_value, bp_unpack_value): Move ...
+	* lto-streamer.h (bp_pack_value, bp_unpack_value): ... here.
+	Re-implement.
+	(struct bitpack_d): Likewise.
+	(bitpack_create, lto_output_bitpack, lto_input_bitpack):
+	New inline functions.
+	* lto-streamer-out.c (lto_output_bitpack): Remove.
+	(pack_ts_base_value_fields): Adjust.  Avoid conditional
+	bitpacking.
+	(pack_value_fields): Adjust.
+	(lto_write_tree): Likewise.
+	(output_gimple_stmt): Likewise.
+	(output_function): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Adjust.
+	(input_function): Likewise.
+	(unpack_ts_base_value_fields): Adjust.  Avoid conditional
+	bitpacking.
+	(lto_input_bitpack): Remove.
+	(lto_materialize_tree): Adjust.
+	* Makefile.in (ipa-prop.o): Add $(LTO_STREAMER_H) dependency.
+	* lto-cgraph.c (lto_output_edge): Adjust.
+	(lto_output_node): Likewise.
+	(lto_output_varpool_node): Likewise.
+	(lto_output_ref): Likewise.
+	(input_node): Likewise.
+	(input_varpool_node): Likewise.
+	(input_ref): Likewise.
+	(input_edge): Likewise.
+	(output_node_opt_summary): Likewise.
+	(input_node_opt_summary): Likewise.
+	* ipa-pure-const.c (pure_const_write_summary): Likewise.
+	(pure_const_read_summary): Likewise.
+	* ipa-prop.c (ipa_write_indirect_edge_info): Likewise.
+	(ipa_read_indirect_edge_info): Likewise.
+	(ipa_write_node_info): Likewise.
+	(ipa_read_node_info): Likewise.
+
 2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44534

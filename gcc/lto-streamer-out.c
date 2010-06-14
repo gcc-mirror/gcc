@@ -151,20 +151,6 @@ destroy_output_block (struct output_block *ob)
 }
 
 
-/* Output bitpack BP to output stream S.  */
-
-void
-lto_output_bitpack (struct lto_output_stream *s, struct bitpack_d *bp)
-{
-  unsigned i;
-  bitpack_word_t v;
-
-  lto_output_uleb128_stream (s, VEC_length (bitpack_word_t, bp->values));
-  for (i = 0; VEC_iterate (bitpack_word_t, bp->values, i, v); i++)
-    lto_output_uleb128_stream (s, v);
-}
-
-
 /* Output STRING of LEN characters to the string
    table in OB. The string might or might not include a trailing '\0'.
    Then put the index onto the INDEX_STREAM.  */
@@ -335,12 +321,16 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 	 so we skip it here.  */
       bp_pack_value (bp, TREE_PUBLIC (expr), 1);
     }
+  else
+    bp_pack_value (bp, 0, 4);
   bp_pack_value (bp, TREE_ADDRESSABLE (expr), 1);
   bp_pack_value (bp, TREE_THIS_VOLATILE (expr), 1);
   if (DECL_P (expr))
     bp_pack_value (bp, DECL_UNSIGNED (expr), 1);
   else if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_UNSIGNED (expr), 1);
+  else
+    bp_pack_value (bp, 0, 1);
   /* We write debug info two times, do not confuse the second one.  */
   bp_pack_value (bp, TYPE_P (expr) ? 0 : TREE_ASM_WRITTEN (expr), 1);
   bp_pack_value (bp, TREE_NO_WARNING (expr), 1);
@@ -352,8 +342,10 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TREE_DEPRECATED (expr), 1);
   if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_SATURATING (expr), 1);
-  if (TREE_CODE (expr) == SSA_NAME)
+  else if (TREE_CODE (expr) == SSA_NAME)
     bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
+  else
+    bp_pack_value (bp, 0, 1);
 }
 
 
@@ -544,14 +536,12 @@ pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
 
 /* Pack all the non-pointer fields in EXPR into a bit pack.  */
 
-static struct bitpack_d *
-pack_value_fields (tree expr)
+static void
+pack_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum tree_code code;
-  struct bitpack_d *bp;
 
   code = TREE_CODE (expr);
-  bp = bitpack_create ();
 
   /* Note that all these functions are highly sensitive to changes in
      the types and sizes of each of the fields being packed.  */
@@ -598,8 +588,6 @@ pack_value_fields (tree expr)
       /* This is only used by High GIMPLE.  */
       gcc_unreachable ();
     }
-
-  return bp;
 }
 
 
@@ -1294,7 +1282,7 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
 static void
 lto_write_tree (struct output_block *ob, tree expr, bool ref_p, int ix)
 {
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   /* Write the header, containing everything needed to materialize
      EXPR on the reading side.  */
@@ -1302,9 +1290,9 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p, int ix)
 
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
-  bp = pack_value_fields (expr);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp = bitpack_create (ob->main_stream);
+  pack_value_fields (&bp, expr);
+  lto_output_bitpack (&bp);
 
   /* Write all the pointer fields in EXPR.  */
   lto_output_tree_pointers (ob, expr, ref_p);
@@ -1661,7 +1649,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   unsigned i;
   enum gimple_code code;
   enum LTO_tags tag;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   /* Emit identifying tag.  */
   code = gimple_code (stmt);
@@ -1669,15 +1657,14 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   output_record_start (ob, tag);
 
   /* Emit the tuple header.  */
-  bp = bitpack_create ();
-  bp_pack_value (bp, gimple_num_ops (stmt), sizeof (unsigned) * 8);
-  bp_pack_value (bp, gimple_no_warning_p (stmt), 1);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, gimple_num_ops (stmt), sizeof (unsigned) * 8);
+  bp_pack_value (&bp, gimple_no_warning_p (stmt), 1);
   if (is_gimple_assign (stmt))
-    bp_pack_value (bp, gimple_assign_nontemporal_move_p (stmt), 1);
-  bp_pack_value (bp, gimple_has_volatile_ops (stmt), 1);
-  bp_pack_value (bp, stmt->gsbase.subcode, 16);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+    bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
+  bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
+  bp_pack_value (&bp, stmt->gsbase.subcode, 16);
+  lto_output_bitpack (&bp);
 
   /* Emit location information for the statement.  */
   lto_output_location (ob, gimple_location (stmt));
@@ -1848,7 +1835,7 @@ produce_asm (struct output_block *ob, tree fn)
 static void
 output_function (struct cgraph_node *node)
 {
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   tree function;
   struct function *fn;
   basic_block bb;
@@ -1873,24 +1860,23 @@ output_function (struct cgraph_node *node)
   output_record_start (ob, LTO_function);
 
   /* Write all the attributes for FN.  */
-  bp = bitpack_create ();
-  bp_pack_value (bp, fn->is_thunk, 1);
-  bp_pack_value (bp, fn->has_local_explicit_reg_vars, 1);
-  bp_pack_value (bp, fn->after_tree_profile, 1);
-  bp_pack_value (bp, fn->returns_pcc_struct, 1);
-  bp_pack_value (bp, fn->returns_struct, 1);
-  bp_pack_value (bp, fn->can_throw_non_call_exceptions, 1);
-  bp_pack_value (bp, fn->always_inline_functions_inlined, 1);
-  bp_pack_value (bp, fn->after_inlining, 1);
-  bp_pack_value (bp, fn->dont_save_pending_sizes_p, 1);
-  bp_pack_value (bp, fn->stdarg, 1);
-  bp_pack_value (bp, fn->has_nonlocal_label, 1);
-  bp_pack_value (bp, fn->calls_alloca, 1);
-  bp_pack_value (bp, fn->calls_setjmp, 1);
-  bp_pack_value (bp, fn->va_list_fpr_size, 8);
-  bp_pack_value (bp, fn->va_list_gpr_size, 8);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, fn->is_thunk, 1);
+  bp_pack_value (&bp, fn->has_local_explicit_reg_vars, 1);
+  bp_pack_value (&bp, fn->after_tree_profile, 1);
+  bp_pack_value (&bp, fn->returns_pcc_struct, 1);
+  bp_pack_value (&bp, fn->returns_struct, 1);
+  bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
+  bp_pack_value (&bp, fn->always_inline_functions_inlined, 1);
+  bp_pack_value (&bp, fn->after_inlining, 1);
+  bp_pack_value (&bp, fn->dont_save_pending_sizes_p, 1);
+  bp_pack_value (&bp, fn->stdarg, 1);
+  bp_pack_value (&bp, fn->has_nonlocal_label, 1);
+  bp_pack_value (&bp, fn->calls_alloca, 1);
+  bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->va_list_fpr_size, 8);
+  bp_pack_value (&bp, fn->va_list_gpr_size, 8);
+  lto_output_bitpack (&bp);
 
   /* Output current IL state of the function.  */
   output_uleb128 (ob, fn->curr_properties);

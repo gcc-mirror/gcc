@@ -943,7 +943,7 @@ pure_const_write_summary (cgraph_node_set set,
       node = csi_node (csi);
       if (node->analyzed && has_function_state (node))
 	{
-	  struct bitpack_d *bp;
+	  struct bitpack_d bp;
 	  funct_state fs;
 	  int node_ref;
 	  lto_cgraph_encoder_t encoder;
@@ -956,14 +956,13 @@ pure_const_write_summary (cgraph_node_set set,
 
 	  /* Note that flags will need to be read in the opposite
 	     order as we are pushing the bitflags into FLAGS.  */
-	  bp = bitpack_create ();
-	  bp_pack_value (bp, fs->pure_const_state, 2);
-	  bp_pack_value (bp, fs->state_previously_known, 2);
-	  bp_pack_value (bp, fs->looping_previously_known, 1);
-	  bp_pack_value (bp, fs->looping, 1);
-	  bp_pack_value (bp, fs->can_throw, 1);
-	  lto_output_bitpack (ob->main_stream, bp);
-	  bitpack_delete (bp);
+	  bp = bitpack_create (ob->main_stream);
+	  bp_pack_value (&bp, fs->pure_const_state, 2);
+	  bp_pack_value (&bp, fs->state_previously_known, 2);
+	  bp_pack_value (&bp, fs->looping_previously_known, 1);
+	  bp_pack_value (&bp, fs->looping, 1);
+	  bp_pack_value (&bp, fs->can_throw, 1);
+	  lto_output_bitpack (&bp);
 	}
     }
 
@@ -998,7 +997,7 @@ pure_const_read_summary (void)
 	    {
 	      unsigned int index;
 	      struct cgraph_node *node;
-	      struct bitpack_d *bp;
+	      struct bitpack_d bp;
 	      funct_state fs;
 	      lto_cgraph_encoder_t encoder;
 
@@ -1013,12 +1012,12 @@ pure_const_read_summary (void)
 		 pushed into FLAGS).  */
 	      bp = lto_input_bitpack (ib);
 	      fs->pure_const_state
-			= (enum pure_const_state_e) bp_unpack_value (bp, 2);
+			= (enum pure_const_state_e) bp_unpack_value (&bp, 2);
 	      fs->state_previously_known
-			= (enum pure_const_state_e) bp_unpack_value (bp, 2);
-	      fs->looping_previously_known = bp_unpack_value (bp, 1);
-	      fs->looping = bp_unpack_value (bp, 1);
-	      fs->can_throw = bp_unpack_value (bp, 1);
+			= (enum pure_const_state_e) bp_unpack_value (&bp, 2);
+	      fs->looping_previously_known = bp_unpack_value (&bp, 1);
+	      fs->looping = bp_unpack_value (&bp, 1);
+	      fs->can_throw = bp_unpack_value (&bp, 1);
 	      if (dump_file)
 		{
 		  int flags = flags_from_decl_or_type (node->decl);
@@ -1042,7 +1041,6 @@ pure_const_read_summary (void)
 		  if (fs->can_throw)
 		    fprintf (dump_file,"  function is locally throwing\n");
 		}
-	      bitpack_delete (bp);
 	    }
 
 	  lto_destroy_simple_input_block (file_data,

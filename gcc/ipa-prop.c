@@ -2403,14 +2403,13 @@ ipa_write_indirect_edge_info (struct output_block *ob,
 			      struct cgraph_edge *cs)
 {
   struct cgraph_indirect_call_info *ii = cs->indirect_info;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   lto_output_sleb128_stream (ob->main_stream, ii->param_index);
   lto_output_sleb128_stream (ob->main_stream, ii->anc_offset);
-  bp = bitpack_create ();
-  bp_pack_value (bp, ii->polymorphic, 1);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, ii->polymorphic, 1);
+  lto_output_bitpack (&bp);
 
   if (ii->polymorphic)
     {
@@ -2428,13 +2427,12 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
 			     struct cgraph_edge *cs)
 {
   struct cgraph_indirect_call_info *ii = cs->indirect_info;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   ii->param_index = (int) lto_input_sleb128 (ib);
   ii->anc_offset = (HOST_WIDE_INT) lto_input_sleb128 (ib);
   bp = lto_input_bitpack (ib);
-  ii->polymorphic = bp_unpack_value (bp, 1);
-  bitpack_delete (bp);
+  ii->polymorphic = bp_unpack_value (&bp, 1);
   if (ii->polymorphic)
     {
       ii->otr_token = (HOST_WIDE_INT) lto_input_sleb128 (ib);
@@ -2452,26 +2450,25 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int j;
   struct cgraph_edge *e;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   encoder = ob->decl_state->cgraph_node_encoder;
   node_ref = lto_cgraph_encoder_encode (encoder, node);
   lto_output_uleb128_stream (ob->main_stream, node_ref);
 
-  bp = bitpack_create ();
-  bp_pack_value (bp, info->called_with_var_arguments, 1);
-  bp_pack_value (bp, info->uses_analysis_done, 1);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, info->called_with_var_arguments, 1);
+  bp_pack_value (&bp, info->uses_analysis_done, 1);
   gcc_assert (info->modification_analysis_done
 	      || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
     {
-      bp_pack_value (bp, info->params[j].modified, 1);
-      bp_pack_value (bp, info->params[j].used, 1);
+      bp_pack_value (&bp, info->params[j].modified, 1);
+      bp_pack_value (&bp, info->params[j].used, 1);
     }
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  lto_output_bitpack (&bp);
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
@@ -2494,13 +2491,13 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int k;
   struct cgraph_edge *e;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   ipa_initialize_node_params (node);
 
   bp = lto_input_bitpack (ib);
-  info->called_with_var_arguments = bp_unpack_value (bp, 1);
-  info->uses_analysis_done = bp_unpack_value (bp, 1);
+  info->called_with_var_arguments = bp_unpack_value (&bp, 1);
+  info->uses_analysis_done = bp_unpack_value (&bp, 1);
   if (ipa_get_param_count (info) != 0)
     {
       info->modification_analysis_done = true;
@@ -2509,10 +2506,9 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
     {
-      info->params[k].modified = bp_unpack_value (bp, 1);
-      info->params[k].used = bp_unpack_value (bp, 1);
+      info->params[k].modified = bp_unpack_value (&bp, 1);
+      info->params[k].used = bp_unpack_value (&bp, 1);
     }
-  bitpack_delete (bp);
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
