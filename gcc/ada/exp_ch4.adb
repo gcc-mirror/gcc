@@ -47,7 +47,6 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
-with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -8760,13 +8759,6 @@ package body Exp_Ch4 is
       --  Check for cases where left argument is known to be True or False
 
       if Compile_Time_Known_Value (Left) then
-
-         --  Mark SCO for left condition as compile time known
-
-         if Generate_SCO and then Comes_From_Source (Left) then
-            Set_SCO_Condition (Left, Expr_Value_E (Left) = Standard_True);
-         end if;
-
          --  Rewrite True AND THEN Right / False OR ELSE Right to Right.
          --  Any actions associated with Right will be executed unconditionally
          --  and can thus be inserted into the tree unconditionally.
@@ -8851,13 +8843,6 @@ package body Exp_Ch4 is
       --  No actions present, check for cases of right argument True/False
 
       if Compile_Time_Known_Value (Right) then
-
-         --  Mark SCO for left condition as compile time known
-
-         if Generate_SCO and then Comes_From_Source (Right) then
-            Set_SCO_Condition (Right, Expr_Value_E (Right) = Standard_True);
-         end if;
-
          --  Change (Left and then True), (Left or else False) to Left.
          --  Note that we know there are no actions associated with the right
          --  operand, since we just checked for this case above.
