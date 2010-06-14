@@ -571,6 +571,40 @@ package Lib.Writ is
    --      source file, so that this order is preserved by the binder in
    --      constructing the set of linker arguments.
 
+   --  --------------
+   --  -- N  Notes --
+   --  --------------
+
+   --  The final section of unit-specific lines contains notes which record
+   --  annotations inserted in source code for processing by external tools
+   --  using pragmas. For each occurrence of any of these pragmas, a line is
+   --  generated with the following syntax:
+
+   --    N x<sloc> [<arg_id>:]<arg> ...
+
+   --      x is one of:
+   --        A  pragma Annotate
+   --        C  pragma Comment
+   --        I  pragma Ident
+   --        T  pragma Title
+   --        S  pragma Subtitle
+
+   --      <sloc> is the source location of the pragma in line:col format
+
+   --      Successive entries record the pragma_argument_associations.
+
+   --        If a pragma argument identifier is present, the entry is prefixed
+   --        with the pragma argument identifier <arg_id> followed by a colon.
+
+   --        <arg> represents the pragma argument, and has the following
+   --        conventions:
+
+   --          - identifiers are output verbatim
+   --          - static string expressions are output as literals encoded as
+   --            for L lines
+   --          - static integer expressions are output as decimal literals
+   --          - any other expression is replaced by the placeholder "<expr>"
+
    ---------------------
    -- Reference Lines --
    ---------------------
@@ -653,40 +687,6 @@ package Lib.Writ is
 
    --  The cross-reference data follows the dependency lines. See the spec of
    --  Lib.Xref for details on the format of this data.
-
-   --  --------------
-   --  -- N  Notes --
-   --  --------------
-
-   --  The note lines record annotations inserted in source code for processing
-   --  by external tools using pragmas. For each occurrence of any of these
-   --  pragmas, a line is generated with the following syntax:
-
-   --    N <dep>x<sloc> [<arg_id>:]<arg> ...
-
-   --  x is one of:
-   --    A  pragma Annotate
-   --    C  pragma Comment
-   --    I  pragma Ident
-   --    T  pragma Title
-   --    S  pragma Subtitle
-
-   --  <dep>  is the source file containing the pragma by its dependency index
-   --         (first D line has index 1)
-   --  <sloc> is the source location of the pragma
-
-   --  Successive entries record the pragma_argument_associations.
-
-   --  For a named association, the entry is prefixed with the pragma argument
-   --  identifier <arg_id> followed by a colon.
-
-   --  <arg> represents the pragma argument, and has the following conventions:
-
-   --   - identifiers are output verbatim
-   --   - static string expressions are output as literals encoded as for
-   --       L lines
-   --   - static integer expressions are output as decimal literals
-   --   - any other expression is replaced by the placeholder "<expr>"
 
    ---------------------------------
    -- Source Coverage Obligations --
