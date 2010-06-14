@@ -1,3 +1,9 @@
+2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Make sure that the explicit
+	raise of CE, SE and PE have the reason correctly set and are properly
+	expanded before stopping the expansions of .NET/JVM exceptions.
+
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
 	* opt.ads (Check_Policy_List): Add some clarifying comments
