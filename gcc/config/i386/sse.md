@@ -3767,7 +3767,7 @@
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
@@ -3795,7 +3795,7 @@
 		     (const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
@@ -3829,7 +3829,7 @@
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x1, %1, %0|%0, %1, 0x1}"
+  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
   [(set_attr "type" "sselog")
    (set_attr "memory" "none,store")
    (set_attr "prefix" "vex")
