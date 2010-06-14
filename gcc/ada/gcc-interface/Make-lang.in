@@ -2033,13 +2033,14 @@ ada/exp_dbug.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/exp_dbug.ads ada/exp_dbug.adb ada/gnat.ads ada/g-htable.ads \
    ada/hostparm.ads ada/interfac.ads ada/namet.ads ada/namet.adb \
    ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/nmake.adb ada/opt.ads \
-   ada/output.ads ada/sem_aux.ads ada/sem_eval.ads ada/sem_util.ads \
-   ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/snames.ads ada/stand.ads \
-   ada/stringt.ads ada/system.ads ada/s-exctab.ads ada/s-htable.ads \
-   ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
-   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
-   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
-   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
+   ada/output.ads ada/rident.ads ada/sem_aux.ads ada/sem_eval.ads \
+   ada/sem_util.ads ada/sinfo.ads ada/sinfo.adb ada/sinput.ads \
+   ada/snames.ads ada/stand.ads ada/stringt.ads ada/system.ads \
+   ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads \
+   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-secsta.ads \
+   ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
+   ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
+   ada/s-wchcon.ads ada/table.ads ada/table.adb ada/targparm.ads \
    ada/tbuild.ads ada/tree_io.ads ada/types.ads ada/uintp.ads \
    ada/uintp.adb ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads \
    ada/urealp.adb ada/widechar.ads 
