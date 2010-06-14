@@ -1,3 +1,13 @@
+2010-06-14  Pascal Obry  <obry@adacore.com>
+
+	* prj-proc.adb: Fix copy of object directory for extending projects.
+
+2010-06-14  Jose Ruiz  <ruiz@adacore.com>
+
+	* init.c (__gnat_alternate_stack): Define this space for PowerPC linux
+	(__gnat_install_handler, PowerPC linux): Activate the alternative
+	signal stack.
+
 2010-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gnat_rm.texi: Move to GFDL version 1.3.
