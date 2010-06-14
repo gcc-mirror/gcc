@@ -1,5 +1,8 @@
 2010-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/44508
+	* gcc.dg/tree-ssa/pr21086.c: Adjust.
+
 	PR bootstrap/44509
 	* gcc.dg/pr44509.c: New test.
 
