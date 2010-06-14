@@ -1,3 +1,14 @@
+2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44534
+	* config/i386/sse.md (vec_extract_lo_<mode>): Replace 0x1 with
+	0x0.
+	(vec_extract_lo_v16hi): Likewise.
+	(vec_extract_lo_v32qi): Likewise.
+
 2010-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/44426

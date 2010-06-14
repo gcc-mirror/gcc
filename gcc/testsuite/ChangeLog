@@ -1,3 +1,12 @@
+2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44534
+	* gcc.target/i386/avx-vextractf128-256-3.c: New.
+	* gcc.target/i386/avx-vextractf128-256-4.c: Likewise.
+
 2010-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/44508
