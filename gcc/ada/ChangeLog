@@ -1,3 +1,14 @@
+2010-06-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Do not check conformance when
+	the spec has been generated for a body without spec that carries an
+	Inline_Always pragma.
+
+2010-06-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.ads: Documentation change: allocate 'Z' letter to C/C++
+	macro.
+
 2010-06-14  Jerome Lambourg  <lambourg@adacore.com>
 
 	* exp_dbug.adb (Debug_Renaming_Declaration): Do not output any debug

@@ -560,7 +560,7 @@ package Lib.Xref is
    --    w     protected object                protected type
    --    x     abstract procedure              exception
    --    y     abstract function               entry or entry family
-   --    z     generic formal parameter        (unused)
+   --    z     generic formal parameter        C/C++ macro
 
    --------------------------------------
    -- Handling of Imported Subprograms --
