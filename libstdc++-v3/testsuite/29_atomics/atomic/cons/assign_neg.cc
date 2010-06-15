@@ -28,20 +28,5 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 522 }
-// { dg-error "deleted function" "" { target *-*-* } 230 }
-// { dg-error "deleted function" "" { target *-*-* } 248 }
-// { dg-error "deleted function" "" { target *-*-* } 266 }
-// { dg-error "deleted function" "" { target *-*-* } 284 }
-// { dg-error "deleted function" "" { target *-*-* } 302 }
-// { dg-error "deleted function" "" { target *-*-* } 320 }
-// { dg-error "deleted function" "" { target *-*-* } 338 }
-// { dg-error "deleted function" "" { target *-*-* } 356 }
-// { dg-error "deleted function" "" { target *-*-* } 374 }
-// { dg-error "deleted function" "" { target *-*-* } 392 }
-// { dg-error "deleted function" "" { target *-*-* } 410 }
-// { dg-error "deleted function" "" { target *-*-* } 428 }
-// { dg-error "deleted function" "" { target *-*-* } 446 }
-// { dg-error "deleted function" "" { target *-*-* } 464 }
-// { dg-error "deleted function" "" { target *-*-* } 482 }
+// { dg-error "ambiguous" "" { target *-*-* } 522 }
 // { dg-excess-errors "In member function" }

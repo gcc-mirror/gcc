@@ -2747,11 +2747,12 @@ print_z_candidates (struct z_candidate *candidates)
   if (!candidates)
     return;
 
-  /* Remove deleted candidates.  */
+  /* Remove non-viable deleted candidates.  */
   cand1 = candidates;
   for (cand2 = &cand1; *cand2; )
     {
       if (TREE_CODE ((*cand2)->fn) == FUNCTION_DECL
+	  && !(*cand2)->viable
 	  && DECL_DELETED_FN ((*cand2)->fn))
 	*cand2 = (*cand2)->next;
       else
@@ -7407,6 +7408,9 @@ tweak:
 	winner = -1, w = cand2, l = cand1;
       if (winner)
 	{
+	  /* Don't choose a deleted function over ambiguity.  */
+	  if (DECL_P (w->fn) && DECL_DELETED_FN (w->fn))
+	    return 0;
 	  if (warn)
 	    {
 	      pedwarn (input_location, 0,

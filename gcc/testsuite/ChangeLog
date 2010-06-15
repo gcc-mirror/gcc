@@ -1,5 +1,7 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/defaulted18.C: New.
+
 	* g++.dg/cpp0x/initlist40.C: New.
 
 	* g++.dg/cpp0x/initlist39.C: New.

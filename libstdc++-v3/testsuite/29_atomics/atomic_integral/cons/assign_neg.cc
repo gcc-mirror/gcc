@@ -29,12 +29,5 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 522 }
-// { dg-excess-errors "deleted function" }
-// { dg-excess-errors "deleted function" }
-// { dg-error "instantiated from" "" { target *-*-* } 28 }
-// { dg-error "instantiated from" "" { target *-*-* } 529 }
-// { dg-error "instantiated from" "" { target *-*-* } 170 }
-// { dg-error "instantiated from" "" { target *-*-* } 399 }
-// { dg-error "instantiated from" "" { target *-*-* } 168 }
+// { dg-error "ambiguous" "" { target *-*-* } 522 }
 // { dg-excess-errors "In member function" }
