@@ -699,6 +699,8 @@ vect_pattern_recog_1 (
 	type_out = get_vectype_for_scalar_type (type_out);
       else
 	type_out = type_in;
+      if (!type_out)
+	return;
       pattern_vectype = type_out;
 
       if (is_gimple_assign (pattern_stmt))
