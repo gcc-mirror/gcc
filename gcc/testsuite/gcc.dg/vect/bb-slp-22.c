@@ -36,6 +36,9 @@ main1 (unsigned int x, unsigned int y)
       out[3] = a3 * y;
     }
 
+  if (x)
+    __asm__ volatile ("" : : : "memory");
+
   /* Check results.  */
   if ((x <= y 
        && (out[0] != (in[0] + 23) * x
