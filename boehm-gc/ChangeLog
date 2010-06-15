@@ -1,3 +1,10 @@
+2010-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (*-*-solaris2.8*): Only usr alternate thread
+	library on Solaris 8.
+	(*-*-solaris2*): Use regular thread library otherwise.
+	* configure: Regenerate.
+
 2010-04-14  Release Manager
 
 	* GCC 4.5.0 released.
