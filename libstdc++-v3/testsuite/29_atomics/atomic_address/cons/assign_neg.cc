@@ -26,7 +26,6 @@ void test01()
   typedef std::atomic_address test_type;
   test_type t1;
   test_type t2;
-  t1 = t2;
+  t1 = t2;			// { dg-error "ambiguous" }
 }
-// { dg-error "used here" "" { target *-*-* } 29 }
 // { dg-excess-errors "deleted function" }
