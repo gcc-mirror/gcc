@@ -116,6 +116,7 @@ static void gfc_init_ts (void);
 #undef LANG_HOOKS_INIT_TS
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #undef LANG_HOOKS_OMP_PREDETERMINED_SHARING
+#undef LANG_HOOKS_OMP_REPORT_DECL
 #undef LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_COPY_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP
@@ -143,6 +144,7 @@ static void gfc_init_ts (void);
 #define LANG_HOOKS_INIT_TS		gfc_init_ts
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING	gfc_omp_predetermined_sharing
+#define LANG_HOOKS_OMP_REPORT_DECL		gfc_omp_report_decl
 #define LANG_HOOKS_OMP_CLAUSE_DEFAULT_CTOR	gfc_omp_clause_default_ctor
 #define LANG_HOOKS_OMP_CLAUSE_COPY_CTOR		gfc_omp_clause_copy_ctor
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP		gfc_omp_clause_assign_op
