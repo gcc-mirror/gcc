@@ -1,3 +1,56 @@
+2010-06-15  Alan Modra  <amodra@gmail.com>
+
+	* doc/invoke.texi: Add mcmodel to powerpc options.
+	* configure.ac: Add HAVE_LD_LARGE_TOC test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/rs6000/linux64.opt (mcmodel): New.
+	* config/rs6000/linux64.h (TARGET_USES_LINUX64_OPT): Define.
+	(TARGET_CMODEL): Define.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Check user -mcmodel choice,
+	select CMODEL_MEDIUM default.
+	* config/rs6000/rs6000.h (enum rs6000_cmodel): New.
+	(TARGET_CMODEL): Define default.
+	* config/rs6000/rs6000.c (cmodel): New variable.
+	(rs6000_explicit_options): Add cmodel field.
+	(rs6000_handle_option): Handle -mcmodel.
+	(create_TOC_reference): Add largetoc_reg param.  Generate high,
+	lo_sum rtl for CMODEL_MEDIUM and CMODEL_LARGE.  Update all callers.
+	(rs6000_delegitimize_address): Recognise new toc reference rtl
+	and minimal-toc rtl.
+	(rs6000_legitimize_reload_address): Handle new toc references.
+	(print_operand_address): Handle legitimate_constant_pool_address_p
+	match before lo_sum.
+	(rs6000_eliminate_indexed_memrefs): Tidy.
+	(rs6000_emit_move): Tweak threshold for inlining constants.
+	Keep rs6000_emit_allocate_stack large stack frame offsets
+	loaded into r0 inline.
+	(rs6000_generate_compare <cmptf_internal2>): One more clobber.
+	(tocrel_base, tocrel_offset): New variables.
+	(toc_relative_expr_p): Set them here.
+	(print_operand_address): Skip over any offset on constant pool
+	address.
+	(rs6000_output_addr_const_extra): Print tocrel_offset before @toc.
+	(rs6000_mode_dependent_address <LO_SUM>): False for new toc refs.
+	(offsettable_ok_by_alignment): New function.
+	(rs6000_emit_move): Address suitably aligned local symbol_refs
+	relative to the toc pointer for -mcmodel=medium.
+	(legitimate_constant_pool_address_p): Make param const_rtx.  Add
+	strict param.  Allow lo_sum version of addressing.  Verify reg
+	used for -mminimal-toc and -mcmodel != small.  Update all callers.
+	* config/rs6000/constraints.md: Update for above change.
+	* config/rs6000/predicates.md: Likewise.
+	* config/rs6000/rs6000.md (tls_gd_aix): Generate -mcmodel=medium/large
+	code.
+	(tls_gd): Split for -mcmodel=medium/large.
+	(tls_gd_high, tls_gd_low): New.
+	(tls_ld_aix, tls_ld, tls_ld_high, tls_ld_low): Similarly.
+	(tls_got_dtprel, tls_got_dtprel_high, tls_got_dtprel_low): Similarly.
+	(tls_got_tprel, tls_got_tprel_high, tls_got_tprel_low): Similarly.
+	(largetoc_high, largetoc_low): New.
+	(cmptf_internal2): Add clobber.
+	* config/rs6000/rs6000-protos.h: Update.
+
 2010-06-14  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-ssa-loop-prefetch.c (nothing_to_prefetch_p): New.  Return

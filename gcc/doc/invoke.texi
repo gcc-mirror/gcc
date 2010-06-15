@@ -744,6 +744,7 @@ See RS/6000 and PowerPC Options.
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
+-mcmodel=@var{code-model} @gol
 -mpower  -mno-power  -mpower2  -mno-power2 @gol
 -mpowerpc  -mpowerpc64  -mno-powerpc @gol
 -maltivec  -mno-altivec @gol
@@ -14966,6 +14967,22 @@ values for @var{cpu_type} are used for @option{-mtune} as for
 @option{-mcpu}.  If both are specified, the code generated will use the
 architecture, registers, and mnemonics set by @option{-mcpu}, but the
 scheduling parameters set by @option{-mtune}.
+
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate PowerPC64 code for the small model: The TOC is limited to
+64k.
+
+@item -mcmodel=medium
+@opindex mcmodel=medium
+Generate PowerPC64 code for the medium model: The TOC and other static
+data may be up to a total of 4G in size.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate PowerPC64 code for the large model: The TOC may be up to 4G
+in size.  Other data and code is only limited by the 64-bit address
+space.
 
 @item -maltivec
 @itemx -mno-altivec
