@@ -1,3 +1,7 @@
+2010-06-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (eliminate): Handle PHI elimination to constants.
+
 2010-06-15  Paul Brook  <paul@codesourcery.com>
  
 	* config/arm/arm.c (use_vfp_abi): Add sorry() for Thumb-1
