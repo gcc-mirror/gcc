@@ -1,3 +1,8 @@
+2010-06-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfc-internals.texi (copyrights-gfortran): Fix copyright year format.
+	* gfortran.texi (copyrights-gfortran): Ditto.
+
 2010-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44536
