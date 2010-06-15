@@ -1,5 +1,8 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (duplicate_decls): Use DECL_IS_BUILTIN rather than test
+	DECL_SOURCE_LOCATION directly.
+
 	* class.c (type_has_user_provided_default_constructor): Use
 	sufficient_parms_p.
 
