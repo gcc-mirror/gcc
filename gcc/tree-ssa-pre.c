@@ -4330,7 +4330,14 @@ eliminate (void)
 	      else
 		gcc_unreachable ();
 	    }
-	  if (!sprimeexpr
+	  if (!sprime && is_gimple_min_invariant (VN_INFO (res)->valnum))
+	    {
+	      sprime = VN_INFO (res)->valnum;
+	      if (!useless_type_conversion_p (TREE_TYPE (res),
+					      TREE_TYPE (sprime)))
+		sprime = fold_convert (TREE_TYPE (res), sprime);
+	    }
+	  if (!sprime
 	      || sprime == res)
 	    {
 	      gsi_next (&gsi);
