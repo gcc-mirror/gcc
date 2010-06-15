@@ -28,6 +28,9 @@ main1 (unsigned int x, unsigned int y)
   *pout++ = a2 * x;
   *pout++ = a3 * y;
 
+  if (x)
+    __asm__ volatile ("" : : : "memory");
+
   /* Check results.  */
   if (out[1] != (in[0] + 23) * x
       || out[2] != (in[1] + 142) * y
