@@ -171,6 +171,10 @@ struct gcc_target
     /* Output an internal label.  */
     void (* internal_label) (FILE *, const char *, unsigned long);
 
+    /* Output label for the constant.  */
+    void (* declare_constant_name) (FILE *, const char *, const_tree, 
+				    HOST_WIDE_INT);
+
     /* Emit a ttype table reference to a typeinfo object.  */
     bool (* ttype) (rtx);
 
