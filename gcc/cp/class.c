@@ -4247,7 +4247,7 @@ type_has_user_provided_constructor (tree t)
 bool
 type_has_user_provided_default_constructor (tree t)
 {
-  tree fns, args;
+  tree fns;
 
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
@@ -4256,14 +4256,9 @@ type_has_user_provided_default_constructor (tree t)
     {
       tree fn = OVL_CURRENT (fns);
       if (TREE_CODE (fn) == FUNCTION_DECL
-	  && user_provided_p (fn))
-	{
-	  args = FUNCTION_FIRST_USER_PARMTYPE (fn);
-	  while (args && TREE_PURPOSE (args))
-	    args = TREE_CHAIN (args);
-	  if (!args || args == void_list_node)
-	    return true;
-	}
+	  && user_provided_p (fn)
+	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)))
+	return true;
     }
 
   return false;

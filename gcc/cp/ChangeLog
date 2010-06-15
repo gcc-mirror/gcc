@@ -1,5 +1,8 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* class.c (type_has_user_provided_default_constructor): Use
+	sufficient_parms_p.
+
 	* call.c (is_subseq): Handle ck_aggr, ck_list.
 	(compare_ics): Treat an aggregate or ambiguous conversion to the
 	same type as involving the same function.
