@@ -1,9 +1,15 @@
+2010-06-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/44391
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use
+	size_one_node for pointer types.  Do not call gmp_cst_to_tree.
+
 2010-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (eliminate): Handle PHI elimination to constants.
 
 2010-06-15  Paul Brook  <paul@codesourcery.com>
- 
+
 	* config/arm/arm.c (use_vfp_abi): Add sorry() for Thumb-1
 	hard-float ABI.
 
@@ -196,7 +202,7 @@
 
 2010-06-14  Ira Rosen  <irar@il.ibm.com>
 
-	PR tree-optimization/44507 
+	PR tree-optimization/44507
 	* tree-vect-loop.c (get_initial_def_for_reduction): Use -1
 	to build initial vector for BIT_AND_EXPR.
 	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
