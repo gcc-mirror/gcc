@@ -22,3 +22,7 @@
 mprofile-kernel
 Target Report Var(profile_kernel)
 Call mcount for profiling before a function prologue
+
+mcmodel=
+Target RejectNegative Joined
+Select code model

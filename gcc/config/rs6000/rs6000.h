@@ -293,6 +293,20 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_SECURE_PLT 0
 #endif
 
+/* Code model for 64-bit linux.
+   small: 16-bit toc offsets.
+   medium: 32-bit toc offsets, static data and code within 2G of TOC pointer.
+   large: 32-bit toc offsets, no limit on static data and code.  */
+enum rs6000_cmodel {
+  CMODEL_SMALL,
+  CMODEL_MEDIUM,
+  CMODEL_LARGE
+};
+
+#ifndef TARGET_CMODEL
+#define TARGET_CMODEL CMODEL_SMALL
+#endif
+
 #define TARGET_32BIT		(! TARGET_64BIT)
 
 #ifndef HAVE_AS_TLS

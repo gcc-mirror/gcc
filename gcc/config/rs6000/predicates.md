@@ -837,7 +837,7 @@
     return 1;
 
   /* A SYMBOL_REF referring to the TOC is valid.  */
-  if (legitimate_constant_pool_address_p (op))
+  if (legitimate_constant_pool_address_p (op, false))
     return 1;
 
   /* A constant pool expression (relative to the TOC) is valid */
