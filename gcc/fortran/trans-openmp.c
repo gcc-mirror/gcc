@@ -76,7 +76,10 @@ gfc_omp_privatize_by_reference (const_tree decl)
 enum omp_clause_default_kind
 gfc_omp_predetermined_sharing (tree decl)
 {
-  if (DECL_ARTIFICIAL (decl) && ! GFC_DECL_RESULT (decl))
+  if (DECL_ARTIFICIAL (decl)
+      && ! GFC_DECL_RESULT (decl)
+      && ! (DECL_LANG_SPECIFIC (decl)
+	    && GFC_DECL_SAVED_DESCRIPTOR (decl)))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   /* Cray pointees shouldn't be listed in any clauses and should be
@@ -119,6 +122,19 @@ gfc_omp_predetermined_sharing (tree decl)
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
 
+/* Return decl that should be used when reporting DEFAULT(NONE)
+   diagnostics.  */
+
+tree
+gfc_omp_report_decl (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    return GFC_DECL_SAVED_DESCRIPTOR (decl);
+
+  return decl;
+}
 
 /* Return true if DECL in private clause needs
    OMP_CLAUSE_PRIVATE_OUTER_REF on the private clause.  */

@@ -29,7 +29,7 @@ subroutine foo (vara, varb, varc, vard, n)
     !$omp master
       vara(1) = 1		! { dg-error "not specified" }
       varb(1) = 1		! Assumed-size is predetermined
-      varc(1) = 1		! { dg-error "not specified" "" { xfail *-*-* } }
+      varc(1) = 1		! { dg-error "not specified" }
       vard(1) = 1		! { dg-error "not specified" }
       vare(1) = 1		! { dg-error "not specified" }
     !$omp end master

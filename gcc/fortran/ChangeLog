@@ -1,3 +1,13 @@
+2010-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/44536
+	* trans-openmp.c (gfc_omp_predetermined_sharing): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for artificial vars with
+	GFC_DECL_SAVED_DESCRIPTOR set.
+	(gfc_omp_report_decl): New function.
+	* trans.h (gfc_omp_report_decl): New prototype.
+	* f95-lang.c (LANG_HOOKS_OMP_REPORT_DECL): Redefine.
+
 2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44347

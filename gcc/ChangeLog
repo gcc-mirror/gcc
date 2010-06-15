@@ -1,3 +1,12 @@
+2010-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/44536
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_report_decl.
+	* langhooks-def.h (LANG_HOOKS_OMP_REPORT_DECL): Define.
+	(LANG_HOOKS_DECLS): Add it.
+	* gimplify.c (omp_notice_variable): Call
+	lang_hooks.decls.omp_report_decl.
+
 2010-06-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44258

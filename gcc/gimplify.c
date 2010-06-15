@@ -5524,7 +5524,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	{
 	case OMP_CLAUSE_DEFAULT_NONE:
 	  error ("%qE not specified in enclosing parallel",
-		 DECL_NAME (decl));
+		 DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
 	  if ((ctx->region_type & ORT_TASK) != 0)
 	    error_at (ctx->location, "enclosing task");
 	  else

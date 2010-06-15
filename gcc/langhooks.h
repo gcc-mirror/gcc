@@ -195,6 +195,10 @@ struct lang_hooks_for_decls
      predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
   enum omp_clause_default_kind (*omp_predetermined_sharing) (tree);
 
+  /* Return decl that should be reported for DEFAULT(NONE) failure
+     diagnostics.  Usually the DECL passed in.  */
+  tree (*omp_report_decl) (tree);
+
   /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
      disregarded in OpenMP construct, because it is going to be
      remapped during OpenMP lowering.  SHARED is true if DECL
