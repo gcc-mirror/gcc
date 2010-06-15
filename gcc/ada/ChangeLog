@@ -56,7 +56,7 @@
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
-	* atree.ads, atree.adb (Ekind_In): New functions
+	* atree.ads, atree.adb (Ekind_In): New functions.
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
@@ -154,7 +154,7 @@
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
-	* g-socket.adb, gnatcmd.adb: Minor reformatting
+	* g-socket.adb, gnatcmd.adb: Minor reformatting.
 
 2010-06-14  Pascal Obry  <obry@adacore.com>
 
@@ -215,7 +215,7 @@
 2010-06-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* ali.adb: Fix typo.
-	* s-auxdec-vms-alpha.adb, scng.ads: Minor reformatting
+	* s-auxdec-vms-alpha.adb, scng.ads: Minor reformatting.
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
@@ -254,7 +254,7 @@
 
 2010-06-14  Ed Falis  <falis@adacore.com>
 
-	* sysdep.c: Fix 653 build against vThreads headers
+	* sysdep.c: Fix 653 build against vThreads headers.
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
@@ -317,7 +317,7 @@
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
-	* sem_res.adb: Minor reformatting
+	* sem_res.adb: Minor reformatting.
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
@@ -376,10 +376,11 @@
 
 2010-06-14  Thomas Quinot  <quinot@adacore.com>
 
-	* exp_attr.adb: Minor reformatting
+	* exp_attr.adb: Minor reformatting.
+
 2010-06-14  Gary Dismukes  <dismukes@adacore.com>
 
-	* gnat_ugn.texi: Minor typo fixes and wording changes
+	* gnat_ugn.texi: Minor typo fixes and wording changes.
 
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
@@ -409,7 +410,7 @@
 
 2010-06-14  Robert Dewar  <dewar@adacore.com>
 
-	* a-convec.adb, sem_prag.adb, checks.adb: Minor reformatting
+	* a-convec.adb, sem_prag.adb, checks.adb: Minor reformatting.
 
 2010-06-14  Eric Botcazou  <ebotcazou@adacore.com>
 
