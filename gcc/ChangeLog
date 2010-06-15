@@ -1,5 +1,14 @@
 2010-06-15  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/44258
+	* tree-sra.c (build_access_subtree): Return false iff there is a
+	partial overlap.
+	(build_access_trees): Likewise.
+	(analyze_all_variable_accesses): Disqualify candidates if
+	build_access_trees returns true for them.
+
+2010-06-15  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/44423
 	* tree-sra.c (dump_access): Dump also grp_assignment_read.
 	(analyze_access_subtree): Pass negative allow_replacements to children

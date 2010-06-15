@@ -1721,9 +1721,10 @@ get_access_replacement (struct access *access)
 
 /* Build a subtree of accesses rooted in *ACCESS, and move the pointer in the
    linked list along the way.  Stop when *ACCESS is NULL or the access pointed
-   to it is not "within" the root.  */
+   to it is not "within" the root.  Return false iff some accesses partially
+   overlap.  */
 
-static void
+static bool
 build_access_subtree (struct access **access)
 {
   struct access *root = *access, *last_child = NULL;
@@ -1738,24 +1739,32 @@ build_access_subtree (struct access **access)
 	last_child->next_sibling = *access;
       last_child = *access;
 
-      build_access_subtree (access);
+      if (!build_access_subtree (access))
+	return false;
     }
+
+  if (*access && (*access)->offset < limit)
+    return false;
+
+  return true;
 }
 
 /* Build a tree of access representatives, ACCESS is the pointer to the first
-   one, others are linked in a list by the next_grp field.  Decide about scalar
-   replacements on the way, return true iff any are to be created.  */
+   one, others are linked in a list by the next_grp field.  Return false iff
+   some accesses partially overlap.  */
 
-static void
+static bool
 build_access_trees (struct access *access)
 {
   while (access)
     {
       struct access *root = access;
 
-      build_access_subtree (&access);
+      if (!build_access_subtree (&access))
+	return false;
       root->next_grp = access;
     }
+  return true;
 }
 
 /* Return true if expr contains some ARRAY_REFs into a variable bounded
@@ -2094,9 +2103,7 @@ analyze_all_variable_accesses (void)
       struct access *access;
 
       access = sort_and_splice_var_accesses (var);
-      if (access)
-	build_access_trees (access);
-      else
+      if (!access || !build_access_trees (access))
 	disqualify_candidate (var,
 			      "No or inhibitingly overlapping accesses.");
     }
