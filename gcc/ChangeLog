@@ -1,3 +1,24 @@
+2010-06-15  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct asm_out):Add declare_constant_name field.
+	* target-def.h (TARGET_ASM_DECLARE_CONSTANT_NAME): Define.
+	(TARGET_INITIALIZER): Use TARGET_ASM_DECLARE_CONSTANT_NAME.
+	* output.h (default_asm_declare_constant_name): Declare.
+	(assemble_label): Update prototype.
+	* varasm.c (assemble_constant_contents): Use
+	targetm.asm_out.declare_constant_name target hook.
+	(assemble_label): Add 'file' argument.
+	(default_asm_declare_constant_name): New function.
+	* system.h (ASM_DECLARE_CONSTANT_NAME): Poison.
+	* doc/tm.texi (ASM_DECLARE_CONSTANT_NAME): Remove.
+	(TARGET_ASM_DECLARE_CONSTANT_NAME): Document it.
+
+	* config/darwin-protos.h (darwin_asm_declare_constant_name): Declare.
+	* config/darwin.c (darwin_asm_declare_constant_name): New function.
+	(machopic_output_indirection): Update assemble_label argument list.
+	* config/darwin.h (ASM_DECLARE_CONSTANT_NAME): Remove.
+	(TARGET_ASM_DECLARE_CONSTANT_NAME): Define.
+
 2010-06-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/44391

@@ -966,7 +966,7 @@ machopic_output_indirection (void **slot, void *data)
     {
       switch_to_section (data_section);
       assemble_align (GET_MODE_ALIGNMENT (Pmode));
-      assemble_label (ptr_name);
+      assemble_label (asm_out_file, ptr_name);
       assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
 			GET_MODE_SIZE (Pmode),
 			GET_MODE_ALIGNMENT (Pmode), 1);
@@ -1615,6 +1615,20 @@ darwin_non_lazy_pcrel (FILE *file, rtx addr)
   fputs ("\t.long\t", file);
   ASM_OUTPUT_LABELREF (file, nlp_name);
   fputs ("-.", file);
+}
+
+/* The implementation of ASM_DECLARE_CONSTANT_NAME.  */
+
+void
+darwin_asm_declare_constant_name (FILE *file, const char *name,
+				  const_tree exp ATTRIBUTE_UNUSED,
+				  HOST_WIDE_INT size)
+{
+  assemble_label (file, name);
+
+  /* Darwin doesn't support zero-size objects, so give them a byte.  */
+  if ((size) == 0)
+    assemble_zeros (1);
 }
 
 /* Emit an assembler directive to set visibility for a symbol.  The

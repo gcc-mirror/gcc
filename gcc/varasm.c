@@ -2461,9 +2461,9 @@ assemble_external_libcall (rtx fun)
 /* Assemble a label named NAME.  */
 
 void
-assemble_label (const char *name)
+assemble_label (FILE *file, const char *name)
 {
-  ASM_OUTPUT_LABEL (asm_out_file, name);
+  ASM_OUTPUT_LABEL (file, name);
 }
 
 /* Set the symbol_referenced flag for ID.  */
@@ -3475,12 +3475,7 @@ assemble_constant_contents (tree exp, const char *label, unsigned int align)
   size = get_constant_size (exp);
 
   /* Do any machine/system dependent processing of the constant.  */
-#ifdef ASM_DECLARE_CONSTANT_NAME
-  ASM_DECLARE_CONSTANT_NAME (asm_out_file, label, exp, size);
-#else
-  /* Standard thing is just output label for the constant.  */
-  ASM_OUTPUT_LABEL (asm_out_file, label);
-#endif /* ASM_DECLARE_CONSTANT_NAME */
+  targetm.asm_out.declare_constant_name (asm_out_file, label, exp, size);
 
   /* Output the value of EXP.  */
   output_constant (exp, size, align);
@@ -6892,6 +6887,17 @@ default_internal_label (FILE *stream, const char *prefix,
   char *const buf = (char *) alloca (40 + strlen (prefix));
   ASM_GENERATE_INTERNAL_LABEL (buf, prefix, labelno);
   ASM_OUTPUT_INTERNAL_LABEL (stream, buf);
+}
+
+
+/* The default implementation of ASM_DECLARE_CONSTANT_NAME.  */
+
+void
+default_asm_declare_constant_name (FILE *file, const char *name,
+				   const_tree exp ATTRIBUTE_UNUSED,
+				   HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+{
+  assemble_label (file, name);
 }
 
 /* This is the default behavior at the beginning of a file.  It's
