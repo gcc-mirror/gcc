@@ -44,7 +44,7 @@ struct Derived : Base { Derived() {} };
 
 auto_ptr<Derived> f() { auto_ptr<Derived> null(0); return null; }
 void g(auto_ptr<Derived>) { }
-void h(auto_ptr<Base>) { }
+void h(auto_ptr<Base>) { }	// { dg-error "initializing" }
 
 int main() {
     auto_ptr<Base> x(f());
@@ -52,5 +52,4 @@ int main() {
     x = y;
     g(f());
     h(f());			// { dg-error "match" "match" } no usable copy ctor
-// { dg-error "initializing" "init" { target *-*-* } 54 }
 }

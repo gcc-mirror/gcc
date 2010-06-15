@@ -1,5 +1,14 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/overload/arg3.C: Adjust error locations.
+	* g++.dg/overload/copy1.C: Likewise.
+	* g++.dg/tc1/dr152.C: Likewise.
+	* g++.dg/template/incomplete4.C: Likewise.
+	* g++.dg/template/incomplete5.C: Likewise.
+	* g++.old-deja/g++.bob/inherit2.C: Likewise.
+	* g++.old-deja/g++.pt/auto_ptr.C: Likewise.
+	* g++.old-deja/g++.pt/crash9.C: Likewise.
+
 	* g++.dg/inherit/virtual5.C: New.
 
 	* g++.dg/cpp0x/defaulted18.C: New.
