@@ -3,11 +3,11 @@
 
 class A;	// { dg-error "forward declaration" }
 
-int f (A);
+int f (A);			// { dg-error "initializing" }
 const A &make ();
 
 int
 main ()
 {
-  return f (make ());	// { dg-error "invalid use of incomplete type|initializing argument" }
+  return f (make ());	// { dg-error "invalid use of incomplete type" }
 }
