@@ -18,6 +18,6 @@ end type t2
 
 class(t), allocatable :: a,c,d
 type(t2) :: b
-allocate(a) ! { dg-error "requires a type-spec or SOURCE" }
-allocate(b%t) ! { dg-error "requires a type-spec or SOURCE" }
+allocate(a) ! { dg-error "requires a type-spec or source-expr" }
+allocate(b%t) ! { dg-error "requires a type-spec or source-expr" }
 end

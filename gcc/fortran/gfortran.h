@@ -1669,10 +1669,13 @@ typedef struct gfc_expr
       it from recurring.  */
   unsigned int error : 1;
   
-  /* Mark and expression where a user operator has been substituted by
+  /* Mark an expression where a user operator has been substituted by
      a function call in interface.c(gfc_extend_expr).  */
   unsigned int user_operator : 1;
 
+  /* Mark an expression as being a MOLD argument of ALLOCATE.  */
+  unsigned int mold : 1;
+  
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
      memory representation, and these cannot always be backformed from

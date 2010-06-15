@@ -1,3 +1,11 @@
+2010-06-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/43388
+	* gfortran.h (gfc_expr): Add new member 'mold'.
+	* match.c (gfc_match_allocate): Implement the MOLD tag.
+	* resolve.c (resolve_allocate_expr): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
 2010-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44536
