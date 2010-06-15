@@ -1,3 +1,9 @@
+2010-06-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (is_subseq): Handle ck_aggr, ck_list.
+	(compare_ics): Treat an aggregate or ambiguous conversion to the
+	same type as involving the same function.
+
 2010-06-13  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* typeck.c (convert_for_assignment): Fix comment. Change message
