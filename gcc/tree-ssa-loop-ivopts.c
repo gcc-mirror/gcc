@@ -3853,6 +3853,7 @@ get_computation_cost_at (struct ivopts_data *data,
   aratio = ratio > 0 ? ratio : -ratio;
   if (aratio != 1)
     cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype), speed);
+  return cost;
 
 fallback:
   if (can_autoinc)

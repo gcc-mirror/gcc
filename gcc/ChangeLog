@@ -1,3 +1,11 @@
+2010-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2010-06-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Return again the
+	computed cost.
+
 2010-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44536
