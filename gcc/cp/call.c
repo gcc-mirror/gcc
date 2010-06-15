@@ -6578,6 +6578,8 @@ is_subseq (conversion *ics1, conversion *ics2)
 
       if (ics2->kind == ck_user
 	  || ics2->kind == ck_ambig
+	  || ics2->kind == ck_aggr
+	  || ics2->kind == ck_list
 	  || ics2->kind == ck_identity)
 	/* At this point, ICS1 cannot be a proper subsequence of
 	   ICS2.  We can get a USER_CONV when we are comparing the
@@ -6762,13 +6764,25 @@ compare_ics (conversion *ics1, conversion *ics2)
 
       for (t1 = ics1; t1->kind != ck_user; t1 = t1->u.next)
 	if (t1->kind == ck_ambig || t1->kind == ck_aggr)
-	  return 0;
+	  break;
       for (t2 = ics2; t2->kind != ck_user; t2 = t2->u.next)
 	if (t2->kind == ck_ambig || t2->kind == ck_aggr)
-	  return 0;
+	  break;
 
-      if (t1->cand->fn != t2->cand->fn)
+      if (t1->kind != t2->kind)
 	return 0;
+      else if (t1->kind == ck_user)
+	{
+	  if (t1->cand->fn != t2->cand->fn)
+	    return 0;
+	}
+      else
+	{
+	  /* For ambiguous or aggregate conversions, use the target type as
+	     a proxy for the conversion function.  */
+	  if (!same_type_ignoring_top_level_qualifiers_p (t1->type, t2->type))
+	    return 0;
+	}
 
       /* We can just fall through here, after setting up
 	 FROM_TYPE1 and FROM_TYPE2.  */
