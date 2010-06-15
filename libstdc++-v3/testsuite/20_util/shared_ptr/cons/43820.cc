@@ -38,5 +38,3 @@ void test01()
   // { dg-error "incomplete" "" { target *-*-* } 657 }
 
 }
-
-// { dg-excess-errors "" }

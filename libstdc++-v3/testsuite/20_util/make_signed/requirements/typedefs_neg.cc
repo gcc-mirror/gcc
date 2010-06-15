@@ -50,6 +50,3 @@ void test01()
 
 // { dg-error "invalid use of incomplete type" "" { target *-*-* } 639 }
 // { dg-error "declaration of" "" { target *-*-* } 603 }
-
-// { dg-excess-errors "At global scope" }
-// { dg-excess-errors "In instantiation of" }

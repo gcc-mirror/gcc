@@ -33,4 +33,3 @@ void test01()
 
 // { dg-error "rep cannot be a duration" "" { target *-*-* } 203 }
 // { dg-error "instantiated from here" "" { target *-*-* } 31 }
-// { dg-excess-errors "In instantiation of" }

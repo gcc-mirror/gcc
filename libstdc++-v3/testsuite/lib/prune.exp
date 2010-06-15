@@ -17,18 +17,45 @@
 
 # Prune messages from g++ that aren't useful.
 
-proc prune_g++_output { text } {
+# Prune any messages matching ARGS[1] (a regexp) from test output.
+proc dg-prune-output { args } {
+    global additional_prunes
+
+    if { [llength $args] != 2 } {
+	error "[lindex $args 1]: need one argument"
+	return
+    }
+
+    lappend additional_prunes [lindex $args 1]
+}
+
+proc libstdc++-dg-prune { system text } {
+    global additional_prunes
 
     # Cygwin warns about -ffunction-sections
     regsub -all "(^|\n)\[^\n\]*: -ffunction-sections may affect debugging on some targets\[^\n\]*" $text "" text
 
     # Remove parts of warnings that refer to location of previous
     # definitions, etc as these confuse dejagnu
-    regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
+    regsub -all "(^|\n)(\[^\n\]*: )?In ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|program|subroutine|block-data)\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   (recursively )?instantiated from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
+    regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
+    # Why doesn't GCC need these to strip header context?
+    regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[ \t\]*from \[^\n\]*" $text "" text
 
     # Ignore errata warning from IA64 assembler.
     regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text
     regsub -all "(^|\n)\[^\n*\]*: Assembler messages:\[^\n\]*" $text "" text
+
+    foreach p $additional_prunes {
+	if { [string length $p] > 0 } {
+	    # Following regexp matches a complete line containing $p.
+	    regsub -all "(^|\n)\[^\n\]*$p\[^\n\]*" $text "" text
+	}
+    }
 
     return $text
 }

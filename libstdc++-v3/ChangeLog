@@ -1,3 +1,47 @@
+2010-06-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Set additional_prunes.
+	(libstdc++-dg-test): Don't prune here.
+	* testsuite/lib/prune.exp (dg-prune-output): New.
+	(libstdc++-dg-prune): Rename from prune_g++_output.
+	Add a bunch of prunes from gcc's prune.exp.
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc: Remove dg-excess-errors.
+	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Likewise.
+	* testsuite/19_diagnostics/headers/system_error/std_c++0x_neg.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Likewise.
+	* testsuite/23_containers/headers/array/std_c++0x_neg.cc: Likewise.
+	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc: Likewise.
+	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc: Likewise.
+	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc: Likewise.
+	* testsuite/27_io/headers/cinttypes/std_c++0x_neg.cc: Likewise.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc: Likewise.
+	* testsuite/30_threads/headers/condition_variable/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/future/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/mutex/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/thread/std_c++0x_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: Likewise.
+
 2010-06-13  Paolo Carlini <paolo.carlini@oracle.com>
 
 	* include/parallel/base.h (min, max): Mark inline.
