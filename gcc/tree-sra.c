@@ -357,13 +357,13 @@ dump_access (FILE *f, struct access *access, bool grp)
   print_generic_expr (f, access->type, 0);
   if (grp)
     fprintf (f, ", grp_write = %d, total_scalarization = %d, "
-	     "grp_read = %d, grp_hint = %d, "
+	     "grp_read = %d, grp_hint = %d, grp_assignment_read = %d,"
 	     "grp_covered = %d, grp_unscalarizable_region = %d, "
 	     "grp_unscalarized_data = %d, grp_partial_lhs = %d, "
 	     "grp_to_be_replaced = %d, grp_maybe_modified = %d, "
 	     "grp_not_necessarilly_dereferenced = %d\n",
 	     access->grp_write, access->total_scalarization,
-	     access->grp_read, access->grp_hint,
+	     access->grp_read, access->grp_hint, access->grp_assignment_read,
 	     access->grp_covered, access->grp_unscalarizable_region,
 	     access->grp_unscalarized_data, access->grp_partial_lhs,
 	     access->grp_to_be_replaced, access->grp_maybe_modified,
@@ -1823,7 +1823,8 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
       else
 	covered_to += child->size;
 
-      sth_created |= analyze_access_subtree (child, allow_replacements,
+      sth_created |= analyze_access_subtree (child,
+					     allow_replacements && !scalar,
 					     mark_read, mark_write);
 
       root->grp_unscalarized_data |= child->grp_unscalarized_data;

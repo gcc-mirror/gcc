@@ -1,3 +1,10 @@
+2010-06-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44423
+	* tree-sra.c (dump_access): Dump also grp_assignment_read.
+	(analyze_access_subtree): Pass negative allow_replacements to children
+	if the current type is scalar.
+
 2010-06-14  Andreas Schwab  <schwab@linux-m68k.org>
 
 	Backport from mainline
