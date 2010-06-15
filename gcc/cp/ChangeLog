@@ -1,5 +1,8 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* call.c (convert_like_real): Don't complain about
+	list-value-initialization from an explicit constructor.
+
 	* decl.c (duplicate_decls): Use DECL_IS_BUILTIN rather than test
 	DECL_SOURCE_LOCATION directly.
 

@@ -4956,7 +4956,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
 	/* When converting from an init list we consider explicit
 	   constructors, but actually trying to call one is an error.  */
-	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn))
+	if (DECL_NONCONVERTING_P (convfn) && DECL_CONSTRUCTOR_P (convfn)
+	    /* Unless we're calling it for value-initialization from an
+	       empty list, since that is handled separately in 8.5.4.  */
+	    && cand->num_convs > 0)
 	  {
 	    if (complain & tf_error)
 	      error ("converting to %qT from initializer list would use "
