@@ -6268,7 +6268,6 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   gfc_symbol *sym = NULL;
   gfc_alloc *a;
   gfc_component *c;
-  gfc_expr *init_e;
 
   /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
   check_intent_in = 1;
@@ -6401,11 +6400,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	  goto failure;
 	}
     }
-  else if (is_abstract&& code->ext.alloc.ts.type == BT_UNKNOWN)
+
+  /* Check F08:C629.  */
+  if (is_abstract && code->ext.alloc.ts.type == BT_UNKNOWN
+      && !code->expr3)
     {
       gcc_assert (e->ts.type == BT_CLASS);
       gfc_error ("Allocating %s of ABSTRACT base type at %L requires a "
-		 "type-spec or SOURCE=", sym->name, &e->where);
+		 "type-spec or source-expr", sym->name, &e->where);
       goto failure;
     }
 
@@ -6416,25 +6418,26 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       goto failure;
     }
     
-  if (!code->expr3)
+  if (!code->expr3 || code->expr3->mold)
     {
       /* Add default initializer for those derived types that need them.  */
-      if (e->ts.type == BT_DERIVED
-	  && (init_e = gfc_default_initializer (&e->ts)))
-	{
-	  gfc_code *init_st = gfc_get_code ();
-	  init_st->loc = code->loc;
-	  init_st->op = EXEC_INIT_ASSIGN;
-	  init_st->expr1 = gfc_expr_to_initialize (e);
-	  init_st->expr2 = init_e;
-	  init_st->next = code->next;
-	  code->next = init_st;
-	}
-      else if (e->ts.type == BT_CLASS
-	       && ((code->ext.alloc.ts.type == BT_UNKNOWN
-		    && (init_e = gfc_default_initializer (&CLASS_DATA (e)->ts)))
-		   || (code->ext.alloc.ts.type == BT_DERIVED
-		       && (init_e = gfc_default_initializer (&code->ext.alloc.ts)))))
+      gfc_expr *init_e = NULL;
+      gfc_typespec ts;
+
+      if (code->ext.alloc.ts.type == BT_DERIVED)
+	ts = code->ext.alloc.ts;
+      else if (code->expr3)
+	ts = code->expr3->ts;
+      else
+	ts = e->ts;
+
+      if (ts.type == BT_DERIVED)
+	init_e = gfc_default_initializer (&ts);
+      /* FIXME: Use default init of dynamic type (cf. PR 44541).  */
+      else if (e->ts.type == BT_CLASS)
+	init_e = gfc_default_initializer (&ts.u.derived->components->ts);
+
+      if (init_e)
 	{
 	  gfc_code *init_st = gfc_get_code ();
 	  init_st->loc = code->loc;

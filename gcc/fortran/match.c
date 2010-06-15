@@ -2785,16 +2785,16 @@ match
 gfc_match_allocate (void)
 {
   gfc_alloc *head, *tail;
-  gfc_expr *stat, *errmsg, *tmp, *source;
+  gfc_expr *stat, *errmsg, *tmp, *source, *mold;
   gfc_typespec ts;
   gfc_symbol *sym;
   match m;
   locus old_locus;
-  bool saw_stat, saw_errmsg, saw_source, b1, b2, b3;
+  bool saw_stat, saw_errmsg, saw_source, saw_mold, b1, b2, b3;
 
   head = tail = NULL;
-  stat = errmsg = source = tmp = NULL;
-  saw_stat = saw_errmsg = saw_source = false;
+  stat = errmsg = source = mold = tmp = NULL;
+  saw_stat = saw_errmsg = saw_source = saw_mold = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -2987,6 +2987,38 @@ alloc_opt_list:
 	    goto alloc_opt_list;
 	}
 
+      m = gfc_match (" mold = %e", &tmp);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_YES)
+	{
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: MOLD tag at %L",
+			      &tmp->where) == FAILURE)
+	    goto cleanup;
+
+	  /* Check F08:C636.  */
+	  if (saw_mold)
+	    {
+	      gfc_error ("Redundant MOLD tag found at %L ", &tmp->where);
+	      goto cleanup;
+	    }
+  
+	  /* Check F08:C637.  */
+	  if (ts.type != BT_UNKNOWN)
+	    {
+	      gfc_error ("MOLD tag at %L conflicts with the typespec at %L",
+			 &tmp->where, &old_locus);
+	      goto cleanup;
+	    }
+
+	  mold = tmp;
+	  saw_mold = true;
+	  mold->mold = 1;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto alloc_opt_list;
+	}
+
 	gfc_gobble_whitespace ();
 
 	if (gfc_peek_char () == ')')
@@ -2997,10 +3029,21 @@ alloc_opt_list:
   if (gfc_match (" )%t") != MATCH_YES)
     goto syntax;
 
+  /* Check F08:C637.  */
+  if (source && mold)
+    {
+      gfc_error ("MOLD tag at %L conflicts with SOURCE tag at %L",
+		  &mold->where, &source->where);
+      goto cleanup;
+    }
+  
   new_st.op = EXEC_ALLOCATE;
   new_st.expr1 = stat;
   new_st.expr2 = errmsg;
-  new_st.expr3 = source;
+  if (source)
+    new_st.expr3 = source;
+  else
+    new_st.expr3 = mold;
   new_st.ext.alloc.list = head;
   new_st.ext.alloc.ts = ts;
 
@@ -3013,7 +3056,8 @@ cleanup:
   gfc_free_expr (errmsg);
   gfc_free_expr (source);
   gfc_free_expr (stat);
-  gfc_free_expr (tmp);
+  gfc_free_expr (mold);
+  if (tmp && tmp->expr_type) gfc_free_expr (tmp);
   gfc_free_alloc_list (head);
   return MATCH_ERROR;
 }
