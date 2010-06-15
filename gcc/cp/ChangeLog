@@ -1,5 +1,9 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* call.c (convert_like_real): Give "initializing argument of"
+	information for ambiguous conversion.  Give source position
+	of function.
+
 	* call.c (print_z_candidates): Do print viable deleted candidates.
 	(joust): Don't choose a deleted function just because its worst
 	conversion is better than another candidate's worst.

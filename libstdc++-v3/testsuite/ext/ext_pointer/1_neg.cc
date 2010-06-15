@@ -92,12 +92,7 @@ void test01(void) {
 }
 
 // { dg-error "invalid conversion " "" { target *-*-* } 314 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 314 }
 // { dg-error "invalid conversion " "" { target *-*-* } 308 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 308 }
 // { dg-error "invalid conversion " "" { target *-*-* } 331 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 331 }
 // { dg-error "invalid conversion " "" { target *-*-* } 339 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 339 }
 // { dg-excess-errors "In constructor" }
-
