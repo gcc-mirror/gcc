@@ -1,3 +1,10 @@
+2010-06-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (*-*-solaris2.8*): Only usr alternate thread
+	library on Solaris 8.
+	(*-*-solaris2*): Use regular thread library otherwise.
+	* configure: Regenerate.
+
 2010-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* tests/leak_test.c (main): Declare as int.  Return 0.
