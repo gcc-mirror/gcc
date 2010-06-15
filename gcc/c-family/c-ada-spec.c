@@ -1549,7 +1549,7 @@ dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
   pp_character (buffer, ')');
 }
 
-/* Dump in BUFFER file:line:col information related to NODE.  */
+/* Dump in BUFFER file:line information related to NODE.  */
 
 static void
 dump_sloc (pretty_printer *buffer, tree node)
@@ -1568,8 +1568,6 @@ dump_sloc (pretty_printer *buffer, tree node)
       pp_string (buffer, xloc.file);
       pp_string (buffer, ":");
       pp_decimal_int (buffer, xloc.line);
-      pp_string (buffer, ":");
-      pp_decimal_int (buffer, xloc.column);
     }
 }
 
@@ -1721,6 +1719,33 @@ dump_ada_template (pretty_printer *buffer, tree t,
   return num_inst > 0;
 }
 
+/* Return true if NODE is a simple enum types, that can be mapped to an
+   Ada enum type directly.  */
+
+static bool
+is_simple_enum (tree node)
+{
+  unsigned HOST_WIDE_INT count = 0;
+  tree value;
+
+  for (value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
+    {
+      tree int_val = TREE_VALUE (value);
+
+      if (TREE_CODE (int_val) != INTEGER_CST)
+	int_val = DECL_INITIAL (int_val);
+
+      if (!host_integerp (int_val, 0))
+	return false;
+      else if (TREE_INT_CST_LOW (int_val) != count)
+	return false;
+
+      count++;
+    }
+
+  return true;
+}
+
 static bool in_function = true;
 static bool bitfield_used = false;
 
@@ -1785,30 +1810,59 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	  (buffer, TYPE_NAME (node), node, cpp_check, spc, 0, true);
       else
 	{
-	  tree value;
+	  tree value = TYPE_VALUES (node);
 
-	  pp_string (buffer, "unsigned");
-
-	  for (value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
+	  if (is_simple_enum (node))
 	    {
-	      pp_semicolon (buffer);
+	      bool first = true;
+	      spc += INDENT_INCR;
+	      newline_and_indent (buffer, spc - 1);
+	      pp_string (buffer, "(");
+	      for (; value; value = TREE_CHAIN (value))
+		{
+		  if (first)
+		    first = false;
+		  else
+		    {
+		      pp_string (buffer, ",");
+		      newline_and_indent (buffer, spc);
+		    }
+
+		  pp_ada_tree_identifier
+		    (buffer, TREE_PURPOSE (value), node, false);
+		}
+	      pp_string (buffer, ");");
+	      spc -= INDENT_INCR;
 	      newline_and_indent (buffer, spc);
-
-	      pp_ada_tree_identifier
-		(buffer, TREE_PURPOSE (value), node, false);
-	      pp_string (buffer, " : constant ");
-
+	      pp_string (buffer, "pragma Convention (C, ");
 	      dump_generic_ada_node
 		(buffer, DECL_NAME (type) ? type : TYPE_NAME (node), type,
 		 cpp_check, spc, 0, true);
+	      pp_string (buffer, ")");
+	    }
+	  else
+	    {
+	      pp_string (buffer, "unsigned");
+	      for (; value; value = TREE_CHAIN (value))
+		{
+		  pp_semicolon (buffer);
+		  newline_and_indent (buffer, spc);
 
-	      pp_string (buffer, " := ");
-	      dump_generic_ada_node
-		(buffer,
-		 TREE_CODE (TREE_VALUE (value)) == INTEGER_CST ?
-		   TREE_VALUE (value) : DECL_INITIAL (TREE_VALUE (value)),
-		 node,
-		 cpp_check, spc, false, true);
+		  pp_ada_tree_identifier
+		    (buffer, TREE_PURPOSE (value), node, false);
+		  pp_string (buffer, " : constant ");
+
+		  dump_generic_ada_node
+		    (buffer, DECL_NAME (type) ? type : TYPE_NAME (node), type,
+		     cpp_check, spc, 0, true);
+
+		  pp_string (buffer, " := ");
+		  dump_generic_ada_node
+		    (buffer,
+		     TREE_CODE (TREE_VALUE (value)) == INTEGER_CST ?
+		       TREE_VALUE (value) : DECL_INITIAL (TREE_VALUE (value)),
+		     node, cpp_check, spc, false, true);
+		}
 	    }
 	}
       break;
@@ -2078,7 +2132,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
-      else if (! host_integerp (node, 0))
+      else if (!host_integerp (node, 0))
 	{
 	  tree val = node;
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
@@ -2573,6 +2627,14 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
 	    pp_string (buffer, "--  skipped function type ");
 	    dump_generic_ada_node (buffer, t, type, 0, spc, false, true);
 	    return 1;
+	    break;
+
+	  case ENUMERAL_TYPE:
+	    if ((orig && TYPE_NAME (orig) && orig != TREE_TYPE (t))
+		|| !is_simple_enum (TREE_TYPE (t)))
+	      pp_string (buffer, "subtype ");
+	    else
+	      pp_string (buffer, "type ");
 	    break;
 
 	  default:
