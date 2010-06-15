@@ -4934,7 +4934,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	{
 	  permerror (input_location, "invalid conversion from %qT to %qT", TREE_TYPE (expr), totype);
 	  if (fn)
-	    permerror (input_location, "  initializing argument %P of %qD", argnum, fn);
+	    permerror (DECL_SOURCE_LOCATION (fn),
+		       "  initializing argument %P of %qD", argnum, fn);
 	}
       else
 	return error_mark_node;
@@ -5018,11 +5019,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
         }
       return expr;
     case ck_ambig:
-      if (!(complain & tf_error))
-	return error_mark_node;
-      /* Call build_user_type_conversion again for the error.  */
-      return build_user_type_conversion
-	(totype, convs->u.expr, LOOKUP_NORMAL);
+      if (complain & tf_error)
+	{
+	  /* Call build_user_type_conversion again for the error.  */
+	  build_user_type_conversion (totype, convs->u.expr, LOOKUP_NORMAL);
+	  if (fn)
+	    error ("  initializing argument %P of %q+D", argnum, fn);
+	}
+      return error_mark_node;
 
     case ck_list:
       {
@@ -5110,7 +5114,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (diag_kind && fn)
 	{
 	  if ((complain & tf_error))
-	    emit_diagnostic (diag_kind, input_location, 0, 
+	    emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), 0,
 			     "  initializing argument %P of %qD", argnum, fn);
 	  else if (diag_kind == DK_ERROR)
 	    return error_mark_node;
