@@ -1,3 +1,10 @@
+2010-06-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (*prefetch_sse_<mode>):  Macroize insn from
+	*prefetch_sse and *prefetch_sse_rex using P mode iterator.
+	(*prefetch_3dnow_<mode>): Ditto from *prefetch_3dnow and
+	*prefetch_3dnow_rex.
+
 2010-06-15  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct asm_out):Add declare_constant_name field.
@@ -84,8 +91,7 @@
 	(rs6000_generate_compare <cmptf_internal2>): One more clobber.
 	(tocrel_base, tocrel_offset): New variables.
 	(toc_relative_expr_p): Set them here.
-	(print_operand_address): Skip over any offset on constant pool
-	address.
+	(print_operand_address): Skip over any offset on constant pool address.
 	(rs6000_output_addr_const_extra): Print tocrel_offset before @toc.
 	(rs6000_mode_dependent_address <LO_SUM>): False for new toc refs.
 	(offsettable_ok_by_alignment): New function.
@@ -152,16 +158,14 @@
 	(bitpack_create, lto_output_bitpack, lto_input_bitpack):
 	New inline functions.
 	* lto-streamer-out.c (lto_output_bitpack): Remove.
-	(pack_ts_base_value_fields): Adjust.  Avoid conditional
-	bitpacking.
+	(pack_ts_base_value_fields): Adjust.  Avoid conditional bitpacking.
 	(pack_value_fields): Adjust.
 	(lto_write_tree): Likewise.
 	(output_gimple_stmt): Likewise.
 	(output_function): Likewise.
 	* lto-streamer-in.c (input_gimple_stmt): Adjust.
 	(input_function): Likewise.
-	(unpack_ts_base_value_fields): Adjust.  Avoid conditional
-	bitpacking.
+	(unpack_ts_base_value_fields): Adjust.  Avoid conditional bitpacking.
 	(lto_input_bitpack): Remove.
 	(lto_materialize_tree): Adjust.
 	* Makefile.in (ipa-prop.o): Add $(LTO_STREAMER_H) dependency.
@@ -185,8 +189,7 @@
 2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44534
-	* config/i386/sse.md (vec_extract_lo_<mode>): Replace 0x1 with
-	0x0.
+	* config/i386/sse.md (vec_extract_lo_<mode>): Replace 0x1 with 0x0.
 	(vec_extract_lo_v16hi): Likewise.
 	(vec_extract_lo_v32qi): Likewise.
 
@@ -204,8 +207,7 @@
 	(build_call_expr): New function.
 
 	PR tree-optimization/44508
-	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE
-	argument.
+	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE argument.
 	* tree-ssa-propagate.c (substitute_and_fold): If !DO_DCE,
 	don't eliminate trivially dead stmts.
 	* tree-vrp.c (vrp_finalize): Pass false as last argument
@@ -354,8 +356,8 @@
 
 2010-06-12  Kazu Hirata  <kazu@codesourcery.com>
 
-	* config.gcc (mips64*-*-linux*, mipsisa64*-*-linux*,
-	mips*-*-linux*): Add crtfastmath.o to extra_parts.
+	* config.gcc (mips64*-*-linux*, mipsisa64*-*-linux*, mips*-*-linux*):
+	Add crtfastmath.o to extra_parts.
 	* config/mips/crtfastmath.c: New.
 	* config/mips/linux.h (ENDFILE_SPEC): New.
 
@@ -370,8 +372,7 @@
 2010-06-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (Wstrict-aliasing=, Wstrict-overflow=, fabi-version=,
-	flto-compression-level=, ftree-parallelize-loops=): Add
-	RejectNegative.
+	flto-compression-level=, ftree-parallelize-loops=): Add RejectNegative.
 
 2010-06-11  Joseph Myers  <joseph@codesourcery.com>
 
@@ -389,7 +390,7 @@
 
 	PR target/44481
 	* config/i386/i386.md (UNSPEC_PARITY): New unspec.
-	(paritydi2_cmp): Use UNSPEC_PARITY unspec insted of parity RTX.
+	(paritydi2_cmp): Use UNSPEC_PARITY unspec instead of parity RTX.
 	(partiysi2_cmp): Ditto.
 	(*partiyhi2_cmp): Ditto.
 	(*parityqi2_cmp): Remove.
@@ -400,7 +401,7 @@
 	(bmp_iter_set, bmp_iter_and, bmp_iter_and_compl): Use it.
 
 2010-06-11  Sandra Loosemore  <sandra@codesourcery.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Return again the
 	computed cost.
