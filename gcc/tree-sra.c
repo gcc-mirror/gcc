@@ -3882,6 +3882,7 @@ replace_removed_params_ssa_names (gimple stmt,
     gimple_phi_set_result (stmt, name);
 
   replace_uses_by (lhs, name);
+  release_ssa_name (lhs);
   return true;
 }
 
