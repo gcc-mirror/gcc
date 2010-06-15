@@ -3821,7 +3821,18 @@ static bool
 use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 {
   if (pcs_variant == ARM_PCS_AAPCS_VFP)
-    return true;
+    {
+      static bool seen_thumb1_vfp = false;
+
+      if (TARGET_THUMB1 && !seen_thumb1_vfp)
+	{
+	  sorry ("Thumb-1 hard-float VFP ABI");
+	  /* sorry() is not immediately fatal, so only display this once.  */
+	  seen_thumb1_vfp = true;
+	}
+
+      return true;
+    }
 
   if (pcs_variant != ARM_PCS_AAPCS_LOCAL)
     return false;
