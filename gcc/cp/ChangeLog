@@ -1,5 +1,9 @@
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
+	* class.c (add_implicitly_declared_members): Implicit assignment
+	operators can also be virtual overriders.
+	* method.c (lazily_declare_fn): Likewise.
+
 	* call.c (convert_like_real): Give "initializing argument of"
 	information for ambiguous conversion.  Give source position
 	of function.

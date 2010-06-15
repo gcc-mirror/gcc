@@ -1108,7 +1108,8 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   /* Declare the function.  */
   fn = implicitly_declare_fn (sfk, type, const_p);
   /* A destructor may be virtual.  */
-  if (sfk == sfk_destructor)
+  if (sfk == sfk_destructor
+      || sfk == sfk_assignment_operator)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
   add_method (type, fn, NULL_TREE);
