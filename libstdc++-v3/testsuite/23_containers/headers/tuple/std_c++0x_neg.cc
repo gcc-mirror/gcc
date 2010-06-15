@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <tuple>  // { dg-excess-errors "In file included from" }
+#include <tuple>
 
 // { dg-error "upcoming ISO" "" { target *-*-* } 31 } 
 

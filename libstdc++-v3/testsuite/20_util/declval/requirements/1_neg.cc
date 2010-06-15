@@ -20,12 +20,10 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "static assertion failed" "" { target *-*-* } 676 }
-// { dg-error "instantiated from here" "" { target *-*-* } 30 }
-// { dg-excess-errors "In function" }
 
 #include <utility>
 
 void test01()
 {
-  std::declval<int>();
+  std::declval<int>();		// { dg-error "instantiated from here" }
 }

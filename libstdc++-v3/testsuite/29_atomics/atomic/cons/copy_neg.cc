@@ -44,4 +44,3 @@ int main()
 // { dg-error "deleted function" "" { target *-*-* } 445 }
 // { dg-error "deleted function" "" { target *-*-* } 463 }
 // { dg-error "deleted function" "" { target *-*-* } 481 }
-// { dg-excess-errors "In member function" }

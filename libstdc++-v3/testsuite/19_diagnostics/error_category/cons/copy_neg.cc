@@ -27,12 +27,10 @@ int main()
   bool test __attribute__((unused)) = true;
 
   __gnu_test::test_category c1;
-  __gnu_test::test_category c2(c1); 
+  __gnu_test::test_category c2(c1); // { dg-error "first required here" }
 
   return 0;
 }
 
 // { dg-error "deleted function" "" { target *-*-* } 72 }
 // { dg-error "used here" "" { target *-*-* } 30 }
-// { dg-error "first required here" "" { target *-*-* } 30 }
-// { dg-excess-errors "copy constructor" }

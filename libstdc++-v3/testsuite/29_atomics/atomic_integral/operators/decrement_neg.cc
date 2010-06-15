@@ -31,4 +31,3 @@ int main()
 // { dg-error "operator" "" { target *-*-* } 376 }
 // { dg-error "operator" "" { target *-*-* } 377 }
 // { dg-error "operator" "" { target *-*-* } 378 }
-// { dg-excess-errors "In file included from" }

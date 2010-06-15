@@ -20,7 +20,7 @@
 
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
-#include <memory>  // { dg-excess-errors "In file included from" }
+#include <memory>
 #include <testsuite_hooks.h>
 
 struct A { };

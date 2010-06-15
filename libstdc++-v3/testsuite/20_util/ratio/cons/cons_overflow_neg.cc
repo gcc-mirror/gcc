@@ -51,4 +51,3 @@ test04()
 // { dg-error "instantiated from here" "" { target *-*-* } 46 }
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 153 }
 // { dg-error "out of range" "" { target *-*-* } 154 }
-// { dg-excess-errors "In instantiation of" }

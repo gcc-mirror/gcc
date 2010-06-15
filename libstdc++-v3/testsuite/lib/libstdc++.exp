@@ -374,7 +374,6 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     # There is a libstdc++_compile made for us by default (via the tool-
     # and-target file), but the defaults are lacking in goodness.
     set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options];
-    set comp_output [ prune_g++_output $comp_output ];
 
     return [list $comp_output $output_file]
 }
@@ -386,13 +385,16 @@ if { [info procs saved-dg-test] == [list] } {
     rename dg-test saved-dg-test
 
     proc dg-test { args } {
+	global additional_prunes
 	global errorInfo
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
+	    set additional_prunes ""
 	    unset_timeout_vars
 	    error $errmsg $saved_info
 	}
+	set additional_prunes ""
 	unset_timeout_vars
     }
 }
@@ -1470,3 +1472,5 @@ proc check_v3_target_binary_io { } {
     verbose "check_v3_target_binary_io: $et_binary_io" 2
     return $et_binary_io
 }
+
+set additional_prunes ""

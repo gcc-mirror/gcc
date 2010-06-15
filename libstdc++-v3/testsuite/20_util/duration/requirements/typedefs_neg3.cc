@@ -35,4 +35,3 @@ void test01()
 
 // { dg-error "period must be positive" "" { target *-*-* } 206 }
 // { dg-error "instantiated from here" "" { target *-*-* } 33 }
-// { dg-excess-errors "In instantiation of" }

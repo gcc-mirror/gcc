@@ -61,4 +61,3 @@ int main()
 }
 
 // { dg-error "invalid" "" { target *-*-* } 187 } 
-// { dg-excess-errors "member function" } 
