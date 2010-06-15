@@ -40,6 +40,7 @@ extern void lhd_do_nothing (void);
 extern void lhd_do_nothing_t (tree);
 extern void lhd_do_nothing_i (int);
 extern void lhd_do_nothing_f (struct function *);
+extern tree lhd_pass_through_t (tree);
 extern bool lhd_post_options (const char **);
 extern alias_set_type lhd_get_alias_set (tree);
 extern tree lhd_return_null_tree_v (void);

@@ -1,5 +1,15 @@
 2010-06-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/44544
+	Backport from mainline
+	2009-09-13  Richard Guenther  <rguenther@suse.de>
+		    Rafael Avila de Espindola  <espindola@google.com>
+
+	* langhooks-def.h (lhd_pass_through_t): Declare.
+	* langhooks.c (lhd_pass_through_t): New function.
+
+2010-06-15  Jakub Jelinek  <jakub@redhat.com>
+
 	PR fortran/44536
 	* langhooks.h (struct lang_hooks_for_decls): Add omp_report_decl.
 	* langhooks-def.h (LANG_HOOKS_OMP_REPORT_DECL): Define.
