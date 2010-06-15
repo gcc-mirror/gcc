@@ -1,3 +1,10 @@
+2010-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_sloc): Remove column info.
+	(is_simple_enum): New function.
+	(dump_generic_ada_node, print_ada_declaration): Map C enum types to Ada
+	enum types when relevant.
+
 2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
         * c-common.c (conversion_warning): Warn at expression
