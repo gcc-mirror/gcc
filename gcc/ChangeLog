@@ -1,3 +1,8 @@
+2010-06-15  Paul Brook  <paul@codesourcery.com>
+ 
+	* config/arm/arm.c (use_vfp_abi): Add sorry() for Thumb-1
+	hard-float ABI.
+
 2010-06-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-vect-patterns.c (vect_pattern_recog_1): Bail out if we
