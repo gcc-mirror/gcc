@@ -1,6 +1,15 @@
 2010-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
+	2010-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/42461
+	* dce.c (deletable_insn_p): Return true for const or pure calls again.
+	* except.c (insn_could_throw_p): Return false if !flag_exceptions.
+
+2010-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
 	2010-06-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* tree-ssa-loop-ivopts.c (get_computation_cost_at): Return again the
