@@ -245,8 +245,13 @@ p
 
 esac
 
+is_git=0
 # Check whether this indeed looks like a local SVN tree.
-if [ ! -d .svn ]; then
+if [ -d .git ]; then
+    GCC_GIT=${GCC_GIT-${GIT-git}}
+    GCC_SVN="true -"
+    is_git=1
+elif [ ! -d .svn ]; then
     echo "This does not seem to be a GCC SVN tree!"
     exit
 fi
@@ -258,6 +263,7 @@ else
     set -- $UPDATE_OPTIONS ${1+"$@"}
 fi
 
+if [ $is_git -eq 0 ]; then
 chat "Updating SVN tree"
 
 $GCC_SVN ${silent+-q}  --non-interactive update ${1+"$@"}
@@ -283,4 +289,27 @@ p
 
 echo "[$branch revision $revision]" > gcc/REVISION
 
+else
+    chat "Updating GIT tree"
+    $GCC_GIT diff --quiet --exit-code HEAD
+    if [ $? -ne 0 ]; then
+        echo "Attempting to update a dirty git tree!" >&2
+        echo "Commit or stash your changes first and retry." >&2
+        exit 1
+    fi
+    $GCC_GIT pull ${silent+-q} --rebase ${1+"$@"}
+    if [ $? -ne 0 ]; then
+        (touch_files_reexec)
+        echo "git pull of full tree failed." >&2
+        exit 1
+    fi
+    rm -f LAST_UPDATED gcc/REVISION
+    revision=`$GCC_GIT log -n1 --pretty=%p:%t:%H`
+    branch=`$GCC_GIT name-rev --name-only HEAD || :`
+    {
+      date
+      echo "`TZ=UTC date` (revision $revision)"
+    } > LAST_UPDATED
+    echo "[$branch revision $revision]" > gcc/REVISION
+fi
 touch_files_reexec
