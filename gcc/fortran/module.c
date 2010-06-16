@@ -3324,7 +3324,7 @@ mio_typebound_proc (gfc_typebound_proc** proc)
 
   if (iomode == IO_INPUT)
     {
-      *proc = gfc_get_typebound_proc ();
+      *proc = gfc_get_typebound_proc (NULL);
       (*proc)->where = gfc_current_locus;
     }
   gcc_assert (*proc);

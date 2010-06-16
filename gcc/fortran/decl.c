@@ -7543,7 +7543,7 @@ match_procedure_in_type (void)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char target_buf[GFC_MAX_SYMBOL_LEN + 1];
   char* target = NULL, *ifc = NULL;
-  gfc_typebound_proc* tb;
+  gfc_typebound_proc tb;
   bool seen_colons;
   bool seen_attrs;
   match m;
@@ -7579,23 +7579,22 @@ match_procedure_in_type (void)
     }
 
   /* Construct the data structure.  */
-  tb = gfc_get_typebound_proc ();
-  tb->where = gfc_current_locus;
-  tb->is_generic = 0;
+  tb.where = gfc_current_locus;
+  tb.is_generic = 0;
 
   /* Match binding attributes.  */
-  m = match_binding_attributes (tb, false, false);
+  m = match_binding_attributes (&tb, false, false);
   if (m == MATCH_ERROR)
     return m;
   seen_attrs = (m == MATCH_YES);
 
   /* Check that attribute DEFERRED is given if an interface is specified.  */
-  if (tb->deferred && !ifc)
+  if (tb.deferred && !ifc)
     {
       gfc_error ("Interface must be specified for DEFERRED binding at %C");
       return MATCH_ERROR;
     }
-  if (ifc && !tb->deferred)
+  if (ifc && !tb.deferred)
     {
       gfc_error ("PROCEDURE(interface) at %C should be declared DEFERRED");
       return MATCH_ERROR;
@@ -7635,7 +7634,7 @@ match_procedure_in_type (void)
 	return m;
       if (m == MATCH_YES)
 	{
-	  if (tb->deferred)
+	  if (tb.deferred)
 	    {
 	      gfc_error ("'=> target' is invalid for DEFERRED binding at %C");
 	      return MATCH_ERROR;
@@ -7668,7 +7667,7 @@ match_procedure_in_type (void)
       gcc_assert (ns);
 
       /* If the binding is DEFERRED, check that the containing type is ABSTRACT.  */
-      if (tb->deferred && !block->attr.abstract)
+      if (tb.deferred && !block->attr.abstract)
 	{
 	  gfc_error ("Type '%s' containing DEFERRED binding at %C "
 		     "is not ABSTRACT", block->name);
@@ -7693,11 +7692,12 @@ match_procedure_in_type (void)
 	  stree = gfc_new_symtree (&ns->tb_sym_root, name);
 	  gcc_assert (stree);
 	}
-      stree->n.tb = tb;
+      stree->n.tb = gfc_get_typebound_proc (&tb);
 
-      if (gfc_get_sym_tree (target, gfc_current_ns, &tb->u.specific, false))
+      if (gfc_get_sym_tree (target, gfc_current_ns, &stree->n.tb->u.specific,
+			    false))
 	return MATCH_ERROR;
-      gfc_set_sym_referenced (tb->u.specific->n.sym);
+      gfc_set_sym_referenced (stree->n.tb->u.specific->n.sym);
   
       if (gfc_match_eos () == MATCH_YES)
 	return MATCH_YES;
@@ -7841,7 +7841,7 @@ gfc_match_generic (void)
     }
   else
     {
-      tb = gfc_get_typebound_proc ();
+      tb = gfc_get_typebound_proc (NULL);
       tb->where = gfc_current_locus;
       tb->access = tbattr.access;
       tb->is_generic = 1;
