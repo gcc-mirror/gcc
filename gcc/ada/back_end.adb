@@ -42,6 +42,29 @@ with Types;     use Types;
 
 package body Back_End is
 
+   type Arg_Array is array (Nat) of Big_String_Ptr;
+   type Arg_Array_Ptr is access Arg_Array;
+   --  Types to access compiler arguments
+
+   Next_Arg : Pos := 1;
+   --  Next argument to be scanned by Scan_Compiler_Arguments. We make this
+   --  global so that it can be accessed by Switch_Subsequently_Cancelled.
+
+   flag_stack_check : Int;
+   pragma Import (C, flag_stack_check);
+   --  Indicates if stack checking is enabled, imported from toplev.c
+
+   save_argc : Nat;
+   pragma Import (C, save_argc);
+   --  Saved value of argc (number of arguments), imported from toplev.c
+
+   save_argv : Arg_Array_Ptr;
+   pragma Import (C, save_argv);
+   --  Saved value of argv (argument pointers), imported from toplev.c
+
+   function Len_Arg (Arg : Pos) return Nat;
+   --  Determine length of argument number Arg on original gnat1 command line
+
    -------------------
    -- Call_Back_End --
    -------------------
@@ -122,36 +145,29 @@ package body Back_End is
          gigi_operating_mode           => Mode);
    end Call_Back_End;
 
+   -------------
+   -- Len_Arg --
+   -------------
+
+   function Len_Arg (Arg : Pos) return Nat is
+   begin
+      for J in 1 .. Nat'Last loop
+         if save_argv (Arg).all (Natural (J)) = ASCII.NUL then
+            return J - 1;
+         end if;
+      end loop;
+
+      raise Program_Error;
+   end Len_Arg;
+
    -----------------------------
    -- Scan_Compiler_Arguments --
    -----------------------------
 
    procedure Scan_Compiler_Arguments is
-      Next_Arg : Pos := 1;
-
-      type Arg_Array is array (Nat) of Big_String_Ptr;
-      type Arg_Array_Ptr is access Arg_Array;
-
-      flag_stack_check : Int;
-      pragma Import (C, flag_stack_check);
-      --  Import from toplev.c
-
-      save_argc : Nat;
-      pragma Import (C, save_argc);
-      --  Import from toplev.c
-
-      save_argv : Arg_Array_Ptr;
-      pragma Import (C, save_argv);
-      --  Import from toplev.c
 
       Output_File_Name_Seen : Boolean := False;
       --  Set to True after having scanned file_name for switch "-gnatO file"
-
-      --  Local functions
-
-      function Len_Arg (Arg : Pos) return Nat;
-      --  Determine length of argument number Arg on the original command line
-      --  from gnat1.
 
       procedure Scan_Back_End_Switches (Switch_Chars : String);
       --  Procedure to scan out switches stored in Switch_Chars. The first
@@ -164,21 +180,6 @@ package body Back_End is
       --  toplev.c, so no errors can occur and control will always return. The
       --  switches must still be scanned to skip "-o" or internal GCC switches
       --  with their argument.
-
-      -------------
-      -- Len_Arg --
-      -------------
-
-      function Len_Arg (Arg : Pos) return Nat is
-      begin
-         for J in 1 .. Nat'Last loop
-            if save_argv (Arg).all (Natural (J)) = ASCII.NUL then
-               return J - 1;
-            end if;
-         end loop;
-
-         raise Program_Error;
-      end Len_Arg;
 
       ----------------------------
       -- Scan_Back_End_Switches --
@@ -295,5 +296,32 @@ package body Back_End is
          Next_Arg := Next_Arg + 1;
       end loop;
    end Scan_Compiler_Arguments;
+
+   -----------------------------------
+   -- Switch_Subsequently_Cancelled --
+   -----------------------------------
+
+   function Switch_Subsequently_Cancelled (C : String) return Boolean is
+      Arg : Pos;
+
+   begin
+      Arg := Next_Arg + 1;
+      while Arg < save_argc loop
+         declare
+            Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
+            Argv_Len : constant Nat            := Len_Arg (Arg);
+            Argv     : constant String         :=
+                         Argv_Ptr (1 .. Natural (Argv_Len));
+         begin
+            if Argv = "-gnat-" & C then
+               return True;
+            end if;
+         end;
+
+         Arg := Arg + 1;
+      end loop;
+
+      return False;
+   end Switch_Subsequently_Cancelled;
 
 end Back_End;

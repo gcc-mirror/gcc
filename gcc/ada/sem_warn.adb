@@ -538,6 +538,13 @@ package body Sem_Warn is
             then
                return Abandon;
             end if;
+
+         --  Declaration of the variable in question
+
+         elsif Nkind (N) = N_Object_Declaration
+           and then Defining_Identifier (N) = Var
+         then
+            return Abandon;
          end if;
 
          --  All OK, continue scan
@@ -554,24 +561,34 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  Case of WHILE loop
+      --  Deal with Iteration scheme present
 
       declare
          Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
 
       begin
-         if Present (Iter) and then Present (Condition (Iter)) then
+         if Present (Iter) then
 
-            --  Skip processing for while iteration with conditions actions,
-            --  since they make it too complicated to get the warning right.
+            --  While iteration
 
-            if Present (Condition_Actions (Iter)) then
+            if Present (Condition (Iter)) then
+
+               --  Skip processing for while iteration with conditions actions,
+               --  since they make it too complicated to get the warning right.
+
+               if Present (Condition_Actions (Iter)) then
+                  return;
+               end if;
+
+               --  Capture WHILE condition
+
+               Expression := Condition (Iter);
+
+            --  For iteration, do not process, since loop will always terminate
+
+            elsif Present (Loop_Parameter_Specification (Iter)) then
                return;
             end if;
-
-            --  Capture WHILE condition
-
-            Expression := Condition (Iter);
          end if;
       end;
 
@@ -3490,26 +3507,16 @@ package body Sem_Warn is
         and then Is_Known_Branch
       then
          declare
-            Start : Source_Ptr;
-            Dummy : Source_Ptr;
-            Typ   : Character;
             Atrue : Boolean;
 
          begin
-            Sloc_Range (Orig, Start, Dummy);
             Atrue := Test_Result;
 
             if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not then
                Atrue := not Atrue;
             end if;
 
-            if Atrue then
-               Typ := 't';
-            else
-               Typ := 'f';
-            end if;
-
-            Set_SCO_Condition (Start, Typ);
+            Set_SCO_Condition (Orig, Atrue);
          end;
       end if;
 

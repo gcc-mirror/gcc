@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,5 +60,12 @@ package Back_End is
    --
    --  Any processed switches that influence the result of a compilation must
    --  be added to the Compilation_Arguments table.
+
+   function Switch_Subsequently_Cancelled (C : String) return Boolean;
+   --  This function is called from Scan_Front_End_Switches. It determines if
+   --  the switch currently being scanned is followed by a switch of the form
+   --  "-gnat-" & C, where C is the argument. If so, then True is returned,
+   --  and Scan_Front_End_Switches will cancel the effect of the switch. If
+   --  no such switch is found, False is returned.
 
 end Back_End;
