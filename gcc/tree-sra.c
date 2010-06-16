@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "flags.h"
 #include "dbgcnt.h"
+#include "tree-inline.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -4225,43 +4226,38 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   return;
 }
 
-/* Create an abstract origin declaration for OLD_DECL and make it an abstract
-   origin of the provided decl so that there are preserved parameters for debug
-   information.  */
-
-static void
-create_abstract_origin (tree old_decl)
-{
-  if (!DECL_ABSTRACT_ORIGIN (old_decl))
-    {
-      tree new_decl = copy_node (old_decl);
-
-      DECL_ABSTRACT (new_decl) = 1;
-      SET_DECL_ASSEMBLER_NAME (new_decl, NULL_TREE);
-      SET_DECL_RTL (new_decl, NULL);
-      DECL_STRUCT_FUNCTION (new_decl) = NULL;
-      DECL_ARTIFICIAL (old_decl) = 1;
-      DECL_ABSTRACT_ORIGIN (old_decl) = new_decl;
-    }
-}
-
 /* Perform all the modification required in IPA-SRA for NODE to have parameters
    as given in ADJUSTMENTS.  */
 
 static void
 modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
-  struct cgraph_node *alias;
-  for (alias = node->same_body; alias; alias = alias->next)
-    ipa_modify_formal_parameters (alias->decl, adjustments, "ISRA");
-  /* current_function_decl must be handled last, after same_body aliases,
-     as following functions will use what it computed.  */
-  create_abstract_origin (current_function_decl);
+  struct cgraph_node *new_node;
+  struct cgraph_edge *cs;
+  VEC (cgraph_edge_p, heap) * redirect_callers;
+  int node_callers;
+
+  node_callers = 0;
+  for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+    node_callers++;
+  redirect_callers = VEC_alloc (cgraph_edge_p, heap, node_callers);
+  for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+    VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
+
+  rebuild_cgraph_edges ();
+  pop_cfun ();
+  current_function_decl = NULL_TREE;
+
+  new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL,
+					 NULL, NULL, "isra");
+  current_function_decl = new_node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
+
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
-  convert_callers (node, adjustments);
-  cgraph_make_node_local (node);
+  convert_callers (new_node, adjustments);
+  cgraph_make_node_local (new_node);
   return;
 }
 
@@ -4273,6 +4269,13 @@ static bool
 ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 {
   if (!cgraph_node_can_be_local_p (node))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function not local to this compilation unit.\n");
+      return false;
+    }
+
+  if (!tree_versionable_function_p (node->decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Function not local to this compilation unit.\n");
