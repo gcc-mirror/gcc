@@ -4591,12 +4591,14 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
    list and marked `error' until symbols are committed.  */
 
 gfc_typebound_proc*
-gfc_get_typebound_proc (void)
+gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 {
   gfc_typebound_proc *result;
   tentative_tbp *list_node;
 
   result = XCNEW (gfc_typebound_proc);
+  if (tb0)
+    *result = *tb0;
   result->error = 1;
 
   list_node = XCNEW (tentative_tbp);

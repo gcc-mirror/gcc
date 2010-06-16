@@ -1,3 +1,8 @@
+2010-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44549
+	* gfortran.dg/typebound_proc_16.f03: New.
+
 2010-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/torture/pr43905.C: New test.

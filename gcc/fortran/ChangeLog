@@ -1,3 +1,14 @@
+2010-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44549
+	* gfortran.h (gfc_get_typebound_proc): Modified Prototype.
+	* decl.c (match_procedure_in_type): Give a unique gfc_typebound_proc
+	structure to each procedure in a procedure list.
+	* module.c (mio_typebound_proc): Add NULL argument to
+	'gfc_get_typebound_proc'.
+	* symbol.c (gfc_get_typebound_proc): Add a new argument, which is used
+	to initialize the new structure.
+
 2010-06-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/43388
