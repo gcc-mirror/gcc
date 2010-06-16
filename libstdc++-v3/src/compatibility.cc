@@ -410,7 +410,11 @@ GLIBCXX_3.4)
 // gcc-4.1.0
 // Long double versions of "C" math functions. 
 #if defined (_GLIBCXX_LONG_DOUBLE_COMPAT) \
-    || (defined (__hppa__) && defined (__linux__))
+    || (defined (__arm__) && defined (__linux__) && defined (__ARM_EABI__)) \
+    || (defined (__hppa__) && defined (__linux__)) \
+    || (defined (__m68k__) && defined (__mcoldfire__) && defined (__linux__)) \
+    || (defined (__mips__) && defined (_ABIO32) && defined (__linux__)) \
+    || (defined (__sh__) && defined (__linux__) && __SIZEOF_SIZE_T__ == 4) \
 
 #define _GLIBCXX_MATHL_WRAPPER(name, argdecl, args, ver) \
 extern "C" double						\
