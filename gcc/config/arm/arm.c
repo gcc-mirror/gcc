@@ -83,6 +83,9 @@ static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
+static void arm_print_operand (FILE *, rtx, int);
+static void arm_print_operand_address (FILE *, rtx);
+static bool arm_print_operand_punct_valid_p (unsigned char code);
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
 static HOST_WIDE_INT int_log2 (HOST_WIDE_INT);
@@ -284,6 +287,13 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_ASM_ALIGNED_SI_OP NULL
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER arm_assemble_integer
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND arm_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS arm_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P arm_print_operand_punct_valid_p
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
@@ -688,9 +698,9 @@ int arm_arch_thumb2;
 /* Nonzero if chip supports integer division instruction.  */
 int arm_arch_hwdiv;
 
-/* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
-   must report the mode of the memory reference from PRINT_OPERAND to
-   PRINT_OPERAND_ADDRESS.  */
+/* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
+   we must report the mode of the memory reference from
+   TARGET_PRINT_OPERAND to TARGET_PRINT_OPERAND_ADDRESS.  */
 enum machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
@@ -15082,7 +15092,7 @@ arm_print_condition (FILE *stream)
    before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
    If X is a REG and CODE is `M', output a ldm/stm style multi-reg.  */
-void
+static void
 arm_print_operand (FILE *stream, rtx x, int code)
 {
   switch (code)
@@ -15699,6 +15709,140 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  break;
 	}
     }
+}
+
+/* Target hook for printing a memory address.  */
+static void
+arm_print_operand_address (FILE *stream, rtx x)
+{
+  if (TARGET_32BIT)
+    {
+      int is_minus = GET_CODE (x) == MINUS;
+
+      if (GET_CODE (x) == REG)
+	asm_fprintf (stream, "[%r, #0]", REGNO (x));
+      else if (GET_CODE (x) == PLUS || is_minus)
+	{
+	  rtx base = XEXP (x, 0);
+	  rtx index = XEXP (x, 1);
+	  HOST_WIDE_INT offset = 0;
+	  if (GET_CODE (base) != REG
+	      || (GET_CODE (index) == REG && REGNO (index) == SP_REGNUM))
+	    {
+	      /* Ensure that BASE is a register.  */
+	      /* (one of them must be).  */
+	      /* Also ensure the SP is not used as in index register.  */
+	      rtx temp = base;
+	      base = index;
+	      index = temp;
+	    }
+	  switch (GET_CODE (index))
+	    {
+	    case CONST_INT:
+	      offset = INTVAL (index);
+	      if (is_minus)
+		offset = -offset;
+	      asm_fprintf (stream, "[%r, #%wd]",
+			   REGNO (base), offset);
+	      break;
+
+	    case REG:
+	      asm_fprintf (stream, "[%r, %s%r]",
+			   REGNO (base), is_minus ? "-" : "",
+			   REGNO (index));
+	      break;
+
+	    case MULT:
+	    case ASHIFTRT:
+	    case LSHIFTRT:
+	    case ASHIFT:
+	    case ROTATERT:
+	      {
+		asm_fprintf (stream, "[%r, %s%r",
+			     REGNO (base), is_minus ? "-" : "",
+			     REGNO (XEXP (index, 0)));
+		arm_print_operand (stream, index, 'S');
+		fputs ("]", stream);
+		break;
+	      }
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else if (GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_INC
+	       || GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_DEC)
+	{
+	  extern enum machine_mode output_memory_reference_mode;
+
+	  gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
+
+	  if (GET_CODE (x) == PRE_DEC || GET_CODE (x) == PRE_INC)
+	    asm_fprintf (stream, "[%r, #%s%d]!",
+			 REGNO (XEXP (x, 0)),
+			 GET_CODE (x) == PRE_DEC ? "-" : "",
+			 GET_MODE_SIZE (output_memory_reference_mode));
+	  else
+	    asm_fprintf (stream, "[%r], #%s%d",
+			 REGNO (XEXP (x, 0)),
+			 GET_CODE (x) == POST_DEC ? "-" : "",
+			 GET_MODE_SIZE (output_memory_reference_mode));
+	}
+      else if (GET_CODE (x) == PRE_MODIFY)
+	{
+	  asm_fprintf (stream, "[%r, ", REGNO (XEXP (x, 0)));
+	  if (GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)
+	    asm_fprintf (stream, "#%wd]!",
+			 INTVAL (XEXP (XEXP (x, 1), 1)));
+	  else
+	    asm_fprintf (stream, "%r]!",
+			 REGNO (XEXP (XEXP (x, 1), 1)));
+	}
+      else if (GET_CODE (x) == POST_MODIFY)
+	{
+	  asm_fprintf (stream, "[%r], ", REGNO (XEXP (x, 0)));
+	  if (GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)
+	    asm_fprintf (stream, "#%wd",
+			 INTVAL (XEXP (XEXP (x, 1), 1)));
+	  else
+	    asm_fprintf (stream, "%r",
+			 REGNO (XEXP (XEXP (x, 1), 1)));
+	}
+      else output_addr_const (stream, x);
+    }
+  else
+    {
+      if (GET_CODE (x) == REG)
+	asm_fprintf (stream, "[%r]", REGNO (x));
+      else if (GET_CODE (x) == POST_INC)
+	asm_fprintf (stream, "%r!", REGNO (XEXP (x, 0)));
+      else if (GET_CODE (x) == PLUS)
+	{
+	  gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    asm_fprintf (stream, "[%r, #%wd]",
+			 REGNO (XEXP (x, 0)),
+			 INTVAL (XEXP (x, 1)));
+	  else
+	    asm_fprintf (stream, "[%r, %r]",
+			 REGNO (XEXP (x, 0)),
+			 REGNO (XEXP (x, 1)));
+	}
+      else
+	output_addr_const (stream, x);
+    }
+}
+
+/* Target hook for indicating whether a punctuation character for
+   TARGET_PRINT_OPERAND is valid.  */
+static bool
+arm_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '@' || code == '|' || code == '.'
+	  || code == '(' || code == ')' || code == '#'
+	  || (TARGET_32BIT && (code == '?'))
+	  || (TARGET_THUMB2 && (code == '!'))
+	  || (TARGET_THUMB && (code == '_')));
 }
 
 /* Target hook for assembling integer objects.  The ARM version needs to
