@@ -1022,6 +1022,15 @@ defaulted_late_check (tree fn)
       error_at (DECL_SOURCE_LOCATION (fn),
 		"does not match expected signature %qD", implicit_fn);
     }
+
+  /* 8.4.2/2: If it is explicitly defaulted on its first declaration, it is
+     implicitly considered to have the same exception-specification as if
+     it had been implicitly declared.  */
+  if (DECL_DEFAULTED_IN_CLASS_P (fn))
+    {
+      tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
+      TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
+    }
 }
 
 /* Returns true iff FN can be explicitly defaulted, and gives any

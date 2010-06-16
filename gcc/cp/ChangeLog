@@ -1,3 +1,8 @@
+2010-06-16  Jason Merrill  <jason@redhat.com>
+
+	* method.c (defaulted_late_check): Give the defaulted method
+	the same exception specification as the implicit declaration.
+
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
 	* class.c (add_implicitly_declared_members): Implicit assignment

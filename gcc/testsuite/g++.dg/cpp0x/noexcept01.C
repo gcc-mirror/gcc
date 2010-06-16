@@ -59,6 +59,14 @@ struct F
 
 SA (noexcept (F()));
 
+struct G
+{
+  G() = default;
+  ~G() = default;
+};
+
+SA (noexcept (G()));
+
 template <class T, bool b>
 void tf()
 {
