@@ -1,3 +1,10 @@
+2010-06-16  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR testsuite/44538
+	* gcc.dg/vect/slp-perm-5.c (main): Prevent
+	initialization loop from being vectorized.
+	* gcc.dg/vect/slp-perm-6.c (main): Likewise.
+
 2010-06-16  Alan Modra  <amodra@gmail.com>
 
 	PR tree-optimization/44507
