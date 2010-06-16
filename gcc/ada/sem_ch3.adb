@@ -9584,7 +9584,14 @@ package body Sem_Ch3 is
       if Is_Tagged_Type (Full_Base) then
          Set_Is_Tagged_Type (Full);
          Set_Primitive_Operations (Full, Primitive_Operations (Full_Base));
-         Set_Class_Wide_Type      (Full, Class_Wide_Type (Full_Base));
+
+         --  Inherit class_wide type of full_base in case the partial view was
+         --  not tagged. Otherwise it has already been created when the private
+         --  subtype was analyzed.
+
+         if No (Class_Wide_Type (Full)) then
+            Set_Class_Wide_Type (Full, Class_Wide_Type (Full_Base));
+         end if;
 
       --  If this is a subtype of a protected or task type, constrain its
       --  corresponding record, unless this is a subtype without constraints,

@@ -183,7 +183,7 @@ package Tbuild is
    --  Create a defining identifier to capture the value of an expression
    --  or aggregate, and link it to the expression that it replaces, in
    --  order to provide better CodePeer reports. The defining identifier
-   --  name is obtained by Make_Internal_Name (Id).
+   --  name is obtained by New_Internal_Name (Id).
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;
