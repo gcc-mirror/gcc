@@ -1,3 +1,42 @@
+2010-06-16  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/ia64/vms.h (ASM_OUTPUT_DWARF_DELTA_UNITS): Remove.
+	(ASM_OUTPUT_DWARF_VMS_DELTA: Define new macro.
+	* dbxout.c (gcc_debug_hooks): New entry begin_epilogue.
+	* debug.c: Likewise.
+	* sdbout.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* debug.h: Likewise. (dwarf2out_vms_{begin,end}_prologue): Declare.
+	* doc/tm.texi (ASM_OUTPUT_DWARF_VMS_DELTA): Document.
+	* dwarf2asm.c (dw2_asm_output_vms_delta): New function.
+	(ASM_OUTPUT_DWARF_VMS_DELTA): Call it.
+	* dwarf2asm.h (dw2_asm_output_vms_delta): Declare.
+	* dwarf2out.c (dw_fde_struct): New fields
+	dw_fde_vms_{end,begin}_prologue.
+	(PROLOGUE_END_LABEL, EPILOGUE_BEGIN_LABEL): New macros.
+	(dwarf2out_begin_prologue): Set dw_fde_struct defaults for above.
+	(dwarf2out_vms_end_prologue): New function.
+	(dwarf2out_vms_begin_epilogue): New function.
+	(dw_val_struct): New value dw_val_class_vms_delta.
+	(gcc_debug_hooks): New entry begin_epilogue. Set end_prologue,
+	begin_epilogue for VMS.
+	(AT_vms_delta1, AT_vms_delta2, add_AT_vms_delta): Declare
+	new static functions.
+	(dwarf_attr_name): New cases DW_AT_HP_{prologue,epilogue}.
+	(AT_vms_delta1, AT_vms_delta2, add_AT_vms_delta): New 
+	static functions.
+	(print_die): New case dw_val_class_vms_delta.
+	(attr_checksum): Likewise.
+	(same_dw_val_p: Likewise.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(output_die): Likewise.
+	(gen_subprogram_die): Call add_AT_vms_delta on VMS.
+	(dwarf2out_begin_epilogue): Rename to dwarf2out_cfi_begin_epilogue
+	* dwarf2out.h (dwarf2out_begin_epilogue): Rename to
+	dwarf2out_cfi_begin_epilogue
+	* final.c (final_scan_insn): Likewise. Call begin_epilogue.
+
 2010-06-16  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/cris/cris-protos.h (cris_print_operand): Delete.

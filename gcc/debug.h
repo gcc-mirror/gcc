@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -74,6 +74,9 @@ struct gcc_debug_hooks
   /* Called at end of prologue code.  LINE is the first line in the
      function.  */
   void (* end_prologue) (unsigned int line, const char *file);
+
+  /* Called at beginning of epilogue code.  */
+  void (* begin_epilogue) (unsigned int line, const char *file);
 
   /* Record end of epilogue code.  */
   void (* end_epilogue) (unsigned int line, const char *file);
@@ -194,6 +197,8 @@ extern const struct gcc_debug_hooks vmsdbg_debug_hooks;
 /* Dwarf2 frame information.  */
 
 extern void dwarf2out_begin_prologue (unsigned int, const char *);
+extern void dwarf2out_vms_end_prologue (unsigned int, const char *);
+extern void dwarf2out_vms_begin_epilogue (unsigned int, const char *);
 extern void dwarf2out_end_epilogue (unsigned int, const char *);
 extern void dwarf2out_frame_init (void);
 extern void dwarf2out_frame_finish (void);

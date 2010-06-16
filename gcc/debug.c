@@ -1,5 +1,5 @@
 /* Do-nothing debug hooks for GCC.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -38,6 +38,7 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int_charstar_int_bool,	 /* source_line */
   debug_nothing_int_charstar,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
+  debug_nothing_int_charstar,	         /* begin_epilogue */
   debug_nothing_int_charstar,	         /* end_epilogue */
   debug_nothing_tree,		         /* begin_function */
   debug_nothing_int,		         /* end_function */

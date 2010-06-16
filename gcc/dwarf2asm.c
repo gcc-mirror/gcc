@@ -152,6 +152,35 @@ dw2_asm_output_delta (int size, const char *lab1, const char *lab2,
   va_end (ap);
 }
 
+/* Output the difference between two symbols in instruction units
+   in a given size.  */
+
+void
+dw2_asm_output_vms_delta (int size ATTRIBUTE_UNUSED,
+			  const char *lab1, const char *lab2,
+			  const char *comment, ...)
+{
+  va_list ap;
+
+  va_start (ap, comment);
+
+#ifndef ASM_OUTPUT_DWARF_VMS_DELTA
+  /* VMS Delta is only special on ia64-vms, but this funtion also gets
+     called on alpha-vms so it has to do something sane.  */
+  dw2_asm_output_delta (size, lab1, lab2, comment);
+#else
+  ASM_OUTPUT_DWARF_VMS_DELTA (asm_out_file, size, lab1, lab2);
+  if (flag_debug_asm && comment)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      vfprintf (asm_out_file, comment, ap);
+    }
+  fputc ('\n', asm_out_file);
+#endif
+
+  va_end (ap);
+}
+
 /* Output a section-relative reference to a LABEL, which was placed in
    BASE.  In general this can only be done for debugging symbols.
    E.g. on most targets with the GNU linker, this is accomplished with

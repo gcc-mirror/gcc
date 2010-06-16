@@ -1896,8 +1896,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_EPILOGUE_BEG:
 #if defined (DWARF2_UNWIND_INFO) && defined (HAVE_epilogue)
 	  if (dwarf2out_do_frame ())
-	    dwarf2out_begin_epilogue (insn);
+	    dwarf2out_cfi_begin_epilogue (insn);
 #endif
+	  (*debug_hooks->begin_epilogue) (last_linenum, last_filename);
 	  targetm.asm_out.function_begin_epilogue (file);
 	  break;
 

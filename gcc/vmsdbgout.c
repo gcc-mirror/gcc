@@ -1,6 +1,6 @@
 /* Output VMS debug format symbol table information from GCC.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
@@ -202,6 +202,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_source_line,
    vmsdbgout_begin_prologue,
    vmsdbgout_end_prologue,
+   debug_nothing_int_charstar,  /* begin_epilogue */
    vmsdbgout_end_epilogue,
    vmsdbgout_begin_function,
    vmsdbgout_end_function,
