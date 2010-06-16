@@ -1,3 +1,8 @@
+2010-06-16  Alan Modra  <amodra@gmail.com>
+
+	PR tree-optimization/44507
+	* gcc.dg/vect/pr44507.c (seeIf256ByteArrayIsConstant): Correct cast.
+
 2010-06-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/overload/arg3.C: Adjust error locations.
