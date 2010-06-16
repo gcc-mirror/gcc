@@ -1,3 +1,8 @@
+2010-06-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Adjust computation of new_position
+	and which entry to add padding for.
+
 2010-06-16  Jason Merrill  <jason@redhat.com>
 
 	* except.c (check_noexcept_r): Return the problematic function.
