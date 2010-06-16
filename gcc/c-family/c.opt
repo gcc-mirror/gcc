@@ -341,6 +341,10 @@ Wnested-externs
 C ObjC Var(warn_nested_externs) Warning
 Warn about \"extern\" declarations not at file scope
 
+Wnoexcept
+C++ ObjC++ Var(warn_noexcept) Warning
+Warn when a noexcept expression evaluates to true even though the expression can't actually throw
+
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template

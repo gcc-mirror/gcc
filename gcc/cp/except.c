@@ -1028,20 +1028,22 @@ check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = (code == AGGR_INIT_EXPR
 		 ? AGGR_INIT_EXPR_FN (t) : CALL_EXPR_FN (t));
+      tree type = TREE_TYPE (TREE_TYPE (fn));
+
+      STRIP_NOPS (fn);
       if (TREE_CODE (fn) == ADDR_EXPR)
 	{
 	  /* We do use TREE_NOTHROW for ABI internals like __dynamic_cast,
 	     and for C library functions known not to throw.  */
-	  tree fn2 = TREE_OPERAND (fn, 0);
-	  if (TREE_CODE (fn2) == FUNCTION_DECL
-	      && DECL_EXTERN_C_P (fn2)
-	      && (DECL_ARTIFICIAL (fn2)
-		  || nothrow_libfn_p (fn2)))
-	    return TREE_NOTHROW (fn2) ? NULL_TREE : t;
+	  fn = TREE_OPERAND (fn, 0);
+	  if (TREE_CODE (fn) == FUNCTION_DECL
+	      && DECL_EXTERN_C_P (fn)
+	      && (DECL_ARTIFICIAL (fn)
+		  || nothrow_libfn_p (fn)))
+	    return TREE_NOTHROW (fn) ? NULL_TREE : fn;
 	}
-      fn = TREE_TYPE (TREE_TYPE (fn));
-      if (!TYPE_NOTHROW_P (fn))
-	return t;
+      if (!TYPE_NOTHROW_P (type))
+	return fn;
     }
 
   return NULL_TREE;
@@ -1050,13 +1052,26 @@ check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 /* Evaluate noexcept ( EXPR ).  */
 
 tree
-finish_noexcept_expr (tree expr)
+finish_noexcept_expr (tree expr, tsubst_flags_t complain)
 {
+  tree fn;
+
   if (processing_template_decl)
     return build_min (NOEXCEPT_EXPR, boolean_type_node, expr);
 
-  if (cp_walk_tree_without_duplicates (&expr, check_noexcept_r, 0))
-    return boolean_false_node;
+  fn = cp_walk_tree_without_duplicates (&expr, check_noexcept_r, 0);
+  if (fn)
+    {
+      if ((complain & tf_warning) && TREE_CODE (fn) == FUNCTION_DECL
+	  && TREE_NOTHROW (fn) && !DECL_ARTIFICIAL (fn))
+	{
+	  warning (OPT_Wnoexcept, "noexcept-expression evaluates to %<false%> "
+		   "because of a call to %qD", fn);
+	  warning (OPT_Wnoexcept, "but %q+D does not throw; perhaps "
+		   "it should be declared %<noexcept%>", fn);
+	}
+      return boolean_false_node;
+    }
   else
     return boolean_true_node;
 }

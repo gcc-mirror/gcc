@@ -196,7 +196,7 @@ in the following sections.
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
--Wnon-virtual-dtor  -Wreorder @gol
+-Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
@@ -2281,6 +2281,14 @@ union U @{
 Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
 public static member functions.
+
+@item -Wnoexcept @r{(C++ and Objective-C++ only)}
+@opindex Wnoexcept
+@opindex Wno-noexcept
+Warn when a noexcept-expression evaluates to false because of a call
+to a function that does not have a non-throwing exception
+specification (i.e. @samp{throw()} or @samp{noexcept}) but is known by
+the compiler to never throw an exception.
 
 @item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wnon-virtual-dtor

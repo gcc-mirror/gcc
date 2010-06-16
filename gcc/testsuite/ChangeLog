@@ -1,5 +1,7 @@
 2010-06-16  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/noexcept03.C: Test -Wnoexcept.
+
 	* g++.dg/cpp0x/noexcept01.C: Test defaulted fns.
 
 2010-06-16  Richard Guenther  <rguenther@suse.de>
