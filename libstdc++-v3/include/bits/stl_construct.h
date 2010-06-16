@@ -67,19 +67,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * Constructs an object in existing memory by invoking an allocated
    * object's constructor with an initializer.
    */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _T1, typename... _Args>
+    inline void
+    _Construct(_T1* __p, _Args&&... __args)
+    { ::new(static_cast<void*>(__p)) _T1(std::forward<_Args>(__args)...); }
+#else
   template<typename _T1, typename _T2>
     inline void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-    // Allow perfect forwarding
-    _Construct(_T1* __p, _T2&& __value)
-#else
     _Construct(_T1* __p, const _T2& __value)
-#endif
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_]allocator::construct
-      ::new(static_cast<void*>(__p)) _T1(_GLIBCXX_FORWARD(_T2, __value));
+      ::new(static_cast<void*>(__p)) _T1(__value);
     }
+#endif
 
   /**
    * Destroy the object pointed to by a pointer type.
