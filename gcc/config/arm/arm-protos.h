@@ -136,8 +136,6 @@ extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);
 extern const char *output_return_instruction (rtx, int, int);
 extern void arm_poke_function_name (FILE *, const char *);
-extern void arm_print_operand (FILE *, rtx, int);
-extern void arm_print_operand_address (FILE *, rtx);
 extern void arm_final_prescan_insn (rtx);
 extern int arm_debugger_arg_offset (int, rtx);
 extern bool arm_is_long_call_p (tree);
