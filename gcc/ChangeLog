@@ -1,3 +1,9 @@
+2010-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/44464
+	* tree-sra.c (replace_removed_params_ssa_names): Call release_ssa_name
+	on the newly dead SSA name.
+
 2010-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
