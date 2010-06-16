@@ -1489,6 +1489,7 @@ df_compact_blocks (void)
 		  + i * dflow->problem->block_info_elt_size, 0,
 		  (last_basic_block - i)
 		  * dflow->problem->block_info_elt_size);
+	  free (problem_temps);
 	}
     }
 
