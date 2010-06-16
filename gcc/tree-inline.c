@@ -892,7 +892,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  int invariant = is_gimple_min_invariant (*tp);
 	  tree block = id->block;
 	  id->block = NULL_TREE;
-	  walk_tree (&TREE_OPERAND (*tp, 0), copy_tree_body_r, id, NULL);
+	  walk_tree (&TREE_OPERAND (*tp, 0), remap_gimple_op_r, data, NULL);
 	  id->block = block;
 
 	  /* Handle the case where we substituted an INDIRECT_REF

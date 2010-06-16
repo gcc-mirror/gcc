@@ -1,3 +1,8 @@
+2010-06-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (remap_gimple_op_r): Recurse using
+	remap_gimple_op_r.
+
 2010-06-16  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/ia64/vms.h (ASM_OUTPUT_DWARF_DELTA_UNITS): Remove.
