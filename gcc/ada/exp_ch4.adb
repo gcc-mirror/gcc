@@ -47,6 +47,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -8676,7 +8677,6 @@ package body Exp_Ch4 is
 
       Result := New_Reference_To (Standard_True, Loc);
       C := Suitable_Element (First_Entity (Typ));
-
       while Present (C) loop
          declare
             New_Lhs : Node_Id;
@@ -8745,7 +8745,28 @@ package body Exp_Ch4 is
       Shortcut_Ent   : constant Entity_Id := Boolean_Literals (Shortcut_Value);
       --  If Left = Shortcut_Value then Right need not be evaluated
 
-      Expr_If_Left_True, Expr_If_Left_False : Node_Id;
+      function Make_Test_Expr (Opnd : Node_Id) return Node_Id;
+      --  For Opnd a boolean expression, return a Boolean expression equivalent
+      --  to Opnd /= Shortcut_Value.
+
+      --------------------
+      -- Make_Test_Expr --
+      --------------------
+
+      function Make_Test_Expr (Opnd : Node_Id) return Node_Id is
+      begin
+         if Shortcut_Value then
+            return Make_Op_Not (Sloc (Opnd), Opnd);
+         else
+            return Opnd;
+         end if;
+      end Make_Test_Expr;
+
+      Op_Var : Entity_Id;
+      --  Entity for a temporary variable holding the value of the operator,
+      --  used for expansion in the case where actions are present.
+
+   --  Start of processing for Expand_Short_Circuit_Operator
 
    begin
       --  Deal with non-standard booleans
@@ -8759,6 +8780,13 @@ package body Exp_Ch4 is
       --  Check for cases where left argument is known to be True or False
 
       if Compile_Time_Known_Value (Left) then
+
+         --  Mark SCO for left condition as compile time known
+
+         if Generate_SCO and then Comes_From_Source (Left) then
+            Set_SCO_Condition (Left, Expr_Value_E (Left) = Standard_True);
+         end if;
+
          --  Rewrite True AND THEN Right / False OR ELSE Right to Right.
          --  Any actions associated with Right will be executed unconditionally
          --  and can thus be inserted into the tree unconditionally.
@@ -8787,52 +8815,66 @@ package body Exp_Ch4 is
       --  If Actions are present, we expand
 
       --     left AND THEN right
-      --     left OR ELSE right
 
       --  into
 
-      --     if left then right else false end
-      --     if left then true else right end
+      --     C : Boolean := False;
+      --     IF left THEN
+      --        Actions;
+      --        IF right THEN
+      --           C := True;
+      --        END IF;
+      --     END IF;
 
-      --  with the actions for the right operand being transferred to the
-      --  approriate actions list of the conditional expression. This
-      --  conditional expression is then further expanded (and will eventually
-      --  disappear).
+      --  and finally rewrite the operator into a reference to C. Similarly
+      --  for left OR ELSE right, with negated values. Note that this rewriting
+      --  preserves two invariants that traces-based coverage analysis depends
+      --  upon:
+
+      --    - there is exactly one conditional jump for each operand;
+
+      --    - for each possible values of the expression, there is exactly
+      --      one location in the generated code that is branched to
+      --      (the inner assignment in one case, the point just past the
+      --      outer END IF; in the other case).
 
       if Present (Actions (N)) then
          Actlist := Actions (N);
 
-         if Kind = N_And_Then then
-            Expr_If_Left_True  := Right;
-            Expr_If_Left_False := New_Occurrence_Of (Standard_False, Loc);
+         Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
 
-         else
-            Expr_If_Left_True  := New_Occurrence_Of (Standard_True, Loc);
-            Expr_If_Left_False := Right;
-         end if;
+         Insert_Action (N,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Op_Var,
+             Object_Definition =>
+               New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression =>
+               New_Occurrence_Of (Shortcut_Ent, Loc)));
 
-         Rewrite (N,
-            Make_Conditional_Expression (Loc,
-              Expressions => New_List (
-                Left,
-                Expr_If_Left_True,
-                Expr_If_Left_False)));
+         Append_To (Actlist,
+           Make_Implicit_If_Statement (Right,
+             Condition       => Make_Test_Expr (Right),
+             Then_Statements => New_List (
+               Make_Assignment_Statement (Sloc (Right),
+                 Name =>
+                   New_Occurrence_Of (Op_Var, Sloc (Right)),
+                 Expression =>
+                   New_Occurrence_Of
+                     (Boolean_Literals (not Shortcut_Value), Sloc (Right))))));
 
-         --  If the right part of an AND THEN is a function call then it can
-         --  be part of the expansion of the predefined equality operator of a
-         --  tagged type and we may need to adjust its SCIL dispatching node.
+         Insert_Action (N,
+           Make_Implicit_If_Statement (Left,
+             Condition       => Make_Test_Expr (Left),
+             Then_Statements => Actlist));
+
+         Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
 
          if Generate_SCIL
            and then Kind = N_And_Then
            and then Nkind (Right) = N_Function_Call
          then
             Adjust_SCIL_Node (N, Right);
-         end if;
-
-         if Kind = N_And_Then then
-            Set_Then_Actions (N, Actlist);
-         else
-            Set_Else_Actions (N, Actlist);
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);
@@ -8843,6 +8885,13 @@ package body Exp_Ch4 is
       --  No actions present, check for cases of right argument True/False
 
       if Compile_Time_Known_Value (Right) then
+
+         --  Mark SCO for left condition as compile time known
+
+         if Generate_SCO and then Comes_From_Source (Right) then
+            Set_SCO_Condition (Right, Expr_Value_E (Right) = Standard_True);
+         end if;
+
          --  Change (Left and then True), (Left or else False) to Left.
          --  Note that we know there are no actions associated with the right
          --  operand, since we just checked for this case above.

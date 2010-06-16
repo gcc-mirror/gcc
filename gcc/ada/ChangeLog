@@ -1,3 +1,9 @@
+2010-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* get_scos.adb, par_sco.adb, par_sco.ads, put_scos.adb, scos.adb,
+	scos.ads, exp_ch4.adb, sem_warn.adb: Code clean up, update
+	documentation.
+
 2010-06-16  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Expand_Dispatching_Call): Adjust the decoration of the
