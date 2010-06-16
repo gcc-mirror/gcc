@@ -484,6 +484,12 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	}
       break;
 
+    case 'N':
+      gcc_assert (CONST_INT_P (op));
+      fprintf (file, "#");
+      rx_print_integer (file, - INTVAL (op));
+      break;
+
     case 'Q':
       if (MEM_P (op))
 	{
@@ -1667,7 +1673,7 @@ rx_notice_update_cc (rtx body, rtx insn)
     case CC_SET_ZSOC:
       /* The insn sets all the condition code bits.  */
       CC_STATUS_INIT;
-      cc_status.value1 = SET_SRC (body);
+      cc_status.value1 = SET_DEST (body);
       break;
     case CC_SET_ZSO:
       /* Insn sets the Z,S and O flags, but not the C flag.  */
@@ -1679,6 +1685,12 @@ rx_notice_update_cc (rtx body, rtx insn)
 	 the type of comparison cannot be satisfied by the range of flag
 	 bits being set here.  See gcc.c-torture/execute/20041210-1.c
 	 for an example of this in action.  */
+      break;
+    case CC_SET_ZSC:
+      /* Insn sets the Z,S and C flags, but not the O flag.  */
+      CC_STATUS_INIT;
+      cc_status.flags |= CC_NO_OVERFLOW;
+      /* See comment above regarding cc_status.value1.  */
       break;
     case CC_SET_ZS:
       /* Insn sets the Z and S flags, but not the O or C flags.  */

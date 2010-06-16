@@ -92,7 +92,7 @@
 ;;   set_zso  - insn sets z,s,o to usable values;
 ;;   set_zsoc - insn sets z,s,o,c to usable values;
 ;;   clobber  - value of cc0 is unknown
-(define_attr "cc" "none,set_zs,set_zso,set_zsoc,clobber" (const_string "none"))
+(define_attr "cc" "none,set_zs,set_zso,set_zsoc,set_zsc,clobber" (const_string "none"))
 
 (define_attr "length" "" (const_int 8))
 
@@ -176,7 +176,7 @@
 					  [(cc0) (const_int 0)])
 		      (label_ref (match_operand 3 ""))
 		      (pc)))]
-  "ALLOW_RX_FPU_INSNS && !cfun->can_throw_non_call_exceptions"
+  "ALLOW_RX_FPU_INSNS && (cfun == NULL || !cfun->can_throw_non_call_exceptions)"
   ""
 )
 
@@ -204,7 +204,7 @@
   ""
   {
     rx_float_compare_mode = false;
-    return "cmp\t%Q1, %Q0";
+    return "cmp\t%Q1, %0";
   }
   [(set_attr "cc" "set_zsoc")
    (set_attr "timings" "11,11,11,11,11,11,33")
@@ -212,15 +212,15 @@
 )
 
 ;; This pattern is disabled if the function can throw non-call exceptions,
-;; it could generate a floating point exception, which would introduce an
-;; edge into the flow graph between this insn and the conditional branch
-;; insn to follow, thus breaking the cc0 relationship.  Run the g++ test
-;; g++.dg/eh/080514-1.C to see this happen.
+;; because it could generate a floating point exception, which would
+;; introduce an edge into the flow graph between this insn and the
+;; conditional branch insn to follow, thus breaking the cc0 relationship.
+;; Run the g++ test g++.dg/eh/080514-1.C to see this happen.
 (define_insn "cmpsf"
   [(set (cc0)
 	(compare:CC (match_operand:SF 0 "register_operand"  "r,r,r")
 		    (match_operand:SF 1 "rx_source_operand" "r,i,Q")))]
-  "ALLOW_RX_FPU_INSNS && !cfun->can_throw_non_call_exceptions"
+  "ALLOW_RX_FPU_INSNS && (cfun == NULL || !cfun->can_throw_non_call_exceptions)"
   {
     rx_float_compare_mode = true;
     return "fcmp\t%1, %0";
@@ -391,6 +391,7 @@
   jsr\t%0
   bsr\t%A0"
   [(set_attr "length" "2,4")
+   (set_attr "cc" "clobber")
    (set_attr "timings" "33")]
 )
 
@@ -418,6 +419,7 @@
   jsr\t%1
   bsr\t%A1"
   [(set_attr "length" "2,4")
+   (set_attr "cc" "clobber")
    (set_attr "timings" "33")]
 )
 
@@ -616,7 +618,7 @@
     rx_float_compare_mode = false;
     return "cmp\t%Q3, %Q2\n\tsc%B1.L\t%0";
   }
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "clobber") ;; Because cc0 is set based on comparing ops 2 & 3 not the value in op 0.
    (set_attr "timings" "22,22,22,22,22,22,44")
    (set_attr "length"  "5,5,6,7,8,9,8")]
 )
@@ -650,7 +652,7 @@
   cmp\t%Q4, %Q3\n\tstnz\t%2, %0
   cmp\t%Q4, %Q3\n\tmov.l\t%2, %0\n\tstz\t%1, %0
   cmp\t%Q4, %Q3\n\tmov.l\t%1, %0\n\tstnz\t%2, %0"
-  [(set_attr "cc"      "set_zsoc")
+  [(set_attr "cc"      "clobber") ;; See cstoresi4
    (set_attr "length"  "13,19,15")
    (set_attr "timings" "22,33,33")]
 )
@@ -666,7 +668,7 @@
   cmp\t%Q4, %Q3\n\tstz\t%2, %0
   cmp\t%Q4, %Q3\n\tmov.l\t%2, %0\n\tstnz\t%1, %0
   cmp\t%Q4, %Q3\n\tmov.l\t%1, %0\n\tstz\t%2, %0"
-  [(set_attr "cc"      "set_zsoc")
+  [(set_attr "cc"      "clobber") ;; See cstoresi4
    (set_attr "length"  "13,19,15")
    (set_attr "timings" "22,33,33")]
 )
@@ -686,17 +688,18 @@
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand"
-			  "=r,r,r,r,r,r,r,r,r,r,r,r")
+			  "=r,r,r,r,r,r,r,r,r,r,r,r,r")
 	(plus:SI (match_operand:SI
 		  1 "register_operand"
-		  "%0,0,0,0,0,0,r,r,r,r,r,0")
+		  "%0,0,0,0,0,0,0,r,r,r,r,r,0")
 		 (match_operand:SI
 		  2 "rx_source_operand"
-		  "r,Uint04,Sint08,Sint16,Sint24,i,r,Sint08,Sint16,Sint24,i,Q")))]
+		  "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "@
   add\t%2, %0
   add\t%2, %0
+  sub\t%N2, %0
   add\t%2, %0
   add\t%2, %0
   add\t%2, %0
@@ -707,9 +710,9 @@
   add\t%2, %1, %0
   add\t%2, %1, %0
   add\t%Q2, %0"
-  [(set_attr "cc" "set_zsoc")
-   (set_attr "timings" "11,11,11,11,11,11,11,11,11,11,11,33")
-   (set_attr "length" "2,2,3,4,5,6,3,3,4,5,6,5")]
+  [(set_attr "cc" "set_zsc") ;; See subsi3
+   (set_attr "timings" "11,11,11,11,11,11,11,11,11,11,11,11,33")
+   (set_attr "length" "2,2,2,3,4,5,6,3,3,4,5,6,5")]
 )
 
 (define_insn "adddi3"
@@ -719,17 +722,17 @@
 				   "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
   "add\t%L2, %L0\n\tadc\t%H2, %H0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zsc") ;; See subsi3
    (set_attr "timings" "22,22,22,22,22,44")
    (set_attr "length" "5,7,9,11,13,11")]
 )
 
 (define_insn "andsi3"
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
-	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,0,Q")
+	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
 		(match_operand:SI
 		 2 "rx_source_operand"
-		 "r,Uint04,Sint08,Sint16,Sint24,i,r,Q,0")))]
+		 "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))]
   ""
   "@
   and\t%2, %0
@@ -738,12 +741,12 @@
   and\t%2, %0
   and\t%2, %0
   and\t%2, %0
+  and\t%1, %0
   and\t%2, %1, %0
-  and\t%Q2, %0
-  and\t%Q1, %0"
+  and\t%Q2, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "11,11,11,11,11,11,11,33,33")
-   (set_attr "length" "2,2,3,4,5,6,3,5,5")]
+   (set_attr "length" "2,2,3,4,5,6,2,5,5")]
 )
 
 ;; Byte swap (single 32-bit value).
@@ -803,13 +806,7 @@
 				  2 "rx_source_operand"
 				  "r,Sint08,Sint16,Sint24,i,Q"))))]
   "! TARGET_BIG_ENDIAN_DATA"
-  "@
-  emul\t%Q2, %0
-  emul\t%Q2, %0
-  emul\t%Q2, %0
-  emul\t%Q2, %0
-  emul\t%Q2, %0
-  emul\t%Q2, %0"
+  "emul\t%Q2, %0"
   [(set_attr "length" "3,4,5,6,7,6")   
    (set_attr "timings" "22,22,22,22,22,44")]
 )
@@ -826,9 +823,7 @@
                  (zero_extend:DI (match_operand:SI 2 "rx_compare_operand"
 						   "r,Q"))))]
   "! TARGET_BIG_ENDIAN_DATA"
-  "@
-  emulu\t%Q2, %0
-  emulu\t%Q2, %0"
+  "emulu\t%Q2, %0"
   [(set_attr "length" "3,6")
    (set_attr "timings" "22,44")]
 )
@@ -850,35 +845,29 @@
 		 (match_operand:SI 2 "rx_source_operand"
 				   "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
-  "@
-  min\t%Q2, %0
-  min\t%Q2, %0
-  min\t%Q2, %0
-  min\t%Q2, %0
-  min\t%Q2, %0
-  min\t%Q2, %0"
+  "min\t%Q2, %0"
   [(set_attr "length"  "3,4,5,6,7,6")
    (set_attr "timings" "11,11,11,11,11,33")]
 )
 
 (define_insn "mulsi3"
   [(set (match_operand:SI          0 "register_operand" "=r,r,r,r,r,r,r,r,r")
-        (mult:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,0,Q,r")
+        (mult:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,0,r,r")
                  (match_operand:SI 2 "rx_source_operand"
 				   "r,Uint04,Sint08,Sint16,Sint24,i,Q,0,r")))]
   ""
   "@
+  mul\t%2, %0
+  mul\t%2, %0
+  mul\t%2, %0
+  mul\t%2, %0
+  mul\t%2, %0
   mul\t%Q2, %0
   mul\t%Q2, %0
-  mul\t%Q2, %0
-  mul\t%Q2, %0
-  mul\t%Q2, %0
-  mul\t%Q2, %0
-  mul\t%Q2, %0
-  mul\t%Q1, %0
-  mul\t%Q2, %1, %0"
-  [(set_attr "length"  "2,2,3,4,5,6,5,5,3")
-   (set_attr "timings" "11,11,11,11,11,11,33,33,11")]
+  mul\t%1, %0
+  mul\t%2, %1, %0"
+  [(set_attr "length"  "2,2,3,4,5,6,5,2,3")
+   (set_attr "timings" "11,11,11,11,11,11,33,11,11")]
 )
 
 (define_insn "negsi2"
@@ -890,7 +879,8 @@
   "@
   neg\t%0
   neg\t%1, %0"
-  [(set_attr "length" "2,3")]
+  [(set_attr "length" "2,3")
+   (set_attr "cc" "set_zsoc")]
 )
 
 (define_insn "one_cmplsi2"
@@ -906,9 +896,9 @@
 
 (define_insn "iorsi3"
   [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r,r,r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,0,Q")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
 	        (match_operand:SI 2 "rx_source_operand"
-				  "r,Uint04,Sint08,Sint16,Sint24,i,r,Q,0")))]
+				  "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))]
   ""
   "@
   or\t%2, %0
@@ -916,13 +906,13 @@
   or\t%2, %0
   or\t%2, %0
   or\t%2, %0
-  or\t%2, %0
-  or\t%2, %1, %0
   or\t%Q2, %0
-  or\t%Q1, %0"
+  or\t%1, %0
+  or\t%2, %1, %0
+  or\t%Q2, %0"
   [(set_attr "cc" "set_zs")
-   (set_attr "timings" "11,11,11,11,11,11,11,33,33")
-   (set_attr "length"  "2,2,3,4,5,6,3,5,5")]
+   (set_attr "timings" "11,11,11,11,11,11,11,11,33")
+   (set_attr "length"  "2,2,3,4,5,6,2,3,5")]
 )
 
 (define_insn "rotlsi3"
@@ -954,7 +944,7 @@
   shar\t%2, %0
   shar\t%2, %0
   shar\t%2, %1, %0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zs")
    (set_attr "length" "3,2,3")]
 )
 
@@ -967,7 +957,7 @@
   shlr\t%2, %0
   shlr\t%2, %0
   shlr\t%2, %1, %0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zs")
    (set_attr "length" "3,2,3")]
 )
 
@@ -980,7 +970,7 @@
   shll\t%2, %0
   shll\t%2, %0
   shll\t%2, %1, %0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zs")
    (set_attr "length" "3,2,3")]
 )
 
@@ -995,7 +985,10 @@
   add\t%N2, %0
   sub\t%2, %1, %0
   sub\t%Q2, %0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zsc") ;; Note - we do not acknowledge that the SUB
+   ;; instruction sets the Overflow flag because its interpretation is
+   ;; different from comparing the result against zero.  Compile and run
+   ;; gcc.c-torture/execute/cmpsi-1.c to see this.
    (set_attr "timings" "11,11,11,11,33")
    (set_attr "length" "2,2,6,3,5")]
 )
@@ -1006,7 +999,7 @@
 		  (match_operand:DI 2 "rx_source_operand" "r,Q")))]
   ""
   "sub\t%L2, %L0\n\tsbb\t%H2, %H0"
-  [(set_attr "cc" "set_zsoc")
+  [(set_attr "cc" "set_zsc") ;; See subsi3
    (set_attr "timings" "22,44")
    (set_attr "length" "5,11")]
 )
@@ -1017,13 +1010,7 @@
 	        (match_operand:SI 2 "rx_source_operand"
 				  "r,Sint08,Sint16,Sint24,i,Q")))]
   ""
-  "@
-  xor\t%Q2, %0
-  xor\t%Q2, %0
-  xor\t%Q2, %0
-  xor\t%Q2, %0
-  xor\t%Q2, %0
-  xor\t%Q2, %0"
+  "xor\t%Q2, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length" "3,4,5,6,7,6")]
@@ -1036,10 +1023,7 @@
 	(plus:SF (match_operand:SF 1 "register_operand"  "%0,0,0")
 		 (match_operand:SF 2 "rx_source_operand"  "r,F,Q")))]
   "ALLOW_RX_FPU_INSNS"
-  "@
-  fadd\t%2, %0
-  fadd\t%2, %0
-  fadd\t%2, %0"
+  "fadd\t%2, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "44,44,66")
    (set_attr "length" "3,7,5")]
@@ -1061,10 +1045,7 @@
 	(mult:SF (match_operand:SF 1 "register_operand" "%0,0,0")
 		(match_operand:SF  2 "rx_source_operand" "r,F,Q")))]
   "ALLOW_RX_FPU_INSNS"
-  "@
-  fmul\t%2, %0
-  fmul\t%2, %0
-  fmul\t%2, %0"
+  "fmul\t%2, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "33,33,55")
    (set_attr "length"  "3,7,5")]
@@ -1075,7 +1056,7 @@
 	(minus:SF (match_operand:SF 1 "register_operand"  "0,0,0")
 		  (match_operand:SF 2 "rx_source_operand" "r,F,Q")))]
   "ALLOW_RX_FPU_INSNS"
-  "fsub\t%2, %0"
+  "fsub\t%Q2, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "44,44,66")
    (set_attr "length" "3,7,5")]
@@ -1085,7 +1066,7 @@
   [(set (match_operand:SI         0 "register_operand"  "=r,r")
 	(fix:SI (match_operand:SF 1 "rx_compare_operand" "r,Q")))]
   "ALLOW_RX_FPU_INSNS"
-  "ftoi\t%1, %0"
+  "ftoi\t%Q1, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "22,44")
    (set_attr "length" "3,5")]
@@ -1095,7 +1076,7 @@
   [(set (match_operand:SF           0 "register_operand"  "=r,r")
 	(float:SF (match_operand:SI 1 "rx_compare_operand" "r,Q")))]
   "ALLOW_RX_FPU_INSNS"
-  "itof\t%1, %0"
+  "itof\t%Q1, %0"
   [(set_attr "cc" "set_zs")
    (set_attr "timings" "22,44")
    (set_attr "length" "3,6")]
@@ -1109,7 +1090,7 @@
 ;; of three instructions at a time.
 
 (define_insn "bitset"
-  [(set:SI (match_operand:SI 0 "register_operand" "+r")
+  [(set:SI (match_operand:SI 0 "register_operand" "=r")
 	   (ior:SI (match_operand:SI 1 "register_operand" "0")
 		   (ashift:SI (const_int 1)
 			      (match_operand:SI 2 "nonmemory_operand" "ri"))))]
@@ -1119,7 +1100,7 @@
 )
 
 (define_insn "bitset_in_memory"
-  [(set:QI (match_operand:QI 0 "memory_operand" "+m")
+  [(set:QI (match_operand:QI 0 "memory_operand" "=m")
 	   (ior:QI (match_operand:QI 1 "memory_operand" "0")
 		   (ashift:QI (const_int 1)
 			      (match_operand:QI 2 "nonmemory_operand" "ri"))))]
@@ -1661,7 +1642,7 @@
 		   UNSPEC_BUILTIN_ROUND))]
   ""
   "round\t%1, %0"
-  [(set_attr "cc" "set_zs")
+  [(set_attr "cc" "clobber")
    (set_attr "timings" "22,44")   
    (set_attr "length" "3,5")]
 )
