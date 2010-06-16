@@ -3463,11 +3463,16 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  nmode = get_best_mode (lbitsize, lbitpos,
-			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
-			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
-				TYPE_ALIGN (TREE_TYPE (rinner))),
-			 word_mode, lvolatilep || rvolatilep);
+  if (lvolatilep
+      && GET_MODE_BITSIZE (lmode) > 0
+      && flag_strict_volatile_bitfields > 0)
+    nmode = lmode;
+  else
+    nmode = get_best_mode (lbitsize, lbitpos,
+			   const_p ? TYPE_ALIGN (TREE_TYPE (linner))
+			   : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
+				  TYPE_ALIGN (TREE_TYPE (rinner))),
+			   word_mode, lvolatilep || rvolatilep);
   if (nmode == VOIDmode)
     return 0;
 

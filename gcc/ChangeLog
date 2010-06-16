@@ -1,3 +1,17 @@
+2010-06-16  DJ Delorie  <dj@redhat.com>
+
+	* common.opt (-fstrict-volatile-bitfields): new.
+	* doc/invoke.texi: Document it.
+	* fold-const.c (optimize_bit_field_compare): For volatile
+	bitfields, use the field's type to determine the mode, not the
+	field's size.
+	* expr.c (expand_assignment): Likewise.
+	(get_inner_reference): Likewise.
+	(expand_expr_real_1): Likewise.
+	* expmed.c (store_fixed_bit_field): Likewise.
+	(extract_bit_field_1): Likewise.
+	(extract_fixed_bit_field): Likewise.
+
 2010-06-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (remap_gimple_op_r): Recurse using

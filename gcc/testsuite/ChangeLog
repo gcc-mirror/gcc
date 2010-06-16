@@ -1,3 +1,8 @@
+2010-06-16  DJ Delorie  <dj@redhat.com>
+
+	* gcc.target/i386/volatile-bitfields-1.c: New.
+	* gcc.target/i386/volatile-bitfields-2.c: New.
+
 2010-06-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/noexcept03.C: Test -Wnoexcept.

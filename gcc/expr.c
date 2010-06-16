@@ -4229,6 +4229,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       to_rtx = expand_normal (tem);
 
+      /* If the bitfield is volatile, we want to access it in the
+	 field's mode, not the computed mode.  */
+      if (volatilep
+	  && GET_CODE (to_rtx) == MEM
+	  && flag_strict_volatile_bitfields > 0)
+	to_rtx = adjust_address (to_rtx, mode1, 0);
+ 
       if (offset != 0)
 	{
 	  enum machine_mode address_mode;
@@ -5990,6 +5997,12 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	mode = DECL_MODE (field);
       else if (DECL_MODE (field) == BLKmode)
 	blkmode_bitfield = true;
+      else if (TREE_THIS_VOLATILE (exp)
+	       && flag_strict_volatile_bitfields > 0)
+	/* Volatile bitfields should be accessed in the mode of the
+	     field's type, not the mode computed based on the bit
+	     size.  */
+	mode = TYPE_MODE (DECL_BIT_FIELD_TYPE (field));
 
       *punsignedp = DECL_UNSIGNED (field);
     }
@@ -8966,6 +8979,14 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  || modifier == EXPAND_STACK_PARM)
 			 ? modifier : EXPAND_NORMAL);
 
+
+	/* If the bitfield is volatile, we want to access it in the
+	   field's mode, not the computed mode.  */
+	if (volatilep
+	    && GET_CODE (op0) == MEM
+	    && flag_strict_volatile_bitfields > 0)
+	  op0 = adjust_address (op0, mode1, 0);
+
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
 
@@ -9091,6 +9112,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT
 		&& modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_INITIALIZER)
+	    /* If the field is volatile, we always want an aligned
+	       access.  */
+	    || (volatilep && flag_strict_volatile_bitfields > 0)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
