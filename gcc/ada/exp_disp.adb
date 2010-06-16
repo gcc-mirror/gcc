@@ -922,6 +922,15 @@ package body Exp_Disp is
          --  we generate: x.tag = y.tag and then x = y
 
          if Subp = Eq_Prim_Op then
+
+            --  Adjust the node referenced by the SCIL node to skip the tags
+            --  comparison because it is the information needed by the SCIL
+            --  backend to process this dispatching call
+
+            if Generate_SCIL then
+               Set_SCIL_Related_Node (SCIL_Node, New_Call);
+            end if;
+
             Param := First_Actual (Call_Node);
             New_Call :=
               Make_And_Then (Loc,

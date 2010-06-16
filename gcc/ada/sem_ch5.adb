@@ -1198,7 +1198,7 @@ package body Sem_Ch5 is
          else
             Error_Msg_N
               ("cannot exit from program unit or accept statement", N);
-            exit;
+            return;
          end if;
       end loop;
 

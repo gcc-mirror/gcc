@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Back_End; use Back_End;
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
@@ -662,20 +663,27 @@ package body Switch.C is
             when 'p' =>
                Ptr := Ptr + 1;
 
-               --  Set all specific options as well as All_Checks in the
-               --  Suppress_Options array, excluding Elaboration_Check, since
-               --  this is treated specially because we do not want -gnatp to
-               --  disable static elaboration processing.
+               --  Skip processing if cancelled by subsequent -gnat-p
 
-               for J in Suppress_Options'Range loop
-                  if J /= Elaboration_Check then
-                     Suppress_Options (J) := True;
-                  end if;
-               end loop;
+               if Switch_Subsequently_Cancelled ("p") then
+                  Store_Switch := False;
 
-               Validity_Checks_On         := False;
-               Opt.Suppress_Checks        := True;
-               Opt.Enable_Overflow_Checks := False;
+               else
+                  --  Set all specific options as well as All_Checks in the
+                  --  Suppress_Options array, excluding Elaboration_Check,
+                  --  since this is treated specially because we do not want
+                  --  -gnatp to disable static elaboration processing.
+
+                  for J in Suppress_Options'Range loop
+                     if J /= Elaboration_Check then
+                        Suppress_Options (J) := True;
+                     end if;
+                  end loop;
+
+                  Validity_Checks_On         := False;
+                  Opt.Suppress_Checks        := True;
+                  Opt.Enable_Overflow_Checks := False;
+               end if;
 
             --  Processing for P switch
 
@@ -933,6 +941,7 @@ package body Switch.C is
             --  Processing for z switch
 
             when 'z' =>
+
                --  -gnatz must be the first and only switch in Switch_Chars,
                --  and is a two-letter switch.
 
@@ -1027,10 +1036,31 @@ package body Switch.C is
                   Ada_Version_Explicit := Ada_Version;
                end if;
 
-            --  Ignore extra switch character
+            --  Switch cancellation, currently only -gnat-p is allowed.
+            --  All we do here is the error checking, since the actual
+            --  processing for switch cancellation is done by calls to
+            --  Switch_Subsequently_Cancelled at the appropriate point.
 
-            when '/' | '-' =>
-               Ptr := Ptr + 1;
+            when '-' =>
+
+               --  Simple ignore -gnat-p
+
+               if Switch_Chars = "-gnat-p" then
+                  return;
+
+               --  Any other occurrence of minus is ignored. This is for
+               --  maximum compatibility with previous version which ignored
+               --  all occurrences of minus.
+
+               else
+                  Store_Switch := False;
+                  Ptr := Ptr + 1;
+               end if;
+
+            --  We ignore '/' in switches, this is historical, still needed???
+
+            when '/' =>
+               Store_Switch := False;
 
             --  Anything else is an error (illegal switch character)
 

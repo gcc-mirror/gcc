@@ -598,4 +598,9 @@ begin
       Write_Line ("Allow Ada 2005 extensions");
    end if;
 
+   --  Line for -gnat-p switch
+
+   Write_Switch_Char ("-p");
+   Write_Line ("Cancel effect of previous -gnatp switch");
+
 end Usage;

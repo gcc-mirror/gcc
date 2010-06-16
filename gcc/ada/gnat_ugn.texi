@@ -4294,7 +4294,12 @@ controlled by this switch (division by zero checking is on by default).
 
 @item -gnatp
 @cindex @option{-gnatp} (@command{gcc})
-Suppress all checks. See @ref{Run-Time Checks} for details.
+Suppress all checks. See @ref{Run-Time Checks} for details. This switch
+has no effect if cancelled by a subsequent @option{-gnat-p} switch.
+
+@item -gnat-p
+@cindex @option{-gnat-p} (@command{gcc})
+Cancel effect of previous @option{-gnatp} switch.
 
 @item -gnatP
 @cindex @option{-gnatP} (@command{gcc})
@@ -4590,6 +4595,9 @@ The switches
 ^^@option{/DISTRIBUTION_STUBS=},^
 @option{-gnatzc} and @option{-gnatzr} may not be combined with any other
 switches, and only one of them may appear in the command line.
+
+@item
+The switch @option{-gnat-p} may not be combined with any other switch.
 
 @ifclear vms
 @item
@@ -6621,6 +6629,16 @@ do anything else. It might even do exactly what you wanted it to do
 year). The compiler will generate code based on the assumption that
 the condition being checked is true, which can result in disaster if
 that assumption is wrong.
+
+The @option{-gnatp} switch has no effect if a subsequent
+@option{-gnat-p} switch appears.
+
+@item -gnat-p
+@cindex @option{-gnat-p} (@command{gcc})
+@cindex Suppressing checks
+@cindex Checks, suppressing
+@findex Suppress
+This switch cancels the effect of a previous @option{gnatp} switch.
 
 @item -gnato
 @cindex @option{-gnato} (@command{gcc})

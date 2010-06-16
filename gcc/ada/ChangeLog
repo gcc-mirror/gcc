@@ -1,3 +1,34 @@
+2010-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): Adjust the decoration of the
+	node referenced by the SCIL node of dispatching "=" to skip the tags
+	comparison.
+
+2010-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Exit_Statement): Return if no enclosing loop,
+	to prevent cascaded errors and compilation aborts.
+
+2010-06-16  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb (Switch_Subsequently_Cancelled): New function
+	Move declarations to package body level to support this change
+	* back_end.ads (Switch_Subsequently_Cancelled): New function
+	* gnat_ugn.texi: Document -gnat-p switch
+	* switch-c.adb (Scan_Front_End_Switches): Implement -gnat-p switch
+	* ug_words: Add entry for -gnat-p (UNSUPPRESS_ALL)
+	* usage.adb: Add line for -gnat-p switch
+	* vms_data.ads: Add entry for UNSUPPRESS_ALL (-gnat-p)
+
+2010-06-16  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): Declaration counts as
+	modification.
+
+2010-06-16  Robert Dewar  <dewar@adacore.com>
+
+	* exp_disp.adb: Minor reformatting
+
 2010-06-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Complete_Private_Subtype): Inherit class_wide type from
