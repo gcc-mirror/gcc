@@ -16,7 +16,7 @@ int seeIf256ByteArrayIsConstant(
            index < 64;
            index += (int)sizeof(unsigned int))
         {
-          curVal = *((unsigned long *)(&pArray[index]));
+          curVal = *((unsigned int *)(&pArray[index]));
           orVal = orVal | curVal;
           andVal = andVal & curVal;
         }
