@@ -1,3 +1,7 @@
+2010-06-16  Jan Hubicka  <jh@suse.cz>
+
+	* df-core.c (df_compact_blocks): Free problem_temps vector.
+
 2010-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43905
