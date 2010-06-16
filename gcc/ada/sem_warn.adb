@@ -3507,26 +3507,16 @@ package body Sem_Warn is
         and then Is_Known_Branch
       then
          declare
-            Start : Source_Ptr;
-            Dummy : Source_Ptr;
-            Typ   : Character;
             Atrue : Boolean;
 
          begin
-            Sloc_Range (Orig, Start, Dummy);
             Atrue := Test_Result;
 
             if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not then
                Atrue := not Atrue;
             end if;
 
-            if Atrue then
-               Typ := 't';
-            else
-               Typ := 'f';
-            end if;
-
-            Set_SCO_Condition (Start, Typ);
+            Set_SCO_Condition (Orig, Atrue);
          end;
       end if;
 

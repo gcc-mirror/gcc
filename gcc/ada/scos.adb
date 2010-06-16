@@ -34,10 +34,11 @@ package body SCOs is
       To   : Source_Location := No_Source_Location;
       C1   : Character       := ' ';
       C2   : Character       := ' ';
+      Node : Node_Id         := Empty;
       Last : Boolean         := False)
    is
    begin
-      SCO_Table.Append ((From, To, C1, C2, Last));
+      SCO_Table.Append ((From, To, Node, C1, C2, Last));
    end Add_SCO;
 
    ----------------
