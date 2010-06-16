@@ -1253,16 +1253,6 @@ enum cris_pic_symbol_type
 #define ADDITIONAL_REGISTER_NAMES \
  {{"r14", 14}, {"r15", 15}, {"pc", 15}}
 
-#define PRINT_OPERAND(FILE, X, CODE)		\
- cris_print_operand (FILE, X, CODE)
-
-/* For delay-slot handling.  */
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
- ((CODE) == '#' || (CODE) == '!' || (CODE) == ':')
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
-   cris_print_operand_address (FILE, ADDR)
-
 /* Output an empty line to illustrate the presence of the delay slot.  */
 #define DBR_OUTPUT_SEQEND(FILE) \
   fprintf (FILE, "\n")

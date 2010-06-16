@@ -108,6 +108,12 @@ static void cris_operand_lossage (const char *, rtx);
 
 static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
 
+static void cris_print_operand (FILE *, rtx, int);
+
+static void cris_print_operand_address (FILE *, rtx);
+
+static bool cris_print_operand_punct_valid_p (unsigned char code);
+
 static void cris_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 
@@ -157,6 +163,13 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP TARGET_ASM_ALIGNED_DI_OP
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND cris_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS cris_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P cris_print_operand_punct_valid_p
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
@@ -687,7 +700,7 @@ saved_regs_mentioned (rtx x)
 
 /* The PRINT_OPERAND worker.  */
 
-void
+static void
 cris_print_operand (FILE *file, rtx x, int code)
 {
   rtx operand = x;
@@ -1114,9 +1127,15 @@ cris_print_operand (FILE *file, rtx x, int code)
     }
 }
 
+static bool
+cris_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '#' || code == '!' || code == ':');
+}
+
 /* The PRINT_OPERAND_ADDRESS worker.  */
 
-void
+static void
 cris_print_operand_address (FILE *file, rtx x)
 {
   /* All these were inside MEM:s so output indirection characters.  */

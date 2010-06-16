@@ -1,5 +1,18 @@
 2010-06-16  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/cris/cris-protos.h (cris_print_operand): Delete.
+	(cris_print_operand_address): Delete.
+	* config/cris/cris.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/cris/cris.c (cris_print_operand_address): Make static.
+	(cris_print_operand): Make static.
+	(cris_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS):
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+
+2010-06-16  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/arm/arm-protos.h (arm_print_operand): Delete.
 	(arm_print_operand_address): Delete.
 	* config/arm/arm.h (PRINT_OPERAND): Delete.
