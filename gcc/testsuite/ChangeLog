@@ -1,3 +1,7 @@
+2010-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/torture/pr43905.C: New test.
+
 2010-06-16  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR testsuite/44538

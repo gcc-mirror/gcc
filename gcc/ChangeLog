@@ -1,3 +1,14 @@
+2010-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43905
+	* tree-sra.c: Include tree-inline.h.
+	(create_abstract_origin): Removed.
+	(modify_function): Version the call graph node instead of creating
+	abstract origins and dealing with same_body aliases.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Check whether the
+	function is versionable.
+	* Makefile.in (tree-sra.o): Add TREE_INLINE_H to dependencies.
+
 2010-06-16  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/linux64.h (BIONIC_DYNAMIC_LINKERN32): Define.
