@@ -1,3 +1,8 @@
+2010-06-16  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/linux64.h (BIONIC_DYNAMIC_LINKERN32): Define.
+	(CHOOSE_DYNAMIC_LINKER): Update.
+
 2010-06-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (*prefetch_sse_<mode>):  Macroize insn from
