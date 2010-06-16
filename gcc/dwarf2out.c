@@ -299,6 +299,8 @@ typedef struct GTY(()) dw_fde_struct {
   const char *dw_fde_begin;
   const char *dw_fde_current_label;
   const char *dw_fde_end;
+  const char *dw_fde_vms_end_prologue;
+  const char *dw_fde_vms_begin_epilogue;
   const char *dw_fde_hot_section_label;
   const char *dw_fde_hot_section_end_label;
   const char *dw_fde_unlikely_section_label;
@@ -506,6 +508,14 @@ static void def_cfa_1 (const char *, dw_cfa_location *);
 
 #ifndef FUNC_END_LABEL
 #define FUNC_END_LABEL		"LFE"
+#endif
+
+#ifndef PROLOGUE_END_LABEL
+#define PROLOGUE_END_LABEL	"LPE"
+#endif
+
+#ifndef EPILOGUE_BEGIN_LABEL
+#define EPILOGUE_BEGIN_LABEL	"LEB"
 #endif
 
 #ifndef FRAME_BEGIN_LABEL
@@ -2789,7 +2799,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
    NOTE_INSN_CFA_RESTORE_STATE at the appropriate place in the stream.  */
 
 void
-dwarf2out_begin_epilogue (rtx insn)
+dwarf2out_cfi_begin_epilogue (rtx insn)
 {
   bool saw_frp = false;
   rtx i;
@@ -2862,7 +2872,8 @@ dwarf2out_begin_epilogue (rtx insn)
   cfa_remember.in_use = 1;
 }
 
-/* A "subroutine" of dwarf2out_begin_epilogue.  Emit the restore required.  */
+/* A "subroutine" of dwarf2out_cfi_begin_epilogue.  Emit the restore
+   required.  */
 
 void
 dwarf2out_frame_debug_restore_state (void)
@@ -3961,6 +3972,8 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   fde->dw_fde_switched_sections = 0;
   fde->dw_fde_switched_cold_to_hot = 0;
   fde->dw_fde_end = NULL;
+  fde->dw_fde_vms_end_prologue = NULL;
+  fde->dw_fde_vms_begin_epilogue = NULL;
   fde->dw_fde_cfi = NULL;
   fde->dw_fde_switch_cfi = NULL;
   fde->funcdef_number = current_function_funcdef_no;
@@ -4015,6 +4028,51 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 	sorry ("multiple EH personalities are supported only with assemblers "
 	       "supporting .cfi_personality directive");
     }
+}
+
+/* Output a marker (i.e. a label) for the end of the generated code
+   for a function prologue.  This gets called *after* the prologue code has
+   been generated.  */
+
+void
+dwarf2out_vms_end_prologue (unsigned int line ATTRIBUTE_UNUSED,
+			const char *file ATTRIBUTE_UNUSED)
+{
+  dw_fde_ref fde;
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  /* Output a label to mark the endpoint of the code generated for this
+     function.  */
+  ASM_GENERATE_INTERNAL_LABEL (label, PROLOGUE_END_LABEL,
+			       current_function_funcdef_no);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, PROLOGUE_END_LABEL,
+			  current_function_funcdef_no);
+  fde = &fde_table[fde_table_in_use - 1];
+  fde->dw_fde_vms_end_prologue = xstrdup (label);
+}
+
+/* Output a marker (i.e. a label) for the beginning of the generated code
+   for a function epilogue.  This gets called *before* the prologue code has
+   been generated.  */
+
+void
+dwarf2out_vms_begin_epilogue (unsigned int line ATTRIBUTE_UNUSED,
+			  const char *file ATTRIBUTE_UNUSED)
+{
+  dw_fde_ref fde;
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  fde = &fde_table[fde_table_in_use - 1];
+  if (fde->dw_fde_vms_begin_epilogue)
+    return;
+
+  /* Output a label to mark the endpoint of the code generated for this
+     function.  */
+  ASM_GENERATE_INTERNAL_LABEL (label, EPILOGUE_BEGIN_LABEL,
+			       current_function_funcdef_no);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, EPILOGUE_BEGIN_LABEL,
+			  current_function_funcdef_no);
+  fde->dw_fde_vms_begin_epilogue = xstrdup (label);
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code
@@ -4193,7 +4251,8 @@ enum dw_val_class
   dw_val_class_str,
   dw_val_class_macptr,
   dw_val_class_file,
-  dw_val_class_data8
+  dw_val_class_data8,
+  dw_val_class_vms_delta
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -4231,6 +4290,11 @@ typedef struct GTY(()) dw_val_struct {
       unsigned char GTY ((tag ("dw_val_class_flag"))) val_flag;
       struct dwarf_file_data * GTY ((tag ("dw_val_class_file"))) val_file;
       unsigned char GTY ((tag ("dw_val_class_data8"))) val_data8[8];
+      struct dw_val_vms_delta_union
+	{
+	  char * lbl1;
+	  char * lbl2;
+	} GTY ((tag ("dw_val_class_vms_delta"))) val_vms_delta;
     }
   GTY ((desc ("%1.val_class"))) v;
 }
@@ -5466,7 +5530,13 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_ignore_block,
   dwarf2out_source_line,
   dwarf2out_begin_prologue,
-  debug_nothing_int_charstar,	/* end_prologue */
+#if VMS_DEBUGGING_INFO
+  dwarf2out_vms_end_prologue,
+  dwarf2out_vms_begin_epilogue,
+#else
+  debug_nothing_int_charstar,
+  debug_nothing_int_charstar,
+#endif
   dwarf2out_end_epilogue,
   dwarf2out_begin_function,
   debug_nothing_int,		/* end_function */
@@ -6230,6 +6300,10 @@ static void prune_unused_types_walk_attribs (dw_die_ref);
 static void prune_unused_types_prune (dw_die_ref);
 static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
+static inline const char *AT_vms_delta1 (dw_attr_ref);
+static inline const char *AT_vms_delta2 (dw_attr_ref);
+static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
+				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
 
@@ -6737,14 +6811,24 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_MIPS_tail_loop_begin";
     case DW_AT_MIPS_epilog_begin:
       return "DW_AT_MIPS_epilog_begin";
+#if VMS_DEBUGGING_INFO
+    case DW_AT_HP_prologue:
+      return "DW_AT_HP_prologue";
+#else
     case DW_AT_MIPS_loop_unroll_factor:
       return "DW_AT_MIPS_loop_unroll_factor";
+#endif
     case DW_AT_MIPS_software_pipeline_depth:
       return "DW_AT_MIPS_software_pipeline_depth";
     case DW_AT_MIPS_linkage_name:
       return "DW_AT_MIPS_linkage_name";
+#if VMS_DEBUGGING_INFO
+    case DW_AT_HP_epilogue:
+      return "DW_AT_HP_epilogue";
+#else
     case DW_AT_MIPS_stride:
       return "DW_AT_MIPS_stride";
+#endif
     case DW_AT_MIPS_abstract_name:
       return "DW_AT_MIPS_abstract_name";
     case DW_AT_MIPS_clone_origin:
@@ -7310,6 +7394,21 @@ AT_file (dw_attr_ref a)
   return a->dw_attr_val.v.val_file;
 }
 
+/* Add a vms delta attribute value to a DIE.  */
+
+static inline void
+add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
+		  const char *lbl1, const char *lbl2)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_vms_delta;
+  attr.dw_attr_val.v.val_vms_delta.lbl1 = xstrdup (lbl1);
+  attr.dw_attr_val.v.val_vms_delta.lbl2 = xstrdup (lbl2);
+  add_dwarf_attr (die, &attr);
+}
+
 /* Add a label identifier attribute value to a DIE.  */
 
 static inline void
@@ -7379,6 +7478,24 @@ add_AT_range_list (dw_die_ref die, enum dwarf_attribute attr_kind,
   attr.dw_attr_val.val_class = dw_val_class_range_list;
   attr.dw_attr_val.v.val_offset = offset;
   add_dwarf_attr (die, &attr);
+}
+
+/* Return the start label of a delta attribute.  */
+
+static inline const char *
+AT_vms_delta1 (dw_attr_ref a)
+{
+  gcc_assert (a && (AT_class (a) == dw_val_class_vms_delta));
+  return a->dw_attr_val.v.val_vms_delta.lbl1;
+}
+
+/* Return the end label of a delta attribute.  */
+
+static inline const char *
+AT_vms_delta2 (dw_attr_ref a)
+{
+  gcc_assert (a && (AT_class (a) == dw_val_class_vms_delta));
+  return a->dw_attr_val.v.val_vms_delta.lbl2;
 }
 
 static inline const char *
@@ -8178,6 +8295,10 @@ print_die (dw_die_ref die, FILE *outfile)
 	  else
 	    fprintf (outfile, "die -> <null>");
 	  break;
+	case dw_val_class_vms_delta:
+	  fprintf (outfile, "delta: @slotcount(%s-%s)",
+		   AT_vms_delta2 (a), AT_vms_delta1 (a));
+	  break;
 	case dw_val_class_lbl_id:
 	case dw_val_class_lineptr:
 	case dw_val_class_macptr:
@@ -8356,6 +8477,7 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
       break;
 
     case dw_val_class_fde_ref:
+    case dw_val_class_vms_delta:
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -9086,6 +9208,7 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
       return same_die_p (v1->v.val_die_ref.die, v2->v.val_die_ref.die, mark);
 
     case dw_val_class_fde_ref:
+    case dw_val_class_vms_delta:
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -10267,6 +10390,9 @@ size_of_die (dw_die_ref die)
 	case dw_val_class_data8:
 	  size += 8;
 	  break;
+	case dw_val_class_vms_delta:
+	  size += DWARF_OFFSET_SIZE;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -10424,6 +10550,7 @@ value_format (dw_attr_ref a)
       if (dwarf_version >= 4)
 	return DW_FORM_sec_offset;
       /* FALLTHRU */
+    case dw_val_class_vms_delta:
     case dw_val_class_offset:
       switch (DWARF_OFFSET_SIZE)
 	{
@@ -10887,6 +11014,12 @@ output_die (dw_die_ref die)
 	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, l1, debug_frame_section,
 				   "%s", name);
 	  }
+	  break;
+
+	case dw_val_class_vms_delta:
+	  dw2_asm_output_vms_delta (DWARF_OFFSET_SIZE,
+				    AT_vms_delta2 (a), AT_vms_delta1 (a),
+				    "%s", name);
 	  break;
 
 	case dw_val_class_lbl_id:
@@ -18434,6 +18567,32 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
 				       current_function_funcdef_no);
 	  add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+
+#if VMS_DEBUGGING_INFO
+      /* HP OpenVMS Industry Standard 64: DWARF Extensions
+	 Section 2.3 Prologue and Epilogue Attributes:
+	 When a breakpoint is set on entry to a function, it is generally
+	 desirable for execution to be suspended, not on the very first
+	 instruction of the function, but rather at a point after the
+	 function's frame has been set up, after any language defined local
+	 declaration processing has been completed, and before execution of
+	 the first statement of the function begins. Debuggers generally
+	 cannot properly determine where this point is.  Similarly for a
+	 breakpoint set on exit from a function. The prologue and epilogue
+	 attributes allow a compiler to communicate the location(s) to use.  */
+
+      {
+        dw_fde_ref fde = &fde_table[current_funcdef_fde];
+
+        if (fde->dw_fde_vms_end_prologue)
+          add_AT_vms_delta (subr_die, DW_AT_HP_prologue,
+	    fde->dw_fde_begin, fde->dw_fde_vms_end_prologue);
+
+        if (fde->dw_fde_vms_begin_epilogue)
+          add_AT_vms_delta (subr_die, DW_AT_HP_epilogue,
+	    fde->dw_fde_begin, fde->dw_fde_vms_begin_epilogue);
+      }
+#endif
 
 	  add_pubname (decl, subr_die);
 	  add_arange (decl, subr_die);
