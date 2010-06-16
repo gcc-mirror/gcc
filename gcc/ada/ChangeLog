@@ -1,3 +1,27 @@
+2010-06-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/trans.c (gnu_stack_free_list): Delete.
+	(gnu_except_ptr_stack): Change type to VEC.  Update comment.
+	(gnu_elab_proc_stack): Likewise.
+	(gnu_return_label_stack): Likewise.
+	(gnu_loop_label_stack): Likewise.
+	(gnu_switch_label_stack): Likewise.
+	(gnu_constraint_label_stack): Likewise.
+	(gnu_storage_error_label_stack): Likewise.
+	(gnu_program_error_label_stack): Likewise.
+	(push_exception_label_stack): Take a VEC ** instead of a tree *.
+	(push_stack): Likewise.  Remove unused second parameter.  Update
+	callers.
+	(pop_stack): Take a VEC * instead of a tree *.  Update callers.
+	(gigi): Initialize stacks as VECs.
+	(Identifier_to_gnu): Use VEC_last instead of TREE_VALUE.
+	(Case_Statement_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(call_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_sjlj): Likewise.
+	(gnat_to_gnu): Likewise.
+	(get_exception_label): Likewise.
+
 2010-06-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): if derived type is an

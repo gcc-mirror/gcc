@@ -153,35 +153,28 @@ struct GTY((chain_next ("%h.next"))) elab_info {
 
 static GTY(()) struct elab_info *elab_info_list;
 
-/* Free list of TREE_LIST nodes used for stacks.  */
-static GTY((deletable)) tree gnu_stack_free_list;
+/* Stack of exception pointer variables.  Each entry is the VAR_DECL
+   that stores the address of the raised exception.  Nonzero means we
+   are in an exception handler.  Not used in the zero-cost case.  */
+static GTY(()) VEC(tree,gc) *gnu_except_ptr_stack;
 
-/* List of TREE_LIST nodes representing a stack of exception pointer
-   variables.  TREE_VALUE is the VAR_DECL that stores the address of
-   the raised exception.  Nonzero means we are in an exception
-   handler.  Not used in the zero-cost case.  */
-static GTY(()) tree gnu_except_ptr_stack;
+/* Stack for storing the current elaboration procedure decl.  */
+static GTY(()) VEC(tree,gc) *gnu_elab_proc_stack;
 
-/* List of TREE_LIST nodes used to store the current elaboration procedure
-   decl.  TREE_VALUE is the decl.  */
-static GTY(()) tree gnu_elab_proc_stack;
+/* Stack of labels to be used as a goto target instead of a return in
+   some functions.  See processing for N_Subprogram_Body.  */
+static GTY(()) VEC(tree,gc) *gnu_return_label_stack;
 
-/* Variable that stores a list of labels to be used as a goto target instead of
-   a return in some functions.  See processing for N_Subprogram_Body.  */
-static GTY(()) tree gnu_return_label_stack;
+/* Stack of LOOP_STMT nodes.  */
+static GTY(()) VEC(tree,gc) *gnu_loop_label_stack;
 
-/* List of TREE_LIST nodes representing a stack of LOOP_STMT nodes.
-   TREE_VALUE of each entry is the label of the corresponding LOOP_STMT.  */
-static GTY(()) tree gnu_loop_label_stack;
+/* Stack of labels for switch statements.  */
+static GTY(()) VEC(tree,gc) *gnu_switch_label_stack;
 
-/* List of TREE_LIST nodes representing labels for switch statements.
-   TREE_VALUE of each entry is the label at the end of the switch.  */
-static GTY(()) tree gnu_switch_label_stack;
-
-/* List of TREE_LIST nodes containing the stacks for N_{Push,Pop}_*_Label.  */
-static GTY(()) tree gnu_constraint_error_label_stack;
-static GTY(()) tree gnu_storage_error_label_stack;
-static GTY(()) tree gnu_program_error_label_stack;
+/* The stacks for N_{Push,Pop}_*_Label.  */
+static GTY(()) VEC(tree,gc) *gnu_constraint_error_label_stack;
+static GTY(()) VEC(tree,gc) *gnu_storage_error_label_stack;
+static GTY(()) VEC(tree,gc) *gnu_program_error_label_stack;
 
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
@@ -192,10 +185,10 @@ static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void add_cleanup (tree, Node_Id);
 static void add_stmt_list (List_Id);
-static void push_exception_label_stack (tree *, Entity_Id);
+static void push_exception_label_stack (VEC(tree,gc) **, Entity_Id);
 static tree build_stmt_group (List_Id, bool);
-static void push_stack (tree *, tree, tree);
-static void pop_stack (tree *);
+static void push_stack (VEC(tree,gc) **, tree);
+static void pop_stack (VEC(tree,gc) *);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
@@ -609,11 +602,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
      user available facilities for Intrinsic imports.  */
   gnat_install_builtins ();
 
-  gnu_except_ptr_stack = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
-  gnu_constraint_error_label_stack
-    = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
-  gnu_storage_error_label_stack = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
-  gnu_program_error_label_stack = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
+  VEC_safe_push (tree, gc, gnu_except_ptr_stack, NULL_TREE);
+  VEC_safe_push (tree, gc, gnu_constraint_error_label_stack, NULL_TREE);
+  VEC_safe_push (tree, gc, gnu_storage_error_label_stack, NULL_TREE);
+  VEC_safe_push (tree, gc, gnu_program_error_label_stack, NULL_TREE);
 
   /* Process any Pragma Ident for the main unit.  */
 #ifdef ASM_OUTPUT_IDENT
@@ -973,7 +965,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      variables of non-constant size because they are automatically allocated
      to memory.  There might be no way of allocating a proper temporary for
      them in any case.  We only do this for SJLJ though.  */
-  if (TREE_VALUE (gnu_except_ptr_stack)
+  if (VEC_last (tree, gnu_except_ptr_stack)
       && TREE_CODE (gnu_result) == VAR_DECL
       && TREE_CODE (DECL_SIZE_UNIT (gnu_result)) == INTEGER_CST)
     TREE_THIS_VOLATILE (gnu_result) = TREE_SIDE_EFFECTS (gnu_result) = 1;
@@ -1943,7 +1935,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
 
-  push_stack (&gnu_switch_label_stack, NULL_TREE,
+  push_stack (&gnu_switch_label_stack,
 	      create_artificial_label (input_location));
   start_stmt_group ();
   for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
@@ -2025,16 +2017,16 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	{
 	  add_stmt (build_stmt_group (Statements (gnat_when), true));
 	  add_stmt (build1 (GOTO_EXPR, void_type_node,
-			    TREE_VALUE (gnu_switch_label_stack)));
+			    VEC_last (tree, gnu_switch_label_stack)));
 	}
     }
 
   /* Now emit a definition of the label all the cases branched to.  */
   add_stmt (build1 (LABEL_EXPR, void_type_node,
-		    TREE_VALUE (gnu_switch_label_stack)));
+		    VEC_last (tree, gnu_switch_label_stack)));
   gnu_result = build3 (SWITCH_EXPR, TREE_TYPE (gnu_expr), gnu_expr,
 		       end_stmt_group (), NULL_TREE);
-  pop_stack (&gnu_switch_label_stack);
+  pop_stack (gnu_switch_label_stack);
 
   return gnu_result;
 }
@@ -2100,7 +2092,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
   /* Save the end label of this LOOP_STMT in a stack so that a corresponding
      N_Exit_Statement can find it.  */
-  push_stack (&gnu_loop_label_stack, NULL_TREE, gnu_loop_label);
+  push_stack (&gnu_loop_label_stack, gnu_loop_label);
 
   /* Set the condition under which the loop must keep going.
      For the case "LOOP .... END LOOP;" the condition is always true.  */
@@ -2317,7 +2309,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   else
     gnu_result = gnu_loop_stmt;
 
-  pop_stack (&gnu_loop_label_stack);
+  pop_stack (gnu_loop_label_stack);
 
   return gnu_result;
 }
@@ -2450,7 +2442,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      properly copies them out.  We do this by making a new block and converting
      any inner return into a goto to a label at the end of the block.  */
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
-  push_stack (&gnu_return_label_stack, NULL_TREE,
+  push_stack (&gnu_return_label_stack,
 	      gnu_cico_list ? create_artificial_label (input_location)
 	      : NULL_TREE);
 
@@ -2540,7 +2532,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
        We need to make a block that contains the definition of that label and
        the copying of the return value.  It first contains the function, then
        the label and copy statement.  */
-  if (TREE_VALUE (gnu_return_label_stack))
+  if (VEC_last (tree, gnu_return_label_stack))
     {
       tree gnu_retval;
 
@@ -2548,7 +2540,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       gnat_pushlevel ();
       add_stmt (gnu_result);
       add_stmt (build1 (LABEL_EXPR, void_type_node,
-			TREE_VALUE (gnu_return_label_stack)));
+			VEC_last (tree, gnu_return_label_stack)));
 
       gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
       if (list_length (gnu_cico_list) == 1)
@@ -2563,7 +2555,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       gnu_result = end_stmt_group ();
     }
 
-  pop_stack (&gnu_return_label_stack);
+  pop_stack (gnu_return_label_stack);
 
   /* Set the end location.  */
   Sloc_to_locus
@@ -2666,7 +2658,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
      so we can give them the scope of the elaboration routine at top level.  */
   else if (!current_function_decl)
     {
-      current_function_decl = TREE_VALUE (gnu_elab_proc_stack);
+      current_function_decl = VEC_last (tree, gnu_elab_proc_stack);
       went_into_elab_proc = true;
     }
 
@@ -3260,7 +3252,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       start_stmt_group ();
       gnat_pushlevel ();
 
-      push_stack (&gnu_except_ptr_stack, NULL_TREE,
+      push_stack (&gnu_except_ptr_stack,
 		  create_var_decl (get_identifier ("EXCEPT_PTR"),
 				   NULL_TREE,
 				   build_pointer_type (except_type_node),
@@ -3289,7 +3281,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* If none of the exception handlers did anything, re-raise but do not
 	 defer abortion.  */
       gnu_expr = build_call_1_expr (raise_nodefer_decl,
-				    TREE_VALUE (gnu_except_ptr_stack));
+				    VEC_last (tree, gnu_except_ptr_stack));
       set_expr_location_from_node
 	(gnu_expr,
 	 Present (End_Label (gnat_node)) ? End_Label (gnat_node) : gnat_node);
@@ -3301,7 +3293,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* End the binding level dedicated to the exception handlers and get the
 	 whole statement group.  */
-      pop_stack (&gnu_except_ptr_stack);
+      pop_stack (gnu_except_ptr_stack);
       gnat_poplevel ();
       gnu_handler = end_stmt_group ();
 
@@ -3385,7 +3377,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 		  build_component_ref
 		  (build_unary_op
 		   (INDIRECT_REF, NULL_TREE,
-		    TREE_VALUE (gnu_except_ptr_stack)),
+		    VEC_last (tree, gnu_except_ptr_stack)),
 		   get_identifier ("not_handled_by_others"), NULL_TREE,
 		   false)),
 		 integer_zero_node);
@@ -3406,8 +3398,9 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 
 	  this_choice
 	    = build_binary_op
-	      (EQ_EXPR, boolean_type_node, TREE_VALUE (gnu_except_ptr_stack),
-	       convert (TREE_TYPE (TREE_VALUE (gnu_except_ptr_stack)),
+	      (EQ_EXPR, boolean_type_node,
+	       VEC_last (tree, gnu_except_ptr_stack),
+	       convert (TREE_TYPE (VEC_last (tree, gnu_except_ptr_stack)),
 			build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr)));
 
 	  /* If this is the distinguished exception "Non_Ada_Error" (and we are
@@ -3418,7 +3411,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 	      tree gnu_comp
 		= build_component_ref
 		  (build_unary_op (INDIRECT_REF, NULL_TREE,
-				   TREE_VALUE (gnu_except_ptr_stack)),
+				   VEC_last (tree, gnu_except_ptr_stack)),
 		   get_identifier ("lang"), NULL_TREE, false);
 
 	      this_choice
@@ -3555,7 +3548,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
        NULL_TREE, void_ftype, NULL_TREE, false, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
-  push_stack (&gnu_elab_proc_stack, NULL_TREE, gnu_elab_proc_decl);
+  push_stack (&gnu_elab_proc_stack, gnu_elab_proc_decl);
   DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
 
   /* Initialize the information structure for the function.  */
@@ -3642,7 +3635,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 
   /* Generate elaboration code for this unit, if necessary, and say whether
      we did or not.  */
-  pop_stack (&gnu_elab_proc_stack);
+  pop_stack (gnu_elab_proc_stack);
 
   /* Invalidate the global renaming pointers.  This is necessary because
      stabilization of the renamed entities may create SAVE_EXPRs which
@@ -3744,7 +3737,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 the elaboration procedure, so mark us as being in that procedure.  */
       if (!current_function_decl)
 	{
-	  current_function_decl = TREE_VALUE (gnu_elab_proc_stack);
+	  current_function_decl = VEC_last (tree, gnu_elab_proc_stack);
 	  went_into_elab_proc = true;
 	}
 
@@ -3755,7 +3748,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 every nested real statement instead.  This also avoids triggering
 	 spurious errors on dummy (empty) sequences created by the front-end
 	 for package bodies in some cases.  */
-      if (current_function_decl == TREE_VALUE (gnu_elab_proc_stack)
+      if (current_function_decl == VEC_last (tree, gnu_elab_proc_stack)
 	  && kind != N_Handled_Sequence_Of_Statements)
 	Check_Elaboration_Code_Allowed (gnat_node);
     }
@@ -4879,7 +4872,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   ? gnat_to_gnu (Condition (gnat_node)) : NULL_TREE),
 		  (Present (Name (gnat_node))
 		   ? get_gnu_tree (Entity (Name (gnat_node)))
-		   : TREE_VALUE (gnu_loop_label_stack)));
+		   : VEC_last (tree, gnu_loop_label_stack)));
       break;
 
     case N_Return_Statement:
@@ -4888,13 +4881,13 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* If we have a return label defined, convert this into a branch to
 	   that label.  The return proper will be handled elsewhere.  */
-	if (TREE_VALUE (gnu_return_label_stack))
+	if (VEC_last (tree, gnu_return_label_stack))
 	  {
 	    gnu_result = build1 (GOTO_EXPR, void_type_node,
-				 TREE_VALUE (gnu_return_label_stack));
+				 VEC_last (tree, gnu_return_label_stack));
 	    /* When not optimizing, make sure the return is preserved.  */
 	    if (!optimize && Comes_From_Source (gnat_node))
-	      DECL_ARTIFICIAL (TREE_VALUE (gnu_return_label_stack)) = 0;
+	      DECL_ARTIFICIAL (VEC_last (tree, gnu_return_label_stack)) = 0;
 	    break;
 	  }
 
@@ -5154,18 +5147,15 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Pop_Constraint_Error_Label:
-      gnu_constraint_error_label_stack
-	= TREE_CHAIN (gnu_constraint_error_label_stack);
+      VEC_pop (tree, gnu_constraint_error_label_stack);
       break;
 
     case N_Pop_Storage_Error_Label:
-      gnu_storage_error_label_stack
-	= TREE_CHAIN (gnu_storage_error_label_stack);
+      VEC_pop (tree, gnu_storage_error_label_stack);
       break;
 
     case N_Pop_Program_Error_Label:
-      gnu_program_error_label_stack
-	= TREE_CHAIN (gnu_program_error_label_stack);
+      VEC_pop (tree, gnu_program_error_label_stack);
       break;
 
     /******************************/
@@ -5682,13 +5672,13 @@ gnat_to_gnu (Node_Id gnat_node)
    label to push onto the stack.  */
 
 static void
-push_exception_label_stack (tree *gnu_stack, Entity_Id gnat_label)
+push_exception_label_stack (VEC(tree,gc) **gnu_stack, Entity_Id gnat_label)
 {
   tree gnu_label = (Present (gnat_label)
 		    ? gnat_to_gnu_entity (gnat_label, NULL_TREE, 0)
 		    : NULL_TREE);
 
-  *gnu_stack = tree_cons (NULL_TREE, gnu_label, *gnu_stack);
+  VEC_safe_push (tree, gc, *gnu_stack, gnu_label);
 }
 
 /* Record the current code position in GNAT_NODE.  */
@@ -5938,35 +5928,18 @@ build_stmt_group (List_Id gnat_list, bool binding_p)
   return end_stmt_group ();
 }
 
-/* Push and pop routines for stacks.  We keep a free list around so we
-   don't waste tree nodes.  */
+/* Push and pop routines for stacks.  */
 
 static void
-push_stack (tree *gnu_stack_ptr, tree gnu_purpose, tree gnu_value)
+push_stack (VEC(tree,gc) **gnu_stack_ptr, tree value)
 {
-  tree gnu_node = gnu_stack_free_list;
-
-  if (gnu_node)
-    {
-      gnu_stack_free_list = TREE_CHAIN (gnu_node);
-      TREE_CHAIN (gnu_node) = *gnu_stack_ptr;
-      TREE_PURPOSE (gnu_node) = gnu_purpose;
-      TREE_VALUE (gnu_node) = gnu_value;
-    }
-  else
-    gnu_node = tree_cons (gnu_purpose, gnu_value, *gnu_stack_ptr);
-
-  *gnu_stack_ptr = gnu_node;
+  VEC_safe_push (tree, gc, *gnu_stack_ptr, value);
 }
 
 static void
-pop_stack (tree *gnu_stack_ptr)
+pop_stack (VEC(tree,gc) *gnu_stack)
 {
-  tree gnu_node = *gnu_stack_ptr;
-
-  *gnu_stack_ptr = TREE_CHAIN (gnu_node);
-  TREE_CHAIN (gnu_node) = gnu_stack_free_list;
-  gnu_stack_free_list = gnu_node;
+  VEC_pop (tree, gnu_stack);
 }
 
 /* Generate GIMPLE in place for the expression at *EXPR_P.  */
@@ -7641,11 +7614,11 @@ tree
 get_exception_label (char kind)
 {
   if (kind == N_Raise_Constraint_Error)
-    return TREE_VALUE (gnu_constraint_error_label_stack);
+    return VEC_last (tree, gnu_constraint_error_label_stack);
   else if (kind == N_Raise_Storage_Error)
-    return TREE_VALUE (gnu_storage_error_label_stack);
+    return VEC_last (tree, gnu_storage_error_label_stack);
   else if (kind == N_Raise_Program_Error)
-    return TREE_VALUE (gnu_program_error_label_stack);
+    return VEC_last (tree, gnu_program_error_label_stack);
   else
     return NULL_TREE;
 }
