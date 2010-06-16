@@ -5883,7 +5883,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    parser->type_definition_forbidden_message = saved_message;
 
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-	    return finish_noexcept_expr (expr);
+	    return finish_noexcept_expr (expr, tf_warning_or_error);
 	  }
 
 	default:

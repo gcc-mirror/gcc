@@ -1,5 +1,5 @@
 // Runtime test for noexcept-specification.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -Wnoexcept" }
 // { dg-do run }
 
 #include <exception>
@@ -23,7 +23,7 @@ void f () noexcept (false)
 }
 
 template <class T>
-void f(T) noexcept (noexcept (T()))
+void f(T) noexcept (noexcept (T())) // { dg-warning "false" }
 {
   p();
 }
@@ -34,7 +34,7 @@ void f2(T a) noexcept (noexcept (f (a)))
   f(a);
 }
 
-struct A { A() { } };
+struct A { A() { } };		// { dg-warning "does not throw" }
 
 // throw(int) overrides noexcept(false) in either order.
 void h() throw (int, std::bad_exception);

@@ -1,3 +1,7 @@
+2010-06-16  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wnoexcept.
+
 2010-06-16  Richard Guenther  <rguenther@suse.de>
 
 	PR c/44555

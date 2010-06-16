@@ -12259,7 +12259,7 @@ tsubst_copy_and_build (tree t,
 				   /*integral_constant_expression_p=*/false);
       --cp_unevaluated_operand;
       --c_inhibit_evaluation_warnings;
-      return finish_noexcept_expr (op1);
+      return finish_noexcept_expr (op1, complain);
 
     case MODOP_EXPR:
       {

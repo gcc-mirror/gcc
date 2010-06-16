@@ -1,5 +1,11 @@
 2010-06-16  Jason Merrill  <jason@redhat.com>
 
+	* except.c (check_noexcept_r): Return the problematic function.
+	(finish_noexcept_expr): Give -Wnoexcept warning.  Add complain parm.
+	* pt.c (tsubst_copy_and_build): Pass it.
+	* parser.c (cp_parser_unary_expression): Likewise.
+	* cp-tree.h: Adjust prototype.
+
 	* method.c (defaulted_late_check): Give the defaulted method
 	the same exception specification as the implicit declaration.
 
