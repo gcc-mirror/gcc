@@ -1,3 +1,38 @@
+2010-06-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/constraints.md (NEGint4): New constraint.
+	* config/rx/rx.md (attr cc): Add set_zsc.
+	(cbranchsf4): Only test for -fnon-call-exceptions if cfun has been
+	initialised.
+	(cmpsf): Likewise.
+	(call_internal): Clobber the cc0 register.
+	(call_value_internal): Likewise.
+	(cstoresi4): Likewise.
+	(movsieq): Likewise.
+	(movsine): Likewise.
+	(addsi3): Add alternative to handle small negative constants.
+	(sunsi3): Likewise.
+	(addsi3): Do not set the O bit in the cc0 register.
+	(adddi3): Likewise.
+	(subsi3): Likewise.
+	(subdi3): Likewise.
+	(andsi3): Reorder alternatives to prefer shorter forms.
+	(mulsi3): Likewise.
+	(iorsi3): Likewise.
+	(negsi2): Note that the cc0 flags are set.
+	(rotlsi3): Note that only the Z and S bits are set in cc0.
+	(lshrsi3): Likewise.
+	(ashlsi3): Likewise.
+	(subsf3): Use %Q for the MEM operand.
+	(fix_truncsfsi2): Likewise.
+	(floatsisf2): Likewise.
+	(bitset): Remove early clobber from destination.
+	(bitset_in_memory): Likewise.
+	(lrintsf2): Clobber the cc0 register.
+	* config/rx/rx.c (rx_notice_update_cc):
+	Handle CC_SET_ZSC.
+	(rx_print_operand): Handle %N.
+
 2010-06-16  Jan Hubicka  <jh@suse.cz>
 
 	* df-core.c (df_compact_blocks): Free problem_temps vector.
