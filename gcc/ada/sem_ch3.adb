@@ -17491,7 +17491,7 @@ package body Sem_Ch3 is
                Make_Class_Wide_Type (Typ);
                Error_Msg_N
                  ("incomplete view of tagged type should be declared tagged?",
-                    Parent (Current_Entity (Typ)));
+                  Parent (Current_Entity (Typ)));
             end if;
             return;
 
@@ -17499,13 +17499,12 @@ package body Sem_Ch3 is
             Inc_T := Make_Defining_Identifier (Loc, Chars (Typ));
             Decl  := Make_Incomplete_Type_Declaration (Loc, Inc_T);
 
-            --  Type has already been inserted into the current scope.
-            --  Remove it, and add incomplete declaration for type, so
-            --  that subsequent anonymous access types can use it.
-            --  The entity is unchained from the homonym list and from
-            --  immediate visibility. After analysis, the entity in the
-            --  incomplete declaration becomes immediately visible in the
-            --  record declaration that follows.
+            --  Type has already been inserted into the current scope. Remove
+            --  it, and add incomplete declaration for type, so that subsequent
+            --  anonymous access types can use it. The entity is unchained from
+            --  the homonym list and from immediate visibility. After analysis,
+            --  the entity in the incomplete declaration becomes immediately
+            --  visible in the record declaration that follows.
 
             H := Current_Entity (Typ);
 
@@ -17526,8 +17525,9 @@ package body Sem_Ch3 is
             Set_Full_View (Inc_T, Typ);
 
             if Is_Tagged then
-               --  Create a common class-wide type for both views, and set
-               --  the Etype of the class-wide type to the full view.
+
+               --  Create a common class-wide type for both views, and set the
+               --  Etype of the class-wide type to the full view.
 
                Make_Class_Wide_Type (Inc_T);
                Set_Class_Wide_Type (Typ, Class_Wide_Type (Inc_T));

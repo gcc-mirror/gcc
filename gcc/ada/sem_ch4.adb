@@ -3105,8 +3105,8 @@ package body Sem_Ch4 is
    -- Analyze_Selected_Component --
    --------------------------------
 
-   --  Prefix is a record type or a task or protected type. In the
-   --  later case, the selector must denote a visible entry.
+   --  Prefix is a record type or a task or protected type. In the latter case,
+   --  the selector must denote a visible entry.
 
    procedure Analyze_Selected_Component (N : Node_Id) is
       Name          : constant Node_Id := Prefix (N);
@@ -3123,6 +3123,9 @@ package body Sem_Ch4 is
       --  In most cases this is the Prefix_Type, but if the Prefix_Type is
       --  a class-wide type, we use its root type, whose components are
       --  present in the class-wide type.
+
+      Is_Single_Concurrent_Object : Boolean;
+      --  Set True if the prefix is a single task or a single protected object
 
       function Has_Mode_Conformant_Spec (Comp : Entity_Id) return Boolean;
       --  It is known that the parent of N denotes a subprogram call. Comp
@@ -3293,6 +3296,15 @@ package body Sem_Ch4 is
       if Is_Class_Wide_Type (Prefix_Type) then
          Type_To_Use := Root_Type (Prefix_Type);
       end if;
+
+      --  If the prefix is a single concurrent object, use its name in error
+      --  messages, rather than that of its anonymous type.
+
+      Is_Single_Concurrent_Object :=
+        Is_Concurrent_Type (Prefix_Type)
+          and then Is_Internal_Name (Chars (Prefix_Type))
+          and then not Is_Derived_Type (Prefix_Type)
+          and then Is_Entity_Name (Name);
 
       Comp := First_Entity (Type_To_Use);
 
@@ -3532,9 +3544,8 @@ package body Sem_Ch4 is
                   return;
 
                else
-                  Error_Msg_NE
-                    ("invisible selector for }",
-                     N, First_Subtype (Prefix_Type));
+                  Error_Msg_Node_2 := First_Subtype (Prefix_Type);
+                  Error_Msg_NE ("invisible selector& for }", N, Sel);
                   Set_Entity (Sel, Any_Id);
                   Set_Etype (N, Any_Type);
                end if;
@@ -3579,8 +3590,13 @@ package body Sem_Ch4 is
                      Has_Candidate := True;
                   end if;
 
+               --  Note: a selected component may not denote a component of a
+               --  protected type (4.1.3(7)).
+
                elsif Ekind_In (Comp, E_Discriminant, E_Entry_Family)
-                 or else (In_Scope and then Is_Entity_Name (Name))
+                 or else (In_Scope
+                            and then not Is_Protected_Type (Prefix_Type)
+                            and then Is_Entity_Name (Name))
                then
                   Set_Entity_With_Style_Check (Sel, Comp);
                   Generate_Reference (Comp, Sel);
@@ -3644,6 +3660,28 @@ package body Sem_Ch4 is
             end if;
          end if;
 
+         if Etype (N) = Any_Type and then Is_Protected_Type (Prefix_Type) then
+            --  Case of a prefix of a protected type: selector might denote
+            --  an invisible private component.
+
+            Comp := First_Private_Entity (Base_Type (Prefix_Type));
+            while Present (Comp) and then Chars (Comp) /= Chars (Sel) loop
+               Next_Entity (Comp);
+            end loop;
+
+            if Present (Comp) then
+               if Is_Single_Concurrent_Object then
+                  Error_Msg_Node_2 := Entity (Name);
+                  Error_Msg_NE ("invisible selector& for &", N, Sel);
+
+               else
+                  Error_Msg_Node_2 := First_Subtype (Prefix_Type);
+                  Error_Msg_NE ("invisible selector& for }", N, Sel);
+               end if;
+               return;
+            end if;
+         end if;
+
          Set_Is_Overloaded (N, Is_Overloaded (Sel));
 
       else
@@ -3656,15 +3694,7 @@ package body Sem_Ch4 is
 
       if Etype (N) = Any_Type then
 
-         --  If the prefix is a single concurrent object, use its name in the
-         --  error message, rather than that of its anonymous type.
-
-         if Is_Concurrent_Type (Prefix_Type)
-           and then Is_Internal_Name (Chars (Prefix_Type))
-           and then not Is_Derived_Type (Prefix_Type)
-           and then Is_Entity_Name (Name)
-         then
-
+         if Is_Single_Concurrent_Object then
             Error_Msg_Node_2 := Entity (Name);
             Error_Msg_NE ("no selector& for&", N, Sel);
 

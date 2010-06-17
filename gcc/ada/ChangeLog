@@ -1,3 +1,29 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* par.adb: Minor comment fix
+	* sem_aggr.adb, sem_ch3.adb: Minor reformatting
+
+2010-06-17  Doug Rupp  <rupp@adacore.com>
+
+	* s-auxdec-vms_64.ads: Revert Integer to Long_Integer change, instead
+	change Address to Short_Address in functions where both must be the
+	same size for intrinsics to work.
+
+2010-06-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): A selected component may
+	not denote a (private) component of a protected object.
+
+2010-06-17  Bob Duff  <duff@adacore.com>
+
+	* par-labl.adb (Try_Loop): Test whether the label and the goto are in
+	the same list.
+
+2010-06-17  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* gnat_ugn.texi: Update the documentation about GDB re: exception
+	catchpoints.
+
 2010-06-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Bump to 4.6 version.
