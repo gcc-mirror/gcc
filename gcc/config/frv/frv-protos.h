@@ -73,8 +73,6 @@ extern rtx frv_index_memory			(rtx, enum machine_mode, int);
 extern const char *frv_asm_output_opcode
 				 	(FILE *, const char *);
 extern void frv_final_prescan_insn	(rtx, rtx *, int);
-extern void frv_print_operand		(FILE *, rtx, int);
-extern void frv_print_operand_address	(FILE *, rtx);
 extern void frv_emit_move		(enum machine_mode, rtx, rtx);
 extern int frv_emit_movsi		(rtx, rtx);
 extern const char *output_move_single	(rtx *, rtx);

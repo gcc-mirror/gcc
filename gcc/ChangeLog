@@ -1,5 +1,18 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/frv/frv-protos.h (frv_print_operand): Delete.
+	(frv_print_operand_address): Delete.
+	* config/frv/frv.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/frv/frv.c (frv_print_operand_address): Make static.
+	(frv_print_operand): Make static.
+	(frv_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS):
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree.h (vec_member): Declare.
 	* tree.c (vec_member): Define.
 
