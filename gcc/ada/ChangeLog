@@ -1,3 +1,7 @@
+2010-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Atomic_Object): Predicate does not apply to
