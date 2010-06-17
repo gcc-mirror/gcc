@@ -1,3 +1,8 @@
+2010-06-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/44486
+	* g++.dg/pr44486.C: New.
+
 2010-06-16  DJ Delorie  <dj@redhat.com>
 
 	* gcc.target/i386/volatile-bitfields-1.c: New.
