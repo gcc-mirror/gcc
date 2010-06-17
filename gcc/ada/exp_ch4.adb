@@ -595,7 +595,7 @@ package body Exp_Ch4 is
 
             Set_Analyzed (Node);
 
-            Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+            Temp := Make_Temporary (Loc, 'P', Node);
 
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -664,8 +664,7 @@ package body Exp_Ch4 is
             Remove_Side_Effects (Exp);
          end if;
 
-         Temp :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Temp := Make_Temporary (Loc, 'P');
 
          --  For a class wide allocation generate the following code:
 
@@ -755,9 +754,7 @@ package body Exp_Ch4 is
 
          else
             declare
-               Def_Id   : constant Entity_Id :=
-                            Make_Defining_Identifier (Loc,
-                              New_Internal_Name ('T'));
+               Def_Id   : constant Entity_Id := Make_Temporary (Loc, 'T');
                New_Decl : Node_Id;
 
             begin
@@ -834,8 +831,7 @@ package body Exp_Ch4 is
 
                New_Decl :=
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => Make_Defining_Identifier (Loc,
-                                             New_Internal_Name ('P')),
+                   Defining_Identifier => Make_Temporary (Loc, 'P'),
                    Object_Definition   => New_Reference_To (PtrT, Loc),
                    Expression          => Unchecked_Convert_To (PtrT,
                                             New_Reference_To (Temp, Loc)));
@@ -916,16 +912,13 @@ package body Exp_Ch4 is
 
                if Is_RTE (Apool, RE_SS_Pool) then
                   declare
-                     F : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('F'));
+                     F : constant Entity_Id := Make_Temporary (Loc, 'F');
                   begin
                      Insert_Action (N,
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => F,
-                         Object_Definition   => New_Reference_To (RTE
-                          (RE_Finalizable_Ptr), Loc)));
-
+                         Object_Definition   =>
+                           New_Reference_To (RTE (RE_Finalizable_Ptr), Loc)));
                      Flist := New_Reference_To (F, Loc);
                      Attach :=  Make_Integer_Literal (Loc, 1);
                   end;
@@ -991,8 +984,7 @@ package body Exp_Ch4 is
          end if;
 
       elsif Aggr_In_Place then
-         Temp :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Temp := Make_Temporary (Loc, 'P');
          Tmp_Node :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
@@ -1076,9 +1068,7 @@ package body Exp_Ch4 is
            and then Is_Packed (T)
          then
             declare
-               ConstrT      : constant Entity_Id :=
-                                Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('A'));
+               ConstrT      : constant Entity_Id := Make_Temporary (Loc, 'A');
                Internal_Exp : constant Node_Id   := Relocate_Node (Exp);
             begin
                Insert_Action (Exp,
@@ -1598,8 +1588,7 @@ package body Exp_Ch4 is
          --  constrained types, then we can use the same index for both
          --  of the arrays.
 
-         An : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                      Chars => New_Internal_Name ('A'));
+         An : constant Entity_Id := Make_Temporary (Loc, 'A');
 
          Bn       : Entity_Id;
          Index_T  : Entity_Id;
@@ -1616,9 +1605,7 @@ package body Exp_Ch4 is
          Index_T := Base_Type (Etype (Index));
 
          if Need_Separate_Indexes then
-            Bn :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('B'));
+            Bn := Make_Temporary (Loc, 'B');
          else
             Bn := An;
          end if;
@@ -1805,7 +1792,7 @@ package body Exp_Ch4 is
           Defining_Identifier => B,
           Parameter_Type      => New_Reference_To (Rtyp, Loc)));
 
-      Func_Name := Make_Defining_Identifier (Loc,  New_Internal_Name ('E'));
+      Func_Name := Make_Temporary (Loc, 'E');
 
       --  Build statement sequence for function
 
@@ -2625,9 +2612,7 @@ package body Exp_Ch4 is
                Operands (NN) := Opnd;
                Is_Fixed_Length (NN) := False;
 
-               Var_Length (NN) :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('L'));
+               Var_Length (NN) := Make_Temporary (Loc, 'L');
 
                Append_To (Actions,
                  Make_Object_Declaration (Loc,
@@ -2674,9 +2659,7 @@ package body Exp_Ch4 is
          --  create an entity initialized to this length.
 
          else
-            Ent :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('L'));
+            Ent := Make_Temporary (Loc, 'L');
 
             if Is_Fixed_Length (NN) then
                Clen := Make_Integer_Literal (Loc, Fixed_Length (NN));
@@ -2794,8 +2777,7 @@ package body Exp_Ch4 is
             end Get_Known_Bound;
 
          begin
-            Ent :=
-              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('L'));
+            Ent := Make_Temporary (Loc, 'L');
 
             Append_To (Actions,
               Make_Object_Declaration (Loc,
@@ -2851,9 +2833,7 @@ package body Exp_Ch4 is
 
       --  Now we construct an array object with appropriate bounds
 
-      Ent :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('S'));
+      Ent := Make_Temporary (Loc, 'S');
 
       --  If the bound is statically known to be out of range, we do not want
       --  to abort, we want a warning and a runtime constraint error. Note that
@@ -3277,9 +3257,7 @@ package body Exp_Ch4 is
       -------------------------
 
       procedure Rewrite_Coextension (N : Node_Id) is
-         Temp : constant Node_Id :=
-                  Make_Defining_Identifier (Loc,
-                    New_Internal_Name ('C'));
+         Temp : constant Node_Id := Make_Temporary (Loc, 'C');
 
          --  Generate:
          --    Cnn : aliased Etyp;
@@ -3432,9 +3410,7 @@ package body Exp_Ch4 is
          --  and replace the allocator by Tnn'Unrestricted_Access. Tnn is
          --  marked as requiring static allocation.
 
-         Temp :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
-
+         Temp := Make_Temporary (Loc, 'T', Expression (Expression (N)));
          Desig := Subtype_Mark (Expression (N));
 
          --  If context is constrained, use constrained subtype directly,
@@ -3597,7 +3573,7 @@ package body Exp_Ch4 is
             if not Restriction_Active (No_Default_Initialization) then
                Init := Base_Init_Proc (T);
                Nod  := N;
-               Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+               Temp := Make_Temporary (Loc, 'P');
 
                --  Construct argument list for the initialization routine call
 
@@ -3965,8 +3941,7 @@ package body Exp_Ch4 is
 
          P_Decl :=
            Make_Full_Type_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('A')),
+             Defining_Identifier => Make_Temporary (Loc, 'A'),
              Type_Definition =>
                Make_Access_To_Object_Definition (Loc,
                  All_Present => True,
@@ -5882,8 +5857,7 @@ package body Exp_Ch4 is
             --    En * En
 
             else -- Expv = 4
-               Temp :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+               Temp := Make_Temporary (Loc, 'E', Base);
 
                Insert_Actions (N, New_List (
                  Make_Object_Declaration (Loc,
@@ -6811,7 +6785,7 @@ package body Exp_Ch4 is
               Name       => B_J,
               Expression => Make_Op_Not (Loc, A_J))));
 
-      Func_Name := Make_Defining_Identifier (Loc, New_Internal_Name ('N'));
+      Func_Name := Make_Temporary (Loc, 'N');
       Set_Is_Inlined (Func_Name);
 
       Insert_Action (N,
@@ -7646,7 +7620,7 @@ package body Exp_Ch4 is
                        Constraints => Cons));
             end if;
 
-            Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+            Temp := Make_Temporary (Loc, 'C');
             Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp,
@@ -7808,9 +7782,7 @@ package body Exp_Ch4 is
             Enable_Overflow_Check (Conv);
          end if;
 
-         Tnn :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
+         Tnn := Make_Temporary (Loc, 'T', Conv);
 
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
@@ -8978,7 +8950,7 @@ package body Exp_Ch4 is
              PtrT /=
                Etype (Defining_Unit_Name (Associated_Node_For_Itype (PtrT)))
          then
-            Owner := Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
+            Owner := Make_Temporary (Loc, 'J');
             Insert_Action (N,
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => Owner,
@@ -9469,7 +9441,7 @@ package body Exp_Ch4 is
       --    if ... end if;
       --  end Gnnn;
 
-      Func_Name := Make_Defining_Identifier (Loc, New_Internal_Name ('G'));
+      Func_Name := Make_Temporary (Loc, 'G');
 
       Func_Body :=
         Make_Subprogram_Body (Loc,
@@ -9597,8 +9569,7 @@ package body Exp_Ch4 is
           Defining_Identifier => B,
           Parameter_Type      => New_Reference_To (Typ, Loc)));
 
-      Func_Name :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Func_Name := Make_Temporary (Loc, 'A');
       Set_Is_Inlined (Func_Name);
 
       Func_Body :=

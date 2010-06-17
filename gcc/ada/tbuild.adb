@@ -442,9 +442,9 @@ package body Tbuild is
    function Make_Temporary
      (Loc          : Source_Ptr;
       Id           : Character;
-      Related_Node : Node_Id := Empty) return Node_Id
+      Related_Node : Node_Id := Empty) return Entity_Id
    is
-      Temp : constant Node_Id :=
+      Temp : constant Entity_Id :=
                Make_Defining_Identifier (Loc,
                  Chars => New_Internal_Name (Id));
    begin
