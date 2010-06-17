@@ -808,9 +808,7 @@ package body Exp_Ch6 is
       Elm := First_Elmt (Var_List);
       while Present (Elm) loop
          Var := Node (Elm);
-         Ent :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('S'));
+         Ent := Make_Temporary (Loc, 'S');
          Append_Elmt (Ent, Shad_List);
 
          --  Insert a declaration for this temporary at the start of the
@@ -966,9 +964,7 @@ package body Exp_Ch6 is
             return;
          end if;
 
-         Temp :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
+         Temp := Make_Temporary (Loc, 'T');
 
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
@@ -1220,9 +1216,7 @@ package body Exp_Ch6 is
 
          Reset_Packed_Prefix;
 
-         Temp :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
+         Temp := Make_Temporary (Loc, 'T');
          Incod  := Relocate_Node (Actual);
          Outcod := New_Copy_Tree (Incod);
 
@@ -1387,9 +1381,7 @@ package body Exp_Ch6 is
             return Entity (Actual);
 
          else
-            Var :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('T'));
+            Var := Make_Temporary (Loc, 'T');
 
             N_Node :=
               Make_Object_Renaming_Declaration (Loc,
@@ -3312,8 +3304,8 @@ package body Exp_Ch6 is
 
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements,
-      --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implcit
-      --  declaration).
+      --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
+      --  declaration). Does nothing if Exit_Lab already set.
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
@@ -3343,20 +3335,15 @@ package body Exp_Ch6 is
       ---------------------
 
       procedure Make_Exit_Label is
+         Lab_Ent : Entity_Id;
       begin
-         --  Create exit label for subprogram if one does not exist yet
-
          if No (Exit_Lab) then
-            Lab_Id :=
-              Make_Identifier (Loc,
-                Chars => New_Internal_Name ('L'));
-            Set_Entity (Lab_Id,
-              Make_Defining_Identifier (Loc, Chars (Lab_Id)));
+            Lab_Ent := Make_Temporary (Loc, 'L');
+            Lab_Id  := New_Reference_To (Lab_Ent, Loc);
             Exit_Lab := Make_Label (Loc, Lab_Id);
-
             Lab_Decl :=
               Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier  => Entity (Lab_Id),
+                Defining_Identifier  => Lab_Ent,
                 Label_Construct      => Exit_Lab);
          end if;
       end Make_Exit_Label;
@@ -3793,9 +3780,7 @@ package body Exp_Ch6 is
             end if;
 
          else
-            Temp :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('C'));
+            Temp := Make_Temporary (Loc, 'C');
 
             --  If the actual for an in/in-out parameter is a view conversion,
             --  make it into an unchecked conversion, given that an untagged
@@ -3883,8 +3868,7 @@ package body Exp_Ch6 is
          else
             --  Replace call with temporary and create its declaration
 
-            Temp :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+            Temp := Make_Temporary (Loc, 'C');
             Set_Is_Internal (Temp);
 
             --  For the unconstrained case, the generated temporary has the
@@ -4610,10 +4594,8 @@ package body Exp_Ch6 is
          --  define _object later on.
 
          declare
-            Decls : List_Id;
-            Obj_Ptr : constant Entity_Id :=  Make_Defining_Identifier (Loc,
-                                               Chars =>
-                                                 New_Internal_Name ('T'));
+            Decls   : List_Id;
+            Obj_Ptr : constant Entity_Id :=  Make_Temporary (Loc, 'T');
 
          begin
             Decls := New_List (
@@ -4623,7 +4605,7 @@ package body Exp_Ch6 is
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
                          New_Reference_To
-                      (Corresponding_Record_Type (Scop), Loc))));
+                           (Corresponding_Record_Type (Scop), Loc))));
 
             Insert_Actions (N, Decls);
             Insert_Actions (N, Freeze_Entity (Obj_Ptr, Sloc (N)));
@@ -5117,8 +5099,7 @@ package body Exp_Ch6 is
          --  Create a new access object and initialize it to the result of the
          --  new uninitialized allocator.
 
-         Return_Obj_Access :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Return_Obj_Access := Make_Temporary (Loc, 'R', Allocator);
          Set_Etype (Return_Obj_Access, Acc_Type);
 
          Insert_Action (Allocator,
@@ -5251,9 +5232,7 @@ package body Exp_Ch6 is
 
          --  Create a temporary object to hold the function result
 
-         Return_Obj_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('R'));
+         Return_Obj_Id := Make_Temporary (Loc, 'R');
          Set_Etype (Return_Obj_Id, Result_Subt);
 
          Return_Obj_Decl :=
@@ -5406,8 +5385,7 @@ package body Exp_Ch6 is
 
       --  Create an access type designating the function's result subtype
 
-      Ptr_Typ :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Ptr_Typ := Make_Temporary (Loc, 'A');
 
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
@@ -5422,7 +5400,7 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Obj_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Obj_Id := Make_Temporary (Loc, 'R');
       Set_Etype (Obj_Id, Ptr_Typ);
 
       Obj_Decl :=
@@ -5684,8 +5662,7 @@ package body Exp_Ch6 is
 
       --  Create an access type designating the function's result subtype
 
-      Ref_Type :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Ref_Type := Make_Temporary (Loc, 'A');
 
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
@@ -5712,14 +5689,12 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Def_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('R'));
-      Set_Etype (Def_Id, Ref_Type);
-
       New_Expr :=
         Make_Reference (Loc,
           Prefix => Relocate_Node (Func_Call));
+
+      Def_Id := Make_Temporary (Loc, 'R', New_Expr);
+      Set_Etype (Def_Id, Ref_Type);
 
       Insert_After_And_Analyze (Ptr_Typ_Decl,
         Make_Object_Declaration (Loc,
@@ -5744,8 +5719,7 @@ package body Exp_Ch6 is
 
          Rewrite (Object_Decl,
            Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Make_Defining_Identifier (Loc,
-                                      New_Internal_Name ('D')),
+             Defining_Identifier => Make_Temporary (Loc, 'D'),
              Access_Definition   => Empty,
              Subtype_Mark        => New_Occurrence_Of (Result_Subt, Loc),
              Name                => Call_Deref));

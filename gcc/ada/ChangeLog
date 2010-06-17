@@ -1,5 +1,11 @@
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch6.adb, exp_ch7.adb, exp_ch5.adb: Use Make_Temporary
+	* tbuild.ads (Make_Temporary): More comment updates
+	* tbuild.adb: Minor reformatting
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb, exp_aggr.adb, exp_atag.adb, exp_attr.adb, exp_ch11.adb,
 	exp_ch3.adb, exp_ch4.adb: Minor code reorganization.
 	Use Make_Temporary.

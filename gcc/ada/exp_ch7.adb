@@ -586,9 +586,7 @@ package body Exp_Ch7 is
          --  Here we generate the required loop
 
          else
-            Index :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
-
+            Index := Make_Temporary (Loc, 'J');
             Append (New_Reference_To (Index, Loc), Index_List);
 
             return New_List (
@@ -1162,7 +1160,7 @@ package body Exp_Ch7 is
         and then not Sec_Stack_Needed_For_Return (Current_Scope)
         and then VM_Target = No_VM
       then
-         Mark := Make_Defining_Identifier (Loc, New_Internal_Name ('M'));
+         Mark := Make_Temporary (Loc, 'M');
          Append_To (New_Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Mark,
@@ -1785,9 +1783,7 @@ package body Exp_Ch7 is
                      end if;
                   end if;
 
-                  Id :=
-                    Make_Defining_Identifier (Flist_Loc,
-                      Chars => New_Internal_Name ('F'));
+                  Id := Make_Temporary (Flist_Loc, 'F');
                end;
 
                Set_Finalization_Chain_Entity (S, Id);
@@ -3438,7 +3434,7 @@ package body Exp_Ch7 is
       --       Fxxx : Finalizable_Ptr renames Lxxx.F;
 
       if Present (Finalization_Chain_Entity (S)) then
-         LC := Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
+         LC := Make_Temporary (Loc, 'L');
 
          --  Use the Sloc of the first declaration of N's containing list, to
          --  maintain monotonicity of source-line stepping during debugging.
