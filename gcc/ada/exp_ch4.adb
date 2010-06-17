@@ -6631,7 +6631,7 @@ package body Exp_Ch4 is
    ---------------------
 
    --  If the argument is other than a Boolean array type, there is no special
-   --  expansion required.
+   --  expansion required, except for VMS operations on signed integers.
 
    --  For the packed case, we call the special routine in Exp_Pakd, except
    --  that if the component size is greater than one, we use the standard
@@ -6679,6 +6679,23 @@ package body Exp_Ch4 is
          Set_Etype (N, Standard_Boolean);
          Adjust_Result_Type (N, Typ);
          return;
+      end if;
+
+      --  For the VMS "not" on signed integer types, use conversion to and
+      --  from a predefined modular type.
+
+      if Is_VMS_Operator (Entity (N)) then
+         declare
+            LI : constant Entity_Id := RTE (RE_Unsigned_64);
+
+         begin
+            Rewrite (N,
+              Unchecked_Convert_To (Typ,
+                (Make_Op_Not (Loc,
+                  Right_Opnd => Unchecked_Convert_To (LI, Right_Opnd (N))))));
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end;
       end if;
 
       --  Only array types need any other processing

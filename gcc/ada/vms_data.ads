@@ -3597,6 +3597,13 @@ package VMS_Data is
    --      HIGH         A great number of messages are output, most of them not
    --                   being useful for the user.
 
+   S_Elim_Nodisp : aliased constant S := "/NO_DISPATCH "                   &
+                                          "--no-elim-dispatch";
+   --        /NONO_DISPATCH (D)
+   --        /NO_DISPATCH
+   --
+   --   Do not generate pragmas for dispatching operations.
+
    S_Elim_Project : aliased constant S := "/PROJECT_FILE=<"                &
                                              "-P>";
    --        /PROJECT_FILE=filename
@@ -3709,6 +3716,7 @@ package VMS_Data is
                       S_Elim_Logfile 'Access,
                       S_Elim_Main    'Access,
                       S_Elim_Mess    'Access,
+                      S_Elim_Nodisp  'Access,
                       S_Elim_Out     'Access,
                       S_Elim_Project 'Access,
                       S_Elim_Quiet   'Access,
