@@ -108,8 +108,8 @@ struct GTY(()) machine_function
 
 /* Global variables for machine-dependent things.  */
 
-/* List of all IQ2000 punctuation characters used by print_operand.  */
-char iq2000_print_operand_punct[256];
+/* List of all IQ2000 punctuation characters used by iq2000_print_operand.  */
+static char iq2000_print_operand_punct[256];
 
 /* The target cpu for optimization and scheduling.  */
 enum processor_type iq2000_tune;
@@ -169,6 +169,9 @@ static void iq2000_asm_trampoline_template (FILE *);
 static void iq2000_trampoline_init    (rtx, tree, rtx);
 static rtx iq2000_function_value      (const_tree, const_tree, bool);
 static rtx iq2000_libcall_value       (enum machine_mode, const_rtx);
+static void iq2000_print_operand      (FILE *, rtx, int);
+static void iq2000_print_operand_address (FILE *, rtx);
+static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -192,6 +195,13 @@ static rtx iq2000_libcall_value       (enum machine_mode, const_rtx);
    iq2000_select_section doesn't yet make use of them.  */
 #undef  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
 #define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND		iq2000_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS	iq2000_print_operand_address
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P iq2000_print_operand_punct_valid_p
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE	default_promote_function_mode_always_promote
@@ -2920,8 +2930,8 @@ iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
    assembler syntax for an instruction operand that is a memory
    reference whose address is ADDR.  ADDR is an RTL expression.  */
 
-void
-print_operand_address (FILE * file, rtx addr)
+static void
+iq2000_print_operand_address (FILE * file, rtx addr)
 {
   if (!addr)
     error ("PRINT_OPERAND_ADDRESS, null pointer");
@@ -2946,7 +2956,7 @@ print_operand_address (FILE * file, rtx addr)
 			     "PRINT_OPERAND_ADDRESS, LO_SUM with #1 not REG.");
 
 	  fprintf (file, "%%lo(");
-	  print_operand_address (file, arg1);
+	  iq2000_print_operand_address (file, arg1);
 	  fprintf (file, ")(%s)", reg_names [REGNO (arg0)]);
 	}
 	break;
@@ -3048,12 +3058,12 @@ print_operand_address (FILE * file, rtx addr)
    '$'	Print the name of the stack pointer register (sp or $29).
    '+'	Print the name of the gp register (gp or $28).  */
 
-void
-print_operand (FILE *file, rtx op, int letter)
+static void
+iq2000_print_operand (FILE *file, rtx op, int letter)
 {
   enum rtx_code code;
 
-  if (PRINT_OPERAND_PUNCT_VALID_P (letter))
+  if (iq2000_print_operand_punct_valid_p (letter))
     {
       switch (letter)
 	{
@@ -3234,13 +3244,18 @@ print_operand (FILE *file, rtx op, int letter)
 
   else if (code == CONST && GET_CODE (XEXP (op, 0)) == REG)
     {
-      print_operand (file, XEXP (op, 0), letter);
+      iq2000_print_operand (file, XEXP (op, 0), letter);
     }
 
   else
     output_addr_const (file, op);
 }
 
+static bool
+iq2000_print_operand_punct_valid_p (unsigned char code)
+{
+  return iq2000_print_operand_punct[code];
+}
 
 /* For the IQ2000, transform:
 
