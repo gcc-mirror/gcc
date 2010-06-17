@@ -1,3 +1,17 @@
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Mark_Context): Refine placement of Withed_Body flag, so
+	that it marks a unit as needed by a spec only if the corresponding
+	instantiation appears in that spec (and not in the corresponding body).
+	* sem_elim.adb (Check_Eliminated): If we are within a subunit, the name
+	in the pragma Eliminate has been parsed as a child unit, but the
+	current compilation unit is in fact the parent in which the subunit is
+	embedded.
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* gnat_rm.texi: Fix typo
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting
