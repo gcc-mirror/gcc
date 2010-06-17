@@ -252,7 +252,7 @@ package body Back_End is
       --  Loop through command line arguments, storing them for later access
 
       Next_Arg := 1;
-      while Next_Arg < Args'Last loop
+      while Next_Arg <= Args'Last loop
          Look_At_Arg : declare
             Argv     : constant String := Args (Next_Arg).all;
 
