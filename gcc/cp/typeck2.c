@@ -1418,18 +1418,14 @@ build_x_arrow (tree expr)
 				   /*overloaded_p=*/NULL, 
 				   tf_warning_or_error)))
 	{
-	  tree t;
-	  unsigned ix;
-
 	  if (expr == error_mark_node)
 	    return error_mark_node;
 
-	  for (ix = 0; VEC_iterate (tree, types_memoized, ix, t); ix++)
-	    if (TREE_TYPE (expr) == t)
-	      {
-		error ("circular pointer delegation detected");
-		return error_mark_node;
-	      }
+	  if (vec_member (TREE_TYPE (expr), types_memoized))
+	    {
+	      error ("circular pointer delegation detected");
+	      return error_mark_node;
+	    }
 
 	  VEC_safe_push (tree, gc, types_memoized, TREE_TYPE (expr));
 	  last_rval = expr;
