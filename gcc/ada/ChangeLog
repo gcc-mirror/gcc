@@ -1,3 +1,38 @@
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Non_VMS_Usage): Do not issue usage for gnat sync.
+	Update the last line of the usage, indicating what commands do not
+	accept project file switches.
+	* vms_conv.adb: Do not issue usage line for GNAT SYNC
+	* vms_data.ads: Fix errors in the qualifiers /LOGFILE and /MAIN of
+	GNAT ELIM.
+	* gnat_ugn.texi: Document the relaxed rules for library directories in
+	externally built library projects.
+
+2010-06-17  Doug Rupp  <rupp@adacore.com>
+
+	* s-auxdec-vms_64.ads: Make boolean and arithmetic operations intrinsic
+	where possible.
+	* s-auxdec-vms-alpha.adb: Remove kludges for aforemention.
+	* gcc-interface/Makefile.in: Update VMS target pairs.
+
+2010-06-17  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* adaint.c: Reorganized in order to avoid use of GetProcessId to stay
+	compatible with Windows NT 4.0 which doesn't provide this function.
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* ali-util.adb (Time_Stamp_Mismatch): In Verbose mode, if there is
+	different timestamps but the checksum is the same, issue a short
+	message saying so.
+
+2010-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-interr.adb (Finalize): If the Abort_Task signal is set to system,
+	it means that we cannot reset interrupt handlers since this would
+	require potentially sending the abort signal to the Server_Task.
+
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb: expand NOT for VMS types.

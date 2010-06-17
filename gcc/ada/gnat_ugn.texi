@@ -14048,9 +14048,9 @@ to be acceptable on all platforms.
 
 The @code{Library_Dir} attribute has a string value that designates the path
 (absolute or relative) of the directory where the library will reside.
-It must designate an existing directory, and this directory must be writable,
-different from the project's object directory and from any source directory
-in the project tree.
+It must designate an existing directory. When the project is not externally
+built, this directory must be writable, different from the project's object
+directory and from any source directory in the project tree.
 
 If both @code{Library_Name} and @code{Library_Dir} are specified and
 are legal, then the project file defines a library project.  The optional
@@ -14073,9 +14073,10 @@ to indicate what kind of library should be build.
 The @code{Library_ALI_Dir} attribute may be specified to indicate the
 directory where the ALI files of the library will be copied. When it is
 not specified, the ALI files are copied to the directory specified in
-attribute @code{Library_Dir}. The directory specified by @code{Library_ALI_Dir}
-must be writable and different from the project's object directory and from
-any source directory in the project tree.
+attribute @code{Library_Dir}. Except when the project is externally built, the
+directory specified by @code{Library_ALI_Dir} must be writable and different
+from the project's object directory and from any source directory in the
+project tree.
 
 The @code{Library_Version} attribute has a string value whose interpretation
 is platform dependent. It has no effect on VMS and Windows. On Unix, it is

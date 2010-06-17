@@ -1272,7 +1272,10 @@ procedure GNATCmd is
       New_Line;
 
       for C in Command_List'Range loop
-         if not Command_List (C).VMS_Only then
+
+         --  No usage for VMS only command or for Sync
+
+         if (not Command_List (C).VMS_Only) and then C /= Sync then
             if Targparm.AAMP_On_Target then
                Put ("gnaampcmd ");
             else
@@ -1306,7 +1309,7 @@ procedure GNATCmd is
       end loop;
 
       New_Line;
-      Put_Line ("Commands find, list, metric, pretty, stack, stub and xref " &
+      Put_Line ("All commands except chop, krunch and preprocess " &
                 "accept project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
    end Non_VMS_Usage;
