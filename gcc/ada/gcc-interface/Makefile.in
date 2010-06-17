@@ -1451,6 +1451,7 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
 
   EH_MECHANISM=-gcc
   GMEM_LIB=gmemlib
+  MISCLIB = -lexc
   THREADSLIB = -lpthread -lmach -lexc -lrt
   GNATLIB_SHARED = gnatlib-shared-default
   LIBRARY_VERSION := $(LIB_VERSION)

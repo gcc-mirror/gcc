@@ -315,6 +315,7 @@ begin
 
             declare
                Loc : Source_Location;
+               C2v : Character;
 
             begin
                --  Acquire location information
@@ -325,9 +326,18 @@ begin
                   Get_Source_Location (Loc);
                end if;
 
+               --  C2 is a space except for pragmas where it is 'e' since
+               --  clearly the pragma is enabled if it was written out.
+
+               if C = 'P' then
+                  C2v := 'e';
+               else
+                  C2v := ' ';
+               end if;
+
                Add_SCO
                  (C1   => Dtyp,
-                  C2   => ' ',
+                  C2   => C2v,
                   From => Loc,
                   To   => No_Source_Location,
                   Last => False);

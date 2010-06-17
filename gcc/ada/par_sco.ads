@@ -49,6 +49,14 @@ package Par_SCO is
    --  by Val. The condition is identified by the First_Sloc value in the
    --  original tree associated with Cond.
 
+   procedure Set_SCO_Pragma_Enabled (Loc : Source_Ptr);
+   --  This procedure is called from Sem_Prag when a pragma is enabled (i.e.
+   --  when the Pragma_Enabled flag is set). Loc is the Sloc of the N_Pragma
+   --  node. This is used to enable the corresponding SCO table entry. Note
+   --  that we use the Sloc as the key here, since in the generic case, the
+   --  analysis is on a copy of the node, which is different from the node
+   --  seen by Par_SCO in the parse tree (but the Sloc values are the same).
+
    procedure SCO_Output;
    --  Outputs SCO lines for all units, with appropriate section headers, for
    --  unit U in the ALI file, as recorded by previous calls to SCO_Record,

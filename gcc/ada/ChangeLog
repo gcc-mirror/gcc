@@ -1,3 +1,32 @@
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: propagate Pragma_Enabled flag to generic.
+	* get_scos.adb: Set C2 flag in decision entry of pragma to 'e' (enabled)
+	* par_sco.ads, par_sco.adb (Set_SCO_Pragma_Enabled): New procedure
+	Remove use of Node field in SCOs table
+	(Output_Header): Set 'd' to initially disable pragma entry
+	* put_scos.adb (Put_SCOs): New flag indicating if pragma is enabled
+	* scos.ads, scos.adb: Remove Node field from internal SCOs table.
+	Use C2 field of pragma decision header to indicate enabled.
+	* sem_prag.adb: Add calls to Set_SCO_Pragma_Enabled.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* back_end.adb (Next_Arg): Moved to procedure Scan_Compiler_Arguments
+	(Scan_Compiler_Arguments): Call Scan_Front_End_Switches with Next_Arg
+	(Switch_Subsequently_Cancelled): Function moved to the body of Switch.C
+	* back_end.ads (Scan_Front_End_Switches): Function moved to the body of
+	Switch.C.
+	* switch-c.adb: Copied a number of global declarations from back_end.adb
+	(Len_Arg): New function copied from back_end.adb
+	(Switch_Subsequently_Cancelled): New function moved from back_end.adb
+	(Scan_Front_End_Switches): New parameter Arg_Rank used to call
+	Switch_Subsequently_Cancelled.
+	* switch-c.ads (Scan_Front_End_Switches): New parameter Arg_Rank.
+	* gcc-interface/Makefile.in: Add line so that shared libgnat is linked
+	with -lexc on Tru64.
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* prj.ads, prj.adb: Minor reformatting
