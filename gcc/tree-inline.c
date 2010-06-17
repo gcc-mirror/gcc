@@ -2701,25 +2701,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest)
 	     via return slot optimization are not believed to have address
 	     taken by alias analysis.  */
 	  gcc_assert (TREE_CODE (return_slot) != SSA_NAME);
-	  if (gimple_in_ssa_p (cfun))
-	    {
-	      HOST_WIDE_INT bitsize;
-	      HOST_WIDE_INT bitpos;
-	      tree offset;
-	      enum machine_mode mode;
-	      int unsignedp;
-	      int volatilep;
-	      tree base;
-	      base = get_inner_reference (return_slot, &bitsize, &bitpos,
-					  &offset,
-					  &mode, &unsignedp, &volatilep,
-					  false);
-	      if (TREE_CODE (base) == INDIRECT_REF)
-		base = TREE_OPERAND (base, 0);
-	      if (TREE_CODE (base) == SSA_NAME)
-		base = SSA_NAME_VAR (base);
-	      mark_sym_for_renaming (base);
-	    }
 	  var = return_slot_addr;
 	}
       else

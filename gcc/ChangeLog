@@ -1,5 +1,9 @@
 2010-06-17  Richard Guenther  <rguenther@suse.de>
 
+	* tree-inline.c (declare_return_variable): Remove bogus code.
+
+2010-06-17  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (gimplify_bind_expr): Always promote complex
 	and vector variables to registers if possible.
 
