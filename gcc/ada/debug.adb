@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,8 +141,8 @@ package body Debug is
    --  d.U
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X  Use Expression_With_Actions for short-circuited forms
-   --  d.Y
+   --  d.X  Use Expression_With_Actions
+   --  d.Y  Do not use Expression_With_Actions
    --  d.Z
 
    --  d1   Error msgs have node numbers where possible
@@ -581,10 +581,15 @@ package body Debug is
 
    --  d.X  By default, the compiler uses an elaborate rewriting framework for
    --       short-circuited forms where the right hand condition generates
-   --       actions to be inserted. Use of this switch causes the compiler to
-   --       use the much simpler Expression_With_Actions node for this purpose.
-   --       It is a debug flag to aid transitional implementation in gigi and
-   --       the back end. As soon as that works fine, we will remove this flag.
+   --       actions to be inserted. With the gcc backend, we now use the new
+   --       N_Expression_With_Actions node for this expansion, but we still use
+   --       the old method for other backends and in SCIL mode. This debug flag
+   --       forces use of the new N_Expression_With_Actions node in these other
+   --       cases and is intended for transitional use.
+
+   --  d.Y  Prevents the use of the N_Expression_With_Actions node even in the
+   --       case of the gcc back end. Provided as a back up in case the new
+   --       scheme has problems.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

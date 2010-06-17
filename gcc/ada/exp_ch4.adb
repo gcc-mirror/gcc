@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8829,10 +8829,10 @@ package body Exp_Ch4 is
          --  of the introduction of the new variable C, which obscures the
          --  structure of the test.
 
-         --  We use this "old approach" by default for now, unless the
-         --  special debug switch gnatd.X is used.
+         --  We use this "old approach" if use of N_Expression_With_Actions
+         --  is False (see description in Opt of when this is or is not set).
 
-         if not Debug_Flag_Dot_XX then
+         if not Use_Expression_With_Actions then
             Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
 
             Insert_Action (N,

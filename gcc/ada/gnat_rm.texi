@@ -5247,6 +5247,9 @@ used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
 be useful in checking whether obsolete pragmas in existing programs are hiding
 real problems.
 
+Note: pragma Warnings does not affect the processing of style messages. See
+separate entry for pragma Style_Checks for control of style messages.
+
 @node Pragma Weak_External
 @unnumberedsec Pragma Weak_External
 @findex Weak_External

@@ -4201,7 +4201,7 @@ Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
 @option{^-gnatwae^/WARNINGS=ALL,ERRORS^} and
 @option{^-gnatyg^/STYLE_CHECKS=GNAT^}
 so that all standard warnings and all standard style options are turned on.
-All warnings and style error messages are treated as errors.
+All warnings and style messages are treated as errors.
 
 @ifclear vms
 @item -gnatG=nn
@@ -5213,12 +5213,14 @@ This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
 
 @item -gnatwe
-@emph{Treat warnings as errors.}
+@emph{Treat warnings and style checks as errors.}
 @cindex @option{-gnatwe} (@command{gcc})
 @cindex Warnings, treat as error
-This switch causes warning messages to be treated as errors.
+This switch causes warning messages and style check messages to be
+treated as errors.
 The warning string still appears, but the warning messages are counted
-as errors, and prevent the generation of an object file.
+as errors, and prevent the generation of an object file. Note that this
+is the only -gnatw switch that affects the handling of style check messages.
 
 @item -gnatw.e
 @emph{Activate every optional warning}
@@ -5581,7 +5583,8 @@ This switch completely suppresses the
 output of all warning messages from the GNAT front end.
 Note that it does not suppress warnings from the @command{gcc} back end.
 To suppress these back end warnings as well, use the switch @option{-w}
-in addition to @option{-gnatws}.
+in addition to @option{-gnatws}. Also this switch has no effect on the
+handling of style check messages.
 
 @item -gnatwt
 @emph{Activate warnings for tracking of deleted conditional code.}
@@ -6140,8 +6143,10 @@ causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
 in writing the GNAT sources themselves. This switch allows user programs
 to activate all or some of these checks. If the source program fails a
-specified style check, an appropriate warning message is given, preceded by
-the character sequence ``(style)''.
+specified style check, an appropriate message is given, preceded by
+the character sequence ``(style)''. This message does not prevent
+successful compilation (unless the @option{-gnatwe} switch is used).
+
 @ifset vms
 @code{(option,option,@dots{})} is a sequence of keywords
 @end ifset
