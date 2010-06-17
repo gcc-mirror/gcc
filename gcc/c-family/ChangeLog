@@ -1,3 +1,9 @@
+2010-06-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44512
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Add cast
+	for C++ standard compliance.
+
 2010-06-16  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -Wnoexcept.

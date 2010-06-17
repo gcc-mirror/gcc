@@ -1022,7 +1022,8 @@ builtin_define_with_hex_fp_value (const char *macro,
       lazy_hex_fp_values[lazy_hex_fp_value_count].fp_suffix = fp_suffix;
       lazy_hex_fp_values[lazy_hex_fp_value_count].macro = node->value.macro;
       node->flags |= NODE_BUILTIN;
-      node->value.builtin = BT_FIRST_USER + lazy_hex_fp_value_count;
+      node->value.builtin
+	= (enum cpp_builtin_type) (BT_FIRST_USER + lazy_hex_fp_value_count);
       lazy_hex_fp_value_count++;
       return;
     }
