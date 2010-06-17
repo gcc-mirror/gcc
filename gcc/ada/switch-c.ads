@@ -41,6 +41,7 @@ package Switch.C is
    --  an optional terminating NUL character is allowed. A bad switch causes
    --  a fatal error exit and control does not return. The call also sets
    --  Usage_Requested to True if a switch -gnath is encountered.
+   --
    --  Arg_Rank is the position of the switch in the command line arguments.
    --  It is used for certain switches -gnatx to check if a subsequent switch
    --  -gnat-x cancels the switch -gnatx.

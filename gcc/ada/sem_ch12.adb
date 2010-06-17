@@ -12223,7 +12223,6 @@ package body Sem_Ch12 is
                --  All other cases than aggregates
 
                else
-
                   --  For pragmas, we propagate the Enabled status for the
                   --  relevant pragmas to the original generic tree. This was
                   --  originally needed for SCO generation. It is no longer
@@ -12233,8 +12232,10 @@ package body Sem_Ch12 is
 
                   if Nkind (N) = N_Pragma
                     and  then
-                      (Pragma_Name (N) = Name_Precondition
-                       or else Pragma_Name (N) = Name_Postcondition)
+                      (Pragma_Name (N) = Name_Assert
+                        or else Pragma_Name (N) = Name_Check
+                        or else Pragma_Name (N) = Name_Precondition
+                        or else Pragma_Name (N) = Name_Postcondition)
                     and then Present (Associated_Node (Pragma_Identifier (N)))
                   then
                      Set_Pragma_Enabled (N,

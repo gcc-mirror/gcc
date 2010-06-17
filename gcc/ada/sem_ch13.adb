@@ -2370,7 +2370,6 @@ package body Sem_Ch13 is
                --  Get the alignment value to perform error checking
 
                Mod_Val := Get_Alignment_Value (Expression (M));
-
             end if;
          end;
       end if;

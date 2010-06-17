@@ -1,5 +1,24 @@
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
+	* switch-c.ads, switch-c.adb, sem_ch13.adb: Minor reformatting.
+	* sem_ch12.adb: Add pragmas Assert and Check to previous change.
+
+2010-06-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Layout_Type): Broaden test for setting an array type's
+	Component_Size to include all scalar types, not just discrete types
+	(components of real types were missed).
+	* sem_ch3.adb (Constrain_Index): Add missing setting of First_Literal
+	on the itype created for an index (consistent with Make_Index and
+	avoids possible Assert_Failures).
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb: Add 6-parameter version of Ekind_In
+	* einfo.adb: Minor code reformatting (use Ekind_In)
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
 	* sem_warn.adb (Test_Ref): Abandon scan if access subprogram parameter
 	found.
 

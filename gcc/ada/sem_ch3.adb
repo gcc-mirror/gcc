@@ -11071,6 +11071,7 @@ package body Sem_Ch3 is
       else
          Set_Ekind (Def_Id, E_Enumeration_Subtype);
          Set_Is_Character_Type (Def_Id, Is_Character_Type (T));
+         Set_First_Literal     (Def_Id, First_Literal (T));
       end if;
 
       Set_Size_Info      (Def_Id,                (T));
