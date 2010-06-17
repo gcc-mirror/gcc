@@ -94,7 +94,9 @@ package Prj.Env is
    procedure Set_Ada_Paths
      (Project             : Project_Id;
       In_Tree             : Project_Tree_Ref;
-      Including_Libraries : Boolean);
+      Including_Libraries : Boolean;
+      Include_Path        : Boolean := True;
+      Objects_Path        : Boolean := True);
    --  Set the environment variables for additional project path files, after
    --  creating the path files if necessary.
 

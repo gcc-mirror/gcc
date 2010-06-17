@@ -2941,9 +2941,8 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      if Ekind (Subp) = E_Function
-        or else Ekind (Subp) = E_Procedure
-      then
+      if Ekind_In (Subp, E_Function, E_Procedure) then
+
          --  We perform two simple optimization on calls:
 
          --  a) replace calls to null procedures unconditionally;
@@ -4338,9 +4337,7 @@ package body Exp_Ch6 is
       --  For a procedure, we add a return for all possible syntactic ends of
       --  the subprogram.
 
-      if Ekind (Spec_Id) = E_Procedure
-        or else Ekind (Spec_Id) = E_Generic_Procedure
-      then
+      if Ekind_In (Spec_Id, E_Procedure, E_Generic_Procedure) then
          Add_Return (Statements (H));
 
          if Present (Exception_Handlers (H)) then
@@ -4707,8 +4704,7 @@ package body Exp_Ch6 is
       --  foreign convention or whose result type has a foreign convention
       --  never qualify.
 
-      if Ekind (E) = E_Function
-        or else Ekind (E) = E_Generic_Function
+      if Ekind_In (E, E_Function, E_Generic_Function)
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then

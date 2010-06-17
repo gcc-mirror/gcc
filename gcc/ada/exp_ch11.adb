@@ -1551,17 +1551,6 @@ package body Exp_Ch11 is
          end if;
       end if;
 
-      --  There is no expansion needed for statement "raise <exception>;" when
-      --  compiling for the JVM since the JVM has a built-in exception
-      --  mechanism. However we need to keep the expansion for "raise;"
-      --  statements. See 4jexcept.ads for details.
-
-      --  What is .NET status, either code or comment is wrong here ???
-
-      if Present (Name (N)) and then VM_Target /= No_VM then
-         return;
-      end if;
-
       --  Case of name present, in this case we expand raise name to
 
       --    Raise_Exception (name'Identity, location_string);

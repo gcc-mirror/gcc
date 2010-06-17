@@ -87,15 +87,15 @@ package body Prj.Proc is
    --  based languages)
 
    procedure Copy_Package_Declarations
-     (From              : Declarations;
-      To                : in out Declarations;
-      New_Loc           : Source_Ptr;
-      Naming_Restricted : Boolean;
-      In_Tree           : Project_Tree_Ref);
+     (From       : Declarations;
+      To         : in out Declarations;
+      New_Loc    : Source_Ptr;
+      Restricted : Boolean;
+      In_Tree    : Project_Tree_Ref);
    --  Copy a package declaration From to To for a renamed package. Change the
-   --  locations of all the attributes to New_Loc. When Naming_Restricted is
-   --  True, do not copy attributes Body, Spec, Implementation and
-   --  Specification.
+   --  locations of all the attributes to New_Loc. When Restricted is
+   --  True, do not copy attributes Body, Spec, Implementation, Specification
+   --  and Linker_Options.
 
    function Expression
      (Project                : Project_Id;
@@ -314,11 +314,11 @@ package body Prj.Proc is
    -------------------------------
 
    procedure Copy_Package_Declarations
-     (From              : Declarations;
-      To                : in out Declarations;
-      New_Loc           : Source_Ptr;
-      Naming_Restricted : Boolean;
-      In_Tree           : Project_Tree_Ref)
+     (From       : Declarations;
+      To         : in out Declarations;
+      New_Loc    : Source_Ptr;
+      Restricted : Boolean;
+      In_Tree    : Project_Tree_Ref)
    is
       V1  : Variable_Id;
       V2  : Variable_Id      := No_Variable;
@@ -345,6 +345,12 @@ package body Prj.Proc is
 
          Var := In_Tree.Variable_Elements.Table (V1);
          V1  := Var.Next;
+
+         --  Do not copy the value of attribute inker_Options if Restricted
+
+         if Restricted and then Var.Name = Snames.Name_Linker_Options then
+            Var.Value.Values := Nil_String;
+         end if;
 
          --  Remove the Next component
 
@@ -376,16 +382,16 @@ package body Prj.Proc is
          Arr := In_Tree.Arrays.Table (A1);
          A1  := Arr.Next;
 
-         if not Naming_Restricted or else
-           (Arr.Name /= Snames.Name_Body
-             and then Arr.Name /= Snames.Name_Spec
-             and then Arr.Name /= Snames.Name_Implementation
-             and then Arr.Name /= Snames.Name_Specification)
+         if not Restricted
+           or else
+             (Arr.Name /= Snames.Name_Body           and then
+              Arr.Name /= Snames.Name_Spec           and then
+              Arr.Name /= Snames.Name_Implementation and then
+              Arr.Name /= Snames.Name_Specification)
          then
             --  Remove the Next component
 
             Arr.Next := No_Array;
-
             Array_Table.Increment_Last (In_Tree.Arrays);
 
             --  Create new Array declaration
@@ -1445,15 +1451,15 @@ package body Prj.Proc is
                            --  renaming declaration.
 
                            Copy_Package_Declarations
-                             (From              =>
+                             (From       =>
                                 In_Tree.Packages.Table (Renamed_Package).Decl,
-                              To                =>
+                              To         =>
                                 In_Tree.Packages.Table (New_Pkg).Decl,
-                              New_Loc           =>
+                              New_Loc    =>
                                 Location_Of
                                   (Current_Item, From_Project_Node_Tree),
-                              Naming_Restricted => False,
-                              In_Tree           => In_Tree);
+                              Restricted => False,
+                              In_Tree    => In_Tree);
                         end;
 
                      --  Standard package declaration, not renaming
@@ -2621,13 +2627,12 @@ package body Prj.Proc is
                            Next   => Project.Decl.Packages);
                         Project.Decl.Packages := Current_Pkg;
                         Copy_Package_Declarations
-                          (From              => Element.Decl,
-                           To                =>
+                          (From       => Element.Decl,
+                           To         =>
                              In_Tree.Packages.Table (Current_Pkg).Decl,
-                           New_Loc           => No_Location,
-                           Naming_Restricted =>
-                             Element.Name = Snames.Name_Naming,
-                           In_Tree           => In_Tree);
+                           New_Loc    => No_Location,
+                           Restricted => True,
+                           In_Tree    => In_Tree);
                      end if;
 
                      Extended_Pkg := Element.Next;

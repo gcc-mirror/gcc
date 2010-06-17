@@ -2723,7 +2723,8 @@ package body Make is
                Prj.Env.Set_Ada_Paths
                  (Arguments_Project,
                   Project_Tree,
-                  Including_Libraries => True);
+                  Including_Libraries => True,
+                  Include_Path        => Use_Include_Path_File);
 
                if not Unique_Compile
                  and then MLib.Tgt.Support_For_Libraries /= Prj.None
@@ -6026,7 +6027,8 @@ package body Make is
                   --  and all the object directories in ADA_OBJECTS_PATH,
                   --  except those of library projects.
 
-                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, False);
+                  Prj.Env.Set_Ada_Paths
+                    (Main_Project, Project_Tree, Use_Include_Path_File);
 
                   --  If switch -C was specified, create a binder mapping file
 
@@ -6253,7 +6255,11 @@ package body Make is
 
                   --  Put the object directories in ADA_OBJECTS_PATH
 
-                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, False);
+                  Prj.Env.Set_Ada_Paths
+                    (Main_Project,
+                     Project_Tree,
+                     Including_Libraries => False,
+                     Include_Path        => False);
 
                   --  Check for attributes Linker'Linker_Options in projects
                   --  other than the main project

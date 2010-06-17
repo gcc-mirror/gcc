@@ -95,13 +95,13 @@ package body GNAT.Sockets.Thin is
    function Syscall_Recvmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t;
+      Flags : C.int) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Recvmsg, "recvmsg");
 
    function Syscall_Sendmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t;
+      Flags : C.int) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Sendmsg, "sendmsg");
 
    function Syscall_Sendto
@@ -307,15 +307,15 @@ package body GNAT.Sockets.Thin is
    function C_Recvmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
-      Res : ssize_t;
+      Res : System.CRTL.ssize_t;
 
    begin
       loop
          Res := Syscall_Recvmsg (S, Msg, Flags);
          exit when SOSC.Thread_Blocking_IO
-           or else Res /= ssize_t (Failure)
+           or else Res /= System.CRTL.ssize_t (Failure)
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
@@ -331,15 +331,15 @@ package body GNAT.Sockets.Thin is
    function C_Sendmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
-      Res : ssize_t;
+      Res : System.CRTL.ssize_t;
 
    begin
       loop
          Res := Syscall_Sendmsg (S, Msg, Flags);
          exit when SOSC.Thread_Blocking_IO
-           or else Res /= ssize_t (Failure)
+           or else Res /= System.CRTL.ssize_t (Failure)
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;

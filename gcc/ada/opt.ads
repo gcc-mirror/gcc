@@ -1229,6 +1229,11 @@ package Opt is
    --  set True, and upper half characters in the source indicate the start of
    --  a wide character sequence. Set by -gnatW or -W switches.
 
+   Use_Include_Path_File : Boolean := False;
+   --  GNATMAKE, GPRBUILD
+   --  When True, create a source search path file, even when a mapping file
+   --  is used.
+
    Usage_Requested : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE
    --  Set to True if -h (-gnath for the compiler) switch encountered

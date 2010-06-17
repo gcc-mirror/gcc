@@ -2309,8 +2309,11 @@ package body System.OS_Lib is
       N  : Integer) return Integer
    is
    begin
-      return Integer (System.CRTL.read
-        (System.CRTL.int (FD), System.CRTL.chars (A), System.CRTL.int (N)));
+      return
+        Integer (System.CRTL.read
+                   (System.CRTL.int (FD),
+                    System.CRTL.chars (A),
+                    System.CRTL.size_t (N)));
    end Read;
 
    -----------------
@@ -2718,8 +2721,11 @@ package body System.OS_Lib is
       N  : Integer) return Integer
    is
    begin
-      return Integer (System.CRTL.write
-        (System.CRTL.int (FD), System.CRTL.chars (A), System.CRTL.int (N)));
+      return
+        Integer (System.CRTL.write
+                   (System.CRTL.int (FD),
+                    System.CRTL.chars (A),
+                    System.CRTL.size_t (N)));
    end Write;
 
 end System.OS_Lib;

@@ -1145,10 +1145,7 @@ package body Freeze is
       if Nkind_In (Par, N_Object_Declaration, N_Assignment_Statement)
         and then Comes_From_Source (Par)
       then
-         Temp :=
-           Make_Defining_Identifier (Loc,
-             New_Internal_Name ('T'));
-
+         Temp := Make_Temporary (Loc, 'T', E);
          New_N :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
@@ -5419,8 +5416,7 @@ package body Freeze is
             --  involve secondary stack expansion.
 
             else
-               Dnam :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
+               Dnam := Make_Temporary (Loc, 'D');
 
                Dbody :=
                  Make_Subprogram_Body (Loc,

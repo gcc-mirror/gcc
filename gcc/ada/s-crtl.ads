@@ -59,6 +59,9 @@ package System.CRTL is
 
    type size_t is mod 2 ** Standard'Address_Size;
 
+   type ssize_t is range -(2 ** (Standard'Address_Size - 1))
+                      .. +(2 ** (Standard'Address_Size - 1)) - 1;
+
    type Filename_Encoding is (UTF8, ASCII_8bits, Unspecified);
    for Filename_Encoding use (UTF8 => 0, ASCII_8bits => 1, Unspecified => 2);
    pragma Convention (C, Filename_Encoding);
@@ -187,10 +190,10 @@ package System.CRTL is
    function close (fd : int) return int;
    pragma Import (C, close, "close");
 
-   function read (fd : int; buffer : chars; nbytes : int) return int;
+   function read (fd : int; buffer : chars; count : size_t) return ssize_t;
    pragma Import (C, read, "read");
 
-   function write (fd : int; buffer : chars; nbytes : int) return int;
+   function write (fd : int; buffer : chars; count : size_t) return ssize_t;
    pragma Import (C, write, "write");
 
 end System.CRTL;
