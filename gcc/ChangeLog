@@ -1,5 +1,10 @@
 2010-06-17  Richard Guenther  <rguenther@suse.de>
 
+	* gimplify.c (gimplify_bind_expr): Always promote complex
+	and vector variables to registers if possible.
+
+2010-06-17  Richard Guenther  <rguenther@suse.de>
+
 	* expr.c (get_inner_reference): Use double_int for bit_offset
 	calculation.
 
