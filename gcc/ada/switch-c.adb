@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Command_Line; use Ada.Command_Line;
-
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
@@ -34,8 +32,9 @@ with Validsw;  use Validsw;
 with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
 
-with System.OS_Lib; use System.OS_Lib;
+with Ada.Command_Line; use Ada.Command_Line;
 
+with System.OS_Lib;  use System.OS_Lib;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
@@ -45,8 +44,7 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Arg_Rank : Positive)
-      return Boolean;
+      Arg_Rank : Positive) return Boolean;
    --  This function is called from Scan_Front_End_Switches. It determines if
    --  the switch currently being scanned is followed by a switch of the form
    --  "-gnat-" & C, where C is the argument. If so, then True is returned,
@@ -1098,12 +1096,14 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Arg_Rank : Positive)
-      return Boolean
+      Arg_Rank : Positive) return Boolean
    is
       Arg : Positive;
       Max : constant Natural := Argument_Count;
+
    begin
+      --  Loop through arguments following the current one
+
       Arg := Arg_Rank + 1;
       while Arg < Max loop
          declare
@@ -1116,6 +1116,8 @@ package body Switch.C is
 
          Arg := Arg + 1;
       end loop;
+
+      --  No match found, not cancelled
 
       return False;
    end Switch_Subsequently_Cancelled;

@@ -2560,10 +2560,10 @@ package body Layout is
 
             begin
                --  For some reasons, access types can cause trouble, So let's
-               --  just do this for discrete types ???
+               --  just do this for scalar types ???
 
                if Present (CT)
-                 and then Is_Discrete_Type (CT)
+                 and then Is_Scalar_Type (CT)
                  and then Known_Static_Esize (CT)
                then
                   declare
