@@ -2107,9 +2107,7 @@ package body Exp_Util is
    begin
       --  Only consider record types
 
-      if Ekind (Typ) /= E_Record_Type
-        and then Ekind (Typ) /= E_Record_Subtype
-      then
+      if not Ekind_In (Typ, E_Record_Type, E_Record_Subtype) then
          return False;
       end if;
 
@@ -4406,9 +4404,7 @@ package body Exp_Util is
             --  already rewritten a variable node with a constant as
             --  a result of an earlier Force_Evaluation call.
 
-            if Ekind (Entity (N)) = E_Constant
-              or else Ekind (Entity (N)) = E_In_Parameter
-            then
+            if Ekind_In (Entity (N), E_Constant, E_In_Parameter) then
                return True;
 
             --  Functions are not side effect free

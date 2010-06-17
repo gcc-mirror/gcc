@@ -3119,11 +3119,7 @@ package body Layout is
       Make_Func : Boolean   := False) return Dynamic_SO_Ref
    is
       Loc  : constant Source_Ptr := Sloc (Ins_Type);
-
-      K : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => New_Internal_Name ('K'));
-
+      K    : constant Entity_Id := Make_Temporary (Loc, 'K');
       Decl : Node_Id;
 
       Vtype_Primary_View : Entity_Id;

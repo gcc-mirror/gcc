@@ -269,7 +269,7 @@ package body GNAT.Sockets.Thin is
    function C_Recvmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
       Res   : C.int;
       Count : C.int := 0;
@@ -287,19 +287,20 @@ package body GNAT.Sockets.Thin is
       --  not available in all versions of Windows. So, we use C_Recv instead.
 
       for J in Iovec'Range loop
-         Res := C_Recv
-           (S,
-            Iovec (J).Base.all'Address,
-            C.int (Iovec (J).Length),
-            Flags);
+         Res :=
+           C_Recv
+            (S,
+             Iovec (J).Base.all'Address,
+             C.int (Iovec (J).Length),
+             Flags);
 
          if Res < 0 then
-            return ssize_t (Res);
+            return System.CRTL.ssize_t (Res);
          else
             Count := Count + Res;
          end if;
       end loop;
-      return ssize_t (Count);
+      return System.CRTL.ssize_t (Count);
    end C_Recvmsg;
 
    --------------
@@ -369,10 +370,11 @@ package body GNAT.Sockets.Thin is
 
                --  Check out-of-band data
 
-               Length := C_Recvfrom
-                 (S, Buffer'Address, 1, Flag,
-                  From    => System.Null_Address,
-                  Fromlen => Fromlen'Unchecked_Access);
+               Length :=
+                 C_Recvfrom
+                  (S, Buffer'Address, 1, Flag,
+                   From    => System.Null_Address,
+                   Fromlen => Fromlen'Unchecked_Access);
                --  Is Fromlen necessary if From is Null_Address???
 
                --  If the signal is not an out-of-band data, then it
@@ -404,7 +406,7 @@ package body GNAT.Sockets.Thin is
    function C_Sendmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
       Res   : C.int;
       Count : C.int := 0;
@@ -423,21 +425,23 @@ package body GNAT.Sockets.Thin is
       --  instead.
 
       for J in Iovec'Range loop
-         Res := C_Sendto
-           (S,
-            Iovec (J).Base.all'Address,
-            C.int (Iovec (J).Length),
-            Flags => Flags,
-            To    => MH.Msg_Name,
-            Tolen => C.int (MH.Msg_Namelen));
+         Res :=
+           C_Sendto
+            (S,
+             Iovec (J).Base.all'Address,
+             C.int (Iovec (J).Length),
+             Flags => Flags,
+             To    => MH.Msg_Name,
+             Tolen => C.int (MH.Msg_Namelen));
 
          if Res < 0 then
-            return ssize_t (Res);
+            return System.CRTL.ssize_t (Res);
          else
             Count := Count + Res;
          end if;
       end loop;
-      return ssize_t (Count);
+
+      return System.CRTL.ssize_t (Count);
    end C_Sendmsg;
 
    --------------

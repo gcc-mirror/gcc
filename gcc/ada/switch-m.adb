@@ -839,6 +839,7 @@ package body Switch.M is
 
                when 'x' =>
                   External_Unit_Compilation_Allowed := True;
+                  Use_Include_Path_File := True;
 
                   --  Processing for z switch
 

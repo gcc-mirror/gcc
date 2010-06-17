@@ -43,6 +43,7 @@ with GNAT.OS_Lib;
 with GNAT.Sockets.Thin_Common;
 
 with System;
+with System.CRTL;
 
 package GNAT.Sockets.Thin is
 
@@ -50,10 +51,7 @@ package GNAT.Sockets.Thin is
 
    package C renames Interfaces.C;
 
-   use type C.size_t;
-   type ssize_t is range -(2 ** (C.size_t'Size - 1))
-     .. +(2 ** (C.size_t'Size - 1) - 1);
-   --  Signed type of the same size as size_t
+   use type System.CRTL.ssize_t;
 
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
    --  Returns last socket error number
@@ -147,7 +145,7 @@ package GNAT.Sockets.Thin is
    function C_Recvmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t;
+      Flags : C.int) return System.CRTL.ssize_t;
 
    function C_Select
      (Nfds      : C.int;
@@ -159,7 +157,7 @@ package GNAT.Sockets.Thin is
    function C_Sendmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t;
+      Flags : C.int) return System.CRTL.ssize_t;
 
    function C_Sendto
      (S     : C.int;

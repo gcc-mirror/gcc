@@ -1,3 +1,82 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb, exp_ch6.adb, exp_smem.adb, exp_util.adb: Use Ekind_In.
+	* layout.adb, freeze.adb: Use Make_Temporary.
+
+2010-06-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Expand raise statements in
+	.NET/JVM normally as this is now perfectly supported by the backend.
+
+2010-06-17  Pascal Obry  <obry@adacore.com>
+
+	* gnat_rm.texi: Fix minor typo, remove duplicate blank lines.
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Collect_Arguments_And_Compile): Create include path file
+	only when -x is specified.
+	(Gnatmake): Ditto
+	* opt.ads (Use_Include_Path_File): New Boolean flag, initialized to
+	False.
+	* prj-env.adb (Set_Ada_Paths): New Boolean parameters Include_Path and
+	Objects_Path, defaulted to True. Only create include path file if
+	Include_Path is True, only create objects path file if Objects_Path is
+	True.
+	* prj-env.ads (Set_Ada_Paths): New Boolean parameters Include_Path and
+	Objects_Path, defaulted to True.
+	* switch-m.adb (Scan_Make_Switches): Set Use_Include_Path_File to True
+	when -x is used.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Build_Interface_Thunk): Use base type of formal to
+	determine whether it has the controlling type, when the formal is an
+	access parameter.
+
+2010-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-crtl.ads (ssize_t): New type.
+	(read): Fix signature.
+	(write): Likewise.
+	* g-socthi.ads: Add 'with System.CRTL' clause.  Remove ssize_t and
+	'use type' directive for C.size_t, add one for System.CRTL.ssize_t.
+	(C_Recvmsg): Replace ssize_t with System.CRTL.ssize_t.
+	(C_Sendmsg): Likewise.
+	* g-socthi.adb (Syscall_Recvmsg): Likewise.
+	(Syscall_Sendmsg): Likewise.
+	(C_Recvmsg): Likewise.
+	(C_Sendmsg): Likewise.
+	* g-socthi-mingw.ads: Add 'with System.CRTL' clause.  Remove ssize_t
+	and 'use type' directive for C.size_t, add one for System.CRTL.ssize_t.
+	(C_Recvmsg): Replace ssize_t with System.CRTL.ssize_t.
+	(C_Sendmsg): Likewise.
+	* g-socthi-mingw.adb (C_Recvmsg): Likewise.
+	(C_Sendmsg): Likewise.
+	* g-socthi-vms.ads: Add 'with System.CRTL' clause.  Remove ssize_t and
+	'use type' directive for C.size_t, add one for System.CRTL.ssize_t.
+	(C_Recvmsg): Replace ssize_t with System.CRTL.ssize_t.
+	(C_Sendmsg): Likewise.
+	* g-socthi-vms.adb (C_Recvmsg): Likewise.
+	(C_Sendmsg): Likewise.
+	* g-socthi-vxworks.ads Add 'with System.CRTL' clause.  Remove ssize_t
+	and 'use type' directive for C.size_t, add one for System.CRTL.ssize_t.
+	(C_Recvmsg): Replace ssize_t with System.CRTL.ssize_t.
+	(C_Sendmsg): Likewise.
+	* g-socthi-vxworks.adb (C_Recvmsg): Likewise.
+	(C_Sendmsg): Likewise.
+	* g-sercom-linux.adb (Read): Use correct types to call 'read'.
+	(Write): Likewise to call 'write'.
+	* s-os_lib.adb (Read): Use correct type to call System.CRTL.read.
+	(Write): Use correct type to call System.CRTL.write.
+	* s-tasdeb.adb (Write): Likewise.
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Copy_Package_Declarations): Change argument name
+	Naming_Restricted to Restricted. If Restricted is True, do not copy the
+	value of attribute Linker_Options.
+
 2010-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (push_stack, pop_stack): Delete.

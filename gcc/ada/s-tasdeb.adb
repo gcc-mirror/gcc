@@ -362,10 +362,11 @@ package body System.Tasking.Debug is
    -----------
 
    procedure Write (Fd : Integer; S : String; Count : Integer) is
-      Discard : Integer;
+      Discard : System.CRTL.ssize_t;
       pragma Unreferenced (Discard);
    begin
-      Discard := System.CRTL.write (Fd, S (S'First)'Address, Count);
+      Discard := System.CRTL.write (Fd, S (S'First)'Address,
+                                    System.CRTL.size_t (Count));
       --  Is it really right to ignore write errors here ???
    end Write;
 

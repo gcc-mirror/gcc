@@ -6221,9 +6221,7 @@ package body Exp_Ch3 is
 
       --  See GNAT Pool packages in the Run-Time for more details
 
-      elsif Ekind (Def_Id) = E_Access_Type
-        or else Ekind (Def_Id) = E_General_Access_Type
-      then
+      elsif Ekind_In (Def_Id, E_Access_Type, E_General_Access_Type) then
          declare
             Loc         : constant Source_Ptr := Sloc (N);
             Desig_Type  : constant Entity_Id  := Designated_Type (Def_Id);

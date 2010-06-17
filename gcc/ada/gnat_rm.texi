@@ -3967,8 +3967,6 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
-
-
 @node Pragma Profile (Ravenscar)
 @unnumberedsec Pragma Profile (Ravenscar)
 @findex Ravenscar
@@ -5946,7 +5944,7 @@ end record;
 @end smallexample
 
 @noindent
-will have a size of 40 (that is @code{Rec'Size} will be 40.  The
+will have a size of 40 (that is @code{Rec'Size} will be 40).  The
 alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
@@ -6574,7 +6572,6 @@ For example:
   Y : Float;
   for Y'Address use X'Address;>>
 @end smallexample
-
 
 @sp 1
 @cartouche
@@ -12225,8 +12222,6 @@ types are @code{Wide_Character} and @code{Wide_String} instead of
 @code{Character} and @code{String}.
 @end table
 
-
-
 @node The Implementation of Standard I/O
 @chapter The Implementation of Standard I/O
 
@@ -15822,7 +15817,6 @@ If any of these conditions are violated, the aggregate will be built in
 a temporary (created either by the front-end or the code generator) and then
 that temporary will be copied onto the target.
 
-
 @node The Size of Discriminated Records with Default Discriminants
 @section The Size of Discriminated Records with Default Discriminants
 
@@ -15938,7 +15932,6 @@ machines that are not fully compliant with this standard, such as Alpha, the
 @option{-mieee} compiler flag must be used for achieving IEEE confirming
 behavior (although at the cost of a significant performance penalty), so
 infinite and and NaN values are properly generated.
-
 
 @node Project File Reference
 @chapter Project File Reference
@@ -16646,7 +16639,6 @@ This is a simple attribute, whose
 value is a path name that designates a file that contains configuration pragmas
 to be used in every build of an executable. If both local and global
 configuration pragmas are specified, a compilation makes use of both sets.
-
 
 @item Executable
 This is an associative array attribute. Its domain is
