@@ -323,10 +323,8 @@ package body Exp_Ch4 is
          if Nkind (Op1) = N_Op_Not then
             if Kind = N_Op_And then
                Proc_Name := RTE (RE_Vector_Nor);
-
             elsif Kind = N_Op_Or then
                Proc_Name := RTE (RE_Vector_Nand);
-
             else
                Proc_Name := RTE (RE_Vector_Xor);
             end if;
@@ -334,14 +332,11 @@ package body Exp_Ch4 is
          else
             if Kind = N_Op_And then
                Proc_Name := RTE (RE_Vector_And);
-
             elsif Kind = N_Op_Or then
                Proc_Name := RTE (RE_Vector_Or);
-
             elsif Nkind (Op2) = N_Op_Not then
                Proc_Name := RTE (RE_Vector_Nxor);
                Arg2 := Right_Opnd (Op2);
-
             else
                Proc_Name := RTE (RE_Vector_Xor);
             end if;
@@ -352,15 +347,15 @@ package body Exp_Ch4 is
              Name => New_Occurrence_Of (Proc_Name, Loc),
              Parameter_Associations => New_List (
                Target,
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Arg1,
-                    Attribute_Name => Name_Address),
-                  Make_Attribute_Reference (Loc,
-                    Prefix => Arg2,
-                    Attribute_Name => Name_Address),
-                 Make_Attribute_Reference (Loc,
-                   Prefix => Op1,
-                    Attribute_Name => Name_Length)));
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Arg1,
+                 Attribute_Name => Name_Address),
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Arg2,
+                 Attribute_Name => Name_Address),
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Op1,
+                 Attribute_Name => Name_Length)));
       end if;
 
       Rewrite (N, Call_Node);
@@ -8718,8 +8713,9 @@ package body Exp_Ch4 is
    -- Expand_Short_Circuit_Operator --
    -----------------------------------
 
-   --  Expand into conditional expression if Actions present, and also deal
-   --  with optimizing case of arguments being True or False.
+   --  Deal with special expansion if actions are present for the right operand
+   --  and deal with optimizing case of arguments being True or False. We also
+   --  deal with the special case of non-standard boolean values.
 
    procedure Expand_Short_Circuit_Operator (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
@@ -8727,6 +8723,7 @@ package body Exp_Ch4 is
       Kind    : constant Node_Kind  := Nkind (N);
       Left    : constant Node_Id    := Left_Opnd (N);
       Right   : constant Node_Id    := Right_Opnd (N);
+      LocR    : constant Source_Ptr := Sloc (Right);
       Actlist : List_Id;
 
       Shortcut_Value : constant Boolean := Nkind (N) = N_Or_Else;
@@ -8800,63 +8797,88 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  If Actions are present, we expand
+      --  If Actions are present for the right operand, we have to do some
+      --  special processing. We can't just let these actions filter back into
+      --  code preceding the short circuit (which is what would have happened
+      --  if we had not trapped them in the short-circuit form), since they
+      --  must only be executed if the right operand of the short circuit is
+      --  executed and not otherwise.
 
-      --     left AND THEN right
-
-      --  into
-
-      --     C : Boolean := False;
-      --     IF left THEN
-      --        Actions;
-      --        IF right THEN
-      --           C := True;
-      --        END IF;
-      --     END IF;
-
-      --  and finally rewrite the operator into a reference to C. Similarly
-      --  for left OR ELSE right, with negated values. Note that this rewriting
-      --  preserves two invariants that traces-based coverage analysis depends
-      --  upon:
-
-      --    - there is exactly one conditional jump for each operand;
-
-      --    - for each possible values of the expression, there is exactly
-      --      one location in the generated code that is branched to
-      --      (the inner assignment in one case, the point just past the
-      --      outer END IF; in the other case).
+      --  the temporary variable C.
 
       if Present (Actions (N)) then
          Actlist := Actions (N);
 
-         Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
+         --  The old approach is to expand:
 
-         Insert_Action (N,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Op_Var,
-             Object_Definition =>
-               New_Occurrence_Of (Standard_Boolean, Loc),
-             Expression =>
-               New_Occurrence_Of (Shortcut_Ent, Loc)));
+         --     left AND THEN right
 
-         Append_To (Actlist,
-           Make_Implicit_If_Statement (Right,
-             Condition       => Make_Test_Expr (Right),
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Right),
-                 Name =>
-                   New_Occurrence_Of (Op_Var, Sloc (Right)),
-                 Expression =>
-                   New_Occurrence_Of
-                     (Boolean_Literals (not Shortcut_Value), Sloc (Right))))));
+         --  into
 
-         Insert_Action (N,
-           Make_Implicit_If_Statement (Left,
-             Condition       => Make_Test_Expr (Left),
-             Then_Statements => Actlist));
+         --     C : Boolean := False;
+         --     IF left THEN
+         --        Actions;
+         --        IF right THEN
+         --           C := True;
+         --        END IF;
+         --     END IF;
 
-         Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
+         --  and finally rewrite the operator into a reference to C. Similarly
+         --  for left OR ELSE right, with negated values. Note that this
+         --  rewrite causes some difficulties for coverage analysis because
+         --  of the introduction of the new variable C, which obscures the
+         --  structure of the test.
+
+         --  We use this "old approach" by default for now, unless the
+         --  special debug switch gnatd.X is used.
+
+         if not Debug_Flag_Dot_XX then
+            Op_Var := Make_Temporary (Loc, 'C', Related_Node => N);
+
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Op_Var,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Boolean, Loc),
+                Expression          =>
+                  New_Occurrence_Of (Shortcut_Ent, Loc)));
+
+            Append_To (Actlist,
+              Make_Implicit_If_Statement (Right,
+                Condition       => Make_Test_Expr (Right),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (LocR,
+                    Name       => New_Occurrence_Of (Op_Var, LocR),
+                    Expression =>
+                      New_Occurrence_Of
+                        (Boolean_Literals (not Shortcut_Value), LocR)))));
+
+            Insert_Action (N,
+              Make_Implicit_If_Statement (Left,
+                Condition       => Make_Test_Expr (Left),
+                Then_Statements => Actlist));
+
+            Rewrite (N, New_Occurrence_Of (Op_Var, Loc));
+            Analyze_And_Resolve (N, Standard_Boolean);
+
+         --  The new approach, activated for now by the use of debug flag
+         --  -gnatd.X is to use the new Expression_With_Actions node for the
+         --  right operand of the short-circuit form. This should solve the
+         --  traceability problems for coverage analysis.
+
+         else
+            Rewrite (Right,
+              Make_Expression_With_Actions (LocR,
+                Expression => Relocate_Node (Right),
+                Actions    => Actlist));
+            Analyze_And_Resolve (Right, Standard_Boolean);
+         end if;
+
+         --  Special processing necessary for SCIL generation for AND THEN
+         --  with a function call as the right operand.
+
+         --  What is this about, and is it needed for both cases above???
 
          if Generate_SCIL
            and then Kind = N_And_Then
@@ -8865,7 +8887,6 @@ package body Exp_Ch4 is
             Adjust_SCIL_Node (N, Right);
          end if;
 
-         Analyze_And_Resolve (N, Standard_Boolean);
          Adjust_Result_Type (N, Typ);
          return;
       end if;

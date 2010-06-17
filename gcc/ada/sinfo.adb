@@ -147,6 +147,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_And_Then
         or else NT (N).Nkind = N_Compilation_Unit_Aux
+        or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Or_Else);
       return List1 (N);
@@ -1178,6 +1179,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Discriminant_Association
         or else NT (N).Nkind = N_Discriminant_Specification
         or else NT (N).Nkind = N_Exception_Declaration
+        or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition
@@ -3058,6 +3060,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_And_Then
         or else NT (N).Nkind = N_Compilation_Unit_Aux
+        or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
         or else NT (N).Nkind = N_Or_Else);
       Set_List1_With_Parent (N, Val);
@@ -4080,6 +4083,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Discriminant_Association
         or else NT (N).Nkind = N_Discriminant_Specification
         or else NT (N).Nkind = N_Exception_Declaration
+        or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Free_Statement
         or else NT (N).Nkind = N_Mod_Clause
         or else NT (N).Nkind = N_Modular_Type_Definition

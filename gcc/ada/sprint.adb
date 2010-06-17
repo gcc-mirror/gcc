@@ -1509,6 +1509,20 @@ package body Sprint is
             Write_Char_Sloc ('.');
             Write_Str_Sloc ("all");
 
+         when N_Expression_With_Actions =>
+            Indent_Begin;
+            Write_Indent_Str_Sloc ("do");
+            Indent_Begin;
+            Write_Indent;
+            Sprint_Node_List (Actions (Node));
+            Indent_End;
+            Write_Indent;
+            Write_Str_With_Col_Check_Sloc ("in ");
+            Sprint_Node (Expression (Node));
+            Write_Str_With_Col_Check (" end");
+            Indent_End;
+            Write_Indent;
+
          when N_Extended_Return_Statement =>
             Write_Indent_Str_Sloc ("return ");
             Sprint_Node_List (Return_Object_Declarations (Node));

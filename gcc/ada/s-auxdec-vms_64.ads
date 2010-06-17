@@ -107,10 +107,10 @@ package System.Aux_DEC is
    Address_Size       : constant := Standard'Address_Size;
    Short_Address_Size : constant := 32;
 
-   function "+" (Left : Short_Address; Right : Integer) return Short_Address;
-   function "+" (Left : Integer; Right : Short_Address) return Short_Address;
-   function "-" (Left : Short_Address; Right : Short_Address) return Integer;
-   function "-" (Left : Short_Address; Right : Integer) return Short_Address;
+   function "+" (Left : Address; Right : Integer) return Address;
+   function "+" (Left : Integer; Right : Address) return Address;
+   function "-" (Left : Address; Right : Address) return Integer;
+   function "-" (Left : Address; Right : Integer) return Address;
 
    pragma Import (Intrinsic, "+");
    pragma Import (Intrinsic, "-");

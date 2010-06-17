@@ -63,6 +63,10 @@ package body Exp_Intr is
    -- Local Subprograms --
    -----------------------
 
+   procedure Expand_Binary_Operator_Call (N : Node_Id);
+   --  Expand a call to an intrinsic arithmetic operator when the operand
+   --  types or sizes are not identical.
+
    procedure Expand_Is_Negative (N : Node_Id);
    --  Expand a call to the intrinsic Is_Negative function
 
@@ -107,6 +111,44 @@ package body Exp_Intr is
    --    Name_Line             - expand integer line number
    --    Name_Source_Location  - expand string of form file:line
    --    Name_Enclosing_Entity - expand string  with name of enclosing entity
+
+   ---------------------------------
+   -- Expand_Binary_Operator_Call --
+   ---------------------------------
+
+   procedure Expand_Binary_Operator_Call (N : Node_Id) is
+      T1  : constant Entity_Id := Underlying_Type (Left_Opnd  (N));
+      T2  : constant Entity_Id := Underlying_Type (Right_Opnd (N));
+      TR  : constant Entity_Id := Etype (N);
+      T3  : Entity_Id;
+      Res : Node_Id;
+      Siz : Uint;
+
+   begin
+      if Esize (T1) > Esize (T2) then
+         Siz := Esize (T1);
+      else
+         Siz := Esize (T2);
+      end if;
+
+      if Siz > 32 then
+         T3 := RTE (RE_Unsigned_64);
+      else
+         T3 := RTE (RE_Unsigned_32);
+      end if;
+
+      Res := New_Copy (N);
+      Set_Etype (Res, Empty);
+      Set_Entity (Res, Empty);
+
+      Set_Left_Opnd (Res,
+         Unchecked_Convert_To (T3, Relocate_Node (Left_Opnd (N))));
+      Set_Right_Opnd (Res,
+         Unchecked_Convert_To (T3, Relocate_Node (Right_Opnd (N))));
+
+      Rewrite (N, Unchecked_Convert_To (TR, Res));
+      Analyze_And_Resolve (N, TR);
+   end Expand_Binary_Operator_Call;
 
    -----------------------------------------
    -- Expand_Dispatching_Constructor_Call --
@@ -486,6 +528,9 @@ package body Exp_Intr is
 
       elsif Present (Alias (E)) then
          Expand_Intrinsic_Call (N,  Alias (E));
+
+      elsif Nkind (N) in N_Binary_Op then
+         Expand_Binary_Operator_Call (N);
 
          --  The only other case is where an external name was specified,
          --  since this is the only way that an otherwise unrecognized

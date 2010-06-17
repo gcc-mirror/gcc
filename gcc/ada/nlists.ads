@@ -259,6 +259,14 @@ package Nlists is
    pragma Inline (Prepend_To);
    --  Like Prepend, but arguments are the other way round
 
+   procedure Prepend_List (List : List_Id; To : List_Id);
+   --  Prepends node list List to the start of node list To. On return,
+   --  List is reset to be empty.
+
+   procedure Prepend_List_To (To : List_Id; List : List_Id);
+   pragma Inline (Prepend_List_To);
+   --  Like Prepend_List, but arguments are the other way round
+
    procedure Remove (Node : Node_Id);
    --  Removes Node, which must be a node that is a member of a node list,
    --  from this node list. The contents of Node are not otherwise affected.

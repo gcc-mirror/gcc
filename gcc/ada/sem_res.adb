@@ -163,9 +163,10 @@ package body Sem_Res is
    procedure Resolve_Character_Literal         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Comparison_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Conditional_Expression    (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Entity_Name               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Equality_Op               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Explicit_Dereference      (N : Node_Id; Typ : Entity_Id);
-   procedure Resolve_Entity_Name               (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Expression_With_Actions   (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Indexed_Component         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Integer_Literal           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Logical_Op                (N : Node_Id; Typ : Entity_Id);
@@ -1842,6 +1843,7 @@ package body Sem_Res is
             --  Check that Typ is a remote access-to-subprogram type
 
             if Is_Remote_Access_To_Subprogram_Type (Typ) then
+
                --  Prefix (N) must statically denote a remote subprogram
                --  declared in a package specification.
 
@@ -2542,11 +2544,14 @@ package body Sem_Res is
             when N_Expanded_Name
                              => Resolve_Entity_Name              (N, Ctx_Type);
 
-            when N_Extension_Aggregate
-                             => Resolve_Extension_Aggregate      (N, Ctx_Type);
-
             when N_Explicit_Dereference
                              => Resolve_Explicit_Dereference     (N, Ctx_Type);
+
+            when N_Expression_With_Actions
+                             => Resolve_Expression_With_Actions  (N, Ctx_Type);
+
+            when N_Extension_Aggregate
+                             => Resolve_Extension_Aggregate      (N, Ctx_Type);
 
             when N_Function_Call
                              => Resolve_Call                     (N, Ctx_Type);
@@ -6493,6 +6498,15 @@ package body Sem_Res is
       --  because such a name can never be static.
 
    end Resolve_Explicit_Dereference;
+
+   -------------------------------------
+   -- Resolve_Expression_With_Actions --
+   -------------------------------------
+
+   procedure Resolve_Expression_With_Actions (N : Node_Id; Typ : Entity_Id) is
+   begin
+      Set_Etype (N, Typ);
+   end Resolve_Expression_With_Actions;
 
    -------------------------------
    -- Resolve_Indexed_Component --

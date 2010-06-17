@@ -6611,6 +6611,38 @@ package Sinfo is
       --  Has_Private_View (Flag11-Sem) set in generic units.
       --  plus fields for expression
 
+      -----------------------------
+      -- Expression with Actions --
+      -----------------------------
+
+      --  This node is created by the analyzer/expander to handle some
+      --  expansion cases, notably short circuit forms where there are
+      --  actions associated with the right hand operand.
+
+      --  The N_Expression_With_Actions node represents an expression with
+      --  an associated set of actions (which are executable statements).
+      --  The required semantics is that the set of actions is executed in
+      --  the order in which it appears just before the expression is
+      --  evaluated (and these actions must only be executed if the value
+      --  of the expression is evaluated). The node is considered to be
+      --  a subexpression, whose value is the value of the Expression after
+      --  executing all the actions.
+
+      --  Sprint syntax:  do
+      --                    action;
+      --                    action;
+      --                    ...
+      --                    action;
+      --                  in expression end
+
+      --  N_Expression_With_Actions
+      --  Actions (List1)
+      --  Expression (Node3)
+      --  plus fields for expression
+
+      --  Note: the actions list is always non-null, since we would
+      --  never have created this node if there weren't some actions.
+
       --------------------
       -- Free Statement --
       --------------------
@@ -7195,6 +7227,7 @@ package Sinfo is
 
       N_Conditional_Expression,
       N_Explicit_Dereference,
+      N_Expression_With_Actions,
       N_Function_Call,
       N_Indexed_Component,
       N_Integer_Literal,
@@ -10983,6 +11016,13 @@ package Sinfo is
         3 => True,    --  Prefix (Node3)
         4 => False,   --  Entity (Node4-Sem)
         5 => False),  --  Etype (Node5-Sem)
+
+     N_Expression_With_Actions =>
+       (1 => True,    --  Actions (List1)
+        2 => False,   --  unused
+        3 => True,    --  Expression (Node3)
+        4 => False,   --  unused
+        5 => False),  --  unused
 
      N_Free_Statement =>
        (1 => False,   --  Storage_Pool (Node1-Sem)
