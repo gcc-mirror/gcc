@@ -571,13 +571,6 @@ typedef struct iq2000_args
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)			\
   final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-/* See iq2000.c for the IQ2000 specific codes.  */
-#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) iq2000_print_operand_punct[CODE]
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
 #define DBR_OUTPUT_SEQEND(STREAM)					\
 do									\
   {									\
@@ -920,9 +913,6 @@ enum processor_type
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* Small data.  */
 
 
-/* List of all IQ2000 punctuation characters used by print_operand.  */
-extern char iq2000_print_operand_punct[256];
-
 /* The target cpu for optimization and scheduling.  */
 extern enum processor_type iq2000_tune;
 

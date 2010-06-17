@@ -1,5 +1,20 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/iq2000/iq2000-protos.h (print_operand): Delete.
+	(print_operand_address): Delete.
+	* config/iq2000/iq2000.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	(iq2000_print_operand_punct): Delete.
+	* config/iq2000/iq2000.c (iq2000_print_operand_punct): Make static.
+	(iq2000_print_operand_address): Make static.
+	(iq2000_print_operand): Make static.
+	(iq2000_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS):
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/frv/frv-protos.h (frv_print_operand): Delete.
 	(frv_print_operand_address): Delete.
 	* config/frv/frv.h (PRINT_OPERAND): Delete.
