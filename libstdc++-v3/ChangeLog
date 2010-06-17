@@ -1,3 +1,16 @@
+2010-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_uninitialized.h (__uninitialized_default,
+	__uninitialized_default_n, __uninitialized_default_a,
+	__uninitialized_default_n_a): Add.
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy,
+	uninitialized_fill, uninitialized_fill_n): Use __is_trivial
+	instead of __is_pod.
+	* include/bits/valarray_array.h: Likewise.
+	* include/bits/stl_algobase.h (__copy_move_backward_a,
+	__copy_move_a): Likewise.
+
 2010-06-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_construct.h (_Construct): Change to variadic in

@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     __valarray_fill_construct(_Tp* __b, _Tp* __e, const _Tp __t)
     {
-      _Array_init_ctor<_Tp, __is_pod(_Tp)>::_S_do_it(__b, __e, __t);
+      _Array_init_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e, __t);
     }
 
   //
@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_copy_construct(const _Tp* __b, const _Tp* __e,
 			      _Tp* __restrict__ __o)
     {
-      _Array_copy_ctor<_Tp, __is_pod(_Tp)>::_S_do_it(__b, __e, __o);
+      _Array_copy_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e, __o);
     }
 
   // copy-construct raw array [__o, *) from strided array __a[<__n : __s>]
@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_copy_construct (const _Tp* __restrict__ __a, size_t __n,
 			       size_t __s, _Tp* __restrict__ __o)
     {
-      if (__is_pod(_Tp))
+      if (__is_trivial(_Tp))
 	while (__n--)
 	  {
 	    *__o++ = *__a;
@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			       const size_t* __restrict__ __i,
 			       _Tp* __restrict__ __o, size_t __n)
     {
-      if (__is_pod(_Tp))
+      if (__is_trivial(_Tp))
 	while (__n--)
 	  *__o++ = __a[*__i++];
       else
@@ -203,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     __valarray_destroy_elements(_Tp* __b, _Tp* __e)
     {
-      if (!__is_pod(_Tp))
+      if (!__is_trivial(_Tp))
 	while (__b != __e)
 	  {
 	    __b->~_Tp();
@@ -267,7 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __valarray_copy(const _Tp* __restrict__ __a, size_t __n,
 		    _Tp* __restrict__ __b)
     {
-      _Array_copier<_Tp, __is_pod(_Tp)>::_S_do_it(__a, __n, __b);
+      _Array_copier<_Tp, __is_trivial(_Tp)>::_S_do_it(__a, __n, __b);
     }
 
   // Copy strided array __a[<__n : __s>] in plain __b[<__n>]
