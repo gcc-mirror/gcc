@@ -122,14 +122,12 @@ package body Exp_Intr is
       TR  : constant Entity_Id := Etype (N);
       T3  : Entity_Id;
       Res : Node_Id;
-      Siz : Uint;
+
+      Siz : constant Uint := UI_Max (Esize (T1), Esize (T2));
+      --  Maximum of operand sizes
 
    begin
-      if Esize (T1) > Esize (T2) then
-         Siz := Esize (T1);
-      else
-         Siz := Esize (T2);
-      end if;
+      --  Use Unsigned_32 for sizes of 32 or below, else Unsigned_64
 
       if Siz > 32 then
          T3 := RTE (RE_Unsigned_64);
@@ -137,14 +135,21 @@ package body Exp_Intr is
          T3 := RTE (RE_Unsigned_32);
       end if;
 
+      --  Copy operator node, and reset type and entity fields, for
+      --  subsequent reanalysis.
+
       Res := New_Copy (N);
       Set_Etype (Res, Empty);
       Set_Entity (Res, Empty);
 
+      --  Convert operands to large enough intermediate type
+
       Set_Left_Opnd (Res,
-         Unchecked_Convert_To (T3, Relocate_Node (Left_Opnd (N))));
+        Unchecked_Convert_To (T3, Relocate_Node (Left_Opnd (N))));
       Set_Right_Opnd (Res,
-         Unchecked_Convert_To (T3, Relocate_Node (Right_Opnd (N))));
+        Unchecked_Convert_To (T3, Relocate_Node (Right_Opnd (N))));
+
+      --  Analyze and resolve result formed by conversion to target type
 
       Rewrite (N, Unchecked_Convert_To (TR, Res));
       Analyze_And_Resolve (N, TR);

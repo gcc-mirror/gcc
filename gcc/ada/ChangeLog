@@ -1,5 +1,14 @@
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
+	* exp_intr.adb: Minor code reorganization (use UI_Max)
+	* sem_intr.adb: use underlying type to check legality.
+	* einfo.adb (Known_Static_Esize): False for generic types
+	(Known_Static_RM_Size): False for generic types
+	* einfo.ads (Known_Static_Esize): False for generic types
+	(Known_Static_RM_Size): False for generic types
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.ads: Minor code reorganization (specs in alpha order).
 
 2010-06-17  Robert Dewar  <dewar@adacore.com>

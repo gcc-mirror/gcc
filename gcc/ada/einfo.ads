@@ -6188,6 +6188,13 @@ package Einfo is
    --  value is always known static for discrete types (and no other types can
    --  have an RM_Size value of zero).
 
+   --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
+   --  more consideration, which is that we always return false for generic
+   --  types. Within a template, the size can look known, because of the fake
+   --  size values we put in template types, but they are not really known and
+   --  anyone testing if they are known within the template should get False as
+   --  a result to prevent incorrect assumptions.
+
    function Known_Alignment                       (E : Entity_Id) return B;
    function Known_Component_Bit_Offset            (E : Entity_Id) return B;
    function Known_Component_Size                  (E : Entity_Id) return B;
