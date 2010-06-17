@@ -1,3 +1,9 @@
+2010-06-16  Matthias Klose  <doko@ubuntu.com>
+
+	* src/compatibility.cc: Export long double versions of "C" math
+	library for arm-linux-gnueabi, m68k-linux-gnu (ColdFire),
+	mips*-linux-gnu (o32 ABI), sh*-linux-gnu (32 bit).
+
 2010-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44487
