@@ -1,3 +1,21 @@
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb (Inherited_Discriminant): New flag on
+	N_Component_Association nodes, to indicate that a component association
+	of an extension aggregate denotes the value of a discriminant of an
+	ancestor type that has been constrained by the derivation.
+	* sem_aggr.adb (Discr_Present): use Inherited_Discriminant to prevent a
+	double expansion of the aggregate appearing in a context that delays
+	expansion, to prevent double insertion of discriminant values when the
+	aggregate is reanalyzed.
+
+2010-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Do not use
+	Allocator as the Related_Node of Return_Obj_Access in call to
+	Make_Temporary below as this would create a sort of infinite
+	"recursion".
+
 2010-06-17  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_ugn.texi: Update gnatcheck doc.
