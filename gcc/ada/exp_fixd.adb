@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -505,8 +505,8 @@ package body Exp_Fixd is
       --  Define quotient and remainder, and set their Etypes, so
       --  that they can be picked up by Build_xxx routines.
 
-      Qnn := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
-      Rnn := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Qnn := Make_Temporary (Loc, 'S');
+      Rnn := Make_Temporary (Loc, 'R');
 
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
@@ -518,8 +518,8 @@ package body Exp_Fixd is
          --  Create temporaries for numerator and denominator and set Etypes,
          --  so that New_Occurrence_Of picks them up for Build_xxx calls.
 
-         Nnn := Make_Defining_Identifier (Loc, New_Internal_Name ('N'));
-         Dnn := Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
+         Nnn := Make_Temporary (Loc, 'N');
+         Dnn := Make_Temporary (Loc, 'D');
 
          Set_Etype (Nnn, QR_Typ);
          Set_Etype (Dnn, QR_Typ);
@@ -882,8 +882,8 @@ package body Exp_Fixd is
       --  Define quotient and remainder, and set their Etypes, so
       --  that they can be picked up by Build_xxx routines.
 
-      Qnn := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
-      Rnn := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Qnn := Make_Temporary (Loc, 'S');
+      Rnn := Make_Temporary (Loc, 'R');
 
       Set_Etype (Qnn, QR_Typ);
       Set_Etype (Rnn, QR_Typ);
@@ -891,8 +891,8 @@ package body Exp_Fixd is
       --  Case that we can compute the numerator in 64 bits
 
       if QR_Siz <= 64 then
-         Nnn := Make_Defining_Identifier (Loc, New_Internal_Name  ('N'));
-         Dnn := Make_Defining_Identifier (Loc, New_Internal_Name  ('D'));
+         Nnn := Make_Temporary (Loc, 'N');
+         Dnn := Make_Temporary (Loc, 'D');
 
          --  Set Etypes, so that they can be picked up by New_Occurrence_Of
 

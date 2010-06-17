@@ -1347,10 +1347,9 @@ package body Exp_Pakd is
          begin
             Decl :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,  New_Internal_Name ('T')),
-                Object_Definition => New_Occurrence_Of (Ctyp, Loc),
-                Expression => New_Copy_Tree (Rhs));
+                Defining_Identifier => Make_Temporary (Loc, 'T', Rhs),
+                Object_Definition   => New_Occurrence_Of (Ctyp, Loc),
+                Expression          => New_Copy_Tree (Rhs));
 
             Insert_Actions (N, New_List (Decl));
             Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
@@ -1841,11 +1840,8 @@ package body Exp_Pakd is
 
       else
          declare
-            Result_Ent : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('T'));
-
-            E_Id : RE_Id;
+            Result_Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
+            E_Id       : RE_Id;
 
          begin
             if Nkind (N) = N_Op_And then
@@ -2192,9 +2188,7 @@ package body Exp_Pakd is
 
       else
          declare
-            Result_Ent : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('T'));
+            Result_Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
 
          begin
             Insert_Actions (N, New_List (

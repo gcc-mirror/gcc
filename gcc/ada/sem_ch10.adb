@@ -5346,7 +5346,7 @@ package body Sem_Ch10 is
          --  and the full-view.
 
          if No (Class_Wide_Type (T)) then
-            CW := Make_Defining_Identifier (Loc,  New_Internal_Name ('S'));
+            CW := Make_Temporary (Loc, 'S');
 
             --  Set parent to be the same as the parent of the tagged type.
             --  We need a parent field set, and it is supposed to point to
@@ -5398,9 +5398,7 @@ package body Sem_Ch10 is
          Sloc_Value : Source_Ptr;
          Id_Char    : Character) return Entity_Id
       is
-         E : constant Entity_Id :=
-               Make_Defining_Identifier (Sloc_Value,
-                 Chars => New_Internal_Name (Id_Char));
+         E : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
       begin
          Set_Ekind       (E, Kind);
@@ -5475,9 +5473,7 @@ package body Sem_Ch10 is
 
       --  Build the header of the limited_view
 
-      Lim_Header :=
-        Make_Defining_Identifier (Sloc (N),
-          Chars => New_Internal_Name (Id_Char => 'Z'));
+      Lim_Header := Make_Temporary (Sloc (N), 'Z');
       Set_Ekind (Lim_Header, E_Package);
       Set_Is_Internal (Lim_Header);
       Set_Limited_View (P, Lim_Header);

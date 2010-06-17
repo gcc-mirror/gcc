@@ -277,6 +277,9 @@ package Tbuild is
    --  if the identical unit is compiled with a semantically consistent set
    --  of sources, the numbers will be consistent. This means that it is fine
    --  to use these as public symbols.
+   --
+   --  Note: Nearly all uses of this function are via calls to Make_Temporary,
+   --  but there are just a few cases where it is called directly.
 
    function New_Occurrence_Of
      (Def_Id : Entity_Id;

@@ -472,8 +472,7 @@ package body Sem_Ch4 is
                end if;
 
                if Expander_Active then
-                  Def_Id :=
-                    Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+                  Def_Id := Make_Temporary (Loc, 'S');
 
                   Insert_Action (E,
                     Make_Subtype_Declaration (Loc,

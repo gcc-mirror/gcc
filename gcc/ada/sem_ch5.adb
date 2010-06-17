@@ -1520,9 +1520,7 @@ package body Sem_Ch5 is
 
             Analyze_And_Resolve (Original_Bound, Typ);
 
-            Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
+            Id := Make_Temporary (Loc, 'S', Original_Bound);
 
             --  Normally, the best approach is simply to generate a constant
             --  declaration that captures the bound. However, there is a nasty
@@ -1721,13 +1719,10 @@ package body Sem_Ch5 is
          then
             declare
                Loc  : constant Source_Ptr := Sloc (N);
-               Arr  : constant Entity_Id :=
-                        Etype (Entity (Prefix (DS)));
+               Arr  : constant Entity_Id := Etype (Entity (Prefix (DS)));
                Indx : constant Entity_Id :=
                         Base_Type (Etype (First_Index (Arr)));
-               Subt : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, New_Internal_Name ('S'));
+               Subt : constant Entity_Id := Make_Temporary (Loc, 'S');
                Decl : Node_Id;
 
             begin

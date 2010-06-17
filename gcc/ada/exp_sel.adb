@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,19 +83,13 @@ package body Exp_Sel is
      (Loc   : Source_Ptr;
       Decls : List_Id) return Entity_Id
    is
-      B : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('B'));
-
+      B : constant Entity_Id := Make_Temporary (Loc, 'B');
    begin
       Append_To (Decls,
         Make_Object_Declaration (Loc,
-          Defining_Identifier =>
-            B,
-          Object_Definition =>
-            New_Reference_To (Standard_Boolean, Loc),
-          Expression =>
-            New_Reference_To (Standard_False, Loc)));
-
+          Defining_Identifier => B,
+          Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
+          Expression          => New_Reference_To (Standard_False, Loc)));
       return B;
    end Build_B;
 
@@ -107,17 +101,12 @@ package body Exp_Sel is
      (Loc   : Source_Ptr;
       Decls : List_Id) return Entity_Id
    is
-      C : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('C'));
-
+      C : constant Entity_Id := Make_Temporary (Loc, 'C');
    begin
       Append_To (Decls,
         Make_Object_Declaration (Loc,
-          Defining_Identifier =>
-            C,
-          Object_Definition =>
-            New_Reference_To (RTE (RE_Prim_Op_Kind), Loc)));
-
+          Defining_Identifier => C,
+          Object_Definition => New_Reference_To (RTE (RE_Prim_Op_Kind), Loc)));
       return C;
    end Build_C;
 
@@ -155,9 +144,7 @@ package body Exp_Sel is
       Decls : List_Id;
       Obj   : Entity_Id) return Entity_Id
    is
-      K : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('K'));
-
+      K : constant Entity_Id := Make_Temporary (Loc, 'K');
    begin
       Append_To (Decls,
         Make_Object_Declaration (Loc,
@@ -169,7 +156,6 @@ package body Exp_Sel is
               Name => New_Reference_To (RTE (RE_Get_Tagged_Kind), Loc),
               Parameter_Associations => New_List (
                 Unchecked_Convert_To (RTE (RE_Tag), Obj)))));
-
       return K;
    end Build_K;
 
@@ -181,16 +167,12 @@ package body Exp_Sel is
      (Loc   : Source_Ptr;
       Decls : List_Id) return Entity_Id
    is
-      S : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('S'));
-
+      S : constant Entity_Id := Make_Temporary (Loc, 'S');
    begin
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => S,
-          Object_Definition   =>
-            New_Reference_To (Standard_Integer, Loc)));
-
+          Object_Definition   => New_Reference_To (Standard_Integer, Loc)));
       return S;
    end Build_S;
 

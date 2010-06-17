@@ -171,11 +171,10 @@ package body Exp_Intr is
 
             Iface_Tag :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('V')),
-                Object_Definition =>
+                Defining_Identifier => Make_Temporary (Loc, 'V'),
+                Object_Definition   =>
                   New_Reference_To (RTE (RE_Tag), Loc),
-                Expression =>
+                Expression          =>
                   Make_Function_Call (Loc,
                     Name => New_Reference_To (RTE (RE_Secondary_Tag), Loc),
                     Parameter_Associations => New_List (
@@ -325,7 +324,7 @@ package body Exp_Intr is
             --  be referencing it by normal visibility methods.
 
             if No (Choice_Parameter (P)) then
-               E := Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+               E := Make_Temporary (Loc, 'E');
                Set_Choice_Parameter (P, E);
                Set_Ekind (E, E_Variable);
                Set_Etype (E, RTE (RE_Exception_Occurrence));
@@ -362,11 +361,9 @@ package body Exp_Intr is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Entity_Id  := Entity (Name (N));
       Str : constant Node_Id    := First_Actual (N);
-      Dum : Entity_Id;
+      Dum : constant Entity_Id  := Make_Temporary (Loc, 'D');
 
    begin
-      Dum := Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
-
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => Dum,
@@ -1025,13 +1022,11 @@ package body Exp_Intr is
                   D_Type := Entity (D_Subtyp);
 
                else
-                  D_Type := Make_Defining_Identifier (Loc,
-                              New_Internal_Name ('A'));
+                  D_Type := Make_Temporary (Loc, 'A');
                   Insert_Action (Deref,
                     Make_Subtype_Declaration (Loc,
                       Defining_Identifier => D_Type,
                       Subtype_Indication  => D_Subtyp));
-
                end if;
 
                --  Force freezing at the point of the dereference. For the

@@ -260,13 +260,8 @@ package body Exp_Imgv is
       Ins_List : List_Id;
       --  List of actions to be inserted
 
-      Snn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Pnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Snn : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Pnn : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       --  Build declarations of Snn and Pnn to be inserted
@@ -773,14 +768,8 @@ package body Exp_Imgv is
    procedure Expand_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
-
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Rnn  : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Lnn  : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       Insert_Actions (N, New_List (
@@ -871,13 +860,8 @@ package body Exp_Imgv is
       Loc  : constant Source_Ptr := Sloc (N);
       Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
 
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Rnn : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Lnn : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       Insert_Actions (N, New_List (

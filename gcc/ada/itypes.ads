@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,7 @@ package Itypes is
    --  If the implicit type does not need an external name, then the
    --  Related_Id parameter is omitted (and hence Empty). In this case
    --  Suffix and Suffix_Index are ignored and the implicit type name is
-   --  created by a call to New_Internal_Name ('T').
+   --  created by a call to Make_Temporary.
    --
    --  Note that in all cases, the name starts with "T". This is used
    --  to identify implicit types in the error message handling circuits.

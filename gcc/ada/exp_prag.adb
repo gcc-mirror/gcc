@@ -536,17 +536,14 @@ package body Exp_Prag is
       begin
          if Present (Call) then
             declare
-               Excep_Internal : constant Node_Id :=
-                                 Make_Defining_Identifier
-                                  (Loc, New_Internal_Name ('V'));
-
-               Export_Pragma : Node_Id;
-               Excep_Alias   : Node_Id;
-               Excep_Object  : Node_Id;
-               Excep_Image   : String_Id;
-               Exdata        : List_Id;
-               Lang_Char     : Node_Id;
-               Code          : Node_Id;
+               Excep_Internal : constant Node_Id := Make_Temporary (Loc, 'V');
+               Export_Pragma  : Node_Id;
+               Excep_Alias    : Node_Id;
+               Excep_Object   : Node_Id;
+               Excep_Image    : String_Id;
+               Exdata         : List_Id;
+               Lang_Char      : Node_Id;
+               Code           : Node_Id;
 
             begin
                if Present (Interface_Name (Id)) then
