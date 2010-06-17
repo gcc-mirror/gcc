@@ -1,3 +1,7 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* prj.ads, prj.adb: Minor reformatting
+
 2010-06-17  Thomas Quinot  <quinot@adacore.com>
 
 	* put_scos.adb: Do not generate a blank line in SCOs when omitting the
