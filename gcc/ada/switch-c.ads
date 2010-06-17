@@ -33,7 +33,7 @@ package Switch.C is
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
-      Arg_Rank     : Pos);
+      Arg_Rank     : Positive);
    --  Procedures to scan out front end switches stored in the given string.
    --  The first character is known to be a valid switch character, and there
    --  are no blanks or other switch terminator characters in the string, so
