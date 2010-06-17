@@ -149,7 +149,6 @@ package body Sem_SCIL is
             when others =>
                pragma Assert (False);
                null;
-
          end case;
 
          return Skip;
@@ -484,7 +483,7 @@ package body Sem_SCIL is
                   then
                      return Found_Node;
 
-                  --  In the subexpression case, keep climbing
+                  --  In the subexpression case keep climbing
 
                   else
                      null;
@@ -647,7 +646,7 @@ package body Sem_SCIL is
 
          end case;
 
-         --  If we fall through above tests, keep climbing tree
+         --  If we fall through above tests keep climbing tree
 
          if Nkind (Parent (P)) = N_Subunit then
 

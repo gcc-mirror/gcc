@@ -3013,10 +3013,7 @@ package body Sem_Elab is
       --  Check for case of body entity
       --  Why is the check for E_Void needed???
 
-      if Ekind (E) = E_Void
-        or else Ekind (E) = E_Subprogram_Body
-        or else Ekind (E) = E_Package_Body
-      then
+      if Ekind_In (E, E_Void, E_Subprogram_Body, E_Package_Body) then
          Decl := E;
 
          loop
@@ -3047,17 +3044,17 @@ package body Sem_Elab is
 
             if No (Corresponding_Body (N)) then
                declare
-                  Loc : constant Source_Ptr := Sloc (N);
-                  B : Node_Id;
-                  Formals : constant List_Id :=
-                     Copy_Parameter_List (Ent);
-                  Nam  : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc, Chars (Ent));
-                  Spec : Node_Id;
-                  Stats : constant List_Id :=
-                    New_List
-                      (Make_Raise_Program_Error (Loc,
-                         Reason => PE_Access_Before_Elaboration));
+                  Loc     : constant Source_Ptr := Sloc (N);
+                  B       : Node_Id;
+                  Formals : constant List_Id := Copy_Parameter_List (Ent);
+                  Nam     : constant Entity_Id :=
+                              Make_Defining_Identifier (Loc, Chars (Ent));
+                  Spec    : Node_Id;
+                  Stats   : constant List_Id :=
+                              New_List
+                               (Make_Raise_Program_Error (Loc,
+                                  Reason => PE_Access_Before_Elaboration));
+
                begin
                   if Ekind (Ent) = E_Function then
                      Spec :=

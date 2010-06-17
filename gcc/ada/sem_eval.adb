@@ -4698,8 +4698,8 @@ package body Sem_Eval is
          if Can_Never_Be_Null (T1) /= Can_Never_Be_Null (T2) then
             return False;
 
-         elsif Ekind (T1) = E_Access_Subprogram_Type
-           or else Ekind (T1) = E_Anonymous_Access_Subprogram_Type
+         elsif Ekind_In (T1, E_Access_Subprogram_Type,
+                             E_Anonymous_Access_Subprogram_Type)
          then
             return
               Subtype_Conformant

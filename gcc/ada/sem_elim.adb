@@ -332,9 +332,8 @@ package body Sem_Elim is
 
             --  Check for case of subprogram
 
-            elsif Ekind (E) = E_Function
-              or else Ekind (E) = E_Procedure
-            then
+            elsif Ekind_In (E, E_Function, E_Procedure) then
+
                --  If Source_Location present, then see if it matches
 
                if Elmt.Source_Location /= No_Name then

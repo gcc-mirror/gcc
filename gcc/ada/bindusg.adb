@@ -73,10 +73,6 @@ package body Bindusg is
       Write_Line ("  -a        Automatically initialize elaboration " &
                   "procedure");
 
-      --  Line for A switch
-
-      Write_Line ("  -A        Generate binder program in Ada (default)");
-
       --  Line for -b switch
 
       Write_Line ("  -b        Generate brief messages to stderr " &
@@ -86,10 +82,6 @@ package body Bindusg is
 
       Write_Line ("  -c        Check only, no generation of " &
                   "binder output file");
-
-      --  Line for C switch
-
-      Write_Line ("  -C        Generate binder program in C");
 
       --  Line for -d switch
 

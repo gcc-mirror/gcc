@@ -3843,6 +3843,16 @@ package body Sem_Ch8 is
                         Error_Msg_NE ("\\missing `WITH &;`", N, Ent);
                         Error_Msg_Qual_Level := 0;
                      end if;
+
+                     if Ekind (Ent) = E_Discriminant
+                       and then Present (Corresponding_Discriminant (Ent))
+                       and then Scope (Corresponding_Discriminant (Ent)) =
+                                                        Etype (Scope (Ent))
+                     then
+                        Error_Msg_N
+                          ("inherited discriminant not allowed here" &
+                            " (RM 3.8 (12), 3.8.1 (6))!", N);
+                     end if;
                   end if;
 
                   --  Set entity and its containing package as referenced. We

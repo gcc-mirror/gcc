@@ -1100,6 +1100,7 @@ package body Switch.C is
       Arg_Rank : Positive) return Boolean
    is
       use type System.Strings.String_Access;
+
    begin
       --  Loop through arguments following the current one
 

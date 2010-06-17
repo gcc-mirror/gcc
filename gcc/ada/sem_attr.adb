@@ -2775,10 +2775,8 @@ package body Sem_Attr is
                exit;
 
             elsif Ekind (Scope (Ent)) in Task_Kind
-              and then Ekind (S) /= E_Loop
-              and then Ekind (S) /= E_Block
-              and then Ekind (S) /= E_Entry
-              and then Ekind (S) /= E_Entry_Family
+              and then
+                not Ekind_In (S, E_Loop, E_Block, E_Entry, E_Entry_Family)
             then
                Error_Attr ("Attribute % cannot appear in inner unit", N);
 
@@ -7813,11 +7811,9 @@ package body Sem_Attr is
                --  also be accessibility checks on those, this is where the
                --  checks can eventually be centralized ???
 
-               if Ekind (Btyp) = E_Access_Subprogram_Type
-                    or else
-                  Ekind (Btyp) = E_Anonymous_Access_Subprogram_Type
-                    or else
-                  Ekind (Btyp) = E_Anonymous_Access_Protected_Subprogram_Type
+               if Ekind_In (Btyp, E_Access_Subprogram_Type,
+                                  E_Anonymous_Access_Subprogram_Type,
+                                  E_Anonymous_Access_Protected_Subprogram_Type)
                then
                   --  Deal with convention mismatch
 
@@ -8244,9 +8240,8 @@ package body Sem_Attr is
                end if;
             end if;
 
-            if Ekind (Btyp) = E_Access_Protected_Subprogram_Type
-                 or else
-               Ekind (Btyp) = E_Anonymous_Access_Protected_Subprogram_Type
+            if Ekind_In (Btyp, E_Access_Protected_Subprogram_Type,
+                               E_Anonymous_Access_Protected_Subprogram_Type)
             then
                if Is_Entity_Name (P)
                  and then not Is_Protected_Type (Scope (Entity (P)))
@@ -8268,9 +8263,8 @@ package body Sem_Attr is
                   return;
                end if;
 
-            elsif (Ekind (Btyp) = E_Access_Subprogram_Type
-                     or else
-                   Ekind (Btyp) = E_Anonymous_Access_Subprogram_Type)
+            elsif Ekind_In (Btyp, E_Access_Subprogram_Type,
+                                  E_Anonymous_Access_Subprogram_Type)
               and then Ekind (Etype (N)) = E_Access_Protected_Subprogram_Type
             then
                Error_Msg_F ("context requires a non-protected subprogram", P);

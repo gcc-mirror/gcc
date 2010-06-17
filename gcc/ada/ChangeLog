@@ -1,3 +1,24 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb, sem_res.adb, switch-c.adb, sem_scil.adb: Minor
+	reformatting.
+	* sem_attr.adb, sem_cat.adb, sem_disp.adb, sem_elab.adb, sem_elim.adb,
+	sem_eval.adb: Use Ekind_In
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: better error message for illegal inherited discriminant
+
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* bindusg.adb: Remove lines for -A and -C
+	* gnat_ugn.texi: Remove all documentation and examples of switches -A
+	and -C for gnatbind and gnatlink.
+	* gnatlink.adb (Usage): Remove lines for -A and -C
+	* switch-b.adb (Scan_Binder_Switches): Issue warning when switch -C is
+	specified.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-17  Vincent Celier  <celier@adacore.com>
 
 	* back_end.adb (Scan_Compiler_Arguments): Put all arguments in new
