@@ -1670,7 +1670,30 @@ package body Sem_Util is
                  and then (not Formal_Derived
                             or else Present (Alias (Id)))
                then
-                  Append_Elmt (Id, Op_List);
+                  --  In the special case of an equality operator aliased to
+                  --  an overriding dispatching equality belonging to the same
+                  --  type, we don't include it in the list of primitives.
+                  --  This avoids inheriting multiple equality operators when
+                  --  deriving from untagged private types whose full type is
+                  --  tagged, which can otherwise cause ambiguities. Note that
+                  --  this should only happen for this kind of untagged parent
+                  --  type, since normally dispatching operations are inherited
+                  --  using the type's Primitive_Operations list.
+
+                  if Chars (Id) = Name_Op_Eq
+                    and then Is_Dispatching_Operation (Id)
+                    and then Present (Alias (Id))
+                    and then Is_Overriding_Operation (Alias (Id))
+                    and then Base_Type (Etype (First_Entity (Id))) =
+                               Base_Type (Etype (First_Entity (Alias (Id))))
+                  then
+                     null;
+
+                  --  Include the subprogram in the list of primitives
+
+                  else
+                     Append_Elmt (Id, Op_List);
+                  end if;
                end if;
             end if;
 

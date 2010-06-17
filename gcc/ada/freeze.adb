@@ -5306,7 +5306,7 @@ package body Freeze is
             return True;
          end;
 
-      --  For the designated type of an access to subprogram. all types in
+      --  For the designated type of an access to subprogram, all types in
       --  the profile must be fully defined.
 
       elsif Ekind (T) = E_Subprogram_Type then
