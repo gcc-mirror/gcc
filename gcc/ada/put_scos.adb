@@ -134,6 +134,8 @@ begin
                         end if;
                      end loop;
 
+                     Write_Info_Terminate;
+
                   --  Statement continuations should not occur since they
                   --  are supposed to have been handled in the loop above.
 
@@ -197,13 +199,13 @@ begin
                               Start := Start + 1;
                            end;
                         end loop;
+
+                        Write_Info_Terminate;
                      end if;
 
                   when others =>
                      raise Program_Error;
                end case;
-
-               Write_Info_Terminate;
             end Output_SCO_Line;
 
             Start := Start + 1;

@@ -1452,7 +1452,8 @@ package Prj is
       Allow_Duplicate_Basenames  : Boolean := True;
       Compiler_Driver_Mandatory  : Boolean := False;
       Error_On_Unknown_Language  : Boolean := True;
-      Require_Obj_Dirs           : Error_Warning := Error)
+      Require_Obj_Dirs           : Error_Warning := Error;
+      Allow_Invalid_External     : Error_Warning := Error)
       return Processing_Flags;
    --  Function used to create Processing_Flags structure
    --
@@ -1481,6 +1482,10 @@ package Prj is
    --  If Require_Obj_Dirs is true, then all object directories must exist
    --  (possibly after they have been created automatically if the appropriate
    --  switches were specified), or an error is raised.
+   --
+   --  If Allow_Invalid_External is Silent, then no error is reported when an
+   --  invalid value is used for an external variable (and it doesn't match its
+   --  type). Instead, the first possible value is used.
 
    Gprbuild_Flags : constant Processing_Flags;
    Gprclean_Flags : constant Processing_Flags;
@@ -1589,6 +1594,7 @@ private
       Compiler_Driver_Mandatory  : Boolean;
       Error_On_Unknown_Language  : Boolean;
       Require_Obj_Dirs           : Error_Warning;
+      Allow_Invalid_External     : Error_Warning;
    end record;
 
    Gprbuild_Flags : constant Processing_Flags :=
@@ -1598,7 +1604,8 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => True,
       Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Error);
+      Require_Obj_Dirs           => Error,
+      Allow_Invalid_External     => Error);
 
    Gprclean_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1607,7 +1614,8 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => True,
       Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Warning);
+      Require_Obj_Dirs           => Warning,
+      Allow_Invalid_External     => Error);
 
    Gnatmake_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1616,6 +1624,7 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => False,
       Error_On_Unknown_Language  => False,
-      Require_Obj_Dirs           => Error);
+      Require_Obj_Dirs           => Error,
+      Allow_Invalid_External     => Error);
 
 end Prj;
