@@ -10388,11 +10388,16 @@ package body Sem_Ch12 is
    ------------------
 
    procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id) is
-      Inst_CU : constant Unit_Number_Type := Get_Source_Unit (Inst_Decl);
+      Inst_CU : constant Unit_Number_Type := Get_Code_Unit   (Inst_Decl);
       Gen_CU  : constant Unit_Number_Type := Get_Source_Unit (Gen_Decl);
       Clause  : Node_Id;
 
    begin
+      --  Note that we use Get_Code_Unit to determine the position of the
+      --  instantiation, because it may itself appear within another instance
+      --  and we need to mark the context of the enclosing unit, not that of
+      --  the unit that contains the corresponding generic.
+
       Clause := First (Context_Items (Cunit (Inst_CU)));
       while Present (Clause) loop
          if Nkind (Clause) = N_With_Clause
@@ -10403,27 +10408,6 @@ package body Sem_Ch12 is
 
          Next (Clause);
       end loop;
-
-      --  If the instance appears within another instantiated unit, check
-      --  whether it appears in the main unit, and indicate the need for
-      --  the body of the enclosing instance as well.
-
-      if In_Extended_Main_Code_Unit (Inst_Decl)
-        and then Instantiation_Location (Sloc (Inst_Decl)) /= No_Location
-        and then Present (Library_Unit (Cunit (Main_Unit)))
-        and then Cunit (Inst_CU) /= Library_Unit (Cunit (Main_Unit))
-      then
-         Clause := First (Context_Items (Library_Unit (Cunit (Main_Unit))));
-         while Present (Clause) loop
-            if Nkind (Clause) = N_With_Clause
-              and then  Library_Unit (Clause) = Cunit (Gen_CU)
-            then
-               Set_Withed_Body (Clause, Cunit (Gen_CU));
-            end if;
-
-            Next (Clause);
-         end loop;
-      end if;
    end Mark_Context;
 
    ---------------------

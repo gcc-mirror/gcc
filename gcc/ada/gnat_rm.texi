@@ -16271,7 +16271,7 @@ be copied.  The directory must exist, must be distinct from the project's
 object directory and source directories of all projects in the project tree,
 and must be writable.
 
-@item  Library_Src_Dir
+@item  Library_ALI_Dir
 Expression must be a path name. The attribute defines the
 directory in which the ALI files of a Library will
 be copied.  The directory must exist, must be distinct from the project's

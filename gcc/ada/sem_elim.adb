@@ -234,6 +234,7 @@ package body Sem_Elim is
       Elmt : Access_Elim_Data;
       Scop : Entity_Id;
       Form : Entity_Id;
+      Up   : Nat;
 
    begin
       if No_Elimination then
@@ -292,7 +293,37 @@ package body Sem_Elim is
 
             --  Now see if compilation unit matches
 
-            for J in reverse Elmt.Unit_Name'Range loop
+            Up := Elmt.Unit_Name'Last;
+
+            --  If we are within a subunit, the name in the pragma  has been
+            --  parsed as a child unit, but the current compilation unit is
+            --  in fact the parent in which the subunit is embedded. We must
+            --  skip the first name which is that of the subunit to match
+            --  the pragma specification.
+
+            declare
+               Par : Node_Id;
+
+            begin
+               Par := Parent (E);
+               while Present (Par) loop
+                  if Nkind (Par) = N_Subunit then
+                     if Chars (Defining_Unit_Name (Proper_Body (Par))) =
+                                                         Elmt.Unit_Name (Up)
+                     then
+                        Up := Up - 1;
+                        exit;
+
+                     else
+                        goto Continue;
+                     end if;
+                  end if;
+
+                  Par := Parent (Par);
+               end loop;
+            end;
+
+            for J in reverse Elmt.Unit_Name'First .. Up loop
                if Elmt.Unit_Name (J) /= Chars (Scop) then
                   goto Continue;
                end if;
