@@ -1,5 +1,16 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/m68hc11/m68hc11-protos.h (print_operand): Delete.
+	(print_operand_address): Delete.
+	* config/m68hc11/m68hc11.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/m68hc11/m68hc11.c (m68hc11_print_operand_address): Make
+	static.
+	(m68hc11_print_operand): Make static.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/m32r/m32r-protos.h (m32r_print_operand): Delete.
 	(m32r_print_operand_address): Delete.
 	* config/m32r/m32r.h (m32r_punct_chars): Delete.
