@@ -8979,15 +8979,18 @@ package body Sem_Res is
 
       Set_Etype (N, Slice_Subtype);
 
-      --  For packed slice subtypes, freeze immediately. Otherwise insert an
-      --  itype reference in the slice's actions so that the itype is frozen
-      --  at the proper place in the tree (i.e. at the point where actions
-      --  for the slice are analyzed). Note that this is different from
-      --  freezing the itype immediately, which might be premature (e.g. if
-      --  the slice is within a transient scope).
+      --  For packed slice subtypes, freeze immediately (except in the
+      --  case of being in a "spec expression" where we never freeze
+      --  when we first see the expression).
 
       if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
          Freeze_Itype (Slice_Subtype, N);
+
+      --  For all other cases insert an itype reference in the slice's actions
+      --  so that the itype is frozen at the proper place in the tree (i.e. at
+      --  the point where actions for the slice are analyzed). Note that this
+      --  is different from freezing the itype immediately, which might be
+      --  premature (e.g. if the slice is within a transient scope).
 
       else
          Ensure_Defined (Typ => Slice_Subtype, N => N);

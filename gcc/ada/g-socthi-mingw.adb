@@ -271,6 +271,8 @@ package body GNAT.Sockets.Thin is
       Msg   : System.Address;
       Flags : C.int) return System.CRTL.ssize_t
    is
+      use type C.size_t;
+
       Res   : C.int;
       Count : C.int := 0;
 
@@ -408,6 +410,8 @@ package body GNAT.Sockets.Thin is
       Msg   : System.Address;
       Flags : C.int) return System.CRTL.ssize_t
    is
+      use type C.size_t;
+
       Res   : C.int;
       Count : C.int := 0;
 
