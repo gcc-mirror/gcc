@@ -481,6 +481,14 @@ package body ALI.Util is
                  (Get_File_Checksum (Sdep.Table (D).Sfile),
                   Source.Table (Src).Checksum)
             then
+               if Verbose_Mode then
+                  Write_Str ("   ");
+                  Write_Str (Get_Name_String (Sdep.Table (D).Sfile));
+                  Write_Str (": up to date, different timestamps " &
+                             "but same checksum");
+                  Write_Eol;
+               end if;
+
                Sdep.Table (D).Stamp := Source.Table (Src).Stamp;
             end if;
 

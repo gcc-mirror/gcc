@@ -1476,11 +1476,10 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
       g-enblsp.adb<g-enblsp-vms-ia64.adb \
       g-trasym.adb<g-trasym-vms-ia64.adb \
       s-asthan.adb<s-asthan-vms-ia64.adb \
+      s-auxdec.adb<s-auxdec-vms-ia64.adb \
       s-osinte.adb<s-osinte-vms-ia64.adb \
       s-osinte.ads<s-osinte-vms-ia64.ads \
       s-vaflop.adb<s-vaflop-vms-ia64.adb \
-      g-trasym.ads<g-trasym-unimplemented.ads \
-      g-trasym.adb<g-trasym-unimplemented.adb \
       system.ads<system-vms-ia64.ads
 
     LIBGNAT_TARGET_PAIRS_AUX2 = \
@@ -1491,12 +1490,12 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
       LIBGNAT_TARGET_PAIRS_AUX1 = \
         g-enblsp.adb<g-enblsp-vms-alpha.adb \
         g-trasym.adb<g-trasym-vms-alpha.adb \
-        s-auxdec.adb<s-auxdec-vms-alpha.adb \
-        s-traent.adb<s-traent-vms.adb \
-        s-traent.ads<s-traent-vms.ads \
         s-asthan.adb<s-asthan-vms-alpha.adb \
+        s-auxdec.adb<s-auxdec-vms-alpha.adb \
         s-osinte.adb<s-osinte-vms.adb \
         s-osinte.ads<s-osinte-vms.ads \
+        s-traent.adb<s-traent-vms.adb \
+        s-traent.ads<s-traent-vms.ads \
         s-vaflop.adb<s-vaflop-vms-alpha.adb \
         system.ads<system-vms_64.ads
 

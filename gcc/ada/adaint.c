@@ -2474,7 +2474,7 @@ static HANDLE *HANDLES_LIST = NULL;
 static int *PID_LIST = NULL, plist_length = 0, plist_max_length = 0;
 
 static void
-add_handle (HANDLE h)
+add_handle (HANDLE h, int pid)
 {
 
   /* -------------------- critical section -------------------- */
@@ -2490,7 +2490,7 @@ add_handle (HANDLE h)
     }
 
   HANDLES_LIST[plist_length] = h;
-  PID_LIST[plist_length] = GetProcessId (h);
+  PID_LIST[plist_length] = pid;
   ++plist_length;
 
   (*Unlock_Task) ();
@@ -2521,8 +2521,8 @@ __gnat_win32_remove_handle (HANDLE h, int pid)
   /* -------------------- critical section -------------------- */
 }
 
-static HANDLE
-win32_no_block_spawn (char *command, char *args[])
+static void
+win32_no_block_spawn (char *command, char *args[], HANDLE *h, int *pid)
 {
   BOOL result;
   STARTUPINFO SI;
@@ -2587,10 +2587,14 @@ win32_no_block_spawn (char *command, char *args[])
   if (result == TRUE)
     {
       CloseHandle (PI.hThread);
-      return PI.hProcess;
+      *h = PI.hProcess;
+      *pid = PI.dwProcessId;
     }
   else
-    return NULL;
+    {
+      *h = NULL;
+      *pid = 0;
+    }
 }
 
 static int
@@ -2627,7 +2631,7 @@ win32_wait (int *status)
   h = hl[res - WAIT_OBJECT_0];
 
   GetExitCodeProcess (h, &exitcode);
-  pid = GetProcessId (h);
+  pid = PID_LIST [res - WAIT_OBJECT_0];
   __gnat_win32_remove_handle (h, -1);
 
   free (hl);
@@ -2661,12 +2665,13 @@ __gnat_portable_no_block_spawn (char *args[])
 #elif defined (_WIN32)
 
   HANDLE h = NULL;
+  int pid;
 
-  h = win32_no_block_spawn (args[0], args);
+  win32_no_block_spawn (args[0], args, &h, &pid);
   if (h != NULL)
     {
-      add_handle (h);
-      return GetProcessId (h);
+      add_handle (h, pid);
+      return pid;
     }
   else
     return -1;

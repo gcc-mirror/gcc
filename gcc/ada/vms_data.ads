@@ -3637,14 +3637,14 @@ package VMS_Data is
    --
    --   Duplicate all the output sent to Stderr into a default log file.
 
-   S_Elim_Logfile : aliased constant S := "/LOGFILE=@ "                    &
+   S_Elim_Logfile : aliased constant S := "/LOGFILE=@"                     &
                                           "-l@";
 
    --      /LOGFILE=logfilename
    --
    --   Duplicate all the output sent to Stderr into a specified log file.
 
-   S_Elim_Main    : aliased constant S := "/MAIN=@ "                       &
+   S_Elim_Main    : aliased constant S := "/MAIN=@"                        &
                                           "-main=@";
 
    --      /MAIN=filename

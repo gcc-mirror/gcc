@@ -107,10 +107,13 @@ package System.Aux_DEC is
    Address_Size       : constant := Standard'Address_Size;
    Short_Address_Size : constant := 32;
 
-   function "+" (Left : Address; Right : Integer) return Address;
-   function "+" (Left : Integer; Right : Address) return Address;
-   function "-" (Left : Address; Right : Address) return Integer;
-   function "-" (Left : Address; Right : Integer) return Address;
+   function "+" (Left : Address; Right : Long_Integer) return Address;
+   function "+" (Left : Long_Integer; Right : Address) return Address;
+   function "-" (Left : Address; Right : Address) return Long_Integer;
+   function "-" (Left : Address; Right : Long_Integer) return Address;
+
+   pragma Import (Intrinsic, "+");
+   pragma Import (Intrinsic, "-");
 
    generic
       type Target is private;
@@ -461,12 +464,10 @@ private
    --  them intrinsic, since the backend can handle them, but the front
    --  end is not prepared to deal with them, so at least inline them.
 
-   pragma Inline_Always ("+");
-   pragma Inline_Always ("-");
-   pragma Inline_Always ("not");
-   pragma Inline_Always ("and");
-   pragma Inline_Always ("or");
-   pragma Inline_Always ("xor");
+   pragma Import (Intrinsic, "not");
+   pragma Import (Intrinsic, "and");
+   pragma Import (Intrinsic, "or");
+   pragma Import (Intrinsic, "xor");
 
    --  Other inlined subprograms
 
