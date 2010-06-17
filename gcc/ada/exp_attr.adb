@@ -530,9 +530,7 @@ package body Exp_Attr is
            and then Is_Written
          then
             declare
-               Temp : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, New_Internal_Name ('V'));
+               Temp : constant Entity_Id := Make_Temporary (Loc, 'V');
                Decl : Node_Id;
                Assn : Node_Id;
 
@@ -1263,8 +1261,7 @@ package body Exp_Attr is
       --  returned is a copy of the library string in gnatvsn.ads.
 
       when Attribute_Body_Version | Attribute_Version => Version : declare
-         E    : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
+         E    : constant Entity_Id := Make_Temporary (Loc, 'V');
          Pent : Entity_Id;
          S    : String_Id;
 
@@ -1777,9 +1774,7 @@ package body Exp_Attr is
            Attribute_Elab_Spec =>
 
          Elab_Body : declare
-            Ent  : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       New_Internal_Name ('E'));
+            Ent  : constant Entity_Id := Make_Temporary (Loc, 'E');
             Str  : String_Id;
             Lang : Node_Id;
 
@@ -2389,13 +2384,14 @@ package body Exp_Attr is
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
                   Dnn  : Entity_Id;
                   Decl : Node_Id;
+                  Expr : Node_Id;
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
                   --  initialize a dummy tag object:
 
-                  --    Dnn : Ada.Tags.Tag
-                  --           := Descendant_Tag (String'Input (Strm), P_Type);
+                  --    Dnn : Ada.Tags.Tag :=
+                  --            Descendant_Tag (String'Input (Strm), P_Type);
 
                   --  This dummy object is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
@@ -2406,30 +2402,28 @@ package body Exp_Attr is
                   --  required for Ada 2005 because tagged types can be
                   --  extended in nested scopes (AI-344).
 
-                  Dnn :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('D'));
+                  Expr :=
+                    Make_Function_Call (Loc,
+                      Name =>
+                        New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (Standard_String, Loc),
+                          Attribute_Name => Name_Input,
+                          Expressions => New_List (
+                            Relocate_Node (Duplicate_Subexpr (Strm)))),
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Reference_To (P_Type, Loc),
+                          Attribute_Name => Name_Tag)));
+
+                  Dnn := Make_Temporary (Loc, 'D', Expr);
 
                   Decl :=
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Dnn,
-                      Object_Definition =>
+                      Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Tag), Loc),
-                      Expression =>
-                        Make_Function_Call (Loc,
-                          Name =>
-                            New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
-                          Parameter_Associations => New_List (
-                            Make_Attribute_Reference (Loc,
-                              Prefix =>
-                                New_Occurrence_Of (Standard_String, Loc),
-                              Attribute_Name => Name_Input,
-                              Expressions => New_List (
-                                Relocate_Node
-                                  (Duplicate_Subexpr (Strm)))),
-                            Make_Attribute_Reference (Loc,
-                              Prefix => New_Reference_To (P_Type, Loc),
-                              Attribute_Name => Name_Tag))));
+                      Expression          => Expr);
 
                   Insert_Action (N, Decl);
 
@@ -2440,8 +2434,9 @@ package body Exp_Attr is
                   --  tagged object).
 
                   Fname := Find_Prim_Op (Rtyp, TSS_Stream_Input);
-                  Cntrl := Unchecked_Convert_To (P_Type,
-                             New_Occurrence_Of (Dnn, Loc));
+                  Cntrl :=
+                    Unchecked_Convert_To (P_Type,
+                      New_Occurrence_Of (Dnn, Loc));
                   Set_Etype (Cntrl, P_Type);
                   Set_Parent (Cntrl, N);
                end;
@@ -2987,9 +2982,7 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Tnn     : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_Internal_Name ('T'));
+         Tnn     : constant Entity_Id := Make_Temporary (Loc, 'T', Pref);
          Subp    : Node_Id;
          Asn_Stm : Node_Id;
 
@@ -4552,8 +4545,7 @@ package body Exp_Attr is
       -----------------
 
       when Attribute_UET_Address => UET_Address : declare
-         Ent : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+         Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
 
       begin
          Insert_Action (N,

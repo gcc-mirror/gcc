@@ -179,11 +179,16 @@ package Tbuild is
    function Make_Temporary
      (Loc          : Source_Ptr;
       Id           : Character;
-      Related_Node : Node_Id := Empty) return Node_Id;
-   --  Create a defining identifier to capture the value of an expression
-   --  or aggregate, and link it to the expression that it replaces, in
-   --  order to provide better CodePeer reports. The defining identifier
-   --  name is obtained by New_Internal_Name (Id).
+      Related_Node : Node_Id := Empty) return Entity_Id;
+   --  This function should be used for all cases where a temporary is
+   --  built with a name to be obtained by New_Internal_Name (here Id is
+   --  the character passed as the argument to New_Internal_Name). Loc
+   --  is the location for the Sloc value of the resulting Entity.
+   --
+   --  Related_Node is used when the identifier is capturing the value of
+   --  an expression (e.g. an aggregate). It should be set whenever possible
+   --  to point to the expression that is being captured. This is provided
+   --  to get better error messages, especially from CodePeer reports.
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;

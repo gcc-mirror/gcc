@@ -504,7 +504,7 @@ package body Exp_Ch3 is
             --  And insert this declaration into the tree. The type of the
             --  discriminant is then reset to this more restricted subtype.
 
-            Tnn := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+            Tnn := Make_Temporary (Loc, 'T');
 
             Insert_Action (Declaration_Node (Rtype),
               Make_Subtype_Declaration (Loc,
@@ -2115,10 +2115,7 @@ package body Exp_Ch3 is
             Spec_Node : Node_Id;
 
          begin
-            Func_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('F'));
-
+            Func_Id := Make_Temporary (Loc, 'F');
             Set_DT_Offset_To_Top_Func (Iface_Comp, Func_Id);
 
             --  Generate
@@ -2246,9 +2243,7 @@ package body Exp_Ch3 is
          if Is_Tagged_Type (Rec_Type)
            and then not Is_CPP_Class (Rec_Type)
          then
-            Set_Tag :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+            Set_Tag := Make_Temporary (Loc, 'P');
 
             Append_To (Parameters,
               Make_Parameter_Specification (Loc,
@@ -3404,37 +3399,21 @@ package body Exp_Ch3 is
       Loc   : constant Source_Ptr := Sloc (Typ);
       Index : constant Entity_Id  := Base_Type (Etype (First_Index (Typ)));
 
-      --  Build formal parameters of procedure
+      Larray    : constant Entity_Id := Make_Temporary (Loc, 'A');
+      Rarray    : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Left_Lo   : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Left_Hi   : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Right_Lo  : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Right_Hi  : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Rev       : constant Entity_Id := Make_Temporary (Loc, 'D');
+      --  Formal parameters of procedure
 
-      Larray   : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('A'));
-      Rarray   : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Left_Lo  : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('L'));
-      Left_Hi  : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('L'));
-      Right_Lo : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Right_Hi : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Rev      : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('D'));
       Proc_Name : constant Entity_Id :=
                     Make_Defining_Identifier (Loc,
                       Chars => Make_TSS_Name (Typ, TSS_Slice_Assign));
 
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Lnn : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Rnn : constant Entity_Id := Make_Temporary (Loc, 'R');
       --  Subscripts for left and right sides
 
       Decls : List_Id;
@@ -4620,8 +4599,7 @@ package body Exp_Ch3 is
                      Decl_1 :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
+                           Make_Temporary (Loc, 'D', Expr_N),
                          Object_Definition =>
                            New_Occurrence_Of (Expr_Typ, Loc),
                          Expression =>
@@ -4633,12 +4611,9 @@ package body Exp_Ch3 is
 
                      Decl_2 :=
                        Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Typ, Loc),
-                         Name =>
+                         Defining_Identifier => Make_Temporary (Loc, 'D'),
+                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+                         Name                =>
                            Unchecked_Convert_To (Typ,
                              Make_Selected_Component (Loc,
                                Prefix =>
@@ -4682,23 +4657,19 @@ package body Exp_Ch3 is
                      Decl_1 :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Object_Definition =>
+                           Make_Temporary (Loc, 'D', New_Expr),
+                         Object_Definition   =>
                            New_Occurrence_Of
                             (Etype (Object_Definition (N)), Loc),
-                         Expression =>
+                         Expression          =>
                            Unchecked_Convert_To
                              (Etype (Object_Definition (N)), New_Expr));
 
                      Decl_2 :=
                        Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Typ, Loc),
-                         Name =>
+                         Defining_Identifier => Make_Temporary (Loc, 'D'),
+                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+                         Name                =>
                            Unchecked_Convert_To (Typ,
                              Make_Explicit_Dereference (Loc,
                                Unchecked_Convert_To (RTE (RE_Tag_Ptr),

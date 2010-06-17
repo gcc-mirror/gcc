@@ -469,9 +469,7 @@ package body Exp_Ch11 is
                Local_Expansion_Required := True;
 
                declare
-                  L : constant Entity_Id :=
-                        Make_Defining_Identifier (Sloc (H),
-                          Chars => New_Internal_Name ('L'));
+                  L : constant Entity_Id := Make_Temporary (Sloc (H), 'L');
                begin
                   Set_Exception_Label (H, L);
                   Add_Label_Declaration (L);
@@ -646,9 +644,7 @@ package body Exp_Ch11 is
          declare
             --  L3 is the label to exit the HSS
 
-            L3_Dent : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('L'));
+            L3_Dent : constant Entity_Id := Make_Temporary (Loc, 'L');
 
             Labl_L3 : constant Node_Id :=
                         Make_Label (Loc,
@@ -1560,6 +1556,8 @@ package body Exp_Ch11 is
       --  mechanism. However we need to keep the expansion for "raise;"
       --  statements. See 4jexcept.ads for details.
 
+      --  What is .NET status, either code or comment is wrong here ???
+
       if Present (Name (N)) and then VM_Target /= No_VM then
          return;
       end if;
@@ -1686,7 +1684,7 @@ package body Exp_Ch11 is
          --  be referencing this entity by normal visibility methods.
 
          if No (Choice_Parameter (Ehand)) then
-            E := Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+            E := Make_Temporary (Loc, 'E');
             Set_Choice_Parameter (Ehand, E);
             Set_Ekind (E, E_Variable);
             Set_Etype (E, RTE (RE_Exception_Occurrence));

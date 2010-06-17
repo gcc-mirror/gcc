@@ -150,14 +150,10 @@ package body Exp_Atag is
       Related_Nod  : Node_Id;
       New_Node     : out Node_Id)
    is
-      Tag_Addr : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                         New_Internal_Name ('D'));
-      Obj_TSD  : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                         New_Internal_Name ('D'));
-      Typ_TSD  : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                         New_Internal_Name ('D'));
-      Index    : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                         New_Internal_Name ('D'));
+      Tag_Addr : constant Entity_Id := Make_Temporary (Loc, 'D', Obj_Tag_Node);
+      Obj_TSD  : constant Entity_Id := Make_Temporary (Loc, 'D');
+      Typ_TSD  : constant Entity_Id := Make_Temporary (Loc, 'D');
+      Index    : constant Entity_Id := Make_Temporary (Loc, 'D');
 
    begin
       --  Generate:

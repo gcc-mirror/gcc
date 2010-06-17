@@ -1584,9 +1584,7 @@ package body Checks is
 
             pragma Assert (Target_Base /= Target_Typ);
 
-            Temp : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('T'));
+            Temp : constant Entity_Id := Make_Temporary (Loc, 'T', Par);
 
          begin
             Apply_Float_Conversion_Check (Ck_Node, Target_Base);
@@ -4707,9 +4705,7 @@ package body Checks is
          --  Then the conversion itself is replaced by an occurrence of Tnn
 
          declare
-            Tnn : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('T'));
+            Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
 
          begin
             Insert_Actions (N, New_List (
@@ -4860,9 +4856,7 @@ package body Checks is
             --  the value is non-negative
 
             declare
-               Tnn : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc,
-                         Chars => New_Internal_Name ('T'));
+               Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
 
             begin
                Insert_Actions (N, New_List (
