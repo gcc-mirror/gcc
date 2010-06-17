@@ -686,7 +686,6 @@ package body Tbuild is
       Loc    : Source_Ptr) return Node_Id
    is
       Occurrence : Node_Id;
-
    begin
       Occurrence := New_Node (N_Identifier, Loc);
       Set_Chars (Occurrence, Chars (Def_Id));

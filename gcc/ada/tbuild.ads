@@ -180,15 +180,19 @@ package Tbuild is
      (Loc          : Source_Ptr;
       Id           : Character;
       Related_Node : Node_Id := Empty) return Entity_Id;
-   --  This function should be used for all cases where a temporary is
-   --  built with a name to be obtained by New_Internal_Name (here Id is
-   --  the character passed as the argument to New_Internal_Name). Loc
-   --  is the location for the Sloc value of the resulting Entity.
+   --  This function should be used for all cases where a defining identifier
+   --  is to be built with a name to be obtained by New_Internal_Name (here Id
+   --  is the character passed as the argument to New_Internal_Name). Loc is
+   --  the location for the Sloc value of the resulting Entity. Note that this
+   --  can be used for all kinds of temporary defining identifiers used in
+   --  expansion (objects, subtypes, functions etc).
    --
-   --  Related_Node is used when the identifier is capturing the value of
-   --  an expression (e.g. an aggregate). It should be set whenever possible
-   --  to point to the expression that is being captured. This is provided
-   --  to get better error messages, especially from CodePeer reports.
+   --  Related_Node is used when the defining identifier is for an object that
+   --  captures the value of an expression (e.g. an aggregate). It should be
+   --  set whenever possible to point to the expression that is being captured.
+   --  This is provided to get better error messages, e.g. from CodePeer.
+   --
+   --  Make_Temp_Id would probably be a better name for this function???
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;
