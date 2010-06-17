@@ -5095,7 +5095,7 @@ package body Exp_Ch6 is
          Rewrite (Allocator, New_Allocator);
 
          --  Create a new access object and initialize it to the result of the
-         --  new uninitialized allocator. Do not use Allocator as the
+         --  new uninitialized allocator. Note: we do not use Allocator as the
          --  Related_Node of Return_Obj_Access in call to Make_Temporary below
          --  as this would create a sort of infinite "recursion".
 
@@ -5660,7 +5660,10 @@ package body Exp_Ch6 is
       Add_Access_Actual_To_Build_In_Place_Call
         (Func_Call, Function_Id, Caller_Object, Is_Access => Pass_Caller_Acc);
 
-      --  Create an access type designating the function's result subtype
+      --  Create an access type designating the function's result subtype. We
+      --  use the type of the original expression because it may be a call to
+      --  an inherited operation, which the expansion has replaced with the
+      --  parent operation that yields the parent type.
 
       Ref_Type := Make_Temporary (Loc, 'A');
 
@@ -5671,7 +5674,7 @@ package body Exp_Ch6 is
             Make_Access_To_Object_Definition (Loc,
               All_Present => True,
               Subtype_Indication =>
-                New_Reference_To (Result_Subt, Loc)));
+                New_Reference_To (Etype (Function_Call), Loc)));
 
       --  The access type and its accompanying object must be inserted after
       --  the object declaration in the constrained case, so that the function

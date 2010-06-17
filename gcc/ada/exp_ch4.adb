@@ -6687,12 +6687,11 @@ package body Exp_Ch4 is
       if Is_VMS_Operator (Entity (N)) then
          declare
             LI : constant Entity_Id := RTE (RE_Unsigned_64);
-
          begin
             Rewrite (N,
               Unchecked_Convert_To (Typ,
                 (Make_Op_Not (Loc,
-                  Right_Opnd => Unchecked_Convert_To (LI, Right_Opnd (N))))));
+                   Right_Opnd => Unchecked_Convert_To (LI, Right_Opnd (N))))));
             Analyze_And_Resolve (N, Typ);
             return;
          end;

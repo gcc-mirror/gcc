@@ -1,3 +1,18 @@
+2010-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads: Bump to 4.6 version.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): The
+	designated type of the generated pointer is the type of the original
+	expression, not that of the function call itself, because the return
+	type may be an untagged  derived type and the function may be an
+	inherited operation.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Inherited_Discriminant): New flag on
