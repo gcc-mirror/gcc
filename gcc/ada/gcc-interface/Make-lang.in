@@ -120,6 +120,7 @@ GNAT1_C_OBJS = ada/b_gnat1.o ada/adadecode.o ada/adaint.o ada/cstreams.o \
 GNAT_ADA_OBJS =	\
  ada/a-charac.o	\
  ada/a-chlat1.o	\
+ ada/a-comlin.o \
  ada/a-elchha.o	\
  ada/a-except.o	\
  ada/a-ioexce.o	\

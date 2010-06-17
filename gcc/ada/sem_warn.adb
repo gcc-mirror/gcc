@@ -539,6 +539,22 @@ package body Sem_Warn is
                return Abandon;
             end if;
 
+            --  If any of the arguments are of type access to subprogram, then
+            --  we may have funny side effects, so no warning in this case.
+
+            declare
+               Actual : Node_Id;
+            begin
+               Actual := First_Actual (N);
+               while Present (Actual) loop
+                  if Is_Access_Subprogram_Type (Etype (Actual)) then
+                     return Abandon;
+                  else
+                     Next_Actual (Actual);
+                  end if;
+               end loop;
+            end;
+
          --  Declaration of the variable in question
 
          elsif Nkind (N) = N_Object_Declaration

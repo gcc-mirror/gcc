@@ -23,6 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Command_Line; use Ada.Command_Line;
+
 with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
@@ -38,27 +40,12 @@ with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
 
-   type Arg_Array is array (Nat) of Big_String_Ptr;
-   type Arg_Array_Ptr is access Arg_Array;
-   --  Types to access compiler arguments
-
-   save_argc : Nat;
-   pragma Import (C, save_argc);
-   --  Saved value of argc (number of arguments), imported from toplev.c
-
-   save_argv : Arg_Array_Ptr;
-   pragma Import (C, save_argv);
-   --  Saved value of argv (argument pointers), imported from toplev.c
-
    RTS_Specified : String_Access := null;
    --  Used to detect multiple use of --RTS= flag
 
-   function Len_Arg (Arg : Pos) return Nat;
-   --  Determine length of argument number Arg on original gnat1 command line
-
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Arg_Rank : Pos)
+      Arg_Rank : Positive)
       return Boolean;
    --  This function is called from Scan_Front_End_Switches. It determines if
    --  the switch currently being scanned is followed by a switch of the form
@@ -66,28 +53,13 @@ package body Switch.C is
    --  and Scan_Front_End_Switches will cancel the effect of the switch. If
    --  no such switch is found, False is returned.
 
-   -------------
-   -- Len_Arg --
-   -------------
-
-   function Len_Arg (Arg : Pos) return Nat is
-   begin
-      for J in 1 .. Nat'Last loop
-         if save_argv (Arg).all (Natural (J)) = ASCII.NUL then
-            return J - 1;
-         end if;
-      end loop;
-
-      raise Program_Error;
-   end Len_Arg;
-
    -----------------------------
    -- Scan_Front_End_Switches --
    -----------------------------
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
-      Arg_Rank     : Pos)
+      Arg_Rank     : Positive)
    is
       First_Switch : Boolean := True;
       --  False for all but first switch
@@ -1126,19 +1098,16 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
-      Arg_Rank : Pos)
+      Arg_Rank : Positive)
       return Boolean
    is
-      Arg : Pos;
-
+      Arg : Positive;
+      Max : constant Natural := Argument_Count;
    begin
       Arg := Arg_Rank + 1;
-      while Arg < save_argc loop
+      while Arg < Max loop
          declare
-            Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
-            Argv_Len : constant Nat            := Len_Arg (Arg);
-            Argv     : constant String         :=
-                         Argv_Ptr (1 .. Natural (Argv_Len));
+            Argv : constant String := Argument (Arg);
          begin
             if Argv = "-gnat-" & C then
                return True;
