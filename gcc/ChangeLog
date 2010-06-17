@@ -1,3 +1,8 @@
+2010-06-17  Gunther Nikl  <gnikl@users.sourceforge.net>
+
+	* config/rs6000/rs6000.c (print_operand) <'K'>: Also use
+	print_operand_address and puts to output the operand for CONST.
+
 2010-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44572
