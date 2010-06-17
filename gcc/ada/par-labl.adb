@@ -381,15 +381,15 @@ procedure Labl is
                   --  statements are always part of some list, so
                   --  List_Containing always makes sense.
 
-                  if
-                    List_Containing (Node (N)) = List_Containing (Node (S1))
+                  if List_Containing (Node (N)) =
+                     List_Containing (Node (S1))
                   then
                      Source := S1;
                      Found  := True;
 
-                  else
-                     --  The goto is within some nested structure
+                  --  The goto is within some nested structure
 
+                  else
                      No_Header (N);
                      return;
                   end if;

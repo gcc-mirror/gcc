@@ -6119,8 +6119,8 @@ package body Sem_Ch4 is
          First_Actual : Node_Id;
 
       begin
-         --  Place the name of the operation, with its interpretations,
-         --  on the rewritten call.
+         --  Place the name of the operation, with its interpretations, on the
+         --  rewritten call.
 
          Set_Name (Call_Node, Subprog);
 

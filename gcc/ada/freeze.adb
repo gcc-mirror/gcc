@@ -5306,6 +5306,26 @@ package body Freeze is
             return True;
          end;
 
+      --  For the designated type of an access to subprogram. all types in
+      --  the profile must be fully defined.
+
+      elsif Ekind (T) = E_Subprogram_Type then
+         declare
+            F : Entity_Id;
+
+         begin
+            F := First_Formal (T);
+            while Present (F) loop
+               if not Is_Fully_Defined (Etype (F)) then
+                  return False;
+               end if;
+
+               Next_Formal (F);
+            end loop;
+
+            return Is_Fully_Defined (Etype (T));
+         end;
+
       else
          return not Is_Private_Type (T)
            or else Present (Full_View (Base_Type (T)));

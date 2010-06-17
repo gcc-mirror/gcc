@@ -531,6 +531,7 @@ Running and Debugging Ada Programs
 * Ada Exceptions::
 * Ada Tasks::
 * Debugging Generic Units::
+* Remote Debugging using gdbserver::
 * GNAT Abnormal Termination or Failure to Terminate::
 * Naming Conventions for GNAT Source Files::
 * Getting Internal Debugging Information::
@@ -22375,6 +22376,7 @@ the incorrect user program.
 * Ada Exceptions::
 * Ada Tasks::
 * Debugging Generic Units::
+* Remote Debugging using gdbserver::
 * GNAT Abnormal Termination or Failure to Terminate::
 * Naming Conventions for GNAT Source Files::
 * Getting Internal Debugging Information::
@@ -22831,6 +22833,56 @@ use the command:
 When the breakpoint occurs, you can step through the code of the
 instance in the normal manner and examine the values of local variables, as for
 other units.
+
+@node Remote Debugging using gdbserver
+@section Remote Debugging using gdbserver
+@cindex Remote Debugging using gdbserver
+
+@noindent
+On platforms where gdbserver is supported, it is possible to use this tool
+to debug your application remotely.  This can be useful in situations
+where the program needs to be run on a target host that is different
+from the host used for development, particularly when the target has
+a limited amount of resources (either CPU and/or memory).
+
+To do so, start your program using gdbserver on the target machine.
+gdbserver then automatically suspends the execution of your program
+at its entry point, waiting for a debugger to connect to it.  The
+following commands starts an application and tells gdbserver to
+wait for a connection with the debugger on localhost port 4444.
+
+@smallexample
+$ gdbserver localhost:4444 program
+Process program created; pid = 5685
+Listening on port 4444
+@end smallexample
+
+Once gdbserver has started listening, we can tell the debugger to establish
+a connection with this gdbserver, and then start the same debugging session
+as if the program was being debugged on the same host, directly under
+the control of GDB.
+
+@smallexample
+$ gdb program
+(gdb) target remote targethost:4444
+Remote debugging using targethost:4444
+0x00007f29936d0af0 in ?? () from /lib64/ld-linux-x86-64.so.
+(gdb) b foo.adb:3
+Breakpoint 1 at 0x401f0c: file foo.adb, line 3.
+(gdb) continue
+Continuing.
+
+Breakpoint 1, foo () at foo.adb:4
+4       end foo;
+@end smallexample
+
+It is also possible to use gdbserver to attach to an already running
+program, in which case the execution of that program is simply suspended
+until the connection between the debugger and gdbserver is established.
+
+For more information on how to use gdbserver, @ref{Top, Server, Using
+the gdbserver Program, gdb, Debugging with GDB}.  GNAT Pro provides support
+for gdbserver on x86-linux, x86-windows and x86_64-linux.
 
 @node GNAT Abnormal Termination or Failure to Terminate
 @section GNAT Abnormal Termination or Failure to Terminate

@@ -39,7 +39,7 @@ package body System.Storage_Elements is
 
    --  Conversion to/from address
 
-   --  Note qualification below of To_Address to avoid ambiguities on VMS.
+   --  Note qualification below of To_Address to avoid ambiguities on VMS
 
    function To_Address is
      new Ada.Unchecked_Conversion (Storage_Offset, Address);
@@ -51,17 +51,29 @@ package body System.Storage_Elements is
    --  These functions must be place first because they are inlined_always
    --  and are used and inlined in other subprograms defined in this unit.
 
-   function To_Integer (Value : Address) return Integer_Address is
-   begin
-      return Integer_Address (Value);
-   end To_Integer;
+   ----------------
+   -- To_Address --
+   ----------------
 
    function To_Address (Value : Integer_Address) return Address is
    begin
       return Address (Value);
    end To_Address;
 
+   ----------------
+   -- To_Integer --
+   ----------------
+
+   function To_Integer (Value : Address) return Integer_Address is
+   begin
+      return Integer_Address (Value);
+   end To_Integer;
+
    --  Address arithmetic
+
+   ---------
+   -- "+" --
+   ---------
 
    function "+" (Left : Address; Right : Storage_Offset) return Address is
    begin
@@ -75,6 +87,10 @@ package body System.Storage_Elements is
         (To_Integer (To_Address (Left)) + To_Integer (Right));
    end "+";
 
+   ---------
+   -- "-" --
+   ---------
+
    function "-" (Left : Address; Right : Storage_Offset) return Address is
    begin
       return Storage_Elements.To_Address
@@ -86,6 +102,10 @@ package body System.Storage_Elements is
       return To_Offset (Storage_Elements.To_Address
                          (To_Integer (Left) - To_Integer (Right)));
    end "-";
+
+   -----------
+   -- "mod" --
+   -----------
 
    function "mod"
      (Left  : Address;
@@ -106,4 +126,5 @@ package body System.Storage_Elements is
          raise Constraint_Error;
       end if;
    end "mod";
+
 end System.Storage_Elements;
