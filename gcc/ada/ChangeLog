@@ -1,3 +1,12 @@
+2010-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (push_stack, pop_stack): Delete.
+	(Case_Statement_to_gnu): Adjust.
+	(Loop_Statement_to_gnu): Likewise.
+	(Subprogram_Body_to_gnu): Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_fixd.adb, exp_imgv.adb, exp_intr.adb, exp_pakd.adb, exp_prag.adb,

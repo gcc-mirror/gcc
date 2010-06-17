@@ -187,8 +187,6 @@ static void add_cleanup (tree, Node_Id);
 static void add_stmt_list (List_Id);
 static void push_exception_label_stack (VEC(tree,gc) **, Entity_Id);
 static tree build_stmt_group (List_Id, bool);
-static void push_stack (VEC(tree,gc) **, tree);
-static void pop_stack (VEC(tree,gc) *);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
@@ -1934,10 +1932,10 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-
-  push_stack (&gnu_switch_label_stack,
-	      create_artificial_label (input_location));
+  VEC_safe_push (tree, gc, gnu_switch_label_stack,
+		 create_artificial_label (input_location));
   start_stmt_group ();
+
   for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
        Present (gnat_when);
        gnat_when = Next_Non_Pragma (gnat_when))
@@ -2026,7 +2024,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 		    VEC_last (tree, gnu_switch_label_stack)));
   gnu_result = build3 (SWITCH_EXPR, TREE_TYPE (gnu_expr), gnu_expr,
 		       end_stmt_group (), NULL_TREE);
-  pop_stack (gnu_switch_label_stack);
+  VEC_pop (tree, gnu_switch_label_stack);
 
   return gnu_result;
 }
@@ -2092,7 +2090,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
   /* Save the end label of this LOOP_STMT in a stack so that a corresponding
      N_Exit_Statement can find it.  */
-  push_stack (&gnu_loop_label_stack, gnu_loop_label);
+  VEC_safe_push (tree, gc, gnu_loop_label_stack, gnu_loop_label);
 
   /* Set the condition under which the loop must keep going.
      For the case "LOOP .... END LOOP;" the condition is always true.  */
@@ -2309,7 +2307,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   else
     gnu_result = gnu_loop_stmt;
 
-  pop_stack (gnu_loop_label_stack);
+  VEC_pop (tree, gnu_loop_label_stack);
 
   return gnu_result;
 }
@@ -2442,9 +2440,10 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      properly copies them out.  We do this by making a new block and converting
      any inner return into a goto to a label at the end of the block.  */
   gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
-  push_stack (&gnu_return_label_stack,
-	      gnu_cico_list ? create_artificial_label (input_location)
-	      : NULL_TREE);
+  VEC_safe_push (tree, gc, gnu_return_label_stack,
+		 gnu_cico_list
+		 ? create_artificial_label (input_location)
+		 : NULL_TREE);
 
   /* Get a tree corresponding to the code for the subprogram.  */
   start_stmt_group ();
@@ -2555,7 +2554,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       gnu_result = end_stmt_group ();
     }
 
-  pop_stack (gnu_return_label_stack);
+  VEC_pop (tree, gnu_return_label_stack);
 
   /* Set the end location.  */
   Sloc_to_locus
@@ -3252,12 +3251,13 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       start_stmt_group ();
       gnat_pushlevel ();
 
-      push_stack (&gnu_except_ptr_stack,
-		  create_var_decl (get_identifier ("EXCEPT_PTR"),
-				   NULL_TREE,
-				   build_pointer_type (except_type_node),
-				   build_call_0_expr (get_excptr_decl), false,
-				   false, false, false, NULL, gnat_node));
+      VEC_safe_push (tree, gc, gnu_except_ptr_stack,
+		     create_var_decl (get_identifier ("EXCEPT_PTR"),
+				      NULL_TREE,
+				      build_pointer_type (except_type_node),
+				      build_call_0_expr (get_excptr_decl),
+							 false,
+				      false, false, false, NULL, gnat_node));
 
       /* Generate code for each handler. The N_Exception_Handler case does the
 	 real work and returns a COND_EXPR for each handler, which we chain
@@ -3293,7 +3293,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* End the binding level dedicated to the exception handlers and get the
 	 whole statement group.  */
-      pop_stack (gnu_except_ptr_stack);
+      VEC_pop (tree, gnu_except_ptr_stack);
       gnat_poplevel ();
       gnu_handler = end_stmt_group ();
 
@@ -3548,7 +3548,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
        NULL_TREE, void_ftype, NULL_TREE, false, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
-  push_stack (&gnu_elab_proc_stack, gnu_elab_proc_decl);
+  VEC_safe_push (tree, gc, gnu_elab_proc_stack, gnu_elab_proc_decl);
   DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
 
   /* Initialize the information structure for the function.  */
@@ -3635,7 +3635,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
 
   /* Generate elaboration code for this unit, if necessary, and say whether
      we did or not.  */
-  pop_stack (gnu_elab_proc_stack);
+  VEC_pop (tree, gnu_elab_proc_stack);
 
   /* Invalidate the global renaming pointers.  This is necessary because
      stabilization of the renamed entities may create SAVE_EXPRs which
@@ -5926,20 +5926,6 @@ build_stmt_group (List_Id gnat_list, bool binding_p)
     gnat_poplevel ();
 
   return end_stmt_group ();
-}
-
-/* Push and pop routines for stacks.  */
-
-static void
-push_stack (VEC(tree,gc) **gnu_stack_ptr, tree value)
-{
-  VEC_safe_push (tree, gc, *gnu_stack_ptr, value);
-}
-
-static void
-pop_stack (VEC(tree,gc) *gnu_stack)
-{
-  VEC_pop (tree, gnu_stack);
 }
 
 /* Generate GIMPLE in place for the expression at *EXPR_P.  */
