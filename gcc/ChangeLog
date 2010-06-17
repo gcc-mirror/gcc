@@ -1,5 +1,18 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mcore/mcore-protos.h (mcore_print_operand): Delete.
+	(mcore_print_operand_address): Delete.
+	* config/mcore/mcore.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/mcore/mcore.c (mcore_print_operand_address): Make static.
+	(mcore_print_operand): Make static.
+	(mcore_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/m68hc11/m68hc11-protos.h (print_operand): Delete.
 	(print_operand_address): Delete.
 	* config/m68hc11/m68hc11.h (PRINT_OPERAND): Delete.

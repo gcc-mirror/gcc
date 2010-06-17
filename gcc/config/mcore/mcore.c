@@ -131,6 +131,9 @@ static tree       mcore_handle_naked_attribute  (tree *, tree, tree, int, bool *
 static void	  mcore_asm_named_section       (const char *,
 						 unsigned int, tree);
 #endif
+static void       mcore_print_operand           (FILE *, rtx, int);
+static void       mcore_print_operand_address   (FILE *, rtx);
+static bool       mcore_print_operand_punct_valid_p (unsigned char code);
 static void       mcore_unique_section	        (tree, int);
 static void mcore_encode_section_info		(tree, rtx, int);
 static const char *mcore_strip_name_encoding	(const char *);
@@ -172,6 +175,13 @@ static const struct attribute_spec mcore_attribute_table[] =
 #undef  TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.long\t"
 #endif
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND		mcore_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS	mcore_print_operand_address
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P mcore_print_operand_punct_valid_p
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE 		mcore_attribute_table
@@ -287,7 +297,7 @@ calc_live_regs (int * count)
 
 /* Print the operand address in x to the stream.  */
 
-void
+static void
 mcore_print_operand_address (FILE * stream, rtx x)
 {
   switch (GET_CODE (x))
@@ -329,6 +339,13 @@ mcore_print_operand_address (FILE * stream, rtx x)
     }
 }
 
+static bool
+mcore_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '.' || code == '#' || code == '*' || code == '^'
+	  || code == '!');
+}
+
 /* Print operand x (an rtx) in assembler syntax to file stream
    according to modifier code.
 
@@ -341,7 +358,7 @@ mcore_print_operand_address (FILE * stream, rtx x)
    'U'  print register for ldm/stm instruction
    'X'  print byte number for xtrbN instruction.  */
 
-void
+static void
 mcore_print_operand (FILE * stream, rtx x, int code)
 {
   switch (code)
