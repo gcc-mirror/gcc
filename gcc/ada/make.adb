@@ -1785,6 +1785,13 @@ package body Make is
 
          Modified_Source := Time_Stamp_Mismatch (ALI, Read_Only);
 
+         --  To avoid using too much memory when switch -m is used, free the
+         --  memory allocated for the source file when computing the checksum.
+
+         if Minimal_Recompilation then
+            Sinput.P.Clear_Source_File_Table;
+         end if;
+
          if Modified_Source /= No_File then
             ALI := No_ALI_Id;
 

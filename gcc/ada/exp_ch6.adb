@@ -3095,12 +3095,14 @@ package body Exp_Ch6 is
       --  In Ada 2005, this may be an indirect call to an access parameter that
       --  is an access_to_subprogram. In that case the anonymous type has a
       --  scope that is a protected operation, but the call is a regular one.
+      --  In either case do not expand call if subprogram is eliminated.
 
       Scop := Scope (Subp);
 
       if Nkind (N) /= N_Entry_Call_Statement
         and then Is_Protected_Type (Scop)
         and then Ekind (Subp) /= E_Subprogram_Type
+        and then not Is_Eliminated (Subp)
       then
          --  If the call is an internal one, it is rewritten as a call to the
          --  corresponding unprotected subprogram.
