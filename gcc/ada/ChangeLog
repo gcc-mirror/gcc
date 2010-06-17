@@ -1,3 +1,23 @@
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Is_Ancestor_Unit): Subsidiary to
+	Install_Limited_Context_Clauses, to determine whether a limited_with in
+	some parent of the current unit designates some other parent, in which
+	case the limited_with clause must not be installed.
+	(In_Context): Refine test.
+
+2010-06-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Collect_Primitive_Operations): In the of an untagged
+	type with a dispatching equality operator that is overridden (for a
+	tagged full type), don't include the overridden equality in the list of
+	primitives. The overridden equality is detected by testing for an
+	Aliased field that references the overriding equality.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
 2010-06-17  Joel Brobecker  <brobecker@adacore.com brobecker>
 
 	* gnat_ugn.texi: Add a section introducing gdbserver.

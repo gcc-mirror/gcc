@@ -3373,6 +3373,11 @@ package body Sem_Ch10 is
       --  units. The shadow entities are created when the inserted clause is
       --  analyzed. Implements Ada 2005 (AI-50217).
 
+      function Is_Ancestor_Unit (U1 : Node_Id; U2 : Node_Id) return Boolean;
+      --  When compiling a unit Q descended from some parent unit P, a limited
+      --  with_clause in the context of P that names some other ancestor of Q
+      --  must not be installed because the ancestor is immediately visible.
+
       ---------------------
       -- Check_Renamings --
       ---------------------
@@ -3645,6 +3650,22 @@ package body Sem_Ch10 is
          New_Nodes_OK := New_Nodes_OK - 1;
       end Expand_Limited_With_Clause;
 
+      ----------------------
+      -- Is_Ancestor_Unit --
+      ----------------------
+
+      function Is_Ancestor_Unit (U1 : Node_Id; U2 : Node_Id) return Boolean is
+         E1 : constant Entity_Id := Defining_Entity (Unit (U1));
+         E2 : Entity_Id;
+      begin
+         if Nkind_In (Unit (U2), N_Package_Body, N_Subprogram_Body) then
+            E2 := Defining_Entity (Unit (Library_Unit (U2)));
+            return Is_Ancestor_Package (E1, E2);
+         else
+            return False;
+         end if;
+      end Is_Ancestor_Unit;
+
    --  Start of processing for Install_Limited_Context_Clauses
 
    begin
@@ -3678,6 +3699,9 @@ package body Sem_Ch10 is
 
             if Library_Unit (Item) /= Cunit (Current_Sem_Unit)
               and then not Limited_View_Installed (Item)
+              and then
+                not Is_Ancestor_Unit
+                      (Library_Unit (Item), Cunit (Current_Sem_Unit))
             then
                if not Private_Present (Item)
                  or else Private_Present (N)
@@ -4013,7 +4037,8 @@ package body Sem_Ch10 is
                   function In_Context return Boolean;
                   --  Scan context of current unit, to check whether there is
                   --  a with_clause on the same unit as a private with-clause
-                  --  on a parent, in which case child unit is visible.
+                  --  on a parent, in which case child unit is visible. If the
+                  --  unit is a grand-child, the same applies to its parent.
 
                   ----------------
                   -- In_Context --
@@ -4027,10 +4052,15 @@ package body Sem_Ch10 is
                         if Nkind (Clause) = N_With_Clause
                           and then Comes_From_Source (Clause)
                           and then Is_Entity_Name (Name (Clause))
-                          and then Entity (Name (Clause)) = Id
                           and then not Private_Present (Clause)
                         then
-                           return True;
+                           if Entity (Name (Clause)) = Id
+                             or else
+                               (Nkind (Name (Clause)) = N_Expanded_Name
+                                 and then Entity (Prefix (Name (Clause))) = Id)
+                           then
+                              return True;
+                           end if;
                         end if;
 
                         Next (Clause);
