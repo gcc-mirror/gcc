@@ -23,9 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree; use Atree;
-with SCOs;  use SCOs;
-with Sinfo; use Sinfo;
+with SCOs; use SCOs;
 
 procedure Put_SCOs is
    Ctr : Nat;
@@ -147,17 +145,9 @@ begin
                   when 'I' | 'E' | 'P' | 'W' | 'X' =>
                      Start := Start + 1;
 
-                     --  For disabled pragma, skip decision output. Note that
-                     --  if the SCO table has been populated by Get_SCOs
-                     --  (re-reading previously generated SCO information),
-                     --  then the Node field of pragma entries is Empty. This
-                     --  is the only way that Node can be Empty, so if we see
-                     --  an Empty node field, we know the pragma is enabled.
+                     --  For disabled pragma, skip decision output
 
-                     if T.C1 = 'P'
-                       and then Present (T.Node)
-                       and then not Pragma_Enabled (Original_Node (T.Node))
-                     then
+                     if T.C1 = 'P' and then T.C2 = 'd' then
                         while not SCO_Table.Table (Start).Last loop
                            Start := Start + 1;
                         end loop;

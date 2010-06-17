@@ -46,6 +46,7 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -1393,9 +1394,12 @@ package body Sem_Prag is
             Pragma_Misplaced;
          end if;
 
-         --  Record whether pragma is enabled
+         --  Record if pragma is enabled
 
-         Set_Pragma_Enabled (N, Check_Enabled (Pname));
+         if Check_Enabled (Pname) then
+            Set_Pragma_Enabled (N);
+            Set_SCO_Pragma_Enabled (Loc);
+         end if;
 
          --  If we are within an inlined body, the legality of the pragma
          --  has been checked already.
@@ -5776,8 +5780,12 @@ package body Sem_Prag is
             --  is to deal with pragma Assert rewritten as a Check pragma.
 
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
-            Set_Pragma_Enabled (N, Check_On);
-            Set_Pragma_Enabled (Original_Node (N), Check_On);
+
+            if Check_On then
+               Set_Pragma_Enabled (N);
+               Set_Pragma_Enabled (Original_Node (N));
+               Set_SCO_Pragma_Enabled (Loc);
+            end if;
 
             --  If expansion is active and the check is not enabled then we
             --  rewrite the Check as:

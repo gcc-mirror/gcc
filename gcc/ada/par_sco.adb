@@ -63,13 +63,14 @@ package body Par_SCO is
      Table_Increment      => 200,
      Table_Name           => "SCO_Unit_Number_Entry");
 
-   --------------------------
-   -- Condition Hash Table --
-   --------------------------
+   ---------------------------------
+   -- Condition/Pragma Hash Table --
+   ---------------------------------
 
    --  We need to be able to get to conditions quickly for handling the calls
-   --  to Set_SCO_Condition efficiently. For this purpose we identify the
-   --  conditions in the table by their starting sloc, and use the following
+   --  to Set_SCO_Condition efficiently, and similarly to get to pragmas to
+   --  handle calls to Set_SCO_Pragma_Enabled. For this purpose we identify the
+   --  conditions and pragmas in the table by their starting sloc, and use this
    --  hash table to map from these starting sloc values to SCO_Table indexes.
 
    type Header_Num is new Integer range 0 .. 996;
@@ -81,7 +82,7 @@ package body Par_SCO is
    function Equal (F1, F2 : Source_Ptr) return Boolean;
    --  Function to test two keys for equality
 
-   package Condition_Hash_Table is new Simple_HTable
+   package Condition_Pragma_Hash_Table is new Simple_HTable
      (Header_Num, Int, 0, Source_Ptr, Hash, Equal);
    --  The actual hash table
 
@@ -116,7 +117,6 @@ package body Par_SCO is
       C2   : Character;
       From : Source_Ptr;
       To   : Source_Ptr;
-      Node : Node_Id;
       Last : Boolean);
    --  Append an entry to SCO_Table with fields set as per arguments
 
@@ -230,11 +230,6 @@ package body Par_SCO is
                Write_Str ("  True");
             else
                Write_Str ("  False");
-            end if;
-
-            if Present (T.Node) then
-               Write_Str ("  Node = ");
-               Write_Int (Int (T.Node));
             end if;
 
             Write_Eol;
@@ -409,7 +404,6 @@ package body Par_SCO is
                C2   => ' ',
                From => Sloc (N),
                To   => No_Location,
-               Node => Empty,
                Last => False);
 
             Output_Decision_Operand (L);
@@ -436,9 +430,8 @@ package body Par_SCO is
             C2   => 'c',
             From => FSloc,
             To   => LSloc,
-            Node => Empty,
             Last => False);
-         Condition_Hash_Table.Set (FSloc, SCO_Table.Last);
+         Condition_Pragma_Hash_Table.Set (FSloc, SCO_Table.Last);
       end Output_Element;
 
       -------------------
@@ -458,26 +451,32 @@ package body Par_SCO is
                   C2   => ' ',
                   From => Sloc (Parent (N)),
                   To   => No_Location,
-                  Node => Empty,
                   Last => False);
 
             when 'P' =>
 
-               --  For PRAGMA, we must record the pragma node. Argument N
-               --  is the pragma argument, and we have to go up two levels
-               --  (through the pragma argument association) to get to the
-               --  pragma node itself.
+               --  For PRAGMA, we must get the location from the pragma node.
+               --  Argument N is the pragma argument, and we have to go up two
+               --  levels (through the pragma argument association) to get to
+               --  the pragma node itself.
 
                declare
-                  Pnode : constant Node_Id := Parent (Parent (N));
+                  Loc : constant Source_Ptr := Sloc (Parent (Parent (N)));
+
                begin
                   Set_Table_Entry
                     (C1   => 'P',
-                     C2   => ' ',
-                     From => Sloc (Pnode),
+                     C2   => 'd',
+                     From => Loc,
                      To   => No_Location,
-                     Node => Pnode,
                      Last => False);
+
+                  --  For pragmas we also must make an entry in the hash table
+                  --  for later access by Set_SCO_Pragma_Enabled. We set the
+                  --  pragma as disabled above, the call will change C2 to 'e'
+                  --  to enable the pragma header entry.
+
+                  Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
                end;
 
             when 'X' =>
@@ -489,7 +488,6 @@ package body Par_SCO is
                   C2   => ' ',
                   From => No_Location,
                   To   => No_Location,
-                  Node => Empty,
                   Last => False);
 
             --  No other possibilities
@@ -821,12 +819,37 @@ package body Par_SCO is
                                   (False => 'f', True => 't');
    begin
       Sloc_Range (Orig, Start, Dummy);
-      Index := Condition_Hash_Table.Get (Start);
+      Index := Condition_Pragma_Hash_Table.Get (Start);
+
+      --  The test here for zero is to deal with possible previous errors
 
       if Index /= 0 then
+         pragma Assert (SCO_Table.Table (Index).C1 = ' ');
          SCO_Table.Table (Index).C2 := Constant_Condition_Code (Val);
       end if;
    end Set_SCO_Condition;
+
+   ----------------------------
+   -- Set_SCO_Pragma_Enabled --
+   ----------------------------
+
+   procedure Set_SCO_Pragma_Enabled (Loc : Source_Ptr) is
+      Index : Nat;
+
+   begin
+      --  Note: the reason we use the Sloc value as the key is that in the
+      --  generic case, the call to this procedure is made on a copy of the
+      --  original node, so we can't use the Node_Id value.
+
+      Index := Condition_Pragma_Hash_Table.Get (Loc);
+
+      --  The test here for zero is to deal with possible previous errors
+
+      if Index /= 0 then
+         pragma Assert (SCO_Table.Table (Index).C1 = 'P');
+         SCO_Table.Table (Index).C2 := 'e';
+      end if;
+   end Set_SCO_Pragma_Enabled;
 
    ---------------------
    -- Set_Table_Entry --
@@ -837,7 +860,6 @@ package body Par_SCO is
       C2   : Character;
       From : Source_Ptr;
       To   : Source_Ptr;
-      Node : Node_Id;
       Last : Boolean)
    is
       function To_Source_Location (S : Source_Ptr) return Source_Location;
@@ -866,7 +888,6 @@ package body Par_SCO is
          C2   => C2,
          From => To_Source_Location (From),
          To   => To_Source_Location (To),
-         Node => Node,
          Last => Last);
    end Set_Table_Entry;
 
@@ -1001,7 +1022,6 @@ package body Par_SCO is
                   C2   => SCE.Typ,
                   From => SCE.From,
                   To   => SCE.To,
-                  Node => Empty,
                   Last => (J = SC_Last));
             end;
          end loop;
@@ -1397,7 +1417,6 @@ package body Par_SCO is
          C2   => ' ',
          From => First,
          To   => Last,
-         Node => Empty,
          Last => True);
 
       --  Now output any embedded decisions
@@ -1423,7 +1442,6 @@ package body Par_SCO is
       Handler : Node_Id;
 
    begin
-
       --  For package bodies without a statement part, the parser adds an empty
       --  one, to normalize the representation. The null statement therein,
       --  which does not come from source, does not get a SCO.
