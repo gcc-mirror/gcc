@@ -8984,13 +8984,10 @@ package body Sem_Res is
 
       Set_Etype (N, Slice_Subtype);
 
-      --  In the packed case, this must be immediately frozen
-
       --  Always freeze subtype. This ensures that the slice subtype is
       --  elaborated in the scope of the expression.
 
       Freeze_Itype (Slice_Subtype, N);
-
    end Set_Slice_Subtype;
 
    --------------------------------

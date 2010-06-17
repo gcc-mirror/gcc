@@ -1447,8 +1447,6 @@ procedure Gnatlink is
       Write_Eol;
       Write_Line ("  mainprog.ali   the ALI file of the main program");
       Write_Eol;
-      Write_Line ("  -A    Binder generated source file is in Ada (default)");
-      Write_Line ("  -C    Binder generated source file is in C");
       Write_Line ("  -f    force object file list to be generated");
       Write_Line ("  -g    Compile binder source file with debug information");
       Write_Line ("  -n    Do not compile the binder source file");

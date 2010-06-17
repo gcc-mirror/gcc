@@ -244,7 +244,6 @@ package body Back_End is
             Argv_Len : constant Nat            := Len_Arg (Arg);
             Argv     : constant String         :=
                          Argv_Ptr (1 .. Natural (Argv_Len));
-
          begin
             Args (Positive (Arg)) := new String'(Argv);
          end;

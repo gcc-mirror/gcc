@@ -1397,8 +1397,8 @@ package body Sem_Cat is
 
                null;
 
-            elsif Ekind (Param_Type) = E_Anonymous_Access_Type
-              or else Ekind (Param_Type) = E_Anonymous_Access_Subprogram_Type
+            elsif Ekind_In (Param_Type, E_Anonymous_Access_Type,
+                                        E_Anonymous_Access_Subprogram_Type)
             then
                --  From RM E.2.2(14), no anonymous access parameter other than
                --  controlling ones may be used (because an anonymous access
@@ -1454,9 +1454,9 @@ package body Sem_Cat is
                  ("limited type not allowed in rci unit", Parent (E));
                Explain_Limited_Type (E, Parent (E));
 
-            elsif Ekind (E) = E_Generic_Function
-              or else Ekind (E) = E_Generic_Package
-              or else Ekind (E) = E_Generic_Procedure
+            elsif Ekind_In (E, E_Generic_Function,
+                               E_Generic_Package,
+                               E_Generic_Procedure)
             then
                Error_Msg_N ("generic declaration not allowed in rci unit",
                  Parent (E));
@@ -1551,7 +1551,6 @@ package body Sem_Cat is
             Type_Decl  := Parent (Param_Type);
 
             if Ekind (Param_Type) = E_Anonymous_Access_Type then
-
                if K = N_Subprogram_Declaration then
                   Error_Node := Param_Spec;
                end if;
