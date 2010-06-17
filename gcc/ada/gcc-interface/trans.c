@@ -204,6 +204,7 @@ static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
+static void set_gnu_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
@@ -5317,6 +5318,19 @@ gnat_to_gnu (Node_Id gnat_node)
     /* Added Nodes  */
     /****************/
 
+    case N_Expression_With_Actions:
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      /* This construct doesn't define a scope so we don't wrap the statement
+	 list in a BIND_EXPR; however, we wrap it in a SAVE_EXPR to protect it
+	 from unsharing.  */
+      gnu_result = build_stmt_group (Actions (gnat_node), false);
+      gnu_result = build1 (SAVE_EXPR, void_type_node, gnu_result);
+      TREE_SIDE_EFFECTS (gnu_result) = 1;
+      gnu_expr = gnat_to_gnu (Expression (gnat_node));
+      gnu_result
+	= build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr), gnu_result, gnu_expr);
+      break;
+
     case N_Freeze_Entity:
       start_stmt_group ();
       process_freeze_entity (gnat_node);
@@ -5536,17 +5550,11 @@ gnat_to_gnu (Node_Id gnat_node)
 				  convert (gnu_result_type,
 					   boolean_false_node));
 
-  /* Set the location information on the result if it is a real expression.
-     References can be reused for multiple GNAT nodes and they would get
-     the location information of their last use.  Note that we may have
+  /* Set the location information on the result.  Note that we may have
      no result if we tried to build a CALL_EXPR node to a procedure with
      no side-effects and optimization is enabled.  */
-  if (gnu_result
-      && EXPR_P (gnu_result)
-      && TREE_CODE (gnu_result) != NOP_EXPR
-      && !REFERENCE_CLASS_P (gnu_result)
-      && !EXPR_HAS_LOCATION (gnu_result))
-    set_expr_location_from_node (gnu_result, gnat_node);
+  if (gnu_result && EXPR_P (gnu_result))
+    set_gnu_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
      something we're elaborating for effect, so just return.  */
@@ -7449,6 +7457,37 @@ set_expr_location_from_node (tree node, Node_Id gnat_node)
     return;
 
   SET_EXPR_LOCATION (node, locus);
+}
+
+/* More elaborate version of set_expr_location_from_node to be used in more
+   general contexts, for example the result of the translation of a generic
+   GNAT node.  */
+
+static void
+set_gnu_expr_location_from_node (tree node, Node_Id gnat_node)
+{
+  /* Set the location information on the node if it is a real expression.
+     References can be reused for multiple GNAT nodes and they would get
+     the location information of their last use.  Also make sure not to
+     overwrite an existing location as it is probably more precise.  */
+
+  switch (TREE_CODE (node))
+    {
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      break;
+
+    case COMPOUND_EXPR:
+      if (EXPR_P (TREE_OPERAND (node, 1)))
+	set_gnu_expr_location_from_node (TREE_OPERAND (node, 1), gnat_node);
+
+      /* ... fall through ... */
+
+    default:
+      if (!REFERENCE_CLASS_P (node) && !EXPR_HAS_LOCATION (node))
+	set_expr_location_from_node (node, gnat_node);
+      break;
+    }
 }
 
 /* Return a colon-separated list of encodings contained in encoded Ada

@@ -1,3 +1,11 @@
+2010-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (set_gnu_expr_location_from_node): New static
+	function.
+	(gnat_to_gnu) <N_Expression_With_Actions>: New case.
+	Use set_gnu_expr_location_from_node to set location information on the
+	result.
+
 2010-06-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
@@ -182,7 +190,8 @@
 
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
-	* exp_ch4.adb: Minor reformatting
+	* exp_ch4.adb: Minor reformatting.
+
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads, sinfo.adb (Inherited_Discriminant): New flag on
