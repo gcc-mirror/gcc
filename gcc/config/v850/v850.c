@@ -75,6 +75,9 @@ static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 static bool v850_can_eliminate       (const int, const int);
 static void v850_asm_trampoline_template (FILE *);
 static void v850_trampoline_init (rtx, tree, rtx);
+static void v850_print_operand (FILE *, rtx, int);
+static void v850_print_operand_address (FILE *, rtx);
+static bool v850_print_operand_punct_valid_p (unsigned char code);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -123,6 +126,13 @@ static const struct attribute_spec v850_attribute_table[] =
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND v850_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS v850_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P v850_print_operand_punct_valid_p
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE v850_attribute_table
@@ -514,8 +524,8 @@ v850_rtx_costs (rtx x,
 /* Print operand X using operand code CODE to assembly language output file
    FILE.  */
 
-void
-print_operand (FILE * file, rtx x, int code)
+static void
+v850_print_operand (FILE * file, rtx x, int code)
 {
   HOST_WIDE_INT high, low;
 
@@ -659,7 +669,7 @@ print_operand (FILE * file, rtx x, int code)
 	  break;
 	case MEM:
 	  x = XEXP (adjust_address (x, SImode, 4), 0);
-	  print_operand_address (file, x);
+	  v850_print_operand_address (file, x);
 	  if (GET_CODE (x) == CONST_INT)
 	    fprintf (file, "[r0]");
 	  break;
@@ -730,7 +740,7 @@ print_operand (FILE * file, rtx x, int code)
 	case CONST:
 	case LABEL_REF:
 	case CODE_LABEL:
-	  print_operand_address (file, x);
+	  v850_print_operand_address (file, x);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -743,14 +753,14 @@ print_operand (FILE * file, rtx x, int code)
 
 /* Output assembly language output for the address ADDR to FILE.  */
 
-void
-print_operand_address (FILE * file, rtx addr)
+static void
+v850_print_operand_address (FILE * file, rtx addr)
 {
   switch (GET_CODE (addr))
     {
     case REG:
       fprintf (file, "0[");
-      print_operand (file, addr, 0);
+      v850_print_operand (file, addr, 0);
       fprintf (file, "]");
       break;
     case LO_SUM:
@@ -758,9 +768,9 @@ print_operand_address (FILE * file, rtx addr)
 	{
 	  /* reg,foo */
 	  fprintf (file, "lo(");
-	  print_operand (file, XEXP (addr, 1), 0);
+	  v850_print_operand (file, XEXP (addr, 1), 0);
 	  fprintf (file, ")[");
-	  print_operand (file, XEXP (addr, 0), 0);
+	  v850_print_operand (file, XEXP (addr, 0), 0);
 	  fprintf (file, "]");
 	}
       break;
@@ -769,16 +779,16 @@ print_operand_address (FILE * file, rtx addr)
 	  || GET_CODE (XEXP (addr, 0)) == SUBREG)
 	{
 	  /* reg,foo */
-	  print_operand (file, XEXP (addr, 1), 0);
+	  v850_print_operand (file, XEXP (addr, 1), 0);
 	  fprintf (file, "[");
-	  print_operand (file, XEXP (addr, 0), 0);
+	  v850_print_operand (file, XEXP (addr, 0), 0);
 	  fprintf (file, "]");
 	}
       else
 	{
-	  print_operand (file, XEXP (addr, 0), 0);
+	  v850_print_operand (file, XEXP (addr, 0), 0);
 	  fprintf (file, "+");
-	  print_operand (file, XEXP (addr, 1), 0);
+	  v850_print_operand (file, XEXP (addr, 1), 0);
 	}
       break;
     case SYMBOL_REF:
@@ -845,6 +855,12 @@ print_operand_address (FILE * file, rtx addr)
       output_addr_const (file, addr);
       break;
     }
+}
+
+static bool
+v850_print_operand_punct_valid_p (unsigned char code)
+{
+  return code == '.';
 }
 
 /* When assemble_integer is used to emit the offsets for a switch

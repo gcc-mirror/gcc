@@ -915,19 +915,6 @@ typedef enum
   { "r30",	30 },							\
   { "lp",	31} }
 
-/* Print an instruction operand X on file FILE.
-   look in v850.c for details */
-
-#define PRINT_OPERAND(FILE, X, CODE)  print_operand (FILE, X, CODE)
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '.')
-
-/* Print a memory operand whose address is X, on file FILE.
-   This uses a function in output-vax.c.  */
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
-
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)
 

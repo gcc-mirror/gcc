@@ -1,5 +1,22 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* v850-protos.h (print_operand): Delete.
+	(print_operand_address): Delete.
+	* v850.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* v850.c (print_operand_address): Rename to...
+	(v850_print_operand_address): ...this.  Make static. Call
+	v850_print_operand.
+	(print_operand): Rename to...
+	(v850_print_operand): ...this.  Make static.  Call
+	v850_print_operand_address.
+	(v850_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/sh/sh-protos.h (print_operand): Delete.
 	(print_operand_address): Delete.
 	* config/sh/sh.h (PRINT_OPERAND): Delete.
