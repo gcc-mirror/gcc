@@ -1,3 +1,15 @@
+2010-06-17  Vincent Celier  <celier@adacore.com>
+
+	* back_end.adb (Scan_Compiler_Arguments): Put all arguments in new
+	local Argument_List variable Args.
+	* switch-c.adb (Scan_Front_End_Switches): New Argument_List argument
+	Args.
+	(Switch_Subsequently_Cancelled): New Argument_List argument Args. Look
+	for subsequent switches in Args.
+	* switch-c.ads (Scan_Front_End_Switches): New Argument_List argument
+	Args.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb: Minor code fix, allow E_Class_Wide_Type for
