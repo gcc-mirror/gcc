@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -331,6 +331,33 @@ procedure Gnat1drv is
          Suppress_Options (Overflow_Check) := False;
       else
          Suppress_Options (Overflow_Check) := True;
+      end if;
+
+      --  Set switch indicating if we can use N_Expression_With_Actions
+
+      --  Debug flag -gnatd.X decisively sets usage on
+
+      if Debug_Flag_Dot_XX then
+         Use_Expression_With_Actions := True;
+
+      --  Debug flag -gnatd.Y decisively sets usage off
+
+      elsif Debug_Flag_Dot_YY then
+         Use_Expression_With_Actions := False;
+
+      --  If no debug flags, usage off for AAMP, VM, SCIL cases
+
+      elsif AAMP_On_Target
+        or else VM_Target /= No_VM
+        or else Generate_SCIL
+      then
+         Use_Expression_With_Actions := False;
+
+         --  Otherwise normal gcc back end, for now still turn usage off by
+         --  default.
+
+      else
+         Use_Expression_With_Actions := False;
       end if;
    end Adjust_Global_Switches;
 

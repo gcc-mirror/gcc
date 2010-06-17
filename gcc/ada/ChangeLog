@@ -1,3 +1,25 @@
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Atomic_Object): Predicate does not apply to
+	subprograms.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Clean up documentation on warning and
+	style check messages.
+	* sem_res.adb (Resolve_Call): Don't call
+	Check_For_Eliminated_Subprogram if we are analyzing within a spec
+	expression.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add documentation for debug flags .X and .Y
+	* exp_ch4.adb (Expand_Short_Circuit_Operator): Use
+	Use_Expression_With_Actions.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Use_Expression_With_Actions.
+	* opt.ads (Use_Expression_With_Actions): New switch.
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_intr.adb: Minor code reorganization (use UI_Max)

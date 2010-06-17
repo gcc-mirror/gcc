@@ -5712,7 +5712,14 @@ package body Sem_Util is
    --  Start of processing for Is_Atomic_Object
 
    begin
-      if Is_Atomic (Etype (N))
+      --  Predicate is not relevant to subprograms
+
+      if Is_Entity_Name (N)
+        and then Is_Overloadable (Entity (N))
+      then
+         return False;
+
+      elsif Is_Atomic (Etype (N))
         or else (Is_Entity_Name (N) and then Is_Atomic (Entity (N)))
       then
          return True;

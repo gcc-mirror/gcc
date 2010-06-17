@@ -5447,9 +5447,14 @@ package body Sem_Res is
          Check_Potentially_Blocking_Operation (N);
       end if;
 
-      --  Issue an error for a call to an eliminated subprogram
+      --  Issue an error for a call to an eliminated subprogram. We skip this
+      --  in a spec expression, e.g. a call in a default parameter value, since
+      --  we are not really doing a call at this time. That's important because
+      --  the spec expression may itself belong to an eliminated subprogram.
 
-      Check_For_Eliminated_Subprogram (Subp, Nam);
+      if not In_Spec_Expression then
+         Check_For_Eliminated_Subprogram (Subp, Nam);
+      end if;
 
       --  All done, evaluate call and deal with elaboration issues
 

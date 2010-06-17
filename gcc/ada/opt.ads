@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -453,8 +453,8 @@ package Opt is
                            Front_End_Setjmp_Longjmp_Exceptions;
    --  GNAT
    --  Set to the appropriate value depending on the default as given in
-   --  system.ads (ZCX_By_Default, GCC_ZCX_Support).
-   --  The C convention is there to make this variable accessible to gigi.
+   --  system.ads (ZCX_By_Default, GCC_ZCX_Support). The C convention is there
+   --  to make this variable accessible to gigi.
 
    Exception_Tracebacks : Boolean := False;
    --  GNATBIND
@@ -1238,6 +1238,13 @@ package Opt is
    --  GNAT, GNATBIND, GNATMAKE
    --  Set to True if -h (-gnath for the compiler) switch encountered
    --  requesting usage information
+
+   Use_Expression_With_Actions : Boolean := False;
+   --  The N_Expression_With_Actions node has been introduced relatively
+   --  recently, and not all back ends are prepared to handle it yet. So
+   --  we use this flag to suppress its use during a transitional period.
+   --  Currently the default is False for all cases except the standard
+   --  GCC back end. The default can be modified using -gnatd.X/-gnatd.Y.
 
    Use_Pragma_Linker_Constructor : Boolean := False;
    --  GNATBIND
