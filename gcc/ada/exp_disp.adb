@@ -1157,8 +1157,7 @@ package body Exp_Disp is
 
             New_Typ_Decl :=
               Make_Full_Type_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('T')),
+                Defining_Identifier => Make_Temporary (Loc, 'T'),
                 Type_Definition =>
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
@@ -1199,10 +1198,7 @@ package body Exp_Disp is
                  Else_Statements => Stats));
             end if;
 
-            Fent :=
-              Make_Defining_Identifier (Loc,
-                New_Internal_Name ('F'));
-
+            Fent := Make_Temporary (Loc, 'F');
             Func :=
               Make_Subprogram_Body (Loc,
                 Specification =>
@@ -1566,9 +1562,7 @@ package body Exp_Disp is
 
             Decl_2 :=
               Make_Full_Type_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    New_Internal_Name ('T')),
+                Defining_Identifier => Make_Temporary (Loc, 'T'),
                 Type_Definition =>
                   Make_Access_To_Object_Definition (Loc,
                     All_Present            => True,
@@ -1593,9 +1587,7 @@ package body Exp_Disp is
 
             Decl_1 :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    New_Internal_Name ('S')),
+                Defining_Identifier => Make_Temporary (Loc, 'S'),
                 Constant_Present    => True,
                 Object_Definition   =>
                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
@@ -1645,8 +1637,7 @@ package body Exp_Disp is
 
             Decl_1 :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
+                Defining_Identifier => Make_Temporary (Loc, 'S'),
                 Constant_Present    => True,
                 Object_Definition   =>
                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
@@ -1665,11 +1656,11 @@ package body Exp_Disp is
 
             Decl_2 :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
-                Constant_Present  => True,
-                Object_Definition => New_Reference_To (RTE (RE_Addr_Ptr), Loc),
-                Expression        =>
+                Defining_Identifier => Make_Temporary (Loc, 'S'),
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Reference_To (RTE (RE_Addr_Ptr), Loc),
+                Expression          =>
                   Unchecked_Convert_To
                     (RTE (RE_Addr_Ptr),
                      New_Reference_To (Defining_Identifier (Decl_1), Loc)));
@@ -1677,7 +1668,7 @@ package body Exp_Disp is
             Append_To (Decl, Decl_1);
             Append_To (Decl, Decl_2);
 
-            --  Reference the new actual. Generate:
+            --  Reference the new actual, generate:
             --    Target_Formal (S2.all)
 
             Append_To (Actuals,
@@ -1696,10 +1687,7 @@ package body Exp_Disp is
          Next (Formal);
       end loop;
 
-      Thunk_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('T'));
-
+      Thunk_Id := Make_Temporary (Loc, 'T');
       Set_Is_Thunk (Thunk_Id);
 
       --  Procedure case
@@ -1998,9 +1986,7 @@ package body Exp_Disp is
             --  Generate:
             --    Bnn : Communication_Block;
 
-            Com_Block :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
-
+            Com_Block := Make_Temporary (Loc, 'B');
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier =>
@@ -2351,8 +2337,7 @@ package body Exp_Disp is
          --  where Bnn is the name of the communication block used in the
          --  call to Protected_Entry_Call.
 
-         Blk_Nam := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
-
+         Blk_Nam := Make_Temporary (Loc, 'B');
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier =>
@@ -3597,13 +3582,8 @@ package body Exp_Disp is
          Exporting_Table    : constant Boolean :=
                                 Building_Static_DT (Typ)
                                   and then Suffix_Index > 0;
-         Iface_DT           : constant Entity_Id :=
-                                Make_Defining_Identifier (Loc,
-                                  Chars => New_Internal_Name ('T'));
-         Name_Predef_Prims  : constant Name_Id := New_Internal_Name ('R');
-         Predef_Prims       : constant Entity_Id :=
-                                Make_Defining_Identifier (Loc,
-                                  Chars => Name_Predef_Prims);
+         Iface_DT           : constant Entity_Id := Make_Temporary (Loc, 'T');
+         Predef_Prims       : constant Entity_Id := Make_Temporary (Loc, 'R');
          DT_Constr_List     : List_Id;
          DT_Aggr_List       : List_Id;
          Empty_DT           : Boolean := False;
@@ -3752,10 +3732,8 @@ package body Exp_Disp is
 
             Decl :=
               Make_Subtype_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    New_Internal_Name ('S')),
-                Subtype_Indication =>
+                Defining_Identifier => Make_Temporary (Loc, 'S'),
+                Subtype_Indication  =>
                   New_Reference_To (RTE (RE_Address_Array), Loc));
 
             Append_To (Result, Decl);
@@ -3916,7 +3894,7 @@ package body Exp_Disp is
                pragma Assert (Count = Nb_Prim);
             end;
 
-            OSD := Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
+            OSD := Make_Temporary (Loc, 'I');
 
             Append_To (Result,
               Make_Object_Declaration (Loc,
@@ -3929,21 +3907,23 @@ package body Exp_Disp is
                       Make_Index_Or_Discriminant_Constraint (Loc,
                         Constraints => New_List (
                           Make_Integer_Literal (Loc, Nb_Prim)))),
-                Expression => Make_Aggregate (Loc,
-                  Component_Associations => New_List (
-                    Make_Component_Association (Loc,
-                      Choices => New_List (
-                        New_Occurrence_Of
-                          (RTE_Record_Component (RE_OSD_Num_Prims), Loc)),
-                      Expression =>
-                        Make_Integer_Literal (Loc, Nb_Prim)),
 
-                    Make_Component_Association (Loc,
-                      Choices => New_List (
-                        New_Occurrence_Of
-                          (RTE_Record_Component (RE_OSD_Table), Loc)),
-                      Expression => Make_Aggregate (Loc,
-                        Component_Associations => OSD_Aggr_List))))));
+                Expression          =>
+                  Make_Aggregate (Loc,
+                    Component_Associations => New_List (
+                      Make_Component_Association (Loc,
+                        Choices => New_List (
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_OSD_Num_Prims), Loc)),
+                        Expression =>
+                          Make_Integer_Literal (Loc, Nb_Prim)),
+
+                      Make_Component_Association (Loc,
+                        Choices => New_List (
+                          New_Occurrence_Of
+                            (RTE_Record_Component (RE_OSD_Table), Loc)),
+                        Expression => Make_Aggregate (Loc,
+                          Component_Associations => OSD_Aggr_List))))));
 
             Append_To (Result,
               Make_Attribute_Definition_Clause (Loc,
@@ -5428,10 +5408,8 @@ package body Exp_Disp is
 
                Decl :=
                  Make_Subtype_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc,
-                       New_Internal_Name ('S')),
-                   Subtype_Indication =>
+                   Defining_Identifier => Make_Temporary (Loc, 'S'),
+                   Subtype_Indication  =>
                      New_Reference_To (RTE (RE_Address_Array), Loc));
 
                Append_To (Result, Decl);

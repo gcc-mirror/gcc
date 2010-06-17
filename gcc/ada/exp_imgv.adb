@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -358,8 +358,8 @@ package body Exp_Imgv is
          if Discard_Names (First_Subtype (Ptyp))
            or else No (Lit_Strings (Root_Type (Ptyp)))
          then
-            --  When pragma Discard_Names applies to the first subtype,
-            --  then build (Pref'Pos)'Img.
+            --  When pragma Discard_Names applies to the first subtype, build
+            --  (Pref'Pos)'Img.
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -380,8 +380,10 @@ package body Exp_Imgv is
 
             if Ttyp = Standard_Integer_8 then
                Imid := RE_Image_Enumeration_8;
-            elsif Ttyp = Standard_Integer_16  then
+
+            elsif Ttyp = Standard_Integer_16 then
                Imid := RE_Image_Enumeration_16;
+
             else
                Imid := RE_Image_Enumeration_32;
             end if;
@@ -459,13 +461,13 @@ package body Exp_Imgv is
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
          Append_To (Arg_List,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Reference_To (Ptyp, Loc),
+             Prefix         => New_Reference_To (Ptyp, Loc),
              Attribute_Name => Name_Scale));
 
          Set_Conversion_OK (First (Arg_List));
          Set_Etype (First (Arg_List), Tent);
 
-         --  For Wide_Character, append Ada 2005 indication
+      --  For Wide_Character, append Ada 2005 indication
 
       elsif Rtyp = Standard_Wide_Character then
          Append_To (Arg_List,
