@@ -991,9 +991,7 @@ package body Sem_Ch9 is
    procedure Analyze_Entry_Index_Specification (N : Node_Id) is
       Iden    : constant Node_Id   := Defining_Identifier (N);
       Def     : constant Node_Id   := Discrete_Subtype_Definition (N);
-      Loop_Id : constant Entity_Id :=
-                  Make_Defining_Identifier (Sloc (N),
-                    Chars => New_Internal_Name ('L'));
+      Loop_Id : constant Entity_Id := Make_Temporary (Sloc (N), 'L');
 
    begin
       Tasking_Used := True;

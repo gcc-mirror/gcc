@@ -398,9 +398,7 @@ package body Sem_Util is
          end loop;
       end if;
 
-      Subt :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('S'));
+      Subt := Make_Temporary (Loc, 'S');
       Set_Is_Internal (Subt);
 
       Decl :=
@@ -624,9 +622,7 @@ package body Sem_Util is
          return Empty;
       end if;
 
-      Subt :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('S'));
+      Subt := Make_Temporary (Loc, 'S');
       Set_Is_Internal (Subt);
 
       Decl :=
@@ -666,10 +662,7 @@ package body Sem_Util is
       end if;
 
       declare
-         Act : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('S'));
-
+         Act         : constant Entity_Id := Make_Temporary (Loc, 'S');
          Constraints : constant List_Id := New_List;
          Decl        : Node_Id;
 
@@ -2080,9 +2073,7 @@ package body Sem_Util is
                --  so we can continue semantic analysis
 
                elsif Nam = Error then
-                  Err :=
-                    Make_Defining_Identifier (Sloc (N),
-                      Chars => New_Internal_Name ('T'));
+                  Err := Make_Temporary (Sloc (N), 'T');
                   Set_Defining_Unit_Name (N, Err);
 
                   return Err;
@@ -8851,8 +8842,7 @@ package body Sem_Util is
       Sloc_Value : Source_Ptr;
       Id_Char    : Character) return Entity_Id
    is
-      N : constant Entity_Id :=
-            Make_Defining_Identifier (Sloc_Value, New_Internal_Name (Id_Char));
+      N : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
    begin
       Set_Ekind          (N, Kind);

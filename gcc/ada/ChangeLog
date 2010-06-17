@@ -1,3 +1,12 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_fixd.adb, exp_imgv.adb, exp_intr.adb, exp_pakd.adb, exp_prag.adb,
+	exp_sel.adb, exp_util.adb, sem_ch10.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch8.adb, sem_ch9.adb,
+	sem_dist.adb, sem_util.adb: Use Make_Temporary
+	* itypes.ads, tbuild.ads: Minor comment update
+	* exp_ch9.adb, exp_dist.adb: Minor reformatting
+
 2010-06-17  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_imgv.adb, exp_ch7.ads: Minor reformatting.

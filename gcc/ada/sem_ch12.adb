@@ -7865,8 +7865,7 @@ package body Sem_Ch12 is
          if not Box_Present (Formal) then
             declare
                I_Pack : constant Entity_Id :=
-                          Make_Defining_Identifier (Sloc (Actual),
-                            Chars => New_Internal_Name  ('P'));
+                          Make_Temporary (Sloc (Actual), 'P');
 
             begin
                Set_Is_Internal (I_Pack);
@@ -8165,9 +8164,8 @@ package body Sem_Ch12 is
          --  to prevent freezing anomalies.
 
          declare
-            Anon_Id : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, New_Internal_Name ('E'));
+            Anon_Id : constant Entity_Id := Make_Temporary (Loc, 'E');
+
          begin
             Set_Defining_Unit_Name (New_Spec, Anon_Id);
             Insert_Before (Instantiation_Node, Decl_Node);
@@ -8314,8 +8312,7 @@ package body Sem_Ch12 is
 
             Subt_Decl :=
               Make_Subtype_Declaration (Loc,
-                 Defining_Identifier =>
-                   Make_Defining_Identifier (Loc, New_Internal_Name ('P')),
+                 Defining_Identifier => Make_Temporary (Loc, 'P'),
                  Subtype_Indication  => New_Occurrence_Of (Ftyp, Loc));
 
             Prepend (Subt_Decl, List);
@@ -10340,8 +10337,7 @@ package body Sem_Ch12 is
             Corr_Decl : Node_Id;
 
          begin
-            New_Corr := Make_Defining_Identifier (Loc,
-                            Chars => New_Internal_Name  ('S'));
+            New_Corr := Make_Temporary (Loc, 'S');
             Corr_Decl :=
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => New_Corr,

@@ -9358,7 +9358,7 @@ package body Exp_Dist is
             --  that the expected type of its parameter is U_Type.
 
             if Ekind (Fnam) = E_Function
-                 and then Present (First_Formal (Fnam))
+              and then Present (First_Formal (Fnam))
             then
                C_Type := Etype (First_Formal (Fnam));
             else

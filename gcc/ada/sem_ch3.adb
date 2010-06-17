@@ -1364,7 +1364,7 @@ package body Sem_Ch3 is
              Subtype_Indication =>
                New_Occurrence_Of (RTE (RE_Interface_Tag), Loc));
 
-         Tag := Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
+         Tag := Make_Temporary (Loc, 'V');
 
          Decl :=
            Make_Component_Declaration (Loc,
@@ -1406,8 +1406,7 @@ package body Sem_Ch3 is
                 Subtype_Indication =>
                   New_Occurrence_Of (RTE (RE_Storage_Offset), Loc));
 
-            Offset :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
+            Offset := Make_Temporary (Loc, 'V');
 
             Decl :=
               Make_Component_Declaration (Loc,
@@ -4323,9 +4322,7 @@ package body Sem_Ch3 is
                Decl  : Entity_Id;
 
             begin
-               New_E :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('T'));
+               New_E := Make_Temporary (Loc, 'T');
                Set_Is_Internal (New_E);
 
                Decl :=
@@ -4574,10 +4571,7 @@ package body Sem_Ch3 is
       Curr_Scope : constant Scope_Stack_Entry :=
                      Scope_Stack.Table (Scope_Stack.Last);
 
-      Anon : constant Entity_Id :=
-               Make_Defining_Identifier (Loc,
-                 Chars => New_Internal_Name ('S'));
-
+      Anon : constant Entity_Id := Make_Temporary (Loc, 'S');
       Acc  : Node_Id;
       Comp : Node_Id;
       Decl : Node_Id;
@@ -4919,9 +4913,7 @@ package body Sem_Ch3 is
    is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Corr_Record : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
-
+      Corr_Record      : constant Entity_Id := Make_Temporary (Loc, 'C');
       Corr_Decl        : Node_Id;
       Corr_Decl_Needed : Boolean;
       --  If the derived type has fewer discriminants than its parent, the
@@ -5724,9 +5716,7 @@ package body Sem_Ch3 is
            and then Expander_Active
          then
             declare
-               Full_Der : constant Entity_Id :=
-                            Make_Defining_Identifier (Loc,
-                              Chars => New_Internal_Name ('T'));
+               Full_Der : constant Entity_Id := Make_Temporary (Loc, 'T');
                New_Ext  : constant Node_Id :=
                             Copy_Separate_Tree
                               (Record_Extension_Part (Type_Definition (N)));
@@ -9655,14 +9645,11 @@ package body Sem_Ch3 is
          then
             declare
                Loc    : constant Source_Ptr := Sloc (N);
-               Def_Id : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            New_Internal_Name ('S'));
-               Decl   : constant Node_Id :=
+               Def_Id : constant Entity_Id  := Make_Temporary (Loc, 'S');
+               Decl   : constant Node_Id    :=
                           Make_Subtype_Declaration (Loc,
-                            Defining_Identifier =>
-                              Def_Id,
-                            Subtype_Indication =>
+                            Defining_Identifier => Def_Id,
+                            Subtype_Indication  =>
                               Relocate_Node (Curr_Obj_Def));
 
             begin
@@ -17693,9 +17680,7 @@ package body Sem_Ch3 is
                 (Access_Definition (Comp_Def));
 
             Build_Incomplete_Type_Declaration;
-            Anon_Access :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
+            Anon_Access := Make_Temporary (Loc, 'S');
 
             --  Create a declaration for the anonymous access type: either
             --  an access_to_object or an access_to_subprogram.

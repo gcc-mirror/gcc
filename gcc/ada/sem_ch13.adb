@@ -1742,9 +1742,7 @@ package body Sem_Ch13 is
             if not Is_Entity_Name (Expr)
               and then Is_Object_Reference (Expr)
             then
-               Pool :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('P'));
+               Pool := Make_Temporary (Loc, 'P', Expr);
 
                declare
                   Rnode : constant Node_Id :=
@@ -1752,7 +1750,7 @@ package body Sem_Ch13 is
                               Defining_Identifier => Pool,
                               Subtype_Mark        =>
                                 New_Occurrence_Of (Etype (Expr), Loc),
-                              Name => Expr);
+                              Name                => Expr);
 
                begin
                   Insert_Before (N, Rnode);

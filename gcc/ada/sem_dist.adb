@@ -451,9 +451,7 @@ package body Sem_Dist is
       --  True iff this RAS has an access formal parameter (see
       --  Exp_Dist.Add_RAS_Dereference_TSS for details).
 
-      Subpkg      : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc,
-                        New_Internal_Name ('S'));
+      Subpkg      : constant Entity_Id := Make_Temporary (Loc, 'S');
       Subpkg_Decl : Node_Id;
       Subpkg_Body : Node_Id;
       Vis_Decls   : constant List_Id := New_List;
@@ -464,16 +462,14 @@ package body Sem_Dist is
                       New_External_Name (Chars (User_Type), 'R'));
 
       Full_Obj_Type : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars (Obj_Type));
+                        Make_Defining_Identifier (Loc, Chars (Obj_Type));
 
       RACW_Type : constant Entity_Id :=
                     Make_Defining_Identifier (Loc,
                       New_External_Name (Chars (User_Type), 'P'));
 
       Fat_Type : constant Entity_Id :=
-                   Make_Defining_Identifier (Loc,
-                     Chars (User_Type));
+                   Make_Defining_Identifier (Loc, Chars (User_Type));
 
       Fat_Type_Decl : Node_Id;
 

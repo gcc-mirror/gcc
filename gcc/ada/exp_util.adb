@@ -398,7 +398,7 @@ package body Exp_Util is
       Pos : Entity_Id;
       --  Running index for substring assignments
 
-      Pref : Entity_Id;
+      Pref : constant Entity_Id := Make_Temporary (Loc, 'P');
       --  Name of enclosing variable, prefix of resulting name
 
       Res : Entity_Id;
@@ -417,8 +417,6 @@ package body Exp_Util is
       Stats : constant List_Id := New_List;
 
    begin
-      Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
-
       --  For a dynamic task, the name comes from the target variable.
       --  For a static one it is a formal of the enclosing init proc.
 
@@ -444,7 +442,7 @@ package body Exp_Util is
       Val  := First (Expressions (Id_Ref));
 
       for J in 1 .. Dims loop
-         T := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+         T := Make_Temporary (Loc, 'T');
          Temps (J) := T;
 
          Append_To (Decls,
@@ -454,10 +452,8 @@ package body Exp_Util is
                Expression =>
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Image,
-                   Prefix =>
-                     New_Occurrence_Of (Etype (Indx), Loc),
-                   Expressions => New_List (
-                     New_Copy_Tree (Val)))));
+                   Prefix         => New_Occurrence_Of (Etype (Indx), Loc),
+                   Expressions    => New_List (New_Copy_Tree (Val)))));
 
          Next_Index (Indx);
          Next (Val);
@@ -613,7 +609,7 @@ package body Exp_Util is
       if Restriction_Active (No_Implicit_Heap_Allocations)
         or else Global_Discard_Names
       then
-         T_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
+         T_Id := Make_Temporary (Loc, 'J');
          Name_Len := 0;
 
          return
@@ -697,9 +693,8 @@ package body Exp_Util is
           Expression => New_Occurrence_Of (Res, Loc)));
 
       Spec := Make_Function_Specification (Loc,
-        Defining_Unit_Name =>
-          Make_Defining_Identifier (Loc, New_Internal_Name ('F')),
-        Result_Definition => New_Occurrence_Of (Standard_String, Loc));
+        Defining_Unit_Name => Make_Temporary (Loc, 'F'),
+        Result_Definition  => New_Occurrence_Of (Standard_String, Loc));
 
       --  Calls to 'Image use the secondary stack, which must be cleaned
       --  up after the task name is built.
@@ -726,15 +721,15 @@ package body Exp_Util is
        Stats  : List_Id)
    is
    begin
-      Len := Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
+      Len := Make_Temporary (Loc, 'L', Sum);
 
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Len,
-          Object_Definition => New_Occurrence_Of (Standard_Integer, Loc),
-          Expression        => Sum));
+          Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
+          Expression          => Sum));
 
-      Res := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Res := Make_Temporary (Loc, 'R');
 
       Append_To (Decls,
          Make_Object_Declaration (Loc,
@@ -750,12 +745,12 @@ package body Exp_Util is
                          Low_Bound => Make_Integer_Literal (Loc, 1),
                          High_Bound => New_Occurrence_Of (Len, Loc)))))));
 
-      Pos := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      Pos := Make_Temporary (Loc, 'P');
 
       Append_To (Decls,
          Make_Object_Declaration (Loc,
             Defining_Identifier => Pos,
-            Object_Definition => New_Occurrence_Of (Standard_Integer, Loc)));
+            Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc)));
 
       --  Pos := Prefix'Length;
 
@@ -765,29 +760,29 @@ package body Exp_Util is
             Expression =>
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_Length,
-                Prefix => New_Occurrence_Of (Prefix, Loc),
-                Expressions =>
-                    New_List (Make_Integer_Literal (Loc, 1)))));
+                Prefix         => New_Occurrence_Of (Prefix, Loc),
+                Expressions    => New_List (Make_Integer_Literal (Loc, 1)))));
 
       --  Res (1 .. Pos) := Prefix;
 
       Append_To (Stats,
-         Make_Assignment_Statement (Loc,
-           Name => Make_Slice (Loc,
-              Prefix => New_Occurrence_Of (Res, Loc),
+        Make_Assignment_Statement (Loc,
+          Name =>
+            Make_Slice (Loc,
+              Prefix          => New_Occurrence_Of (Res, Loc),
               Discrete_Range  =>
                 Make_Range (Loc,
-                   Low_Bound => Make_Integer_Literal (Loc, 1),
+                   Low_Bound  => Make_Integer_Literal (Loc, 1),
                    High_Bound => New_Occurrence_Of (Pos, Loc))),
 
-           Expression => New_Occurrence_Of (Prefix, Loc)));
+          Expression => New_Occurrence_Of (Prefix, Loc)));
 
       Append_To (Stats,
          Make_Assignment_Statement (Loc,
-            Name => New_Occurrence_Of (Pos, Loc),
+            Name       => New_Occurrence_Of (Pos, Loc),
             Expression =>
               Make_Op_Add (Loc,
-                Left_Opnd => New_Occurrence_Of (Pos, Loc),
+                Left_Opnd  => New_Occurrence_Of (Pos, Loc),
                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
    end Build_Task_Image_Prefix;
 
@@ -809,7 +804,7 @@ package body Exp_Util is
       Res : Entity_Id;
       --  String to hold result
 
-      Pref : Entity_Id;
+      Pref : constant Entity_Id := Make_Temporary (Loc, 'P');
       --  Name of enclosing variable, prefix of resulting name
 
       Sum : Node_Id;
@@ -822,8 +817,6 @@ package body Exp_Util is
       Stats : constant List_Id := New_List;
 
    begin
-      Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
-
       --  For a dynamic task, the name comes from the target variable.
       --  For a static one it is a formal of the enclosing init proc.
 
@@ -845,15 +838,15 @@ package body Exp_Util is
              Name                => Make_Identifier (Loc, Name_uTask_Name)));
       end if;
 
-      Sel := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+      Sel := Make_Temporary (Loc, 'S');
 
       Get_Name_String (Chars (Selector_Name (Id_Ref)));
 
       Append_To (Decls,
          Make_Object_Declaration (Loc,
            Defining_Identifier => Sel,
-           Object_Definition => New_Occurrence_Of (Standard_String, Loc),
-           Expression =>
+           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+           Expression          =>
              Make_String_Literal (Loc,
                Strval => String_From_Name_Buffer)));
 
@@ -1300,9 +1293,7 @@ package body Exp_Util is
             end if;
 
          else
-            T :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('T'));
+            T := Make_Temporary (Loc, 'T');
 
             Insert_Action (N,
               Make_Subtype_Declaration (Loc,
@@ -3758,21 +3749,19 @@ package body Exp_Util is
       if not Has_Discriminants (Root_Typ) then
          Constr_Root := Root_Typ;
       else
-         Constr_Root :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Constr_Root := Make_Temporary (Loc, 'R');
 
          --  subtype cstr__n is T (List of discr constraints taken from Exp)
 
          Append_To (List_Def,
            Make_Subtype_Declaration (Loc,
              Defining_Identifier => Constr_Root,
-               Subtype_Indication =>
-                 Make_Subtype_From_Expr (E, Root_Typ)));
+             Subtype_Indication  => Make_Subtype_From_Expr (E, Root_Typ)));
       end if;
 
       --  Generate the range subtype declaration
 
-      Range_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('G'));
+      Range_Type := Make_Temporary (Loc, 'G');
 
       if not Is_Interface (Root_Typ) then
 
@@ -3821,7 +3810,7 @@ package body Exp_Util is
 
       --  subtype str__nn is Storage_Array (rg__x);
 
-      Str_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+      Str_Type := Make_Temporary (Loc, 'S');
       Append_To (List_Def,
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Str_Type,
@@ -3838,7 +3827,7 @@ package body Exp_Util is
       --    E : Str_Type;
       --  end Equiv_T;
 
-      Equiv_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+      Equiv_Type := Make_Temporary (Loc, 'T');
       Set_Ekind (Equiv_Type, E_Record_Type);
       Set_Parent_Subtype (Equiv_Type, Constr_Root);
 
@@ -3863,9 +3852,7 @@ package body Exp_Util is
 
       Append_To (Comp_List,
         Make_Component_Declaration (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc,
-              Chars => New_Internal_Name ('C')),
+          Defining_Identifier  => Make_Temporary (Loc, 'C'),
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present    => False,
@@ -3991,15 +3978,12 @@ package body Exp_Util is
          --  actual or an explicit subtype.
 
          Utyp        := Underlying_Type (Base_Type (Unc_Typ));
-         Full_Subtyp := Make_Defining_Identifier (Loc,
-                          New_Internal_Name ('C'));
+         Full_Subtyp := Make_Temporary (Loc, 'C');
          Full_Exp    :=
-           Unchecked_Convert_To
-             (Utyp, Duplicate_Subexpr_No_Checks (E));
+           Unchecked_Convert_To (Utyp, Duplicate_Subexpr_No_Checks (E));
          Set_Parent (Full_Exp, Parent (E));
 
-         Priv_Subtyp :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Priv_Subtyp := Make_Temporary (Loc, 'P');
 
          Insert_Action (E,
            Make_Subtype_Declaration (Loc,
@@ -4870,7 +4854,7 @@ package body Exp_Util is
             end;
          end if;
 
-         Ref_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Ref_Type := Make_Temporary (Loc, 'A');
 
          Ptr_Typ_Decl :=
            Make_Full_Type_Declaration (Loc,

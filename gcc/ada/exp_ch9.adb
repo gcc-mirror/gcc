@@ -2132,7 +2132,6 @@ package body Exp_Ch9 is
          --  record type, so mark the spec accordingly.
 
          if Ekind (Subp_Id) = E_Function then
-
             declare
                Res_Def : Node_Id;
 
@@ -2388,12 +2387,10 @@ package body Exp_Ch9 is
          Add_Object_Pointer (Loc, Typ, Decls);
 
          while Present (Ent) loop
-
             if Ekind (Ent) = E_Entry then
                Add_If_Clause (Make_Integer_Literal (Loc, 1));
 
             elsif Ekind (Ent) = E_Entry_Family then
-
                E_Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
                Hi := Convert_Discriminant_Ref (Type_High_Bound (E_Typ));
                Lo := Convert_Discriminant_Ref (Type_Low_Bound  (E_Typ));
