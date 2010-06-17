@@ -2489,8 +2489,8 @@ package body Sem_Aggr is
       --  This routine checks whether this is indeed the case and if so returns
       --  False, signaling that no value for Discr should appear in N's
       --  aggregate part. Also, in this case, the routine appends to
-      --  New_Assoc_List the discriminant value specified in the ancestor
-      --  part.
+      --  New_Assoc_List the discriminant value specified in the ancestor part.
+      --
       --  If the aggregate is in a context with expansion delayed, it will be
       --  reanalyzed, The inherited discriminant values must not be reinserted
       --  in the component list to prevent spurious errors, but it must be
@@ -2507,6 +2507,7 @@ package body Sem_Aggr is
       --  a list of N_Component_Association nodes.
       --  What is this referring to??? There is no "following function" in
       --  sight???
+      --
       --  If no component association has a choice for the searched component,
       --  the value provided by the others choice is returned, if there is one,
       --  and Consider_Others_Choice is set to true. Otherwise Empty is
@@ -2585,6 +2586,7 @@ package body Sem_Aggr is
                if Inherited_Discriminant (Comp_Assoc) then
                   return True;
                end if;
+
                Next (Comp_Assoc);
             end loop;
          end if;

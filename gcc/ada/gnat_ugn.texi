@@ -22520,11 +22520,10 @@ and execution encounters the breakpoint, then the program
 stops and @code{GDB} signals that the breakpoint was encountered by
 printing the line of code before which the program is halted.
 
-@item breakpoint exception @var{name}
-A special form of the breakpoint command which breakpoints whenever
-exception @var{name} is raised.
-If @var{name} is omitted,
-then a breakpoint will occur when any exception is raised.
+@item catch exception @var{name}
+This command causes the program execution to stop whenever exception
+@var{name} is raised.  If @var{name} is omitted, then the execution is
+suspended when any exception is raised.
 
 @item print @var{expression}
 This will print the value of the given expression. Most simple
@@ -22686,25 +22685,25 @@ The value returned is always that from the first return statement
 that was stepped through.
 
 @node Ada Exceptions
-@section Breaking on Ada Exceptions
+@section Stopping when Ada Exceptions are Raised
 @cindex Exceptions
 
 @noindent
-You can set breakpoints that trip when your program raises
-selected exceptions.
+You can set catchpoints that stop the program execution when your program
+raises selected exceptions.
 
 @table @code
-@item break exception
-Set a breakpoint that trips whenever (any task in the) program raises
-any exception.
+@item catch exception
+Set a catchpoint that stops execution whenever (any task in the) program
+raises any exception.
 
-@item break exception @var{name}
-Set a breakpoint that trips whenever (any task in the) program raises
-the exception @var{name}.
+@item catch exception @var{name}
+Set a catchpoint that stops execution whenever (any task in the) program
+raises the exception @var{name}.
 
-@item break exception unhandled
-Set a breakpoint that trips whenever (any task in the) program raises an
-exception for which there is no handler.
+@item catch exception unhandled
+Set a catchpoint that stops executino whenever (any task in the) program
+raises an exception for which there is no handler.
 
 @item info exceptions
 @itemx info exceptions @var{regexp}
