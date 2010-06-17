@@ -285,7 +285,7 @@ package body Sem_Intr is
          return;
       end if;
 
-      if not Is_Numeric_Type (T1) then
+      if not Is_Numeric_Type (Underlying_Type (T1)) then
          Errint ("intrinsic operator can only apply to numeric types", E, N);
       end if;
    end Check_Intrinsic_Operator;
