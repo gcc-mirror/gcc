@@ -1027,9 +1027,8 @@ package body Sem_Warn is
             --  we exclude protected types, too complicated to worry about.
 
             if Ekind (E1) = E_Variable
-                 or else
-                ((Ekind (E1) = E_Out_Parameter
-                    or else Ekind (E1) = E_In_Out_Parameter)
+              or else
+                (Ekind_In (E1, E_Out_Parameter, E_In_Out_Parameter)
                   and then not Is_Protected_Type (Current_Scope))
             then
                --  Case of an unassigned variable
@@ -1345,7 +1344,7 @@ package body Sem_Warn is
                               while Present (Comp) loop
                                  if Ekind (Comp) = E_Component
                                    and then Nkind (Parent (Comp)) =
-                                   N_Component_Declaration
+                                              N_Component_Declaration
                                    and then No (Expression (Parent (Comp)))
                                  then
                                     Error_Msg_Node_2 := Comp;
@@ -2883,9 +2882,7 @@ package body Sem_Warn is
 
       --  Reference to obsolescent component
 
-      elsif Ekind (E) = E_Component
-        or else Ekind (E) = E_Discriminant
-      then
+      elsif Ekind_In (E, E_Component, E_Discriminant) then
          Error_Msg_NE
            ("?reference to obsolescent component& declared#", N, E);
 

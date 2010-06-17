@@ -1776,7 +1776,7 @@ package body Freeze is
          Prev := Empty;
          while Present (Comp) loop
 
-            --  First handle the (real) component case
+            --  First handle the component case
 
             if Ekind (Comp) = E_Component
               or else Ekind (Comp) = E_Discriminant
@@ -1847,129 +1847,12 @@ package body Freeze is
                            Component_Name (Component_Clause (Comp)));
                      end if;
                   end if;
-
-                  --  If component clause is present, then deal with the non-
-                  --  default bit order case for Ada 95 mode. The required
-                  --  processing for Ada 2005 mode is handled separately after
-                  --  processing all components.
-
-                  --  We only do this processing for the base type, and in
-                  --  fact that's important, since otherwise if there are
-                  --  record subtypes, we could reverse the bits once for
-                  --  each subtype, which would be incorrect.
-
-                  if Present (CC)
-                    and then Reverse_Bit_Order (Rec)
-                    and then Ekind (E) = E_Record_Type
-                    and then Ada_Version <= Ada_95
-                  then
-                     declare
-                        CFB : constant Uint    := Component_Bit_Offset (Comp);
-                        CSZ : constant Uint    := Esize (Comp);
-                        CLC : constant Node_Id := Component_Clause (Comp);
-                        Pos : constant Node_Id := Position (CLC);
-                        FB  : constant Node_Id := First_Bit (CLC);
-
-                        Storage_Unit_Offset : constant Uint :=
-                                                CFB / System_Storage_Unit;
-
-                        Start_Bit : constant Uint :=
-                                      CFB mod System_Storage_Unit;
-
-                     begin
-                        --  Cases where field goes over storage unit boundary
-
-                        if Start_Bit + CSZ > System_Storage_Unit then
-
-                           --  Allow multi-byte field but generate warning
-
-                           if Start_Bit mod System_Storage_Unit = 0
-                             and then CSZ mod System_Storage_Unit = 0
-                           then
-                              Error_Msg_N
-                                ("multi-byte field specified with non-standard"
-                                 & " Bit_Order?", CLC);
-
-                              if Bytes_Big_Endian then
-                                 Error_Msg_N
-                                   ("bytes are not reversed "
-                                    & "(component is big-endian)?", CLC);
-                              else
-                                 Error_Msg_N
-                                   ("bytes are not reversed "
-                                    & "(component is little-endian)?", CLC);
-                              end if;
-
-                           --  Do not allow non-contiguous field
-
-                           else
-                              Error_Msg_N
-                                ("attempt to specify non-contiguous field "
-                                 & "not permitted", CLC);
-                              Error_Msg_N
-                                ("\caused by non-standard Bit_Order "
-                                 & "specified", CLC);
-                              Error_Msg_N
-                                ("\consider possibility of using "
-                                 & "Ada 2005 mode here", CLC);
-                           end if;
-
-                        --  Case where field fits in one storage unit
-
-                        else
-                           --  Give warning if suspicious component clause
-
-                           if Intval (FB) >= System_Storage_Unit
-                             and then Warn_On_Reverse_Bit_Order
-                           then
-                              Error_Msg_N
-                                ("?Bit_Order clause does not affect " &
-                                 "byte ordering", Pos);
-                              Error_Msg_Uint_1 :=
-                                Intval (Pos) + Intval (FB) /
-                                  System_Storage_Unit;
-                              Error_Msg_N
-                                ("?position normalized to ^ before bit " &
-                                 "order interpreted", Pos);
-                           end if;
-
-                           --  Here is where we fix up the Component_Bit_Offset
-                           --  value to account for the reverse bit order.
-                           --  Some examples of what needs to be done are:
-
-                           --    First_Bit .. Last_Bit     Component_Bit_Offset
-                           --      old          new          old       new
-
-                           --     0 .. 0       7 .. 7         0         7
-                           --     0 .. 1       6 .. 7         0         6
-                           --     0 .. 2       5 .. 7         0         5
-                           --     0 .. 7       0 .. 7         0         4
-
-                           --     1 .. 1       6 .. 6         1         6
-                           --     1 .. 4       3 .. 6         1         3
-                           --     4 .. 7       0 .. 3         4         0
-
-                           --  The general rule is that the first bit is
-                           --  is obtained by subtracting the old ending bit
-                           --  from storage_unit - 1.
-
-                           Set_Component_Bit_Offset
-                             (Comp,
-                              (Storage_Unit_Offset * System_Storage_Unit) +
-                                (System_Storage_Unit - 1) -
-                                  (Start_Bit + CSZ - 1));
-
-                           Set_Normalized_First_Bit
-                             (Comp,
-                                Component_Bit_Offset (Comp) mod
-                                  System_Storage_Unit);
-                        end if;
-                     end;
-                  end if;
                end;
             end if;
 
-            --  Gather data for possible Implicit_Packing later
+            --  Gather data for possible Implicit_Packing later. Note that at
+            --  this stage we might be dealing with a real component, or with
+            --  an implicit subtype declaration.
 
             if not Is_Scalar_Type (Etype (Comp)) then
                All_Scalar_Components := False;
@@ -2118,7 +2001,7 @@ package body Freeze is
             Next_Entity (Comp);
          end loop;
 
-         --  Deal with pragma Bit_Order
+         --  Deal with pragma Bit_Order setting non-standard bit order
 
          if Reverse_Bit_Order (Rec) and then Base_Type (Rec) = Rec then
             if not Placed_Component then
@@ -2129,13 +2012,24 @@ package body Freeze is
                Error_Msg_N
                  ("\?since no component clauses were specified", ADC);
 
-            --  Here is where we do Ada 2005 processing for bit order (the Ada
-            --  95 case was already taken care of above).
+            --  Here is where we do the processing for reversed bit order
 
-            elsif Ada_Version >= Ada_05 then
+            else
                Adjust_Record_For_Reverse_Bit_Order (Rec);
             end if;
          end if;
+
+         --  Complete error checking on record representation clause (e.g.
+         --  overlap of components). This is called after adjusting the
+         --  record for reverse bit order.
+
+         declare
+            RRC : constant Node_Id := Get_Record_Representation_Clause (Rec);
+         begin
+            if Present (RRC) then
+               Check_Record_Representation_Clause (RRC);
+            end if;
+         end;
 
          --  Set OK_To_Reorder_Components depending on debug flags
 

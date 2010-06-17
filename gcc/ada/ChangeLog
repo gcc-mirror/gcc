@@ -1,5 +1,27 @@
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
+	* sem_intr.adb, sem_prag.adb, sem_res.adb, sem_type.adb, sem_util.adb,
+	sem_warn.adb, sem_eval.adb: Minor reformatting.  Use Ekind_In.
+	(Set_Slice_Subtype): Explicitly freeze the slice's itype at the point
+	where the slice's actions are inserted.
+	(Decompose_Expr): Account for possible rewriting of slice bounds
+	resulting from side effects suppression caused by the above freezing,
+	so that folding of bounds is preserved by such rewriting.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Get_Record_Representation_Clause): New function.
+	* freeze.adb (Freeze_Record_Type): Add call to
+	Check_Record_Representation_Clause.
+	* sem_ch13.adb (Check_Record_Representation_Clause): New function
+	(Analyze_Record_Representation_Clause): Split out overlap code into this
+	new function.
+	(Check_Component_Overlap): Moved inside
+	Check_Record_Representation_Clause.
+	* sem_ch13.ads (Check_Record_Representation_Clause): New function.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
 	* back_end.adb, sem_res.adb, switch-c.adb, sem_scil.adb: Minor
 	reformatting.
 	* sem_attr.adb, sem_cat.adb, sem_disp.adb, sem_elab.adb, sem_elim.adb,

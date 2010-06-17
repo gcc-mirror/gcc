@@ -5760,6 +5760,26 @@ package body Einfo is
       end if;
    end Get_Full_View;
 
+   --------------------------------------
+   -- Get_Record_Representation_Clause --
+   --------------------------------------
+
+   function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Record_Representation_Clause then
+            return N;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Record_Representation_Clause;
+
    --------------------
    -- Get_Rep_Pragma --
    --------------------
