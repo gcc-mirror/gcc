@@ -1586,12 +1586,8 @@ find_reg_equiv_invariant_const (void)
 
 	  x = XEXP (note, 0);
 
-	  if (! function_invariant_p (x)
-	      || ! flag_pic
-	      /* A function invariant is often CONSTANT_P but may
-		 include a register.  We promise to only pass CONSTANT_P
-		 objects to LEGITIMATE_PIC_OPERAND_P.  */
-	      || (CONSTANT_P (x) && LEGITIMATE_PIC_OPERAND_P (x)))
+	  if (! CONSTANT_P (x)
+	      || ! flag_pic || LEGITIMATE_PIC_OPERAND_P (x))
 	    {
 	      /* It can happen that a REG_EQUIV note contains a MEM
 		 that is not a legitimate memory operand.  As later

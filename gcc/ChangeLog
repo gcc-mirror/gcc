@@ -1,3 +1,12 @@
+2010-06-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/39871
+	* reload1.c (init_eliminable_invariants): For flag_pic, disable
+	equivalences only for constants that aren't LEGITIMATE_PIC_OPERAND_P.
+	(function_invariant_p): Rule out a plus of frame or arg pointer with
+	a SYMBOL_REF.
+	* ira.c (find_reg_equiv_invariant_const): Likewise.
+
 2010-06-17  Gunther Nikl  <gnikl@users.sourceforge.net>
 
 	* config/rs6000/rs6000.c (print_operand) <'K'>: Also use

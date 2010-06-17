@@ -4151,13 +4151,9 @@ init_eliminable_invariants (rtx first, bool do_subregs)
 	  if (i <= LAST_VIRTUAL_REGISTER)
 	    continue;
 
-	  if (! function_invariant_p (x)
-	      || ! flag_pic
-	      /* A function invariant is often CONSTANT_P but may
-		 include a register.  We promise to only pass
-		 CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
-	      || (CONSTANT_P (x)
-		  && LEGITIMATE_PIC_OPERAND_P (x)))
+	  /* If flag_pic and we have constant, verify it's legitimate.  */
+	  if (!CONSTANT_P (x)
+	      || !flag_pic || LEGITIMATE_PIC_OPERAND_P (x))
 	    {
 	      /* It can happen that a REG_EQUIV note contains a MEM
 		 that is not a legitimate memory operand.  As later
@@ -6004,7 +6000,7 @@ function_invariant_p (const_rtx x)
     return 1;
   if (GET_CODE (x) == PLUS
       && (XEXP (x, 0) == frame_pointer_rtx || XEXP (x, 0) == arg_pointer_rtx)
-      && CONSTANT_P (XEXP (x, 1)))
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
     return 1;
   return 0;
 }
