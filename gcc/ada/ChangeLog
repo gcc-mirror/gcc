@@ -1,3 +1,14 @@
+2010-06-17  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Update gnatcheck doc.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Incomplete_Type_Declaration): If there is an
+	incomplete view of the type that is not tagged, and the full type is a
+	tagged extension, create class_wide type now, and warn that the
+	incomplete view should be tagged as well.
+
 2010-06-17  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb (Non_VMS_Usage): Do not issue usage for gnat sync.

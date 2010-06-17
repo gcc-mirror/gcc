@@ -17484,6 +17484,15 @@ package body Sem_Ch3 is
            and then Ekind (Current_Entity (Typ)) = E_Incomplete_Type
            and then Full_View (Current_Entity (Typ)) = Typ
          then
+            if Is_Tagged
+              and then Comes_From_Source (Current_Entity (Typ))
+              and then not Is_Tagged_Type (Current_Entity (Typ))
+            then
+               Make_Class_Wide_Type (Typ);
+               Error_Msg_N
+                 ("incomplete view of tagged type should be declared tagged?",
+                    Parent (Current_Entity (Typ)));
+            end if;
             return;
 
          else
