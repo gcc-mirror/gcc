@@ -2074,7 +2074,7 @@ package body Sem_Ch7 is
          --  but the formals are private and remain so.
 
          if Ekind (Id) = E_Function
-           and then  Is_Operator_Symbol_Name (Chars (Id))
+           and then Is_Operator_Symbol_Name (Chars (Id))
            and then not Is_Hidden (Id)
            and then not Error_Posted (Id)
          then

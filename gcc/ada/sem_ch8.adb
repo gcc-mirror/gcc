@@ -1315,7 +1315,8 @@ package body Sem_Ch8 is
    begin
       if not Is_Overloaded (P) then
          if Ekind (Etype (Nam)) /= E_Subprogram_Type
-           or else not Type_Conformant (Etype (Nam), New_S) then
+           or else not Type_Conformant (Etype (Nam), New_S)
+         then
             Error_Msg_N ("designated type does not match specification", P);
          else
             Resolve (P);
@@ -1330,8 +1331,8 @@ package body Sem_Ch8 is
          while Present (It.Nam) loop
 
             if Ekind (It.Nam) = E_Subprogram_Type
-              and then Type_Conformant (It.Nam, New_S) then
-
+              and then Type_Conformant (It.Nam, New_S)
+            then
                if Typ /= Any_Id then
                   Error_Msg_N ("ambiguous renaming", P);
                   return;
@@ -2149,9 +2150,7 @@ package body Sem_Ch8 is
          --  Guard against previous errors, and omit renamings of predefined
          --  operators.
 
-         elsif Ekind (Old_S) /= E_Function
-           and then Ekind (Old_S) /= E_Procedure
-         then
+         elsif not Ekind_In (Old_S, E_Function, E_Procedure) then
             null;
 
          elsif Requires_Overriding (Old_S)
@@ -4755,9 +4754,9 @@ package body Sem_Ch8 is
 
                         exit when S = Standard_Standard;
 
-                        if Ekind (S) = E_Function
-                          or else Ekind (S) = E_Package
-                          or else Ekind (S) = E_Procedure
+                        if Ekind_In (S, E_Function,
+                                        E_Package,
+                                        E_Procedure)
                         then
                            P := Generic_Parent (Specification
                                   (Unit_Declaration_Node (S)));
@@ -6223,9 +6222,7 @@ package body Sem_Ch8 is
             Next_Formal (Old_F);
          end loop;
 
-         if Ekind (Old_S) = E_Function
-           or else Ekind (Old_S) = E_Enumeration_Literal
-         then
+         if Ekind_In (Old_S, E_Function, E_Enumeration_Literal) then
             Set_Etype (New_S, Etype (Old_S));
          end if;
       end if;

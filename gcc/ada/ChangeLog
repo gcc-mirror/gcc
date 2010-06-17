@@ -1,5 +1,25 @@
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb: Minor code fix, allow E_Class_Wide_Type for
+	Equivalent_Type to match documentation.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb, sem_ch7.adb: Minor reformatting.
+	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_ch4.adb, sem_ch8.adb, sem_ch13.adb: Make use of Ekind_In.
+
+2010-06-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): Always freeze the slice's itype.
+
+2010-06-17  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Short circuit operators are valid
+	freeze node insertion points.
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.ads, switch-c.adb, sem_ch13.adb: Minor reformatting.
 	* sem_ch12.adb: Add pragmas Assert and Check to previous change.
 

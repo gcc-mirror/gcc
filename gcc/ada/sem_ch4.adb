@@ -818,10 +818,10 @@ package body Sem_Ch4 is
          elsif Nkind (Nam) = N_Selected_Component then
             Nam_Ent := Entity (Selector_Name (Nam));
 
-            if Ekind (Nam_Ent) /= E_Entry
-              and then Ekind (Nam_Ent) /= E_Entry_Family
-              and then Ekind (Nam_Ent) /= E_Function
-              and then Ekind (Nam_Ent) /= E_Procedure
+            if not Ekind_In (Nam_Ent, E_Entry,
+                                      E_Entry_Family,
+                                      E_Function,
+                                      E_Procedure)
             then
                Error_Msg_N ("name in call is not a callable entity", Nam);
                Set_Etype (N, Any_Type);
@@ -1174,7 +1174,6 @@ package body Sem_Ch4 is
 
       if Present (Op_Id) then
          if Ekind (Op_Id) = E_Operator then
-
             LT := Base_Type (Etype (L));
             RT := Base_Type (Etype (R));
 
@@ -1944,7 +1943,8 @@ package body Sem_Ch4 is
          elsif Ekind (Etype (P)) = E_Subprogram_Type
            or else (Is_Access_Type (Etype (P))
                       and then
-                    Ekind (Designated_Type (Etype (P))) = E_Subprogram_Type)
+                        Ekind (Designated_Type (Etype (P))) =
+                                                   E_Subprogram_Type)
          then
             --  Call to access_to-subprogram with possible implicit dereference
 
@@ -1969,7 +1969,7 @@ package body Sem_Ch4 is
          if Ekind (P_T) = E_Subprogram_Type
            or else (Is_Access_Type (P_T)
                      and then
-                    Ekind (Designated_Type (P_T)) = E_Subprogram_Type)
+                       Ekind (Designated_Type (P_T)) = E_Subprogram_Type)
          then
             Process_Function_Call;
 
@@ -3580,10 +3580,8 @@ package body Sem_Ch4 is
                      Has_Candidate := True;
                   end if;
 
-               elsif Ekind (Comp) = E_Discriminant
-                 or else Ekind (Comp) = E_Entry_Family
-                 or else (In_Scope
-                   and then Is_Entity_Name (Name))
+               elsif Ekind_In (Comp, E_Discriminant, E_Entry_Family)
+                 or else (In_Scope and then Is_Entity_Name (Name))
                then
                   Set_Entity_With_Style_Check (Sel, Comp);
                   Generate_Reference (Comp, Sel);
@@ -4502,9 +4500,7 @@ package body Sem_Ch4 is
       if Nkind (N) = N_Function_Call then
          Get_First_Interp (Nam, X, It);
          while Present (It.Nam) loop
-            if Ekind (It.Nam) = E_Function
-              or else Ekind (It.Nam) = E_Operator
-            then
+            if Ekind_In (It.Nam, E_Function, E_Operator) then
                return;
             else
                Get_Next_Interp (X, It);
@@ -6675,9 +6671,8 @@ package body Sem_Ch4 is
             if Is_Derived_Type (T) then
                return Primitive_Operations (T);
 
-            elsif Ekind (Scope (T)) = E_Procedure
-              or else Ekind (Scope (T)) = E_Function
-            then
+            elsif Ekind_In (Scope (T), E_Procedure, E_Function) then
+
                --  Scan the list of generic formals to find subprograms
                --  that may have a first controlling formal of the type.
 

@@ -3285,9 +3285,7 @@ package body Sem_Ch3 is
            ("parent of type extension must be a tagged type ", Indic);
          return;
 
-      elsif Ekind (Parent_Type) = E_Void
-        or else Ekind (Parent_Type) = E_Incomplete_Type
-      then
+      elsif Ekind_In (Parent_Type, E_Void, E_Incomplete_Type) then
          Error_Msg_N ("premature derivation of incomplete type", Indic);
          return;
 
@@ -7548,9 +7546,7 @@ package body Sem_Ch3 is
       begin
          D := First_Entity (Derived_Type);
          while Present (D) loop
-            if Ekind (D) = E_Discriminant
-              or else Ekind (D) = E_Component
-            then
+            if Ekind_In (D, E_Discriminant, E_Component) then
                if Is_Itype (Etype (D))
                   and then Ekind (Etype (D)) = E_Anonymous_Access_Type
                then
@@ -8741,9 +8737,7 @@ package body Sem_Ch3 is
       begin
          if not Comes_From_Source (E) then
 
-            if Ekind (E) = E_Task_Type
-              or else Ekind (E) = E_Protected_Type
-            then
+            if Ekind_In (E, E_Task_Type, E_Protected_Type) then
                --  It may be an anonymous protected type created for a
                --  single variable. Post error on variable, if present.
 
@@ -9834,9 +9828,10 @@ package body Sem_Ch3 is
                          & " must be in private part", N);
 
          elsif Ekind (Current_Scope) = E_Package
-           and then List_Containing (Parent (Prev))
-           /= Visible_Declarations
-             (Specification (Unit_Declaration_Node (Current_Scope)))
+           and then
+             List_Containing (Parent (Prev)) /=
+               Visible_Declarations
+                 (Specification (Unit_Declaration_Node (Current_Scope)))
          then
             Error_Msg_N
               ("deferred constant must be declared in visible part",
@@ -13363,9 +13358,7 @@ package body Sem_Ch3 is
 
       --  Check for early use of incomplete or private type
 
-      if Ekind (Parent_Type) = E_Void
-        or else Ekind (Parent_Type) = E_Incomplete_Type
-      then
+      if Ekind_In (Parent_Type, E_Void, E_Incomplete_Type) then
          Error_Msg_N ("premature derivation of incomplete type", Indic);
          return;
 
@@ -14786,8 +14779,8 @@ package body Sem_Ch3 is
          then
             null;
 
-         elsif Ekind (Derived_Base) = E_Private_Type
-           or else Ekind (Derived_Base) = E_Limited_Private_Type
+         elsif Ekind_In (Derived_Base, E_Private_Type,
+                                       E_Limited_Private_Type)
          then
             null;
 
@@ -14955,9 +14948,7 @@ package body Sem_Ch3 is
    --  Start of processing for Is_Visible_Component
 
    begin
-      if Ekind (C) = E_Component
-        or else Ekind (C) = E_Discriminant
-      then
+      if Ekind_In (C, E_Component, E_Discriminant) then
          Original_Comp := Original_Record_Component (C);
       end if;
 
@@ -16492,9 +16483,9 @@ package body Sem_Ch3 is
          while Present (Priv_Elmt) loop
             Priv := Node (Priv_Elmt);
 
-            if Ekind (Priv) = E_Private_Subtype
-              or else Ekind (Priv) = E_Limited_Private_Subtype
-              or else Ekind (Priv) = E_Record_Subtype_With_Private
+            if Ekind_In (Priv, E_Private_Subtype,
+                               E_Limited_Private_Subtype,
+                               E_Record_Subtype_With_Private)
             then
                Full := Make_Defining_Identifier (Sloc (Priv), Chars (Priv));
                Set_Is_Itype (Full);
@@ -16642,10 +16633,7 @@ package body Sem_Ch3 is
 
                Prim := Next_Entity (Full_T);
                while Present (Prim) and then Prim /= Priv_T loop
-                  if Ekind (Prim) = E_Procedure
-                       or else
-                     Ekind (Prim) = E_Function
-                  then
+                  if Ekind_In (Prim, E_Procedure, E_Function) then
                      Disp_Typ := Find_Dispatching_Type (Prim);
 
                      if Disp_Typ = Full_T

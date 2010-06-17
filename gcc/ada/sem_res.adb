@@ -8958,6 +8958,15 @@ package body Sem_Res is
          Set_Etype        (Index_Subtype, Index_Type);
          Set_Size_Info    (Index_Subtype, Index_Type);
          Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
+
+         --  Now replace the discrete range in the slice with a reference to
+         --  its index subtype. This ensures that further expansion (e.g
+         --  while rewriting a slice assignment into a FOR loop) does not
+         --  attempt to remove side effects on the bounds again (which would
+         --  cause the bounds in the index subtype definition to refer to
+         --  temporaries before they are defined).
+
+         Set_Discrete_Range (N, New_Copy_Tree (Drange));
       end if;
 
       Slice_Subtype := Create_Itype (E_Array_Subtype, N);
@@ -8970,8 +8979,6 @@ package body Sem_Res is
       Set_Etype          (Slice_Subtype, Base_Type (Etype (N)));
       Set_Is_Constrained (Slice_Subtype, True);
 
-      Check_Compile_Time_Size (Slice_Subtype);
-
       --  The Etype of the existing Slice node is reset to this slice subtype.
       --  Its bounds are obtained from its first index.
 
@@ -8979,15 +8986,10 @@ package body Sem_Res is
 
       --  In the packed case, this must be immediately frozen
 
-      --  Couldn't we always freeze here??? and if we did, then the above
-      --  call to Check_Compile_Time_Size could be eliminated, which would
-      --  be nice, because then that routine could be made private to Freeze.
+      --  Always freeze subtype. This ensures that the slice subtype is
+      --  elaborated in the scope of the expression.
 
-      --  Why the test for In_Spec_Expression here ???
-
-      if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
-         Freeze_Itype (Slice_Subtype, N);
-      end if;
+      Freeze_Itype (Slice_Subtype, N);
 
    end Set_Slice_Subtype;
 

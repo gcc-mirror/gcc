@@ -975,7 +975,8 @@ package body Einfo is
    function Equivalent_Type (Id : E) return E is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Class_Wide_Subtype,
+        (Ekind_In (Id, E_Class_Wide_Type,
+                       E_Class_Wide_Subtype,
                        E_Access_Protected_Subprogram_Type,
                        E_Anonymous_Access_Protected_Subprogram_Type,
                        E_Access_Subprogram_Type,
@@ -7872,10 +7873,10 @@ package body Einfo is
             Write_Str ("Spec_PPC_List");
 
          when E_Record_Type                                =>
-            Write_Str ("Underlying record view");
+            Write_Str ("Underlying_Record_View");
 
          when E_Variable | E_Constant                      =>
-            Write_Str ("Related expression");
+            Write_Str ("Related_Expression");
 
          when others                                       =>
             Write_Str ("???");

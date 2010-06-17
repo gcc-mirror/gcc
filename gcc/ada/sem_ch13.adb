@@ -803,9 +803,7 @@ package body Sem_Ch13 is
             --  it imported.
 
             if Ignore_Rep_Clauses then
-               if Ekind (U_Ent) = E_Variable
-                 or else Ekind (U_Ent) = E_Constant
-               then
+               if Ekind_In (U_Ent, E_Variable, E_Constant) then
                   Record_Rep_Item (U_Ent, N);
                end if;
 
@@ -1534,8 +1532,8 @@ package body Sem_Ch13 is
                   Nam);
                return;
 
-            elsif Ekind (U_Ent) /= E_Access_Type
-              and then Ekind (U_Ent) /= E_General_Access_Type
+            elsif not
+              Ekind_In (U_Ent, E_Access_Type, E_General_Access_Type)
             then
                Error_Msg_N
                  ("storage pool can only be given for access types", Nam);
@@ -2402,10 +2400,7 @@ package body Sem_Ch13 is
             Parent_Last_Bit := UI_From_Int (System_Address_Size - 1);
             Pcomp := First_Entity (Tagged_Parent);
             while Present (Pcomp) loop
-               if Ekind (Pcomp) = E_Discriminant
-                    or else
-                  Ekind (Pcomp) = E_Component
-               then
+               if Ekind_In (Pcomp, E_Discriminant, E_Component) then
                   if Component_Bit_Offset (Pcomp) /= No_Uint
                     and then Known_Static_Esize (Pcomp)
                   then
@@ -2820,9 +2815,7 @@ package body Sem_Ch13 is
             --  This latter test is repeated recursively up the variant tree.
 
             Main_Component_Loop : while Present (C1_Ent) loop
-               if Ekind (C1_Ent) /= E_Component
-                 and then Ekind (C1_Ent) /= E_Discriminant
-               then
+               if not Ekind_In (C1_Ent, E_Component, E_Discriminant) then
                   goto Continue_Main_Component_Loop;
                end if;
 
@@ -3208,11 +3201,8 @@ package body Sem_Ch13 is
 
                --  Otherwise look at the identifier and see if it is OK
 
-               if Ekind (Ent) = E_Named_Integer
-                    or else
-                  Ekind (Ent) = E_Named_Real
-                    or else
-                  Is_Type (Ent)
+               if Ekind_In (Ent, E_Named_Integer, E_Named_Real)
+                 or else Is_Type (Ent)
                then
                   return;
 
@@ -3884,9 +3874,10 @@ package body Sem_Ch13 is
                 Out_Present         => Out_P,
                 Parameter_Type      => T_Ref));
 
-            Spec := Make_Procedure_Specification (Loc,
-                      Defining_Unit_Name       => Subp_Id,
-                      Parameter_Specifications => Formals);
+            Spec :=
+              Make_Procedure_Specification (Loc,
+                Defining_Unit_Name       => Subp_Id,
+                Parameter_Specifications => Formals);
          end if;
 
          return Spec;
