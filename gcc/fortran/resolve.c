@@ -5498,7 +5498,8 @@ resolve_typebound_function (gfc_expr* e)
 
   /* Treat the call as if it is a typebound procedure, in order to roll
      out the correct name for the specific function.  */
-  resolve_compcall (e, &name);
+  if (resolve_compcall (e, &name) == FAILURE)
+    return FAILURE;
   ts = e->ts;
 
   /* Then convert the expression to a procedure pointer component call.  */
@@ -5571,7 +5572,8 @@ resolve_typebound_subroutine (gfc_code *code)
   if (code->expr1->value.compcall.tbp->is_generic)
     genname = code->expr1->value.compcall.name;
 
-  resolve_typebound_call (code, &name);
+  if (resolve_typebound_call (code, &name) == FAILURE)
+    return FAILURE;
   ts = code->expr1->ts;
 
   /* Then convert the expression to a procedure pointer component call.  */

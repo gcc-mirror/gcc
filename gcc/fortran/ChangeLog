@@ -1,3 +1,9 @@
+2010-06-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44558
+	* resolve.c (resolve_typebound_function,resolve_typebound_subroutine):
+	Return directly in case of an error.
+
 2010-06-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44549
