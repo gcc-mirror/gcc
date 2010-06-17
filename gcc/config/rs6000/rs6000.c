@@ -14885,27 +14885,16 @@ print_operand (FILE *file, rtx x, int code)
       /* X must be a symbolic constant on ELF.  Write an
 	 expression suitable for an 'addi' that adds in the low 16
 	 bits of the MEM.  */
-      if (GET_CODE (x) != CONST)
-	{
-	  print_operand_address (file, x);
-	  fputs ("@l", file);
-	}
-      else
+      if (GET_CODE (x) == CONST)
 	{
 	  if (GET_CODE (XEXP (x, 0)) != PLUS
 	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) != SYMBOL_REF
 		  && GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
 	      || GET_CODE (XEXP (XEXP (x, 0), 1)) != CONST_INT)
 	    output_operand_lossage ("invalid %%K value");
-	  print_operand_address (file, XEXP (XEXP (x, 0), 0));
-	  fputs ("@l", file);
-	  /* For GNU as, there must be a non-alphanumeric character
-	     between 'l' and the number.  The '-' is added by
-	     print_operand() already.  */
-	  if (INTVAL (XEXP (XEXP (x, 0), 1)) >= 0)
-	    fputs ("+", file);
-	  print_operand (file, XEXP (XEXP (x, 0), 1), 0);
 	}
+      print_operand_address (file, x);
+      fputs ("@l", file);
       return;
 
       /* %l is output_asm_label.  */
