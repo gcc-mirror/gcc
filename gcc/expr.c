@@ -5984,7 +5984,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   enum machine_mode mode = VOIDmode;
   bool blkmode_bitfield = false;
   tree offset = size_zero_node;
-  tree bit_offset = bitsize_zero_node;
+  double_int bit_offset = double_int_zero;
 
   /* First get the mode, signedness, and size.  We do this from just the
      outermost expression.  */
@@ -6045,8 +6045,9 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
-				   TREE_OPERAND (exp, 2));
+	  bit_offset
+	    = double_int_add (bit_offset,
+			      tree_to_double_int (TREE_OPERAND (exp, 2)));
 	  break;
 
 	case COMPONENT_REF:
@@ -6061,8 +6062,9 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      break;
 
 	    offset = size_binop (PLUS_EXPR, offset, this_offset);
-	    bit_offset = size_binop (PLUS_EXPR, bit_offset,
-				     DECL_FIELD_BIT_OFFSET (field));
+	    bit_offset = double_int_add (bit_offset,
+					 tree_to_double_int
+					   (DECL_FIELD_BIT_OFFSET (field)));
 
 	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
 	  }
@@ -6094,8 +6096,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
-				   bitsize_int (*pbitsize));
+	  bit_offset = double_int_add (bit_offset,
+				       uhwi_to_double_int (*pbitsize));
 	  break;
 
 	case VIEW_CONVERT_EXPR:
@@ -6126,9 +6128,11 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      this conversion.  */
   if (host_integerp (offset, 0))
     {
-      double_int tem = double_int_mul (tree_to_double_int (offset),
-				       uhwi_to_double_int (BITS_PER_UNIT));
-      tem = double_int_add (tem, tree_to_double_int (bit_offset));
+      double_int tem = double_int_lshift (tree_to_double_int (offset),
+					  BITS_PER_UNIT == 8
+					  ? 3 : exact_log2 (BITS_PER_UNIT),
+					  HOST_BITS_PER_DOUBLE_INT, true);
+      tem = double_int_add (tem, bit_offset);
       if (double_int_fits_in_shwi_p (tem))
 	{
 	  *pbitpos = double_int_to_shwi (tem);
@@ -6139,7 +6143,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* Otherwise, split it up.  */
   if (offset)
     {
-      *pbitpos = tree_low_cst (bit_offset, 0);
+      *pbitpos = double_int_to_shwi (bit_offset);
       *poffset = offset;
     }
 

@@ -1,3 +1,8 @@
+2010-06-17  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (get_inner_reference): Use double_int for bit_offset
+	calculation.
+
 2010-06-16  DJ Delorie  <dj@redhat.com>
 
 	* common.opt (-fstrict-volatile-bitfields): new.
