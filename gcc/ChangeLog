@@ -1,3 +1,8 @@
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (vec_member): Declare.
+	* tree.c (vec_member): Define.
+
 2010-06-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (array_ref_contains_indirect_ref): Remove.

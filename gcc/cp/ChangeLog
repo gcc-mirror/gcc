@@ -1,3 +1,13 @@
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* name-lookup.c (struct arg_lookup): Convert namespaces and
+	classes fields to VEC.
+	(arg_assoc_namespace): Adjust for new type of namespaces.
+	(arg_assoc_class): Adjust for new type of classes.
+	(lookup_arg_dependent): Use make_tree_vector and
+	release_tree_vector.
+	* typeck2.c (build_x_arrow): Use vec_member.
+
 2010-06-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/44486

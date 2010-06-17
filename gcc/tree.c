@@ -1917,6 +1917,19 @@ purpose_member (const_tree elem, tree list)
   return NULL_TREE;
 }
 
+/* Return true if ELEM is in V.  */
+
+bool
+vec_member (const_tree elem, VEC(tree,gc) *v)
+{
+  unsigned ix;
+  tree t;
+  for (ix = 0; VEC_iterate (tree, v, ix, t); ix++)
+    if (elem == t)
+      return true;
+  return false;
+}
+
 /* Returns element number IDX (zero-origin) of chain CHAIN, or
    NULL_TREE.  */
 
