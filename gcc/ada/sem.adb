@@ -1701,6 +1701,18 @@ package body Sem is
       procedure Do_Withed_Unit (Withed_Unit : Node_Id) is
       begin
          Do_Unit_And_Dependents (Withed_Unit, Unit (Withed_Unit));
+
+         --  If the unit in the with_clause is a generic instance, the clause
+         --  now denotes the instance body. Traverse the corresponding spec
+         --  because there may be no other dependence that will force the
+         --  traversal of its own context.
+
+         if Nkind (Unit (Withed_Unit)) = N_Package_Body
+           and then Is_Generic_Instance
+             (Defining_Entity (Unit (Library_Unit (Withed_Unit))))
+         then
+            Do_Withed_Unit (Library_Unit (Withed_Unit));
+         end if;
       end Do_Withed_Unit;
 
       ----------------------------
