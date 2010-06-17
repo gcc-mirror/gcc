@@ -1,5 +1,10 @@
 2010-06-17  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow-inline.h (array_ref_contains_indirect_ref): Remove.
+	* tree-flow.h (array_ref_contains_indirect_ref): Likewise.
+
+2010-06-17  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (declare_return_variable): Remove bogus code.
 
 2010-06-17  Richard Guenther  <rguenther@suse.de>

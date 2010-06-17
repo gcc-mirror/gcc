@@ -1113,20 +1113,6 @@ unmodifiable_var_p (const_tree var)
   return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }
 
-/* Return true if REF, an ARRAY_REF, has an INDIRECT_REF somewhere in it.  */
-
-static inline bool
-array_ref_contains_indirect_ref (const_tree ref)
-{
-  gcc_checking_assert (TREE_CODE (ref) == ARRAY_REF);
-
-  do {
-    ref = TREE_OPERAND (ref, 0);
-  } while (handled_component_p (ref));
-
-  return TREE_CODE (ref) == INDIRECT_REF;
-}
-
 /* Return true if REF, a handled component reference, has an ARRAY_REF
    somewhere in it.  */
 
