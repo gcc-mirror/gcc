@@ -1,3 +1,14 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Withed_Unit): if the unit in the with_clause is a generic
+	instance, the clause now denotes the instance body. Traverse the
+	corresponding spec because there may be no other dependence that will
+	force the traversal of its own context.
+
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Is_Ancestor_Unit): Subsidiary to

@@ -1699,8 +1699,8 @@ package body Sem_Util is
 
             Next_Entity (Id);
 
-            --  For a type declared in System, some of its operations
-            --  may appear in  the target-specific extension to System.
+            --  For a type declared in System, some of its operations may
+            --  appear in the target-specific extension to System.
 
             if No (Id)
               and then Chars (B_Scope) = Name_System
