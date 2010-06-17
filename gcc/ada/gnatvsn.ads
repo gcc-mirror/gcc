@@ -77,7 +77,7 @@ package Gnatvsn is
    --  value should never be decreased in the future, but it would be
    --  OK to increase it if absolutely necessary.
 
-   Library_Version : constant String := "4.5";
+   Library_Version : constant String := "4.6";
    --  Library version. This value must be updated whenever any change to the
    --  compiler affects the library formats in such a way as to obsolete
    --  previously compiled library modules.
