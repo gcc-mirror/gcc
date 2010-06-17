@@ -2414,8 +2414,8 @@ package body Sem_Ch12 is
                end if;
 
             elsif Nkind (Prefix (Def)) = N_Selected_Component then
-               if Ekind (Entity (Selector_Name (Prefix (Def))))
-                 /= E_Entry_Family
+               if Ekind (Entity (Selector_Name (Prefix (Def)))) /=
+                                                          E_Entry_Family
                then
                   Error_Msg_N ("expect valid subprogram name as default", Def);
                end if;
@@ -4078,9 +4078,7 @@ package body Sem_Ch12 is
       --  Verify that it is a generic subprogram of the right kind, and that
       --  it does not lead to a circular instantiation.
 
-      if Ekind (Gen_Unit) /= E_Generic_Procedure
-        and then Ekind (Gen_Unit) /= E_Generic_Function
-      then
+      if not Ekind_In (Gen_Unit, E_Generic_Procedure, E_Generic_Function) then
          Error_Msg_N ("expect generic subprogram in instantiation", Gen_Id);
 
       elsif In_Open_Scopes (Gen_Unit) then
@@ -9860,9 +9858,7 @@ package body Sem_Ch12 is
                               --  then so far the subprograms correspond, so
                               --  now check that any result types correspond.
 
-                              if No (Anc_Formal)
-                                and then No (Act_Formal)
-                              then
+                              if No (Anc_Formal) and then No (Act_Formal) then
                                  Subprograms_Correspond := True;
 
                                  if Ekind (Act_Subp) = E_Function then
@@ -11293,9 +11289,9 @@ package body Sem_Ch12 is
          --  exchanged explicitly now, in order to remain consistent with the
          --  view of the parent type.
 
-         if Ekind (Typ) = E_Private_Type
-           or else Ekind (Typ) = E_Limited_Private_Type
-           or else Ekind (Typ) = E_Record_Type_With_Private
+         if Ekind_In (Typ, E_Private_Type,
+                           E_Limited_Private_Type,
+                           E_Record_Type_With_Private)
          then
             Dep_Elmt := First_Elmt (Private_Dependents (Typ));
             while Present (Dep_Elmt) loop

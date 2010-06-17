@@ -4244,8 +4244,8 @@ package body Freeze is
       --  exiting from the loop when it is appropriate to insert the freeze
       --  node before the current node P.
 
-      --  Also checks som special exceptions to the freezing rules. These cases
-      --  result in a direct return, bypassing the freeze action.
+      --  Also checks some special exceptions to the freezing rules. These
+      --  cases result in a direct return, bypassing the freeze action.
 
       P := N;
       loop
@@ -4422,6 +4422,8 @@ package body Freeze is
                  N_Entry_Call_Alternative     |
                  N_Triggering_Alternative     |
                  N_Abortable_Part             |
+                 N_And_Then                   |
+                 N_Or_Else                    |
                  N_Freeze_Entity              =>
 
                exit when Is_List_Member (P);

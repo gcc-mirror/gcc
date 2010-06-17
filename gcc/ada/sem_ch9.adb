@@ -1174,9 +1174,7 @@ package body Sem_Ch9 is
 
       E := First_Entity (Current_Scope);
       while Present (E) loop
-         if Ekind (E) = E_Function
-           or else Ekind (E) = E_Procedure
-         then
+         if Ekind_In (E, E_Function, E_Procedure) then
             Set_Convention (E, Convention_Protected);
 
          elsif Is_Task_Type (Etype (E))
@@ -1343,9 +1341,7 @@ package body Sem_Ch9 is
          Enclosing := Scope_Stack.Table (J).Entity;
          exit when Is_Entry (Enclosing);
 
-         if Ekind (Enclosing) /= E_Block
-           and then Ekind (Enclosing) /= E_Loop
-         then
+         if not Ekind_In (Enclosing, E_Block, E_Loop) then
             Error_Msg_N ("requeue must appear within accept or entry body", N);
             return;
          end if;
@@ -1576,10 +1572,7 @@ package body Sem_Ch9 is
                   --  perform an unconditional goto so that any further
                   --  references will not occur anyway.
 
-                  if Ekind (Ent) = E_Out_Parameter
-                       or else
-                     Ekind (Ent) = E_In_Out_Parameter
-                  then
+                  if Ekind_In (Ent, E_Out_Parameter, E_In_Out_Parameter) then
                      Set_Never_Set_In_Source (Ent, False);
                      Set_Is_True_Constant    (Ent, False);
                   end if;

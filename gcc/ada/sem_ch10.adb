@@ -5535,9 +5535,7 @@ package body Sem_Ch10 is
          then
             return True;
 
-         elsif Ekind (E) = E_Generic_Function
-           or else Ekind (E) = E_Generic_Procedure
-         then
+         elsif Ekind_In (E, E_Generic_Function, E_Generic_Procedure) then
             return True;
 
          elsif Ekind (E) = E_Generic_Package
@@ -5578,10 +5576,7 @@ package body Sem_Ch10 is
       then
          Set_Body_Needed_For_SAL (Unit_Name);
 
-      elsif Ekind (Unit_Name) = E_Generic_Procedure
-              or else
-            Ekind (Unit_Name) = E_Generic_Function
-      then
+      elsif Ekind_In (Unit_Name, E_Generic_Procedure, E_Generic_Function) then
          Set_Body_Needed_For_SAL (Unit_Name);
 
       elsif Is_Subprogram (Unit_Name)

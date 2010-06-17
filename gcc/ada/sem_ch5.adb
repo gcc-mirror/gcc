@@ -998,11 +998,9 @@ package body Sem_Ch5 is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
-            if Ekind (Ent) = E_Variable
-                 or else
-               Ekind (Ent) = E_In_Out_Parameter
-                 or else
-               Ekind (Ent) = E_Out_Parameter
+            if Ekind_In (Ent, E_Variable,
+                              E_In_Out_Parameter,
+                              E_Out_Parameter)
             then
                if List_Length (Choices) = 1
                  and then Nkind (First (Choices)) in N_Subexpr

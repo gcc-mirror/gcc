@@ -3125,6 +3125,7 @@ package body Sem_Ch6 is
               or else Is_Child_Unit (S)
             then
                return False;
+
             elsif Ekind (S) = E_Package
               and then Has_Forward_Instantiation (S)
             then
@@ -6513,7 +6514,6 @@ package body Sem_Ch6 is
          --  instance of) a generic type.
 
          Formal := First_Formal (Prev_E);
-
          while Present (Formal) loop
             F_Typ := Base_Type (Etype (Formal));
 
