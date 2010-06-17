@@ -1,5 +1,19 @@
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/sh/sh-protos.h (print_operand): Delete.
+	(print_operand_address): Delete.
+	* config/sh/sh.h (PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/sh/sh.c (sh_print_operand_address): Make static.
+	(sh_print_operand): Make static.  Call sh_print_operand_address
+	and sh_print_operand.
+	(sh_print_operand_punct_valid_p): New function.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+
+2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/mcore/mcore-protos.h (mcore_print_operand): Delete.
 	(mcore_print_operand_address): Delete.
 	* config/mcore/mcore.h (PRINT_OPERAND): Delete.

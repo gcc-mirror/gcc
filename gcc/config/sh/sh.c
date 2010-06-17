@@ -198,6 +198,9 @@ static tree sh2a_handle_function_vector_handler_attribute (tree *, tree,
 static tree sh_handle_sp_switch_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_trap_exit_attribute (tree *, tree, tree, int, bool *);
 static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
+static void sh_print_operand (FILE *, rtx, int);
+static void sh_print_operand_address (FILE *, rtx);
+static bool sh_print_operand_punct_valid_p (unsigned char code);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
@@ -325,6 +328,13 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_ASM_UNALIGNED_DI_OP "\t.uaquad\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND sh_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS sh_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P sh_print_operand_punct_valid_p
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
@@ -966,8 +976,8 @@ sh_override_options (void)
 
 /* Print the operand address in x to the stream.  */
 
-void
-print_operand_address (FILE *stream, rtx x)
+static void
+sh_print_operand_address (FILE *stream, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -1045,8 +1055,8 @@ print_operand_address (FILE *stream, rtx x)
    'u'  prints the lowest 16 bits of CONST_INT, as an unsigned value.
    'o'  output an operator.  */
 
-void
-print_operand (FILE *stream, rtx x, int code)
+static void
+sh_print_operand (FILE *stream, rtx x, int code)
 {
   int regno;
   enum machine_mode mode;
@@ -1120,7 +1130,7 @@ print_operand (FILE *stream, rtx x, int code)
       else if (MEM_P (x))
 	{
 	  x = adjust_address (x, SImode, 4 * LSW);
-	  print_operand_address (stream, XEXP (x, 0));
+	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
 	{
@@ -1132,7 +1142,7 @@ print_operand (FILE *stream, rtx x, int code)
 	  if (GET_MODE_SIZE (mode) >= 8)
 	    sub = simplify_subreg (SImode, x, mode, 4 * LSW);
 	  if (sub)
-	    print_operand (stream, sub, 0);
+	    sh_print_operand (stream, sub, 0);
 	  else
 	    output_operand_lossage ("invalid operand to %%R");
 	}
@@ -1147,7 +1157,7 @@ print_operand (FILE *stream, rtx x, int code)
       else if (MEM_P (x))
 	{
 	  x = adjust_address (x, SImode, 4 * MSW);
-	  print_operand_address (stream, XEXP (x, 0));
+	  sh_print_operand_address (stream, XEXP (x, 0));
 	}
       else
 	{
@@ -1159,7 +1169,7 @@ print_operand (FILE *stream, rtx x, int code)
 	  if (GET_MODE_SIZE (mode) >= 8)
 	    sub = simplify_subreg (SImode, x, mode, 4 * MSW);
 	  if (sub)
-	    print_operand (stream, sub, 0);
+	    sh_print_operand (stream, sub, 0);
 	  else
 	    output_operand_lossage ("invalid operand to %%S");
 	}
@@ -1175,7 +1185,7 @@ print_operand (FILE *stream, rtx x, int code)
 	  if (GET_CODE (XEXP (x, 0)) != PRE_DEC
 	      && GET_CODE (XEXP (x, 0)) != POST_INC)
 	    x = adjust_address (x, SImode, 4);
-	  print_operand_address (stream, XEXP (x, 0));
+	  sh_print_operand_address (stream, XEXP (x, 0));
 	  break;
 	default:
 	  break;
@@ -1189,7 +1199,7 @@ print_operand (FILE *stream, rtx x, int code)
 	{
 	case REG:
 	case SUBREG:
-	  print_operand (stream, x, 0);
+	  sh_print_operand (stream, x, 0);
 	  break;
 	default:
 	  break;
@@ -1248,14 +1258,14 @@ print_operand (FILE *stream, rtx x, int code)
 	{
 	case REG:
 	case SUBREG:
-	  print_operand (stream, x, 0);
+	  sh_print_operand (stream, x, 0);
 	  fputs (", 0", stream);
 	  break;
 
 	case PLUS:
-	  print_operand (stream, XEXP (x, 0), 0);
+	  sh_print_operand (stream, XEXP (x, 0), 0);
 	  fputs (", ", stream);
-	  print_operand (stream, XEXP (x, 1), 0);
+	  sh_print_operand (stream, XEXP (x, 1), 0);
 	  break;
 
 	default:
@@ -1397,6 +1407,13 @@ print_operand (FILE *stream, rtx x, int code)
 	}
       break;
     }
+}
+
+static bool
+sh_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '.' || code == '#' || code == '@' || code == ','
+          || code == '$' || code == '\'' || code == '>');
 }
 
 
