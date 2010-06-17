@@ -3631,99 +3631,103 @@ package body Prj.Nmsc is
                   "library directory { does not exist",
                   Lib_Dir.Location, Project);
 
+            elsif not Project.Externally_Built then
+
                --  The library directory cannot be the same as the Object
                --  directory.
 
-            elsif Project.Library_Dir.Name = Project.Object_Directory.Name then
-               Error_Msg
-                 (Data.Flags,
-                  "library directory cannot be the same " &
-                  "as object directory",
-                  Lib_Dir.Location, Project);
-               Project.Library_Dir := No_Path_Information;
+               if Project.Library_Dir.Name = Project.Object_Directory.Name then
+                  Error_Msg
+                    (Data.Flags,
+                     "library directory cannot be the same " &
+                     "as object directory",
+                     Lib_Dir.Location, Project);
+                  Project.Library_Dir := No_Path_Information;
 
-            else
-               declare
-                  OK       : Boolean := True;
-                  Dirs_Id  : String_List_Id;
-                  Dir_Elem : String_Element;
-                  Pid      : Project_List;
+               else
+                  declare
+                     OK       : Boolean := True;
+                     Dirs_Id  : String_List_Id;
+                     Dir_Elem : String_Element;
+                     Pid      : Project_List;
 
-               begin
-                  --  The library directory cannot be the same as a source
-                  --  directory of the current project.
-
-                  Dirs_Id := Project.Source_Dirs;
-                  while Dirs_Id /= Nil_String loop
-                     Dir_Elem := Data.Tree.String_Elements.Table (Dirs_Id);
-                     Dirs_Id  := Dir_Elem.Next;
-
-                     if Project.Library_Dir.Name =
-                       Path_Name_Type (Dir_Elem.Value)
-                     then
-                        Err_Vars.Error_Msg_File_1 :=
-                          File_Name_Type (Dir_Elem.Value);
-                        Error_Msg
-                          (Data.Flags,
-                           "library directory cannot be the same " &
-                           "as source directory {",
-                           Lib_Dir.Location, Project);
-                        OK := False;
-                        exit;
-                     end if;
-                  end loop;
-
-                  if OK then
-
+                  begin
                      --  The library directory cannot be the same as a source
-                     --  directory of another project either.
+                     --  directory of the current project.
 
-                     Pid := Data.Tree.Projects;
-                     Project_Loop : loop
-                        exit Project_Loop when Pid = null;
+                     Dirs_Id := Project.Source_Dirs;
+                     while Dirs_Id /= Nil_String loop
+                        Dir_Elem := Data.Tree.String_Elements.Table (Dirs_Id);
+                        Dirs_Id  := Dir_Elem.Next;
 
-                        if Pid.Project /= Project then
-                           Dirs_Id := Pid.Project.Source_Dirs;
-
-                           Dir_Loop : while Dirs_Id /= Nil_String loop
-                              Dir_Elem :=
-                                Data.Tree.String_Elements.Table (Dirs_Id);
-                              Dirs_Id  := Dir_Elem.Next;
-
-                              if Project.Library_Dir.Name =
-                                Path_Name_Type (Dir_Elem.Value)
-                              then
-                                 Err_Vars.Error_Msg_File_1 :=
-                                   File_Name_Type (Dir_Elem.Value);
-                                 Err_Vars.Error_Msg_Name_1 := Pid.Project.Name;
-
-                                 Error_Msg
-                                   (Data.Flags,
-                                    "library directory cannot be the same " &
-                                    "as source directory { of project %%",
-                                    Lib_Dir.Location, Project);
-                                 OK := False;
-                                 exit Project_Loop;
-                              end if;
-                           end loop Dir_Loop;
+                        if Project.Library_Dir.Name =
+                          Path_Name_Type (Dir_Elem.Value)
+                        then
+                           Err_Vars.Error_Msg_File_1 :=
+                             File_Name_Type (Dir_Elem.Value);
+                           Error_Msg
+                             (Data.Flags,
+                              "library directory cannot be the same " &
+                              "as source directory {",
+                              Lib_Dir.Location, Project);
+                           OK := False;
+                           exit;
                         end if;
+                     end loop;
 
-                        Pid := Pid.Next;
-                     end loop Project_Loop;
-                  end if;
+                     if OK then
 
-                  if not OK then
-                     Project.Library_Dir := No_Path_Information;
+                        --  The library directory cannot be the same as a
+                        --  source directory of another project either.
 
-                  elsif Current_Verbosity = High then
+                        Pid := Data.Tree.Projects;
+                        Project_Loop : loop
+                           exit Project_Loop when Pid = null;
 
-                     --  Display the Library directory in high verbosity
+                           if Pid.Project /= Project then
+                              Dirs_Id := Pid.Project.Source_Dirs;
 
-                     Write_Attr
-                       ("Library directory",
-                        Get_Name_String (Project.Library_Dir.Display_Name));
-                  end if;
-               end;
+                              Dir_Loop : while Dirs_Id /= Nil_String loop
+                                 Dir_Elem :=
+                                   Data.Tree.String_Elements.Table (Dirs_Id);
+                                 Dirs_Id  := Dir_Elem.Next;
+
+                                 if Project.Library_Dir.Name =
+                                   Path_Name_Type (Dir_Elem.Value)
+                                 then
+                                    Err_Vars.Error_Msg_File_1 :=
+                                      File_Name_Type (Dir_Elem.Value);
+                                    Err_Vars.Error_Msg_Name_1 :=
+                                      Pid.Project.Name;
+
+                                    Error_Msg
+                                      (Data.Flags,
+                                       "library directory cannot be the same" &
+                                       " as source directory { of project %%",
+                                       Lib_Dir.Location, Project);
+                                    OK := False;
+                                    exit Project_Loop;
+                                 end if;
+                              end loop Dir_Loop;
+                           end if;
+
+                           Pid := Pid.Next;
+                        end loop Project_Loop;
+                     end if;
+
+                     if not OK then
+                        Project.Library_Dir := No_Path_Information;
+
+                     elsif Current_Verbosity = High then
+
+                        --  Display the Library directory in high verbosity
+
+                        Write_Attr
+                          ("Library directory",
+                           Get_Name_String (Project.Library_Dir.Display_Name));
+                     end if;
+                  end;
+               end if;
             end if;
          end if;
 
@@ -3811,8 +3815,9 @@ package body Prj.Nmsc is
                      Lib_ALI_Dir.Location, Project);
                end if;
 
-               if Project.Library_ALI_Dir /= Project.Library_Dir then
-
+               if (not Project.Externally_Built) and then
+                  Project.Library_ALI_Dir /= Project.Library_Dir
+               then
                   --  The library ALI directory cannot be the same as the
                   --  Object directory.
 
