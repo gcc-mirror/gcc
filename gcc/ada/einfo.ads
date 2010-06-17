@@ -6767,6 +6767,11 @@ package Einfo is
    --  value returned is the N_Attribute_Definition_Clause node, otherwise
    --  Empty is returned.
 
+   function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
+   --  Searches the Rep_Item chain for a given entyt E, for a record
+   --  representation clause, and if found, returns it. Returns Empty
+   --  if no such clause is found.
+
    function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  a representation pragma with the given name Nam. If found then the

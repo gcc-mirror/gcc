@@ -3534,9 +3534,7 @@ package body Sem_Res is
             --  might not be done in the In Out case since Gigi does not do
             --  any analysis. More thought required about this ???
 
-            if Ekind (F) = E_In_Parameter
-              or else Ekind (F) = E_In_Out_Parameter
-            then
+            if Ekind_In (F, E_In_Parameter, E_In_Out_Parameter) then
                if Is_Scalar_Type (Etype (A)) then
                   Apply_Scalar_Range_Check (A, F_Typ);
 
@@ -3582,9 +3580,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            if Ekind (F) = E_Out_Parameter
-              or else Ekind (F) = E_In_Out_Parameter
-            then
+            if Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter) then
                if Nkind (A) = N_Type_Conversion then
                   if Is_Scalar_Type (A_Typ) then
                      Apply_Scalar_Range_Check
@@ -6163,9 +6159,7 @@ package body Sem_Res is
       Resolve_Actuals (N, Nam);
       Generate_Reference (Nam, Entry_Name);
 
-      if Ekind (Nam) = E_Entry
-        or else Ekind (Nam) = E_Entry_Family
-      then
+      if Ekind_In (Nam, E_Entry, E_Entry_Family) then
          Check_Potentially_Blocking_Operation (N);
       end if;
 
@@ -8559,9 +8553,7 @@ package body Sem_Res is
 
                --  Handle subtypes
 
-               if Ekind (Opnd) = E_Protected_Subtype
-                 or else Ekind (Opnd) = E_Task_Subtype
-               then
+               if Ekind_In (Opnd, E_Protected_Subtype, E_Task_Subtype) then
                   Opnd := Etype (Opnd);
                end if;
 
@@ -8954,19 +8946,20 @@ package body Sem_Res is
 
          Index_Subtype := Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
 
-         Set_Scalar_Range (Index_Subtype, Drange);
+         --  Take a new copy of Drange (where bounds have been rewritten to
+         --  reference side-effect-vree names). Using a separate tree ensures
+         --  that further expansion (e.g while rewriting a slice assignment
+         --  into a FOR loop) does not attempt to remove side effects on the
+         --  bounds again (which would cause the bounds in the index subtype
+         --  definition to refer to temporaries before they are defined) (the
+         --  reason is that some names are considered side effect free here
+         --  for the subtype, but not in the context of a loop iteration
+         --  scheme).
+
+         Set_Scalar_Range (Index_Subtype, New_Copy_Tree (Drange));
          Set_Etype        (Index_Subtype, Index_Type);
          Set_Size_Info    (Index_Subtype, Index_Type);
          Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
-
-         --  Now replace the discrete range in the slice with a reference to
-         --  its index subtype. This ensures that further expansion (e.g
-         --  while rewriting a slice assignment into a FOR loop) does not
-         --  attempt to remove side effects on the bounds again (which would
-         --  cause the bounds in the index subtype definition to refer to
-         --  temporaries before they are defined).
-
-         Set_Discrete_Range (N, New_Copy_Tree (Drange));
       end if;
 
       Slice_Subtype := Create_Itype (E_Array_Subtype, N);
@@ -8979,15 +8972,26 @@ package body Sem_Res is
       Set_Etype          (Slice_Subtype, Base_Type (Etype (N)));
       Set_Is_Constrained (Slice_Subtype, True);
 
+      Check_Compile_Time_Size (Slice_Subtype);
+
       --  The Etype of the existing Slice node is reset to this slice subtype.
       --  Its bounds are obtained from its first index.
 
       Set_Etype (N, Slice_Subtype);
 
-      --  Always freeze subtype. This ensures that the slice subtype is
-      --  elaborated in the scope of the expression.
+      --  For packed slice subtypes, freeze immediately. Otherwise insert an
+      --  itype reference in the slice's actions so that the itype is frozen
+      --  at the proper place in the tree (i.e. at the point where actions
+      --  for the slice are analyzed). Note that this is different from
+      --  freezing the itype immediately, which might be premature (e.g. if
+      --  the slice is within a transient scope).
 
-      Freeze_Itype (Slice_Subtype, N);
+      if Is_Packed (Slice_Subtype) and not In_Spec_Expression then
+         Freeze_Itype (Slice_Subtype, N);
+
+      else
+         Ensure_Defined (Typ => Slice_Subtype, N => N);
+      end if;
    end Set_Slice_Subtype;
 
    --------------------------------
@@ -9732,7 +9736,6 @@ package body Sem_Res is
             elsif Ekind (Opnd_Type) = E_Anonymous_Access_Type
               and then not Is_Local_Anonymous_Access (Opnd_Type)
             then
-
                --  When the operand is a selected access discriminant the check
                --  needs to be made against the level of the object denoted by
                --  the prefix of the selected name (Object_Access_Level handles

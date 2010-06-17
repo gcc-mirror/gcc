@@ -73,9 +73,7 @@ package body Sem_Intr is
 
    procedure Check_Exception_Function (E : Entity_Id; N : Node_Id) is
    begin
-      if Ekind (E) /= E_Function
-        and then Ekind (E) /= E_Generic_Function
-      then
+      if not Ekind_In (E, E_Function, E_Generic_Function) then
          Errint
            ("intrinsic exception subprogram must be a function", E, N);
 
@@ -374,9 +372,7 @@ package body Sem_Intr is
       Ptyp2 : Node_Id;
 
    begin
-      if Ekind (E) /= E_Function
-        and then Ekind (E) /= E_Generic_Function
-      then
+      if not Ekind_In (E, E_Function, E_Generic_Function) then
          Errint ("intrinsic shift subprogram must be a function", E, N);
          return;
       end if;

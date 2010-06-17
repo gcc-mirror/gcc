@@ -2534,9 +2534,9 @@ package body Sem_Eval is
    -- Eval_Relational_Op --
    ------------------------
 
-   --  Relational operations are static functions, so the result is static
-   --  if both operands are static (RM 4.9(7), 4.9(20)), except that for
-   --  strings, the result is never static, even if the operands are.
+   --  Relational operations are static functions, so the result is static if
+   --  both operands are static (RM 4.9(7), 4.9(20)), except that for strings,
+   --  the result is never static, even if the operands are.
 
    procedure Eval_Relational_Op (N : Node_Id) is
       Left   : constant Node_Id   := Left_Opnd (N);
@@ -2650,17 +2650,37 @@ package body Sem_Eval is
                      if Nkind (Expr) = N_Op_Add
                        and then Compile_Time_Known_Value (Right_Opnd (Expr))
                      then
-                        Exp := Left_Opnd (Expr);
+                        Exp  := Left_Opnd (Expr);
                         Cons := Expr_Value (Right_Opnd (Expr));
 
                      elsif Nkind (Expr) = N_Op_Subtract
                        and then Compile_Time_Known_Value (Right_Opnd (Expr))
                      then
-                        Exp := Left_Opnd (Expr);
+                        Exp  := Left_Opnd (Expr);
                         Cons := -Expr_Value (Right_Opnd (Expr));
 
+                     --  If the bound is a constant created to remove side
+                     --  effects, recover original expression to see if it has
+                     --  one of the recognizable forms.
+
+                     elsif Nkind (Expr) = N_Identifier
+                       and then not Comes_From_Source (Entity (Expr))
+                       and then Ekind (Entity (Expr)) = E_Constant
+                       and then
+                         Nkind (Parent (Entity (Expr))) = N_Object_Declaration
+                     then
+                        Exp := Expression (Parent (Entity (Expr)));
+                        Decompose_Expr (Exp, Ent, Kind, Cons);
+
+                        --  If original expression includes an entity, create a
+                        --  reference to it for use below.
+
+                        if Present (Ent) then
+                           Exp := New_Occurrence_Of (Ent, Sloc (Ent));
+                        end if;
+
                      else
-                        Exp := Expr;
+                        Exp  := Expr;
                         Cons := Uint_0;
                      end if;
 
@@ -2669,8 +2689,10 @@ package body Sem_Eval is
                      if Nkind (Exp) = N_Attribute_Reference then
                         if Attribute_Name (Exp) = Name_First then
                            Kind := 'F';
+
                         elsif Attribute_Name (Exp) = Name_Last then
                            Kind := 'L';
+
                         else
                            Ent := Empty;
                            return;

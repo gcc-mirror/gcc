@@ -1846,7 +1846,8 @@ package body Sem_Prag is
             Proc := Entity (Name);
 
             if Ekind (Proc) /= E_Procedure
-                 or else Present (First_Formal (Proc)) then
+              or else Present (First_Formal (Proc))
+            then
                Error_Pragma_Arg
                  ("argument of pragma% must be parameterless procedure", Arg);
             end if;
@@ -2516,10 +2517,7 @@ package body Sem_Prag is
 
          --  Check that we are not applying this to a named constant
 
-         if Ekind (E) = E_Named_Integer
-              or else
-            Ekind (E) = E_Named_Real
-         then
+         if Ekind_In (E, E_Named_Integer, E_Named_Real) then
             Error_Msg_Name_1 := Pname;
             Error_Msg_N
               ("cannot apply pragma% to named constant!",
@@ -2756,9 +2754,7 @@ package body Sem_Prag is
          Process_Extended_Import_Export_Internal_Arg (Arg_Internal);
          Def_Id := Entity (Arg_Internal);
 
-         if Ekind (Def_Id) /= E_Constant
-           and then Ekind (Def_Id) /= E_Variable
-         then
+         if not Ekind_In (Def_Id, E_Constant, E_Variable) then
             Error_Pragma_Arg
               ("pragma% must designate an object", Arg_Internal);
          end if;
@@ -3368,10 +3364,8 @@ package body Sem_Prag is
          Kill_Size_Check_Code (Def_Id);
          Note_Possible_Modification (Expression (Arg2), Sure => False);
 
-         if Ekind (Def_Id) = E_Variable
-              or else
-            Ekind (Def_Id) = E_Constant
-         then
+         if Ekind_In (Def_Id, E_Variable, E_Constant) then
+
             --  We do not permit Import to apply to a renaming declaration
 
             if Present (Renamed_Object (Def_Id)) then
@@ -9131,9 +9125,7 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  if Ekind (E) = E_Procedure
-                    or else Ekind (E) = E_Generic_Procedure
-                  then
+                  if Ekind_In (E, E_Procedure, E_Generic_Procedure) then
                      Set_No_Return (E);
 
                      --  Set flag on any alias as well
@@ -10291,9 +10283,7 @@ package body Sem_Prag is
 
             Def_Id := Entity (Internal);
 
-            if Ekind (Def_Id) /= E_Constant
-              and then Ekind (Def_Id) /= E_Variable
-            then
+            if not Ekind_In (Def_Id, E_Constant, E_Variable) then
                Error_Pragma_Arg
                  ("pragma% must designate an object", Internal);
             end if;
@@ -10459,9 +10449,9 @@ package body Sem_Prag is
                loop
                   Def_Id := Get_Base_Subprogram (E);
 
-                  if Ekind (Def_Id) /= E_Function
-                    and then Ekind (Def_Id) /= E_Generic_Function
-                    and then Ekind (Def_Id) /= E_Operator
+                  if not Ekind_In (Def_Id, E_Function,
+                                           E_Generic_Function,
+                                           E_Operator)
                   then
                      Error_Pragma_Arg
                        ("pragma% requires a function name", Arg1);
