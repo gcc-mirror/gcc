@@ -2417,6 +2417,13 @@ package body Exp_Util is
                   end if;
                end;
 
+            --  Case of appearing within an Expressions_With_Actions node. We
+            --  prepend the actions to the list of actions already there.
+
+            when N_Expression_With_Actions =>
+               Prepend_List (Ins_Actions, Actions (P));
+               return;
+
             --  Case of appearing in the condition of a while expression or
             --  elsif. We insert the actions into the Condition_Actions field.
             --  They will be moved further out when the while loop or elsif

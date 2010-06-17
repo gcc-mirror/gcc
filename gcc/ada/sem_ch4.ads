@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ package Sem_Ch4  is
    procedure Analyze_Conditional_Expression             (N : Node_Id);
    procedure Analyze_Equality_Op                        (N : Node_Id);
    procedure Analyze_Explicit_Dereference               (N : Node_Id);
+   procedure Analyze_Expression_With_Actions            (N : Node_Id);
    procedure Analyze_Logical_Op                         (N : Node_Id);
    procedure Analyze_Membership_Op                      (N : Node_Id);
    procedure Analyze_Negation                           (N : Node_Id);

@@ -141,7 +141,7 @@ package body Debug is
    --  d.U
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X
+   --  d.X  Use Expression_With_Actions for short-circuited forms
    --  d.Y
    --  d.Z
 
@@ -578,6 +578,13 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for SofCheck
    --       Inspector.
+
+   --  d.X  By default, the compiler uses an elaborate rewriting framework for
+   --       short-circuited forms where the right hand condition generates
+   --       actions to be inserted. Use of this switch causes the compiler to
+   --       use the much simpler Expression_With_Actions node for this purpose.
+   --       It is a debug flag to aid transitional implementation in gigi and
+   --       the back end. As soon as that works fine, we will remove this flag.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

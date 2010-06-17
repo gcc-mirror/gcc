@@ -221,6 +221,9 @@ package body Sem is
          when N_Explicit_Dereference =>
             Analyze_Explicit_Dereference (N);
 
+         when N_Expression_With_Actions =>
+            Analyze_Expression_With_Actions (N);
+
          when N_Extended_Return_Statement =>
             Analyze_Extended_Return_Statement (N);
 
@@ -1709,7 +1712,7 @@ package body Sem is
 
          if Nkind (Unit (Withed_Unit)) = N_Package_Body
            and then Is_Generic_Instance
-             (Defining_Entity (Unit (Library_Unit (Withed_Unit))))
+                      (Defining_Entity (Unit (Library_Unit (Withed_Unit))))
          then
             Do_Withed_Unit (Library_Unit (Withed_Unit));
          end if;

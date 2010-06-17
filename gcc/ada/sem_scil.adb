@@ -544,6 +544,7 @@ package body Sem_SCIL is
                N_Exception_Handler                      |
                N_Expanded_Name                          |
                N_Explicit_Dereference                   |
+               N_Expression_With_Actions                |
                N_Extension_Aggregate                    |
                N_Floating_Point_Definition              |
                N_Formal_Decimal_Fixed_Point_Definition  |

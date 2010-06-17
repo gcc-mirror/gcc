@@ -1589,6 +1589,25 @@ package body Sem_Ch4 is
       Check_Parameterless_Call (N);
    end Analyze_Expression;
 
+   -------------------------------------
+   -- Analyze_Expression_With_Actions --
+   -------------------------------------
+
+   procedure Analyze_Expression_With_Actions (N : Node_Id) is
+      A : Node_Id;
+
+   begin
+      A := First (Actions (N));
+      loop
+         Analyze (A);
+         Next (A);
+         exit when No (A);
+      end loop;
+
+      Analyze_Expression (Expression (N));
+      Set_Etype (N, Etype (Expression (N)));
+   end Analyze_Expression_With_Actions;
+
    ------------------------------------
    -- Analyze_Indexed_Component_Form --
    ------------------------------------
@@ -6119,8 +6138,8 @@ package body Sem_Ch4 is
          First_Actual : Node_Id;
 
       begin
-         --  Place the name of the operation, with its interpretations, on the
-         --  rewritten call.
+         --  Place the name of the operation, with its interpretations,
+         --  on the rewritten call.
 
          Set_Name (Call_Node, Subprog);
 

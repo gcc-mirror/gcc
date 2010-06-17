@@ -54,7 +54,7 @@ package body Sem_Intr is
 
    procedure Check_Intrinsic_Operator (E : Entity_Id; N : Node_Id);
    --  Check that operator is one of the binary arithmetic operators, and
-   --  that the types involved have the same size.
+   --  that the types involved both have underlying integer types..
 
    procedure Check_Shift (E : Entity_Id; N : Node_Id);
    --  Check intrinsic shift subprogram, the two arguments are the same
@@ -198,11 +198,24 @@ package body Sem_Intr is
             T2 := Etype (Next_Formal (First_Formal (E)));
          end if;
 
-         if Root_Type (T1) /= Root_Type (T2)
-           or else Root_Type (T1) /= Root_Type (Ret)
+         if Root_Type (T1) = Root_Type (T2)
+           or else Root_Type (T1) = Root_Type (Ret)
          then
+            --  Same types, predefined operator will apply
+
+            null;
+
+         elsif Is_Integer_Type (Underlying_Type (T1))
+           and then Is_Integer_Type (Underlying_Type (T2))
+           and then Is_Integer_Type (Underlying_Type (Ret))
+         then
+            --  Expansion will introduce conversions if sizes are not equal
+
+            null;
+
+         else
             Errint
-              ("types of intrinsic operator must have the same size", E, N);
+              ("types of intrinsic operator operands do not match", E, N);
          end if;
 
       --  Comparison operators

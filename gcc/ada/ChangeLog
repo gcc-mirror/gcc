@@ -1,3 +1,39 @@
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.ads: Minor code reorganization (specs in alpha order).
+
+2010-06-17  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: New debug flag -gnatd.X to use Expression_With_Actions
+	node when expanding short circuit form with actions present for right
+	opnd.
+	* exp_ch4.adb: Minor reformatting
+	(Expand_Short_Circuit_Operator): Use new Expression_With_Actions node if
+	right opeand has actions present, and debug flag -gnatd.X is set.
+	* exp_util.adb (Insert_Actions): Handle case of Expression_With_Actions
+	node.
+	* nlists.adb (Prepend_List): New procedure
+	(Prepend_List_To): New procedure
+	* nlists.ads (Prepend_List): New procedure
+	(Prepend_List_To): New procedure
+	* sem.adb: Add processing for Expression_With_Actions
+	* sem_ch4.adb (Analyze_Expression_With_Actions): New procedure
+	* sem_ch4.ads (Analyze_Expression_With_Actions): New procedure
+	* sem_res.adb: Add processing for Expression_With_Actions.
+	* sem_scil.adb: Add processing for Expression_With_Actions
+	* sinfo.ads, sinfo.adb (N_Expression_With_Actions): New node.
+	* sprint.ads, sprint.adb: Add processing for Expression_With_Actions
+
+2010-06-17  Doug Rupp  <rupp@adacore.com>
+
+	* sem_intr.adb (Check_Intrinsic_Operator): Check that the types
+	involved both have underlying integer types.
+	* exp_intr.adb (Expand_Binary_Operator) New subprogram to expand a call
+	to an intrinsic operator when the operand types or sizes are not
+	identical.
+	* s-auxdec-vms_64.ads: Revert "+" "-" ops back to Address now that
+	64/32 Address/Integer works.
+
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Mark_Context): Refine placement of Withed_Body flag, so
