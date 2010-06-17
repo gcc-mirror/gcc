@@ -1255,8 +1255,100 @@ package body Prj.Proc is
       Pkg                    : Package_Id;
       Item                   : Project_Node_Id)
    is
+      procedure Check_Or_Set_Typed_Variable
+        (Value       : in out Variable_Value;
+         Declaration : Project_Node_Id);
+      --  Check whether Value is valid for this typed variable declaration. If
+      --  it is an error, the behavior depends on the flags: either an error is
+      --  reported, or a warning, or nothing. In the last two cases, the value
+      --  of the variable is set to a valid value, replacing Value.
+
+      ---------------------------------
+      -- Check_Or_Set_Typed_Variable --
+      ---------------------------------
+
+      procedure Check_Or_Set_Typed_Variable
+        (Value       : in out Variable_Value;
+         Declaration : Project_Node_Id)
+      is
+         Loc : constant Source_Ptr :=
+                 Location_Of (Declaration, From_Project_Node_Tree);
+
+         Reset_Value    : Boolean := False;
+         Current_String : Project_Node_Id;
+
+      begin
+         --  Report an error for an empty string
+
+         if Value.Value = Empty_String then
+            Error_Msg_Name_1 := Name_Of (Declaration, From_Project_Node_Tree);
+
+            case Flags.Allow_Invalid_External is
+               when Error =>
+                  Error_Msg (Flags, "no value defined for %%", Loc, Project);
+               when Warning =>
+                  Reset_Value := True;
+                  Error_Msg (Flags, "?no value defined for %%", Loc, Project);
+               when Silent =>
+                  Reset_Value := True;
+            end case;
+
+         else
+            --  Loop through all the valid strings for the
+            --  string type and compare to the string value.
+
+            Current_String :=
+              First_Literal_String
+                (String_Type_Of (Declaration, From_Project_Node_Tree),
+                 From_Project_Node_Tree);
+            while Present (Current_String)
+              and then String_Value_Of
+                (Current_String, From_Project_Node_Tree) /= Value.Value
+            loop
+               Current_String :=
+                 Next_Literal_String (Current_String, From_Project_Node_Tree);
+            end loop;
+
+            --  Report error if string value is not one for the string type
+
+            if No (Current_String) then
+               Error_Msg_Name_1 := Value.Value;
+               Error_Msg_Name_2 :=
+                 Name_Of (Declaration, From_Project_Node_Tree);
+
+               case Flags.Allow_Invalid_External is
+                  when Error =>
+                     Error_Msg
+                       (Flags, "value %% is illegal for typed string %%",
+                        Loc, Project);
+                  when Warning =>
+                     Error_Msg
+                       (Flags, "?value %% is illegal for typed string %%",
+                        Loc, Project);
+                     Reset_Value := True;
+                  when Silent =>
+                     Reset_Value := True;
+               end case;
+            end if;
+         end if;
+
+         if Reset_Value then
+            Current_String :=
+              First_Literal_String
+                (String_Type_Of (Declaration, From_Project_Node_Tree),
+                 From_Project_Node_Tree);
+
+            Value.Value := String_Value_Of
+              (Current_String, From_Project_Node_Tree);
+         end if;
+      end Check_Or_Set_Typed_Variable;
+
+      --  Local variables
+
       Current_Declarative_Item : Project_Node_Id;
       Current_Item             : Project_Node_Id;
+
+   --  Start of processing for Process_Declarative_Items
 
    begin
       --  Loop through declarative items
@@ -1677,7 +1769,7 @@ package body Prj.Proc is
 
                else
                   declare
-                     New_Value : constant Variable_Value :=
+                     New_Value : Variable_Value :=
                        Expression
                          (Project                => Project,
                           In_Tree                => In_Tree,
@@ -1713,59 +1805,9 @@ package body Prj.Proc is
                      if Kind_Of (Current_Item, From_Project_Node_Tree) =
                           N_Typed_Variable_Declaration
                      then
-                        --  Report an error for an empty string
-
-                        if New_Value.Value = Empty_String then
-                           Error_Msg_Name_1 :=
-                             Name_Of (Current_Item, From_Project_Node_Tree);
-                           Error_Msg
-                             (Flags,
-                              "no value defined for %%",
-                              Location_Of
-                                (Current_Item, From_Project_Node_Tree),
-                              Project);
-
-                        else
-                           declare
-                              Current_String : Project_Node_Id;
-
-                           begin
-                              --  Loop through all the valid strings for the
-                              --  string type and compare to the string value.
-
-                              Current_String :=
-                                First_Literal_String
-                                  (String_Type_Of (Current_Item,
-                                                   From_Project_Node_Tree),
-                                                   From_Project_Node_Tree);
-                              while Present (Current_String)
-                                and then
-                                  String_Value_Of
-                                    (Current_String, From_Project_Node_Tree) /=
-                                                               New_Value.Value
-                              loop
-                                 Current_String :=
-                                   Next_Literal_String
-                                     (Current_String, From_Project_Node_Tree);
-                              end loop;
-
-                              --  Report an error if the string value is not
-                              --  one for the string type.
-
-                              if No (Current_String) then
-                                 Error_Msg_Name_1 := New_Value.Value;
-                                 Error_Msg_Name_2 :=
-                                   Name_Of
-                                     (Current_Item, From_Project_Node_Tree);
-                                 Error_Msg
-                                   (Flags,
-                                    "value %% is illegal for typed string %%",
-                                    Location_Of
-                                      (Current_Item, From_Project_Node_Tree),
-                                    Project);
-                              end if;
-                           end;
-                        end if;
+                        Check_Or_Set_Typed_Variable
+                          (Value       => New_Value,
+                           Declaration => Current_Item);
                      end if;
 
                      --  Comment here ???

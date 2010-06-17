@@ -1,3 +1,15 @@
+2010-06-17  Thomas Quinot  <quinot@adacore.com>
+
+	* put_scos.adb: Do not generate a blank line in SCOs when omitting the
+	CP line for a disabled pragma.
+
+2010-06-17  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj.adb, prj.ads (Check_Or_Set_Typed_Variable): New
+	subprogram.
+	(Process_Declarative_Item): An invalid value in an typed variable
+	declaration is no longer always fatal.
+
 2010-06-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* get_scos.adb, par_sco.adb, par_sco.ads, put_scos.adb, scos.adb,
