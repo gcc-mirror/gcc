@@ -32,9 +32,7 @@ with Validsw;  use Validsw;
 with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
 
-with Ada.Command_Line; use Ada.Command_Line;
-
-with System.OS_Lib;  use System.OS_Lib;
+with System.Strings;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
@@ -44,6 +42,7 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
+      Args     : Argument_List;
       Arg_Rank : Positive) return Boolean;
    --  This function is called from Scan_Front_End_Switches. It determines if
    --  the switch currently being scanned is followed by a switch of the form
@@ -57,6 +56,7 @@ package body Switch.C is
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
+      Args         : Argument_List;
       Arg_Rank     : Positive)
    is
       First_Switch : Boolean := True;
@@ -677,7 +677,7 @@ package body Switch.C is
 
                --  Skip processing if cancelled by subsequent -gnat-p
 
-               if Switch_Subsequently_Cancelled ("p", Arg_Rank) then
+               if Switch_Subsequently_Cancelled ("p", Args, Arg_Rank) then
                   Store_Switch := False;
 
                else
@@ -1096,25 +1096,17 @@ package body Switch.C is
 
    function Switch_Subsequently_Cancelled
      (C        : String;
+      Args     : Argument_List;
       Arg_Rank : Positive) return Boolean
    is
-      Arg : Positive;
-      Max : constant Natural := Argument_Count;
-
+      use type System.Strings.String_Access;
    begin
       --  Loop through arguments following the current one
 
-      Arg := Arg_Rank + 1;
-      while Arg < Max loop
-         declare
-            Argv : constant String := Argument (Arg);
-         begin
-            if Argv = "-gnat-" & C then
-               return True;
-            end if;
-         end;
-
-         Arg := Arg + 1;
+      for Arg in Arg_Rank + 1 .. Args'Last loop
+         if Args (Arg).all = "-gnat-" & C then
+            return True;
+         end if;
       end loop;
 
       --  No match found, not cancelled

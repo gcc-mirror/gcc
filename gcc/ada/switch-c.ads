@@ -29,10 +29,13 @@
 --  switches that are recognized. In addition, package Debug documents
 --  the otherwise undocumented debug switches that are also recognized.
 
+with System.OS_Lib; use System.OS_Lib;
+
 package Switch.C is
 
    procedure Scan_Front_End_Switches
      (Switch_Chars : String;
+      Args         : Argument_List;
       Arg_Rank     : Positive);
    --  Procedures to scan out front end switches stored in the given string.
    --  The first character is known to be a valid switch character, and there
@@ -42,8 +45,8 @@ package Switch.C is
    --  a fatal error exit and control does not return. The call also sets
    --  Usage_Requested to True if a switch -gnath is encountered.
    --
-   --  Arg_Rank is the position of the switch in the command line arguments.
-   --  It is used for certain switches -gnatx to check if a subsequent switch
-   --  -gnat-x cancels the switch -gnatx.
+   --  Args is the full list of command line arguments. Arg_Rank is the
+   --  position of the switch in Args. It is used for certain switches -gnatx
+   --  to check if a subsequent switch -gnat-x cancels the switch -gnatx.
 
 end Switch.C;
