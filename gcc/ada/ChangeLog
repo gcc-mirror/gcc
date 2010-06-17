@@ -1,5 +1,16 @@
 2010-06-17  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb: expand NOT for VMS types.
+	* sem_util.adb: Use OpenVMS_On_Target for IS_VMS_Operator.
+
+2010-06-17  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add qualifier for '--no-elim-dispatch' gnatelim option.
+	* gnat_ugn.texi (gnatelim): add description for --no-elim-dispatch
+	option.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch6.adb (Expand_Call): Do not expand a call to an internal
 	protected operation if the subprogram has been eliminated.
 

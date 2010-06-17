@@ -10727,6 +10727,10 @@ is named @file{gnatelim.log} and is located in the current directory.
 @cindex @option{^-log^/LOGFILE^} (@command{gnatelim})
 Duplicate all the output sent to @file{stderr} into a specified log file.
 
+@cindex @option{^--no-elim-dispatch^/NO_DISPATCH^} (@command{gnatelim})
+@item ^--no-elim-dispatch^/NO_DISPATCH^
+Do not generate pragmas for dispatching operations.
+
 @cindex @option{^-o^/OUTPUT^} (@command{gnatelim})
 @item ^-o^/OUTPUT^=@var{report_file}
 Put @command{gnatelim} output into a specified file. If this file already exists,
