@@ -5095,9 +5095,11 @@ package body Exp_Ch6 is
          Rewrite (Allocator, New_Allocator);
 
          --  Create a new access object and initialize it to the result of the
-         --  new uninitialized allocator.
+         --  new uninitialized allocator. Do not use Allocator as the
+         --  Related_Node of Return_Obj_Access in call to Make_Temporary below
+         --  as this would create a sort of infinite "recursion".
 
-         Return_Obj_Access := Make_Temporary (Loc, 'R', Allocator);
+         Return_Obj_Access := Make_Temporary (Loc, 'R');
          Set_Etype (Return_Obj_Access, Acc_Type);
 
          Insert_Action (Allocator,

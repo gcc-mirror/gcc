@@ -2488,10 +2488,14 @@ package body Sem_Aggr is
       --  whose value may already have been specified by N's ancestor part.
       --  This routine checks whether this is indeed the case and if so returns
       --  False, signaling that no value for Discr should appear in N's
-      --  aggregate part. Also, in this case, the routine appends
-      --  New_Assoc_List Discr the discriminant value specified in the ancestor
+      --  aggregate part. Also, in this case, the routine appends to
+      --  New_Assoc_List the discriminant value specified in the ancestor
       --  part.
-      --  Can't parse previous sentence, appends what where???
+      --  If the aggregate is in a context with expansion delayed, it will be
+      --  reanalyzed, The inherited discriminant values must not be reinserted
+      --  in the component list to prevent spurious errors, but it must be
+      --  present on first analysis to build the proper subtype indications.
+      --  The flag Inherited_Discriminant is used to prevent the re-insertion.
 
       function Get_Value
         (Compon                 : Node_Id;
@@ -2556,6 +2560,7 @@ package body Sem_Aggr is
          Loc : Source_Ptr;
 
          Ancestor     : Node_Id;
+         Comp_Assoc   : Node_Id;
          Discr_Expr   : Node_Id;
 
          Ancestor_Typ : Entity_Id;
@@ -2568,6 +2573,20 @@ package body Sem_Aggr is
       begin
          if Regular_Aggr then
             return True;
+         end if;
+
+         --  Check whether inherited discriminant values have already been
+         --  inserted in the aggregate. This will be the case if we are
+         --  re-analyzing an aggregate whose expansion was delayed.
+
+         if Present (Component_Associations (N)) then
+            Comp_Assoc := First (Component_Associations (N));
+            while Present (Comp_Assoc) loop
+               if Inherited_Discriminant (Comp_Assoc) then
+                  return True;
+               end if;
+               Next (Comp_Assoc);
+            end loop;
          end if;
 
          Ancestor     := Ancestor_Part (N);
@@ -2627,6 +2646,7 @@ package body Sem_Aggr is
                end if;
 
                Resolve_Aggr_Expr (Discr_Expr, Discr);
+               Set_Inherited_Discriminant (Last (New_Assoc_List));
                return False;
             end if;
 

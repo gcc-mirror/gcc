@@ -1180,6 +1180,12 @@ package Sinfo is
    --    range is given by the programmer, even if that range is identical to
    --    the range for Float.
 
+   --  Inherited_Discriminant (Flag13-Sem)
+   --    This flag is present in N_Component_Association nodes. It indicates
+   --    that a given component association in an extension aggregate is the
+   --    value obtained from a constraint on an ancestor. Used to prevent
+   --    double expansion when the aggregate has expansion delayed.
+
    --  Instance_Spec (Node5-Sem)
    --    This field is present in generic instantiation nodes, and also in
    --    formal package declaration nodes (formal package declarations are
@@ -3340,6 +3346,7 @@ package Sinfo is
       --  Loop_Actions (List2-Sem)
       --  Expression (Node3)
       --  Box_Present (Flag15)
+      --  Inherited_Discriminant (Flag13)
 
       --  Note: this structure is used for both record component associations
       --  and array component associations, since the two cases aren't always
@@ -8117,6 +8124,9 @@ package Sinfo is
    function Includes_Infinities
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Inherited_Discriminant
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Instance_Spec
      (N : Node_Id) return Node_Id;    -- Node5
 
@@ -9040,6 +9050,9 @@ package Sinfo is
 
    procedure Set_Includes_Infinities
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Inherited_Discriminant
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Instance_Spec
      (N : Node_Id; Val : Node_Id);            -- Node5
@@ -11332,6 +11345,7 @@ package Sinfo is
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);
    pragma Inline (In_Present);
+   pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
    pragma Inline (Intval);
    pragma Inline (Is_Accessibility_Actual);
@@ -11636,6 +11650,7 @@ package Sinfo is
    pragma Inline (Set_Interface_List);
    pragma Inline (Set_Interface_Present);
    pragma Inline (Set_In_Present);
+   pragma Inline (Set_Inherited_Discriminant);
    pragma Inline (Set_Instance_Spec);
    pragma Inline (Set_Intval);
    pragma Inline (Set_Is_Accessibility_Actual);

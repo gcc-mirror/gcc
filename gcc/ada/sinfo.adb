@@ -1572,6 +1572,14 @@ package body Sinfo is
       return Flag11 (N);
    end Includes_Infinities;
 
+   function Inherited_Discriminant
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association);
+      return Flag13 (N);
+   end Inherited_Discriminant;
+
    function Instance_Spec
       (N : Node_Id) return Node_Id is
    begin
@@ -4465,6 +4473,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Range);
       Set_Flag11 (N, Val);
    end Set_Includes_Infinities;
+
+   procedure Set_Inherited_Discriminant
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association);
+      Set_Flag13 (N, Val);
+   end Set_Inherited_Discriminant;
 
    procedure Set_Instance_Spec
       (N : Node_Id; Val : Node_Id) is
