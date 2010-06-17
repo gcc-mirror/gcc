@@ -1,3 +1,31 @@
+2010-06-17  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* gnat_ugn.texi: Add a section introducing gdbserver.
+
+2010-06-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb, sem_ch4.adb, s-stoele.adb, par-labl.adb: Minor
+	reformatting.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Valid_Ancestor_Type): handle properly the case of a
+	constrained discriminated parent that is a private type.
+	(Analyze_Record_Aggregate): when collecting inherited discriminants,
+	handle properly an ancestor type that is a constrained private type.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Enclosing_Subprogram): If the called subprogram is
+	protected, use the protected_subprogram_body only if the original
+	subprogram has not been eliminated.
+
+2010-06-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Expression): The designated type of an
+	access_to_suprogram type can only be frozen if all types in its profile
+	are fully defined.
+
 2010-06-17  Robert Dewar  <dewar@adacore.com>
 
 	* par.adb: Minor comment fix

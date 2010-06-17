@@ -2288,6 +2288,18 @@ package body Sem_Aggr is
             then
                A_Type := Etype (Imm_Type);
                return True;
+
+            --  The parent type may be a private extension. The aggregate is
+            --  legal if the type of the aggregate is an extension of it that
+            --  is not a private extension.
+
+            elsif Is_Private_Type (A_Type)
+              and then not Is_Private_Type (Imm_Type)
+              and then Present (Full_View (A_Type))
+              and then Base_Type (Full_View (A_Type)) = Etype (Imm_Type)
+            then
+               return True;
+
             else
                Imm_Type := Etype (Base_Type (Imm_Type));
             end if;
@@ -2502,11 +2514,9 @@ package body Sem_Aggr is
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False)
          return                   Node_Id;
-      --  Given a record component stored in parameter Compon, the following
-      --  function returns its value as it appears in the list From, which is
-      --  a list of N_Component_Association nodes.
-      --  What is this referring to??? There is no "following function" in
-      --  sight???
+      --  Given a record component stored in parameter Compon, this function
+      --  returns its value as it appears in the list From, which is a list
+      --  of N_Component_Association nodes.
       --
       --  If no component association has a choice for the searched component,
       --  the value provided by the others choice is returned, if there is one,
@@ -3241,12 +3251,11 @@ package body Sem_Aggr is
 
                Dnode := Declaration_Node (Base_Type (Root_Typ));
 
-               --  If we don't get a full declaration, then we have some
-               --  error which will get signalled later so skip this part.
-               --  Otherwise, gather components of root that apply to the
-               --  aggregate type. We use the base type in case there is an
-               --  applicable stored constraint that renames the discriminants
-               --  of the root.
+               --  If we don't get a full declaration, then we have some error
+               --  which will get signalled later so skip this part. Otherwise
+               --  gather components of root that apply to the aggregate type.
+               --  We use the base type in case there is an applicable stored
+               --  constraint that renames the discriminants of the root.
 
                if Nkind (Dnode) = N_Full_Type_Declaration then
                   Record_Def := Type_Definition (Dnode);
@@ -3281,6 +3290,15 @@ package body Sem_Aggr is
                          Ancestor_Part (N), Parent_Typ);
                      return;
                   end if;
+
+               --  The current view of ancestor part may be a private type,
+               --  while the context type is always non-private.
+
+               elsif Is_Private_Type (Root_Typ)
+                 and then Present (Full_View (Root_Typ))
+                 and then Nkind (N) = N_Extension_Aggregate
+               then
+                  exit when Base_Type (Full_View (Root_Typ)) = Parent_Typ;
                end if;
             end loop;
 

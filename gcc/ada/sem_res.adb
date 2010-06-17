@@ -2076,7 +2076,7 @@ package body Sem_Res is
                         end if;
 
                         if Nkind_In
-                          (N, N_Procedure_Call_Statement, N_Function_Call)
+                             (N, N_Procedure_Call_Statement, N_Function_Call)
                           and then Present (Parameter_Associations (N))
                         then
                            Report_Ambiguous_Argument;
@@ -2121,7 +2121,7 @@ package body Sem_Res is
 
                      --  If this is an indirect call, use the subprogram_type
                      --  in the message, to have a meaningful location.
-                     --  Indicate as well if this is an inherited operation,
+                     --  Also indicate if this is an inherited operation,
                      --  created by a type declaration.
 
                      elsif Nkind (N) = N_Function_Call
@@ -2202,7 +2202,7 @@ package body Sem_Res is
                   null;
 
                --  For procedure or function calls, set the type of the name,
-               --  and also the entity pointer for the prefix
+               --  and also the entity pointer for the prefix.
 
                elsif Nkind_In (N, N_Procedure_Call_Statement, N_Function_Call)
                  and then (Is_Entity_Name (Name (N))
@@ -2238,9 +2238,9 @@ package body Sem_Res is
       end if;
 
       --  At this stage Found indicates whether or not an acceptable
-      --  interpretation exists. If not, then we have an error, except
-      --  that if the context is Any_Type as a result of some other error,
-      --  then we suppress the error report.
+      --  interpretation exists. If not, then we have an error, except that if
+      --  the context is Any_Type as a result of some other error, then we
+      --  suppress the error report.
 
       if not Found then
          if Typ /= Any_Type then

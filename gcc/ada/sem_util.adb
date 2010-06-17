@@ -2549,7 +2549,12 @@ package body Sem_Util is
       elsif Ekind (Dynamic_Scope) = E_Task_Type then
          return Get_Task_Body_Procedure (Dynamic_Scope);
 
-      elsif Convention (Dynamic_Scope) = Convention_Protected then
+      --  No body is generated if the protected operation is eliminated
+
+      elsif Convention (Dynamic_Scope) = Convention_Protected
+        and then not Is_Eliminated (Dynamic_Scope)
+        and then Present (Protected_Body_Subprogram (Dynamic_Scope))
+      then
          return Protected_Body_Subprogram (Dynamic_Scope);
 
       else
