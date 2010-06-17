@@ -2441,20 +2441,6 @@ struct sh_args {
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
   final_prescan_insn ((INSN), (OPVEC), (NOPERANDS))
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-
-#define PRINT_OPERAND(STREAM, X, CODE)  print_operand ((STREAM), (X), (CODE))
-
-/* Print a memory address as an operand to reference that memory location.  */
-
-#define PRINT_OPERAND_ADDRESS(STREAM,X)  print_operand_address ((STREAM), (X))
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR) == '.' || (CHAR) == '#' || (CHAR) == '@' || (CHAR) == ','	\
-   || (CHAR) == '$' || (CHAR) == '\'' || (CHAR) == '>')
-
 /* Recognize machine-specific patterns that may appear within
    constants.  Used for PIC-specific UNSPECs.  */
 #define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \

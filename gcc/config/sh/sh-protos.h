@@ -64,8 +64,6 @@ extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern int nonpic_symbol_mentioned_p (rtx);
 extern void emit_sf_insn (rtx);
 extern void emit_df_insn (rtx);
-extern void print_operand_address (FILE *, rtx);
-extern void print_operand (FILE *, rtx, int);
 extern void output_pic_addr_const (FILE *, rtx);
 extern int expand_block_move (rtx *);
 extern int prepare_move_operands (rtx[], enum machine_mode mode);
