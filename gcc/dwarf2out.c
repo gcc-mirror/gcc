@@ -22381,6 +22381,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   0,		/* source_line */
   0,		/* begin_prologue */
   0,		/* end_prologue */
+  0,		/* begin_epilogue */
   0,		/* end_epilogue */
   0,		/* begin_function */
   0,		/* end_function */
