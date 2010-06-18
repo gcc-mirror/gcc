@@ -1,5 +1,11 @@
 2010-06-18  Javier Miranda  <miranda@adacore.com>
 
+	* exp_cg.adb: Code clean up.
+	* debug.adb: Complete documentation of switch -gnatd.Z.
+	* gcc-interface/misc.c (callgraph_info_file): Declare.
+
+2010-06-18  Javier Miranda  <miranda@adacore.com>
+
 	* exp_cg.adb (Homonym_Suffix_Length): Minor code reorganization.
 
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
