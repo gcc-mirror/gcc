@@ -344,10 +344,9 @@ package body Sem_Elim is
             if Present (Elmt.Entity_Node)
               and then Elmt.Entity_Scope /= null
             then
-
-               --  Check that names of enclosing scopes match.
-               --  Skip blocks and wrapper package of subprogram instances,
-               --  which do not appear in the pragma.
+               --  Check that names of enclosing scopes match. Skip blocks and
+               --  wrapper package of subprogram instances, which do not appear
+               --  in the pragma.
 
                Scop := Scope (E);
 
@@ -723,14 +722,19 @@ package body Sem_Elim is
             Enclosing_Subp := Enclosing_Subprogram (Enclosing_Subp);
          end loop;
 
-         --  Emit error, unless we are within an instance body and
-         --  the expander is disabled, which indicates an instance
-         --  within an enclosing generic.
+         --  Emit error, unless we are within an instance body and the expander
+         --  is disabled, indicating an instance within an enclosing generic.
+         --  In an instance, the ultimate alias is an internal entity, so place
+         --  the message on the original subprogram.
 
          if In_Instance_Body and then not Expander_Active then
             null;
-         else
+
+         elsif Comes_From_Source (Ultimate_Subp) then
             Eliminate_Error_Msg (N, Ultimate_Subp);
+
+         else
+            Eliminate_Error_Msg (N, S);
          end if;
       end if;
    end Check_For_Eliminated_Subprogram;
@@ -762,7 +766,9 @@ package body Sem_Elim is
       --  Otherwise should not fall through, entry should be in table
 
       else
-         raise Program_Error;
+         Error_Msg_NE
+           ("subprogram& is called but its alias is eliminated", N, E);
+         --  raise Program_Error;
       end if;
    end Eliminate_Error_Msg;
 
