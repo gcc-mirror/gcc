@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -552,7 +552,8 @@ package body Sem_Ch10 is
                                      or else
                                        Used_In_Spec)
                      then
-                        Error_Msg_N ("?redundant with clause in body", Clause);
+                        Error_Msg_N -- CODEFIX
+                          ("?redundant with clause in body", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -580,7 +581,8 @@ package body Sem_Ch10 is
                        Exit_On_Self => True);
 
                      if Withed then
-                        Error_Msg_N ("?redundant with clause", Clause);
+                        Error_Msg_N -- CODEFIX
+                          ("?redundant with clause", Clause);
                      end if;
                   end;
                end if;
@@ -690,9 +692,9 @@ package body Sem_Ch10 is
             end if;
 
             if Circularity then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("circular dependency caused by with_clauses", N);
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("\possibly missing limited_with clause"
                   & " in one of the following", N);
 
@@ -1470,11 +1472,11 @@ package body Sem_Ch10 is
                                                       Unit_Name)
                               then
                                  Error_Msg_Sloc := Sloc (It);
-                                 Error_Msg_N
+                                 Error_Msg_N -- CODEFIX???
                                    ("simultaneous visibility of limited "
                                     & "and unlimited views not allowed",
                                     Item);
-                                 Error_Msg_NE
+                                 Error_Msg_NE -- CODEFIX???
                                    ("\unlimited view visible through "
                                     & "context clause #",
                                     Item, It);
@@ -1853,7 +1855,8 @@ package body Sem_Ch10 is
       if No (Nam)
         or else not Is_Protected_Type (Etype (Nam))
       then
-         Error_Msg_N ("missing specification for Protected body", N);
+         Error_Msg_N -- CODEFIX???
+           ("missing specification for Protected body", N);
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Set_Has_Completion (Etype (Nam));
@@ -2252,7 +2255,8 @@ package body Sem_Ch10 is
       end if;
 
       if No (Nam) or else not Is_Task_Type (Etype (Nam)) then
-         Error_Msg_N ("missing specification for task body", N);
+         Error_Msg_N -- CODEFIX???
+           ("missing specification for task body", N);
       else
          Set_Scope (Defining_Entity (N), Current_Scope);
          Generate_Reference (Nam, Defining_Identifier (N), 'b');
@@ -2393,13 +2397,15 @@ package body Sem_Ch10 is
 
             begin
                if U_Kind = Implementation_Unit then
-                  Error_Msg_F ("& is an internal 'G'N'A'T unit?", Name (N));
+                  Error_Msg_F -- CODEFIX???
+                    ("& is an internal 'G'N'A'T unit?", Name (N));
 
                   --  Add alternative name if available, otherwise issue a
                   --  general warning message.
 
                   if Error_Msg_Strlen /= 0 then
-                     Error_Msg_F ("\use ""~"" instead", Name (N));
+                     Error_Msg_F -- CODEFIX???
+                       ("\use ""~"" instead", Name (N));
                   else
                      Error_Msg_F
                        ("\use of this unit is non-portable " &
@@ -3449,7 +3455,7 @@ package body Sem_Ch10 is
                      end loop;
 
                      if E2 = WEnt then
-                        Error_Msg_N
+                        Error_Msg_N -- CODEFIX???
                           ("unlimited view visible through use clause ", W);
                         return;
                      end if;
@@ -3799,7 +3805,7 @@ package body Sem_Ch10 is
                                          N_Generic_Package_Declaration)
         and then Nkind (Lib_Unit) not in N_Generic_Renaming_Declaration
       then
-         Error_Msg_N
+         Error_Msg_N -- CODEFIX???
            ("child of a generic package must be a generic unit", Lib_Unit);
 
       elsif not Is_Package_Or_Generic_Package (P_Name) then
@@ -4491,11 +4497,11 @@ package body Sem_Ch10 is
                         --  installed.
 
                         if Kind = N_Package_Declaration then
-                           Error_Msg_N
+                           Error_Msg_N -- CODEFIX???
                              ("simultaneous visibility of the limited and " &
                               "unlimited views not allowed", N);
                            Error_Msg_Sloc := Sloc (Item);
-                           Error_Msg_NE
+                           Error_Msg_NE -- CODEFIX???
                              ("\\  unlimited view of & visible through the " &
                               "context clause #", N, P);
                            Error_Msg_Sloc := Sloc (Decl);
@@ -5948,9 +5954,9 @@ package body Sem_Ch10 is
          if Nkind (Item) = N_With_Clause
            and then Private_Present (Item)
          then
-            --  If private_with_clause is redundant, remove it from
-            --  context, as a small optimization to subsequent handling
-            --  of private_with clauses in other nested packages..
+            --  If private_with_clause is redundant, remove it from context,
+            --  as a small optimization to subsequent handling of private_with
+            --  clauses in other nested packages.
 
             if In_Regular_With_Clause (Entity (Name (Item))) then
                declare

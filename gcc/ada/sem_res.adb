@@ -130,10 +130,14 @@ package body Sem_Res is
    --  declaration, and not an (anonymous) allocator type.
 
    function Is_Predefined_Op (Nam : Entity_Id) return Boolean;
-   --  Utility to check whether the name in the call is a predefined
-   --  operator, in which case the call is made into an operator node.
-   --  An instance of an intrinsic conversion operation may be given
-   --  an operator name, but is not treated like an operator.
+   --  Utility to check whether the entity for an operator is a predefined
+   --  operator, in which case the expression is left as an operator in the
+   --  tree (else it is rewritten into a call). An instance of an intrinsic
+   --  conversion operation may be given an operator name, but is not treated
+   --  like an operator. Note that an operator that is an imported back-end
+   --  builtin has convention Intrinsic, but is expected to be rewritten into
+   --  a call, so such an operator is not treated as predefined by this
+   --  predicate.
 
    procedure Replace_Actual_Discriminants (N : Node_Id; Default : Node_Id);
    --  If a default expression in entry call N depends on the discriminants
@@ -213,6 +217,9 @@ package body Sem_Res is
    procedure Resolve_Intrinsic_Operator (N : Node_Id; Typ : Entity_Id);
    --  A call to a user-defined intrinsic operator is rewritten as a call
    --  to the corresponding predefined operator, with suitable conversions.
+   --  Note that this applies only for intrinsic operators that denote
+   --  predefined operators, not opeartors that are intrinsic imports of
+   --  back-end builtins.
 
    procedure Resolve_Intrinsic_Unary_Operator (N : Node_Id; Typ : Entity_Id);
    --  Ditto, for unary operators (arithmetic ones and "not" on signed
@@ -1108,11 +1115,21 @@ package body Sem_Res is
 
    function Is_Predefined_Op (Nam : Entity_Id) return Boolean is
    begin
-      return Is_Intrinsic_Subprogram (Nam)
-        and then not Is_Generic_Instance (Nam)
+      --  Predefined operators are intrinsic subprograms
+
+      if not Is_Intrinsic_Subprogram (Nam) then
+         return False;
+      end if;
+
+      --  A call to a back-end builtin is never a predefined operator
+
+      if Is_Imported (Nam) and then Present (Interface_Name (Nam)) then
+         return False;
+      end if;
+
+      return not Is_Generic_Instance (Nam)
         and then Chars (Nam) in Any_Operator_Name
-        and then (No (Alias (Nam))
-                   or else Is_Predefined_Op (Alias (Nam)));
+        and then (No (Alias (Nam)) or else Is_Predefined_Op (Alias (Nam)));
    end Is_Predefined_Op;
 
    -----------------------------

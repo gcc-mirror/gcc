@@ -53,8 +53,8 @@ package body Sem_Intr is
    --  returns type String.
 
    procedure Check_Intrinsic_Operator (E : Entity_Id; N : Node_Id);
-   --  Check that operator is one of the binary arithmetic operators, and
-   --  that the types involved both have underlying integer types.
+   --  Check that operator is one of the binary arithmetic operators, and that
+   --  the types involved both have underlying integer types.
 
    procedure Check_Shift (E : Entity_Id; N : Node_Id);
    --  Check intrinsic shift subprogram, the two arguments are the same

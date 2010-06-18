@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -659,7 +659,7 @@ package body Tbuild is
 
          --  We don't really need these shift operators, since they never
          --  appear as operators in the source, but the path of least
-         --  resistance is to put them in (the aggregate must be complete)
+         --  resistance is to put them in (the aggregate must be complete).
 
          N_Op_Rotate_Left            => Name_Rotate_Left,
          N_Op_Rotate_Right           => Name_Rotate_Right,

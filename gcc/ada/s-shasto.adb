@@ -6,8 +6,8 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
---                                                                         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
+--                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
@@ -88,8 +88,8 @@ package body System.Shared_Storage is
       Item   : AS.Stream_Element_Array);
 
    subtype Hash_Header is Natural range 0 .. 30;
-   --  Number of hash headers, related (for efficiency purposes only)
-   --  to the maximum number of lock files..
+   --  Number of hash headers, related (for efficiency purposes only) to the
+   --  maximum number of lock files.
 
    type Shared_Var_File_Entry;
    type Shared_Var_File_Entry_Ptr is access Shared_Var_File_Entry;
