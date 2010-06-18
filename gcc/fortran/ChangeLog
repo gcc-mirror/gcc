@@ -1,3 +1,9 @@
+2010-06-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44556
+	* resolve.c (resolve_allocate_deallocate): Properly check
+	part-refs in stat=/errmsg= for invalid use.
+
 2010-06-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44558
