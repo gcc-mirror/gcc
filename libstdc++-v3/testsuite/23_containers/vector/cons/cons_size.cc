@@ -1,6 +1,8 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation
+// 2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,14 +19,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1592 }
-// { dg-excess-errors "" }
+#include <vector>
+#include <testsuite_hooks.h>
+#include <testsuite_api.h>
 
-#include <deque>
-#include <utility>
-
-void f()
+void test01()
 {
-  std::deque<std::deque<std::pair<char, char> > > d('a', 'b');
+  bool test __attribute__((unused)) = true;
+
+  std::vector<__gnu_test::NonCopyConstructible> v(1000);
+  VERIFY( std::distance(v.begin(), v.end()) == 1000 );
+  for(auto it = v.begin(); it != v.end(); ++it)
+    VERIFY( *it == -1 );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }

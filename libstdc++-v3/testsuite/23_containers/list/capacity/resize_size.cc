@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// 2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+// 2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2010 Free Software Foundation, Inc.
 //
@@ -19,30 +19,20 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <forward_list>
+#include <list>
 #include <testsuite_hooks.h>
-
-struct NoCopyConstructor
-{
-  NoCopyConstructor() : num(-1) { }
-  NoCopyConstructor(const NoCopyConstructor&) = delete;
-
-  operator int() { return num; }
-
-private:
-  int num;
-};
+#include <testsuite_api.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::forward_list<NoCopyConstructor> fl;
-  VERIFY( std::distance(fl.begin(), fl.end()) == 0 );
+  std::list<__gnu_test::NonCopyConstructible> l;
+  VERIFY( std::distance(l.begin(), l.end()) == 0 );
 
-  fl.resize(10);
-  VERIFY( std::distance(fl.begin(), fl.end()) == 10 );
-  for(auto it = fl.begin(); it != fl.end(); ++it)
+  l.resize(1000);
+  VERIFY( std::distance(l.begin(), l.end()) == 1000 );
+  for(auto it = l.begin(); it != l.end(); ++it)
     VERIFY( *it == -1 );
 }
 

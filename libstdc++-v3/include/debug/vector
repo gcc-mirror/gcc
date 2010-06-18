@@ -72,12 +72,24 @@ namespace __debug
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.4.1 construct/copy/destroy:
-      explicit vector(const _Allocator& __a = _Allocator())
+      explicit
+      vector(const _Allocator& __a = _Allocator())
       : _Base(__a), _M_guaranteed_capacity(0) { }
 
-      explicit vector(size_type __n, const _Tp& __value = _Tp(),
-		      const _Allocator& __a = _Allocator())
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+      vector(size_type __n)
+      : _Base(__n), _M_guaranteed_capacity(__n) { }
+
+      vector(size_type __n, const _Tp& __value,
+	     const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a), _M_guaranteed_capacity(__n) { }
+#else
+      explicit
+      vector(size_type __n, const _Tp& __value = _Tp(),
+	     const _Allocator& __a = _Allocator())
+      : _Base(__n, __value, __a), _M_guaranteed_capacity(__n) { }
+#endif
 
       template<class _InputIterator>
         vector(_InputIterator __first, _InputIterator __last,
@@ -226,6 +238,31 @@ namespace __debug
       using _Base::size;
       using _Base::max_size;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      resize(size_type __sz)
+      {
+	bool __realloc = _M_requires_reallocation(__sz);
+	if (__sz < this->size())
+	  this->_M_invalidate_if(_After_nth(__sz, _M_base().begin()));
+	_Base::resize(__sz);
+	if (__realloc)
+	  this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
+      }
+
+      void
+      resize(size_type __sz, const _Tp& __c)
+      {
+	bool __realloc = _M_requires_reallocation(__sz);
+	if (__sz < this->size())
+	  this->_M_invalidate_if(_After_nth(__sz, _M_base().begin()));
+	_Base::resize(__sz, __c);
+	if (__realloc)
+	  this->_M_invalidate_all();
+	_M_update_guaranteed_capacity();
+      }
+#else
       void
       resize(size_type __sz, _Tp __c = _Tp())
       {
@@ -237,6 +274,7 @@ namespace __debug
 	  this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
       }
+#endif
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       using _Base::shrink_to_fit;

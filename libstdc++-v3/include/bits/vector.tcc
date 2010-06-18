@@ -458,6 +458,59 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    void
+    vector<_Tp, _Alloc>::
+    _M_default_append(size_type __n)
+    {
+      if (__n != 0)
+	{
+	  if (size_type(this->_M_impl._M_end_of_storage
+			- this->_M_impl._M_finish) >= __n)
+	    {
+	      std::__uninitialized_default_n_a(this->_M_impl._M_finish,
+					       __n, _M_get_Tp_allocator());
+	      this->_M_impl._M_finish += __n;
+	    }
+	  else
+	    {
+	      const size_type __len =
+		_M_check_len(__n, "vector::_M_default_append");
+	      const size_type __old_size = this->size();
+	      pointer __new_start(this->_M_allocate(__len));
+	      pointer __new_finish(__new_start);
+	      __try
+		{
+		  __new_finish =
+		    std::__uninitialized_move_a(this->_M_impl._M_start,
+						this->_M_impl._M_finish,
+						__new_start,
+						_M_get_Tp_allocator());
+		  std::__uninitialized_default_n_a(__new_finish, __n,
+						   _M_get_Tp_allocator());
+		  __new_finish += __n;
+		}
+	      __catch(...)
+		{
+		  std::_Destroy(__new_start, __new_finish,
+				_M_get_Tp_allocator());
+		  _M_deallocate(__new_start, __len);
+		  __throw_exception_again;
+		}
+	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+			    _M_get_Tp_allocator());
+	      _M_deallocate(this->_M_impl._M_start,
+			    this->_M_impl._M_end_of_storage
+			    - this->_M_impl._M_start);
+	      this->_M_impl._M_start = __new_start;
+	      this->_M_impl._M_finish = __new_finish;
+	      this->_M_impl._M_end_of_storage = __new_start + __len;
+	    }
+	}
+    }
+#endif
+
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
       void
