@@ -1,3 +1,8 @@
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb, g-socket.ads (Check_Selector): Make Selector an IN
+	parameter rather than IN OUT.
+
 2010-06-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb: Add extra guard.
