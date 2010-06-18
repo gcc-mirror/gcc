@@ -1,3 +1,7 @@
+2010-06-18  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.target/arm/pr40900.c: New test.
+
 2010-06-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/class_wide2.adb: Remove bogus message, no longer generated.
