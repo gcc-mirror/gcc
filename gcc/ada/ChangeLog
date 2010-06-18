@@ -1,3 +1,28 @@
+2010-06-18  Geert Bosch  <bosch@adacore.com>
+
+	* i-forbla-darwin.adb: Include -lgnala and -lm in linker options for
+	Darwin.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set Use_Expression_With_Actions
+	true for gcc.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb: Minor format change for N_Expression_With_Actions.
+	* repinfo.adb: Minor reformatting.
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb (Check_Eliminated): If within a subunit, use
+	Defining_Entity to obtain the name of the entity in the proper body, to
+	properly handle both separate packages and subprograms.
+
+2010-06-18  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_File): New parameter Display_Path.
+
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.adb, g-socket.ads (Null_Selector): New object.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -403,7 +403,6 @@ package body Repinfo is
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
-
                end if;
 
                --  Recurse into nested package, but not if they are package

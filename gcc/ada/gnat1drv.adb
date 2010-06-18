@@ -353,11 +353,11 @@ procedure Gnat1drv is
       then
          Use_Expression_With_Actions := False;
 
-         --  Otherwise normal gcc back end, for now still turn usage off by
-         --  default.
+         --  Otherwise normal gcc back end, which does implement this feature
+         --  so by default we allow its use.
 
       else
-         Use_Expression_With_Actions := False;
+         Use_Expression_With_Actions := True;
       end if;
 
       --  Set switch indicating if back end can handle limited types, and

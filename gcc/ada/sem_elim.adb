@@ -299,7 +299,7 @@ package body Sem_Elim is
             --  parsed as a child unit, but the current compilation unit is in
             --  fact the parent in which the subunit is embedded. We must skip
             --  the first name which is that of the subunit to match the pragma
-            --  specification.
+            --  specification. Body may be that of a package or subprogram.
 
             declare
                Par : Node_Id;
@@ -308,7 +308,7 @@ package body Sem_Elim is
                Par := Parent (E);
                while Present (Par) loop
                   if Nkind (Par) = N_Subunit then
-                     if Chars (Defining_Unit_Name (Proper_Body (Par))) =
+                     if Chars (Defining_Entity (Proper_Body (Par))) =
                                                          Elmt.Unit_Name (Up)
                      then
                         Up := Up - 1;
