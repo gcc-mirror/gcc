@@ -3720,13 +3720,12 @@ package body Exp_Ch6 is
       if Nkind (Orig_Bod) = N_Defining_Identifier
         or else Nkind (Orig_Bod) = N_Defining_Operator_Symbol
       then
-         --  Subprogram is a renaming_as_body. Calls appearing after the
-         --  renaming can be replaced with calls to the renamed entity
-         --  directly, because the subprograms are subtype conformant. If
-         --  the renamed subprogram is an inherited operation, we must redo
-         --  the expansion because implicit conversions may be needed.
-         --  Similarly, if the renamed entity is inlined, expand the call
-         --  for further optimizations.
+         --  Subprogram is renaming_as_body. Calls occurring after the renaming
+         --  can be replaced with calls to the renamed entity directly, because
+         --  the subprograms are subtype conformant. If the renamed subprogram
+         --  is an inherited operation, we must redo the expansion because
+         --  implicit conversions may be needed. Similarly, if the renamed
+         --  entity is inlined, expand the call for further optimizations.
 
          Set_Name (N, New_Occurrence_Of (Orig_Bod, Loc));
 
