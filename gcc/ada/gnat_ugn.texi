@@ -11549,7 +11549,8 @@ regular files.
 
 @noindent
 One or several Naming Patterns may be given as arguments to @code{gnatname}.
-Each Naming Pattern is enclosed between double quotes.
+Each Naming Pattern is enclosed between double quotes (or single
+quotes on Windows).
 A Naming Pattern is a regular expression similar to the wildcard patterns
 used in file names by the Unix shells or the DOS prompt.
 

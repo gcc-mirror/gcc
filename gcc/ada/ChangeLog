@@ -1,5 +1,30 @@
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
 
+	* g-socket.adb, g-socket.ads (Null_Selector): New object.
+
+2010-06-18  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Minor clarification.
+
+2010-06-18  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Find_Source_Dirs): Minor refactoring to avoid duplicate
+	code when using the project dir as the source dir.
+	(Search_Directories): use the normalized name for the source directory,
+	where symbolic names have potentially been resolved.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Clear Actions field
+	when we create N_Expression_With_Actions node.
+	(Expand_Short_Circuit): Ditto.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting.
+
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
 	* types.ads: Clean up obsolete comments
 	* tbuild.adb: Minor reformatting.
 	* exp_ch5.adb, sem_intr.adb, sem_ch10.adb, rtsfind.adb, s-shasto.adb,

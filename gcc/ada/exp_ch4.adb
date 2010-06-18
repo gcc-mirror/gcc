@@ -4111,6 +4111,7 @@ package body Exp_Ch4 is
                  Make_Expression_With_Actions (Sloc (Thenx),
                    Actions    => Then_Actions (N),
                    Expression => Relocate_Node (Thenx)));
+               Set_Then_Actions (N, No_List);
                Analyze_And_Resolve (Thenx, Typ);
             end if;
 
@@ -4119,6 +4120,7 @@ package body Exp_Ch4 is
                  Make_Expression_With_Actions (Sloc (Elsex),
                    Actions    => Else_Actions (N),
                    Expression => Relocate_Node (Elsex)));
+               Set_Else_Actions (N, No_List);
                Analyze_And_Resolve (Elsex, Typ);
             end if;
 
@@ -9044,6 +9046,7 @@ package body Exp_Ch4 is
               Make_Expression_With_Actions (LocR,
                 Expression => Relocate_Node (Right),
                 Actions    => Actlist));
+            Set_Actions (N, No_List);
             Analyze_And_Resolve (Right, Standard_Boolean);
          end if;
 
