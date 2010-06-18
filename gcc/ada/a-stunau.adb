@@ -37,28 +37,20 @@ package body Ada.Strings.Unbounded.Aux is
 
    procedure Get_String
      (U : Unbounded_String;
-      S : out String_Access;
+      S : out Big_String_Access;
       L : out Natural)
    is
+      X : aliased Big_String;
+      for X'Address use U.Reference.all'Address;
+
    begin
-      S := U.Reference;
+      S := X'Unchecked_Access;
       L := U.Last;
    end Get_String;
 
    ----------------
    -- Set_String --
    ----------------
-
-   procedure Set_String (UP : in out Unbounded_String; S : String) is
-   begin
-      if S'Length > UP.Last then
-         Finalize (UP);
-         UP.Reference := new String (1 .. S'Length);
-      end if;
-
-      UP.Reference (1 .. S'Length) := S;
-      UP.Last := S'Length;
-   end Set_String;
 
    procedure Set_String (UP : in out Unbounded_String; S : String_Access) is
    begin

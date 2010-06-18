@@ -37,9 +37,12 @@
 package Ada.Strings.Unbounded.Aux is
    pragma Preelaborate;
 
+   subtype Big_String is String (1 .. Positive'Last);
+   type Big_String_Access is access all Big_String;
+
    procedure Get_String
      (U : Unbounded_String;
-      S : out String_Access;
+      S : out Big_String_Access;
       L : out Natural);
    pragma Inline (Get_String);
    --  This procedure returns the internal string pointer used in the
@@ -54,18 +57,16 @@ package Ada.Strings.Unbounded.Aux is
    --  referenced string returned by this call is always one, so the actual
    --  string data is always accessible as S (1 .. L).
 
-   procedure Set_String (UP : in out Unbounded_String; S : String);
-   pragma Inline (Set_String);
-   --  This function sets the string contents of the referenced unbounded
-   --  string to the given string value. It is significantly more efficient
-   --  than the use of To_Unbounded_String with an assignment, since it
-   --  avoids the necessity of messing with finalization chains. The lower
-   --  bound of the string S is not required to be one.
+   procedure Set_String (UP : out Unbounded_String; S : String)
+     renames Set_Unbounded_String;
+   --  This function is simply a renaming of the new Ada 2005 function as shown
+   --  above. It is provided for historical reasons, but should be removed at
+   --  this stage???
 
    procedure Set_String (UP : in out Unbounded_String; S : String_Access);
    pragma Inline (Set_String);
-   --  This version of Set_String takes a string access value, rather than a
-   --  string. The lower bound of the string value is required to be one, and
-   --  this requirement is not checked.
+   --  This version of Set_Unbounded_String takes a string access value, rather
+   --  than a string. The lower bound of the string value is required to be
+   --  one, and this requirement is not checked.
 
 end Ada.Strings.Unbounded.Aux;

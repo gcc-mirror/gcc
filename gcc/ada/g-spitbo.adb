@@ -135,7 +135,7 @@ package body GNAT.Spitbol is
    -------
 
    function N (Str : VString) return Integer is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
    begin
       Get_String (Str, S, L);
@@ -147,7 +147,7 @@ package body GNAT.Spitbol is
    --------------------
 
    function Reverse_String (Str : VString) return VString is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
    begin
@@ -177,7 +177,7 @@ package body GNAT.Spitbol is
    end Reverse_String;
 
    procedure Reverse_String (Str : in out VString) is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
    begin
@@ -191,7 +191,7 @@ package body GNAT.Spitbol is
             Result (J) := S (L + 1 - J);
          end loop;
 
-         Set_String (Str, Result);
+         Set_Unbounded_String (Str, Result);
       end;
    end Reverse_String;
 
@@ -284,7 +284,7 @@ package body GNAT.Spitbol is
       Start : Positive;
       Len   : Natural) return VString
    is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
    begin
@@ -413,7 +413,7 @@ package body GNAT.Spitbol is
 
                if Elmt.Name /= null then
                   loop
-                     Set_String (TA (P).Name, Elmt.Name.all);
+                     Set_Unbounded_String (TA (P).Name, Elmt.Name.all);
                      TA (P).Value := Elmt.Value;
                      P := P + 1;
                      Elmt := Elmt.Next;
@@ -458,7 +458,7 @@ package body GNAT.Spitbol is
       end Delete;
 
       procedure Delete (T : in out Table; Name  : VString) is
-         S : String_Access;
+         S : Big_String_Access;
          L : Natural;
       begin
          Get_String (Name, S, L);
@@ -584,7 +584,7 @@ package body GNAT.Spitbol is
       end Get;
 
       function Get (T : Table; Name : VString) return Value_Type is
-         S : String_Access;
+         S : Big_String_Access;
          L : Natural;
       begin
          Get_String (Name, S, L);
@@ -625,7 +625,7 @@ package body GNAT.Spitbol is
       end Present;
 
       function Present (T : Table; Name : VString) return Boolean is
-         S : String_Access;
+         S : Big_String_Access;
          L : Natural;
       begin
          Get_String (Name, S, L);
@@ -661,7 +661,7 @@ package body GNAT.Spitbol is
       ---------
 
       procedure Set (T : in out Table; Name : VString; Value : Value_Type) is
-         S : String_Access;
+         S : Big_String_Access;
          L : Natural;
       begin
          Get_String (Name, S, L);

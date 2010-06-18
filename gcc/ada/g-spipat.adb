@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2008, AdaCore                     --
+--                     Copyright (C) 1998-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2793,9 +2793,8 @@ package body GNAT.Spitbol.Patterns is
      (Subject : VString;
       Pat     : Pattern) return Boolean
    is
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
-
       Start : Natural;
       Stop  : Natural;
       pragma Unreferenced (Stop);
@@ -2838,7 +2837,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -2867,7 +2866,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -2892,7 +2891,7 @@ package body GNAT.Spitbol.Patterns is
      (Subject : VString;
       Pat     : Pattern)
    is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
       Start : Natural;
@@ -2933,7 +2932,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -2958,7 +2957,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -2980,7 +2979,7 @@ package body GNAT.Spitbol.Patterns is
       Pat     : PString) return Boolean
    is
       Pat_Len : constant Natural := Pat'Length;
-      S       : String_Access;
+      S       : Big_String_Access;
       L       : Natural;
 
    begin
@@ -3038,7 +3037,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3067,7 +3066,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3092,7 +3091,7 @@ package body GNAT.Spitbol.Patterns is
      (Subject : VString;
       Pat     : PString)
    is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
       Start : Natural;
@@ -3133,7 +3132,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3158,7 +3157,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3182,7 +3181,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3213,7 +3212,7 @@ package body GNAT.Spitbol.Patterns is
    is
       Start : Natural;
       Stop  : Natural;
-      S     : String_Access;
+      S     : Big_String_Access;
       L     : Natural;
 
    begin
@@ -3362,7 +3361,7 @@ package body GNAT.Spitbol.Patterns is
      (Result  : in out Match_Result;
       Replace : VString)
    is
-      S : String_Access;
+      S : Big_String_Access;
       L : Natural;
 
    begin
@@ -3955,7 +3954,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Any_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -3975,7 +3974,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Any_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4142,7 +4141,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Break_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4163,7 +4162,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Break_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4210,7 +4209,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_BreakX_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4231,7 +4230,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_BreakX_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4376,7 +4375,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NotAny_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4397,7 +4396,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NotAny_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4440,7 +4439,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NSpan_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4459,7 +4458,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NSpan_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4682,7 +4681,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Span_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
             P : Natural;
 
@@ -4708,7 +4707,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Span_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
             P : Natural;
 
@@ -4809,7 +4808,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_String_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -4829,7 +4828,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_String_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5354,7 +5353,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Any_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5376,7 +5375,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Any_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5563,7 +5562,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Break_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5585,7 +5584,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Break_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5637,7 +5636,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_BreakX_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5659,7 +5658,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_BreakX_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5826,7 +5825,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NotAny_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5848,7 +5847,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NotAny_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5896,7 +5895,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NSpan_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -5916,7 +5915,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_NSpan_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -6172,7 +6171,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Span_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
             P : Natural;
 
@@ -6199,7 +6198,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_Span_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
             P : Natural;
 
@@ -6314,7 +6313,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_String_VF => declare
             U : constant VString := Node.VF.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
@@ -6335,7 +6334,7 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_String_VP => declare
             U : constant VString := Node.VP.all;
-            S : String_Access;
+            S : Big_String_Access;
             L : Natural;
 
          begin
