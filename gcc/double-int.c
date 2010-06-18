@@ -432,51 +432,6 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
     }
 }
 
-/* Rotate the doubleword integer in L1, H1 left by COUNT places
-   keeping only PREC bits of result.
-   Rotate right if COUNT is negative.
-   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
-
-void
-lrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-		HOST_WIDE_INT count, unsigned int prec,
-		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
-{
-  unsigned HOST_WIDE_INT s1l, s2l;
-  HOST_WIDE_INT s1h, s2h;
-
-  count %= prec;
-  if (count < 0)
-    count += prec;
-
-  lshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
-  rshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
-  *lv = s1l | s2l;
-  *hv = s1h | s2h;
-}
-
-/* Rotate the doubleword integer in L1, H1 left by COUNT places
-   keeping only PREC bits of result.  COUNT must be positive.
-   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
-
-void
-rrotate_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-		HOST_WIDE_INT count, unsigned int prec,
-		unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
-{
-  unsigned HOST_WIDE_INT s1l, s2l;
-  HOST_WIDE_INT s1h, s2h;
-
-  count %= prec;
-  if (count < 0)
-    count += prec;
-
-  rshift_double (l1, h1, count, prec, &s1l, &s1h, 0);
-  lshift_double (l1, h1, prec - count, prec, &s2l, &s2h, 0);
-  *lv = s1l | s2l;
-  *hv = s1h | s2h;
-}
-
 /* Divide doubleword integer LNUM, HNUM by doubleword integer LDEN, HDEN
    for a quotient (stored in *LQUO, *HQUO) and remainder (in *LREM, *HREM).
    CODE is a tree code for a kind of division, one of
@@ -842,14 +797,6 @@ double_int_sext (double_int cst, unsigned prec)
   return r;
 }
 
-/* Returns true if CST fits in unsigned HOST_WIDE_INT.  */
-
-bool
-double_int_fits_in_uhwi_p (double_int cst)
-{
-  return cst.high == 0;
-}
-
 /* Returns true if CST fits in signed HOST_WIDE_INT.  */
 
 bool
@@ -873,24 +820,6 @@ double_int_fits_in_hwi_p (double_int cst, bool uns)
     return double_int_fits_in_uhwi_p (cst);
   else
     return double_int_fits_in_shwi_p (cst);
-}
-
-/* Returns value of CST as a signed number.  CST must satisfy
-   double_int_fits_in_shwi_p.  */
-
-HOST_WIDE_INT
-double_int_to_shwi (double_int cst)
-{
-  return (HOST_WIDE_INT) cst.low;
-}
-
-/* Returns value of CST as an unsigned number.  CST must satisfy
-   double_int_fits_in_uhwi_p.  */
-
-unsigned HOST_WIDE_INT
-double_int_to_uhwi (double_int cst)
-{
-  return cst.low;
 }
 
 /* Returns A * B.  */
@@ -1049,6 +978,42 @@ double_int_rshift (double_int a, HOST_WIDE_INT count, unsigned int prec, bool ar
   return ret;
 }
 
+/* Rotate  A left by COUNT places keeping only PREC bits of result.
+   Rotate right if COUNT is negative.  */
+
+double_int
+double_int_lrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
+{
+  double_int t1, t2;
+
+  count %= prec;
+  if (count < 0)
+    count += prec;
+
+  t1 = double_int_lshift (a, count, prec, false);
+  t2 = double_int_rshift (a, prec - count, prec, false);
+
+  return double_int_ior (t1, t2);
+}
+
+/* Rotate A rigth by COUNT places keeping only PREC bits of result.
+   Rotate right if COUNT is negative.  */
+
+double_int
+double_int_rrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
+{
+  double_int t1, t2;
+
+  count %= prec;
+  if (count < 0)
+    count += prec;
+
+  t1 = double_int_rshift (a, count, prec, false);
+  t2 = double_int_lshift (a, prec - count, prec, false);
+
+  return double_int_ior (t1, t2);
+}
+
 /* Returns -1 if A < B, 0 if A == B and 1 if A > B.  Signedness of the
    comparison is given by UNS.  */
 
@@ -1095,6 +1060,51 @@ double_int_scmp (double_int a, double_int b)
     return 1;
 
   return 0;
+}
+
+/* Compares two values A and B.  Returns max value.  Signedness of the
+   comparison is given by UNS.  */
+
+double_int
+double_int_max (double_int a, double_int b, bool uns)
+{
+  return (double_int_cmp (a, b, uns) == 1) ? a : b;
+}
+
+/* Compares two signed values A and B.  Returns max value.  */
+
+double_int double_int_smax (double_int a, double_int b)
+{
+  return (double_int_scmp (a, b) == 1) ? a : b;
+}
+
+/* Compares two unsigned values A and B.  Returns max value.  */
+
+double_int double_int_umax (double_int a, double_int b)
+{
+  return (double_int_ucmp (a, b) == 1) ? a : b;
+}
+
+/* Compares two values A and B.  Returns mix value.  Signedness of the
+   comparison is given by UNS.  */
+
+double_int double_int_min (double_int a, double_int b, bool uns)
+{
+  return (double_int_cmp (a, b, uns) == -1) ? a : b;
+}
+
+/* Compares two signed values A and B.  Returns min value.  */
+
+double_int double_int_smin (double_int a, double_int b)
+{
+  return (double_int_scmp (a, b) == -1) ? a : b;
+}
+
+/* Compares two unsigned values A and B.  Returns min value.  */
+
+double_int double_int_umin (double_int a, double_int b)
+{
+  return (double_int_ucmp (a, b) == -1) ? a : b;
 }
 
 /* Splits last digit of *CST (taken as unsigned) in BASE and returns it.  */
