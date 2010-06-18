@@ -348,16 +348,16 @@ package Types is
    --  lie in. Such tests appear only in the lowest level packages.
 
    subtype List_Range      is Union_Id
-     range List_Low_Bound   .. List_High_Bound;
+     range List_Low_Bound    .. List_High_Bound;
 
    subtype Node_Range      is Union_Id
-     range Node_Low_Bound   .. Node_High_Bound;
+     range Node_Low_Bound    .. Node_High_Bound;
 
    subtype Elist_Range     is Union_Id
-     range Elist_Low_Bound  .. Elist_High_Bound;
+     range Elist_Low_Bound   .. Elist_High_Bound;
 
    subtype Elmt_Range      is Union_Id
-     range Elmt_Low_Bound   .. Elmt_High_Bound;
+     range Elmt_Low_Bound    .. Elmt_High_Bound;
 
    subtype Names_Range     is Union_Id
      range Names_Low_Bound   .. Names_High_Bound;
@@ -369,23 +369,23 @@ package Types is
      range Uint_Low_Bound    .. Uint_High_Bound;
 
    subtype Ureal_Range     is Union_Id
-     range Ureal_Low_Bound    .. Ureal_High_Bound;
+     range Ureal_Low_Bound   .. Ureal_High_Bound;
 
-   ----------------------------
+   -----------------------------
    -- Types for Atree Package --
-   ----------------------------
+   -----------------------------
 
    --  Node_Id values are used to identify nodes in the tree. They are
-   --  subscripts into the Node table declared in package Tree. Note that
-   --  the special values Empty and Error are subscripts into this table,
+   --  subscripts into the Nodes table declared in package Atree. Note that
+   --  the special values Empty and Error are subscripts into this table.
    --  See package Atree for further details.
 
    type Node_Id is range Node_Low_Bound .. Node_High_Bound;
    --  Type used to identify nodes in the tree
 
    subtype Entity_Id is Node_Id;
-   --  A synonym for node types, used in the entity package to refer to nodes
-   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx) All such
+   --  A synonym for node types, used in the Einfo package to refer to nodes
+   --  that are entities (i.e. nodes with an Nkind of N_Defining_xxx). All such
    --  nodes are extended nodes and these are the only extended nodes, so that
    --  in practice entity and extended nodes are synonymous.
 
@@ -402,12 +402,12 @@ package Types is
 
    Empty_List_Or_Node : constant := 0;
    --  This constant is used in situations (e.g. initializing empty fields)
-   --  where the value set will be used to represent either an empty node
-   --  or a non-existent list, depending on the context.
+   --  where the value set will be used to represent either an empty node or
+   --  a non-existent list, depending on the context.
 
    Error : constant Node_Id := Node_Low_Bound + 1;
-   --  Used to indicate that there was an error in the source program. A node
-   --  is actually allocated at this address, so that Nkind (Error) = N_Error.
+   --  Used to indicate an error in the source program. A node is actually
+   --  allocated with this Id value, so that Nkind (Error) = N_Error.
 
    Empty_Or_Error : constant Node_Id := Error;
    --  Since Empty and Error are the first two Node_Id values, the test for
@@ -422,11 +422,12 @@ package Types is
    -- Types for Nlists Package --
    ------------------------------
 
-   --  List_Id values are used to identify node lists in the tree. They are
-   --  subscripts into the Lists table declared in package Tree. Note that the
-   --  special value Error_List is a subscript in this table, but the value
-   --  No_List is *not* a valid subscript, and any attempt to apply list
-   --  operations to No_List will cause a (detected) error.
+   --  List_Id values are used to identify node lists stored in the tree, so
+   --  that each node can be on at most one such list (see package Nlists for
+   --  further details). Note that the special value Error_List is a subscript
+   --  in this table, but the value No_List is *not* a valid subscript, and any
+   --  attempt to apply list operations to No_List will cause a (detected)
+   --  error.
 
    type List_Id is range List_Low_Bound .. List_High_Bound;
    --  Type used to identify a node list
@@ -449,24 +450,23 @@ package Types is
    -- Types for Elists Package --
    ------------------------------
 
-   --  Element list Id values are used to identify element lists stored in the
-   --  tree (see package Atree for further details). They are formed by adding
-   --  a bias (Element_List_Bias) to subscript values in the same array that is
-   --  used for node list headers.
+   --  Element list Id values are used to identify element lists stored outside
+   --  of the tree, allowing nodes to be members of more than one such list
+   --  (see package Elists for further details).
 
    type Elist_Id is range Elist_Low_Bound .. Elist_High_Bound;
    --  Type used to identify an element list (Elist header table subscript)
 
    No_Elist : constant Elist_Id := Elist_Low_Bound;
-   --  Used to indicate absence of an element list. Note that this is not
-   --  an actual Elist header, so element list operations on this value
-   --  are not valid.
+   --  Used to indicate absence of an element list. Note that this is not an
+   --  actual Elist header, so element list operations on this value are not
+   --  valid.
 
    First_Elist_Id : constant Elist_Id := No_Elist + 1;
    --  Subscript of first allocated Elist header
 
-   --  Element Id values are used to identify individual elements of an
-   --  element list (see package Elists for further details).
+   --  Element Id values are used to identify individual elements of an element
+   --  list (see package Elists for further details).
 
    type Elmt_Id is range Elmt_Low_Bound .. Elmt_High_Bound;
    --  Type used to identify an element list
@@ -482,11 +482,12 @@ package Types is
    -------------------------------
 
    --  String_Id values are used to identify entries in the strings table. They
-   --  are subscripts into the strings table defined in package Strings.
+   --  are subscripts into the Strings table defined in package Stringt.
 
    --  Note that with only a few exceptions, which are clearly documented, the
    --  type String_Id should be regarded as a private type. In particular it is
    --  never appropriate to perform arithmetic operations using this type.
+   --  Doesn't this also apply to all other *_Id types???
 
    type String_Id is range Strings_Low_Bound .. Strings_High_Bound;
    --  Type used to identify entries in the strings table
@@ -554,7 +555,7 @@ package Types is
    type Unit_Number_Type is new Int;
    --  Unit number. The main source is unit 0, and subsidiary sources have
    --  non-zero numbers starting with 1. Unit numbers are used to index the
-   --  file table in Lib.
+   --  Units table in package Lib.
 
    Main_Unit : constant Unit_Number_Type := 0;
    --  Unit number value for main unit

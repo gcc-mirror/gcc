@@ -1,3 +1,27 @@
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* types.ads: Clean up obsolete comments
+	* tbuild.adb: Minor reformatting.
+	* exp_ch5.adb, sem_intr.adb, sem_ch10.adb, rtsfind.adb, s-shasto.adb,
+	exp_strm.adb, aa_drive.adb: Minor reformatting.
+	* sem_res.adb (Is_Predefined_Operator): An operator that is an imported
+	intrinsic with an Interface_Name denotes an imported back-end builtin,
+	and must be rewritten into a call, not left in the tree as an operator,
+	so return False in that case.
+
+2010-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Make a copy for an allocator.
+	
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* scos.ads: Add proposed output for case expression
+
+2010-06-18  Jose Ruiz  <ruiz@adacore.com>
+
+	* gnat_ugn.texi: Document that, when using the RTX compiler to generate
+	RTSS modules, we need to use the Microsoft linker.
+
 2010-06-18  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Safe_To_Capture_In_Parameter_Value): Deal with case

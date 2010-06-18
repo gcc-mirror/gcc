@@ -25555,7 +25555,8 @@ Windows executables that run in Ring 3 to utilize memory protection
 @item
 Real-time subsystem (RTSS) executables that run in Ring 0, where
 performance can be optimized with RTSS applications taking precedent
-over all Windows applications (@emph{rts-rtx-rtss}).
+over all Windows applications (@emph{rts-rtx-rtss}). This mode requires
+the Microsoft linker to handle RTSS libraries.
 
 @end itemize
 

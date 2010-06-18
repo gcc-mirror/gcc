@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,9 +161,9 @@ package SCOs is
 
    --    and is omitted for all other cases.
 
-   --  Note: up to 6 entries can appear on a single CS line. If more than 6
-   --  entries appear in one logical statement sequence, continuation lines are
-   --  marked by Cs and appear immediately after the CS line they continue.
+   --    Note: up to 6 entries can appear on a single CS line. If more than 6
+   --    entries appear in one logical statement sequence, continuation lines
+   --    are marked by Cs and appear immediately after the CS line.
 
    --  Decisions
 
@@ -271,6 +271,23 @@ package SCOs is
    --    The SCO line for a decision always occurs after the CS line for the
    --    enclosing statement. The SCO line for a nested decision always occurs
    --    after the line for the enclosing decision.
+
+   --  Case Expressions
+
+   --    For case statements, we rely on statement coverage to make sure that
+   --    all branches of a case statement are covered, but that does not work
+   --    for case expressions, since the entire expression is contained in a
+   --    single statement. However, for complete coverage we really should be
+   --    able to check that every branch of the case statement is covered, so
+   --    we generate a SCO of the form:
+
+   --      CC sloc-range sloc-range ...
+
+   --    where sloc-range covers the range of the case expression.
+
+   --    Note: up to 6 entries can appear on a single CC line. If more than 6
+   --    entries appear in one logical statement sequence, continuation lines
+   --    are marked by Cc and appear immediately after the CC line.
 
    ---------------------------------------------------------------------
    -- Internal table used to store Source Coverage Obligations (SCOs) --

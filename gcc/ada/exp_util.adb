@@ -4684,14 +4684,15 @@ package body Exp_Util is
       Scope_Suppress := (others => True);
 
       --  If it is a scalar type and we need to capture the value, just make
-      --  a copy. Likewise for a function call, an attribute reference or an
-      --  operator. And if we have a volatile reference and Name_Req is not
-      --  set (see comments above for Side_Effect_Free).
+      --  a copy. Likewise for a function call, an attribute reference, an
+      --  allocator or an operator. And if we have a volatile reference and
+      --  Name_Req is not set (see comments above for Side_Effect_Free).
 
       if Is_Elementary_Type (Exp_Type)
         and then (Variable_Ref
                    or else Nkind (Exp) = N_Function_Call
                    or else Nkind (Exp) = N_Attribute_Reference
+                   or else Nkind (Exp) = N_Allocator
                    or else Nkind (Exp) in N_Op
                    or else (not Name_Req and then Is_Volatile_Reference (Exp)))
       then
