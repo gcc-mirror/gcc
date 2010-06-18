@@ -31,6 +31,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_CG;   use Exp_CG;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -960,6 +961,10 @@ package body Exp_Disp is
              Name                   => New_Call_Name,
              Parameter_Associations => New_Params);
       end if;
+
+      --  Register the dispatching call in the call graph nodes table
+
+      Register_CG_Node (Call_Node);
 
       Rewrite (Call_Node, New_Call);
 
@@ -5968,6 +5973,10 @@ package body Exp_Disp is
             end loop;
          end;
       end if;
+
+      --  Register the tagged type in the call graph nodes table
+
+      Register_CG_Node (Typ);
 
       return Result;
    end Make_DT;
