@@ -1,3 +1,7 @@
+2010-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* stor-layout.c (debug_rli): Remove unused local variables.
+
 2010-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/40900
