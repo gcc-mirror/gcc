@@ -1077,7 +1077,7 @@ package GNAT.Sockets is
    --  already closed.
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       Status       : out Selector_Status;
@@ -1096,7 +1096,7 @@ package GNAT.Sockets is
    --  used for the implementation of Abort_Selector.
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       E_Socket_Set : in out Socket_Set_Type;
