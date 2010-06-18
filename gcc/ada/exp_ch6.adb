@@ -3396,6 +3396,7 @@ package body Exp_Ch6 is
             return Skip;
 
          elsif Is_Entity_Name (N)
+           and then Present (Return_Object)
            and then Chars (N) = Chars (Return_Object)
          then
             --  Occurrence within an extended return statement. The return

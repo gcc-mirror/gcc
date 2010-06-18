@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -664,33 +664,33 @@ package GNAT.Sockets is
    --  with a socket. Options may exist at multiple protocol levels in the
    --  communication stack. Socket_Level is the uppermost socket level.
 
-   type Level_Type is (
-     Socket_Level,
-     IP_Protocol_For_IP_Level,
-     IP_Protocol_For_UDP_Level,
-     IP_Protocol_For_TCP_Level);
+   type Level_Type is
+     (Socket_Level,
+      IP_Protocol_For_IP_Level,
+      IP_Protocol_For_UDP_Level,
+      IP_Protocol_For_TCP_Level);
 
    --  There are several options available to manipulate sockets. Each option
    --  has a name and several values available. Most of the time, the value is
    --  a boolean to enable or disable this option.
 
-   type Option_Name is (
-     Keep_Alive,          -- Enable sending of keep-alive messages
-     Reuse_Address,       -- Allow bind to reuse local address
-     Broadcast,           -- Enable datagram sockets to recv/send broadcasts
-     Send_Buffer,         -- Set/get the maximum socket send buffer in bytes
-     Receive_Buffer,      -- Set/get the maximum socket recv buffer in bytes
-     Linger,              -- Shutdown wait for msg to be sent or timeout occur
-     Error,               -- Get and clear the pending socket error
-     No_Delay,            -- Do not delay send to coalesce data (TCP_NODELAY)
-     Add_Membership,      -- Join a multicast group
-     Drop_Membership,     -- Leave a multicast group
-     Multicast_If,        -- Set default out interface for multicast packets
-     Multicast_TTL,       -- Set the time-to-live of sent multicast packets
-     Multicast_Loop,      -- Sent multicast packets are looped to local socket
-     Receive_Packet_Info, -- Receive low level packet info as ancillary data
-     Send_Timeout,        -- Set timeout value for output
-     Receive_Timeout);    -- Set timeout value for input
+   type Option_Name is
+     (Keep_Alive,          -- Enable sending of keep-alive messages
+      Reuse_Address,       -- Allow bind to reuse local address
+      Broadcast,           -- Enable datagram sockets to recv/send broadcasts
+      Send_Buffer,         -- Set/get the maximum socket send buffer in bytes
+      Receive_Buffer,      -- Set/get the maximum socket recv buffer in bytes
+      Linger,              -- Shutdown wait for msg to be sent or timeout occur
+      Error,               -- Get and clear the pending socket error
+      No_Delay,            -- Do not delay send to coalesce data (TCP_NODELAY)
+      Add_Membership,      -- Join a multicast group
+      Drop_Membership,     -- Leave a multicast group
+      Multicast_If,        -- Set default out interface for multicast packets
+      Multicast_TTL,       -- Set the time-to-live of sent multicast packets
+      Multicast_Loop,      -- Sent multicast packets are looped to local socket
+      Receive_Packet_Info, -- Receive low level packet info as ancillary data
+      Send_Timeout,        -- Set timeout value for output
+      Receive_Timeout);    -- Set timeout value for input
 
    type Option_Type (Name : Option_Name := Keep_Alive) is record
       case Name is
@@ -740,8 +740,8 @@ package GNAT.Sockets is
    --  socket options in that they are not specific to sockets but are
    --  available for any device.
 
-   type Request_Name is (
-      Non_Blocking_IO,  --  Cause a caller not to wait on blocking operations.
+   type Request_Name is
+     (Non_Blocking_IO,  --  Cause a caller not to wait on blocking operations
       N_Bytes_To_Read); --  Return the number of bytes available to read
 
    type Request_Type (Name : Request_Name := Non_Blocking_IO) is record
