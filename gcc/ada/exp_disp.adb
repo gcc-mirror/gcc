@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1546,8 +1546,8 @@ package body Exp_Disp is
             Ftyp := Base_Type (Etype (Target_Formal));
          end if;
 
-         --  For concurrent types, the relevant info is on the corresponding_
-         --  record type.
+         --  For concurrent types, the relevant information is found in the
+         --  Corresponding_Record_Type, rather than the type entity itself.
 
          if Is_Concurrent_Type (Ftyp) then
             Ftyp := Corresponding_Record_Type (Ftyp);
@@ -3520,7 +3520,7 @@ package body Exp_Disp is
            and then not Is_Frozen (Typ)
          then
             Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("declaration must appear after completion of type &", N, Typ);
             Error_Msg_NE
               ("\which is an untagged type in the profile of"
@@ -7350,7 +7350,7 @@ package body Exp_Disp is
                  and then
                not Is_TSS (Prim, TSS_Stream_Output)
             then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("abstract inherited private operation&" &
                   " must be overridden (RM 3.9.3(10))",
                  Parent (Typ), Prim);
@@ -7364,11 +7364,11 @@ package body Exp_Disp is
 
       if Is_Controlled (Typ) then
          if not Finalized then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("controlled type has no explicit Finalize method?", Typ);
 
          elsif not Adjusted then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("controlled type has no explicit Adjust method?", Typ);
          end if;
       end if;

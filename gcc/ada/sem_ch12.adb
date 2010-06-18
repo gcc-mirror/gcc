@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1144,7 +1144,8 @@ package body Sem_Ch12 is
                Others_Present := True;
 
                if Present (Next (Actual)) then
-                  Error_Msg_N ("others must be last association", Actual);
+                  Error_Msg_N -- CODEFIX???
+                    ("others must be last association", Actual);
                end if;
 
                --  This subprogram is used both for formal packages and for
@@ -1834,11 +1835,11 @@ package body Sem_Ch12 is
 
          if Null_Exclusion_Present (N) then
             if not Is_Access_Type (T) then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("null exclusion can only apply to an access type", N);
 
             elsif Can_Never_Be_Null (T) then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("`NOT NULL` not allowed (& already excludes null)",
                     N, T);
             end if;
@@ -4088,7 +4089,7 @@ package body Sem_Ch12 is
         and then Ekind (Gen_Unit) /= E_Generic_Procedure
       then
          if Ekind (Gen_Unit) = E_Generic_Function then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot instantiate generic function as procedure", Gen_Id);
          else
             Error_Msg_N
@@ -4099,7 +4100,7 @@ package body Sem_Ch12 is
         and then Ekind (Gen_Unit) /= E_Generic_Function
       then
          if Ekind (Gen_Unit) = E_Generic_Procedure then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot instantiate generic procedure as function", Gen_Id);
          else
             Error_Msg_N
@@ -4227,7 +4228,8 @@ package body Sem_Ch12 is
                   then
                      Error_Msg_NE ("access parameter& is controlling,",
                        N, Formal);
-                     Error_Msg_NE ("\corresponding parameter of & must be"
+                     Error_Msg_NE -- CODEFIX???
+                       ("\corresponding parameter of & must be"
                        & " explicitly null-excluding", N, Gen_Id);
                   end if;
 
@@ -5043,7 +5045,7 @@ package body Sem_Ch12 is
                   if Is_Child_Unit (E)
                     and then not Is_Visible_Child_Unit (E)
                   then
-                     Error_Msg_NE
+                     Error_Msg_NE -- CODEFIX???
                        ("generic child unit& is not visible", Gen_Id, E);
                   end if;
 
@@ -8354,14 +8356,14 @@ package body Sem_Ch12 is
          if Is_Atomic_Object (Actual)
            and then not Is_Atomic (Orig_Ftyp)
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot instantiate non-atomic formal object " &
                "with atomic actual", Actual);
 
          elsif Is_Volatile_Object (Actual)
            and then not Is_Volatile (Orig_Ftyp)
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot instantiate non-volatile formal object " &
                "with volatile actual", Actual);
          end if;
@@ -8528,7 +8530,7 @@ package body Sem_Ch12 is
         and then Has_Null_Exclusion (Analyzed_Formal)
       then
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
-         Error_Msg_N
+         Error_Msg_N -- CODEFIX???
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
@@ -9212,21 +9214,23 @@ package body Sem_Ch12 is
 
          if Is_Access_Constant (A_Gen_T) then
             if not Is_Access_Constant (Act_T) then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("actual type must be access-to-constant type", Actual);
                Abandon_Instantiation (Actual);
             end if;
          else
             if Is_Access_Constant (Act_T) then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("actual type must be access-to-variable type", Actual);
                Abandon_Instantiation (Actual);
 
             elsif Ekind (A_Gen_T) = E_General_Access_Type
               and then Ekind (Base_Type (Act_T)) /= E_General_Access_Type
             then
-               Error_Msg_N ("actual must be general access type!", Actual);
-               Error_Msg_NE ("add ALL to }!", Actual, Act_T);
+               Error_Msg_N -- CODEFIX
+                 ("actual must be general access type!", Actual);
+               Error_Msg_NE -- CODEFIX
+                 ("add ALL to }!", Actual, Act_T);
                Abandon_Instantiation (Actual);
             end if;
          end if;
@@ -9266,7 +9270,7 @@ package body Sem_Ch12 is
          --  Ada 2005: null-exclusion indicators of the two types must agree
 
          if Can_Never_Be_Null (A_Gen_T) /=  Can_Never_Be_Null (Act_T) then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("non null exclusion of actual and formal & do not match",
                  Actual, Gen_T);
          end if;
@@ -9388,7 +9392,7 @@ package body Sem_Ch12 is
          if Has_Aliased_Components (A_Gen_T)
            and then not Has_Aliased_Components (Act_T)
          then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("actual must have aliased components to match formal type &",
                Actual, Gen_T);
          end if;
@@ -9577,7 +9581,7 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12))
 
          if Is_Atomic (Act_T) and then not Is_Atomic (Ancestor) then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot have atomic actual type for non-atomic formal type",
                Actual);
 
@@ -9585,7 +9589,7 @@ package body Sem_Ch12 is
            and then not Is_Volatile (Ancestor)
            and then Is_By_Reference_Type (Ancestor)
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("cannot have volatile actual type for non-volatile formal type",
                Actual);
          end if;
@@ -9940,7 +9944,7 @@ package body Sem_Ch12 is
            and then not Is_Limited_Type (A_Gen_T)
            and then False
          then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("actual for non-limited & cannot be a limited type", Actual,
                Gen_T);
             Explain_Limited_Type (Act_T, Actual);
@@ -9988,7 +9992,7 @@ package body Sem_Ch12 is
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)
          then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("actual for non-limited & cannot be a limited type", Actual,
                Gen_T);
             Explain_Limited_Type (Act_T, Actual);
@@ -12207,11 +12211,11 @@ package body Sem_Ch12 is
                   --  idea to have this flag set properly.
 
                   if Nkind (N) = N_Pragma
-                    and  then
-                      (Pragma_Name (N) = Name_Assert
-                        or else Pragma_Name (N) = Name_Check
-                        or else Pragma_Name (N) = Name_Precondition
-                        or else Pragma_Name (N) = Name_Postcondition)
+                    and then
+                      (Pragma_Name (N) = Name_Assert       or else
+                       Pragma_Name (N) = Name_Check        or else
+                       Pragma_Name (N) = Name_Precondition or else
+                       Pragma_Name (N) = Name_Postcondition)
                     and then Present (Associated_Node (Pragma_Identifier (N)))
                   then
                      Set_Pragma_Enabled (N,
@@ -12300,19 +12304,22 @@ package body Sem_Ch12 is
       Act_Unit : Entity_Id)
    is
    begin
-      --  Regardless of the current mode, predefined units are analyzed in
-      --  the most current Ada mode, and earlier version Ada checks do not
-      --  apply to predefined units. Nothing needs to be done for non-internal
-      --  units. These are always analyzed in the current mode.
+      --  Regardless of the current mode, predefined units are analyzed in the
+      --  most current Ada mode, and earlier version Ada checks do not apply
+      --  to predefined units. Nothing needs to be done for non-internal units.
+      --  These are always analyzed in the current mode.
 
       if Is_Internal_File_Name
-          (Fname => Unit_File_Name (Get_Source_Unit (Gen_Unit)),
-           Renamings_Included => True)
+           (Fname              => Unit_File_Name (Get_Source_Unit (Gen_Unit)),
+            Renamings_Included => True)
       then
          Set_Opt_Config_Switches (True, Current_Sem_Unit = Main_Unit);
       end if;
 
-      Current_Instantiated_Parent := (Gen_Unit, Act_Unit, Assoc_Null);
+      Current_Instantiated_Parent :=
+        (Gen_Id         => Gen_Unit,
+         Act_Id         => Act_Unit,
+         Next_In_HTable => Assoc_Null);
    end Set_Instance_Env;
 
    -----------------
