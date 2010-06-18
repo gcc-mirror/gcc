@@ -1,3 +1,7 @@
+2010-06-18  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux64.h (SET_CMODEL): Don't expand to empty.
+
 2010-06-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43740
@@ -358,7 +362,7 @@
 	* config.in: Regenerate.
 	* config/rs6000/linux64.opt (mcmodel): New.
 	* config/rs6000/linux64.h (TARGET_USES_LINUX64_OPT): Define.
-	(TARGET_CMODEL): Define.
+	(TARGET_CMODEL, SET_CMODEL): Define.
 	(SUBSUBTARGET_OVERRIDE_OPTIONS): Check user -mcmodel choice,
 	select CMODEL_MEDIUM default.
 	* config/rs6000/rs6000.h (enum rs6000_cmodel): New.

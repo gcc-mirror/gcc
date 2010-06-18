@@ -70,7 +70,7 @@ extern enum rs6000_cmodel cmodel;
 #define TARGET_CMODEL cmodel
 #define SET_CMODEL(opt) cmodel = opt
 #else
-#define SET_CMODEL(opt)
+#define SET_CMODEL(opt) do {} while (0)
 #endif
 
 #undef  PROCESSOR_DEFAULT
