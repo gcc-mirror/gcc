@@ -3,6 +3,7 @@
 /* { dg-do run } */
 /* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
+/* { dg-options "-O2 -pg -static" { target hppa*-*-hpux* } } */
 
 extern char *strdup (const char *);
 

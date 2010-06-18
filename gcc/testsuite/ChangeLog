@@ -1,3 +1,11 @@
+2010-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline
+	2010-04-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/43739
+	* gcc.dg/pr43643.c: Use static link on hppa*-*-hpux*.
+
 2010-06-16  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR testsuite/44538
