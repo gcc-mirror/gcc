@@ -6078,7 +6078,7 @@ package body Make is
                exception
                   when others =>
 
-                     --  Delete the temporary mapping file, if one was created
+                     --  Delete the temporary mapping file if one was created
 
                      if Mapping_Path /= No_Path then
                         Delete_Temporary_File (Project_Tree, Mapping_Path);
@@ -6089,7 +6089,7 @@ package body Make is
                      raise;
                end;
 
-               --  If -dn was not specified, delete the temporary mapping file,
+               --  If -dn was not specified, delete the temporary mapping file
                --  if one was created.
 
                if Mapping_Path /= No_Path then

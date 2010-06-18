@@ -1805,7 +1805,7 @@ package body Sem_Eval is
    ---------------------------------
 
    --  We can fold to a static expression if the condition and both constituent
-   --  expressions are static. Othewise the only required processing is to do
+   --  expressions are static. Otherwise, the only required processing is to do
    --  the check for non-static context for the then and else expressions.
 
    procedure Eval_Conditional_Expression (N : Node_Id) is

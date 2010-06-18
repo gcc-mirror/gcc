@@ -1079,8 +1079,7 @@ package body Sem_Cat is
          --  implicit call, and must be treated as such.
 
          if Present (E)
-              and then
-            (Comes_From_Source (E) or else Nkind (E) /= N_Aggregate)
+           and then (Comes_From_Source (E) or else Nkind (E) /= N_Aggregate)
          then
             null;
 
@@ -1240,8 +1239,8 @@ package body Sem_Cat is
                   PEE := Parent (EE);
 
                   if Nkind (PEE) = N_Full_Type_Declaration
-                       and then not Static_Discriminant_Expr
-                                     (Discriminant_Specifications (PEE))
+                    and then not Static_Discriminant_Expr
+                                   (Discriminant_Specifications (PEE))
                   then
                      Error_Msg_N
                        ("non-static discriminant in preelaborated unit",
