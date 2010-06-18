@@ -1,3 +1,23 @@
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb: Add extra guard.
+
+2010-06-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb (Object_Access_Level): For Ada 2005, determine the
+	accessibility level of a function call from the level of the innermost
+	enclosing dynamic scope.
+	(Innermost_Master_Scope_Depth): New function to find the depth of the
+	nearest dynamic scope enclosing a node.
+
+2010-06-18  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c: Make ATTR_UNSET static as it is not used outside this file.
+
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Minor reformatting.
+
 2010-06-18  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Must_Compile): New Boolean global variable
