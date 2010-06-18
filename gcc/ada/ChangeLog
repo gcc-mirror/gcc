@@ -1,3 +1,8 @@
+2010-06-18  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.ads, g-pehage.adb (Produce): Clean up some of the code.
+	Raise an exception if the output file cannot be opened. Add comments.
+
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_cat.adb (Validate_Object_Declaration): A variable declaration is

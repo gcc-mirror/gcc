@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2008, AdaCore                     --
+--                     Copyright (C) 2002-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,9 +130,13 @@ package GNAT.Perfect_Hash_Generators is
    --  Raise Too_Many_Tries in case that the algorithm does not succeed in less
    --  than Tries attempts (see Initialize).
 
-   procedure Produce (Pkg_Name  : String := Default_Pkg_Name);
+   procedure Produce (Pkg_Name : String := Default_Pkg_Name);
    --  Generate the hash function package Pkg_Name. This package includes the
-   --  minimal perfect Hash function.
+   --  minimal perfect Hash function. The output is placed in the current
+   --  directory, in files X.ads and X.adb, where X is the standard GNAT file
+   --  name for a package named Pkg_Name.
+
+   ----------------------------------------------------------------
 
    --  The routines and structures defined below allow producing the hash
    --  function using a different way from the procedure above. The procedure
