@@ -307,10 +307,9 @@ package body Sem_Ch4 is
          end if;
 
          if Opnd = Left_Opnd (N) then
-            Error_Msg_N -- CODEFIX???
-              ("\left operand has the following interpretations", N);
+            Error_Msg_N ("\left operand has the following interpretations", N);
          else
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("\right operand has the following interpretations", N);
             Err := Opnd;
          end if;
@@ -322,16 +321,13 @@ package body Sem_Ch4 is
 
    begin
       if Nkind (N) in N_Membership_Test then
-         Error_Msg_N -- CODEFIX???
-           ("ambiguous operands for membership",  N);
+         Error_Msg_N ("ambiguous operands for membership",  N);
 
       elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
-         Error_Msg_N -- CODEFIX???
-           ("ambiguous operands for equality",  N);
+         Error_Msg_N ("ambiguous operands for equality",  N);
 
       else
-         Error_Msg_N -- CODEFIX???
-           ("ambiguous operands for comparison",  N);
+         Error_Msg_N ("ambiguous operands for comparison",  N);
       end if;
 
       if All_Errors_Mode then
@@ -4148,24 +4144,20 @@ package body Sem_Ch4 is
 
       elsif Nkind (Expr) = N_Null then
          Error_Msg_N ("argument of conversion cannot be null", N);
-         Error_Msg_N -- CODEFIX???
-           ("\use qualified expression instead", N);
+         Error_Msg_N ("\use qualified expression instead", N);
          Set_Etype (N, Any_Type);
 
       elsif Nkind (Expr) = N_Aggregate then
          Error_Msg_N ("argument of conversion cannot be aggregate", N);
-         Error_Msg_N -- CODEFIX???
-           ("\use qualified expression instead", N);
+         Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Allocator then
          Error_Msg_N ("argument of conversion cannot be an allocator", N);
-         Error_Msg_N -- CODEFIX???
-           ("\use qualified expression instead", N);
+         Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_String_Literal then
          Error_Msg_N ("argument of conversion cannot be string literal", N);
-         Error_Msg_N -- CODEFIX???
-           ("\use qualified expression instead", N);
+         Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Character_Literal then
          if Ada_Version = Ada_83 then
@@ -4173,8 +4165,7 @@ package body Sem_Ch4 is
          else
             Error_Msg_N ("argument of conversion cannot be character literal",
               N);
-            Error_Msg_N -- CODEFIX???
-              ("\use qualified expression instead", N);
+            Error_Msg_N ("\use qualified expression instead", N);
          end if;
 
       elsif Nkind (Expr) = N_Attribute_Reference
@@ -4184,8 +4175,7 @@ package body Sem_Ch4 is
            Attribute_Name (Expr) = Name_Unrestricted_Access)
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
-         Error_Msg_N -- CODEFIX???
-           ("\use qualified expression instead", N);
+         Error_Msg_N ("\use qualified expression instead", N);
       end if;
    end Analyze_Type_Conversion;
 
@@ -4659,7 +4649,7 @@ package body Sem_Ch4 is
              and then From_With_Type (Etype (Actual))
             then
                Error_Msg_Qual_Level := 1;
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                 ("missing with_clause for scope of imported type&",
                   Actual, Etype (Actual));
                Error_Msg_Qual_Level := 0;
@@ -5680,9 +5670,9 @@ package body Sem_Ch4 is
                                  (R,
                                   Etype (Next_Formal (First_Formal (Op_Id))))
                            then
-                              Error_Msg_N -- CODEFIX???
+                              Error_Msg_N
                                 ("No legal interpretation for operator&", N);
-                              Error_Msg_NE -- CODEFIX???
+                              Error_Msg_NE
                                 ("\use clause on& would make operation legal",
                                    N, Scope (Op_Id));
                               exit;
@@ -6373,7 +6363,7 @@ package body Sem_Ch4 is
                 Prefix => Relocate_Node (Obj)));
 
             if not Is_Aliased_View (Obj) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("object in prefixed call to& must be aliased"
                       & " (RM-2005 4.3.1 (13))",
                  Prefix (First_Actual), Subprog);
@@ -6428,28 +6418,27 @@ package body Sem_Ch4 is
 
          if Access_Formal and then not Access_Actual then
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("\possible interpretation"
                    & " (inherited, with implicit 'Access) #", N);
             else
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("\possible interpretation (with implicit 'Access) #", N);
             end if;
 
          elsif not Access_Formal and then Access_Actual then
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("\possible interpretation"
                    & " ( inherited, with implicit dereference) #", N);
             else
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("\possible interpretation (with implicit dereference) #", N);
             end if;
 
          else
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N -- CODEFIX???
-                 ("\possible interpretation (inherited)#", N);
+               Error_Msg_N ("\possible interpretation (inherited)#", N);
             else
                Error_Msg_N -- CODEFIX
                  ("\possible interpretation#", N);
@@ -6650,8 +6639,7 @@ package body Sem_Ch4 is
                      if Present (Valid_Candidate (Success, Call_Node, Hom))
                        and then Nkind (Call_Node) /= N_Function_Call
                      then
-                        Error_Msg_NE -- CODEFIX???
-                          ("ambiguous call to&", N, Hom);
+                        Error_Msg_NE ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);
                         Report_Ambiguity (Hom);
                         Error := True;
@@ -7068,8 +7056,7 @@ package body Sem_Ch4 is
                   if Present (Valid_Candidate (Success, Call_Node, Prim_Op))
                     and then Nkind (Call_Node) /= N_Function_Call
                   then
-                     Error_Msg_NE -- CODEFIX???
-                       ("ambiguous call to&", N, Prim_Op);
+                     Error_Msg_NE ("ambiguous call to&", N, Prim_Op);
                      Report_Ambiguity (Matching_Op);
                      Report_Ambiguity (Prim_Op);
                      return True;

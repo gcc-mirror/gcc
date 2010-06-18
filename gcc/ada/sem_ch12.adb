@@ -1144,8 +1144,7 @@ package body Sem_Ch12 is
                Others_Present := True;
 
                if Present (Next (Actual)) then
-                  Error_Msg_N -- CODEFIX???
-                    ("others must be last association", Actual);
+                  Error_Msg_N ("others must be last association", Actual);
                end if;
 
                --  This subprogram is used both for formal packages and for
@@ -1835,11 +1834,11 @@ package body Sem_Ch12 is
 
          if Null_Exclusion_Present (N) then
             if not Is_Access_Type (T) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("null exclusion can only apply to an access type", N);
 
             elsif Can_Never_Be_Null (T) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("`NOT NULL` not allowed (& already excludes null)",
                     N, T);
             end if;
@@ -4089,7 +4088,7 @@ package body Sem_Ch12 is
         and then Ekind (Gen_Unit) /= E_Generic_Procedure
       then
          if Ekind (Gen_Unit) = E_Generic_Function then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot instantiate generic function as procedure", Gen_Id);
          else
             Error_Msg_N
@@ -4100,7 +4099,7 @@ package body Sem_Ch12 is
         and then Ekind (Gen_Unit) /= E_Generic_Function
       then
          if Ekind (Gen_Unit) = E_Generic_Procedure then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot instantiate generic procedure as function", Gen_Id);
          else
             Error_Msg_N
@@ -4228,7 +4227,7 @@ package body Sem_Ch12 is
                   then
                      Error_Msg_NE ("access parameter& is controlling,",
                        N, Formal);
-                     Error_Msg_NE -- CODEFIX???
+                     Error_Msg_NE
                        ("\corresponding parameter of & must be"
                        & " explicitly null-excluding", N, Gen_Id);
                   end if;
@@ -5045,7 +5044,7 @@ package body Sem_Ch12 is
                   if Is_Child_Unit (E)
                     and then not Is_Visible_Child_Unit (E)
                   then
-                     Error_Msg_NE -- CODEFIX???
+                     Error_Msg_NE
                        ("generic child unit& is not visible", Gen_Id, E);
                   end if;
 
@@ -8356,14 +8355,14 @@ package body Sem_Ch12 is
          if Is_Atomic_Object (Actual)
            and then not Is_Atomic (Orig_Ftyp)
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot instantiate non-atomic formal object " &
                "with atomic actual", Actual);
 
          elsif Is_Volatile_Object (Actual)
            and then not Is_Volatile (Orig_Ftyp)
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot instantiate non-volatile formal object " &
                "with volatile actual", Actual);
          end if;
@@ -8530,7 +8529,7 @@ package body Sem_Ch12 is
         and then Has_Null_Exclusion (Analyzed_Formal)
       then
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
-         Error_Msg_N -- CODEFIX???
+         Error_Msg_N
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
@@ -9214,13 +9213,13 @@ package body Sem_Ch12 is
 
          if Is_Access_Constant (A_Gen_T) then
             if not Is_Access_Constant (Act_T) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("actual type must be access-to-constant type", Actual);
                Abandon_Instantiation (Actual);
             end if;
          else
             if Is_Access_Constant (Act_T) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("actual type must be access-to-variable type", Actual);
                Abandon_Instantiation (Actual);
 
@@ -9270,7 +9269,7 @@ package body Sem_Ch12 is
          --  Ada 2005: null-exclusion indicators of the two types must agree
 
          if Can_Never_Be_Null (A_Gen_T) /=  Can_Never_Be_Null (Act_T) then
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("non null exclusion of actual and formal & do not match",
                  Actual, Gen_T);
          end if;
@@ -9392,7 +9391,7 @@ package body Sem_Ch12 is
          if Has_Aliased_Components (A_Gen_T)
            and then not Has_Aliased_Components (Act_T)
          then
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("actual must have aliased components to match formal type &",
                Actual, Gen_T);
          end if;
@@ -9581,7 +9580,7 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12))
 
          if Is_Atomic (Act_T) and then not Is_Atomic (Ancestor) then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot have atomic actual type for non-atomic formal type",
                Actual);
 
@@ -9589,7 +9588,7 @@ package body Sem_Ch12 is
            and then not Is_Volatile (Ancestor)
            and then Is_By_Reference_Type (Ancestor)
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("cannot have volatile actual type for non-volatile formal type",
                Actual);
          end if;
@@ -9944,7 +9943,7 @@ package body Sem_Ch12 is
            and then not Is_Limited_Type (A_Gen_T)
            and then False
          then
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("actual for non-limited & cannot be a limited type", Actual,
                Gen_T);
             Explain_Limited_Type (Act_T, Actual);
@@ -9992,7 +9991,7 @@ package body Sem_Ch12 is
          if Is_Limited_Type (Act_T)
            and then not Is_Limited_Type (A_Gen_T)
          then
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("actual for non-limited & cannot be a limited type", Actual,
                Gen_T);
             Explain_Limited_Type (Act_T, Actual);

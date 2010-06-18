@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -346,7 +346,7 @@ package body Ch12 is
          Scan;  --  past OTHERS
 
          if Token /= Tok_Arrow then
-            Error_Msg_BC ("expect arrow after others");
+            Error_Msg_BC  ("expect arrow after others");
          else
             Scan;  --  past arrow
          end if;
@@ -912,7 +912,8 @@ package body Ch12 is
          Scan;
 
          if Token = Tok_Private then
-            Error_Msg_SC ("TAGGED should be WITH");
+            Error_Msg_SC  -- CODEFIX
+              ("TAGGED should be WITH");
             Set_Private_Present (Def_Node, True);
             T_Private;
          else

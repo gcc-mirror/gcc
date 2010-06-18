@@ -3058,8 +3058,7 @@ package body Sem_Eval is
                     = Entity (Drange)
                then
                   if Warn_On_Redundant_Constructs then
-                     Error_Msg_N -- CODEFIX???
-                       ("redundant slice denotes whole array?", N);
+                     Error_Msg_N ("redundant slice denotes whole array?", N);
                   end if;
 
                   --  The following might be a useful optimization????

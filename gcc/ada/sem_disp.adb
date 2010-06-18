@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -640,8 +640,8 @@ package body Sem_Disp is
                   end if;
 
                   if Present (Func) and then Is_Abstract_Subprogram (Func) then
-                     Error_Msg_N (
-                       "call to abstract function must be dispatching", N);
+                     Error_Msg_N
+                       ("call to abstract function must be dispatching", N);
                   end if;
                end if;
 
@@ -746,7 +746,7 @@ package body Sem_Disp is
                  and then not In_Instance
                then
                   Error_Msg_N ("?declaration of& is too late!", Subp);
-                  Error_Msg_NE
+                  Error_Msg_NE -- CODEFIX??
                     ("\spec should appear immediately after declaration of &!",
                      Subp, Typ);
                   exit;

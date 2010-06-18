@@ -150,8 +150,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          Error_Msg_Name_2 := Name_On;
          Error_Msg_Name_3 := Name_Off;
 
-         Error_Msg -- CODEFIX???
-           ("argument for pragma% must be% or%", Sloc (Argx));
+         Error_Msg ("argument for pragma% must be% or%", Sloc (Argx));
          raise Error_Resync;
       end if;
    end Check_Arg_Is_On_Or_Off;
@@ -539,7 +538,7 @@ begin
 
                for J in 1 .. Name_Len loop
                   if Is_Directory_Separator (Name_Buffer (J)) then
-                     Error_Msg -- CODEFIX???
+                     Error_Msg
                        ("directory separator character not allowed",
                         Sloc (Expression (Arg)) + Source_Ptr (J));
                   end if;
@@ -606,7 +605,7 @@ begin
                   end if;
                end if;
 
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("Casing argument for pragma% must be " &
                   "one of Mixedcase, Lowercase, Uppercase",
                   Arg);

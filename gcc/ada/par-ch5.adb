@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,8 @@ package body Ch5 is
       procedure Test_Statement_Required is
       begin
          if Statement_Required then
-            Error_Msg_BC ("statement expected");
+            Error_Msg_BC -- CODEFIX
+              ("statement expected");
          end if;
       end Test_Statement_Required;
 
@@ -607,7 +608,8 @@ package body Ch5 is
                                    or else
                                  Nkind (Name_Node) = N_Selected_Component)
                      then
-                        Error_Msg_SC ("""/"" should be "".""");
+                        Error_Msg_SC -- CODEFIX
+                          ("""/"" should be "".""");
                         Statement_Required := False;
                         raise Error_Resync;
 
@@ -857,7 +859,8 @@ package body Ch5 is
                      Junk_Declaration;
 
                   else
-                     Error_Msg_BC ("statement expected");
+                     Error_Msg_BC -- CODEFIX
+                       ("statement expected");
                      raise Error_Resync;
                   end if;
             end case;
@@ -1172,7 +1175,8 @@ package body Ch5 is
          --  of WHEN expression =>
 
          if Token = Tok_Arrow then
-            Error_Msg_SC ("THEN expected");
+            Error_Msg_SC -- CODEFIX
+              ("THEN expected");
             Scan; -- past the arrow
             Pop_Scope_Stack; -- remove unneeded entry
             raise Error_Resync;
@@ -1208,7 +1212,8 @@ package body Ch5 is
             Scan; -- past ELSE
 
             if Else_Should_Be_Elsif then
-               Error_Msg_SP ("ELSE should be ELSIF");
+               Error_Msg_SP -- CODEFIX
+                 ("ELSE should be ELSIF");
                Add_Elsif_Part;
 
             else
@@ -1258,7 +1263,8 @@ package body Ch5 is
 
       if Token = Tok_Colon_Equal then
          while Token = Tok_Colon_Equal loop
-            Error_Msg_SC (""":="" should be ""=""");
+            Error_Msg_SC -- CODEFIX
+              (""":="" should be ""=""");
             Scan; -- past junk :=
             Discard_Junk_Node (P_Expression_No_Right_Paren);
          end loop;
@@ -2196,7 +2202,8 @@ package body Ch5 is
       --  What we are interested in is whether it was a case of a bad IS.
 
       if Scope.Table (Scope.Last + 1).Etyp = E_Bad_Is then
-         Error_Msg ("|IS should be "";""", Scope.Table (Scope.Last + 1).S_Is);
+         Error_Msg -- CODEFIX
+           ("|IS should be "";""", Scope.Table (Scope.Last + 1).S_Is);
          Set_Bad_Is_Detected (Parent, True);
       end if;
 
@@ -2225,7 +2232,8 @@ package body Ch5 is
       TF_Then;
 
       while Token = Tok_Then loop
-         Error_Msg_SC ("redundant THEN");
+         Error_Msg_SC -- CODEFIX
+           ("redundant THEN");
          TF_Then;
       end loop;
 

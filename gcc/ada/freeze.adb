@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2004,8 +2004,7 @@ package body Freeze is
             if not Placed_Component then
                ADC :=
                  Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
-               Error_Msg_N
-                 ("?Bit_Order specification has no effect", ADC);
+               Error_Msg_N ("?Bit_Order specification has no effect", ADC);
                Error_Msg_N
                  ("\?since no component clauses were specified", ADC);
 
@@ -2063,7 +2062,7 @@ package body Freeze is
             --  Give warning if redundant constructs warnings on
 
             if Warn_On_Redundant_Constructs then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX
                  ("?pragma Pack has no effect, no unplaced components",
                   Get_Rep_Pragma (Rec, Name_Pack));
             end if;
@@ -2232,9 +2231,9 @@ package body Freeze is
                declare
                   Sz : constant Node_Id := Size_Clause (Rec);
                begin
-                  Error_Msg_NE --  CODEFIX
+                  Error_Msg_NE -- CODEFIX
                     ("size given for& too small", Sz, Rec);
-                  Error_Msg_N --  CODEFIX
+                  Error_Msg_N -- CODEFIX
                     ("\use explicit pragma Pack "
                      & "or use pragma Implicit_Packing", Sz);
                end;
@@ -2463,8 +2462,7 @@ package body Freeze is
                           and then not Has_Size_Clause (F_Type)
                           and then VM_Target = No_VM
                         then
-                           Error_Msg_N
-                             ("& is an 8-bit Ada Boolean?", Formal);
+                           Error_Msg_N ("& is an 8-bit Ada Boolean?", Formal);
                            Error_Msg_N
                              ("\use appropriate corresponding type in C "
                               & "(e.g. char)?", Formal);
@@ -2731,7 +2729,8 @@ package body Freeze is
                                Object_Definition (Parent (E)));
 
                   if Is_CPP_Class (Etype (E)) then
-                     Error_Msg_NE ("\} may need a cpp_constructor",
+                     Error_Msg_NE
+                       ("\} may need a cpp_constructor",
                        Object_Definition (Parent (E)), Etype (E));
                   end if;
                end if;
@@ -3011,7 +3010,7 @@ package body Freeze is
                               else
                                  Error_Msg_NE
                                    ("size given for& too small", SZ, E);
-                                 Error_Msg_N
+                                 Error_Msg_N -- CODEFIX
                                    ("\use explicit pragma Pack "
                                     & "or use pragma Implicit_Packing", SZ);
                               end if;

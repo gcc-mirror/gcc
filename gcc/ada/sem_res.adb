@@ -282,29 +282,24 @@ package body Sem_Res is
 
    begin
       if Nkind (C) = N_Character_Literal then
-         Error_Msg_N -- CODEFIX???
-           ("ambiguous character literal", C);
+         Error_Msg_N ("ambiguous character literal", C);
 
          --  First the ones in Standard
 
-         Error_Msg_N -- CODEFIX???
-           ("\\possible interpretation: Character!", C);
-         Error_Msg_N -- CODEFIX???
-           ("\\possible interpretation: Wide_Character!", C);
+         Error_Msg_N ("\\possible interpretation: Character!", C);
+         Error_Msg_N ("\\possible interpretation: Wide_Character!", C);
 
          --  Include Wide_Wide_Character in Ada 2005 mode
 
          if Ada_Version >= Ada_05 then
-            Error_Msg_N -- CODEFIX???
-              ("\\possible interpretation: Wide_Wide_Character!", C);
+            Error_Msg_N ("\\possible interpretation: Wide_Wide_Character!", C);
          end if;
 
          --  Now any other types that match
 
          E := Current_Entity (C);
          while Present (E) loop
-            Error_Msg_NE -- CODEFIX???
-              ("\\possible interpretation:}!", C, Etype (E));
+            Error_Msg_NE ("\\possible interpretation:}!", C, Etype (E));
             E := Homonym (E);
          end loop;
       end if;
@@ -1774,8 +1769,7 @@ package body Sem_Res is
            and then Is_Entity_Name (Name (Arg))
            and then Is_Overloaded (Name (Arg))
          then
-            Error_Msg_NE -- CODEFIX???
-              ("ambiguous call to&", Arg, Name (Arg));
+            Error_Msg_NE ("ambiguous call to&", Arg, Name (Arg));
 
             --  Could use comments on what is going on here ???
 
@@ -1784,11 +1778,9 @@ package body Sem_Res is
                Error_Msg_Sloc := Sloc (It.Nam);
 
                if Nkind (Parent (It.Nam)) = N_Full_Type_Declaration then
-                  Error_Msg_N -- CODEFIX???
-                    ("interpretation (inherited) #!", Arg);
+                  Error_Msg_N ("interpretation (inherited) #!", Arg);
                else
-                  Error_Msg_N -- CODEFIX???
-                    ("interpretation #!", Arg);
+                  Error_Msg_N ("interpretation #!", Arg);
                end if;
 
                Get_Next_Interp (I, It);
@@ -2083,7 +2075,7 @@ package body Sem_Res is
                         if Nkind (N) = N_Function_Call
                           and then Nkind (Name (N)) = N_Explicit_Dereference
                         then
-                           Error_Msg_N -- CODEFIX???
+                           Error_Msg_N
                              ("ambiguous expression "
                                & "(cannot resolve indirect call)!", N);
                         else
@@ -2095,7 +2087,7 @@ package body Sem_Res is
                         Ambiguous := True;
 
                         if Nkind (Parent (Seen)) = N_Full_Type_Declaration then
-                           Error_Msg_N -- CODEFIX???
+                           Error_Msg_N
                              ("\\possible interpretation (inherited)#!", N);
                         else
                            Error_Msg_N -- CODEFIX
@@ -2173,19 +2165,19 @@ package body Sem_Res is
                         if  It.Typ = Universal_Fixed
                           and then Scope (It.Nam) = Standard_Standard
                         then
-                           Error_Msg_N -- CODEFIX???
+                           Error_Msg_N
                              ("\\possible interpretation as " &
                                 "universal_fixed operation " &
                                   "(RM 4.5.5 (19))", N);
                         else
-                           Error_Msg_N -- CODEFIX???
+                           Error_Msg_N
                              ("\\possible interpretation (predefined)#!", N);
                         end if;
 
                      elsif
                        Nkind (Parent (It.Nam)) = N_Full_Type_Declaration
                      then
-                        Error_Msg_N -- CODEFIX???
+                        Error_Msg_N
                           ("\\possible interpretation (inherited)#!", N);
                      else
                         Error_Msg_N -- CODEFIX
@@ -2938,7 +2930,7 @@ package body Sem_Res is
                --  Introduce an implicit 'Access in prefix
 
                if not Is_Aliased_View (Act) then
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("object in prefixed call to& must be aliased"
                          & " (RM-2005 4.3.1 (13))",
                     Prefix (Act), Nam);
@@ -4229,8 +4221,7 @@ package body Sem_Res is
          declare
             Loc : constant Source_Ptr := Sloc (N);
          begin
-            Error_Msg_N -- CODEFIX???
-              ("?allocation from empty storage pool!", N);
+            Error_Msg_N ("?allocation from empty storage pool!", N);
             Error_Msg_N ("\?Storage_Error will be raised at run time!", N);
             Insert_Action (N,
               Make_Raise_Storage_Error (Loc,
@@ -7422,7 +7413,7 @@ package body Sem_Res is
 
       elsif Typ = Universal_Integer or else Typ = Any_Modular then
          if Parent_Is_Boolean then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("operand of not must be enclosed in parentheses",
                Right_Opnd (N));
          else
@@ -7444,8 +7435,7 @@ package body Sem_Res is
            and then not Is_Boolean_Type (Typ)
            and then Parent_Is_Boolean
          then
-            Error_Msg_N -- CODEFIX???
-              ("?not expression should be parenthesized here!", N);
+            Error_Msg_N ("?not expression should be parenthesized here!", N);
          end if;
 
          --  Warn on double negation if checking redundant constructs
@@ -7456,8 +7446,7 @@ package body Sem_Res is
            and then Root_Type (Typ) = Standard_Boolean
            and then Nkind (Right_Opnd (N)) = N_Op_Not
          then
-            Error_Msg_N -- CODEFIX???
-              ("redundant double negation?", N);
+            Error_Msg_N ("redundant double negation?", N);
          end if;
 
          --  Complete resolution and evaluation of NOT
@@ -8881,7 +8870,7 @@ package body Sem_Res is
 
                --  If we fall through warning should be issued
 
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("?unary minus expression should be parenthesized here!", N);
             end if;
          end if;
@@ -9262,12 +9251,9 @@ package body Sem_Res is
 
       procedure Fixed_Point_Error is
       begin
-         Error_Msg_N -- CODEFIX???
-           ("ambiguous universal_fixed_expression", N);
-         Error_Msg_NE -- CODEFIX???
-            ("\\possible interpretation as}", N, T1);
-         Error_Msg_NE -- CODEFIX???
-            ("\\possible interpretation as}", N, T2);
+         Error_Msg_N ("ambiguous universal_fixed_expression", N);
+         Error_Msg_NE ("\\possible interpretation as}", N, T1);
+         Error_Msg_NE ("\\possible interpretation as}", N, T2);
       end Fixed_Point_Error;
 
    --  Start of processing for Unique_Fixed_Point_Type

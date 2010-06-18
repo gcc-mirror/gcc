@@ -2851,7 +2851,7 @@ package body Checks is
          --  applied to an access [sub]type.
 
          if not Is_Access_Type (Typ) then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("`NOT NULL` allowed only for an access type", Error_Node);
 
          --  Enforce legality rule RM 3.10(14/1): A null exclusion can only
@@ -2860,7 +2860,7 @@ package body Checks is
          elsif Can_Never_Be_Null (Typ)
            and then Comes_From_Source (Typ)
          then
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("`NOT NULL` not allowed (& already excludes null)",
                Error_Node, Typ);
          end if;

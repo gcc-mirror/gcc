@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,8 +92,7 @@ package body Sem_Mech is
             return;
 
          elsif Chars (Mech_Name) = Name_Copy then
-            Error_Msg_N
-              ("bad mechanism name, Value assumed", Mech_Name);
+            Error_Msg_N ("bad mechanism name, Value assumed", Mech_Name);
             Set_Mechanism (Ent, By_Copy);
 
          else

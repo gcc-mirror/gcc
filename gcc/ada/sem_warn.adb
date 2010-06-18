@@ -199,7 +199,7 @@ package body Sem_Warn is
       Setup_Asm_Inputs (N);
 
       if No (Asm_Input_Value) then
-         Error_Msg_F -- CODEFIX???
+         Error_Msg_F
            ("?code statement with no inputs should usually be Volatile!", N);
          return;
       end if;
@@ -207,7 +207,7 @@ package body Sem_Warn is
       Setup_Asm_Outputs (N);
 
       if No (Asm_Output_Variable) then
-         Error_Msg_F -- CODEFIX???
+         Error_Msg_F
            ("?code statement with no outputs should usually be Volatile!", N);
          return;
       end if;
@@ -218,7 +218,7 @@ package body Sem_Warn is
         and then Present (Prev (N))
         and then Nkind (Prev (N)) = N_Code_Statement
       then
-         Error_Msg_F -- CODEFIX???
+         Error_Msg_F
            ("?code statements in sequence should usually be Volatile!", N);
          Error_Msg_F
            ("\?(suggest using template with multiple instructions)!", N);
@@ -1083,7 +1083,7 @@ package body Sem_Warn is
                   if (Is_Volatile (E1) or else Has_Volatile_Components (E1))
                     and then not Is_Imported (E1)
                   then
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("?& is not modified, volatile has no effect!", E1);
 
                   --  Another special case, Exception_Occurrence, this catches
@@ -1275,7 +1275,7 @@ package body Sem_Warn is
                        and then Present (Hiding_Loop_Variable (E1))
                        and then not Warnings_Off_E1
                      then
-                        Error_Msg_N -- CODEFIX???
+                        Error_Msg_N
                           ("?for loop implicitly declares loop variable!",
                            Hiding_Loop_Variable (E1));
 
@@ -2771,7 +2771,7 @@ package body Sem_Warn is
                   if Warn_On_Constant then
                      Error_Msg_N
                        ("?formal parameter & is not modified!", E1);
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("\?mode could be IN instead of `IN OUT`!", E1);
 
                      --  We do not generate warnings for IN OUT parameters
@@ -2781,7 +2781,7 @@ package body Sem_Warn is
                      --  default mode.
 
                   elsif Check_Unreferenced then
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("?formal parameter& is read but "
                         & "never assigned!", E1);
                   end if;
@@ -2968,21 +2968,21 @@ package body Sem_Warn is
             --  Used only in context where Unmodified would have worked
 
             elsif Warnings_Off_Used_Unmodified (E) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("?could use Unmodified instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Used only in context where Unreferenced would have worked
 
             elsif Warnings_Off_Used_Unreferenced (E) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("?could use Unreferenced instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Not used at all
 
             else
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("?pragma Warnings Off for & unused, "
                   & "could be omitted", N, E);
             end if;
@@ -3606,19 +3606,17 @@ package body Sem_Warn is
                   if Is_Entity_Name (Original_Node (C))
                     and then Nkind (Cond) /= N_Op_Not
                   then
-                     Error_Msg_NE -- CODEFIX???
+                     Error_Msg_NE
                        ("object & is always True?", Cond, Original_Node (C));
                      Track (Original_Node (C), Cond);
 
                   else
-                     Error_Msg_N -- CODEFIX???
-                       ("condition is always True?", Cond);
+                     Error_Msg_N ("condition is always True?", Cond);
                      Track (Cond, Cond);
                   end if;
 
                else
-                  Error_Msg_N -- CODEFIX???
-                    ("condition is always False?", Cond);
+                  Error_Msg_N ("condition is always False?", Cond);
                   Track (Cond, Cond);
                end if;
             end;
@@ -4002,7 +4000,7 @@ package body Sem_Warn is
          elsif Length_Reference (X) then
             Warn1;
             Error_Msg_Node_2 := Ent;
-            Error_Msg_FE -- CODEFIX???
+            Error_Msg_FE
               ("\suggest replacement of `&''Length` by `&''Last`",
                X, Ent);
 
@@ -4013,7 +4011,7 @@ package body Sem_Warn is
          then
             Warn1;
             Error_Msg_Node_2 := Ent;
-            Error_Msg_FE -- CODEFIX???
+            Error_Msg_FE
               ("\suggest replacement of `&''Length` by `&''Last`",
                Left_Opnd (X), Ent);
          end if;
@@ -4218,8 +4216,7 @@ package body Sem_Warn is
                null;
 
             when E_Discriminant =>
-               Error_Msg_N -- CODEFIX???
-                 ("?discriminant & is not referenced!", E);
+               Error_Msg_N ("?discriminant & is not referenced!", E);
 
             when E_Named_Integer |
                  E_Named_Real    =>
