@@ -829,8 +829,6 @@ debug_rli (record_layout_info rli)
 
   if (!VEC_empty (tree, rli->pending_statics))
     {
-      unsigned ix;
-      tree t;
       fprintf (stderr, "pending statics:\n");
       debug_vec_tree (rli->pending_statics);
     }
