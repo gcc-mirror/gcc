@@ -1,3 +1,18 @@
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Build_And_Analyze_Renamed_Body): If the renaming
+	declaration appears in the same unit and ealier than the renamed
+	entity, retain generated body to prevent order-of-elaboration issues in
+	gigi.
+
+2010-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tpoben.adb: Update comments.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Minor comment change.
+
 2010-06-18  Javier Miranda  <miranda@adacore.com>
 
 	* exp_cg.adb: Code clean up.

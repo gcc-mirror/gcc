@@ -36,6 +36,7 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
 with Exp_Tss;  use Exp_Tss;
 with Layout;   use Layout;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -203,32 +204,42 @@ package body Freeze is
       New_S : Entity_Id;
       After : in out Node_Id)
    is
-      Body_Node :  Node_Id;
-      Intr      : Entity_Id;
-      Body_Decl : constant Node_Id := Unit_Declaration_Node (New_S);
-      Ent       : constant Entity_Id := Defining_Entity (Decl);
+      Body_Decl    : constant Node_Id := Unit_Declaration_Node (New_S);
+      Ent          : constant Entity_Id := Defining_Entity (Decl);
+      Body_Node    : Node_Id;
+      Renamed_Subp : Entity_Id;
 
    begin
 
       --  if the renamed subprogram is intrinsic, there is no need for a
       --  wrapper body: we set the alias that will be called and expanded
-      --  which completes the declaration.
+      --  which completes the declaration. This transformation is only
+      --  legal if the renamed entity has already been elaborated.
+
       --  Note that it is legal for a renaming_as_body to rename an intrinsic
       --  subprogram, as long as the renaming occurs before the new entity
       --  is frozen. See RM 8.5.4 (5).
 
       if Nkind (Body_Decl) = N_Subprogram_Renaming_Declaration
          and then Is_Entity_Name (Name (Body_Decl))
-        and then Is_Intrinsic_Subprogram (Entity (Name (Body_Decl)))
-        and then Present (Interface_Name (Entity (Name (Body_Decl))))
       then
-         Intr := Entity (Name (Body_Decl));
-         Set_Interface_Name
-           (Intr, Interface_Name (Entity (Name (Body_Decl))));
-         if Present (Alias (Intr)) then
-            Set_Alias (Ent, Alias (Intr));
+         Renamed_Subp := Entity (Name (Body_Decl));
+      else
+         Renamed_Subp := Empty;
+      end if;
+
+      if Present (Renamed_Subp)
+        and then Is_Intrinsic_Subprogram (Renamed_Subp)
+        and then Present (Interface_Name (Renamed_Subp))
+        and then
+          (not In_Same_Source_Unit (Renamed_Subp, Ent)
+            or else Sloc (Renamed_Subp) < Sloc (Ent))
+      then
+         Set_Interface_Name (Ent, Interface_Name (Renamed_Subp));
+         if Present (Alias (Renamed_Subp)) then
+            Set_Alias (Ent, Alias (Renamed_Subp));
          else
-            Set_Alias (Ent, Intr);
+            Set_Alias (Ent, Renamed_Subp);
          end if;
 
          Set_Is_Intrinsic_Subprogram (Ent);
