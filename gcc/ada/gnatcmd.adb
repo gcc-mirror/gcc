@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,6 +122,7 @@ procedure GNATCmd is
 
    Naming_String      : constant SA := new String'("naming");
    Binder_String      : constant SA := new String'("binder");
+   Builder_String     : constant SA := new String'("builder");
    Compiler_String    : constant SA := new String'("compiler");
    Check_String       : constant SA := new String'("check");
    Synchronize_String : constant SA := new String'("synchronize");
@@ -139,7 +140,8 @@ procedure GNATCmd is
      new String_List'((Naming_String, Binder_String));
 
    Packages_To_Check_By_Check : constant String_List_Access :=
-     new String_List'((Naming_String, Check_String, Compiler_String));
+     new String_List'
+       ((Naming_String, Builder_String, Check_String, Compiler_String));
 
    Packages_To_Check_By_Sync : constant String_List_Access :=
      new String_List'((Naming_String, Synchronize_String, Compiler_String));
@@ -363,7 +365,7 @@ procedure GNATCmd is
 
       if Add_Sources then
 
-         --  For gnatcheck, gnatpp and gnatmetric , create a temporary file
+         --  For gnatcheck, gnatpp and gnatmetric, create a temporary file
          --  and put the list of sources in it.
 
          if The_Command = Check  or else
@@ -2197,6 +2199,87 @@ begin
                if M_File /= No_Path then
                   Add_To_Carg_Switches
                     (new String'("-gnatem=" & Get_Name_String (M_File)));
+               end if;
+
+               --  For gnatcheck, also indicate a global configuration pragmas
+               --  file and, if -U is not used, a local one.
+
+               if The_Command = Check then
+                  declare
+                     Pkg  : constant Prj.Package_Id :=
+                       Prj.Util.Value_Of
+                         (Name        => Name_Builder,
+                          In_Packages => Project.Decl.Packages,
+                          In_Tree     => Project_Tree);
+                     Variable : Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Name                    => No_Name,
+                          Attribute_Or_Array_Name =>
+                            Name_Global_Configuration_Pragmas,
+                          In_Package              => Pkg,
+                          In_Tree                 => Project_Tree);
+
+                  begin
+                     if (Variable = Nil_Variable_Value or else
+                         Length_Of_Name (Variable.Value) = 0)
+                         and then Pkg /= No_Package
+                     then
+                        Variable :=
+                          Prj.Util.Value_Of
+                         (Name                    => Name_Ada,
+                          Attribute_Or_Array_Name => Name_Global_Config_File,
+                          In_Package              => Pkg,
+                          In_Tree                 => Project_Tree);
+                     end if;
+
+                     if Variable /= Nil_Variable_Value and then
+                       Length_Of_Name (Variable.Value) /= 0
+                     then
+                        Add_To_Carg_Switches
+                          (new String'
+                             ("-gnatec=" & Get_Name_String (Variable.Value)));
+                     end if;
+                  end;
+
+                  if not All_Projects then
+                     declare
+                        Pkg      : constant Prj.Package_Id :=
+                          Prj.Util.Value_Of
+                            (Name        => Name_Compiler,
+                             In_Packages => Project.Decl.Packages,
+                             In_Tree     => Project_Tree);
+                        Variable : Variable_Value :=
+                          Prj.Util.Value_Of
+                            (Name                    => No_Name,
+                             Attribute_Or_Array_Name =>
+                               Name_Local_Configuration_Pragmas,
+                             In_Package              => Pkg,
+                             In_Tree                 => Project_Tree);
+
+                     begin
+                        if (Variable = Nil_Variable_Value or else
+                              Length_Of_Name (Variable.Value) = 0)
+                          and then Pkg /= No_Package
+                        then
+                           Variable :=
+                             Prj.Util.Value_Of
+                               (Name                    => Name_Ada,
+                                Attribute_Or_Array_Name =>
+                                  Name_Local_Config_File,
+                                In_Package              => Pkg,
+                                In_Tree                 => Project_Tree);
+                        end if;
+
+                        if Variable /= Nil_Variable_Value and then
+                          Length_Of_Name (Variable.Value) /= 0
+                        then
+                           Add_To_Carg_Switches
+                             (new String'
+                                ("-gnatec=" &
+                                 Get_Name_String (Variable.Value)));
+                        end if;
+                     end;
+                  end if;
                end if;
             end;
          end if;

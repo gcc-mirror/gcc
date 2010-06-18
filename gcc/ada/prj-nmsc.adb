@@ -703,7 +703,7 @@ package body Prj.Nmsc is
 
       if Current_Verbosity = High then
          Write_Str ("Adding source File: ");
-         Write_Str (Get_Name_String (File_Name));
+         Write_Str (Get_Name_String (Display_File));
 
          if Index /= 0 then
             Write_Str (" at" & Index'Img);
@@ -813,8 +813,8 @@ package body Prj.Nmsc is
    -----------
 
    procedure Check
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data)
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data)
    is
       Specs     : Array_Element_Id;
       Bodies    : Array_Element_Id;
@@ -4883,7 +4883,7 @@ package body Prj.Nmsc is
          if not Removed and then List = Nil_String then
             if Current_Verbosity = High then
                Write_Str  ("   Adding Source Dir=");
-               Write_Line (Get_Name_String (Path_Id));
+               Write_Line (Get_Name_String (Display_Path_Id));
             end if;
 
             String_Element_Table.Increment_Last (Data.Tree.String_Elements);
@@ -6845,7 +6845,9 @@ package body Prj.Nmsc is
 
                begin
                   if Current_Verbosity = High then
-                     Write_Attr ("Source_Dir", Source_Directory);
+                     Write_Attr
+                       ("Source_Dir",
+                        Source_Directory (Source_Directory'First .. Dir_Last));
                      Write_Line (Num_Nod.Number'Img);
                   end if;
 
@@ -7382,7 +7384,7 @@ package body Prj.Nmsc is
       while Current /= Nil_String loop
          Element := In_Tree.String_Elements.Table (Current);
          Write_Str  ("   ");
-         Write_Line (Get_Name_String (Element.Value));
+         Write_Line (Get_Name_String (Element.Display_Value));
          Current := Element.Next;
       end loop;
 

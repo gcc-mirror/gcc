@@ -4005,11 +4005,14 @@ package body Sem_Ch12 is
          --  If the instance is a child unit, mark the Id accordingly. Mark
          --  the anonymous entity as well, which is the real subprogram and
          --  which is used when the instance appears in a context clause.
+         --  Similarly, propagate the Is_Eliminated flag to handle properly
+         --  nested eliminated subprograms.
 
          Set_Is_Child_Unit (Act_Decl_Id, Is_Child_Unit (Defining_Entity (N)));
          Set_Is_Child_Unit (Anon_Id, Is_Child_Unit (Defining_Entity (N)));
          New_Overloaded_Entity (Act_Decl_Id);
          Check_Eliminated  (Act_Decl_Id);
+         Set_Is_Eliminated (Anon_Id, Is_Eliminated (Act_Decl_Id));
 
          --  In compilation unit case, kill elaboration checks on the
          --  instantiation, since they are never needed -- the body is
