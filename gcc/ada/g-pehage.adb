@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2009, AdaCore                     --
+--                     Copyright (C) 2002-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
+with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 with GNAT.Heap_Sort_G;
 with GNAT.OS_Lib;      use GNAT.OS_Lib;
@@ -212,6 +213,12 @@ package body GNAT.Perfect_Hash_Generators is
 
    procedure Put_Vertex_Table (File : File_Descriptor; Title : String);
    --  Output a title and a vertex table
+
+   function Ada_File_Base_Name (Pkg_Name : String) return String;
+   --  Return the base file name (i.e. without .ads/.adb extension) for an Ada
+   --  source file containing the named package, using the standard GNAT
+   --  file-naming convention. For example, if Pkg_Name is "Parent.Child", we
+   --  return "parent-child".
 
    ----------------------------------
    -- Character Position Selection --
@@ -493,6 +500,23 @@ package body GNAT.Perfect_Hash_Generators is
 
       return True;
    end Acyclic;
+
+   ------------------------
+   -- Ada_File_Base_Name --
+   ------------------------
+
+   function Ada_File_Base_Name (Pkg_Name : String) return String is
+   begin
+      --  Convert to lower case, then replace '.' with '-'
+
+      return Result : String := To_Lower (Pkg_Name) do
+         for J in Result'Range loop
+            if Result (J) = '.' then
+               Result (J) := '-';
+            end if;
+         end loop;
+      end return;
+   end Ada_File_Base_Name;
 
    ---------
    -- Add --
@@ -1369,7 +1393,7 @@ package body GNAT.Perfect_Hash_Generators is
    -- Produce --
    -------------
 
-   procedure Produce (Pkg_Name  : String := Default_Pkg_Name) is
+   procedure Produce (Pkg_Name : String := Default_Pkg_Name) is
       File : File_Descriptor;
 
       Status : Boolean;
@@ -1462,27 +1486,18 @@ package body GNAT.Perfect_Hash_Generators is
       L : Natural;
       P : Natural;
 
-      PLen  : constant Natural := Pkg_Name'Length;
-      FName : String (1 .. PLen + 4);
+      FName : String := Ada_File_Base_Name (Pkg_Name) & ".ads";
+      --  Initially, the name of the spec file; then modified to be the name of
+      --  the body file.
 
    --  Start of processing for Produce
 
    begin
-      FName (1 .. PLen) := Pkg_Name;
-      for J in 1 .. PLen loop
-         if FName (J) in 'A' .. 'Z' then
-            FName (J) := Character'Val (Character'Pos (FName (J))
-                                        - Character'Pos ('A')
-                                        + Character'Pos ('a'));
-
-         elsif FName (J) = '.' then
-            FName (J) := '-';
-         end if;
-      end loop;
-
-      FName (PLen + 1 .. PLen + 4) := ".ads";
 
       File := Create_File (FName, Binary);
+      if File = Invalid_FD then
+         raise Program_Error with "cannot create: " & FName;
+      end if;
 
       Put      (File, "package ");
       Put      (File, Pkg_Name);
@@ -1500,9 +1515,12 @@ package body GNAT.Perfect_Hash_Generators is
          raise Device_Error;
       end if;
 
-      FName (PLen + 4) := 'b';
+      FName (FName'Last) := 'b';  --  Set to body file name
 
       File := Create_File (FName, Binary);
+      if File = Invalid_FD then
+         raise Program_Error with "cannot create: " & FName;
+      end if;
 
       Put      (File, "with Interfaces; use Interfaces;");
       New_Line (File);
