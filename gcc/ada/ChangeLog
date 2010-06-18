@@ -1,3 +1,28 @@
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Analyze_Indexed_Component, Analyze_Selected_Component):
+	Warn on assigning to packed atomic component.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads: Minor reformatting
+	* einfo.ads, einfo.adb: Minor doc clarification (scope of decls in
+	Expression_With_Actions).
+	* snames.ads-tmpl: Minor comment fix
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Diagnose_Multiple_Pragmas): New procedure
+	(Set_Imported): Use Import_Interface_Present to control message output
+	* sinfo.ads, sinfo.adb (Import_Interface_Present): New flag
+	* gnat_rm.texi: Document that we can have pragma Import and pragma
+	Interface for the same subprogram.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): Fix bad reference to
+	Has_Pragma_Unreferenced (clients should always use Has_Unreferenced).
+
 2010-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (set_gnu_expr_location_from_node): New static

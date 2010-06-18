@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1556,6 +1556,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Record_Definition);
       return Flag16 (N);
    end Interface_Present;
+
+   function Import_Interface_Present
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag16 (N);
+   end Import_Interface_Present;
 
    function In_Present
       (N : Node_Id) return Boolean is
@@ -4460,6 +4468,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Record_Definition);
       Set_Flag16 (N, Val);
    end Set_Interface_Present;
+
+   procedure Set_Import_Interface_Present
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag16 (N, Val);
+   end Set_Import_Interface_Present;
 
    procedure Set_In_Present
       (N : Node_Id; Val : Boolean := True) is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2346,11 +2346,175 @@ package body Sem_Prag is
          Cname     : Name_Id;
          Comp_Unit : Unit_Number_Type;
 
+         procedure Diagnose_Multiple_Pragmas (S : Entity_Id);
+         --  Called if we have more than one Export/Import/Convention pragma.
+         --  This is generally illegal, but we have a special case of allowing
+         --  Import and Interface to coexist if they specify the convention in
+         --  a consistent manner. We are allowed to do this, since Interface is
+         --  an implementation defined pragma, and we choose to do it since we
+         --  know Rational allows this combination. S is the entity id of the
+         --  subprogram in question. This procedure also sets the special flag
+         --  Import_Interface_Present in both pragmas in the case where we do
+         --  have matching Import and Interface pragmas.
+
          procedure Set_Convention_From_Pragma (E : Entity_Id);
          --  Set convention in entity E, and also flag that the entity has a
          --  convention pragma. If entity is for a private or incomplete type,
          --  also set convention and flag on underlying type. This procedure
          --  also deals with the special case of C_Pass_By_Copy convention.
+
+         -------------------------------
+         -- Diagnose_Multiple_Pragmas --
+         -------------------------------
+
+         procedure Diagnose_Multiple_Pragmas (S : Entity_Id) is
+            Pdec : constant Node_Id := Declaration_Node (S);
+            Decl : Node_Id;
+            Err  : Boolean;
+
+            function Same_Convention (Decl : Node_Id) return Boolean;
+            --  Decl is a pragma node. This function returns True if this
+            --  pragma has a first argument that is an identifier with a
+            --  Chars field corresponding to the Convention_Id C.
+
+            function Same_Name (Decl : Node_Id) return Boolean;
+            --  Decl is a pragma node. This function returns True if this
+            --  pragma has a second argument that is an identifier with a
+            --  Chars field that matches the Chars of the current subprogram.
+
+            ---------------------
+            -- Same_Convention --
+            ---------------------
+
+            function Same_Convention (Decl : Node_Id) return Boolean is
+               Arg1 : constant Node_Id :=
+                        First (Pragma_Argument_Associations (Decl));
+
+            begin
+               if Present (Arg1) then
+                  declare
+                     Arg : constant Node_Id := Get_Pragma_Arg (Arg1);
+                  begin
+                     if Nkind (Arg) = N_Identifier
+                       and then Is_Convention_Name (Chars (Arg))
+                       and then Get_Convention_Id (Chars (Arg)) = C
+                     then
+                        return True;
+                     end if;
+                  end;
+               end if;
+
+               return False;
+            end Same_Convention;
+
+            ---------------
+            -- Same_Name --
+            ---------------
+
+            function Same_Name (Decl : Node_Id) return Boolean is
+               Arg1 : constant Node_Id :=
+                        First (Pragma_Argument_Associations (Decl));
+               Arg2 : Node_Id;
+
+            begin
+               if No (Arg1) then
+                  return False;
+               end if;
+
+               Arg2 := Next (Arg1);
+
+               if No (Arg2) then
+                  return False;
+               end if;
+
+               declare
+                  Arg : constant Node_Id := Get_Pragma_Arg (Arg2);
+               begin
+                  if Nkind (Arg) = N_Identifier
+                    and then Chars (Arg) = Chars (S)
+                  then
+                     return True;
+                  end if;
+               end;
+
+               return False;
+            end Same_Name;
+
+         --  Start of processing for Diagnose_Multiple_Pragmas
+
+         begin
+            Err := True;
+
+            --  Definitely give message if we have Convention/Export here
+
+            if Prag_Id = Pragma_Convention or else Prag_Id = Pragma_Export then
+               null;
+
+               --  If we have an Import or Export, scan back from pragma to
+               --  find any previous pragma applying to the same procedure.
+               --  The scan will be terminated by the start of the list, or
+               --  hitting the subprogram declaration. This won't allow one
+               --  pragma to appear in the public part and one in the private
+               --  part, but that seems very unlikely in practice.
+
+            else
+               Decl := Prev (N);
+               while Present (Decl) and then Decl /= Pdec loop
+
+                  --  Look for pragma with same name as us
+
+                  if Nkind (Decl) = N_Pragma
+                    and then Same_Name (Decl)
+                  then
+                     --  Give error if same as our pragma or Export/Convention
+
+                     if Pragma_Name (Decl) = Name_Export
+                          or else
+                        Pragma_Name (Decl) = Name_Convention
+                          or else
+                        Pragma_Name (Decl) = Pragma_Name (N)
+                     then
+                        exit;
+
+                     --  Case of Import/Interface or the other way round
+
+                     elsif Pragma_Name (Decl) = Name_Interface
+                             or else
+                           Pragma_Name (Decl) = Name_Import
+                     then
+                        --  Here we know that we have Import and Interface. It
+                        --  doesn't matter which way round they are. See if
+                        --  they specify the same convention. If so, all OK,
+                        --  and set special flags to stop other messages
+
+                        if Same_Convention (Decl) then
+                           Set_Import_Interface_Present (N);
+                           Set_Import_Interface_Present (Decl);
+                           Err := False;
+
+                        --  If different conventions, special message
+
+                        else
+                           Error_Msg_Sloc := Sloc (Decl);
+                           Error_Pragma_Arg
+                             ("convention differs from that given#", Arg1);
+                           return;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end if;
+
+            --  Give message if needed if we fall through those tests
+
+            if Err then
+               Error_Pragma_Arg
+                 ("at most one Convention/Export/Import pragma is allowed",
+                  Arg2);
+            end if;
+         end Diagnose_Multiple_Pragmas;
 
          --------------------------------
          -- Set_Convention_From_Pragma --
@@ -2545,8 +2709,7 @@ package body Sem_Prag is
          end if;
 
          if Has_Convention_Pragma (E) then
-            Error_Pragma_Arg
-              ("at most one Convention/Export/Import pragma is allowed", Arg2);
+            Diagnose_Multiple_Pragmas (E);
 
          elsif Convention (E) = Convention_Protected
            or else Ekind (Scope (E)) = E_Protected_Type
@@ -4674,8 +4837,19 @@ package body Sem_Prag is
          --  Error message if already imported or exported
 
          if Is_Exported (E) or else Is_Imported (E) then
+
+            --  Error if being set Exported twice
+
             if Is_Exported (E) then
                Error_Msg_NE ("entity& was previously exported", N, E);
+
+            --  OK if Import/Interface case
+
+            elsif Import_Interface_Present (N) then
+               goto OK;
+
+            --  Error if being set Imported twice
+
             else
                Error_Msg_NE ("entity& was previously imported", N, E);
             end if;
@@ -4704,6 +4878,8 @@ package body Sem_Prag is
                Set_Is_Statically_Allocated (E);
             end if;
          end if;
+
+         <<OK>> null;
       end Set_Imported;
 
       -------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -666,7 +666,7 @@ package body Lib.Xref is
          --  Check for pragma Unreferenced given and reference is within
          --  this source unit (occasion for possible warning to be issued).
 
-         if Has_Pragma_Unreferenced (E)
+         if Has_Unreferenced (E)
            and then In_Same_Extended_Unit (E, N)
          then
             --  A reference as a named parameter in a call does not count
