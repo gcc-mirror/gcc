@@ -220,13 +220,13 @@ enum ld_plugin_status
 
 typedef
 enum ld_plugin_status
-(*ld_plugin_add_input_file) (char *pathname);
+(*ld_plugin_add_input_file) (const char *pathname);
 
 /* The linker's interface for adding a library that should be searched.  */
 
 typedef
 enum ld_plugin_status
-(*ld_plugin_add_input_library) (char *libname);
+(*ld_plugin_add_input_library) (const char *libname);
 
 /* The linker's interface for issuing a warning or error message.  */
 
