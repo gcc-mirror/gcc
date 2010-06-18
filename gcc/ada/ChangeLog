@@ -15,6 +15,10 @@
 	a-szunau.adb, a-szunau.ads, a-stunau.adb, a-stunau.ads,
 	a-strunb.adb (Big_String. Big_String_Access): New type.
 
+	* par-labl.adb, restrict.adb, s-osinte-hpux-dce.ads, sem_ch11.adb,
+	exp_pakd.adb, s-filofl.ads, par-endh.adb, exp_intr.adb, sem_cat.adb,
+	sem_case.adb, exp_ch11.adb: Fix copyright notices.
+
 2010-06-18  Geert Bosch  <bosch@adacore.com>
 
 	* i-forbla-darwin.adb: Include -lgnala and -lm in linker options for
