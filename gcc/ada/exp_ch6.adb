@@ -3725,10 +3725,14 @@ package body Exp_Ch6 is
          --  directly, because the subprograms are subtype conformant. If
          --  the renamed subprogram is an inherited operation, we must redo
          --  the expansion because implicit conversions may be needed.
+         --  Similarly, if the renamed entity is inlined, expand the call
+         --  for further optimizations.
 
          Set_Name (N, New_Occurrence_Of (Orig_Bod, Loc));
 
-         if Present (Alias (Orig_Bod)) then
+         if Present (Alias (Orig_Bod))
+           or else Is_Inlined (Orig_Bod)
+         then
             Expand_Call (N);
          end if;
 
