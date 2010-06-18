@@ -1084,6 +1084,32 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_Case_Expression =>
+            declare
+               Alt : Node_Id;
+
+            begin
+               Write_Str_With_Col_Check_Sloc ("(case ");
+               Sprint_Node (Expression (Node));
+               Write_Str_With_Col_Check (" is");
+
+               Alt := First (Alternatives (Node));
+               loop
+                  Sprint_Node (Alt);
+                  Next (Alt);
+                  exit when No (Alt);
+                  Write_Char (',');
+               end loop;
+
+               Write_Char (')');
+            end;
+
+         when N_Case_Expression_Alternative =>
+            Write_Str_With_Col_Check (" when ");
+            Sprint_Bar_List (Discrete_Choices (Node));
+            Write_Str (" => ");
+            Sprint_Node (Expression (Node));
+
          when N_Case_Statement =>
             Write_Indent_Str_Sloc ("case ");
             Sprint_Node (Expression (Node));

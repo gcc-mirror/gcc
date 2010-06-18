@@ -6543,10 +6543,46 @@ package Sinfo is
    --  reconstructed tree printed by Sprint, and the node descriptions here
    --  show this syntax.
 
-   --  Note: Conditional_Expression is in this section for historical reasons.
-   --  We will move it to its appropriate place when it is officially approved
-   --  as an extension (and then we will know what the exact grammar and place
-   --  in the Reference Manual is!)
+   --  Note: Case_Expression and Conditional_Expression is in this section for
+   --  now, since they are extensions. We will move them to their appropriate
+   --  places when they are officially approved as extensions (and then we will
+   --  know what the exact grammar and place in the Reference Manual is!)
+
+      ---------------------
+      -- Case Expression --
+      ---------------------
+
+      --  CASE_EXPRESSION ::=
+      --    case EXPRESSION is
+      --      CASE_EXPRESSION_ALTERNATIVE
+      --      {CASE_EXPRESSION_ALTERNATIVE}
+
+      --  Note that the Alternatives cannot include pragmas (this constrasts
+      --  with the situation of case statements where pragmas are allowed).
+
+      --  N_Case_Expression
+      --  Sloc points to CASE
+      --  Expression (Node3)
+      --  Alternatives (List4)
+
+      ---------------------------------
+      -- Case Expression Alternative --
+      ---------------------------------
+
+      --  CASE_STATEMENT_ALTERNATIVE ::=
+      --    when DISCRETE_CHOICE_LIST =>
+      --      EXPRESSION
+
+      --  N_Case_Expression_Alternative
+      --  Sloc points to WHEN
+      --  Actions (List1)
+      --  Discrete_Choices (List4)
+      --  Expression (Node3)
+
+      --  Note: The Actions field temporarily holds any actions associated with
+      --  evaluation of the Expression. During expansion of the case expression
+      --  these actions are wrapped into the an N_Expressions_With_Actions node
+      --  replacing the original expression.
 
       ----------------------------
       -- Conditional Expression --
@@ -7259,6 +7295,7 @@ package Sinfo is
 
       N_Aggregate,
       N_Allocator,
+      N_Case_Expression,
       N_Extension_Aggregate,
       N_Range,
       N_Real_Literal,
@@ -7437,6 +7474,7 @@ package Sinfo is
       N_Abstract_Subprogram_Declaration,
       N_Access_Definition,
       N_Access_To_Object_Definition,
+      N_Case_Expression_Alternative,
       N_Case_Statement_Alternative,
       N_Compilation_Unit,
       N_Compilation_Unit_Aux,
@@ -10258,6 +10296,20 @@ package Sinfo is
         2 => True,    --  Then_Statements (List2)
         3 => False,   --  Condition_Actions (List3-Sem)
         4 => False,   --  unused
+        5 => False),  --  unused
+
+     N_Case_Expression =>
+       (1 => False,   --  unused
+        2 => False,   --  unused
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Alternatives (List4)
+        5 => False),  --  unused
+
+     N_Case_Expression_Alternative =>
+       (1 => False,   --  Actions (List1-Sem)
+        2 => False,   --  unused
+        3 => True,    --  Statements (List3)
+        4 => True,    --  Expression (Node4)
         5 => False),  --  unused
 
      N_Case_Statement =>

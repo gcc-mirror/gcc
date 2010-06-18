@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -730,14 +730,14 @@ package Types is
    -- Parameter Mechanism Control --
    ---------------------------------
 
-   --  Function and parameter entities have a field that records the
-   --  passing mechanism. See specification of Sem_Mech for full details.
-   --  The following subtype is used to represent values of this type:
+   --  Function and parameter entities have a field that records the passing
+   --  mechanism. See specification of Sem_Mech for full details. The following
+   --  subtype is used to represent values of this type:
 
    subtype Mechanism_Type is Int range -18 .. Int'Last;
-   --  Type used to represent a mechanism value. This is a subtype rather
-   --  than a type to avoid some annoying processing problems with certain
-   --  routines in Einfo (processing them to create the corresponding C).
+   --  Type used to represent a mechanism value. This is a subtype rather than
+   --  a type to avoid some annoying processing problems with certain routines
+   --  in Einfo (processing them to create the corresponding C).
 
    ------------------------------
    -- Run-Time Exception Codes --
@@ -762,12 +762,12 @@ package Types is
    --    1. Modify the type and subtype declarations below appropriately,
    --       keeping things in alphabetical order.
 
-   --    2. Modify the corresponding definitions in types.h, including
-   --       the definition of last_reason_code.
+   --    2. Modify the corresponding definitions in types.h, including the
+   --       definition of last_reason_code.
 
-   --    3. Add a new routine in Ada.Exceptions with the appropriate call
-   --       and static string constant. Note that there is more than one
-   --       version of a-except.adb which must be modified.
+   --    3. Add a new routine in Ada.Exceptions with the appropriate call and
+   --       static string constant. Note that there is more than one version
+   --       of a-except.adb which must be modified.
 
    type RT_Exception_Code is
      (CE_Access_Check_Failed,            -- 00

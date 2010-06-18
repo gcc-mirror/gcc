@@ -366,7 +366,7 @@ procedure Gnat1drv is
 
       --  Debug flag -gnatd.L decisively sets usage on
 
-      if Debug_Flag_Dot_XX then
+      if Debug_Flag_Dot_LL then
          Back_End_Handles_Limited_Types := True;
 
       --  If no debug flag, usage off for AAMP, VM, SCIL cases

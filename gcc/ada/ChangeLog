@@ -1,3 +1,46 @@
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Safe_To_Capture_In_Parameter_Value): Deal with case
+	expression (cannot count on a particular branch being executed).
+	* exp_ch4.adb (Expand_N_Case_Expression): New procedure.
+	* exp_ch4.ads (Expand_N_Case_Expression): New procedure.
+	* exp_util.adb (Insert_Actions): Deal with proper insertion of actions
+	within case expression.
+	* expander.adb (Expand): Add call to Expand_N_Case_Expression
+	* par-ch4.adb Add calls to P_Case_Expression at appropriate points
+	(P_Case_Expression): New procedure
+	(P_Case_Expression_Alternative): New procedure
+	* par.adb (P_Case_Expression): New procedure
+	* par_sco.adb (Process_Decisions): Add dummy place holder entry for
+	N_Case_Expression.
+	* sem.adb (Analyze): Add call to Analyze_Case_Expression
+	* sem_case.ads (Analyze_Choices): Also used for case expressions now,
+	this is a documentation change only.
+	* sem_ch4.ads, sem_ch4.adb (Analyze_Case_Expression): New procedure.
+	* sem_ch6.adb (Fully_Conformant_Expressions): Add handling of case
+	expressions.
+	* sem_eval.ads, sem_eval.adb (Eval_Case_Expression): New procedure.
+	* sem_res.adb (Resolve_Case_Expression): New procedure.
+	* sem_scil.adb (Find_SCIL_Node): Add processing for
+	N_Case_Expression_Alternative.
+	* sinfo.ads, sinfo.adb (N_Case_Expression): New node.
+	(N_Case_Expression_Alternative): New node.
+	* sprint.adb (Sprint_Node_Actual): Add processing for new nodes
+	N_Case_Expression and N_Case_Expression_Alternative.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch7.adb, sem_warn.adb, types.ads, par-ch3.adb: Minor reformatting.
+	* gnat1drv.adb: Fix typo.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* par-prag.adb (Prag, case Style_Checks): All_Checks sets gnat style
+	for -gnatg.
+	* sem_prag.adb (Analyze_Pragma, case Style_Checks): All_Checks sets
+	gnat style for -gnatg.
+	* gnat_rm.texi: Add documentation for ALL_CHECKS in GNAT mode.
+
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_eval.adb (Test_In_Range): New subprogram, factoring duplicated

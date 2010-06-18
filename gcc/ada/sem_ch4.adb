@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Case; use Sem_Case;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
@@ -52,8 +53,9 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
+with Sem_Util; use Sem_Util;
+with Sem_Warn; use Sem_Warn;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
@@ -305,10 +307,10 @@ package body Sem_Ch4 is
          end if;
 
          if Opnd = Left_Opnd (N) then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("\left operand has the following interpretations", N);
          else
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("\right operand has the following interpretations", N);
             Err := Opnd;
          end if;
@@ -320,13 +322,16 @@ package body Sem_Ch4 is
 
    begin
       if Nkind (N) in N_Membership_Test then
-         Error_Msg_N ("ambiguous operands for membership",  N);
+         Error_Msg_N -- CODEFIX???
+           ("ambiguous operands for membership",  N);
 
       elsif Nkind_In (N, N_Op_Eq, N_Op_Ne) then
-         Error_Msg_N ("ambiguous operands for equality",  N);
+         Error_Msg_N -- CODEFIX???
+           ("ambiguous operands for equality",  N);
 
       else
-         Error_Msg_N ("ambiguous operands for comparison",  N);
+         Error_Msg_N -- CODEFIX???
+           ("ambiguous operands for comparison",  N);
       end if;
 
       if All_Errors_Mode then
@@ -1048,6 +1053,141 @@ package body Sem_Ch4 is
       end if;
    end Analyze_Call;
 
+   -----------------------------
+   -- Analyze_Case_Expression --
+   -----------------------------
+
+   procedure Analyze_Case_Expression (N : Node_Id) is
+      Expr      : constant Node_Id := Expression (N);
+      FirstX    : constant Node_Id := Expression (First (Alternatives (N)));
+      Alt       : Node_Id;
+      Exp_Type  : Entity_Id;
+      Exp_Btype : Entity_Id;
+
+      Last_Choice    : Nat;
+      Dont_Care      : Boolean;
+      Others_Present : Boolean;
+
+      procedure Non_Static_Choice_Error (Choice : Node_Id);
+      --  Error routine invoked by the generic instantiation below when
+      --  the case expression has a non static choice.
+
+      package Case_Choices_Processing is new
+        Generic_Choices_Processing
+          (Get_Alternatives          => Alternatives,
+           Get_Choices               => Discrete_Choices,
+           Process_Empty_Choice      => No_OP,
+           Process_Non_Static_Choice => Non_Static_Choice_Error,
+           Process_Associated_Node   => No_OP);
+      use Case_Choices_Processing;
+
+      Case_Table : Choice_Table_Type (1 .. Number_Of_Choices (N));
+
+      -----------------------------
+      -- Non_Static_Choice_Error --
+      -----------------------------
+
+      procedure Non_Static_Choice_Error (Choice : Node_Id) is
+      begin
+         Flag_Non_Static_Expr
+           ("choice given in case expression is not static!", Choice);
+      end Non_Static_Choice_Error;
+
+   --  Start of processing for Analyze_Case_Expression
+
+   begin
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
+
+      Analyze_And_Resolve (Expr, Any_Discrete);
+      Check_Unset_Reference (Expr);
+      Exp_Type := Etype (Expr);
+      Exp_Btype := Base_Type (Exp_Type);
+
+      Alt := First (Alternatives (N));
+      while Present (Alt) loop
+         Analyze (Expression (Alt));
+         Next (Alt);
+      end loop;
+
+      if not Is_Overloaded (FirstX) then
+         Set_Etype (N, Etype (FirstX));
+
+      else
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Set_Etype (N, Any_Type);
+
+            Get_First_Interp (FirstX, I, It);
+            while Present (It.Nam) loop
+
+               --  For each intepretation of the first expression, we only
+               --  add the intepretation if every other expression in the
+               --  case expression alternatives has a compatible type.
+
+               Alt := Next (First (Alternatives (N)));
+               while Present (Alt) loop
+                  exit when not Has_Compatible_Type (Expression (Alt), It.Typ);
+                  Next (Alt);
+               end loop;
+
+               if No (Alt) then
+                  Add_One_Interp (N, It.Typ, It.Typ);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
+
+      Exp_Btype := Base_Type (Exp_Type);
+
+      --  The expression must be of a discrete type which must be determinable
+      --  independently of the context in which the expression occurs, but
+      --  using the fact that the expression must be of a discrete type.
+      --  Moreover, the type this expression must not be a character literal
+      --  (which is always ambiguous).
+
+      --  If error already reported by Resolve, nothing more to do
+
+      if Exp_Btype = Any_Discrete
+        or else Exp_Btype = Any_Type
+      then
+         return;
+
+      elsif Exp_Btype = Any_Character then
+         Error_Msg_N
+           ("character literal as case expression is ambiguous", Expr);
+         return;
+      end if;
+
+      --  If the case expression is a formal object of mode in out, then
+      --  treat it as having a nonstatic subtype by forcing use of the base
+      --  type (which has to get passed to Check_Case_Choices below).  Also
+      --  use base type when the case expression is parenthesized.
+
+      if Paren_Count (Expr) > 0
+        or else (Is_Entity_Name (Expr)
+                  and then Ekind (Entity (Expr)) = E_Generic_In_Out_Parameter)
+      then
+         Exp_Type := Exp_Btype;
+      end if;
+
+      --  Call instantiated Analyze_Choices which does the rest of the work
+
+      Analyze_Choices
+        (N, Exp_Type, Case_Table, Last_Choice, Dont_Care, Others_Present);
+
+      if Exp_Type = Universal_Integer and then not Others_Present then
+         Error_Msg_N
+           ("case on universal integer requires OTHERS choice", Expr);
+      end if;
+   end Analyze_Case_Expression;
+
    ---------------------------
    -- Analyze_Comparison_Op --
    ---------------------------
@@ -1263,8 +1403,13 @@ package body Sem_Ch4 is
          Analyze_Expression (Else_Expr);
       end if;
 
+      --  If then expression not overloaded, then that decides the type
+
       if not Is_Overloaded (Then_Expr) then
          Set_Etype (N, Etype (Then_Expr));
+
+      --  Case where then expression is overloaded
+
       else
          declare
             I  : Interp_Index;
@@ -1274,6 +1419,12 @@ package body Sem_Ch4 is
             Set_Etype (N, Any_Type);
             Get_First_Interp (Then_Expr, I, It);
             while Present (It.Nam) loop
+
+               --  For each possible intepretation of the Then Expression,
+               --  add it only if the else expression has a compatible type.
+
+               --  Is this right if Else_Expr is empty?
+
                if Has_Compatible_Type (Else_Expr, It.Typ) then
                   Add_One_Interp (N, It.Typ, It.Typ);
                end if;
@@ -3997,20 +4148,24 @@ package body Sem_Ch4 is
 
       elsif Nkind (Expr) = N_Null then
          Error_Msg_N ("argument of conversion cannot be null", N);
-         Error_Msg_N ("\use qualified expression instead", N);
+         Error_Msg_N -- CODEFIX???
+           ("\use qualified expression instead", N);
          Set_Etype (N, Any_Type);
 
       elsif Nkind (Expr) = N_Aggregate then
          Error_Msg_N ("argument of conversion cannot be aggregate", N);
-         Error_Msg_N ("\use qualified expression instead", N);
+         Error_Msg_N -- CODEFIX???
+           ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Allocator then
          Error_Msg_N ("argument of conversion cannot be an allocator", N);
-         Error_Msg_N ("\use qualified expression instead", N);
+         Error_Msg_N -- CODEFIX???
+           ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_String_Literal then
          Error_Msg_N ("argument of conversion cannot be string literal", N);
-         Error_Msg_N ("\use qualified expression instead", N);
+         Error_Msg_N -- CODEFIX???
+           ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Character_Literal then
          if Ada_Version = Ada_83 then
@@ -4018,7 +4173,8 @@ package body Sem_Ch4 is
          else
             Error_Msg_N ("argument of conversion cannot be character literal",
               N);
-            Error_Msg_N ("\use qualified expression instead", N);
+            Error_Msg_N -- CODEFIX???
+              ("\use qualified expression instead", N);
          end if;
 
       elsif Nkind (Expr) = N_Attribute_Reference
@@ -4028,7 +4184,8 @@ package body Sem_Ch4 is
            Attribute_Name (Expr) = Name_Unrestricted_Access)
       then
          Error_Msg_N ("argument of conversion cannot be access", N);
-         Error_Msg_N ("\use qualified expression instead", N);
+         Error_Msg_N -- CODEFIX???
+           ("\use qualified expression instead", N);
       end if;
    end Analyze_Type_Conversion;
 
@@ -4502,7 +4659,7 @@ package body Sem_Ch4 is
              and then From_With_Type (Etype (Actual))
             then
                Error_Msg_Qual_Level := 1;
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                 ("missing with_clause for scope of imported type&",
                   Actual, Etype (Actual));
                Error_Msg_Qual_Level := 0;
@@ -5360,10 +5517,11 @@ package body Sem_Ch4 is
                   end if;
                end if;
 
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX
                  ("operator for} is not directly visible!",
                   N, First_Subtype (Candidate_Type));
-               Error_Msg_N ("use clause would make operation legal!",  N);
+               Error_Msg_N -- CODEFIX
+                 ("use clause would make operation legal!",  N);
                return;
 
             --  If either operand is a junk operand (e.g. package name), then
@@ -5522,9 +5680,9 @@ package body Sem_Ch4 is
                                  (R,
                                   Etype (Next_Formal (First_Formal (Op_Id))))
                            then
-                              Error_Msg_N
+                              Error_Msg_N -- CODEFIX???
                                 ("No legal interpretation for operator&", N);
-                              Error_Msg_NE
+                              Error_Msg_NE -- CODEFIX???
                                 ("\use clause on& would make operation legal",
                                    N, Scope (Op_Id));
                               exit;
@@ -6215,7 +6373,7 @@ package body Sem_Ch4 is
                 Prefix => Relocate_Node (Obj)));
 
             if not Is_Aliased_View (Obj) then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("object in prefixed call to& must be aliased"
                       & " (RM-2005 4.3.1 (13))",
                  Prefix (First_Actual), Subprog);
@@ -6270,27 +6428,28 @@ package body Sem_Ch4 is
 
          if Access_Formal and then not Access_Actual then
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("\possible interpretation"
                    & " (inherited, with implicit 'Access) #", N);
             else
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("\possible interpretation (with implicit 'Access) #", N);
             end if;
 
          elsif not Access_Formal and then Access_Actual then
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("\possible interpretation"
                    & " ( inherited, with implicit dereference) #", N);
             else
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("\possible interpretation (with implicit dereference) #", N);
             end if;
 
          else
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
-               Error_Msg_N ("\possible interpretation (inherited)#", N);
+               Error_Msg_N -- CODEFIX???
+                 ("\possible interpretation (inherited)#", N);
             else
                Error_Msg_N -- CODEFIX
                  ("\possible interpretation#", N);
@@ -6491,7 +6650,8 @@ package body Sem_Ch4 is
                      if Present (Valid_Candidate (Success, Call_Node, Hom))
                        and then Nkind (Call_Node) /= N_Function_Call
                      then
-                        Error_Msg_NE ("ambiguous call to&", N, Hom);
+                        Error_Msg_NE -- CODEFIX???
+                          ("ambiguous call to&", N, Hom);
                         Report_Ambiguity (Matching_Op);
                         Report_Ambiguity (Hom);
                         Error := True;
@@ -6908,7 +7068,8 @@ package body Sem_Ch4 is
                   if Present (Valid_Candidate (Success, Call_Node, Prim_Op))
                     and then Nkind (Call_Node) /= N_Function_Call
                   then
-                     Error_Msg_NE ("ambiguous call to&", N, Prim_Op);
+                     Error_Msg_NE -- CODEFIX???
+                       ("ambiguous call to&", N, Prim_Op);
                      Report_Ambiguity (Matching_Op);
                      Report_Ambiguity (Prim_Op);
                      return True;

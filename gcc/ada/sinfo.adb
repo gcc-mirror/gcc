@@ -146,6 +146,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_And_Then
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Compilation_Unit_Aux
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
@@ -230,6 +231,7 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression
         or else NT (N).Nkind = N_Case_Statement
         or else NT (N).Nkind = N_In
         or else NT (N).Nkind = N_Not_In);
@@ -792,6 +794,7 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement_Alternative
         or else NT (N).Nkind = N_Variant);
       return List4 (N);
@@ -1170,6 +1173,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Attribute_Definition_Clause
+        or else NT (N).Nkind = N_Case_Expression
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement
         or else NT (N).Nkind = N_Code_Statement
         or else NT (N).Nkind = N_Component_Association
@@ -3067,6 +3072,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_And_Then
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Compilation_Unit_Aux
         or else NT (N).Nkind = N_Expression_With_Actions
         or else NT (N).Nkind = N_Freeze_Entity
@@ -3151,6 +3157,7 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression
         or else NT (N).Nkind = N_Case_Statement
         or else NT (N).Nkind = N_In
         or else NT (N).Nkind = N_Not_In);
@@ -3713,6 +3720,7 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement_Alternative
         or else NT (N).Nkind = N_Variant);
       Set_List4_With_Parent (N, Val);
@@ -4082,6 +4090,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement
         or else NT (N).Nkind = N_At_Clause
         or else NT (N).Nkind = N_Attribute_Definition_Clause
+        or else NT (N).Nkind = N_Case_Expression
+        or else NT (N).Nkind = N_Case_Expression_Alternative
         or else NT (N).Nkind = N_Case_Statement
         or else NT (N).Nkind = N_Code_Statement
         or else NT (N).Nkind = N_Component_Association
@@ -6049,7 +6059,6 @@ package body Sinfo is
              T = V7 or else
              T = V8;
    end Nkind_In;
-
 
    function Nkind_In
      (T  : Node_Kind;

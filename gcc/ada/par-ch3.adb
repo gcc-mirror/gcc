@@ -111,7 +111,6 @@ package body Ch3 is
    --  current token, and if this is the first such message issued, saves
    --  the message id in Missing_Begin_Msg, for possible later replacement.
 
-
    ---------------------------------
    -- Check_Restricted_Expression --
    ---------------------------------

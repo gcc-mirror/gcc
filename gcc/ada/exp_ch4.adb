@@ -3878,6 +3878,137 @@ package body Exp_Ch4 is
    procedure Expand_N_And_Then (N : Node_Id)
      renames Expand_Short_Circuit_Operator;
 
+   ------------------------------
+   -- Expand_N_Case_Expression --
+   ------------------------------
+
+   procedure Expand_N_Case_Expression (N : Node_Id) is
+      Loc     : constant Source_Ptr := Sloc (N);
+      Typ     : constant Entity_Id  := Etype (N);
+      Cstmt   : Node_Id;
+      Tnn     : Entity_Id;
+      Pnn     : Entity_Id;
+      Actions : List_Id;
+      Ttyp    : Entity_Id;
+      Alt     : Node_Id;
+      Fexp    : Node_Id;
+
+   begin
+      --  We expand
+
+      --    case X is when A => AX, when B => BX ...
+
+      --  to
+
+      --    do
+      --       Tnn : typ;
+      --       case X is
+      --          when A =>
+      --             Tnn := AX;
+      --          when B =>
+      --             Tnn := BX;
+      --          ...
+      --       end case;
+      --    in Tnn end;
+
+      --  However, this expansion is wrong for limited types, and also
+      --  wrong for unconstrained types (since the bounds may not be the
+      --  same in all branches). Furthermore it involves an extra copy
+      --  for large objects. So we take care of this by using the following
+      --  modified expansion for non-scalar types:
+
+      --    do
+      --       type Pnn is access all typ;
+      --       Tnn : Pnn;
+      --       case X is
+      --          when A =>
+      --             T := AX'Unrestricted_Access;
+      --          when B =>
+      --             T := BX'Unrestricted_Access;
+      --          ...
+      --       end case;
+      --    in Tnn.all end;
+
+      Cstmt :=
+        Make_Case_Statement (Loc,
+          Expression   => Expression (N),
+          Alternatives => New_List);
+
+      Actions := New_List;
+
+      --  Scalar case
+
+      if Is_Scalar_Type (Typ) then
+         Ttyp := Typ;
+
+      else
+         Pnn := Make_Temporary (Loc, 'P');
+         Append_To (Actions,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Pnn,
+             Type_Definition =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present => True,
+                 Subtype_Indication =>
+                   New_Reference_To (Typ, Loc))));
+         Ttyp := Pnn;
+      end if;
+
+      Tnn := Make_Temporary (Loc, 'T');
+      Append_To (Actions,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tnn,
+          Object_Definition   => New_Occurrence_Of (Ttyp, Loc)));
+
+      --  Now process the alternatives
+
+      Alt := First (Alternatives (N));
+      while Present (Alt) loop
+         declare
+            Aexp : Node_Id             := Expression (Alt);
+            Aloc : constant Source_Ptr := Sloc (Aexp);
+
+         begin
+            if not Is_Scalar_Type (Typ) then
+               Aexp :=
+                 Make_Attribute_Reference (Aloc,
+                   Prefix         => Relocate_Node (Aexp),
+                   Attribute_Name => Name_Unrestricted_Access);
+            end if;
+
+            Append_To
+              (Alternatives (Cstmt),
+               Make_Case_Statement_Alternative (Sloc (Alt),
+                 Discrete_Choices => Discrete_Choices (Alt),
+                 Statements       => New_List (
+                   Make_Assignment_Statement (Aloc,
+                     Name       => New_Occurrence_Of (Tnn, Loc),
+                     Expression => Aexp))));
+         end;
+
+         Next (Alt);
+      end loop;
+
+      Append_To (Actions, Cstmt);
+
+      --  Construct and return final expression with actions
+
+      if Is_Scalar_Type (Typ) then
+         Fexp := New_Occurrence_Of (Tnn, Loc);
+      else
+         Fexp :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => New_Occurrence_Of (Tnn, Loc));
+      end if;
+
+      Rewrite (N,
+        Make_Expression_With_Actions (Loc,
+          Expression => Fexp,
+          Actions    => Actions));
+
+      Analyze_And_Resolve (N, Typ);
+   end Expand_N_Case_Expression;
+
    -------------------------------------
    -- Expand_N_Conditional_Expression --
    -------------------------------------

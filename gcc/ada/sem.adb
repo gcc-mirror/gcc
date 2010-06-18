@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,6 +157,9 @@ package body Sem is
 
          when N_Block_Statement =>
             Analyze_Block_Statement (N);
+
+         when N_Case_Expression =>
+            Analyze_Case_Expression (N);
 
          when N_Case_Statement =>
             Analyze_Case_Statement (N);
@@ -632,6 +635,7 @@ package body Sem is
            N_Access_Function_Definition             |
            N_Access_Procedure_Definition            |
            N_Access_To_Object_Definition            |
+           N_Case_Expression_Alternative            |
            N_Case_Statement_Alternative             |
            N_Compilation_Unit_Aux                   |
            N_Component_Association                  |

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2741,9 +2741,11 @@ package body Checks is
          end case;
 
          if K = N_Op_And then
-            Error_Msg_N ("use `AND THEN` instead of AND?", P);
+            Error_Msg_N -- CODEFIX
+              ("use `AND THEN` instead of AND?", P);
          else
-            Error_Msg_N ("use `OR ELSE` instead of OR?", P);
+            Error_Msg_N -- CODEFIX
+              ("use `OR ELSE` instead of OR?", P);
          end if;
 
          --  If not short-circuited, we need the ckeck
@@ -2849,7 +2851,7 @@ package body Checks is
          --  applied to an access [sub]type.
 
          if not Is_Access_Type (Typ) then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("`NOT NULL` allowed only for an access type", Error_Node);
 
          --  Enforce legality rule RM 3.10(14/1): A null exclusion can only
@@ -2858,7 +2860,7 @@ package body Checks is
          elsif Can_Never_Be_Null (Typ)
            and then Comes_From_Source (Typ)
          then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX???
               ("`NOT NULL` not allowed (& already excludes null)",
                Error_Node, Typ);
          end if;
@@ -5289,6 +5291,16 @@ package body Checks is
 
                if Nkind (P) = N_Conditional_Expression
                  and then N /= First (Expressions (P))
+               then
+                  return False;
+               end if;
+
+               --  If we are in a case eexpression, and not part of the
+               --  expression, then we return False, since a particular
+               --  branch may not always be elaborated
+
+               if Nkind (P) = N_Case_Expression
+                 and then N /= Expression (P)
                then
                   return False;
                end if;

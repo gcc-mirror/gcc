@@ -2417,6 +2417,21 @@ package body Exp_Util is
                   end if;
                end;
 
+            --  Alternative of case expression, we place the action in
+            --  the Actions field of the case expression alternative, this
+            --  will be handled when the case expression is expanded.
+
+            when N_Case_Expression_Alternative =>
+               if Present (Actions (P)) then
+                  Insert_List_After_And_Analyze
+                    (Last (Actions (P)), Ins_Actions);
+               else
+                  Set_Actions (P, Ins_Actions);
+                  Analyze_List (Then_Actions (P));
+               end if;
+
+               return;
+
             --  Case of appearing within an Expressions_With_Actions node. We
             --  prepend the actions to the list of actions already there.
 
@@ -2679,6 +2694,7 @@ package body Exp_Util is
                N_Access_To_Object_Definition            |
                N_Aggregate                              |
                N_Allocator                              |
+               N_Case_Expression                        |
                N_Case_Statement_Alternative             |
                N_Character_Literal                      |
                N_Compilation_Unit                       |
