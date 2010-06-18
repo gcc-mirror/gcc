@@ -374,7 +374,7 @@ procedure Gnat1drv is
          Back_End_Handles_Limited_Types := False;
 
       --  Otherwise normal gcc back end, for now still turn flag off by
-      --  default, since we have not verified proper back end handling.
+      --  default, since there are unresolved problems in the front end.
 
       else
          Back_End_Handles_Limited_Types := False;
