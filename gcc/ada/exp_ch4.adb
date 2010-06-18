@@ -8190,15 +8190,13 @@ package body Exp_Ch4 is
          --  renaming, since this is an error situation which will be caught by
          --  Sem_Ch8, and the expansion can interfere with this error check.
 
-         if Is_Access_Type (Target_Type)
-           and then Is_Renamed_Object (N)
-         then
+         if Is_Access_Type (Target_Type) and then Is_Renamed_Object (N) then
             return;
          end if;
 
          --  Otherwise, proceed with processing tagged conversion
 
-         declare
+         Tagged_Conversion : declare
             Actual_Op_Typ   : Entity_Id;
             Actual_Targ_Typ : Entity_Id;
             Make_Conversion : Boolean := False;
@@ -8253,7 +8251,7 @@ package body Exp_Ch4 is
                    Reason    => CE_Tag_Check_Failed));
             end Make_Tag_Check;
 
-         --  Start of processing
+         --  Start of processing for Tagged_Conversion
 
          begin
             if Is_Access_Type (Target_Type) then
@@ -8350,7 +8348,7 @@ package body Exp_Ch4 is
                   end;
                end if;
             end if;
-         end;
+         end Tagged_Conversion;
 
       --  Case of other access type conversions
 
@@ -8387,9 +8385,9 @@ package body Exp_Ch4 is
          end if;
 
          --  Otherwise do correct fixed-conversion, but skip these if the
-         --  Conversion_OK flag is set, because from a semantic point of
-         --  view these are simple integer conversions needing no further
-         --  processing (the backend will simply treat them as integers)
+         --  Conversion_OK flag is set, because from a semantic point of view
+         --  these are simple integer conversions needing no further processing
+         --  (the backend will simply treat them as integers).
 
          if not Conversion_OK (N) then
             if Is_Fixed_Point_Type (Etype (N)) then
@@ -8443,7 +8441,7 @@ package body Exp_Ch4 is
          --  with the end-point. But that can lose precision in some cases, and
          --  give a wrong result. Converting the operand to Universal_Real is
          --  helpful, but still does not catch all cases with 64-bit integers
-         --  on targets with only 64-bit floats
+         --  on targets with only 64-bit floats.
 
          --  The above comment seems obsoleted by Apply_Float_Conversion_Check
          --  Can this code be removed ???
@@ -8526,7 +8524,7 @@ package body Exp_Ch4 is
       elsif Is_Enumeration_Type (Target_Type) then
 
          --  Special processing is required if there is a change of
-         --  representation (from enumeration representation clauses)
+         --  representation (from enumeration representation clauses).
 
          if not Same_Representation (Target_Type, Operand_Type) then
 
@@ -8552,9 +8550,8 @@ package body Exp_Ch4 is
       end if;
 
       --  At this stage, either the conversion node has been transformed into
-      --  some other equivalent expression, or left as a conversion that can
-      --  be handled by Gigi. The conversions that Gigi can handle are the
-      --  following:
+      --  some other equivalent expression, or left as a conversion that can be
+      --  handled by Gigi, in the following cases:
 
       --    Conversions with no change of representation or type
 
@@ -8607,7 +8604,7 @@ package body Exp_Ch4 is
                end if;
 
                --  Reset overflow flag, since the range check will include
-               --  dealing with possible overflow, and generate the check If
+               --  dealing with possible overflow, and generate the check. If
                --  Address is either a source type or target type, suppress
                --  range check to avoid typing anomalies when it is a visible
                --  integer type.
@@ -8638,16 +8635,16 @@ package body Exp_Ch4 is
    -- Expand_N_Unchecked_Expression --
    -----------------------------------
 
-   --  Remove the unchecked expression node from the tree. It's job was simply
+   --  Remove the unchecked expression node from the tree. Its job was simply
    --  to make sure that its constituent expression was handled with checks
    --  off, and now that that is done, we can remove it from the tree, and
-   --  indeed must, since gigi does not expect to see these nodes.
+   --  indeed must, since Gigi does not expect to see these nodes.
 
    procedure Expand_N_Unchecked_Expression (N : Node_Id) is
       Exp : constant Node_Id := Expression (N);
 
    begin
-      Set_Assignment_OK (Exp, Assignment_OK (N) or Assignment_OK (Exp));
+      Set_Assignment_OK (Exp, Assignment_OK (N) or else Assignment_OK (Exp));
       Rewrite (N, Exp);
    end Expand_N_Unchecked_Expression;
 
@@ -8666,9 +8663,11 @@ package body Exp_Ch4 is
    begin
       --  Nothing at all to do if conversion is to the identical type so remove
       --  the conversion completely, it is useless, except that it may carry
-      --  an Assignment_OK indication which must be proprgated to the operand.
+      --  an Assignment_OK indication which must be propagated to the operand.
 
       if Operand_Type = Target_Type then
+         --  Code duplicates Expand_N_Unchecked_Expression above, factor???
+
          if Assignment_OK (N) then
             Set_Assignment_OK (Operand);
          end if;
@@ -9178,7 +9177,7 @@ package body Exp_Ch4 is
          then
             Owner := Scope (Return_Applies_To (Scope (PtrT)));
 
-         --  Case of an access discriminant, or (Ada 2005), of an anonymous
+         --  Case of an access discriminant, or (Ada 2005) of an anonymous
          --  access component or anonymous access function result: find the
          --  final list associated with the scope of the type. (In the
          --  anonymous access component kind, a list controller will have
@@ -9825,7 +9824,7 @@ package body Exp_Ch4 is
       --  in the call to Compile_Time_Compare. If this call results in a
       --  clear result of always True or Always False, that's decisive and
       --  we are done. Otherwise we repeat the processing with Assume_Valid
-      --  set to True to generate additional warnings. We can stil that step
+      --  set to True to generate additional warnings. We can skip that step
       --  if Constant_Condition_Warnings is False.
 
       for AV in False .. True loop
@@ -9914,9 +9913,9 @@ package body Exp_Ch4 is
                end if;
 
             --  If this is the second iteration (AV = True), and the original
-            --  node comes from source and we are not in an instance, then
-            --  give a warning if we know result would be True or False. Note
-            --  we know Constant_Condition_Warnings is set if we get here.
+            --  node comes from source and we are not in an instance, then give
+            --  a warning if we know result would be True or False. Note: we
+            --  know Constant_Condition_Warnings is set if we get here.
 
             elsif Comes_From_Source (Original_Node (N))
               and then not In_Instance
@@ -9934,9 +9933,9 @@ package body Exp_Ch4 is
          end;
 
          --  Skip second iteration if not warning on constant conditions or
-         --  if the first iteration already generated a warning of some kind
-         --  or if we are in any case assuming all values are valid (so that
-         --  the first iteration took care of the valid case).
+         --  if the first iteration already generated a warning of some kind or
+         --  if we are in any case assuming all values are valid (so that the
+         --  first iteration took care of the valid case).
 
          exit when not Constant_Condition_Warnings;
          exit when Warning_Generated;
@@ -10003,7 +10002,7 @@ package body Exp_Ch4 is
          end if;
       end Is_Safe_Operand;
 
-      --  Start of processing for Is_Safe_In_Place_Array_Op
+   --  Start of processing for Is_Safe_In_Place_Array_Op
 
    begin
       --  Skip this processing if the component size is different from system
@@ -10024,12 +10023,10 @@ package body Exp_Ch4 is
 
       elsif not Is_Unaliased (Lhs) then
          return False;
+
       else
          Target := Entity (Lhs);
-
-         return
-           Is_Safe_Operand (Op1)
-             and then Is_Safe_Operand (Op2);
+         return Is_Safe_Operand (Op1) and then Is_Safe_Operand (Op2);
       end if;
    end Safe_In_Place_Array_Op;
 

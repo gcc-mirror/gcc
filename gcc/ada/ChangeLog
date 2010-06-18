@@ -1,3 +1,11 @@
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2010-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* debug.ads Add documentation on -gnatd.Z.
+
 2010-06-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_elim.adb: Proper error message on improperly eliminated instances
