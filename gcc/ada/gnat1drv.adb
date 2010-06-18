@@ -30,6 +30,7 @@ with Csets;    use Csets;
 with Debug;    use Debug;
 with Elists;
 with Errout;   use Errout;
+with Exp_CG;
 with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
@@ -596,6 +597,7 @@ begin
       Nlists.Initialize;
       Sinput.Initialize;
       Sem.Initialize;
+      Exp_CG.Initialize;
       Csets.Initialize;
       Uintp.Initialize;
       Urealp.Initialize;
@@ -984,6 +986,10 @@ begin
       --  the library file output.
 
       Namet.Unlock;
+
+      --  Generate the call-graph output of dispatching calls
+
+      Exp_CG.Generate_CG_Output;
 
       --  Validate unchecked conversions (using the values for size and
       --  alignment annotated by the backend where possible).
