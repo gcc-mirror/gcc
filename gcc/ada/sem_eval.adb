@@ -1804,17 +1804,79 @@ package body Sem_Eval is
    -- Eval_Conditional_Expression --
    ---------------------------------
 
-   --  We never attempt folding of conditional expressions (and the language)
-   --  does not require it, so the only required processing is to do the check
-   --  for non-static context for the then and else expressions.
+   --  We can fold to a static expression if the condition and both constituent
+   --  expressions are static. Othewise the only required processing is to do
+   --  the check for non-static context for the then and else expressions.
 
    procedure Eval_Conditional_Expression (N : Node_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : constant Node_Id := Next (Then_Expr);
+      Condition  : constant Node_Id := First (Expressions (N));
+      Then_Expr  : constant Node_Id := Next (Condition);
+      Else_Expr  : constant Node_Id := Next (Then_Expr);
+      Result     : Node_Id;
+      Non_Result : Node_Id;
+
+      Rstat : constant Boolean :=
+                Is_Static_Expression (Condition)
+                  and then
+                Is_Static_Expression (Then_Expr)
+                  and then
+                Is_Static_Expression (Else_Expr);
+
    begin
-      Check_Non_Static_Context (Then_Expr);
-      Check_Non_Static_Context (Else_Expr);
+      --  If any operand is Any_Type, just propagate to result and do not try
+      --  to fold, this prevents cascaded errors.
+
+      if Etype (Condition) = Any_Type or else
+         Etype (Then_Expr) = Any_Type or else
+         Etype (Else_Expr) = Any_Type
+      then
+         Set_Etype (N, Any_Type);
+         Set_Is_Static_Expression (N, False);
+         return;
+
+      --  Static case where we can fold. Note that we don't try to fold cases
+      --  where the condition is known at compile time, but the result is
+      --  non-static. This avoids possible cases of infinite recursion where
+      --  the expander puts in a redundant test and we remove it. Instead we
+      --  deal with these cases in the expander.
+
+      elsif Rstat then
+
+         --  Select result operand
+
+         if Is_True (Expr_Value (Condition)) then
+            Result := Then_Expr;
+            Non_Result := Else_Expr;
+         else
+            Result := Else_Expr;
+            Non_Result := Then_Expr;
+         end if;
+
+         --  Note that it does not matter if the non-result operand raises a
+         --  Constraint_Error, but if the result raises constraint error then
+         --  we replace the node with a raise constraint error. This will
+         --  properly propagate Raises_Constraint_Error since this flag is
+         --  set in Result.
+
+         if Raises_Constraint_Error (Result) then
+            Rewrite_In_Raise_CE (N, Result);
+            Check_Non_Static_Context (Non_Result);
+
+         --  Otherwise the result operand replaces the original node
+
+         else
+            Rewrite (N, Relocate_Node (Result));
+         end if;
+
+      --  Case of condition not known at compile time
+
+      else
+         Check_Non_Static_Context (Condition);
+         Check_Non_Static_Context (Then_Expr);
+         Check_Non_Static_Context (Else_Expr);
+      end if;
+
+      Set_Is_Static_Expression (N, Rstat);
    end Eval_Conditional_Expression;
 
    ----------------------
@@ -2937,9 +2999,11 @@ package body Sem_Eval is
       Left     : constant Node_Id   := Left_Opnd (N);
       Right    : constant Node_Id   := Right_Opnd (N);
       Left_Int : Uint;
-      Rstat    : constant Boolean   :=
-                   Is_Static_Expression (Left)
-                     and then Is_Static_Expression (Right);
+
+      Rstat : constant Boolean :=
+                Is_Static_Expression (Left)
+                  and then
+                Is_Static_Expression (Right);
 
    begin
       --  Short circuit operations are never static in Ada 83
@@ -3001,7 +3065,7 @@ package body Sem_Eval is
 
       if (Kind = N_And_Then and then Is_False (Left_Int))
             or else
-         (Kind = N_Or_Else  and then Is_True (Left_Int))
+         (Kind = N_Or_Else  and then Is_True  (Left_Int))
       then
          Fold_Uint (N, Left_Int, Rstat);
          return;

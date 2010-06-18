@@ -6186,14 +6186,14 @@ package body Prj.Nmsc is
    ------------------
 
    procedure Find_Sources
-     (Project   : in out Project_Processing_Data;
-      Data      : in out Tree_Processing_Data)
+     (Project : in out Project_Processing_Data;
+      Data    : in out Tree_Processing_Data)
    is
       Sources : constant Variable_Value :=
                   Util.Value_Of
                     (Name_Source_Files,
-                    Project.Project.Decl.Attributes,
-                    Data.Tree);
+                     Project.Project.Decl.Attributes,
+                     Data.Tree);
 
       Source_List_File : constant Variable_Value :=
                            Util.Value_Of
@@ -6888,26 +6888,36 @@ package body Prj.Nmsc is
                         end if;
 
                         declare
-                           Path_Name : constant String :=
-                                         Normalize_Pathname
-                                           (Name (1 .. Last),
-                                            Directory       =>
-                                              Source_Directory
-                                                (Source_Directory'First ..
-                                                 Dir_Last),
-                                            Resolve_Links   =>
-                                              Opt.Follow_Links_For_Files,
-                                            Case_Sensitive => True);
+                           Path_Name    : constant String :=
+                                            Normalize_Pathname
+                                              (Name (1 .. Last),
+                                               Directory       =>
+                                                 Source_Directory
+                                                   (Source_Directory'First ..
+                                                    Dir_Last),
+                                               Resolve_Links   =>
+                                                 Opt.Follow_Links_For_Files,
+                                               Case_Sensitive => True);
 
-                           Path : Path_Name_Type;
-                           FF   : File_Found := Excluded_Sources_Htable.Get
-                                                 (Project.Excluded, File_Name);
-                           To_Remove : Boolean := False;
+                           Path         : Path_Name_Type;
+                           Display_Path : Path_Name_Type;
+                           FF           : File_Found :=
+                                            Excluded_Sources_Htable.Get
+                                              (Project.Excluded, File_Name);
+                           To_Remove    : Boolean := False;
 
                         begin
                            Name_Len := Path_Name'Length;
                            Name_Buffer (1 .. Name_Len) := Path_Name;
-                           Path := Name_Find;
+                           Display_Path := Name_Find;
+
+                           if Osint.File_Names_Case_Sensitive then
+                              Path := Display_Path;
+                           else
+                              Canonical_Case_File_Name
+                                (Name_Buffer (1 .. Name_Len));
+                              Path := Name_Find;
+                           end if;
 
                            if FF /= No_File_Found then
                               if not FF.Found then
@@ -6944,7 +6954,7 @@ package body Prj.Nmsc is
                               Source_Dir_Rank   => Num_Nod.Number,
                               Data              => Data,
                               Path              => Path,
-                              Display_Path      => Name_Find,
+                              Display_Path      => Display_Path,
                               File_Name         => File_Name,
                               Locally_Removed   => To_Remove,
                               Display_File_Name => Display_File_Name,

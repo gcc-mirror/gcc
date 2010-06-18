@@ -1,3 +1,18 @@
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Eval_Conditional_Expression): Result is static if
+	condition and both sub-expressions are static (and result is selected
+	expression).
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* g-pehage.adb: Minor reformatting
+
+2010-06-18  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Search_Directories): Insert canonical filenames into
+	source hash table.
+
 2010-06-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
