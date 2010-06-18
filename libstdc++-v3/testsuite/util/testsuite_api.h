@@ -19,7 +19,6 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-#include <cstddef>
 #include <exception>
 #include <testsuite_hooks.h>
 
@@ -107,7 +106,7 @@ namespace __gnu_test
   // For 23 unordered_* requirements.
   struct NonDefaultConstructible_hash
   {
-    size_t
+    std::size_t
     operator()(NonDefaultConstructible) const
     { return 1; }
   };
@@ -170,10 +169,29 @@ namespace __gnu_test
 
   struct OverloadedAddress_hash
   {
-    size_t
+    std::size_t
     operator()(const OverloadedAddress&) const
     { return 1; }
   };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct NonCopyConstructible
+  {
+    NonCopyConstructible() : num(-1) { }
+
+    NonCopyConstructible(NonCopyConstructible&& other)
+    : num(other.num)
+    { other.num = 0; }
+
+    NonCopyConstructible(const NonCopyConstructible&) = delete;
+
+    operator int() { return num; }
+
+  private:
+    int num;
+  };
+#endif
+
 }
 
 #endif

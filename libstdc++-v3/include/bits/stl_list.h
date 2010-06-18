@@ -508,6 +508,32 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       list(const allocator_type& __a)
       : _Base(__a) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Creates a %list with default constructed elements.
+       *  @param  n  The number of elements to initially create.
+       *
+       *  This constructor fills the %list with @a n default
+       *  constructed elements.
+       */
+      explicit
+      list(size_type __n)
+      : _Base()
+      { _M_default_initialize(__n); }
+
+      /**
+       *  @brief  Creates a %list with copies of an exemplar element.
+       *  @param  n  The number of elements to initially create.
+       *  @param  value  An element to copy.
+       *  @param  a  An allocator object.
+       *
+       *  This constructor fills the %list with @a n copies of @a value.
+       */
+      list(size_type __n, const value_type& __value,
+	   const allocator_type& __a = allocator_type())
+      : _Base(__a)
+      { _M_fill_initialize(__n, __value); }
+#else
       /**
        *  @brief  Creates a %list with copies of an exemplar element.
        *  @param  n  The number of elements to initially create.
@@ -521,6 +547,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	   const allocator_type& __a = allocator_type())
       : _Base(__a)
       { _M_fill_initialize(__n, __value); }
+#endif
 
       /**
        *  @brief  %List copy constructor.
@@ -811,6 +838,32 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       max_size() const
       { return _M_get_Node_allocator().max_size(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief Resizes the %list to the specified number of elements.
+       *  @param new_size Number of elements the %list should contain.
+       *
+       *  This function will %resize the %list to the specified number
+       *  of elements.  If the number is smaller than the %list's
+       *  current size the %list is truncated, otherwise default
+       *  constructed elements are appended.
+       */
+      void
+      resize(size_type __new_size);
+
+      /**
+       *  @brief Resizes the %list to the specified number of elements.
+       *  @param new_size Number of elements the %list should contain.
+       *  @param x Data with which new elements should be populated.
+       *
+       *  This function will %resize the %list to the specified number
+       *  of elements.  If the number is smaller than the %list's
+       *  current size the %list is truncated, otherwise the %list is
+       *  extended and new elements are populated with given data.
+       */
+      void
+      resize(size_type __new_size, const value_type& __x);
+#else
       /**
        *  @brief Resizes the %list to the specified number of elements.
        *  @param new_size Number of elements the %list should contain.
@@ -823,6 +876,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       void
       resize(size_type __new_size, value_type __x = value_type());
+#endif
 
       // element access
       /**
@@ -1394,10 +1448,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       _M_fill_initialize(size_type __n, const value_type& __x)
       {
-	for (; __n > 0; --__n)
+	for (; __n; --__n)
 	  push_back(__x);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // Called by list(n).
+      void
+      _M_default_initialize(size_type __n)
+      {
+	for (; __n; --__n)
+	  emplace_back();
+      }
+
+      // Called by resize(sz).
+      void
+      _M_default_append(size_type __n);
+#endif
 
       // Internal assign functions follow.
 

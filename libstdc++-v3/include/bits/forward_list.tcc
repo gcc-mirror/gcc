@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_fill_initialize(size_type __n, const value_type& __value)
     {
       _Node_base* __to = &this->_M_impl._M_head;
-      for (; __n > 0; --__n)
+      for (; __n; --__n)
         {
           __to->_M_next = this->_M_create_node(__value);
           __to = __to->_M_next;
@@ -122,12 +122,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _Tp, typename _Alloc>
+    void
     forward_list<_Tp, _Alloc>::
-    forward_list(size_type __n)
-    : _Base()
+    _M_default_initialize(size_type __n)
     {
       _Node_base* __to = &this->_M_impl._M_head;
-      for (; __n > 0; --__n)
+      for (; __n; --__n)
         {
           __to->_M_next = this->_M_create_node();
           __to = __to->_M_next;
@@ -164,6 +164,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     void
     forward_list<_Tp, _Alloc>::
+    _M_default_insert_after(const_iterator __pos, size_type __n)
+    {
+      const_iterator __saved_pos = __pos;
+      __try
+	{
+	  for (; __n; --__n)
+	    __pos = emplace_after(__pos);
+	}
+      __catch(...)
+	{
+	  erase_after(__saved_pos, ++__pos);
+	  __throw_exception_again;
+	}
+    }
+
+  template<typename _Tp, typename _Alloc>
+    void
+    forward_list<_Tp, _Alloc>::
     resize(size_type __sz)
     {
       iterator __k = before_begin();
@@ -177,10 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len == __sz)
         erase_after(__k, end());
       else
-	{
-	  forward_list __tmp(__sz - __len);
-	  splice_after(__k, std::move(__tmp));
-	}
+	_M_default_insert_after(__k, __sz - __len);
     }
 
   template<typename _Tp, typename _Alloc>

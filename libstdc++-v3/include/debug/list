@@ -67,12 +67,24 @@ namespace __debug
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.2.1 construct/copy/destroy:
-      explicit list(const _Allocator& __a = _Allocator())
+      explicit
+      list(const _Allocator& __a = _Allocator())
       : _Base(__a) { }
 
-      explicit list(size_type __n, const _Tp& __value = _Tp(),
-		    const _Allocator& __a = _Allocator())
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+      list(size_type __n)
+      : _Base(__n) { }
+
+      list(size_type __n, const _Tp& __value,
+	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) { }
+#else
+      explicit
+      list(size_type __n, const _Tp& __value = _Tp(),
+	   const _Allocator& __a = _Allocator())
+      : _Base(__n, __value, __a) { }
+#endif
 
       template<class _InputIterator>
       list(_InputIterator __first, _InputIterator __last,
@@ -208,6 +220,63 @@ namespace __debug
       using _Base::size;
       using _Base::max_size;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      resize(size_type __sz)
+      {
+	this->_M_detach_singular();
+
+	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
+	iterator __victim = begin();
+	iterator __end = end();
+	for (size_type __i = __sz; __victim != __end && __i > 0; --__i)
+	  ++__victim;
+
+	while (__victim != __end)
+	  {
+	    iterator __real_victim = __victim++;
+	    __real_victim._M_invalidate();
+	  }
+
+	__try
+	  {
+	    _Base::resize(__sz);
+	  }
+	__catch(...)
+	  {
+	    this->_M_revalidate_singular();
+	    __throw_exception_again;
+	  }
+      }
+
+      void
+      resize(size_type __sz, const _Tp& __c)
+      {
+	this->_M_detach_singular();
+
+	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
+	iterator __victim = begin();
+	iterator __end = end();
+	for (size_type __i = __sz; __victim != __end && __i > 0; --__i)
+	  ++__victim;
+
+	while (__victim != __end)
+	  {
+	    iterator __real_victim = __victim++;
+	    __real_victim._M_invalidate();
+	  }
+
+	__try
+	  {
+	    _Base::resize(__sz, __c);
+	  }
+	__catch(...)
+	  {
+	    this->_M_revalidate_singular();
+	    __throw_exception_again;
+	  }
+      }
+#else
       void
       resize(size_type __sz, _Tp __c = _Tp())
       {
@@ -235,6 +304,7 @@ namespace __debug
 	    __throw_exception_again;
 	  }
       }
+#endif
 
       // element access:
       reference

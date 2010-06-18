@@ -76,20 +76,40 @@ namespace __profile
       _M_base() const { return *this; }
 
       // 23.2.4.1 construct/copy/destroy:
-      explicit vector(const _Allocator& __a = _Allocator())
+      explicit
+      vector(const _Allocator& __a = _Allocator())
       : _Base(__a)
       { 
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);
       }
 
-      explicit vector(size_type __n, const _Tp& __value = _Tp(),
-		      const _Allocator& __a = _Allocator())
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+      vector(size_type __n)
+      :  _Base(__n)
+      { 
+        __profcxx_vector_construct(this, this->capacity());
+        __profcxx_vector_construct2(this);
+      }
+
+      vector(size_type __n, const _Tp& __value,
+	     const _Allocator& __a = _Allocator())
       :  _Base(__n, __value, __a)
       { 
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);
       }
+#else
+      explicit
+      vector(size_type __n, const _Tp& __value = _Tp(),
+	     const _Allocator& __a = _Allocator())
+      :  _Base(__n, __value, __a)
+      { 
+        __profcxx_vector_construct(this, this->capacity());
+        __profcxx_vector_construct2(this);
+      }
+#endif
 
       template<class _InputIterator>
         vector(_InputIterator __first, _InputIterator __last,
@@ -218,6 +238,23 @@ namespace __profile
       using _Base::size;
       using _Base::max_size;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      resize(size_type __sz)
+      {
+        __profcxx_vector_invalid_operator(this);
+        _M_profile_resize(this, this->capacity(), __sz);
+        _Base::resize(__sz);
+      }
+
+      void
+      resize(size_type __sz, const _Tp& __c)
+      {
+        __profcxx_vector_invalid_operator(this);
+        _M_profile_resize(this, this->capacity(), __sz);
+        _Base::resize(__sz, __c);
+      }
+#else
       void
       resize(size_type __sz, _Tp __c = _Tp())
       {
@@ -225,6 +262,7 @@ namespace __profile
         _M_profile_resize(this, this->capacity(), __sz);
         _Base::resize(__sz, __c);
       }
+#endif
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       using _Base::shrink_to_fit;

@@ -1,6 +1,7 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -58,6 +59,33 @@
 #define _DEQUE_TCC 1
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template <typename _Tp, typename _Alloc>
+    void
+    deque<_Tp, _Alloc>::
+    _M_default_initialize()
+    {
+      _Map_pointer __cur;
+      __try
+        {
+          for (__cur = this->_M_impl._M_start._M_node;
+	       __cur < this->_M_impl._M_finish._M_node;
+	       ++__cur)
+            std::__uninitialized_default_a(*__cur, *__cur + _S_buffer_size(),
+					   _M_get_Tp_allocator());
+          std::__uninitialized_default_a(this->_M_impl._M_finish._M_first,
+					 this->_M_impl._M_finish._M_cur,
+					 _M_get_Tp_allocator());
+        }
+      __catch(...)
+        {
+          std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
+			_M_get_Tp_allocator());
+          __throw_exception_again;
+        }
+    }
+#endif
 
   template <typename _Tp, typename _Alloc>
     deque<_Tp, _Alloc>&
@@ -270,6 +298,32 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       else
         _M_insert_aux(__pos, __n, __x);
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template <typename _Tp, typename _Alloc>
+    void
+    deque<_Tp, _Alloc>::
+    _M_default_append(size_type __n)
+    {
+      if (__n)
+	{
+	  iterator __new_finish = _M_reserve_elements_at_back(__n);
+	  __try
+	    {
+	      std::__uninitialized_default_a(this->_M_impl._M_finish,
+					     __new_finish,
+					     _M_get_Tp_allocator());
+	      this->_M_impl._M_finish = __new_finish;
+	    }
+	  __catch(...)
+	    {
+	      _M_destroy_nodes(this->_M_impl._M_finish._M_node + 1,
+			       __new_finish._M_node + 1);
+	      __throw_exception_again;
+	    }
+	}
+    }
+#endif
 
   template <typename _Tp, typename _Alloc>
     void

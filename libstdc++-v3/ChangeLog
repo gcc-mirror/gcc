@@ -1,3 +1,85 @@
+2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/32618
+	* include/bits/stl_list.h (vector<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(list<>::list(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/list.tcc (list<>::resize, _M_default_append): Define.
+	* include/bits/stl_vector.h (vector<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(vector<>::vector(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/vector.tcc (vector<>::_M_default_append): Define.
+	* include/bits/stl_deque.h (deque<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(deque<>::deque(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/deque.tcc (deque<>::_M_default_append): Define.
+	* include/debug/vector: Update.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/bits/forward_list.h (_M_default_initialize,
+	_M_default_insert_after): Declare.
+	(forward_list<>::forward_list(size_type), resize(size_type)): Fix,
+	use the latter.
+	* include/bits/forward_list.tcc (forward_list<>::_M_default_append,
+	_M_default_insert_after): Define.
+	* testsuite/util/testsuite_api.h (NonCopyConstructible): Add.
+	* testsuite/23_containers/forward_list/modifiers/6.cc: Move to...
+	* testsuite/23_containers/forward_list/capacity/resize_size.cc:
+	... here.
+	* testsuite/23_containers/forward_list/cons/10.cc: Move to...
+	* testsuite/23_containers/forward_list/cons/cons_size.cc: ... here.
+	* testsuite/23_containers/vector/resize/1.cc: Move to...
+	* testsuite/23_containers/vector/capacity/resize/1.cc: ... here.
+	* testsuite/23_containers/vector/resize/moveable.cc: Move to...
+	* testsuite/23_containers/vector/resize/capacity/moveable.cc: ... here.
+	* testsuite/23_containers/vector/cons/cons_size.cc: New.
+	* testsuite/23_containers/vector/capacity/resize/resize_size.cc:
+	Likewise.
+	* testsuite/23_containers/deque/cons/cons_size.cc: Likewise.
+	* testsuite/23_containers/deque/capacity/resize_size.cc: Likewise.
+	* testsuite/23_containers/list/cons/cons_size.cc: Likewise.
+	* testsuite/23_containers/list/capacity/resize_size.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/resize/moveable.cc: Adjust.
+	* testsuite/23_containers/deque/capacity/moveable.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2010-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_uninitialized.h (__uninitialized_default,
