@@ -309,9 +309,13 @@ procedure Gnatname is
                   declare
                      New_Arguments : Argument_Data;
                      pragma Warnings (Off, New_Arguments);
-                     --  Declaring this defaulted itialized object ensures that
-                     --  the new allocated component of table Arguments is
-                     --  correctly initialized.
+                     --  Declaring this defaulted initialized object ensures
+                     --  that the new allocated component of table Arguments
+                     --  is correctly initialized.
+
+                     --  This is VERY ugly, Table should never be used with
+                     --  data requiring default initialization. We should
+                     --  find a way to avoid violating this rule ???
 
                   begin
                      Arguments.Append (New_Arguments);
