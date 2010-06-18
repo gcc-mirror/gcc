@@ -1,3 +1,22 @@
+2010-06-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (double_int_to_shwi, double_int_to_uhwi,
+	double_int_fits_in_uhwi_p): Implement as static inline.
+	(double_int_xor): New inline function.
+	(double_int_lrotate, double_int_rrotate, double_int_max,
+	double_int_umax, double_int_smax, double_int_min, double_int_umin,
+	double_int_smin): Declare.
+	(lrotate_double, rrotate_double): Remove declaration.
+	* double-int.c (double_int_fits_in_uhwi_p, double_int_to_shwi,
+	double_int_to_uhwi, lrotate_double, rrotate_double): Remove function.
+	(double_int_lrotate, double_int_rrotate, double_int_max,
+	double_int_umax, double_int_smax, double_int_min, double_int_umin,
+	double_int_smin): New function.
+	* fold-const.c (int_const_binop): Clean up, use double_int_*
+	functions.
+	* simplify-rtx.c (simplify_const_binary_operation): Clean up, use
+	double_int_* and immed_double_int_const functions.
+
 2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* function.h (types_used_by_cur_var_decl): Change type to a VEC.
