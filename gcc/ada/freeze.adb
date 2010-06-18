@@ -203,12 +203,44 @@ package body Freeze is
       New_S : Entity_Id;
       After : in out Node_Id)
    is
-      Body_Node : constant Node_Id := Build_Renamed_Body (Decl, New_S);
+      Body_Node :  Node_Id;
+      Intr      : Entity_Id;
+      Body_Decl : constant Node_Id := Unit_Declaration_Node (New_S);
+      Ent       : constant Entity_Id := Defining_Entity (Decl);
+
    begin
-      Insert_After (After, Body_Node);
-      Mark_Rewrite_Insertion (Body_Node);
-      Analyze (Body_Node);
-      After := Body_Node;
+
+      --  if the renamed subprogram is intrinsic, there is no need for a
+      --  wrapper body: we set the alias that will be called and expanded
+      --  which completes the declaration.
+      --  Note that it is legal for a renaming_as_body to rename an intrinsic
+      --  subprogram, as long as the renaming occurs before the new entity
+      --  is frozen. See RM 8.5.4 (5).
+
+      if Nkind (Body_Decl) = N_Subprogram_Renaming_Declaration
+         and then Is_Entity_Name (Name (Body_Decl))
+        and then Is_Intrinsic_Subprogram (Entity (Name (Body_Decl)))
+        and then Present (Interface_Name (Entity (Name (Body_Decl))))
+      then
+         Intr := Entity (Name (Body_Decl));
+         Set_Interface_Name
+           (Intr, Interface_Name (Entity (Name (Body_Decl))));
+         if Present (Alias (Intr)) then
+            Set_Alias (Ent, Alias (Intr));
+         else
+            Set_Alias (Ent, Intr);
+         end if;
+
+         Set_Is_Intrinsic_Subprogram (Ent);
+         Set_Has_Completion (Ent);
+
+      else
+         Body_Node := Build_Renamed_Body (Decl, New_S);
+         Insert_After (After, Body_Node);
+         Mark_Rewrite_Insertion (Body_Node);
+         Analyze (Body_Node);
+         After := Body_Node;
+      end if;
    end Build_And_Analyze_Renamed_Body;
 
    ------------------------
@@ -308,8 +340,8 @@ package body Freeze is
       end if;
 
       --  For simple renamings, subsequent calls can be expanded directly as
-      --  called to the renamed entity. The body must be generated in any case
-      --  for calls they may appear elsewhere.
+      --  calls to the renamed entity. The body must be generated in any case
+      --  for calls that may appear elsewhere.
 
       if (Ekind (Old_S) = E_Function
            or else Ekind (Old_S) = E_Procedure)
@@ -1339,6 +1371,9 @@ package body Freeze is
       --  that require us to build a default expression functions. This is the
       --  point at which such functions are constructed (after all types that
       --  might be used in such expressions have been frozen).
+
+      --  For subprograms that are renaming_as_body, we create the wrapper
+      --  bodies as needed.
 
       --  We also add finalization chains to access types whose designated
       --  types are controlled. This is normally done when freezing the type,

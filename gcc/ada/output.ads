@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains low level output routines used by the compiler
---  for writing error messages and informational output. It is also used
---  by the debug source file output routines (see Sprintf.Print_Eol).
+--  This package contains low level output routines used by the compiler for
+--  writing error messages and informational output. It is also used by the
+--  debug source file output routines (see Sprint.Print_Debug_Line).
 
 with Hostparm; use Hostparm;
 with Types;    use Types;

@@ -31,7 +31,7 @@ with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 --  with Interfaces.C;
 --  with Interfaces.C_Streams;
---  Why are these commented out ???
+--   Why are these commented out ???
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -161,18 +161,16 @@ package body Exp_CG is
 
             --  Prefix "__" followed by number
 
-            elsif Nr < 10 then
-               return Prefix_Length + 1;
-
-            elsif Nr < 100 then
-               return Prefix_Length + 2;
-
-            elsif Nr < 1000 then
-               return Prefix_Length + 3;
-
             else
-               pragma Assert (False);
-               raise Program_Error;
+               declare
+                  Result : Natural := Prefix_Length + 1;
+               begin
+                  while Nr > 10 loop
+                     Result := Result + 1;
+                     Nr := Nr / 10;
+                  end loop;
+                  return Result;
+               end;
             end if;
          end if;
       end Homonym_Suffix_Length;
