@@ -4685,7 +4685,7 @@ package body Exp_Util is
 
       --  If it is a scalar type and we need to capture the value, just make
       --  a copy. Likewise for a function call, an attribute reference, an
-      --  allocator or an operator. And if we have a volatile reference and
+      --  allocator, or an operator. And if we have a volatile reference and
       --  Name_Req is not set (see comments above for Side_Effect_Free).
 
       if Is_Elementary_Type (Exp_Type)

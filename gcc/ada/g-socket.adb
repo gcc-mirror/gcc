@@ -273,7 +273,8 @@ package body GNAT.Sockets is
 
    function Is_Open (S : Selector_Type) return Boolean;
    --  Return True for an "open" Selector_Type object, i.e. one for which
-   --  Create_Selector has been called and Close_Selector has not been called.
+   --  Create_Selector has been called and Close_Selector has not been called,
+   --  or the null selector.
 
    ---------
    -- "+" --
@@ -294,6 +295,10 @@ package body GNAT.Sockets is
    begin
       if not Is_Open (Selector) then
          raise Program_Error with "closed selector";
+
+      elsif Selector.Is_Null then
+         raise Program_Error with "null selector";
+
       end if;
 
       --  Send one byte to unblock select system call
@@ -491,7 +496,7 @@ package body GNAT.Sockets is
    is
       Res  : C.int;
       Last : C.int;
-      RSig : constant Socket_Type := Selector.R_Sig_Socket;
+      RSig : Socket_Type := No_Socket;
       TVal : aliased Timeval;
       TPtr : Timeval_Access;
 
@@ -511,9 +516,12 @@ package body GNAT.Sockets is
          TPtr := TVal'Unchecked_Access;
       end if;
 
-      --  Add read signalling socket
+      --  Add read signalling socket, if present
 
-      Set (R_Socket_Set, RSig);
+      if not Selector.Is_Null then
+         RSig := Selector.R_Sig_Socket;
+         Set (R_Socket_Set, RSig);
+      end if;
 
       Last := C.int'Max (C.int'Max (C.int (R_Socket_Set.Last),
                                     C.int (W_Socket_Set.Last)),
@@ -540,7 +548,7 @@ package body GNAT.Sockets is
       --  If Select was resumed because of read signalling socket, read this
       --  data and remove socket from set.
 
-      if Is_Set (R_Socket_Set, RSig) then
+      if RSig /= No_Socket and then Is_Set (R_Socket_Set, RSig) then
          Clear (R_Socket_Set, RSig);
 
          Res := Signalling_Fds.Read (C.int (RSig));
@@ -585,10 +593,9 @@ package body GNAT.Sockets is
 
    procedure Close_Selector (Selector : in out Selector_Type) is
    begin
-      if not Is_Open (Selector) then
+      --  Nothing to do if selector already in closed state
 
-         --  Selector already in closed state: nothing to do
-
+      if Selector.Is_Null or else not Is_Open (Selector) then
          return;
       end if;
 
@@ -1425,14 +1432,19 @@ package body GNAT.Sockets is
 
    function Is_Open (S : Selector_Type) return Boolean is
    begin
-      --  Either both controlling socket descriptors are valid (case of an
-      --  open selector) or neither (case of a closed selector).
+      if S.Is_Null then
+         return True;
 
-      pragma Assert ((S.R_Sig_Socket /= No_Socket)
-                       =
-                     (S.W_Sig_Socket /= No_Socket));
+      else
+         --  Either both controlling socket descriptors are valid (case of an
+         --  open selector) or neither (case of a closed selector).
 
-      return S.R_Sig_Socket /= No_Socket;
+         pragma Assert ((S.R_Sig_Socket /= No_Socket)
+                          =
+                        (S.W_Sig_Socket /= No_Socket));
+
+         return S.R_Sig_Socket /= No_Socket;
+      end if;
    end Is_Open;
 
    ------------

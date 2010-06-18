@@ -422,6 +422,11 @@ package GNAT.Sockets is
    type Selector_Access is access all Selector_Type;
    --  Selector objects are used to wait for i/o events to occur on sockets
 
+   Null_Selector : constant Selector_Type;
+   --  The Null_Selector can be used in place of a normal selector without
+   --  having to call Create_Selector if the use of Abort_Selector is not
+   --  required.
+
    --  Timeval_Duration is a subtype of Standard.Duration because the full
    --  range of Standard.Duration cannot be represented in the equivalent C
    --  structure. Moreover, negative values are not allowed to avoid system
@@ -1067,7 +1072,7 @@ package GNAT.Sockets is
    --  the situation where a change to the monitored sockets set must be made.
 
    procedure Create_Selector (Selector : out Selector_Type);
-   --  Create a new selector
+   --  Initialize (open) a new selector
 
    procedure Close_Selector (Selector : in out Selector_Type);
    --  Close Selector and all internal descriptors associated; deallocate any
@@ -1110,7 +1115,8 @@ package GNAT.Sockets is
    --  different objects.
 
    procedure Abort_Selector (Selector : Selector_Type);
-   --  Send an abort signal to the selector
+   --  Send an abort signal to the selector. The Selector may not be the
+   --  Null_Selector.
 
    type Fd_Set is private;
    --  ??? This type must not be used directly, it needs to be visible because
@@ -1126,13 +1132,27 @@ private
    type Socket_Type is new Integer;
    No_Socket : constant Socket_Type := -1;
 
-   type Selector_Type is limited record
-      R_Sig_Socket : Socket_Type := No_Socket;
-      W_Sig_Socket : Socket_Type := No_Socket;
-      --  Signalling sockets used to abort a select operation
+   --  A selector is either a null selector, which is always "open" and can
+   --  never be aborted, or a regular selector, which is created "closed",
+   --  becomes "open" when Create_Selector is called, and "closed" again when
+   --  Close_Selector is called.
+
+   type Selector_Type (Is_Null : Boolean := False) is limited record
+      case Is_Null is
+         when True =>
+            null;
+
+         when False =>
+            R_Sig_Socket : Socket_Type := No_Socket;
+            W_Sig_Socket : Socket_Type := No_Socket;
+            --  Signalling sockets used to abort a select operation
+
+      end case;
    end record;
 
    pragma Volatile (Selector_Type);
+
+   Null_Selector : constant Selector_Type := (Is_Null => True);
 
    type Fd_Set is
      new System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_fd_set);
