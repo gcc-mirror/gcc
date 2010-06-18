@@ -645,9 +645,9 @@ hashval_t types_used_by_vars_do_hash (const void*);
 int types_used_by_vars_eq (const void *, const void *);
 void types_used_by_var_decl_insert (tree type, tree var_decl);
 
-/* During parsing of a global variable, this linked list points to
-   the list of types referenced by the global variable.  */
-extern GTY(()) tree types_used_by_cur_var_decl;
+/* During parsing of a global variable, this vector contains the types
+   referenced by the global variable.  */
+extern GTY(()) VEC(tree,gc) *types_used_by_cur_var_decl;
 
 
 /* cfun shouldn't be set directly; use one of these functions instead.  */

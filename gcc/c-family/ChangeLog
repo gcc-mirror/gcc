@@ -1,3 +1,8 @@
+2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (record_types_used_by_current_var_decl): Adjust for
+	new type of types_used_by_cur_var_decl.
+
 2010-06-17  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR bootstrap/44512
