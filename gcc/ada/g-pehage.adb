@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.IO_Exceptions; use Ada.IO_Exceptions;
+with Ada.IO_Exceptions;       use Ada.IO_Exceptions;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 with GNAT.Heap_Sort_G;
@@ -215,8 +215,8 @@ package body GNAT.Perfect_Hash_Generators is
    --  Output a title and a vertex table
 
    function Ada_File_Base_Name (Pkg_Name : String) return String;
-   --  Return the base file name (i.e. without .ads/.adb extension) for an Ada
-   --  source file containing the named package, using the standard GNAT
+   --  Return the base file name (i.e. without .ads/.adb extension) for an
+   --  Ada source file containing the named package, using the standard GNAT
    --  file-naming convention. For example, if Pkg_Name is "Parent.Child", we
    --  return "parent-child".
 
@@ -1495,6 +1495,7 @@ package body GNAT.Perfect_Hash_Generators is
    begin
 
       File := Create_File (FName, Binary);
+
       if File = Invalid_FD then
          raise Program_Error with "cannot create: " & FName;
       end if;
@@ -1518,6 +1519,7 @@ package body GNAT.Perfect_Hash_Generators is
       FName (FName'Last) := 'b';  --  Set to body file name
 
       File := Create_File (FName, Binary);
+
       if File = Invalid_FD then
          raise Program_Error with "cannot create: " & FName;
       end if;
