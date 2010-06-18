@@ -4536,7 +4536,11 @@ gcc -c -gnatyl @dots{}
 The form ALL_CHECKS activates all standard checks (its use is equivalent
 to the use of the @code{gnaty} switch with no options.  @xref{Top,
 @value{EDITION} User's Guide, About This Guide, gnat_ugn,
-@value{EDITION} User's Guide}, for details.
+@value{EDITION} User's Guide}, for details.)
+
+Note: the behavior is slightly different in GNAT mode (@option{-gnatg} used).
+In this case, ALL_CHECKS implies the standard set of GNAT mode style check
+options (i.e. equivalent to -gnatyg).
 
 The forms with @code{Off} and @code{On}
 can be used to temporarily disable style checks

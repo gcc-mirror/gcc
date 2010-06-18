@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -572,6 +572,11 @@ package body Par_SCO is
                   Process_Decision_Operand (N);
                   return Skip;
                end;
+
+            --  Case expression
+
+            when N_Case_Expression =>
+               return OK; -- ???
 
             --  Conditional expression, processed like an if statement
 

@@ -1666,6 +1666,27 @@ package body Sem_Eval is
       end if;
    end Eval_Call;
 
+   --------------------------
+   -- Eval_Case_Expression --
+   --------------------------
+
+   --  Right now we do not attempt folding of any case expressions, and the
+   --  language does not require it, so the only required processing is to
+   --  do the check for all expressions appearing in the case expression.
+
+   procedure Eval_Case_Expression (N : Node_Id) is
+      Alt : Node_Id;
+
+   begin
+      Check_Non_Static_Context (Expression (N));
+
+      Alt := First (Alternatives (N));
+      while Present (Alt) loop
+         Check_Non_Static_Context (Expression (Alt));
+         Next (Alt);
+      end loop;
+   end Eval_Case_Expression;
+
    ------------------------
    -- Eval_Concatenation --
    ------------------------
@@ -1783,15 +1804,14 @@ package body Sem_Eval is
    -- Eval_Conditional_Expression --
    ---------------------------------
 
-   --  This GNAT internal construct can never be statically folded, so the
-   --  only required processing is to do the check for non-static context
-   --  for the two expression operands.
+   --  We never attempt folding of conditional expressions (and the language)
+   --  does not require it, so the only required processing is to do the check
+   --  for non-static context for the then and else expressions.
 
    procedure Eval_Conditional_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : constant Node_Id := Next (Condition);
       Else_Expr : constant Node_Id := Next (Then_Expr);
-
    begin
       Check_Non_Static_Context (Then_Expr);
       Check_Non_Static_Context (Else_Expr);

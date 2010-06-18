@@ -160,6 +160,7 @@ package body Sem_Res is
    procedure Resolve_Allocator                 (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Arithmetic_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Call                      (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Case_Expression           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Character_Literal         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Comparison_Op             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Conditional_Expression    (N : Node_Id; Typ : Entity_Id);
@@ -2187,6 +2188,9 @@ package body Sem_Res is
                   Set_Entity (N, Seen);
                   Generate_Reference (Seen, N);
 
+               elsif Nkind (N) = N_Case_Expression then
+                  Set_Etype (N, Expr_Type);
+
                elsif Nkind (N) = N_Character_Literal then
                   Set_Etype (N, Expr_Type);
 
@@ -2542,6 +2546,9 @@ package body Sem_Res is
             when N_Attribute_Reference
                              => Resolve_Attribute                (N, Ctx_Type);
 
+            when N_Case_Expression
+                             => Resolve_Case_Expression          (N, Ctx_Type);
+
             when N_Character_Literal
                              => Resolve_Character_Literal        (N, Ctx_Type);
 
@@ -2640,7 +2647,6 @@ package body Sem_Res is
 
             when N_Unchecked_Type_Conversion =>
                Resolve_Unchecked_Type_Conversion                 (N, Ctx_Type);
-
          end case;
 
          --  If the subexpression was replaced by a non-subexpression, then
@@ -5470,6 +5476,24 @@ package body Sem_Res is
       Check_Elab_Call (N);
       Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
+
+   -----------------------------
+   -- Resolve_Case_Expression --
+   -----------------------------
+
+   procedure Resolve_Case_Expression (N : Node_Id; Typ : Entity_Id) is
+      Alt : Node_Id;
+
+   begin
+      Alt := First (Alternatives (N));
+      while Present (Alt) loop
+         Resolve (Expression (Alt), Typ);
+         Next (Alt);
+      end loop;
+
+      Set_Etype (N, Typ);
+      Eval_Case_Expression (N);
+   end Resolve_Case_Expression;
 
    -------------------------------
    -- Resolve_Character_Literal --

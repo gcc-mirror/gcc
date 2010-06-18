@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,6 +317,15 @@ package body Sem_SCIL is
                   return Found_Node;
                end if;
 
+            --  Actions of case expressions
+
+            when N_Case_Expression_Alternative =>
+               if Present (Actions (P))
+                 and then Find_SCIL_Node (Actions (P))
+               then
+                  return Found_Node;
+               end if;
+
             --  Actions of conditional expressions
 
             when N_Conditional_Expression =>
@@ -513,6 +522,7 @@ package body Sem_SCIL is
                N_Access_To_Object_Definition            |
                N_Aggregate                              |
                N_Allocator                              |
+               N_Case_Expression                        |
                N_Case_Statement_Alternative             |
                N_Character_Literal                      |
                N_Compilation_Unit                       |

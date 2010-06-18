@@ -315,7 +315,7 @@ package body Sem_Ch6 is
          --  extended_return_statement.
 
          if Returns_Object then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("extended_return_statement cannot return value; " &
                "use `""RETURN;""`", N);
          end if;
@@ -1126,7 +1126,8 @@ package body Sem_Ch6 is
            and then No (Actuals)
            and then Comes_From_Source (N)
          then
-            Error_Msg_N ("missing explicit dereference in call", N);
+            Error_Msg_N -- CODEFIX???
+              ("missing explicit dereference in call", N);
          end if;
 
          Analyze_Call_And_Resolve;
@@ -1174,7 +1175,8 @@ package body Sem_Ch6 is
          if Present (Actuals) then
             Analyze_Call_And_Resolve;
          else
-            Error_Msg_N ("missing explicit dereference in call ", N);
+            Error_Msg_N -- CODEFIX???
+              ("missing explicit dereference in call ", N);
          end if;
 
       --  If not an access to subprogram, then the prefix must resolve to the
@@ -1827,20 +1829,20 @@ package body Sem_Ch6 is
                null;
 
             elsif not Is_Overriding_Operation (Spec_Id) then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("subprogram& is not overriding", Body_Spec, Spec_Id);
             end if;
 
          elsif Must_Not_Override (Body_Spec) then
             if Is_Overriding_Operation (Spec_Id) then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("subprogram& overrides inherited operation",
                   Body_Spec, Spec_Id);
 
             elsif Nkind (Spec_Id) = N_Defining_Operator_Symbol
               and then  Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("subprogram & overrides predefined operator ",
                     Body_Spec, Spec_Id);
 
@@ -1850,9 +1852,10 @@ package body Sem_Ch6 is
             elsif not Is_Primitive (Spec_Id)
               and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
             then
-               Error_Msg_N ("overriding indicator only allowed " &
-                "if subprogram is primitive",
-                Body_Spec);
+               Error_Msg_N -- CODEFIX???
+                 ("overriding indicator only allowed " &
+                  "if subprogram is primitive",
+                  Body_Spec);
             end if;
 
          elsif Style_Check --  ??? incorrect use of Style_Check!
@@ -2057,7 +2060,8 @@ package body Sem_Ch6 is
          Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
          if Is_Abstract_Subprogram (Spec_Id) then
-            Error_Msg_N ("an abstract subprogram cannot have a body", N);
+            Error_Msg_N -- CODEFIX???
+              ("an abstract subprogram cannot have a body", N);
             return;
 
          else
@@ -2634,7 +2638,7 @@ package body Sem_Ch6 is
          end loop;
 
          if Is_Protected_Type (Current_Scope) then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("protected operation cannot be a null procedure", N);
          end if;
       end if;
@@ -2731,7 +2735,7 @@ package body Sem_Ch6 is
                               and then Null_Present (Specification (N)))
             then
                Error_Msg_Name_1 := Chars (Defining_Entity (N));
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("(Ada 2005) interface subprogram % must be abstract or null",
                   N);
             end if;
@@ -2908,7 +2912,7 @@ package body Sem_Ch6 is
            and then
              (Nkind (Parent (N))) /= N_Formal_Abstract_Subprogram_Declaration
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("function that returns abstract type must be abstract", N);
          end if;
       end if;
@@ -4003,7 +4007,7 @@ package body Sem_Ch6 is
                if Is_Interface_Conformant (Typ, Iface_Prim, Op)
                  and then Convention (Iface_Prim) /= Convention (Op)
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("inconsistent conventions in primitive operations", Typ);
 
                   Error_Msg_Name_1 := Chars (Op);
@@ -4012,24 +4016,28 @@ package body Sem_Ch6 is
 
                   if Comes_From_Source (Op) then
                      if not Is_Overriding_Operation (Op) then
-                        Error_Msg_N ("\\primitive % defined #", Typ);
+                        Error_Msg_N -- CODEFIX???
+                          ("\\primitive % defined #", Typ);
                      else
-                        Error_Msg_N ("\\overriding operation % with " &
-                                     "convention % defined #", Typ);
+                        Error_Msg_N -- CODEFIX???
+                          ("\\overriding operation % with " &
+                           "convention % defined #", Typ);
                      end if;
 
                   else pragma Assert (Present (Alias (Op)));
                      Error_Msg_Sloc := Sloc (Alias (Op));
-                     Error_Msg_N ("\\inherited operation % with " &
-                                  "convention % defined #", Typ);
+                     Error_Msg_N -- CODEFIX???
+                       ("\\inherited operation % with " &
+                        "convention % defined #", Typ);
                   end if;
 
                   Error_Msg_Name_1 := Chars (Op);
                   Error_Msg_Name_2 :=
                     Get_Convention_Name (Convention (Iface_Prim));
                   Error_Msg_Sloc := Sloc (Iface_Prim);
-                  Error_Msg_N ("\\overridden operation % with " &
-                               "convention % defined #", Typ);
+                  Error_Msg_N -- CODEFIX???
+                    ("\\overridden operation % with " &
+                     "convention % defined #", Typ);
 
                   --  Avoid cascading errors
 
@@ -4447,7 +4455,8 @@ package body Sem_Ch6 is
                then
                   Error_Msg_Node_2 := Alias (Overridden_Subp);
                   Error_Msg_Sloc := Sloc (Error_Msg_Node_2);
-                  Error_Msg_NE ("& does not match corresponding formal of&#",
+                  Error_Msg_NE -- CODEFIX???
+                    ("& does not match corresponding formal of&#",
                      Form1, Form1);
                   exit;
                end if;
@@ -6074,8 +6083,9 @@ package body Sem_Ch6 is
             when N_Aggregate =>
                return
                  FCL (Expressions (E1), Expressions (E2))
-                   and then FCL (Component_Associations (E1),
-                                 Component_Associations (E2));
+                   and then
+                 FCL (Component_Associations (E1),
+                      Component_Associations (E2));
 
             when N_Allocator =>
                if Nkind (Expression (E1)) = N_Qualified_Expression
@@ -6145,6 +6155,38 @@ package body Sem_Ch6 is
                    and then
                  FCE (Right_Opnd (E1), Right_Opnd (E2));
 
+            when N_Case_Expression =>
+               declare
+                  Alt1 : Node_Id;
+                  Alt2 : Node_Id;
+
+               begin
+                  if not FCE (Expression (E1), Expression (E2)) then
+                     return False;
+
+                  else
+                     Alt1 := First (Alternatives (E1));
+                     Alt2 := First (Alternatives (E2));
+                     loop
+                        if Present (Alt1) /= Present (Alt2) then
+                           return False;
+                        elsif No (Alt1) then
+                           return True;
+                        end if;
+
+                        if not FCE (Expression (Alt1), Expression (Alt2))
+                          or else not FCL (Discrete_Choices (Alt1),
+                                           Discrete_Choices (Alt2))
+                        then
+                           return False;
+                        end if;
+
+                        Next (Alt1);
+                        Next (Alt2);
+                     end loop;
+                  end if;
+               end;
+
             when N_Character_Literal =>
                return
                  Char_Literal_Value (E1) = Char_Literal_Value (E2);
@@ -6152,7 +6194,8 @@ package body Sem_Ch6 is
             when N_Component_Association =>
                return
                  FCL (Choices (E1), Choices (E2))
-                   and then FCE (Expression (E1), Expression (E2));
+                   and then
+                 FCE (Expression (E1), Expression (E2));
 
             when N_Conditional_Expression =>
                return
@@ -6173,13 +6216,15 @@ package body Sem_Ch6 is
             when N_Function_Call =>
                return
                  FCE (Name (E1), Name (E2))
-                   and then FCL (Parameter_Associations (E1),
-                                 Parameter_Associations (E2));
+                   and then
+                 FCL (Parameter_Associations (E1),
+                      Parameter_Associations (E2));
 
             when N_Indexed_Component =>
                return
                  FCE (Prefix (E1), Prefix (E2))
-                   and then FCL (Expressions (E1), Expressions (E2));
+                   and then
+                 FCL (Expressions (E1), Expressions (E2));
 
             when N_Integer_Literal =>
                return (Intval (E1) = Intval (E2));
@@ -6203,12 +6248,14 @@ package body Sem_Ch6 is
             when N_Qualified_Expression =>
                return
                  FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then FCE (Expression (E1), Expression (E2));
+                   and then
+                 FCE (Expression (E1), Expression (E2));
 
             when N_Range =>
                return
                  FCE (Low_Bound (E1), Low_Bound (E2))
-                   and then FCE (High_Bound (E1), High_Bound (E2));
+                   and then
+                 FCE (High_Bound (E1), High_Bound (E2));
 
             when N_Real_Literal =>
                return (Realval (E1) = Realval (E2));
@@ -6216,12 +6263,14 @@ package body Sem_Ch6 is
             when N_Selected_Component =>
                return
                  FCE (Prefix (E1), Prefix (E2))
-                   and then FCE (Selector_Name (E1), Selector_Name (E2));
+                   and then
+                 FCE (Selector_Name (E1), Selector_Name (E2));
 
             when N_Slice =>
                return
                  FCE (Prefix (E1), Prefix (E2))
-                   and then FCE (Discrete_Range (E1), Discrete_Range (E2));
+                   and then
+                 FCE (Discrete_Range (E1), Discrete_Range (E2));
 
             when N_String_Literal =>
                declare
@@ -6250,17 +6299,20 @@ package body Sem_Ch6 is
             when N_Type_Conversion =>
                return
                  FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then FCE (Expression (E1), Expression (E2));
+                   and then
+                 FCE (Expression (E1), Expression (E2));
 
             when N_Unary_Op =>
                return
                  Entity (E1) = Entity (E2)
-                   and then FCE (Right_Opnd (E1), Right_Opnd (E2));
+                   and then
+                 FCE (Right_Opnd (E1), Right_Opnd (E2));
 
             when N_Unchecked_Type_Conversion =>
                return
                  FCE (Subtype_Mark (E1), Subtype_Mark (E2))
-                   and then FCE (Expression (E1), Expression (E2));
+                   and then
+                 FCE (Expression (E1), Expression (E2));
 
             --  All other node types cannot appear in this context. Strictly
             --  we should raise a fatal internal error. Instead we just ignore
@@ -6864,18 +6916,19 @@ package body Sem_Ch6 is
                  and then (not Is_Overriding
                             or else not Is_Abstract_Subprogram (E))
                then
-                  Error_Msg_N ("abstract subprograms must be visible "
-                                   & "(RM 3.9.3(10))!", S);
+                  Error_Msg_N -- CODEFIX???
+                    ("abstract subprograms must be visible "
+                     & "(RM 3.9.3(10))!", S);
 
                elsif Ekind (S) = E_Function
                  and then Is_Tagged_Type (T)
                  and then T = Base_Type (Etype (S))
                  and then not Is_Overriding
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("private function with tagged result must"
                      & " override visible-part function", S);
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("\move subprogram to the visible part"
                      & " (RM 3.9.3(10))", S);
                end if;
@@ -8031,14 +8084,14 @@ package body Sem_Ch6 is
               and then Null_Exclusion_Present (Param_Spec)
             then
                if not Is_Access_Type (Formal_Type) then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("`NOT NULL` allowed only for an access type", Param_Spec);
 
                else
                   if Can_Never_Be_Null (Formal_Type)
                     and then Comes_From_Source (Related_Nod)
                   then
-                     Error_Msg_NE
+                     Error_Msg_NE -- CODEFIX???
                        ("`NOT NULL` not allowed (& already excludes null)",
                         Param_Spec,
                         Formal_Type);
@@ -8096,7 +8149,7 @@ package body Sem_Ch6 is
 
          if Present (Default) then
             if Out_Present (Param_Spec) then
-               Error_Msg_N
+               Error_Msg_N -- CODEFIX???
                  ("default initialization only allowed for IN parameters",
                   Param_Spec);
             end if;
@@ -8760,7 +8813,7 @@ package body Sem_Ch6 is
          N := N + 1;
 
          if Present (Default_Value (F)) then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("default values not allowed for operator parameters",
                Parent (F));
          end if;

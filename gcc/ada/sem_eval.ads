@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,6 +282,7 @@ package Sem_Eval is
    procedure Eval_Allocator              (N : Node_Id);
    procedure Eval_Arithmetic_Op          (N : Node_Id);
    procedure Eval_Call                   (N : Node_Id);
+   procedure Eval_Case_Expression        (N : Node_Id);
    procedure Eval_Character_Literal      (N : Node_Id);
    procedure Eval_Concatenation          (N : Node_Id);
    procedure Eval_Conditional_Expression (N : Node_Id);

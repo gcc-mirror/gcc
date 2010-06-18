@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -676,8 +676,13 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Simple_Expression                    return Node_Id;
       function P_Simple_Expression_Or_Range_Attribute return Node_Id;
 
+      function P_Case_Expression return Node_Id;
+      --  Scans out a case expression. Called with Token pointing to the CASE
+      --  keyword, and returns pointing to the terminating right parent,
+      --  semicolon, or comma, but does not consume this terminating token.
+
       function P_Conditional_Expression return Node_Id;
-      --  Scans out a conditional expression. Called with token pointing to
+      --  Scans out a conditional expression. Called with Token pointing to
       --  the IF keyword, and returns pointing to the terminating right paren,
       --  semicolon or comma, but does not consume this terminating token.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,7 +68,7 @@ package Sem_Case is
       --  Processing to carry out for a non static Choice
 
       with procedure Process_Associated_Node (A : Node_Id);
-      --  Associated to each case alternative, aggregate component
+      --  Associated with each case alternative, aggregate component
       --  association or record variant A there is a node or list of nodes
       --  that need semantic processing. This routine implements that
       --  processing.
@@ -76,9 +76,9 @@ package Sem_Case is
    package Generic_Choices_Processing is
 
       function Number_Of_Choices (N : Node_Id) return Nat;
-      --  Iterates through the choices of N, (N can be a case statement,
-      --  array aggregate or record variant), counting all the Choice nodes
-      --  except for the Others choice.
+      --  Iterates through the choices of N, (N can be a case expression, case
+      --  statement, array aggregate or record variant), counting all the
+      --  Choice nodes except for the Others choice.
 
       procedure Analyze_Choices
         (N              : Node_Id;
@@ -87,10 +87,10 @@ package Sem_Case is
          Last_Choice    : out Nat;
          Raises_CE      : out Boolean;
          Others_Present : out Boolean);
-      --  From a case statement, array aggregate or record variant N, this
-      --  routine analyzes the corresponding list of discrete choices.
-      --  Subtyp is the subtype of the discrete choices. The type against
-      --  which the discrete choices must be resolved is its base type.
+      --  From a case expression, case statement, array aggregate or record
+      --  variant N, this routine analyzes the corresponding list of discrete
+      --  choices. Subtyp is the subtype of the discrete choices. The type
+      --  against which the discrete choices must be resolved is its base type.
       --
       --  On entry Choice_Table must be big enough to contain all the discrete
       --  choices encountered. The lower bound of Choice_Table must be one.
