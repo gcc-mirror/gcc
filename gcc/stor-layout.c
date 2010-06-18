@@ -743,7 +743,7 @@ start_record_layout (tree t)
   rli->offset = size_zero_node;
   rli->bitpos = bitsize_zero_node;
   rli->prev_field = 0;
-  rli->pending_statics = 0;
+  rli->pending_statics = NULL;
   rli->packed_maybe_necessary = 0;
   rli->remaining_in_alignment = 0;
 
@@ -827,10 +827,12 @@ debug_rli (record_layout_info rli)
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
 
-  if (rli->pending_statics)
+  if (!VEC_empty (tree, rli->pending_statics))
     {
+      unsigned ix;
+      tree t;
       fprintf (stderr, "pending statics:\n");
-      debug_tree (rli->pending_statics);
+      debug_vec_tree (rli->pending_statics);
     }
 }
 
@@ -1041,8 +1043,7 @@ place_field (record_layout_info rli, tree field)
      it *after* the record is laid out.  */
   if (TREE_CODE (field) == VAR_DECL)
     {
-      rli->pending_statics = tree_cons (NULL_TREE, field,
-					rli->pending_statics);
+      VEC_safe_push (tree, gc, rli->pending_statics, field);
       return;
     }
 
@@ -1718,15 +1719,15 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
-  while (rli->pending_statics)
-    {
-      layout_decl (TREE_VALUE (rli->pending_statics), 0);
-      rli->pending_statics = TREE_CHAIN (rli->pending_statics);
-    }
+  while (!VEC_empty (tree, rli->pending_statics))
+    layout_decl (VEC_pop (tree, rli->pending_statics), 0);
 
   /* Clean up.  */
   if (free_p)
-    free (rli);
+    {
+      VEC_free (tree, gc, rli->pending_statics);
+      free (rli);
+    }
 }
 
 

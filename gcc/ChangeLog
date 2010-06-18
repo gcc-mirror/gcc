@@ -1,3 +1,13 @@
+2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (record_layout_info): Change type of pending_statics field
+	to a VEC.
+	* stor-layout.c (start_record_layout): Store NULL into
+	pending_statics.
+	(debug_rli): Call debug_vec_tree instead of debug_tree.
+	(place_field): Likewise.
+	(finish_record_layout): Likewise.
+
 2010-06-18  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux64.h (SET_CMODEL): Don't expand to empty.
