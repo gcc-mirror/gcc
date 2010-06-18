@@ -1537,7 +1537,7 @@ package body Sprint is
 
          when N_Expression_With_Actions =>
             Indent_Begin;
-            Write_Indent_Str_Sloc ("do");
+            Write_Indent_Str_Sloc ("do ");
             Indent_Begin;
             Sprint_Node_List (Actions (Node));
             Indent_End;

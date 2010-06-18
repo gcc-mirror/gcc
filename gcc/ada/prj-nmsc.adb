@@ -298,6 +298,7 @@ package body Prj.Nmsc is
       Data              : in out Tree_Processing_Data;
       Source_Dir_Rank   : Natural;
       Path              : Path_Name_Type;
+      Display_Path      : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
       Locally_Removed   : Boolean;
@@ -307,11 +308,12 @@ package body Prj.Nmsc is
    --  schemes, it is added to various htables through Add_Source and to
    --  Source_Paths_Htable.
    --
-   --  Name is the name of the candidate file. It hasn't been normalized yet
-   --  and is the direct result of readdir().
+   --  File_Name is the same as Display_File_Name, but has been normalized.
+   --  They do not include the directory information.
    --
-   --  File_Name is the same as Name, but has been normalized.
-   --  Display_File_Name, however, has not been normalized.
+   --  Path and Display_Path on the other hand are the full path to the file.
+   --  Path must have been normalized (canonical casing and possibly links
+   --  resolved).
    --
    --  Source_Directory is the directory in which the file was found. It is
    --  neither normalized nor has had links resolved, and must not end with a
@@ -6663,15 +6665,12 @@ package body Prj.Nmsc is
       Data              : in out Tree_Processing_Data;
       Source_Dir_Rank   : Natural;
       Path              : Path_Name_Type;
+      Display_Path      : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
       Locally_Removed   : Boolean;
       For_All_Sources   : Boolean)
    is
-      Canonical_Path : constant Path_Name_Type :=
-                         Path_Name_Type
-                           (Canonical_Case_File_Name (Name_Id (Path)));
-
       Name_Loc              : Name_Location :=
                                 Source_Names_Htable.Get
                                   (Project.Source_Names, File_Name);
@@ -6721,11 +6720,11 @@ package body Prj.Nmsc is
                Check_Name := True;
 
             else
-               Name_Loc.Source.Path := (Canonical_Path, Path);
+               Name_Loc.Source.Path := (Path, Display_Path);
 
                Source_Paths_Htable.Set
                  (Data.Tree.Source_Paths_HT,
-                  Canonical_Path,
+                  Path,
                   Name_Loc.Source);
 
                --  Check if this is a subunit
@@ -6734,7 +6733,7 @@ package body Prj.Nmsc is
                  and then Name_Loc.Source.Kind = Impl
                then
                   Src_Ind := Sinput.P.Load_Project_File
-                    (Get_Name_String (Canonical_Path));
+                    (Get_Name_String (Path));
 
                   if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                      Override_Kind (Name_Loc.Source, Sep);
@@ -6786,7 +6785,7 @@ package body Prj.Nmsc is
                Display_File        => Display_File_Name,
                Unit                => Unit,
                Locally_Removed     => Locally_Removed,
-               Path                => (Canonical_Path, Path));
+               Path                => (Path, Display_Path));
 
             --  If it is a source specified in a list, update the entry in
             --  the Source_Names table.
@@ -6930,11 +6929,20 @@ package body Prj.Nmsc is
                               end if;
                            end if;
 
+                           --  Preserve the user's original casing and use of
+                           --  links. The display_value (a directory) already
+                           --  ends with a directory separator by construction,
+                           --  so no need to add one.
+
+                           Get_Name_String (Element.Display_Value);
+                           Get_Name_String_And_Append (Display_File_Name);
+
                            Check_File
                              (Project           => Project,
                               Source_Dir_Rank   => Num_Nod.Number,
                               Data              => Data,
                               Path              => Path,
+                              Display_Path      => Name_Find,
                               File_Name         => File_Name,
                               Locally_Removed   => To_Remove,
                               Display_File_Name => Display_File_Name,
