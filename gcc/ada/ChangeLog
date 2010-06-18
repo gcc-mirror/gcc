@@ -1,3 +1,22 @@
+2010-06-18  Pascal Obry  <obry@adacore.com>
+
+	* make.adb, prj-nmsc.adb: Fix source filenames casing in debug output.
+
+2010-06-18  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: For gnatcheck, add -gnatec= switch for a global
+	configuration pragmas file and, if -U is not used, for a local one.
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb (Check_Eliminated): Use full information on entity name
+	when it is given in the pragma by a selected component.
+	(Check_For_Eliminated_Subprogram): Do no emit error if within a
+	instance body that is itself within a generic unit.
+	* sem_ch12.adb (Analyze_Subprogram_Instance): If the subprogram is
+	eliminated, mark as well the anonymous subprogram that is its alias
+	and appears within the wrapper package.
+
 2010-06-18  Bob Duff  <duff@adacore.com>
 
 	* g-pehage.ads, g-pehage.adb (Produce): Clean up some of the code.

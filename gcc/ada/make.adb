@@ -1395,7 +1395,7 @@ package body Make is
 
       if Project_Of_Current_Object_Directory /= Project then
          Project_Of_Current_Object_Directory := Project;
-         Object_Directory := Project.Object_Directory.Name;
+         Object_Directory := Project.Object_Directory.Display_Name;
 
          --  Set the working directory to the object directory of the actual
          --  project.
@@ -6078,7 +6078,7 @@ package body Make is
                exception
                   when others =>
 
-                     --  Delete the temporary mapping file, if one was created.
+                     --  Delete the temporary mapping file, if one was created
 
                      if Mapping_Path /= No_Path then
                         Delete_Temporary_File (Project_Tree, Mapping_Path);
