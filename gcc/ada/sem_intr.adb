@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package body Sem_Intr is
 
    procedure Check_Intrinsic_Operator (E : Entity_Id; N : Node_Id);
    --  Check that operator is one of the binary arithmetic operators, and
-   --  that the types involved both have underlying integer types..
+   --  that the types involved both have underlying integer types.
 
    procedure Check_Shift (E : Entity_Id; N : Node_Id);
    --  Check intrinsic shift subprogram, the two arguments are the same

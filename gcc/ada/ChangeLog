@@ -1,3 +1,20 @@
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Make_Subtype_From_Expr): If the unconstrained type is
+	the class-wide type for a private extension, and the completion is a
+	subtype, set the type of the class-wide type to the base type of the
+	full view.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* g-socket.ads, sem_aggr.adb, einfo.ads, sem_elim.adb,
+	sem_intr.adb, sem_eval.adb: Minor reformatting
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Is_Ancestor): If either type is private, examine full
+	view.
+
 2010-06-18  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.adb, g-socket.ads (Check_Selector): Make Selector an IN

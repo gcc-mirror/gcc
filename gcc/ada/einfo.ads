@@ -6189,7 +6189,7 @@ package Einfo is
    --  have an RM_Size value of zero).
 
    --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
-   --  more consideration, which is that we always return false for generic
+   --  more consideration, which is that we always return False for generic
    --  types. Within a template, the size can look known, because of the fake
    --  size values we put in template types, but they are not really known and
    --  anyone testing if they are known within the template should get False as

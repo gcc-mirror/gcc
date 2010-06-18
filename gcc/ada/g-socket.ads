@@ -1088,9 +1088,11 @@ package GNAT.Sockets is
    --  R_Socket_Set or W_Socket_Set. Status is set to Expired if no socket was
    --  ready after a Timeout expiration. Status is set to Aborted if an abort
    --  signal has been received while checking socket status.
+   --
    --  Note that two different Socket_Set_Type objects must be passed as
    --  R_Socket_Set and W_Socket_Set (even if they denote the same set of
    --  Sockets), or some event may be lost.
+   --
    --  Socket_Error is raised when the select(2) system call returns an
    --  error condition, or when a read error occurs on the signalling socket
    --  used for the implementation of Abort_Selector.

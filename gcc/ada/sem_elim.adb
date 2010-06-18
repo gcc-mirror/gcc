@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,11 +295,11 @@ package body Sem_Elim is
 
             Up := Elmt.Unit_Name'Last;
 
-            --  If we are within a subunit, the name in the pragma  has been
-            --  parsed as a child unit, but the current compilation unit is
-            --  in fact the parent in which the subunit is embedded. We must
-            --  skip the first name which is that of the subunit to match
-            --  the pragma specification.
+            --  If we are within a subunit, the name in the pragma has been
+            --  parsed as a child unit, but the current compilation unit is in
+            --  fact the parent in which the subunit is embedded. We must skip
+            --  the first name which is that of the subunit to match the pragma
+            --  specification.
 
             declare
                Par : Node_Id;
