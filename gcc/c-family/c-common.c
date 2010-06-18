@@ -9191,17 +9191,10 @@ record_types_used_by_current_var_decl (tree decl)
 {
   gcc_assert (decl && DECL_P (decl) && TREE_STATIC (decl));
 
-  if (types_used_by_cur_var_decl)
+  while (!VEC_empty (tree, types_used_by_cur_var_decl))
     {
-      tree node;
-      for (node = types_used_by_cur_var_decl;
-	   node;
-	   node = TREE_CHAIN (node))
-      {
-	tree type = TREE_PURPOSE (node);
-	types_used_by_var_decl_insert (type, decl);
-      }
-      types_used_by_cur_var_decl = NULL;
+      tree type = VEC_pop (tree, types_used_by_cur_var_decl);
+      types_used_by_var_decl_insert (type, decl);
     }
 }
 

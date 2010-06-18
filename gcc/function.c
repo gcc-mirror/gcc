@@ -132,7 +132,7 @@ static GTY((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 
 
 htab_t types_used_by_vars_hash = NULL;
-tree types_used_by_cur_var_decl = NULL;
+VEC(tree,gc) *types_used_by_cur_var_decl;
 
 /* Forward declarations.  */
 
@@ -5562,9 +5562,7 @@ used_types_insert (tree t)
 	/* So this might be a type referenced by a global variable.
 	   Record that type so that we can later decide to emit its debug
 	   information.  */
-	types_used_by_cur_var_decl =
-	  tree_cons (t, NULL, types_used_by_cur_var_decl);
-
+        VEC_safe_push (tree, gc, types_used_by_cur_var_decl, t);
     }
 }
 

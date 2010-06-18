@@ -1,5 +1,12 @@
 2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* function.h (types_used_by_cur_var_decl): Change type to a VEC.
+	* function.c (types_used_by_cur_var_decl): Likewise.
+	(used_types_insert): Adjust for new type of
+	types_used_by_cur_var_decl.
+
+2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree.h (record_layout_info): Change type of pending_statics field
 	to a VEC.
 	* stor-layout.c (start_record_layout): Store NULL into
