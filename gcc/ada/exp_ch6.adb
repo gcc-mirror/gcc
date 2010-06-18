@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3297,6 +3297,9 @@ package body Exp_Ch6 is
       Temp     : Entity_Id;
       Temp_Typ : Entity_Id;
 
+      Return_Object : Entity_Id := Empty;
+      --  Entity in declaration in an extended_return_statement
+
       Is_Unc : constant Boolean :=
                     Is_Array_Type (Etype (Subp))
                       and then not Is_Constrained (Etype (Subp));
@@ -3390,6 +3393,21 @@ package body Exp_Ch6 is
                   Rewrite (N, New_Copy (A));
                end if;
             end if;
+            return Skip;
+
+         elsif Is_Entity_Name (N)
+           and then Chars (N) = Chars (Return_Object)
+         then
+            --  Occurrence within an extended return statement. The return
+            --  object is local to the body been inlined, and thus the generic
+            --  copy is not analyzed yet, so we match by name, and replace it
+            --  with target of call.
+
+            if Nkind (Targ) = N_Defining_Identifier then
+               Rewrite (N, New_Occurrence_Of (Targ, Loc));
+            else
+               Rewrite (N, New_Copy_Tree (Targ));
+            end if;
 
             return Skip;
 
@@ -3397,8 +3415,7 @@ package body Exp_Ch6 is
             if No (Expression (N)) then
                Make_Exit_Label;
                Rewrite (N,
-                 Make_Goto_Statement (Loc,
-                   Name => New_Copy (Lab_Id)));
+                 Make_Goto_Statement (Loc, Name => New_Copy (Lab_Id)));
 
             else
                if Nkind (Parent (N)) = N_Handled_Sequence_Of_Statements
@@ -3455,6 +3472,46 @@ package body Exp_Ch6 is
             end if;
 
             return OK;
+
+         elsif Nkind (N) = N_Extended_Return_Statement then
+
+            --  An extended return becomes a block whose first statement is
+            --  the assignment of the initial expression of the return object
+            --  to the target of the call itself.
+
+            declare
+               Return_Decl : constant Entity_Id :=
+                               First (Return_Object_Declarations (N));
+               Assign      : Node_Id;
+
+            begin
+               Return_Object := Defining_Identifier (Return_Decl);
+
+               if Present (Expression (Return_Decl)) then
+                  if Nkind (Targ) = N_Defining_Identifier then
+                     Assign :=
+                       Make_Assignment_Statement (Loc,
+                         Name => New_Occurrence_Of (Targ, Loc),
+                         Expression => Expression (Return_Decl));
+                  else
+                     Assign :=
+                       Make_Assignment_Statement (Loc,
+                         Name => New_Copy (Targ),
+                         Expression => Expression (Return_Decl));
+                  end if;
+
+                  Set_Assignment_OK (Name (Assign));
+                  Prepend (Assign,
+                    Statements (Handled_Statement_Sequence (N)));
+               end if;
+
+               Rewrite (N,
+                 Make_Block_Statement (Loc,
+                    Handled_Statement_Sequence =>
+                      Handled_Statement_Sequence (N)));
+
+               return OK;
+            end;
 
          --  Remove pragma Unreferenced since it may refer to formals that
          --  are not visible in the inlined body, and in any case we will
@@ -3865,6 +3922,11 @@ package body Exp_Ch6 is
            and then Is_Entity_Name (Prefix (Name (Parent (N))))
          then
             Targ := Name (Parent (N));
+
+         elsif Nkind (Parent (N)) = N_Object_Declaration
+           and then Is_Limited_Type (Etype (Subp))
+         then
+            Targ := Defining_Identifier (Parent (N));
 
          else
             --  Replace call with temporary and create its declaration

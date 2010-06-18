@@ -1,3 +1,25 @@
+2010-06-18  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Must_Compile): New Boolean global variable
+	(Main_On_Command_Line): New Boolean global variable
+	(Collect_Arguments_And_Compile): Do compile if Must_Compile is True,
+	even when the project is externally built.
+	(Start_Compile_If_Possible): Compile in -aL directories if
+	Check_Readonly_Files is True. Do compile if Must_Compile is True, even
+	when the project is externally built.
+	(Gnatmake): Set Must_Compile and Check_Readonly_Files to True when
+	invoked with -f -u and one or several mains on the command line.
+	(Scan_Make_Arg): Set Main_On_Command_Line to True when at least one main
+	is specified on the command line.
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Build_Body_For_Inline): Handle extended_return_statements
+	* exp_ch6.adb (Expand_Inlined_Call): when possible, inline a body
+	containing extented_return statements.
+	* exp_util.adb (Make_CW_Equivalent_Type): If the root type is already
+	constrained, do not build subtype declaration.
+
 2010-06-18  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Analyze_Indexed_Component, Analyze_Selected_Component):
