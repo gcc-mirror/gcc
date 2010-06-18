@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3103,6 +3103,15 @@ package body Sem_Ch6 is
               and then Has_Excluded_Statement (Statements (S))
             then
                return True;
+
+            elsif Nkind (S) = N_Extended_Return_Statement then
+               if Has_Excluded_Statement
+                  (Statements (Handled_Statement_Sequence (S)))
+                 or else Present
+                   (Exception_Handlers (Handled_Statement_Sequence (S)))
+               then
+                  return True;
+               end if;
             end if;
 
             Next (S);
@@ -3170,9 +3179,30 @@ package body Sem_Ch6 is
                      return Abandon;
                   end if;
 
+               --  A return statement within an extended return is a noop
+               --  after inlining.
+
+               elsif No (Expression (N))
+                 and then Nkind (Parent (Parent (N))) =
+                 N_Extended_Return_Statement
+               then
+                  return OK;
+
                else
                   --  Expression has wrong form
 
+                  return Abandon;
+               end if;
+
+            --  We can only inline a build-in-place function if
+            --  it has a single extended return.
+
+            elsif Nkind (N) = N_Extended_Return_Statement then
+               if No (Return_Statement) then
+                  Return_Statement := N;
+                  return OK;
+
+               else
                   return Abandon;
                end if;
 
@@ -3186,11 +3216,18 @@ package body Sem_Ch6 is
       --  Start of processing for Has_Single_Return
 
       begin
-         return Check_All_Returns (N) = OK
-           and then Present (Declarations (N))
-           and then Present (First (Declarations (N)))
-           and then Chars (Expression (Return_Statement)) =
-                    Chars (Defining_Identifier (First (Declarations (N))));
+         if Check_All_Returns (N) /= OK then
+            return False;
+
+         elsif Nkind (Return_Statement) = N_Extended_Return_Statement then
+            return True;
+
+         else
+            return Present (Declarations (N))
+              and then Present (First (Declarations (N)))
+              and then Chars (Expression (Return_Statement)) =
+                 Chars (Defining_Identifier (First (Declarations (N))));
+         end if;
       end Has_Single_Return;
 
       --------------------
@@ -4444,10 +4481,10 @@ package body Sem_Ch6 is
             Error_Msg_Sloc := Sloc (Overridden_Subp);
 
             if Ekind (Subp) = E_Entry then
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("entry & overrides inherited operation #", Spec, Subp);
             else
-               Error_Msg_NE
+               Error_Msg_NE -- CODEFIX???
                  ("subprogram & overrides inherited operation #", Spec, Subp);
             end if;
 
@@ -4498,12 +4535,12 @@ package body Sem_Ch6 is
                if not Is_Primitive
                  and then Ekind (Scope (Subp)) /= E_Protected_Type
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("overriding indicator only allowed "
                      & "if subprogram is primitive", Subp);
 
                elsif Can_Override then
-                  Error_Msg_NE
+                  Error_Msg_NE -- CODEFIX???
                     ("subprogram & overrides predefined operator ",
                        Spec, Subp);
                end if;
@@ -4513,7 +4550,8 @@ package body Sem_Ch6 is
                   Set_Is_Overriding_Operation (Subp);
 
                elsif not Can_Override then
-                  Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
+                  Error_Msg_NE -- CODEFIX???
+                    ("subprogram & is not overriding", Spec, Subp);
                end if;
 
             elsif not Error_Posted (Subp)
@@ -4542,9 +4580,11 @@ package body Sem_Ch6 is
 
       elsif Must_Override (Spec) then
          if Ekind (Subp) = E_Entry then
-            Error_Msg_NE ("entry & is not overriding", Spec, Subp);
+            Error_Msg_NE -- CODEFIX???
+              ("entry & is not overriding", Spec, Subp);
          else
-            Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
+            Error_Msg_NE -- CODEFIX???
+              ("subprogram & is not overriding", Spec, Subp);
          end if;
 
       --  If the operation is marked "not overriding" and it's not primitive
@@ -4557,7 +4597,7 @@ package body Sem_Ch6 is
         and then Ekind (Subp) /= E_Entry
         and then Ekind (Scope (Subp)) /= E_Protected_Type
       then
-         Error_Msg_N
+         Error_Msg_N -- CODEFIX???
            ("overriding indicator only allowed if subprogram is primitive",
             Subp);
          return;

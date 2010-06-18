@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,6 +201,14 @@ package body Make is
 
    Unique_Compile_All_Projects : Boolean := False;
    --  Set to True if -U is used
+
+   Must_Compile : Boolean := False;
+   --  True if gnatmake is invoked with -f -u and one or several mains on the
+   --  command line.
+
+   Main_On_Command_Line : Boolean := False;
+   --  True if gnatmake is invoked with one or several mains on the command
+   --  line.
 
    RTS_Specified : String_Access := null;
    --  Used to detect multiple --RTS= switches
@@ -2243,12 +2251,14 @@ package body Make is
             if Arguments_Project = No_Project then
                Add_Arguments (The_Saved_Gcc_Switches.all);
 
-            elsif not Arguments_Project.Externally_Built then
+            elsif not Arguments_Project.Externally_Built
+              or else Must_Compile
+            then
                --  We get the project directory for the relative path
                --  switches and arguments.
 
-               Arguments_Project := Ultimate_Extending_Project_Of
-                 (Arguments_Project);
+               Arguments_Project :=
+                 Ultimate_Extending_Project_Of (Arguments_Project);
 
                --  If building a dynamic or relocatable library, compile with
                --  PIC option, if it exists.
@@ -2258,7 +2268,6 @@ package body Make is
                then
                   declare
                      PIC : constant String := MLib.Tgt.PIC_Option;
-
                   begin
                      if PIC /= "" then
                         Add_Arguments ((1 => new String'(PIC)));
@@ -2726,7 +2735,9 @@ package body Make is
          --  check for an eventual library project, and use the full path.
 
          if Arguments_Project /= No_Project then
-            if not Arguments_Project.Externally_Built then
+            if not Arguments_Project.Externally_Built
+              or else Must_Compile
+            then
                Prj.Env.Set_Ada_Paths
                  (Arguments_Project,
                   Project_Tree,
@@ -2742,7 +2753,7 @@ package body Make is
 
                   begin
                      if Prj.Library
-                       and then not Prj.Externally_Built
+                       and then (not Prj.Externally_Built or else Must_Compile)
                        and then not Prj.Need_To_Build_Lib
                      then
                         --  Add to the Q all sources of the project that have
@@ -3272,8 +3283,9 @@ package body Make is
                Executable_Obsolete := True;
             end if;
 
-            In_Lib_Dir := Full_Lib_File /= No_File
-              and then In_Ada_Lib_Dir (Full_Lib_File);
+            In_Lib_Dir := not Check_Readonly_Files
+                            and then Full_Lib_File /= No_File
+                            and then In_Ada_Lib_Dir (Full_Lib_File);
 
             --  Since the following requires a system call, we precompute it
             --  when needed.
@@ -3350,6 +3362,7 @@ package body Make is
 
                if Arguments_Project = No_Project
                  or else not Arguments_Project.Externally_Built
+                 or else Must_Compile
                then
                   --  Don't waste any time if we have to recompile anyway
 
@@ -4739,13 +4752,6 @@ package body Make is
          Display_Version ("GNATMAKE", "1995");
       end if;
 
-      if Main_Project /= No_Project
-        and then Main_Project.Externally_Built
-      then
-         Make_Failed
-           ("nothing to do for a main project that is externally built");
-      end if;
-
       if Osint.Number_Of_Files = 0 then
          if Main_Project /= No_Project
            and then Main_Project.Library
@@ -5180,6 +5186,26 @@ package body Make is
                   Program           => Linker);
             end if;
          end;
+      end if;
+
+      --  The combination of -f -u and one or several mains on the command line
+      --  implies -a.
+
+      if Force_Compilations
+        and then Unique_Compile
+        and then not Unique_Compile_All_Projects
+        and then Main_On_Command_Line
+      then
+         Check_Readonly_Files := True;
+         Must_Compile := True;
+      end if;
+
+      if Main_Project /= No_Project
+        and then not Must_Compile
+        and then Main_Project.Externally_Built
+      then
+         Make_Failed
+           ("nothing to do for a main project that is externally built");
       end if;
 
       --  Get the target parameters, which are only needed for a couple of
@@ -8219,6 +8245,10 @@ package body Make is
       --  If not a switch it must be a file name
 
       else
+         if And_Save then
+            Main_On_Command_Line := True;
+         end if;
+
          Add_File (Argv);
          Mains.Add_Main (Argv);
       end if;
