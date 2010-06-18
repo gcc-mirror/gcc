@@ -1049,8 +1049,7 @@ package body Sem_Prag is
                           ("parameters out of order for pragma%", Arg);
                         Error_Msg_Name_1 := Names (K);
                         Error_Msg_Name_2 := Names (Highest_So_Far);
-                        Error_Msg_N -- CODEFIX???
-                          ("\% must appear before %", Arg);
+                        Error_Msg_N ("\% must appear before %", Arg);
                         raise Pragma_Exit;
 
                      else
@@ -2618,7 +2617,7 @@ package body Sem_Prag is
 
          else
             if Warn_On_Export_Import and not OpenVMS_On_Target then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("?unrecognized convention name, C assumed",
                   Expression (Arg1));
             end if;
@@ -3270,7 +3269,7 @@ package body Sem_Prag is
             Prag_Id = Pragma_Import_Valued_Procedure
          then
             if not Is_Imported (Ent) then
-               Error_Pragma -- CODEFIX???
+               Error_Pragma
                  ("pragma Import or Interface must precede pragma%");
             end if;
 
@@ -3729,11 +3728,11 @@ package body Sem_Prag is
             --  these types have been supported this way for some time.
 
             if not Is_Limited_Type (Def_Id) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("imported 'C'P'P type should be " &
                     "explicitly declared limited?",
                   Get_Pragma_Arg (Arg2));
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("\type will be considered limited",
                   Get_Pragma_Arg (Arg2));
             end if;
@@ -3855,8 +3854,7 @@ package body Sem_Prag is
                if Front_End_Inlining
                  and then Analyzed (Corresponding_Body (Decl))
                then
-                  Error_Msg_N -- CODEFIX???
-                    ("pragma appears too late, ignored?", N);
+                  Error_Msg_N ("pragma appears too late, ignored?", N);
                   return True;
 
                --  If the subprogram is a renaming as body, the body is just a
@@ -4080,10 +4078,10 @@ package body Sem_Prag is
               and then not Suppress_All_Inlining
             then
                if Inlining_Not_Possible (Subp) then
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("pragma Inline for& is ignored?", N, Entity (Subp_Id));
                else
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("pragma Inline for& is redundant?", N, Entity (Subp_Id));
                end if;
             end if;
@@ -4155,7 +4153,7 @@ package body Sem_Prag is
                                         or else
                                       Get_Character (C) = '/'))
                then
-                  Error_Msg -- CODEFIX???
+                  Error_Msg
                     ("?interface name contains illegal character",
                      Sloc (SN) + Source_Ptr (J));
                end if;
@@ -4689,11 +4687,11 @@ package body Sem_Prag is
       procedure Set_Exported (E : Entity_Id; Arg : Node_Id) is
       begin
          if Is_Imported (E) then
-            Error_Pragma_Arg -- CODEFIX???
+            Error_Pragma_Arg
               ("cannot export entity& that was previously imported", Arg);
 
          elsif Present (Address_Clause (E)) then
-            Error_Pragma_Arg -- CODEFIX???
+            Error_Pragma_Arg
               ("cannot export entity& that has an address clause", Arg);
          end if;
 
@@ -4712,8 +4710,7 @@ package body Sem_Prag is
             --  Not allowed at all for subprograms
 
             if Is_Subprogram (E) then
-               Error_Pragma_Arg -- CODEFIX???
-                 ("local subprogram& cannot be exported", Arg);
+               Error_Pragma_Arg ("local subprogram& cannot be exported", Arg);
 
             --  Otherwise set public and statically allocated
 
@@ -4739,8 +4736,7 @@ package body Sem_Prag is
          end if;
 
          if Warn_On_Export_Import and then Is_Type (E) then
-            Error_Msg_NE -- CODEFIX???
-              ("exporting a type has no effect?", Arg, E);
+            Error_Msg_NE ("exporting a type has no effect?", Arg, E);
          end if;
 
          if Warn_On_Export_Import and Inside_A_Generic then
@@ -4862,8 +4858,7 @@ package body Sem_Prag is
               ("\(pragma% applies to all previous entities)", N);
 
             Error_Msg_Sloc  := Sloc (E);
-            Error_Msg_NE -- CODEFIX???
-              ("\import not allowed for& declared#", N, E);
+            Error_Msg_NE ("\import not allowed for& declared#", N, E);
 
          --  Here if not previously imported or exported, OK to import
 
@@ -6376,7 +6371,7 @@ package body Sem_Prag is
 
          begin
             if Warn_On_Obsolescent_Feature then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("'G'N'A'T pragma cpp'_class is now obsolete; replace it" &
                   " by pragma import?", N);
             end if;
@@ -6412,7 +6407,7 @@ package body Sem_Prag is
             --  been supported this way for some time.
 
             if not Is_Limited_Type (Typ) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("imported 'C'P'P type should be " &
                     "explicitly declared limited?",
                   Get_Pragma_Arg (Arg1));
@@ -6575,7 +6570,7 @@ package body Sem_Prag is
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("'G'N'A'T pragma cpp'_virtual is now obsolete and has " &
                   "no effect?", N);
             end if;
@@ -6590,7 +6585,7 @@ package body Sem_Prag is
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("'G'N'A'T pragma cpp'_vtable is now obsolete and has " &
                   "no effect?", N);
             end if;
@@ -6833,7 +6828,7 @@ package body Sem_Prag is
             if Elab_Warnings and not Dynamic_Elaboration_Checks then
                Error_Msg_N
                  ("?use of pragma Elaborate may not be safe", N);
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("?use pragma Elaborate_All instead if possible", N);
             end if;
          end Elaborate;
@@ -10471,13 +10466,13 @@ package body Sem_Prag is
             Check_Too_Long (Internal);
 
             if Is_Imported (Def_Id) or else Is_Exported (Def_Id) then
-               Error_Pragma_Arg -- CODEFIX???
+               Error_Pragma_Arg
                  ("cannot use pragma% for imported/exported object",
                   Internal);
             end if;
 
             if Is_Concurrent_Type (Etype (Internal)) then
-               Error_Pragma_Arg -- CODEFIX???
+               Error_Pragma_Arg
                  ("cannot specify pragma % for task/protected object",
                   Internal);
             end if;
@@ -10490,7 +10485,7 @@ package body Sem_Prag is
             end if;
 
             if Ekind (Def_Id) = E_Constant then
-               Error_Pragma_Arg -- CODEFIX???
+               Error_Pragma_Arg
                  ("cannot specify pragma % for a constant", Internal);
             end if;
 
@@ -10651,7 +10646,7 @@ package body Sem_Prag is
                if not Effective
                  and then Warn_On_Redundant_Constructs
                then
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("pragma Pure_Function on& is redundant?",
                      N, Entity (E_Id));
                end if;
@@ -10826,10 +10821,8 @@ package body Sem_Prag is
             Set_Ravenscar_Profile (N);
 
             if Warn_On_Obsolescent_Feature then
-               Error_Msg_N -- CODEFIX???
-                 ("pragma Ravenscar is an obsolescent feature?", N);
-               Error_Msg_N -- CODEFIX???
-                 ("|use pragma Profile (Ravenscar) instead", N);
+               Error_Msg_N ("pragma Ravenscar is an obsolescent feature?", N);
+               Error_Msg_N ("|use pragma Profile (Ravenscar) instead", N);
             end if;
 
          -------------------------
@@ -10846,10 +10839,9 @@ package body Sem_Prag is
               (Restricted, N, Warn => Treat_Restrictions_As_Warnings);
 
             if Warn_On_Obsolescent_Feature then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("pragma Restricted_Run_Time is an obsolescent feature?", N);
-               Error_Msg_N -- CODEFIX???
-                 ("|use pragma Profile (Restricted) instead", N);
+               Error_Msg_N ("|use pragma Profile (Restricted) instead", N);
             end if;
 
          ------------------
@@ -11799,14 +11791,14 @@ package body Sem_Prag is
                return;
 
             elsif Is_Limited_Type (Typ) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("Unchecked_Union must not be limited record type", Typ);
                Explain_Limited_Type (Typ, Typ);
                return;
 
             else
                if not Has_Discriminants (Typ) then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("Unchecked_Union must have one discriminant", Typ);
                   return;
                end if;

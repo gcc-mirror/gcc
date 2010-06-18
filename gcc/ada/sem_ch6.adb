@@ -315,7 +315,7 @@ package body Sem_Ch6 is
          --  extended_return_statement.
 
          if Returns_Object then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("extended_return_statement cannot return value; " &
                "use `""RETURN;""`", N);
          end if;
@@ -1126,8 +1126,7 @@ package body Sem_Ch6 is
            and then No (Actuals)
            and then Comes_From_Source (N)
          then
-            Error_Msg_N -- CODEFIX???
-              ("missing explicit dereference in call", N);
+            Error_Msg_N ("missing explicit dereference in call", N);
          end if;
 
          Analyze_Call_And_Resolve;
@@ -1175,8 +1174,7 @@ package body Sem_Ch6 is
          if Present (Actuals) then
             Analyze_Call_And_Resolve;
          else
-            Error_Msg_N -- CODEFIX???
-              ("missing explicit dereference in call ", N);
+            Error_Msg_N ("missing explicit dereference in call ", N);
          end if;
 
       --  If not an access to subprogram, then the prefix must resolve to the
@@ -1829,20 +1827,20 @@ package body Sem_Ch6 is
                null;
 
             elsif not Is_Overriding_Operation (Spec_Id) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("subprogram& is not overriding", Body_Spec, Spec_Id);
             end if;
 
          elsif Must_Not_Override (Body_Spec) then
             if Is_Overriding_Operation (Spec_Id) then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("subprogram& overrides inherited operation",
                   Body_Spec, Spec_Id);
 
             elsif Nkind (Spec_Id) = N_Defining_Operator_Symbol
               and then  Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("subprogram & overrides predefined operator ",
                     Body_Spec, Spec_Id);
 
@@ -1852,7 +1850,7 @@ package body Sem_Ch6 is
             elsif not Is_Primitive (Spec_Id)
               and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
             then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("overriding indicator only allowed " &
                   "if subprogram is primitive",
                   Body_Spec);
@@ -2060,8 +2058,7 @@ package body Sem_Ch6 is
          Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
          if Is_Abstract_Subprogram (Spec_Id) then
-            Error_Msg_N -- CODEFIX???
-              ("an abstract subprogram cannot have a body", N);
+            Error_Msg_N ("an abstract subprogram cannot have a body", N);
             return;
 
          else
@@ -2638,8 +2635,7 @@ package body Sem_Ch6 is
          end loop;
 
          if Is_Protected_Type (Current_Scope) then
-            Error_Msg_N -- CODEFIX???
-              ("protected operation cannot be a null procedure", N);
+            Error_Msg_N ("protected operation cannot be a null procedure", N);
          end if;
       end if;
 
@@ -2735,7 +2731,7 @@ package body Sem_Ch6 is
                               and then Null_Present (Specification (N)))
             then
                Error_Msg_Name_1 := Chars (Defining_Entity (N));
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("(Ada 2005) interface subprogram % must be abstract or null",
                   N);
             end if;
@@ -2912,7 +2908,7 @@ package body Sem_Ch6 is
            and then
              (Nkind (Parent (N))) /= N_Formal_Abstract_Subprogram_Declaration
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("function that returns abstract type must be abstract", N);
          end if;
       end if;
@@ -3520,21 +3516,21 @@ package body Sem_Ch6 is
 
                when Mode_Conformant =>
                   if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("not mode conformant with operation inherited#!",
                          Enode);
                   else
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("not mode conformant with declaration#!", Enode);
                   end if;
 
                when Subtype_Conformant =>
                   if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("not subtype conformant with operation inherited#!",
                          Enode);
                   else
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("not subtype conformant with declaration#!", Enode);
                   end if;
 
@@ -4007,7 +4003,7 @@ package body Sem_Ch6 is
                if Is_Interface_Conformant (Typ, Iface_Prim, Op)
                  and then Convention (Iface_Prim) /= Convention (Op)
                then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("inconsistent conventions in primitive operations", Typ);
 
                   Error_Msg_Name_1 := Chars (Op);
@@ -4016,17 +4012,16 @@ package body Sem_Ch6 is
 
                   if Comes_From_Source (Op) then
                      if not Is_Overriding_Operation (Op) then
-                        Error_Msg_N -- CODEFIX???
-                          ("\\primitive % defined #", Typ);
+                        Error_Msg_N ("\\primitive % defined #", Typ);
                      else
-                        Error_Msg_N -- CODEFIX???
+                        Error_Msg_N
                           ("\\overriding operation % with " &
                            "convention % defined #", Typ);
                      end if;
 
                   else pragma Assert (Present (Alias (Op)));
                      Error_Msg_Sloc := Sloc (Alias (Op));
-                     Error_Msg_N -- CODEFIX???
+                     Error_Msg_N
                        ("\\inherited operation % with " &
                         "convention % defined #", Typ);
                   end if;
@@ -4035,7 +4030,7 @@ package body Sem_Ch6 is
                   Error_Msg_Name_2 :=
                     Get_Convention_Name (Convention (Iface_Prim));
                   Error_Msg_Sloc := Sloc (Iface_Prim);
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("\\overridden operation % with " &
                      "convention % defined #", Typ);
 
@@ -4455,7 +4450,7 @@ package body Sem_Ch6 is
                then
                   Error_Msg_Node_2 := Alias (Overridden_Subp);
                   Error_Msg_Sloc := Sloc (Error_Msg_Node_2);
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("& does not match corresponding formal of&#",
                      Form1, Form1);
                   exit;
@@ -4490,10 +4485,10 @@ package body Sem_Ch6 is
             Error_Msg_Sloc := Sloc (Overridden_Subp);
 
             if Ekind (Subp) = E_Entry then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("entry & overrides inherited operation #", Spec, Subp);
             else
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("subprogram & overrides inherited operation #", Spec, Subp);
             end if;
 
@@ -4544,12 +4539,12 @@ package body Sem_Ch6 is
                if not Is_Primitive
                  and then Ekind (Scope (Subp)) /= E_Protected_Type
                then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("overriding indicator only allowed "
                      & "if subprogram is primitive", Subp);
 
                elsif Can_Override then
-                  Error_Msg_NE -- CODEFIX???
+                  Error_Msg_NE
                     ("subprogram & overrides predefined operator ",
                        Spec, Subp);
                end if;
@@ -4559,8 +4554,7 @@ package body Sem_Ch6 is
                   Set_Is_Overriding_Operation (Subp);
 
                elsif not Can_Override then
-                  Error_Msg_NE -- CODEFIX???
-                    ("subprogram & is not overriding", Spec, Subp);
+                  Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
                end if;
 
             elsif not Error_Posted (Subp)
@@ -4589,11 +4583,9 @@ package body Sem_Ch6 is
 
       elsif Must_Override (Spec) then
          if Ekind (Subp) = E_Entry then
-            Error_Msg_NE -- CODEFIX???
-              ("entry & is not overriding", Spec, Subp);
+            Error_Msg_NE ("entry & is not overriding", Spec, Subp);
          else
-            Error_Msg_NE -- CODEFIX???
-              ("subprogram & is not overriding", Spec, Subp);
+            Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
          end if;
 
       --  If the operation is marked "not overriding" and it's not primitive
@@ -4606,7 +4598,7 @@ package body Sem_Ch6 is
         and then Ekind (Subp) /= E_Entry
         and then Ekind (Scope (Subp)) /= E_Protected_Type
       then
-         Error_Msg_N -- CODEFIX???
+         Error_Msg_N
            ("overriding indicator only allowed if subprogram is primitive",
             Subp);
          return;
@@ -6916,7 +6908,7 @@ package body Sem_Ch6 is
                  and then (not Is_Overriding
                             or else not Is_Abstract_Subprogram (E))
                then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("abstract subprograms must be visible "
                      & "(RM 3.9.3(10))!", S);
 
@@ -6925,10 +6917,10 @@ package body Sem_Ch6 is
                  and then T = Base_Type (Etype (S))
                  and then not Is_Overriding
                then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("private function with tagged result must"
                      & " override visible-part function", S);
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("\move subprogram to the visible part"
                      & " (RM 3.9.3(10))", S);
                end if;
@@ -8084,14 +8076,14 @@ package body Sem_Ch6 is
               and then Null_Exclusion_Present (Param_Spec)
             then
                if not Is_Access_Type (Formal_Type) then
-                  Error_Msg_N -- CODEFIX???
+                  Error_Msg_N
                     ("`NOT NULL` allowed only for an access type", Param_Spec);
 
                else
                   if Can_Never_Be_Null (Formal_Type)
                     and then Comes_From_Source (Related_Nod)
                   then
-                     Error_Msg_NE -- CODEFIX???
+                     Error_Msg_NE
                        ("`NOT NULL` not allowed (& already excludes null)",
                         Param_Spec,
                         Formal_Type);
@@ -8149,7 +8141,7 @@ package body Sem_Ch6 is
 
          if Present (Default) then
             if Out_Present (Param_Spec) then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("default initialization only allowed for IN parameters",
                   Param_Spec);
             end if;
@@ -8813,7 +8805,7 @@ package body Sem_Ch6 is
          N := N + 1;
 
          if Present (Default_Value (F)) then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("default values not allowed for operator parameters",
                Parent (F));
          end if;

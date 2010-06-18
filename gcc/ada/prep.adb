@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -411,7 +411,8 @@ package body Prep is
                   Scan.all;
 
                else
-                  Error_Msg ("`)` expected", Token_Ptr);
+                  Error_Msg -- CODEFIX
+                    ("`)` expected", Token_Ptr);
                end if;
 
             when Tok_Not =>
@@ -906,7 +907,8 @@ package body Prep is
             Scan.all;
 
             if Token /= Tok_Colon_Equal then
-               Error_Msg ("`:=` expected", Token_Ptr);
+               Error_Msg -- CODEFIX
+                 ("`:=` expected", Token_Ptr);
                goto Cleanup;
             end if;
 
@@ -1219,7 +1221,8 @@ package body Prep is
                      elsif
                        Pp_States.Table (Pp_States.Last).Else_Ptr /= 0
                      then
-                        Error_Msg ("duplicate ELSE line", Token_Ptr);
+                        Error_Msg -- CODEFIX
+                          ("duplicate ELSE line", Token_Ptr);
                         No_Error_Found := False;
                      end if;
 
@@ -1269,14 +1272,16 @@ package body Prep is
                      Scan.all;
 
                      if Token /= Tok_If then
-                        Error_Msg ("IF expected", Token_Ptr);
+                        Error_Msg -- CODEFIX
+                          ("IF expected", Token_Ptr);
                         No_Error_Found := False;
 
                      else
                         Scan.all;
 
                         if Token /= Tok_Semicolon then
-                           Error_Msg ("`;` Expected", Token_Ptr);
+                           Error_Msg -- CODEFIX
+                             ("`;` Expected", Token_Ptr);
                            No_Error_Found := False;
 
                         else
@@ -1312,13 +1317,15 @@ package body Prep is
                      No_Error_Found := False;
 
                      if Pp_States.Last = 0 then
-                        Error_Msg ("IF expected", Token_Ptr);
+                        Error_Msg -- CODEFIX
+                          ("IF expected", Token_Ptr);
 
                      elsif
                        Pp_States.Table (Pp_States.Last).Else_Ptr = 0
                      then
-                        Error_Msg ("IF, ELSIF, ELSE, or `END IF` expected",
-                                   Token_Ptr);
+                        Error_Msg
+                          ("IF, ELSIF, ELSE, or `END IF` expected",
+                           Token_Ptr);
 
                      else
                         Error_Msg ("IF or `END IF` expected", Token_Ptr);

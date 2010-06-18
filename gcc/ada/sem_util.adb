@@ -9299,8 +9299,7 @@ package body Sem_Util is
                  or else Modification_Comes_From_Source
                then
                   if Has_Pragma_Unmodified (Ent) then
-                     Error_Msg_NE -- CODEFIX???
-                       ("?pragma Unmodified given for &!", N, Ent);
+                     Error_Msg_NE ("?pragma Unmodified given for &!", N, Ent);
                   end if;
 
                   Set_Never_Set_In_Source (Ent, False);
@@ -9355,7 +9354,7 @@ package body Sem_Util is
                           and then Is_Entity_Name (Prefix (Exp))
                         then
                            Error_Msg_Sloc := Sloc (A);
-                           Error_Msg_NE -- CODEFIX???
+                           Error_Msg_NE
                              ("constant& may be modified via address clause#?",
                               N, Entity (Prefix (Exp)));
                         end if;
@@ -11362,7 +11361,7 @@ package body Sem_Util is
          Error_Msg_N
            ("address arithmetic not predefined in package System",
             Parent (Expr));
-         Error_Msg_N -- CODEFIX???
+         Error_Msg_N
            ("\possible missing with/use of System.Storage_Elements",
             Parent (Expr));
          return;
@@ -11451,7 +11450,7 @@ package body Sem_Util is
               Ekind (Entity (Expr)) = E_Generic_Procedure)
          then
             if Ekind (Expec_Type) = E_Access_Subprogram_Type then
-               Error_Msg_N -- CODEFIX???
+               Error_Msg_N
                  ("found procedure name, possibly missing Access attribute!",
                    Expr);
             else
@@ -11464,7 +11463,7 @@ package body Sem_Util is
            and then Etype (Designated_Type (Expec_Type)) = Etype (Expr)
            and then No (Parameter_Associations (Expr))
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("found function name, possibly missing Access attribute!",
                Expr);
 
@@ -11478,7 +11477,7 @@ package body Sem_Util is
             and then not In_Use (Expec_Type)
             and then Has_Compatible_Type (Right_Opnd (Expr), Expec_Type)
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("operator of the type is not directly visible!", Expr);
 
          elsif Ekind (Found_Type) = E_Void

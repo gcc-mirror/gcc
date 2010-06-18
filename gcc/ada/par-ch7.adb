@@ -205,7 +205,7 @@ package body Ch7 is
                      if Token_Is_At_Start_Of_Line
                        and then Start_Column /= Error_Msg_Col
                      then
-                        Error_Msg_SC -- CODEFIX???
+                        Error_Msg_SC
                           ("(style) PRIVATE in wrong column, should be@");
                      end if;
                   end if;
@@ -217,7 +217,7 @@ package body Ch7 is
                   --  Deal gracefully with multiple PRIVATE parts
 
                   while Token = Tok_Private loop
-                     Error_Msg_SC -- CODEFIX???
+                     Error_Msg_SC
                        ("only one private part allowed per package");
                      Scan; -- past PRIVATE
                      Append_List (P_Basic_Declarative_Items,
@@ -234,8 +234,7 @@ package body Ch7 is
                end if;
 
                if Token = Tok_Begin then
-                  Error_Msg_SC -- CODEFIX???
-                    ("begin block not allowed in package spec");
+                  Error_Msg_SC ("begin block not allowed in package spec");
                   Scan; -- past BEGIN
                   Discard_Junk_List (P_Sequence_Of_Statements (SS_None));
                end if;

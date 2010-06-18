@@ -3491,7 +3491,7 @@ package body Exp_Util is
             --  Generate warning if not suppressed
 
             if W then
-               Error_Msg_F -- CODEFIX???
+               Error_Msg_F
                  ("?this code can never be executed and has been deleted!", N);
             end if;
          end if;

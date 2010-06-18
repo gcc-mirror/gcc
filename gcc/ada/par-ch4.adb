@@ -367,8 +367,7 @@ package body Ch4 is
             begin
                if Token_Is_At_Start_Of_Line then
                   Restore_Scan_State (Scan_State); -- to apostrophe
-                  Error_Msg_SC -- CODEFIX???
-                    ("|""''"" should be "";""");
+                  Error_Msg_SC ("|""''"" should be "";""");
                   Token := Tok_Semicolon;
                   return True;
                else
@@ -567,8 +566,7 @@ package body Ch4 is
 
          elsif Token = Tok_Range then
             if Expr_Form /= EF_Simple_Name then
-               Error_Msg_SC -- CODEFIX???
-                 ("subtype mark must precede RANGE");
+               Error_Msg_SC ("subtype mark must precede RANGE");
                raise Error_Resync;
             end if;
 
@@ -740,8 +738,7 @@ package body Ch4 is
          --  a possible fix.
 
          if Nkind (Expr_Node) = N_Op_Eq then
-            Error_Msg_N -- CODEFIX???
-              ("\maybe `='>` was intended", Expr_Node);
+            Error_Msg_N ("\maybe `='>` was intended", Expr_Node);
          end if;
 
          --  We go back to scanning out expressions, so that we do not get
@@ -1092,7 +1089,7 @@ package body Ch4 is
            and then
          Nkind (Aggr_Node) /= N_Extension_Aggregate
       then
-         Error_Msg -- CODEFIX???
+         Error_Msg
            ("aggregate may not have single positional component", Aggr_Sloc);
          return Error;
       else
@@ -1264,7 +1261,7 @@ package body Ch4 is
             if Nkind (Expr_Node) = N_Attribute_Reference
               and then Attribute_Name (Expr_Node) = Name_Range
             then
-               Error_Msg -- CODEFIX???
+               Error_Msg
                  ("|parentheses not allowed for range attribute", Lparen_Sloc);
                Scan; -- past right paren
                return Expr_Node;
@@ -2131,8 +2128,7 @@ package body Ch4 is
                   Scan; -- scan past right paren if present
                end if;
 
-               Error_Msg -- CODEFIX???
-                 ("parentheses not allowed for range attribute", Lptr);
+               Error_Msg ("parentheses not allowed for range attribute", Lptr);
 
                return Attr_Node;
             end if;
@@ -2357,7 +2353,7 @@ package body Ch4 is
                --  that way with an error message.
 
                elsif Extensions_Allowed then
-                  Error_Msg_SC -- CODEFIX???
+                  Error_Msg_SC
                     ("conditional expression must be parenthesized");
                   return P_Conditional_Expression;
 
@@ -2383,8 +2379,7 @@ package body Ch4 is
                --  with an error message.
 
                elsif Extensions_Allowed then
-                  Error_Msg_SC -- CODEFIX???
-                    ("case expression must be parenthesized");
+                  Error_Msg_SC ("case expression must be parenthesized");
                   return P_Case_Expression;
 
                --  Otherwise treat as misused identifier
@@ -2717,8 +2712,7 @@ package body Ch4 is
       --  If we have an END CASE, diagnose as not needed
 
       if Token = Tok_End then
-         Error_Msg_SC -- CODEFIX???
-           ("`END CASE` not allowed at end of case expression");
+         Error_Msg_SC ("`END CASE` not allowed at end of case expression");
          Scan; -- past END
 
          if Token = Tok_Case then
@@ -2817,7 +2811,7 @@ package body Ch4 is
       --  If we have an END IF, diagnose as not needed
 
       if Token = Tok_End then
-         Error_Msg_SC -- CODEFIX???
+         Error_Msg_SC
            ("`END IF` not allowed at end of conditional expression");
          Scan; -- past END
 

@@ -699,7 +699,7 @@ package body Lib.Xref is
                   BE := First_Entity (Current_Scope);
                   while Present (BE) loop
                      if Chars (BE) = Chars (E) then
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("?pragma Unreferenced given for&!", N, BE);
                         exit;
                      end if;
@@ -711,7 +711,8 @@ package body Lib.Xref is
             --  Here we issue the warning, since this is a real reference
 
             else
-               Error_Msg_NE ("?pragma Unreferenced given for&!", N, E);
+               Error_Msg_NE -- CODEFIX
+                 ("?pragma Unreferenced given for&!", N, E);
             end if;
          end if;
 

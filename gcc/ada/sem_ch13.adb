@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1810,8 +1810,7 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("storage size clause for task is an " &
                      "obsolescent feature (RM J.9)?", N);
-                  Error_Msg_N
-                    ("\use Storage_Size pragma instead?", N);
+                  Error_Msg_N ("\use Storage_Size pragma instead?", N);
                end if;
 
                FOnly := True;
@@ -4243,8 +4242,7 @@ package body Sem_Ch13 is
       elsif Is_Type (T)
         and then Is_Generic_Type (Root_Type (T))
       then
-         Error_Msg_N
-           ("representation item not allowed for generic type", N);
+         Error_Msg_N ("representation item not allowed for generic type", N);
          return True;
       end if;
 

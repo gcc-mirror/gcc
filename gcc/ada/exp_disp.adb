@@ -3520,7 +3520,7 @@ package body Exp_Disp is
            and then not Is_Frozen (Typ)
          then
             Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_NE -- CODEFIX???
+            Error_Msg_NE
               ("declaration must appear after completion of type &", N, Typ);
             Error_Msg_NE
               ("\which is an untagged type in the profile of"
@@ -7317,11 +7317,11 @@ package body Exp_Disp is
             Adjusted := True;
          end if;
 
-         --  An abstract operation cannot be declared in the private part
-         --  for a visible abstract type, because it could never be over-
-         --  ridden. For explicit declarations this is checked at the
-         --  point of declaration, but for inherited operations it must
-         --  be done when building the dispatch table.
+         --  An abstract operation cannot be declared in the private part for a
+         --  visible abstract type, because it can't be overridden outside this
+         --  package hierarchy. For explicit declarations this is checked at
+         --  the point of declaration, but for inherited operations it must be
+         --  done when building the dispatch table.
 
          --  Ada 2005 (AI-251): Primitives associated with interfaces are
          --  excluded from this check because interfaces must be visible in
@@ -7350,7 +7350,7 @@ package body Exp_Disp is
                  and then
                not Is_TSS (Prim, TSS_Stream_Output)
             then
-               Error_Msg_NE -- CODEFIX???
+               Error_Msg_NE
                  ("abstract inherited private operation&" &
                   " must be overridden (RM 3.9.3(10))",
                  Parent (Typ), Prim);
@@ -7364,11 +7364,11 @@ package body Exp_Disp is
 
       if Is_Controlled (Typ) then
          if not Finalized then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("controlled type has no explicit Finalize method?", Typ);
 
          elsif not Adjusted then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("controlled type has no explicit Adjust method?", Typ);
          end if;
       end if;

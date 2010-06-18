@@ -558,8 +558,7 @@ package body Sem_Ch5 is
         and then not Is_Tag_Indeterminate (Rhs)
         and then not Is_Dynamically_Tagged (Rhs)
       then
-         Error_Msg_N -- CODEFIX???
-           ("dynamically tagged expression required!", Rhs);
+         Error_Msg_N ("dynamically tagged expression required!", Rhs);
       end if;
 
       --  Propagate the tag from a class-wide target to the rhs when the rhs
@@ -573,7 +572,7 @@ package body Sem_Ch5 is
               and then Is_Entity_Name (Name (Rhs))
               and then Is_Abstract_Subprogram (Entity (Name (Rhs)))
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("call to abstract function must be dispatching", Name (Rhs));
 
          elsif Nkind (Rhs) = N_Qualified_Expression
@@ -582,7 +581,7 @@ package body Sem_Ch5 is
               and then
                 Is_Abstract_Subprogram (Entity (Name (Expression (Rhs))))
          then
-            Error_Msg_N -- CODEFIX???
+            Error_Msg_N
               ("call to abstract function must be dispatching",
                 Name (Expression (Rhs)));
          end if;
@@ -1636,11 +1635,10 @@ package body Sem_Ch5 is
                         else
                            --  Both of them are user-defined
 
-                           Error_Msg_N -- CODEFIX???
+                           Error_Msg_N
                              ("ambiguous bounds in range of iteration",
                                R_Copy);
-                           Error_Msg_N -- CODEFIX???
-                             ("\possible interpretations:", R_Copy);
+                           Error_Msg_N ("\possible interpretations:", R_Copy);
                            Error_Msg_NE ("\\} ", R_Copy, Found);
                            Error_Msg_NE ("\\} ", R_Copy, It.Typ);
                            exit;
@@ -1892,7 +1890,7 @@ package body Sem_Ch5 is
                               if Compile_Time_Compare
                                    (L, H, Assume_Valid => False) = GT
                               then
-                                 Error_Msg_N -- CODEFIX???
+                                 Error_Msg_N
                                    ("?loop range is null, "
                                     & "loop will not execute",
                                     DS);
@@ -1946,8 +1944,7 @@ package body Sem_Ch5 is
                                     Intval (Original_Node (H)) = Uint_1)
                         then
                            Error_Msg_N ("?loop range may be null", DS);
-                           Error_Msg_N -- CODEFIX???
-                             ("\?bounds may be wrong way round", DS);
+                           Error_Msg_N ("\?bounds may be wrong way round", DS);
                         end if;
                      end;
                   end if;
@@ -2244,8 +2241,7 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning
 
-                  Error_Msg -- CODEFIX???
-                    ("?unreachable code!", Error_Loc);
+                  Error_Msg ("?unreachable code!", Error_Loc);
                end if;
 
             --  If the unconditional transfer of control instruction is

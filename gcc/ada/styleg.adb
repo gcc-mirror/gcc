@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -237,9 +237,11 @@ package body Styleg is
                   --  Otherwise we have an error
 
                   elsif Nkind (Orig) = N_Op_And then
-                     Error_Msg ("(style) `AND THEN` required", Sloc (Orig));
+                     Error_Msg -- CODEFIX
+                       ("(style) `AND THEN` required", Sloc (Orig));
                   else
-                     Error_Msg ("(style) `OR ELSE` required", Sloc (Orig));
+                     Error_Msg -- CODEFIX
+                       ("(style) `OR ELSE` required", Sloc (Orig));
                   end if;
                end;
             end if;
@@ -434,7 +436,8 @@ package body Styleg is
          if Scan_Ptr > Source_First (Current_Source_File)
            and then Source (Scan_Ptr - 1) > ' '
          then
-            Error_Msg_S ("(style) space required");
+            Error_Msg_S -- CODEFIX
+              ("(style) space required");
          end if;
       end if;
 
@@ -447,7 +450,8 @@ package body Styleg is
             if Source (Scan_Ptr + 2) > ' '
               and then not Is_Special_Character (Source (Scan_Ptr + 2))
             then
-               Error_Msg ("(style) space required", Scan_Ptr + 2);
+               Error_Msg -- CODEFIX
+                 ("(style) space required", Scan_Ptr + 2);
             end if;
          end if;
 
@@ -505,7 +509,8 @@ package body Styleg is
                   if Is_Box_Comment then
                      Error_Space_Required (Scan_Ptr + 2);
                   else
-                     Error_Msg ("(style) two spaces required", Scan_Ptr + 2);
+                     Error_Msg -- CODEFIX
+                       ("(style) two spaces required", Scan_Ptr + 2);
                   end if;
 
                   return;
@@ -558,12 +563,12 @@ package body Styleg is
          --  We expect one blank line, from the EOF, but no more than one
 
          if Blank_Lines = 2 then
-            Error_Msg
+            Error_Msg -- CODEFIX
               ("(style) blank line not allowed at end of file",
                Blank_Line_Location);
 
          elsif Blank_Lines >= 3 then
-            Error_Msg
+            Error_Msg -- CODEFIX
               ("(style) blank lines not allowed at end of file",
                Blank_Line_Location);
          end if;
@@ -590,7 +595,8 @@ package body Styleg is
    procedure Check_HT is
    begin
       if Style_Check_Horizontal_Tabs then
-         Error_Msg_S ("(style) horizontal tab not allowed");
+         Error_Msg_S -- CODEFIX
+           ("(style) horizontal tab not allowed");
       end if;
    end Check_HT;
 
@@ -608,7 +614,8 @@ package body Styleg is
          if Token_Ptr = First_Non_Blank_Location
            and then Start_Column rem Style_Check_Indentation /= 0
          then
-            Error_Msg_SC ("(style) bad indentation");
+            Error_Msg_SC -- CODEFIX
+              ("(style) bad indentation");
          end if;
       end if;
    end Check_Indentation;
@@ -682,9 +689,11 @@ package body Styleg is
 
       if Style_Check_Form_Feeds then
          if Source (Scan_Ptr) = ASCII.FF then
-            Error_Msg_S ("(style) form feed not allowed");
+            Error_Msg_S -- CODEFIX
+              ("(style) form feed not allowed");
          elsif Source (Scan_Ptr) = ASCII.VT then
-            Error_Msg_S ("(style) vertical tab not allowed");
+            Error_Msg_S -- CODEFIX
+              ("(style) vertical tab not allowed");
          end if;
       end if;
 
@@ -717,7 +726,7 @@ package body Styleg is
       --  Issue message for blanks at end of line if option enabled
 
       if Style_Check_Blanks_At_End and then L < Len then
-         Error_Msg
+         Error_Msg -- CODEFIX
            ("(style) trailing spaces not permitted", S);
       end if;
 
@@ -913,7 +922,7 @@ package body Styleg is
 
       else
          if Token = Tok_Then then
-            Error_Msg
+            Error_Msg -- CODEFIX
               ("(style) no statements may follow THEN on same line", S);
          else
             Error_Msg
@@ -977,7 +986,8 @@ package body Styleg is
    procedure Check_Xtra_Parens (Loc : Source_Ptr) is
    begin
       if Style_Check_Xtra_Parens then
-         Error_Msg ("redundant parentheses?", Loc);
+         Error_Msg -- CODEFIX
+           ("redundant parentheses?", Loc);
       end if;
    end Check_Xtra_Parens;
 
@@ -996,7 +1006,8 @@ package body Styleg is
 
    procedure Error_Space_Not_Allowed (S : Source_Ptr) is
    begin
-      Error_Msg ("(style) space not allowed", S);
+      Error_Msg -- CODEFIX
+        ("(style) space not allowed", S);
    end Error_Space_Not_Allowed;
 
    --------------------------
@@ -1005,7 +1016,8 @@ package body Styleg is
 
    procedure Error_Space_Required (S : Source_Ptr) is
    begin
-      Error_Msg ("(style) space required", S);
+      Error_Msg -- CODEFIX
+        ("(style) space required", S);
    end Error_Space_Required;
 
    --------------------
@@ -1037,7 +1049,8 @@ package body Styleg is
    begin
       if Style_Check_End_Labels then
          Error_Msg_Node_1 := Name;
-         Error_Msg_SP ("(style) `END &` required");
+         Error_Msg_SP -- CODEFIX
+           ("(style) `END &` required");
       end if;
    end No_End_Name;
 
@@ -1052,7 +1065,8 @@ package body Styleg is
    begin
       if Style_Check_End_Labels then
          Error_Msg_Node_1 := Name;
-         Error_Msg_SP ("(style) `EXIT &` required");
+         Error_Msg_SP -- CODEFIX
+           ("(style) `EXIT &` required");
       end if;
    end No_Exit_Name;
 
@@ -1067,7 +1081,7 @@ package body Styleg is
    procedure Non_Lower_Case_Keyword is
    begin
       if Style_Check_Keyword_Casing then
-         Error_Msg_SC -- CODEIX
+         Error_Msg_SC -- CODEFIX
            ("(style) reserved words must be all lower case");
       end if;
    end Non_Lower_Case_Keyword;

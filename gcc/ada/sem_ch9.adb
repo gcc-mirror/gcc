@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2424,15 +2424,17 @@ package body Sem_Ch9 is
                Iface := Find_Hidden_Interface (Priv_T_Ifaces, Full_T_Ifaces);
 
                if Present (Iface) then
-                  Error_Msg_NE ("interface & not implemented by full type " &
-                                "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
+                  Error_Msg_NE
+                    ("interface & not implemented by full type " &
+                     "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
                end if;
 
                Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);
 
                if Present (Iface) then
-                  Error_Msg_NE ("interface & not implemented by partial " &
-                                "view (RM-2005 7.3 (7.3/2))", T, Iface);
+                  Error_Msg_NE
+                    ("interface & not implemented by partial " &
+                     "view (RM-2005 7.3 (7.3/2))", T, Iface);
                end if;
             end if;
          end if;

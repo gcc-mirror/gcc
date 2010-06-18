@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,15 +83,18 @@ package body Tchk is
       --  A little recovery helper, accept then in place of =>
 
       elsif Token = Tok_Then then
-         Error_Msg_BC ("|THEN should be ""='>""");
+         Error_Msg_BC -- CODEFIX
+           ("|THEN should be ""='>""");
          Scan; -- past THEN used in place of =>
 
       elsif Token = Tok_Colon_Equal then
-         Error_Msg_SC ("|"":="" should be ""='>""");
+         Error_Msg_SC -- CODEFIX
+           ("|"":="" should be ""='>""");
          Scan; -- past := used in place of =>
 
       else
-         Error_Msg_AP ("missing ""='>""");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""='>""");
       end if;
    end T_Arrow;
 
@@ -122,7 +125,8 @@ package body Tchk is
       if Token = Tok_Box then
          Scan;
       else
-         Error_Msg_AP ("missing ""'<'>""");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""'<'>""");
       end if;
    end T_Box;
 
@@ -135,7 +139,8 @@ package body Tchk is
       if Token = Tok_Colon then
          Scan;
       else
-         Error_Msg_AP ("missing "":""");
+         Error_Msg_AP -- CODEFIX
+           ("missing "":""");
       end if;
    end T_Colon;
 
@@ -149,19 +154,23 @@ package body Tchk is
          Scan;
 
       elsif Token = Tok_Equal then
-         Error_Msg_SC ("|""="" should be "":=""");
+         Error_Msg_SC -- CODEFIX
+           ("|""="" should be "":=""");
          Scan;
 
       elsif Token = Tok_Colon then
-         Error_Msg_SC ("|"":"" should be "":=""");
+         Error_Msg_SC -- CODEFIX
+           ("|"":"" should be "":=""");
          Scan;
 
       elsif Token = Tok_Is then
-         Error_Msg_SC ("|IS should be "":=""");
+         Error_Msg_SC -- CODEFIX
+           ("|IS should be "":=""");
          Scan;
 
       else
-         Error_Msg_AP ("missing "":=""");
+         Error_Msg_AP -- CODEFIX
+           ("missing "":=""");
       end if;
    end T_Colon_Equal;
 
@@ -182,7 +191,8 @@ package body Tchk is
          if Token = Tok_Comma then
             Scan;
          else
-            Error_Msg_AP ("missing "",""");
+            Error_Msg_AP -- CODEFIX
+              ("missing "",""");
          end if;
       end if;
 
@@ -200,7 +210,8 @@ package body Tchk is
       if Token = Tok_Dot_Dot then
          Scan;
       else
-         Error_Msg_AP ("missing ""..""");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""..""");
       end if;
    end T_Dot_Dot;
 
@@ -222,7 +233,8 @@ package body Tchk is
       if Token = Tok_Greater_Greater then
          Scan;
       else
-         Error_Msg_AP ("missing ""'>'>""");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""'>'>""");
       end if;
    end T_Greater_Greater;
 
@@ -271,15 +283,18 @@ package body Tchk is
       --  Allow OF, => or = to substitute for IS with complaint
 
       elsif Token = Tok_Arrow then
-         Error_Msg_SC ("|""=>"" should be IS");
+         Error_Msg_SC -- CODEFIX
+           ("|""=>"" should be IS");
          Scan; -- past =>
 
       elsif Token = Tok_Of then
-         Error_Msg_SC ("|OF should be IS");
+         Error_Msg_SC -- CODEFIX
+           ("|OF should be IS");
          Scan; -- past OF
 
       elsif Token = Tok_Equal then
-         Error_Msg_SC ("|""="" should be IS");
+         Error_Msg_SC -- CODEFIX
+           ("|""="" should be IS");
          Scan; -- past =
 
       else
@@ -289,7 +304,8 @@ package body Tchk is
       --  Ignore extra IS keywords
 
       while Token = Tok_Is loop
-         Error_Msg_SC ("|extra IS ignored");
+         Error_Msg_SC -- CODEFIX
+           ("|extra IS ignored");
          Scan;
       end loop;
    end T_Is;
@@ -303,7 +319,8 @@ package body Tchk is
       if Token = Tok_Left_Paren then
          Scan;
       else
-         Error_Msg_AP ("missing ""(""");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""(""");
       end if;
    end T_Left_Paren;
 
@@ -314,7 +331,8 @@ package body Tchk is
    procedure T_Loop is
    begin
       if Token = Tok_Do then
-         Error_Msg_SC ("LOOP expected");
+         Error_Msg_SC -- CODEFIX
+           ("LOOP expected");
          Scan;
       else
          Check_Token (Tok_Loop, AP);
@@ -393,7 +411,8 @@ package body Tchk is
       if Token = Tok_Right_Paren then
          Scan;
       else
-         Error_Msg_AP ("|missing "")""");
+         Error_Msg_AP -- CODEFIX
+           ("|missing "")""");
       end if;
    end T_Right_Paren;
 
@@ -408,24 +427,28 @@ package body Tchk is
          Scan;
 
          if Token = Tok_Semicolon then
-            Error_Msg_SC ("|extra "";"" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "";"" ignored");
             Scan;
          end if;
 
          return;
 
       elsif Token = Tok_Colon then
-         Error_Msg_SC ("|"":"" should be "";""");
+         Error_Msg_SC -- CODEFIX
+           ("|"":"" should be "";""");
          Scan;
          return;
 
       elsif Token = Tok_Comma then
-         Error_Msg_SC ("|"","" should be "";""");
+         Error_Msg_SC -- CODEFIX
+           ("|"","" should be "";""");
          Scan;
          return;
 
       elsif Token = Tok_Dot then
-         Error_Msg_SC ("|""."" should be "";""");
+         Error_Msg_SC -- CODEFIX
+           ("|""."" should be "";""");
          Scan;
          return;
 
@@ -464,7 +487,8 @@ package body Tchk is
 
       --  If none of those tests return, we really have a missing semicolon
 
-      Error_Msg_AP ("|missing "";""");
+      Error_Msg_AP -- CODEFIX
+        ("|missing "";""");
       return;
    end T_Semicolon;
 
@@ -646,7 +670,8 @@ package body Tchk is
          Scan; -- skip RETURN and we are done
 
       else
-         Error_Msg_SC ("missing RETURN");
+         Error_Msg_SC -- CODEFIX
+           ("missing RETURN");
          Save_Scan_State (Scan_State); -- at start of junk tokens
 
          loop
@@ -814,7 +839,8 @@ package body Tchk is
       if Token = Tok_Left_Paren then
          Scan;
       else
-         Error_Msg_AP ("missing ""(""!");
+         Error_Msg_AP -- CODEFIX
+           ("missing ""(""!");
       end if;
    end U_Left_Paren;
 
@@ -827,7 +853,8 @@ package body Tchk is
       if Token = Tok_Right_Paren then
          Scan;
       else
-         Error_Msg_AP ("|missing "")""!");
+         Error_Msg_AP -- CODEFIX
+           ("|missing "")""!");
       end if;
    end U_Right_Paren;
 
@@ -846,7 +873,8 @@ package body Tchk is
          Scan;
 
          if Token = T then
-            Error_Msg_SP ("|extra "";"" ignored");
+            Error_Msg_SP -- CODEFIX
+              ("|extra "";"" ignored");
             Scan;
          else
             Error_Msg_SP (M);
@@ -856,7 +884,8 @@ package body Tchk is
          Scan;
 
          if Token = T then
-            Error_Msg_SP ("|extra "","" ignored");
+            Error_Msg_SP -- CODEFIX
+              ("|extra "","" ignored");
             Scan;
 
          else

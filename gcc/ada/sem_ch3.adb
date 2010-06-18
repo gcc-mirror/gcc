@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1912,8 +1912,7 @@ package body Sem_Ch3 is
             if Is_Interface (Root_Type (Current_Scope)) then
                Error_Msg_N
                  ("\limitedness is not inherited from limited interface", N);
-               Error_Msg_N
-                 ("\add LIMITED to type indication", N);
+               Error_Msg_N ("\add LIMITED to type indication", N);
             end if;
 
             Explain_Limited_Type (T, N);
@@ -8573,8 +8572,7 @@ package body Sem_Ch3 is
                --  them all, and not just the first one).
 
                Error_Msg_Node_2 := Subp;
-               Error_Msg_N
-                 ("nonabstract type& has abstract subprogram&!", T);
+               Error_Msg_N ("nonabstract type& has abstract subprogram&!", T);
             end if;
          end if;
 
@@ -8775,8 +8773,7 @@ package body Sem_Ch3 is
                   Error_Msg_NE
                     ("missing full declaration for }", Parent (E), E);
                else
-                  Error_Msg_NE
-                    ("missing body for &", Parent (E), E);
+                  Error_Msg_NE ("missing body for &", Parent (E), E);
                end if;
 
             --  Package body has no completion for a declaration that appears
@@ -8787,8 +8784,7 @@ package body Sem_Ch3 is
                Error_Msg_Sloc := Sloc (E);
 
                if Is_Type (E) then
-                  Error_Msg_NE
-                    ("missing full declaration for }!", Body_Id, E);
+                  Error_Msg_NE ("missing full declaration for }!", Body_Id, E);
 
                elsif Is_Overloadable (E)
                  and then Current_Entity_In_Scope (E) /= E
@@ -9811,8 +9807,9 @@ package body Sem_Ch3 is
            and then not In_Private_Part (Current_Scope)
          then
             Error_Msg_Sloc := Sloc (Prev);
-            Error_Msg_N ("full constant for declaration#"
-                         & " must be in private part", N);
+            Error_Msg_N
+              ("full constant for declaration#"
+               & " must be in private part", N);
 
          elsif Ekind (Current_Scope) = E_Package
            and then
@@ -10065,8 +10062,7 @@ package body Sem_Ch3 is
       --  is such an array type... (RM 3.6.1)
 
       if Is_Constrained (T) then
-         Error_Msg_N
-           ("array type is already constrained", Subtype_Mark (SI));
+         Error_Msg_N ("array type is already constrained", Subtype_Mark (SI));
          Constraint_OK := False;
 
       else
@@ -10814,8 +10810,7 @@ package body Sem_Ch3 is
             Error_Msg_N
               ("(Ada 2005) incomplete subtype may not be constrained", C);
          else
-            Error_Msg_N
-              ("invalid constraint: type has no discriminant", C);
+            Error_Msg_N ("invalid constraint: type has no discriminant", C);
          end if;
 
          Fixup_Bad_Constraint;
@@ -13489,8 +13484,9 @@ package body Sem_Ch3 is
              (not Is_Interface (Parent_Type)
                or else not Is_Limited_Interface (Parent_Type))
          then
-            Error_Msg_NE ("parent type& of limited type must be limited",
-              N, Parent_Type);
+            Error_Msg_NE
+              ("parent type& of limited type must be limited",
+               N, Parent_Type);
          end if;
       end if;
    end Derived_Type_Declaration;
@@ -13943,9 +13939,9 @@ package body Sem_Ch3 is
 
             elsif Nkind (Type_Definition (N)) = N_Derived_Type_Definition then
                if No (Record_Extension_Part (Type_Definition (N))) then
-                  Error_Msg_NE (
-                    "full declaration of } must be a record extension",
-                    Prev, Id);
+                  Error_Msg_NE
+                    ("full declaration of } must be a record extension",
+                     Prev, Id);
 
                   --  Set some attributes to produce a usable full view
 
@@ -16253,15 +16249,17 @@ package body Sem_Ch3 is
             Iface := Find_Hidden_Interface (Priv_T_Ifaces, Full_T_Ifaces);
 
             if Present (Iface) then
-               Error_Msg_NE ("interface & not implemented by full type " &
-                             "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
+               Error_Msg_NE
+                 ("interface & not implemented by full type " &
+                  "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
             end if;
 
             Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);
 
             if Present (Iface) then
-               Error_Msg_NE ("interface & not implemented by partial view " &
-                             "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
+               Error_Msg_NE
+                 ("interface & not implemented by partial view " &
+                  "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
          end;
       end if;

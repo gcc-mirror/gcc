@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,8 @@ package body Util is
         and then Name_Len = 7
         and then Name_Buffer (1 .. 7) = "program"
       then
-         Error_Msg_SC ("PROCEDURE expected");
+         Error_Msg_SC -- CODEFIX
+           ("PROCEDURE expected");
          Token := T;
          return True;
 
@@ -86,8 +87,7 @@ package body Util is
             M2 (P2 + J - 1) := Fold_Upper (S (J));
          end loop;
 
-         Error_Msg_SC -- CODEFIX???
-           (M2 (1 .. P2 - 1 + S'Last));
+         Error_Msg_SC (M2 (1 .. P2 - 1 + S'Last));
          Token := T;
          return True;
       end if;
@@ -334,7 +334,8 @@ package body Util is
 
          <<Assume_Comma>>
             Restore_Scan_State (Scan_State);
-            Error_Msg_SC ("|"";"" should be "",""");
+            Error_Msg_SC -- CODEFIX
+              ("|"";"" should be "",""");
             Scan; -- past the semicolon
             return True;
 
@@ -384,26 +385,30 @@ package body Util is
    begin
       while Token = T loop
          if T = Tok_Comma then
-            Error_Msg_SC ("|extra "","" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "","" ignored");
 
          elsif T = Tok_Left_Paren then
-            Error_Msg_SC ("|extra ""("" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra ""("" ignored");
 
          elsif T = Tok_Right_Paren then
-            Error_Msg_SC ("|extra "")"" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "")"" ignored");
 
          elsif T = Tok_Semicolon then
-            Error_Msg_SC ("|extra "";"" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "";"" ignored");
 
          elsif T = Tok_Colon then
-            Error_Msg_SC ("|extra "":"" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "":"" ignored");
 
          else
             declare
                Tname : constant String := Token_Type'Image (Token);
             begin
-               Error_Msg_SC
-                 ("|extra " & Tname (5 .. Tname'Last) & "ignored");
+               Error_Msg_SC ("|extra " & Tname (5 .. Tname'Last) & "ignored");
             end;
          end if;
 
@@ -567,8 +572,7 @@ package body Util is
       end;
 
       Error_Msg_Node_1 := Prev;
-      Error_Msg_SC
-        ("unexpected identifier, possibly & was meant here");
+      Error_Msg_SC ("unexpected identifier, possibly & was meant here");
       Scan;
    end Merge_Identifier;
 
