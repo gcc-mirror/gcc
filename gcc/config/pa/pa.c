@@ -1680,10 +1680,6 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		  && !REG_POINTER (operand0)
 		  && !HARD_REGISTER_P (operand0))
 		copy_reg_pointer (operand0, operand1);
-	      else if (REG_POINTER (operand0)
-		       && !REG_POINTER (operand1)
-		       && !HARD_REGISTER_P (operand1))
-		copy_reg_pointer (operand1, operand0);
 	    }
 	  
 	  /* When MEMs are broken out, the REG_POINTER flag doesn't
