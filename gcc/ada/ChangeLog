@@ -1,3 +1,35 @@
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb (Test_In_Range): New subprogram, factoring duplicated
+	code between...
+	(Is_In_Range, Is_Out_Of_Range): Reimplement in terms of call to
+	Test_In_Range.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb: Minor change in output format for expression wi actions.
+	* par-ch3.adb: Minor code reorganization.  Minor reformatting.
+	* sem_ch5.adb: Minor comment fix.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: New debug flag -gnatd.L to control
+	Back_End_Handles_Limited_Types.
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Let back end handle
+	limited case if Back_End_Handles_Limited_Types is True.
+	(Expand_N_Conditional_Expression): Use N_Expression_With_Actions to
+	simplify expansion if Use_Expression_With_Actions is True.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Back_End_Handles_Limited_Types.
+	* opt.ads (Back_End_Handles_Limited_Types): New flag.
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Rewrite_Operator_As_Call): Do not rewrite user-defined
+	intrinsic operator if expansion is not enabled, because in an
+	instantiation the original operator must be present to verify the
+	legality of the operation.
+
 2010-06-18  Robert Dewar  <dewar@adacore.com>
 
 	* exp_disp.adb, sem_ch12.adb: Minor reformatting

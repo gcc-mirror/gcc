@@ -172,6 +172,15 @@ package Opt is
    --  also set true if certain Unchecked_Conversion instantiations require
    --  checking based on annotated values.
 
+   Back_End_Handles_Limited_Types : Boolean;
+   --  This flag is set true if the back end can properly handle limited or
+   --  other by reference types, and avoid copies. If this flag is False, then
+   --  the front end does special expansion for conditional expressions to make
+   --  sure that no copy occurs. If the flag is True, then the expansion for
+   --  conditional expressions relies on the back end properly handling things.
+   --  Currently the default is False for all cases (set in gnat1drv). The
+   --  default can be modified using -gnatd.L (sets the flag True).
+
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
    --  True if main should be called Alternate_Main_Name.all.
@@ -1239,12 +1248,12 @@ package Opt is
    --  Set to True if -h (-gnath for the compiler) switch encountered
    --  requesting usage information
 
-   Use_Expression_With_Actions : Boolean := False;
+   Use_Expression_With_Actions : Boolean;
    --  The N_Expression_With_Actions node has been introduced relatively
    --  recently, and not all back ends are prepared to handle it yet. So
    --  we use this flag to suppress its use during a transitional period.
-   --  Currently the default is False for all cases except the standard
-   --  GCC back end. The default can be modified using -gnatd.X/-gnatd.Y.
+   --  Currently the default is False for all cases (set in gnat1drv).
+   --  The default can be modified using -gnatd.X/-gnatd.Y.
 
    Use_Pragma_Linker_Constructor : Boolean := False;
    --  GNATBIND

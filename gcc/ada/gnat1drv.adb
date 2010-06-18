@@ -359,6 +359,30 @@ procedure Gnat1drv is
       else
          Use_Expression_With_Actions := False;
       end if;
+
+      --  Set switch indicating if back end can handle limited types, and
+      --  guarantee that no incorrect copies are made (e.g. in the context
+      --  of a conditional expression).
+
+      --  Debug flag -gnatd.L decisively sets usage on
+
+      if Debug_Flag_Dot_XX then
+         Back_End_Handles_Limited_Types := True;
+
+      --  If no debug flag, usage off for AAMP, VM, SCIL cases
+
+      elsif AAMP_On_Target
+        or else VM_Target /= No_VM
+        or else Generate_SCIL
+      then
+         Back_End_Handles_Limited_Types := False;
+
+         --  Otherwise normal gcc back end, for now still turn flag off by
+         --  default, since we have not verified proper back end handling.
+
+      else
+         Back_End_Handles_Limited_Types := False;
+      end if;
    end Adjust_Global_Switches;
 
    --------------------
