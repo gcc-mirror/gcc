@@ -2113,6 +2113,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   ifeq ($(strip $(filter-out %86,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
+    i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-susv3.adb \
     s-osinte.adb<s-osinte-darwin.adb \
@@ -2137,6 +2138,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   ifeq ($(strip $(filter-out %x86_64,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
+    i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-susv3.adb \
     s-osinte.adb<s-osinte-darwin.adb \
@@ -2156,6 +2158,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   ifeq ($(strip $(filter-out powerpc%,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
+    i-forbla.adb<i-forbla-darwin.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
     s-osinte.adb<s-osinte-darwin.adb \
@@ -2637,7 +2640,8 @@ gnatlib-shared:
              $(GNATLIB_SHARED)
 
 gnatlib-sjlj:
-	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="" ../stamp-gnatlib1-$(RTSDIR)
+	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="" \
+	THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
 	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -2650,7 +2654,8 @@ gnatlib-sjlj:
 	     TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" gnatlib
 
 gnatlib-zcx:
-	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="-gcc" ../stamp-gnatlib1-$(RTSDIR)
+	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="-gcc" \
+	THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
 	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := True;/' $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \

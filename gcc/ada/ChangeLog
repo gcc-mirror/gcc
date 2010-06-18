@@ -1,3 +1,9 @@
+2010-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies. Fix target pairs on darwin.
+	(gnatlib-sjlj, gnatlib-zcx): Pass THREAD_KIND.
+
 2010-06-18  Pascal Obry  <obry@adacore.com>
 
 	* make.adb, prj-nmsc.adb: Fix source filenames casing in debug output.
