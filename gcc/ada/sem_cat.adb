@@ -78,12 +78,12 @@ package body Sem_Cat is
 
    function In_RCI_Declaration (N : Node_Id) return Boolean;
    --  Determines if a declaration is  within the visible part of a Remote
-   --  Call Interface compilation unit, for semantic checking purposes only,
+   --  Call Interface compilation unit, for semantic checking purposes only
    --  (returns false within an instance and within the package body).
 
    function In_RT_Declaration return Boolean;
-   --  Determines if current scope is within a Remote Types compilation unit,
-   --  for semantic checking purposes.
+   --  Determines if current scope is within the declaration of a Remote Types
+   --  unit, for semantic checking purposes.
 
    function Is_Non_Remote_Access_Type (E : Entity_Id) return Boolean;
    --  Returns true if the entity is a type whose full view is a non-remote
@@ -1061,27 +1061,25 @@ package body Sem_Cat is
       --  Exclude generic specs from the checks (this will get rechecked
       --  on instantiations).
 
-      if Inside_A_Generic
-        and then No (Enclosing_Generic_Body (Id))
-      then
+      if Inside_A_Generic and then No (Enclosing_Generic_Body (Id)) then
          return;
       end if;
 
-      --  Required checks for declaration that is in a preelaborated
-      --  package and is not within some subprogram.
+      --  Required checks for declaration that is in a preelaborated package
+      --  and is not within some subprogram.
 
       if In_Preelaborated_Unit
         and then not In_Subprogram_Or_Concurrent_Unit
       then
          --  Check for default initialized variable case. Note that in
-         --  accordance with (RM B.1(24)) imported objects are not
-         --  subject to default initialization.
+         --  accordance with (RM B.1(24)) imported objects are not subject to
+         --  default initialization.
          --  If the initialization does not come from source and is an
          --  aggregate, it is a static initialization that replaces an
          --  implicit call, and must be treated as such.
 
          if Present (E)
-           and then
+              and then
             (Comes_From_Source (E) or else Nkind (E) /= N_Aggregate)
          then
             null;
@@ -1210,13 +1208,8 @@ package body Sem_Cat is
                elsif Nkind (Odf) = N_Subtype_Indication then
                   Ent := Etype (Subtype_Mark (Odf));
 
-               elsif
-                  Nkind (Odf) = N_Constrained_Array_Definition
-               then
+               elsif Nkind (Odf) = N_Constrained_Array_Definition then
                   Ent := Component_Type (T);
-
-               --  else
-               --     return;
                end if;
 
                if Is_Task_Type (Ent)
@@ -1230,9 +1223,9 @@ package body Sem_Cat is
             end;
          end if;
 
-         --  Non-static discriminant not allowed in preelaborated unit
-         --  Controlled object of a type with a user-defined Initialize
-         --  is forbidden as well.
+         --  Non-static discriminants not allowed in preelaborated unit.
+         --  Objects of a controlled type with a user-defined Initialize
+         --  are forbidden as well.
 
          if Is_Record_Type (Etype (Id)) then
             declare
@@ -1247,8 +1240,8 @@ package body Sem_Cat is
                   PEE := Parent (EE);
 
                   if Nkind (PEE) = N_Full_Type_Declaration
-                    and then not Static_Discriminant_Expr
-                                  (Discriminant_Specifications (PEE))
+                       and then not Static_Discriminant_Expr
+                                     (Discriminant_Specifications (PEE))
                   then
                      Error_Msg_N
                        ("non-static discriminant in preelaborated unit",
@@ -1270,23 +1263,21 @@ package body Sem_Cat is
       --  except within a subprogram, generic subprogram, task unit, or
       --  protected unit (RM 10.2.1(16)).
 
-      if In_Pure_Unit
-        and then not In_Subprogram_Task_Protected_Unit
-      then
+      if In_Pure_Unit and then not In_Subprogram_Task_Protected_Unit then
          Error_Msg_N ("declaration of variable not allowed in pure unit", N);
 
       --  The visible part of an RCI library unit must not contain the
       --  declaration of a variable (RM E.1.3(9))
 
       elsif In_RCI_Declaration (N) then
-         Error_Msg_N ("declaration of variable not allowed in rci unit", N);
+         Error_Msg_N ("visible variable not allowed in 'R'C'I unit", N);
 
       --  The visible part of a Shared Passive library unit must not contain
       --  the declaration of a variable (RM E.2.2(7))
 
-      elsif In_RT_Declaration then
+      elsif In_RT_Declaration and then not In_Private_Part (Id) then
          Error_Msg_N
-           ("variable declaration not allowed in remote types unit", N);
+           ("visible variable not allowed in remote types unit", N);
       end if;
 
    end Validate_Object_Declaration;

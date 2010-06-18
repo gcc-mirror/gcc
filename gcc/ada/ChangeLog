@@ -1,3 +1,9 @@
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb (Validate_Object_Declaration): A variable declaration is
+	not illegal per E.2.2(7) if it occurs in the private part of a
+	Remote_Types unit.
+
 2010-06-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* par-ch9.adb, sem_aggr.adb, sem_ch3.adb, layout.adb, sem_ch4.adb,
@@ -17,7 +23,7 @@
 
 	* par-labl.adb, restrict.adb, s-osinte-hpux-dce.ads, sem_ch11.adb,
 	exp_pakd.adb, s-filofl.ads, par-endh.adb, exp_intr.adb, sem_cat.adb,
-	sem_case.adb, exp_ch11.adb: Fix copyright notices.
+	sem_case.adb, exp_ch11.adb, s-osinte-linux.ads: Fix copyright notices.
 
 2010-06-18  Geert Bosch  <bosch@adacore.com>
 
