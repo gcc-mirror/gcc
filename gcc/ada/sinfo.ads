@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1172,6 +1172,11 @@ package Sinfo is
    --    'Address or 'Tag attribute. ???There are other implicit with clauses
    --    as well.
 
+   --  Import_Interface_Present (Flag16-Sem)
+   --     This flag is set in an Interface or Import pragma if a matching
+   --     pragma of the other kind is also present. This is used to avoid
+   --     generating some unwanted error messages.
+
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of
    --    unconstrained float types defined in Standard, which include not only
@@ -1999,6 +2004,7 @@ package Sinfo is
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
       --  Pragma_Enabled (Flag5-Sem)
+      --  Import_Interface_Present (Flag16-Sem)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -6620,13 +6626,21 @@ package Sinfo is
       --  actions associated with the right hand operand.
 
       --  The N_Expression_With_Actions node represents an expression with
-      --  an associated set of actions (which are executable statements).
+      --  an associated set of actions (which are executable statements and
+      --  declarations, as might occur in a handled statement sequence).
+
       --  The required semantics is that the set of actions is executed in
       --  the order in which it appears just before the expression is
       --  evaluated (and these actions must only be executed if the value
       --  of the expression is evaluated). The node is considered to be
       --  a subexpression, whose value is the value of the Expression after
       --  executing all the actions.
+
+      --  Note: if the actions contain declarations, then these declarations
+      --  maybe referenced with in the expression. It is thus appropriate for
+      --  the back end to create a scope that encompasses the construct (any
+      --  declarations within the actions will definitely not be referenced
+      --  once elaboration of the construct is completed).
 
       --  Sprint syntax:  do
       --                    action;
@@ -8151,6 +8165,9 @@ package Sinfo is
    function Implicit_With
      (N : Node_Id) return Boolean;    -- Flag16
 
+   function Import_Interface_Present
+     (N : Node_Id) return Boolean;    -- Flag16
+
    function In_Present
      (N : Node_Id) return Boolean;    -- Flag15
 
@@ -9076,6 +9093,9 @@ package Sinfo is
      (N : Node_Id; Val : Boolean := True);    -- Flag16
 
    procedure Set_Implicit_With
+     (N : Node_Id; Val : Boolean := True);    -- Flag16
+
+   procedure Set_Import_Interface_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag16
 
    procedure Set_In_Present
@@ -11384,6 +11404,7 @@ package Sinfo is
    pragma Inline (Interface_List);
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);
+   pragma Inline (Import_Interface_Present);
    pragma Inline (In_Present);
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
@@ -11689,6 +11710,7 @@ package Sinfo is
    pragma Inline (Set_Includes_Infinities);
    pragma Inline (Set_Interface_List);
    pragma Inline (Set_Interface_Present);
+   pragma Inline (Set_Import_Interface_Present);
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Inherited_Discriminant);
    pragma Inline (Set_Instance_Spec);

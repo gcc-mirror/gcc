@@ -2856,7 +2856,12 @@ the standard Ada pragma @code{Import}.  It is provided for compatibility
 with Ada 83.  The definition is upwards compatible both with pragma
 @code{Interface} as defined in the Ada 83 Reference Manual, and also
 with some extended implementations of this pragma in certain Ada 83
-implementations.
+implementations.  The only difference between pragma @code{Interface}
+and pragma @code{Import} is that there is special circuitry to allow
+both pragmas to appear for the same subprogram entity (normally it
+is illegal to have multiple @code{Import} pragmas. This is useful in
+maintaining Ada 83/Ada 95 compatibility and is compatible with other
+Ada 83 compilers.
 
 @node Pragma Interface_Name
 @unnumberedsec Pragma Interface_Name

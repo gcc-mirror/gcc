@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -712,7 +712,7 @@ package Sem_Util is
    --  by a derived type declarations.
 
    function Is_LHS (N : Node_Id) return Boolean;
-   --  Returns True iff N is used as Name in an assignment statement.
+   --  Returns True iff N is used as Name in an assignment statement
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,

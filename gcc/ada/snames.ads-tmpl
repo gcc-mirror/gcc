@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1690,9 +1690,10 @@ package Snames is
    --  call this function with a name that is not the name of a attribute.
 
    function Get_Convention_Id (N : Name_Id) return Convention_Id;
-   --  Returns Id of language convention corresponding to given name. It is an
-   --  to call this function with a name that is not the name of a convention,
-   --  or one previously given in a call to Record_Convention_Identifier.
+   --  Returns Id of language convention corresponding to given name. It is
+   --  an error to call this function with a name that is not the name of a
+   --  convention, or one that has been previously recorded using a call to
+   --  Record_Convention_Identifier.
 
    function Get_Convention_Name (C : Convention_Id) return Name_Id;
    --  Returns the name of language convention corresponding to given

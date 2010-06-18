@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6635,6 +6635,24 @@ package body Sem_Res is
          Warn_On_Suspicious_Index (Name, First (Expressions (N)));
          Eval_Indexed_Component (N);
       end if;
+
+      --  If the array type is atomic, and is packed, and we are in a left side
+      --  context, then this is worth a warning, since we have a situation
+      --  where the access to the component may cause extra read/writes of
+      --  the atomic array object, which could be considered unexpected.
+
+      if Nkind (N) = N_Indexed_Component
+        and then (Is_Atomic (Array_Type)
+                   or else (Is_Entity_Name (Prefix (N))
+                             and then Is_Atomic (Entity (Prefix (N)))))
+        and then Is_Bit_Packed_Array (Array_Type)
+        and then Is_LHS (N)
+      then
+         Error_Msg_N ("?assignment to component of packed atomic array",
+                      Prefix (N));
+         Error_Msg_N ("?\may cause unexpected accesses to atomic object",
+                      Prefix (N));
+      end if;
    end Resolve_Indexed_Component;
 
    -----------------------------
@@ -7715,7 +7733,6 @@ package body Sem_Res is
 
                   Comp := Next_Entity (Comp);
                end loop;
-
             end if;
 
             Get_Next_Interp (I, It);
@@ -7784,6 +7801,23 @@ package body Sem_Res is
       --  Note: No Eval processing is required, because the prefix is of a
       --  record type, or protected type, and neither can possibly be static.
 
+      --  If the array type is atomic, and is packed, and we are in a left side
+      --  context, then this is worth a warning, since we have a situation
+      --  where the access to the component may cause extra read/writes of
+      --  the atomic array object, which could be considered unexpected.
+
+      if Nkind (N) = N_Selected_Component
+        and then (Is_Atomic (T)
+                   or else (Is_Entity_Name (Prefix (N))
+                             and then Is_Atomic (Entity (Prefix (N)))))
+        and then Is_Packed (T)
+        and then Is_LHS (N)
+      then
+         Error_Msg_N ("?assignment to component of packed atomic record",
+                      Prefix (N));
+         Error_Msg_N ("?\may cause unexpected accesses to atomic object",
+                      Prefix (N));
+      end if;
    end Resolve_Selected_Component;
 
    -------------------
