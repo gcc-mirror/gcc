@@ -3475,7 +3475,7 @@ package body Exp_Util is
             --  Generate warning if not suppressed
 
             if W then
-               Error_Msg_F
+               Error_Msg_F -- CODEFIX???
                  ("?this code can never be executed and has been deleted!", N);
             end if;
          end if;
@@ -4052,6 +4052,20 @@ package body Exp_Util is
             --  additional intermediate type to handle the assignment).
 
             if Expander_Active and then Tagged_Type_Expansion then
+
+               --  If this is the class_wide type of a completion that is
+               --  a record subtype, set the type of the class_wide type
+               --  to be the full base type, for use in the expanded code
+               --  for the equivalent type. Should this be done earlier when
+               --  the completion is analyzed ???
+
+               if Is_Private_Type (Etype (Unc_Typ))
+                 and then
+                   Ekind (Full_View (Etype (Unc_Typ))) = E_Record_Subtype
+               then
+                  Set_Etype (Unc_Typ, Base_Type (Full_View (Etype (Unc_Typ))));
+               end if;
+
                EQ_Typ := Make_CW_Equivalent_Type (Unc_Typ, E);
             end if;
 

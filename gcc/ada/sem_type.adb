@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2554,9 +2554,9 @@ package body Sem_Type is
       BT1 := Base_Type (T1);
       BT2 := Base_Type (T2);
 
-      --  Handle underlying view of records with unknown discriminants
-      --  using the original entity that motivated the construction of
-      --  this underlying record view (see Build_Derived_Private_Type).
+      --  Handle underlying view of records with unknown discriminants using
+      --  the original entity that motivated the construction of this
+      --  underlying record view (see Build_Derived_Private_Type).
 
       if Is_Underlying_Record_View (BT1) then
          BT1 := Underlying_Record_View (BT1);
@@ -2569,9 +2569,17 @@ package body Sem_Type is
       if BT1 = BT2 then
          return True;
 
+      --  The predicate must look past privacy
+
       elsif Is_Private_Type (T1)
         and then Present (Full_View (T1))
         and then BT2 = Base_Type (Full_View (T1))
+      then
+         return True;
+
+      elsif Is_Private_Type (T2)
+        and then Present (Full_View (T2))
+        and then BT1 = Base_Type (Full_View (T2))
       then
          return True;
 

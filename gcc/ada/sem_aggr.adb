@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1431,7 +1431,8 @@ package body Sem_Aggr is
                   --  aggregate must not be enclosed in parentheses.
 
                   if Paren_Count (Expr) /= 0 then
-                     Error_Msg_N ("no parenthesis allowed here", Expr);
+                     Error_Msg_N -- CODEFIX???
+                       ("no parenthesis allowed here", Expr);
                   end if;
 
                   Make_String_Into_Aggregate (Expr);
@@ -1443,8 +1444,9 @@ package body Sem_Aggr is
                   --  a missing component association for a 1-aggregate.
 
                   if Paren_Count (Expr) > 0 then
-                     Error_Msg_N ("\if single-component aggregate is intended,"
-                                  & " write e.g. (1 ='> ...)", Expr);
+                     Error_Msg_N -- CODEFIX???
+                       ("\if single-component aggregate is intended,"
+                        & " write e.g. (1 ='> ...)", Expr);
                   end if;
                   return Failure;
                end if;
@@ -1547,13 +1549,13 @@ package body Sem_Aggr is
                   if Choice /= First (Choices (Assoc))
                     or else Present (Next (Choice))
                   then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("OTHERS must appear alone in a choice list", Choice);
                      return Failure;
                   end if;
 
                   if Present (Next (Assoc)) then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("OTHERS must appear last in an aggregate", Choice);
                      return Failure;
                   end if;
@@ -2504,8 +2506,8 @@ package body Sem_Aggr is
       --  New_Assoc_List the discriminant value specified in the ancestor part.
       --
       --  If the aggregate is in a context with expansion delayed, it will be
-      --  reanalyzed, The inherited discriminant values must not be reinserted
-      --  in the component list to prevent spurious errors, but it must be
+      --  reanalyzed. The inherited discriminant values must not be reinserted
+      --  in the component list to prevent spurious errors, but they must be
       --  present on first analysis to build the proper subtype indications.
       --  The flag Inherited_Discriminant is used to prevent the re-insertion.
 
@@ -3023,13 +3025,15 @@ package body Sem_Aggr is
                   if Selector_Name /= First (Choices (Assoc))
                     or else Present (Next (Selector_Name))
                   then
-                     Error_Msg_N ("OTHERS must appear alone in a choice list",
-                                  Selector_Name);
+                     Error_Msg_N -- CODEFIX???
+                       ("OTHERS must appear alone in a choice list",
+                        Selector_Name);
                      return;
 
                   elsif Present (Next (Assoc)) then
-                     Error_Msg_N ("OTHERS must appear last in an aggregate",
-                                  Selector_Name);
+                     Error_Msg_N -- CODEFIX???
+                       ("OTHERS must appear last in an aggregate",
+                        Selector_Name);
                      return;
 
                   --  (Ada2005): If this is an association with a box,
@@ -3242,10 +3246,11 @@ package body Sem_Aggr is
                if Nkind (Parent (Base_Type (Root_Typ))) =
                                                N_Private_Type_Declaration
                then
-                  Error_Msg_NE
+                  Error_Msg_NE -- CODEFIX???
                     ("type of aggregate has private ancestor&!",
                      N, Root_Typ);
-                  Error_Msg_N  ("must use extension aggregate!", N);
+                  Error_Msg_N -- CODEFIX???
+                    ("must use extension aggregate!", N);
                   return;
                end if;
 
@@ -3278,10 +3283,11 @@ package body Sem_Aggr is
                                         N_Private_Extension_Declaration
                then
                   if Nkind (N) /= N_Extension_Aggregate then
-                     Error_Msg_NE
+                     Error_Msg_NE -- CODEFIX???
                        ("type of aggregate has private ancestor&!",
                         N, Parent_Typ);
-                     Error_Msg_N  ("must use extension aggregate!", N);
+                     Error_Msg_N  -- CODEFIX???
+                       ("must use extension aggregate!", N);
                      return;
 
                   elsif Parent_Typ /= Root_Typ then
@@ -3766,7 +3772,7 @@ package body Sem_Aggr is
                if No (Others_Etype)
                   and then not Others_Box
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("OTHERS must represent at least one component", Selectr);
                end if;
 

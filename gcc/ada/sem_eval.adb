@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2069,8 +2069,7 @@ package body Sem_Eval is
          Right_Int : constant Uint := Expr_Value (Right);
 
       begin
-
-         --  VMS includes bitwise operations on signed types.
+         --  VMS includes bitwise operations on signed types
 
          if Is_Modular_Integer_Type (Etype (N))
            or else Is_VMS_Operator (Entity (N))
@@ -2149,9 +2148,7 @@ package body Sem_Eval is
       --  Ignore if error in either operand, except to make sure that Any_Type
       --  is properly propagated to avoid junk cascaded errors.
 
-      if Etype (Left) = Any_Type
-        or else Etype (Right) = Any_Type
-      then
+      if Etype (Left) = Any_Type or else Etype (Right) = Any_Type then
          Set_Etype (N, Any_Type);
          return;
       end if;
@@ -2224,7 +2221,8 @@ package body Sem_Eval is
             declare
                Typlen : constant Uint := String_Type_Len (Etype (Right));
                Strlen : constant Uint :=
-                 UI_From_Int (String_Length (Strval (Get_String_Val (Left))));
+                          UI_From_Int
+                            (String_Length (Strval (Get_String_Val (Left))));
             begin
                Result := (Typlen = Strlen);
             end;
@@ -2316,8 +2314,8 @@ package body Sem_Eval is
                Result   : Uint;
 
             begin
-               --  Exponentiation of an integer raises the exception
-               --  Constraint_Error for a negative exponent (RM 4.5.6)
+               --  Exponentiation of an integer raises Constraint_Error for a
+               --  negative exponent (RM 4.5.6).
 
                if Right_Int < 0 then
                   Apply_Compile_Time_Constraint_Error
@@ -2432,9 +2430,9 @@ package body Sem_Eval is
 
    begin
       --  Can only fold if target is string or scalar and subtype is static.
-      --  Also, do not fold if our parent is an allocator (this is because
-      --  the qualified expression is really part of the syntactic structure
-      --  of an allocator, and we do not want to end up with something that
+      --  Also, do not fold if our parent is an allocator (this is because the
+      --  qualified expression is really part of the syntactic structure of an
+      --  allocator, and we do not want to end up with something that
       --  corresponds to "new 1" where the 1 is the result of folding a
       --  qualified expression).
 
@@ -2620,7 +2618,7 @@ package body Sem_Eval is
                --  entity name, and the two X's are the same and K1 and K2 are
                --  known at compile time, in this case, the length can also be
                --  computed at compile time, even though the bounds are not
-               --  known. A common case of this is e.g. (X'First..X'First+5).
+               --  known. A common case of this is e.g. (X'First .. X'First+5).
 
                Extract_Length : declare
                   procedure Decompose_Expr
@@ -2879,9 +2877,9 @@ package body Sem_Eval is
    -- Eval_Shift --
    ----------------
 
-   --  Shift operations are intrinsic operations that can never be static,
-   --  so the only processing required is to perform the required check for
-   --  a non static context for the two operands.
+   --  Shift operations are intrinsic operations that can never be static, so
+   --  the only processing required is to perform the required check for a non
+   --  static context for the two operands.
 
    --  Actually we could do some compile time evaluation here some time ???
 
@@ -2895,8 +2893,8 @@ package body Sem_Eval is
    -- Eval_Short_Circuit --
    ------------------------
 
-   --  A short circuit operation is potentially static if both operands
-   --  are potentially static (RM 4.9 (13))
+   --  A short circuit operation is potentially static if both operands are
+   --  potentially static (RM 4.9 (13)).
 
    procedure Eval_Short_Circuit (N : Node_Id) is
       Kind     : constant Node_Kind := Nkind (N);
@@ -2910,9 +2908,7 @@ package body Sem_Eval is
    begin
       --  Short circuit operations are never static in Ada 83
 
-      if Ada_Version = Ada_83
-        and then Comes_From_Source (N)
-      then
+      if Ada_Version = Ada_83 and then Comes_From_Source (N) then
          Check_Non_Static_Context (Left);
          Check_Non_Static_Context (Right);
          return;
@@ -2923,8 +2919,8 @@ package body Sem_Eval is
       --  are a special case, they can still be foldable, even if the right
       --  operand raises constraint error.
 
-      --  If either operand is Any_Type, just propagate to result and
-      --  do not try to fold, this prevents cascaded errors.
+      --  If either operand is Any_Type, just propagate to result and do not
+      --  try to fold, this prevents cascaded errors.
 
       if Etype (Left) = Any_Type or else Etype (Right) = Any_Type then
          Set_Etype (N, Any_Type);
@@ -2997,8 +2993,8 @@ package body Sem_Eval is
    -- Eval_Slice --
    ----------------
 
-   --  Slices can never be static, so the only processing required is to
-   --  check for non-static context if an explicit range is given.
+   --  Slices can never be static, so the only processing required is to check
+   --  for non-static context if an explicit range is given.
 
    procedure Eval_Slice (N : Node_Id) is
       Drange : constant Node_Id := Discrete_Range (N);
@@ -3008,7 +3004,7 @@ package body Sem_Eval is
          Check_Non_Static_Context (High_Bound (Drange));
       end if;
 
-      --  A slice of the form  A (subtype), when the subtype is the index of
+      --  A slice of the form A (subtype), when the subtype is the index of
       --  the type of A, is redundant, the slice can be replaced with A, and
       --  this is worth a warning.
 
@@ -3026,10 +3022,11 @@ package body Sem_Eval is
                     = Entity (Drange)
                then
                   if Warn_On_Redundant_Constructs then
-                     Error_Msg_N ("redundant slice denotes whole array?", N);
+                     Error_Msg_N -- CODEFIX???
+                       ("redundant slice denotes whole array?", N);
                   end if;
 
-                  --  The following might be a useful optimization ????
+                  --  The following might be a useful optimization????
 
                   --  Rewrite (N, New_Occurrence_Of (E, Sloc (N)));
                end if;
@@ -3051,7 +3048,7 @@ package body Sem_Eval is
 
    begin
       --  Nothing to do if error type (handles cases like default expressions
-      --  or generics where we have not yet fully resolved the type)
+      --  or generics where we have not yet fully resolved the type).
 
       if Bas = Any_Type or else Bas = Any_String then
          return;
@@ -3069,7 +3066,7 @@ package body Sem_Eval is
          end if;
 
       --  Here if Etype of string literal is normal Etype (not yet possible,
-      --  but may be possible in future!)
+      --  but may be possible in future).
 
       elsif not Is_OK_Static_Expression
                     (Type_Low_Bound (Etype (First_Index (Typ))))
@@ -3085,12 +3082,12 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  Test for illegal Ada 95 cases. A string literal is illegal in
-      --  Ada 95 if its bounds are outside the index base type and this
-      --  index type is static. This can happen in only two ways. Either
-      --  the string literal is too long, or it is null, and the lower
-      --  bound is type'First. In either case it is the upper bound that
-      --  is out of range of the index type.
+      --  Test for illegal Ada 95 cases. A string literal is illegal in Ada 95
+      --  if its bounds are outside the index base type and this index type is
+      --  static. This can happen in only two ways. Either the string literal
+      --  is too long, or it is null, and the lower bound is type'First. In
+      --  either case it is the upper bound that is out of range of the index
+      --  type.
 
       if Ada_Version >= Ada_95 then
          if Root_Type (Bas) = Standard_String
@@ -3136,7 +3133,7 @@ package body Sem_Eval is
 
    --  A type conversion is potentially static if its subtype mark is for a
    --  static scalar subtype, and its operand expression is potentially static
-   --  (RM 4.9 (10))
+   --  (RM 4.9(10)).
 
    procedure Eval_Type_Conversion (N : Node_Id) is
       Operand     : constant Node_Id   := Expression (N);
@@ -3147,9 +3144,9 @@ package body Sem_Eval is
       Fold   : Boolean;
 
       function To_Be_Treated_As_Integer (T : Entity_Id) return Boolean;
-      --  Returns true if type T is an integer type, or if it is a
-      --  fixed-point type to be treated as an integer (i.e. the flag
-      --  Conversion_OK is set on the conversion node).
+      --  Returns true if type T is an integer type, or if it is a fixed-point
+      --  type to be treated as an integer (i.e. the flag Conversion_OK is set
+      --  on the conversion node).
 
       function To_Be_Treated_As_Real (T : Entity_Id) return Boolean;
       --  Returns true if type T is a floating-point type, or if it is a
@@ -3283,7 +3280,7 @@ package body Sem_Eval is
    -------------------
 
    --  Predefined unary operators are static functions (RM 4.9(20)) and thus
-   --  are potentially static if the operand is potentially static (RM 4.9(7))
+   --  are potentially static if the operand is potentially static (RM 4.9(7)).
 
    procedure Eval_Unary_Op (N : Node_Id) is
       Right : constant Node_Id := Right_Opnd (N);
@@ -3380,8 +3377,8 @@ package body Sem_Eval is
       if Is_Entity_Name (N) then
          Ent := Entity (N);
 
-         --  An enumeration literal that was either in the source or
-         --  created as a result of static evaluation.
+         --  An enumeration literal that was either in the source or created
+         --  as a result of static evaluation.
 
          if Ekind (Ent) = E_Enumeration_Literal then
             return Enumeration_Rep (Ent);
@@ -3393,8 +3390,8 @@ package body Sem_Eval is
             return Expr_Rep_Value (Constant_Value (Ent));
          end if;
 
-      --  An integer literal that was either in the source or created
-      --  as a result of static evaluation.
+      --  An integer literal that was either in the source or created as a
+      --  result of static evaluation.
 
       elsif Kind = N_Integer_Literal then
          return Intval (N);
@@ -3421,11 +3418,11 @@ package body Sem_Eval is
          pragma Assert (Kind = N_Character_Literal);
          Ent := Entity (N);
 
-         --  Since Character literals of type Standard.Character don't
-         --  have any defining character literals built for them, they
-         --  do not have their Entity set, so just use their Char
-         --  code. Otherwise for user-defined character literals use
-         --  their Pos value as usual which is the same as the Rep value.
+         --  Since Character literals of type Standard.Character don't have any
+         --  defining character literals built for them, they do not have their
+         --  Entity set, so just use their Char code. Otherwise for user-
+         --  defined character literals use their Pos value as usual which is
+         --  the same as the Rep value.
 
          if No (Ent) then
             return Char_Literal_Value (N);
@@ -3459,8 +3456,8 @@ package body Sem_Eval is
       if Is_Entity_Name (N) then
          Ent := Entity (N);
 
-         --  An enumeration literal that was either in the source or
-         --  created as a result of static evaluation.
+         --  An enumeration literal that was either in the source or created as
+         --  a result of static evaluation.
 
          if Ekind (Ent) = E_Enumeration_Literal then
             Val := Enumeration_Pos (Ent);
@@ -3472,8 +3469,8 @@ package body Sem_Eval is
             Val := Expr_Value (Constant_Value (Ent));
          end if;
 
-      --  An integer literal that was either in the source or created
-      --  as a result of static evaluation.
+      --  An integer literal that was either in the source or created as a
+      --  result of static evaluation.
 
       elsif Kind = N_Integer_Literal then
          Val := Intval (N);
@@ -3585,8 +3582,8 @@ package body Sem_Eval is
          return Ureal_0;
       end if;
 
-      --  If we fall through, we have a node that cannot be interpreted
-      --  as a compile time constant. That is definitely an error.
+      --  If we fall through, we have a node that cannot be interpreted as a
+      --  compile time constant. That is definitely an error.
 
       raise Program_Error;
    end Expr_Value_R;
@@ -3650,8 +3647,8 @@ package body Sem_Eval is
       Ent : Entity_Id;
 
    begin
-      --  If we are folding a named number, retain the entity in the
-      --  literal, for ASIS use.
+      --  If we are folding a named number, retain the entity in the literal,
+      --  for ASIS use.
 
       if Is_Entity_Name (N)
         and then Ekind (Entity (N)) = E_Named_Integer
@@ -3704,8 +3701,8 @@ package body Sem_Eval is
       Ent : Entity_Id;
 
    begin
-      --  If we are folding a named number, retain the entity in the
-      --  literal, for ASIS use.
+      --  If we are folding a named number, retain the entity in the literal,
+      --  for ASIS use.
 
       if Is_Entity_Name (N)
         and then Ekind (Entity (N)) = E_Named_Real
@@ -3941,8 +3938,8 @@ package body Sem_Eval is
             LB_Known := Compile_Time_Known_Value (Lo);
             UB_Known := Compile_Time_Known_Value (Hi);
 
-            --  Fixed point types should be considered as such only in
-            --  flag Fixed_Int is set to False.
+            --  Fixed point types should be considered as such only if flag
+            --  Fixed_Int is set to False.
 
             if Is_Floating_Point_Type (Typ)
               or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
@@ -3950,24 +3947,16 @@ package body Sem_Eval is
             then
                Valr := Expr_Value_R (N);
 
-               if LB_Known and then Valr >= Expr_Value_R (Lo)
-                 and then UB_Known and then Valr <= Expr_Value_R (Hi)
-               then
-                  return True;
-               else
-                  return False;
-               end if;
+               return LB_Known and then Valr >= Expr_Value_R (Lo)
+                        and then
+                      UB_Known and then Valr <= Expr_Value_R (Hi);
 
             else
                Val := Expr_Value (N);
 
-               if         LB_Known and then Val >= Expr_Value (Lo)
-                 and then UB_Known and then Val <= Expr_Value (Hi)
-               then
-                  return True;
-               else
-                  return False;
-               end if;
+               return LB_Known and then Val >= Expr_Value (Lo)
+                        and then
+                      UB_Known and then Val <= Expr_Value (Hi);
             end if;
          end;
       end if;
@@ -4025,8 +4014,8 @@ package body Sem_Eval is
    -- Is_OK_Static_Subtype --
    --------------------------
 
-   --  Determines if Typ is a static subtype as defined in (RM 4.9(26))
-   --  where neither bound raises constraint error when evaluated.
+   --  Determines if Typ is a static subtype as defined in (RM 4.9(26)) where
+   --  neither bound raises constraint error when evaluated.
 
    function Is_OK_Static_Subtype (Typ : Entity_Id) return Boolean is
       Base_T   : constant Entity_Id := Base_Type (Typ);
@@ -4068,8 +4057,8 @@ package body Sem_Eval is
             return True;
 
          else
-            --  Scalar_Range (Typ) might be an N_Subtype_Indication, so
-            --  use Get_Type_Low,High_Bound.
+            --  Scalar_Range (Typ) might be an N_Subtype_Indication, so use
+            --  Get_Type_{Low,High}_Bound.
 
             return     Is_OK_Static_Subtype (Anc_Subt)
               and then Is_OK_Static_Expression (Type_Low_Bound (Typ))
@@ -4143,9 +4132,9 @@ package body Sem_Eval is
             LB_Known := Compile_Time_Known_Value (Lo);
             UB_Known := Compile_Time_Known_Value (Hi);
 
-            --  Real types (note that fixed-point types are not treated
-            --  as being of a real type if the flag Fixed_Int is set,
-            --  since in that case they are regarded as integer types).
+            --  Real types (note that fixed-point types are not treated as
+            --  being of a real type if the flag Fixed_Int is set, since in
+            --  that case they are regarded as integer types).
 
             if Is_Floating_Point_Type (Typ)
               or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
@@ -4153,28 +4142,16 @@ package body Sem_Eval is
             then
                Valr := Expr_Value_R (N);
 
-               if LB_Known and then Valr < Expr_Value_R (Lo) then
-                  return True;
-
-               elsif UB_Known and then Expr_Value_R (Hi) < Valr then
-                  return True;
-
-               else
-                  return False;
-               end if;
+               return (LB_Known and then Valr < Expr_Value_R (Lo))
+                        or else
+                      (UB_Known and then Expr_Value_R (Hi) < Valr);
 
             else
                Val := Expr_Value (N);
 
-               if LB_Known and then Val < Expr_Value (Lo) then
-                  return True;
-
-               elsif UB_Known and then Expr_Value (Hi) < Val then
-                  return True;
-
-               else
-                  return False;
-               end if;
+               return (LB_Known and then Val < Expr_Value (Lo))
+                        or else
+                      (UB_Known and then Expr_Value (Hi) < Val);
             end if;
          end;
       end if;
@@ -4302,10 +4279,9 @@ package body Sem_Eval is
    begin
       --  If we have the static expression case, then this is an illegality
       --  in Ada 95 mode, except that in an instance, we never generate an
-      --  error (if the error is legitimate, it was already diagnosed in
-      --  the template). The expression to compute the length of a packed
-      --  array is attached to the array type itself, and deserves a separate
-      --  message.
+      --  error (if the error is legitimate, it was already diagnosed in the
+      --  template). The expression to compute the length of a packed array is
+      --  attached to the array type itself, and deserves a separate message.
 
       if Is_Static_Expression (N)
         and then not In_Instance
@@ -4327,8 +4303,8 @@ package body Sem_Eval is
               (N, "value not in range of}", CE_Range_Check_Failed);
          end if;
 
-      --  Here we generate a warning for the Ada 83 case, or when we are
-      --  in an instance, or when we have a non-static expression case.
+      --  Here we generate a warning for the Ada 83 case, or when we are in an
+      --  instance, or when we have a non-static expression case.
 
       else
          Apply_Compile_Time_Constraint_Error
@@ -4344,22 +4320,22 @@ package body Sem_Eval is
       Typ : constant Entity_Id := Etype (N);
 
    begin
-      --  If we want to raise CE in the condition of a raise_CE node
-      --  we may as well get rid of the condition
+      --  If we want to raise CE in the condition of a N_Raise_CE node
+      --  we may as well get rid of the condition.
 
       if Present (Parent (N))
         and then Nkind (Parent (N)) = N_Raise_Constraint_Error
       then
          Set_Condition (Parent (N), Empty);
 
-      --  If the expression raising CE is a N_Raise_CE node, we can use
-      --  that one. We just preserve the type of the context
+      --  If the expression raising CE is a N_Raise_CE node, we can use that
+      --  one. We just preserve the type of the context.
 
       elsif Nkind (Exp) = N_Raise_Constraint_Error then
          Rewrite (N, Exp);
          Set_Etype (N, Typ);
 
-      --  We have to build an explicit raise_ce node
+      --  Else build an explcit N_Raise_CE
 
       else
          Rewrite (N,
@@ -4496,16 +4472,16 @@ package body Sem_Eval is
          --  A constrained numeric subtype never matches an unconstrained
          --  subtype, i.e. both types must be constrained or unconstrained.
 
-         --  To understand the requirement for this test, see RM 4.9.1(1).
-         --  As is made clear in RM 3.5.4(11), type Integer, for example
-         --  is a constrained subtype with constraint bounds matching the
-         --  bounds of its corresponding unconstrained base type. In this
-         --  situation, Integer and Integer'Base do not statically match,
-         --  even though they have the same bounds.
+         --  To understand the requirement for this test, see RM 4.9.1(1). As
+         --  is made clear in RM 3.5.4(11), type Integer, for example is a
+         --  constrained subtype with constraint bounds matching the bounds of
+         --  its corresponding unconstrained base type. In this situation,
+         --  Integer and Integer'Base do not statically match, even though they
+         --  have the same bounds.
 
-         --  We only apply this test to types in Standard and types that
-         --  appear in user programs. That way, we do not have to be
-         --  too careful about setting Is_Constrained right for itypes.
+         --  We only apply this test to types in Standard and types that appear
+         --  in user programs. That way, we do not have to be too careful about
+         --  setting Is_Constrained right for Itypes.
 
          if Is_Numeric_Type (T1)
            and then (Is_Constrained (T1) /= Is_Constrained (T2))
@@ -4516,9 +4492,9 @@ package body Sem_Eval is
          then
             return False;
 
-         --  A generic scalar type does not statically match its base
-         --  type (AI-311). In this case we make sure that the formals,
-         --  which are first subtypes of their bases, are constrained.
+         --  A generic scalar type does not statically match its base type
+         --  (AI-311). In this case we make sure that the formals, which are
+         --  first subtypes of their bases, are constrained.
 
          elsif Is_Generic_Type (T1)
            and then Is_Generic_Type (T2)
@@ -4527,8 +4503,8 @@ package body Sem_Eval is
             return False;
          end if;
 
-         --  If there was an error in either range, then just assume
-         --  the types statically match to avoid further junk errors
+         --  If there was an error in either range, then just assume the types
+         --  statically match to avoid further junk errors.
 
          if Error_Posted (Scalar_Range (T1))
               or else
@@ -4559,8 +4535,8 @@ package body Sem_Eval is
                then
                   return False;
 
-               --  If either type has constraint error bounds, then say
-               --  that they match to avoid junk cascaded errors here.
+               --  If either type has constraint error bounds, then say that
+               --  they match to avoid junk cascaded errors here.
 
                elsif not Is_OK_Static_Subtype (T1)
                  or else not Is_OK_Static_Subtype (T2)
@@ -4670,11 +4646,11 @@ package body Sem_Eval is
 
          return True;
 
-      --  A definite type does not match an indefinite or classwide type
+      --  A definite type does not match an indefinite or classwide type.
       --  However, a generic type with unknown discriminants may be
       --  instantiated with a type with no discriminants, and conformance
-      --  checking on an inherited operation may compare the actual with
-      --  the subtype that renames it in the instance.
+      --  checking on an inherited operation may compare the actual with the
+      --  subtype that renames it in the instance.
 
       elsif
          Has_Unknown_Discriminants (T1) /= Has_Unknown_Discriminants (T2)
@@ -4686,16 +4662,15 @@ package body Sem_Eval is
 
       elsif Is_Array_Type (T1) then
 
-         --  If either subtype is unconstrained then both must be,
-         --  and if both are unconstrained then no further checking
-         --  is needed.
+         --  If either subtype is unconstrained then both must be, and if both
+         --  are unconstrained then no further checking is neede.
 
          if not Is_Constrained (T1) or else not Is_Constrained (T2) then
             return not (Is_Constrained (T1) or else Is_Constrained (T2));
          end if;
 
-         --  Both subtypes are constrained, so check that the index
-         --  subtypes statically match.
+         --  Both subtypes are constrained, so check that the index subtypes
+         --  statically match.
 
          declare
             Index1 : Node_Id := First_Index (T1);
@@ -4846,8 +4821,8 @@ package body Sem_Eval is
          Set_Etype (N, Any_Type);
          return;
 
-      --  If left operand raises constraint error, then replace node N with
-      --  the raise constraint error node, and we are obviously not foldable.
+      --  If left operand raises constraint error, then replace node N with the
+      --  Raise_Constraint_Error node, and we are obviously not foldable.
       --  Is_Static_Expression is set from the two operands in the normal way,
       --  and we check the right operand if it is in a non-static context.
 
@@ -4860,9 +4835,9 @@ package body Sem_Eval is
          Set_Is_Static_Expression (N, Rstat);
          return;
 
-      --  Similar processing for the case of the right operand. Note that
-      --  we don't use this routine for the short-circuit case, so we do
-      --  not have to worry about that special case here.
+      --  Similar processing for the case of the right operand. Note that we
+      --  don't use this routine for the short-circuit case, so we do not have
+      --  to worry about that special case here.
 
       elsif Raises_Constraint_Error (Op2) then
          if not Rstat then
@@ -4882,7 +4857,7 @@ package body Sem_Eval is
          return;
 
       --  If result is not static, then check non-static contexts on operands
-      --  since one of them may be static and the other one may not be static
+      --  since one of them may be static and the other one may not be static.
 
       elsif not Rstat then
          Check_Non_Static_Context (Op1);
@@ -4891,8 +4866,8 @@ package body Sem_Eval is
                    and then Compile_Time_Known_Value (Op2);
          return;
 
-      --  Else result is static and foldable. Both operands are static,
-      --  and neither raises constraint error, so we can definitely fold.
+      --  Else result is static and foldable. Both operands are static, and
+      --  neither raises constraint error, so we can definitely fold.
 
       else
          Set_Is_Static_Expression (N);
@@ -4923,8 +4898,8 @@ package body Sem_Eval is
       E   : Entity_Id;
 
       procedure Why_Not_Static_List (L : List_Id);
-      --  A version that can be called on a list of expressions. Finds
-      --  all non-static violations in any element of the list.
+      --  A version that can be called on a list of expressions. Finds all
+      --  non-static violations in any element of the list.
 
       -------------------------
       -- Why_Not_Static_List --
@@ -4946,8 +4921,8 @@ package body Sem_Eval is
    --  Start of processing for Why_Not_Static
 
    begin
-      --  If in ACATS mode (debug flag 2), then suppress all these
-      --  messages, this avoids massive updates to the ACATS base line.
+      --  If in ACATS mode (debug flag 2), then suppress all these messages,
+      --  this avoids massive updates to the ACATS base line.
 
       if Debug_Flag_2 then
          return;
@@ -5071,8 +5046,8 @@ package body Sem_Eval is
 
                return;
 
-            --  Special case generic types, since again this is a common
-            --  source of confusion.
+            --  Special case generic types, since again this is a common source
+            --  of confusion.
 
             elsif Is_Generic_Actual_Type (E)
                     or else
