@@ -1,3 +1,7 @@
+2010-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/class_wide2.adb: Remove bogus message, no longer generated.
+
 2010-06-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44558
