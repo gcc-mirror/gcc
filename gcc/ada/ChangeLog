@@ -1,5 +1,21 @@
 2010-06-18  Javier Miranda  <miranda@adacore.com>
 
+	* exp_cg.adb (Homonym_Suffix_Length): Minor code reorganization.
+
+2010-06-18  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.ads: Minor reformatting.
+	* output.ads: Update obsolete comment.
+
+2010-06-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Build_And_Analyze_Renamed_Body): if the renamed entity is
+	an external intrinsic operation (e.g. a GCC numeric function) indicate
+	that the renaming entity has the same characteristics, so a call to it
+	is properly expanded.
+
+2010-06-18  Javier Miranda  <miranda@adacore.com>
+
 	* exp_cg.adb, exp_cg.ads, exp_disp.adb, gnat1drv.adb: Add initial
 	support for dispatch table/callgraph info generation.
 	* gcc-interface/Make-lang.in: Update dependencies.
