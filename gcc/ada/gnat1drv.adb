@@ -345,16 +345,12 @@ procedure Gnat1drv is
       elsif Debug_Flag_Dot_YY then
          Use_Expression_With_Actions := False;
 
-      --  If no debug flags, usage off for AAMP, VM, SCIL cases
+      --  If no debug flags, usage off for SCIL
 
-      elsif AAMP_On_Target
-        or else VM_Target /= No_VM
-        or else Generate_SCIL
-      then
+      elsif Generate_SCIL then
          Use_Expression_With_Actions := False;
 
-      --  Otherwise normal gcc back end, which does implement this feature so
-      --  by default we allow its use.
+      --  Otherwise this feature is implemented, so we allow its use
 
       else
          Use_Expression_With_Actions := True;
@@ -377,8 +373,8 @@ procedure Gnat1drv is
       then
          Back_End_Handles_Limited_Types := False;
 
-         --  Otherwise normal gcc back end, for now still turn flag off by
-         --  default, since we have not verified proper back end handling.
+      --  Otherwise normal gcc back end, for now still turn flag off by
+      --  default, since we have not verified proper back end handling.
 
       else
          Back_End_Handles_Limited_Types := False;

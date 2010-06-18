@@ -1838,6 +1838,9 @@ package body Prj.Nmsc is
                         elsif Name = Name_Gnu then
                            Project.Config.Resp_File_Format := GNU;
 
+                        elsif Name_Buffer (1 .. Name_Len) = "gcc" then
+                           Project.Config.Resp_File_Format := GCC;
+
                         elsif Name = Name_Object_List then
                            Project.Config.Resp_File_Format := Object_List;
 
