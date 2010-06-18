@@ -29,9 +29,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
---  with Interfaces.C;
---  with Interfaces.C_Streams;
---   Why are these commented out ???
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -42,12 +39,31 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with System;   use System;
 with Table;
 with Uintp;    use Uintp;
 
 package body Exp_CG is
 
-   --  package ICS renames Interfaces.C_Streams;
+   --  We duplicate here some declarations from packages Interfaces.C and
+   --  Interfaces.C_Streams because adding their dependence to the frontend
+   --  causes bootstrapping problems with old versions of the compiler.
+
+   subtype FILEs is System.Address;
+   --  Corresponds to the C type FILE*
+
+   subtype C_chars is System.Address;
+   --  Pointer to null-terminated array of characters
+
+   function fputs (Strng : C_chars; Stream : FILEs) return Integer;
+   pragma Import (C, fputs, "fputs");
+
+   --  Import the file stream associated with the "ci" output file. Done to
+   --  generate the output in the file created and left opened by routine
+   --  toplev.c before calling gnat1drv.
+
+   Callgraph_Info_File : FILEs;
+   pragma Import (C, Callgraph_Info_File);
 
    package Call_Graph_Nodes is new Table.Table (
       Table_Component_Type => Node_Id,
@@ -56,7 +72,10 @@ package body Exp_CG is
       Table_Initial        => 50,
       Table_Increment      => 100,
       Table_Name           => "Call_Graph_Nodes");
-   --  Document this table! ???
+   --  This table records nodes associated with dispatching calls and tagged
+   --  type declarations found in the main compilation unit. Used as an
+   --  auxiliary storage because the call-graph output requires fully qualified
+   --  names and they are not available until the backend is called.
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Determines if E is a predefined primitive operation.
@@ -88,7 +107,12 @@ package body Exp_CG is
       N : Node_Id;
 
    begin
-      if not Debug_Flag_Dot_Z then
+      --  No output if the "ci" output file has not been previously opened
+      --  by toplev.c. Temporarily the output is also disabled with -gnatd.Z
+
+      if Callgraph_Info_File = Null_Address
+        or else not Debug_Flag_Dot_ZZ
+      then
          return;
       end if;
 
@@ -330,27 +354,16 @@ package body Exp_CG is
    -- Write_Output --
    ------------------
 
---  This functionality has been temporarily disabled because bootstrapping the
---  compiler with old versions requires no dependency on package Interfaces.C
-
-   --  Import the file stream associated with the "ci" output file. Done to
-   --  generate the output in the file created and left opened by routine
-   --  toplev.c before calling gnat1drv.
-
---   Callgraph_Info_File : ICS.FILEs;
---   pragma Import (C, Callgraph_Info_File);
-
---   procedure Write_Output (Str : String) is
---      Line  : constant Interfaces.C.char_array := Interfaces.C.To_C (Str);
---      Errno : ICS.int;
---   begin
---      Errno := ICS.fputs (Line'Address, Callgraph_Info_File);
---      pragma Assert (Errno = 0);
---   end Write_Output;
-
    procedure Write_Output (Str : String) is
+      Nul   : constant Character := Character'First;
+      Line  : String (Str'First .. Str'Last + 1);
+      Errno : Integer;
    begin
-      null;
+      --  Add the null character to the string as required by fputs
+
+      Line  := Str & Nul;
+      Errno := fputs (Line'Address, Callgraph_Info_File);
+      pragma Assert (Errno >= 0);
    end Write_Output;
 
    ---------------------
