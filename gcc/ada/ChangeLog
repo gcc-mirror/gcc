@@ -1,3 +1,11 @@
+2010-06-18  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Fix source filenames casing in debug output.
+
+2010-06-18  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb: Minor reformatting.
+
 2010-06-18  Robert Dewar  <dewar@adacore.com>
 
 	* sem_eval.adb (Eval_Conditional_Expression): Result is static if
