@@ -8301,6 +8301,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   location_t loc = EXPR_LOCATION (exp);
   struct separate_ops ops;
   tree treeop0, treeop1, treeop2;
+  tree ssa_name = NULL_TREE;
+  gimple g;
 
   type = TREE_TYPE (exp);
   mode = TYPE_MODE (type);
@@ -8413,15 +8415,17 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 base variable.  This unnecessarily allocates a pseudo, see how we can
 	 reuse it, if partition base vars have it set already.  */
       if (!currently_expanding_to_rtl)
-	return expand_expr_real_1 (SSA_NAME_VAR (exp), target, tmode, modifier, NULL);
-      {
-	gimple g = get_gimple_for_ssa_name (exp);
-	if (g)
-	  return expand_expr_real (gimple_assign_rhs_to_tree (g), target,
-				   tmode, modifier, NULL);
-      }
-      decl_rtl = get_rtx_for_ssa_name (exp);
-      exp = SSA_NAME_VAR (exp);
+	return expand_expr_real_1 (SSA_NAME_VAR (exp), target, tmode, modifier,
+				   NULL);
+
+      g = get_gimple_for_ssa_name (exp);
+      if (g)
+	return expand_expr_real (gimple_assign_rhs_to_tree (g), target, tmode,
+				 modifier, NULL);
+
+      ssa_name = exp;
+      decl_rtl = get_rtx_for_ssa_name (ssa_name);
+      exp = SSA_NAME_VAR (ssa_name);
       goto expand_decl_rtl;
 
     case PARM_DECL:
@@ -8523,15 +8527,21 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* If the mode of DECL_RTL does not match that of the decl, it
 	 must be a promoted value.  We return a SUBREG of the wanted mode,
 	 but mark it so that we know that it was already extended.  */
-
-      if (REG_P (decl_rtl)
-	  && GET_MODE (decl_rtl) != DECL_MODE (exp))
+      if (REG_P (decl_rtl) && GET_MODE (decl_rtl) != DECL_MODE (exp))
 	{
 	  enum machine_mode pmode;
 
-	  /* Get the signedness used for this variable.  Ensure we get the
-	     same mode we got when the variable was declared.  */
-	  pmode = promote_decl_mode (exp, &unsignedp);
+	  /* Get the signedness to be used for this variable.  Ensure we get
+	     the same mode we got when the variable was declared.  */
+	  if (code == SSA_NAME
+	      && (g = SSA_NAME_DEF_STMT (ssa_name))
+	      && gimple_code (g) == GIMPLE_CALL)
+	    pmode = promote_function_mode (type, mode, &unsignedp,
+					   TREE_TYPE
+					   (TREE_TYPE (gimple_call_fn (g))),
+					   2);
+	  else
+	    pmode = promote_decl_mode (exp, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
