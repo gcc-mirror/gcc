@@ -76,7 +76,7 @@ package body Debug is
    --  dJ   Output debugging trace info for JGNAT (Java VM version of GNAT)
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
-   --  dM   Asssume all variables are modified (no current values)
+   --  dM   Assume all variables are modified (no current values)
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
@@ -129,7 +129,7 @@ package body Debug is
    --  d.I  SCIL generation mode
    --  d.J  Parallel SCIL generation mode
    --  d.K
-   --  d.L
+   --  d.L  Depend on back end for limited types in conditional expressions
    --  d.M
    --  d.N
    --  d.O  Dump internal SCO tables
@@ -566,6 +566,11 @@ package body Debug is
    --  d.J  Ensure the SCIL generated is compatible with parallel builds.
    --       This means in particular not writing the same files under the
    --       same directory.
+
+   --  d.L  Normally the front end generates special expansion for conditional
+   --       expressions of a limited type. This debug flag removes this special
+   --       case expansion, leaving it up to the back end to handle conditional
+   --       expressions correctly.
 
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)

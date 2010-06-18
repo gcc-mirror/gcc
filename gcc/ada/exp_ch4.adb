@@ -3882,7 +3882,7 @@ package body Exp_Ch4 is
    -- Expand_N_Conditional_Expression --
    -------------------------------------
 
-   --  Expand into expression actions if then/else actions present
+   --  Deal with limited types and expression actions
 
    procedure Expand_N_Conditional_Expression (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -3898,26 +3898,11 @@ package body Exp_Ch4 is
       P_Decl : Node_Id;
 
    begin
-      --  If either then or else actions are present, then given:
+      --  If the type is limited or unconstrained, we expand as follows to
+      --  avoid any possibility of improper copies.
 
-      --     if cond then then-expr else else-expr end
-
-      --  we insert the following sequence of actions (using Insert_Actions):
-
-      --      Cnn : typ;
-      --      if cond then
-      --         <<then actions>>
-      --         Cnn := then-expr;
-      --      else
-      --         <<else actions>>
-      --         Cnn := else-expr
-      --      end if;
-
-      --  and replace the conditional expression by a reference to Cnn
-
-      --  If the type is limited or unconstrained, the above expansion is
-      --  not legal, because it involves either an uninitialized object
-      --  or an illegal assignment. Instead, we generate:
+      --  Note: it may be possible to avoid this special processing if the
+      --  back end uses its own mechanisms for handling by-reference types ???
 
       --      type Ptr is access all Typ;
       --      Cnn : Ptr;
@@ -3931,7 +3916,12 @@ package body Exp_Ch4 is
 
       --  and replace the conditional expresion by a reference to Cnn.all.
 
-      if Is_By_Reference_Type (Typ) then
+      --  This special case can be skipped if the back end handles limited
+      --  types properly and ensures that no incorrect copies are made.
+
+      if Is_By_Reference_Type (Typ)
+        and then not Back_End_Handles_Limited_Types
+      then
          Cnn := Make_Temporary (Loc, 'C', N);
 
          P_Decl :=
@@ -3979,40 +3969,82 @@ package body Exp_Ch4 is
       --  associated with either branch.
 
       elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
-         Cnn := Make_Temporary (Loc, 'C', N);
 
-         Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Cnn,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc));
+         --  We have two approaches to handling this. If we are allowed to use
+         --  N_Expression_With_Actions, then we can just wrap the actions into
+         --  the appropriate expression.
 
-         New_If :=
-           Make_Implicit_If_Statement (N,
-             Condition => Relocate_Node (Cond),
+         if Use_Expression_With_Actions then
+            if Present (Then_Actions (N)) then
+               Rewrite (Thenx,
+                 Make_Expression_With_Actions (Sloc (Thenx),
+                   Actions    => Then_Actions (N),
+                   Expression => Relocate_Node (Thenx)));
+               Analyze_And_Resolve (Thenx, Typ);
+            end if;
 
-             Then_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Thenx),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                 Expression => Relocate_Node (Thenx))),
+            if Present (Else_Actions (N)) then
+               Rewrite (Elsex,
+                 Make_Expression_With_Actions (Sloc (Elsex),
+                   Actions    => Else_Actions (N),
+                   Expression => Relocate_Node (Elsex)));
+               Analyze_And_Resolve (Elsex, Typ);
+            end if;
 
-             Else_Statements => New_List (
-               Make_Assignment_Statement (Sloc (Elsex),
-                 Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                 Expression => Relocate_Node (Elsex))));
+            return;
 
-         Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-         Set_Assignment_OK (Name (First (Else_Statements (New_If))));
+            --  if we can't use N_Expression_With_Actions nodes, then we insert
+            --  the following sequence of actions (using Insert_Actions):
 
-         New_N := New_Occurrence_Of (Cnn, Loc);
+            --      Cnn : typ;
+            --      if cond then
+            --         <<then actions>>
+            --         Cnn := then-expr;
+            --      else
+            --         <<else actions>>
+            --         Cnn := else-expr
+            --      end if;
+
+            --  and replace the conditional expression by a reference to Cnn
+
+         else
+            Cnn := Make_Temporary (Loc, 'C', N);
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                    Expression => Relocate_Node (Thenx))),
+
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                    Expression => Relocate_Node (Elsex))));
+
+            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
+            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
+
+            New_N := New_Occurrence_Of (Cnn, Loc);
+         end if;
+
+         --  If no actions then no expansion needed, gigi will handle it using
+         --  the same approach as a C conditional expression.
 
       else
-         --  No expansion needed, gigi handles it like a C conditional
-         --  expression.
-
          return;
       end if;
 
-      --  Move the SLOC of the parent If statement to the newly created one and
+      --  Fall through here for either the limited expansion, or the case of
+      --  inserting actions for non-limited types. In both these cases, we must
+      --  move the SLOC of the parent If statement to the newly created one and
       --  change it to the SLOC of the expression which, after expansion, will
       --  correspond to what is being evaluated.
 
@@ -4143,7 +4175,8 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Rtyp);
 
          Error_Msg_N ("?explicit membership test may be optimized away", N);
-         Error_Msg_N ("\?use ''Valid attribute instead", N);
+         Error_Msg_N -- CODEFIX
+           ("\?use ''Valid attribute instead", N);
          return;
       end Substitute_Valid_Check;
 
@@ -4267,8 +4300,10 @@ package body Exp_Ch4 is
 
             if Lcheck = LT or else Ucheck = GT then
                if Warn1 then
-                  Error_Msg_N ("?range test optimized away", N);
-                  Error_Msg_N ("\?value is known to be out of range", N);
+                  Error_Msg_N -- CODEFIX???
+                    ("?range test optimized away", N);
+                  Error_Msg_N -- CODEFIX???
+                    ("\?value is known to be out of range", N);
                end if;
 
                Rewrite (N,
@@ -4283,8 +4318,10 @@ package body Exp_Ch4 is
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                if Warn1 then
-                  Error_Msg_N ("?range test optimized away", N);
-                  Error_Msg_N ("\?value is known to be in range", N);
+                  Error_Msg_N -- CODEFIX???
+                    ("?range test optimized away", N);
+                  Error_Msg_N -- CODEFIX???
+                    ("\?value is known to be in range", N);
                end if;
 
                Rewrite (N,
@@ -4300,8 +4337,10 @@ package body Exp_Ch4 is
 
             elsif Lcheck in Compare_GE then
                if Warn2 and then not In_Instance then
-                  Error_Msg_N ("?lower bound test optimized away", Lo);
-                  Error_Msg_N ("\?value is known to be in range", Lo);
+                  Error_Msg_N -- CODEFIX???
+                    ("?lower bound test optimized away", Lo);
+                  Error_Msg_N -- CODEFIX???
+                    ("\?value is known to be in range", Lo);
                end if;
 
                Rewrite (N,
@@ -4318,8 +4357,10 @@ package body Exp_Ch4 is
 
             elsif Ucheck in Compare_LE then
                if Warn2 and then not In_Instance then
-                  Error_Msg_N ("?upper bound test optimized away", Hi);
-                  Error_Msg_N ("\?value is known to be in range", Hi);
+                  Error_Msg_N -- CODEFIX???
+                    ("?upper bound test optimized away", Hi);
+                  Error_Msg_N -- CODEFIX???
+                    ("\?value is known to be in range", Hi);
                end if;
 
                Rewrite (N,
@@ -4343,25 +4384,25 @@ package body Exp_Ch4 is
                --  Result is out of range for valid value
 
                if Lcheck = LT or else Ucheck = GT then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("?value can only be in range if it is invalid", N);
 
                --  Result is in range for valid value
 
                elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("?value can only be out of range if it is invalid", N);
 
                --  Lower bound check succeeds if value is valid
 
                elsif Warn2 and then Lcheck in Compare_GE then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("?lower bound check only fails if it is invalid", Lo);
 
                --  Upper bound  check succeeds if value is valid
 
                elsif Warn2 and then Ucheck in Compare_LE then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("?upper bound check only fails for invalid values", Hi);
                end if;
             end if;
@@ -9692,7 +9733,7 @@ package body Exp_Ch4 is
                  and then Is_Integer_Type (Etype (Left_Opnd (N)))
                  and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("can never be greater than, could replace by ""'=""?", N);
                   Warning_Generated := True;
                end if;
@@ -9717,7 +9758,7 @@ package body Exp_Ch4 is
                  and then Is_Integer_Type (Etype (Left_Opnd (N)))
                  and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("can never be less than, could replace by ""'=""?", N);
                   Warning_Generated := True;
                end if;
@@ -9755,11 +9796,11 @@ package body Exp_Ch4 is
               and then not In_Instance
             then
                if True_Result then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("condition can only be False if invalid values present?",
                      N);
                elsif False_Result then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("condition can only be True if invalid values present?",
                      N);
                end if;

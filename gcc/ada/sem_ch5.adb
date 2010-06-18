@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -558,7 +558,8 @@ package body Sem_Ch5 is
         and then not Is_Tag_Indeterminate (Rhs)
         and then not Is_Dynamically_Tagged (Rhs)
       then
-         Error_Msg_N ("dynamically tagged expression required!", Rhs);
+         Error_Msg_N -- CODEFIX???
+           ("dynamically tagged expression required!", Rhs);
       end if;
 
       --  Propagate the tag from a class-wide target to the rhs when the rhs
@@ -572,7 +573,7 @@ package body Sem_Ch5 is
               and then Is_Entity_Name (Name (Rhs))
               and then Is_Abstract_Subprogram (Entity (Name (Rhs)))
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("call to abstract function must be dispatching", Name (Rhs));
 
          elsif Nkind (Rhs) = N_Qualified_Expression
@@ -581,7 +582,7 @@ package body Sem_Ch5 is
               and then
                 Is_Abstract_Subprogram (Entity (Name (Expression (Rhs))))
          then
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX???
               ("call to abstract function must be dispatching",
                 Name (Expression (Rhs)));
          end if;
@@ -693,10 +694,10 @@ package body Sem_Ch5 is
         and then Nkind (Original_Node (Rhs)) not in N_Op
       then
          if Nkind (Lhs) in N_Has_Entity then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX
               ("?useless assignment of & to itself!", N, Entity (Lhs));
          else
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX
               ("?useless assignment of object to itself!", N);
          end if;
       end if;
@@ -948,7 +949,7 @@ package body Sem_Ch5 is
       --  the case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
-      --  Analyzes all the statements associated to a case alternative.
+      --  Analyzes all the statements associated with a case alternative.
       --  Needed by the generic instantiation below.
 
       package Case_Choices_Processing is new
@@ -1635,10 +1636,11 @@ package body Sem_Ch5 is
                         else
                            --  Both of them are user-defined
 
-                           Error_Msg_N
+                           Error_Msg_N -- CODEFIX???
                              ("ambiguous bounds in range of iteration",
                                R_Copy);
-                           Error_Msg_N ("\possible interpretations:", R_Copy);
+                           Error_Msg_N -- CODEFIX???
+                             ("\possible interpretations:", R_Copy);
                            Error_Msg_NE ("\\} ", R_Copy, Found);
                            Error_Msg_NE ("\\} ", R_Copy, It.Typ);
                            exit;
@@ -1890,7 +1892,7 @@ package body Sem_Ch5 is
                               if Compile_Time_Compare
                                    (L, H, Assume_Valid => False) = GT
                               then
-                                 Error_Msg_N
+                                 Error_Msg_N -- CODEFIX???
                                    ("?loop range is null, "
                                     & "loop will not execute",
                                     DS);
@@ -1944,7 +1946,8 @@ package body Sem_Ch5 is
                                     Intval (Original_Node (H)) = Uint_1)
                         then
                            Error_Msg_N ("?loop range may be null", DS);
-                           Error_Msg_N ("\?bounds may be wrong way round", DS);
+                           Error_Msg_N -- CODEFIX???
+                             ("\?bounds may be wrong way round", DS);
                         end if;
                      end;
                   end if;
@@ -2241,7 +2244,8 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning
 
-                  Error_Msg ("?unreachable code!", Error_Loc);
+                  Error_Msg -- CODEFIX???
+                    ("?unreachable code!", Error_Loc);
                end if;
 
             --  If the unconditional transfer of control instruction is

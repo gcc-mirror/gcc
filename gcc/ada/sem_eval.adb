@@ -126,6 +126,10 @@ package body Sem_Eval is
    --  This is the actual cache, with entries consisting of node/value pairs,
    --  and the impossible value Node_High_Bound used for unset entries.
 
+   type Range_Membership is (In_Range, Out_Of_Range, Unknown);
+   --  Range membership may either be statically known to be in range or out
+   --  of range, or not statically known. Used for Test_In_Range below.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -209,6 +213,18 @@ package body Sem_Eval is
       Fold : out Boolean);
    --  Same processing, except applies to an expression N with two operands
    --  Op1 and Op2.
+
+   function Test_In_Range
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Assume_Valid : Boolean;
+      Fixed_Int    : Boolean;
+      Int_Real     : Boolean) return Range_Membership;
+   --  Common processing for Is_In_Range and Is_Out_Of_Range:
+   --  Returns In_Range or Out_Of_Range if it can be guaranteed at compile time
+   --  that expression N is known to be in or out of range of the subtype Typ.
+   --  If not compile time known, Unknown is returned.
+   --  See documentation of Is_In_Range for complete description of parameters.
 
    procedure To_Bits (U : Uint; B : out Bits);
    --  Converts a Uint value to a bit string of length B'Length
@@ -3896,70 +3912,9 @@ package body Sem_Eval is
       Fixed_Int    : Boolean := False;
       Int_Real     : Boolean := False) return Boolean
    is
-      Val  : Uint;
-      Valr : Ureal;
-
-      pragma Warnings (Off, Assume_Valid);
-      --  For now Assume_Valid is unreferenced since the current implementation
-      --  always returns False if N is not a compile time known value, but we
-      --  keep the parameter to allow for future enhancements in which we try
-      --  to get the information in the variable case as well.
-
    begin
-      --  Universal types have no range limits, so always in range
-
-      if Typ = Universal_Integer or else Typ = Universal_Real then
-         return True;
-
-      --  Never in range if not scalar type. Don't know if this can
-      --  actually happen, but our spec allows it, so we must check!
-
-      elsif not Is_Scalar_Type (Typ) then
-         return False;
-
-      --  Never in range unless we have a compile time known value
-
-      elsif not Compile_Time_Known_Value (N) then
-         return False;
-
-      --  General processing with a known compile time value
-
-      else
-         declare
-            Lo       : Node_Id;
-            Hi       : Node_Id;
-            LB_Known : Boolean;
-            UB_Known : Boolean;
-
-         begin
-            Lo := Type_Low_Bound  (Typ);
-            Hi := Type_High_Bound (Typ);
-
-            LB_Known := Compile_Time_Known_Value (Lo);
-            UB_Known := Compile_Time_Known_Value (Hi);
-
-            --  Fixed point types should be considered as such only if flag
-            --  Fixed_Int is set to False.
-
-            if Is_Floating_Point_Type (Typ)
-              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
-              or else Int_Real
-            then
-               Valr := Expr_Value_R (N);
-
-               return LB_Known and then Valr >= Expr_Value_R (Lo)
-                        and then
-                      UB_Known and then Valr <= Expr_Value_R (Hi);
-
-            else
-               Val := Expr_Value (N);
-
-               return LB_Known and then Val >= Expr_Value (Lo)
-                        and then
-                      UB_Known and then Val <= Expr_Value (Hi);
-            end if;
-         end;
-      end if;
+      return Test_In_Range (N, Typ, Assume_Valid, Fixed_Int, Int_Real)
+               = In_Range;
    end Is_In_Range;
 
    -------------------
@@ -4083,78 +4038,9 @@ package body Sem_Eval is
       Fixed_Int    : Boolean := False;
       Int_Real     : Boolean := False) return Boolean
    is
-      Val  : Uint;
-      Valr : Ureal;
-
-      pragma Warnings (Off, Assume_Valid);
-      --  For now Assume_Valid is unreferenced since the current implementation
-      --  always returns False if N is not a compile time known value, but we
-      --  keep the parameter to allow for future enhancements in which we try
-      --  to get the information in the variable case as well.
-
    begin
-      --  Universal types have no range limits, so always in range
-
-      if Typ = Universal_Integer or else Typ = Universal_Real then
-         return False;
-
-      --  Never out of range if not scalar type. Don't know if this can
-      --  actually happen, but our spec allows it, so we must check!
-
-      elsif not Is_Scalar_Type (Typ) then
-         return False;
-
-      --  Never out of range if this is a generic type, since the bounds
-      --  of generic types are junk. Note that if we only checked for
-      --  static expressions (instead of compile time known values) below,
-      --  we would not need this check, because values of a generic type
-      --  can never be static, but they can be known at compile time.
-
-      elsif Is_Generic_Type (Typ) then
-         return False;
-
-      --  Never out of range unless we have a compile time known value
-
-      elsif not Compile_Time_Known_Value (N) then
-         return False;
-
-      else
-         declare
-            Lo       : Node_Id;
-            Hi       : Node_Id;
-            LB_Known : Boolean;
-            UB_Known : Boolean;
-
-         begin
-            Lo := Type_Low_Bound (Typ);
-            Hi := Type_High_Bound (Typ);
-
-            LB_Known := Compile_Time_Known_Value (Lo);
-            UB_Known := Compile_Time_Known_Value (Hi);
-
-            --  Real types (note that fixed-point types are not treated as
-            --  being of a real type if the flag Fixed_Int is set, since in
-            --  that case they are regarded as integer types).
-
-            if Is_Floating_Point_Type (Typ)
-              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
-              or else Int_Real
-            then
-               Valr := Expr_Value_R (N);
-
-               return (LB_Known and then Valr < Expr_Value_R (Lo))
-                        or else
-                      (UB_Known and then Expr_Value_R (Hi) < Valr);
-
-            else
-               Val := Expr_Value (N);
-
-               return (LB_Known and then Val < Expr_Value (Lo))
-                        or else
-                      (UB_Known and then Expr_Value (Hi) < Val);
-            end if;
-         end;
-      end if;
+      return Test_In_Range (N, Typ, Assume_Valid, Fixed_Int, Int_Real)
+               = Out_Of_Range;
    end Is_Out_Of_Range;
 
    ---------------------
@@ -4472,12 +4358,12 @@ package body Sem_Eval is
          --  A constrained numeric subtype never matches an unconstrained
          --  subtype, i.e. both types must be constrained or unconstrained.
 
-         --  To understand the requirement for this test, see RM 4.9.1(1). As
-         --  is made clear in RM 3.5.4(11), type Integer, for example is a
-         --  constrained subtype with constraint bounds matching the bounds of
-         --  its corresponding unconstrained base type. In this situation,
-         --  Integer and Integer'Base do not statically match, even though they
-         --  have the same bounds.
+         --  To understand the requirement for this test, see RM 4.9.1(1).
+         --  As is made clear in RM 3.5.4(11), type Integer, for example is
+         --  a constrained subtype with constraint bounds matching the bounds
+         --  of its corresponding unconstrained base type. In this situation,
+         --  Integer and Integer'Base do not statically match, even though
+         --  they have the same bounds.
 
          --  We only apply this test to types in Standard and types that appear
          --  in user programs. That way, we do not have to be too careful about
@@ -4876,6 +4762,125 @@ package body Sem_Eval is
          return;
       end if;
    end Test_Expression_Is_Foldable;
+
+   -------------------
+   -- Test_In_Range --
+   -------------------
+
+   function Test_In_Range
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Assume_Valid : Boolean;
+      Fixed_Int    : Boolean;
+      Int_Real     : Boolean) return Range_Membership
+   is
+      Val  : Uint;
+      Valr : Ureal;
+
+      pragma Warnings (Off, Assume_Valid);
+      --  For now Assume_Valid is unreferenced since the current implementation
+      --  always returns Unknown if N is not a compile time known value, but we
+      --  keep the parameter to allow for future enhancements in which we try
+      --  to get the information in the variable case as well.
+
+   begin
+      --  Universal types have no range limits, so always in range
+
+      if Typ = Universal_Integer or else Typ = Universal_Real then
+         return In_Range;
+
+      --  Never known if not scalar type. Don't know if this can actually
+      --  happen, but our spec allows it, so we must check!
+
+      elsif not Is_Scalar_Type (Typ) then
+         return Unknown;
+
+      --  Never known if this is a generic type, since the bounds of generic
+      --  types are junk. Note that if we only checked for static expressions
+      --  (instead of compile time known values) below, we would not need this
+      --  check, because values of a generic type can never be static, but they
+      --  can be known at compile time.
+
+      elsif Is_Generic_Type (Typ) then
+         return Unknown;
+
+      --  Never known unless we have a compile time known value
+
+      elsif not Compile_Time_Known_Value (N) then
+         return Unknown;
+
+      --  General processing with a known compile time value
+
+      else
+         declare
+            Lo       : Node_Id;
+            Hi       : Node_Id;
+
+            LB_Known : Boolean;
+            HB_Known : Boolean;
+
+         begin
+            Lo := Type_Low_Bound  (Typ);
+            Hi := Type_High_Bound (Typ);
+
+            LB_Known := Compile_Time_Known_Value (Lo);
+            HB_Known := Compile_Time_Known_Value (Hi);
+
+            --  Fixed point types should be considered as such only if flag
+            --  Fixed_Int is set to False.
+
+            if Is_Floating_Point_Type (Typ)
+              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
+              or else Int_Real
+            then
+               Valr := Expr_Value_R (N);
+
+               if LB_Known and HB_Known then
+                  if Valr >= Expr_Value_R (Lo)
+                       and then
+                     Valr <= Expr_Value_R (Hi)
+                  then
+                     return In_Range;
+                  else
+                     return Out_Of_Range;
+                  end if;
+
+               elsif (LB_Known and then Valr < Expr_Value_R (Lo))
+                       or else
+                     (HB_Known and then Valr > Expr_Value_R (Hi))
+               then
+                  return Out_Of_Range;
+
+               else
+                  return Unknown;
+               end if;
+
+            else
+               Val := Expr_Value (N);
+
+               if LB_Known and HB_Known then
+                  if Val >= Expr_Value (Lo)
+                       and then
+                     Val <= Expr_Value (Hi)
+                  then
+                     return In_Range;
+                  else
+                     return Out_Of_Range;
+                  end if;
+
+               elsif (LB_Known and then Val < Expr_Value (Lo))
+                       or else
+                     (HB_Known and then Val > Expr_Value (Hi))
+               then
+                  return Out_Of_Range;
+
+               else
+                  return Unknown;
+               end if;
+            end if;
+         end;
+      end if;
+   end Test_In_Range;
 
    --------------
    -- To_Bits --

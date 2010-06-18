@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,7 +125,7 @@ package body Ch3 is
       elsif Nkind_In (N, N_In, N_Not_In)
         and then Paren_Count (N) = 0
       then
-         Error_Msg_N
+         Error_Msg_N -- CODEFIX???
            ("|this expression must be parenthesized!", N);
          Error_Msg_N
            ("\|since extensions (and set notation) are allowed", N);
@@ -385,7 +385,8 @@ package body Ch3 is
          Scan; -- past = used in place of IS
 
       elsif Token = Tok_Renames then
-         Error_Msg_SC ("RENAMES should be IS");
+         Error_Msg_SC  -- CODEFIX
+           ("RENAMES should be IS");
          Scan; -- past RENAMES used in place of IS
 
       else
@@ -440,7 +441,8 @@ package body Ch3 is
            or else Token = Tok_Record
            or else Token = Tok_Null
          then
-            Error_Msg_AP ("TAGGED expected");
+            Error_Msg_AP -- CODEFIX???
+              ("TAGGED expected");
          end if;
       end if;
 
@@ -455,7 +457,8 @@ package body Ch3 is
       --  Special check for misuse of Aliased
 
       if Token = Tok_Aliased or else Token_Name = Name_Aliased then
-         Error_Msg_SC ("ALIASED not allowed in type definition");
+         Error_Msg_SC -- CODEFIX???
+           ("ALIASED not allowed in type definition");
          Scan; -- past ALIASED
       end if;
 
@@ -677,7 +680,8 @@ package body Ch3 is
                   elsif Abstract_Present
                     and then Prev_Token /= Tok_Tagged
                   then
-                     Error_Msg_SP ("TAGGED expected");
+                     Error_Msg_SP -- CODEFIX???
+                       ("TAGGED expected");
                   end if;
 
                   Typedef_Node := P_Record_Definition;
@@ -812,7 +816,7 @@ package body Ch3 is
                         if Nkind (Typedef_Node) =
                           N_Derived_Type_Definition
                         then
-                           Error_Msg_N
+                           Error_Msg_N -- CODEFIX???
                              ("SYNCHRONIZED not allowed for record extension",
                               Typedef_Node);
                         else
@@ -827,7 +831,8 @@ package body Ch3 is
 
                   else
                      if Token /= Tok_Interface then
-                        Error_Msg_SC ("NEW or INTERFACE expected");
+                        Error_Msg_SC -- CODEFIX???
+                          ("NEW or INTERFACE expected");
                      end if;
 
                      Typedef_Node :=
@@ -918,7 +923,8 @@ package body Ch3 is
             Set_Abstract_Present (Typedef_Node, Abstract_Present);
 
          elsif Abstract_Present then
-            Error_Msg ("ABSTRACT not allowed here, ignored", Abstract_Loc);
+            Error_Msg -- CODEFIX???
+              ("ABSTRACT not allowed here, ignored", Abstract_Loc);
          end if;
 
          Decl_Node := New_Node (N_Full_Type_Declaration, Type_Loc);
@@ -972,7 +978,8 @@ package body Ch3 is
       TF_Is;
 
       if Token = Tok_New then
-         Error_Msg_SC ("NEW ignored (only allowed in type declaration)");
+         Error_Msg_SC  -- CODEFIX
+           ("NEW ignored (only allowed in type declaration)");
          Scan; -- past NEW
       end if;
 
@@ -1034,11 +1041,13 @@ package body Ch3 is
             end if;
 
          else
-            Error_Msg_SP ("NULL expected");
+            Error_Msg_SP -- CODEFIX???
+              ("NULL expected");
          end if;
 
          if Token = Tok_New then
-            Error_Msg ("`NOT NULL` comes after NEW, not before", Not_Loc);
+            Error_Msg -- CODEFIX???
+              ("`NOT NULL` comes after NEW, not before", Not_Loc);
          end if;
 
          return True;
@@ -1090,7 +1099,8 @@ package body Ch3 is
          return Subtype_Mark;
       else
          if Not_Null_Present then
-            Error_Msg_SP ("`NOT NULL` not allowed if constraint given");
+            Error_Msg_SP -- CODEFIX???
+              ("`NOT NULL` not allowed if constraint given");
          end if;
 
          Indic_Node := New_Node (N_Subtype_Indication, Sloc (Subtype_Mark));
@@ -1358,8 +1368,9 @@ package body Ch3 is
       procedure No_List is
       begin
          if Num_Idents > 1 then
-            Error_Msg ("identifier list not allowed for RENAMES",
-                       Sloc (Idents (2)));
+            Error_Msg -- CODEFIX???
+              ("identifier list not allowed for RENAMES",
+               Sloc (Idents (2)));
          end if;
 
          List_OK := False;
@@ -1379,7 +1390,8 @@ package body Ch3 is
             Check_Misspelling_Of (Tok_Renames);
 
             if Token = Tok_Renames then
-               Error_Msg_SP ("|extra "":"" ignored");
+               Error_Msg_SP -- CODEFIX
+                 ("|extra "":"" ignored");
                Scan; -- past RENAMES
                return True;
             else
@@ -1433,7 +1445,8 @@ package body Ch3 is
          Scan; -- past :=
 
          if Token = Tok_Constant then
-            Error_Msg_SP ("colon expected");
+            Error_Msg_SP -- CODEFIX???
+              ("colon expected");
 
          else
             Restore_Scan_State (Scan_State);
@@ -1553,7 +1566,7 @@ package body Ch3 is
 
             if Present (Init_Expr) then
                if Not_Null_Present then
-                  Error_Msg_SP
+                  Error_Msg_SP -- CODEFIX???
                     ("`NOT NULL` not allowed in numeric expression");
                end if;
 
@@ -1604,7 +1617,7 @@ package body Ch3 is
                end if;
 
                if Token = Tok_Renames then
-                  Error_Msg
+                  Error_Msg -- CODEFIX???
                     ("CONSTANT not permitted in renaming declaration",
                      Con_Loc);
                   Scan; -- Past renames
@@ -1720,7 +1733,7 @@ package body Ch3 is
 
                if Token_Is_Renames then
                   if Ada_Version < Ada_05 then
-                     Error_Msg_SP
+                     Error_Msg_SP -- CODEFIX???
                        ("`NOT NULL` not allowed in object renaming");
                      raise Error_Resync;
 
@@ -1750,9 +1763,10 @@ package body Ch3 is
                   --  illegal
 
                   if Token_Is_Renames then
-                     Error_Msg_N ("constraint not allowed in object renaming "
-                                  & "declaration",
-                                  Constraint (Object_Definition (Decl_Node)));
+                     Error_Msg_N -- CODEFIX???
+                       ("constraint not allowed in object renaming "
+                        & "declaration",
+                        Constraint (Object_Definition (Decl_Node)));
                      raise Error_Resync;
                   end if;
                end if;
@@ -1812,7 +1826,7 @@ package body Ch3 is
                --  a constraint on the Type_Node and renames, which is illegal
 
                if Token_Is_Renames then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX???
                     ("constraint not allowed in object renaming declaration",
                      Constraint (Object_Definition (Decl_Node)));
                   raise Error_Resync;
@@ -1965,7 +1979,8 @@ package body Ch3 is
          end loop;
 
          if Token /= Tok_With then
-            Error_Msg_SC ("WITH expected");
+            Error_Msg_SC -- CODEFIX???
+              ("WITH expected");
             raise Error_Resync;
          end if;
       end if;
@@ -1981,7 +1996,7 @@ package body Ch3 is
          T_With; -- past WITH or give error message
 
          if Token = Tok_Limited then
-            Error_Msg_SC
+            Error_Msg_SC -- CODEFIX???
               ("LIMITED keyword not allowed in private extension");
             Scan; -- ignore LIMITED
          end if;
@@ -2107,7 +2122,6 @@ package body Ch3 is
       Range_Node : Node_Id;
       Save_Loc   : Source_Ptr;
 
-
    --  Start of processing for P_Range_Or_Subtype_Mark
 
    begin
@@ -2170,6 +2184,11 @@ package body Ch3 is
             return Expr_Node;
          end if;
 
+      --  Simple expression case
+
+      elsif Expr_Form = EF_Simple and then Allow_Simple_Expression then
+         return Expr_Node;
+
       --  Here we have some kind of error situation. Check for junk parens
       --  then return what we have, caller will deal with other errors.
 
@@ -2177,7 +2196,8 @@ package body Ch3 is
          if Nkind (Expr_Node) in N_Subexpr
            and then Paren_Count (Expr_Node) /= 0
          then
-            Error_Msg ("|parentheses not allowed for subtype mark", Save_Loc);
+            Error_Msg -- CODEFIX???
+              ("|parentheses not allowed for subtype mark", Save_Loc);
             Set_Paren_Count (Expr_Node, 0);
          end if;
 
@@ -2652,7 +2672,8 @@ package body Ch3 is
          end if;
 
          if Aliased_Present then
-            Error_Msg_SP ("ALIASED not allowed here");
+            Error_Msg_SP -- CODEFIX???
+              ("ALIASED not allowed here");
          end if;
 
          Set_Subtype_Indication     (CompDef_Node, Empty);
@@ -3299,7 +3320,8 @@ package body Ch3 is
 
                if Token = Tok_Colon then
                   Restore_Scan_State (Scan_State);
-                  Error_Msg_SC ("component may not follow variant part");
+                  Error_Msg_SC -- CODEFIX???
+                    ("component may not follow variant part");
                   Discard_Junk_Node (P_Component_List);
 
                elsif Token = Tok_Case then
@@ -3392,7 +3414,8 @@ package body Ch3 is
             Set_Defining_Identifier (Decl_Node, Idents (Ident));
 
             if Token = Tok_Constant then
-               Error_Msg_SC ("constant components are not permitted");
+               Error_Msg_SC -- CODEFIX???
+                 ("constant components are not permitted");
                Scan;
             end if;
 
@@ -3420,7 +3443,8 @@ package body Ch3 is
                end if;
 
                if Aliased_Present then
-                  Error_Msg_SP ("ALIASED not allowed here");
+                  Error_Msg_SP -- CODEFIX???
+                    ("ALIASED not allowed here");
                end if;
 
                Set_Subtype_Indication (CompDef_Node, Empty);
@@ -3434,7 +3458,7 @@ package body Ch3 is
                Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
 
                if Token = Tok_Array then
-                  Error_Msg_SC
+                  Error_Msg_SC -- CODEFIX???
                     ("anonymous arrays not allowed as components");
                   raise Error_Resync;
                end if;
@@ -3514,7 +3538,8 @@ package body Ch3 is
          Error_Msg ("discriminant name expected", Sloc (Case_Node));
 
       elsif Paren_Count (Case_Node) /= 0 then
-         Error_Msg ("|discriminant name may not be parenthesized",
+         Error_Msg -- CODEFIX???
+           ("|discriminant name may not be parenthesized",
                     Sloc (Case_Node));
          Set_Paren_Count (Case_Node, 0);
       end if;
@@ -3698,7 +3723,8 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
-            Error_Msg_SC (""","" should be ""'|""");
+            Error_Msg_SC -- CODEFIX
+              (""","" should be ""'|""");
          else
             exit when Token /= Tok_Vertical_Bar;
          end if;
@@ -3745,8 +3771,9 @@ package body Ch3 is
       end if;
 
       if Abstract_Present then
-         Error_Msg_SP ("ABSTRACT not allowed in interface type definition " &
-                       "(RM 3.9.4(2/2))");
+         Error_Msg_SP -- CODEFIX???
+           ("ABSTRACT not allowed in interface type definition " &
+            "(RM 3.9.4(2/2))");
       end if;
 
       Scan; -- past INTERFACE
@@ -3768,7 +3795,8 @@ package body Ch3 is
 
       else
          if Token /= Tok_And then
-            Error_Msg_AP ("AND expected");
+            Error_Msg_AP -- CODEFIX???
+              ("AND expected");
          else
             Scan; -- past AND
          end if;
@@ -3854,7 +3882,8 @@ package body Ch3 is
             Scan; -- past possible junk subprogram name
 
             if Token = Tok_Left_Paren or else Token = Tok_Semicolon then
-               Error_Msg_SP ("unexpected subprogram name ignored");
+               Error_Msg_SP -- CODEFIX???
+                 ("unexpected subprogram name ignored");
                return;
 
             else
@@ -4035,7 +4064,7 @@ package body Ch3 is
 
          if Token = Tok_All then
             if Ada_Version < Ada_05 then
-               Error_Msg_SP
+               Error_Msg_SP -- CODEFIX???
                  ("ALL is not permitted for anonymous access types");
             end if;
 
@@ -4246,7 +4275,8 @@ package body Ch3 is
 
          when Tok_With =>
             Check_Bad_Layout;
-            Error_Msg_SC ("WITH can only appear in context clause");
+            Error_Msg_SC -- CODEFIX???
+              ("WITH can only appear in context clause");
             raise Error_Resync;
 
          --  BEGIN terminates the scan of a sequence of declarations unless
@@ -4284,7 +4314,8 @@ package body Ch3 is
                   --  Otherwise we saved the semicolon position, so complain
 
                   else
-                     Error_Msg ("|"";"" should be IS", SIS_Semicolon_Sloc);
+                     Error_Msg -- CODEFIX
+                       ("|"";"" should be IS", SIS_Semicolon_Sloc);
                   end if;
 
                   --  The next job is to fix up any declarations that occurred
@@ -4410,7 +4441,8 @@ package body Ch3 is
             if In_Spec then
                Done := True;
             else
-               Error_Msg_SC ("PRIVATE not allowed in body");
+               Error_Msg_SC -- CODEFIX???
+                 ("PRIVATE not allowed in body");
                Scan; -- past PRIVATE
             end if;
 
@@ -4519,17 +4551,17 @@ package body Ch3 is
             Kind = N_Task_Body or else
             Kind = N_Protected_Body
          then
-            Error_Msg
+            Error_Msg -- CODEFIX???
               ("proper body not allowed in package spec", Sloc (Decl));
 
          --  Test for body stub scanned, not acceptable as basic decl item
 
          elsif Kind in N_Body_Stub then
-            Error_Msg
+            Error_Msg -- CODEFIX???
               ("body stub not allowed in package spec", Sloc (Decl));
 
          elsif Kind = N_Assignment_Statement then
-            Error_Msg
+            Error_Msg -- CODEFIX???
               ("assignment statement not allowed in package spec",
                  Sloc (Decl));
          end if;
@@ -4618,7 +4650,8 @@ package body Ch3 is
          --  not allowed in package spec. This message never gets changed.
 
          if In_Spec then
-            Error_Msg_SC ("statement not allowed in package spec");
+            Error_Msg_SC -- CODEFIX???
+              ("statement not allowed in package spec");
 
          --  If in declarative part, then we give the message complaining
          --  about finding a statement when a declaration is expected. This
@@ -4626,7 +4659,8 @@ package body Ch3 is
          --  find that no BEGIN is present.
 
          else
-            Error_Msg_SC ("statement not allowed in declarative part");
+            Error_Msg_SC -- CODEFIX???
+              ("statement not allowed in declarative part");
          end if;
 
          --  Capture message Id. This is used for two purposes, first to
