@@ -11,6 +11,10 @@
 	sem_disp.adb, prepcomp.adb, par-ch7.adb, sem_elab.adb, exp_ch4.adb,
 	errout.ads: Update comments. Minor reformatting.
 
+	* g-spipat.adb, a-swunau.adb, a-swunau.ads, g-spitbo.adb,
+	a-szunau.adb, a-szunau.ads, a-stunau.adb, a-stunau.ads,
+	a-strunb.adb (Big_String. Big_String_Access): New type.
+
 2010-06-18  Geert Bosch  <bosch@adacore.com>
 
 	* i-forbla-darwin.adb: Include -lgnala and -lm in linker options for
