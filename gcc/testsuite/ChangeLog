@@ -1,3 +1,7 @@
+2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.dg/ext/label13.C: Fix typo in last change.
+
 2010-06-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44477
