@@ -1,3 +1,13 @@
+2010-06-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44477
+	* io/file_pos.c (st_endfile): Add check for ENDFILE when file is
+	already positioned after the EOF marker. Use find_or_create_unit
+	instead of find_unit. If unit is not connected, connect it and create 
+	the file with default settings.
+	* io/transfer.c (data_transfer_init):  Add check for attempted READ or
+	WRITE when file is already positioned after the EOF marker.
+
 2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/selected_char_kind.c (selected_char_kind): Fix
