@@ -1,3 +1,8 @@
+2010-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/41090
+	* g++.dg/ext/label13.C: xfail on 32-bit hppa*-*-hpux*.
+
 2010-06-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44556
