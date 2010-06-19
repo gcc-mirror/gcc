@@ -1,3 +1,9 @@
+2010-06-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/44072
+	* gcc.target/arm/thumb2-cmpneg2add-1.c: New test.
+	* gcc.target/arm/thumb2-cmpneg2add-2.c: New test.
+
 2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/ext/label13.C: Fix typo in last change.

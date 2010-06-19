@@ -737,14 +737,14 @@
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
-	 (match_operand:SI 2 "arm_addimm_operand" "I,L")))
+	 (match_operand:SI 2 "arm_addimm_operand" "L,I")))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1)
-		 (match_operand:SI 3 "arm_addimm_operand" "L,I")))]
+		 (match_operand:SI 3 "arm_addimm_operand" "I,L")))]
   "TARGET_32BIT && INTVAL (operands[2]) == -INTVAL (operands[3])"
   "@
-   sub%.\\t%0, %1, %2
-   add%.\\t%0, %1, #%n2"
+   add%.\\t%0, %1, %3
+   sub%.\\t%0, %1, #%n3"
   [(set_attr "conds" "set")]
 )
 
