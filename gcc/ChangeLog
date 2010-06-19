@@ -1,3 +1,8 @@
+2010-06-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* c-decl.c (c_write_global_declarations): Don't check
+	flag_syntax_only.
+
 2010-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* stor-layout.c (debug_rli): Remove unused local variables.
