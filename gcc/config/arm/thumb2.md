@@ -1231,6 +1231,32 @@
    (set_attr "length" "2")]
 )
 
+(define_peephole2
+  [(set (match_operand:CC 0 "cc_register" "")
+	(compare:CC (match_operand:SI 1 "low_register_operand" "")
+		    (match_operand:SI 2 "const_int_operand" "")))]
+  "TARGET_THUMB2
+   && peep2_reg_dead_p (1, operands[1])
+   && satisfies_constraint_Pw (operands[2])"
+  [(parallel
+    [(set (match_dup 0) (compare:CC (match_dup 1) (match_dup 2)))
+     (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 3)))])]
+  "operands[3] = GEN_INT (- INTVAL (operands[2]));"
+)
+
+(define_peephole2
+  [(match_scratch:SI 3 "l")
+   (set (match_operand:CC 0 "cc_register" "")
+	(compare:CC (match_operand:SI 1 "low_register_operand" "")
+		    (match_operand:SI 2 "const_int_operand" "")))]
+  "TARGET_THUMB2
+   && satisfies_constraint_Px (operands[2])"
+  [(parallel
+    [(set (match_dup 0) (compare:CC (match_dup 1) (match_dup 2)))
+     (set (match_dup 3) (plus:SI (match_dup 1) (match_dup 4)))])]
+  "operands[4] = GEN_INT (- INTVAL (operands[2]));"
+)
+
 (define_insn "*thumb2_addsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV

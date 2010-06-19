@@ -1,3 +1,11 @@
+2010-06-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/44072
+	* arm.md (cmpsi2_addneg): Prefer emitting adds to subs with a negative
+	immediate.
+	* constraints.md (Pw, Px): New constraints.
+	* thumb2.md (cmpsi2_addneg peephole2): New peepholes.
+
 2010-06-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (fma4modesuffixf4): Removed.
