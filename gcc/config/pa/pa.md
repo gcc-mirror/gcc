@@ -6426,27 +6426,41 @@
 ;; Processors prior to PA 2.0 don't have a fneg instruction.  Fast
 ;; negation can be done by subtracting from plus zero.  However, this
 ;; violates the IEEE standard when negating plus and minus zero.
+;; The slow path toggles the sign bit in the general registers.
 (define_expand "negdf2"
-  [(parallel [(set (match_operand:DF 0 "register_operand" "")
-		   (neg:DF (match_operand:DF 1 "register_operand" "")))
-	      (use (match_dup 2))])]
-  "! TARGET_SOFT_FLOAT"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (match_operand:DF 1 "register_operand" "")))]
+  "!TARGET_SOFT_FLOAT"
 {
   if (TARGET_PA_20 || flag_unsafe_math_optimizations)
     emit_insn (gen_negdf2_fast (operands[0], operands[1]));
   else
-    {
-      operands[2] = force_reg (DFmode,
-	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, DFmode));
-      emit_insn (gen_muldf3 (operands[0], operands[1], operands[2]));
-    }
+    emit_insn (gen_negdf2_slow (operands[0], operands[1]));
   DONE;
 })
+
+(define_insn "negdf2_slow"
+  [(set (match_operand:DF 0 "register_operand" "=r")
+	(neg:DF (match_operand:DF 1 "register_operand" "r")))]
+  "!TARGET_SOFT_FLOAT && !TARGET_PA_20"
+  "*
+{
+  if (rtx_equal_p (operands[0], operands[1]))
+    return \"and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0\";
+  else
+    return \"and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0\;copy %R1,%R0\";
+}"
+  [(set_attr "type" "multi")
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "rtx_equal_p (operands[0], operands[1])")
+			  (const_int 0))
+	    (const_int 12)
+	    (const_int 16)))])
 
 (define_insn "negdf2_fast"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
   if (TARGET_PA_20)
@@ -6458,26 +6472,29 @@
    (set_attr "length" "4")])
 
 (define_expand "negsf2"
-  [(parallel [(set (match_operand:SF 0 "register_operand" "")
-		   (neg:SF (match_operand:SF 1 "register_operand" "")))
-	      (use (match_dup 2))])]
-  "! TARGET_SOFT_FLOAT"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (match_operand:SF 1 "register_operand" "")))]
+  "!TARGET_SOFT_FLOAT"
 {
   if (TARGET_PA_20 || flag_unsafe_math_optimizations)
     emit_insn (gen_negsf2_fast (operands[0], operands[1]));
   else
-    {
-      operands[2] = force_reg (SFmode,
-	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, SFmode));
-      emit_insn (gen_mulsf3 (operands[0], operands[1], operands[2]));
-    }
+    emit_insn (gen_negsf2_slow (operands[0], operands[1]));
   DONE;
 })
+
+(define_insn "negsf2_slow"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+	(neg:SF (match_operand:SF 1 "register_operand" "r")))]
+  "!TARGET_SOFT_FLOAT && !TARGET_PA_20"
+  "and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 (define_insn "negsf2_fast"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
   if (TARGET_PA_20)

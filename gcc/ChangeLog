@@ -1,3 +1,13 @@
+2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline
+	2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/44261
+	config/pa/pa.md (negdf2_slow, negsf2_slow): New patterns.
+	(negdf2): Adjust expander pattern and use negdf2_slow.
+	(negsf2): Likewise.
+
 2010-06-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43740
