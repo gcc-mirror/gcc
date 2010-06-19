@@ -1,3 +1,15 @@
+2010-06-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (fma4modesuffixf4): Removed.
+	(ssemodesuffixf2s): Likewise.
+	(ssemodesuffixf4): Likewise.
+	(ssemodesuffixf2c): Likewise.
+	(ssescalarmodesuffix2s): Likewise.
+	(avxmodesuffixf2c): Likewise.
+	(ssemodesuffix): New.
+	(ssescalarmodesuffix): Likewise.
+	Update patterns with ssemodesuffix and ssescalarmodesuffix.
+
 2010-06-19  Philip Herron  <herron.philip@googlemail.com>
 
 	* c-decl.c (c_write_global_declarations): Don't check
