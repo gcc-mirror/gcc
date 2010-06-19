@@ -9658,11 +9658,6 @@ c_write_global_declarations (void)
   if (pch_file)
     return;
 
-  /* Don't waste time on further processing if -fsyntax-only.
-     Continue for warning and errors issued during lowering though.  */
-  if (flag_syntax_only)
-    return;
-
   /* Close the external scope.  */
   ext_block = pop_scope ();
   external_scope = 0;
