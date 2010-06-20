@@ -10892,7 +10892,7 @@ resolve_fl_derived (gfc_symbol *sym)
 		  c->ts.u.cl = cl;
 		}
 	    }
-	  else if (c->ts.interface->name[0] != '\0' && !sym->attr.vtype)
+	  else if (!sym->attr.vtype && c->ts.interface->name[0] != '\0')
 	    {
 	      gfc_error ("Interface '%s' of procedure pointer component "
 			 "'%s' at %L must be explicit", c->ts.interface->name,
