@@ -1204,13 +1204,6 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
     {
       gimple stmt = input_gimple_stmt (ib, data_in, fn, tag);
 
-      /* Change debug stmts to nops on-the-fly if we do not have VTA enabled.
-	 This allows us to build for example static libs with debugging
-	 enabled and do the final link without.  */
-      if (!MAY_HAVE_DEBUG_STMTS
-	  && is_gimple_debug (stmt))
-	stmt = gimple_build_nop ();
-
       find_referenced_vars_in (stmt);
       gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 
@@ -1370,11 +1363,26 @@ input_function (tree fn_decl, struct data_in *data_in,
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
   FOR_ALL_BB (bb)
     {
-      gimple_stmt_iterator bsi;
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+      gimple_stmt_iterator bsi = gsi_start_bb (bb);
+      while (!gsi_end_p (bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
-	  stmts[gimple_uid (stmt)] = stmt;
+	  /* If we're recompiling LTO objects with debug stmts but
+	     we're not supposed to have debug stmts, remove them now.
+	     We can't remove them earlier because this would cause uid
+	     mismatches in fixups, but we can do it at this point, as
+	     long as debug stmts don't require fixups.  */
+	  if (!MAY_HAVE_DEBUG_STMTS && is_gimple_debug (stmt))
+	    {
+	      gimple_stmt_iterator gsi = bsi;
+	      gsi_next (&bsi);
+	      gsi_remove (&gsi, true);
+	    }
+	  else
+	    {
+	      gsi_next (&bsi);
+	      stmts[gimple_uid (stmt)] = stmt;
+	    }
 	}
     }
 
