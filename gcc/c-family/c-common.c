@@ -7624,6 +7624,8 @@ parse_optimize_options (tree args, bool attr_p)
   unsigned i;
   int saved_flag_strict_aliasing;
   const char **opt_argv;
+  struct cl_decoded_option *decoded_options;
+  unsigned int decoded_options_count;
   tree ap;
 
   /* Build up argv vector.  Just in case the string is stored away, use garbage
@@ -7716,7 +7718,8 @@ parse_optimize_options (tree args, bool attr_p)
   saved_flag_strict_aliasing = flag_strict_aliasing;
 
   /* Now parse the options.  */
-  decode_options (opt_argc, opt_argv);
+  decode_options (opt_argc, opt_argv, &decoded_options,
+		  &decoded_options_count);
 
   targetm.override_options_after_change();
 

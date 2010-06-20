@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 
 /* Perform a binary search to find which option the command-line INPUT
-   matches.  Returns its index in the option array, and N_OPTS
-   (cl_options_count) on failure.
+   matches.  Returns its index in the option array, and
+   OPT_SPECIAL_unknown on failure.
 
    This routine is quite subtle.  A normal binary search is not good
    enough because some options can be suffixed with an argument, and
@@ -73,8 +73,8 @@ find_opt (const char *input, int lang_mask)
     }
 
   /* This is the switch that is the best match but for a different
-     front end, or cl_options_count if there is no match at all.  */
-  match_wrong_lang = cl_options_count;
+     front end, or OPT_SPECIAL_unknown if there is no match at all.  */
+  match_wrong_lang = OPT_SPECIAL_unknown;
 
   /* Backtrace the chain of possible matches, returning the longest
      one, if any, that fits best.  With current GCC switches, this
@@ -94,7 +94,7 @@ find_opt (const char *input, int lang_mask)
 
 	  /* If we haven't remembered a prior match, remember this
 	     one.  Any prior match is necessarily better.  */
-	  if (match_wrong_lang == cl_options_count)
+	  if (match_wrong_lang == OPT_SPECIAL_unknown)
 	    match_wrong_lang = mn;
 	}
 
@@ -104,7 +104,7 @@ find_opt (const char *input, int lang_mask)
     }
   while (mn != cl_options_count);
 
-  /* Return the best wrong match, or cl_options_count if none.  */
+  /* Return the best wrong match, or OPT_SPECIAL_unknown if none.  */
   return match_wrong_lang;
 }
 
@@ -129,7 +129,7 @@ integral_argument (const char *arg)
    LANG_MASK, into the structure *DECODED.  Returns the number of
    switches consumed.  */
 
-unsigned int
+static unsigned int
 decode_cmdline_option (const char **argv, unsigned int lang_mask,
 		       struct cl_decoded_option *decoded)
 {
@@ -144,7 +144,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   opt = argv[0];
 
   opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
-  if (opt_index == cl_options_count
+  if (opt_index == OPT_SPECIAL_unknown
       && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
       && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
     {
@@ -160,8 +160,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
     }
 
-  if (opt_index == cl_options_count)
-    goto done;
+  if (opt_index == OPT_SPECIAL_unknown)
+    {
+      arg = argv[0];
+      goto done;
+    }
 
   option = &cl_options[opt_index];
 
@@ -169,7 +172,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
      unrecognized.  */
   if (!value && (option->flags & CL_REJECT_NEGATIVE))
     {
-      opt_index = cl_options_count;
+      opt_index = OPT_SPECIAL_unknown;
+      arg = argv[0];
       goto done;
     }
 
@@ -237,7 +241,74 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   decoded->arg = arg;
   decoded->value = value;
   decoded->errors = errors;
+  switch (result)
+    {
+    case 1:
+      decoded->orig_option_with_args_text = argv[0];
+      break;
+    case 2:
+      decoded->orig_option_with_args_text = concat (argv[0], " ",
+						    argv[1], NULL);
+      break;
+    default:
+      gcc_unreachable ();
+    }
   return result;
+}
+
+/* Decode command-line options (ARGC and ARGV being the arguments of
+   main) into an array, setting *DECODED_OPTIONS to a pointer to that
+   array and *DECODED_OPTIONS_COUNT to the number of entries in the
+   array.  The first entry in the array is always one for the program
+   name (OPT_SPECIAL_program_name).  LANG_MASK indicates the language
+   applicable for decoding.  Do not produce any diagnostics or set
+   state outside of these variables.  */
+
+void
+decode_cmdline_options_to_array (unsigned int argc, const char **argv, 
+				 unsigned int lang_mask,
+				 struct cl_decoded_option **decoded_options,
+				 unsigned int *decoded_options_count)
+{
+  unsigned int n, i;
+  struct cl_decoded_option *opt_array;
+  unsigned int num_decoded_options;
+
+  opt_array = XNEWVEC (struct cl_decoded_option, argc);
+
+  opt_array[0].opt_index = OPT_SPECIAL_program_name;
+  opt_array[0].arg = argv[0];
+  opt_array[0].orig_option_with_args_text = argv[0];
+  opt_array[0].value = 1;
+  opt_array[0].errors = 0;
+  num_decoded_options = 1;
+
+  for (i = 1; i < argc; i += n)
+    {
+      const char *opt = argv[i];
+
+      /* Interpret "-" or a non-switch as a file name.  */
+      if (opt[0] != '-' || opt[1] == '\0')
+	{
+	  opt_array[num_decoded_options].opt_index = OPT_SPECIAL_input_file;
+	  opt_array[num_decoded_options].arg = opt;
+	  opt_array[num_decoded_options].orig_option_with_args_text = opt;
+	  opt_array[num_decoded_options].value = 1;
+	  opt_array[num_decoded_options].errors = 0;
+	  num_decoded_options++;
+	  n = 1;
+	  continue;
+	}
+
+      n = decode_cmdline_option (argv + i, lang_mask,
+				 &opt_array[num_decoded_options]);
+      num_decoded_options++;
+    }
+
+  opt_array = XRESIZEVEC (struct cl_decoded_option, opt_array,
+			  num_decoded_options);
+  *decoded_options = opt_array;
+  *decoded_options_count = num_decoded_options;
 }
 
 /* Return true if NEXT_OPT_IDX cancels OPT_IDX.  Return false if the
@@ -281,7 +352,7 @@ prune_options (int *argcp, char ***argvp)
       const char *opt = (*argvp) [i];
 
       opt_index = find_opt (opt + 1, -1);
-      if (opt_index == cl_options_count
+      if (opt_index == OPT_SPECIAL_unknown
 	  && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
 	  && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
 	{
@@ -300,7 +371,7 @@ prune_options (int *argcp, char ***argvp)
 	  free (dup);
 	}
 
-      if (opt_index == cl_options_count)
+      if (opt_index == OPT_SPECIAL_unknown)
 	{
 cont:
 	  options [i] = 0;

@@ -541,10 +541,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
   int result = 1;
   enum opt_code code = (enum opt_code) scode;
 
-  /* Ignore file names.  */
-  if (code == N_OPTS)
-    return 1;
-
   if (gfc_cpp_handle_option (scode, arg, value) == 1)
     return 1;
 
