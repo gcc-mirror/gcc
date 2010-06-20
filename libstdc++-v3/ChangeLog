@@ -1,3 +1,9 @@
+2010-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Kai-Uwe Bux  <bux@kubux.net>
+
+	* include/bits/random.tcc (uniform_int_distribution<>::operator()):
+	Fix to work well for arbitrary urng.max() and urng.min().
+
 2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/32618

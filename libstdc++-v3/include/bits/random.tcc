@@ -828,27 +828,61 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	// XXX Must be fixed to work well for *arbitrary* __urng.max(),
-	// __urng.min(), __param.b(), __param.a().  Currently works fine only
-	// in the most common case __urng.max() - __urng.min() >=
-	// __param.b() - __param.a(), with __urng.max() > __urng.min() >= 0.
 	typedef typename std::make_unsigned<typename
-	  _UniformRandomNumberGenerator::result_type>::type __urntype;
+	  _UniformRandomNumberGenerator::result_type>::type __urngtype;
 	typedef typename std::make_unsigned<result_type>::type __utype;
-	typedef typename std::conditional<(sizeof(__urntype) > sizeof(__utype)),
-	  __urntype, __utype>::type __uctype;
+	typedef typename std::conditional<(sizeof(__urngtype)
+					   > sizeof(__utype)),
+	  __urngtype, __utype>::type __uctype;
 
-	result_type __ret;
+	const __uctype __urngmin = __urng.min();
+	const __uctype __urngmax = __urng.max();
+	const __uctype __urngrange = __urngmax - __urngmin;
+	const __uctype __urange
+	  = __uctype(__param.b()) - __uctype(__param.a());
 
-	const __urntype __urnmin = __urng.min();
-	const __urntype __urnmax = __urng.max();
-	const __urntype __urnrange = __urnmax - __urnmin;
-	const __uctype __urange = __param.b() - __param.a();
-	const __uctype __udenom = (__urnrange <= __urange
-				   ? 1 : __urnrange / (__urange + 1));
-	do
-	  __ret = (__urntype(__urng()) -  __urnmin) / __udenom;
-	while (__ret > __param.b() - __param.a());
+	__uctype __ret;
+
+	if (__urngrange > __urange)
+	  {
+	    // downscaling
+	    const __uctype __uerange = __urange + 1; // __urange can be zero
+	    const __uctype __scaling = __urngrange / __uerange;
+	    const __uctype __past = __uerange * __scaling;
+	    do
+	      __ret = __uctype(__urng()) - __urngmin;
+	    while (__ret >= __past);
+	    __ret /= __scaling;
+	  }
+	else if (__urngrange < __urange)
+	  {
+	    // upscaling
+	    /*
+	      Note that every value in [0, urange]
+	      can be written uniquely as
+
+	      (urngrange + 1) * high + low
+
+	      where
+
+	      high in [0, urange / (urngrange + 1)]
+
+	      and
+	
+	      low in [0, urngrange].
+	    */
+	    __uctype __tmp; // wraparound control
+	    do
+	      {
+		const __uctype __uerngrange = __urngrange + 1;
+		__tmp = (__uerngrange * operator()
+			 (__urng, param_type(0, __urange / __uerngrange)));
+		__ret = __tmp + (__uctype(__urng()) - __urngmin);
+	      }
+	    while (__ret > __urange || __ret < __tmp);
+	  }
+	else
+	  __ret = __uctype(__urng()) - __urngmin;
 
 	return __ret + __param.a();
       }
