@@ -12,12 +12,20 @@ implicit none
 type :: t
 contains
   procedure :: foo
-  procedure :: bar, baz  { dg-error "PROCEDURE list" }
+  procedure :: bar, baz  ! { dg-error "PROCEDURE list" }
 end type
 
 contains
 
   subroutine foo (this)
+    class(t) :: this
+  end subroutine
+
+  subroutine bar (this)
+    class(t) :: this
+  end subroutine
+
+  subroutine baz (this)
     class(t) :: this
   end subroutine
 

@@ -1,3 +1,8 @@
+2010-06-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44584
+	* gfortran.dg/typebound_proc_15.f03: Modified.
+
 2010-06-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/44072
