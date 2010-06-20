@@ -1,3 +1,11 @@
+2010-06-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline:
+	2009-09-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.ac (*-*-freebsd*): Enable check for __stack_chk_fail.
+	* configure: Regenerate.
+
 2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline
