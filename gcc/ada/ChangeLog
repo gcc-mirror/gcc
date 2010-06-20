@@ -1,3 +1,8 @@
+2010-06-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Use while instead of
+	for loop.  Call build_constructor_from_list directly in the CICO case.
+
 2010-06-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Build_And_Analyze_Renamed_Body): If the renaming
