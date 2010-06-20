@@ -2462,9 +2462,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       {
 	/* Skip any entries that have been already filled in; they must
 	   correspond to In Out parameters.  */
-	for (; gnu_cico_list && TREE_VALUE (gnu_cico_list);
-	     gnu_cico_list = TREE_CHAIN (gnu_cico_list))
-	  ;
+	while (gnu_cico_list && TREE_VALUE (gnu_cico_list))
+	  gnu_cico_list = TREE_CHAIN (gnu_cico_list);
 
 	/* Do any needed references for padded types.  */
 	TREE_VALUE (gnu_cico_list)
@@ -2546,8 +2545,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       if (list_length (gnu_cico_list) == 1)
 	gnu_retval = TREE_VALUE (gnu_cico_list);
       else
-	gnu_retval = gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
-					     gnu_cico_list);
+	gnu_retval = build_constructor_from_list (TREE_TYPE (gnu_subprog_type),
+						  gnu_cico_list);
 
       add_stmt_with_node (build_return_expr (gnu_result_decl, gnu_retval),
 			  End_Label (Handled_Statement_Sequence (gnat_node)));
