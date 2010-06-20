@@ -1,3 +1,19 @@
+2010-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44546
+	* config/i386/predicates.md (ix86_swapped_fp_comparsion_operator):
+	New predicate.
+	* config/i386/i386.md (*fp_jcc_8<mode>_387): Use
+	ix86_swapped_fp_comparsion_operator instead of
+	ix86_fp_comparison_operator.
+
+	(*fp_jcc_1_387): Rename from *fp_jcc_3_387.
+	(*fp_jcc_1r_387): Rename from *fp_jcc_4_387.
+	(*fp_jcc_2_387): Rename from *fp_jcc_5_387.
+	(*fp_jcc_2r_387): Rename from *fp_jcc_6_387.
+	(*fp_jcc_3_387): Rename from *fp_jcc_7_387.
+	(*fp_jcc_4_<mode>_387): Rename from *fp_jcc_8<mode>_387.
+
 2010-06-20  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/32998
@@ -15,8 +31,7 @@
 	decode_cmdline_options_to_array.  Use decoded options for -O
 	scan.  Use integral_argument for -O parameters.  Update call to
 	read_cmdline_options.
-	(enable_warning_as_error): Update handling of find_opt return
-	value.
+	(enable_warning_as_error): Update handling of find_opt return value.
 	* opts.h: Update comment on unknown options.
 	(struct cl_decoded_option): Update comments on opt_index and arg.
 	Add orig_option_with_args_text.
@@ -27,11 +42,9 @@
 	(save_decoded_options, save_decoded_options_count): New.
 	(read_integral_parameter): Remove.
 	(print_switch_values): Use decoded options.
-	(toplev_main): Don't set save_argv.  Update call to
-	decode_options.
+	(toplev_main): Don't set save_argv.  Update call to decode_options.
 	* toplev.h (read_integral_parameter): Remove.
-	* varasm.c (elf_record_gcc_switches): Don't handle holding back
-	names.
+	* varasm.c (elf_record_gcc_switches): Don't handle holding back names.
 
 2010-06-19  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -113,8 +126,8 @@
 2010-06-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43740
-	config/pa/pa.c (emit_move_sequence): Don't infer REG_POINTER flag for
-	SET source operand from SET destination operand.
+	* config/pa/pa.c (emit_move_sequence): Don't infer REG_POINTER flag
+	for SET source operand from SET destination operand.
 
 2010-06-17  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -274,8 +287,7 @@
 
 2010-06-16  Richard Guenther  <rguenther@suse.de>
 
-	* tree-inline.c (remap_gimple_op_r): Recurse using
-	remap_gimple_op_r.
+	* tree-inline.c (remap_gimple_op_r): Recurse using remap_gimple_op_r.
 
 2010-06-16  Douglas B Rupp  <rupp@gnat.com>
 
@@ -302,7 +314,7 @@
 	(AT_vms_delta1, AT_vms_delta2, add_AT_vms_delta): Declare
 	new static functions.
 	(dwarf_attr_name): New cases DW_AT_HP_{prologue,epilogue}.
-	(AT_vms_delta1, AT_vms_delta2, add_AT_vms_delta): New 
+	(AT_vms_delta1, AT_vms_delta2, add_AT_vms_delta): New
 	static functions.
 	(print_die): New case dw_val_class_vms_delta.
 	(attr_checksum): Likewise.
@@ -375,8 +387,7 @@
 	(bitset): Remove early clobber from destination.
 	(bitset_in_memory): Likewise.
 	(lrintsf2): Clobber the cc0 register.
-	* config/rx/rx.c (rx_notice_update_cc):
-	Handle CC_SET_ZSC.
+	* config/rx/rx.c (rx_notice_update_cc): Handle CC_SET_ZSC.
 	(rx_print_operand): Handle %N.
 
 2010-06-16  Jan Hubicka  <jh@suse.cz>
@@ -3615,8 +3626,7 @@
 2010-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_materialize_clone): Only remove calles,
-	refs and body; not the whole node for masters of materialized
-	clones.
+	refs and body; not the whole node for masters of materialized clones.
 
 2010-05-29  Mike Stump  <mikestump@comcast.net>
 
@@ -3756,8 +3766,7 @@
 	* gcc.c (inform, warning, inform): New functions.
 	(fatal_ice): Rename to internal_error; change cmsgid parameter to
 	gmsgid.  All callers changed.
-	(notice): Rename to fnotice; add parameter fp.  All callers
-	changed.
+	(notice): Rename to fnotice; add parameter fp.  All callers changed.
 	(fatal_error): Rename to fatal_signal.  All users changed.
 	(fatal): Rename to fatal_error; change cmsgid parameter to
 	gmsgid.  All callers changed.
@@ -3772,8 +3781,7 @@
 	(warning): Declare.
 	* config/darwin-driver.c (darwin_default_min_version): Use warning
 	instead of fprintf for warnings.
-	* cppspec.c (lang_specific_driver): Use fatal_error instead of
-	fatal.
+	* cppspec.c (lang_specific_driver): Use fatal_error instead of fatal.
 
 2010-05-28  Julian Brown  <julian@codesourcery.com>
 

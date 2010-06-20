@@ -1,3 +1,8 @@
+2010-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44546
+	* gcc.target/i386/pr44546.c: New test.
+
 2010-06-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/opts-2.c: New test.
@@ -181,7 +186,7 @@
 
 2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
 
-        * gfortran.dg/whole_file_20.f03: New.
+	* gfortran.dg/whole_file_20.f03: New.
 
 2010-06-12  Jan Hubicka  <jh@suse.cz>
 
