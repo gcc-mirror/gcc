@@ -1,3 +1,13 @@
+2010-06-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline:
+	2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* mf-runtime.c (__mf_init): Support FreeBSD.
+	Prime mutex which calls calloc upon first lock to avoid deadlock.
+	* mf-hooks1.c (__mf_0fn_mmap): Support FreeBSD.
+	Ignore red zone allocation request for initial thread's stack.
+
 2010-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620

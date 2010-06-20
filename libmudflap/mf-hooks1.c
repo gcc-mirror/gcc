@@ -321,6 +321,11 @@ WRAPPER(void, free, void *buf)
 void *
 __mf_0fn_mmap (void *start, size_t l, int prot, int f, int fd, off_t off)
 {
+#if defined(__FreeBSD__)
+  if (f == 0x1000 && fd == -1 && prot == 0 && off == 0)
+    return 0;
+#endif /* Ignore red zone allocation request for initial thread's stack. */
+
   return (void *) -1;
 }
 #endif
