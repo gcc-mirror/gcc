@@ -13,14 +13,17 @@ int main ()
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 #ifdef HAVE_MMAP
   void *p;
   unsigned pg = getpagesize ();
   int rc;
 
   p = mmap (NULL, 4 * pg, PROT_READ|PROT_WRITE, 
-            MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-  if (p == NULL)
+            MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+  if (p == MAP_FAILED)
     return 1;
 
   memset (p, 0, 4*pg);

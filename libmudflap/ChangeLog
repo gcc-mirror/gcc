@@ -2,6 +2,17 @@
 
 	Backport from mainline:
 	2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
+	            Andreas Schwab  <schwab@linux-m68k.org>
+
+	* testsuite/libmudflap.c/pass51-frag.c (MAP_FAILED): Define,
+	if not in system header; use it.  On FreeBSD, must pass fd==-1
+	with MAP_ANON flag.  Correct mmap error check.
+	* testsuite/libmudflap.c/fail40-frag.c: Ditto.
+
+2010-06-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backport from mainline:
+	2009-09-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* mf-runtime.c (__mf_init): Support FreeBSD.
 	Prime mutex which calls calloc upon first lock to avoid deadlock.
