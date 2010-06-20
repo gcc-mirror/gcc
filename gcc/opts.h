@@ -92,7 +92,7 @@ extern const unsigned int cl_lang_count;
 
 /* Possible ways in which a command-line option may be erroneous.
    These do not include not being known at all; an option index of
-   cl_options_count is used for that.  */
+   OPT_SPECIAL_unknown is used for that.  */
 
 #define CL_ERR_DISABLED		(1 << 0) /* Disabled in this configuration.  */
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
@@ -103,11 +103,19 @@ extern const unsigned int cl_lang_count;
 
 struct cl_decoded_option
 {
-  /* The index of this option, or cl_options_count if not known.  */
+  /* The index of this option, or an OPT_SPECIAL_* value for
+     non-options and unknown options.  */
   size_t opt_index;
 
-  /* The string argument, or NULL if none.  */
+  /* The string argument, or NULL if none.  For OPT_SPECIAL_* cases,
+     the option or non-option command-line argument.  */
   const char *arg;
+
+  /* The original text of option plus arguments, with separate argv
+     elements concatenated into one string with spaces separating
+     them.  This is for such uses as diagnostics and
+     -frecord-gcc-switches.  */
+  const char *orig_option_with_args_text;
 
   /* For a boolean option, 1 for the true case and 0 for the "no-"
      case.  For an unsigned integer option, the value of the
@@ -128,11 +136,15 @@ extern unsigned num_in_fnames;
 
 size_t find_opt (const char *input, int lang_mask);
 extern int integral_argument (const char *arg);
-extern unsigned int decode_cmdline_option (const char **argv,
-					   unsigned int lang_mask,
-					   struct cl_decoded_option *decoded);
+extern void decode_cmdline_options_to_array (unsigned int argc,
+					     const char **argv, 
+					     unsigned int lang_mask,
+					     struct cl_decoded_option **decoded_options,
+					     unsigned int *decoded_options_count);
 extern void prune_options (int *argcp, char ***argvp);
-extern void decode_options (unsigned int argc, const char **argv);
+extern void decode_options (unsigned int argc, const char **argv,
+			    struct cl_decoded_option **decoded_options,
+			    unsigned int *decoded_options_count);
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
 extern void set_option (int opt_index, int value, const char *arg, int);

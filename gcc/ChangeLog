@@ -1,3 +1,38 @@
+2010-06-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/32998
+	* opth-gen.awk: Generate definitions of OPT_SPECIAL_unknown,
+	OPT_SPECIAL_program_name and OPT_SPECIAL_input_file.
+	* opts-common.c (find_opt): Return OPT_SPECIAL_unknown on failure.
+	(decode_cmdline_option): Update for this return value.  Set
+	orig_option_with_args_text field.  Set arg field for unknown
+	options.  Make static.
+	(decode_cmdline_options_to_array): New.
+	(prune_options): Update handling of find_opt return value.
+	* opts.c (read_cmdline_option): Take decoded option.  Return void.
+	(read_cmdline_options): Take decoded options.
+	(decode_options): Add parameters for decoded options.  Use
+	decode_cmdline_options_to_array.  Use decoded options for -O
+	scan.  Use integral_argument for -O parameters.  Update call to
+	read_cmdline_options.
+	(enable_warning_as_error): Update handling of find_opt return
+	value.
+	* opts.h: Update comment on unknown options.
+	(struct cl_decoded_option): Update comments on opt_index and arg.
+	Add orig_option_with_args_text.
+	(decode_cmdline_option): Remove.
+	(decode_cmdline_options_to_array): Declare.
+	(decode_options): Update prototype.
+	* toplev.c (save_argv): Remove.
+	(save_decoded_options, save_decoded_options_count): New.
+	(read_integral_parameter): Remove.
+	(print_switch_values): Use decoded options.
+	(toplev_main): Don't set save_argv.  Update call to
+	decode_options.
+	* toplev.h (read_integral_parameter): Remove.
+	* varasm.c (elf_record_gcc_switches): Don't handle holding back
+	names.
+
 2010-06-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/44072

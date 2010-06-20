@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
 extern int toplev_main (int, char **);
-extern int read_integral_parameter (const char *, const char *, const int);
 extern void strip_off_ending (char *, int);
 extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
      ATTRIBUTE_NORETURN;
