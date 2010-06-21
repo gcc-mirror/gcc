@@ -1,3 +1,11 @@
+2010-06-21  Robert Dewar  <dewar@adacore.com>
+
+	* g-expect.ads, g-expect.adb: Minor reformatting.
+
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Next_Pointer_Bytes): New named constant. Code clean up.
+
 2010-06-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

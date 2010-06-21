@@ -182,6 +182,12 @@ package body System.Regpat is
    --  Using two bytes for the "next" pointer is vast overkill for most
    --  things, but allows patterns to get big without disasters.
 
+   Next_Pointer_Bytes : constant := 3;
+   --  Points after the "next pointer" data. An instruction is therefore:
+   --     1 byte: instruction opcode
+   --     2 bytes: pointer to next instruction
+   --     * bytes: optional data for the instruction
+
    -----------------------
    -- Character classes --
    -----------------------
@@ -347,7 +353,7 @@ package body System.Regpat is
         (Program_Data, Character_Class);
 
    begin
-      Op (0 .. 31) := Convert (Program (P + 3 .. P + 34));
+      Op (0 .. 31) := Convert (Program (P + Next_Pointer_Bytes .. P + 34));
    end Bitmap_Operand;
 
    -------------
@@ -582,7 +588,7 @@ package body System.Regpat is
             Program (Emit_Ptr + 2) := ASCII.NUL;
          end if;
 
-         Emit_Ptr := Emit_Ptr + 3;
+         Emit_Ptr := Emit_Ptr + Next_Pointer_Bytes;
          return Result;
       end Emit_Node;
 
@@ -660,8 +666,8 @@ package body System.Regpat is
          Old    : Pointer;
       begin
          Old := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 7);
-         Emit_Natural (Old + 3, Min);
-         Emit_Natural (Old + 5, Max);
+         Emit_Natural (Old + Next_Pointer_Bytes, Min);
+         Emit_Natural (Old + Next_Pointer_Bytes + 2, Max);
       end Insert_Curly_Operator;
 
       ----------------------------
@@ -682,7 +688,7 @@ package body System.Regpat is
          --  If not greedy, we have to emit another opcode first
 
          if not Greedy then
-            Size := Size + 3;
+            Size := Size + Next_Pointer_Bytes;
          end if;
 
          --  Move the operand in the byte-compilation, so that we can insert
@@ -700,7 +706,7 @@ package body System.Regpat is
 
          if not Greedy then
             Old := Emit_Node (MINMOD);
-            Link_Tail (Old, Old + 3);
+            Link_Tail (Old, Old + Next_Pointer_Bytes);
          end if;
 
          Old := Emit_Node (Op);
@@ -720,7 +726,8 @@ package body System.Regpat is
          Discard : Pointer;
          pragma Warnings (Off, Discard);
       begin
-         Discard := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 3);
+         Discard := Insert_Operator_Before
+            (Op, Operand, Greedy, Opsize => Next_Pointer_Bytes);
       end Insert_Operator;
 
       -----------------------
@@ -803,10 +810,10 @@ package body System.Regpat is
 
       begin
          --  Find last node (the size of the pattern matcher might be too
-         --  small, so don't try to read past its end)
+         --  small, so don't try to read past its end).
 
          Scan := P;
-         while Scan + 3 <= PM.Size loop
+         while Scan + Next_Pointer_Bytes <= PM.Size loop
             Temp := Get_Next (Program, Scan);
             exit when Temp = Scan;
             Scan := Temp;
@@ -1618,7 +1625,7 @@ package body System.Regpat is
          --  is an initial string to emit, do it now.
 
          if Has_Special_Operator
-           and then Emit_Ptr >= Length_Ptr + 3
+           and then Emit_Ptr >= Length_Ptr + Next_Pointer_Bytes
          then
             Emit_Ptr := Emit_Ptr - 1;
             Parse_Pos := Start_Pos;
@@ -2105,7 +2112,8 @@ package body System.Regpat is
 
             if Op = OPEN or else Op = CLOSE or else Op = REFF then
                Put (Image (Natural'Image
-                            (Character'Pos (Program (Index + 3)))));
+                            (Character'Pos
+                               (Program (Index + Next_Pointer_Bytes)))));
             end if;
 
             if Next = Index then
@@ -2165,7 +2173,7 @@ package body System.Regpat is
                      Put_Line ("]");
                   end if;
 
-                  Index := Index + 3 + Bitmap'Length;
+                  Index := Index + Next_Pointer_Bytes + Bitmap'Length;
                end;
 
             when EXACT | EXACTF =>
@@ -2188,7 +2196,7 @@ package body System.Regpat is
                   New_Line;
                end if;
 
-               Index  := Index + 3;
+               Index  := Index + Next_Pointer_Bytes;
                Dump_Until (Program, Index, Pointer'Min (Next, Till),
                            Local_Indent + 1, Do_Print);
 
@@ -2196,7 +2204,8 @@ package body System.Regpat is
                if Do_Print then
                   Put_Line
                     (" {"
-                    & Image (Natural'Image (Read_Natural (Program, Index + 3)))
+                    & Image (Natural'Image
+                       (Read_Natural (Program, Index + Next_Pointer_Bytes)))
                     & ","
                     & Image (Natural'Image (Read_Natural (Program, Index + 5)))
                     & "}");
@@ -2226,7 +2235,7 @@ package body System.Regpat is
                end if;
 
             when others =>
-               Index := Index + 3;
+               Index := Index + Next_Pointer_Bytes;
 
                if Do_Print then
                   New_Line;
@@ -2794,9 +2803,10 @@ package body System.Regpat is
 
                   declare
                      Min : constant Natural :=
-                             Read_Natural (Program, Scan + 3);
+                             Read_Natural (Program, Scan + Next_Pointer_Bytes);
                      Max : constant Natural :=
-                             Read_Natural (Program, Scan + 5);
+                             Read_Natural
+                                (Program, Scan + Next_Pointer_Bytes + 2);
                      Cc  : aliased Current_Curly_Record;
 
                      Has_Match : Boolean;
@@ -2814,7 +2824,7 @@ package body System.Regpat is
                      Greedy := True;
                      Current_Curly := Cc'Unchecked_Access;
 
-                     Has_Match := Match (Next - 3);
+                     Has_Match := Match (Next - Next_Pointer_Bytes);
 
                      --  Start on the WHILEM
 
@@ -2896,8 +2906,8 @@ package body System.Regpat is
                Operand_Code := Operand (Scan);
 
             when others =>
-               Min := Read_Natural (Program, Scan + 3);
-               Max := Read_Natural (Program, Scan + 5);
+               Min := Read_Natural (Program, Scan + Next_Pointer_Bytes);
+               Max := Read_Natural (Program, Scan + Next_Pointer_Bytes + 2);
                Operand_Code := Scan + 7;
          end case;
 
@@ -3573,7 +3583,7 @@ package body System.Regpat is
 
    function Operand (P : Pointer) return Pointer is
    begin
-      return P + 3;
+      return P + Next_Pointer_Bytes;
    end Operand;
 
    --------------
@@ -3690,7 +3700,7 @@ package body System.Regpat is
    is
    begin
       pragma Assert (Program (P) = EXACT or else Program (P) = EXACTF);
-      return Character'Pos (Program (P + 3));
+      return Character'Pos (Program (P + Next_Pointer_Bytes));
    end String_Length;
 
    --------------------
