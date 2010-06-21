@@ -1,3 +1,7 @@
+2010-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_type): Add DW_ATE_UTF.
+
 2010-06-18  Rafael Espindola  <espindola@google.com>
 
 	* plugin.h (ld_plugin_add_input_file, ld_plugin_add_input_library):

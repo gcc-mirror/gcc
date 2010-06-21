@@ -654,6 +654,8 @@ enum dwarf_type
     DW_ATE_signed_fixed = 0xd,
     DW_ATE_unsigned_fixed = 0xe,
     DW_ATE_decimal_float = 0xf,
+    /* DWARF 4.  */
+    DW_ATE_UTF = 0x10,
 
     DW_ATE_lo_user = 0x80,
     DW_ATE_hi_user = 0xff,
