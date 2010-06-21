@@ -139,6 +139,7 @@ decode_specification_statement (void)
 
     case 'c':
       match ("codimension", gfc_match_codimension, ST_ATTR_DECL);
+      match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
       break;
 
     case 'd':
@@ -346,6 +347,7 @@ decode_statement (void)
       match ("call", gfc_match_call, ST_CALL);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
+      match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
       match ("cycle", gfc_match_cycle, ST_CYCLE);
       match ("case", gfc_match_case, ST_CASE);
       match ("common", gfc_match_common, ST_COMMON);

@@ -1588,4 +1588,3 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 
   return fin_dep == GFC_DEP_OVERLAP;
 }
-

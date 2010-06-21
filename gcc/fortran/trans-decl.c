@@ -1213,7 +1213,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Create variables to hold the non-constant bits of array info.  */
       gfc_build_qualified_array (decl, sym);
 
-      if ((sym->attr.allocatable || !sym->attr.dummy) && !sym->attr.pointer)
+      if (sym->attr.contiguous
+	  || ((sym->attr.allocatable || !sym->attr.dummy) && !sym->attr.pointer))
 	GFC_DECL_PACKED_ARRAY (decl) = 1;
     }
 

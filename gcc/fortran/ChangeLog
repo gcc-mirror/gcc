@@ -1,3 +1,34 @@
+2010-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40632
+	* interface.c (compare_parameter): Add gfc_is_simply_contiguous
+	checks.
+	* symbol.c (gfc_add_contiguous): New function.
+	(gfc_copy_attr, check_conflict): Handle contiguous attribute.
+	* decl.c (match_attr_spec): Ditto.
+	(gfc_match_contiguous): New function.
+	* resolve.c (resolve_fl_derived, resolve_symbol): Handle
+	contiguous.
+	* gfortran.h (symbol_attribute): Add contiguous.
+	(gfc_is_simply_contiguous): Add prototype.
+	(gfc_add_contiguous): Add prototype.
+	* match.h (gfc_match_contiguous): Add prototype.
+	* parse.c (decode_specification_statement,
+	decode_statement): Handle contiguous attribute.
+	* expr.c (gfc_is_simply_contiguous): New function.
+	* dump-parse-tree.c (show_attr): Handle contiguous.
+	* module.c (ab_attribute, attr_bits, mio_symbol_attribute):
+	Ditto.
+	* trans-expr.c (gfc_add_interface_mapping): Copy
+	attr.contiguous.
+	* trans-array.c (gfc_conv_descriptor_stride_get,
+	gfc_conv_array_parameter): Handle contiguous arrays.
+	* trans-types.c (gfc_build_array_type, gfc_build_array_type,
+	gfc_sym_type, gfc_get_derived_type, gfc_get_array_descr_info):
+	Ditto.
+	* trans.h (gfc_array_kind): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl): Ditto.
+
 2010-06-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* options.c (gfc_handle_option): Don't handle N_OPTS.
