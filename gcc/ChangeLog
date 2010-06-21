@@ -44,8 +44,7 @@
 	* cfgexpand.c: Include insn-attr.h.
 	(gimple_expand_cfg): Call init_sched_attrs.
 
-	* stmt.c (resolve_asm_operand_names): Fix handling
-	of %%.
+	* stmt.c (resolve_asm_operand_names): Fix handling of %%.
 
 	PR target/44575
 	* config/i386/i386.c (ix86_gimplify_va_arg): When copying
@@ -79,8 +78,7 @@
 	(rx_print_operand_address): Make static.
 	(rx_gen_move_template): Rename local variable 'template' to
 	out_template.
-	(rx_function_arg): Do not pass unknown sized objects in
-	registers.
+	(rx_function_arg): Do not pass unknown sized objects in registers.
 	(TARGET_PRINT_OPERAND): Define.
 	(TARGET_PRINT_OPERAND_ADDRESS): Define.
 
@@ -108,7 +106,7 @@
 	PR target/44546
 	* config/i386/predicates.md (ix86_swapped_fp_comparsion_operator):
 	New predicate.
-	* config/i386/i386.md (*fp_jcc_8<mode>_387): Use
+	* config/i386/i386.md (*fp_jcc_8<mode>_387 and splitters): Use
 	ix86_swapped_fp_comparsion_operator instead of
 	ix86_fp_comparison_operator.
 
