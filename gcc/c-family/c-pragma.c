@@ -706,12 +706,6 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   diagnostic_t kind;
   tree x;
 
-  if (cfun)
-    {
-      error ("#pragma GCC diagnostic not allowed inside functions");
-      return;
-    }
-
   token = pragma_lex (&x);
   if (token != CPP_NAME)
     GCC_BAD ("missing [error|warning|ignored] after %<#pragma GCC diagnostic%>");
@@ -722,8 +716,18 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
     kind = DK_WARNING;
   else if (strcmp (kind_string, "ignored") == 0)
     kind = DK_IGNORED;
+  else if (strcmp (kind_string, "push") == 0)
+    {
+      diagnostic_push_diagnostics (global_dc, input_location);
+      return;
+    }
+  else if (strcmp (kind_string, "pop") == 0)
+    {
+      diagnostic_pop_diagnostics (global_dc, input_location);
+      return;
+    }
   else
-    GCC_BAD ("expected [error|warning|ignored] after %<#pragma GCC diagnostic%>");
+    GCC_BAD ("expected [error|warning|ignored|push|pop] after %<#pragma GCC diagnostic%>");
 
   token = pragma_lex (&x);
   if (token != CPP_STRING)
@@ -733,7 +737,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
     if (strcmp (cl_options[option_index].opt_text, option_string) == 0)
       {
 	/* This overrides -Werror, for example.  */
-	diagnostic_classify_diagnostic (global_dc, option_index, kind);
+	diagnostic_classify_diagnostic (global_dc, option_index, kind, input_location);
 	/* This makes sure the option is enabled, like -Wfoo would do.  */
 	if (cl_options[option_index].var_type == CLVC_BOOLEAN
 	    && cl_options[option_index].flag_var

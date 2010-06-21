@@ -306,7 +306,8 @@ default_diagnostic_finalizer (diagnostic_context *context,
 diagnostic_t
 diagnostic_classify_diagnostic (diagnostic_context *context,
 				int option_index,
-				diagnostic_t new_kind)
+				diagnostic_t new_kind,
+				location_t where)
 {
   diagnostic_t old_kind;
 
@@ -316,8 +317,64 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
     return DK_UNSPECIFIED;
 
   old_kind = context->classify_diagnostic[option_index];
-  context->classify_diagnostic[option_index] = new_kind;
+
+  /* Handle pragmas separately, since we need to keep track of *where*
+     the pragmas were.  */
+  if (where != UNKNOWN_LOCATION)
+    {
+      int i;
+
+      for (i = context->n_classification_history - 1; i >= 0; i --)
+	if (context->classification_history[i].option == option_index)
+	  {
+	    old_kind = context->classification_history[i].kind;
+	    break;
+	  }
+
+      i = context->n_classification_history;
+      context->classification_history =
+	(diagnostic_classification_change_t *) xrealloc (context->classification_history, (i + 1)
+							 * sizeof (diagnostic_classification_change_t));
+      context->classification_history[i].location = where;
+      context->classification_history[i].option = option_index;
+      context->classification_history[i].kind = new_kind;
+      context->n_classification_history ++;
+    }
+  else
+    context->classify_diagnostic[option_index] = new_kind;
+
   return old_kind;
+}
+
+/* Save all diagnostic classifications in a stack.  */
+void
+diagnostic_push_diagnostics (diagnostic_context *context, location_t where ATTRIBUTE_UNUSED)
+{
+  context->push_list = (int *) xrealloc (context->push_list, (context->n_push + 1) * sizeof (int));
+  context->push_list[context->n_push ++] = context->n_classification_history;
+}
+
+/* Restore the topmost classification set off the stack.  If the stack
+   is empty, revert to the state based on command line parameters.  */
+void
+diagnostic_pop_diagnostics (diagnostic_context *context, location_t where)
+{
+  int jump_to;
+  int i;
+
+  if (context->n_push)
+    jump_to = context->push_list [-- context->n_push];
+  else
+    jump_to = 0;
+
+  i = context->n_classification_history;
+  context->classification_history =
+    (diagnostic_classification_change_t *) xrealloc (context->classification_history, (i + 1)
+						     * sizeof (diagnostic_classification_change_t));
+  context->classification_history[i].location = where;
+  context->classification_history[i].option = jump_to;
+  context->classification_history[i].kind = DK_POP;
+  context->n_classification_history ++;
 }
 
 /* Report a diagnostic message (an error or a warning) as specified by
@@ -374,13 +431,41 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   if (diagnostic->option_index)
     {
+      diagnostic_t diag_class = DK_UNSPECIFIED;
+
       /* This tests if the user provided the appropriate -Wfoo or
 	 -Wno-foo option.  */
       if (! context->option_enabled (diagnostic->option_index))
 	return false;
+
+      /* This tests for #pragma diagnostic changes.  */
+      if (context->n_classification_history > 0)
+	{
+	  int i;
+	  /* FIXME: Stupid search.  Optimize later. */
+	  for (i = context->n_classification_history - 1; i >= 0; i --)
+	    {
+	      if (context->classification_history[i].location <= location)
+		{
+		  if (context->classification_history[i].kind == (int) DK_POP)
+		    {
+		      i = context->classification_history[i].option;
+		      continue;
+		    }
+		  if (context->classification_history[i].option == diagnostic->option_index)
+		    {
+		      diag_class = context->classification_history[i].kind;
+		      if (diag_class != DK_UNSPECIFIED)
+			diagnostic->kind = diag_class;
+		      break;
+		    }
+		}
+	    }
+	}
       /* This tests if the user provided the appropriate -Werror=foo
 	 option.  */
-      if (context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
+      if (diag_class == DK_UNSPECIFIED
+	  && context->classify_diagnostic[diagnostic->option_index] != DK_UNSPECIFIED)
 	{
 	  diagnostic->kind = context->classify_diagnostic[diagnostic->option_index];
 	}

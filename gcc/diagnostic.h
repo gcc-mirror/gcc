@@ -41,6 +41,16 @@ typedef struct diagnostic_info
   int option_index;
 } diagnostic_info;
 
+/* Each time a diagnostic's classification is changed with a pragma,
+   we record the change and the location of the change in an array of
+   these structs.  */
+typedef struct diagnostic_classification_change_t
+{
+  location_t location;
+  int option;
+  diagnostic_t kind;
+} diagnostic_classification_change_t;
+
 /*  Forward declarations.  */
 typedef struct diagnostic_context diagnostic_context;
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,
@@ -75,6 +85,20 @@ struct diagnostic_context
      it as the reported kind, or DK_IGNORED to not report it at
      all.  */
   diagnostic_t *classify_diagnostic;
+
+  /* History of all changes to the classifications above.  This list
+     is stored in location-order, so we can search it, either
+     binary-wise or end-to-front, to find the most recent
+     classification for a given diagnostic, given the location of the
+     diagnostic.  */
+  diagnostic_classification_change_t *classification_history;
+
+  /* The size of the above array.  */
+  int n_classification_history;
+
+  /* For pragma push/pop.  */
+  int *push_list;
+  int n_push;
 
   /* True if we should print the command line option which controls
      each diagnostic, if known.  */
@@ -228,7 +252,10 @@ extern void diagnostic_report_current_module (diagnostic_context *);
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
 						    int /* optidx */,
-						    diagnostic_t /* kind */);
+						    diagnostic_t /* kind */,
+						    location_t);
+extern void diagnostic_push_diagnostics (diagnostic_context *, location_t);
+extern void diagnostic_pop_diagnostics (diagnostic_context *, location_t);
 extern bool diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
 #ifdef ATTRIBUTE_GCC_DIAG

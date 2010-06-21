@@ -2396,7 +2396,8 @@ set_option (int opt_index, int value, const char *arg, int kind)
     }
 
   if ((diagnostic_t)kind != DK_UNSPECIFIED)
-    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t)kind);
+    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t)kind,
+				    UNKNOWN_LOCATION);
 }
 
 
@@ -2434,7 +2435,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
     {
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
 
-      diagnostic_classify_diagnostic (global_dc, option_index, kind);
+      diagnostic_classify_diagnostic (global_dc, option_index, kind,
+				      UNKNOWN_LOCATION);
       if (kind == DK_ERROR)
 	{
 	  const struct cl_option * const option = cl_options + option_index;

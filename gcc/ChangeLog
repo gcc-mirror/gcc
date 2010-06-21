@@ -1,3 +1,24 @@
+2010-06-21  DJ Delorie  <dj@redhat.com>
+
+	* diagnostic.h (diagnostic_classification_change_t): New.
+	(diagnostic_context): Add history and push/pop list.
+	(diagnostic_push_diagnostics): Declare.
+	(diagnostic_pop_diagnostics): Declare.
+	* diagnostic.c (diagnostic_classify_diagnostic): Store changes
+	from pragmas in a history chain instead of the global table.
+	(diagnostic_push_diagnostics): New.
+	(diagnostic_pop_diagnostics): New.
+	(diagnostic_report_diagnostic): Scan history chain to find state
+	of diagnostics as of the diagnostic location.
+	* opts.c (set_option): Pass UNKNOWN_LOCATION to
+	diagnostic_classify_diagnostic.
+	(enable_warning_as_error): Likewise.
+	* diagnostic-core.h (DK_POP): Add after "real" diagnostics, for
+	use in the history chain.
+	* c-family/c-pragma.c (handle_pragma_diagnostic): Add push/pop,
+	allow these pragmas anywhere.
+	* doc/extend.texi: Document pragma GCC diagnostic changes.
+
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (add_linkage_name): New function.  Don't add
