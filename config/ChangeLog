@@ -1,3 +1,7 @@
+2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* bootstrap-lto.mk: New.
+
 2010-06-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	* override.m4: Remove obsolete (<2.64) definitions.

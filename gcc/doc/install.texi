@@ -2150,6 +2150,11 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 @item @samp{bootstrap-O3}
 Analogous to @code{bootstrap-O1}.
 
+@item @samp{bootstrap-lto}
+Enables Link-Time Optimization for host tools during bootstrapping.
+@samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
+@option{-flto} to @samp{BOOT_CFLAGS}.
+
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
 or not it is asked to emit debug information.  To this end, this

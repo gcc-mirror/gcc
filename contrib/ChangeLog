@@ -1,3 +1,7 @@
+2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Drop LTO sections.
+
 2010-06-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* gcc_update: Support updating a git clone.
