@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Disp; use Exp_Disp;
+with Exp_Dbug; use Exp_Dbug;
 with Exp_Tss;  use Exp_Tss;
 with Lib;      use Lib;
 with Namet;    use Namet;
@@ -392,7 +393,8 @@ package body Exp_CG is
 
       Write_Str ("edge: { sourcename: ");
       Write_Char ('"');
-      Write_Name (Chars (Defining_Entity (P)));
+      Get_External_Name (Defining_Entity (P), Has_Suffix => False);
+      Write_Str (Name_Buffer (1 .. Name_Len));
 
       if Nkind (P) = N_Package_Declaration then
          Write_Str ("___elabs");

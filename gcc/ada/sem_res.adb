@@ -5906,7 +5906,7 @@ package body Sem_Res is
          --  to the discriminant of the same name in the target task. If the
          --  entry name is the target of a requeue statement and the entry is
          --  in the current protected object, the bound to be used is the
-         --  discriminal of the object (see apply_range_checks for details of
+         --  discriminal of the object (see Apply_Range_Checks for details of
          --  the transformation).
 
          -----------------------------

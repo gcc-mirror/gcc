@@ -6477,7 +6477,7 @@ package body Checks is
                      --  current discriminal, which is the renaming within
                      --  the task body.
 
-                     Disc :=  First_Discriminant (Tsk);
+                     Disc := First_Discriminant (Tsk);
                      while Present (Disc) loop
                         if Chars (Disc) = Chars (Entity (Bound)) then
                            Set_Scope (Discriminal (Disc), Tsk);

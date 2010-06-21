@@ -1,3 +1,38 @@
+2010-06-21  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Search_Directories): Use the non-translated directory
+	path to open it.
+
+2010-06-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Write_Call_Info): Fill the component sourcename using the
+	external name.
+
+2010-06-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): If an object declaration is created
+	to hold the result, indicate that the target of the declaration does
+	not need an initialization, to prevent spurious errors when
+	Initialize_Scalars is enabled.
+
+2010-06-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-tifiio.adb (Put): In the procedure that performs I/O on a String,
+	Fore is not bound by line length. The Fore parameter of the internal
+	procedure that performs the operation is an integer.
+
+2010-06-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb, checks.adb: Minor reformatting.
+
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Next_Instruction, Get_Next_Offset): Removed, merged
+	into Get_Next.
+	(Insert_Operator_Before): New subprogram, avoids duplicated code
+	(Compile): Avoid doing two compilations when the pattern matcher ends
+	up being small.
+
 2010-06-21  Emmanuel Briot  <briot@adacore.com>
 
 	* s-regpat.adb: Improve debug traces
