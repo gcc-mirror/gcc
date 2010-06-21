@@ -731,7 +731,7 @@
 (define_insn_reservation "ppro_insn" 1
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "none,unknown")
-				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseimul,mmx,mmxadd,mmxcmp")))
+				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseishft1,sseimul,mmx,mmxadd,mmxcmp")))
 			 "decodern,(p0|p1)")
 
 ;; read-modify and register-memory instructions have 2 or three uops,
@@ -739,13 +739,13 @@
 (define_insn_reservation "ppro_insn_load" 3
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "load")
-				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseimul,mmx,mmxadd,mmxcmp")))
+				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseishft1,sseimul,mmx,mmxadd,mmxcmp")))
 			 "decoder0,p2+(p0|p1)")
 
 (define_insn_reservation "ppro_insn_store" 1
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "store")
-				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseimul,mmx,mmxadd,mmxcmp")))
+				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseishft1,sseimul,mmx,mmxadd,mmxcmp")))
 			 "decoder0,(p0|p1),p4+p3")
 
 ;; read-modify-store instructions produce 4 uops so they have to be
@@ -753,6 +753,6 @@
 (define_insn_reservation "ppro_insn_both" 4
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "both")
-				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseimul,mmx,mmxadd,mmxcmp")))
+				   (eq_attr "type" "alu,alu1,negnot,incdec,icmp,test,setcc,icmov,push,pop,fxch,sseiadd,sseishft,sseishft1,sseimul,mmx,mmxadd,mmxcmp")))
 			 "decoder0,p2+(p0|p1),p4+p3")
 

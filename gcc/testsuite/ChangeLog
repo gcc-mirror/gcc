@@ -1,3 +1,8 @@
+2010-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44615
+	* gcc.target/i386/sse2-vec-2a.c: New.
+
 2010-06-21  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/pragma-diag-1.c: New.
