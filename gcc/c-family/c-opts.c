@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "mkdeps.h"
 #include "target.h"		/* For gcc_targetcm.  */
+#include "tm_p.h"		/* For C_COMMON_OVERRIDE_OPTIONS.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
