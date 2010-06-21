@@ -1151,7 +1151,7 @@ package body Sem_Res is
 
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
       --  If the operand is not universal, and the operator is given by a
-      --  expanded name,  verify that the operand has an interpretation with
+      --  expanded name, verify that the operand has an interpretation with
       --  a type defined in the given scope of the operator.
 
       function Type_In_P (Test : Kind_Test) return Entity_Id;
@@ -1292,16 +1292,15 @@ package body Sem_Res is
       --  you courtesy of b33302a. The type itself must be frozen, so we must
       --  find the type of the proper class in the given scope.
 
-      --  A final wrinkle is the multiplication operator for fixed point
-      --  types, which is defined in Standard only, and not in the scope of
-      --  the fixed_point type itself.
+      --  A final wrinkle is the multiplication operator for fixed point types,
+      --  which is defined in Standard only, and not in the scope of the
+      --  fixed_point type itself.
 
       if Nkind (Name (N)) = N_Expanded_Name then
          Pack := Entity (Prefix (Name (N)));
 
-         --  If the entity being called is defined in the given package,
-         --  it is a renaming of a predefined operator, and known to be
-         --  legal.
+         --  If the entity being called is defined in the given package, it is
+         --  a renaming of a predefined operator, and known to be legal.
 
          if Scope (Entity (Name (N))) = Pack
             and then Pack /= Standard_Standard
@@ -1315,8 +1314,7 @@ package body Sem_Res is
          elsif In_Instance then
             null;
 
-         elsif (Op_Name =  Name_Op_Multiply
-              or else Op_Name = Name_Op_Divide)
+         elsif (Op_Name =  Name_Op_Multiply or else Op_Name = Name_Op_Divide)
            and then Is_Fixed_Point_Type (Etype (Left_Opnd  (Op_Node)))
            and then Is_Fixed_Point_Type (Etype (Right_Opnd (Op_Node)))
          then
@@ -1324,8 +1322,8 @@ package body Sem_Res is
                Error := True;
             end if;
 
-         --  Ada 2005, AI-420:  Predefined equality on Universal_Access
-         --  is available.
+         --  Ada 2005, AI-420: Predefined equality on Universal_Access is
+         --  available.
 
          elsif Ada_Version >= Ada_05
            and then (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
@@ -1356,7 +1354,7 @@ package body Sem_Res is
                if Pack /= Standard_Standard then
 
                   if Opnd_Type = Universal_Integer then
-                     Orig_Type :=  Type_In_P (Is_Integer_Type'Access);
+                     Orig_Type := Type_In_P (Is_Integer_Type'Access);
 
                   elsif Opnd_Type = Universal_Real then
                      Orig_Type := Type_In_P (Is_Real_Type'Access);
@@ -1365,7 +1363,7 @@ package body Sem_Res is
                      Orig_Type := Type_In_P (Is_String_Type'Access);
 
                   elsif Opnd_Type = Any_Access then
-                     Orig_Type :=  Type_In_P (Is_Definite_Access_Type'Access);
+                     Orig_Type := Type_In_P (Is_Definite_Access_Type'Access);
 
                   elsif Opnd_Type = Any_Composite then
                      Orig_Type := Type_In_P (Is_Composite_Type'Access);

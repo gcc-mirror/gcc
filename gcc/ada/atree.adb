@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,8 @@ package body Atree is
 
    --  The second method is faster
 
+   --  Similarly, rr and rrd allow breaking on rewriting of a given node.
+
    ww : Node_Id'Base := Node_Id'First - 1;
    pragma Export (Ada, ww); --  trick the optimizer
    Watch_Node : Node_Id'Base renames ww;
@@ -88,6 +90,25 @@ package body Atree is
    --
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
+
+   procedure rr;
+   pragma Export (Ada, rr);
+   procedure Rewrite_Breakpoint renames rr;
+   --  This doesn't do anything interesting; it's just for setting breakpoint
+   --  on as explained above.
+
+   procedure rrd (Old_Node, New_Node : Node_Id);
+   pragma Export (Ada, rrd);
+   procedure Rewrite_Debugging_Output
+     (Old_Node, New_Node : Node_Id) renames rrd;
+   --  For debugging. If debugging is turned on, Rewrite calls this. If debug
+   --  flag N is turned on, this prints out the new node.
+   --
+   --  If Old_Node = Watch_Node, this prints out the old and new nodes and
+   --  calls Rewrite_Breakpoint. Otherwise, does nothing.
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id);
+   --  Common code for nnr and rrd. Write Op followed by information about N
 
    -----------------------------
    -- Local Objects and Types --
@@ -1237,21 +1258,7 @@ package body Atree is
 
    begin
       if Debug_Flag_N or else Node_Is_Watched then
-         Write_Str ("Allocate ");
-
-         if Nkind (N) in N_Entity then
-            Write_Str ("entity");
-         else
-            Write_Str ("node");
-         end if;
-
-         Write_Str (", Id = ");
-         Write_Int (Int (N));
-         Write_Str ("  ");
-         Write_Location (Sloc (N));
-         Write_Str ("  ");
-         Write_Str (Node_Kind'Image (Nkind (N)));
-         Write_Eol;
+         Node_Debug_Output ("Allocate", N);
 
          if Node_Is_Watched then
             New_Node_Breakpoint;
@@ -1371,6 +1378,7 @@ package body Atree is
    begin
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9);
    end Nkind_In;
+
    --------
    -- No --
    --------
@@ -1379,6 +1387,29 @@ package body Atree is
    begin
       return N = Empty;
    end No;
+
+   -----------------------
+   -- Node_Debug_Output --
+   -----------------------
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id) is
+   begin
+      Write_Str (Op);
+
+      if Nkind (N) in N_Entity then
+         Write_Str (" entity");
+      else
+         Write_Str (" node");
+      end if;
+
+      Write_Str (" Id = ");
+      Write_Int (Int (N));
+      Write_Str ("  ");
+      Write_Location (Sloc (N));
+      Write_Str ("  ");
+      Write_Str (Node_Kind'Image (Nkind (N)));
+      Write_Eol;
+   end Node_Debug_Output;
 
    -------------------
    -- Nodes_Address --
@@ -1564,6 +1595,7 @@ package body Atree is
         (not Has_Extension (Old_Node)
            and not Has_Extension (New_Node)
            and not Nodes.Table (New_Node).In_List);
+      pragma Debug (Rewrite_Debugging_Output (Old_Node, New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
          Old_Paren_Count     := Paren_Count (Old_Node);
@@ -1597,6 +1629,36 @@ package body Atree is
 
       Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
    end Rewrite;
+
+   -------------------------
+   -- Rewrite_Breakpoint --
+   -------------------------
+
+   procedure rr is -- Rewrite_Breakpoint
+   begin
+      Write_Str ("Watched node ");
+      Write_Int (Int (Watch_Node));
+      Write_Str (" rewritten");
+      Write_Eol;
+   end rr;
+
+   ------------------------------
+   -- Rewrite_Debugging_Output --
+   ------------------------------
+
+   procedure rrd (Old_Node, New_Node : Node_Id) is -- Rewrite_Debugging_Output
+      Node_Is_Watched : constant Boolean := Old_Node = Watch_Node;
+
+   begin
+      if Debug_Flag_N or else Node_Is_Watched then
+         Node_Debug_Output ("Rewrite", Old_Node);
+         Node_Debug_Output ("into",    New_Node);
+
+         if Node_Is_Watched then
+            Rewrite_Breakpoint;
+         end if;
+      end if;
+   end rrd;
 
    ------------------
    -- Set_Analyzed --
