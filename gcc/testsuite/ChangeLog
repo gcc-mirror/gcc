@@ -1,3 +1,17 @@
+2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_gas): New proc.
+	* gcc.c-torture/execute/960321-1.x: New file.
+
+	2009-10-03  Ben Elliston  <bje@au.ibm.com>
+		    Janis Johnson  <janis187@us.ibm.com>
+	    	    Diego Novillo  <dnovillo@google.com>
+
+	* lib/c-torture.exp: Load target-supports.exp.
+
 2010-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline

@@ -2929,6 +2929,28 @@ proc check_effective_target_correct_iso_cpp_string_wchar_protos { } {
     }]
 }
 
+# Return 1 if GNU as is used.
+
+proc check_effective_target_gas { } {
+    global use_gas_saved
+    global tool
+
+    if {![info exists use_gas_saved]} {
+	# Check if the as used by gcc is GNU as.
+	set gcc_as [lindex [${tool}_target_compile "-print-prog-name=as" "" "none" ""] 0]
+	# Provide /dev/null as input, otherwise gas times out reading from
+	# stdin.
+	set status [remote_exec host "$gcc_as" "-v /dev/null"]
+	set as_output [lindex $status 1]
+	if { [ string first "GNU" $as_output ] >= 0 } {
+	    set use_gas_saved 1
+	} else {
+	    set use_gas_saved 0
+	}
+    }
+    return $use_gas_saved
+}
+
 # Return 1 if the language for the compiler under test is C.
 
 proc check_effective_target_c { } {
