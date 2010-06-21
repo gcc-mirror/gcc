@@ -4788,8 +4788,8 @@ package body Prj.Nmsc is
    ---------------------
 
    procedure Get_Directories
-     (Project     : Project_Id;
-      Data        : in out Tree_Processing_Data)
+     (Project : Project_Id;
+      Data    : in out Tree_Processing_Data)
    is
       package Recursive_Dirs is new GNAT.Dynamic_HTables.Simple_HTable
         (Header_Num => Header_Num,
@@ -6839,12 +6839,18 @@ package body Prj.Nmsc is
                declare
                   --  We use Element.Value, not Display_Value, because we want
                   --  the symbolic links to be resolved when appropriate.
-                  Source_Directory : constant String :=
-                                       Get_Name_String (Element.Value)
-                                         & Directory_Separator;
-                  Dir_Last : constant Natural :=
-                                       Compute_Directory_Last
-                                         (Source_Directory);
+                  Source_Directory         : constant String :=
+                                               Get_Name_String (Element.Value)
+                                                 & Directory_Separator;
+                  Dir_Last                 : constant Natural :=
+                                               Compute_Directory_Last
+                                                 (Source_Directory);
+                  --  The Display_Source_Directory is to be able to open an
+                  --  UTF-8 encoded directory on Windows.
+                  Display_Source_Directory : constant String :=
+                                               Get_Name_String
+                                                 (Element.Display_Value)
+                                                  & Directory_Separator;
 
                begin
                   if Current_Verbosity = High then
@@ -6856,7 +6862,7 @@ package body Prj.Nmsc is
 
                   --  We look to every entry in the source directory
 
-                  Open (Dir, Source_Directory);
+                  Open (Dir, Display_Source_Directory);
 
                   loop
                      Read (Dir, Name, Last);
@@ -6871,7 +6877,7 @@ package body Prj.Nmsc is
 
                      if not Opt.Follow_Links_For_Files
                        or else Is_Regular_File
-                                 (Source_Directory & Name (1 .. Last))
+                                 (Display_Source_Directory & Name (1 .. Last))
                      then
                         if Current_Verbosity = High then
                            Write_Str  ("   Checking ");

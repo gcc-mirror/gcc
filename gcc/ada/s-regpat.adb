@@ -50,13 +50,6 @@ package body System.Regpat is
    Debug : constant Boolean := False;
    --  Set to True to activate debug traces
 
-   MAGIC : constant Character := Character'Val (10#0234#);
-   --  The first byte of the regexp internal "program" is actually
-   --  this magic number; the start node begins in the second byte.
-   --
-   --  This is used to make sure that a regular expression was correctly
-   --  compiled.
-
    ----------------------------
    -- Implementation details --
    ----------------------------
@@ -79,21 +72,19 @@ package body System.Regpat is
    --  You can see the exact byte-compiled version by using the Dump
    --  subprogram. However, here are a few examples:
 
-   --  (a|b):  1 : MAGIC
-   --          2 : BRANCH  (next at  10)
-   --          5 :    EXACT  (next at  18)   operand=a
-   --         10 : BRANCH  (next at  18)
-   --         13 :    EXACT  (next at  18)   operand=b
-   --         18 : EOP  (next at 0)
+   --  (a|b):  1 : BRANCH  (next at  9)
+   --          4 :    EXACT  (next at  17)   operand=a
+   --          9 : BRANCH  (next at  17)
+   --         12 :    EXACT  (next at  17)   operand=b
+   --         17 : EOP  (next at 0)
    --
-   --  (ab)*:  1 : MAGIC
-   --          2 : CURLYX  (next at  26)  { 0, 32767}
-   --          9 :    OPEN 1  (next at  13)
-   --         13 :       EXACT  (next at  19)   operand=ab
-   --         19 :    CLOSE 1  (next at  23)
-   --         23 :    WHILEM  (next at 0)
-   --         26 : NOTHING  (next at  29)
-   --         29 : EOP  (next at 0)
+   --  (ab)*:  1 : CURLYX  (next at  25)  { 0, 32767}
+   --          8 :    OPEN 1  (next at  12)
+   --         12 :       EXACT  (next at  18)   operand=ab
+   --         18 :    CLOSE 1  (next at  22)
+   --         22 :    WHILEM  (next at 0)
+   --         25 : NOTHING  (next at  28)
+   --         28 : EOP  (next at 0)
 
    --  The opcodes are:
 
@@ -282,11 +273,6 @@ package body System.Regpat is
       Op      : out Character_Class);
    --  Return a pointer to the string argument of the node at P
 
-   function Get_Next_Offset
-     (Program : Program_Data;
-      IP      : Pointer) return Pointer;
-   --  Get the offset field of a node. Used by Get_Next
-
    function Get_Next
      (Program : Program_Data;
       IP      : Pointer) return Pointer;
@@ -306,7 +292,6 @@ package body System.Regpat is
    pragma Inline (Is_Alnum);
    pragma Inline (Is_White_Space);
    pragma Inline (Get_Next);
-   pragma Inline (Get_Next_Offset);
    pragma Inline (Operand);
    pragma Inline (Read_Natural);
    pragma Inline (String_Length);
@@ -389,7 +374,6 @@ package body System.Regpat is
       PM        : Pattern_Matcher renames Matcher;
       Program   : Program_Data renames PM.Program;
 
-      Emit_Code : constant Boolean := PM.Size > 0;
       Emit_Ptr  : Pointer := Program_First;
 
       Parse_Pos : Natural := Expression'First; -- Input-scan pointer
@@ -456,6 +440,17 @@ package body System.Regpat is
       --  This applies to PLUS and STAR.
       --  If Minmod is True, then the operator is non-greedy.
 
+      function Insert_Operator_Before
+        (Op      : Opcode;
+         Operand : Pointer;
+         Greedy  : Boolean;
+         Opsize  : Pointer) return Pointer;
+      --  Insert an operator before Operand (and move the latter forward in the
+      --  program). Opsize is the size needed to represent the operator.
+      --  This returns the position at which the operator was
+      --  inserted, and moves Emit_Ptr after the new position of the
+      --  operand.
+
       procedure Insert_Curly_Operator
         (Op      : Opcode;
          Min     : Natural;
@@ -470,9 +465,6 @@ package body System.Regpat is
 
       procedure Link_Operand_Tail (P, Val : Pointer);
       --  Link_Tail on operand of first argument; noop if operand-less
-
-      function  Next_Instruction (P : Pointer) return Pointer;
-      --  Dig the "next" pointer out of a node
 
       procedure Fail (M : String);
       pragma No_Return (Fail);
@@ -533,7 +525,7 @@ package body System.Regpat is
 
       procedure Emit (B : Character) is
       begin
-         if Emit_Code then
+         if Emit_Ptr <= PM.Size then
             Program (Emit_Ptr) := B;
          end if;
 
@@ -551,7 +543,7 @@ package body System.Regpat is
            (Character_Class, Program31);
 
       begin
-         if Emit_Code then
+         if Emit_Ptr + 31 <= PM.Size then
             Program (Emit_Ptr .. Emit_Ptr + 31) := Convert (Bitmap);
          end if;
 
@@ -564,7 +556,7 @@ package body System.Regpat is
 
       procedure Emit_Natural (IP : Pointer; N : Natural) is
       begin
-         if Emit_Code then
+         if IP + 1 <= PM.Size then
             Program (IP + 1) := Character'Val (N / 256);
             Program (IP) := Character'Val (N mod 256);
          end if;
@@ -578,7 +570,7 @@ package body System.Regpat is
          Result : constant Pointer := Emit_Ptr;
 
       begin
-         if Emit_Code then
+         if Emit_Ptr + 2 <= PM.Size then
             Program (Emit_Ptr) := Character'Val (Opcode'Pos (Op));
             Program (Emit_Ptr + 1) := ASCII.NUL;
             Program (Emit_Ptr + 2) := ASCII.NUL;
@@ -659,12 +651,29 @@ package body System.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Dest   : constant Pointer := Emit_Ptr;
          Old    : Pointer;
-         Size   : Pointer := 7;
+      begin
+         Old := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 7);
+         Emit_Natural (Old + 3, Min);
+         Emit_Natural (Old + 5, Max);
+      end Insert_Curly_Operator;
+
+      ----------------------------
+      -- Insert_Operator_Before --
+      ----------------------------
+
+      function Insert_Operator_Before
+        (Op      : Opcode;
+         Operand : Pointer;
+         Greedy  : Boolean;
+         Opsize  : Pointer) return Pointer
+      is
+         Dest : constant Pointer := Emit_Ptr;
+         Old  : Pointer;
+         Size : Pointer := Opsize;
 
       begin
-         --  If the operand is not greedy, insert an extra operand before it
+         --  If not greedy, we have to emit another opcode first
 
          if not Greedy then
             Size := Size + 3;
@@ -673,7 +682,7 @@ package body System.Regpat is
          --  Move the operand in the byte-compilation, so that we can insert
          --  the operator before it.
 
-         if Emit_Code then
+         if Emit_Ptr + Size <= PM.Size then
             Program (Operand + Size .. Emit_Ptr + Size) :=
               Program (Operand .. Emit_Ptr);
          end if;
@@ -689,11 +698,9 @@ package body System.Regpat is
          end if;
 
          Old := Emit_Node (Op);
-         Emit_Natural (Old + 3, Min);
-         Emit_Natural (Old + 5, Max);
-
          Emit_Ptr := Dest + Size;
-      end Insert_Curly_Operator;
+         return Old;
+      end Insert_Operator_Before;
 
       ---------------------
       -- Insert_Operator --
@@ -704,40 +711,10 @@ package body System.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Dest : constant Pointer := Emit_Ptr;
-         Old  : Pointer;
-         Size : Pointer := 3;
-
          Discard : Pointer;
          pragma Warnings (Off, Discard);
-
       begin
-         --  If not greedy, we have to emit another opcode first
-
-         if not Greedy then
-            Size := Size + 3;
-         end if;
-
-         --  Move the operand in the byte-compilation, so that we can insert
-         --  the operator before it.
-
-         if Emit_Code then
-            Program (Operand + Size .. Emit_Ptr + Size) :=
-              Program (Operand .. Emit_Ptr);
-         end if;
-
-         --  Insert the operator at the position previously occupied by the
-         --  operand.
-
-         Emit_Ptr := Operand;
-
-         if not Greedy then
-            Old := Emit_Node (MINMOD);
-            Link_Tail (Old, Old + 3);
-         end if;
-
-         Discard := Emit_Node (Op);
-         Emit_Ptr := Dest + Size;
+         Discard := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 3);
       end Insert_Operator;
 
       -----------------------
@@ -804,7 +781,7 @@ package body System.Regpat is
 
       procedure Link_Operand_Tail (P, Val : Pointer) is
       begin
-         if Emit_Code and then Program (P) = BRANCH then
+         if Program (P) = BRANCH then
             Link_Tail (Operand (P), Val);
          end if;
       end Link_Operand_Tail;
@@ -819,7 +796,7 @@ package body System.Regpat is
          Offset : Pointer;
 
       begin
-         if not Emit_Code then
+         if Emit_Ptr > PM.Size then
             return;
          end if;
 
@@ -827,8 +804,8 @@ package body System.Regpat is
 
          Scan := P;
          loop
-            Temp := Next_Instruction (Scan);
-            exit when Temp = 0;
+            Temp := Get_Next (Program, Scan);
+            exit when Temp = Scan;
             Scan := Temp;
          end loop;
 
@@ -836,27 +813,6 @@ package body System.Regpat is
 
          Emit_Natural (Scan + 1, Natural (Offset));
       end Link_Tail;
-
-      ----------------------
-      -- Next_Instruction --
-      ----------------------
-
-      function Next_Instruction (P : Pointer) return Pointer is
-         Offset : Pointer;
-
-      begin
-         if not Emit_Code then
-            return 0;
-         end if;
-
-         Offset := Get_Next_Offset (Program, P);
-
-         if Offset = 0 then
-            return 0;
-         end if;
-
-         return P + Offset;
-      end Next_Instruction;
 
       -----------
       -- Parse --
@@ -873,7 +829,7 @@ package body System.Regpat is
          IP             : out Pointer)
       is
          E              : String renames Expression;
-         Br             : Pointer;
+         Br, Br2        : Pointer;
          Ender          : Pointer;
          Par_No         : Natural;
          New_Flags      : Expression_Flags;
@@ -964,9 +920,10 @@ package body System.Regpat is
 
             Br := IP;
             loop
-               exit when Br = 0;
                Link_Operand_Tail (Br, Ender);
-               Br := Next_Instruction (Br);
+               Br2 := Get_Next (Program, Br);
+               exit when Br2 = Br;
+               Br := Br2;
             end loop;
          end if;
 
@@ -1665,7 +1622,7 @@ package body System.Regpat is
             Parse_Pos := Start_Pos;
          end if;
 
-         if Emit_Code then
+         if Length_Ptr <= PM.Size then
             Program (Length_Ptr) := Character'Val (Emit_Ptr - Length_Ptr - 2);
          end if;
 
@@ -2007,7 +1964,6 @@ package body System.Regpat is
    --  Start of processing for Compile
 
    begin
-      Emit (MAGIC);
       Parse (False, Expr_Flags, Result);
 
       if Result = 0 then
@@ -2019,7 +1975,7 @@ package body System.Regpat is
       --  Do we want to actually compile the expression, or simply get the
       --  code size ???
 
-      if Emit_Code then
+      if Emit_Ptr <= PM.Size then
          Optimize (PM);
       end if;
 
@@ -2030,19 +1986,37 @@ package body System.Regpat is
      (Expression : String;
       Flags      : Regexp_Flags := No_Flags) return Pattern_Matcher
    is
+      --  Assume the compiled regexp will fit in 1000 chars. If it does not
+      --  we will have to compile a second time once the correct size is
+      --  known. If it fits, we save a significant amount of time by avoiding
+      --  the second compilation.
+      Dummy : Pattern_Matcher (1000);
       Size  : Program_Size;
-      Dummy : Pattern_Matcher (0);
-      pragma Unreferenced (Dummy);
 
    begin
       Compile (Dummy, Expression, Size, Flags);
 
-      declare
-         Result : Pattern_Matcher (Size);
-      begin
-         Compile (Result, Expression, Size, Flags);
-         return Result;
-      end;
+      if Size <= Dummy.Size then
+         return Pattern_Matcher'
+           (Size             => Size,
+            First            => Dummy.First,
+            Anchored         => Dummy.Anchored,
+            Must_Have        => Dummy.Must_Have,
+            Must_Have_Length => Dummy.Must_Have_Length,
+            Paren_Count      => Dummy.Paren_Count,
+            Flags            => Dummy.Flags,
+            Program          => Dummy.Program
+              (Dummy.Program'First .. Dummy.Program'First + Size - 1));
+      else
+         --  We have to recompile now that we know the size
+         --  ??? Can we use Ada05's return construct ?
+         declare
+            Result : Pattern_Matcher (Size);
+         begin
+            Compile (Result, Expression, Size, Flags);
+            return Result;
+         end;
+      end if;
    end Compile;
 
    procedure Compile
@@ -2051,9 +2025,11 @@ package body System.Regpat is
       Flags      : Regexp_Flags := No_Flags)
    is
       Size : Program_Size;
-      pragma Unreferenced (Size);
    begin
       Compile (Matcher, Expression, Size, Flags);
+      if Size > Matcher.Size then
+         raise Expression_Error with "Pattern_Matcher is too small";
+      end if;
    end Compile;
 
    --------------------
@@ -2101,7 +2077,7 @@ package body System.Regpat is
    begin
       while Index < Till loop
          Op   := Opcode'Val (Character'Pos ((Program (Index))));
-         Next := Index + Get_Next_Offset (Program, Index);
+         Next := Get_Next (Program, Index);
 
          if Do_Print then
             declare
@@ -2254,14 +2230,11 @@ package body System.Regpat is
 
    procedure Dump (Self : Pattern_Matcher) is
       Program : Program_Data renames Self.Program;
-      Index   : Pointer := Program'First + 1;
+      Index   : Pointer := Program'First;
 
    --  Start of processing for Dump
 
    begin
-      pragma Assert (Self.Program (Program_First) = MAGIC,
-                     "Corrupted Pattern_Matcher");
-
       Put_Line ("Must start with (Self.First) = "
                 & Character'Image (Self.First));
 
@@ -2277,7 +2250,6 @@ package body System.Regpat is
          Put_Line ("  Multiple_Lines mode");
       end if;
 
-      Put_Line ("   1:MAGIC");
       Dump_Until (Program, Index, Self.Program'Last + 1, 0);
    end Dump;
 
@@ -2300,26 +2272,9 @@ package body System.Regpat is
    --------------
 
    function Get_Next (Program : Program_Data; IP : Pointer) return Pointer is
-      Offset : constant Pointer := Get_Next_Offset (Program, IP);
    begin
-      if Offset = 0 then
-         return 0;
-      else
-         return IP + Offset;
-      end if;
+      return IP + Pointer (Read_Natural (Program, IP + 1));
    end Get_Next;
-
-   ---------------------
-   -- Get_Next_Offset --
-   ---------------------
-
-   function Get_Next_Offset
-     (Program : Program_Data;
-      IP      : Pointer) return Pointer
-   is
-   begin
-      return Pointer (Read_Natural (Program, IP + 1));
-   end Get_Next_Offset;
 
    --------------
    -- Is_Alnum --
@@ -3366,7 +3321,7 @@ package body System.Regpat is
          Last_Paren := 0;
          Matches_Full := (others => No_Match);
 
-         if Match (Program_First + 1) then
+         if Match (Program_First) then
             Matches_Full (0) := (Pos, Input_Pos - 1);
             return True;
          end if;
@@ -3383,12 +3338,6 @@ package body System.Regpat is
          Matches := (others => No_Match);
          return;
       end if;
-
-      --  Check validity of program
-
-      pragma Assert
-        (Program (Program_First) = MAGIC,
-         "Corrupted Pattern_Matcher");
 
       --  If there is a "must appear" string, look for it
 
@@ -3618,7 +3567,7 @@ package body System.Regpat is
       Self.Must_Have := Program'Last + 1;
       Self.Must_Have_Length := 0;
 
-      Scan := Program_First + 1;  --  First instruction (can be anything)
+      Scan := Program_First;  --  First instruction (can be anything)
 
       if Program (Scan) = EXACT then
          Self.First := Program (String_Operand (Scan));

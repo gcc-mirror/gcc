@@ -2827,8 +2827,11 @@ package body Exp_Ch4 is
       Insert_Actions (Cnode, Actions, Suppress => All_Checks);
 
       --  Now we construct an array object with appropriate bounds
+      --  The target is marked as internal, to prevent useless initialization
+      --  when Initialize_Scalars is enabled.
 
       Ent := Make_Temporary (Loc, 'S');
+      Set_Is_Internal (Ent);
 
       --  If the bound is statically known to be out of range, we do not want
       --  to abort, we want a warning and a runtime constraint error. Note that
