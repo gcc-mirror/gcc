@@ -928,9 +928,6 @@ C ObjC C++ ObjC++ Joined Separate
 lang-asm
 C Undocumented
 
-lang-objc
-C ObjC C++ ObjC++ Undocumented
-
 nostdinc
 C ObjC C++ ObjC++
 Do not search standard system include directories (those specified with -isystem will still be used)
