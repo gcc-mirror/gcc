@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2009, AdaCore                    --
+--                      Copyright (C) 1999-2010, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,9 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Unchecked_Conversion;
 
 package body System.Regpat is
+
+   Debug : constant Boolean := False;
+   --  Set to True to activate debug traces
 
    MAGIC : constant Character := Character'Val (10#0234#);
    --  The first byte of the regexp internal "program" is actually
@@ -317,6 +320,23 @@ package body System.Regpat is
 
    Worst_Expression : constant Expression_Flags := (others => False);
    --  Worst case
+
+   procedure Dump_Until
+     (Program  : Program_Data;
+      Index    : in out Pointer;
+      Till     : Pointer;
+      Indent   : Natural;
+      Do_Print : Boolean := True);
+   --  Dump the program until the node Till (not included) is met.
+   --  Every line is indented with Index spaces at the beginning
+   --  Dumps till the end if Till is 0.
+
+   procedure Dump_Operation
+      (Program      : Program_Data;
+       Index        : Pointer;
+       Indent       : Natural);
+   --  Same as above, but only dumps a single operation, and compute its
+   --  indentation from the program
 
    ---------
    -- "=" --
@@ -2036,88 +2056,89 @@ package body System.Regpat is
       Compile (Matcher, Expression, Size, Flags);
    end Compile;
 
-   ----------
-   -- Dump --
-   ----------
+   --------------------
+   -- Dump_Operation --
+   --------------------
 
-   procedure Dump (Self : Pattern_Matcher) is
-      Op      : Opcode;
-      Program : Program_Data renames Self.Program;
+   procedure Dump_Operation
+      (Program      : Program_Data;
+       Index        : Pointer;
+       Indent       : Natural)
+   is
+      Current : Pointer := Index;
+   begin
+      Dump_Until (Program, Current, Current + 1, Indent);
+   end Dump_Operation;
 
-      procedure Dump_Until
-        (Start  : Pointer;
-         Till   : Pointer;
-         Indent : Natural := 0);
-      --  Dump the program until the node Till (not included) is met.
-      --  Every line is indented with Index spaces at the beginning
-      --  Dumps till the end if Till is 0.
+   ----------------
+   -- Dump_Until --
+   ----------------
 
-      ----------------
-      -- Dump_Until --
-      ----------------
+   procedure Dump_Until
+      (Program  : Program_Data;
+       Index    : in out Pointer;
+       Till     : Pointer;
+       Indent   : Natural;
+       Do_Print : Boolean := True)
+   is
+      function Image (S : String) return String;
+      --  Remove leading space
 
-      procedure Dump_Until
-        (Start  : Pointer;
-         Till   : Pointer;
-         Indent : Natural := 0)
-      is
-         Next         : Pointer;
-         Index        : Pointer;
-         Local_Indent : Natural := Indent;
-         Length       : Pointer;
-
+      function Image (S : String) return String is
       begin
-         Index := Start;
-         while Index < Till loop
-            Op := Opcode'Val (Character'Pos ((Self.Program (Index))));
+         if S (S'First) = ' ' then
+            return S (S'First + 1 .. S'Last);
+         else
+            return S;
+         end if;
+      end Image;
 
-            if Op = CLOSE then
-               Local_Indent := Local_Indent - 3;
-            end if;
+      Op      : Opcode;
+      Next    : Pointer;
+      Length  : Pointer;
+      Local_Indent : Natural := Indent;
 
+   begin
+      while Index < Till loop
+         Op   := Opcode'Val (Character'Pos ((Program (Index))));
+         Next := Index + Get_Next_Offset (Program, Index);
+
+         if Do_Print then
             declare
-               Point : constant String := Pointer'Image (Index);
-
+               Point   : constant String := Pointer'Image (Index);
             begin
-               for J in 1 .. 6 - Point'Length loop
-                  Put (' ');
-               end loop;
-
-               Put (Point
-                    & " : "
-                    & (1 .. Local_Indent => ' ')
-                    & Opcode'Image (Op));
+               Put ((1 .. 4 - Point'Length => ' ')
+                    & Point & ":"
+                    & (1 .. Local_Indent * 2 => ' ') & Opcode'Image (Op));
             end;
 
             --  Print the parenthesis number
 
             if Op = OPEN or else Op = CLOSE or else Op = REFF then
-               Put (Natural'Image (Character'Pos (Program (Index + 3))));
+               Put
+                 (Image (Natural'Image (Character'Pos (Program (Index + 3)))));
             end if;
-
-            Next := Index + Get_Next_Offset (Program, Index);
 
             if Next = Index then
-               Put ("  (next at 0)");
+               Put (" (-)");
             else
-               Put ("  (next at " & Pointer'Image (Next) & ")");
+               Put (" (" & Image (Pointer'Image (Next)) & ")");
             end if;
+         end if;
 
-            case Op is
+         case Op is
+            when ANYOF =>
+               declare
+                  Bitmap  : Character_Class;
+                  Last    : Character := ASCII.NUL;
+                  Current : Natural := 0;
+                  Current_Char : Character;
 
-               --  Character class operand
+               begin
+                  Bitmap_Operand (Program, Index, Bitmap);
 
-               when ANYOF =>  null;
-                  declare
-                     Bitmap  : Character_Class;
-                     Last    : Character := ASCII.NUL;
-                     Current : Natural := 0;
-
-                     Current_Char : Character;
-
-                  begin
-                     Bitmap_Operand (Program, Index, Bitmap);
-                     Put ("   operand=");
+                  if Do_Print then
+                     Put ("[");
 
                      while Current <= 255 loop
                         Current_Char := Character'Val (Current);
@@ -2135,17 +2156,16 @@ package body System.Regpat is
                               Current_Char := Character'Val (Current);
                               exit when
                                 not Get_From_Class (Bitmap, Current_Char);
-
                            end loop;
 
-                           if Last <= ' ' then
+                           if not Is_Graphic (Last) then
                               Put (Last'Img);
                            else
                               Put (Last);
                            end if;
 
                            if Character'Succ (Last) /= Current_Char then
-                              Put ("-" & Character'Pred (Current_Char));
+                              Put ("\-" & Character'Pred (Current_Char));
                            end if;
 
                         else
@@ -2153,69 +2173,88 @@ package body System.Regpat is
                         end if;
                      end loop;
 
-                     New_Line;
-                     Index := Index + 3 + Bitmap'Length;
-                  end;
+                     Put_Line ("]");
+                  end if;
 
-               --  string operand
+                  Index := Index + 3 + Bitmap'Length;
+               end;
 
-               when EXACT | EXACTF =>
-                  Length := String_Length (Program, Index);
-                  Put ("   operand (length:" & Program_Size'Image (Length + 1)
-                       & ") ="
-                       & String (Program (String_Operand (Index)
-                                          .. String_Operand (Index)
-                                          + Length)));
-                  Index := String_Operand (Index) + Length + 1;
-                  New_Line;
+            when EXACT | EXACTF =>
+               Length := String_Length (Program, Index);
+               if Do_Print then
+                  Put (" (" & Image (Program_Size'Image (Length + 1))
+                         & " chars) <"
+                         & String (Program (String_Operand (Index)
+                                              .. String_Operand (Index)
+                                              + Length)));
+                  Put_Line (">");
+               end if;
+
+               Index := String_Operand (Index) + Length + 1;
 
                --  Node operand
 
-               when BRANCH =>
+            when BRANCH | STAR | PLUS =>
+               if Do_Print then
                   New_Line;
-                  Dump_Until (Index + 3, Next, Local_Indent + 3);
-                  Index := Next;
+               end if;
 
-               when STAR | PLUS =>
+               Index  := Index + 3;
+               Dump_Until (Program, Index, Pointer'Min (Next, Till),
+                           Local_Indent + 1, Do_Print);
+
+            when CURLY | CURLYX =>
+               if Do_Print then
+                  Put_Line
+                    (" {"
+                    & Image (Natural'Image (Read_Natural (Program, Index + 3)))
+                    & ","
+                    & Image (Natural'Image (Read_Natural (Program, Index + 5)))
+                    & "}");
+               end if;
+
+               Index  := Index + 7;
+               Dump_Until (Program, Index, Pointer'Min (Next, Till),
+                           Local_Indent + 1, Do_Print);
+
+            when OPEN =>
+               if Do_Print then
                   New_Line;
+               end if;
 
-                  --  Only one instruction
+               Index := Index + 4;
+               Local_Indent := Local_Indent + 1;
 
-                  Dump_Until (Index + 3, Index + 4, Local_Indent + 3);
-                  Index := Next;
-
-               when CURLY | CURLYX =>
-                  Put ("  {"
-                       & Natural'Image (Read_Natural (Program, Index + 3))
-                       & ","
-                       & Natural'Image (Read_Natural (Program, Index + 5))
-                       & "}");
+            when CLOSE | REFF =>
+               if Do_Print then
                   New_Line;
-                  Dump_Until (Index + 7, Next, Local_Indent + 3);
-                  Index := Next;
+               end if;
 
-               when OPEN =>
+               Index := Index + 4;
+
+               if Op = CLOSE then
+                  Local_Indent := Local_Indent - 1;
+               end if;
+
+            when others =>
+               Index := Index + 3;
+
+               if Do_Print then
                   New_Line;
-                  Index := Index + 4;
-                  Local_Indent := Local_Indent + 3;
+               end if;
 
-               when CLOSE | REFF =>
-                  New_Line;
-                  Index := Index + 4;
+               exit when Op = EOP;
+         end case;
+      end loop;
+   end Dump_Until;
 
-               when EOP =>
-                  Index := Index + 3;
-                  New_Line;
-                  exit;
+   ----------
+   -- Dump --
+   ----------
 
-               --  No operand
-
-               when others =>
-                  Index := Index + 3;
-                  New_Line;
-            end case;
-         end loop;
-      end Dump_Until;
+   procedure Dump (Self : Pattern_Matcher) is
+      Program : Program_Data renames Self.Program;
+      Index   : Pointer := Program'First + 1;
 
    --  Start of processing for Dump
 
@@ -2238,8 +2277,8 @@ package body System.Regpat is
          Put_Line ("  Multiple_Lines mode");
       end if;
 
-      Put_Line ("     1 : MAGIC");
-      Dump_Until (Program_First + 1, Self.Program'Last + 1);
+      Put_Line ("   1:MAGIC");
+      Dump_Until (Program, Index, Self.Program'Last + 1, 0);
    end Dump;
 
    --------------------
@@ -2401,9 +2440,8 @@ package body System.Regpat is
       --  using a loop instead of recursion.
       --  Why is the above comment part of the spec rather than body ???
 
-      function Match_Whilem (IP : Pointer) return Boolean;
-      --  Return True if a WHILEM matches
-      --  How come IP is unreferenced in the body ???
+      function Match_Whilem return Boolean;
+      --  Return True if a WHILEM matches the Current_Curly
 
       function Recurse_Match (IP : Pointer; From : Natural) return Boolean;
       pragma Inline (Recurse_Match);
@@ -2417,6 +2455,11 @@ package body System.Regpat is
          Next   : Pointer;
          Greedy : Boolean) return Boolean;
       --  Return True it the simple operator (possibly non-greedy) matches
+
+      Dump_Indent : Integer := -1;
+      procedure Dump_Current (Scan : Pointer; Prefix : Boolean := True);
+      procedure Dump_Error (Msg : String);
+      --  Debug: print the current context
 
       pragma Inline (Index);
       pragma Inline (Repeat);
@@ -2447,13 +2490,12 @@ package body System.Regpat is
 
       function Recurse_Match (IP : Pointer; From : Natural) return Boolean is
          L : constant Natural := Last_Paren;
-
          Tmp_F : constant Match_Array :=
                    Matches_Full (From + 1 .. Matches_Full'Last);
-
          Start : constant Natural_Array :=
                    Matches_Tmp (From + 1 .. Matches_Tmp'Last);
          Input : constant Natural := Input_Pos;
+         Dump_Indent_Save : constant Integer := Dump_Indent;
 
       begin
          if Match (IP) then
@@ -2464,8 +2506,41 @@ package body System.Regpat is
          Matches_Full (Tmp_F'Range) := Tmp_F;
          Matches_Tmp (Start'Range) := Start;
          Input_Pos := Input;
+         Dump_Indent := Dump_Indent_Save;
          return False;
       end Recurse_Match;
+
+      ------------------
+      -- Dump_Current --
+      ------------------
+
+      procedure Dump_Current (Scan : Pointer; Prefix : Boolean := True) is
+         Length : constant := 10;
+         Pos : constant String := Integer'Image (Input_Pos);
+      begin
+         if Prefix then
+            Put ((1 .. 5 - Pos'Length => ' '));
+            Put (Pos & " <"
+                 & Data (Input_Pos
+                     .. Integer'Min (Last_In_Data, Input_Pos + Length - 1)));
+            Put ((1 .. Length - 1 - Last_In_Data + Input_Pos => ' '));
+            Put ("> |");
+         else
+            Put ("                    ");
+         end if;
+         Dump_Operation (Program, Scan, Indent => Dump_Indent);
+      end Dump_Current;
+
+      ----------------
+      -- Dump_Error --
+      ----------------
+
+      procedure Dump_Error (Msg : String) is
+      begin
+         Put ("                   |     ");
+         Put ((1 .. Dump_Indent * 2 => ' '));
+         Put_Line (Msg);
+      end Dump_Error;
 
       -----------
       -- Match --
@@ -2475,8 +2550,11 @@ package body System.Regpat is
          Scan   : Pointer := IP;
          Next   : Pointer;
          Op     : Opcode;
+         Result : Boolean;
 
       begin
+         Dump_Indent := Dump_Indent + 1;
+
          State_Machine :
          loop
             pragma Assert (Scan /= 0);
@@ -2490,8 +2568,13 @@ package body System.Regpat is
 
             Next := Get_Next (Program, Scan);
 
+            if Debug then
+               Dump_Current (Scan);
+            end if;
+
             case Op is
                when EOP =>
+                  Dump_Indent := Dump_Indent - 1;
                   return True;  --  Success !
 
                when BRANCH =>
@@ -2501,6 +2584,7 @@ package body System.Regpat is
                   else
                      loop
                         if Recurse_Match (Operand (Scan), 0) then
+                           Dump_Indent := Dump_Indent - 1;
                            return True;
                         end if;
 
@@ -2517,7 +2601,7 @@ package body System.Regpat is
                when BOL =>
                   exit State_Machine when Input_Pos /= BOL_Pos
                     and then ((Self.Flags and Multiple_Lines) = 0
-                              or else Data (Input_Pos - 1) /= ASCII.LF);
+                      or else Data (Input_Pos - 1) /= ASCII.LF);
 
                when MBOL =>
                   exit State_Machine when Input_Pos /= BOL_Pos
@@ -2686,6 +2770,10 @@ package body System.Regpat is
                      --  If we haven't seen that parenthesis yet
 
                      if Last_Paren < No then
+                        Dump_Indent := Dump_Indent - 1;
+                        if Debug then
+                           Dump_Error ("REFF: No match, backtracking");
+                        end if;
                         return False;
                      end if;
 
@@ -2695,6 +2783,10 @@ package body System.Regpat is
                         if Input_Pos > Last_In_Data
                           or else Data (Input_Pos) /= Data (Data_Pos)
                         then
+                           Dump_Indent := Dump_Indent - 1;
+                           if Debug then
+                              Dump_Error ("REFF: No match, backtracking");
+                           end if;
                            return False;
                         end if;
 
@@ -2711,7 +2803,9 @@ package body System.Regpat is
                      Greed : constant Boolean := Greedy;
                   begin
                      Greedy := True;
-                     return Match_Simple_Operator (Op, Scan, Next, Greed);
+                     Result := Match_Simple_Operator (Op, Scan, Next, Greed);
+                     Dump_Indent := Dump_Indent - 1;
+                     return Result;
                   end;
 
                when CURLYX =>
@@ -2742,6 +2836,7 @@ package body System.Regpat is
                             Next        => Next,
                             Lastloc     => 0,
                             Old_Cc      => Current_Curly);
+                     Greedy := True;
                      Current_Curly := Cc'Unchecked_Access;
 
                      Has_Match := Match (Next - 3);
@@ -2749,15 +2844,31 @@ package body System.Regpat is
                      --  Start on the WHILEM
 
                      Current_Curly := Cc.Old_Cc;
+                     Dump_Indent := Dump_Indent - 1;
+                     if not Has_Match then
+                        if Debug then
+                           Dump_Error ("CURLYX failed...");
+                        end if;
+                     end if;
                      return Has_Match;
                   end;
 
                when WHILEM =>
-                  return Match_Whilem (IP);
+                  Result := Match_Whilem;
+                  Dump_Indent := Dump_Indent - 1;
+                  if Debug and then not Result then
+                     Dump_Error ("WHILEM: no match, backtracking");
+                  end if;
+                  return Result;
             end case;
 
             Scan := Next;
          end loop State_Machine;
+
+         if Debug then
+            Dump_Error ("failed...");
+            Dump_Indent := Dump_Indent - 1;
+         end if;
 
          --  If we get here, there is no match.
          --  For successful matches when EOP is the terminating point.
@@ -2811,16 +2922,24 @@ package body System.Regpat is
                Operand_Code := Scan + 7;
          end case;
 
+         if Debug then
+            Dump_Current (Operand_Code, Prefix => False);
+         end if;
+
          --  Non greedy operators
 
          if not Greedy then
 
-            --  Test the minimal repetitions
+            --  Test we can repeat at least Min times
 
-            if Min /= 0
-              and then Repeat (Operand_Code, Min) < Min
-            then
-               return False;
+            if Min /= 0 then
+               No := Repeat (Operand_Code, Min);
+               if No < Min then
+                  if Debug then
+                     Dump_Error ("failed... matched" & No'Img & " times");
+                  end if;
+                  return False;
+               end if;
             end if;
 
             Old := Input_Pos;
@@ -2841,6 +2960,10 @@ package body System.Regpat is
                end if;
 
                --  Look for the first possible opportunity
+
+               if Debug then
+                  Dump_Error ("Next_Char must be " & Next_Char);
+               end if;
 
                loop
                   --  Find the next possible position
@@ -2864,6 +2987,10 @@ package body System.Regpat is
                   begin
                      Input_Pos := Old;
 
+                     if Debug then
+                        Dump_Error ("Would we still match at that position?");
+                     end if;
+
                      if Repeat (Operand_Code, Num) < Num then
                         return False;
                      end if;
@@ -2879,14 +3006,18 @@ package body System.Regpat is
                   Input_Pos := Input_Pos + 1;
                end loop;
 
-            --  We know what the next character is
+            --  We do not know what the next character is
 
             else
                while Max >= Min loop
+                  if Debug then
+                     Dump_Error ("Non-greedy repeat, N=" & Min'Img);
+                     Dump_Error ("Do we still match Next if we stop here?");
+                  end if;
 
                   --  If the next character matches
 
-                  if Match (Next) then
+                  if Recurse_Match (Next, 1) then
                      return True;
                   end if;
 
@@ -2897,6 +3028,9 @@ package body System.Regpat is
                   if Repeat (Operand_Code, 1) /= 0 then
                      Min := Min + 1;
                   else
+                     if Debug then
+                        Dump_Error ("Non-greedy repeat failed...");
+                     end if;
                      return False;
                   end if;
                end loop;
@@ -2908,6 +3042,10 @@ package body System.Regpat is
 
          else
             No := Repeat (Operand_Code, Max);
+
+            if Debug and then No < Min then
+               Dump_Error ("failed... matched" & No'Img & " times");
+            end if;
 
             --  ??? Perl has some special code here in case the
             --  next instruction is of type EOL, since $ and \Z
@@ -2948,9 +3086,7 @@ package body System.Regpat is
       --  tree by recursing ever deeper.  And if it fails, we have to reset
       --  our parent's current state that we can try again after backing off.
 
-      function Match_Whilem (IP : Pointer) return Boolean is
-         pragma Unreferenced (IP);
-
+      function Match_Whilem return Boolean is
          Cc : constant Current_Curly_Access := Current_Curly;
          N  : constant Natural              := Cc.Cur + 1;
          Ln : Natural                       := 0;
@@ -2991,12 +3127,22 @@ package body System.Regpat is
             Cc.Cur := N;
             Cc.Lastloc := Input_Pos;
 
+            if Debug then
+               Dump_Error
+                 ("Tests that we match at least" & Cc.Min'Img & " N=" & N'Img);
+            end if;
+
             if Match (Cc.Scan) then
                return True;
             end if;
 
             Cc.Cur := N - 1;
             Cc.Lastloc := Lastloc;
+
+            if Debug then
+               Dump_Error ("failed...");
+            end if;
+
             return False;
          end if;
 
@@ -3022,12 +3168,19 @@ package body System.Regpat is
             --  Maximum greed exceeded ?
 
             if N >= Cc.Max then
+               if Debug then
+                  Dump_Error ("failed...");
+               end if;
                return False;
             end if;
 
             --  Try scanning more and see if it helps
             Cc.Cur := N;
             Cc.Lastloc := Input_Pos;
+
+            if Debug then
+               Dump_Error ("Next failed, what about Current?");
+            end if;
 
             if Recurse_Match (Cc.Scan, Cc.Paren_Floor) then
                return True;
@@ -3044,6 +3197,10 @@ package body System.Regpat is
             Cc.Cur := N;
             Cc.Lastloc := Input_Pos;
 
+            if Debug then
+               Dump_Error ("Recurse at current position");
+            end if;
+
             if Recurse_Match (Cc.Scan, Cc.Paren_Floor) then
                return True;
             end if;
@@ -3057,6 +3214,10 @@ package body System.Regpat is
             Ln := Current_Curly.Cur;
          end if;
 
+         if Debug then
+            Dump_Error ("Failed matching for later positions");
+         end if;
+
          if Match (Cc.Next) then
             return True;
          end if;
@@ -3068,6 +3229,11 @@ package body System.Regpat is
          Current_Curly := Cc;
          Cc.Cur := N - 1;
          Cc.Lastloc := Lastloc;
+
+         if Debug then
+            Dump_Error ("failed...");
+         end if;
+
          return False;
       end Match_Whilem;
 

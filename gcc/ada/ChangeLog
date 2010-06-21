@@ -1,3 +1,13 @@
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb: Improve debug traces
+	(Dump): Change output format to keep it smaller.
+
+2010-06-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Generate_CG_Output): Disable redirection of standard
+	output to the output file when this routine completes its work.
+
 2010-06-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Use while instead of
