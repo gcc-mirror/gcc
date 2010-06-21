@@ -1,0 +1,3 @@
+# clear all hardware capabilities emitted by Sun as: the tests here
+# guard against execution at runtime
+hwcap_1 = V0x0 OVERRIDE;
