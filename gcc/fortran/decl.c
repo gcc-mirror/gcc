@@ -2875,8 +2875,8 @@ match_attr_spec (void)
     DECL_IN, DECL_OUT, DECL_INOUT, DECL_INTRINSIC, DECL_OPTIONAL,
     DECL_PARAMETER, DECL_POINTER, DECL_PROTECTED, DECL_PRIVATE,
     DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
-    DECL_IS_BIND_C, DECL_CODIMENSION, DECL_ASYNCHRONOUS, DECL_NONE,
-    GFC_DECL_END /* Sentinel */
+    DECL_IS_BIND_C, DECL_CODIMENSION, DECL_ASYNCHRONOUS, DECL_CONTIGUOUS,
+    DECL_NONE, GFC_DECL_END /* Sentinel */
   }
   decl_types;
 
@@ -2939,6 +2939,7 @@ match_attr_spec (void)
 		    }
 		  break;
 		}
+	      break;
 
 	    case 'b':
 	      /* Try and match the bind(c).  */
@@ -2950,8 +2951,24 @@ match_attr_spec (void)
 	      break;
 
 	    case 'c':
-	      if (match_string_p ("codimension"))
-		d = DECL_CODIMENSION;
+	      gfc_next_ascii_char ();
+	      if ('o' != gfc_next_ascii_char ())
+		break;
+	      switch (gfc_next_ascii_char ())
+		{
+		case 'd':
+		  if (match_string_p ("imension"))
+		    {
+		      d = DECL_CODIMENSION;
+		      break;
+		    }
+		case 'n':
+		  if (match_string_p ("tiguous"))
+		    {
+		      d = DECL_CONTIGUOUS;
+		      break;
+		    }
+		}
 	      break;
 
 	    case 'd':
@@ -3144,6 +3161,9 @@ match_attr_spec (void)
 	  case DECL_CODIMENSION:
 	    attr = "CODIMENSION";
 	    break;
+	  case DECL_CONTIGUOUS:
+	    attr = "CONTIGUOUS";
+	    break;
 	  case DECL_DIMENSION:
 	    attr = "DIMENSION";
 	    break;
@@ -3214,7 +3234,7 @@ match_attr_spec (void)
       if (gfc_current_state () == COMP_DERIVED
 	  && d != DECL_DIMENSION && d != DECL_CODIMENSION
 	  && d != DECL_POINTER   && d != DECL_PRIVATE
-	  && d != DECL_PUBLIC && d != DECL_NONE)
+	  && d != DECL_PUBLIC && d != DECL_CONTIGUOUS && d != DECL_NONE)
 	{
 	  if (d == DECL_ALLOCATABLE)
 	    {
@@ -3281,6 +3301,15 @@ match_attr_spec (void)
 
 	case DECL_CODIMENSION:
 	  t = gfc_add_codimension (&current_attr, NULL, &seen_at[d]);
+	  break;
+
+	case DECL_CONTIGUOUS:
+	  if (gfc_notify_std (GFC_STD_F2008,
+			      "Fortran 2008: CONTIGUOUS attribute at %C")
+	      == FAILURE)
+	    t = FAILURE;
+	  else
+	    t = gfc_add_contiguous (&current_attr, NULL, &seen_at[d]);
 	  break;
 
 	case DECL_DIMENSION:
@@ -6115,6 +6144,20 @@ gfc_match_codimension (void)
 {
   gfc_clear_attr (&current_attr);
   current_attr.codimension = 1;
+
+  return attr_decl ();
+}
+
+
+match
+gfc_match_contiguous (void)
+{
+  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CONTIGUOUS statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  gfc_clear_attr (&current_attr);
+  current_attr.contiguous = 1;
 
   return attr_decl ();
 }

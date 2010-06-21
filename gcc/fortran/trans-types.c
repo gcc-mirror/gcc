@@ -1202,7 +1202,8 @@ gfc_is_nodesc_array (gfc_symbol * sym)
 
 static tree
 gfc_build_array_type (tree type, gfc_array_spec * as,
-		      enum gfc_array_kind akind, bool restricted)
+		      enum gfc_array_kind akind, bool restricted,
+		      bool contiguous)
 {
   tree lbound[GFC_MAX_DIMENSIONS];
   tree ubound[GFC_MAX_DIMENSIONS];
@@ -1219,7 +1220,8 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
     }
 
   if (as->type == AS_ASSUMED_SHAPE)
-    akind = GFC_ARRAY_ASSUMED_SHAPE;
+    akind = contiguous ? GFC_ARRAY_ASSUMED_SHAPE_CONT
+		       : GFC_ARRAY_ASSUMED_SHAPE;
   return gfc_get_array_type_bounds (type, as->rank, as->corank, lbound,
 				    ubound, 0, akind, restricted);
 }
@@ -1799,10 +1801,12 @@ gfc_sym_type (gfc_symbol * sym)
 	{
 	  enum gfc_array_kind akind = GFC_ARRAY_UNKNOWN;
 	  if (sym->attr.pointer)
-	    akind = GFC_ARRAY_POINTER;
+	    akind = sym->attr.contiguous ? GFC_ARRAY_POINTER_CONT
+					 : GFC_ARRAY_POINTER;
 	  else if (sym->attr.allocatable)
 	    akind = GFC_ARRAY_ALLOCATABLE;
-	  type = gfc_build_array_type (type, sym->as, akind, restricted);
+	  type = gfc_build_array_type (type, sym->as, akind, restricted,
+				       sym->attr.contiguous);
 	}
     }
   else
@@ -2121,14 +2125,16 @@ gfc_get_derived_type (gfc_symbol * derived)
 	    {
 	      enum gfc_array_kind akind;
 	      if (c->attr.pointer)
-		akind = GFC_ARRAY_POINTER;
+		akind = c->attr.contiguous ? GFC_ARRAY_POINTER_CONT
+					   : GFC_ARRAY_POINTER;
 	      else
 		akind = GFC_ARRAY_ALLOCATABLE;
 	      /* Pointers to arrays aren't actually pointer types.  The
 	         descriptors are separate, but the data is common.  */
 	      field_type = gfc_build_array_type (field_type, c->as, akind,
 						 !c->attr.target
-						 && !c->attr.pointer);
+						 && !c->attr.pointer,
+						 c->attr.contiguous);
 	    }
 	  else
 	    field_type = gfc_get_nodesc_array_type (field_type, c->as,
@@ -2516,7 +2522,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   if (int_size_in_bytes (etype) <= 0)
     return false;
   /* Nor non-constant lower bounds in assumed shape arrays.  */
-  if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE)
+  if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE
+      || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT)
     {
       for (dim = 0; dim < rank; dim++)
 	if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE
@@ -2565,7 +2572,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
     info->allocated = build2 (NE_EXPR, boolean_type_node,
 			      info->data_location, null_pointer_node);
-  else if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER)
+  else if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
+	   || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)
     info->associated = build2 (NE_EXPR, boolean_type_node,
 			       info->data_location, null_pointer_node);
 
@@ -2579,7 +2587,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
 		  size_binop (PLUS_EXPR, dim_off, upper_suboff));
       t = build1 (INDIRECT_REF, gfc_array_index_type, t);
       info->dimen[dim].upper_bound = t;
-      if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE)
+      if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT)
 	{
 	  /* Assumed shape arrays have known lower bounds.  */
 	  info->dimen[dim].upper_bound

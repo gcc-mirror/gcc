@@ -620,14 +620,17 @@ extern GTY(()) tree gfor_fndecl_sr_kind;
 /* True if node is an integer constant.  */
 #define INTEGER_CST_P(node) (TREE_CODE(node) == INTEGER_CST)
 
-/* G95-specific declaration information.  */
+/* gfortran-specific declaration information, the _CONT versions denote
+   arrays with CONTIGUOUS attribute.  */
 
 enum gfc_array_kind
 {
   GFC_ARRAY_UNKNOWN,
   GFC_ARRAY_ASSUMED_SHAPE,
+  GFC_ARRAY_ASSUMED_SHAPE_CONT,
   GFC_ARRAY_ALLOCATABLE,
-  GFC_ARRAY_POINTER
+  GFC_ARRAY_POINTER,
+  GFC_ARRAY_POINTER_CONT
 };
 
 /* Array types only.  */

@@ -598,6 +598,8 @@ show_attr (symbol_attribute *attr)
     fputs (" CODIMENSION", dumpfile);
   if (attr->dimension)
     fputs (" DIMENSION", dumpfile);
+  if (attr->contiguous)
+    fputs (" CONTIGUOUS", dumpfile);
   if (attr->external)
     fputs (" EXTERNAL", dumpfile);
   if (attr->intrinsic)
