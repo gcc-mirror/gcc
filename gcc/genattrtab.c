@@ -1,6 +1,6 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -4372,6 +4372,69 @@ process_bypasses (void)
 	r->bypassed = true;
 }
 
+/* Check that attribute NAME is used in define_insn_reservation condition
+   EXP.  Return true if it is.  */
+static bool
+check_tune_attr (const char *name, rtx exp)
+{
+  switch (GET_CODE (exp))
+    {
+    case AND:
+      if (check_tune_attr (name, XEXP (exp, 0)))
+	return true;
+      return check_tune_attr (name, XEXP (exp, 1));
+
+    case IOR:
+      return (check_tune_attr (name, XEXP (exp, 0))
+	      && check_tune_attr (name, XEXP (exp, 1)));
+
+    case EQ_ATTR:
+      return XSTR (exp, 0) == name;
+
+    default:
+      return false;
+    }
+}
+
+/* Try to find a const attribute (usually cpu or tune) that is used
+   in all define_insn_reservation conditions.  */
+static struct attr_desc *
+find_tune_attr (rtx exp)
+{
+  struct attr_desc *attr;
+
+  switch (GET_CODE (exp))
+    {
+    case AND:
+    case IOR:
+      attr = find_tune_attr (XEXP (exp, 0));
+      if (attr)
+	return attr;
+      return find_tune_attr (XEXP (exp, 1));
+
+    case EQ_ATTR:
+      if (XSTR (exp, 0) == alternative_name)
+	return NULL;
+
+      attr = find_attr (&XSTR (exp, 0), 0);
+      gcc_assert (attr);
+
+      if (attr->is_const && !attr->is_special)
+	{
+	  struct insn_reserv *decl;
+
+	  for (decl = all_insn_reservs; decl; decl = decl->next)
+	    if (! check_tune_attr (attr->name, decl->condexp))
+	      return NULL;
+	  return attr;
+	}
+      return NULL;
+
+    default:
+      return NULL;
+    }
+}
+
 /* Create all of the attributes that describe automaton properties.  */
 static void
 make_automaton_attrs (void)
@@ -4379,28 +4442,154 @@ make_automaton_attrs (void)
   int i;
   struct insn_reserv *decl;
   rtx code_exp, lats_exp, byps_exp;
+  struct attr_desc *tune_attr;
 
   if (n_insn_reservs == 0)
     return;
 
-  code_exp = rtx_alloc (COND);
-  lats_exp = rtx_alloc (COND);
-
-  XVEC (code_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
-  XVEC (lats_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
-
-  XEXP (code_exp, 1) = make_numeric_value (n_insn_reservs + 1);
-  XEXP (lats_exp, 1) = make_numeric_value (0);
-
-  for (decl = all_insn_reservs, i = 0;
-       decl;
-       decl = decl->next, i += 2)
+  tune_attr = find_tune_attr (all_insn_reservs->condexp);
+  if (tune_attr != NULL)
     {
-      XVECEXP (code_exp, 0, i)   = decl->condexp;
-      XVECEXP (lats_exp, 0, i)   = decl->condexp;
+      rtx *condexps = XNEWVEC (rtx, n_insn_reservs * 3);
+      struct attr_value *val;
+      bool first = true;
 
-      XVECEXP (code_exp, 0, i+1) = make_numeric_value (decl->insn_num);
-      XVECEXP (lats_exp, 0, i+1) = make_numeric_value (decl->default_latency);
+      gcc_assert (tune_attr->is_const
+		  && !tune_attr->is_special
+		  && !tune_attr->is_numeric);
+      for (val = tune_attr->first_value; val; val = val->next)
+	{
+	  if (val == tune_attr->default_val)
+	    continue;
+	  gcc_assert (GET_CODE (val->value) == CONST_STRING);
+	  printf ("static int internal_dfa_insn_code_%s (rtx);\n"
+		  "static int insn_default_latency_%s (rtx);\n",
+		  XSTR (val->value, 0), XSTR (val->value, 0));
+	}
+
+      printf ("\n");
+      printf ("int (*internal_dfa_insn_code) (rtx);\n");
+      printf ("int (*insn_default_latency) (rtx);\n");
+      printf ("\n");
+      printf ("void\n");
+      printf ("init_sched_attrs (void)\n");
+      printf ("{\n");
+
+      for (val = tune_attr->first_value; val; val = val->next)
+	{
+	  int j;
+	  char *name;
+	  rtx test = attr_rtx (EQ_ATTR, tune_attr->name, XSTR (val->value, 0));
+
+	  if (val == tune_attr->default_val)
+	    continue;
+	  for (decl = all_insn_reservs, i = 0;
+	       decl;
+	       decl = decl->next)
+	    {
+	      rtx ctest = test;
+	      rtx condexp
+		= simplify_and_tree (decl->condexp, &ctest, -2, 0);
+	      if (condexp == false_rtx)
+		continue;
+	      if (condexp == true_rtx)
+		break;
+	      condexps[i] = condexp;
+	      condexps[i + 1] = make_numeric_value (decl->insn_num);
+	      condexps[i + 2] = make_numeric_value (decl->default_latency);
+	      i += 3;
+	    }
+
+	  code_exp = rtx_alloc (COND);
+	  lats_exp = rtx_alloc (COND);
+
+	  j = i / 3 * 2;
+	  XVEC (code_exp, 0) = rtvec_alloc (j);
+	  XVEC (lats_exp, 0) = rtvec_alloc (j);
+
+	  if (decl)
+	    {
+	      XEXP (code_exp, 1) = make_numeric_value (decl->insn_num);
+	      XEXP (lats_exp, 1) = make_numeric_value (decl->default_latency);
+	    }
+	  else
+	    {
+	      XEXP (code_exp, 1) = make_numeric_value (n_insn_reservs + 1);
+	      XEXP (lats_exp, 1) = make_numeric_value (0);
+	    }
+
+	  while (i > 0)
+	    {
+	      i -= 3;
+	      j -= 2;
+	      XVECEXP (code_exp, 0, j) = condexps[i];
+	      XVECEXP (lats_exp, 0, j) = condexps[i];
+
+	      XVECEXP (code_exp, 0, j + 1) = condexps[i + 1];
+	      XVECEXP (lats_exp, 0, j + 1) = condexps[i + 2];
+	    }
+
+	  name = XNEWVEC (char,
+			  sizeof ("*internal_dfa_insn_code_")
+			  + strlen (XSTR (val->value, 0)));
+	  strcpy (name, "*internal_dfa_insn_code_");
+	  strcat (name, XSTR (val->value, 0));
+	  make_internal_attr (name, code_exp, ATTR_NONE);
+	  strcpy (name, "*insn_default_latency_");
+	  strcat (name, XSTR (val->value, 0));
+	  make_internal_attr (name, lats_exp, ATTR_NONE);
+	  XDELETEVEC (name);
+
+	  if (first)
+	    {
+	      printf ("  if (");
+	      first = false;
+	    }
+	  else
+	    printf ("  else if (");
+	  write_test_expr (test, 0);
+	  printf (")\n");
+	  printf ("    {\n");
+	  printf ("      internal_dfa_insn_code\n");
+	  printf ("        = internal_dfa_insn_code_%s;\n",
+		  XSTR (val->value, 0));
+	  printf ("      insn_default_latency\n");
+	  printf ("        = insn_default_latency_%s;\n",
+		  XSTR (val->value, 0));
+	  printf ("    }\n");
+	}
+
+      printf ("  else\n");
+      printf ("    gcc_unreachable ();\n");
+      printf ("}\n");
+      printf ("\n");
+
+      XDELETEVEC (condexps);
+    }
+  else
+    {
+      code_exp = rtx_alloc (COND);
+      lats_exp = rtx_alloc (COND);
+
+      XVEC (code_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
+      XVEC (lats_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
+
+      XEXP (code_exp, 1) = make_numeric_value (n_insn_reservs + 1);
+      XEXP (lats_exp, 1) = make_numeric_value (0);
+
+      for (decl = all_insn_reservs, i = 0;
+	   decl;
+	   decl = decl->next, i += 2)
+	{
+	  XVECEXP (code_exp, 0, i)   = decl->condexp;
+	  XVECEXP (lats_exp, 0, i)   = decl->condexp;
+
+	  XVECEXP (code_exp, 0, i+1) = make_numeric_value (decl->insn_num);
+	  XVECEXP (lats_exp, 0, i+1)
+	    = make_numeric_value (decl->default_latency);
+	}
+      make_internal_attr ("*internal_dfa_insn_code", code_exp, ATTR_NONE);
+      make_internal_attr ("*insn_default_latency",   lats_exp, ATTR_NONE);
     }
 
   if (n_bypasses == 0)
@@ -4423,8 +4612,6 @@ make_automaton_attrs (void)
 	  }
     }
 
-  make_internal_attr ("*internal_dfa_insn_code", code_exp, ATTR_NONE);
-  make_internal_attr ("*insn_default_latency",   lats_exp, ATTR_NONE);
   make_internal_attr ("*bypass_p",               byps_exp, ATTR_NONE);
 }
 
