@@ -1,3 +1,8 @@
+2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Add *-*-solaris2.1[0-9]* to dg-xfail-if, dg-excess-errors.
+
 2010-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Kai-Uwe Bux  <bux@kubux.net>
 

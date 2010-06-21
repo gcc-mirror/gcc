@@ -1,3 +1,10 @@
+2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris__restrict, solaris_complex_cxx): New fixes
+	* fixincl.x: Regenerate.
+	* tests/base/complex.h [SOLARIS_COMPLEX_CXX_CHECK]: New test.
+	* tests/base/sys/feature_tests.h: New file.
+
 2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
