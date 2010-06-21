@@ -3,6 +3,14 @@
 	* stmt.c (resolve_asm_operand_names): Fix handling
 	of %%.
 
+	PR bootstrap/44426
+	* sel-sched-dump.h (sel_prepare_string_for_dot_label): Remove
+	prototype.
+	(sel_print_to_dot): Remove macro.
+	(sel_print): Likewise.  New prototype.
+	* sel-sched-dump.c (sel_prepare_string_for_dot_label): Make static.
+	(sel_print): New function.
+
 2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define
