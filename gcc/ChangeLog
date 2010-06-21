@@ -1,5 +1,21 @@
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (cfgexpand.o): Depend on $(INSN_ATTR_H).
+	* genattrtab.c (check_tune_attr, find_tune_attr): New functions.
+	(make_automaton_attrs): If find_tune_attr returns non-NULL,
+	write separate internal_dfa_insn_code_* and insn_default_latency_*
+	functions for each attribute's value and emit init_sched_attrs
+	function and function pointers.
+	* genattr.c (const_attrs, reservations): New variables.
+	(gen_attr): Add const attributes to const_attrs vector.
+	(check_tune_attr, find_tune_attr): New functions.
+	(main): Add reservations to reservations vector.  If find_tune_attr
+	returns true, add prototype for init_sched_attrs and make
+	internal_dfa_insn_code and insn_default_latency function pointers,
+	otherwise define init_sched_attrs as dummy macro.
+	* cfgexpand.c: Include insn-attr.h.
+	(gimple_expand_cfg): Call init_sched_attrs.
+
 	* stmt.c (resolve_asm_operand_names): Fix handling
 	of %%.
 

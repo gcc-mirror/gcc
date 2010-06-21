@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssaexpand.h"
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "insn-attr.h" /* For INSN_SCHEDULING.  */
 
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */
@@ -3760,6 +3761,10 @@ gimple_expand_cfg (void)
     }
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   prologue_locator = curr_insn_locator ();
+
+#ifdef INSN_SCHEDULING
+  init_sched_attrs ();
+#endif
 
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.

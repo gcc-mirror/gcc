@@ -1,6 +1,6 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
+   2010  Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -40,11 +40,17 @@ write_upcase (const char *str)
     putchar (TOUPPER(*str));
 }
 
+static VEC (rtx, heap) *const_attrs, *reservations;
+
+
 static void
 gen_attr (rtx attr)
 {
   const char *p, *tag;
   int is_const = GET_CODE (XEXP (attr, 2)) == CONST;
+
+  if (is_const)
+    VEC_safe_push (rtx, heap, const_attrs, attr);
 
   printf ("#define HAVE_ATTR_%s\n", XSTR (attr, 0));
 
@@ -89,6 +95,68 @@ extern int insn_min_length (rtx);\n\
 extern int insn_variable_length_p (rtx);\n\
 extern int insn_current_length (rtx);\n\n\
 #include \"insn-addr.h\"\n");
+    }
+}
+
+/* Check that attribute NAME is used in define_insn_reservation condition
+   EXP.  Return true if it is.  */
+static bool
+check_tune_attr (const char *name, rtx exp)
+{
+  switch (GET_CODE (exp))
+    {
+    case AND:
+      if (check_tune_attr (name, XEXP (exp, 0)))
+	return true;
+      return check_tune_attr (name, XEXP (exp, 1));
+
+    case IOR:
+      return (check_tune_attr (name, XEXP (exp, 0))
+	      && check_tune_attr (name, XEXP (exp, 1)));
+
+    case EQ_ATTR:
+      return strcmp (XSTR (exp, 0), name) == 0;
+
+    default:
+      return false;
+    }
+}
+
+/* Try to find a const attribute (usually cpu or tune) that is used
+   in all define_insn_reservation conditions.  */
+static bool
+find_tune_attr (rtx exp)
+{
+  unsigned int i;
+  rtx attr;
+
+  switch (GET_CODE (exp))
+    {
+    case AND:
+    case IOR:
+      if (find_tune_attr (XEXP (exp, 0)))
+	return true;
+      return find_tune_attr (XEXP (exp, 1));
+
+    case EQ_ATTR:
+      if (strcmp (XSTR (exp, 0), "alternative") == 0)
+	return false;
+
+      for (i = 0; VEC_iterate (rtx, const_attrs, i, attr); i++)
+	if (strcmp (XSTR (attr, 0), XSTR (exp, 0)) == 0)
+	  {
+	    unsigned int j;
+	    rtx resv;
+
+	    for (j = 0; VEC_iterate (rtx, reservations, j, resv); j++)
+	      if (! check_tune_attr (XSTR (attr, 0), XEXP (resv, 2)))
+		return false;
+	    return true;
+	  }
+      return false;
+
+    default:
+      return false;
     }
 }
 
@@ -162,11 +230,16 @@ main (int argc, char **argv)
         }
 
       else if (GET_CODE (desc) == DEFINE_INSN_RESERVATION)
-	num_insn_reservations++;
+	{
+	  num_insn_reservations++;
+	  VEC_safe_push (rtx, heap, reservations, desc);
+	}
     }
 
   if (num_insn_reservations > 0)
     {
+      bool has_tune_attr
+	= find_tune_attr (XEXP (VEC_index (rtx, reservations, 0), 2));
       /* Output interface for pipeline hazards recognition based on
 	 DFA (deterministic finite state automata.  */
       printf ("\n#define INSN_SCHEDULING\n");
@@ -181,10 +254,24 @@ main (int argc, char **argv)
       printf ("#define CPU_UNITS_QUERY 0\n");
       printf ("#endif\n\n");
       /* Interface itself: */
-      printf ("/* Internal insn code number used by automata.  */\n");
-      printf ("extern int internal_dfa_insn_code (rtx);\n\n");
-      printf ("/* Insn latency time defined in define_insn_reservation. */\n");
-      printf ("extern int insn_default_latency (rtx);\n\n");
+      if (has_tune_attr)
+	{
+	  printf ("/* Initialize fn pointers for internal_dfa_insn_code\n");
+	  printf ("   and insn_default_latency.  */\n");
+	  printf ("extern void init_sched_attrs (void);\n\n");
+	  printf ("/* Internal insn code number used by automata.  */\n");
+	  printf ("extern int (*internal_dfa_insn_code) (rtx);\n\n");
+	  printf ("/* Insn latency time defined in define_insn_reservation. */\n");
+	  printf ("extern int (*insn_default_latency) (rtx);\n\n");
+	}
+      else
+	{
+	  printf ("#define init_sched_attrs() do { } while (0)\n\n");
+	  printf ("/* Internal insn code number used by automata.  */\n");
+	  printf ("extern int internal_dfa_insn_code (rtx);\n\n");
+	  printf ("/* Insn latency time defined in define_insn_reservation. */\n");
+	  printf ("extern int insn_default_latency (rtx);\n\n");
+	}
       printf ("/* Return nonzero if there is a bypass for given insn\n");
       printf ("   which is a data producer.  */\n");
       printf ("extern int bypass_p (rtx);\n\n");
