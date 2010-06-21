@@ -1,5 +1,9 @@
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
+	* doc/install.texi: Document bootstrap-lto.
+
+2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/44248
 	* lto-streamer-in.c (input_bb): Leave debug stmts alone.
 	(input_function): Drop them here, if VTA is disabled.
