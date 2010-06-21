@@ -1,3 +1,37 @@
+2010-06-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Fold if condition
+	known at compile time.
+
+2010-06-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* atree.adb: Fix comment typo.
+
+2010-06-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Test_Ambiguous_Operator): New procedure to check
+	whether a universal arithmetic expression in a conversion, which is
+	rewritten from a function call with an expanded name, is ambiguous.
+
+2010-06-21  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Name_Location): New Boolean component Listed, to record
+	source files in specified list of sources.
+	(Check_Package_Naming): Remove out parameters Bodies and Specs, as they
+	are never used.
+	(Add_Source): Set the Location of the new source
+	(Process_Exceptions_File_Based): Call Add_Source with the Location
+	(Get_Sources_From_File): If an exception is found, set its Listed to
+	True
+	(Find_Sources): When Source_Files is specified, if an exception is
+	found, set its Listed to True. Remove any exception that is not in a
+	specified list of sources.
+	* prj.ads (Source_Data): New component Location
+
+2010-06-21  Vincent Celier  <celier@adacore.com>
+
+	* gnatbind.adb (Closure_Sources): Global table, moved from block.
+
 2010-06-21  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_res.adb: Minor reformatting.

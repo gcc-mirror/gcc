@@ -667,6 +667,10 @@ package Prj is
       Project : Project_Id := No_Project;
       --  Project of the source
 
+      Location : Source_Ptr := No_Location;
+      --  Location in the project file of the declaration of the source in
+      --  package Naming.
+
       Source_Dir_Rank : Natural := 0;
       --  The rank of the source directory in list declared with attribute
       --  Source_Dirs. Two source files with the same name cannot appears in
@@ -768,6 +772,7 @@ package Prj is
 
    No_Source_Data : constant Source_Data :=
                       (Project                => No_Project,
+                       Location               => No_Location,
                        Source_Dir_Rank        => 0,
                        Language               => No_Language_Index,
                        In_Interfaces          => True,

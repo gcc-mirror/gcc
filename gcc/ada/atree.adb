@@ -108,7 +108,7 @@ package body Atree is
    --  calls Rewrite_Breakpoint. Otherwise, does nothing.
 
    procedure Node_Debug_Output (Op : String; N : Node_Id);
-   --  Common code for nnr and rrd. Write Op followed by information about N
+   --  Common code for nnd and rrd. Write Op followed by information about N.
 
    -----------------------------
    -- Local Objects and Types --

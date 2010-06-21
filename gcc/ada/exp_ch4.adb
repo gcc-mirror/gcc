@@ -2826,9 +2826,9 @@ package body Exp_Ch4 is
 
       Insert_Actions (Cnode, Actions, Suppress => All_Checks);
 
-      --  Now we construct an array object with appropriate bounds
-      --  The target is marked as internal, to prevent useless initialization
-      --  when Initialize_Scalars is enabled.
+      --  Now we construct an array object with appropriate bounds. We mark
+      --  the target as internal to prevent useless initialization when
+      --  Initialize_Scalars is enabled.
 
       Ent := Make_Temporary (Loc, 'S');
       Set_Is_Internal (Ent);
@@ -4025,13 +4025,44 @@ package body Exp_Ch4 is
       Elsex  : constant Node_Id    := Next (Thenx);
       Typ    : constant Entity_Id  := Etype (N);
 
-      Cnn    : Entity_Id;
-      Decl   : Node_Id;
-      New_If : Node_Id;
-      New_N  : Node_Id;
-      P_Decl : Node_Id;
+      Cnn     : Entity_Id;
+      Decl    : Node_Id;
+      New_If  : Node_Id;
+      New_N   : Node_Id;
+      P_Decl  : Node_Id;
+      Expr    : Node_Id;
+      Actions : List_Id;
 
    begin
+      --  Fold at compile time if condition known. We have already folded
+      --  static conditional expressions, but it is possible to fold any
+      --  case in which the condition is known at compile time, even though
+      --  the result is non-static.
+
+      --  Note that we don't do the fold of such cases in Sem_Elab because
+      --  it can cause infinite loops with the expander adding a conditional
+      --  expression, and Sem_Elab circuitry removing it repeatedly.
+
+      if Compile_Time_Known_Value (Cond) then
+         if Is_True (Expr_Value (Cond)) then
+            Expr := Thenx;
+            Actions := Then_Actions (N);
+         else
+            Expr := Elsex;
+            Actions := Else_Actions (N);
+         end if;
+
+         Remove (Expr);
+         Insert_Actions (N, Actions);
+         Rewrite (N, Relocate_Node (Expr));
+
+         --  Note that the result is never static (legitimate cases of static
+         --  conditional expressions were folded in Sem_Eval).
+
+         Set_Is_Static_Expression (N, False);
+         return;
+      end if;
+
       --  If the type is limited or unconstrained, we expand as follows to
       --  avoid any possibility of improper copies.
 

@@ -54,10 +54,11 @@ package body Prj.Nmsc is
       Name     : File_Name_Type;  --  ??? duplicates the key
       Location : Source_Ptr;
       Source   : Source_Id := No_Source;
+      Listed   : Boolean := False;
       Found    : Boolean := False;
    end record;
    No_Name_Location : constant Name_Location :=
-     (No_File, No_Location, No_Source, False);
+     (No_File, No_Location, No_Source, False, False);
    package Source_Names_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Name_Location,
@@ -234,13 +235,9 @@ package body Prj.Nmsc is
 
    procedure Check_Package_Naming
      (Project : Project_Id;
-      Data    : in out Tree_Processing_Data;
-      Bodies  : out Array_Element_Id;
-      Specs   : out Array_Element_Id);
+      Data    : in out Tree_Processing_Data);
    --  Check the naming scheme part of Data, and initialize the naming scheme
-   --  data in the config of the various languages. This also returns the
-   --  naming scheme exceptions for unit-based languages (Bodies and Specs are
-   --  associative arrays mapping individual unit names to source file names).
+   --  data in the config of the various languages.
 
    procedure Check_Configuration
      (Project : Project_Id;
@@ -727,6 +724,7 @@ package body Prj.Nmsc is
       end if;
 
       Id.Project             := Project;
+      Id.Location            := Location;
       Id.Source_Dir_Rank     := Source_Dir_Rank;
       Id.Language            := Lang_Id;
       Id.Kind                := Kind;
@@ -816,8 +814,6 @@ package body Prj.Nmsc is
      (Project : Project_Id;
       Data    : in out Tree_Processing_Data)
    is
-      Specs     : Array_Element_Id;
-      Bodies    : Array_Element_Id;
       Extending : Boolean := False;
       Prj_Data  : Project_Processing_Data;
 
@@ -889,7 +885,7 @@ package body Prj.Nmsc is
 
       Extending := Project.Extends /= No_Project;
 
-      Check_Package_Naming (Project, Data, Bodies => Bodies, Specs => Specs);
+      Check_Package_Naming (Project, Data);
 
       --  Find the sources
 
@@ -2722,9 +2718,7 @@ package body Prj.Nmsc is
 
    procedure Check_Package_Naming
      (Project : Project_Id;
-      Data    : in out Tree_Processing_Data;
-      Bodies  : out Array_Element_Id;
-      Specs   : out Array_Element_Id)
+      Data    : in out Tree_Processing_Data)
    is
       Naming_Id : constant Package_Id :=
                     Util.Value_Of
@@ -2957,7 +2951,8 @@ package body Prj.Nmsc is
                      Kind             => Kind,
                      File_Name        => File_Name,
                      Display_File     => File_Name_Type (Element.Value),
-                     Naming_Exception => True);
+                     Naming_Exception => True,
+                     Location         => Element.Location);
 
                else
                   --  Check if the file name is already recorded for another
@@ -3380,9 +3375,6 @@ package body Prj.Nmsc is
    --  Start of processing for Check_Naming_Schemes
 
    begin
-      Specs  := No_Array_Element;
-      Bodies := No_Array_Element;
-
       --  No Naming package or parsing a configuration file? nothing to do
 
       if Naming_Id /= No_Package
@@ -5557,7 +5549,11 @@ package body Prj.Nmsc is
                     (Name     => Source_Name,
                      Location => Location,
                      Source   => No_Source,
+                     Listed   => True,
                      Found    => False);
+
+               else
+                  Name_Loc.Listed := True;
                end if;
 
                Source_Names_Htable.Set
@@ -6292,10 +6288,15 @@ package body Prj.Nmsc is
                     (Name     => Name,
                      Location => Location,
                      Source   => No_Source,
+                     Listed   => True,
                      Found    => False);
-                  Source_Names_Htable.Set
-                    (Project.Source_Names, Name, Name_Loc);
+
+               else
+                  Name_Loc.Listed := True;
                end if;
+
+               Source_Names_Htable.Set
+                 (Project.Source_Names, Name, Name_Loc);
 
                Current := Element.Next;
             end loop;
@@ -6341,6 +6342,57 @@ package body Prj.Nmsc is
          --  directories.
 
          Has_Explicit_Sources := False;
+      end if;
+
+      --  Remove any exception that is not in the specified list of sources
+
+      if Has_Explicit_Sources then
+         declare
+            Source : Source_Id;
+            Iter   : Source_Iterator;
+            NL     : Name_Location;
+            Again  : Boolean;
+         begin
+            Iter_Loop :
+            loop
+               Again := False;
+               Iter := For_Each_Source (Data.Tree, Project.Project);
+
+               Source_Loop :
+               loop
+                  Source := Prj.Element (Iter);
+                  exit Source_Loop when Source = No_Source;
+
+                  if Source.Naming_Exception then
+                     NL := Source_Names_Htable.Get
+                       (Project.Source_Names, Source.File);
+
+                     if NL /= No_Name_Location and then not NL.Listed then
+                        --  Remove the exception
+                        Source_Names_Htable.Set
+                          (Project.Source_Names,
+                           Source.File,
+                           No_Name_Location);
+                        Remove_Source (Source, No_Source);
+
+                        Error_Msg_Name_1 := Name_Id (Source.File);
+                        Error_Msg
+                          (Data.Flags,
+                           "? unknown source file %%",
+                           NL.Location,
+                           Project.Project);
+
+                        Again := True;
+                        exit Source_Loop;
+                     end if;
+                  end if;
+
+                  Next (Iter);
+               end loop Source_Loop;
+
+               exit Iter_Loop when not Again;
+            end loop Iter_Loop;
+         end;
       end if;
 
       Search_Directories
@@ -7031,8 +7083,9 @@ package body Prj.Nmsc is
             K => Source.File,
             E => Name_Location'
                   (Name     => Source.File,
-                   Location => No_Location,
+                   Location => Source.Location,
                    Source   => Source,
+                   Listed   => False,
                    Found    => False));
 
          --  If this is an Ada exception, record in table Unit_Exceptions

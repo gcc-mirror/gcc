@@ -180,6 +180,13 @@ package body Sem_Eval is
    --  used for producing the result of the static evaluation of the
    --  logical operators
 
+   procedure Test_Ambiguous_Operator (N : Node_Id);
+   --  Check whether an arithmetic operation with universal operands which
+   --  is a rewritten function call with an explicit scope indication is
+   --  ambiguous:  P."+" (1, 2) will be ambiguous if there is more than one
+   --  visible numeric type declared in P and the context does not impose a
+   --  type on the result (e.g. in the expression of a type conversion).
+
    procedure Test_Expression_Is_Foldable
      (N    : Node_Id;
       Op1  : Node_Id;
@@ -1456,6 +1463,15 @@ package body Sem_Eval is
 
       if not Fold then
          return;
+      end if;
+
+      if (Etype (Right) = Universal_Integer
+           or else Etype (Right) = Universal_Real)
+        and then
+          (Etype (Left) = Universal_Integer
+            or else Etype (Left) = Universal_Real)
+      then
+         Test_Ambiguous_Operator (N);
       end if;
 
       --  Fold for cases where both operands are of integer type
@@ -3395,6 +3411,12 @@ package body Sem_Eval is
          return;
       end if;
 
+      if Etype (Right) = Universal_Integer
+           or else Etype (Right) = Universal_Real
+      then
+         Test_Ambiguous_Operator (N);
+      end if;
+
       --  Fold for integer case
 
       if Is_Integer_Type (Etype (N)) then
@@ -4698,6 +4720,78 @@ package body Sem_Eval is
          return Uint_0;
       end if;
    end Test;
+
+   -----------------------------
+   -- Test_Ambiguous_Operator --
+   -----------------------------
+
+   procedure Test_Ambiguous_Operator (N : Node_Id) is
+      Call   : constant Node_Id := Original_Node (N);
+      Is_Int : constant Boolean := Is_Integer_Type (Etype (N));
+
+      Is_Fix : constant Boolean :=
+        Nkind (N) in N_Binary_Op
+        and then Nkind (Right_Opnd (N)) /= Nkind (Left_Opnd (N));
+      --  a mixed-mode operation in this context indicates the
+      --  presence of fixed-point type in the designated package.
+
+      E      : Entity_Id;
+      Pack   : Entity_Id;
+      Typ1   : Entity_Id;
+      Priv_E : Entity_Id;
+
+   begin
+      if Nkind (Call) /= N_Function_Call
+        or else Nkind (Name (Call)) /= N_Expanded_Name
+      then
+         return;
+
+      elsif Nkind (Parent (N)) = N_Type_Conversion then
+         Pack := Entity (Prefix (Name (Call)));
+
+         --  If the prefix is a package declared elsewhere, iterate over
+         --  its visible entities, otherwise iterate over all declarations
+         --  in the designated scope.
+
+         if Ekind (Pack) = E_Package
+           and then not In_Open_Scopes (Pack)
+         then
+            Priv_E := First_Private_Entity (Pack);
+         else
+            Priv_E := Empty;
+         end if;
+
+         Typ1 := Empty;
+         E := First_Entity (Pack);
+         while Present (E)
+           and then E /= Priv_E
+         loop
+            if Is_Numeric_Type (E)
+              and then Nkind (Parent (E)) /= N_Subtype_Declaration
+              and then Comes_From_Source (E)
+              and then Is_Integer_Type (E) = Is_Int
+              and then
+                (Nkind (N) in N_Unary_Op
+                  or else Is_Fixed_Point_Type (E) = Is_Fix)
+            then
+               if No (Typ1) then
+                  Typ1 := E;
+
+               else
+                  --  More than one type of the proper class declared in P
+
+                  Error_Msg_N ("ambiguous operation", N);
+                  Error_Msg_Sloc := Sloc (Typ1);
+                  Error_Msg_N ("\possible interpretation (inherited)#", N);
+                  Error_Msg_Sloc := Sloc (E);
+                  Error_Msg_N ("\possible interpretation (inherited)#", N);
+               end if;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+      end if;
+   end Test_Ambiguous_Operator;
 
    ---------------------------------
    -- Test_Expression_Is_Foldable --
