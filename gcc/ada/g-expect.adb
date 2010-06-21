@@ -539,6 +539,7 @@ package body GNAT.Expect is
 
       for J in Descriptors'Range loop
          Descriptors (J) := Regexps (J).Descriptor;
+
          if Descriptors (J) /= null then
             Reinitialize_Buffer (Regexps (J).Descriptor.all);
          end if;
