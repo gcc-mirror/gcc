@@ -82,6 +82,16 @@ procedure Gnatbind is
 
    Mapping_File : String_Ptr := null;
 
+   package Closure_Sources is new Table.Table
+     (Table_Component_Type => File_Name_Type,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatbind.Closure_Sources");
+   --  Table to record the sources in the closure, to avoid duplications. Used
+   --  only with switch -R.
+
    function Gnatbind_Supports_Auto_Init return Boolean;
    --  Indicates if automatic initialization of elaboration procedure
    --  through the constructor mechanism is possible on the platform.
@@ -817,16 +827,6 @@ begin
 
             if List_Closure then
                declare
-                  package Sources is new Table.Table
-                    (Table_Component_Type => File_Name_Type,
-                     Table_Index_Type     => Natural,
-                     Table_Low_Bound      => 1,
-                     Table_Initial        => 10,
-                     Table_Increment      => 100,
-                     Table_Name           => "Gnatbind.Sources");
-                  --  Table to record the sources in the closure, to avoid
-                  --  dupications.
-
                   Source : File_Name_Type;
 
                   function Put_In_Sources (S : File_Name_Type) return Boolean;
@@ -842,17 +842,19 @@ begin
                                            return Boolean
                   is
                   begin
-                     for J in 1 .. Sources.Last loop
-                        if Sources.Table (J) = S then
+                     for J in 1 .. Closure_Sources.Last loop
+                        if Closure_Sources.Table (J) = S then
                            return False;
                         end if;
                      end loop;
 
-                     Sources.Append (S);
+                     Closure_Sources.Append (S);
                      return True;
                   end Put_In_Sources;
 
                begin
+                  Closure_Sources.Init;
+
                   if not Zero_Formatting then
                      Write_Eol;
                      Write_Str ("REFERENCED SOURCES");
