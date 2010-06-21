@@ -47,6 +47,12 @@
 	* stmt.c (resolve_asm_operand_names): Fix handling
 	of %%.
 
+	PR target/44575
+	* config/i386/i386.c (ix86_gimplify_va_arg): When copying
+	va_arg from a set of register save slots into a temporary,
+	if the container is bigger than type size, do the copying
+	using smaller mode or using memcpy.
+
 	PR bootstrap/44426
 	* sel-sched-dump.h (sel_prepare_string_for_dot_label): Remove
 	prototype.
