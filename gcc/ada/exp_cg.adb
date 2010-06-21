@@ -132,6 +132,8 @@ package body Exp_CG is
             Write_Type_Info (N);
          end if;
       end loop;
+
+      Set_Special_Output (null);
    end Generate_CG_Output;
 
    ----------------
