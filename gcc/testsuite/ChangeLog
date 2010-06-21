@@ -1,3 +1,8 @@
+2010-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44546
+	* gcc.target/i386/pr44546.c: New test.
+
 2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/ext/label13.C: Fix typo in last change.

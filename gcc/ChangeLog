@@ -1,18 +1,34 @@
+2010-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/44546
+	* config/i386/predicates.md (ix86_swapped_fp_comparsion_operator):
+	New predicate.
+	* config/i386/i386.md (*fp_jcc_8<mode>_387 and splitters): Use
+	ix86_swapped_fp_comparsion_operator instead of
+	ix86_fp_comparison_operator.
+
+	(*fp_jcc_1_387): Rename from *fp_jcc_3_387.
+	(*fp_jcc_1r_387): Rename from *fp_jcc_4_387.
+	(*fp_jcc_2_387): Rename from *fp_jcc_5_387.
+	(*fp_jcc_2r_387): Rename from *fp_jcc_6_387.
+	(*fp_jcc_3_387): Rename from *fp_jcc_7_387.
+	(*fp_jcc_4_<mode>_387): Rename from *fp_jcc_8<mode>_387.
+
 2010-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline
 	2010-05-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44261
-	config/pa/pa.md (negdf2_slow, negsf2_slow): New patterns.
+	* config/pa/pa.md (negdf2_slow, negsf2_slow): New patterns.
 	(negdf2): Adjust expander pattern and use negdf2_slow.
 	(negsf2): Likewise.
 
 2010-06-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/43740
-	config/pa/pa.c (emit_move_sequence): Don't infer REG_POINTER flag for
-	SET source operand from SET destination operand.
+	* config/pa/pa.c (emit_move_sequence): Don't infer REG_POINTER flag
+	for SET source operand from SET destination operand.
 
 2010-06-16  Martin Jambor  <mjambor@suse.cz>
 
@@ -74,8 +90,7 @@
 	2010-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44534
-	* config/i386/sse.md (vec_extract_lo_<mode>): Replace 0x1 with
-	0x0.
+	* config/i386/sse.md (vec_extract_lo_<mode>): Replace 0x1 with 0x0.
 	(vec_extract_lo_v16hi): Likewise.
 	(vec_extract_lo_v32qi): Likewise.
 
@@ -93,8 +108,7 @@
 	(build_call_expr): New function.
 
 	PR tree-optimization/44508
-	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE
-	argument.
+	* tree-ssa-propagate.h (substitute_and_fold): Add DO_DCE argument.
 	* tree-ssa-propagate.c (substitute_and_fold): If !DO_DCE,
 	don't eliminate trivially dead stmts.
 	* tree-vrp.c (vrp_finalize): Pass false as last argument

@@ -1083,6 +1083,19 @@
                (match_operand 0 "comparison_operator")
                (match_operand 0 "ix86_trivial_fp_comparison_operator")))
 
+;; Same as above, but for swapped comparison used in fp_jcc_4_387.
+(define_predicate "ix86_swapped_fp_comparison_operator"
+  (match_operand 0 "comparison_operator")
+{
+  enum rtx_code code = GET_CODE (op);
+  int ret;
+
+  PUT_CODE (op, swap_condition (code));
+  ret = ix86_fp_comparison_operator (op, mode);
+  PUT_CODE (op, code);
+  return ret;
+})
+
 ;; Nearly general operand, but accept any const_double, since we wish
 ;; to be able to drop them into memory rather than have them get pulled
 ;; into registers.
