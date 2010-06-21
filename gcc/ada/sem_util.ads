@@ -331,7 +331,7 @@ package Sem_Util is
       Typ  : Entity_Id) return Entity_Id;
    --  Because discriminants may have different names in a generic unit and in
    --  an instance, they are resolved positionally when possible. A reference
-   --  to a discriminant carries the discriminant that it denotes when
+   --  to a discriminant carries the discriminant that it denotes when it is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
 

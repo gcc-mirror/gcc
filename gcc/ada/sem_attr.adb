@@ -4906,17 +4906,18 @@ package body Sem_Attr is
       -----------------------------------
 
       procedure Check_Concurrent_Discriminant (Bound : Node_Id) is
-         Tsk  : Entity_Id;
+         Tsk : Entity_Id;
          --  The concurrent (task or protected) type
+
       begin
          if Nkind (Bound) = N_Identifier
            and then Ekind (Entity (Bound)) = E_Discriminant
            and then Is_Concurrent_Record_Type (Scope (Entity (Bound)))
          then
             Tsk := Corresponding_Concurrent_Type (Scope (Entity (Bound)));
-            if In_Open_Scopes (Tsk)
-                 and then Has_Completion (Tsk)
-            then
+
+            if In_Open_Scopes (Tsk) and then Has_Completion (Tsk) then
+
                --  Find discriminant of original concurrent type, and use
                --  its current discriminal, which is the renaming within
                --  the task/protected body.
@@ -6015,6 +6016,7 @@ package body Sem_Attr is
             else
                Fold_Uint  (N, Expr_Value (Lo_Bound), Static);
             end if;
+
          else
             Check_Concurrent_Discriminant (Lo_Bound);
          end if;
@@ -6205,6 +6207,7 @@ package body Sem_Attr is
             else
                Fold_Uint  (N, Expr_Value (Hi_Bound), Static);
             end if;
+
          else
             Check_Concurrent_Discriminant (Hi_Bound);
          end if;

@@ -7526,9 +7526,11 @@ package body Sem_Ch6 is
       --  E exists and is overloadable
 
       else
-         --  Ada 2005 (AI-251): Derivation of abstract interface primitives
-         --  need no check against the homonym chain. They are directly added
-         --  to the list of primitive operations of Derived_Type.
+         --  Ada 2005 (AI-251): Derivation of abstract interface primitives.
+         --  They are directly added to the list of primitive operations of
+         --  Derived_Type, unless this is a rederivation in the private part
+         --  of an operation that was already derived in the visible part of
+         --  the current package.
 
          if Ada_Version >= Ada_05
            and then Present (Derived_Type)
@@ -7536,7 +7538,16 @@ package body Sem_Ch6 is
            and then Present (Find_Dispatching_Type (Alias (S)))
            and then Is_Interface (Find_Dispatching_Type (Alias (S)))
          then
-            goto Add_New_Entity;
+            if Type_Conformant (E, S)
+              and then Is_Package_Or_Generic_Package (Current_Scope)
+              and then In_Private_Part (Current_Scope)
+              and then Parent (E) /= Parent (S)
+              and then Alias (E) = Alias (S)
+            then
+               Check_Operation_From_Private_View (S, E);
+            else
+               goto Add_New_Entity;
+            end if;
          end if;
 
          Check_Synchronized_Overriding (S, Overridden_Subp);

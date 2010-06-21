@@ -5929,6 +5929,12 @@ package body Sem_Res is
               and then In_Open_Scopes (Tsk)
               and then Nkind (Parent (Entry_Name)) = N_Requeue_Statement
             then
+               --  Note: here Bound denotes a discriminant of the corresponding
+               --  record type tskV, whose discriminal is a formal of the
+               --  init-proc tskVIP. What we want is the body discriminal,
+               --  which is associated to the discriminant of the original
+               --  concurrent type tsk.
+
                return New_Occurrence_Of
                         (Find_Body_Discriminal (Entity (Bound)), Loc);
 
