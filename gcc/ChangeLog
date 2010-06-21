@@ -1,3 +1,7 @@
+2010-06-21  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* Makefile.in (POD2MAN): Provide --date from $(DATESTAMP).
+
 2010-06-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (ix86_compute_frame_layout): Avoid
