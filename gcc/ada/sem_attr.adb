@@ -4811,6 +4811,12 @@ package body Sem_Attr is
       --  Computes Aft value for current attribute prefix (used by Aft itself
       --  and also by Width for computing the Width of a fixed point type).
 
+      procedure Check_Concurrent_Discriminant (Bound : Node_Id);
+      --  If Bound is a reference to a discriminant of a task or protected type
+      --  occurring within the object's body, rewrite attribute reference into
+      --  a reference to the corresponding discriminal. Use for the expansion
+      --  of checks against bounds of entry family index subtypes.
+
       procedure Check_Expressions;
       --  In case where the attribute is not foldable, the expressions, if
       --  any, of the attribute, are in a non-static context. This procedure
@@ -4894,6 +4900,33 @@ package body Sem_Attr is
 
          return Result;
       end Aft_Value;
+
+      -----------------------------------
+      -- Check_Concurrent_Discriminant --
+      -----------------------------------
+
+      procedure Check_Concurrent_Discriminant (Bound : Node_Id) is
+         Tsk  : Entity_Id;
+         --  The concurrent (task or protected) type
+      begin
+         if Nkind (Bound) = N_Identifier
+           and then Ekind (Entity (Bound)) = E_Discriminant
+           and then Is_Concurrent_Record_Type (Scope (Entity (Bound)))
+         then
+            Tsk := Corresponding_Concurrent_Type (Scope (Entity (Bound)));
+            if In_Open_Scopes (Tsk)
+                 and then Has_Completion (Tsk)
+            then
+               --  Find discriminant of original concurrent type, and use
+               --  its current discriminal, which is the renaming within
+               --  the task/protected body.
+
+               Rewrite (N,
+                 New_Occurrence_Of
+                   (Find_Body_Discriminal (Entity (Bound)), Loc));
+            end if;
+         end if;
+      end Check_Concurrent_Discriminant;
 
       -----------------------
       -- Check_Expressions --
@@ -5982,6 +6015,8 @@ package body Sem_Attr is
             else
                Fold_Uint  (N, Expr_Value (Lo_Bound), Static);
             end if;
+         else
+            Check_Concurrent_Discriminant (Lo_Bound);
          end if;
       end First_Attr;
 
@@ -6170,6 +6205,8 @@ package body Sem_Attr is
             else
                Fold_Uint  (N, Expr_Value (Hi_Bound), Static);
             end if;
+         else
+            Check_Concurrent_Discriminant (Hi_Bound);
          end if;
       end Last;
 

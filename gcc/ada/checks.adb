@@ -6249,7 +6249,8 @@ package body Checks is
       --    Expr > Typ'Last
 
       function Get_E_First_Or_Last
-        (E    : Entity_Id;
+        (Loc  : Source_Ptr;
+         E    : Entity_Id;
          Indx : Nat;
          Nam  : Name_Id) return Node_Id;
       --  Returns expression to compute:
@@ -6320,7 +6321,7 @@ package body Checks is
                      Duplicate_Subexpr_No_Checks (Expr)),
                  Right_Opnd =>
                    Convert_To (Base_Type (Typ),
-                               Get_E_First_Or_Last (Typ, 0, Name_First))),
+                               Get_E_First_Or_Last (Loc, Typ, 0, Name_First))),
 
              Right_Opnd =>
                Make_Op_Gt (Loc,
@@ -6330,7 +6331,7 @@ package body Checks is
                  Right_Opnd =>
                    Convert_To
                      (Base_Type (Typ),
-                      Get_E_First_Or_Last (Typ, 0, Name_Last))));
+                      Get_E_First_Or_Last (Loc, Typ, 0, Name_Last))));
       end Discrete_Expr_Cond;
 
       -------------------------
@@ -6368,7 +6369,8 @@ package body Checks is
 
              Right_Opnd =>
                Convert_To
-                 (Base_Type (Typ), Get_E_First_Or_Last (Typ, 0, Name_First)));
+                 (Base_Type (Typ),
+                  Get_E_First_Or_Last (Loc, Typ, 0, Name_First)));
 
          if Base_Type (Typ) = Typ then
             return Left_Opnd;
@@ -6403,7 +6405,7 @@ package body Checks is
              Right_Opnd =>
                Convert_To
                  (Base_Type (Typ),
-                  Get_E_First_Or_Last (Typ, 0, Name_Last)));
+                  Get_E_First_Or_Last (Loc, Typ, 0, Name_Last)));
 
          return Make_Or_Else (Loc, Left_Opnd, Right_Opnd);
       end Discrete_Range_Cond;
@@ -6413,115 +6415,23 @@ package body Checks is
       -------------------------
 
       function Get_E_First_Or_Last
-        (E    : Entity_Id;
+        (Loc  : Source_Ptr;
+         E    : Entity_Id;
          Indx : Nat;
          Nam  : Name_Id) return Node_Id
       is
-         N     : Node_Id;
-         LB    : Node_Id;
-         HB    : Node_Id;
-         Bound : Node_Id;
-
+         Exprs : List_Id;
       begin
-         if Is_Array_Type (E) then
-            N := First_Index (E);
-
-            for J in 2 .. Indx loop
-               Next_Index (N);
-            end loop;
-
+         if Indx > 0 then
+            Exprs := New_List (Make_Integer_Literal (Loc, UI_From_Int (Indx)));
          else
-            N := Scalar_Range (E);
+            Exprs := No_List;
          end if;
 
-         if Nkind (N) = N_Subtype_Indication then
-            LB := Low_Bound (Range_Expression (Constraint (N)));
-            HB := High_Bound (Range_Expression (Constraint (N)));
-
-         elsif Is_Entity_Name (N) then
-            LB := Type_Low_Bound  (Etype (N));
-            HB := Type_High_Bound (Etype (N));
-
-         else
-            LB := Low_Bound  (N);
-            HB := High_Bound (N);
-         end if;
-
-         if Nam = Name_First then
-            Bound := LB;
-         else
-            Bound := HB;
-         end if;
-
-         if Nkind (Bound) = N_Identifier
-           and then Ekind (Entity (Bound)) = E_Discriminant
-         then
-            --  If this is a task discriminant, and we are the body, we must
-            --  retrieve the corresponding body discriminal. This is another
-            --  consequence of the early creation of discriminals, and the
-            --  need to generate constraint checks before their declarations
-            --  are made visible.
-
-            if Is_Concurrent_Record_Type (Scope (Entity (Bound)))  then
-               declare
-                  Tsk : constant Entity_Id :=
-                          Corresponding_Concurrent_Type
-                           (Scope (Entity (Bound)));
-                  Disc : Entity_Id;
-
-               begin
-                  if In_Open_Scopes (Tsk)
-                    and then Has_Completion (Tsk)
-                  then
-                     --  Find discriminant of original task, and use its
-                     --  current discriminal, which is the renaming within
-                     --  the task body.
-
-                     Disc := First_Discriminant (Tsk);
-                     while Present (Disc) loop
-                        if Chars (Disc) = Chars (Entity (Bound)) then
-                           Set_Scope (Discriminal (Disc), Tsk);
-                           return New_Occurrence_Of (Discriminal (Disc), Loc);
-                        end if;
-
-                        Next_Discriminant (Disc);
-                     end loop;
-
-                     --  That loop should always succeed in finding a matching
-                     --  entry and returning. Fatal error if not.
-
-                     raise Program_Error;
-
-                  else
-                     return
-                       New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
-                  end if;
-               end;
-            else
-               return New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
-            end if;
-
-         elsif Nkind (Bound) = N_Identifier
-           and then Ekind (Entity (Bound)) = E_In_Parameter
-           and then not Inside_Init_Proc
-         then
-            return Get_Discriminal (E, Bound);
-
-         elsif Nkind (Bound) = N_Integer_Literal then
-            return Make_Integer_Literal (Loc, Intval (Bound));
-
-         --  Case of a bound rewritten to an N_Raise_Constraint_Error node
-         --  because it is an out-of-range value. Duplicate_Subexpr cannot be
-         --  called on this node because an N_Raise_Constraint_Error is not
-         --  side effect free, and we may not assume that we are in the proper
-         --  context to remove side effects on it at the point of reference.
-
-         elsif Nkind (Bound) = N_Raise_Constraint_Error then
-            return New_Copy_Tree (Bound);
-
-         else
-            return Duplicate_Subexpr_No_Checks (Bound);
-         end if;
+         return Make_Attribute_Reference (Loc,
+                  Prefix         => New_Occurrence_Of (E, Loc),
+                  Attribute_Name => Nam,
+                  Expressions    => Exprs);
       end Get_E_First_Or_Last;
 
       -----------------
@@ -6568,13 +6478,17 @@ package body Checks is
            Make_Or_Else (Loc,
              Left_Opnd =>
                Make_Op_Lt (Loc,
-                 Left_Opnd => Get_E_First_Or_Last (Exptyp, Indx, Name_First),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_First)),
+                 Left_Opnd   =>
+                   Get_E_First_Or_Last (Loc, Exptyp, Indx, Name_First),
+                 Right_Opnd  =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_First)),
 
              Right_Opnd =>
                Make_Op_Gt (Loc,
-                 Left_Opnd => Get_E_First_Or_Last (Exptyp, Indx, Name_Last),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_Last)));
+                 Left_Opnd   =>
+                   Get_E_First_Or_Last (Loc, Exptyp, Indx, Name_Last),
+                 Right_Opnd  =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_Last)));
       end Range_E_Cond;
 
       ------------------------
@@ -6591,12 +6505,17 @@ package body Checks is
            Make_Or_Else (Loc,
              Left_Opnd =>
                Make_Op_Ne (Loc,
-                 Left_Opnd => Get_E_First_Or_Last (Exptyp, Indx, Name_First),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_First)),
+                 Left_Opnd   =>
+                   Get_E_First_Or_Last (Loc, Exptyp, Indx, Name_First),
+                 Right_Opnd  =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_First)),
+
              Right_Opnd =>
                Make_Op_Ne (Loc,
-                 Left_Opnd => Get_E_First_Or_Last (Exptyp, Indx, Name_Last),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_Last)));
+                 Left_Opnd   =>
+                   Get_E_First_Or_Last (Loc, Exptyp, Indx, Name_Last),
+                 Right_Opnd  =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_Last)));
       end Range_Equal_E_Cond;
 
       ------------------
@@ -6613,13 +6532,17 @@ package body Checks is
            Make_Or_Else (Loc,
              Left_Opnd =>
                Make_Op_Lt (Loc,
-                 Left_Opnd => Get_N_First (Expr, Indx),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_First)),
+                 Left_Opnd  =>
+                   Get_N_First (Expr, Indx),
+                 Right_Opnd =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_First)),
 
              Right_Opnd =>
                Make_Op_Gt (Loc,
-                 Left_Opnd => Get_N_Last (Expr, Indx),
-                 Right_Opnd  => Get_E_First_Or_Last (Typ, Indx, Name_Last)));
+                 Left_Opnd  =>
+                   Get_N_Last (Expr, Indx),
+                 Right_Opnd =>
+                   Get_E_First_Or_Last (Loc, Typ, Indx, Name_Last)));
       end Range_N_Cond;
 
    --  Start of processing for Selected_Range_Checks

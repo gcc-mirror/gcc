@@ -304,7 +304,7 @@ package body Ada.Text_IO.Fixed_IO is
       Fore : Integer;
       Aft  : Field;
       Exp  : Field);
-   --  Actual output function, used internally by all other Put routines
+   --  Actual output function, used internally by all other Put routines.
    --  The formal Fore is an Integer, not a Field, because the routine is
    --  also called from the version of Put that performs I/O to a string,
    --  where the starting position depends on the size of the String, and

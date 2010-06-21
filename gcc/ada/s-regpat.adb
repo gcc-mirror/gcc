@@ -781,7 +781,7 @@ package body System.Regpat is
 
       procedure Link_Operand_Tail (P, Val : Pointer) is
       begin
-         if Program (P) = BRANCH then
+         if P <= PM.Size and then Program (P) = BRANCH then
             Link_Tail (Operand (P), Val);
          end if;
       end Link_Operand_Tail;
@@ -796,14 +796,10 @@ package body System.Regpat is
          Offset : Pointer;
 
       begin
-         if Emit_Ptr > PM.Size then
-            return;
-         end if;
-
          --  Find last node
 
          Scan := P;
-         loop
+         while Scan <= PM.Size loop
             Temp := Get_Next (Program, Scan);
             exit when Temp = Scan;
             Scan := Temp;
@@ -914,7 +910,7 @@ package body System.Regpat is
 
          Link_Tail (IP, Ender);
 
-         if Have_Branch then
+         if Have_Branch and then Emit_Ptr <= PM.Size then
 
             --  Hook the tails of the branches to the closing node
 
