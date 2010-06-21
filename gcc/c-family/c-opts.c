@@ -842,10 +842,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->dollars_in_ident = false;
       break;
 
-    case OPT_lang_objc:
-      cpp_opts->objc = 1;
-      break;
-
     case OPT_nostdinc:
       std_inc = false;
       break;

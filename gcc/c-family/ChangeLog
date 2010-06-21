@@ -1,3 +1,8 @@
+2010-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (lang-objc): Remove.
+	* c-opts.c (c_common_handle_option): Don't handle OPT_lang_objc.
+
 2010-06-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* c-opts.c: Include "tm_p.h".
