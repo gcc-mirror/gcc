@@ -566,7 +566,7 @@ replace_str_in_buf (char *buf, const char *str1, const char *str2)
 }
 
 /* Replace characters in BUF that have special meaning in .dot file.  */
-void
+static void
 sel_prepare_string_for_dot_label (char *buf)
 {
   static char specials_from[7][2] = { "<", ">", "{", "|", "}", "\"",
@@ -577,6 +577,28 @@ sel_prepare_string_for_dot_label (char *buf)
 
   for (i = 0; i < 7; i++)
     replace_str_in_buf (buf, specials_from[i], specials_to[i]);
+}
+
+/* This function acts like printf but dumps to the sched_dump file.  */
+void
+sel_print (const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  if (sched_dump_to_dot_p)
+    {
+      char *message;
+      if (vasprintf (&message, fmt, ap) >= 0 && message != NULL)
+	{
+	  message = (char *) xrealloc (message, 2 * strlen (message) + 1);
+	  sel_prepare_string_for_dot_label (message);
+	  fprintf (sched_dump, "%s", message);
+	  free (message);
+	}
+    }
+  else
+    vfprintf (sched_dump, fmt, ap);
+  va_end (ap);
 }
 
 /* Dump INSN with FLAGS.  */

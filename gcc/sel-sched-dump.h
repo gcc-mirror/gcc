@@ -177,34 +177,13 @@ extern void dump_insn_1 (insn_t, int);
 extern void dump_insn (insn_t);
 extern void debug_insn (insn_t);
 
-extern void sel_prepare_string_for_dot_label (char *);
-
 /* When this flag is on, we are dumping to the .dot file.
    When it is off, we are dumping to log.  */
 extern bool sched_dump_to_dot_p;
-
-/* This macro acts like printf but dumps information to the .dot file.
-   Used when dumping control flow.  */
-#define sel_print_to_dot(...)                           \
-  do {                                                  \
-    int __j = 1 + 2 * snprintf (NULL, 0, __VA_ARGS__);  \
-    char *__s = XALLOCAVEC (char, __j);                 \
-    snprintf (__s, __j, __VA_ARGS__);                   \
-    sel_prepare_string_for_dot_label (__s);             \
-    fprintf (sched_dump, "%s", __s);                    \
-  } while (0)
-
-/* This macro acts like printf but dumps to the sched_dump file.  */
-#define sel_print(...)					\
-  do {							\
-    if (sched_dump_to_dot_p)                            \
-      sel_print_to_dot (__VA_ARGS__);                   \
-    else                                                \
-      fprintf (sched_dump, __VA_ARGS__);                \
-  } while (0)
 
 
 /* Functions from sel-sched-dump.c.  */
+extern void sel_print (const char *fmt, ...) ATTRIBUTE_PRINTF_1;
 extern const char * sel_print_insn (const_rtx, int);
 extern void free_sel_dump_data (void);
 
