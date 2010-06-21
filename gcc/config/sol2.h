@@ -99,7 +99,8 @@ along with GCC; see the file COPYING3.  If not see
 	   library.  */					\
 	if (c_dialect_cxx ())				\
 	  {						\
-	    builtin_define ("_XOPEN_SOURCE=500");	\
+	    builtin_define ("__STDC_VERSION__=199901L");\
+	    builtin_define ("_XOPEN_SOURCE=600");	\
 	    builtin_define ("_LARGEFILE_SOURCE=1");	\
 	    builtin_define ("_LARGEFILE64_SOURCE=1");	\
 	    builtin_define ("__EXTENSIONS__");		\

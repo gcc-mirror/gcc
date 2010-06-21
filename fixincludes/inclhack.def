@@ -3249,6 +3249,23 @@ fix = {
 
 
 /*
+ *  Solaris 10+ <sys/feature_tests.h> defines _RESTRICT_KYWD as restrict
+ *  for C99.  This is wrong for C++, which needs many C99 features, but
+ *  only supports __restrict.
+ */
+fix = {
+    hackname  = solaris___restrict;
+    files     = sys/feature_tests.h;
+    select    = "#define[ \t]*_RESTRICT_KYWD[ \t]*restrict";
+    mach      = "*-*-solaris2*";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n#define\t_RESTRICT_KYWD\t__restrict\n"
+    	        "#else\n%0\n#endif";
+    test_text = "#define	_RESTRICT_KYWD	restrict";
+};
+
+
+/*
  * Solaris 10+ complex.h defines _Complex_I and _Imaginary_I in terms of
  * themselves, which are Sun Studio compiler intrinsics.  Remove _Imaginary_I
  * and imaginary definitions which are not supported by GCC.
@@ -3269,6 +3286,23 @@ fix = {
 		"#define	imaginary	_Imaginary\n"
 		"#undef	I\n"
 		"#define	I		_Imaginary_I";
+};
+
+
+/*
+ * Solaris 10+ <complex.h> is wrapped in #ifndef __cplusplus.  Wrap in
+ * extern "C" instead so libstdc++ can use it.
+ */
+fix = {
+    hackname  = solaris_complex_cxx;
+    mach      = "*-*-solaris2.*";
+    files     = complex.h;
+    sed	      = "/#if[ \t]*!defined(__cplusplus)/c"
+    		"#ifdef\t__cplusplus\\\nextern \"C\" {\\\n#endif";
+    sed	      = "/#endif[ \t]*\\/\\* !defined(__cplusplus) \\*\\//c"
+		"#ifdef\t__cplusplus\\\n}\\\n#endif";
+    test_text = "#if !defined(__cplusplus)\n"
+		"#endif	/* !defined(__cplusplus) */";
 };
 
 
