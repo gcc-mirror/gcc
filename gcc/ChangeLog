@@ -1,3 +1,8 @@
+2010-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* stmt.c (resolve_asm_operand_names): Fix handling
+	of %%.
+
 2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define
