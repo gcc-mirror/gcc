@@ -1,3 +1,26 @@
+2010-06-21  Thomas Quinot  <quinot@adacore.com>
+
+	* bindgen.ads: Update comments.
+
+2010-06-21  Vincent Celier  <celier@adacore.com>
+
+	* gnatbind.adb: Suppress dupicates when listing the sources in the
+	closure (switch -R).
+
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Link_Tail): Fix error when size of the pattern matcher
+	is too small.
+
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* g-expect.adb, g-expect.ads (First_Dead_Process, Free, Has_Process):
+	New subprograms.
+	(Expect_Internal): No longer raises an exception, so that it can set
+	out parameters as well. When a process has died, reset its Input_Fd
+	to Invalid_Fd, so that when using multiple processes we can find out
+	which process has died.
+
 2010-06-21  Robert Dewar  <dewar@adacore.com>
 
 	* s-regpat.adb, s-tpoben.adb, sem_attr.adb, sem_util.adb, sem_util.ads,

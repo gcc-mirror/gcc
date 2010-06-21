@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2009, AdaCore                     --
+--                     Copyright (C) 2000-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -466,7 +466,22 @@ package GNAT.Expect is
       Regexp     : Pattern_Matcher_Access;
    end record;
    type Multiprocess_Regexp_Array is array (Positive range <>)
-     of Multiprocess_Regexp;
+   of Multiprocess_Regexp;
+
+   procedure Free (Regexp : in out Multiprocess_Regexp);
+   --  Free the memory occupied by Regexp
+
+   function Has_Process (Regexp : Multiprocess_Regexp_Array) return Boolean;
+   --  Return True if at least one entry in Regexp is non-null, ie there is
+   --  still at least one process to monitor
+
+   function First_Dead_Process
+     (Regexp : Multiprocess_Regexp_Array) return Natural;
+   --  Find the first entry in Regexp that corresponds to a dead process that
+   --  wasn't Free-d yet.
+   --  This function is called in general when Expect (below) raises the
+   --  exception Process_Died.
+   --  This returns 0 if no process has died yet.
 
    procedure Expect
      (Result      : out Expect_Match;
@@ -474,7 +489,28 @@ package GNAT.Expect is
       Matched     : out GNAT.Regpat.Match_Array;
       Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
-   --  Same as above, but for multi processes
+   --  Same as above, but for multi processes. Any of the entries in
+   --  Regexps can have a null Descriptor or Regexp. Such entries will
+   --  simply be ignored. Therefore when a process terminates, you can
+   --  simply reset its entry.
+   --  The expect loop would therefore look like:
+   --
+   --     Processes : Multiprocess_Regexp_Array (...) := ...;
+   --     R         : Natural;
+   --
+   --     while Has_Process (Processes) loop
+   --        begin
+   --           Expect (Result, Processes, Timeout => -1);
+   --           ... process output of process Result (output, full buffer,...)
+   --
+   --        exception
+   --           when Process_Died =>
+   --               --  Free memory
+   --               R := First_Dead_Process (Processes);
+   --               Close (Processes (R).Descriptor.all, Status);
+   --               Free (Processes (R));
+   --        end;
+   --     end loop;
 
    procedure Expect
      (Result      : out Expect_Match;
