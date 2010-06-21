@@ -6835,22 +6835,24 @@ package body Prj.Nmsc is
             Num_Nod := Data.Tree.Number_Lists.Table (Src_Dir_Rank);
             Element := Data.Tree.String_Elements.Table (Source_Dir);
 
+            --  Use Element.Value in this test, not Display_Value, because we
+            --  want the symbolic links to be resolved when appropriate.
+
             if Element.Value /= No_Name then
                declare
-                  --  We use Element.Value, not Display_Value, because we want
-                  --  the symbolic links to be resolved when appropriate.
-                  Source_Directory         : constant String :=
-                                               Get_Name_String (Element.Value)
-                                                 & Directory_Separator;
-                  Dir_Last                 : constant Natural :=
-                                               Compute_Directory_Last
-                                                 (Source_Directory);
-                  --  The Display_Source_Directory is to be able to open an
-                  --  UTF-8 encoded directory on Windows.
+                  Source_Directory : constant String :=
+                                       Get_Name_String (Element.Value)
+                                         & Directory_Separator;
+
+                  Dir_Last : constant Natural :=
+                               Compute_Directory_Last (Source_Directory);
+
                   Display_Source_Directory : constant String :=
                                                Get_Name_String
                                                  (Element.Display_Value)
                                                   & Directory_Separator;
+                  --  Display_Source_Directory is to allow us to open a UTF-8
+                  --  encoded directory on Windows.
 
                begin
                   if Current_Verbosity = High then

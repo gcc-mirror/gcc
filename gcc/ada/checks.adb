@@ -6253,8 +6253,13 @@ package body Checks is
          E    : Entity_Id;
          Indx : Nat;
          Nam  : Name_Id) return Node_Id;
-      --  Returns expression to compute:
+      --  Returns an attribute reference
       --    E'First or E'Last
+      --  with a source location of Loc.
+      --  Nam is Name_First or Name_Last, according to which attribute is
+      --  desired. If Indx is non-zero, it is passed as a literal in the
+      --  Expressions of the attribute reference (identifying the desired
+      --  array dimension).
 
       function Get_N_First (N : Node_Id; Indx : Nat) return Node_Id;
       function Get_N_Last  (N : Node_Id; Indx : Nat) return Node_Id;

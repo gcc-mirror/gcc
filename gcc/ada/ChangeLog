@@ -1,5 +1,10 @@
 2010-06-21  Thomas Quinot  <quinot@adacore.com>
 
+	* checks.adb: Add comments.
+	* prj-nmsc.adb: Minor reformatting.
+
+2010-06-21  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_ch9.adb, checks.adb, sem_util.adb, sem_util.ads, sem_res.adb,
 	sem_attr.adb (Get_E_First_Or_Last): Use attribute references on E to
 	extract bounds, to ensure that we get the proper captured values,
