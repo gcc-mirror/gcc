@@ -1,3 +1,9 @@
+2010-06-21  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h (ld_plugin_set_extra_library_path): New.
+	(ld_plugin_tag): Add LDPT_SET_EXTRA_LIBRARY_PATH.
+	(ld_plugin_tv): Add tv_set_extra_library_path.
+
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (enum dwarf_type): Add DW_ATE_UTF.
