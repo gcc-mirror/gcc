@@ -12590,15 +12590,30 @@ option.
 #pragma GCC diagnostic ignored "-Wformat"
 @end example
 
-Note that these pragmas override any command-line options.  Also,
-while it is syntactically valid to put these pragmas anywhere in your
-sources, the only supported location for them is before any data or
-functions are defined.  Doing otherwise may result in unpredictable
-results depending on how the optimizer manages your sources.  If the
-same option is listed multiple times, the last one specified is the
-one that is in effect.  This pragma is not intended to be a general
-purpose replacement for command-line options, but for implementing
-strict control over project policies.
+Note that these pragmas override any command-line options.  GCC keeps
+track of the location of each pragma, and issues diagnostics according
+to the state as of that point in the source file.  Thus, pragmas occurring
+after a line do not affect diagnostics caused by that line.
+
+@item #pragma GCC diagnostic push
+@itemx #pragma GCC diagnostic pop
+
+Causes GCC to remember the state of the diagnostics as of each
+@code{push}, and restore to that point at each @code{pop}.  If a
+@code{pop} has no matching @code{push}, the command line options are
+restored.
+
+@example
+#pragma GCC diagnostic error "-Wuninitialized"
+  foo(a);			/* error is given for this one */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+  foo(b);			/* no diagnostic for this one */
+#pragma GCC diagnostic pop
+  foo(c);			/* error is given for this one */
+#pragma GCC diagnostic pop
+  foo(d);			/* depends on command line options */
+@end example
 
 @end table
 

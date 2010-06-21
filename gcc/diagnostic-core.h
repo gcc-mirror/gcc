@@ -32,7 +32,10 @@ typedef enum
 #define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
-  DK_LAST_DIAGNOSTIC_KIND
+  DK_LAST_DIAGNOSTIC_KIND,
+  /* This is used for tagging pragma pops in the diagnostic
+     classification history chain.  */
+  DK_POP
 } diagnostic_t;
 
 extern const char *progname;
