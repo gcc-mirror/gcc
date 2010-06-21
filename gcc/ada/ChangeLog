@@ -1,3 +1,8 @@
+2010-06-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+	* atree.adb: New debugging hook "rr" for node rewrites.
+
 2010-06-21  Robert Dewar  <dewar@adacore.com>
 
 	* g-expect.ads, g-expect.adb: Minor reformatting.
