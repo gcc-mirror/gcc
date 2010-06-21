@@ -48,7 +48,9 @@ with Ada.Unchecked_Conversion;
 package body System.Regpat is
 
    Debug : constant Boolean := False;
-   --  Set to True to activate debug traces
+   --  Set to True to activate debug traces. This is normally set to constant
+   --  False to simply delete all the trace code. It is to be edited to True
+   --  for internal debugging of the package.
 
    ----------------------------
    -- Implementation details --
@@ -312,16 +314,16 @@ package body System.Regpat is
       Till     : Pointer;
       Indent   : Natural;
       Do_Print : Boolean := True);
-   --  Dump the program until the node Till (not included) is met.
-   --  Every line is indented with Index spaces at the beginning
-   --  Dumps till the end if Till is 0.
+   --  Dump the program until the node Till (not included) is met. Every line
+   --  is indented with Index spaces at the beginning Dumps till the end if
+   --  Till is 0.
 
    procedure Dump_Operation
       (Program      : Program_Data;
        Index        : Pointer;
        Indent       : Natural);
    --  Same as above, but only dumps a single operation, and compute its
-   --  indentation from the program
+   --  indentation from the program.
 
    ---------
    -- "=" --
@@ -425,19 +427,19 @@ package body System.Regpat is
         (Expr_Flags : out Expression_Flags;
          IP         : out Pointer);
       --  Parse_Atom is the lowest level parse procedure.
-      --  Optimization:  gobbles an entire sequence of ordinary characters
-      --  so that it can turn them into a single node, which is smaller to
-      --  store and faster to run. Backslashed characters are exceptions,
-      --  each becoming a separate node; the code is simpler that way and
-      --  it's not worth fixing.
+      --
+      --  Optimization: Gobbles an entire sequence of ordinary characters so
+      --  that it can turn them into a single node, which is smaller to store
+      --  and faster to run. Backslashed characters are exceptions, each
+      --  becoming a separate node; the code is simpler that way and it's
+      --  not worth fixing.
 
       procedure Insert_Operator
         (Op       : Opcode;
          Operand  : Pointer;
          Greedy   : Boolean := True);
-      --  Insert_Operator inserts an operator in front of an
-      --  already-emitted operand and relocates the operand.
-      --  This applies to PLUS and STAR.
+      --  Insert_Operator inserts an operator in front of an already-emitted
+      --  operand and relocates the operand. This applies to PLUS and STAR.
       --  If Minmod is True, then the operator is non-greedy.
 
       function Insert_Operator_Before
@@ -446,10 +448,9 @@ package body System.Regpat is
          Greedy  : Boolean;
          Opsize  : Pointer) return Pointer;
       --  Insert an operator before Operand (and move the latter forward in the
-      --  program). Opsize is the size needed to represent the operator.
-      --  This returns the position at which the operator was
-      --  inserted, and moves Emit_Ptr after the new position of the
-      --  operand.
+      --  program). Opsize is the size needed to represent the operator. This
+      --  returns the position at which the operator was inserted, and moves
+      --  Emit_Ptr after the new position of the operand.
 
       procedure Insert_Curly_Operator
         (Op      : Opcode;
@@ -543,6 +544,11 @@ package body System.Regpat is
            (Character_Class, Program31);
 
       begin
+         --  What is the mysterious constant 31 here??? Can't it be expressed
+         --  symbolically (size of integer - 1 or some such???). In any case
+         --  it should be declared as a constant (and referenced presumably
+         --  as this constant + 1 below.
+
          if Emit_Ptr + 31 <= PM.Size then
             Program (Emit_Ptr .. Emit_Ptr + 31) := Convert (Bitmap);
          end if;
@@ -814,22 +820,21 @@ package body System.Regpat is
       -- Parse --
       -----------
 
-      --  Combining parenthesis handling with the base level
-      --  of regular expression is a trifle forced, but the
-      --  need to tie the tails of the branches to what follows
-      --  makes it hard to avoid.
+      --  Combining parenthesis handling with the base level of regular
+      --  expression is a trifle forced, but the need to tie the tails of the
+      --  the branches to what follows makes it hard to avoid.
 
       procedure Parse
-        (Parenthesized  : Boolean;
-         Flags          : out Expression_Flags;
-         IP             : out Pointer)
+         (Parenthesized  : Boolean;
+          Flags          : out Expression_Flags;
+          IP             : out Pointer)
       is
-         E              : String renames Expression;
-         Br, Br2        : Pointer;
-         Ender          : Pointer;
-         Par_No         : Natural;
-         New_Flags      : Expression_Flags;
-         Have_Branch    : Boolean := False;
+         E           : String renames Expression;
+         Br, Br2     : Pointer;
+         Ender       : Pointer;
+         Par_No      : Natural;
+         New_Flags   : Expression_Flags;
+         Have_Branch : Boolean := False;
 
       begin
          Flags := (Has_Width => True, others => False);  -- Tentatively
@@ -1982,10 +1987,11 @@ package body System.Regpat is
      (Expression : String;
       Flags      : Regexp_Flags := No_Flags) return Pattern_Matcher
    is
-      --  Assume the compiled regexp will fit in 1000 chars. If it does not
-      --  we will have to compile a second time once the correct size is
-      --  known. If it fits, we save a significant amount of time by avoiding
-      --  the second compilation.
+      --  Assume the compiled regexp will fit in 1000 chars. If it does not we
+      --  will have to compile a second time once the correct size is known. If
+      --  it fits, we save a significant amount of time by avoiding the second
+      --  compilation.
+
       Dummy : Pattern_Matcher (1000);
       Size  : Program_Size;
 
@@ -2021,8 +2027,10 @@ package body System.Regpat is
       Flags      : Regexp_Flags := No_Flags)
    is
       Size : Program_Size;
+
    begin
       Compile (Matcher, Expression, Size, Flags);
+
       if Size > Matcher.Size then
          raise Expression_Error with "Pattern_Matcher is too small";
       end if;
@@ -2033,9 +2041,9 @@ package body System.Regpat is
    --------------------
 
    procedure Dump_Operation
-      (Program      : Program_Data;
-       Index        : Pointer;
-       Indent       : Natural)
+      (Program : Program_Data;
+       Index   : Pointer;
+       Indent  : Natural)
    is
       Current : Pointer := Index;
    begin
@@ -2056,6 +2064,10 @@ package body System.Regpat is
       function Image (S : String) return String;
       --  Remove leading space
 
+      -----------
+      -- Image --
+      -----------
+
       function Image (S : String) return String is
       begin
          if S (S'First) = ' ' then
@@ -2065,10 +2077,14 @@ package body System.Regpat is
          end if;
       end Image;
 
-      Op      : Opcode;
-      Next    : Pointer;
-      Length  : Pointer;
+      --  Local variables
+
+      Op           : Opcode;
+      Next         : Pointer;
+      Length       : Pointer;
       Local_Indent : Natural := Indent;
+
+   --  Start of processing for Dump_Until
 
    begin
       while Index < Till loop
@@ -2087,8 +2103,8 @@ package body System.Regpat is
             --  Print the parenthesis number
 
             if Op = OPEN or else Op = CLOSE or else Op = REFF then
-               Put
-                 (Image (Natural'Image (Character'Pos (Program (Index + 3)))));
+               Put (Image (Natural'Image
+                            (Character'Pos (Program (Index + 3)))));
             end if;
 
             if Next = Index then
@@ -2101,9 +2117,9 @@ package body System.Regpat is
          case Op is
             when ANYOF =>
                declare
-                  Bitmap  : Character_Class;
-                  Last    : Character := ASCII.NUL;
-                  Current : Natural := 0;
+                  Bitmap       : Character_Class;
+                  Last         : Character := ASCII.NUL;
+                  Current      : Natural := 0;
                   Current_Char : Character;
 
                begin
@@ -2155,8 +2171,8 @@ package body System.Regpat is
                Length := String_Length (Program, Index);
                if Do_Print then
                   Put (" (" & Image (Program_Size'Image (Length + 1))
-                         & " chars) <"
-                         & String (Program (String_Operand (Index)
+                          & " chars) <"
+                          & String (Program (String_Operand (Index)
                                               .. String_Operand (Index)
                                               + Length)));
                   Put_Line (">");
@@ -2440,12 +2456,13 @@ package body System.Regpat is
       -------------------
 
       function Recurse_Match (IP : Pointer; From : Natural) return Boolean is
-         L : constant Natural := Last_Paren;
+         L     : constant Natural := Last_Paren;
          Tmp_F : constant Match_Array :=
                    Matches_Full (From + 1 .. Matches_Full'Last);
          Start : constant Natural_Array :=
                    Matches_Tmp (From + 1 .. Matches_Tmp'Last);
          Input : constant Natural := Input_Pos;
+
          Dump_Indent_Save : constant Integer := Dump_Indent;
 
       begin
@@ -2467,7 +2484,8 @@ package body System.Regpat is
 
       procedure Dump_Current (Scan : Pointer; Prefix : Boolean := True) is
          Length : constant := 10;
-         Pos : constant String := Integer'Image (Input_Pos);
+         Pos    : constant String := Integer'Image (Input_Pos);
+
       begin
          if Prefix then
             Put ((1 .. 5 - Pos'Length => ' '));
@@ -2476,9 +2494,11 @@ package body System.Regpat is
                      .. Integer'Min (Last_In_Data, Input_Pos + Length - 1)));
             Put ((1 .. Length - 1 - Last_In_Data + Input_Pos => ' '));
             Put ("> |");
+
          else
             Put ("                    ");
          end if;
+
          Dump_Operation (Program, Scan, Indent => Dump_Indent);
       end Dump_Current;
 
@@ -2514,8 +2534,8 @@ package body System.Regpat is
 
             Op := Opcode'Val (Character'Pos (Program (Scan)));
 
-            --  Calculate offset of next instruction.
-            --  Second character is most significant in Program_Data.
+            --  Calculate offset of next instruction. Second character is most
+            --  significant in Program_Data.
 
             Next := Get_Next (Program, Scan);
 
@@ -2552,7 +2572,7 @@ package body System.Regpat is
                when BOL =>
                   exit State_Machine when Input_Pos /= BOL_Pos
                     and then ((Self.Flags and Multiple_Lines) = 0
-                      or else Data (Input_Pos - 1) /= ASCII.LF);
+                               or else Data (Input_Pos - 1) /= ASCII.LF);
 
                when MBOL =>
                   exit State_Machine when Input_Pos /= BOL_Pos
@@ -2564,7 +2584,7 @@ package body System.Regpat is
                when EOL =>
                   exit State_Machine when Input_Pos <= Data'Last
                     and then ((Self.Flags and Multiple_Lines) = 0
-                              or else Data (Input_Pos) /= ASCII.LF);
+                               or else Data (Input_Pos) /= ASCII.LF);
 
                when MEOL =>
                   exit State_Machine when Input_Pos <= Data'Last
@@ -2645,7 +2665,6 @@ package body System.Regpat is
                   declare
                      Opnd    : Pointer  := String_Operand (Scan);
                      Current : Positive := Input_Pos;
-
                      Last    : constant Pointer :=
                                  Opnd + String_Length (Program, Scan);
 
@@ -2722,9 +2741,11 @@ package body System.Regpat is
 
                      if Last_Paren < No then
                         Dump_Indent := Dump_Indent - 1;
+
                         if Debug then
                            Dump_Error ("REFF: No match, backtracking");
                         end if;
+
                         return False;
                      end if;
 
@@ -2735,9 +2756,11 @@ package body System.Regpat is
                           or else Data (Input_Pos) /= Data (Data_Pos)
                         then
                            Dump_Indent := Dump_Indent - 1;
+
                            if Debug then
                               Dump_Error ("REFF: No match, backtracking");
                            end if;
+
                            return False;
                         end if;
 
@@ -2796,20 +2819,24 @@ package body System.Regpat is
 
                      Current_Curly := Cc.Old_Cc;
                      Dump_Indent := Dump_Indent - 1;
+
                      if not Has_Match then
                         if Debug then
                            Dump_Error ("CURLYX failed...");
                         end if;
                      end if;
+
                      return Has_Match;
                   end;
 
                when WHILEM =>
                   Result := Match_Whilem;
                   Dump_Indent := Dump_Indent - 1;
+
                   if Debug and then not Result then
                      Dump_Error ("WHILEM: no match, backtracking");
                   end if;
+
                   return Result;
             end case;
 
@@ -2821,8 +2848,8 @@ package body System.Regpat is
             Dump_Indent := Dump_Indent - 1;
          end if;
 
-         --  If we get here, there is no match.
-         --  For successful matches when EOP is the terminating point.
+         --  If we get here, there is no match. For successful matches when EOP
+         --  is the terminating point.
 
          return False;
       end Match;
@@ -2848,8 +2875,8 @@ package body System.Regpat is
          Save            : constant Natural := Input_Pos;
 
       begin
-         --  Lookahead to avoid useless match attempts
-         --  when we know what character comes next.
+         --  Lookahead to avoid useless match attempts when we know what
+         --  character comes next.
 
          if Program (Next) = EXACT then
             Next_Char := Program (String_Operand (Next));
@@ -2885,10 +2912,12 @@ package body System.Regpat is
 
             if Min /= 0 then
                No := Repeat (Operand_Code, Min);
+
                if No < Min then
                   if Debug then
                      Dump_Error ("failed... matched" & No'Img & " times");
                   end if;
+
                   return False;
                end if;
             end if;
@@ -2898,6 +2927,7 @@ package body System.Regpat is
             --  Find the place where 'next' could work
 
             if Next_Char_Known then
+
                --  Last position to check
 
                if Max = Natural'Last then
@@ -2929,8 +2959,8 @@ package body System.Regpat is
                      return False;
                   end if;
 
-                  --  Check that we still match if we stop
-                  --  at the position we just found.
+                  --  Check that we still match if we stop at the position we
+                  --  just found.
 
                   declare
                      Num : constant Natural := Input_Pos - Old;
@@ -2982,6 +3012,7 @@ package body System.Regpat is
                      if Debug then
                         Dump_Error ("Non-greedy repeat failed...");
                      end if;
+
                      return False;
                   end if;
                end loop;
@@ -2998,12 +3029,11 @@ package body System.Regpat is
                Dump_Error ("failed... matched" & No'Img & " times");
             end if;
 
-            --  ??? Perl has some special code here in case the
-            --  next instruction is of type EOL, since $ and \Z
-            --  can match before *and* after newline at the end.
+            --  ??? Perl has some special code here in case the next
+            --  instruction is of type EOL, since $ and \Z can match before
+            --  *and* after newline at the end.
 
-            --  ??? Perl has some special code here in case (paren)
-            --  is True.
+            --  ??? Perl has some special code here in case (paren) is True
 
             --  Else, if we don't have any parenthesis
 
@@ -3039,6 +3069,7 @@ package body System.Regpat is
 
       function Match_Whilem return Boolean is
          Cc : constant Current_Curly_Access := Current_Curly;
+
          N  : constant Natural              := Cc.Cur + 1;
          Ln : Natural                       := 0;
 

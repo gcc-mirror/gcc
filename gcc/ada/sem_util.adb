@@ -3070,9 +3070,11 @@ package body Sem_Util is
      (Spec_Discriminant : Entity_Id) return Entity_Id
    is
       pragma Assert (Is_Concurrent_Record_Type (Scope (Spec_Discriminant)));
+
       Tsk  : constant Entity_Id :=
                Corresponding_Concurrent_Type (Scope (Spec_Discriminant));
       Disc : Entity_Id;
+
    begin
       --  Find discriminant of original concurrent type, and use its current
       --  discriminal, which is the renaming within the task/protected body.

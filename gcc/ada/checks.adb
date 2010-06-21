@@ -6256,6 +6256,7 @@ package body Checks is
       --  Returns an attribute reference
       --    E'First or E'Last
       --  with a source location of Loc.
+      --
       --  Nam is Name_First or Name_Last, according to which attribute is
       --  desired. If Indx is non-zero, it is passed as a literal in the
       --  Expressions of the attribute reference (identifying the desired

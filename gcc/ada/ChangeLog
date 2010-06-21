@@ -1,3 +1,16 @@
+2010-06-21  Robert Dewar  <dewar@adacore.com>
+
+	* s-regpat.adb, s-tpoben.adb, sem_attr.adb, sem_util.adb, sem_util.ads,
+	checks.adb, sem_res.adb: Minor reformatting. Add comments.
+
+2010-06-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): If the new entity is a
+	rederivation associated with a full declaration in a private part, and
+	there is a partial view that derives the same parent subprogram, the
+	new entity does not become visible. This check must be applied to
+	interface operations as well.
+
 2010-06-21  Thomas Quinot  <quinot@adacore.com>
 
 	* checks.adb: Add comments.
