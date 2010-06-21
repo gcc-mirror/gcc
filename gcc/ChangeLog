@@ -1,3 +1,8 @@
+2010-06-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (ix86_compute_frame_layout): Avoid
+	stack-alignment for simple leaf-functions.
+
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/install.texi: Document bootstrap-lto.
