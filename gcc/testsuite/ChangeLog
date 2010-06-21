@@ -1,3 +1,9 @@
+2010-06-21  Alan Modra  <amodra@gmail.com>
+
+	PR testsuite/44505
+	* gcc.c-torture/execute/frame-address.c (check_fa): Avoid
+	tail call to check_fa_mid.
+
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44575

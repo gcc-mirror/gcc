@@ -25,7 +25,8 @@ int check_fa (char *unused)
 {
   const char c = 0;
 
-  return check_fa_mid (&c);
+  /* Prevent a tail call to check_fa_mid, eliding the current stack frame.  */
+  return check_fa_mid (&c) != 0;
 }
 
 int how_much (void)
