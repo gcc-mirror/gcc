@@ -41,8 +41,6 @@ extern bool		rx_is_legitimate_constant (rtx);
 extern bool 		rx_is_mode_dependent_addr (rtx);
 extern bool		rx_is_restricted_memory_address (rtx, Mmode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
-extern void		rx_print_operand (FILE *, rtx, int);
-extern void		rx_print_operand_address (FILE *, rtx);
 #endif
 
 #ifdef TREE_CODE
