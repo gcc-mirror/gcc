@@ -3062,6 +3062,37 @@ package body Sem_Util is
       Call   := Empty;
    end Find_Actual;
 
+   ---------------------------
+   -- Find_Body_Discriminal --
+   ---------------------------
+
+   function Find_Body_Discriminal
+     (Spec_Discriminant : Entity_Id) return Entity_Id
+   is
+      pragma Assert (Is_Concurrent_Record_Type (Scope (Spec_Discriminant)));
+      Tsk  : constant Entity_Id :=
+               Corresponding_Concurrent_Type (Scope (Spec_Discriminant));
+      Disc : Entity_Id;
+   begin
+      --  Find discriminant of original concurrent type, and use its current
+      --  discriminal, which is the renaming within the task/protected body.
+
+      Disc := First_Discriminant (Tsk);
+      while Present (Disc) loop
+         if Chars (Disc) = Chars (Spec_Discriminant) then
+            Set_Scope (Discriminal (Disc), Tsk);
+            return Discriminal (Disc);
+         end if;
+
+         Next_Discriminant (Disc);
+      end loop;
+
+      --  That loop should always succeed in finding a matching entry and
+      --  returning. Fatal error if not.
+
+      raise Program_Error;
+   end Find_Body_Discriminal;
+
    -------------------------------------
    -- Find_Corresponding_Discriminant --
    -------------------------------------

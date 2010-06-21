@@ -5929,7 +5929,8 @@ package body Sem_Res is
               and then In_Open_Scopes (Tsk)
               and then Nkind (Parent (Entry_Name)) = N_Requeue_Statement
             then
-               return New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
+               return New_Occurrence_Of
+                        (Find_Body_Discriminal (Entity (Bound)), Loc);
 
             else
                Ref :=

@@ -30,7 +30,6 @@ with Errout;   use Errout;
 with Exp_Ch9;  use Exp_Ch9;
 with Elists;   use Elists;
 with Freeze;   use Freeze;
-with Itypes;   use Itypes;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -166,73 +165,6 @@ package body Sem_Ch9 is
       E         : Entity_Id;
       Kind      : Entity_Kind;
       Task_Nam  : Entity_Id;
-
-      -----------------------
-      -- Actual_Index_Type --
-      -----------------------
-
-      function Actual_Index_Type (E : Entity_Id) return Entity_Id;
-      --  If the bounds of an entry family depend on task discriminants, create
-      --  a new index type where a discriminant is replaced by the local
-      --  variable that renames it in the task body.
-
-      -----------------------
-      -- Actual_Index_Type --
-      -----------------------
-
-      function Actual_Index_Type (E : Entity_Id) return Entity_Id is
-         Typ   : constant Entity_Id := Entry_Index_Type (E);
-         Lo    : constant Node_Id   := Type_Low_Bound  (Typ);
-         Hi    : constant Node_Id   := Type_High_Bound (Typ);
-         New_T : Entity_Id;
-
-         function Actual_Discriminant_Ref (Bound : Node_Id) return Node_Id;
-         --  If bound is discriminant reference, replace with corresponding
-         --  local variable of the same name.
-
-         -----------------------------
-         -- Actual_Discriminant_Ref --
-         -----------------------------
-
-         function Actual_Discriminant_Ref (Bound : Node_Id) return Node_Id is
-            Typ : constant Entity_Id := Etype (Bound);
-            Ref : Node_Id;
-         begin
-            if not Is_Entity_Name (Bound)
-              or else Ekind (Entity (Bound)) /= E_Discriminant
-            then
-               return Bound;
-            else
-               Ref := Make_Identifier (Sloc (N), Chars (Entity (Bound)));
-               Analyze (Ref);
-               Resolve (Ref, Typ);
-               return Ref;
-            end if;
-         end Actual_Discriminant_Ref;
-
-      --  Start of processing for Actual_Index_Type
-
-      begin
-         if not Has_Discriminants (Task_Nam)
-           or else (not Is_Entity_Name (Lo)
-                     and then not Is_Entity_Name (Hi))
-         then
-            return Entry_Index_Type (E);
-         else
-            New_T := Create_Itype (Ekind (Typ), N);
-            Set_Etype        (New_T, Base_Type (Typ));
-            Set_Size_Info    (New_T, Typ);
-            Set_RM_Size      (New_T, RM_Size (Typ));
-            Set_Scalar_Range (New_T,
-              Make_Range (Sloc (N),
-                Low_Bound  => Actual_Discriminant_Ref (Lo),
-                High_Bound => Actual_Discriminant_Ref (Hi)));
-
-            return New_T;
-         end if;
-      end Actual_Index_Type;
-
-   --  Start of processing for Analyze_Accept_Statement
 
    begin
       Tasking_Used := True;
@@ -370,7 +302,7 @@ package body Sem_Ch9 is
             Error_Msg_N ("missing entry index in accept for entry family", N);
          else
             Analyze_And_Resolve (Index, Entry_Index_Type (E));
-            Apply_Range_Check (Index, Actual_Index_Type (E));
+            Apply_Range_Check (Index, Entry_Index_Type (E));
          end if;
 
       elsif Present (Index) then

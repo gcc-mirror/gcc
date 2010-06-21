@@ -1,3 +1,29 @@
+2010-06-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch9.adb, checks.adb, sem_util.adb, sem_util.ads, sem_res.adb,
+	sem_attr.adb (Get_E_First_Or_Last): Use attribute references on E to
+	extract bounds, to ensure that we get the proper captured values,
+	rather than an expression that may have changed value since the point
+	where the subtype was elaborated.
+	(Find_Body_Discriminal): New utility subprogram to share code between...
+	(Eval_Attribute): For the case of a subtype bound that references a
+	discriminant of the current concurrent type, insert appropriate
+	discriminal reference.
+	(Resolve_Entry.Actual_Index_Type.Actual_Discriminant_Ref): For a
+	requeue to an entry in a family in the current task, use corresponding
+	body discriminal. 
+	(Analyze_Accept_Statement): Rely on expansion of attribute references
+	to insert proper discriminal references in range check for entry in
+	family.
+
+2010-06-21  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Compile): Fix handling of big patterns.
+
+2010-06-21  Robert Dewar  <dewar@adacore.com>
+
+	* a-tifiio.adb: Minor reformatting.
+
 2010-06-21  Pascal Obry  <obry@adacore.com>
 
 	* prj-nmsc.adb (Search_Directories): Use the non-translated directory

@@ -329,11 +329,11 @@ package Sem_Util is
    function Find_Corresponding_Discriminant
      (Id   : Node_Id;
       Typ  : Entity_Id) return Entity_Id;
-   --  Because discriminants may have different names in a generic unit
-   --  and in an instance, they are resolved positionally when possible.
-   --  A reference to a discriminant carries the discriminant that it
-   --  denotes when analyzed. Subsequent uses of this id on a different
-   --  type denote the discriminant at the same position in this new type.
+   --  Because discriminants may have different names in a generic unit and in
+   --  an instance, they are resolved positionally when possible. A reference
+   --  to a discriminant carries the discriminant that it denotes when
+   --  analyzed. Subsequent uses of this id on a different type denotes the
+   --  discriminant at the same position in this new type.
 
    procedure Find_Overlaid_Entity
      (N   : Node_Id;
@@ -354,6 +354,12 @@ package Sem_Util is
    --  N is a case statement whose expression is a compile-time value.
    --  Determine the alternative chosen, so that the code of non-selected
    --  alternatives, and the warnings that may apply to them, are removed.
+
+   function Find_Body_Discriminal
+     (Spec_Discriminant : Entity_Id) return Entity_Id;
+   --  Given a discriminant of the record type that implements a task or
+   --  protected type, return the discriminal of the corresponding discriminant
+   --  of the actual concurrent type.
 
    function First_Actual (Node : Node_Id) return Node_Id;
    --  Node is an N_Function_Call or N_Procedure_Call_Statement node. The
