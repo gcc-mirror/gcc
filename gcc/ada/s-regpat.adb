@@ -802,10 +802,11 @@ package body System.Regpat is
          Offset : Pointer;
 
       begin
-         --  Find last node
+         --  Find last node (the size of the pattern matcher might be too
+         --  small, so don't try to read past its end)
 
          Scan := P;
-         while Scan <= PM.Size loop
+         while Scan + 3 <= PM.Size loop
             Temp := Get_Next (Program, Scan);
             exit when Temp = Scan;
             Scan := Temp;

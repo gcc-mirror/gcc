@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ with Rident;   use Rident;
 with Snames;
 with Switch;   use Switch;
 with Switch.B; use Switch.B;
+with Table;
 with Targparm; use Targparm;
 with Types;    use Types;
 
@@ -815,55 +816,97 @@ begin
             --  sources) if -R was used.
 
             if List_Closure then
-               if not Zero_Formatting then
-                  Write_Eol;
-                  Write_Str ("REFERENCED SOURCES");
-                  Write_Eol;
-               end if;
+               declare
+                  package Sources is new Table.Table
+                    (Table_Component_Type => File_Name_Type,
+                     Table_Index_Type     => Natural,
+                     Table_Low_Bound      => 1,
+                     Table_Initial        => 10,
+                     Table_Increment      => 100,
+                     Table_Name           => "Gnatbind.Sources");
+                  --  Table to record the sources in the closure, to avoid
+                  --  dupications.
 
-               for J in reverse Elab_Order.First .. Elab_Order.Last loop
+                  Source : File_Name_Type;
 
-                  --  Do not include the sources of the runtime
+                  function Put_In_Sources (S : File_Name_Type) return Boolean;
+                  --  Check if S is already in table Sources and put in Sources
+                  --  if it is not. Return False if the source is already in
+                  --  Sources, and True if it is added.
 
-                  if not Is_Internal_File_Name
-                           (Units.Table (Elab_Order.Table (J)).Sfile)
-                  then
-                     if not Zero_Formatting then
-                        Write_Str ("   ");
-                     end if;
+                  --------------------
+                  -- Put_In_Sources --
+                  --------------------
 
-                     Write_Str
-                       (Get_Name_String
-                          (Units.Table (Elab_Order.Table (J)).Sfile));
+                  function Put_In_Sources (S : File_Name_Type)
+                                           return Boolean
+                  is
+                  begin
+                     for J in 1 .. Sources.Last loop
+                        if Sources.Table (J) = S then
+                           return False;
+                        end if;
+                     end loop;
+
+                     Sources.Append (S);
+                     return True;
+                  end Put_In_Sources;
+
+               begin
+                  if not Zero_Formatting then
+                     Write_Eol;
+                     Write_Str ("REFERENCED SOURCES");
                      Write_Eol;
                   end if;
-               end loop;
 
-               --  Subunits do not appear in the elaboration table because they
-               --  are subsumed by their parent units, but we need to list them
-               --  for other tools. For now they are listed after other files,
-               --  rather than right after their parent, since there is no easy
-               --  link between the elaboration table and the ALIs table ???
-               --  Note also that subunits may appear repeatedly in the list,
-               --  if the parent unit appears in the context of several units
-               --  in the closure.
+                  for J in reverse Elab_Order.First .. Elab_Order.Last loop
 
-               for J in Sdep.First .. Sdep.Last loop
-                  if Sdep.Table (J).Subunit_Name /= No_Name
-                    and then not Is_Internal_File_Name (Sdep.Table (J).Sfile)
-                  then
-                     if not Zero_Formatting then
-                        Write_Str ("   ");
+                     Source := Units.Table (Elab_Order.Table (J)).Sfile;
+
+                     --  Do not include the sources of the runtime and do not
+                     --  include the same source several times.
+
+                     if Put_In_Sources (Source)
+                       and then not Is_Internal_File_Name (Source)
+                     then
+                        if not Zero_Formatting then
+                           Write_Str ("   ");
+                        end if;
+
+                        Write_Str (Get_Name_String  (Source));
+                        Write_Eol;
                      end if;
+                  end loop;
 
-                     Write_Str (Get_Name_String (Sdep.Table (J).Sfile));
+                  --  Subunits do not appear in the elaboration table because
+                  --  they are subsumed by their parent units, but we need to
+                  --  list them for other tools. For now they are listed after
+                  --  other files, rather than right after their parent, since
+                  --  there is no easy link between the elaboration table and
+                  --  the ALIs table ??? As subunits may appear repeatedly in
+                  --  the list, if the parent unit appears in the context of
+                  --  several units in the closure, duplicates are suppressed.
+
+                  for J in Sdep.First .. Sdep.Last loop
+                     Source := Sdep.Table (J).Sfile;
+
+                     if Sdep.Table (J).Subunit_Name /= No_Name
+                       and then Put_In_Sources (Source)
+                       and then not Is_Internal_File_Name (Source)
+                     then
+                        if not Zero_Formatting then
+                           Write_Str ("   ");
+                        end if;
+
+                        Write_Str (Get_Name_String (Source));
+                        Write_Eol;
+                     end if;
+                  end loop;
+
+                  if not Zero_Formatting then
                      Write_Eol;
                   end if;
-               end loop;
-
-               if not Zero_Formatting then
-                  Write_Eol;
-               end if;
+               end;
             end if;
          end if;
       end if;
