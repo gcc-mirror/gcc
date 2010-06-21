@@ -1,3 +1,21 @@
+2010-06-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (PTRDIFF_TYPE): Define.
+	(SMALL_REGISTER_CLASS): Define (to zero).
+	(PRINT_OPERAND): Delete.
+	(PRINT_OPERAND_ADDRESS): Delete.
+	* config/rx/rx-protos.h (rx_print_operand): Delete prototype.
+	(rx_print_operand_address): Delete prototype.
+	* config/rx/rx.c (rx_print_operand): Make static.
+	Allow %H and %L to handle CONST_DOUBLEs.
+	(rx_print_operand_address): Make static.
+	(rx_gen_move_template): Rename local variable 'template' to
+	out_template.
+	(rx_function_arg): Do not pass unknown sized objects in
+	registers.
+	(TARGET_PRINT_OPERAND): Define.
+	(TARGET_PRINT_OPERAND_ADDRESS): Define.
+
 2010-06-21  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* Makefile.in (POD2MAN): Provide --date from $(DATESTAMP).

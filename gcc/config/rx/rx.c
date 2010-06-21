@@ -50,6 +50,8 @@
 #include "target-def.h"
 #include "langhooks.h"
 
+static void rx_print_operand (FILE *, rtx, int);
+
 enum rx_cpu_types  rx_cpu_type = RX600;
 
 /* Return true if OP is a reference to an object in a small data area.  */
@@ -254,7 +256,7 @@ rx_is_mode_dependent_addr (rtx addr)
    assembler syntax for an instruction operand that is a memory
    reference whose address is ADDR.  */
 
-void
+static void
 rx_print_operand_address (FILE * file, rtx addr)
 {
   switch (GET_CODE (addr))
@@ -362,10 +364,11 @@ int rx_float_compare_mode;
      %F  Print a condition code flag name.
      %H  Print high part of a DImode register, integer or address.
      %L  Print low part of a DImode register, integer or address.
+     %N  Print the negation of the immediate value.
      %Q  If the operand is a MEM, then correctly generate
          register indirect or register relative addressing.  */
 
-void
+static void
 rx_print_operand (FILE * file, rtx op, int letter)
 {
   switch (letter)
@@ -422,7 +425,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case 0xc: fprintf (file, "intb"); break;
 	default:
 	  warning (0, "unreocgnized control register number: %d - using 'psw'",
-		   INTVAL (op));
+		   (int) INTVAL (op));
 	  fprintf (file, "psw");
 	  break;
 	}
@@ -444,43 +447,57 @@ rx_print_operand (FILE * file, rtx op, int letter)
       break;
 
     case 'H':
-      if (REG_P (op))
-	fprintf (file, "%s", reg_names [REGNO (op) + (WORDS_BIG_ENDIAN ? 0 : 1)]);
-      else if (CONST_INT_P (op))
+      switch (GET_CODE (op))
 	{
-	  HOST_WIDE_INT v = INTVAL (op);
+	case REG:
+	  fprintf (file, "%s", reg_names [REGNO (op) + (WORDS_BIG_ENDIAN ? 0 : 1)]);
+	  break;
+	case CONST_INT:
+	  {
+	    HOST_WIDE_INT v = INTVAL (op);
 
+	    fprintf (file, "#");
+	    /* Trickery to avoid problems with shifting 32 bits at a time.  */
+	    v = v >> 16;
+	    v = v >> 16;	  
+	    rx_print_integer (file, v);
+	    break;
+	  }
+	case CONST_DOUBLE:
 	  fprintf (file, "#");
-	  /* Trickery to avoid problems with shifting 32 bits at a time.  */
-	  v = v >> 16;
-	  v = v >> 16;	  
-	  rx_print_integer (file, v);
-	}
-      else
-	{
-	  gcc_assert (MEM_P (op));
-
+	  rx_print_integer (file, CONST_DOUBLE_HIGH (op));
+	  break;
+	case MEM:
 	  if (! WORDS_BIG_ENDIAN)
 	    op = adjust_address (op, SImode, 4);
 	  output_address (XEXP (op, 0));
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
       break;
 
     case 'L':
-      if (REG_P (op))
-	fprintf (file, "%s", reg_names [REGNO (op) + (WORDS_BIG_ENDIAN ? 1 : 0)]);
-      else if (CONST_INT_P (op))
+      switch (GET_CODE (op))
 	{
+	case REG:
+	  fprintf (file, "%s", reg_names [REGNO (op) + (WORDS_BIG_ENDIAN ? 1 : 0)]);
+	  break;
+	case CONST_INT:
 	  fprintf (file, "#");
 	  rx_print_integer (file, INTVAL (op) & 0xffffffff);
-	}
-      else
-	{
-	  gcc_assert (MEM_P (op));
-
+	  break;
+	case CONST_DOUBLE:
+	  fprintf (file, "#");
+	  rx_print_integer (file, CONST_DOUBLE_LOW (op));
+	  break;
+	case MEM:
 	  if (WORDS_BIG_ENDIAN)
 	    op = adjust_address (op, SImode, 4);
 	  output_address (XEXP (op, 0));
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
       break;
 
@@ -634,7 +651,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 char *
 rx_gen_move_template (rtx * operands, bool is_movu)
 {
-  static char  template [64];
+  static char  out_template [64];
   const char * extension = TARGET_AS100_SYNTAX ? ".L" : "";
   const char * src_template;
   const char * dst_template;
@@ -678,9 +695,9 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   else
     dst_template = "%0";
 
-  sprintf (template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
+  sprintf (out_template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
 	   extension, src_template, dst_template);
-  return template;
+  return out_template;
 }
 
 /* Returns an assembler template for a conditional branch instruction.  */
@@ -689,7 +706,6 @@ const char *
 rx_gen_cond_branch_template (rtx condition, bool reversed)
 {
   enum rtx_code code = GET_CODE (condition);
-
 
   if ((cc_status.flags & CC_NO_OVERFLOW) && ! rx_float_compare_mode)
     gcc_assert (code != GT && code != GE && code != LE && code != LT);
@@ -777,6 +793,9 @@ rx_function_arg (Fargs * cum, Mmode mode, const_tree type, bool named)
 
   /* An exploded version of rx_function_arg_size.  */
   size = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  /* If the size is not known it cannot be passed in registers.  */
+  if (size < 1)
+    return NULL_RTX;
 
   rounded_size = rx_round_up (size, UNITS_PER_WORD);
 
@@ -2584,6 +2603,12 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT			rx_trampoline_init
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND			rx_print_operand
+
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS		rx_print_operand_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
