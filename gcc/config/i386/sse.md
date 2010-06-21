@@ -5967,6 +5967,7 @@
   [(set_attr "type" "sseishft")
    (set_attr "prefix_data16" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "atom_unit" "sishuf")
    (set_attr "mode" "TI")])
 
 (define_insn "lshr<mode>3"
@@ -7397,7 +7398,7 @@
    vpsrldq\t{$8, %1, %0|%0, %1, 8}
    vmovq\t{%H1, %0|%0, %H1}
    vmov{q}\t{%H1, %0|%0, %H1}"
-  [(set_attr "type" "ssemov,sseishft,ssemov,imov")
+  [(set_attr "type" "ssemov,sseishft1,ssemov,imov")
    (set_attr "length_immediate" "*,1,*,*")
    (set_attr "memory" "*,none,*,*")
    (set_attr "prefix" "vex")
@@ -7414,9 +7415,8 @@
    psrldq\t{$8, %0|%0, 8}
    movq\t{%H1, %0|%0, %H1}
    mov{q}\t{%H1, %0|%0, %H1}"
-  [(set_attr "type" "ssemov,sseishft,ssemov,imov")
+  [(set_attr "type" "ssemov,sseishft1,ssemov,imov")
    (set_attr "length_immediate" "*,1,*,*")
-   (set_attr "atom_unit" "*,sishuf,*,*")
    (set_attr "memory" "*,none,*,*")
    (set_attr "mode" "V2SF,TI,TI,DI")])
 
@@ -7432,7 +7432,7 @@
    vmovhps\t{%1, %0|%0, %1}
    vpsrldq\t{$8, %1, %0|%0, %1, 8}
    vmovq\t{%H1, %0|%0, %H1}"
-  [(set_attr "type" "ssemov,sseishft,ssemov")
+  [(set_attr "type" "ssemov,sseishft1,ssemov")
    (set_attr "length_immediate" "*,1,*")
    (set_attr "memory" "*,none,*")
    (set_attr "prefix" "vex")
@@ -7449,9 +7449,8 @@
    movhps\t{%1, %0|%0, %1}
    psrldq\t{$8, %0|%0, 8}
    movq\t{%H1, %0|%0, %H1}"
-  [(set_attr "type" "ssemov,sseishft,ssemov")
+  [(set_attr "type" "ssemov,sseishft1,ssemov")
    (set_attr "length_immediate" "*,1,*")
-   (set_attr "atom_unit" "*,sishuf,*")
    (set_attr "memory" "*,none,*")
    (set_attr "mode" "V2SF,TI,TI")])
 
