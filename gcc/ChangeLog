@@ -1,5 +1,24 @@
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (build/genattrtab.o): Depend on vecprim.h.
+	* genattrtab.c: Include vecprim.h.
+	(cached_attrs, cached_attr_count, attrs_seen_once,
+	attrs_seen_more_than_once, attrs_to_cache, attrs_cached_inside,
+	attrs_cached_after): New variables.
+	(find_attrs_to_cache): New function.
+	(FLG_BITWISE, FLG_AFTER, FLG_INSIDE, FLG_OUTSIDE_AND): Define.
+	(write_test_expr): Add attrs_cached argument, return it too,
+	attempt to cache non-const attributes used more than once in
+	a single case handling.
+	(write_attr_get): Use find_attrs_to_cache, for caching candidates
+	emit cached_* variables.  Adjust write_attr_set callers.
+	(write_attr_set): Add attrs_cached attribute, use find_attrs_to_cache
+	to find attributes that should be cached in this block.  Adjust
+	write_test_expr callers.
+	(write_attr_case): Clear attrs_to_cache.  Adjust write_attr_set
+	callers.
+	(make_automaton_attrs): Adjust write_test_expr caller.
+
 	* Makefile.in (cfgexpand.o): Depend on $(INSN_ATTR_H).
 	* genattrtab.c (check_tune_attr, find_tune_attr): New functions.
 	(make_automaton_attrs): If find_tune_attr returns non-NULL,
