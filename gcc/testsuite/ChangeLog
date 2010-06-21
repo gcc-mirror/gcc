@@ -1,3 +1,8 @@
+2010-06-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.target/x86_64/abi/callabi/leaf-1.c: New.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c: New.
+
 2010-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/44546
