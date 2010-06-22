@@ -1,5 +1,9 @@
 2010-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* bitmap.c (bitmap_clear_bit): Micro optimize.
+
+2010-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (SWI1248x): New mode iterator.
 	(SWI48x): Ditto.
 	(SWI12): Ditto.
