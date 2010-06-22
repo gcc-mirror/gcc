@@ -1,3 +1,9 @@
+2010-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44627
+	* error.c (dump_expr): Don't look at CALL_EXPR_ARG (t, 0) if
+	the CALL_EXPR has no arguments.
+
 2010-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44366

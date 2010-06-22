@@ -1,3 +1,8 @@
+2010-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44627
+	* g++.dg/other/method1.C: New test.
+
 2010-06-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44556
