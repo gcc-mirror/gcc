@@ -4053,8 +4053,25 @@ package body Exp_Ch4 is
          end if;
 
          Remove (Expr);
-         Insert_Actions (N, Actions);
-         Rewrite (N, Relocate_Node (Expr));
+
+         if Present (Actions) then
+
+            --  If we are not allowed to use Expression_With_Actions, just
+            --  skip the optimization, it is not critical for correctness.
+
+            if not Use_Expression_With_Actions then
+               goto Skip_Optimization;
+            end if;
+
+            Rewrite (N,
+              Make_Expression_With_Actions (Loc,
+                Expression => Relocate_Node (Expr),
+                Actions    => Actions));
+            Analyze_And_Resolve (N, Typ);
+
+         else
+            Rewrite (N, Relocate_Node (Expr));
+         end if;
 
          --  Note that the result is never static (legitimate cases of static
          --  conditional expressions were folded in Sem_Eval).
@@ -4062,6 +4079,8 @@ package body Exp_Ch4 is
          Set_Is_Static_Expression (N, False);
          return;
       end if;
+
+      <<Skip_Optimization>>
 
       --  If the type is limited or unconstrained, we expand as follows to
       --  avoid any possibility of improper copies.

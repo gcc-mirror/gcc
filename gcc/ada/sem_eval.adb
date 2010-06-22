@@ -183,7 +183,7 @@ package body Sem_Eval is
    procedure Test_Ambiguous_Operator (N : Node_Id);
    --  Check whether an arithmetic operation with universal operands which
    --  is a rewritten function call with an explicit scope indication is
-   --  ambiguous:  P."+" (1, 2) will be ambiguous if there is more than one
+   --  ambiguous: P."+" (1, 2) will be ambiguous if there is more than one
    --  visible numeric type declared in P and the context does not impose a
    --  type on the result (e.g. in the expression of a type conversion).
 
@@ -1466,10 +1466,12 @@ package body Sem_Eval is
       end if;
 
       if (Etype (Right) = Universal_Integer
-           or else Etype (Right) = Universal_Real)
+            or else
+          Etype (Right) = Universal_Real)
         and then
           (Etype (Left) = Universal_Integer
-            or else Etype (Left) = Universal_Real)
+            or else
+           Etype (Left) = Universal_Real)
       then
          Test_Ambiguous_Operator (N);
       end if;
@@ -3412,7 +3414,8 @@ package body Sem_Eval is
       end if;
 
       if Etype (Right) = Universal_Integer
-           or else Etype (Right) = Universal_Real
+           or else
+         Etype (Right) = Universal_Real
       then
          Test_Ambiguous_Operator (N);
       end if;
@@ -4730,9 +4733,9 @@ package body Sem_Eval is
       Is_Int : constant Boolean := Is_Integer_Type (Etype (N));
 
       Is_Fix : constant Boolean :=
-        Nkind (N) in N_Binary_Op
-        and then Nkind (Right_Opnd (N)) /= Nkind (Left_Opnd (N));
-      --  a mixed-mode operation in this context indicates the
+                 Nkind (N) in N_Binary_Op
+                   and then Nkind (Right_Opnd (N)) /= Nkind (Left_Opnd (N));
+      --  A mixed-mode operation in this context indicates the
       --  presence of fixed-point type in the designated package.
 
       E      : Entity_Id;
@@ -4763,9 +4766,7 @@ package body Sem_Eval is
 
          Typ1 := Empty;
          E := First_Entity (Pack);
-         while Present (E)
-           and then E /= Priv_E
-         loop
+         while Present (E) and then E /= Priv_E loop
             if Is_Numeric_Type (E)
               and then Nkind (Parent (E)) /= N_Subtype_Declaration
               and then Comes_From_Source (E)
