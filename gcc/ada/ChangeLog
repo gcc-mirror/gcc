@@ -1,3 +1,17 @@
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Parse_Cmd_Line): Recognize switch
+	--unchecked-shared-lib-imports.
+	(Usage): Add line for switch --unchecked-shared-lib-imports
+	* makeusg.adb: Add line for switch --unchecked-shared-lib-imports
+	* makeutl.ads: (Unchecked_Shared_Lib_Imports): New constant string
+	moved from GPR_Util.
+	* switch-m.adb (Scan_Make_Switches): Recognize switch
+	--unchecked-shared-lib-imports.
+	* vms_data.ads: Add VMS qualifiers /UNCHECKED_SHARED_LIB_IMPORTS.
+	* gnat_ugn.texi: Add documentation for new switch
+	--unchecked-shared-lib-imports.  Add also documentation for --subdirs.
+
 2010-06-22  Javier Miranda  <miranda@adacore.com>
 
 	* sem_prag.adb, sem_util.adb, sem_util.ads, sem_attr.adb, exp_ch6.adb,

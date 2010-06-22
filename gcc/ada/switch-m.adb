@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -583,6 +583,9 @@ package body Switch.M is
                 (Switch_Chars
                   (Switch_Chars'First + Subdirs_Option'Length ..
                    Switch_Chars'Last));
+
+         elsif Switch_Chars = Makeutl.Unchecked_Shared_Lib_Imports then
+            Opt.Unchecked_Shared_Lib_Imports := True;
 
          elsif Switch_Chars (Ptr) = '-' then
             Bad_Switch (Switch_Chars);
