@@ -1,3 +1,15 @@
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* bindusg.adb (Display): Update line for -R
+	* switch-b.adb (Scan_Binder_Switches): Allow generation of the binder
+	generated files when -R is used.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Lib_Data_Table): New table.
+	(Check_Library_Attributes): Check if the same library name is used in
+	two different projects that do not extend each other.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* lib-writ.ads, errout.adb, einfo.adb, einfo.ads: Minor reformatting.
