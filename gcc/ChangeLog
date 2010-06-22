@@ -1,7 +1,7 @@
 2010-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/39690
-	config/pa/pa.c (override_options): Disable
+	* config/pa/pa.c (override_options): Disable
 	-freorder-blocks-and-partition.
 
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
