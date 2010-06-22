@@ -1,5 +1,9 @@
 2010-06-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/44619
+	* typeck2.c (build_m_component_ref): Call mark_lvalue_use on
+	datum and mark_rvalue_use on component.
+
 	PR c++/44627
 	* error.c (dump_expr): Don't look at CALL_EXPR_ARG (t, 0) if
 	the CALL_EXPR has no arguments.
