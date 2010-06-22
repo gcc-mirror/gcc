@@ -6778,10 +6778,12 @@ package body Sem_Ch3 is
          Mark_Rewrite_Insertion (New_Decl);
          Insert_Before (N, New_Decl);
 
-         --  In the tagged case, make sure ancestor is frozen appropriately
+         --  In the extension case, make sure ancestor is frozen appropriately
          --  (see also non-discriminated case below).
 
-         if not Private_Extension or else Is_Interface (Parent_Base) then
+         if Present (Record_Extension_Part (Type_Def))
+              or else Is_Interface (Parent_Base)
+         then
             Freeze_Before (New_Decl, Parent_Type);
          end if;
 
@@ -16667,10 +16669,9 @@ package body Sem_Ch3 is
                end loop;
             end if;
 
-            --  For the tagged case, the two views can share the same
-            --  Primitive Operation list and the same class wide type.
-            --  Update attributes of the class-wide type which depend on
-            --  the full declaration.
+            --  For the tagged case, the two views can share the same primitive
+            --  operations list and the same class-wide type. Update attributes
+            --  of the class-wide type which depend on the full declaration.
 
             if Is_Tagged_Type (Priv_T) then
                Set_Primitive_Operations (Priv_T, Full_List);
