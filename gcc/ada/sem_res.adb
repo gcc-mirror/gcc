@@ -1422,6 +1422,31 @@ package body Sem_Res is
               ("& not declared in&", N, Selector_Name (Name (N)));
             Set_Etype (N, Any_Type);
             return;
+
+         --  Detect a mismatch between the context type and the result type
+         --  in the named package, which is otherwise not detected if the
+         --  operands are universal. Check is only needed if source entity is
+         --  an operator, not a function that renames an operator.
+
+         elsif Nkind (Parent (N)) /= N_Type_Conversion
+           and then Ekind (Entity (Name (N))) = E_Operator
+           and then Is_Numeric_Type (Typ)
+           and then not Is_Universal_Numeric_Type (Typ)
+           and then Scope (Base_Type (Typ)) /= Pack
+           and then not In_Instance
+         then
+            if Is_Fixed_Point_Type (Typ)
+              and then (Op_Name = Name_Op_Multiply
+                          or else
+                        Op_Name = Name_Op_Divide)
+            then
+               --  Already checked above
+
+               null;
+
+            else
+               Error_Msg_NE ("expect type&", N, Typ);
+            end if;
          end if;
       end if;
 

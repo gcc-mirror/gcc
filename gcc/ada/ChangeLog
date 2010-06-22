@@ -1,3 +1,19 @@
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* uintp.adb: Fix scope error in operator call.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Executable_Prefix_Path): on VMS, return "/gnu/".
+	* prj-conf.adb (Get_Or_Create_Configuration_File): On VMS, if
+	autoconfiguration is needed, fail indicating that no config project
+	file can be found, as there is no autoconfiguration on VMS.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): Diagnose an incorrect scope
+	for an operator in a functional notation, when operands are universal.
+
 2010-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

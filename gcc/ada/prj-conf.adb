@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2009, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2010, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 
 with Ada.Directories;  use Ada.Directories;
 with GNAT.HTable;      use GNAT.HTable;
+with Hostparm;
 with Makeutl;          use Makeutl;
 with MLib.Tgt;
 with Opt;              use Opt;
@@ -889,8 +890,18 @@ package body Prj.Conf is
       <<Process_Config_File>>
 
       if Automatically_Generated then
-         --  This might raise an Invalid_Config exception
-         Do_Autoconf;
+         if Hostparm.OpenVMS then
+
+            --  There is no gprconfig on VMS
+
+            raise Invalid_Config
+              with "could not locate any configuration project file";
+
+         else
+            --  This might raise an Invalid_Config exception
+
+            Do_Autoconf;
+         end if;
       end if;
 
       --  Parse the configuration file
