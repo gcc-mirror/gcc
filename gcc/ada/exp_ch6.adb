@@ -4764,8 +4764,9 @@ package body Exp_Ch6 is
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean is
    begin
-      --  This function is called in some rare cases when expansion is off.
-      --  In those cases the build_in_place expansion will not take place.
+      --  This function is called from Expand_Subtype_From_Expr during
+      --  semantic analysis, even when expansion is off. In those cases
+      --  the build_in_place expansion will not take place.
 
       if not Expander_Active then
          return False;

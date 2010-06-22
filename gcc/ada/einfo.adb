@@ -570,6 +570,18 @@ package body Einfo is
       return Flag104 (Id);
    end Address_Taken;
 
+   function Aft_Value (Id : E) return U is
+      Result    : Nat := 1;
+      Delta_Val : Ureal := Delta_Value (Id);
+   begin
+      while Delta_Val < Ureal_Tenth loop
+         Delta_Val := Delta_Val * Ureal_10;
+         Result := Result + 1;
+      end loop;
+
+      return UI_From_Int (Result);
+   end Aft_Value;
+
    function Alias (Id : E) return E is
    begin
       pragma Assert
