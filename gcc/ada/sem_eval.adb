@@ -31,6 +31,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
@@ -180,12 +181,14 @@ package body Sem_Eval is
    --  used for producing the result of the static evaluation of the
    --  logical operators
 
-   procedure Test_Ambiguous_Operator (N : Node_Id);
+   function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id;
    --  Check whether an arithmetic operation with universal operands which
    --  is a rewritten function call with an explicit scope indication is
    --  ambiguous: P."+" (1, 2) will be ambiguous if there is more than one
    --  visible numeric type declared in P and the context does not impose a
    --  type on the result (e.g. in the expression of a type conversion).
+   --  If ambiguous, emit an error and return Empty, else return the result
+   --  type of the operator.
 
    procedure Test_Expression_Is_Foldable
      (N    : Node_Id;
@@ -1453,6 +1456,7 @@ package body Sem_Eval is
       Right : constant Node_Id   := Right_Opnd (N);
       Ltype : constant Entity_Id := Etype (Left);
       Rtype : constant Entity_Id := Etype (Right);
+      Otype : Entity_Id          := Empty;
       Stat  : Boolean;
       Fold  : Boolean;
 
@@ -1465,15 +1469,11 @@ package body Sem_Eval is
          return;
       end if;
 
-      if (Etype (Right) = Universal_Integer
-            or else
-          Etype (Right) = Universal_Real)
-        and then
-          (Etype (Left) = Universal_Integer
-            or else
-           Etype (Left) = Universal_Real)
+      if Is_Universal_Numeric_Type (Etype (Left))
+           and then
+         Is_Universal_Numeric_Type (Etype (Right))
       then
-         Test_Ambiguous_Operator (N);
+         Otype := Find_Universal_Operator_Type (N);
       end if;
 
       --  Fold for cases where both operands are of integer type
@@ -1582,9 +1582,9 @@ package body Sem_Eval is
             Fold_Uint (N, Result, Stat);
          end;
 
-      --  Cases where at least one operand is a real. We handle the cases
-      --  of both reals, or mixed/real integer cases (the latter happen
-      --  only for divide and multiply, and the result is always real).
+      --  Cases where at least one operand is a real. We handle the cases of
+      --  both reals, or mixed/real integer cases (the latter happen only for
+      --  divide and multiply, and the result is always real).
 
       elsif Is_Real_Type (Ltype) or else Is_Real_Type (Rtype) then
          declare
@@ -1626,6 +1626,14 @@ package body Sem_Eval is
 
             Fold_Ureal (N, Result, Stat);
          end;
+      end if;
+
+      --  If the operator was resolved to a specific type, make sure that type
+      --  is frozen even if the expression is folded into a literal (which has
+      --  a universal type).
+
+      if Present (Otype) then
+         Freeze_Before (N, Otype);
       end if;
    end Eval_Arithmetic_Op;
 
@@ -2371,6 +2379,7 @@ package body Sem_Eval is
       end if;
 
       Fold_Uint (N, Test (Result), True);
+
       Warn_On_Known_Condition (N);
    end Eval_Membership_Op;
 
@@ -2656,6 +2665,7 @@ package body Sem_Eval is
       Left   : constant Node_Id   := Left_Opnd (N);
       Right  : constant Node_Id   := Right_Opnd (N);
       Typ    : constant Entity_Id := Etype (Left);
+      Otype  : Entity_Id := Empty;
       Result : Boolean;
       Stat   : Boolean;
       Fold   : Boolean;
@@ -2887,6 +2897,17 @@ package body Sem_Eval is
          Set_Is_Static_Expression (N, False);
       end if;
 
+      --  For operators on universal numeric types called as functions with
+      --  an explicit scope, determine appropriate specific numeric type, and
+      --  diagnose possible ambiguity.
+
+      if Is_Universal_Numeric_Type (Etype (Left))
+           and then
+         Is_Universal_Numeric_Type (Etype (Right))
+      then
+         Otype := Find_Universal_Operator_Type (N);
+      end if;
+
       --  For static real type expressions, we cannot use Compile_Time_Compare
       --  since it worries about run-time results which are not exact.
 
@@ -2984,6 +3005,13 @@ package body Sem_Eval is
          end;
 
          Fold_Uint (N, Test (Result), Stat);
+      end if;
+
+      --  For the case of a folded relational operator on a specific numeric
+      --  type, freeze operand type now.
+
+      if Present (Otype) then
+         Freeze_Before (N, Otype);
       end if;
 
       Warn_On_Known_Condition (N);
@@ -3401,6 +3429,7 @@ package body Sem_Eval is
 
    procedure Eval_Unary_Op (N : Node_Id) is
       Right : constant Node_Id := Right_Opnd (N);
+      Otype : Entity_Id := Empty;
       Stat  : Boolean;
       Fold  : Boolean;
 
@@ -3417,7 +3446,7 @@ package body Sem_Eval is
            or else
          Etype (Right) = Universal_Real
       then
-         Test_Ambiguous_Operator (N);
+         Otype := Find_Universal_Operator_Type (N);
       end if;
 
       --  Fold for integer case
@@ -3474,6 +3503,14 @@ package body Sem_Eval is
 
             Fold_Ureal (N, Result, Stat);
          end;
+      end if;
+
+      --  If the operator was resolved to a specific type, make sure that type
+      --  is frozen even if the expression is folded into a literal (which has
+      --  a universal type).
+
+      if Present (Otype) then
+         Freeze_Before (N, Otype);
       end if;
    end Eval_Unary_Op;
 
@@ -4724,32 +4761,61 @@ package body Sem_Eval is
       end if;
    end Test;
 
-   -----------------------------
-   -- Test_Ambiguous_Operator --
-   -----------------------------
+   ----------------------------------
+   -- Find_Universal_Operator_Type --
+   ----------------------------------
 
-   procedure Test_Ambiguous_Operator (N : Node_Id) is
+   function Find_Universal_Operator_Type (N : Node_Id) return Entity_Id is
+      PN     : constant Node_Id := Parent (N);
       Call   : constant Node_Id := Original_Node (N);
       Is_Int : constant Boolean := Is_Integer_Type (Etype (N));
 
       Is_Fix : constant Boolean :=
                  Nkind (N) in N_Binary_Op
                    and then Nkind (Right_Opnd (N)) /= Nkind (Left_Opnd (N));
-      --  A mixed-mode operation in this context indicates the
-      --  presence of fixed-point type in the designated package.
+      --  A mixed-mode operation in this context indicates the presence of
+      --  fixed-point type in the designated package.
+
+      Is_Relational : constant Boolean := Etype (N) = Standard_Boolean;
+      --  Case where N is a relational (or membership) operator (else it is an
+      --  arithmetic one).
+
+      In_Membership : constant Boolean :=
+                        Nkind (PN) in N_Membership_Test
+                          and then
+                        Nkind (Right_Opnd (PN)) = N_Range
+                          and then
+                        Is_Universal_Numeric_Type (Etype (Left_Opnd (PN)))
+                          and then
+                        Is_Universal_Numeric_Type
+                          (Etype (Low_Bound (Right_Opnd (PN))))
+                          and then
+                        Is_Universal_Numeric_Type
+                          (Etype (High_Bound (Right_Opnd (PN))));
+      --  Case where N is part of a membership test with a universal range
 
       E      : Entity_Id;
       Pack   : Entity_Id;
-      Typ1   : Entity_Id;
+      Typ1   : Entity_Id := Empty;
       Priv_E : Entity_Id;
 
    begin
       if Nkind (Call) /= N_Function_Call
         or else Nkind (Name (Call)) /= N_Expanded_Name
       then
-         return;
+         return Empty;
 
-      elsif Nkind (Parent (N)) = N_Type_Conversion then
+      --  There are two cases where the context does not imply the type of the
+      --  operands: either the universal expression appears in a type
+      --  type conversion, or we are in the case of a predefined relational
+      --  operator, where the context type is always Boolean.
+
+      elsif Nkind (Parent (N)) = N_Type_Conversion
+              or else
+            Is_Relational
+              or else
+            In_Membership
+      then
          Pack := Entity (Prefix (Name (Call)));
 
          --  If the prefix is a package declared elsewhere, iterate over
@@ -4773,6 +4839,7 @@ package body Sem_Eval is
               and then Is_Integer_Type (E) = Is_Int
               and then
                 (Nkind (N) in N_Unary_Op
+                  or else Is_Relational
                   or else Is_Fixed_Point_Type (E) = Is_Fix)
             then
                if No (Typ1) then
@@ -4786,13 +4853,16 @@ package body Sem_Eval is
                   Error_Msg_N ("\possible interpretation (inherited)#", N);
                   Error_Msg_Sloc := Sloc (E);
                   Error_Msg_N ("\possible interpretation (inherited)#", N);
+                  return Empty;
                end if;
             end if;
 
             Next_Entity (E);
          end loop;
       end if;
-   end Test_Ambiguous_Operator;
+
+      return Typ1;
+   end Find_Universal_Operator_Type;
 
    ---------------------------------
    -- Test_Expression_Is_Foldable --
