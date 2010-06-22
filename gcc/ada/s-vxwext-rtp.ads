@@ -39,7 +39,7 @@ package System.VxWorks.Ext is
    subtype SEM_ID is Long_Integer;
    --  typedef struct semaphore *SEM_ID;
 
-   type sigset_t is mod 2 ** Interfaces.C.long_long'Size;
+   type sigset_t is mod 2 ** Long_Long_Integer'Size;
 
    type t_id is new Long_Integer;
    subtype int is Interfaces.C.int;

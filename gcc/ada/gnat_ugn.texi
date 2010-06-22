@@ -9445,7 +9445,7 @@ directories.
 @item ^-P^/PROJECT_FILE=^@var{project}
 @cindex @option{^-P^/PROJECT_FILE^} (@command{gnatmake})
 Use project file @var{project}. Only one such switch can be used.
-@xref{^gnatmake^gnatmake^ and Project Files}.
+@xref{gnatmake and Project Files}.
 
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatmake})
@@ -9497,7 +9497,7 @@ Verbosity level High. Equivalent to ^-v^/REASONS^.
 
 @item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
 Indicate the verbosity of the parsing of GNAT project files.
-@xref{^Switches^Switches^ Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-x^/NON_PROJECT_UNIT_COMPILATION^
 @cindex @option{^-x^/NON_PROJECT_UNIT_COMPILATION^} (@command{gnatmake})
@@ -9514,7 +9514,7 @@ command line need to be sources of a project file.
 Indicate that external variable @var{name} has the value @var{value}.
 The Project Manager will use this value for occurrences of
 @code{external(name)} when parsing the project file.
-@xref{^Switches^Switches^ Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-z^/NOMAIN^
 @cindex @option{^-z^/NOMAIN^} (@command{gnatmake})
@@ -11780,7 +11780,6 @@ are used in this example.
 @macro CINDEX{TXT}
 @cindex \TXT\
 @end macro
-
 
 @include projects.texi
 
@@ -15385,14 +15384,14 @@ Verbose mode.
 @item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
 @cindex @option{^-vP^/MESSAGES_PROJECT_FILE^} (@code{gnatclean})
 Indicates the verbosity of the parsing of GNAT project files.
-@xref{^Switches^Switches^ Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
 @cindex @option{^-X^/EXTERNAL_REFERENCE^} (@code{gnatclean})
 Indicates that external variable @var{name} has the value @var{value}.
 The Project Manager will use this value for occurrences of
 @code{external(name)} when parsing the project file.
-@xref{^Switches^Switches^ Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-aO^/OBJECT_SEARCH=^@var{dir}
 @cindex @option{^-aO^/OBJECT_SEARCH^} (@code{gnatclean})

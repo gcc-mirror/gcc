@@ -1077,7 +1077,7 @@ project files rather than packages.
 Each literal string after @code{with} is the path
 (absolute or relative) to a project file. The @code{.gpr} extension is
 optional, although we recommend adding it. If no extension is specified,
-and no project file with the @file{^.gpr^.GPR} extension is found, then
+and no project file with the @file{^.gpr^.GPR^} extension is found, then
 the file is searched for exactly as written in the @code{with} clause,
 that is with no extension.
 
