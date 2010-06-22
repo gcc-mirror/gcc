@@ -1042,7 +1042,7 @@ package body Sem_Res is
       if (Is_Entity_Name (N)
             and then Is_Overloadable (Entity (N))
             and then (Ekind (Entity (N)) /= E_Enumeration_Literal
-                        or else Is_Overloaded (N)))
+                       or else Is_Overloaded (N)))
 
       --  Rewrite as call if it is an explicit dereference of an expression of
       --  a subprogram access type, and the subprogram type is not that of a
@@ -1058,11 +1058,10 @@ package body Sem_Res is
       or else
         (Nkind (N) = N_Selected_Component
           and then (Ekind (Entity (Selector_Name (N))) = E_Function
-                      or else
-                        ((Ekind (Entity (Selector_Name (N))) = E_Entry
-                            or else
-                          Ekind (Entity (Selector_Name (N))) = E_Procedure)
-                            and then Is_Overloaded (Selector_Name (N)))))
+                     or else
+                       (Ekind_In (Entity (Selector_Name (N)), E_Entry,
+                                                              E_Procedure)
+                         and then Is_Overloaded (Selector_Name (N)))))
 
       --  If one of the above three conditions is met, rewrite as call.
       --  Apply the rewriting only once.
@@ -5400,9 +5399,7 @@ package body Sem_Res is
             F := First_Formal (Nam);
             A := First_Actual (N);
             while Present (F) and then Present (A) loop
-               if (Ekind (F) = E_Out_Parameter
-                     or else
-                   Ekind (F) = E_In_Out_Parameter)
+               if Ekind_In (F, E_Out_Parameter, E_In_Out_Parameter)
                  and then Warn_On_Modified_As_Out_Parameter (F)
                  and then Is_Entity_Name (A)
                  and then Present (Entity (A))
@@ -6365,8 +6362,7 @@ package body Sem_Res is
             return;
 
          elsif T = Any_Access
-           or else Ekind (T) = E_Allocator_Type
-           or else Ekind (T) = E_Access_Attribute_Type
+           or else Ekind_In (T, E_Allocator_Type, E_Access_Attribute_Type)
          then
             T := Find_Unique_Access_Type;
 
@@ -6434,8 +6430,8 @@ package body Sem_Res is
 
          if Expander_Active
            and then
-             (Ekind (T) =  E_Anonymous_Access_Type
-               or else Ekind (T) = E_Anonymous_Access_Subprogram_Type
+             (Ekind_In (T, E_Anonymous_Access_Type,
+                           E_Anonymous_Access_Subprogram_Type)
                or else Is_Private_Type (T))
          then
             if Etype (L) /= T then
@@ -7820,9 +7816,7 @@ package body Sem_Res is
       end if;
 
       if Has_Discriminants (T)
-        and then (Ekind (Entity (S)) = E_Component
-                   or else
-                  Ekind (Entity (S)) = E_Discriminant)
+        and then Ekind_In (Entity (S), E_Component, E_Discriminant)
         and then Present (Original_Record_Component (Entity (S)))
         and then Ekind (Original_Record_Component (Entity (S))) = E_Component
         and then Present (Discriminant_Checking_Func
@@ -8572,7 +8566,7 @@ package body Sem_Res is
              (Etype (Entity (Orig_N)) = Orig_T
                 or else
                   (Ekind (Entity (Orig_N)) = E_Loop_Parameter
-                     and then Covers (Orig_T, Etype (Entity (Orig_N)))))
+                    and then Covers (Orig_T, Etype (Entity (Orig_N)))))
          then
             --  One more check, do not give warning if the analyzed conversion
             --  has an expression with non-static bounds, and the bounds of the
@@ -8958,9 +8952,7 @@ package body Sem_Res is
       --  Exclude user-defined intrinsic operations of the same name, which are
       --  treated separately and rewritten as calls.
 
-      if Ekind (Op) /= E_Function
-        or else Chars (N) /= Nam
-      then
+      if Ekind (Op) /= E_Function or else Chars (N) /= Nam then
          Op_Node := New_Node (Operator_Kind (Nam, Is_Binary), Sloc (N));
          Set_Chars      (Op_Node, Nam);
          Set_Etype      (Op_Node, Etype (N));
@@ -8999,9 +8991,8 @@ package body Sem_Res is
             end case;
          end if;
 
-      elsif Ekind (Op) = E_Function
-        and then Is_Intrinsic_Subprogram (Op)
-      then
+      elsif Ekind (Op) = E_Function and then Is_Intrinsic_Subprogram (Op) then
+
          --  Operator renames a user-defined operator of the same name. Use
          --  the original operator in the node, which is the one that Gigi
          --  knows about.
@@ -9441,9 +9432,8 @@ package body Sem_Res is
                --  out-of-scope references.
 
             elsif
-              (Ekind (Target_Comp_Base) = E_Anonymous_Access_Type
-                 or else
-               Ekind (Target_Comp_Base) = E_Anonymous_Access_Subprogram_Type)
+              Ekind_In (Target_Comp_Base, E_Anonymous_Access_Type,
+                                          E_Anonymous_Access_Subprogram_Type)
               and then Ekind (Opnd_Comp_Base) = Ekind (Target_Comp_Base)
               and then
                 Subtypes_Statically_Match (Target_Comp_Type, Opnd_Comp_Type)
@@ -9714,9 +9704,8 @@ package body Sem_Res is
       --  Ada 2005 (AI-251): Anonymous access types where target references an
       --  interface type.
 
-      elsif (Ekind (Target_Type) = E_General_Access_Type
-              or else
-             Ekind (Target_Type) = E_Anonymous_Access_Type)
+      elsif Ekind_In (Target_Type, E_General_Access_Type,
+                                   E_Anonymous_Access_Type)
         and then Is_Interface (Directly_Designated_Type (Target_Type))
       then
          --  Check the static accessibility rule of 4.6(17). Note that the
@@ -9785,8 +9774,8 @@ package body Sem_Res is
 
                if Is_Entity_Name (Operand)
                  and then not Is_Local_Anonymous_Access (Opnd_Type)
-                 and then (Ekind (Entity (Operand)) = E_In_Parameter
-                            or else Ekind (Entity (Operand)) = E_Constant)
+                 and then
+                   Ekind_In (Entity (Operand), E_In_Parameter, E_Constant)
                  and then Present (Discriminal_Link (Entity (Operand)))
                then
                   Error_Msg_N
@@ -9801,15 +9790,14 @@ package body Sem_Res is
 
       --  General and anonymous access types
 
-      elsif (Ekind (Target_Type) = E_General_Access_Type
-        or else Ekind (Target_Type) = E_Anonymous_Access_Type)
+      elsif Ekind_In (Target_Type, E_General_Access_Type,
+                                   E_Anonymous_Access_Type)
           and then
             Conversion_Check
               (Is_Access_Type (Opnd_Type)
-                 and then Ekind (Opnd_Type) /=
-                   E_Access_Subprogram_Type
-                 and then Ekind (Opnd_Type) /=
-                   E_Access_Protected_Subprogram_Type,
+                and then not
+                  Ekind_In (Opnd_Type, E_Access_Subprogram_Type,
+                                       E_Access_Protected_Subprogram_Type),
                "must be an access-to-object type")
       then
          if Is_Access_Constant (Opnd_Type)
@@ -9895,8 +9883,8 @@ package body Sem_Res is
                --  access type.
 
                if Is_Entity_Name (Operand)
-                 and then (Ekind (Entity (Operand)) = E_In_Parameter
-                            or else Ekind (Entity (Operand)) = E_Constant)
+                 and then
+                   Ekind_In (Entity (Operand), E_In_Parameter, E_Constant)
                  and then Present (Discriminal_Link (Entity (Operand)))
                then
                   Error_Msg_N

@@ -4377,8 +4377,13 @@ package body Sem_Ch8 is
             return;
          end if;
 
+         --  Set the entity. Note that the reason we call Set_Entity here, as
+         --  opposed to Set_Entity_With_Style_Check is that in the overloaded
+         --  case, the initial call can set the wrong homonym. The call that
+         --  sets the right homonym is in Sem_Res and that call does use
+         --  Set_Entity_With_Style_Check, so we don't miss a style check.
+
          Set_Entity (N, E);
-         --  Why no Style_Check here???
 
          if Is_Type (E) then
             Set_Etype (N, E);
@@ -6034,10 +6039,12 @@ package body Sem_Ch8 is
 
          if Nkind (Parent (N)) = N_Indexed_Component then
             declare
-               Is_Binary_Call : constant Boolean
-                 := Present (Next (First (Expressions (Parent (N)))));
-               Is_Binary_Op   : constant Boolean
-                 := First_Entity (Predef_Op) /= Last_Entity (Predef_Op);
+               Is_Binary_Call : constant Boolean :=
+                                  Present
+                                    (Next (First (Expressions (Parent (N)))));
+               Is_Binary_Op   : constant Boolean :=
+                                  First_Entity
+                                    (Predef_Op) /= Last_Entity (Predef_Op);
                Predef_Op2     : constant Entity_Id := Homonym (Predef_Op);
 
             begin
