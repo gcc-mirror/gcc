@@ -6782,7 +6782,7 @@ package body Sem_Ch3 is
          --  (see also non-discriminated case below).
 
          if Present (Record_Extension_Part (Type_Def))
-              or else Is_Interface (Parent_Base)
+           or else Is_Interface (Parent_Base)
          then
             Freeze_Before (New_Decl, Parent_Type);
          end if;
