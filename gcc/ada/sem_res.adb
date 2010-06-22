@@ -1452,9 +1452,8 @@ package body Sem_Res is
                null;
 
             else
-               --  Note: we go to First_Subtype here to ensure the message
-               --  has the proper source type name (Typ may be an anonymous
-               --  base type).
+               --  Note: go to First_Subtype here to ensure the message has the
+               --  proper source type name (Typ may be an anonymous base type).
 
                --  Could we use Wrong_Type here??? (this would require setting
                --  Etype (N) to the actual type found where Typ was expected).
