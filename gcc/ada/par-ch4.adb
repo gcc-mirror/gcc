@@ -437,7 +437,7 @@ package body Ch4 is
                elsif Token = Tok_Access then
                   Attr_Name := Name_Access;
 
-               elsif Token = Tok_Mod and then Ada_Version = Ada_05 then
+               elsif Token = Tok_Mod and then Ada_Version >= Ada_95 then
                   Attr_Name := Name_Mod;
 
                elsif Apostrophe_Should_Be_Semicolon then
