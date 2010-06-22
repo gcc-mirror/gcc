@@ -1728,7 +1728,9 @@ package body Sem is
 
       procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id) is
          Unit_Num : constant Unit_Number_Type :=
-                      Get_Cunit_Unit_Number (CU);
+           Get_Cunit_Unit_Number (CU);
+         Child     : Node_Id;
+         Parent_CU : Node_Id;
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
 
@@ -1758,6 +1760,20 @@ package body Sem is
 
                   if CU = Library_Unit (Main_CU) then
                      Process_Bodies_In_Context (CU);
+
+                     --  If main is a child unit, examine context of parent
+                     --  units to see if they include instantiated units.
+
+                     if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
+                        Child := Cunit_Entity (Main_Unit);
+                        while Is_Child_Unit (Child) loop
+                           Parent_CU :=
+                             Cunit
+                               (Get_Cunit_Entity_Unit_Number (Scope (Child)));
+                           Process_Bodies_In_Context (Parent_CU);
+                           Child := Scope (Child);
+                        end loop;
+                     end if;
                   end if;
 
                   Do_Action (CU, Item);

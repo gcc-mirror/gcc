@@ -111,7 +111,12 @@ private
       Scl : Flt := Scal;
    end record;
 
+   type Writable_Access (Self : access Generator) is limited null record;
+   --  Auxiliary type to make Generator a self-referential type
+
    type Generator is limited record
+      Writable  : Writable_Access (Generator'Access);
+      --  This self reference allows functions to modify Generator arguments
       Gen_State : State;
    end record;
 

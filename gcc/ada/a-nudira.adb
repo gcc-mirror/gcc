@@ -29,80 +29,66 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Random_Numbers; use System.Random_Numbers;
-
 package body Ada.Numerics.Discrete_Random is
 
-   -------------------------
-   -- Implementation Note --
-   -------------------------
+   package SRN renames System.Random_Numbers;
+   use SRN;
 
-   --  The design of this spec is a bit awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally
-   --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution would be to add a self-referential component to the generator
-   --  allowing access to the generator object from inside the function. This
-   --  would work because the generator is limited, which prevents any copy.
+   -----------
+   -- Image --
+   -----------
 
-   --  This is a bit heavy, so what we do is to use Unrestricted_Access to
-   --  get a pointer to the state in the passed Generator. This works because
-   --  Generator is a limited type and will thus always be passed by reference.
-
-   subtype Rep_Generator is System.Random_Numbers.Generator;
-   subtype Rep_State is System.Random_Numbers.State;
-
-   function Rep_Random is
-      new Random_Discrete (Result_Subtype, Result_Subtype'First);
-
-   function Random (Gen : Generator) return Result_Subtype is
+   function Image (Of_State : State) return String is
    begin
-      return Rep_Random (Gen.Rep);
-   end Random;
-
-   procedure Reset
-     (Gen       : Generator;
-      Initiator : Integer)
-   is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
-   begin
-      Reset (G, Initiator);
-   end Reset;
-
-   procedure Reset (Gen : Generator) is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
-   begin
-      Reset (G);
-   end Reset;
-
-   procedure Save
-     (Gen        : Generator;
-      To_State   : out State)
-   is
-   begin
-      Save (Gen.Rep, State (To_State));
-   end Save;
-
-   procedure Reset
-     (Gen        : Generator;
-      From_State : State)
-   is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
-   begin
-      Reset (G, From_State);
-   end Reset;
-
-   function Image (Of_State : State)  return String is
-   begin
-      return Image (Rep_State (Of_State));
+      return Image (SRN.State (Of_State));
    end Image;
 
-   function Value (Coded_State : String) return State is
-      G : Generator;
-      S : Rep_State;
+   ------------
+   -- Random --
+   ------------
+
+   function Random (Gen : Generator) return Result_Subtype is
+      function Random is
+        new SRN.Random_Discrete (Result_Subtype, Result_Subtype'First);
    begin
-      Reset (G.Rep, Coded_State);
-      System.Random_Numbers.Save (G.Rep, S);
-      return State (S);
+      return Random (SRN.Generator (Gen));
+   end Random;
+
+   -----------
+   -- Reset --
+   -----------
+
+   procedure Reset (Gen : Generator) is
+   begin
+      Reset (SRN.Generator (Gen));
+   end Reset;
+
+   procedure Reset (Gen : Generator; Initiator : Integer) is
+   begin
+      Reset (SRN.Generator (Gen), Initiator);
+   end Reset;
+
+   procedure Reset (Gen : Generator; From_State : State) is
+   begin
+      Reset (SRN.Generator (Gen), SRN.State (From_State));
+   end Reset;
+
+   ----------
+   -- Save --
+   ----------
+
+   procedure Save (Gen : Generator; To_State   : out State) is
+   begin
+      Save (SRN.Generator (Gen), SRN.State (To_State));
+   end Save;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (Coded_State : String) return State is
+   begin
+      return State (SRN.State'(Value (Coded_State)));
    end Value;
 
 end Ada.Numerics.Discrete_Random;

@@ -881,6 +881,7 @@ package body Errout is
       Errors.Append
         ((Text     => new String'(Msg_Buffer (1 .. Msglen)),
           Next     => No_Error_Msg,
+          Prev     => No_Error_Msg,
           Sptr     => Sptr,
           Optr     => Optr,
           Sfile    => Get_Source_File_Index (Sptr),
@@ -1215,6 +1216,16 @@ package body Errout is
       F   : Error_Msg_Id;
 
    begin
+      --  Set Prev pointers
+
+      Cur := First_Error_Msg;
+      while Cur /= No_Error_Msg loop
+         Nxt := Errors.Table (Cur).Next;
+         exit when Nxt = No_Error_Msg;
+         Errors.Table (Nxt).Prev := Cur;
+         Cur := Nxt;
+      end loop;
+
       --  Eliminate any duplicated error messages from the list. This is
       --  done after the fact to avoid problems with Change_Error_Text.
 
@@ -1239,11 +1250,28 @@ package body Errout is
       while Cur /= No_Error_Msg loop
          if not Errors.Table (Cur).Deleted
            and then Warning_Specifically_Suppressed
-                     (Errors.Table (Cur).Sptr,
-                      Errors.Table (Cur).Text)
+                      (Errors.Table (Cur).Sptr, Errors.Table (Cur).Text)
          then
             Errors.Table (Cur).Deleted := True;
             Warnings_Detected := Warnings_Detected - 1;
+
+            --  If this is a continuation, delete previous messages
+
+            F := Cur;
+            while Errors.Table (F).Msg_Cont loop
+               F := Errors.Table (F).Prev;
+               Errors.Table (F).Deleted := True;
+            end loop;
+
+            --  Delete any following continuations
+
+            F := Cur;
+            loop
+               F := Errors.Table (F).Next;
+               exit when F = No_Error_Msg;
+               exit when not Errors.Table (F).Msg_Cont;
+               Errors.Table (F).Deleted := True;
+            end loop;
          end if;
 
          Cur := Errors.Table (Cur).Next;

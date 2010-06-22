@@ -29,29 +29,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces; use Interfaces;
-
-with System.Random_Numbers; use System.Random_Numbers;
-
 package body Ada.Numerics.Float_Random is
 
-   -------------------------
-   -- Implementation Note --
-   -------------------------
+   package SRN renames System.Random_Numbers;
+   use SRN;
 
-   --  The design of this spec is a bit awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally
-   --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution would be to add a self-referential component to the generator
-   --  allowing access to the generator object from inside the function. This
-   --  would work because the generator is limited, which prevents any copy.
+   -----------
+   -- Image --
+   -----------
 
-   --  This is a bit heavy, so what we do is to use Unrestricted_Access to
-   --  get a pointer to the state in the passed Generator. This works because
-   --  Generator is a limited type and will thus always be passed by reference.
-
-   subtype Rep_Generator is System.Random_Numbers.Generator;
-   subtype Rep_State is System.Random_Numbers.State;
+   function Image (Of_State : State) return String is
+   begin
+      return Image (SRN.State (Of_State));
+   end Image;
 
    ------------
    -- Random --
@@ -59,35 +49,32 @@ package body Ada.Numerics.Float_Random is
 
    function Random (Gen : Generator) return Uniformly_Distributed is
    begin
-      return Random (Gen.Rep);
+      return Random (SRN.Generator (Gen));
    end Random;
 
    -----------
    -- Reset --
    -----------
 
-   --  Version that works from given initiator value
-
-   procedure Reset (Gen : Generator; Initiator : Integer) is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
-   begin
-      Reset (G, Integer_32 (Initiator));
-   end Reset;
-
    --  Version that works from calendar
 
    procedure Reset (Gen : Generator) is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
-      Reset (G);
+      Reset (SRN.Generator (Gen));
+   end Reset;
+
+   --  Version that works from given initiator value
+
+   procedure Reset (Gen : Generator; Initiator : Integer) is
+   begin
+      Reset (SRN.Generator (Gen), Initiator);
    end Reset;
 
    --  Version that works from specific saved state
 
    procedure Reset (Gen : Generator; From_State : State) is
-      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
-      Reset (G, From_State);
+      Reset (SRN.Generator (Gen), From_State);
    end Reset;
 
    ----------
@@ -96,28 +83,19 @@ package body Ada.Numerics.Float_Random is
 
    procedure Save  (Gen : Generator; To_State : out State) is
    begin
-      Save (Gen.Rep, State (To_State));
+      Save (SRN.Generator (Gen), To_State);
    end Save;
-
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Of_State : State) return String is
-   begin
-      return Image (Rep_State (Of_State));
-   end Image;
 
    -----------
    -- Value --
    -----------
 
    function Value (Coded_State : String) return State is
-      G : Generator;
-      S : Rep_State;
+      G : SRN.Generator;
+      S : SRN.State;
    begin
-      Reset (G.Rep, Coded_State);
-      System.Random_Numbers.Save (G.Rep, S);
+      Reset (G, Coded_State);
+      Save (G, S);
       return State (S);
    end Value;
 
