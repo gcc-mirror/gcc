@@ -1,3 +1,9 @@
+2010-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (execute_function_todo): Move call of statistics_fini_pass
+	to ...
+	(execute_todo) ... this one.
+
 2010-06-22  Alan Modra  <amodra@gmail.com>
 
 	PR target/44364
