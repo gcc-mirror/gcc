@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,14 +173,14 @@ package body Exp_Aggr is
    -----------------------------------------------------
 
    function Aggr_Size_OK (N : Node_Id; Typ : Entity_Id) return Boolean;
-   --  Very large static aggregates present problems to the back-end, and
-   --  are transformed into assignments and loops. This function verifies
-   --  that the total number of components of an aggregate is acceptable
-   --  for transformation into a purely positional static form. It is called
-   --  prior to calling Flatten.
-   --  This function also detects and warns about one-component aggregates
-   --  that appear in a non-static context. Even if the component value is
-   --  static, such an aggregate must be expanded into an assignment.
+   --  Very large static aggregates present problems to the back-end, and are
+   --  transformed into assignments and loops. This function verifies that the
+   --  total number of components of an aggregate is acceptable for rewriting
+   --  into a purely positional static form. It is called prior to calling
+   --  Flatten.
+   --  This function also detects and warns about one-component aggregates that
+   --  appear in a non-static context. Even if the component value is static,
+   --  such an aggregate must be expanded into an assignment.
 
    procedure Convert_Array_Aggr_In_Allocator
      (Decl   : Node_Id;
@@ -3782,10 +3782,11 @@ package body Exp_Aggr is
             Rep_Count : Nat;
             --  Used to validate Max_Others_Replicate limit
 
-            Elmt   : Node_Id;
-            Num    : Int := UI_To_Int (Lov);
-            Choice : Node_Id;
-            Lo, Hi : Node_Id;
+            Elmt         : Node_Id;
+            Num          : Int := UI_To_Int (Lov);
+            Choice_Index : Int;
+            Choice       : Node_Id;
+            Lo, Hi       : Node_Id;
 
          begin
             if Present (Expressions (N)) then
@@ -3911,9 +3912,18 @@ package body Exp_Aggr is
                         return False;
 
                      else
-                        Vals (UI_To_Int (Expr_Value (Choice))) :=
-                          New_Copy_Tree (Expression (Elmt));
-                        goto Continue;
+                        Choice_Index := UI_To_Int (Expr_Value (Choice));
+                        if Choice_Index in Vals'Range then
+                           Vals (Choice_Index) :=
+                             New_Copy_Tree (Expression (Elmt));
+                           goto Continue;
+
+                        else
+                           --  Choice is statically out-of-range, will be
+                           --  rewritten to raise Constraint_Error.
+
+                           return False;
+                        end if;
                      end if;
                   end if;
 

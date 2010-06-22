@@ -1,3 +1,20 @@
+2010-06-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Find_Interface_ADT): Retrieve Designated_Type instead of
+	Directly_Designated_Type when the type argument is an access type.
+	(Find_Interface_Tag): Retrieve Designated_Type instead of
+	Directly_Designated_Type when the type argument is an access type.
+	(Has_Controlled_Coextensions): Retrieve Designated_Type instead of
+	Directly_Designated_Type of each access discriminant.
+	* sem_res.adb (Resolve_Type_Conversion): Retrieve Designated_Type
+	instead of Directly_Designated_Type when the operand and target types
+	are access types.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Flatten): Return False if one choice is statically
+	known to be out of bounds.
+
 2010-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Call): If the call is rewritten as an indexed of

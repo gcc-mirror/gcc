@@ -218,7 +218,7 @@ package body Sem_Res is
    --  A call to a user-defined intrinsic operator is rewritten as a call
    --  to the corresponding predefined operator, with suitable conversions.
    --  Note that this applies only for intrinsic operators that denote
-   --  predefined operators, not opeartors that are intrinsic imports of
+   --  predefined operators, not operators that are intrinsic imports of
    --  back-end builtins.
 
    procedure Resolve_Intrinsic_Unary_Operator (N : Node_Id; Typ : Entity_Id);
@@ -4625,7 +4625,7 @@ package body Sem_Res is
 
          --  If the context is Universal_Fixed and the operands are also
          --  universal fixed, this is an error, unless there is only one
-         --  applicable fixed_point type (usually duration).
+         --  applicable fixed_point type (usually Duration).
 
          if B_Typ = Universal_Fixed and then Etype (L) = Universal_Fixed then
             T := Unique_Fixed_Point_Type (N);
@@ -8608,11 +8608,11 @@ package body Sem_Res is
 
          begin
             if Is_Access_Type (Opnd) then
-               Opnd := Directly_Designated_Type (Opnd);
+               Opnd := Designated_Type (Opnd);
             end if;
 
             if Is_Access_Type (Target_Typ) then
-               Target := Directly_Designated_Type (Target);
+               Target := Designated_Type (Target);
             end if;
 
             if Opnd = Target then
