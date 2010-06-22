@@ -65,9 +65,9 @@ package body Switch.B is
                Ptr := Max + 1;
                return Result;
             end if;
-         else
-            return null;
          end if;
+
+         return null;
       end Get_Optional_Filename;
 
       --------------------
