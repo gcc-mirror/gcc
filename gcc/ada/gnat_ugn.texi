@@ -11781,10 +11781,6 @@ are used in this example.
 @end quotation
 @end macro
 
-@macro CINDEX{TXT}
-@cindex \TXT\
-@end macro
-
 @include projects.texi
 
 @c *****************************************
