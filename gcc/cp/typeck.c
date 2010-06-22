@@ -993,35 +993,37 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   const_tree probe;
   const_tree base;
   int  length = 0;
-  const_tree noexcept_spec = NULL_TREE;
-  const_tree other_spec;
 
   if (t1 == t2)
     return true;
 
-  /* First test noexcept compatibility.  */
-  if (t1 && TREE_PURPOSE (t1))
-    noexcept_spec = t1, other_spec = t2;
-  else if (t2 && TREE_PURPOSE (t2))
-    noexcept_spec = t2, other_spec = t1;
-  if (noexcept_spec)
+  /* First handle noexcept.  */
+  if (exact < ce_exact)
     {
-      tree p = TREE_PURPOSE (noexcept_spec);
-      /* Two noexcept-specs are equivalent iff their exprs are.  */
-      if (other_spec && TREE_PURPOSE (other_spec))
-	return cp_tree_equal (p, TREE_PURPOSE (other_spec));
-      /* noexcept(true) is compatible with throw().  */
-      else if (exact < ce_exact && p == boolean_true_node)
-	return nothrow_spec_p (other_spec);
-      /* noexcept(false) is compatible with any throwing
-	 dynamic-exception-spec.  */
-      else if (exact < ce_exact && p == boolean_false_node)
-	return !nothrow_spec_p (other_spec);
-      /* A dependent noexcept-spec is not compatible with any
-	 dynamic-exception-spec.  */
-      else
-	return false;
+      /* noexcept(false) is compatible with any throwing dynamic-exc-spec
+	 and stricter than any spec.  */
+      if (t1 == noexcept_false_spec)
+	return !nothrow_spec_p (t2) || exact == ce_derived;
+      /* Even a derived noexcept(false) is compatible with a throwing
+	 dynamic spec.  */
+      if (t2 == noexcept_false_spec)
+	return !nothrow_spec_p (t1);
+
+      /* Otherwise, if we aren't looking for an exact match, noexcept is
+	 equivalent to throw().  */
+      if (t1 == noexcept_true_spec)
+	t1 = empty_except_spec;
+      if (t2 == noexcept_true_spec)
+	t2 = empty_except_spec;
     }
+
+  /* If any noexcept is left, it is only comparable to itself;
+     either we're looking for an exact match or we're redeclaring a
+     template with dependent noexcept.  */
+  if ((t1 && TREE_PURPOSE (t1))
+      || (t2 && TREE_PURPOSE (t2)))
+    return (t1 && t2
+	    && cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)));
 
   if (t1 == NULL_TREE)			   /* T1 is ...  */
     return t2 == NULL_TREE || exact == ce_derived;

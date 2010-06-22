@@ -1,5 +1,7 @@
 2010-06-21  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/noexcept08.C: New.
+
 	* g++.dg/ext/unary_trait_incomplete.C: Adjust.
 
 2010-06-21  H.J. Lu  <hongjiu.lu@intel.com>
