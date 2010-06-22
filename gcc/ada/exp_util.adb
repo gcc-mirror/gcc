@@ -2007,6 +2007,17 @@ package body Exp_Util is
             --  unknown before the ELSE part or after the IF statement.
 
          elsif Nkind (CV) = N_Elsif_Part then
+
+            --  if the Elsif_Part had condition_actions, the elsif has been
+            --  rewritten as a nested if, and the original elsif_part is
+            --  detached from the tree, so there is no way to obtain useful
+            --  information on the current value of the variable.
+            --  Can this be improved ???
+
+            if No (Parent (CV)) then
+               return;
+            end if;
+
             Stm := Parent (CV);
 
             --  Before start of ELSIF part

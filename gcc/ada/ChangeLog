@@ -1,3 +1,14 @@
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): If the call is rewritten as an indexed of
+	a parameterless function call, preserve parentheses of original
+	expression, for proper handling by pretty printer.
+	* sem_attr.adb (Analyze_Attribute, case 'Old): Add guard to Process
+	procedure, to handle quietly identifiers that have no entity names.
+	* exp_util.adb (Get_Current_Value_Condition): If the parent of an
+	elsif_part is missing, it has been rewritten as a nested if, and there
+	is no useful information on the current value of the variable.
+
 2010-06-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Build_Discriminal): Set default scopes for newly created
