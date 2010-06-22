@@ -1,5 +1,28 @@
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb (Resolve_Record_Aggregate): Do style check on component
+	name.
+	* sem_ch10.adb (Analyze_Subunit): Do style check on parent unit name.
+	* sem_ch8.adb (Find_Direct_Name): For non-overloadable entities, do
+	style check.
+	* sem_res.adb (Resolve_Entity_Name): Do style check for enumeration
+	literals.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): No longer pass -nostdlib to the compiler as
+	it has no effect. Always pass -nostdlib to gnatlink, even on VMS.
+
+2010-06-22  Pascal Obry  <obry@adacore.com>
+
+	* g-socthi-mingw.adb: Fix implementation of the vectored sockets on
+	Windows.
+	(C_Recvmsg): Make sure the routine is atomic. Also fully
+	fill vectors in the proper order.
+	(C_Sendmsg): Make sure the routine is atomic.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch8.adb: Update comment.
 	* sem_res.adb: Minor code reorganization (use Ekind_In).
 

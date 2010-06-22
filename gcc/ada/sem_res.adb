@@ -5793,6 +5793,14 @@ package body Sem_Res is
          Set_Etype (N, Typ);
          Eval_Named_Real (N);
 
+      --  For enumeration literals, we need to make sure that a proper style
+      --  check is done, since such literals are overloaded, and thus we did
+      --  not do a style check during the first phase of analysis.
+
+      elsif Ekind (E) = E_Enumeration_Literal then
+         Set_Entity_With_Style_Check (N, E);
+         Eval_Entity_Name (N);
+
       --  Allow use of subtype only if it is a concurrent type where we are
       --  currently inside the body. This will eventually be expanded into a
       --  call to Self (for tasks) or _object (for protected objects). Any
@@ -5847,7 +5855,6 @@ package body Sem_Res is
            and then not In_Spec_Expression
            and then not Is_Imported (E)
          then
-
             if No_Initialization (Parent (E))
               or else (Present (Full_View (E))
                         and then No_Initialization (Parent (Full_View (E))))

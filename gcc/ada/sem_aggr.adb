@@ -54,6 +54,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stand;    use Stand;
+with Style;    use Style;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -3779,7 +3780,15 @@ package body Sem_Aggr is
                New_Assoc := First (New_Assoc_List);
                while Present (New_Assoc) loop
                   Component := First (Choices (New_Assoc));
-                  exit when Chars (Selectr) = Chars (Component);
+
+                  if Chars (Selectr) = Chars (Component) then
+                     if Style_Check then
+                        Check_Identifier (Selectr, Entity (Component));
+                     end if;
+
+                     exit;
+                  end if;
+
                   Next (New_Assoc);
                end loop;
 

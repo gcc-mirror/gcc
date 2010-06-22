@@ -4377,13 +4377,18 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         --  Set the entity. Note that the reason we call Set_Entity here, as
-         --  opposed to Set_Entity_With_Style_Check is that in the overloaded
-         --  case, the initial call can set the wrong homonym. The call that
-         --  sets the right homonym is in Sem_Res and that call does use
-         --  Set_Entity_With_Style_Check, so we don't miss a style check.
+         --  Set the entity. Note that the reason we call Set_Entity for the
+         --  overloadable case, as opposed to Set_Entity_With_Style_Check is
+         --  that in the overloaded case, the initial call can set the wrong
+         --  homonym. The call that sets the right homonym is in Sem_Res and
+         --  that call does use Set_Entity_With_Style_Check, so we don't miss
+         --  a style check.
 
-         Set_Entity (N, E);
+         if Is_Overloadable (E) then
+            Set_Entity (N, E);
+         else
+            Set_Entity_With_Style_Check (N, E);
+         end if;
 
          if Is_Type (E) then
             Set_Etype (N, E);
