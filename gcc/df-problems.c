@@ -983,7 +983,8 @@ df_lr_confluence_n (edge e)
   else
     changed = bitmap_ior_into (op1, op2);
 
-  return bitmap_ior_into (op1, &df->hardware_regs_used) || changed;
+  changed |= bitmap_ior_into (op1, &df->hardware_regs_used);
+  return changed;
 }
 
 
@@ -2726,11 +2727,13 @@ df_byte_lr_confluence_n (edge e)
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    changed = bitmap_ior_and_compl_into (op1, op2, &problem_data->invalidated_by_call);
+    changed = bitmap_ior_and_compl_into (op1, op2,
+					 &problem_data->invalidated_by_call);
   else
     changed = bitmap_ior_into (op1, op2);
 
-  return bitmap_ior_into (op1, &problem_data->hardware_regs_used) || changed;
+  changed |= bitmap_ior_into (op1, &problem_data->hardware_regs_used);
+  return changed;
 }
 
 
@@ -4440,7 +4443,8 @@ df_md_confluence_n (edge e)
     return false;
 
   if (e->flags & EDGE_EH)
-    return bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+    return bitmap_ior_and_compl_into (op1, op2,
+				      regs_invalidated_by_call_regset);
   else
     return bitmap_ior_into (op1, op2);
 }
