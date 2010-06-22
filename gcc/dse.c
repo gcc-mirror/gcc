@@ -3396,7 +3396,7 @@ dse_confluence_0 (basic_block bb)
    out set of the src of E.  If the various in or out sets are not
    there, that means they are all ones.  */
 
-static void
+static bool
 dse_confluence_n (edge e)
 {
   bb_info_t src_info = bb_table[e->src->index];
@@ -3412,6 +3412,7 @@ dse_confluence_n (edge e)
 	  bitmap_copy (src_info->out, dest_info->in);
 	}
     }
+  return true;
 }
 
 
