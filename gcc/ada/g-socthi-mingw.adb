@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,13 @@
 
 --  This version is for NT
 
-with Interfaces.C.Strings; use Interfaces.C.Strings;
-with System;               use System;
+with Ada.Streams;             use Ada.Streams;
+with Ada.Unchecked_Conversion;
+with Interfaces.C.Strings;    use Interfaces.C.Strings;
+with System;                  use System;
+with System.Storage_Elements; use System.Storage_Elements;
+
+with GNAT.Task_Lock;
 
 package body GNAT.Sockets.Thin is
 
@@ -273,8 +278,10 @@ package body GNAT.Sockets.Thin is
    is
       use type C.size_t;
 
-      Res   : C.int;
-      Count : C.int := 0;
+      Res    : C.int;
+      Count  : C.int := 0;
+      Locked : Boolean := False;
+      --  Set to false when the lock is activated
 
       MH : Msghdr;
       for MH'Address use Msg;
@@ -283,26 +290,105 @@ package body GNAT.Sockets.Thin is
       for Iovec'Address use MH.Msg_Iov;
       pragma Import (Ada, Iovec);
 
+      Iov_Index     : Integer;
+      Current_Iovec : Vector_Element;
+
+      function To_Access is new Ada.Unchecked_Conversion
+                                  (System.Address, Stream_Element_Reference);
+      pragma Warnings (Off, Stream_Element_Reference);
+
+      Req : Request_Type (Name => N_Bytes_To_Read);
+
    begin
       --  Windows does not provide an implementation of recvmsg(). The spec for
       --  WSARecvMsg() is incompatible with the data types we define, and is
       --  not available in all versions of Windows. So, we use C_Recv instead.
 
-      for J in Iovec'Range loop
+      --  First, wait for some data to be available if socket is blocking
+
+      declare
+         Selector     : Selector_Type;
+         R_Socket_Set : Socket_Set_Type;
+         W_Socket_Set : Socket_Set_Type;
+         Status       : Selector_Status;
+         Req          : Request_Type (Name => Non_Blocking_IO);
+      begin
+         Control_Socket (Socket_Type (S), Req);
+
+         if not Req.Enabled then
+            --  We are in a blocking IO mode
+            Create_Selector (Selector);
+
+            Set (R_Socket_Set, Socket_Type (S));
+
+            Check_Selector (Selector, R_Socket_Set, W_Socket_Set, Status);
+
+            Close_Selector (Selector);
+         end if;
+      end;
+
+      GNAT.Task_Lock.Lock;
+      Locked := True;
+
+      --  Check how much data are available
+
+      Control_Socket (Socket_Type (S), Req);
+
+      --  Fill the vectors
+
+      Iov_Index := -1;
+      Current_Iovec := (Base => null, Length => 0);
+
+      loop
+         if Current_Iovec.Length = 0 then
+            Iov_Index := Iov_Index + 1;
+            exit when Iov_Index > Integer (Iovec'Last);
+            Current_Iovec := Iovec (SOSC.Msg_Iovlen_T (Iov_Index));
+         end if;
+
          Res :=
            C_Recv
             (S,
-             Iovec (J).Base.all'Address,
-             C.int (Iovec (J).Length),
+             Current_Iovec.Base.all'Address,
+             C.int (Current_Iovec.Length),
              Flags);
 
          if Res < 0 then
+            Task_Lock.Unlock;
             return System.CRTL.ssize_t (Res);
+
+         elsif Res = 0 then
+            exit;
+
          else
+            pragma Assert (Stream_Element_Count (Res) <= Current_Iovec.Length);
+
             Count := Count + Res;
+            Current_Iovec.Length :=
+              Current_Iovec.Length - Stream_Element_Count (Res);
+            Current_Iovec.Base :=
+              To_Access (Current_Iovec.Base.all'Address
+                + Storage_Offset (Res));
+
+            --  If we have read all the data that was initially available,
+            --  do not attempt to receive more, since this might block, or
+            --  merge data from successive datagrams in case of a datagram-
+            --  oriented socket.
+
+            exit when Natural (Count) >= Req.Size;
          end if;
       end loop;
+
+      Task_Lock.Unlock;
+
       return System.CRTL.ssize_t (Count);
+
+   exception
+      when others =>
+         if Locked then
+            Task_Lock.Unlock;
+         end if;
+         raise;
    end C_Recvmsg;
 
    --------------
@@ -428,7 +514,10 @@ package body GNAT.Sockets.Thin is
       --  not available in all versions of Windows. So, we'll use C_Sendto
       --  instead.
 
+      Task_Lock.Lock;
+
       for J in Iovec'Range loop
+
          Res :=
            C_Sendto
             (S,
@@ -439,13 +528,20 @@ package body GNAT.Sockets.Thin is
              Tolen => C.int (MH.Msg_Namelen));
 
          if Res < 0 then
+            Task_Lock.Unlock;
             return System.CRTL.ssize_t (Res);
          else
             Count := Count + Res;
          end if;
       end loop;
 
+      Task_Lock.Unlock;
+
       return System.CRTL.ssize_t (Count);
+   exception
+      when others =>
+         Task_Lock.Unlock;
+         raise;
    end C_Sendmsg;
 
    --------------

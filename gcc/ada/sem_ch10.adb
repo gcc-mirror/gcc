@@ -2140,6 +2140,19 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Subunit
 
    begin
+      if Style_Check then
+         declare
+            Nam : Node_Id := Name (Unit (N));
+
+         begin
+            if Nkind (Nam) = N_Selected_Component then
+               Nam := Selector_Name (Nam);
+            end if;
+
+            Check_Identifier (Nam, Par_Unit);
+         end;
+      end if;
+
       if not Is_Empty_List (Context_Items (N)) then
 
          --  Save current use clauses

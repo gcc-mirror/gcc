@@ -8213,17 +8213,11 @@ package body Make is
 
          elsif Argv (2 .. Argv'Last) = "nostdlib" then
 
+            --  Pass -nstdlib to gnatbind and gnatlink
+
             No_Stdlib := True;
-
-            Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
-
-            --  On Open VMS, do not pass -nostdlib to gnatlink, it will disable
-            --  linking with all standard library files.
-
-            if not OpenVMS then
-               Add_Switch (Argv, Linker, And_Save => And_Save);
-            end if;
+            Add_Switch (Argv, Linker, And_Save => And_Save);
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
 
