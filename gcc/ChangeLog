@@ -1,3 +1,7 @@
+2010-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (unit): Also check sseishft1.
+
 2010-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.h (gimple_expr_code): Do checking on when gimple checking is enabled.
