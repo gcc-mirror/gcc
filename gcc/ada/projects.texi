@@ -257,7 +257,7 @@ There are several ways of defining source directories:
   @file{build.gpr} is inside @file{common/}, or "common" if it is one level up).
   Each of the source directories must exist and be readable.
 
-  @cindex portability
+@cindex portability
   The syntax for directories is platform specific. For portability, however,
   the project manager will always properly translate UNIX-like path names to
   the native format of specific platform. For instance, when the same project
@@ -269,9 +269,9 @@ There are several ways of defining source directories:
   the list ends with @emph{"/**"}, then that path and all its subdirectories
   (recursively) are included in the list of source directories. For instance,
   @file{./**} represent the complete directory tree rooted at ".".
-  @cindex Source directories, recursive
+@cindex Source directories, recursive
 
-  @cindex @code{Excluded_Source_Dirs}
+@cindex @code{Excluded_Source_Dirs}
   When using that construct, it can sometimes be convenient to also use the
   attribute @b{Excluded_Source_Dirs}, which is also a list of paths. Each entry
   specifies a directory whose immediate content, not including subdirs, is to
@@ -311,7 +311,7 @@ locating the specified source files in the specified source directories.
   all the sources in subdirectory "common" for the default language (Ada) using
   the default naming convention.
 
-  @cindex @code{Languages}
+@cindex @code{Languages}
   However, when compiling a multi-language application, or a pure C
   application, the project manager must be told which languages are of
   interest, which is done by setting the @b{Languages} attribute to a list of
@@ -320,7 +320,7 @@ locating the specified source files in the specified source directories.
   @command{gprbuild} know about many more languages such as C, C++, Fortran,
   assembly and others can be added dynamically.
 
-  @cindex Naming scheme
+@cindex Naming scheme
   Even when using only Ada, the default naming might not be suitable. Indeed,
   how does the project manager recognizes an "Ada file" from any other
   file? Project files can describe the naming scheme used for source files,
@@ -330,7 +330,8 @@ locating the specified source files in the specified source directories.
   is explicitly specified.
   @xref{Naming Schemes}.
 
-@item @cindex @code{Source_Files}
+@item @code{Source Files}
+  @cindex @code{Source_Files}
   In some cases, source directories might contain files that should not be
   included in a project. One can specify the explicit list of file names to
   be considered through the @b{Source_Files} attribute.
@@ -347,7 +348,8 @@ locating the specified source files in the specified source directories.
   @emph{Source_Dirs} can be set to the empty list, with the same
   result.
 
-@item @cindex @code{Source_List_File}
+@item @code{Source_List_File}
+@cindex @code{Source_List_File}
   If there is a great number of files, it might be more convenient to use
   the attribute @b{Source_List_File}, which specifies the full path of a file.
   This file must contain a list of source file names (one per line, no
@@ -359,9 +361,10 @@ locating the specified source files in the specified source directories.
   @code{Source_List_File} are given explicit values. In this case, the
   attribute @code{Source_Files} prevails.
 
-@item @cindex @code{Excluded_Source_Files}
-  @cindex @code{Locally_Removed_Files}
-  @cindex @code{Excluded_Source_List_File}
+@item @code{Excluded_Source_Files}
+@cindex @code{Excluded_Source_Files}
+@cindex @code{Locally_Removed_Files}
+@cindex @code{Excluded_Source_List_File}
   Specifying an explicit list of files is not always convenient.It might be
   more convenient to use the default search rules with specific exceptions.
   This can be done thanks to the attribute @b{Excluded_Source_Files}
@@ -593,7 +596,7 @@ Several attributes can be used to specify the switches:
 
 @table @asis
 @item @b{Default_Switches}:
-  @cindex @code{Default_Switches}
+@cindex @code{Default_Switches}
   This is the first mention in this manual of an @b{indexed attribute}. When
   this attribute is defined, one must supply an @emph{index} in the form of a
   literal string.
@@ -613,7 +616,7 @@ Several attributes can be used to specify the switches:
   @end smallexample
 
 @item @b{Switches}:
-  @cindex @code{Switches}
+@cindex @code{Switches}
   in some cases, we might want to use specific switches
   for one or more files. For instance, compiling @file{proc.adb} might not be
   possible at high level of optimization because of a compiler issue.
@@ -634,7 +637,7 @@ Several attributes can be used to specify the switches:
   name in which case it has the same semantics as @emph{Default_Switches}.
 
 @item @b{Local_Configuration_Pragmas}:
-  @cindex @code{Local_Configuration_Pragmas}
+@cindex @code{Local_Configuration_Pragmas}
   this attribute may specify the path
   of a file containing configuration pragmas for use by the Ada compiler,
   such as @code{pragma Restrictions (No_Tasking)}. These pragmas will be
@@ -845,7 +848,7 @@ The following attributes can be defined in package @code{Naming}:
 
 @table @asis
 @item @b{Casing}:
-  @cindex @code{Casing}
+@cindex @code{Casing}
   Its value must be one of @code{"lowercase"} (the default if
   unspecified), @code{"uppercase"} or @code{"mixedcase"}. It describes the
   casing of file names with regards to the Ada unit name. Given an Ada unit
@@ -855,7 +858,7 @@ The following attributes can be defined in package @code{Naming}:
   irrelevant.
 
 @item @b{Dot_Replacement}:
-  @cindex @code{Dot_Replacement}
+@cindex @code{Dot_Replacement}
   This attribute specifies the string that should replace the "." in unit
   names. Its default value is @code{"-"} so that a unit
   @code{Parent.Child} is expected to be found in the file
@@ -873,8 +876,8 @@ The following attributes can be defined in package @code{Naming}:
   @end itemize
 
 @item @b{Spec_Suffix} and @b{Specification_Suffix}:
-  @cindex @code{Spec_Suffix}
-  @cindex @code{Specification_Suffix}
+@cindex @code{Spec_Suffix}
+@cindex @code{Specification_Suffix}
   For Ada, these attributes give the suffix used in file names that contain
   specifications. For other languages, they give the extension for files
   that contain declaration (header files in C for instance). The attribute
@@ -893,8 +896,8 @@ The following attributes can be defined in package @code{Naming}:
   @end itemize
 
 @item @b{Body_Suffix} and @b{Implementation_Suffix}:
-  @cindex @code{Body_Suffix}
-  @cindex @code{Implementation_Suffix}
+@cindex @code{Body_Suffix}
+@cindex @code{Implementation_Suffix}
   These attributes give the extension used for file names that contain
   code (bodies in Ada). They are indexed on the language. The second
   version is obsolescent and fully replaced by the first attribute.
@@ -919,15 +922,15 @@ The following attributes can be defined in package @code{Naming}:
   (GPS).
 
 @item @b{Separate_Suffix}:
-  @cindex @code{Separate_Suffix}
+@cindex @code{Separate_Suffix}
   This attribute is specific to Ada. It denotes the suffix used in file names
   that contain separate bodies. If it is not specified, then it defaults to
   same value as @code{Body_Suffix ("Ada")}. The same rules apply as for the
   @code{Body_Suffix} attribute. The only accepted index is "Ada".
 
 @item @b{Spec} or @b{Specification}:
-  @cindex @code{Spec}
-  @cindex @code{Specification}
+@cindex @code{Spec}
+@cindex @code{Specification}
   This attribute @code{Spec} can be used to define the source file name for a
   given Ada compilation unit's spec. The index is the literal name of the Ada
   unit (case insensitive). The value is the literal base name of the file that
@@ -946,13 +949,13 @@ The following attributes can be defined in package @code{Naming}:
   @end smallexample
 
 @item @b{Body} or @b{Implementation}:
-  @cindex @code{Body}
-  @cindex @code{Implementation}
+@cindex @code{Body}
+@cindex @code{Implementation}
   These attribute play the same role as @emph{Spec} for Ada bodies.
 
 @item @b{Specification_Exceptions} and @b{Implementation_Exceptions}:
-  @cindex @code{Specification_Exceptions}
-  @cindex @code{Implementation_Exceptions}
+@cindex @code{Specification_Exceptions}
+@cindex @code{Implementation_Exceptions}
   These attributes define exceptions to the naming scheme for languages
   other than Ada. They are indexed on the language name, and contain
   a list of file names respectively for headers and source code.
@@ -1086,8 +1089,9 @@ the search stops:
 @itemize @bullet
 @item First, the file is searched relative to the directory that contains the
   current project file.
-@item @cindex @code{ADA_PROJECT_PATH}
-  @cindex @code{GPR_PROJECT_PATH}
+@item
+@cindex @code{ADA_PROJECT_PATH}
+@cindex @code{GPR_PROJECT_PATH}
   Then it is searched relative to all the directories specified in the
   ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
   @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
@@ -1261,7 +1265,7 @@ There are two main approaches to avoiding this duplication:
   in any directory and we are sure it shares no sources with @code{Build}
   or @code{Logging}, which of course would be invalid.
 
-  @cindex project qualifier
+@cindex project qualifier
   Note the additional use of the @b{abstract} qualifier in @file{shared.gpr}.
   This qualifier is optional, but helps convey the message that we do not
   intend this project to have sources (@pxref{Qualified Projects} for
@@ -1289,7 +1293,7 @@ Here is a list of commonly used global attributes:
 
 @table @asis
 @item @b{Builder.Global_Configuration_Pragmas}:
-  @cindex @code{Global_Configuration_Pragmas}
+@cindex @code{Global_Configuration_Pragmas}
   This attribute points to a file that contains configuration pragmas
   to use when building executables. These pragmas apply for all
   executables build from this project hierarchy. As we have seen before,
@@ -1297,7 +1301,7 @@ Here is a list of commonly used global attributes:
   @code{Compiler.Local_Configuration_Pragmas} attribute.
 
 @item @b{Builder.Global_Compilation_Switches}:
-  @cindex @code{Global_Compilation_Switches}
+@cindex @code{Global_Compilation_Switches}
   This attribute is a list of compiler switches to use when compiling any
   source file in the project hierarchy. These switches are used in addition
   to the ones defined in the @code{Compiler} package, which only apply to
@@ -1345,7 +1349,7 @@ order of priority):
 
 @table @asis
 @item @b{Command line}:
-  @cindex @option{-X}
+@cindex @option{-X}
   When launching @command{gnatmake} or @command{gprbuild}, the user can pass
   extra @option{-X} switches to define the external value. In
   our case, the command line might look like
@@ -1477,7 +1481,7 @@ front of the @code{project} keyword.
 
 @table @asis
 @item @b{Library_Name}:
-  @cindex @code{Library_Name}
+@cindex @code{Library_Name}
   This attribute is the name of the library to be built. There is no
   restriction on the name of a library imposed by the project manager;
   however, there may be system specific restrictions on the name.
@@ -1485,7 +1489,7 @@ front of the @code{project} keyword.
   (and possibly underscores) to help portability.
 
 @item @b{Library_Dir}:
-  @cindex @code{Library_Dir}
+@cindex @code{Library_Dir}
   This attribute  is the path (absolute or relative) of the directory where
   the library is to be installed. In the process of building a library,
   the sources are compiled, the object files end up  in the explicit or
@@ -1514,7 +1518,7 @@ Other library-related attributes can be used to change the defaults:
 
 @table @asis
 @item @b{Library_Kind}:
-  @cindex @code{Library_Kind}
+@cindex @code{Library_Kind}
   The value of this attribute must be either @code{"static"}, @code{"dynamic"} or
   @code{"relocatable"} (the latter is a synonym for dynamic). It indicates
   which kind of library should be build (the default is to build a
@@ -1702,7 +1706,7 @@ two attributes that make a project a Library Project (@code{Library_Name} and
 
 @table @asis
 @item @b{Library_Interface}:
-  @cindex @code{Library_Interface}
+@cindex @code{Library_Interface}
   This attribute defines an explicit subset of the units of the project.
   Projects importing this library project may only "with" units whose sources
   are listed in the @code{Library_Interface}. Other sources are considered
@@ -1728,7 +1732,7 @@ included in the library.
 
 @table @asis
 @item @b{Library_Auto_Init}:
-  @cindex @code{Library_Auto_Init}
+@cindex @code{Library_Auto_Init}
   A dynamic stand-alone Library is automatically initialized
   if automatic initialization of Stand-alone Libraries is supported on the
   platform and if attribute @b{Library_Auto_Init} is not specified or
@@ -1743,7 +1747,7 @@ included in the library.
   package.
 
 @item @b{Library_Dir}:
-  @cindex @code{Library_Dir}
+@cindex @code{Library_Dir}
   For a stand-alone library, only the @file{ALI} files of the interface units
   (those that are listed in attribute @code{Library_Interface}) are copied to
   the library directory. As a consequence, only the interface units may be
@@ -1756,12 +1760,12 @@ included in the library.
   used in the call to @command{gnatbind}.
 
 @item @b{Library_Options}:
-  @cindex @code{Library_Options}
+@cindex @code{Library_Options}
   This attribute may be used to specified additional switches to  @command{gcc}
   when linking the library.
 
 @item @b{Library_Src_Dir}:
-  @cindex @code{Library_Src_Dir}
+@cindex @code{Library_Src_Dir}
   This attribute defines the location (absolute or relative to the project
   directory) where the sources of the interface units are copied at
   installation time.
@@ -1773,7 +1777,7 @@ included in the library.
   which is the default value for this attribute.
 
 @item @b{Library_Symbol_Policy}:
-  @cindex @code{Library_Symbol_Policy}
+@cindex @code{Library_Symbol_Policy}
   This attribute controls the export of symbols and, on some platforms (like
   VMS) that have the notions of major and minor IDs built in the library
   files, it controls the setting of these IDs. It is not supported on all
@@ -1804,7 +1808,7 @@ included in the library.
   @end itemize
 
 @item @b{Library_Reference_Symbol_File}
-  @cindex @code{Library_Reference_Symbol_File}
+@cindex @code{Library_Reference_Symbol_File}
   This attribute may define the path name of a reference symbol file that is
   read when the symbol policy is either "compliant" or "controlled", on
   platforms that support symbol control, such as VMS, when building a
@@ -1812,7 +1816,7 @@ included in the library.
   to the project directory.
 
 @item @b{Library_Symbol_File}
-  @cindex @code{Library_Symbol_File}
+@cindex @code{Library_Symbol_File}
   This attribute may define the name of the symbol file to be created when
   building a stand-alone library when the symbol policy is either "compliant",
   "controlled" or "restricted", on platforms that support symbol control,

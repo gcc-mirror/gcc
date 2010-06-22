@@ -23,26 +23,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Directories;  use Ada.Directories;
-with GNAT.HTable;      use GNAT.HTable;
 with Hostparm;
-with Makeutl;          use Makeutl;
+with Makeutl;  use Makeutl;
 with MLib.Tgt;
-with Opt;              use Opt;
-with Output;           use Output;
+with Opt;      use Opt;
+with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
 with Prj.Part;
 with Prj.PP;
-with Prj.Proc;         use Prj.Proc;
-with Prj.Tree;         use Prj.Tree;
-with Prj.Util;         use Prj.Util;
-with Prj;              use Prj;
-with Snames;           use Snames;
+with Prj.Proc; use Prj.Proc;
+with Prj.Tree; use Prj.Tree;
+with Prj.Util; use Prj.Util;
+with Prj;      use Prj;
+with Snames;   use Snames;
 
---  Use GNAT.Case_Util instead of System.Case_Util so that this unit can
---  be used by user code with the "is an internal GNAT Unit" warning
-with GNAT.Case_Util;   use GNAT.Case_Util;
+with Ada.Directories; use Ada.Directories;
+
+with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Prj.Conf is
 

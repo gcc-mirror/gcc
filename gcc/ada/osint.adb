@@ -31,14 +31,14 @@ with GNAT.HTable;
 
 with Alloc;
 with Debug;
-with Fmap;             use Fmap;
-with Gnatvsn;          use Gnatvsn;
+with Fmap;     use Fmap;
+with Gnatvsn;  use Gnatvsn;
 with Hostparm;
-with Opt;              use Opt;
-with Output;           use Output;
-with Sdefault;         use Sdefault;
+with Opt;      use Opt;
+with Output;   use Output;
+with Sdefault; use Sdefault;
 with Table;
-with Targparm;         use Targparm;
+with Targparm; use Targparm;
 
 package body Osint is
 

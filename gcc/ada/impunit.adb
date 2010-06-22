@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2009, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2010, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -494,6 +494,8 @@ package body Impunit is
    --  Array of alternative unit names
 
    Scasuti : aliased String := "GNAT.Case_Util";
+   Scrc32  : aliased String := "GNAT.CRC32";
+   Shtable : aliased String := "GNAT.HTable";
    Sos_lib : aliased String := "GNAT.OS_Lib";
    Sregexp : aliased String := "GNAT.Regexp";
    Sregpat : aliased String := "GNAT.Regpat";
@@ -504,8 +506,10 @@ package body Impunit is
 
    --  Array giving mapping
 
-   Map_Array : constant array (1 .. 8) of Aunit_Record := (
+   Map_Array : constant array (1 .. 10) of Aunit_Record := (
                  ("casuti", Scasuti'Access),
+                 ("crc32 ", Scrc32 'Access),
+                 ("htable", Shtable'Access),
                  ("os_lib", Sos_lib'Access),
                  ("regexp", Sregexp'Access),
                  ("regpat", Sregpat'Access),
@@ -609,12 +613,17 @@ package body Impunit is
 
       Get_Name_String (Fname);
 
-      if Name_Len = 12
+      if Name_Len in 11 .. 12
         and then Name_Buffer (1 .. 2) = "s-"
-        and then Name_Buffer (9 .. 12) = ".ads"
+        and then Name_Buffer (Name_Len - 3 .. Name_Len) = ".ads"
       then
          for J in Map_Array'Range loop
-            if Name_Buffer (3 .. 8) = Map_Array (J).Fname then
+            if (Name_Len = 12 and then
+                 Name_Buffer (3 .. 8) = Map_Array (J).Fname)
+              or else
+               (Name_Len = 11 and then
+                 Name_Buffer (3 .. 7) = Map_Array (J).Fname (1 .. 5))
+            then
                Error_Msg_Strlen := Map_Array (J).Aname'Length;
                Error_Msg_String (1 .. Error_Msg_Strlen) :=
                  Map_Array (J).Aname.all;

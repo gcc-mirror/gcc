@@ -1,3 +1,12 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* uintp.adb, osint.adb, prj-conf.adb, prj-part.adb, prj.adb: Minor
+	reformatting.
+	* s-taprop-vxworks.adb: Add comment for Set_Priority.
+	* impunit.adb (Map_Array): Add entries for s-htable.ads and s-crc32.ads
+	* projects.texi: Move @cindex to the left margin, since otherwise we
+	are missing entries in the index.
+
 2010-06-22  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-part.adb, prj.adb, tempdir.ads, makeutl.adb: Use
