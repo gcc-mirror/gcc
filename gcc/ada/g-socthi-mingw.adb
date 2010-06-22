@@ -346,16 +346,21 @@ package body GNAT.Sockets.Thin is
 
             --  If all the data that was initially available read, do not
             --  attempt to receive more, since this might block, or merge data
-            --  from successive datagrams for a datagram-oriented
-            --  socket. We still try to receive more if we need to fill all
-            --  vectors (MSG_WAITALL flag is set).
+            --  from successive datagrams for a datagram-oriented socket. We
+            --  still try to receive more if we need to fill all vectors
+            --  (MSG_WAITALL flag is set).
 
             exit when Natural (Count) >= Req.Size
               and then
-                (not Fill -- either we are not in fill mode
-                 or else  -- or last vector filled
-                  (Interfaces.C.size_t (Iov_Index) = Iovec'Last
-                   and then Current_Iovec.Length = 0));
+
+                --  Either we are not in fill mode
+
+                (not Fill
+
+                  --  Or else last vector filled
+
+                  or else (Interfaces.C.size_t (Iov_Index) = Iovec'Last
+                            and then Current_Iovec.Length = 0));
          end if;
       end loop;
 

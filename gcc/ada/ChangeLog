@@ -1,3 +1,43 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* ali-util.ads: Minor comment update.
+	* g-socthi-mingw.adb: Minor reformatting.
+
+2010-06-22  Ed Falis  <falis@adacore.com>
+
+	* s-osinte-vxworks.ads: take sigset_t definition from System.VxWorks.Ext
+	* s-vxwext.ads, s-vxwext-kernel.ads, s-vxwext-rtp.ads: Define sigset_t
+	for specific versions of VxWorks.
+
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi, projects.texi: Remove all project files
+	related sections from user's guide and reference manual, since they
+	have now been merged together into a separate document (projects.texi).
+	This removes a lot of duplication where attributes where described
+	in several places.
+	The grammar for the project files is now in each of the sections
+	(packages,expressions,...) instead of being duplicates in two other
+	sections (one in the user's guide that contained the full grammar,
+	and various sections in the rm that contained extracts of the same
+	grammar).
+	Added the full list of all supported attributes, since existing lists
+	were incomplete
+	Rename "associative array" into "indexed attribute"
+	Remove sections that were duplicates ("External References in
+	Project Files" and "External Values", and "Project Extensions"
+	for instance). The list of valid packages in project files is now in
+	a single place.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): If
+	Find_Primitive_Covering_Interface does not find the operation, it may
+	be because of a name conflict between the inherited operation and a
+	local non-overloadable name. In that case look for the operation among
+	the primitive operations of the type. This search must succeed
+	regardless of visibility.
+
 2010-06-22  Pascal Obry  <obry@adacore.com>
 
 	* g-socthi-mingw.adb: Properly honor MSG_WAITALL in recvmsg.

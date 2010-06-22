@@ -32,9 +32,8 @@ package ALI.Util is
    -- Source File Table --
    -----------------------
 
-   --  A source file table entry is built for every source file that is in the
-   --  source dependency table of any of the ALI files that make up the current
-   --  program.
+   --  A table entry is built for every source file that is in the source
+   --  dependency table of any ALI file that is part of the current program.
 
    No_Source_Id : constant Source_Id := Source_Id'First;
    --  Special value indicating no Source table entry
