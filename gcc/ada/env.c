@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2009, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2010, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -107,9 +107,7 @@ typedef struct _ile3
 void
 __gnat_setenv (char *name, char *value)
 {
-#ifdef MSDOS
-
-#elif defined (VMS)
+#if defined (VMS)
   struct descriptor_s name_desc;
   /* Put in JOB table for now, so that the project stuff at least works.  */
   struct descriptor_s table_desc = {7, 0, "LNM$JOB"};

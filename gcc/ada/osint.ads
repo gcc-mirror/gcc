@@ -84,7 +84,7 @@ package Osint is
                                  Get_File_Names_Case_Sensitive /= 0;
    --  Set to indicate whether the operating system convention is for file
    --  names to be case sensitive (e.g., in Unix, set True), or non case
-   --  sensitive (e.g., in OS/2, set False).
+   --  sensitive (e.g., in Windows, set False).
 
    procedure Canonical_Case_File_Name (S : in out String);
    --  Given a file name, converts it to canonical case form. For systems

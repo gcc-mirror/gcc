@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -231,7 +231,7 @@ package body Xref_Lib is
 
       Line_Start := Index (Entity (File_Start .. Entity'Last), ":");
 
-      --  Check if it was a disk:\directory item (for NT and OS/2)
+      --  Check if it was a disk:\directory item (for Windows)
 
       if File_Start = Line_Start - 1
         and then Line_Start < Entity'Last

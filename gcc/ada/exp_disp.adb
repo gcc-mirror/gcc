@@ -1782,7 +1782,7 @@ package body Exp_Disp is
            or else TSS_Name  = TSS_Stream_Output
            or else
              (Chars (E) = Name_Op_Eq
-                and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
+                and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
            or else Chars (E) = Name_uAssign
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
@@ -1824,7 +1824,7 @@ package body Exp_Disp is
            or else Chars (E) = Name_uAlignment
            or else
              (Chars (E) = Name_Op_Eq
-                and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
+                and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
            or else Chars (E) = Name_uAssign
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize

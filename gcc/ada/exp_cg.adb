@@ -238,7 +238,7 @@ package body Exp_CG is
               or else Chars (E) = Name_uAlignment
               or else
                 (Chars (E) = Name_Op_Eq
-                   and then Etype (First_Entity (E)) = Etype (Last_Entity (E)))
+                   and then Etype (First_Formal (E)) = Etype (Last_Formal (E)))
               or else Chars (E) = Name_uAssign
               or else Is_Predefined_Interface_Primitive (E)
             then
@@ -283,7 +283,7 @@ package body Exp_CG is
 
                      return Predef_Names_95 (J) /= Name_Op_Eq
                        or else
-                         Etype (First_Entity (E)) = Etype (Last_Entity (E));
+                         Etype (First_Formal (E)) = Etype (Last_Formal (E));
                   end if;
                end loop;
 

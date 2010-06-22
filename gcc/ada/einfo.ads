@@ -2756,6 +2756,13 @@ package Einfo is
 --       Points to the last entry in the list of associated entities chained
 --       through the Next_Entity field. Empty if no entities are chained.
 
+--    Last_Formal (synthesized)
+--       Applies to subprograms and subprogram types, and also in entries
+--       and entry families. Returns last formal of the subprogram or entry.
+--       The formals are the first entities declared in a subprogram or in
+--       a subprogram type (the designated type of an Access_To_Subprogram
+--       definition) or in an entry.
+
 --    Limited_View (Node23)
 --       Present in non-generic package entities that are not instances. Bona
 --       fide package with the limited-view list through the first_entity and
@@ -4881,9 +4888,10 @@ package Einfo is
    --    Sec_Stack_Needed_For_Return         (Flag167)
    --    Uses_Sec_Stack                      (Flag95)
    --    Address_Clause                      (synth)
+   --    Entry_Index_Type                    (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
-   --    Entry_Index_Type                    (synth)
+   --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
 
@@ -5002,6 +5010,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    Scope_Depth                         (synth)
 
@@ -5261,6 +5270,7 @@ package Einfo is
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
 
    --  E_Protected_Body
@@ -5385,6 +5395,7 @@ package Einfo is
    --    Directly_Designated_Type            (Node20)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
+   --    Last_Formal                         (synth)
    --    Number_Formals                      (synth)
    --    (plus type attributes)
 
@@ -6149,6 +6160,7 @@ package Einfo is
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
+   function Last_Formal                         (Id : E) return E;
    function Next_Component                      (Id : E) return E;
    function Next_Component_Or_Discriminant      (Id : E) return E;
    function Next_Discriminant                   (Id : E) return E;
