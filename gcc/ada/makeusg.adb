@@ -24,8 +24,8 @@
 ------------------------------------------------------------------------------
 
 with Makeutl;
-with Osint;  use Osint;
-with Output; use Output;
+with Osint;   use Osint;
+with Output;  use Output;
 with Usage;
 
 procedure Makeusg is

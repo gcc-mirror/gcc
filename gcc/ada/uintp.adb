@@ -168,13 +168,15 @@ package body Uintp is
      (Left, Right       : Uint;
       Quotient          : out Uint;
       Remainder         : out Uint;
-      Discard_Quotient  : Boolean;
-      Discard_Remainder : Boolean);
-   --  Compute Euclidean division of Left by Right, and return Quotient and
-   --  signed Remainder (Left rem Right).
+      Discard_Quotient  : Boolean := False;
+      Discard_Remainder : Boolean := False);
+   --  Compute Euclidean division of Left by Right. If Discard_Quotient is
+   --  False then the quotient is returned in Quotient (otherwise Quotient is
+   --  set to No_Uint). If Discard_Remainder is False, then the remainder is
+   --  returned in Remainder (otherwise Remainder is set to No_Uint).
    --
-   --    If Discard_Quotient is True, Quotient is left unchanged.
-   --    If Discard_Remainder is True, Remainder is left unchanged.
+   --  If Discard_Quotient is True, Quotient is set to No_Uint
+   --  If Discard_Remainder is True, Remainder is set to No_Uint
 
    function Vector_To_Uint
      (In_Vec   : UI_Vector;
@@ -1253,7 +1255,6 @@ package body Uintp is
       UI_Div_Rem
         (Left, Right,
          Quotient, Remainder,
-         Discard_Quotient  => False,
          Discard_Remainder => True);
       return Quotient;
    end UI_Div;
@@ -1266,13 +1267,16 @@ package body Uintp is
      (Left, Right       : Uint;
       Quotient          : out Uint;
       Remainder         : out Uint;
-      Discard_Quotient  : Boolean;
-      Discard_Remainder : Boolean)
+      Discard_Quotient  : Boolean := False;
+      Discard_Remainder : Boolean := False)
    is
       pragma Warnings (Off, Quotient);
       pragma Warnings (Off, Remainder);
    begin
       pragma Assert (Right /= Uint_0);
+
+      Quotient  := No_Uint;
+      Remainder := No_Uint;
 
       --  Cases where both operands are represented directly
 
@@ -1682,42 +1686,8 @@ package body Uintp is
 
    function UI_From_CC (Input : Char_Code) return Uint is
    begin
-      return UI_From_Dint (Dint (Input));
+      return UI_From_Int (Int (Input));
    end UI_From_CC;
-
-   ------------------
-   -- UI_From_Dint --
-   ------------------
-
-   function UI_From_Dint (Input : Dint) return Uint is
-   begin
-
-      if Dint (Min_Direct) <= Input and then Input <= Dint (Max_Direct) then
-         return Uint (Dint (Uint_Direct_Bias) + Input);
-
-      --  For values of larger magnitude, compute digits into a vector and call
-      --  Vector_To_Uint.
-
-      else
-         declare
-            Max_For_Dint : constant := 5;
-            --  Base is defined so that 5 Uint digits is sufficient to hold the
-            --  largest possible Dint value.
-
-            V : UI_Vector (1 .. Max_For_Dint);
-
-            Temp_Integer : Dint := Input;
-
-         begin
-            for J in reverse V'Range loop
-               V (J) := Int (abs (Temp_Integer rem Dint (Base)));
-               Temp_Integer := Temp_Integer / Dint (Base);
-            end loop;
-
-            return Vector_To_Uint (V, Input < Dint'(0));
-         end;
-      end if;
-   end UI_From_Dint;
 
    -----------------
    -- UI_From_Int --
@@ -2191,11 +2161,7 @@ package body Uintp is
       Y := Uint_0;
 
       loop
-         UI_Div_Rem
-           (U, V,
-            Quotient => Q, Remainder => R,
-            Discard_Quotient  => False,
-            Discard_Remainder => False);
+         UI_Div_Rem (U, V, Quotient => Q, Remainder => R);
 
          U := V;
          V := R;
@@ -2232,12 +2198,15 @@ package body Uintp is
 
    function UI_Mul (Left : Uint; Right : Uint) return Uint is
    begin
-      --  Simple case of single length operands
+      --  Case where product fits in the range of a 32-bit integer
 
-      if Direct (Left) and then Direct (Right) then
+      if Int (Left)  <= Int (Uint_Max_Simple_Mul)
+           and then
+         Int (Right) <= Int (Uint_Max_Simple_Mul)
+      then
          return
-           UI_From_Dint
-             (Dint (Direct_Val (Left)) * Dint (Direct_Val (Right)));
+           UI_From_Int
+             (Int (Direct_Val (Left)) * Int (Direct_Val (Right)));
       end if;
 
       --  Otherwise we have the general case (Algorithm M in Knuth)
@@ -2560,9 +2529,7 @@ package body Uintp is
          pragma Warnings (Off, Quotient);
       begin
          UI_Div_Rem
-           (Left, Right, Quotient, Remainder,
-            Discard_Quotient  => True,
-            Discard_Remainder => False);
+           (Left, Right, Quotient, Remainder, Discard_Quotient  => True);
          return Remainder;
       end;
    end UI_Rem;

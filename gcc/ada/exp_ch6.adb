@@ -4764,6 +4764,13 @@ package body Exp_Ch6 is
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean is
    begin
+      --  This function is called in some rare cases when expansion is off.
+      --  In those cases the build_in_place expansion will not take place.
+
+      if not Expander_Active then
+         return False;
+      end if;
+
       --  For now we test whether E denotes a function or access-to-function
       --  type whose result subtype is inherently limited. Later this test may
       --  be revised to allow composite nonlimited types. Functions with a
