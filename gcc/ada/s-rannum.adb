@@ -86,9 +86,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;              use Ada.Calendar;
+with Ada.Calendar;             use Ada.Calendar;
 with Ada.Unchecked_Conversion;
-with Interfaces;                use Interfaces;
+
+with Interfaces; use Interfaces;
 
 use Ada;
 
@@ -122,7 +123,9 @@ package body System.Random_Numbers is
    Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
 
-   --  Utility functions
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Init (Gen : out Generator; Initiator : Unsigned_32);
    --  Perform a default initialization of the state of Gen. The resulting
@@ -199,6 +202,10 @@ package body System.Random_Numbers is
    --  assuming that Unsigned is large enough to hold the bits of a mantissa
    --  for type Real.
 
+   ---------------------------
+   -- Random_Float_Template --
+   ---------------------------
+
    function Random_Float_Template (Gen : Generator) return Real is
 
       pragma Compile_Time_Error
@@ -232,6 +239,7 @@ package body System.Random_Numbers is
       if Real'Machine_Radix /= 2 then
          return Real'Machine
            (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
+
       else
          declare
             type Bit_Count is range 0 .. 4;
@@ -239,8 +247,8 @@ package body System.Random_Numbers is
             subtype T is Real'Base;
 
             Trailing_Ones : constant array (Unsigned_32 range 0 .. 15)
-              of Bit_Count
-              :=  (2#00000# => 0, 2#00001# => 1, 2#00010# => 0, 2#00011# => 2,
+              of Bit_Count :=
+                  (2#00000# => 0, 2#00001# => 1, 2#00010# => 0, 2#00011# => 2,
                    2#00100# => 0, 2#00101# => 1, 2#00110# => 0, 2#00111# => 3,
                    2#01000# => 0, 2#01001# => 1, 2#01010# => 0, 2#01011# => 2,
                    2#01100# => 0, 2#01101# => 1, 2#01110# => 0, 2#01111# => 4);
@@ -255,21 +263,30 @@ package body System.Random_Numbers is
                          (Unsigned'Size - T'Machine_Mantissa + 1);
             --  Random bits left over after selecting mantissa
 
-            Mantissa   : Unsigned;
-            X          : Real;            -- Scaled mantissa
-            R          : Unsigned_32;     -- Supply of random bits
-            R_Bits     : Natural;         -- Number of bits left in R
+            Mantissa : Unsigned;
 
-            K          : Bit_Count;       -- Next decrement to exponent
+            X : Real;
+            --  Scaled mantissa
+
+            R : Unsigned_32;
+            --  Supply of random bits
+
+            R_Bits : Natural;
+            --  Number of bits left in R
+
+            K : Bit_Count;
+            --  Next decrement to exponent
+
          begin
-
             Mantissa := Random (Gen) / 2**Extra_Bits;
             R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
             R_Bits := Extra_Bits;
             X := Real (2**(T'Machine_Mantissa - 1) + Mantissa); -- Exact
 
-            if Extra_Bits < 4 and then R < 2**Extra_Bits - 1 then
+            if Extra_Bits < 4 and then R < 2 ** Extra_Bits - 1 then
+
                --  We got lucky and got a zero in our few extra bits
+
                K := Trailing_Ones (R);
 
             else
@@ -305,12 +322,11 @@ package body System.Random_Numbers is
                end loop Find_Zero;
             end if;
 
-            --  K has the count of trailing ones not reflected yet in X.
-            --  The following multiplication takes care of that, as well
-            --  as the correction to move the radix point to the left of
-            --  the mantissa. Doing it at the end avoids repeated rounding
-            --  errors in the exceedingly unlikely case of ever having
-            --  a subnormal result.
+            --  K has the count of trailing ones not reflected yet in X. The
+            --  following multiplication takes care of that, as well as the
+            --  correction to move the radix point to the left of the mantissa.
+            --  Doing it at the end avoids repeated rounding errors in the
+            --  exceedingly unlikely case of ever having a subnormal result.
 
             X := X * Pow_Tab (K);
 
@@ -329,6 +345,10 @@ package body System.Random_Numbers is
          end;
       end if;
    end Random_Float_Template;
+
+   ------------
+   -- Random --
+   ------------
 
    function Random (Gen : Generator) return Float is
       function F is new Random_Float_Template (Unsigned_32, Float);
@@ -371,7 +391,7 @@ package body System.Random_Numbers is
             --  Ignore different-size warnings here; since GNAT's handling
             --  is correct.
 
-            pragma Warnings ("Z");
+            pragma Warnings ("Z");  -- better to use msg string! ???
             function Conv_To_Unsigned is
                new Unchecked_Conversion (Result_Subtype'Base, Unsigned_64);
             function Conv_To_Result is
@@ -489,7 +509,7 @@ package body System.Random_Numbers is
       I, J : Integer;
 
    begin
-      Init (Gen, 19650218);
+      Init (Gen, 19650218); -- please give this constant a name ???
       I := 1;
       J := 0;
 

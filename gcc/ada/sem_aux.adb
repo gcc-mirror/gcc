@@ -799,4 +799,20 @@ package body Sem_Aux is
       Obsolescent_Warnings.Tree_Write;
    end Tree_Write;
 
+   --------------------
+   -- Ultimate_Alias --
+   --------------------
+
+   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id is
+      E : Entity_Id := Prim;
+
+   begin
+      while Present (Alias (E)) loop
+         pragma Assert (Alias (E) /= E);
+         E := Alias (E);
+      end loop;
+
+      return E;
+   end Ultimate_Alias;
+
 end Sem_Aux;

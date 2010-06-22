@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,12 @@ package Sem_Disp is
    --  if it has a parameter of this type and is defined at a proper place for
    --  primitive operations (new primitives are only defined in package spec,
    --  overridden operation can be defined in any scope). If Old_Subp is not
-   --  Empty we are in the overriding case.
+   --  Empty we are in the overriding case. If the tagged type associated with
+   --  Subp is a concurrent type (case that occurs when the type is declared in
+   --  a generic because the analysis of generics disables generation of the
+   --  corresponding record) then this routine does does not add "Subp" to the
+   --  list of primitive operations but leaves Subp decorated as dispatching
+   --  operation to enable checks associated with the Object.Operation notation
 
    procedure Check_Operation_From_Incomplete_Type
      (Subp : Entity_Id;

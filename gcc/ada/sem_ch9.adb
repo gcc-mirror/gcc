@@ -1176,16 +1176,6 @@ package body Sem_Ch9 is
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
 
-      --  Perform minimal expansion of protected type while inside a generic.
-      --  The corresponding record is needed for various semantic checks.
-
-      if Ada_Version >= Ada_05
-        and then Inside_A_Generic
-      then
-         Insert_After_And_Analyze (N,
-           Build_Corresponding_Record (N, T, Sloc (T)));
-      end if;
-
       Analyze (Protected_Definition (N));
 
       --  Protected types with entries are controlled (because of the
@@ -1975,15 +1965,6 @@ package body Sem_Ch9 is
       end if;
 
       Set_Is_Constrained (T, not Has_Discriminants (T));
-
-      --  Perform minimal expansion of the task type while inside a generic
-      --  context. The corresponding record is needed for various semantic
-      --  checks.
-
-      if Inside_A_Generic then
-         Insert_After_And_Analyze (N,
-           Build_Corresponding_Record (N, T, Sloc (T)));
-      end if;
 
       if Present (Task_Definition (N)) then
          Analyze_Task_Definition (Task_Definition (N));

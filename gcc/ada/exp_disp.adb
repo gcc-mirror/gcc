@@ -3968,12 +3968,9 @@ package body Exp_Disp is
                   --  are located in a separate dispatch table; skip also
                   --  abstract and eliminated primitives.
 
-                  --  Why do we skip imported primitives???
-
                   if not Is_Predefined_Dispatching_Operation (Prim)
                     and then Present (Interface_Alias (Prim))
                     and then not Is_Abstract_Subprogram (Alias (Prim))
-                    and then not Is_Imported (Alias (Prim))
                     and then not Is_Eliminated (Alias (Prim))
                     and then Find_Dispatching_Type
                                (Interface_Alias (Prim)) = Iface
@@ -5518,13 +5515,10 @@ package body Exp_Disp is
                   --  to build secondary dispatch tables; skip also abstract
                   --  and eliminated primitives.
 
-                  --  Why do we skip imported primitives???
-
                   if not Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Predefined_Dispatching_Operation (E)
                     and then not Present (Interface_Alias (Prim))
                     and then not Is_Abstract_Subprogram (E)
-                    and then not Is_Imported (E)
                     and then not Is_Eliminated (E)
                   then
                      pragma Assert

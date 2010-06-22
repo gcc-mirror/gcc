@@ -1260,11 +1260,6 @@ package Sem_Util is
    function Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Return the accessibility level of Typ
 
-   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
-   pragma Inline (Ultimate_Alias);
-   --  Return the last entity in the chain of aliased entities of Prim. If Prim
-   --  has no alias return Prim.
-
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the
    --  corresponding xxx_Declaration node for the entity. Also applies to the
