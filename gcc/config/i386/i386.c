@@ -18838,7 +18838,7 @@ promote_duplicated_reg (enum machine_mode mode, rtx val)
 	if (mode == SImode)
 	  emit_insn (gen_movsi_insv_1 (reg, reg));
 	else
-	  emit_insn (gen_movdi_insv_1_rex64 (reg, reg));
+	  emit_insn (gen_movdi_insv_1 (reg, reg));
       else
 	{
 	  tmp = expand_simple_binop (mode, ASHIFT, reg, GEN_INT (8),

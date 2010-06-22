@@ -1,3 +1,54 @@
+2010-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI1248x): New mode iterator.
+	(SWI48x): Ditto.
+	(SWI12): Ditto.
+	(SWI24): Ditto.
+	
+	(mov<mode>): Macroize expander from mov{qi,hi,si,di} using
+	SWI1248x mode iterator.
+	(*push<mode>2_rex64): Macroize insn from *push{qi,hi,si}_rex64
+	using SWI124 mode iterator.
+	(*push<mode>2): Macroize insn from *push{qi,hi} using SWI12
+	mode iterator.
+	(*push<mode>2_prologue): Macroize insn from  *pushsi2_prologue and
+	*pushdi2_prologue_rex64 using P mode iterator.
+	(*mov<mode>_xor): Macroize insn from *movsi_xor and *movdi_xor_rex64
+	using SWI48 mode iterator.
+	(*mov<mode>_or): Ditto from *movsi_or and *movdi_or_rex64.
+	(*movabs<mode>_1): Macroize insn from *movabs{qi,hi,si,di}_1_rex64
+	using SWI1248x mode iterator.
+	(*movabs<mode>_2): Ditto from *movabs{qi,hi,si,di}_1_rex64.
+	(*swap<mode>): Macroize insn from *swapsi and *swapdi_rex64 using
+	SWI48 mode iterator.
+	(*swap<mode>_1): Macroize insn from *swap{qi,hi}_1 using SWI12 mode
+	iterator.
+	(*swap<mode>_2): Ditto from *swap{qi,hi}_2.
+	(movstrict<mode>): Macroize expander from movstrict{qi,hi} using
+	SWI12 mode iterator.
+	(*movstrict<mode>_1): Macroize insn from *movstrict{qi,hi}_1 using
+	SWI12 mode iterator.
+	(*movstrict<mode>_xor): Ditto from *movstrict{qi,hi}_xor.
+	(*mov<mode>_extv_1): Macroize insn from *mov{hi,si}_extv_1 using
+	SWI24 mode iterator.
+	(*mov<mode>_extzv_1): Macroize insn from *mov{si,di}_extzv_1 using
+	SWI48 mode iterator.
+	(mov<mode>_insn_1): New expander.
+	(*mov<mode>_insv_1_rex64): Macroize insn from *mov{si,di}_insv_1_rex64
+	using SWI48x mode iterator.
+
+	(*movoi_internal_avx): Rename from *movoi_internal.
+	(*movti_internal_rex64): Rename from *movti_rex64.
+	(*movti_internal_sse): Rename from *movti_sse.
+	(*movdi_internal_rex64): Rename from *movdi_1_rex64.
+	(*movdi_internal): Rename from *movdi_2.
+	(*movsi_internal): Rename from *movsi_1.
+	(*movhi_internal): Rename from *movhi_1.
+	(*movqi_internal): Rename from *movqi_1.
+
+	(insv): Update the call to gen_movsi_insv_1 for rename.
+	* config/i386/i386.c (promote_duplicated_reg): Ditto.
+
 2010-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (execute_function_todo): Move call of statistics_fini_pass
@@ -231,8 +282,7 @@
 
 2010-06-19  Philip Herron  <herron.philip@googlemail.com>
 
-	* c-decl.c (c_write_global_declarations): Don't check
-	flag_syntax_only.
+	* c-decl.c (c_write_global_declarations): Don't check flag_syntax_only.
 
 2010-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -269,8 +319,7 @@
 
 	* function.h (types_used_by_cur_var_decl): Change type to a VEC.
 	* function.c (types_used_by_cur_var_decl): Likewise.
-	(used_types_insert): Adjust for new type of
-	types_used_by_cur_var_decl.
+	(used_types_insert): Adjust for new type of types_used_by_cur_var_decl.
 
 2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -512,8 +561,7 @@
 	(PRINT_OPERAND_PUNCT_VALID_P): Delete.
 	(PRINT_OPERAND_ADDRESS, ARM_PRINT_OPERAND_ADDRESS):
 	(THUMB_PRINT_OPERAND_ADDRESS): Delete and move code to...
-	* config/arm/arm.c (arm_print_operand_address): ...here.  New
-	function.
+	* config/arm/arm.c (arm_print_operand_address): ...here.  New function.
 	(arm_print_operand): Make static.
 	(arm_print_operand_punct_valid_p): New function.
 	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS):
