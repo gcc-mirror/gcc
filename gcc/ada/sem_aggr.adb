@@ -3503,8 +3503,8 @@ package body Sem_Aggr is
                      --  subaggregate is needed.
 
                      Capture_Discriminants : declare
-                        Loc        : constant Source_Ptr := Sloc (N);
-                        Expr       : Node_Id;
+                        Loc  : constant Source_Ptr := Sloc (N);
+                        Expr : Node_Id;
 
                         procedure Add_Discriminant_Values
                           (New_Aggr   : Node_Id;
@@ -3610,7 +3610,6 @@ package body Sem_Aggr is
                            New_Aggr   : Node_Id;
 
                         begin
-
                            Inner_Comp := First_Component (Etype (Comp));
                            while Present (Inner_Comp) loop
                               Comp_Type := Etype (Inner_Comp);
@@ -3623,7 +3622,7 @@ package body Sem_Aggr is
                                  Set_Etype (New_Aggr, Comp_Type);
                                  Add_Association
                                    (Inner_Comp, New_Aggr,
-                                     Component_Associations (Aggr));
+                                    Component_Associations (Aggr));
 
                                  --  Collect discriminant values and recurse
 
@@ -3673,7 +3672,7 @@ package body Sem_Aggr is
 
                         else
                            declare
-                              Comp            : Entity_Id;
+                              Comp : Entity_Id;
 
                            begin
                               --  If the type has additional components, create
