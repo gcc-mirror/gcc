@@ -951,9 +951,17 @@ package Opt is
    --  GNATBIND
    --  True if output of list of linker options is requested (-K switch set)
 
-   Output_Object_List : Boolean := False;
+   Output_ALI_List   : Boolean := False;
+   ALI_List_Filename : String_Ptr;
    --  GNATBIND
-   --  True if output of list of objects is requested (-O switch set)
+   --  True if output of list of ALIs is requested (-A switch set). List is
+   --  output under the given filename, or standard output if not specified.
+
+   Output_Object_List   : Boolean := False;
+   Object_List_Filename : String_Ptr;
+   --  GNATBIND
+   --  True if output of list of objects is requested (-O switch set). List is
+   --  output under the given filename, or standard output if not specified.
 
    Overflow_Checks_Unsuppressed : Boolean := False;
    --  GNAT

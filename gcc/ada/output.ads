@@ -33,6 +33,8 @@
 --  writing error messages and informational output. It is also used by the
 --  debug source file output routines (see Sprint.Print_Debug_Line).
 
+with System.OS_Lib; use System.OS_Lib;
+
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
@@ -84,6 +86,12 @@ package Output is
    --  the output will appear on standard output only after special output
    --  has been cancelled. Output to standard output is the default mode
    --  before any call to either of the Set procedures.
+
+   procedure Set_Output (FD : File_Descriptor);
+   --  Sets subsequent output to appear on the given file descriptor when no
+   --  special output is in effect. When a special output is in effect,
+   --  the output will appear on the given file descriptor only after special
+   --  output has been cancelled.
 
    procedure Indent;
    --  Increases the current indentation level. Whenever a line is written

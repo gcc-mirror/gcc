@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,6 +195,14 @@ package VMS_Data is
    --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
    --
    --   Add directories to the project search path.
+
+   S_Bind_ALI     : aliased constant S := "/ALI_LIST "                     &
+                                            "-A";
+   --        /NOALI_LIST (D)
+   --        /ALI_LIST
+   --
+   --    Output full names of all the ALI files in the partition. The output is
+   --    written to SYS$OUTPUT.
 
    S_Bind_Bind    : aliased constant S := "/BIND_FILE="                    &
                                             "ADA "                         &
@@ -385,7 +393,7 @@ package VMS_Data is
    --        /NOOBJECT_LIST (D)
    --        /OBJECT_LIST
    --
-   --    Output full names of all the object files that must be linker to
+   --    Output full names of all the object files that must be linked to
    --    provide the Ada component of the program. The output is written to
    --    SYS$OUTPUT.
 
@@ -669,6 +677,7 @@ package VMS_Data is
 
    Bind_Switches : aliased constant Switches :=
                      (S_Bind_Add     'Access,
+                      S_Bind_ALI     'Access,
                       S_Bind_Bind    'Access,
                       S_Bind_Build   'Access,
                       S_Bind_Current 'Access,

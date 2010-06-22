@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1936,6 +1936,10 @@ package body Bindgen is
       WBI ("");
       Write_Info_Ada_C ("-- ", "/* ", " BEGIN Object file/option list");
 
+      if Object_List_Filename /= null then
+         Set_List_File (Object_List_Filename.all);
+      end if;
+
       for E in Elab_Order.First .. Elab_Order.Last loop
 
          --  If not spec that has an associated body, then generate a
@@ -1984,6 +1988,10 @@ package body Bindgen is
             end if;
          end if;
       end loop;
+
+      if Object_List_Filename /= null then
+         Close_List_File;
+      end if;
 
       --  Add a "-Ldir" for each directory in the object path
 

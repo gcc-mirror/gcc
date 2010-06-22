@@ -8028,6 +8028,10 @@ Specify directory to be searched for ALI files.
 @cindex @option{^-aI^/SOURCE_SEARCH^} (@command{gnatbind})
 Specify directory to be searched for source file.
 
+@item ^-A^/ALI_LIST^@r{[=}@var{filename}@r{]}
+@cindex @option{^-A^/ALI_LIST^} (@command{gnatbind})
+Output ALI list (to standard output or to the named file).
+
 @item ^-b^/REPORT_ERRORS=BRIEF^
 @cindex @option{^-b^/REPORT_ERRORS=BRIEF^} (@command{gnatbind})
 Generate brief messages to @file{stderr} even if verbose mode set.
@@ -8180,9 +8184,9 @@ Name the output file @var{file} (default is @file{b~@var{xxx}.adb}).
 Note that if this option is used, then linking must be done manually,
 gnatlink cannot be used.
 
-@item ^-O^/OBJECT_LIST^
+@item ^-O^/OBJECT_LIST^@r{[=}@var{filename}@r{]}
 @cindex @option{^-O^/OBJECT_LIST^} (@command{gnatbind})
-Output object list.
+Output object list (to standard output or to the named file).
 
 @item ^-p^/PESSIMISTIC_ELABORATION^
 @cindex @option{^-p^/PESSIMISTIC_ELABORATION^} (@command{gnatbind})
