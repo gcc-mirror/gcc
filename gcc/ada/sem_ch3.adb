@@ -6941,9 +6941,8 @@ package body Sem_Ch3 is
 
       --  Ada 2005 (AI-251)
 
-      if Ada_Version = Ada_05
-        and then Is_Tagged
-      then
+      if Ada_Version >= Ada_05 and then Is_Tagged then
+
          --  "The declaration of a specific descendant of an interface type
          --  freezes the interface type" (RM 13.14).
 
