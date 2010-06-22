@@ -1,3 +1,8 @@
+2010-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44627
+	* g++.dg/other/method1.C: New test.
+
 2010-06-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
