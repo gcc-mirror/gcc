@@ -1,149 +1,9 @@
 @set gprconfig GPRconfig
 
-@c --------------------------------------------- macro
-@c This macro can be used to insert code sample. Each line should end with
-@c @NL{}, since otherwise texinfo doesn't guarantee that newlines will be
-@c preserved
-@macro CODESAMPLE{TXT}
-@ifhtml
-@smallexample
-@group
-\TXT\
-@end group
-@end smallexample
-@end ifhtml
-@ifnothtml
-@smallexample
-@group
-\TXT\
-@end group
-@end smallexample
-@end ifnothtml
-@end macro
-
-@macro PROJECTFILE{TXT}
-@CODESAMPLE{\TXT\}
-@end macro
-
-@c simulates a newline when in a @CODESAMPLE
-@macro NL{}
-@end macro
-
-@c --------------------------------------------- macro
-@c This macro can be used to insert a "Tip" or "Did you know" box. In HTML,
-@c this box is displayed in the right margin of the text, and thus doesn't
-@c disturbs the normal reading flow, but provides additional useful
-@c information. A small icon is displayed on the left of the box.
-@c Calls to this macro should be followed by @noindent for proper rendering
-@c in pdf
-@macro TIP{TXT}
-@ifhtml
-@html
-<div class="tip">
-@end html
-\TXT\
-@html
-</div>
-@end html
-@end ifhtml
-@ifnothtml
-@quotation
-@noindent
-@c @image{tip,15pt}  \TXT\
-@end quotation
-@end ifnothtml
-@end macro
-
-@c --------------------------------------------- macro
-@c This macro is similar to TIP, but only has an effect in html output,
-@c and displayed a note in the margin. This can be used to highlight important
-@c points that are repeated in the text. In the other outputs, we do not
-@c know how to create margin notes, and whether that would only duplicate
-@c information in the main text
-@macro TIPHTML{TXT}
-@ifhtml
-@html
-<div class="tip">
-@end html
-\TXT\
-@html
-</div>
-@end html
-@end ifhtml
-@end macro
-
-@c --------------------------------------------- macro
-@c This macro can be used to insert an "Important" box in the text.
-@c This box is displayed inline in the main body of the text, but is
-@c surrounded by a frame, and has a small icon on the left.
-@c Calls to this macro should be followed by @noindent for proper rendering
-@c in pdf
-@macro IMPORTANT{TXT}
-@ifhtml
-@html
-<div class="important">
-@end html
-\TXT\
-@html
-</div>
-@end html
-@end ifhtml
-@ifnothtml
-@quotation
-@noindent
-@c @image{important,15pt}  \TXT\
-@end quotation
-@end ifnothtml
-@end macro
-
-@c --------------------------------------------- macro
-@c This macro can be used to insert a "Note" box in the text. It is
-@c displayed inline in the main body of the text, but has a different
-@c icon that the "Important" box
-@c Calls to this macro should be followed by @noindent for proper rendering
-@c in pdf
-@macro NOTE{TXT}
-@ifhtml
-@html
-<div class="note">
-@end html
-\TXT\
-@html
-</div>
-@end html
-@end ifhtml
-@ifnothtml
-@quotation
-@noindent
-@c @image{note,15pt}  \TXT\
-@end quotation
-@end ifnothtml
-@end macro
-
-@c --------------------------------------------- macro
-@c This macro creates index entries. Optionally, it can display that
-@c entry in the right-side margin of the text in HTML, to help people
-@c locate where exactly the index entry points to.
-
-@macro CINDEX{TXT}
-@cindex \TXT\
-@ifset useindex
-@ifhtml
-@html
-<div class="side"><a href="#Index">
-@end html
-\TXT\
-@html
-</a></div>
-@end html
-@end ifhtml
-@end ifset
-@end macro
-
-@menu
-* GNAT Project Manager::
-* Tools Supporting Project Files::
-@end menu
+@c ------ projects.texi
+@c This file is shared between the GNAT user's guide and gprbuild. It is not
+@c compilable on its own, you should instead compile the other two manuals.
+@c For that reason, there is no toplevel @menu
 
 @c ---------------------------------------------
 @node GNAT Project Manager
@@ -151,8 +11,6 @@
 @c ---------------------------------------------
 
 @noindent
-
-
 @menu
 * Introduction::
 * Building With Projects::

@@ -11731,6 +11731,57 @@ are used in this example.
 @c * G N A T  P r o j e c t  M a n a g e r *
 @c *****************************************
 
+@c ------ macros for projects.texi
+@c These macros are needed when building the gprbuild documentation, but
+@c should have no effect in the gnat user's guide
+
+@macro CODESAMPLE{TXT}
+@smallexample
+@group
+\TXT\
+@end group
+@end smallexample
+@end macro
+
+@macro PROJECTFILE{TXT}
+@CODESAMPLE{\TXT\}
+@end macro
+
+@c simulates a newline when in a @CODESAMPLE
+@macro NL{}
+@end macro
+
+@macro TIP{TXT}
+@quotation
+@noindent
+\TXT\
+@end quotation
+@end macro
+
+@macro TIPHTML{TXT}
+\TXT\
+@end macro
+
+@macro IMPORTANT{TXT}
+@quotation
+@noindent
+\TXT\
+@end quotation
+
+@end macro
+
+@macro NOTE{TXT}
+@quotation
+@noindent
+\TXT\
+@end quotation
+@end macro
+
+@macro CINDEX{TXT}
+@cindex \TXT\
+@end macro
+
+
 @include projects.texi
 
 @c *****************************************

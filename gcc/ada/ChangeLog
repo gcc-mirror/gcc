@@ -1,5 +1,15 @@
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb: Minor reformatting.  Minor code reorganization.
+
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* gnat_ugn.texi, projects.texi: Remove toplevel menu, since we should
+	not build this file on its own (only through gnat_ugn.texi).
+	Remove macro definitions and insert simpler version in gnat_ugn.texi.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
 	* ali-util.ads: Minor comment update.
 	* g-socthi-mingw.adb: Minor reformatting.
 
