@@ -1,8 +1,38 @@
+2010-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-06-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (unit): Also check sseishft1.
+
 2010-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/39690
 	* config/pa/pa.c (override_options): Disable
 	-freorder-blocks-and-partition.
+
+2010-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-06-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44615
+	* config/i386/atom.md (atom_sseishft_2): Also check sseishft1.
+
+	* config/i386/i386.md (type): Add sseishft1
+
+	* config/i386/ppro_insn (ppro_insn): Also check sseishft1.
+	(ppro_insn_load): Likewise.
+	(ppro_insn_store): Likewise.
+	(ppro_insn_both): Likewise.
+
+	* config/i386/sse.md (sse2_lshrv1ti3): Add atom_unit.
+	(*vec_extractv2di_1_rex64_avx): Replace sseishft with sseishft1
+	for type.
+	(*vec_extractv2di_1_avx): Likewise.
+	(*vec_extractv2di_1_rex64): Replace sseishft with sseishft1 for
+	type.  Remove atom_unit.
+	(*vec_extractv2di_1_sse2): Likewise.
 
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
 
