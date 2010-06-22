@@ -2567,8 +2567,8 @@ package body Errout is
       Is_Unconditional_Msg := False;
       Msglen := 0;
       Flag_Source := Get_Source_File_Index (Flag);
-      P := Text'First;
 
+      P := Text'First;
       while P <= Text'Last loop
          C := Text (P);
          P := P + 1;
