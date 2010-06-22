@@ -203,33 +203,32 @@ package body System.Random_Numbers is
 
    function Random_Float_Template (Gen : Generator) return Real is
       --  This code generates random floating-point numbers from unsigned
-      --  integers. Assuming that Real'Machine_Radix = 2, it can deliver
-      --  all machine values of type Real (at least as implied by
-      --  Real'Machine_Mantissa and Real'Machine_Emin), which is not true
-      --  of the standard method (to which we fall back for non-binary
-      --  radix): computing Real(<random integer>) / (<max random integer>+1).
-      --  To do so, we first extract an (M-1)-bit significand (where M
-      --  is Real'Machine_Mantissa), and then decide on a normalized
-      --  exponent by repeated coin flips, decrementing from 0 as long as
-      --  we flip heads (1 bits). This yields the proper geometric
-      --  distribution for the exponent: in a uniformly distributed set of
-      --  floating-point numbers, 1/2 of them will be in [0.5, 1), 1/4 will
-      --  be in [0.25, 0.5), and so forth. If the process reaches
-      --  Machine_Emin (an extremely rare event), it uses the selected
-      --  mantissa bits as an unnormalized fraction with Machine_Emin as
-      --  exponent. Otherwise, it adds a leading bit to the selected
-      --  mantissa bits (thus giving a normalized fraction) and adjusts by
-      --  the chosen exponent. The algorithm attempts to be stingy with
-      --  random integers. In the worst case, it can consume roughly
-      --  -Real'Machine_Emin/32 32-bit integers, but this case occurs with
-      --  probability 2**Machine_Emin, and the expected number of calls to
-      --  integer-valued Random is 1.
+      --  integers. Assuming that Real'Machine_Radix = 2, it can deliver all
+      --  machine values of type Real (as implied by Real'Machine_Mantissa and
+      --  Real'Machine_Emin), which is not true of the standard method (to
+      --  which we fall back for non-binary radix): computing Real(<random
+      --  integer>) / (<max random integer>+1). To do so, we first extract an
+      --  (M-1)-bit significand (where M is Real'Machine_Mantissa), and then
+      --  decide on a normalized exponent by repeated coin flips, decrementing
+      --  from 0 as long as we flip heads (1 bits). This yields the proper
+      --  geometric distribution for the exponent: in a uniformly distributed
+      --  set of floating-point numbers, 1/2 of them will be in [0.5, 1), 1/4
+      --  will be in [0.25, 0.5), and so forth. If the process reaches
+      --  Machine_Emin (an extremely rare event), it uses the selected mantissa
+      --  bits as an unnormalized fraction with Machine_Emin as exponent.
+      --  Otherwise, it adds a leading bit to the selected mantissa bits (thus
+      --  giving a normalized fraction) and adjusts by the chosen exponent. The
+      --  algorithm attempts to be stingy with random integers. In the worst
+      --  case, it can consume roughly -Real'Machine_Emin/32 32-bit integers,
+      --  but this case occurs with probability 2**Machine_Emin, and the
+      --  expected number of calls to integer-valued Random is 1.
 
    begin
       if Real'Machine_Radix /= 2 then
          declare
-            Val : constant Real := Real'Machine
-              (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
+            Val : constant Real :=
+                    Real'Machine
+                      (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
          begin
             if Val < 1.0 then
                return Real'Base (Val);
@@ -237,20 +236,21 @@ package body System.Random_Numbers is
                return Real'Pred (1.0);
             end if;
          end;
+
       else
          declare
             Mant_Bits : constant Integer := Real'Machine_Mantissa - 1;
             Mant_Mask : constant Unsigned := 2**Mant_Bits - 1;
             Adjust32  : constant Integer := Real'Size - Unsigned_32'Size;
             Leftover  : constant Integer :=
-              Unsigned'Size - Real'Machine_Mantissa + 1;
-
+                          Unsigned'Size - Real'Machine_Mantissa + 1;
             V         : constant Unsigned := Random (Gen);
             Mant      : constant Unsigned := V and Mant_Mask;
             Rand_Bits : Unsigned_32;
             Exp       : Integer;
             Bits_Left : Integer;
             Result    : Real;
+
          begin
             Rand_Bits := Unsigned_32 (Shift_Right (V, Adjust32));
             Exp := 0;
@@ -271,6 +271,7 @@ package body System.Random_Numbers is
                   Rand_Bits := Random (Gen);
                end if;
             end loop;
+
             return Result;
          end;
       end if;

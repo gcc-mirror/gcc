@@ -363,6 +363,8 @@ The GNAT Library
 * GNAT.IO (g-io.ads)::
 * GNAT.IO_Aux (g-io_aux.ads)::
 * GNAT.Lock_Files (g-locfil.ads)::
+* GNAT.MBBS_Discrete_Random (g-mbdira.ads)::
+* GNAT.MBBS_Float_Random (g-mbflra.ads)::
 * GNAT.MD5 (g-md5.ads)::
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
@@ -13547,6 +13549,8 @@ of GNAT, and will generate a warning message.
 * GNAT.IO (g-io.ads)::
 * GNAT.IO_Aux (g-io_aux.ads)::
 * GNAT.Lock_Files (g-locfil.ads)::
+* GNAT.MBBS_Discrete_Random (g-mbdira.ads)::
+* GNAT.MBBS_Float_Random (g-mbflra.ads)::
 * GNAT.MD5 (g-md5.ads)::
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
@@ -14430,6 +14434,24 @@ for whether a file exists, and functions for reading a line of text.
 @noindent
 Provides a general interface for using files as locks.  Can be used for
 providing program level synchronization.
+
+@node GNAT.MBBS_Discrete_Random (g-mbdira.ads)
+@section @code{GNAT.MBBS_Discrete_Random} (@file{g-mbdira.ads})
+@cindex @code{GNAT.MBBS_Discrete_Random} (@file{g-mbdira.ads})
+@cindex Random number generation
+
+@noindent
+The original implementation of @code{Ada.Numerics.Discrete_Random}.  Uses
+a modified version of the Blum-Blum-Shub generator.
+
+@node GNAT.MBBS_Float_Random (g-mbflra.ads)
+@section @code{GNAT.MBBS_Float_Random} (@file{g-mbflra.ads})
+@cindex @code{GNAT.MBBS_Float_Random} (@file{g-mbflra.ads})
+@cindex Random number generation
+
+@noindent
+The original implementation of @code{Ada.Numerics.Float_Random}.  Uses
+a modified version of the Blum-Blum-Shub generator.
 
 @node GNAT.MD5 (g-md5.ads)
 @section @code{GNAT.MD5} (@file{g-md5.ads})

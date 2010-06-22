@@ -58,33 +58,39 @@ package body Ada.Numerics.Discrete_Random is
       return Rep_Random (Gen.Rep);
    end Random;
 
-   procedure Reset (Gen       : Generator;
-                    Initiator : Integer) is
+   procedure Reset
+     (Gen       : Generator;
+      Initiator : Integer)
+   is
       G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
       Reset (G, Initiator);
    end Reset;
 
-   procedure Reset (Gen       : Generator) is
+   procedure Reset (Gen : Generator) is
       G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
       Reset (G);
    end Reset;
 
-   procedure Save  (Gen        : Generator;
-                    To_State   : out State) is
+   procedure Save
+     (Gen        : Generator;
+      To_State   : out State)
+   is
    begin
       Save (Gen.Rep, State (To_State));
    end Save;
 
-   procedure Reset (Gen        : Generator;
-                    From_State : State) is
+   procedure Reset
+     (Gen        : Generator;
+      From_State : State)
+   is
       G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
       Reset (G, From_State);
    end Reset;
 
-   function Image (Of_State    : State)  return String is
+   function Image (Of_State : State)  return String is
    begin
       return Image (Rep_State (Of_State));
    end Image;

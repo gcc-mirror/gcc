@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---            G N A T . M B S S _ D I S C R E T E _ R A N D O M             --
+--            G N A T . M B B S _ D I S C R E T E _ R A N D O M             --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
