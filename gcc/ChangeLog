@@ -1,5 +1,9 @@
 2010-06-22  Jan Hubicka  <jh@suse.cz>
 
+	* gimple.h (gimple_expr_code): Do checking on when gimple checking is enabled.
+
+2010-06-22  Jan Hubicka  <jh@suse.cz>
+
 	* df-problems.c (df_rd_confluence_n, df_lr_confluence_n, df_live_confluence_n,
 	df_byte_lr_confluence_n, df_md_confluence_n): Return true if something changed.
 	* df.h (df_confluence_function_n): Return bool.
