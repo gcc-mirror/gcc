@@ -455,9 +455,6 @@ package body Einfo is
    --    Is_Primitive_Wrapper            Flag195
    --    Was_Hidden                      Flag196
    --    Is_Limited_Interface            Flag197
-   --    Is_Protected_Interface          Flag198
-   --    Is_Synchronized_Interface       Flag199
-   --    Is_Task_Interface               Flag200
 
    --    Has_Anon_Block_Suffix           Flag201
    --    Itype_Printed                   Flag202
@@ -510,6 +507,10 @@ package body Einfo is
    --    Is_Private_Primitive            Flag245
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
+
+   --    (unused)                        Flag198
+   --    (unused)                        Flag199
+   --    (unused)                        Flag200
 
    -----------------------
    -- Local subprograms --
@@ -1942,12 +1943,6 @@ package body Einfo is
       return Flag245 (Id);
    end Is_Private_Primitive;
 
-   function Is_Protected_Interface (Id : E) return B is
-   begin
-      pragma Assert (Is_Interface (Id));
-      return Flag198 (Id);
-   end Is_Protected_Interface;
-
    function Is_Public (Id : E) return B is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -2007,12 +2002,6 @@ package body Einfo is
       return Flag28 (Id);
    end Is_Statically_Allocated;
 
-   function Is_Synchronized_Interface (Id : E) return B is
-   begin
-      pragma Assert (Is_Interface (Id));
-      return Flag199 (Id);
-   end Is_Synchronized_Interface;
-
    function Is_Tag (Id : E) return B is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -2023,12 +2012,6 @@ package body Einfo is
    begin
       return Flag55 (Id);
    end Is_Tagged_Type;
-
-   function Is_Task_Interface (Id : E) return B is
-   begin
-      pragma Assert (Is_Interface (Id));
-      return Flag200 (Id);
-   end Is_Task_Interface;
 
    function Is_Thunk (Id : E) return B is
    begin
@@ -4390,12 +4373,6 @@ package body Einfo is
       Set_Flag245 (Id, V);
    end Set_Is_Private_Primitive;
 
-   procedure Set_Is_Protected_Interface (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Interface (Id));
-      Set_Flag198 (Id, V);
-   end Set_Is_Protected_Interface;
-
    procedure Set_Is_Public (Id : E; V : B := True) is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -4461,12 +4438,6 @@ package body Einfo is
       Set_Flag28 (Id, V);
    end Set_Is_Statically_Allocated;
 
-   procedure Set_Is_Synchronized_Interface (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Interface (Id));
-      Set_Flag199 (Id, V);
-   end Set_Is_Synchronized_Interface;
-
    procedure Set_Is_Tag (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind_In (Id, E_Component, E_Constant));
@@ -4477,12 +4448,6 @@ package body Einfo is
    begin
       Set_Flag55 (Id, V);
    end Set_Is_Tagged_Type;
-
-   procedure Set_Is_Task_Interface (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Interface (Id));
-      Set_Flag200 (Id, V);
-   end Set_Is_Task_Interface;
 
    procedure Set_Is_Thunk (Id : E; V : B := True) is
    begin
@@ -6112,6 +6077,22 @@ package body Einfo is
         and then Is_Protected_Type (Scope (Id));
    end Is_Protected_Component;
 
+   ----------------------------
+   -- Is_Protected_Interface --
+   ----------------------------
+
+   function Is_Protected_Interface (Id : E) return B is
+      Typ : constant Entity_Id := Base_Type (Id);
+   begin
+      if not Is_Interface (Typ) then
+         return False;
+      elsif Is_Class_Wide_Type (Typ) then
+         return Is_Protected_Interface (Etype (Typ));
+      else
+         return Protected_Present (Type_Definition (Parent (Typ)));
+      end if;
+   end Is_Protected_Interface;
+
    ------------------------------
    -- Is_Protected_Record_Type --
    ------------------------------
@@ -6157,6 +6138,43 @@ package body Einfo is
                   and then Number_Dimensions (Id) = 1
                   and then Is_Character_Type (Component_Type (Id)));
    end Is_String_Type;
+
+   -------------------------------
+   -- Is_Synchronized_Interface --
+   -------------------------------
+
+   function Is_Synchronized_Interface (Id : E) return B is
+      Typ : constant Entity_Id := Base_Type (Id);
+
+   begin
+      if not Is_Interface (Typ) then
+         return False;
+
+      elsif Is_Class_Wide_Type (Typ) then
+         return Is_Synchronized_Interface (Etype (Typ));
+
+      else
+         return    Protected_Present    (Type_Definition (Parent (Typ)))
+           or else Synchronized_Present (Type_Definition (Parent (Typ)))
+           or else Task_Present         (Type_Definition (Parent (Typ)));
+      end if;
+   end Is_Synchronized_Interface;
+
+   -----------------------
+   -- Is_Task_Interface --
+   -----------------------
+
+   function Is_Task_Interface (Id : E) return B is
+      Typ : constant Entity_Id := Base_Type (Id);
+   begin
+      if not Is_Interface (Typ) then
+         return False;
+      elsif Is_Class_Wide_Type (Typ) then
+         return Is_Task_Interface (Etype (Typ));
+      else
+         return Task_Present (Type_Definition (Parent (Typ)));
+      end if;
+   end Is_Task_Interface;
 
    -------------------------
    -- Is_Task_Record_Type --
@@ -6927,7 +6945,6 @@ package body Einfo is
       W ("Is_Private_Composite",            Flag107 (Id));
       W ("Is_Private_Descendant",           Flag53  (Id));
       W ("Is_Private_Primitive",            Flag245 (Id));
-      W ("Is_Protected_Interface",          Flag198 (Id));
       W ("Is_Public",                       Flag10  (Id));
       W ("Is_Pure",                         Flag44  (Id));
       W ("Is_Pure_Unit_Access_Type",        Flag189 (Id));
@@ -6938,11 +6955,9 @@ package body Einfo is
       W ("Is_Renaming_Of_Object",           Flag112 (Id));
       W ("Is_Return_Object",                Flag209 (Id));
       W ("Is_Shared_Passive",               Flag60  (Id));
-      W ("Is_Synchronized_Interface",       Flag199 (Id));
       W ("Is_Statically_Allocated",         Flag28  (Id));
       W ("Is_Tag",                          Flag78  (Id));
       W ("Is_Tagged_Type",                  Flag55  (Id));
-      W ("Is_Task_Interface",               Flag200 (Id));
       W ("Is_Thunk",                        Flag225 (Id));
       W ("Is_Trivial_Subprogram",           Flag235 (Id));
       W ("Is_True_Constant",                Flag163 (Id));

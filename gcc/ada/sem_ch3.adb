@@ -2166,17 +2166,6 @@ package body Sem_Ch3 is
               or else Synchronized_Present (Def)
               or else Task_Present (Def));
 
-      Set_Is_Protected_Interface (T, Protected_Present (Def));
-      Set_Is_Task_Interface (T, Task_Present (Def));
-
-      --  Type is a synchronized interface if it includes the keyword task,
-      --  protected, or synchronized.
-
-      Set_Is_Synchronized_Interface
-        (T, Synchronized_Present (Def)
-              or else Protected_Present (Def)
-              or else Task_Present (Def));
-
       Set_Interfaces (T, New_Elmt_List);
       Set_Primitive_Operations (T, New_Elmt_List);
 
@@ -2186,9 +2175,6 @@ package body Sem_Ch3 is
       if Present (CW) then
          Set_Is_Interface (CW);
          Set_Is_Limited_Interface      (CW, Is_Limited_Interface (T));
-         Set_Is_Protected_Interface    (CW, Is_Protected_Interface (T));
-         Set_Is_Synchronized_Interface (CW, Is_Synchronized_Interface (T));
-         Set_Is_Task_Interface         (CW, Is_Task_Interface (T));
       end if;
 
       --  Check runtime support for synchronized interfaces

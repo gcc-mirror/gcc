@@ -1,3 +1,25 @@
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* fmap.adb, scng.adb, switch-m.ads, sinput-c.adb, opt.ads, output.ads,
+	tree_io.ads, osint.adb, osint.ads: Use configuration pragmas to prevent
+	warnings on use of internal GNAT units.
+
+2010-06-22  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-vxworks.adb (Set_Priority): Update comments.
+
+2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* s-rannum.adb: Make stylistic change to remove mystery constant in
+	Extract_Value.  Image_Numeral_Length: new symbolic constant.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: Make Is_Protected_Interface,
+	Is_Synchronized_Interface, Is_Task_Interface into computable
+	predicates, to free three flags in entity nodes.
+	* sem_ch3.adb: Remove setting of these flags.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* uintp.adb, osint.adb, prj-conf.adb, prj-part.adb, prj.adb: Minor
