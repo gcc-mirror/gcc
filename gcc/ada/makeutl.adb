@@ -39,8 +39,10 @@ with Ada.Command_Line;  use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
+pragma Warnings (Off);
 with System.Case_Util; use System.Case_Util;
 with System.HTable;
+pragma Warnings (On);
 
 package body Makeutl is
 

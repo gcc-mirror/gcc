@@ -1,3 +1,13 @@
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Minor spelling error fixes.
+	Minor reformatting.
+
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj-ext.adb, prj.adb, makeutl.adb, prj-conf.adb: Remove
+	warnings for some with clauses.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb (Unwind_Internal_Type): Improve handling of First_Subtype

@@ -348,7 +348,7 @@ locating the specified source files in the specified source directories.
   result.
 
 @item @cindex @code{Source_List_File}
-  If ther is a great number of files, it might be more convenient to use
+  If there is a great number of files, it might be more convenient to use
   the attribute @b{Source_List_File}, which specifies the full path of a file.
   This file must contain a list of source file names (one per line, no
   directory information) that are searched as if they had been defined
@@ -478,7 +478,7 @@ unit.
 
 There can be any number of such main files within a given project, and thus
 several executables can be built in the context of a single project file. Of
-course, one givene executable might not (and in fact will not) need all the
+course, one given executable might not (and in fact will not) need all the
 source files referenced by the project. As opposed to other build environments
 such as @command{makefile}, one does not need to specify the list of
 dependencies of each executable, the project-aware builders knows enough of the
@@ -633,7 +633,7 @@ Several attributes can be used to specify the switches:
   @code{Switches} can also be given a language name as index instead of a file
   name in which case it has the same semantics as @emph{Default_Switches}.
 
-@item @b{Local_Configuration_Pragams}:
+@item @b{Local_Configuration_Pragmas}:
   @cindex @code{Local_Configuration_Pragmas}
   this attribute may specify the path
   of a file containing configuration pragmas for use by the Ada compiler,
@@ -646,7 +646,7 @@ The switches for the other tools are defined in a similar manner through the
 @b{Default_Switches} and @b{Switches} attributes, respectively in the
 @emph{Builder} package (for @command{gnatmake} and @command{gprbuild}),
 the @emph{Binder} package (binding Ada executables) and the @emph{Linker}
-package (for inking executables).
+package (for linking executables).
 
 @c ---------------------------------------------
 @node Compiling with Project Files
@@ -687,12 +687,12 @@ set of actions to be executed. Here is the invocation of
 
 @smallexample
 $ gprbuild -Pbuild
-gcc -c proc.adb -o proc.o
-gcc -c pack.adb -o pack.o
-gcc -c utils.c -o utils.o
+gcc -c proc.adb
+gcc -c pack.adb
+gcc -c utils.c
 gprbind proc
 ...
-gcc proc.o -o proc.exe
+gcc proc.o -o proc
 @end smallexample
 
 @noindent
@@ -707,8 +707,8 @@ Notice the three steps described earlier:
 
 @noindent
 @cindex @option{-v} option (for GPRbuild)
-The default output of GPRbuild's execution is kept reasonably simple and easy to
-understand. In particular, some of the less frequently used commands are not
+The default output of GPRbuild's execution is kept reasonably simple and easy
+to understand. In particular, some of the less frequently used commands are not
 shown, and some parameters are abbreviated. So it is not possible to rerun the
 effect ofthe gprbuild command by cut-and-pasting its output. GPRbuild's option
 @code{-v} provides a much more verbose output which includes, among other
@@ -746,7 +746,7 @@ its value replace the platform-specific executable suffix.
 The default executable suffix is empty on UNIX and ".exe" on Windows.
 
 It is also possible to change the name of the produced executable by using the
-command line switch @option{-o}. when several mains are defined in the project,
+command line switch @option{-o}. When several mains are defined in the project,
 it is not possible to use the @option{-o} switch and the only way to change the
 names of the executable is provided by Attributes @code{Executable} and
 @code{Executable_Suffix}.
@@ -801,17 +801,16 @@ replaced by a reference to the @code{Default_Switches} attribute:
 Note the tick (@emph{'}) used to refer to attributes defined in a package.
 
 Here is the output of the GPRbuild command using this project:
-@c This is NOT the output of gprbuild????
 
 @smallexample
 $gprbuild -Pc_main
-gcc -c -pedantic -g main.c -o main.o
-gcc -c -gnaty proc.adb -o proc.o
-gcc -c -gnaty pack.adb -o pack.o
-gcc -c -pedantic utils.c -o utils.o
-gprbind main
+gcc -c -pedantic -g main.c
+gcc -c -gnaty proc.adb
+gcc -c -gnaty pack.adb
+gcc -c -pedantic utils.c
+gprbind main.bexch
 ...
-gcc main.o -o main.exe
+gcc main.o -o main
 @end smallexample
 
 @noindent
@@ -837,11 +836,10 @@ allows finding of source files when searching in the source
 directories, and given a source file name it makes it possible to guess
 the associated language, and thus the compiler to use.
 
-Note that the use of pragmas described in
-@ref{Alternative File Naming Schemes,,,gnat_ugn} by mean of a configuration
-pragmas file is not supported when using project files. You must use
-the features described in this paragraph. You can however specify
-other configuration pragmas (@pxref{Specifying Configuration Pragmas}).
+Note that the use by the Ada compiler of pragmas Source_File_Name is not
+supported when using project files. You must use the features described in this
+paragraph. You can however specify other configuration pragmas
+(@pxref{Specifying Configuration Pragmas}).
 
 The following attributes can be defined in package @code{Naming}:
 
@@ -1003,9 +1001,9 @@ names in lower case)
 
 @noindent
 A @b{subsystem} is a coherent part of the complete system to be built. It is
-represented by a set of sources and one single object directory. A system can be
-composed of a single subsystem when it is simple as we have seen in the first
-section,. Complex systems are usually composed of several interdependent
+represented by a set of sources and one single object directory. A system can
+be composed of a single subsystem when it is simple as we have seen in the
+first section. Complex systems are usually composed of several interdependent
 subsystems. A subsystem is dependent on another subsystem if knowledge of the
 other one is required to build it, and in particular if visibility on some of
 the sources of this other subsystem is required. Each subsystem is usually
@@ -1176,18 +1174,17 @@ end D;
 @c ---------------------------------------------
 
 @noindent
-When building an application, it is common to have similar needs in the projects
-corresponding to the subsystems under construction. For instance, they will all
-have the same  compilation switches.
-such as @code{Build} and @code{Logging}, while not wanting to affect
-external subsystems, such as @code{GtkAda} in our example.
+When building an application, it is common to have similar needs in severa of
+the projects corresponding to the subsystems under construction. For instance,
+they will all have the same compilation switches.
 
 As seen before (@pxref{Tools Options in Project Files}), setting compilation
-switches for all sources of a subsystem is simple: it is just a matter of adding
-a @code{Compiler.Default_Switches} attribute to each project files with the same
-value. Of course, that means duplication of data, and both places need to be changed
-in order to recompile the whole application with different switches. It can become
-a real problem if there are many subsystems and thus many project files to edit.
+switches for all sources of a subsystem is simple: it is just a matter of
+adding a @code{Compiler.Default_Switches} attribute to each project files with
+the same value. Of course, that means duplication of data, and both places need
+to be changed in order to recompile the whole application with different
+switches. It can become a real problem if there are many subsystems and thus
+many project files to edit.
 
 There are two main approaches to avoiding this duplication:
 
@@ -1259,7 +1256,7 @@ There are two main approaches to avoiding this duplication:
 
   @noindent
   As for the first example, we could have chosen to set the attributes
-  one by one rather than rename a package. The reason we explicitly
+  one by one rather than to rename a package. The reason we explicitly
   indicate that @code{Shared} has no sources is so that it can be created
   in any directory and we are sure it shares no sources with @code{Build}
   or @code{Logging}, which of course would be invalid.
@@ -2932,6 +2929,7 @@ project MyProj is
        when "NT" =>
          for Switches ("Ada") use ("-gnatP");
        when others =>
+         null;
      end case;
    end Compiler;
 end MyProj;

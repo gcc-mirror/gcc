@@ -39,8 +39,10 @@ with Prj.Tree;         use Prj.Tree;
 with Prj.Util;         use Prj.Util;
 with Prj;              use Prj;
 with Snames;           use Snames;
-with System.Case_Util; use System.Case_Util;
-with System;
+
+--  Use GNAT.Case_Util instead of System.Case_Util so that this unit can
+--  be used by user code with the "is an internal GNAT Unit" warning
+with GNAT.Case_Util;   use GNAT.Case_Util;
 
 package body Prj.Conf is
 
