@@ -1,3 +1,15 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Rewrite_Discriminant): Rewriting must occur only for an
+	expression referring to a discriminal of the type of the aggregate (not
+	a discriminal of some other unrelated type), and the prefix in the
+	generated selected component must come from Lhs, not Obj.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Fix predicate determining
+	when to freeze the parent type.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* s-rannum.adb, a-nudira.adb, types.ads, freeze.adb, sem_aggr.adb,

@@ -93,7 +93,7 @@ package body Exp_Aggr is
 
    function Has_Default_Init_Comps (N : Node_Id) return Boolean;
    --  N is an aggregate (record or array). Checks the presence of default
-   --  initialization (<>) in any component (Ada 2005: AI-287)
+   --  initialization (<>) in any component (Ada 2005: AI-287).
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
@@ -2431,10 +2431,12 @@ package body Exp_Aggr is
            and then Present (Entity (Expr))
            and then Ekind (Entity (Expr)) = E_In_Parameter
            and then Present (Discriminal_Link (Entity (Expr)))
+           and then Scope (Discriminal_Link (Entity (Expr)))
+                      = Base_Type (Etype (N))
          then
             Rewrite (Expr,
               Make_Selected_Component (Loc,
-                Prefix        => New_Occurrence_Of (Obj, Loc),
+                Prefix        => New_Copy_Tree (Lhs),
                 Selector_Name => Make_Identifier (Loc, Chars (Expr))));
          end if;
          return OK;
