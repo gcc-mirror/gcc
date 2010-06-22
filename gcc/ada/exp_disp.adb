@@ -1843,23 +1843,10 @@ package body Exp_Disp is
 
    function Is_Predefined_Dispatching_Alias (Prim : Entity_Id) return Boolean
    is
-      E : Entity_Id;
-
    begin
-      if not Is_Predefined_Dispatching_Operation (Prim)
+      return not Is_Predefined_Dispatching_Operation (Prim)
         and then Present (Alias (Prim))
-      then
-         E := Prim;
-         while Present (Alias (E)) loop
-            E := Alias (E);
-         end loop;
-
-         if Is_Predefined_Dispatching_Operation (E) then
-            return True;
-         end if;
-      end if;
-
-      return False;
+        and then Is_Predefined_Dispatching_Operation (Ultimate_Alias (Prim));
    end Is_Predefined_Dispatching_Alias;
 
    ---------------------------------------
@@ -3703,11 +3690,8 @@ package body Exp_Disp is
                           Alias (Prim);
 
                      else
-                        while Present (Alias (Prim)) loop
-                           Prim := Alias (Prim);
-                        end loop;
-
-                        Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
+                        Expand_Interface_Thunk
+                          (Ultimate_Alias (Prim), Thunk_Id, Thunk_Code);
 
                         if Present (Thunk_Id) then
                            Append_To (Result, Thunk_Code);
@@ -3874,12 +3858,7 @@ package body Exp_Disp is
                                (Interface_Alias (Prim)) = Iface
                   then
                      Prim_Alias := Interface_Alias (Prim);
-
-                     E := Prim;
-                     while Present (Alias (E)) loop
-                        E := Alias (E);
-                     end loop;
-
+                     E   := Ultimate_Alias (Prim);
                      Pos := UI_To_Int (DT_Position (Prim_Alias));
 
                      if Present (Prim_Table (Pos)) then
@@ -4933,9 +4912,7 @@ package body Exp_Disp is
                   Prim := Node (Prim_Elmt);
 
                   if Chars (Prim) = Name_uSize then
-                     while Present (Alias (Prim)) loop
-                        Prim := Alias (Prim);
-                     end loop;
+                     Prim := Ultimate_Alias (Prim);
 
                      if Is_Abstract_Subprogram (Prim) then
                         Append_To (TSD_Aggr_List,
@@ -5396,11 +5373,7 @@ package body Exp_Disp is
                        and then not Present (Prim_Table
                                               (UI_To_Int (DT_Position (Prim))))
                      then
-                        E := Prim;
-                        while Present (Alias (E)) loop
-                           E := Alias (E);
-                        end loop;
-
+                        E := Ultimate_Alias (Prim);
                         pragma Assert (not Is_Abstract_Subprogram (E));
                         Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
                      end if;
@@ -6121,10 +6094,7 @@ package body Exp_Disp is
 
                --  Retrieve the root of the alias chain
 
-               Prim_Als := Prim;
-               while Present (Alias (Prim_Als)) loop
-                  Prim_Als := Alias (Prim_Als);
-               end loop;
+               Prim_Als := Ultimate_Alias (Prim);
 
                --  In the case of an entry wrapper, set the entry index
 
@@ -6656,10 +6626,7 @@ package body Exp_Disp is
    begin
       --  Retrieve the original primitive operation
 
-      Prim_Op := Prim;
-      while Present (Alias (Prim_Op)) loop
-         Prim_Op := Alias (Prim_Op);
-      end loop;
+      Prim_Op := Ultimate_Alias (Prim);
 
       if Ekind (Typ) = E_Record_Type
         and then Present (Corresponding_Concurrent_Type (Typ))
@@ -7179,12 +7146,8 @@ package body Exp_Disp is
                Set_DT_Position (Prim, Default_Prim_Op_Position (Prim));
 
             elsif Is_Predefined_Dispatching_Alias (Prim) then
-               E := Alias (Prim);
-               while Present (Alias (E)) loop
-                  E := Alias (E);
-               end loop;
-
-               Set_DT_Position (Prim, Default_Prim_Op_Position (E));
+               Set_DT_Position (Prim,
+                 Default_Prim_Op_Position (Ultimate_Alias (Prim)));
 
             --  Overriding primitives of ancestor abstract interfaces
 

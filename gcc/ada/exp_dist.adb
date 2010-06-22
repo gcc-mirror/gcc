@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1346,13 +1346,7 @@ package body Exp_Dist is
                --  primitive may have been inherited, go back the alias chain
                --  until the real primitive has been found.
 
-               Current_Primitive_Alias := Current_Primitive;
-               while Present (Alias (Current_Primitive_Alias)) loop
-                  pragma Assert
-                    (Current_Primitive_Alias
-                      /= Alias (Current_Primitive_Alias));
-                  Current_Primitive_Alias := Alias (Current_Primitive_Alias);
-               end loop;
+               Current_Primitive_Alias := Ultimate_Alias (Current_Primitive);
 
                --  Copy the spec from the original declaration for the purpose
                --  of declaring an overriding subprogram: we need to replace

@@ -11128,13 +11128,13 @@ package body Sem_Util is
    --------------------
    -- Ultimate_Alias --
    --------------------
-   --  To do: add occurrences calling this new subprogram
 
    function Ultimate_Alias (Prim : Entity_Id) return Entity_Id is
       E : Entity_Id := Prim;
 
    begin
       while Present (Alias (E)) loop
+         pragma Assert (Alias (E) /= E);
          E := Alias (E);
       end loop;
 

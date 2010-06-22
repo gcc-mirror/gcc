@@ -3956,9 +3956,7 @@ package body Sem_Prag is
             --  entity (if declared in the same unit) is inlined.
 
             if Is_Subprogram (Subp) then
-               while Present (Alias (Inner_Subp)) loop
-                  Inner_Subp := Alias (Inner_Subp);
-               end loop;
+               Inner_Subp := Ultimate_Alias (Inner_Subp);
 
                if In_Same_Source_Unit (Subp, Inner_Subp) then
                   Set_Inline_Flags (Inner_Subp);

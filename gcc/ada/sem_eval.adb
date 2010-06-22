@@ -1674,10 +1674,7 @@ package body Sem_Eval is
         and then Present (Alias (Entity (Name (N))))
         and then Is_Enumeration_Type (Base_Type (Typ))
       then
-         Lit := Alias (Entity (Name (N)));
-         while Present (Alias (Lit)) loop
-            Lit := Alias (Lit);
-         end loop;
+         Lit := Ultimate_Alias (Entity (Name (N)));
 
          if Ekind (Lit) = E_Enumeration_Literal then
             if Base_Type (Etype (Lit)) /= Base_Type (Typ) then
