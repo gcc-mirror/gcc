@@ -9193,6 +9193,15 @@ itself must not include any embedded spaces.
 
 @end ifclear
 
+@item ^--subdirs^/SUBDIRS^=subdir
+Actual object directory of each project file is the subdirectory subdir of the
+object directory specified or defauted in the project file.
+
+@item ^--unchecked-shared-lib-imports^/UNCHECKED_SHARED_LIB_IMPORTS^
+By default, shared library projects are not allowed to import static library
+projects. When this switch is used on the command line, this restriction is
+relaxed.
+
 @item ^-a^/ALL_FILES^
 @cindex @option{^-a^/ALL_FILES^} (@command{gnatmake})
 Consider all files in the make process, even the GNAT internal system
@@ -15328,6 +15337,15 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatclean}
 If @option{--version} was not used, display usage, then exit disregarding
 all other options.
+
+@item ^--subdirs^/SUBDIRS^=subdir
+Actual object directory of each project file is the subdirectory subdir of the
+object directory specified or defauted in the project file.
+
+@item ^--unchecked-shared-lib-imports^/UNCHECKED_SHARED_LIB_IMPORTS^
+By default, shared library projects are not allowed to import static library
+projects. When this switch is used on the command line, this restriction is
+relaxed.
 
 @item ^-c^/COMPILER_FILES_ONLY^
 @cindex @option{^-c^/COMPILER_FILES_ONLY^} (@code{gnatclean})

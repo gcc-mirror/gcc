@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1677,6 +1677,9 @@ package body Clean is
                              new String'
                                (Arg (Subdirs_Option'Length + 1 .. Arg'Last));
 
+                        elsif Arg = Makeutl.Unchecked_Shared_Lib_Imports then
+                           Opt.Unchecked_Shared_Lib_Imports := True;
+
                         else
                            Bad_Argument;
                         end if;
@@ -1957,6 +1960,8 @@ package body Clean is
          New_Line;
 
          Put_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+         Put_Line ("  " & Makeutl.Unchecked_Shared_Lib_Imports);
+         Put_Line ("       Allow shared libraries to import static libraries");
          New_Line;
 
          Put_Line ("  -c       Only delete compiler generated files");
