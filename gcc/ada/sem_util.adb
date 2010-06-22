@@ -398,7 +398,7 @@ package body Sem_Util is
          end loop;
       end if;
 
-      Subt := Make_Temporary (Loc, 'S');
+      Subt := Make_Temporary (Loc, 'S', Related_Node => N);
       Set_Is_Internal (Subt);
 
       Decl :=
