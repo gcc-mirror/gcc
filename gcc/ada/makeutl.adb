@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with ALI;      use ALI;
 with Debug;
 with Fname;
+with Hostparm;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
@@ -378,6 +379,12 @@ package body Makeutl is
    --  Beginning of Executable_Prefix_Path
 
    begin
+      --  For VMS, the path returned is always /gnu/
+
+      if Hostparm.OpenVMS then
+         return "/gnu/";
+      end if;
+
       --  First determine if a path prefix was placed in front of the
       --  executable name.
 

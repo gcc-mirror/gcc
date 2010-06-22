@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,7 +239,7 @@ package body Uintp is
 
    function Hash_Num (F : Int) return Hnum is
    begin
-      return Standard."mod" (F, Hnum'Range_Length);
+      return Types."mod" (F, Hnum'Range_Length);
    end Hash_Num;
 
    ---------------
