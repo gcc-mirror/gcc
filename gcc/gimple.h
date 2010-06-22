@@ -1464,10 +1464,11 @@ gimple_expr_code (const_gimple stmt)
   enum gimple_code code = gimple_code (stmt);
   if (code == GIMPLE_ASSIGN || code == GIMPLE_COND)
     return (enum tree_code) stmt->gsbase.subcode;
-  else if (code == GIMPLE_CALL)
-    return CALL_EXPR;
   else
-    gcc_unreachable ();
+    {
+      gcc_gimple_checking_assert (code == GIMPLE_CALL);
+      return CALL_EXPR;
+    }
 }
 
 
