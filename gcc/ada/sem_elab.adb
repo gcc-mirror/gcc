@@ -599,9 +599,7 @@ package body Sem_Elab is
 
       --  No checks needed for pure or preelaborated compilation units
 
-      if Is_Pure (E_Scope)
-        or else Is_Preelaborated (E_Scope)
-      then
+      if Is_Pure (E_Scope) or else Is_Preelaborated (E_Scope) then
          return;
       end if;
 

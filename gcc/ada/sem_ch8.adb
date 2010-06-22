@@ -407,6 +407,12 @@ package body Sem_Ch8 is
    --  is rewritten as a subprogram body that returns the attribute reference
    --  applied to the formals of the function.
 
+   procedure Set_Entity_Or_Discriminal (N : Node_Id; E : Entity_Id);
+   --  Set Entity, with style check if need be. For a discriminant
+   --  reference, replace by the corresponding discriminal, i.e. the
+   --  parameter of the initialization procedure that corresponds to
+   --  the discriminant.
+
    procedure Check_Frozen_Renaming (N : Node_Id; Subp : Entity_Id);
    --  A renaming_as_body may occur after the entity of the original decla-
    --  ration has been frozen. In that case, the body of the new entity must
@@ -3036,6 +3042,56 @@ package body Sem_Ch8 is
       end if;
    end Check_Frozen_Renaming;
 
+   -------------------------------
+   -- Set_Entity_Or_Discriminal --
+   -------------------------------
+
+   procedure Set_Entity_Or_Discriminal (N : Node_Id; E : Entity_Id) is
+      P : Node_Id;
+
+   begin
+      --  If the entity is not a discriminant, or else expansion is disabled,
+      --  simply set the entity.
+
+      if not In_Spec_Expression
+        or else Ekind (E) /= E_Discriminant
+        or else Inside_A_Generic
+      then
+         Set_Entity_With_Style_Check (N, E);
+
+      --  The replacement of a discriminant by the corresponding discriminal
+      --  is not done for a task discriminant that appears in a default
+      --  expression of an entry parameter. See Expand_Discriminant in exp_ch2
+      --  for details on their handling.
+
+      elsif Is_Concurrent_Type (Scope (E)) then
+
+         P := Parent (N);
+         while Present (P)
+           and then not Nkind_In (P, N_Parameter_Specification,
+                                  N_Component_Declaration)
+         loop
+            P := Parent (P);
+         end loop;
+
+         if Present (P)
+           and then Nkind (P) = N_Parameter_Specification
+         then
+            null;
+
+         else
+            Set_Entity (N, Discriminal (E));
+         end if;
+
+         --  Otherwise, this is a discriminant in a context in which
+         --  it is a reference to the corresponding parameter of the
+         --  init proc for the enclosing type.
+
+      else
+         Set_Entity (N, Discriminal (E));
+      end if;
+   end Set_Entity_Or_Discriminal;
+
    -----------------------------------
    -- Check_In_Previous_With_Clause --
    -----------------------------------
@@ -4498,58 +4554,7 @@ package body Sem_Ch8 is
                Check_Nested_Access (E);
             end if;
 
-            --  Set Entity, with style check if need be. For a discriminant
-            --  reference, replace by the corresponding discriminal, i.e. the
-            --  parameter of the initialization procedure that corresponds to
-            --  the discriminant. If this replacement is being performed, there
-            --  is no style check to perform.
-
-            --  This replacement must not be done if we are currently
-            --  processing a generic spec or body, because the discriminal
-            --  has not been not generated in this case.
-
-            --  The replacement is also skipped if we are in special
-            --  spec-expression mode. Why is this skipped in this case ???
-
-            if not In_Spec_Expression
-              or else Ekind (E) /= E_Discriminant
-              or else Inside_A_Generic
-            then
-               Set_Entity_With_Style_Check (N, E);
-
-            --  The replacement is not done either for a task discriminant that
-            --  appears in a default expression of an entry parameter. See
-            --  Expand_Discriminant in exp_ch2 for details on their handling.
-
-            elsif Is_Concurrent_Type (Scope (E)) then
-               declare
-                  P : Node_Id;
-
-               begin
-                  P := Parent (N);
-                  while Present (P)
-                    and then not Nkind_In (P, N_Parameter_Specification,
-                                              N_Component_Declaration)
-                  loop
-                     P := Parent (P);
-                  end loop;
-
-                  if Present (P)
-                     and then Nkind (P) = N_Parameter_Specification
-                  then
-                     null;
-                  else
-                     Set_Entity (N, Discriminal (E));
-                  end if;
-               end;
-
-            --  Otherwise, this is a discriminant in a context in which
-            --  it is a reference to the corresponding parameter of the
-            --  init proc for the enclosing type.
-
-            else
-               Set_Entity (N, Discriminal (E));
-            end if;
+            Set_Entity_Or_Discriminal (N, E);
          end if;
       end;
    end Find_Direct_Name;
@@ -4945,7 +4950,7 @@ package body Sem_Ch8 is
       if Has_Homonym (Id) then
          Set_Entity (N, Id);
       else
-         Set_Entity_With_Style_Check (N, Id);
+         Set_Entity_Or_Discriminal (N, Id);
          Generate_Reference (Id, N);
       end if;
 

@@ -1,5 +1,20 @@
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_elab.adb: Minor reformatting.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* gnatsym.adb: Put the object files in the table in increasing
+	aphabetical order of base names.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Set_Entity_Or_Discriminal): New procedure used by
+	Find_Direct_Name and Find_Expanded_Name, to replace a discriminant with
+	the corresponding discriminal within a record declaration.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_aggr.adb (Rewrite_Discriminant): Rewriting must occur only for an
 	expression referring to a discriminal of the type of the aggregate (not
 	a discriminal of some other unrelated type), and the prefix in the
