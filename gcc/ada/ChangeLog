@@ -1,5 +1,10 @@
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.adb (Is_Delegate): Put in proper alpha order.
+	* sem_eval.adb: Minor reformatting.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
 	* g-expect-vms.adb, sem_res.adb: Minor reformatting.
 	* exp_aggr.adb: Minor comment changes and reformatting.
 	* sem_eval.adb (Find_Universal_Operator_Type): Put in proper alpha order

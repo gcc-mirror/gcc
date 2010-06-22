@@ -3802,22 +3802,24 @@ package body Sem_Eval is
       Priv_E : Entity_Id;
 
       function Is_Mixed_Mode_Operand (Op : Node_Id) return Boolean;
-      --  Check whether one operand is a mixed-mode operation that requires
-      --  the presence of a fixed-point type. Given that all operands are
-      --  universal and have been constant-folded, retrieve the original
-      --  function call.
+      --  Check whether one operand is a mixed-mode operation that requires the
+      --  presence of a fixed-point type. Given that all operands are universal
+      --  and have been constant-folded, retrieve the original function call.
 
       ---------------------------
       -- Is_Mixed_Mode_Operand --
       ---------------------------
 
       function Is_Mixed_Mode_Operand (Op : Node_Id) return Boolean is
+         Onod : constant Node_Id := Original_Node (Op);
       begin
-         return Nkind (Original_Node (Op)) = N_Function_Call
-           and then Present (Next_Actual (First_Actual (Original_Node (Op))))
-           and then Etype (First_Actual (Original_Node (Op))) /=
-                    Etype (Next_Actual (First_Actual (Original_Node (Op))));
+         return Nkind (Onod) = N_Function_Call
+           and then Present (Next_Actual (First_Actual (Onod)))
+           and then Etype (First_Actual (Onod)) /=
+                    Etype (Next_Actual (First_Actual (Onod)));
       end Is_Mixed_Mode_Operand;
+
+   --  Start of processing for Find_Universal_Operator_Type
 
    begin
       if Nkind (Call) /= N_Function_Call
@@ -3827,20 +3829,18 @@ package body Sem_Eval is
 
       --  There are two cases where the context does not imply the type of the
       --  operands: either the universal expression appears in a type
-      --  type conversion, or we are in the case of a predefined relational
+      --  conversion, or we are in the case of a predefined relational
       --  operator, where the context type is always Boolean.
 
       elsif Nkind (Parent (N)) = N_Type_Conversion
-              or else
-            Is_Relational
-              or else
-            In_Membership
+        or else Is_Relational
+        or else In_Membership
       then
          Pack := Entity (Prefix (Name (Call)));
 
-         --  If the prefix is a package declared elsewhere, iterate over
-         --  its visible entities, otherwise iterate over all declarations
-         --  in the designated scope.
+         --  If the prefix is a package declared elsewhere, iterate over its
+         --  visible entities, otherwise iterate over all declarations in the
+         --  designated scope.
 
          if Ekind (Pack) = E_Package
            and then not In_Open_Scopes (Pack)
