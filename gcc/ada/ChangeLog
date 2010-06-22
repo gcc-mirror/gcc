@@ -1,3 +1,30 @@
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* cstand.adb: Add tree nodes for pragma Pack on string types.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Last_Formal): New synthesized attribute.
+	* exp_util.adb (Find_Prim_Op): Use new attribute to locate the last
+	formal of a primitive.
+	* exp_disp.adb (Is_Predefined_Dispatching_Operation,
+	 Is_Predefined_Dispatching_Alias): Use new attribute to locate the last
+	formal of a primitive.
+	* exp_cg.adb (Is_Predefined_Dispatching_Operation): Use new attribute
+	to obtain the last formal of a primitive.
+
+2010-06-22  Geert Bosch  <bosch@adacore.com>
+
+	* sysdep.c, init.c, adaint.c, cstreams.c: Remove conditional code
+	depending on __EMX__ or MSDOS being defined.
+	* i-cstrea.ads, gnat_rm.texi: Remove mentions of OS/2, DOS and Xenix.
+	* a-excpol-abort.adb: Update comment indicating users of the file.
+	* xref_lib.adb, sfn_scan.adb: Remove mention of OS/2, replace NT by
+	Windows.
+	* env.c: Remove empty conditional for MSDOS.
+	* s-stchop.adb, g-dirope.ads, s-fileio.adb, osint.ads: Remove mention
+	of OS/2 in comment.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* s-rannum.adb: Minor reformatting.

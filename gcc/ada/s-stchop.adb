@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ package body System.Stack_Checking.Operations is
 
    --  Note: This function must be compiled with Polling turned off
 
-   --  Note: on systems like VxWorks and OS/2 with real thread-local storage,
+   --  Note: on systems with real thread-local storage,
    --        Set_Stack_Info should return an access value for such local
    --        storage. In those cases the cache will always be up-to-date.
 

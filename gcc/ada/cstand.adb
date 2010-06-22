@@ -119,6 +119,10 @@ package body CStand is
      (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
    --  Builds a new entity for Standard
 
+   procedure Pack_String_Type (String_Type : Entity_Id);
+   --  Generate the proper tree for the pragma Pack that applies to each
+   --  string type.
+
    procedure Print_Standard;
    --  Print representation of package Standard if switch set
 
@@ -695,6 +699,7 @@ package body CStand is
       Init_Size_Align     (Standard_String);
       Set_Alignment       (Standard_String, Uint_1);
       Set_Has_Pragma_Pack (Standard_String, True);
+      Pack_String_Type    (Standard_String);
 
       --  On targets where a storage unit is larger than a byte (such as AAMP),
       --  pragma Pack has a real effect on the representation of type String,
@@ -738,6 +743,7 @@ package body CStand is
       Set_Component_Size  (Standard_Wide_String, Uint_16);
       Init_Size_Align     (Standard_Wide_String);
       Set_Has_Pragma_Pack (Standard_Wide_String, True);
+      Pack_String_Type    (Standard_Wide_String);
 
       --  Set index type of Wide_String
 
@@ -775,6 +781,7 @@ package body CStand is
       Init_Size_Align      (Standard_Wide_Wide_String);
       Set_Is_Ada_2005_Only (Standard_Wide_Wide_String);
       Set_Has_Pragma_Pack  (Standard_Wide_Wide_String, True);
+      Pack_String_Type     (Standard_Wide_Wide_String);
 
       --  Set index type of Wide_Wide_String
 
@@ -1623,6 +1630,19 @@ package body CStand is
 
       return E;
    end New_Standard_Entity;
+
+   ----------------------
+   -- Pack_String_Type --
+   ----------------------
+
+   procedure Pack_String_Type (String_Type : Entity_Id) is
+   begin
+      Record_Rep_Item (String_Type,
+         Make_Pragma (Stloc,
+            Chars  => Name_Pack,
+            Pragma_Argument_Associations =>
+              New_List (New_Occurrence_Of (String_Type, Stloc))));
+   end Pack_String_Type;
 
    --------------------
    -- Print_Standard --

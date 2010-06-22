@@ -1670,7 +1670,7 @@ package body Exp_Util is
          exit when Chars (Op) = Name
            and then
              (Name /= Name_Op_Eq
-                or else Etype (First_Entity (Op)) = Etype (Last_Entity (Op)));
+                or else Etype (First_Formal (Op)) = Etype (Last_Formal (Op)));
 
          Next_Elmt (Prim);
 

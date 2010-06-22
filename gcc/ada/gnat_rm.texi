@@ -2923,7 +2923,7 @@ Ada exceptions, or used to implement run-time functions such as the
 Pragma @code{Interrupt_State} provides a general mechanism for overriding
 such uses of interrupts.  It subsumes the functionality of pragma
 @code{Unreserve_All_Interrupts}.  Pragma @code{Interrupt_State} is not
-available on OS/2, Windows or VMS.  On all other platforms than VxWorks,
+available on Windows or VMS.  On all other platforms than VxWorks,
 it applies to signals; on VxWorks, it applies to vectored hardware interrupts
 and may be used to mark interrupts required by the board support package
 as reserved.
@@ -13246,8 +13246,8 @@ package Interfaces.C_Streams is
   -- Standard C functions --
   --------------------------
   -- The functions selected below are ones that are
-  -- available in DOS, OS/2, UNIX and Xenix (but not
-  -- necessarily in ANSI C).  These are very thin interfaces
+  -- available in UNIX (but not necessarily in ANSI C).
+  -- These are very thin interfaces
   -- which copy exactly the C headers.  For more
   -- documentation on these functions, see the Microsoft C
   -- "Run-Time Library Reference" (Microsoft Press, 1990,
@@ -15502,7 +15502,7 @@ the underlying kernel.  Otherwise, some target dependent glue code maps
 the services offered by the underlying kernel to the semantics expected
 by GNARL@.
 
-Whatever the underlying OS (VxWorks, UNIX, OS/2, Windows NT, etc.) the
+Whatever the underlying OS (VxWorks, UNIX, Windows, etc.) the
 key point is that each Ada task is mapped on a thread in the underlying
 kernel.  For example, in the case of VxWorks, one Ada task = one VxWorks task.
 

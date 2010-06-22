@@ -6209,6 +6209,36 @@ package body Einfo is
                and then Present (Related_Instance (Id)));
    end Is_Wrapper_Package;
 
+   -----------------
+   -- Last_Formal --
+   -----------------
+
+   function Last_Formal (Id : E) return E is
+      Formal : E;
+
+   begin
+      pragma Assert
+        (Is_Overloadable (Id)
+          or else Ekind_In (Id, E_Entry_Family,
+                                E_Subprogram_Body,
+                                E_Subprogram_Type));
+
+      if Ekind (Id) = E_Enumeration_Literal then
+         return Empty;
+
+      else
+         Formal := First_Formal (Id);
+
+         if Present (Formal) then
+            while Present (Next_Formal (Formal)) loop
+               Formal := Next_Formal (Formal);
+            end loop;
+         end if;
+
+         return Formal;
+      end if;
+   end Last_Formal;
+
    --------------------
    -- Next_Component --
    --------------------

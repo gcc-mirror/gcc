@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2211,10 +2211,10 @@ __gnat_install_handler (void)
 /*********************/
 
 /* This routine is called as each process thread is created, for possible
-   initialization of the FP processor.  This version is used under INTERIX,
-   WIN32 and could be used under OS/2.  */
+   initialization of the FP processor.  This version is used under INTERIX
+   and WIN32.  */
 
-#if defined (_WIN32) || defined (__INTERIX) || defined (__EMX__) \
+#if defined (_WIN32) || defined (__INTERIX) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
   || defined (__OpenBSD__)
 
