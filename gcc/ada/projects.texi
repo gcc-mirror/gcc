@@ -144,8 +144,9 @@ detailed later in this documentation. They are summarized here as a reference.
 
 @item @b{Project variables}:
   In addition to attributes, a project can use variables to store intermediate
-  values and avoid duplication in complex expressions.   It can be initialized with a value coming from the environment
-  Z frequent use of variables is to define scenarios.
+  values and avoid duplication in complex expressions. It can be initialized
+  with a value coming from the environment.
+  A frequent use of variables is to define scenarios.
   @xref{External Values}, @xref{Scenarios in Projects}, and @xref{Variables}.
 
 @item @b{Source files} and @b{source directories}:
@@ -199,8 +200,8 @@ the directory @file{obj/}.
 @end smallexample
 
 @noindent
-Our project is to be called @emph{Build}. By convention, the name of the
-file is the name of the project (lower-cased) with the
+Our project is to be called @emph{Build}. The name of the
+file is the name of the project (case-insensitive) with the
 @file{.gpr} extension, therefore the project file name is @file{build.gpr}. This
 is not mandatory, but a warning is issued when this convention is not followed.
 
@@ -245,9 +246,9 @@ There are several ways of defining source directories:
 
 @itemize @bullet
 @item When the attribute @b{Source_Dirs} is not used, a project contains a
-  single source directory which is the one where the project file itself resides.
-  In our example, if  @file{build.gpr} is placed in the @file{common} directory,
-  the project has the needed implicit source directory.
+  single source directory which is the one where the project file itself
+  resides. In our example, if @file{build.gpr} is placed in the @file{common}
+  directory, the project has the needed implicit source directory.
 
 @item The attribute @b{Source_Dirs} can be set to a list of path names, one
   for each of the source directories. Such paths can either be absolute
@@ -257,25 +258,25 @@ There are several ways of defining source directories:
   Each of the source directories must exist and be readable.
 
   @cindex portability
-  The syntax for directories is platform specific. For portability, however, the
-  project manager will always properly translate UNIX-like path names to the
-  native format of specific platform. For instance, when the same project file
-  is to be used both on Unix and Windows, "/" should be used as the directory
-  separator rather than "\".
+  The syntax for directories is platform specific. For portability, however,
+  the project manager will always properly translate UNIX-like path names to
+  the native format of specific platform. For instance, when the same project
+  file is to be used both on Unix and Windows, "/" should be used as the
+  directory separator rather than "\".
 
-@item The attribute @b{Source_Dirs} can automatically include subdirectories using
-  a special syntax inspired by some UNIX shells. If any of the path in the
-  list ends with @emph{"/**"}, then that path and all its subdirectories
-  (recursively) are included in the list of source directories. For
-  instance, @file{./**} represent the complete directory tree rooted at ".".
+@item The attribute @b{Source_Dirs} can automatically include subdirectories
+  using a special syntax inspired by some UNIX shells. If any of the path in
+  the list ends with @emph{"/**"}, then that path and all its subdirectories
+  (recursively) are included in the list of source directories. For instance,
+  @file{./**} represent the complete directory tree rooted at ".".
   @cindex Source directories, recursive
 
   @cindex @code{Excluded_Source_Dirs}
-  When using that construct, it can sometimes be convenient to also use
-  the attribute @b{Excluded_Source_Dirs}, which is also a list of paths.
-  Each entry specifies a directory whose immediate content, not including
-  subdirs, is to be excluded. It is also possible to exclude a complete directory
-  subtree using the "**" notation.
+  When using that construct, it can sometimes be convenient to also use the
+  attribute @b{Excluded_Source_Dirs}, which is also a list of paths. Each entry
+  specifies a directory whose immediate content, not including subdirs, is to
+  be excluded. It is also possible to exclude a complete directory subtree
+  using the "/**" notation.
 
 @end itemize
 
@@ -305,24 +306,24 @@ locating the specified source files in the specified source directories.
   specified languages in all the source directories.
 
   Since the project manager was initially developed for Ada environments, the
-  default language is Ada and the above project file is complete: it defines
-  without ambiguity the sources composing the project: that is to say, all
-  the sources in subdirectory "common" for the default language (Ada) using
+  default language is usually Ada and the above project file is complete: it
+  defines without ambiguity the sources composing the project: that is to say,
+  all the sources in subdirectory "common" for the default language (Ada) using
   the default naming convention.
 
   @cindex @code{Languages}
   However, when compiling a multi-language application, or a pure C
-  application, the project
-  manager must be told which languages are of interest, which is done by setting
-  the @b{Languages} attribute to a list of strings, each of which is the
-  name of a language. Tools like @command{gnatmake} only know about Ada,
-  while other tools like @command{gprbuild} know about many more
-  languages such as C, C++, Fortran, assembly  and others can be added dynamically.
+  application, the project manager must be told which languages are of
+  interest, which is done by setting the @b{Languages} attribute to a list of
+  strings, each of which is the name of a language. Tools like
+  @command{gnatmake} only know about Ada, while other tools like
+  @command{gprbuild} know about many more languages such as C, C++, Fortran,
+  assembly and others can be added dynamically.
 
   @cindex Naming scheme
   Even when using only Ada, the default naming might not be suitable. Indeed,
   how does the project manager recognizes an "Ada file" from any other
-  file ? Project files can describe the naming scheme used for source files,
+  file? Project files can describe the naming scheme used for source files,
   and override the default (@pxref{Naming Schemes}). The default is the
   standard GNAT extension (@file{.adb} for bodies and @file{.ads} for
   specs), which is what is used in our example, explaining why no naming scheme
@@ -355,8 +356,8 @@ locating the specified source files in the specified source directories.
   external tools.
 
   A warning is issued if both attributes @code{Source_Files} and
-  @code{Source_List_File} are given explicit values. In this case, the attribute
-  @code{Source_Files} prevails.
+  @code{Source_List_File} are given explicit values. In this case, the
+  attribute @code{Source_Files} prevails.
 
 @item @cindex @code{Excluded_Source_Files}
   @cindex @code{Locally_Removed_Files}
@@ -366,9 +367,9 @@ locating the specified source files in the specified source directories.
   This can be done thanks to the attribute @b{Excluded_Source_Files}
   (or its synonym @b{Locally_Removed_Files}).
   Its value is the list of file names that should not be taken into account.
-  This attribute is often used when extending a project, @xref{Project Extension}.
-  A similar attribute @b{Excluded_Source_List_File} plays the same role
-  but takes the name of file containing file names similarly to
+  This attribute is often used when extending a project, @xref{Project
+  Extension}. A similar attribute @b{Excluded_Source_List_File} plays the same
+  role but takes the name of file containing file names similarly to
   @code{Source_List_File}.
 
 @end itemize
@@ -385,12 +386,15 @@ attached to it unless explicitly declared as mentionend above.
 
 If the order of the source directories is known statically, that is if
 @code{"/**"} is not used in the string list @code{Source_Dirs}, then there may
-be several files with the same source file name sitting in different directories
-of the project. In this case, only the file in the first directory is considered
-as a source of the project and the others are hidden. If the order of the source
-directories is not known statically, it is an error to have several files with
-the same source file name, since there would be an ambiguity as to which one
-should be used.
+be several files with the same source file name sitting in different
+directories of the project. In this case, only the file in the first directory
+is considered as a source of the project and the others are hidden. If
+@code{"/**"} is not used in the string list @code{Source_Dirs}, it is an error
+to have several files with the same source file name in the same directory
+@code{"/**"} subtree, since there would be an ambiguity as to which one should
+be used. However, two files with the same source file name may in two single
+directories or directory subtrees. In this case, the one in the first directory
+or directory subtree is a source of the project.
 
 @c ---------------------------------------------
 @node Object and Exec Directory
@@ -399,13 +403,13 @@ should be used.
 
 @noindent
 The next step when writing a project is to indicate where the compiler should
-put the object files. In fact, the compiler and other tools might create several
-different kind of files (for GNAT, there is the @code{.o} object file and the
-@code{.ali} file for instance). One of the important concepts in projects is
-that most tools may consider source directories as read-only and do not attempt
-to create new or temporary files there. Instead, all  files are created
-in the object directory. It is of course not true for project-aware IDEs,
-whose purpose it is to create the source files.
+put the object files. In fact, the compiler and other tools might create
+several different kind of files (for GNAT, there is the object file and the ALI
+file for instance). One of the important concepts in projects is that most
+tools may consider source directories as read-only and do not attempt to create
+new or temporary files there. Instead, all files are created in the object
+directory. It is of course not true for project-aware IDEs, whose purpose it is
+to create the source files.
 
 @cindex @code{Object_Dir}
 The object directory is specified through the @b{Object_Dir} attribute.
@@ -416,7 +420,7 @@ some tools have a switch to create the directory if needed (See
 the switch @code{-p} for @command{gnatmake} and @command{gprbuild}).
 
 If the attribute @code{Object_Dir} is not specified, it defaults to
-the directory that contains the project file.
+the project directory, that is the directory containing the project file.
 
 For our example, we can specify the object dir in this way:
 
@@ -428,13 +432,13 @@ For our example, we can specify the object dir in this way:
 @end smallexample
 
 @noindent
-As mentioned earlier, there is a single object directory per project.
-As a result, if you have an existing system where the object files are spread
-in several directories, you can either move all of them into the same directory
-if you want to build it with a single project file, or
-study the section on subsystems
-(@pxref{Organizing Projects into Subsystems}) to see how each separate object
-directory can be associated with one of the subsystem constituting the application.
+As mentioned earlier, there is a single object directory per project. As a
+result, if you have an existing system where the object files are spread in
+several directories, you can either move all of them into the same directory if
+you want to build it with a single project file, or study the section on
+subsystems (@pxref{Organizing Projects into Subsystems}) to see how each
+separate object directory can be associated with one of the subsystem
+constituting the application.
 
 When the @command{linker} is called, it usually creates an executable. By
 default, this executable is placed in the object directory of the project. It
@@ -443,10 +447,10 @@ might be convenient to store it in its own directory.
 @cindex @code{Exec_Dir}
 This can be done through the @code{Exec_Dir} attribute, which, like
 @emph{Object_Dir} contains a single absolute or relative path and must point to
-an existing and writable directory, unless you ask the tool to create it on your
-behalf. When not specified, It defaults to the object directory and therefore to
-the project file's directory if neither @emph{Object_Dir} nor @emph{Exec_Dir}
-was specified.
+an existing and writable directory, unless you ask the tool to create it on
+your behalf. When not specified, It defaults to the object directory and
+therefore to the project file's directory if neither @emph{Object_Dir} nor
+@emph{Exec_Dir} was specified.
 
 In the case of the example, let's place the executable in the root
 of the hierarchy, ie the same directory as @file{build.gpr}. Hence
@@ -510,22 +514,17 @@ automatically builds all the executables corresponding to the files
 listed in the @emph{Main} attribute. It is possible to specify one
 or more executables on the command line to build a subset of them.
 
-@cindex @code{Main_Language}
-The attribute @b{Main_Language} contains a string that specifies the
-language of the main program.
-@c ??? What is this for, we already have the naming scheme
-
 @c ---------------------------------------------
 @node Tools Options in Project Files
 @subsection Tools Options in Project Files
 @c ---------------------------------------------
 
 @noindent
-We now have a project file that fully describes our environment, and can be used
-to build the application with a simple @command{gnatmake} command as seen in the
-previous section. In fact, the empty project we showed immediately at the
-beginning (with no attribute at all) could already fullfill that need if it was
-put in the @file{common} directory.
+We now have a project file that fully describes our environment, and can be
+used to build the application with a simple @command{gnatmake} command as seen
+in the previous section. In fact, the empty project we showed immediately at
+the beginning (with no attribute at all) could already fullfill that need if it
+was put in the @file{common} directory.
 
 Of course, we always want more control. This section will show you how to
 specify the compilation switches that the various tools involved in the
@@ -533,16 +532,16 @@ building of the executable should use.
 
 @cindex command line length
 Since source names and locations are described into the project file, it is not
-necessary to use switches on the command line for this purpose (switches such as
--I for gcc). This removes a major source of command line length overflow.
+necessary to use switches on the command line for this purpose (switches such
+as -I for gcc). This removes a major source of command line length overflow.
 Clearly, the builders will have to communicate this information one way or
 another to the underlying compilers and tools they call but they usually use
 response files for this and thus should not be subject to command line
 overflows.
 
-Several tools are participating to the creation of an executable: the
-compiler produces object files from the source files; the binder (in the Ada
-case) creates an source file that takes care, among other things, of elaboration
+Several tools are participating to the creation of an executable: the compiler
+produces object files from the source files; the binder (in the Ada case)
+creates an source file that takes care, among other things, of elaboration
 issues and global variables initialization; and the linker gathers everything
 into a single executable that users can execute. All these tools are known by
 the project manager and will be called with user defined switches from the
@@ -553,13 +552,13 @@ express which switches to be used for any of the tools involved in the build.
 A project file is subdivided into zero or more @b{packages}, each of which
 contains the attributes specific to one tool (or one set of tools). Project
 files use an Ada-like syntax for packages. Package names permitted in project
-files are restricted to a predefined set (@pxref{Packages}), and the contents of
-packages are limited to a small set of constructs and attributes
+files are restricted to a predefined set (@pxref{Packages}), and the contents
+of packages are limited to a small set of constructs and attributes
 (@pxref{Attributes}).
 
-Our example project file can be extended with the following empty
-packages. At this stage, they could all be omitted since they are empty,
-but they show which packages would be involved in the build process.
+Our example project file can be extended with the following empty packages. At
+this stage, they could all be omitted since they are empty, but they show which
+packages would be involved in the build process.
 
 @smallexample
    @b{project} Build @b{is}
@@ -631,8 +630,8 @@ Several attributes can be used to specify the switches:
   @end smallexample
 
   @noindent
-  @code{Switches} can also be given a language name as index instead of a file name
-  in which case it has the same semantics as @emph{Default_Switches}.
+  @code{Switches} can also be given a language name as index instead of a file
+  name in which case it has the same semantics as @emph{Default_Switches}.
 
 @item @b{Local_Configuration_Pragams}:
   @cindex @code{Local_Configuration_Pragmas}
@@ -646,8 +645,8 @@ Several attributes can be used to specify the switches:
 The switches for the other tools are defined in a similar manner through the
 @b{Default_Switches} and @b{Switches} attributes, respectively in the
 @emph{Builder} package (for @command{gnatmake} and @command{gprbuild}),
-the @emph{Binder} package (for @command{gnatbind} and @command{gprbind})
-and the @emph{Linker} package (for @command{gnatlink} and @command{gprlink}).
+the @emph{Binder} package (binding Ada executables) and the @emph{Linker}
+package (for inking executables).
 
 @c ---------------------------------------------
 @node Compiling with Project Files
@@ -744,7 +743,7 @@ on Windows), we could configure our project file to build "proc1"
 Attribute @b{Executable_Suffix}, when specified, may change the suffix
 of the executable files, when no attribute @code{Executable} applies:
 its value replace the platform-specific executable suffix.
-By default, the latter is empty on UNIX and ".exe" on Windows.
+The default executable suffix is empty on UNIX and ".exe" on Windows.
 
 It is also possible to change the name of the produced executable by using the
 command line switch @option{-o}. when several mains are defined in the project,
@@ -771,7 +770,7 @@ project C_Main is
       C_Switches := ("-pedantic");
       for Default_Switches ("C")   use C_Switches;
       for Default_Switches ("Ada") use ("-gnaty");
-      for Switches ("main.c")    use C_Switches & ("-g");
+      for Switches ("main.c") use C_Switches & ("-g");
    end Compiler;
 end C_Main;
 @end smallexample
@@ -802,6 +801,7 @@ replaced by a reference to the @code{Default_Switches} attribute:
 Note the tick (@emph{'}) used to refer to attributes defined in a package.
 
 Here is the output of the GPRbuild command using this project:
+@c This is NOT the output of gprbuild????
 
 @smallexample
 $gprbuild -Pc_main
@@ -817,7 +817,7 @@ gcc main.o -o main.exe
 @noindent
 The default switches for Ada sources,
 the default switches for C sources (in the compilation of @file{lib.c}),
-and the specific switches for @file{c_main.c} have all been taken into
+and the specific switches for @file{main.c} have all been taken into
 account.
 
 @c ---------------------------------------------
@@ -829,8 +829,8 @@ account.
 Sometimes an Ada software system is ported from one compilation environment to
 another (say GNAT), and the file are not named using the default GNAT
 conventions. Instead of changing all the file names, which for a variety of
-reasons might not be possible, you can define the relevant file naming scheme in
-the @b{Naming} package of your project file.
+reasons might not be possible, you can define the relevant file naming scheme
+in the @b{Naming} package of your project file.
 
 The naming scheme has two distinct goals for the project manager: it
 allows finding of source files when searching in the source
@@ -860,9 +860,9 @@ The following attributes can be defined in package @code{Naming}:
   @cindex @code{Dot_Replacement}
   This attribute specifies the string that should replace the "." in unit
   names. Its default value is @code{"-"} so that a unit
-  @code{Parent.Child}is expected to be found in the file @file{parent-child.adb}.
-  The replacement string must satisfy the following requirements to
-  avoid ambiguities in the naming scheme:
+  @code{Parent.Child} is expected to be found in the file
+  @file{parent-child.adb}. The replacement string must satisfy the following
+  requirements to avoid ambiguities in the naming scheme:
 
   @itemize -
   @item It must not be empty
@@ -978,7 +978,7 @@ For example, the following package models the Apex file naming rules:
 @end ifclear
 
 @ifset vms
-For example, the following package models the HP Ada file naming rules:
+For example, the following package models the DEC Ada file naming rules:
 
 @smallexample @c projectfile
 @group
@@ -1053,21 +1053,18 @@ of our project:
 When such a project is compiled, @command{gnatmake} will automatically
 check the other projects and recompile their sources when needed. It will also
 recompile the sources from @code{Build} when needed, and finally create the
-executable. In some cases,
-the implementation units needed to recompile a project are not available,
-or come from some third-party and
-you do not want to recompile it yourself. In this case, the
-attribute @b{Externally_Built} to "true" can be set, indicating to the builder
- that this project can be assumed to be up-to-date, and should not be considered
-for recompilation. In Ada, if the sources of this externally built project
-were compiled with another version of the compiler or with incompatible options,
-the binder will issue an error.
+executable. In some cases, the implementation units needed to recompile a
+project are not available, or come from some third-party and you do not want to
+recompile it yourself. In this case, the attribute @b{Externally_Built} to
+"true" can be set, indicating to the builder that this project can be assumed
+to be up-to-date, and should not be considered for recompilation. In Ada, if
+the sources of this externally built project were compiled with another version
+of the compiler or with incompatible options, the binder will issue an error.
 
 The project's @code{with} clause has several effects. It provides source
-visibility between projects during the compilation process.
-It also guarantees that the necessary object files from @code{Logging}
-and @code{GtkAda} are available when
-linking @code{Build}.
+visibility between projects during the compilation process. It also guarantees
+that the necessary object files from @code{Logging} and @code{GtkAda} are
+available when linking @code{Build}.
 
 As can be seen in this example, the syntax for importing projects is similar
 to the syntax for importing compilation units in Ada. However, project files
@@ -1095,14 +1092,13 @@ the search stops:
   @cindex @code{GPR_PROJECT_PATH}
   Then it is searched relative to all the directories specified in the
   ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
-  @b{ADA_PROJECT_PATH} (in that order) if they exist.. The former is
+  @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
   recommended, the latter is kept for backward compatibility.
 @item Finally, it is searched relative to the default project directories.
-  Such directories are defined by the compiler and are relative to the
-  installation directory of that compiler (in the @file{lib/gnat/} and
-  @file{lib/gpr/} subdirectories). In our example, @file{gtkada.gpr}
-  is found in the predefined directory if it was installed at the same root
-  as GNAT.
+  Such directories depends on the tool used. For @command{gnatmake}, there is
+  one default project directory: @file{<prefix>/lib/gnat/}. In our example,
+  @file{gtkada.gpr} is found in the predefined directory if it was installed at
+  the same root as GNAT.
 
 @end itemize
 
@@ -1131,7 +1127,7 @@ when they do, they need to specify precisely which project owns which sources
 using attribute @code{Source_Files} or equivalent. By contrast, 2 projects
 can each own a source with the same base file name as long as they live in
 different directories. The latter is not true for Ada Sources because of the
-correlation betwen source files and Ada units: it is not possible to link an
+correlation betwen source files and Ada units.
 
 @c ---------------------------------------------
 @node Cyclic Project Dependencies

@@ -43,6 +43,7 @@ with Opt;      use Opt;
 with Nlists;   use Nlists;
 with Output;   use Output;
 with Scans;    use Scans;
+with Sem_Aux;  use Sem_Aux;
 with Sinput;   use Sinput;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
@@ -2824,7 +2825,7 @@ package body Errout is
       --  "type derived from" message more than once in the case where we climb
       --  up multiple levels.
 
-      loop
+      Find : loop
          Old_Ent := Ent;
 
          --  Implicit access type, use directly designated type In Ada 2005,
@@ -2872,7 +2873,7 @@ package body Errout is
                   Set_Msg_Str ("access to procedure ");
                end if;
 
-               exit;
+               exit Find;
 
             --  Type is access to object, named or anonymous
 
@@ -2910,51 +2911,54 @@ package body Errout is
          --  itself an internal name. This avoids the obvious loop (subtype ->
          --  basetype -> subtype) which would otherwise occur!)
 
-         elsif Present (Freeze_Node (Ent))
-           and then Present (First_Subtype_Link (Freeze_Node (Ent)))
-           and then
-             not Is_Internal_Name
-                   (Chars (First_Subtype_Link (Freeze_Node (Ent))))
-         then
-            Ent := First_Subtype_Link (Freeze_Node (Ent));
-
-         --  Otherwise use root type
-
          else
-            if not Derived then
-               Buffer_Remove ("type ");
+            declare
+               FST : constant Entity_Id := First_Subtype (Ent);
 
-               --  Test for "subtype of type derived from" which seems
-               --  excessive and is replaced by simply "type derived from"
+            begin
+               if not Is_Internal_Name (Chars (FST)) then
+                  Ent := FST;
+                  exit Find;
 
-               Buffer_Remove ("subtype of");
+                  --  Otherwise use root type
 
-               --  Avoid duplication "type derived from type derived from"
+               else
+                  if not Derived then
+                     Buffer_Remove ("type ");
 
-               if not Buffer_Ends_With ("type derived from ") then
-                  Set_Msg_Str ("type derived from ");
+                     --  Test for "subtype of type derived from" which seems
+                     --  excessive and is replaced by "type derived from".
+
+                     Buffer_Remove ("subtype of");
+
+                     --  Avoid duplicated "type derived from type derived from"
+
+                     if not Buffer_Ends_With ("type derived from ") then
+                        Set_Msg_Str ("type derived from ");
+                     end if;
+
+                     Derived := True;
+                  end if;
                end if;
-
-               Derived := True;
-            end if;
+            end;
 
             Ent := Etype (Ent);
          end if;
 
          --  If we are stuck in a loop, get out and settle for the internal
-         --  name after all. In this case we set to kill the message if it
-         --  is not the first error message (we really try hard not to show
-         --  the dirty laundry of the implementation to the poor user!)
+         --  name after all. In this case we set to kill the message if it is
+         --  not the first error message (we really try hard not to show the
+         --  dirty laundry of the implementation to the poor user!)
 
          if Ent = Old_Ent then
             Kill_Message := True;
-            exit;
+            exit Find;
          end if;
 
          --  Get out if we finally found a non-internal name to use
 
-         exit when not Is_Internal_Name (Chars (Ent));
-      end loop;
+         exit Find when not Is_Internal_Name (Chars (Ent));
+      end loop Find;
 
       if Mchar = '"' then
          Set_Msg_Char ('"');

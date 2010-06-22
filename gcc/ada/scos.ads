@@ -272,6 +272,10 @@ package SCOs is
    --    enclosing statement. The SCO line for a nested decision always occurs
    --    after the line for the enclosing decision.
 
+   --    Note that membership tests are considered to be a single simple
+   --    condition, and that is true even if the Ada 2005 set membership
+   --    form is used, e.g. A in (2,7,11.15).
+
    --  Case Expressions
 
    --    For case statements, we rely on statement coverage to make sure that

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007,2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -528,7 +528,7 @@ package body System.Random_Numbers is
    function Extract_Value (S : String; Index : Integer) return State_Val is
    begin
       return State_Val'Value (S (S'First + Index * 11 ..
-                                 S'First + Index * 11 + 11));
+                                 S'First + Index * 11 + 10));
    end Extract_Value;
 
 end System.Random_Numbers;

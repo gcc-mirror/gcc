@@ -1444,7 +1444,7 @@ package body Sem_Res is
 
                null;
 
-               --  Operator may be defined in an extension of system
+            --  Operator may be defined in an extension of System
 
             elsif Present (System_Aux_Id)
               and then Scope (Opnd_Type) = System_Aux_Id
@@ -1452,13 +1452,10 @@ package body Sem_Res is
                null;
 
             else
-               --  Note: go to First_Subtype here to ensure the message has the
-               --  proper source type name (Typ may be an anonymous base type).
-
                --  Could we use Wrong_Type here??? (this would require setting
                --  Etype (N) to the actual type found where Typ was expected).
 
-               Error_Msg_NE ("expect type&", N, First_Subtype (Typ));
+               Error_Msg_NE ("expect }", N, Typ);
             end if;
          end if;
       end if;
