@@ -1,3 +1,11 @@
+2010-06-22  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (is_nested_in_subprogram): New function.
+	(should_move_die_to_comdat): Use it.
+	(copy_ancestor_tree): Don't mark DIEs here.
+	(copy_decls_walk): Start walk from root of newly-added tree;
+	mark DIEs here instead.
+
 2010-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (unit): Also check sseishft1.

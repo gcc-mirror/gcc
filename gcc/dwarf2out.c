@@ -9630,6 +9630,18 @@ is_declaration_die (dw_die_ref die)
   return 0;
 }
 
+/* Return non-zero if this DIE is nested inside a subprogram.  */
+
+static int
+is_nested_in_subprogram (dw_die_ref die)
+{
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+
+  if (decl == NULL)
+    decl = die;
+  return local_scope_p (decl);
+}
+
 /* Return non-zero if this is a type DIE that should be moved to a
    COMDAT .debug_types section.  */
 
@@ -9642,8 +9654,11 @@ should_move_die_to_comdat (dw_die_ref die)
     case DW_TAG_structure_type:
     case DW_TAG_enumeration_type:
     case DW_TAG_union_type:
-      /* Don't move declarations or inlined instances.  */
-      if (is_declaration_die (die) || get_AT (die, DW_AT_abstract_origin))
+      /* Don't move declarations, inlined instances, or types nested in a
+	 subprogram.  */
+      if (is_declaration_die (die)
+          || get_AT (die, DW_AT_abstract_origin)
+          || is_nested_in_subprogram (die))
         return 0;
       return 1;
     case DW_TAG_array_type:
@@ -10055,8 +10070,6 @@ copy_ancestor_tree (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
 
   if (decl_table != NULL)
     {
-      /* Make sure the copy is marked as part of the type unit.  */
-      copy->die_mark = 1;
       /* Record the pointer to the copy.  */
       entry->copy = copy;
     }
@@ -10130,7 +10143,18 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
                  installed in a previously-added context, it won't
                  get visited otherwise.  */
               if (parent != unit)
-                copy_decls_walk (unit, parent, decl_table);
+		{
+		  /* Find the highest point of the newly-added tree,
+		     mark each node along the way, and walk from there.  */
+		  parent->die_mark = 1;
+		  while (parent->die_parent
+		  	 && parent->die_parent->die_mark == 0)
+		    {
+		      parent = parent->die_parent;
+		      parent->die_mark = 1;
+		    }
+		  copy_decls_walk (unit, parent, decl_table);
+		}
             }
         }
     }
