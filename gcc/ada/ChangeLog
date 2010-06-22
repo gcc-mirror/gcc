@@ -1,3 +1,8 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Update comment.
+	* sem_res.adb: Minor code reorganization (use Ekind_In).
+
 2010-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Add_Implicit_Operator): If the context of the expanded
