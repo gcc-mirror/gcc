@@ -1,5 +1,7 @@
 2010-06-21  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (comp_except_specs): Fix ce_derived with noexcept.
+
 	* semantics.c (check_trait_type): Check COMPLETE_TYPE_P for array
 	element type.
 
