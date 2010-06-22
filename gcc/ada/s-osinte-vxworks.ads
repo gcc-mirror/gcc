@@ -155,7 +155,7 @@ package System.OS_Interface is
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
 
-   subtype sigset_t is System.VxWorks.Ext.sigset_t;
+   type sigset_t is private;
 
    type struct_sigaction is record
       sa_handler : System.Address;
@@ -497,4 +497,5 @@ private
    type clockid_t is new int;
    CLOCK_REALTIME : constant clockid_t := 0;
 
+   type sigset_t is new System.VxWorks.Ext.sigset_t;
 end System.OS_Interface;

@@ -1,5 +1,21 @@
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_attr.adb, lib-writ.ads, bindgen.adb: Minor reformatting.
+	* einfo.adb (Related_Expression, Set_Related_Expression): Add
+	assertions.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Minor code
+	reorganization to properly check if the operation has been inherited as
+	an abstract operation.
+
+2010-06-22  Ed Falis  <falis@adacore.com>
+
+	* s-osinte-vxworks.ads: Complete previous change.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_res.adb: Add comment.
 	* projects.texi, gnat_ugn.texi: Remove macro.
 

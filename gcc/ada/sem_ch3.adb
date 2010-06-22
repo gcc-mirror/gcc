@@ -1567,15 +1567,15 @@ package body Sem_Ch3 is
                              and then Alias (Prim) = Iface_Prim;
                            Next_Elmt (El);
                         end loop;
+
+                        --  If the operation was not explicitly overridden, it
+                        --  should have been inherited as an abstract operation
+                        --  so Prim can not be Empty at this stage.
+
+                        if No (El) then
+                           raise Program_Error;
+                        end if;
                      end;
-                  end if;
-
-                  --  If the operation was not explicitly overridden, it should
-                  --  have been inherited as an abstract operation so Prim can
-                  --  not be Empty at this stage.
-
-                  if No (Prim) then
-                     raise Program_Error;
                   end if;
 
                   Derive_Subprogram
