@@ -1,3 +1,32 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_Conditional_Expression): Defend against
+	malformed tree.
+	* sprint.adb (Sprint_Node_Actual, case N_Conditional_Expression): Ditto.
+
+2010-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-intman-vxworks.ads: Code clean up.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Resolve_Slice): When the prefix is an explicit
+	dereference, construct actual subtype of designated object to generate
+	proper bounds checks.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* ali-util.adb, ali-util.ads, gnatbind.adb (Read_ALI): Rename to
+	Read_Withed_ALIs, which is more descriptive.
+
+2010-06-22  Pascal Obry  <obry@adacore.com>
+
+	* g-sothco.ads: Minor reformatting.
+	* g-socthi-mingw.adb: Remove part of work on the C_Recvmsg and
+	C_Sendmsg implementation.
+	(C_Sendmsg): Do not use lock (not needed).
+	(C_Recvmsg): Likewise and also do not wait for incoming data.
+
 2010-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* uintp.adb: Fix scope error in operator call.

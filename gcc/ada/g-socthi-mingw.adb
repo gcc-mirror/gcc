@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                    Copyright (C) 2001-2010, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,8 +42,6 @@ with Ada.Unchecked_Conversion;
 with Interfaces.C.Strings;    use Interfaces.C.Strings;
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;
-
-with GNAT.Task_Lock;
 
 package body GNAT.Sockets.Thin is
 
@@ -278,10 +276,8 @@ package body GNAT.Sockets.Thin is
    is
       use type C.size_t;
 
-      Res    : C.int;
-      Count  : C.int := 0;
-      Locked : Boolean := False;
-      --  Set to false when the lock is activated
+      Res   : C.int;
+      Count : C.int := 0;
 
       MH : Msghdr;
       for MH'Address use Msg;
@@ -302,33 +298,8 @@ package body GNAT.Sockets.Thin is
    begin
       --  Windows does not provide an implementation of recvmsg(). The spec for
       --  WSARecvMsg() is incompatible with the data types we define, and is
-      --  not available in all versions of Windows. So, we use C_Recv instead.
-
-      --  First, wait for some data to be available if socket is blocking
-
-      declare
-         Selector     : Selector_Type;
-         R_Socket_Set : Socket_Set_Type;
-         W_Socket_Set : Socket_Set_Type;
-         Status       : Selector_Status;
-         Req          : Request_Type (Name => Non_Blocking_IO);
-      begin
-         Control_Socket (Socket_Type (S), Req);
-
-         if not Req.Enabled then
-            --  We are in a blocking IO mode
-            Create_Selector (Selector);
-
-            Set (R_Socket_Set, Socket_Type (S));
-
-            Check_Selector (Selector, R_Socket_Set, W_Socket_Set, Status);
-
-            Close_Selector (Selector);
-         end if;
-      end;
-
-      GNAT.Task_Lock.Lock;
-      Locked := True;
+      --  available starting with Windows Vista and Server 2008 only. So,
+      --  we use C_Recv instead.
 
       --  Check how much data are available
 
@@ -354,7 +325,6 @@ package body GNAT.Sockets.Thin is
              Flags);
 
          if Res < 0 then
-            Task_Lock.Unlock;
             return System.CRTL.ssize_t (Res);
 
          elsif Res = 0 then
@@ -370,25 +340,15 @@ package body GNAT.Sockets.Thin is
               To_Access (Current_Iovec.Base.all'Address
                 + Storage_Offset (Res));
 
-            --  If we have read all the data that was initially available,
-            --  do not attempt to receive more, since this might block, or
-            --  merge data from successive datagrams in case of a datagram-
-            --  oriented socket.
+            --  If all the data that was initially available read, do not
+            --  attempt to receive more, since this might block, or merge data
+            --  from successive datagrams for a datagram-oriented socket.
 
             exit when Natural (Count) >= Req.Size;
          end if;
       end loop;
 
-      Task_Lock.Unlock;
-
       return System.CRTL.ssize_t (Count);
-
-   exception
-      when others =>
-         if Locked then
-            Task_Lock.Unlock;
-         end if;
-         raise;
    end C_Recvmsg;
 
    --------------
@@ -411,8 +371,8 @@ package body GNAT.Sockets.Thin is
       Last : aliased C.int;
 
    begin
-      --  Asynchronous connection failures are notified in the exception fd set
-      --  instead of the write fd set. To ensure POSIX compatibility, copy
+      --  Asynchronous connection failures are notified in the exception fd
+      --  set instead of the write fd set. To ensure POSIX compatibility, copy
       --  write fd set into exception fd set. Once select() returns, check any
       --  socket present in the exception fd set and peek at incoming
       --  out-of-band data. If the test is not successful, and the socket is
@@ -511,13 +471,10 @@ package body GNAT.Sockets.Thin is
    begin
       --  Windows does not provide an implementation of sendmsg(). The spec for
       --  WSASendMsg() is incompatible with the data types we define, and is
-      --  not available in all versions of Windows. So, we'll use C_Sendto
-      --  instead.
-
-      Task_Lock.Lock;
+      --  available starting with Windows Vista and Server 2008 only. So
+      --  use C_Sendto instead.
 
       for J in Iovec'Range loop
-
          Res :=
            C_Sendto
             (S,
@@ -528,20 +485,13 @@ package body GNAT.Sockets.Thin is
              Tolen => C.int (MH.Msg_Namelen));
 
          if Res < 0 then
-            Task_Lock.Unlock;
             return System.CRTL.ssize_t (Res);
          else
             Count := Count + Res;
          end if;
       end loop;
 
-      Task_Lock.Unlock;
-
       return System.CRTL.ssize_t (Count);
-   exception
-      when others =>
-         Task_Lock.Unlock;
-         raise;
    end C_Sendmsg;
 
    --------------
@@ -563,13 +513,12 @@ package body GNAT.Sockets.Thin is
    package body Host_Error_Messages is
 
       --  On Windows, socket and host errors share the same code space, and
-      --  error messages are provided by Socket_Error_Message. The default
-      --  separate body for Host_Error_Messages is therefore not used in
-      --  this case.
+      --  error messages are provided by Socket_Error_Message, so the default
+      --  separate body for Host_Error_Messages is not used in this case.
 
       function Host_Error_Message
         (H_Errno : Integer) return C.Strings.chars_ptr
-        renames Socket_Error_Message;
+         renames Socket_Error_Message;
 
    end Host_Error_Messages;
 

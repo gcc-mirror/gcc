@@ -8105,6 +8105,7 @@ package body Sem_Res is
          end if;
 
       elsif Is_Entity_Name (Name)
+        or else Nkind (Name) = N_Explicit_Dereference
         or else (Nkind (Name) = N_Function_Call
                   and then not Is_Constrained (Etype (Name)))
       then
