@@ -1206,6 +1206,20 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, RTE (RE_AST_Handler));
       end AST_Entry;
 
+      ---------
+      -- Bit --
+      ---------
+
+      --  We compute this if a packed array reference was present, otherwise we
+      --  leave the computation up to the back end.
+
+      when Attribute_Bit =>
+         if Involves_Packed_Array_Reference (Pref) then
+            Expand_Packed_Bit_Reference (N);
+         else
+            Apply_Universal_Integer_Attribute_Checks (N);
+         end if;
+
       ------------------
       -- Bit_Position --
       ------------------
@@ -1218,8 +1232,7 @@ package body Exp_Attr is
       --  in generated code (i.e. the prefix is an identifier that
       --  references the component or discriminant entity).
 
-      when Attribute_Bit_Position => Bit_Position :
-      declare
+      when Attribute_Bit_Position => Bit_Position : declare
          CE : Entity_Id;
 
       begin
@@ -3232,9 +3245,9 @@ package body Exp_Attr is
       --  For enumeration types with a standard representation, Pos is
       --  handled by the back end.
 
-      --  For enumeration types, with a non-standard representation we
-      --  generate a call to the _Rep_To_Pos function created when the
-      --  type was frozen. The call has the form
+      --  For enumeration types, with a non-standard representation we generate
+      --  a call to the _Rep_To_Pos function created when the type was frozen.
+      --  The call has the form
 
       --    _rep_to_pos (expr, flag)
 
@@ -3541,6 +3554,7 @@ package body Exp_Attr is
       ------------------
 
       when Attribute_Range_Length => Range_Length : begin
+
          --  The only special processing required is for the case where
          --  Range_Length is applied to an enumeration type with holes.
          --  In this case we transform
@@ -4257,8 +4271,7 @@ package body Exp_Attr is
       --  2. For floating-point, generate call to attribute function
       --  3. For other cases, deal with constraint checking
 
-      when Attribute_Succ => Succ :
-      declare
+      when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
 
       begin
@@ -4350,8 +4363,7 @@ package body Exp_Attr is
 
       --  Transforms X'Tag into a direct reference to the tag of X
 
-      when Attribute_Tag => Tag :
-      declare
+      when Attribute_Tag => Tag : declare
          Ttyp           : Entity_Id;
          Prefix_Is_Type : Boolean;
 
@@ -4598,8 +4610,7 @@ package body Exp_Attr is
       --  with a non-standard representation we use the _Pos_To_Rep array that
       --  was created when the type was frozen.
 
-      when Attribute_Val => Val :
-      declare
+      when Attribute_Val => Val : declare
          Etyp : constant Entity_Id := Base_Type (Entity (Pref));
 
       begin
@@ -4662,8 +4673,7 @@ package body Exp_Attr is
       --  The code for valid is dependent on the particular types involved.
       --  See separate sections below for the generated code in each case.
 
-      when Attribute_Valid => Valid :
-      declare
+      when Attribute_Valid => Valid : declare
          Btyp : Entity_Id := Base_Type (Ptyp);
          Tst  : Node_Id;
 
@@ -5267,7 +5277,6 @@ package body Exp_Attr is
       --  that the result is in range.
 
       when Attribute_Aft                          |
-           Attribute_Bit                          |
            Attribute_Max_Size_In_Storage_Elements
       =>
          Apply_Universal_Integer_Attribute_Checks (N);

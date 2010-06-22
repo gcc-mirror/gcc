@@ -5755,9 +5755,7 @@ package body Einfo is
 
    function Get_Full_View (T : Entity_Id) return Entity_Id is
    begin
-      if Ekind (T) = E_Incomplete_Type
-        and then Present (Full_View (T))
-      then
+      if Ekind (T) = E_Incomplete_Type and then Present (Full_View (T)) then
          return Full_View (T);
 
       elsif Is_Class_Wide_Type (T)

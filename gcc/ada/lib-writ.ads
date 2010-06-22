@@ -696,14 +696,13 @@ package Lib.Writ is
    --  reference data. See the spec of Par_SCO for full details of the format.
 
    ----------------------
-   -- Global variables --
+   -- Global Variables --
    ----------------------
 
-   --  The table structure defined here stores one entry for each
-   --  Interrupt_State pragma encountered either in the main source or
-   --  in an ancillary with'ed source. Since interrupt state values
-   --  have to be consistent across all units in a partition, we may
-   --  as well detect inconsistencies at compile time when we can.
+   --  The table defined here stores one entry for each Interrupt_State pragma
+   --  encountered either in the main source or in an ancillary with'ed source.
+   --  Since interrupt state values have to be consistent across all units in a
+   --  partition, we detect inconsistencies at compile time when we can.
 
    type Interrupt_State_Entry is record
       Interrupt_Number : Pos;

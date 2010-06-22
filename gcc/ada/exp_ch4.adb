@@ -4883,7 +4883,7 @@ package body Exp_Ch4 is
 
       --    The second expression in a 'Read attribute reference
 
-      --    The prefix of an address or size attribute reference
+      --    The prefix of an address or bit or size attribute reference
 
       --  The following circuit detects these exceptions
 
@@ -4906,6 +4906,8 @@ package body Exp_Ch4 is
 
             elsif Nkind (Parnt) = N_Attribute_Reference
               and then (Attribute_Name (Parnt) = Name_Address
+                         or else
+                        Attribute_Name (Parnt) = Name_Bit
                          or else
                         Attribute_Name (Parnt) = Name_Size)
               and then Prefix (Parnt) = Child

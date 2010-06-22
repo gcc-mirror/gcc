@@ -6821,9 +6821,9 @@ package Einfo is
    --  Add an entity to the list of entities declared in the scope V
 
    function Get_Full_View (T : Entity_Id) return Entity_Id;
-   --  If T is an incomplete type and the full declaration has been
-   --  seen, or is the name of a class_wide type whose root is incomplete.
-   --  return the corresponding full declaration.
+   --  If T is an incomplete type and the full declaration has been seen, or
+   --  is the name of a class_wide type whose root is incomplete, return the
+   --  corresponding full declaration, else return T itself.
 
    function Is_Entity_Name (N : Node_Id) return Boolean;
    --  Test if the node N is the name of an entity (i.e. is an identifier,
