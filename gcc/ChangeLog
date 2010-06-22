@@ -1,3 +1,10 @@
+2010-06-22  Alan Modra  <amodra@gmail.com>
+
+	PR target/44364
+	* config/rs6000/e500.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* caller-save.c (insert_restore, insert_save): Use non-validate
+	form of adjust_address.
+
 2010-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/39690

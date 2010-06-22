@@ -1,5 +1,5 @@
 /* Enable E500 support.
-   Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009 Free Software
+   Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010 Free Software
    Foundation, Inc.
    This file is part of GCC.
 
@@ -46,3 +46,10 @@
 	  error ("E500 and FPRs not supported");			\
       }									\
   } while (0)
+
+/* When setting up caller-save slots (MODE == VOIDmode) ensure we
+   allocate space for DFmode.  Save gprs in the correct mode too.  */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
+  (TARGET_E500_DOUBLE && ((MODE) == VOIDmode || (MODE) == DFmode)	\
+   ? DFmode								\
+   : choose_hard_reg_mode ((REGNO), (NREGS), false))
