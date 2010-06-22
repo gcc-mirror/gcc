@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;
+with Interfaces; use Interfaces;
+
+with System.Random_Numbers; use System.Random_Numbers;
 
 package body Ada.Numerics.Float_Random is
 
@@ -47,105 +49,16 @@ package body Ada.Numerics.Float_Random is
    --  get a pointer to the state in the passed Generator. This works because
    --  Generator is a limited type and will thus always be passed by reference.
 
-   type Pointer is access all State;
-
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   procedure Euclid (P, Q : Int; X, Y : out Int; GCD : out Int);
-
-   function  Euclid (P, Q : Int) return Int;
-
-   function Square_Mod_N (X, N : Int) return Int;
-
-   ------------
-   -- Euclid --
-   ------------
-
-   procedure Euclid (P, Q : Int; X, Y : out Int; GCD : out Int) is
-
-      XT : Int := 1;
-      YT : Int := 0;
-
-      procedure Recur
-        (P,  Q  : Int;                    --  a (i-1), a (i)
-         X,  Y  : Int;                    --  x (i),   y (i)
-         XP, YP : in out Int;             --  x (i-1), y (i-1)
-         GCD    : out Int);
-
-      procedure Recur
-        (P,  Q  : Int;
-         X,  Y  : Int;
-         XP, YP : in out Int;
-         GCD    : out Int)
-      is
-         Quo : Int := P / Q;              --  q <-- |_ a (i-1) / a (i) _|
-         XT  : Int := X;                  --  x (i)
-         YT  : Int := Y;                  --  y (i)
-
-      begin
-         if P rem Q = 0 then                 --  while does not divide
-            GCD := Q;
-            XP  := X;
-            YP  := Y;
-         else
-            Recur (Q, P - Q * Quo, XP - Quo * X, YP - Quo * Y, XT, YT, Quo);
-
-            --  a (i) <== a (i)
-            --  a (i+1) <-- a (i-1) - q*a (i)
-            --  x (i+1) <-- x (i-1) - q*x (i)
-            --  y (i+1) <-- y (i-1) - q*y (i)
-            --  x (i) <== x (i)
-            --  y (i) <== y (i)
-
-            XP  := XT;
-            YP  := YT;
-            GCD := Quo;
-         end if;
-      end Recur;
-
-   --  Start of processing for Euclid
-
-   begin
-      Recur (P, Q, 0, 1, XT, YT, GCD);
-      X := XT;
-      Y := YT;
-   end Euclid;
-
-   function Euclid (P, Q : Int) return Int is
-      X, Y, GCD : Int;
-      pragma Unreferenced (Y, GCD);
-   begin
-      Euclid (P, Q, X, Y, GCD);
-      return X;
-   end Euclid;
-
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Of_State : State) return String is
-   begin
-      return Int'Image (Of_State.X1) & ',' & Int'Image (Of_State.X2)
-             & ',' &
-             Int'Image (Of_State.P)  & ',' & Int'Image (Of_State.Q);
-   end Image;
+   subtype Rep_Generator is System.Random_Numbers.Generator;
+   subtype Rep_State is System.Random_Numbers.State;
 
    ------------
    -- Random --
    ------------
 
-   function Random  (Gen : Generator) return Uniformly_Distributed is
-      Genp : constant Pointer := Gen.Gen_State'Unrestricted_Access;
-
+   function Random (Gen : Generator) return Uniformly_Distributed is
    begin
-      Genp.X1 := Square_Mod_N (Genp.X1,  Genp.P);
-      Genp.X2 := Square_Mod_N (Genp.X2,  Genp.Q);
-      return
-        Float ((Flt (((Genp.X2 - Genp.X1) * Genp.X)
-                  mod Genp.Q) * Flt (Genp.P)
-          + Flt (Genp.X1)) * Genp.Scl);
+      return Random (Gen.Rep);
    end Random;
 
    -----------
@@ -155,157 +68,56 @@ package body Ada.Numerics.Float_Random is
    --  Version that works from given initiator value
 
    procedure Reset (Gen : Generator; Initiator : Integer) is
-      Genp   : constant Pointer := Gen.Gen_State'Unrestricted_Access;
-      X1, X2 : Int;
-
+      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
-      X1 := 2 + Int (Initiator) mod (K1 - 3);
-      X2 := 2 + Int (Initiator) mod (K2 - 3);
-
-      --  Eliminate effects of small initiators
-
-      for J in 1 .. 5 loop
-         X1 := Square_Mod_N (X1, K1);
-         X2 := Square_Mod_N (X2, K2);
-      end loop;
-
-      Genp.all :=
-        (X1  => X1,
-         X2  => X2,
-         P   => K1,
-         Q   => K2,
-         X   => 1,
-         Scl => Scal);
-   end Reset;
-
-   --  Version that works from specific saved state
-
-   procedure Reset (Gen : Generator; From_State : State) is
-      Genp : constant Pointer := Gen.Gen_State'Unrestricted_Access;
-
-   begin
-      Genp.all := From_State;
+      Reset (G, Integer_32 (Initiator));
    end Reset;
 
    --  Version that works from calendar
 
    procedure Reset (Gen : Generator) is
-      Genp   : constant Pointer       := Gen.Gen_State'Unrestricted_Access;
-      Now    : constant Calendar.Time := Calendar.Clock;
-      X1, X2 : Int;
-
+      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
    begin
-      X1 := Int (Calendar.Year  (Now)) * 12 * 31 +
-            Int (Calendar.Month (Now)) * 31 +
-            Int (Calendar.Day   (Now));
+      Reset (G);
+   end Reset;
 
-      X2 := Int (Calendar.Seconds (Now) * Duration (1000.0));
+   --  Version that works from specific saved state
 
-      X1 := 2 + X1 mod (K1 - 3);
-      X2 := 2 + X2 mod (K2 - 3);
-
-      --  Eliminate visible effects of same day starts
-
-      for J in 1 .. 5 loop
-         X1 := Square_Mod_N (X1, K1);
-         X2 := Square_Mod_N (X2, K2);
-      end loop;
-
-      Genp.all :=
-        (X1  => X1,
-         X2  => X2,
-         P   => K1,
-         Q   => K2,
-         X   => 1,
-         Scl => Scal);
-
+   procedure Reset (Gen : Generator; From_State : State) is
+      G : Rep_Generator renames Gen.Rep'Unrestricted_Access.all;
+   begin
+      Reset (G, From_State);
    end Reset;
 
    ----------
    -- Save --
    ----------
 
-   procedure Save (Gen : Generator; To_State : out State) is
+   procedure Save  (Gen : Generator; To_State : out State) is
    begin
-      To_State := Gen.Gen_State;
+      Save (Gen.Rep, State (To_State));
    end Save;
 
-   ------------------
-   -- Square_Mod_N --
-   ------------------
+   -----------
+   -- Image --
+   -----------
 
-   function Square_Mod_N (X, N : Int) return Int is
-      Temp : constant Flt := Flt (X) * Flt (X);
-      Div  : Int;
-
+   function Image (Of_State : State) return String is
    begin
-      Div := Int (Temp / Flt (N));
-      Div := Int (Temp - Flt (Div) * Flt (N));
-
-      if Div < 0 then
-         return Div + N;
-      else
-         return Div;
-      end if;
-   end Square_Mod_N;
+      return Image (Rep_State (Of_State));
+   end Image;
 
    -----------
    -- Value --
    -----------
 
    function Value (Coded_State : String) return State is
-      Last  : constant Natural := Coded_State'Last;
-      Start : Positive := Coded_State'First;
-      Stop  : Positive := Coded_State'First;
-      Outs  : State;
-
+      G : Generator;
+      S : Rep_State;
    begin
-      while Stop <= Last and then Coded_State (Stop) /= ',' loop
-         Stop := Stop + 1;
-      end loop;
-
-      if Stop > Last then
-         raise Constraint_Error;
-      end if;
-
-      Outs.X1 := Int'Value (Coded_State (Start .. Stop - 1));
-      Start := Stop + 1;
-
-      loop
-         Stop := Stop + 1;
-         exit when Stop > Last or else Coded_State (Stop) = ',';
-      end loop;
-
-      if Stop > Last then
-         raise Constraint_Error;
-      end if;
-
-      Outs.X2 := Int'Value (Coded_State (Start .. Stop - 1));
-      Start := Stop + 1;
-
-      loop
-         Stop := Stop + 1;
-         exit when Stop > Last or else Coded_State (Stop) = ',';
-      end loop;
-
-      if Stop > Last then
-         raise Constraint_Error;
-      end if;
-
-      Outs.P   := Int'Value (Coded_State (Start .. Stop - 1));
-      Outs.Q   := Int'Value (Coded_State (Stop + 1 .. Last));
-      Outs.X   := Euclid (Outs.P, Outs.Q);
-      Outs.Scl := 1.0 / (Flt (Outs.P) * Flt (Outs.Q));
-
-      --  Now do *some* sanity checks
-
-      if Outs.Q < 31 or else Outs.P < 31
-        or else Outs.X1 not in 2 .. Outs.P - 1
-        or else Outs.X2 not in 2 .. Outs.Q - 1
-      then
-         raise Constraint_Error;
-      end if;
-
-      return Outs;
+      Reset (G.Rep, Coded_State);
+      System.Random_Numbers.Save (G.Rep, S);
+      return State (S);
    end Value;
+
 end Ada.Numerics.Float_Random;

@@ -188,35 +188,104 @@ package body System.Random_Numbers is
       return Y;
    end Random;
 
-   function Random (Gen : Generator) return Float is
+   generic
+      type Unsigned is mod <>;
+      type Real is digits <>;
+      with function Shift_Right (Value : Unsigned; Amount : Natural)
+        return Unsigned is <>;
+      with function Random (G : Generator) return Unsigned is <>;
+   function Random_Float_Template (Gen : Generator) return Real;
+   pragma Inline (Random_Float_Template);
+   --  Template for a random-number generator implementation that delivers
+   --  values of type Real in the half-open range [0 .. 1), using values from
+   --  Gen, assuming that Unsigned is large enough to hold the bits of
+   --  a mantissa for type Real.
 
-      --  Note: The application of Float'Machine (...) is necessary to avoid
-      --  returning extra significand bits. Without it, the function's value
-      --  will change if it is spilled, for example, causing
-      --  gratuitous nondeterminism.
+   function Random_Float_Template (Gen : Generator) return Real is
+      --  This code generates random floating-point numbers from unsigned
+      --  integers. Assuming that Real'Machine_Radix = 2, it can deliver
+      --  all machine values of type Real (at least as implied by
+      --  Real'Machine_Mantissa and Real'Machine_Emin), which is not true
+      --  of the standard method (to which we fall back for non-binary
+      --  radix): computing Real(<random integer>) / (<max random integer>+1).
+      --  To do so, we first extract an (M-1)-bit significand (where M
+      --  is Real'Machine_Mantissa), and then decide on a normalized
+      --  exponent by repeated coin flips, decrementing from 0 as long as
+      --  we flip heads (1 bits). This yields the proper geometric
+      --  distribution for the exponent: in a uniformly distributed set of
+      --  floating-point numbers, 1/2 of them will be in [0.5, 1), 1/4 will
+      --  be in [0.25, 0.5), and so forth. If the process reaches
+      --  Machine_Emin (an extremely rare event), it uses the selected
+      --  mantissa bits as an unnormalized fraction with Machine_Emin as
+      --  exponent. Otherwise, it adds a leading bit to the selected
+      --  mantissa bits (thus giving a normalized fraction) and adjusts by
+      --  the chosen exponent. The algorithm attempts to be stingy with
+      --  random integers. In the worst case, it can consume roughly
+      --  -Real'Machine_Emin/32 32-bit integers, but this case occurs with
+      --  probability 2**Machine_Emin, and the expected number of calls to
+      --  integer-valued Random is 1.
 
-      Result : constant Float :=
-                 Float'Machine
-                   (Float (Unsigned_32'(Random (Gen))) * 2.0 ** (-32));
    begin
-      if Result < 1.0 then
-         return Result;
+      if Real'Machine_Radix /= 2 then
+         declare
+            Val : constant Real := Real'Machine
+              (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
+         begin
+            if Val < 1.0 then
+               return Real'Base (Val);
+            else
+               return Real'Pred (1.0);
+            end if;
+         end;
       else
-         return Float'Adjacent (1.0, 0.0);
+         declare
+            Mant_Bits : constant Integer := Real'Machine_Mantissa - 1;
+            Mant_Mask : constant Unsigned := 2**Mant_Bits - 1;
+            Adjust32  : constant Integer := Real'Size - Unsigned_32'Size;
+            Leftover  : constant Integer :=
+              Unsigned'Size - Real'Machine_Mantissa + 1;
+
+            V         : constant Unsigned := Random (Gen);
+            Mant      : constant Unsigned := V and Mant_Mask;
+            Rand_Bits : Unsigned_32;
+            Exp       : Integer;
+            Bits_Left : Integer;
+            Result    : Real;
+         begin
+            Rand_Bits := Unsigned_32 (Shift_Right (V, Adjust32));
+            Exp := 0;
+            Bits_Left := Leftover;
+            Result := Real (Mant + 2**Mant_Bits) * 2.0**(-Mant_Bits - 1);
+            while Rand_Bits >= 2**31 loop
+               if Exp = Real'Machine_Emin then
+                  return Real (Mant) * 2.0**Real'Machine_Emin;
+               end if;
+
+               Result := Result * 0.5;
+               Exp := Exp - 1;
+               Rand_Bits := 2 * Rand_Bits;
+               Bits_Left := Bits_Left - 1;
+
+               if Bits_Left = 0 then
+                  Bits_Left := 32;
+                  Rand_Bits := Random (Gen);
+               end if;
+            end loop;
+            return Result;
+         end;
       end if;
+   end Random_Float_Template;
+
+   function Random (Gen : Generator) return Float is
+      function F is new Random_Float_Template (Unsigned_32, Float);
+   begin
+      return F (Gen);
    end Random;
 
    function Random (Gen : Generator) return Long_Float is
-      Result : constant Long_Float :=
-                 Long_Float'Machine ((Long_Float (Unsigned_32'(Random (Gen)))
-                   * 2.0 ** (-32))
-                   + (Long_Float (Unsigned_32'(Random (Gen))) * 2.0 ** (-64)));
+      function F is new Random_Float_Template (Unsigned_64, Long_Float);
    begin
-      if Result < 1.0 then
-         return Result;
-      else
-         return Long_Float'Adjacent (1.0, 0.0);
-      end if;
+      return F (Gen);
    end Random;
 
    function Random (Gen : Generator) return Unsigned_64 is
