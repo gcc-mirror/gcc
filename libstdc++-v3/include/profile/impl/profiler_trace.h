@@ -125,17 +125,6 @@ void __trace_list_to_slist_report(FILE*, __warning_vector_t&);
 void __trace_list_to_vector_report(FILE*, __warning_vector_t&);
 void __trace_map_to_unordered_map_report(FILE*, __warning_vector_t&);
 
-// Utility functions.
-inline size_t __max(size_t __a, size_t __b)
-{
-  return __a >= __b ? __a : __b;
-}
-
-inline size_t __min(size_t __a, size_t __b)
-{
-  return __a <= __b ? __a : __b;
-}
-
 struct __cost_factor
 {
   const char* __env_var;
@@ -424,8 +413,8 @@ inline void __report(void)
 
   // Sort data by magnitude.
   // XXX: instead of sorting, should collect only top N for better performance.
-  size_t __cutoff = __min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
-                          __warnings.size());
+  size_t __cutoff = std::min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
+			     __warnings.size());
 
   std::make_heap(__warnings.begin(), __warnings.end(),
 		 std::greater<__warning_vector_t::value_type>());

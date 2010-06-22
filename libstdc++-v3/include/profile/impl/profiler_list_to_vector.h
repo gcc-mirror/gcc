@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -124,13 +124,13 @@ inline void __list2vector_info::__merge(const __list2vector_info& __o)
   _M_list_cost    += __o._M_list_cost;
   _M_valid        &= __o._M_valid;
   _M_resize       += __o._M_resize;
-  _M_max_size     = __max( _M_max_size, __o._M_max_size);
+  _M_max_size     = std::max( _M_max_size, __o._M_max_size);
 }
 
 inline void __list2vector_info::__opr_insert(size_t __shift, size_t __size) 
 {
   _M_shift_count += __shift;
-  _M_max_size = __max(_M_max_size, __size);
+  _M_max_size = std::max(_M_max_size, __size);
 }
 
 inline void __list2vector_info::__resize(size_t __from, size_t __to)

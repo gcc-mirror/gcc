@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -102,14 +102,14 @@ inline const char* __container_size_info::__advice() const
 
 inline void __container_size_info::__destruct(size_t __num, size_t __inum) 
 {
-  _M_max = __max(_M_max, __num);
-  _M_item_max = __max(_M_item_max, __inum);
+  _M_max = std::max(_M_max, __num);
+  _M_item_max = std::max(_M_item_max, __inum);
   if (_M_min == 0) {
     _M_min = __num; 
     _M_item_min = __inum;
   } else {
-    _M_min = __min(_M_min, __num);
-    _M_item_min = __min(_M_item_min, __inum);
+    _M_min = std::min(_M_min, __num);
+    _M_item_min = std::min(_M_item_min, __inum);
   }
   _M_total += __num;
   _M_item_total += __inum;
@@ -120,7 +120,7 @@ inline void __container_size_info::__resize(size_t __from, size_t __to)
 {
   _M_cost += this->__resize_cost(__from, __to);
   _M_resize += 1;
-  _M_max = __max(_M_max, __to);
+  _M_max = std::max(_M_max, __to);
 }
 
 inline __container_size_info::__container_size_info(__stack_t __stack, 
@@ -138,11 +138,11 @@ inline __container_size_info::__container_size_info(__stack_t __stack,
 
 inline void __container_size_info::__merge(const __container_size_info& __o)
 {
-  _M_init        = __max(_M_init, __o._M_init);
-  _M_max         = __max(_M_max, __o._M_max);
-  _M_item_max    = __max(_M_item_max, __o._M_item_max);
-  _M_min         = __min(_M_min, __o._M_min);
-  _M_item_min    = __min(_M_item_min, __o._M_item_min);
+  _M_init        = std::max(_M_init, __o._M_init);
+  _M_max         = std::max(_M_max, __o._M_max);
+  _M_item_max    = std::max(_M_item_max, __o._M_item_max);
+  _M_min         = std::min(_M_min, __o._M_min);
+  _M_item_min    = std::min(_M_item_min, __o._M_item_min);
   _M_total      += __o._M_total;
   _M_item_total += __o._M_item_total;
   _M_count      += __o._M_count;
