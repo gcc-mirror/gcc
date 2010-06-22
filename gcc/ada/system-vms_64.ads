@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                (OpenVMS 64bit GCC_ZCX DEC Threads Version)               --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -239,7 +239,7 @@ private
    -- Special VMS Interfaces --
    ----------------------------
 
-   procedure Lib_Stop (I : Integer);
+   procedure Lib_Stop (Cond_Value : Integer);
    pragma Interface (C, Lib_Stop);
    pragma Import_Procedure (Lib_Stop, "LIB$STOP", Mechanism => (Value));
    --  Interface to VMS condition handling. Used by RTSfind and pragma
@@ -250,5 +250,8 @@ private
    pragma Export_Object (ADA_GNAT, "ADA$GNAT");
    --  Ubiquitous global symbol identifying a GNAT compiled image to VMS Debug.
    --  Do not remove!
+
+   pragma Ident ("GNAT"); --  Gnat_Static_Version_String
+   --  Default ident for all VMS images.
 
 end System;

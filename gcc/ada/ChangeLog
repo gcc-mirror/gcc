@@ -1,3 +1,25 @@
+2010-06-22  Doug Rupp  <rupp@adacore.com>
+
+	* system-vms.ads, system-vms-zcx.ads: Remove old unused VMS system
+	packages.
+	* system-vms_64.ads, system-vms-ia64.ads: Minor reformatting.
+	(pragma Ident): Add a default ident string in the private part.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb: Minor reformatting.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Build_And_Analyze_Renamed_Body): For expansion purposes,
+	recognize the Shift and Rotation intrinsics that are known to the
+	compiler but have no interface name.
+
+2010-06-22  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngcoty.adb ("*"): Rewrite complex multiplication to use proper
+	scaling in case of overflow or NaN results.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* cstand.adb: Complete previous change.
