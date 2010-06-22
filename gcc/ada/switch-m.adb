@@ -215,10 +215,10 @@ package body Switch.M is
 
                   --  One-letter switches
 
-                  when 'a' | 'A' | 'b' | 'c' | 'D' | 'E' | 'f' |
-                    'F' | 'g' | 'h' | 'H' | 'k' | 'l' | 'L' | 'n' | 'N' |
-                    'o' | 'O' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 't' |
-                    'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
+                  when 'a' | 'A' | 'b' | 'c' | 'D' | 'E' | 'f' | 'F' |
+                       'g' | 'h' | 'H' | 'l' | 'L' | 'n' | 'N' | 'o' |
+                       'O' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 't' |
+                       'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
                      Storing (First_Stored) := C;
                      Add_Switch_Component
                        (Storing (Storing'First .. First_Stored));
@@ -226,7 +226,7 @@ package body Switch.M is
 
                   --  One-letter switches followed by a positive number
 
-                  when 'm' | 'T' =>
+                  when 'k' | 'm' | 'T' =>
                      Storing (First_Stored) := C;
                      Last_Stored := First_Stored;
 

@@ -1,3 +1,48 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting
+	Minor code reorganization (use Nkind_In and Ekind_In).
+
+2010-06-22  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Remove the messages that recommend using 
+	-gnatc when a file is compiled that we cannot generate code for, not
+	helpful and confusing.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Process correctly
+	switches -gnatknn.
+
+2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* s-rannum.adb: Replace constants with commented symbols.
+	* s-rannum.ads: Explain significance of the initial value of the data
+	structure.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-ngcoty.adb: Clarify comment.
+
+2010-06-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Return without
+	expansion for indexing packed arrays with small power-of-2 component
+	sizes when the target is AAMP.
+	(Expand_Packed_Element_Reference): Return without expansion for
+	indexing packed arrays with small power-of-2 component sizes when the
+	target is AAMP.
+
+2010-06-22  Geert Bosch  <bosch@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Do not substitute a valid check for X in
+	Float'Range.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* g-mbdira.adb, g-mbflra.adb, a-nuflra.adb, a-nudira.adb: Minor comment
+	updates.
+
 2010-06-22  Doug Rupp  <rupp@adacore.com>
 
 	* system-vms.ads, system-vms-zcx.ads: Remove old unused VMS system

@@ -99,29 +99,70 @@ package body System.Random_Numbers is
    -- Implementation Note --
    -------------------------
 
-   --  The design of this spec is very awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally,
+   --  The design of this spec is a bit awkward, as a result of Ada 95 not
+   --  permitting in-out parameters for function formals (most naturally
    --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution is to use the heap and pointers, and, to avoid memory leaks,
-   --  controlled types.
+   --  solution would be to add a self-referential component to the generator
+   --  allowing access to the generator object from inside the function. This
+   --  would work because the generator is limited, which prevents any copy.
 
-   --  This is awfully heavy, so what we do is to use Unrestricted_Access to
+   --  This is a bit heavy, so what we do is to use Unrestricted_Access to
    --  get a pointer to the state in the passed Generator. This works because
    --  Generator is a limited type and will thus always be passed by reference.
-
-   Low31_Mask : constant := 2**31-1;
-   Bit31_Mask : constant := 2**31;
-
-   Matrix_A_X : constant array (State_Val range 0 .. 1) of State_Val :=
-                  (0, 16#9908b0df#);
 
    Y2K : constant Calendar.Time :=
            Calendar.Time_Of
              (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
-   --  First Year 2000 day
+   --  First day of Year 2000 (what is this for???)
 
    Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
+
+   ----------------------------
+   -- Algorithmic Parameters --
+   ----------------------------
+
+   Lower_Mask : constant := 2**31-1;
+   Upper_Mask : constant := 2**31;
+
+   Matrix_A   : constant array (State_Val range 0 .. 1) of State_Val
+     := (0, 16#9908b0df#);
+   --  The twist transformation is represented by a matrix of the form
+   --
+   --               [  0    I(31) ]
+   --               [    _a       ]
+   --
+   --  where 0 is a 31x31 block of 0s, I(31) is the 31x31 identity matrix and
+   --  _a is a particular bit row-vector, represented here by a 32-bit integer.
+   --  If integer x represents a row vector of bits (with x(0), the units bit,
+   --  last), then
+   --           x * A = [0 x(31..1)] xor Matrix_A(x(0)).
+
+   U      : constant := 11;
+   S      : constant := 7;
+   B_Mask : constant := 16#9d2c5680#;
+   T      : constant := 15;
+   C_Mask : constant := 16#efc60000#;
+   L      : constant := 18;
+   --  The tempering shifts and bit masks, in the order applied
+
+   Seed0 : constant := 5489;
+   --  Default seed, used to initialize the state vector when Reset not called
+
+   Seed1 : constant := 19650218;
+   --  Seed used to initialize the state vector when calling Reset with an
+   --  initialization vector.
+
+   Mult0 : constant := 1812433253;
+   --  Multiplier for a modified linear congruential generator used to
+   --  initialize the state vector when calling Reset with a single integer
+   --  seed.
+
+   Mult1 : constant := 1664525;
+   Mult2 : constant := 1566083941;
+   --  Multipliers for two modified linear congruential generators used to
+   --  initialize the state vector when calling Reset with an initialization
+   --  vector.
 
    -----------------------
    -- Local Subprograms --
@@ -153,40 +194,40 @@ package body System.Random_Numbers is
    function Random (Gen : Generator) return Unsigned_32 is
       G : Generator renames Gen'Unrestricted_Access.all;
       Y : State_Val;
-      I : Integer;
+      I : Integer;      --  should avoid use of identifier I ???
 
    begin
       I := G.I;
 
       if I < N - M then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (I + 1) and Low31_Mask);
-         Y := G.S (I + M) xor Shift_Right (Y, 1) xor Matrix_A_X (Y and 1);
+         Y := (G.S (I) and Upper_Mask) or (G.S (I + 1) and Lower_Mask);
+         Y := G.S (I + M) xor Shift_Right (Y, 1) xor Matrix_A (Y and 1);
          I := I + 1;
 
       elsif I < N - 1 then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (I + 1) and Low31_Mask);
+         Y := (G.S (I) and Upper_Mask) or (G.S (I + 1) and Lower_Mask);
          Y := G.S (I + (M - N))
                 xor Shift_Right (Y, 1)
-                xor Matrix_A_X (Y and 1);
+                xor Matrix_A (Y and 1);
          I := I + 1;
 
       elsif I = N - 1 then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (0) and Low31_Mask);
-         Y := G.S (M - 1) xor Shift_Right (Y, 1) xor Matrix_A_X (Y and 1);
+         Y := (G.S (I) and Upper_Mask) or (G.S (0) and Lower_Mask);
+         Y := G.S (M - 1) xor Shift_Right (Y, 1) xor Matrix_A (Y and 1);
          I := 0;
 
       else
-         Init (G, 5489);
+         Init (G, Seed0);
          return Random (Gen);
       end if;
 
       G.S (G.I) := Y;
       G.I := I;
 
-      Y := Y xor Shift_Right (Y, 11);
-      Y := Y xor (Shift_Left (Y, 7)  and 16#9d2c5680#);
-      Y := Y xor (Shift_Left (Y, 15) and 16#efc60000#);
-      Y := Y xor Shift_Right (Y, 18);
+      Y := Y xor Shift_Right (Y, U);
+      Y := Y xor (Shift_Left (Y, S)  and B_Mask);
+      Y := Y xor (Shift_Left (Y, T) and C_Mask);
+      Y := Y xor Shift_Right (Y, L);
 
       return Y;
    end Random;
@@ -265,17 +306,10 @@ package body System.Random_Numbers is
 
             Mantissa : Unsigned;
 
-            X : Real;
-            --  Scaled mantissa
-
-            R : Unsigned_32;
-            --  Supply of random bits
-
-            R_Bits : Natural;
-            --  Number of bits left in R
-
-            K : Bit_Count;
-            --  Next decrement to exponent
+            X      : Real;            --  Scaled mantissa
+            R      : Unsigned_32;     --  Supply of random bits
+            R_Bits : Natural;         --  Number of bits left in R
+            K      : Bit_Count;       --  Next decrement to exponent
 
          begin
             Mantissa := Random (Gen) / 2**Extra_Bits;
@@ -388,7 +422,7 @@ package body System.Random_Numbers is
          declare
             --  In the 64-bit case, we have to be careful, since not all 64-bit
             --  unsigned values are representable in GNAT's root_integer type.
-            --  Ignore different-size warnings here; since GNAT's handling
+            --  Ignore different-size warnings here since GNAT's handling
             --  is correct.
 
             pragma Warnings ("Z");  -- better to use msg string! ???
@@ -482,7 +516,7 @@ package body System.Random_Numbers is
 
    procedure Reset (Gen : out Generator; Initiator : Integer) is
    begin
-      pragma Warnings ("C");
+      pragma Warnings (Off, "condition is always *");
       --  This is probably an unnecessary precaution against future change, but
       --  since the test is a static expression, no extra code is involved.
 
@@ -502,14 +536,14 @@ package body System.Random_Numbers is
          end;
       end if;
 
-      pragma Warnings ("c");
+      pragma Warnings (On, "condition is always *");
    end Reset;
 
    procedure Reset (Gen : out Generator; Initiator : Initialization_Vector) is
       I, J : Integer;
 
    begin
-      Init (Gen, 19650218); -- please give this constant a name ???
+      Init (Gen, Seed1);
       I := 1;
       J := 0;
 
@@ -517,8 +551,8 @@ package body System.Random_Numbers is
          for K in reverse 1 .. Integer'Max (N, Initiator'Length) loop
             Gen.S (I) :=
               (Gen.S (I)
-                 xor ((Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
-                                                                 * 1664525))
+               xor ((Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
+                    * Mult1))
               + Initiator (J + Initiator'First) + Unsigned_32 (J);
 
             I := I + 1;
@@ -538,7 +572,7 @@ package body System.Random_Numbers is
       for K in reverse 1 .. N - 1 loop
          Gen.S (I) :=
            (Gen.S (I) xor ((Gen.S (I - 1)
-                            xor Shift_Right (Gen.S (I - 1), 30)) * 1566083941))
+                            xor Shift_Right (Gen.S (I - 1), 30)) * Mult2))
            - Unsigned_32 (I);
          I := I + 1;
 
@@ -548,7 +582,7 @@ package body System.Random_Numbers is
          end if;
       end loop;
 
-      Gen.S (0) := Bit31_Mask;
+      Gen.S (0) := Upper_Mask;
    end Reset;
 
    procedure Reset (Gen : out Generator; From_State : Generator) is
@@ -612,7 +646,6 @@ package body System.Random_Numbers is
 
    begin
       Result := (others => ' ');
-
       for J in 0 .. N - 1 loop
          Insert_Image (Result, J, Gen.S ((J + Gen.I) mod N));
       end loop;
@@ -643,9 +676,8 @@ package body System.Random_Numbers is
 
       for I in 1 .. N - 1 loop
          Gen.S (I) :=
-           1812433253
-             * (Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
-           + Unsigned_32 (I);
+           Mult0 * (Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30)) +
+                                                             Unsigned_32 (I);
       end loop;
 
       Gen.I := 0;
