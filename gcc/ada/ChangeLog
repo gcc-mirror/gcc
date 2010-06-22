@@ -1,3 +1,19 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb (Find_Universal_Operator_Type): New
+	subprogram to identify the operand type of an operator on universal
+	operands, when an explicit scope indication is present. Diagnose the
+	case where such a call is ambiguous.
+	(Eval_Arithmetic_Op, Eval_Relational_Op, Eval_Unary_Op):
+	Use the above to identify the operand type so it can be properly frozen.
+	* sem_res.adb (Make_Call_Into_Operator): Remove bogus freeze of operand
+	type, done in an arbitrary, possibly incorrect type (the presence of
+	some numeric type in the scope is checked for legality, but when more
+	than one such type is in the scope, we just pick a random one, not
+	necessarily the expected one).
+	* sem_utils.ads, sem_utils.adb (Is_Universal_Numeric_Type): New utility
+	subprogram.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_eval.adb: Minor reformatting.

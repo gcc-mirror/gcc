@@ -1484,14 +1484,6 @@ package body Sem_Res is
       else
          Resolve (N, Typ);
       end if;
-
-      --  For predefined operators on literals, the operation freezes
-      --  their type.
-
-      if Present (Orig_Type) then
-         Set_Etype (Act1, Orig_Type);
-         Freeze_Expression (Act1);
-      end if;
    end Make_Call_Into_Operator;
 
    -------------------

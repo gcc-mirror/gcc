@@ -7082,6 +7082,15 @@ package body Sem_Util is
       return (U /= 0);
    end Is_True;
 
+   -------------------------------
+   -- Is_Universal_Numeric_Type --
+   -------------------------------
+
+   function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean is
+   begin
+      return T = Universal_Integer or else T = Universal_Real;
+   end Is_Universal_Numeric_Type;
+
    -------------------
    -- Is_Value_Type --
    -------------------

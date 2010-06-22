@@ -800,6 +800,9 @@ package Sem_Util is
    --  Boolean operand (i.e. is either 0 for False, or 1 for True). This
    --  function simply tests if it is True (i.e. non-zero)
 
+   function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
+   --  True if T is Universal_Integer or Universal_Real
+
    function Is_Value_Type (T : Entity_Id) return Boolean;
    --  Returns true if type T represents a value type. This is only relevant to
    --  CIL, will always return false for other targets. A value type is a CIL
@@ -1259,7 +1262,7 @@ package Sem_Util is
    --  may be a child unit with any number of ancestors.
 
    function Universal_Interpretation (Opnd : Node_Id) return Entity_Id;
-   --  Yields universal_Integer or Universal_Real if this is a candidate
+   --  Yields Universal_Integer or Universal_Real if this is a candidate
 
    function Unqualify (Expr : Node_Id) return Node_Id;
    --  Removes any qualifications from Expr. For example, for T1'(T2'(X)),
