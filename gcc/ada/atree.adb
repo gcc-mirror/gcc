@@ -63,15 +63,15 @@ package body Atree is
 
    --  Either way, gnat1 will stop when node 12345 is created
 
-   --  The second method is faster
+   --  The second method is much faster
 
-   --  Similarly, rr and rrd allow breaking on rewriting of a given node.
+   --  Similarly, rr and rrd allow breaking on rewriting of a given node
 
    ww : Node_Id'Base := Node_Id'First - 1;
    pragma Export (Ada, ww); --  trick the optimizer
    Watch_Node : Node_Id'Base renames ww;
-   --  Node to "watch"; that is, whenever a node is created, we check if it is
-   --  equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
+   --  Node to "watch"; that is, whenever a node is created, we check if it
+   --  is equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
    --  presumably set a breakpoint on New_Node_Breakpoint. Note that the
    --  initial value of Node_Id'First - 1 ensures that by default, no node
    --  will be equal to Watch_Node.
@@ -108,7 +108,7 @@ package body Atree is
    --  calls Rewrite_Breakpoint. Otherwise, does nothing.
 
    procedure Node_Debug_Output (Op : String; N : Node_Id);
-   --  Common code for nnd and rrd. Write Op followed by information about N.
+   --  Common code for nnd and rrd, writes Op followed by information about N
 
    -----------------------------
    -- Local Objects and Types --
