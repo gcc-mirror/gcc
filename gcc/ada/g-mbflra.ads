@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---         A D A . N U M E R I C S . D I S C R E T E _ R A N D O M          --
+--               G N A T . M B S S _ F L O A T _ R A N D O M                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -33,24 +33,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: the implementation used in this package is a version of the
---  Mersenne Twister. See s-rannum.adb for details and references.
+--  The implementation used in this package was contributed by
+--  Robert Eachus. It is based on the work of L. Blum, M. Blum, and
+--  M. Shub, SIAM Journal of Computing, Vol 15. No 2, May 1986. The
+--  particular choices for P and Q chosen here guarantee a period of
+--  562,085,314,430,582 (about 2**49), and the generated sequence has
+--  excellent randomness properties. For further details, see the
+--  paper "Fast Generation of Trustworthy Random Numbers", by Robert
+--  Eachus, which describes both the algorithm and the efficient
+--  implementation approach used here.
 
-with System.Random_Numbers;
+--  Formerly, this package was Ada.Numerics.Float_Random. It is retained
+--  here in part to allow users to reconstruct number sequences generated
+--  by previous versions.
 
-generic
-   type Result_Subtype is (<>);
+with Interfaces;
 
-package Ada.Numerics.Discrete_Random is
+package GNAT.MBBS_Float_Random is
 
    --  Basic facilities
 
    type Generator is limited private;
 
-   function Random (Gen : Generator) return Result_Subtype;
+   subtype Uniformly_Distributed is Float range 0.0 .. 1.0;
 
-   procedure Reset (Gen : Generator; Initiator : Integer);
+   function Random (Gen : Generator) return Uniformly_Distributed;
+
    procedure Reset (Gen : Generator);
+   procedure Reset (Gen : Generator; Initiator : Integer);
 
    --  Advanced facilities
 
@@ -59,17 +69,35 @@ package Ada.Numerics.Discrete_Random is
    procedure Save  (Gen : Generator; To_State   : out State);
    procedure Reset (Gen : Generator; From_State : State);
 
-   Max_Image_Width : constant := System.Random_Numbers.Max_Image_Width;
+   Max_Image_Width : constant := 80;
 
    function Image (Of_State    : State)  return String;
    function Value (Coded_State : String) return State;
 
 private
+   type Int is new Interfaces.Integer_32;
 
-   type Generator is limited record
-      Rep : System.Random_Numbers.Generator;
+   --  We prefer to use 14 digits for Flt, but some targets are more limited
+
+   type Flt is digits Positive'Min (14, Long_Long_Float'Digits);
+
+   K1   : constant := 94_833_359;
+   K1F  : constant := 94_833_359.0;
+   K2   : constant := 47_416_679;
+   K2F  : constant := 47_416_679.0;
+   Scal : constant := 1.0 / (K1F * K2F);
+
+   type State is record
+      X1  : Int := 2999 ** 2;      --  Square mod p
+      X2  : Int := 1439 ** 2;      --  Square mod q
+      P   : Int := K1;
+      Q   : Int := K2;
+      X   : Int := 1;
+      Scl : Flt := Scal;
    end record;
 
-   type State is new System.Random_Numbers.State;
+   type Generator is limited record
+      Gen_State : State;
+   end record;
 
-end Ada.Numerics.Discrete_Random;
+end GNAT.MBBS_Float_Random;

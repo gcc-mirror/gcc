@@ -250,6 +250,8 @@ package body Impunit is
      "g-io    ",    -- GNAT.IO
      "g-io_aux",    -- GNAT.IO_Aux
      "g-locfil",    -- GNAT.Lock_Files
+     "g-mbdira",    -- GNAT.MBBS_Discrete_Random
+     "g-mbflra",    -- GNAT.MBBS_Float_Random
      "g-md5   ",    -- GNAT.MD5
      "g-memdum",    -- GNAT.Memory_Dump
      "g-moreex",    -- GNAT.Most_Recent_Exception

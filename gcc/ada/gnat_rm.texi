@@ -8848,7 +8848,7 @@ floating-point.
 @code{Numerics.Float_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
-Maximum image width is 649, see library file @file{a-numran.ads}.
+Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
 @cartouche
@@ -8857,7 +8857,7 @@ Maximum image width is 649, see library file @file{a-numran.ads}.
 @code{Numerics.Discrete_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
-Maximum image width is 80, see library file @file{a-nudira.ads}.
+Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
 @cartouche
@@ -8866,8 +8866,8 @@ Maximum image width is 80, see library file @file{a-nudira.ads}.
 A.5.2(32).
 @end cartouche
 @noindent
-The algorithm is documented in the source files @file{a-numran.ads} and
-@file{a-numran.adb}.
+The algorithm is the Mersenne Twister, as documented in the source file
+@file{s-rannum.adb}.
 
 @sp 1
 @cartouche
@@ -8876,7 +8876,9 @@ The algorithm is documented in the source files @file{a-numran.ads} and
 state.  See A.5.2(38).
 @end cartouche
 @noindent
-See the documentation contained in the file @file{a-numran.adb}.
+The value returned by the Image function is the concatenation of 
+the fixed-width decimal representations of the 624 32-bit integers 
+of the state vector.
 
 @sp 1
 @cartouche
@@ -11839,12 +11841,12 @@ This is a predefined instantiation of
 build the type @code{Complex} and @code{Imaginary}.
 
 @item Ada.Numerics.Discrete_Random
-This package provides a random number generator suitable for generating
-random integer values from a specified range.
+This generic package provides a random number generator suitable for generating
+uniformly distributed values of a specified discrete subtype.
 
 @item Ada.Numerics.Float_Random
 This package provides a random number generator suitable for generating
-uniformly distributed floating point values.
+uniformly distributed floating point values in the unit interval.
 
 @item Ada.Numerics.Generic_Complex_Elementary_Functions
 This is a generic version of the package that provides the

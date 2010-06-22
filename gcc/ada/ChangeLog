@@ -1,3 +1,13 @@
+2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* a-nudira.adb, a-nudira.ads, a-nuflra.adb, a-nuflra.ads,
+	gnat_rm.texi, impunit.adb, Makefile.rtl, s-rannum.adb
+	(Random_Float_Template, Random): New method of creating
+	uniform floating-point variables that allow the creation of all machine
+	values in [0 .. 1).  
+
+	* g-mbdira.adb, g-mbflra.adb, g-mbdira.ads, g-mbflra.ads: New file.
+
 2010-06-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch5.adb (Analyze_Assignment): Revise test for illegal assignment
