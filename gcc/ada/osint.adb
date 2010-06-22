@@ -23,10 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Alloc;
 with Debug;
 with Fmap;     use Fmap;
@@ -40,7 +36,10 @@ with Targparm; use Targparm;
 
 with Unchecked_Conversion;
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.Case_Util; use System.Case_Util;
+pragma Warnings (On);
 
 with GNAT.HTable;
 

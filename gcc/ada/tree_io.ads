@@ -34,14 +34,13 @@
 --  create and close routines are elsewhere (in Osint in the compiler, and in
 --  the tree read driver for the tree read interface).
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
+with Types;  use Types;
+with System; use System;
 
-with Types; use Types;
-
-with System;        use System;
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 package Tree_IO is
 

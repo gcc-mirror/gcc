@@ -33,14 +33,13 @@
 --  writing error messages and informational output. It is also used by the
 --  debug source file output routines (see Sprint.Print_Debug_Line).
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 package Output is
    pragma Elaborate_Body;

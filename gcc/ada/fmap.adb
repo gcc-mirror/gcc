@@ -23,17 +23,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Opt;    use Opt;
 with Osint;  use Osint;
 with Output; use Output;
 with Table;
 with Types;  use Types;
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 with Unchecked_Conversion;
 

@@ -1,3 +1,22 @@
+2010-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* fmap.adb, opt.ads, osint.adb, osint.ads, output.ads, scng.adb,
+	sinput-c.adb, switch-m.ads, tree_io.ads: Use simpler form of
+	Warnings Off/On.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Do not generate thunk of
+	eliminated primitives.
+	(Make_DT): Avoid referencing eliminated primitives.
+	(Register_Primitive): Do not register eliminated primitives in the
+	dispatch table. Required to add this functionality when the program is
+	compiled without static dispatch tables (-gnatd.t)
+
 2010-06-22  Emmanuel Briot  <briot@adacore.com>
 
 	* fmap.adb, scng.adb, switch-m.ads, sinput-c.adb, opt.ads, output.ads,
