@@ -60,15 +60,16 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       if not Standard'Fast_Math then
 
-         --  ??? the test below is weird, it needs a comment, otherwise I or
-         --  someone else will change it back to R'Last > abs (X) ???
+         --  Note that the test below is written as a negation. This is to
+         --  account for the fact that X and Y may be NaNs, because both of
+         --  their operands could overflow. Given that all operations on NaNs
+         --  return false, the test can only be written thus.
 
          if not (abs (X) <= R'Last) then
             X := Scale**2 * ((Left.Re / Scale) * (Right.Re / Scale) -
                              (Left.Im / Scale) * (Right.Im / Scale));
          end if;
 
-         --  ??? same weird test ???
          if not (abs (Y) <= R'Last) then
             Y := Scale**2 * ((Left.Re / Scale) * (Right.Im / Scale)
                            + (Left.Im / Scale) * (Right.Re / Scale));

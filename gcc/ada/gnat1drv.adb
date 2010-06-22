@@ -861,42 +861,28 @@ begin
          if Subunits_Missing then
             Write_Str (" (missing subunits)");
             Write_Eol;
-            Write_Str ("to check parent unit");
 
          elsif Main_Kind = N_Subunit then
             Write_Str (" (subunit)");
             Write_Eol;
-            Write_Str ("to check subunit");
 
          elsif Main_Kind = N_Subprogram_Declaration then
             Write_Str (" (subprogram spec)");
             Write_Eol;
-            Write_Str ("to check subprogram spec");
 
          --  Generic package body in GNAT implementation mode
 
          elsif Main_Kind = N_Package_Body and then GNAT_Mode then
             Write_Str (" (predefined generic)");
             Write_Eol;
-            Write_Str ("to check predefined generic");
 
          --  Only other case is a package spec
 
          else
             Write_Str (" (package spec)");
             Write_Eol;
-            Write_Str ("to check package spec");
          end if;
 
-         Write_Str (" for errors, use ");
-
-         if Hostparm.OpenVMS then
-            Write_Str ("/NOLOAD");
-         else
-            Write_Str ("-gnatc");
-         end if;
-
-         Write_Eol;
          Set_Standard_Output;
 
          Sem_Ch13.Validate_Unchecked_Conversions;

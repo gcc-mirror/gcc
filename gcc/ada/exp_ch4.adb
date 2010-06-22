@@ -4378,9 +4378,12 @@ package body Exp_Ch4 is
 
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
-      --  test and give a warning.
+      --  test and give a warning. For floating point types however, this
+      --  is a standard way to check for finite numbers, and using 'Valid
+      --  would typically be a pessimization
 
       if Is_Scalar_Type (Etype (Lop))
+        and then not Is_Floating_Point_Type (Etype (Lop))
         and then Nkind (Rop) in N_Has_Entity
         and then Etype (Lop) = Entity (Rop)
         and then Comes_From_Source (N)

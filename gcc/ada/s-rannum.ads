@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007,2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,7 +140,7 @@ private
       --  The shift register, a circular buffer
 
       I : Integer := N;
-      --  Current starting position in shift register S
+      --  Current starting position in shift register S (N means uninitialized)
    end record;
 
 end System.Random_Numbers;
