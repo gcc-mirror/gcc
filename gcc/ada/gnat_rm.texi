@@ -8869,7 +8869,8 @@ A.5.2(32).
 @end cartouche
 @noindent
 The algorithm is the Mersenne Twister, as documented in the source file
-@file{s-rannum.adb}.
+@file{s-rannum.adb}. This version of the algorithm has a period of
+2**19937-1.
 
 @sp 1
 @cartouche

@@ -191,17 +191,21 @@ package body System.Random_Numbers is
    generic
       type Unsigned is mod <>;
       type Real is digits <>;
-      with function Shift_Right (Value : Unsigned; Amount : Natural)
-        return Unsigned is <>;
       with function Random (G : Generator) return Unsigned is <>;
    function Random_Float_Template (Gen : Generator) return Real;
    pragma Inline (Random_Float_Template);
    --  Template for a random-number generator implementation that delivers
-   --  values of type Real in the half-open range [0 .. 1), using values from
-   --  Gen, assuming that Unsigned is large enough to hold the bits of
-   --  a mantissa for type Real.
+   --  values of type Real in the range [0 .. 1], using values from Gen,
+   --  assuming that Unsigned is large enough to hold the bits of a mantissa
+   --  for type Real.
 
    function Random_Float_Template (Gen : Generator) return Real is
+
+      pragma Compile_Time_Error
+        (Unsigned'Last <= 2**(Real'Machine_Mantissa - 1),
+         "insufficiently large modular type used to hold mantissa");
+
+   begin
       --  This code generates random floating-point numbers from unsigned
       --  integers. Assuming that Real'Machine_Radix = 2, it can deliver all
       --  machine values of type Real (as implied by Real'Machine_Mantissa and
@@ -210,69 +214,118 @@ package body System.Random_Numbers is
       --  integer>) / (<max random integer>+1). To do so, we first extract an
       --  (M-1)-bit significand (where M is Real'Machine_Mantissa), and then
       --  decide on a normalized exponent by repeated coin flips, decrementing
-      --  from 0 as long as we flip heads (1 bits). This yields the proper
-      --  geometric distribution for the exponent: in a uniformly distributed
-      --  set of floating-point numbers, 1/2 of them will be in [0.5, 1), 1/4
-      --  will be in [0.25, 0.5), and so forth. If the process reaches
-      --  Machine_Emin (an extremely rare event), it uses the selected mantissa
-      --  bits as an unnormalized fraction with Machine_Emin as exponent.
-      --  Otherwise, it adds a leading bit to the selected mantissa bits (thus
-      --  giving a normalized fraction) and adjusts by the chosen exponent. The
-      --  algorithm attempts to be stingy with random integers. In the worst
-      --  case, it can consume roughly -Real'Machine_Emin/32 32-bit integers,
-      --  but this case occurs with probability 2**Machine_Emin, and the
-      --  expected number of calls to integer-valued Random is 1.
+      --  from 0 as long as we flip heads (1 bits). This process yields the
+      --  proper geometric distribution for the exponent: in a uniformly
+      --  distributed set of floating-point numbers, 1/2 of them will be in
+      --  (0.5, 1], 1/4 will be in (0.25, 0.5], and so forth. It makes a
+      --  further adjustment at binade boundaries (see comments below) to give
+      --  the effect of selecting a uniformly distributed real deviate in
+      --  [0..1] and then rounding to the nearest representable floating-point
+      --  number.  The algorithm attempts to be stingy with random integers. In
+      --  the worst case, it can consume roughly -Real'Machine_Emin/32 32-bit
+      --  integers, but this case occurs with probability around
+      --  2**Machine_Emin, and the expected number of calls to integer-valued
+      --  Random is 1.  For another discussion of the issues addressed by this
+      --  process, see Allen Downey's unpublished paper at
+      --  http://allendowney.com/research/rand/downey07randfloat.pdf.
 
-   begin
       if Real'Machine_Radix /= 2 then
-         declare
-            Val : constant Real :=
-                    Real'Machine
-                      (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
-         begin
-            if Val < 1.0 then
-               return Real'Base (Val);
-            else
-               return Real'Pred (1.0);
-            end if;
-         end;
-
+         return Real'Machine
+           (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
       else
          declare
-            Mant_Bits : constant Integer := Real'Machine_Mantissa - 1;
-            Mant_Mask : constant Unsigned := 2**Mant_Bits - 1;
-            Adjust32  : constant Integer := Real'Size - Unsigned_32'Size;
-            Leftover  : constant Integer :=
-                          Unsigned'Size - Real'Machine_Mantissa + 1;
-            V         : constant Unsigned := Random (Gen);
-            Mant      : constant Unsigned := V and Mant_Mask;
-            Rand_Bits : Unsigned_32;
-            Exp       : Integer;
-            Bits_Left : Integer;
-            Result    : Real;
+            type Bit_Count is range 0 .. 4;
 
+            subtype T is Real'Base;
+
+            Trailing_Ones : constant array (Unsigned_32 range 0 .. 15)
+              of Bit_Count
+              :=  (2#00000# => 0, 2#00001# => 1, 2#00010# => 0, 2#00011# => 2,
+                   2#00100# => 0, 2#00101# => 1, 2#00110# => 0, 2#00111# => 3,
+                   2#01000# => 0, 2#01001# => 1, 2#01010# => 0, 2#01011# => 2,
+                   2#01100# => 0, 2#01101# => 1, 2#01110# => 0, 2#01111# => 4);
+
+            Pow_Tab : constant array (Bit_Count range 0 .. 3) of Real
+              := (0 => 2.0**(0 - T'Machine_Mantissa),
+                  1 => 2.0**(-1 - T'Machine_Mantissa),
+                  2 => 2.0**(-2 - T'Machine_Mantissa),
+                  3 => 2.0**(-3 - T'Machine_Mantissa));
+
+            Extra_Bits : constant Natural :=
+                         (Unsigned'Size - T'Machine_Mantissa + 1);
+            --  Random bits left over after selecting mantissa
+
+            Mantissa   : Unsigned;
+            X          : Real;            -- Scaled mantissa
+            R          : Unsigned_32;     -- Supply of random bits
+            R_Bits     : Natural;         -- Number of bits left in R
+
+            K          : Bit_Count;       -- Next decrement to exponent
          begin
-            Rand_Bits := Unsigned_32 (Shift_Right (V, Adjust32));
-            Exp := 0;
-            Bits_Left := Leftover;
-            Result := Real (Mant + 2**Mant_Bits) * 2.0**(-Mant_Bits - 1);
-            while Rand_Bits >= 2**31 loop
-               if Exp = Real'Machine_Emin then
-                  return Real (Mant) * 2.0**Real'Machine_Emin;
-               end if;
 
-               Result := Result * 0.5;
-               Exp := Exp - 1;
-               Rand_Bits := 2 * Rand_Bits;
-               Bits_Left := Bits_Left - 1;
+            Mantissa := Random (Gen) / 2**Extra_Bits;
+            R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
+            R_Bits := Extra_Bits;
+            X := Real (2**(T'Machine_Mantissa - 1) + Mantissa); -- Exact
 
-               if Bits_Left = 0 then
-                  Bits_Left := 32;
-                  Rand_Bits := Random (Gen);
-               end if;
-            end loop;
+            if Extra_Bits < 4 and then R < 2**Extra_Bits - 1 then
+               --  We got lucky and got a zero in our few extra bits
+               K := Trailing_Ones (R);
 
-            return Result;
+            else
+               Find_Zero : loop
+
+                  --  R has R_Bits unprocessed random bits, a multiple of 4.
+                  --  X needs to be halved for each trailing one bit. The
+                  --  process stops as soon as a 0 bit is found. If R_Bits
+                  --  becomes zero, reload R.
+
+                  --  Process 4 bits at a time for speed: the two iterations
+                  --  on average with three tests each was still too slow,
+                  --  probably because the branches are not predictable.
+                  --  This loop now will only execute once 94% of the cases,
+                  --  doing more bits at a time will not help.
+
+                  while R_Bits >= 4 loop
+                     K := Trailing_Ones (R mod 16);
+
+                     exit Find_Zero when K < 4; -- Exits 94% of the time
+
+                     R_Bits := R_Bits - 4;
+                     X := X / 16.0;
+                     R := R / 16;
+                  end loop;
+
+                  --  Do not allow us to loop endlessly even in the (very
+                  --  unlikely) case that Random (Gen) keeps yielding all ones.
+
+                  exit Find_Zero when X = 0.0;
+                  R := Random (Gen);
+                  R_Bits := 32;
+               end loop Find_Zero;
+            end if;
+
+            --  K has the count of trailing ones not reflected yet in X.
+            --  The following multiplication takes care of that, as well
+            --  as the correction to move the radix point to the left of
+            --  the mantissa. Doing it at the end avoids repeated rounding
+            --  errors in the exceedingly unlikely case of ever having
+            --  a subnormal result.
+
+            X := X * Pow_Tab (K);
+
+            --  The smallest value in each binade is rounded to by 0.75 of
+            --  the span of real numbers as its next larger neighbor, and
+            --  1.0 is rounded to by half of the span of real numbers as its
+            --  next smaller neighbor. To account for this, when we encounter
+            --  the smallest number in a binade, we substitute the smallest
+            --  value in the next larger binade with probability 1/2.
+
+            if Mantissa = 0 and then Unsigned_32'(Random (Gen)) mod 2 = 0 then
+               X := 2.0 * X;
+            end if;
+
+            return X;
          end;
       end if;
    end Random_Float_Template;
