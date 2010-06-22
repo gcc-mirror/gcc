@@ -381,8 +381,12 @@ gsi_replace (gimple_stmt_iterator *gsi, gimple stmt, bool update_eh_info)
     maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 
   gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
+
+  /* Free all the data flow information for ORIG_STMT.  */
+  gimple_set_bb (orig_stmt, NULL);
   gimple_remove_stmt_histograms (cfun, orig_stmt);
   delink_stmt_imm_use (orig_stmt);
+
   *gsi_stmt_ptr (gsi) = stmt;
   gimple_set_modified (stmt, true);
   update_modified_stmt (stmt);

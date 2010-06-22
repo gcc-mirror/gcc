@@ -2259,7 +2259,6 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
   gimple new_stmt;
-  gimple_stmt_iterator gsi;
 
   if (!decl || decl == e->callee->decl
       /* Don't update call from same body alias to the real function.  */
@@ -2275,20 +2274,24 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
     }
 
   if (e->callee->clone.combined_args_to_skip)
-    new_stmt = gimple_call_copy_skip_args (e->call_stmt,
-				       e->callee->clone.combined_args_to_skip);
+    {
+      gimple_stmt_iterator gsi;
+
+      new_stmt
+	= gimple_call_copy_skip_args (e->call_stmt,
+				      e->callee->clone.combined_args_to_skip);
+
+      if (gimple_vdef (new_stmt)
+	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
+	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+
+      gsi = gsi_for_stmt (e->call_stmt);
+      gsi_replace (&gsi, new_stmt, true);
+    }
   else
     new_stmt = e->call_stmt;
-  if (gimple_vdef (new_stmt)
-      && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
-    SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+
   gimple_call_set_fndecl (new_stmt, e->callee->decl);
-
-  gsi = gsi_for_stmt (e->call_stmt);
-  gsi_replace (&gsi, new_stmt, true);
-
-  /* Update EH information too, just in case.  */
-  maybe_clean_or_replace_eh_stmt (e->call_stmt, new_stmt);
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt);
 

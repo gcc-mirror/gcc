@@ -1,3 +1,13 @@
+2010-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Chain the
+	new statement and adjust VDEF only if necessary.  Remove superfluous
+	call to maybe_clean_or_replace_eh_stmt.
+	* gimple.c (gimple_call_copy_skip_args): Use gimple_call_copy_flags to
+	copy the flags.
+	* gimple-iterator.c (gsi_replace): Clear BB of old statement here...
+	* tree-inline.c (copy_bb): ...and not there.
+
 2010-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
