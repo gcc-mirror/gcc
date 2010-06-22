@@ -964,7 +964,7 @@ package body Exp_Ch6 is
             return;
          end if;
 
-         Temp := Make_Temporary (Loc, 'T');
+         Temp := Make_Temporary (Loc, 'T', Actual);
 
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
@@ -1216,7 +1216,7 @@ package body Exp_Ch6 is
 
          Reset_Packed_Prefix;
 
-         Temp := Make_Temporary (Loc, 'T');
+         Temp := Make_Temporary (Loc, 'T', Actual);
          Incod  := Relocate_Node (Actual);
          Outcod := New_Copy_Tree (Incod);
 
@@ -1381,7 +1381,7 @@ package body Exp_Ch6 is
             return Entity (Actual);
 
          else
-            Var := Make_Temporary (Loc, 'T');
+            Var := Make_Temporary (Loc, 'T', Actual);
 
             N_Node :=
               Make_Object_Renaming_Declaration (Loc,
