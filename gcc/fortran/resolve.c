@@ -11144,6 +11144,7 @@ resolve_fl_derived (gfc_symbol *sym)
   /* If this is a non-ABSTRACT type extending an ABSTRACT one, ensure that
      all DEFERRED bindings are overridden.  */
   if (super_type && super_type->attr.abstract && !sym->attr.abstract
+      && !sym->attr.is_class
       && ensure_not_abstract (sym, super_type) == FAILURE)
     return FAILURE;
 

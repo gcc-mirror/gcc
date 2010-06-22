@@ -1,3 +1,9 @@
+2010-06-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44616
+	* resolve.c (resolve_fl_derived): Avoid checking for abstract on class
+	containers.
+
 2010-06-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40632

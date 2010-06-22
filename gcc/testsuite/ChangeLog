@@ -1,3 +1,8 @@
+2010-06-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44616
+	* gfortran.dg/abstract_type_8.f03: New.
+
 2010-06-21  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/noexcept08.C: New.
