@@ -23,16 +23,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Opt;    use Opt;
 with System; use System;
 
 with Ada.Unchecked_Conversion;
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 package body Sinput.C is
 

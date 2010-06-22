@@ -26,15 +26,16 @@
 --  This package contains the low level, operating system routines used in the
 --  compiler and binder for command line processing and file input output.
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Namet; use Namet;
 with Types; use Types;
 
 with System;                  use System;
+
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib;           use System.OS_Lib;
+pragma Warnings (On);
+
 with System.Storage_Elements;
 
 pragma Elaborate_All (System.OS_Lib);

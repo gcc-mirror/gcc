@@ -2477,7 +2477,7 @@ package Einfo is
 --       Applicable to all entities, true if the entity denotes a private
 --       component of a protected type.
 
---    Is_Protected_Interface (Synthesized)
+--    Is_Protected_Interface (synthesized)
 --       Present in types that are interfaces. True if interface is declared
 --       protected, or is derived from protected interfaces.
 
@@ -2598,7 +2598,7 @@ package Einfo is
 --    Is_Tagged_Type (Flag55)
 --       Present in all entities. Set for an entity for a tagged type.
 
---    Is_Task_Interface (Synthesized)
+--    Is_Task_Interface (synthesized)
 --       Present in types that are interfaces. True if interface is declared as
 --       a task interface, or if it is derived from task interfaces.
 

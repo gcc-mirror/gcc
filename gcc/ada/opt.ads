@@ -38,15 +38,14 @@
 --  use the Project Manager. These tools include gnatmake, gnatname, the gnat
 --  driver, gnatclean, gprbuild and gprclean.
 
---  This unit is used by gnatcoll
-pragma Warnings (Off, "*is an internal GNAT unit");
-pragma Warnings (Off, "*use * instead");
-
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.Strings; use System.Strings;
 with System.WCh_Con; use System.WCh_Con;
+pragma Warnings (On);
 
 package Opt is
 

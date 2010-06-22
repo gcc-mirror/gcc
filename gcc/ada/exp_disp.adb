@@ -1474,10 +1474,15 @@ package body Exp_Disp is
       Thunk_Id   := Empty;
       Thunk_Code := Empty;
 
+      --  No thunk needed if the primitive has been eliminated
+
+      if Is_Eliminated (Ultimate_Alias (Prim)) then
+         return;
+
       --  In case of primitives that are functions without formals and a
       --  controlling result there is no need to build the thunk.
 
-      if not Present (First_Formal (Target)) then
+      elsif not Present (First_Formal (Target)) then
          pragma Assert (Ekind (Target) = E_Function
            and then Has_Controlling_Result (Target));
          return;
@@ -3689,6 +3694,7 @@ package body Exp_Disp is
 
                   if Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Abstract_Subprogram (Prim)
+                    and then not Is_Eliminated (Prim)
                     and then not Present (Prim_Table
                                            (UI_To_Int (DT_Position (Prim))))
                   then
@@ -3979,10 +3985,17 @@ package body Exp_Disp is
                while Present (Prim_Elmt) loop
                   Prim := Node (Prim_Elmt);
 
+                  --  Do not reference predefined primitives because they
+                  --  are located in a separate dispatch table; skip also
+                  --  abstract and eliminated primitives.
+
+                  --  Why do we skip imported primitives???
+
                   if not Is_Predefined_Dispatching_Operation (Prim)
                     and then Present (Interface_Alias (Prim))
                     and then not Is_Abstract_Subprogram (Alias (Prim))
                     and then not Is_Imported (Alias (Prim))
+                    and then not Is_Eliminated (Alias (Prim))
                     and then Find_Dispatching_Type
                                (Interface_Alias (Prim)) = Iface
 
@@ -5379,6 +5392,7 @@ package body Exp_Disp is
 
                      if Is_Predefined_Dispatching_Operation (Prim)
                        and then not Is_Abstract_Subprogram (Prim)
+                       and then not Is_Eliminated (Prim)
                        and then not Present (Prim_Table
                                               (UI_To_Int (DT_Position (Prim))))
                      then
@@ -5525,23 +5539,25 @@ package body Exp_Disp is
 
                   E := Ultimate_Alias (Prim);
 
-                  if Is_Imported (Prim)
-                    or else Present (Interface_Alias (Prim))
-                    or else Is_Predefined_Dispatching_Operation (Prim)
-                    or else Is_Eliminated (E)
+                  --  Do not reference predefined primitives because they are
+                  --  located in a separate dispatch table; skip entities with
+                  --  attribute Interface_Alias because they are only required
+                  --  to build secondary dispatch tables; skip also abstract
+                  --  and eliminated primitives.
+
+                  --  Why do we skip imported primitives???
+
+                  if not Is_Predefined_Dispatching_Operation (Prim)
+                    and then not Is_Predefined_Dispatching_Operation (E)
+                    and then not Present (Interface_Alias (Prim))
+                    and then not Is_Abstract_Subprogram (E)
+                    and then not Is_Imported (E)
+                    and then not Is_Eliminated (E)
                   then
-                     null;
+                     pragma Assert
+                       (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);
 
-                  else
-                     if not Is_Predefined_Dispatching_Operation (E)
-                       and then not Is_Abstract_Subprogram (E)
-                       and then not Present (Interface_Alias (E))
-                     then
-                        pragma Assert
-                          (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);
-
-                        Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
-                     end if;
+                     Prim_Table (UI_To_Int (DT_Position (Prim))) := E;
                   end if;
 
                   Next_Elmt (Prim_Elmt);
@@ -6741,7 +6757,11 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      if not RTE_Available (RE_Tag) then
+      --  Do not register in the dispatch table eliminated primitives
+
+      if not RTE_Available (RE_Tag)
+        or else Is_Eliminated (Ultimate_Alias (Prim))
+      then
          return L;
       end if;
 
