@@ -77,7 +77,7 @@ class StdListPrinter:
         elif self.typename == "std::__debug::list":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            raise "Cannot cast list node for list printer."
+            raise ValueError, "Cannot cast list node for list printer."
         return self._iterator(nodetype, self.val['_M_impl']['_M_node'])
 
     def to_string(self):
@@ -101,7 +101,7 @@ class StdListIteratorPrinter:
         elif self.typename == "std::__norm::_List_iterator" or self.typename == "std::__norm::_List_const_iterator":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            raise "Cannot cast list node for list iterator printer."
+            raise ValueError, "Cannot cast list node for list iterator printer."
         return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
 
 class StdSlistPrinter:
@@ -208,7 +208,7 @@ class StdTuplePrinter:
             # tuple.
             nodes = self.head.type.fields ()
             if len (nodes) != 1:
-                raise "Top of tuple tree does not consist of a single node."
+                raise ValueError, "Top of tuple tree does not consist of a single node."
 
             # Set the actual head to the first pair.
             self.head  = self.head.cast (nodes[0].type)
@@ -224,7 +224,7 @@ class StdTuplePrinter:
                 raise StopIteration
             # Check that this iteration has an expected structure.
             if len (nodes) != 2:
-                raise "Cannot parse more than 2 nodes in a tuple tree."
+                raise ValueError, "Cannot parse more than 2 nodes in a tuple tree."
 
             # - Left node is the next recursion parent.
             # - Right node is the actual class contained in the tuple.
