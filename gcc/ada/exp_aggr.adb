@@ -176,8 +176,9 @@ package body Exp_Aggr is
    --  Very large static aggregates present problems to the back-end, and are
    --  transformed into assignments and loops. This function verifies that the
    --  total number of components of an aggregate is acceptable for rewriting
-   --  into a purely positional static form. It is called prior to calling
-   --  Flatten.
+   --  into a purely positional static form. Aggr_Size_OK must be called before
+   --  calling Flatten.
+   --
    --  This function also detects and warns about one-component aggregates that
    --  appear in a non-static context. Even if the component value is static,
    --  such an aggregate must be expanded into an assignment.
