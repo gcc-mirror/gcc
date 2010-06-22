@@ -211,10 +211,10 @@ package body Freeze is
 
    begin
 
-      --  if the renamed subprogram is intrinsic, there is no need for a
-      --  wrapper body: we set the alias that will be called and expanded
-      --  which completes the declaration. This transformation is only
-      --  legal if the renamed entity has already been elaborated.
+      --  If the renamed subprogram is intrinsic, there is no need for a
+      --  wrapper body: we set the alias that will be called and expanded which
+      --  completes the declaration. This transformation is only legal if the
+      --  renamed entity has already been elaborated.
 
       --  Note that it is legal for a renaming_as_body to rename an intrinsic
       --  subprogram, as long as the renaming occurs before the new entity

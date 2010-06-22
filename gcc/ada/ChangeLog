@@ -1,3 +1,11 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* s-rannum.adb, a-nudira.adb, types.ads, freeze.adb, sem_aggr.adb,
+	exp_aggr.adb: Minor reformatting.
+	* gnat_rm.texi: Document GNAT.MBBS_Discrete_Random and
+	GNAT.MBSS_Float_Random.
+	* g-mbdira.adb, g-mbflra.adb, g-mbdira.ads, g-mbflra.ads: Fix header.
+
 2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
 
 	* a-nudira.adb, a-nudira.ads, a-nuflra.adb, a-nuflra.ads,

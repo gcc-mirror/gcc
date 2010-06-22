@@ -503,10 +503,10 @@ package Types is
    --  The type Char is used for character data internally in the compiler, but
    --  character codes in the source are represented by the Char_Code type.
    --  Each character literal in the source is interpreted as being one of the
-   --  16#7FFF_FFFF possible Wide_Wide_Character codes, and a unique Integer
-   --  Value is assigned, corresponding to the UTF_32 value, which also
-   --  corresponds to the POS value in the Wide_Wide_Character type, and also
-   --  corresponds to the POS value in the Wide_Character and Character types
+   --  16#7FFF_FFFF# possible Wide_Wide_Character codes, and a unique Integer
+   --  value is assigned, corresponding to the UTF-32 value, which also
+   --  corresponds to the Pos value in the Wide_Wide_Character type, and also
+   --  corresponds to the Pos value in the Wide_Character and Character types
    --  for values that are in appropriate range. String literals are similarly
    --  interpreted as a sequence of such codes.
 

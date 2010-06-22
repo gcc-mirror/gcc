@@ -2861,14 +2861,14 @@ package body Exp_Aggr is
          if Is_CPP_Constructor_Call (Expression (Comp)) then
             Append_List_To (L,
               Build_Initialization_Call (Loc,
-                Id_Ref => Make_Selected_Component (Loc,
-                            Prefix => New_Copy_Tree (Target),
-                            Selector_Name => New_Occurrence_Of (Selector,
-                                                                   Loc)),
-                Typ    => Etype (Selector),
-                Enclos_Type => Typ,
+                Id_Ref            => Make_Selected_Component (Loc,
+                                       Prefix        => New_Copy_Tree (Target),
+                                       Selector_Name =>
+                                         New_Occurrence_Of (Selector, Loc)),
+                Typ               => Etype (Selector),
+                Enclos_Type       => Typ,
                 With_Default_Init => True,
-                Constructor_Ref => Expression (Comp)));
+                Constructor_Ref   => Expression (Comp)));
 
          --  Ada 2005 (AI-287): For each default-initialized component generate
          --  a call to the corresponding IP subprogram if available.
@@ -2887,8 +2887,8 @@ package body Exp_Aggr is
 
             declare
                Ctype            : constant Entity_Id := Etype (Selector);
-               Inside_Allocator : Boolean   := False;
-               P                : Node_Id   := Parent (N);
+               Inside_Allocator : Boolean            := False;
+               P                : Node_Id            := Parent (N);
 
             begin
                if Is_Task_Type (Ctype) or else Has_Task (Ctype) then
@@ -2909,12 +2909,12 @@ package body Exp_Aggr is
 
             Append_List_To (L,
               Build_Initialization_Call (Loc,
-                Id_Ref => Make_Selected_Component (Loc,
-                            Prefix => New_Copy_Tree (Target),
-                            Selector_Name => New_Occurrence_Of (Selector,
-                                                                   Loc)),
-                Typ    => Etype (Selector),
-                Enclos_Type => Typ,
+                Id_Ref            => Make_Selected_Component (Loc,
+                                       Prefix        => New_Copy_Tree (Target),
+                                       Selector_Name =>
+                                         New_Occurrence_Of (Selector, Loc)),
+                Typ               => Etype (Selector),
+                Enclos_Type       => Typ,
                 With_Default_Init => True));
 
          --  Prepare for component assignment

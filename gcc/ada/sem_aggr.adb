@@ -1800,8 +1800,8 @@ package body Sem_Aggr is
 
                elsif Is_Tagged_Type (Etype (Expression (Assoc))) then
                   Check_Dynamically_Tagged_Expression
-                    (Expr => Expression (Assoc),
-                     Typ  => Component_Type (Etype (N)),
+                    (Expr        => Expression (Assoc),
+                     Typ         => Component_Type (Etype (N)),
                      Related_Nod => N);
                end if;
 
