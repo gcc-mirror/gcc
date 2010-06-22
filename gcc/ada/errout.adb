@@ -2499,7 +2499,7 @@ package body Errout is
       --  in case, which is the case when we can copy from the source.
 
       declare
-         Src_Loc : constant Source_Ptr := Sloc (Error_Msg_Node_1);
+         Src_Loc : constant Source_Ptr := Sloc (Node);
          Sbuffer : Source_Buffer_Ptr;
          Ref_Ptr : Integer;
          Src_Ptr : Source_Ptr;

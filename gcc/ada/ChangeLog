@@ -1,3 +1,19 @@
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Display): In non verbose mode, truncate after fourth
+	argument.
+	* mlib-utl.adb (Gcc): In non verbose mode, truncate the display of the
+	gcc command if it is too long.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Node): Fix incorrect reference to node.
+
+2010-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Use Actual as the related node when
+	calling Make_Temporary.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb, sem_aux.adb, errout.adb: Minor reformatting.
