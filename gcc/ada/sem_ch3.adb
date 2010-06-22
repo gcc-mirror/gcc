@@ -6790,6 +6790,13 @@ package body Sem_Ch3 is
          Mark_Rewrite_Insertion (New_Decl);
          Insert_Before (N, New_Decl);
 
+         --  In the tagged case, make sure ancestor is frozen appropriately
+         --  (see also non-discriminated case below).
+
+         if not Private_Extension or else Is_Interface (Parent_Base) then
+            Freeze_Before (New_Decl, Parent_Type);
+         end if;
+
          --  Note that this call passes False for the Derive_Subps parameter
          --  because subprogram derivation is deferred until after creating
          --  the subtype (see below).
@@ -6880,9 +6887,7 @@ package body Sem_Ch3 is
          --  The declaration of a specific descendant of an interface type
          --  freezes the interface type (RM 13.14).
 
-         if not Private_Extension
-           or else Is_Interface (Parent_Base)
-         then
+         if not Private_Extension or else Is_Interface (Parent_Base) then
             Freeze_Before (N, Parent_Type);
          end if;
 

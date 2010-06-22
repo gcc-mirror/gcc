@@ -2788,12 +2788,6 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
     for (;;)
       {
-        for (; *path_val == PATH_SEPARATOR; path_val++)
-          ;
-
-      if (*path_val == 0)
-        return 0;
-
       /* Skip the starting quote */
 
       if (*path_val == '"')
@@ -2802,7 +2796,14 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
       for (ptr = file_path; *path_val && *path_val != PATH_SEPARATOR; )
 	*ptr++ = *path_val++;
 
-      ptr--;
+      /* If directory is empty, it is the current directory*/
+
+      if (ptr == file_path)
+        {
+         *ptr = '.';
+        }
+      else
+        ptr--;
 
       /* Skip the ending quote */
 
@@ -2816,6 +2817,13 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
       if (__gnat_is_regular_file (file_path))
         return xstrdup (file_path);
+
+      if (*path_val == 0)
+        return 0;
+
+      /* Skip path separator */
+
+      path_val++;
       }
   }
 

@@ -1,3 +1,30 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* lib-writ.ads, errout.adb, einfo.adb, einfo.ads: Minor reformatting.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* adaint.c (__gnat_locate_regular_file): If a directory in the path is
+	empty, make it the current working directory.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): When deriving a tagged
+	private type with discriminants, make sure the parent type is frozen.
+
+2010-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Bit>: Deal
+	with packed array references specially.
+	* exp_ch4.adb (Expand_N_Indexed_Component): Do not convert a reference
+	to a component of a bit packed array if it is the prefix of 'Bit.
+	* exp_pakd.ads (Expand_Packed_Bit_Reference): Declare.
+	* exp_pakd.adb (Expand_Packed_Bit_Reference): New procedure.  Expand a
+	'Bit reference, where the prefix involves a packed array reference.
+	(Get_Base_And_Bit_Offset): New helper, extracted from...
+	(Expand_Packed_Address_Reference): ...here.  Call above procedure to
+	get the outer object and offset expression.
+
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_attr.adb, lib-writ.ads, bindgen.adb: Minor reformatting.
