@@ -165,7 +165,7 @@ package body Prj.Nmsc is
 
    package Lib_Data_Table is new GNAT.Table
      (Table_Component_Type => Lib_Data,
-      Table_Index_Type     => Positive,
+      Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
       Table_Increment      => 100);
@@ -7567,6 +7567,7 @@ package body Prj.Nmsc is
 
    --  Start of processing for Process_Naming_Scheme
    begin
+      Lib_Data_Table.Init;
       Initialize (Data, Tree => Tree, Flags => Flags);
       Check_All_Projects (Root_Project, Data, Imported_First => True);
       Free (Data);

@@ -136,6 +136,7 @@ package body Sem_Attr is
 
    Attribute_05 : constant Attribute_Class_Array := Attribute_Class_Array'(
       Attribute_Machine_Rounding  |
+      Attribute_Mod               |
       Attribute_Priority          |
       Attribute_Stream_Size       |
       Attribute_Wide_Wide_Width   => True,
