@@ -677,18 +677,15 @@ package body Sem_Disp is
       Set_Is_Dispatching_Operation (Subp, False);
       Tagged_Type := Find_Dispatching_Type (Subp);
 
-      --  Ada 2005 (AI-345)
+      --  Ada 2005 (AI-345): Use the corresponding record (if available).
+      --  Required because primitives of concurrent types are be attached
+      --  to the corresponding record (not to the concurrent type).
 
       if Ada_Version >= Ada_05
         and then Present (Tagged_Type)
         and then Is_Concurrent_Type (Tagged_Type)
+        and then Present (Corresponding_Record_Type (Tagged_Type))
       then
-         --  Protect the frontend against previously detected errors
-
-         if No (Corresponding_Record_Type (Tagged_Type)) then
-            return;
-         end if;
-
          Tagged_Type := Corresponding_Record_Type (Tagged_Type);
       end if;
 
@@ -1067,6 +1064,18 @@ package body Sem_Disp is
                end;
             end if;
          end if;
+
+      --  If the tagged type is a concurrent type then we must be compiling
+      --  with no code generation (we are either compiling a generic unit or
+      --  compiling under -gnatc mode) because we have previously tested that
+      --  no serious errors has been reported. In this case we do not add the
+      --  primitive to the list of primitives of Tagged_Type but we leave the
+      --  primitive decorated as a dispatching operation to be able to analyze
+      --  and report errors associated with the Object.Operation notation.
+
+      elsif Is_Concurrent_Type (Tagged_Type) then
+         pragma Assert (not Expander_Active);
+         null;
 
       --  If no old subprogram, then we add this as a dispatching operation,
       --  but we avoid doing this if an error was posted, to prevent annoying

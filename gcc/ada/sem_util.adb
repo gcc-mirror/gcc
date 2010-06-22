@@ -11125,22 +11125,6 @@ package body Sem_Util is
       return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
    end Type_Access_Level;
 
-   --------------------
-   -- Ultimate_Alias --
-   --------------------
-
-   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id is
-      E : Entity_Id := Prim;
-
-   begin
-      while Present (Alias (E)) loop
-         pragma Assert (Alias (E) /= E);
-         E := Alias (E);
-      end loop;
-
-      return E;
-   end Ultimate_Alias;
-
    --------------------------
    -- Unit_Declaration_Node --
    --------------------------

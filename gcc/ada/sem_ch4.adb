@@ -6880,23 +6880,26 @@ package body Sem_Ch4 is
                --  Scan the list of generic formals to find subprograms
                --  that may have a first controlling formal of the type.
 
-               declare
-                  Decl : Node_Id;
+               if Nkind (Unit_Declaration_Node (Scope (T)))
+                 = N_Generic_Subprogram_Declaration
+               then
+                  declare
+                     Decl : Node_Id;
 
-               begin
-                  Decl :=
-                    First (Generic_Formal_Declarations
-                            (Unit_Declaration_Node (Scope (T))));
-                  while Present (Decl) loop
-                     if Nkind (Decl) in N_Formal_Subprogram_Declaration then
-                        Subp := Defining_Entity (Decl);
-                        Check_Candidate;
-                     end if;
+                  begin
+                     Decl :=
+                       First (Generic_Formal_Declarations
+                               (Unit_Declaration_Node (Scope (T))));
+                     while Present (Decl) loop
+                        if Nkind (Decl) in N_Formal_Subprogram_Declaration then
+                           Subp := Defining_Entity (Decl);
+                           Check_Candidate;
+                        end if;
 
-                     Next (Decl);
-                  end loop;
-               end;
-
+                        Next (Decl);
+                     end loop;
+                  end;
+               end if;
                return Candidates;
 
             else
@@ -6906,7 +6909,15 @@ package body Sem_Ch4 is
                --  declaration or body (either the one that declares T, or a
                --  child unit).
 
-               Subp := First_Entity (Scope (T));
+               --  For a subtype representing a generic actual type, go to the
+               --  base type.
+
+               if Is_Generic_Actual_Type (T) then
+                  Subp := First_Entity (Scope (Base_Type (T)));
+               else
+                  Subp := First_Entity (Scope (T));
+               end if;
+
                while Present (Subp) loop
                   if Is_Overloadable (Subp) then
                      Check_Candidate;
@@ -6979,12 +6990,13 @@ package body Sem_Ch4 is
          --  corresponding record (base) type.
 
          if Is_Concurrent_Type (Obj_Type) then
-            if not Present (Corresponding_Record_Type (Obj_Type)) then
-               return False;
+            if Present (Corresponding_Record_Type (Obj_Type)) then
+               Corr_Type := Base_Type (Corresponding_Record_Type (Obj_Type));
+               Elmt := First_Elmt (Primitive_Operations (Corr_Type));
+            else
+               Corr_Type := Obj_Type;
+               Elmt := First_Elmt (Collect_Generic_Type_Ops (Obj_Type));
             end if;
-
-            Corr_Type := Base_Type (Corresponding_Record_Type (Obj_Type));
-            Elmt := First_Elmt (Primitive_Operations (Corr_Type));
 
          elsif not Is_Generic_Type (Obj_Type) then
             Corr_Type := Obj_Type;

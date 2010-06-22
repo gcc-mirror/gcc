@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,6 +127,14 @@ package body Exp_Ch9 is
       Def_Id : Entity_Id) return Node_Id;
    --  Build a specification for a function implementing the protected entry
    --  barrier of the specified entry body.
+
+   function Build_Corresponding_Record
+     (N    : Node_Id;
+      Ctyp : Node_Id;
+      Loc  : Source_Ptr) return Node_Id;
+   --  Common to tasks and protected types. Copy discriminant specifications,
+   --  build record declaration. N is the type declaration, Ctyp is the
+   --  concurrent entity (task type or protected type).
 
    function Build_Entry_Count_Expression
      (Concurrent_Type : Node_Id;
@@ -1037,8 +1045,9 @@ package body Exp_Ch9 is
       --  record is "limited tagged". It is "limited" to reflect the underlying
       --  limitedness of the task or protected object that it represents, and
       --  ensuring for example that it is properly passed by reference. It is
-      --  "tagged" to give support to dispatching calls through interfaces (Ada
-      --  2005: AI-345)
+      --  "tagged" to give support to dispatching calls through interfaces. We
+      --  propagate here the list of interfaces covered by the concurrent type
+      --  (Ada 2005: AI-345).
 
       return
         Make_Full_Type_Declaration (Loc,
@@ -1051,6 +1060,7 @@ package body Exp_Ch9 is
                   Component_Items => Cdecls),
               Tagged_Present  =>
                  Ada_Version >= Ada_05 and then Is_Tagged_Type (Ctyp),
+              Interface_List  => Interface_List (N),
               Limited_Present => True));
    end Build_Corresponding_Record;
 
@@ -7682,11 +7692,6 @@ package body Exp_Ch9 is
 
       Cdecls := Component_Items (Component_List (Type_Definition (Rec_Decl)));
 
-      --  Ada 2005 (AI-345): Propagate the attribute that contains the list
-      --  of implemented interfaces.
-
-      Set_Interface_List (Type_Definition (Rec_Decl), Interface_List (N));
-
       Qualify_Entity_Names (N);
 
       --  If the type has discriminants, their occurrences in the declaration
@@ -9945,11 +9950,6 @@ package body Exp_Ch9 is
       --  Here we will do the expansion
 
       Rec_Decl := Build_Corresponding_Record (N, Tasktyp, Loc);
-
-      --  Ada 2005 (AI-345): Propagate the attribute that contains the list
-      --  of implemented interfaces.
-
-      Set_Interface_List (Type_Definition (Rec_Decl), Interface_List (N));
 
       Rec_Ent  := Defining_Identifier (Rec_Decl);
       Cdecls   := Component_Items (Component_List

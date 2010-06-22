@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -192,5 +192,10 @@ package Sem_Aux is
 
    function Number_Discriminants (Typ : Entity_Id) return Pos;
    --  Typ is a type with discriminants, yields number of discriminants in type
+
+   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
+   pragma Inline (Ultimate_Alias);
+   --  Return the last entity in the chain of aliased entities of Prim. If Prim
+   --  has no alias return Prim.
 
 end Sem_Aux;

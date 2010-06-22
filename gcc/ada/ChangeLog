@@ -1,3 +1,44 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* s-rannum.adb: Minor reformatting.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads, sem_util.adb, sem_util.ads, sem_elim.adb,
+	exp_cg.adb: Minor code reorganization: Move routine Ultimate_Alias from
+	package Sem_Util to package Sem_Aux.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Secondary_DT, Make_DT): Minor code cleanup:
+	remove useless restriction on imported routines when building the
+	dispatch tables.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Create_Standard): Set Has_Pragma_Pack for standard string
+	types.
+
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Collect_Generic_Type_Ops): Protect code that handles
+	generic subprogram declarations to ensure proper context. Add missing
+	support for generic actuals.
+	(Try_Primitive_Operation): Add missing support for concurrent types that
+	have no Corresponding_Record_Type. Required to diagnose errors compiling
+	generics or when compiling with no code generation (-gnatc).
+	* sem_ch9.adb (Analyze_Protected_Type, Analyze_Task_Type): Do not build
+	the corresponding record type.
+	* sem_disp.ads, sem_disp.adb (Check_Dispatching_Operation): Complete
+	documentation. Do minimum decoration when processing a primitive of a
+	concurrent tagged type that covers interfaces. Required to diagnose
+	errors in the Object.Operation notation compiling generics or under
+	-gnatc.
+	* exp_ch9.ads, exp_ch9.adb (Build_Corresponding_Record): Add missing
+	propagation of attribute Interface_List to the corresponding record.
+	(Expand_N_Task_Type_Declaration): Code cleanup.
+	(Expand_N_Protected_Type_Declaration): Code cleanup.
+
 2010-06-22  Matthew Heaney  <heaney@adacore.com>
 
 	* a-convec.adb, a-coinve.adb: Removed 64-bit types Int and UInt.

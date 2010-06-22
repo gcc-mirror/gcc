@@ -34,6 +34,7 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Disp; use Sem_Disp;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;

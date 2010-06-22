@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,14 +49,6 @@ package Exp_Ch9 is
    --  E (typically a runtime routine entity obtained using RTE) with the
    --  Task_Id of the associated task as the parameter. The caller is
    --  responsible for analyzing and resolving the resulting tree.
-
-   function Build_Corresponding_Record
-     (N    : Node_Id;
-      Ctyp : Node_Id;
-      Loc  : Source_Ptr) return Node_Id;
-   --  Common to tasks and protected types. Copy discriminant specifications,
-   --  build record declaration. N is the type declaration, Ctyp is the
-   --  concurrent entity (task type or protected type).
 
    function Build_Entry_Names (Conc_Typ : Entity_Id) return Node_Id;
    --  Create the statements which populate the entry names array of a task or
