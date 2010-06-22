@@ -1,3 +1,8 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb: Add comment.
+	* projects.texi, gnat_ugn.texi: Remove macro.
+
 2010-06-22  Vincent Celier  <celier@adacore.com>
 
 	* prj-attr.adb: Remove project level attribute Main_Language.
