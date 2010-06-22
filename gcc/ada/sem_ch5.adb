@@ -448,14 +448,14 @@ package body Sem_Ch5 is
          end if;
          return;
 
-      --  Enforce RM 3.9.3 (8): left-hand side cannot be abstract
+      --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
+      --  abstract. This is only checked when the assignment Comes_From_Source,
+      --  because in some cases the expander generates such assignments (such
+      --  in the _assign operation for an abstract type).
 
-      elsif Is_Interface (T1)
-        and then not Is_Class_Wide_Type (T1)
-      then
+      elsif Is_Abstract_Type (T1) and then Comes_From_Source (N) then
          Error_Msg_N
-           ("target of assignment operation may not be abstract", Lhs);
-         return;
+           ("target of assignment operation must not be abstract", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand

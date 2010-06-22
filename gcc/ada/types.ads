@@ -59,9 +59,6 @@ package Types is
    type Int is range -2 ** 31 .. +2 ** 31 - 1;
    --  Signed 32-bit integer
 
-   type Dint is range -2 ** 63 .. +2 ** 63 - 1;
-   --  Double length (64-bit) integer
-
    subtype Nat is Int range 0 .. Int'Last;
    --  Non-negative Int values
 
@@ -506,7 +503,7 @@ package Types is
    --  The type Char is used for character data internally in the compiler, but
    --  character codes in the source are represented by the Char_Code type.
    --  Each character literal in the source is interpreted as being one of the
-   --  16#8000_0000 possible Wide_Wide_Character codes, and a unique Integer
+   --  16#7FFF_FFFF possible Wide_Wide_Character codes, and a unique Integer
    --  Value is assigned, corresponding to the UTF_32 value, which also
    --  corresponds to the POS value in the Wide_Wide_Character type, and also
    --  corresponds to the POS value in the Wide_Character and Character types

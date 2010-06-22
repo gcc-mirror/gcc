@@ -1154,9 +1154,8 @@ package VMS_Data is
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
 
-   S_Clean_Unc_Shared_Libs : aliased constant S :=
-                                          "/UNCHECKED_SHARED_LIB_IMPORTS " &
-                                              "--unchecked-shared-lib-imports";
+   S_Clean_USL : aliased constant S :=  "/UNCHECKED_SHARED_LIB_IMPORTS " &
+                                           "--unchecked-shared-lib-imports";
    --        /NOUNCHECKED_SHARED_LIB_IMPORTS (D)
    --        /UNCHECKED_SHARED_LIB_IMPORTS
    --
@@ -1188,7 +1187,7 @@ package VMS_Data is
                        S_Clean_Search 'Access,
                        S_Clean_Subdirs'Access,
                        S_Clean_Verbose'Access,
-                       S_Clean_Unc_Shared_Libs'Access);
+                       S_Clean_USL    'Access);
 
    -------------------------------
    -- Switches for GNAT COMPILE --
@@ -4869,9 +4868,8 @@ package VMS_Data is
    --   For example, -O -O2 is different than -O2 -O, but -g -O is equivalent
    --   to -O -g.
 
-   S_Make_Unc_Shared_Libs : aliased constant S :=
-                                          "/UNCHECKED_SHARED_LIB_IMPORTS " &
-                                              "--unchecked-shared-lib-imports";
+   S_Make_USL : aliased constant S := "/UNCHECKED_SHARED_LIB_IMPORTS " &
+                                         "--unchecked-shared-lib-imports";
    --        /NOUNCHECKED_SHARED_LIB_IMPORTS (D)
    --        /UNCHECKED_SHARED_LIB_IMPORTS
    --
@@ -4954,7 +4952,7 @@ package VMS_Data is
                       S_Make_Stand   'Access,
                       S_Make_Subdirs 'Access,
                       S_Make_Switch  'Access,
-                      S_Make_Unc_Shared_Libs'Access,
+                      S_Make_USL     'Access,
                       S_Make_Unique  'Access,
                       S_Make_Use_Map 'Access,
                       S_Make_Verbose 'Access);

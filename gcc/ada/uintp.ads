@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -233,9 +233,6 @@ package Uintp is
    --  given Modulo (uses Euclid's algorithm). Note: the call is considered
    --  to be erroneous (and the behavior is undefined) if n is not invertible.
 
-   function UI_From_Dint (Input : Dint) return Uint;
-   --  Converts Dint value to universal integer form
-
    function UI_From_Int (Input : Int) return Uint;
    --  Converts Int value to universal integer form
 
@@ -404,7 +401,8 @@ private
    --  Base is defined to allow efficient execution of the primitive operations
    --  (a0, b0, c0) defined in the section "The Classical Algorithms"
    --  (sec. 4.3.1) of Donald Knuth's "The Art of Computer  Programming",
-   --  Vol. 2. These algorithms are used in this package.
+   --  Vol. 2. These algorithms are used in this package. In particular,
+   --  the product of two single digits in this base fits in a 32-bit integer.
 
    Base_Bits : constant := 15;
    --  Number of bits in base value
@@ -469,6 +467,11 @@ private
    Uint_Minus_63  : constant Uint := Uint (Uint_Direct_Bias - 63);
    Uint_Minus_80  : constant Uint := Uint (Uint_Direct_Bias - 80);
    Uint_Minus_128 : constant Uint := Uint (Uint_Direct_Bias - 128);
+
+   Uint_Max_Simple_Mul : constant := Uint_Direct_Bias + 2 ** 15;
+   --  If two values are directly represented and less than or equal to this
+   --  value, then we know the product fits in a 32-bit integer. This allows
+   --  UI_Mul to efficiently compute the product in this case.
 
    type Save_Mark is record
       Save_Uint   : Uint;
