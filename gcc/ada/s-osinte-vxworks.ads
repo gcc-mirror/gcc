@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --            Copyright (C) 1991-1994, Florida State University             --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,7 +155,7 @@ package System.OS_Interface is
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
 
-   type sigset_t is private;
+   subtype sigset_t is System.Vxworks.Ext.sigset_t;
 
    type struct_sigaction is record
       sa_handler : System.Address;
@@ -490,8 +490,6 @@ package System.OS_Interface is
    --  For uniprocessor systems return ERROR status.
 
 private
-   type sigset_t is new unsigned_long_long;
-
    type pid_t is new int;
 
    ERROR_PID : constant pid_t := -1;

@@ -1551,7 +1551,34 @@ package body Sem_Ch3 is
                       (Tagged_Type => Tagged_Type,
                        Iface_Prim  => Iface_Prim);
 
-                  pragma Assert (Present (Prim));
+                  if No (Prim) then
+
+                     --  In some are cases, a name conflict may have
+                     --  kept the operation completely hidden. Look for
+                     --  it in the list of primitive operations of the
+                     --  type.
+
+                     declare
+                        El : Elmt_Id :=
+                          First_Elmt (Primitive_Operations (Tagged_Type));
+                     begin
+                        while Present (El) loop
+                           Prim := Node (El);
+                           if Is_Subprogram (Prim)
+                             and then Alias (Prim) = Iface_Prim
+                           then
+                              exit;
+                           end if;
+                           Next_Elmt (El);
+                        end loop;
+                     end;
+                  end if;
+
+                  if No (Prim) then
+                     --  If the operation was not explicitly overridden, it
+                     --  should have been inherited as an abstract operation.
+                     raise Program_Error;
+                  end if;
 
                   Derive_Subprogram
                     (New_Subp     => New_Subp,
