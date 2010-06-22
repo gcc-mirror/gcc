@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,12 +26,16 @@
 --  This package contains the low level, operating system routines used in the
 --  compiler and binder for command line processing and file input output.
 
+--  This unit is used by gnatcoll
+pragma Warnings (Off, "*is an internal GNAT unit");
+pragma Warnings (Off, "*use * instead");
+
 with Namet; use Namet;
 with Types; use Types;
 
-with System.Storage_Elements;
-with System.OS_Lib;           use System.OS_Lib;
 with System;                  use System;
+with System.OS_Lib;           use System.OS_Lib;
+with System.Storage_Elements;
 
 pragma Elaborate_All (System.OS_Lib);
 --  For the call to function Get_Target_Object_Suffix in the private part
@@ -39,9 +43,8 @@ pragma Elaborate_All (System.OS_Lib);
 package Osint is
 
    Multi_Unit_Index_Character : Character := '~';
-   --  The character before the index of the unit in a multi-unit source, in
-   --  ALI and object file names. This is not a constant, because it is changed
-   --  to '$' on VMS.
+   --  The character before the index of the unit in a multi-unit source in ALI
+   --  and object file names. Changed to '$' on VMS.
 
    Ada_Include_Path          : constant String := "ADA_INCLUDE_PATH";
    Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";

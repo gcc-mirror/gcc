@@ -23,6 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This unit is used by gnatcoll
+pragma Warnings (Off, "*is an internal GNAT unit");
+pragma Warnings (Off, "*use of this unit is non-portable*");
+pragma Warnings (Off, "*use * instead");
+
 with Csets;    use Csets;
 with Err_Vars; use Err_Vars;
 with Hostparm; use Hostparm;

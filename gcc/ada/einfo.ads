@@ -2477,7 +2477,7 @@ package Einfo is
 --       Applicable to all entities, true if the entity denotes a private
 --       component of a protected type.
 
---    Is_Protected_Interface (Flag198)
+--    Is_Protected_Interface (Synthesized)
 --       Present in types that are interfaces. True if interface is declared
 --       protected, or is derived from protected interfaces.
 
@@ -2584,7 +2584,7 @@ package Einfo is
 --       Applies to all entities, true for function, procedure and operator
 --       entities.
 
---    Is_Synchronized_Interface (Flag199)
+--    Is_Synchronized_Interface (synthesized)
 --       Present in types that are interfaces. True if interface is declared
 --       synchronized, task, or protected, or is derived from a synchronized
 --       interface.
@@ -2598,7 +2598,7 @@ package Einfo is
 --    Is_Tagged_Type (Flag55)
 --       Present in all entities. Set for an entity for a tagged type.
 
---    Is_Task_Interface (Flag200)
+--    Is_Task_Interface (Synthesized)
 --       Present in types that are interfaces. True if interface is declared as
 --       a task interface, or if it is derived from task interfaces.
 
@@ -4641,10 +4641,7 @@ package Einfo is
    --    Is_Eliminated                       (Flag124)
    --    Is_Frozen                           (Flag4)
    --    Is_Generic_Actual_Type              (Flag94)
-   --    Is_Protected_Interface              (Flag198)
    --    Is_RACW_Stub_Type                   (Flag244)
-   --    Is_Synchronized_Interface           (Flag199)
-   --    Is_Task_Interface                   (Flag200)
    --    Is_Non_Static_Subtype               (Flag109)
    --    Is_Packed                           (Flag51)   (base type only)
    --    Is_Private_Composite                (Flag107)
@@ -5915,7 +5912,6 @@ package Einfo is
    function Is_Private_Composite                (Id : E) return B;
    function Is_Private_Descendant               (Id : E) return B;
    function Is_Private_Primitive                (Id : E) return B;
-   function Is_Protected_Interface              (Id : E) return B;
    function Is_Public                           (Id : E) return B;
    function Is_Pure                             (Id : E) return B;
    function Is_Pure_Unit_Access_Type            (Id : E) return B;
@@ -5927,10 +5923,8 @@ package Einfo is
    function Is_Return_Object                    (Id : E) return B;
    function Is_Shared_Passive                   (Id : E) return B;
    function Is_Statically_Allocated             (Id : E) return B;
-   function Is_Synchronized_Interface           (Id : E) return B;
    function Is_Tag                              (Id : E) return B;
    function Is_Tagged_Type                      (Id : E) return B;
-   function Is_Task_Interface                   (Id : E) return B;
    function Is_Thunk                            (Id : E) return B;
    function Is_Trivial_Subprogram               (Id : E) return B;
    function Is_True_Constant                    (Id : E) return B;
@@ -6140,9 +6134,12 @@ package Einfo is
    function Is_Package_Or_Generic_Package       (Id : E) return B;
    function Is_Prival                           (Id : E) return B;
    function Is_Protected_Component              (Id : E) return B;
+   function Is_Protected_Interface              (Id : E) return B;
    function Is_Protected_Record_Type            (Id : E) return B;
    function Is_Standard_Character_Type          (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;
+   function Is_Synchronized_Interface           (Id : E) return B;
+   function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
    function Next_Component                      (Id : E) return E;
@@ -6478,7 +6475,6 @@ package Einfo is
    procedure Set_Is_Private_Composite            (Id : E; V : B := True);
    procedure Set_Is_Private_Descendant           (Id : E; V : B := True);
    procedure Set_Is_Private_Primitive            (Id : E; V : B := True);
-   procedure Set_Is_Protected_Interface          (Id : E; V : B := True);
    procedure Set_Is_Public                       (Id : E; V : B := True);
    procedure Set_Is_Pure                         (Id : E; V : B := True);
    procedure Set_Is_Pure_Unit_Access_Type        (Id : E; V : B := True);
@@ -6490,10 +6486,8 @@ package Einfo is
    procedure Set_Is_Return_Object                (Id : E; V : B := True);
    procedure Set_Is_Shared_Passive               (Id : E; V : B := True);
    procedure Set_Is_Statically_Allocated         (Id : E; V : B := True);
-   procedure Set_Is_Synchronized_Interface       (Id : E; V : B := True);
    procedure Set_Is_Tag                          (Id : E; V : B := True);
    procedure Set_Is_Tagged_Type                  (Id : E; V : B := True);
-   procedure Set_Is_Task_Interface               (Id : E; V : B := True);
    procedure Set_Is_Thunk                        (Id : E; V : B := True);
    procedure Set_Is_Trivial_Subprogram           (Id : E; V : B := True);
    procedure Set_Is_True_Constant                (Id : E; V : B := True);
@@ -7170,7 +7164,6 @@ package Einfo is
    pragma Inline (Is_Private_Descendant);
    pragma Inline (Is_Private_Primitive);
    pragma Inline (Is_Private_Type);
-   pragma Inline (Is_Protected_Interface);
    pragma Inline (Is_Protected_Type);
    pragma Inline (Is_Public);
    pragma Inline (Is_Pure);
@@ -7188,10 +7181,8 @@ package Einfo is
    pragma Inline (Is_Signed_Integer_Type);
    pragma Inline (Is_Statically_Allocated);
    pragma Inline (Is_Subprogram);
-   pragma Inline (Is_Synchronized_Interface);
    pragma Inline (Is_Tag);
    pragma Inline (Is_Tagged_Type);
-   pragma Inline (Is_Task_Interface);
    pragma Inline (Is_True_Constant);
    pragma Inline (Is_Task_Type);
    pragma Inline (Is_Thunk);
@@ -7570,7 +7561,6 @@ package Einfo is
    pragma Inline (Set_Is_Private_Composite);
    pragma Inline (Set_Is_Private_Descendant);
    pragma Inline (Set_Is_Private_Primitive);
-   pragma Inline (Set_Is_Protected_Interface);
    pragma Inline (Set_Is_Public);
    pragma Inline (Set_Is_Pure);
    pragma Inline (Set_Is_Pure_Unit_Access_Type);
@@ -7582,10 +7572,8 @@ package Einfo is
    pragma Inline (Set_Is_Return_Object);
    pragma Inline (Set_Is_Shared_Passive);
    pragma Inline (Set_Is_Statically_Allocated);
-   pragma Inline (Set_Is_Synchronized_Interface);
    pragma Inline (Set_Is_Tag);
    pragma Inline (Set_Is_Tagged_Type);
-   pragma Inline (Set_Is_Task_Interface);
    pragma Inline (Set_Is_Thunk);
    pragma Inline (Set_Is_Trivial_Subprogram);
    pragma Inline (Set_Is_True_Constant);

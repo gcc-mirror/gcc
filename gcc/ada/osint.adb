@@ -23,11 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
-
-with System.Case_Util; use System.Case_Util;
-
-with GNAT.HTable;
+--  This unit is used by gnatcoll
+pragma Warnings (Off, "*is an internal GNAT unit");
+pragma Warnings (Off, "*use * instead");
 
 with Alloc;
 with Debug;
@@ -39,6 +37,12 @@ with Output;   use Output;
 with Sdefault; use Sdefault;
 with Table;
 with Targparm; use Targparm;
+
+with Unchecked_Conversion;
+
+with System.Case_Util; use System.Case_Util;
+
+with GNAT.HTable;
 
 package body Osint is
 

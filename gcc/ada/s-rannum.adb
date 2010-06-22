@@ -119,6 +119,7 @@ package body System.Random_Numbers is
              (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
    --  First Year 2000 day
 
+   Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
 
    --  Utility functions
@@ -526,9 +527,9 @@ package body System.Random_Numbers is
    -------------------
 
    function Extract_Value (S : String; Index : Integer) return State_Val is
+      Start : constant Integer := S'First + Index * Image_Numeral_Length;
    begin
-      return State_Val'Value (S (S'First + Index * 11 ..
-                                 S'First + Index * 11 + 10));
+      return State_Val'Value (S (Start .. Start + Image_Numeral_Length - 1));
    end Extract_Value;
 
 end System.Random_Numbers;
