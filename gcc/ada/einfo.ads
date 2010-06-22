@@ -3244,9 +3244,13 @@ package Einfo is
 --       only for type-related error messages.
 
 --    Related_Expression (Node24)
---       Present in variables generated internally. Denotes the source
---       expression whose elaboration created the variable declaration.
---       Used for clearer messages from CodePeer.
+--       Present in variables and types. Set only for internally generated
+--       entities, where it may be used to denote the source expression whose
+--       elaboration created the variable declaration. If set, it is used
+--       for generating clearer messages from CodePeer.
+--
+--       Shouldn't it also be used for the same purpose in errout? It seems
+--       odd to have two mechanisms here???
 
 --    Related_Instance (Node15)
 --       Present in the wrapper packages created for subprogram instances.
@@ -3539,12 +3543,13 @@ package Einfo is
 --       value may be passed around, and if used, may clobber a local variable.
 
 --    Task_Body_Procedure (Node25)
---       Present in task types and subtypes. Points to the entity for
---       the task body procedure (as further described in Exp_Ch9, task
---       bodies are expanded into procedures). A convenient function to
---       retrieve this field is Sem_Util.Get_Task_Body_Procedure.
---       The last sentence is odd ??? Why not have Task_Body_Procedure
---       go to the Underlying_Type of the Root_Type???
+--       Present in task types and subtypes. Points to the entity for the task
+--       task body procedure (as further described in Exp_Ch9, task bodies are
+--       expanded into procedures). A convenient function to retrieve this
+--       field is Sem_Util.Get_Task_Body_Procedure.
+--
+--       The last sentence is odd??? Why not have Task_Body_Procedure go to the
+--       Underlying_Type of the Root_Type???
 
 --    Treat_As_Volatile (Flag41)
 --       Present in all type entities, and also in constants, components and
@@ -3591,7 +3596,7 @@ package Einfo is
 --       private completion. If Td is already constrained, then its full view
 --       can serve directly as the full view of T.
 
---    Underlying_Record_View (Node24)
+--    Underlying_Record_View (Node28)
 --       Present in record types. Set for record types that are extensions of
 --       types with unknown discriminants, and also set for internally built
 --       underlying record views to reference its original record type. Record
@@ -4599,6 +4604,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    RM_Size                             (Uint13)
    --    Alignment                           (Uint14)
+   --    Related_Expression                  (Node24)
 
    --    Depends_On_Private                  (Flag14)
    --    Discard_Names                       (Flag88)
@@ -5290,8 +5296,8 @@ package Einfo is
    --    Discriminant_Constraint             (Elist21)
    --    Corresponding_Remote_Type           (Node22)
    --    Stored_Constraint                   (Elist23)
-   --    Underlying_Record_View              (Node24)   (base type only)
    --    Interfaces                          (Elist25)
+   --    Underlying_Record_View              (Node28)   (base type only)
    --    Component_Alignment                 (special)  (base type only)
    --    C_Pass_By_Copy                      (Flag125)  (base type only)
    --    Has_Dispatch_Table                  (Flag220)  (base tagged type only)

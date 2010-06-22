@@ -1,3 +1,11 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb (Build_Actual_Subtype): Record original expression in
+	Related_Expression attribute of the constructed subtype.
+	* einfo.adb, einfo.ads (Underlying_View): Move to Node28 to free up
+	Node24 on types for...
+	(Related_Expression): Make attribute available on types as well.
+
 2010-06-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_util.adb (Find_Interface_ADT): Retrieve Designated_Type instead of

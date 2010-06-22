@@ -208,7 +208,6 @@ package body Einfo is
 
    --    Related_Expression              Node24
    --    Spec_PPC_List                   Node24
-   --    Underlying_Record_View          Node24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -228,6 +227,7 @@ package body Einfo is
    --    Wrapped_Entity                  Node27
 
    --    Extra_Formals                   Node28
+   --    Underlying_Record_View          Node28
 
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
@@ -2434,7 +2434,8 @@ package body Einfo is
 
    function Related_Expression (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Is_Type (Id)
+                       or else Ekind_In (Id, E_Constant, E_Variable));
       return Node24 (Id);
    end Related_Expression;
 
@@ -2656,7 +2657,7 @@ package body Einfo is
 
    function Underlying_Record_View (Id : E) return E is
    begin
-      return Node24 (Id);
+      return Node28 (Id);
    end Underlying_Record_View;
 
    function Universal_Aliasing (Id : E) return B is
@@ -2937,6 +2938,12 @@ package body Einfo is
    ------------------------------
    -- Attribute Set Procedures --
    ------------------------------
+
+   --  Note: in many of these set procedures an "obvious" assertion is missing.
+   --  The reason for this is that in many cases, a field is set before the
+   --  Ekind field is set, so that the field is set when Ekind = E_Void. It
+   --  it is possible to add assertions that specifically include the E_Void
+   --  possibility, but in some cases, we just omit the assertions.
 
    procedure Set_Accept_Address (Id : E; V : L) is
    begin
@@ -5114,7 +5121,7 @@ package body Einfo is
    procedure Set_Underlying_Record_View (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Record_Type);
-      Set_Node24 (Id, V);
+      Set_Node28 (Id, V);
    end Set_Underlying_Record_View;
 
    procedure Set_Universal_Aliasing (Id : E; V : B := True) is
@@ -7894,14 +7901,11 @@ package body Einfo is
          when Subprogram_Kind                              =>
             Write_Str ("Spec_PPC_List");
 
-         when E_Record_Type                                =>
-            Write_Str ("Underlying_Record_View");
-
-         when E_Variable | E_Constant                      =>
+         when E_Variable | E_Constant | Type_Kind          =>
             Write_Str ("Related_Expression");
 
          when others                                       =>
-            Write_Str ("???");
+            Write_Str ("Field24???");
       end case;
    end Write_Field24_Name;
 
@@ -8004,6 +8008,9 @@ package body Einfo is
       case Ekind (Id) is
          when E_Procedure | E_Function | E_Entry           =>
             Write_Str ("Extra_Formals");
+
+         when E_Record_Type =>
+            Write_Str ("Underlying_Record_View");
 
          when others                                       =>
             Write_Str ("Field28??");
