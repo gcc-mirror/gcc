@@ -1345,9 +1345,11 @@ package body Uintp is
             if not Discard_Quotient then
                Quotient := Uint_0;
             end if;
+
             if not Discard_Remainder then
                Remainder := Left;
             end if;
+
             return;
          end if;
 
@@ -1377,6 +1379,7 @@ package body Uintp is
                if not Discard_Remainder then
                   Remainder := UI_From_Int (Remainder_I);
                end if;
+
                return;
             end;
          end if;

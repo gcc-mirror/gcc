@@ -745,6 +745,15 @@ package body System.Task_Primitives.Operations is
           (T.Common.LL.Thread, To_VxWorks_Priority (int (Prio)));
       pragma Assert (Result = 0);
 
+      --  Note: in VxWorks, the task is placed at the end of the priority queue
+      --  instead of the head. This is not the behavior required by Annex D,
+      --  but we consider it an acceptable variation (RM 1.1.3(6)), given this
+      --  is the built-in behavior of the operating system.
+
+      --  In older versions we attempted to better approximate the Annex D
+      --  required behavior, but this simulation was not entirely accurate,
+      --  and it seems better to live with the standard VxWorks semantics.
+
       T.Common.Current_Priority := Prio;
    end Set_Priority;
 

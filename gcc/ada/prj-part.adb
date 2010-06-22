@@ -36,8 +36,8 @@ with Sinput.P; use Sinput.P;
 with Snames;
 with Table;
 
-with Ada.Characters.Handling;    use Ada.Characters.Handling;
-with Ada.Exceptions;             use Ada.Exceptions;
+with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Exceptions;          use Ada.Exceptions;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.HTable;               use GNAT.HTable;
