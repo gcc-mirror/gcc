@@ -1,3 +1,7 @@
+2010-06-22  Matthias Klose  <doko@ubuntu.com>
+
+	* python/libstdcxx/v6/printers.py: Don't use string exceptions.
+
 2010-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44630
