@@ -1,3 +1,15 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): Use First_Subtype for better
+	error reporting with generic types.
+
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* bindgen.adb, bindusg.adb, gnatbind.adb, gnat_ugn.texi, opt.ads,
+	osint-b.adb, osint-b.ads, output.adb, output.ads, switch-b.adb,
+	vms_data.ads: Add a new command line switch -A to gnatbind to output
+	the list of all ALI files for the partition.
+
 2010-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osinte-vxworks.ads: Fix casing.

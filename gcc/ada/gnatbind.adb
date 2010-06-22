@@ -738,7 +738,7 @@ begin
          Free (Text);
       end if;
 
-      --  Acquire all information in ALI files that have been read in
+      --  Load ALIs for all dependent units
 
       for Index in ALIs.First .. ALIs.Last loop
          Read_Withed_ALIs (Index);
@@ -748,6 +748,32 @@ begin
 
       if No_Object_Specified then
          raise Unrecoverable_Error;
+      end if;
+
+      --  Output list of ALI files in closure
+
+      if Output_ALI_List then
+         declare
+            FD : File_Descriptor;
+         begin
+            if ALI_List_Filename /= null then
+               Set_List_File (ALI_List_Filename.all);
+            end if;
+
+            for Index in ALIs.First .. ALIs.Last loop
+               declare
+                  Full_Afile : constant File_Name_Type :=
+                                 Find_File (ALIs.Table (Index).Afile, Library);
+               begin
+                  Write_Name (Full_Afile);
+                  Write_Eol;
+               end;
+            end loop;
+
+            if ALI_List_Filename /= null then
+               Close_List_File;
+            end if;
+         end;
       end if;
 
       --  Build source file table from the ALI files we have read in

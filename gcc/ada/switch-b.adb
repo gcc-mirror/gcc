@@ -41,9 +41,34 @@ package body Switch.B is
       Ptr : Integer          := Switch_Chars'First;
       C   : Character        := ' ';
 
+      function Get_Optional_Filename return String_Ptr;
+      --  If current character is '=', return a newly allocated string
+      --  containing the remainder of the current switch (after the '='), else
+      --  return null.
+
       function Get_Stack_Size (S : Character) return Int;
       --  Used for -d and -D to scan stack size including handling k/m.
       --  S is set to 'd' or 'D' to indicate the switch being scanned.
+
+      ---------------------------
+      -- Get_Optional_Filename --
+      ---------------------------
+
+      function Get_Optional_Filename return String_Ptr is
+         Result : String_Ptr;
+      begin
+         if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            else
+               Result := new String'(Switch_Chars (Ptr + 1 .. Max));
+               Ptr := Max + 1;
+               return Result;
+            end if;
+         else
+            return null;
+         end if;
+      end Get_Optional_Filename;
 
       --------------------
       -- Get_Stack_Size --
@@ -125,7 +150,8 @@ package body Switch.B is
 
          when 'A' =>
             Ptr := Ptr + 1;
-            Ada_Bind_File := True;
+            Output_ALI_List := True;
+            ALI_List_Filename := Get_Optional_Filename;
 
          --  Processing for b switch
 
@@ -144,7 +170,6 @@ package body Switch.B is
 
          when 'C' =>
             Ptr := Ptr + 1;
-
             Ada_Bind_File := False;
 
             Write_Line ("warning: gnatbind switch -C is obsolescent");
@@ -318,6 +343,7 @@ package body Switch.B is
          when 'O' =>
             Ptr := Ptr + 1;
             Output_Object_List := True;
+            Object_List_Filename := Get_Optional_Filename;
 
          --  Processing for p switch
 

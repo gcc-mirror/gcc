@@ -1313,7 +1313,7 @@ package body Sem_Res is
          elsif In_Instance then
             null;
 
-         elsif (Op_Name =  Name_Op_Multiply or else Op_Name = Name_Op_Divide)
+         elsif (Op_Name = Name_Op_Multiply or else Op_Name = Name_Op_Divide)
            and then Is_Fixed_Point_Type (Etype (Left_Opnd  (Op_Node)))
            and then Is_Fixed_Point_Type (Etype (Right_Opnd (Op_Node)))
          then
@@ -1445,7 +1445,7 @@ package body Sem_Res is
                null;
 
             else
-               Error_Msg_NE ("expect type&", N, Typ);
+               Error_Msg_NE ("expect type&", N, First_Subtype (Typ));
             end if;
          end if;
       end if;
