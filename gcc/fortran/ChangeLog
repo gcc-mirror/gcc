@@ -1,3 +1,9 @@
+2010-06-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44556
+	* resolve.c (resolve_allocate_deallocate): Properly check
+	part-refs in stat=/errmsg= for invalid use.
+
 2010-06-15  Tobias Burnus  <burnus@net-b.de>
 
 	* gfc-internals.texi (copyrights-gfortran): Fix copyright year format.
