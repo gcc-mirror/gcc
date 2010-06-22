@@ -37,10 +37,10 @@ package body SFN_Scan is
    --  Allow easy access to control character definitions
 
    EOF : constant Character := ASCII.SUB;
-   --  The character SUB (16#1A#) is DOS-derived systems, such as Windows
-   --  to signal the end of a text file. If this character appears as the
-   --  last character of a file scanned by a call to Scan_SFN_Pragmas,
-   --  then it is ignored, otherwise it is treated as an illegal character.
+   --  The character SUB (16#1A#) is used in DOS-derived systems, such as
+   --  Windows to signal the end of a text file. If this character appears as
+   --  the last character of a file scanned by a call to Scan_SFN_Pragmas, then
+   --  it is ignored, otherwise it is treated as an illegal character.
 
    type String_Ptr is access String;
 
