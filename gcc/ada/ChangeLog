@@ -1,3 +1,15 @@
+2010-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-vxworks.ads: Fix casing.
+	* s-vxwext-kernel.ads, s-vxwext-rtp.ads: Complete previous
+	change: Interfaces.C does not provide a long_long type.
+
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* gnat_ugn.texi, projects.texi: Preprocess projects.texi for VMS and
+	native user's guide, since this document contains the two versions.
+	* gcc-interface/Make-lang.in: Update doc dependencies.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.  Minor code reorganization.

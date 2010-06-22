@@ -155,7 +155,7 @@ package System.OS_Interface is
    SIG_DFL : constant := 0;
    SIG_IGN : constant := 1;
 
-   subtype sigset_t is System.Vxworks.Ext.sigset_t;
+   subtype sigset_t is System.VxWorks.Ext.sigset_t;
 
    type struct_sigaction is record
       sa_handler : System.Address;
