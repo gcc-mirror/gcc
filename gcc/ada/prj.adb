@@ -36,10 +36,8 @@ with Ada.Unchecked_Deallocation;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-pragma Warnings (Off);
-with System.Case_Util; use System.Case_Util;
-with System.HTable;
-pragma Warnings (On);
+with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.HTable;
 
 package body Prj is
 
@@ -570,7 +568,7 @@ package body Prj is
    -- Hash --
    ----------
 
-   function Hash is new System.HTable.Hash (Header_Num => Header_Num);
+   function Hash is new GNAT.HTable.Hash (Header_Num => Header_Num);
    --  Used in implementation of other functions Hash below
 
    function Hash (Name : File_Name_Type) return Header_Num is

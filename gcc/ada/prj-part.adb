@@ -40,10 +40,7 @@ with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Exceptions;             use Ada.Exceptions;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-
-pragma Warnings (Off);
-with System.HTable;              use System.HTable;
-pragma Warnings (On);
+with GNAT.HTable;               use GNAT.HTable;
 
 package body Prj.Part is
 
@@ -100,7 +97,7 @@ package body Prj.Part is
    --  limited imported projects when there is a circularity with at least
    --  one limited imported project file.
 
-   package Virtual_Hash is new System.HTable.Simple_HTable
+   package Virtual_Hash is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Project_Node_Id,
       No_Element => Empty_Node,
@@ -110,7 +107,7 @@ package body Prj.Part is
    --  Hash table to store the node id of the project for which a virtual
    --  extending project need to be created.
 
-   package Processed_Hash is new System.HTable.Simple_HTable
+   package Processed_Hash is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
@@ -121,7 +118,7 @@ package body Prj.Part is
    --  need to have a virtual extending project, to avoid processing the same
    --  project twice.
 
-   package Projects_Paths is new System.HTable.Simple_HTable
+   package Projects_Paths is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Path_Name_Type,
       No_Element => No_Path,
