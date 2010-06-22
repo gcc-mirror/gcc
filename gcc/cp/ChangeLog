@@ -1,3 +1,8 @@
+2010-06-21  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (check_trait_type): Check COMPLETE_TYPE_P for array
+	element type.
+
 2010-06-17  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* name-lookup.c (struct arg_lookup): Convert namespaces and
