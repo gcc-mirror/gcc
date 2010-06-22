@@ -1,3 +1,9 @@
+2010-06-22  Pascal Obry  <obry@adacore.com>
+
+	* g-socthi-mingw.adb: Properly honor MSG_WAITALL in recvmsg.
+	(C_Recvmsg): Propely honor the MSG_WAITALL flag in Windows
+	recvmsg emulation.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb (Analyze_Conditional_Expression): Defend against

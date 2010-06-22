@@ -276,6 +276,10 @@ package body GNAT.Sockets.Thin is
    is
       use type C.size_t;
 
+      Fill  : constant Boolean :=
+                (C.unsigned (Flags) and SOSC.MSG_WAITALL) /= 0;
+      --  Is the MSG_WAITALL flag set? If so we need to fully fill all vectors
+
       Res   : C.int;
       Count : C.int := 0;
 
@@ -327,7 +331,7 @@ package body GNAT.Sockets.Thin is
          if Res < 0 then
             return System.CRTL.ssize_t (Res);
 
-         elsif Res = 0 then
+         elsif Res = 0 and then not Fill then
             exit;
 
          else
@@ -342,9 +346,16 @@ package body GNAT.Sockets.Thin is
 
             --  If all the data that was initially available read, do not
             --  attempt to receive more, since this might block, or merge data
-            --  from successive datagrams for a datagram-oriented socket.
+            --  from successive datagrams for a datagram-oriented
+            --  socket. We still try to receive more if we need to fill all
+            --  vectors (MSG_WAITALL flag is set).
 
-            exit when Natural (Count) >= Req.Size;
+            exit when Natural (Count) >= Req.Size
+              and then
+                (not Fill -- either we are not in fill mode
+                 or else  -- or last vector filled
+                  (Interfaces.C.size_t (Iov_Index) = Iovec'Last
+                   and then Current_Iovec.Length = 0));
          end if;
       end loop;
 
