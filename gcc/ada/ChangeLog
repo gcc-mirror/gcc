@@ -1,3 +1,35 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Unwind_Internal_Type): Improve handling of First_Subtype
+	test to catch more cases where first subtype is the results we want.
+	* sem_res.adb (Make_Call_Into_Operator): Don't go to First_Subtype in
+	error case, since Errout will now handle this correctly.
+	* gcc-interface/Make-lang.in: Add Sem_Aux to list of GNATBIND objects.
+	Update dependencies.
+
+2010-06-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Set Related_Node properly
+	when calling Make_Temporary.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): An anonymous access to
+	subprogram can be associated with an entry body.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* scos.ads: Add note on membership test handling.
+
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Minor spelling fixes.
+	Minor reformatting.
+
+2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* s-rannum.adb: Correct off-by-one error in Extract_Value.
+
 2010-06-22  Vincent Celier  <celier@adacore.com>
 
 	* mlib-prj.adb (Display): In non verbose mode, truncate after fourth

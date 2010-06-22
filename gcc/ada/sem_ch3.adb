@@ -1037,8 +1037,8 @@ package body Sem_Ch3 is
 
    begin
       --  Associate the Itype node with the inner full-type declaration or
-      --  subprogram spec. This is required to handle nested anonymous
-      --  declarations. For example:
+      --  subprogram spec or entry body. This is required to handle nested
+      --  anonymous declarations. For example:
 
       --      procedure P
       --       (X : access procedure
@@ -1050,7 +1050,9 @@ package body Sem_Ch3 is
                                    N_Private_Type_Declaration,
                                    N_Private_Extension_Declaration,
                                    N_Procedure_Specification,
-                                   N_Function_Specification)
+                                   N_Function_Specification,
+                                   N_Entry_Body)
+
                    or else
                  Nkind_In (D_Ityp, N_Object_Declaration,
                                    N_Object_Renaming_Declaration,

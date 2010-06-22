@@ -590,7 +590,7 @@ package body Exp_Ch4 is
 
             Set_Analyzed (Node);
 
-            Temp := Make_Temporary (Loc, 'P', Node);
+            Temp := Make_Temporary (Loc, 'P', N);
 
             Insert_Action (N,
               Make_Object_Declaration (Loc,
@@ -659,7 +659,7 @@ package body Exp_Ch4 is
             Remove_Side_Effects (Exp);
          end if;
 
-         Temp := Make_Temporary (Loc, 'P');
+         Temp := Make_Temporary (Loc, 'P', N);
 
          --  For a class wide allocation generate the following code:
 
@@ -979,7 +979,7 @@ package body Exp_Ch4 is
          end if;
 
       elsif Aggr_In_Place then
-         Temp := Make_Temporary (Loc, 'P');
+         Temp := Make_Temporary (Loc, 'P', N);
          Tmp_Node :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
