@@ -1,3 +1,16 @@
+2010-06-22  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb: Removed 64-bit types Int and UInt.
+
+2010-06-22  Paul Hilfinger  <hilfinger@adacore.com>
+
+	* s-rannum.adb (Random_Float_Template): Replace with unbiased version
+	that is able to produce all representable floating-point numbers in the
+	unit interval. Remove template parameter Shift_Right, no longer used.
+	* gnat_rm.texi: Document the period of the pseudo-random number
+	generator under the description of its algorithm.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_aggr.adb (Rewrite_Discriminant): Fix predicate used to identify
