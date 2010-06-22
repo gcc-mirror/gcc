@@ -505,6 +505,10 @@ package body GNAT.Sockets.Thin is
          else
             Count := Count + Res;
          end if;
+
+         --  Exit now if the buffer is not fully transmitted
+
+         exit when Stream_Element_Count (Res) < Iovec (J).Length;
       end loop;
 
       return System.CRTL.ssize_t (Count);

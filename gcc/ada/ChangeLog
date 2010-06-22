@@ -1,3 +1,17 @@
+2010-06-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Remove project level attribute Main_Language.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* switch-b.adb, osint-b.adb: Minor reformatting.
+
+2010-06-22  Pascal Obry  <obry@adacore.com>
+
+	* g-socthi-mingw.adb (C_Sendmsg): Do not attempt to send data from a
+	vector if previous send was not fully successful. If only part of
+	the vector data was sent, we exit the loop.
+
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_res.adb (Make_Call_Into_Operator): Use First_Subtype for better

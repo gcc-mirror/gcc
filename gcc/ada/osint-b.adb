@@ -192,6 +192,10 @@ package body Osint.B is
       Current_File_Name_Index := To;
    end Set_Current_File_Name_Index;
 
+   -------------------
+   -- Set_List_File --
+   -------------------
+
    procedure Set_List_File (Filename : String) is
    begin
       pragma Assert (Current_List_File = Invalid_FD);
@@ -199,7 +203,6 @@ package body Osint.B is
 
       if Current_List_File = Invalid_FD then
          Fail ("cannot create list file: " & Filename);
-
       else
          Set_Output (Current_List_File);
       end if;
