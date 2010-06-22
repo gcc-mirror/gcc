@@ -1487,7 +1487,7 @@ package body Exp_Util is
       --  Handle access types
 
       if Is_Access_Type (Typ) then
-         Typ := Directly_Designated_Type (Typ);
+         Typ := Designated_Type (Typ);
       end if;
 
       --  Handle task and protected types implementing interfaces
@@ -1594,7 +1594,7 @@ package body Exp_Util is
       --  Handle access types
 
       if Is_Access_Type (Typ) then
-         Typ := Directly_Designated_Type (Typ);
+         Typ := Designated_Type (Typ);
       end if;
 
       --  Handle class-wide types
@@ -2129,9 +2129,9 @@ package body Exp_Util is
 
             if Ekind (D_Typ) = E_Anonymous_Access_Type
               and then
-                (Is_Controlled (Directly_Designated_Type (D_Typ))
+                (Is_Controlled (Designated_Type (D_Typ))
                    or else
-                 Is_Concurrent_Type (Directly_Designated_Type (D_Typ)))
+                 Is_Concurrent_Type (Designated_Type (D_Typ)))
             then
                return True;
             end if;
