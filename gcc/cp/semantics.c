@@ -5152,7 +5152,8 @@ check_trait_type (tree type)
   if (COMPLETE_TYPE_P (type))
     return true;
 
-  if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
+  if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type)
+      && COMPLETE_TYPE_P (TREE_TYPE (type)))
     return true;
 
   if (VOID_TYPE_P (type))
