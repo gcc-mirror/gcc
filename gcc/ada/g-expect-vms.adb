@@ -524,6 +524,7 @@ package body GNAT.Expect is
 
       for J in Descriptors'Range loop
          Descriptors (J) := Regexps (J).Descriptor;
+
          if Descriptors (J) /= null then
             Reinitialize_Buffer (Regexps (J).Descriptor.all);
          end if;
@@ -775,7 +776,8 @@ package body GNAT.Expect is
    ------------------------
 
    function First_Dead_Process
-     (Regexp : Multiprocess_Regexp_Array) return Natural is
+     (Regexp : Multiprocess_Regexp_Array) return Natural
+   is
    begin
       for R in Regexp'Range loop
          if Regexp (R).Descriptor /= null

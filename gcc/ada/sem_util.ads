@@ -801,6 +801,7 @@ package Sem_Util is
    --  function simply tests if it is True (i.e. non-zero)
 
    function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
+   pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
 
    function Is_Value_Type (T : Entity_Id) return Boolean;
