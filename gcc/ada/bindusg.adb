@@ -181,7 +181,7 @@ package body Bindusg is
       --  Line for -R switch
 
       Write_Line
-        ("  -R        List sources referenced in closure (implies -c)");
+        ("  -R        List sources referenced in closure");
 
       --  Line for -s switch
 

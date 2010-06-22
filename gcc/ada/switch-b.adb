@@ -366,7 +366,6 @@ package body Switch.B is
 
          when 'R' =>
             Ptr := Ptr + 1;
-            Check_Only   := True;
             List_Closure := True;
 
          --  Processing for s switch

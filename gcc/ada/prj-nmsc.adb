@@ -26,6 +26,7 @@
 with GNAT.Case_Util;             use GNAT.Case_Util;
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;
+with GNAT.Table;
 
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
@@ -156,6 +157,20 @@ package body Prj.Nmsc is
    --  necessary while performing consistency checks (duplicate sources,...)
    --  This data must be initialized before processing any project, and the
    --  same data is used for processing all projects in the tree.
+
+   type Lib_Data is record
+      Name : Name_Id;
+      Proj : Project_Id;
+   end record;
+
+   package Lib_Data_Table is new GNAT.Table
+     (Table_Component_Type => Lib_Data,
+      Table_Index_Type     => Positive,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100);
+   --  A table to record library names in order to check that two library
+   --  projects do not have the same library names.
 
    procedure Initialize
      (Data  : out Tree_Processing_Data;
@@ -4083,8 +4098,45 @@ package body Prj.Nmsc is
          end;
       end if;
 
-      if Project.Extends /= No_Project then
+      if Project.Extends /= No_Project and then Project.Extends.Library then
+
+         --  Remove the library name from Lib_Data_Table
+
+         for J in 1 .. Lib_Data_Table.Last loop
+            if Lib_Data_Table.Table (J).Proj = Project.Extends then
+               Lib_Data_Table.Table (J) :=
+                 Lib_Data_Table.Table (Lib_Data_Table.Last);
+               Lib_Data_Table.Set_Last (Lib_Data_Table.Last - 1);
+               exit;
+            end if;
+         end loop;
+
          Project.Extends.Library := False;
+      end if;
+
+      if Project.Library and then not Lib_Name.Default then
+
+         --  Check if the same library name is used in an other library project
+
+         for J in 1 .. Lib_Data_Table.Last loop
+            if Lib_Data_Table.Table (J).Name = Project.Library_Name then
+               Error_Msg_Name_1 := Lib_Data_Table.Table (J).Proj.Name;
+               Error_Msg
+                 (Data.Flags,
+                  "Library name cannot be the same as in project %%",
+                  Lib_Name.Location, Project);
+               Project.Library := False;
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      if Project.Library then
+
+         --  Record the library name
+
+         Lib_Data_Table.Append
+           ((Name => Project.Library_Name, Proj => Project));
       end if;
    end Check_Library_Attributes;
 
