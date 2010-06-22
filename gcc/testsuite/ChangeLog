@@ -1,3 +1,7 @@
+2010-06-22  Cary Coutant  <ccoutant@google.com>
+
+	* g++.dg/debug/dwarf2/dwarf4-typedef.C: New test.
+
 2010-06-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44616
