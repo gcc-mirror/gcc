@@ -1,3 +1,14 @@
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Add_Implicit_Operator): If the context of the expanded
+	name is a call, use the number of actuals to determine whether this is
+	a binary or unary operator, rather than relying on later information
+	to resolve the overload.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb, sem_aggr.adb: Minor reformatting.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_disp.adb: Minor code fixes.
