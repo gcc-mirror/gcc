@@ -65,9 +65,7 @@ package Ada.Numerics.Float_Random is
 
 private
 
-   type Generator is limited record
-      Rep : System.Random_Numbers.Generator;
-   end record;
+   type Generator is new System.Random_Numbers.Generator;
 
    type State is new System.Random_Numbers.State;
 

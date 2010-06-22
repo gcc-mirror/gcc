@@ -1,5 +1,38 @@
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb (Finalize): Set Prev pointers.
+	(Finalize): Delete continuations for deletion by warnings off(str).
+	* erroutc.ads: Add Prev pointer to error message structure.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Unit_And_Dependents): If the spec of the main unit is a
+	child unit, examine context of parent units to locate instantiated
+	generics whose bodies may be needed. 
+	* sem_ch12.adb: (Mark_Context): if the enclosing unit does not have a
+	with_clause for the instantiated generic, examine the context of its
+	parents, to set Withed_Body flag, so that it can be visited earlier.
+	* exp_ch4.adb (Expand_N_Op_Not): If this is a VMS operator applied to
+	an unsigned type, use a type of the proper size for the intermediate
+	value, to prevent alignment problems on unchecked conversion.
+
+2010-06-22  Geert Bosch  <bosch@adacore.com>
+
+	* s-rannum.ads Change Generator type to be self-referential to allow
+	Random to update its argument. Use "in" mode for the generator in the
+	Reset procedures to allow them to be called from the Ada.Numerics
+	packages without tricks.
+	* s-rannum.adb: Use the self-referencing argument to get write access
+	to the internal state of the random generator.
+	* a-nudira.ads: Make Generator a derived type of
+	System.Random_Numbers.Generator.
+	* a-nudira.adb: Remove use of 'Unrestricted_Access.
+	Put subprograms in alpha order and add headers.
+	* g-mbdira.ads: Change Generator type to be self-referential.
+	* g-mbdira.adb: Remove use of 'Unrestricted_Access.
+
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb: Minor reformatting
 	Minor code reorganization (use Nkind_In and Ekind_In).
 

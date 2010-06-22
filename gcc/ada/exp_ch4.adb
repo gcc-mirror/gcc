@@ -6905,12 +6905,39 @@ package body Exp_Ch4 is
 
       if Is_VMS_Operator (Entity (N)) then
          declare
-            LI : constant Entity_Id := RTE (RE_Unsigned_64);
+            Rtyp : Entity_Id;
+            Utyp : Entity_Id;
+
          begin
+            --  If this is a derived type, retrieve original VMS type so that
+            --  the proper sized type is used for intermediate values.
+
+            if Is_Derived_Type (Typ) then
+               Rtyp := First_Subtype (Etype (Typ));
+            else
+               Rtyp := Typ;
+            end if;
+
+            --  The proper unsigned type must have a size compatible with
+            --  the operand, to prevent misalignment..
+
+            if RM_Size (Rtyp) <= 8 then
+               Utyp := RTE (RE_Unsigned_8);
+
+            elsif RM_Size (Rtyp) <= 16 then
+               Utyp := RTE (RE_Unsigned_16);
+
+            elsif RM_Size (Rtyp) = RM_Size (Standard_Unsigned) then
+               Utyp := Typ;
+
+            else
+               Utyp := RTE (RE_Long_Long_Unsigned);
+            end if;
+
             Rewrite (N,
               Unchecked_Convert_To (Typ,
-                (Make_Op_Not (Loc,
-                   Right_Opnd => Unchecked_Convert_To (LI, Right_Opnd (N))))));
+                Make_Op_Not (Loc,
+                  Unchecked_Convert_To (Utyp, Right_Opnd (N)))));
             Analyze_And_Resolve (N, Typ);
             return;
          end;

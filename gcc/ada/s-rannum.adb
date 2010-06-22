@@ -95,21 +95,6 @@ use Ada;
 
 package body System.Random_Numbers is
 
-   -------------------------
-   -- Implementation Note --
-   -------------------------
-
-   --  The design of this spec is a bit awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally
-   --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution would be to add a self-referential component to the generator
-   --  allowing access to the generator object from inside the function. This
-   --  would work because the generator is limited, which prevents any copy.
-
-   --  This is a bit heavy, so what we do is to use Unrestricted_Access to
-   --  get a pointer to the state in the passed Generator. This works because
-   --  Generator is a limited type and will thus always be passed by reference.
-
    Y2K : constant Calendar.Time :=
            Calendar.Time_Of
              (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
@@ -168,7 +153,7 @@ package body System.Random_Numbers is
    -- Local Subprograms --
    -----------------------
 
-   procedure Init (Gen : out Generator; Initiator : Unsigned_32);
+   procedure Init (Gen : Generator; Initiator : Unsigned_32);
    --  Perform a default initialization of the state of Gen. The resulting
    --  state is identical for identical values of Initiator.
 
@@ -192,7 +177,7 @@ package body System.Random_Numbers is
    ------------
 
    function Random (Gen : Generator) return Unsigned_32 is
-      G : Generator renames Gen'Unrestricted_Access.all;
+      G : Generator renames Gen.Writable.Self.all;
       Y : State_Val;
       I : Integer;      --  should avoid use of identifier I ???
 
@@ -498,23 +483,23 @@ package body System.Random_Numbers is
    -- Reset --
    -----------
 
-   procedure Reset (Gen : out Generator) is
+   procedure Reset (Gen : Generator) is
       X : constant Unsigned_32 := Unsigned_32 ((Calendar.Clock - Y2K) * 64.0);
    begin
       Init (Gen, X);
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Integer_32) is
+   procedure Reset (Gen : Generator; Initiator : Integer_32) is
    begin
       Init (Gen, To_Unsigned (Initiator));
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Unsigned_32) is
+   procedure Reset (Gen : Generator; Initiator : Unsigned_32) is
    begin
       Init (Gen, Initiator);
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Integer) is
+   procedure Reset (Gen : Generator; Initiator : Integer) is
    begin
       pragma Warnings (Off, "condition is always *");
       --  This is probably an unnecessary precaution against future change, but
@@ -539,27 +524,27 @@ package body System.Random_Numbers is
       pragma Warnings (On, "condition is always *");
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Initialization_Vector) is
+   procedure Reset (Gen : Generator; Initiator : Initialization_Vector) is
+      G    : Generator renames Gen.Writable.Self.all;
       I, J : Integer;
 
    begin
-      Init (Gen, Seed1);
+      Init (G, Seed1);
       I := 1;
       J := 0;
 
       if Initiator'Length > 0 then
          for K in reverse 1 .. Integer'Max (N, Initiator'Length) loop
-            Gen.S (I) :=
-              (Gen.S (I)
-               xor ((Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
-                    * Mult1))
+            G.S (I) :=
+              (G.S (I) xor ((G.S (I - 1)
+                               xor Shift_Right (G.S (I - 1), 30)) * Mult1))
               + Initiator (J + Initiator'First) + Unsigned_32 (J);
 
             I := I + 1;
             J := J + 1;
 
             if I >= N then
-               Gen.S (0) := Gen.S (N - 1);
+               G.S (0) := G.S (N - 1);
                I := 1;
             end if;
 
@@ -570,39 +555,42 @@ package body System.Random_Numbers is
       end if;
 
       for K in reverse 1 .. N - 1 loop
-         Gen.S (I) :=
-           (Gen.S (I) xor ((Gen.S (I - 1)
-                            xor Shift_Right (Gen.S (I - 1), 30)) * Mult2))
+         G.S (I) :=
+           (G.S (I) xor ((G.S (I - 1)
+                            xor Shift_Right (G.S (I - 1), 30)) * Mult2))
            - Unsigned_32 (I);
          I := I + 1;
 
          if I >= N then
-            Gen.S (0) := Gen.S (N - 1);
+            G.S (0) := G.S (N - 1);
             I := 1;
          end if;
       end loop;
 
-      Gen.S (0) := Upper_Mask;
+      G.S (0) := Upper_Mask;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_State : Generator) is
+   procedure Reset (Gen : Generator; From_State : Generator) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.S := From_State.S;
-      Gen.I := From_State.I;
+      G.S := From_State.S;
+      G.I := From_State.I;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_State : State) is
+   procedure Reset (Gen : Generator; From_State : State) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.I := 0;
-      Gen.S := From_State;
+      G.I := 0;
+      G.S := From_State;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_Image : String) is
+   procedure Reset (Gen : Generator; From_Image : String) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.I := 0;
+      G.I := 0;
 
       for J in 0 .. N - 1 loop
-         Gen.S (J) := Extract_Value (From_Image, J);
+         G.S (J) := Extract_Value (From_Image, J);
       end loop;
    end Reset;
 
@@ -670,17 +658,18 @@ package body System.Random_Numbers is
    -- Init --
    ----------
 
-   procedure Init (Gen : out Generator; Initiator : Unsigned_32) is
+   procedure Init (Gen : Generator; Initiator : Unsigned_32) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.S (0) := Initiator;
+      G.S (0) := Initiator;
 
       for I in 1 .. N - 1 loop
-         Gen.S (I) :=
-           Mult0 * (Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30)) +
-                                                             Unsigned_32 (I);
+         G.S (I) :=
+           (G.S (I - 1) xor Shift_Right (G.S (I - 1), 30)) * Mult0
+           + Unsigned_32 (I);
       end loop;
 
-      Gen.I := 0;
+      G.I := 0;
    end Init;
 
    ------------------
@@ -706,5 +695,4 @@ package body System.Random_Numbers is
    begin
       return State_Val'Value (S (Start .. Start + Image_Numeral_Length - 1));
    end Extract_Value;
-
 end System.Random_Numbers;

@@ -35,24 +35,7 @@ with Interfaces; use Interfaces;
 
 package body GNAT.MBBS_Discrete_Random is
 
-   -------------------------
-   -- Implementation Note --
-   -------------------------
-
-   --  The design of this spec is a bit awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally
-   --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution would be to add a self-referential component to the generator
-   --  allowing access to the generator object from inside the function. This
-   --  would work because the generator is limited, which prevents any copy.
-
-   --  This is a bit heavy, so what we do is to use Unrestricted_Access to
-   --  get a pointer to the state in the passed Generator. This works because
-   --  Generator is a limited type and will thus always be passed by reference.
-
    package Calendar renames Ada.Calendar;
-
-   type Pointer is access all State;
 
    Fits_In_32_Bits : constant Boolean :=
                        Rst'Size < 31
@@ -109,7 +92,7 @@ package body GNAT.MBBS_Discrete_Random is
    ------------
 
    function Random (Gen : Generator) return Rst is
-      Genp : constant Pointer := Gen.Gen_State'Unrestricted_Access;
+      S    : State renames Gen.Writable.Self.Gen_State;
       Temp : Int;
       TF   : Flt;
 
@@ -124,21 +107,21 @@ package body GNAT.MBBS_Discrete_Random is
 
       --  Continue with computation if non-flat range
 
-      Genp.X1 := Square_Mod_N (Genp.X1, Genp.P);
-      Genp.X2 := Square_Mod_N (Genp.X2, Genp.Q);
-      Temp := Genp.X2 - Genp.X1;
+      S.X1 := Square_Mod_N (S.X1, S.P);
+      S.X2 := Square_Mod_N (S.X2, S.Q);
+      Temp := S.X2 - S.X1;
 
       --  Following duplication is not an error, it is a loop unwinding!
 
       if Temp < 0 then
-         Temp := Temp + Genp.Q;
+         Temp := Temp + S.Q;
       end if;
 
       if Temp < 0 then
-         Temp := Temp + Genp.Q;
+         Temp := Temp + S.Q;
       end if;
 
-      TF := Offs + (Flt (Temp) * Flt (Genp.P) + Flt (Genp.X1)) * Genp.Scl;
+      TF := Offs + (Flt (Temp) * Flt (S.P) + Flt (S.X1)) * S.Scl;
 
       --  Pathological, but there do exist cases where the rounding implicit
       --  in calculating the scale factor will cause rounding to 'Last + 1.
@@ -160,7 +143,7 @@ package body GNAT.MBBS_Discrete_Random is
    -----------
 
    procedure Reset (Gen : Generator; Initiator : Integer) is
-      Genp   : constant Pointer := Gen.Gen_State'Unrestricted_Access;
+      S      : State renames Gen.Writable.Self.Gen_State;
       X1, X2 : Int;
 
    begin
@@ -174,7 +157,7 @@ package body GNAT.MBBS_Discrete_Random is
 
       --  Eliminate effects of small Initiators
 
-      Genp.all :=
+      S :=
         (X1  => X1,
          X2  => X2,
          P   => K1,
@@ -188,7 +171,7 @@ package body GNAT.MBBS_Discrete_Random is
    -----------
 
    procedure Reset (Gen : Generator) is
-      Genp : constant Pointer       := Gen.Gen_State'Unrestricted_Access;
+      S    : State renames Gen.Writable.Self.Gen_State;
       Now  : constant Calendar.Time := Calendar.Clock;
       X1   : Int;
       X2   : Int;
@@ -210,7 +193,7 @@ package body GNAT.MBBS_Discrete_Random is
          X2 := Square_Mod_N (X2, K2);
       end loop;
 
-      Genp.all :=
+      S :=
         (X1  => X1,
          X2  => X2,
          P   => K1,
@@ -225,9 +208,8 @@ package body GNAT.MBBS_Discrete_Random is
    -----------
 
    procedure Reset (Gen : Generator; From_State : State) is
-      Genp : constant Pointer := Gen.Gen_State'Unrestricted_Access;
    begin
-      Genp.all := From_State;
+      Gen.Writable.Self.Gen_State := From_State;
    end Reset;
 
    ----------
