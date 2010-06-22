@@ -57,8 +57,14 @@ package body Prj.Nmsc is
       Listed   : Boolean := False;
       Found    : Boolean := False;
    end record;
+
    No_Name_Location : constant Name_Location :=
-     (No_File, No_Location, No_Source, False, False);
+                        (Name     => No_File,
+                         Location => No_Location,
+                         Source   => No_Source,
+                         Listed   => False,
+                         Found    => False);
+
    package Source_Names_Htable is new GNAT.Dynamic_HTables.Simple_HTable
      (Header_Num => Header_Num,
       Element    => Name_Location,
@@ -66,11 +72,10 @@ package body Prj.Nmsc is
       Key        => File_Name_Type,
       Hash       => Hash,
       Equal      => "=");
-   --  Information about file names found in string list attribute
-   --  (Source_Files or Source_List_File).
-   --  Except is set to True if source is a naming exception in the project.
-   --  This is used to check that all referenced files were indeed found on the
-   --  disk.
+   --  File name information found in string list attribute (Source_Files or
+   --  Source_List_File). Except is set to True if source is a naming exception
+   --  in the project. Used to check that all referenced files were indeed
+   --  found on the disk.
 
    type Unit_Exception is record
       Name : Name_Id;  --  ??? duplicates the key
@@ -6405,6 +6410,8 @@ package body Prj.Nmsc is
       declare
          Source : Source_Id;
          Iter   : Source_Iterator;
+         Found  : Boolean := False;
+         Path   : Path_Information;
 
       begin
          Iter := For_Each_Source (Data.Tree, Project.Project);
@@ -6416,16 +6423,22 @@ package body Prj.Nmsc is
               and then Source.Path = No_Path_Information
             then
                if Source.Unit /= No_Unit_Index then
+                  Found := False;
 
                   --  For multi-unit source files, source_id gets duplicated
                   --  once for every unit. Only the first source_id got its
-                  --  full path set. So if it isn't set for that first one,
-                  --  the file wasn't found. Otherwise we need to update for
-                  --  units after the first one.
+                  --  full path set.
 
-                  if Source.Index = 0
-                    or else Source.Index = 1
-                  then
+                  if Source.Index /= 0 then
+                     Path := Files_Htable.Get
+                       (Data.File_To_Source, Source.File).Path;
+
+                     if Path /= No_Path_Information then
+                        Found := True;
+                     end if;
+                  end if;
+
+                  if not Found then
                      Error_Msg_Name_1 := Name_Id (Source.Display_File);
                      Error_Msg_Name_2 := Name_Id (Source.Unit.Name);
                      Error_Msg
@@ -6434,8 +6447,7 @@ package body Prj.Nmsc is
                         No_Location, Project.Project);
 
                   else
-                     Source.Path := Files_Htable.Get
-                       (Data.File_To_Source, Source.File).Path;
+                     Source.Path := Path;
 
                      if Current_Verbosity = High then
                         if Source.Path /= No_Path_Information then
@@ -6443,7 +6455,7 @@ package body Prj.Nmsc is
                                        & Get_Name_String (Source.File)
                                        & " at" & Source.Index'Img
                                        & " to "
-                                       & Get_Name_String (Source.Path.Name));
+                                       & Get_Name_String (Path.Name));
                         end if;
                      end if;
                   end if;

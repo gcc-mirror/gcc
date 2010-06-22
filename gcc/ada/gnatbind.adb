@@ -826,7 +826,7 @@ begin
             --  sources) if -R was used.
 
             if List_Closure then
-               declare
+               List_Closure_Display : declare
                   Source : File_Name_Type;
 
                   function Put_In_Sources (S : File_Name_Type) return Boolean;
@@ -852,6 +852,8 @@ begin
                      return True;
                   end Put_In_Sources;
 
+               --  Start of processing for List_Closure_Display
+
                begin
                   Closure_Sources.Init;
 
@@ -862,7 +864,6 @@ begin
                   end if;
 
                   for J in reverse Elab_Order.First .. Elab_Order.Last loop
-
                      Source := Units.Table (Elab_Order.Table (J)).Sfile;
 
                      --  Do not include the sources of the runtime and do not
@@ -875,7 +876,7 @@ begin
                            Write_Str ("   ");
                         end if;
 
-                        Write_Str (Get_Name_String  (Source));
+                        Write_Str (Get_Name_String (Source));
                         Write_Eol;
                      end if;
                   end loop;
@@ -908,7 +909,7 @@ begin
                   if not Zero_Formatting then
                      Write_Eol;
                   end if;
-               end;
+               end List_Closure_Display;
             end if;
          end if;
       end if;
