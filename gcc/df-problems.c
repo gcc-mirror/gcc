@@ -479,14 +479,15 @@ df_rd_init_solution (bitmap all_blocks)
 
 /* In of target gets or of out of source.  */
 
-static void
+static bool
 df_rd_confluence_n (edge e)
 {
   bitmap op1 = &df_rd_get_bb_info (e->dest->index)->in;
   bitmap op2 = &df_rd_get_bb_info (e->src->index)->out;
+  bool changed = false;
 
   if (e->flags & EDGE_FAKE)
-    return;
+    return false;
 
   if (e->flags & EDGE_EH)
     {
@@ -508,11 +509,12 @@ df_rd_confluence_n (edge e)
  			      DF_DEFS_BEGIN (regno),
  			      DF_DEFS_COUNT (regno));
 	}
-      bitmap_ior_into (op1, &tmp);
+      changed |= bitmap_ior_into (op1, &tmp);
       bitmap_clear (&tmp);
+      return changed;
     }
   else
-    bitmap_ior_into (op1, op2);
+    return bitmap_ior_into (op1, op2);
 }
 
 
@@ -966,21 +968,22 @@ df_lr_confluence_0 (basic_block bb)
 
 /* Confluence function that ignores fake edges.  */
 
-static void
+static bool
 df_lr_confluence_n (edge e)
 {
   bitmap op1 = &df_lr_get_bb_info (e->src->index)->out;
   bitmap op2 = &df_lr_get_bb_info (e->dest->index)->in;
+  bool changed = false;
 
   /* Call-clobbered registers die across exception and call edges.  */
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+    changed = bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
   else
-    bitmap_ior_into (op1, op2);
+    changed = bitmap_ior_into (op1, op2);
 
-  bitmap_ior_into (op1, &df->hardware_regs_used);
+  return bitmap_ior_into (op1, &df->hardware_regs_used) || changed;
 }
 
 
@@ -1503,16 +1506,16 @@ df_live_init (bitmap all_blocks)
 
 /* Forward confluence function that ignores fake edges.  */
 
-static void
+static bool
 df_live_confluence_n (edge e)
 {
   bitmap op1 = &df_live_get_bb_info (e->dest->index)->in;
   bitmap op2 = &df_live_get_bb_info (e->src->index)->out;
 
   if (e->flags & EDGE_FAKE)
-    return;
+    return false;
 
-  bitmap_ior_into (op1, op2);
+  return bitmap_ior_into (op1, op2);
 }
 
 
@@ -2710,23 +2713,24 @@ df_byte_lr_confluence_0 (basic_block bb)
 
 /* Confluence function that ignores fake edges.  */
 
-static void
+static bool
 df_byte_lr_confluence_n (edge e)
 {
   struct df_byte_lr_problem_data *problem_data
     = (struct df_byte_lr_problem_data *)df_byte_lr->problem_data;
   bitmap op1 = &df_byte_lr_get_bb_info (e->src->index)->out;
   bitmap op2 = &df_byte_lr_get_bb_info (e->dest->index)->in;
+  bool changed = false;
 
   /* Call-clobbered registers die across exception and call edges.  */
   /* ??? Abnormal call edges ignored for the moment, as this gets
      confused by sibling call edges, which crashes reg-stack.  */
   if (e->flags & EDGE_EH)
-    bitmap_ior_and_compl_into (op1, op2, &problem_data->invalidated_by_call);
+    changed = bitmap_ior_and_compl_into (op1, op2, &problem_data->invalidated_by_call);
   else
-    bitmap_ior_into (op1, op2);
+    changed = bitmap_ior_into (op1, op2);
 
-  bitmap_ior_into (op1, &problem_data->hardware_regs_used);
+  return bitmap_ior_into (op1, &problem_data->hardware_regs_used) || changed;
 }
 
 
@@ -4426,19 +4430,19 @@ df_md_confluence_0 (basic_block bb)
 
 /* In of target gets or of out of source.  */
 
-static void
+static bool
 df_md_confluence_n (edge e)
 {
   bitmap op1 = &df_md_get_bb_info (e->dest->index)->in;
   bitmap op2 = &df_md_get_bb_info (e->src->index)->out;
 
   if (e->flags & EDGE_FAKE)
-    return;
+    return false;
 
   if (e->flags & EDGE_EH)
-    bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
+    return bitmap_ior_and_compl_into (op1, op2, regs_invalidated_by_call_regset);
   else
-    bitmap_ior_into (op1, op2);
+    return bitmap_ior_into (op1, op2);
 }
 
 /* Free all storage associated with the problem.  */

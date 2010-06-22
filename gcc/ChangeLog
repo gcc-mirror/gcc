@@ -1,4 +1,15 @@
-2010-06-22  Uros Bizjak  <ubizjak@gmail.com>
+2010-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* df-problems.c (df_rd_confluence_n, df_lr_confluence_n, df_live_confluence_n,
+	df_byte_lr_confluence_n, df_md_confluence_n): Return true if something changed.
+	* df.h (df_confluence_function_n): Return bool.
+	* df-core.c (df_worklist_propagate_forward, df_worklist_propagate_backward):
+	track changes and ages.
+	(df_worklist_dataflow_doublequeue): Use bitmap iterator for main walk;
+	track ages.
+	* dse.c (dse_confluence_n): Return always true.
+
+2010-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* bitmap.c (bitmap_clear_bit): Micro optimize.
 

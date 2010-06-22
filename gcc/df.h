@@ -223,7 +223,7 @@ typedef void (*df_dataflow_function) (struct dataflow *, bitmap, int *, int);
 typedef void (*df_confluence_function_0) (basic_block);
 
 /* Confluence operator for blocks with 1 or more out (or in) edges.  */
-typedef void (*df_confluence_function_n) (edge);
+typedef bool (*df_confluence_function_n) (edge);
 
 /* Transfer function for blocks.  */
 typedef bool (*df_transfer_function) (int);
