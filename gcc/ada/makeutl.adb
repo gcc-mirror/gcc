@@ -39,10 +39,8 @@ with Ada.Command_Line;  use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-pragma Warnings (Off);
-with System.Case_Util; use System.Case_Util;
-with System.HTable;
-pragma Warnings (On);
+with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.HTable;
 
 package body Makeutl is
 
@@ -61,7 +59,7 @@ package body Makeutl is
 
    function Hash (Key : Mark_Key) return Mark_Num;
 
-   package Marks is new System.HTable.Simple_HTable
+   package Marks is new GNAT.HTable.Simple_HTable
      (Header_Num => Mark_Num,
       Element    => Boolean,
       No_Element => False,

@@ -1,3 +1,15 @@
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj.adb, tempdir.ads, makeutl.adb: Use
+	packages from the GNAT hierarchy instead of System when possible.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-06-22  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-vxworks.adb (Set_Priority): Remove the code that was
+	previously in place to reorder the ready queue when a task drops its
+	priority due to the loss of inherited priority.
+
 2010-06-22  Vincent Celier  <celier@adacore.com>
 
 	* projects.texi: Minor spelling error fixes.
