@@ -1478,6 +1478,9 @@ build_m_component_ref (tree datum, tree component)
   if (error_operand_p (datum) || error_operand_p (component))
     return error_mark_node;
 
+  mark_lvalue_use (datum);
+  mark_rvalue_use (component);
+
   ptrmem_type = TREE_TYPE (component);
   if (!TYPE_PTR_TO_MEMBER_P (ptrmem_type))
     {
