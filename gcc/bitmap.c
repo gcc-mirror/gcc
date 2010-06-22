@@ -624,11 +624,13 @@ bitmap_clear_bit (bitmap head, int bit)
       BITMAP_WORD bit_val = ((BITMAP_WORD) 1) << bit_num;
       bool res = (ptr->bits[word_num] & bit_val) != 0;
       if (res)
-	ptr->bits[word_num] &= ~bit_val;
-
-      /* If we cleared the entire word, free up the element.  */
-      if (bitmap_element_zerop (ptr))
-	bitmap_element_free (head, ptr);
+	{
+	  ptr->bits[word_num] &= ~bit_val;
+	  /* If we cleared the entire word, free up the element.  */
+	  if (!ptr->bits[word_num]
+	      && bitmap_element_zerop (ptr))
+	    bitmap_element_free (head, ptr);
+	}
 
       return res;
     }
