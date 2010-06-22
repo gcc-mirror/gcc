@@ -3827,10 +3827,13 @@ package body Sem_Eval is
       then
          return Empty;
 
-      --  There are two cases where the context does not imply the type of the
-      --  operands: either the universal expression appears in a type
-      --  conversion, or we are in the case of a predefined relational
-      --  operator, where the context type is always Boolean.
+      --  There are several cases where the context does not imply the type of
+      --  the operands:
+      --     - the universal expression appears in a type conversion;
+      --     - the expression is a relational operator applied to universal
+      --       operands;
+      --     - the expression is a membership test with a universal operand
+      --       and a range with universal bounds.
 
       elsif Nkind (Parent (N)) = N_Type_Conversion
         or else Is_Relational

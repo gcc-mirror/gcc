@@ -679,7 +679,7 @@ package body Sem_Disp is
 
       --  Ada 2005 (AI-345)
 
-      if Ada_Version = Ada_05
+      if Ada_Version >= Ada_05
         and then Present (Tagged_Type)
         and then Is_Concurrent_Type (Tagged_Type)
       then
