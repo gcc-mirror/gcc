@@ -1,3 +1,24 @@
+2010-06-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Rewrite_Discriminant): Fix predicate used to identify
+	reference to discriminant (can be an expanded name as well as an
+	identifier).
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb: Clarify comment.
+
+2010-06-22  Geert Bosch  <bosch@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Treat ordinary fixed point
+	with decimal small as decimal types, avoiding floating-point arithmetic.
+	(Has_Decimal_Small): New function.
+	* einfo.ads, einfo.adb (Aft_Value): New synthesized attributed for
+	fixed point types.
+	* sem_attr.adb (Eval_Attribute): Remove Aft_Value function and update
+	callers to call the new function in Einfo that takes the entity as
+	parameter.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_ch8.adb: Minor reformatting.

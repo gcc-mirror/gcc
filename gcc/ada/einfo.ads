@@ -350,6 +350,10 @@ package Einfo is
 --       make sure that the address can be meaningfully taken, and also in
 --       the case of subprograms to control output of certain warnings.
 
+--    Aft_Value (synthesized)
+--       Applies to fixed and decimal types. Computes a universal integer
+--       that holds value of the Aft attribute for the type.
+
 --    Alias (Node18)
 --       Present in overloaded entities (literals, subprograms, entries) and
 --       subprograms that cover a primitive operation of an abstract interface
@@ -4832,6 +4836,7 @@ package Einfo is
    --    Small_Value                         (Ureal21)
    --    Has_Machine_Radix_Clause            (Flag83)
    --    Machine_Radix_10                    (Flag84)
+   --    Aft_Value                           (synth)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5114,6 +5119,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Small_Value                         (Ureal21)
    --    Has_Small_Clause                    (Flag67)
+   --    Aft_Value                           (synth)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6113,6 +6119,7 @@ package Einfo is
    --  so they do not correspond to defined fields in the entity itself.
 
    function Address_Clause                      (Id : E) return N;
+   function Aft_Value                           (Id : E) return U;
    function Alignment_Clause                    (Id : E) return N;
    function Base_Type                           (Id : E) return E;
    function Declaration_Node                    (Id : E) return N;

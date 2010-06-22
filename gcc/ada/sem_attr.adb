@@ -4805,10 +4805,6 @@ package body Sem_Attr is
       --  processing, since otherwise gigi might see an attribute which it is
       --  unprepared to deal with.
 
-      function Aft_Value return Nat;
-      --  Computes Aft value for current attribute prefix (used by Aft itself
-      --  and also by Width for computing the Width of a fixed point type).
-
       procedure Check_Concurrent_Discriminant (Bound : Node_Id);
       --  If Bound is a reference to a discriminant of a task or protected type
       --  occurring within the object's body, rewrite attribute reference into
@@ -4879,25 +4875,6 @@ package body Sem_Attr is
       function Statically_Denotes_Entity (N : Node_Id) return Boolean;
       --  Verify that the prefix of a potentially static array attribute
       --  satisfies the conditions of 4.9 (14).
-
-      ---------------
-      -- Aft_Value --
-      ---------------
-
-      function Aft_Value return Nat is
-         Result    : Nat;
-         Delta_Val : Ureal;
-
-      begin
-         Result := 1;
-         Delta_Val := Delta_Value (P_Type);
-         while Delta_Val < Ureal_Tenth loop
-            Delta_Val := Delta_Val * Ureal_10;
-            Result := Result + 1;
-         end loop;
-
-         return Result;
-      end Aft_Value;
 
       -----------------------------------
       -- Check_Concurrent_Discriminant --
@@ -5786,7 +5763,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Aft =>
-         Fold_Uint (N, UI_From_Int (Aft_Value), True);
+         Fold_Uint (N, Aft_Value (P_Type), True);
 
       ---------------
       -- Alignment --
@@ -7364,7 +7341,8 @@ package body Sem_Attr is
                   --  For fixed-point type width is Fore + 1 + Aft (RM 3.5(34))
 
                   Fold_Uint
-                    (N, UI_From_Int (Fore_Value + 1 + Aft_Value), True);
+                    (N, UI_From_Int (Fore_Value + 1) + Aft_Value (P_Type),
+                     True);
                end if;
 
             --  Discrete types

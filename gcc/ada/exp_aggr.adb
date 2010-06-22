@@ -2427,7 +2427,7 @@ package body Exp_Aggr is
 
       function Rewrite_Discriminant (Expr : Node_Id) return Traverse_Result is
       begin
-         if Nkind (Expr) = N_Identifier
+         if Is_Entity_Name (Expr)
            and then Present (Entity (Expr))
            and then Ekind (Entity (Expr)) = E_In_Parameter
            and then Present (Discriminal_Link (Entity (Expr)))
