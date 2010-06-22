@@ -1175,8 +1175,6 @@ execute_function_todo (void *data)
   if (!flags)
     return;
 
-  statistics_fini_pass ();
-
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
@@ -1287,6 +1285,8 @@ execute_todo (unsigned int flags)
 
   /* Inform the pass whether it is the first time it is run.  */
   first_pass_instance = (flags & TODO_mark_first_instance) != 0;
+
+  statistics_fini_pass ();
 
   do_per_function (execute_function_todo, (void *)(size_t) flags);
 
