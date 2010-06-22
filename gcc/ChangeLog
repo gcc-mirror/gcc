@@ -1,3 +1,13 @@
+2010-06-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Chain the
+	new statement and adjust VDEF only if necessary.  Remove superfluous
+	call to maybe_clean_or_replace_eh_stmt.
+	* gimple.c (gimple_call_copy_skip_args): Use gimple_call_copy_flags to
+	copy the flags.
+	* gimple-iterator.c (gsi_replace): Clear BB of old statement here...
+	* tree-inline.c (copy_bb): ...and not there.
+
 2010-06-22  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (is_nested_in_subprogram): New function.
@@ -12,15 +22,17 @@
 
 2010-06-22  Jan Hubicka  <jh@suse.cz>
 
-	* gimple.h (gimple_expr_code): Do checking on when gimple checking is enabled.
+	* gimple.h (gimple_expr_code): Do checking on when gimple checking is
+	enabled.
 
 2010-06-22  Jan Hubicka  <jh@suse.cz>
 
-	* df-problems.c (df_rd_confluence_n, df_lr_confluence_n, df_live_confluence_n,
-	df_byte_lr_confluence_n, df_md_confluence_n): Return true if something changed.
+	* df-problems.c (df_rd_confluence_n, df_lr_confluence_n,
+	df_live_confluence_n, df_byte_lr_confluence_n, df_md_confluence_n):
+	Return true if something changed.
 	* df.h (df_confluence_function_n): Return bool.
-	* df-core.c (df_worklist_propagate_forward, df_worklist_propagate_backward):
-	track changes and ages.
+	* df-core.c (df_worklist_propagate_forward,
+	df_worklist_propagate_backward): Track changes and ages.
 	(df_worklist_dataflow_doublequeue): Use bitmap iterator for main walk;
 	track ages.
 	* dse.c (dse_confluence_n): Return always true.
