@@ -9567,6 +9567,7 @@ package body Sem_Res is
             It  : Interp;
             It1 : Interp;
             N1  : Entity_Id;
+            T1  : Entity_Id;
 
          begin
             --  Remove procedure calls, which syntactically cannot appear in
@@ -9623,16 +9624,30 @@ package body Sem_Res is
 
             if Present (It.Typ) then
                N1  := It1.Nam;
+               T1  := It1.Typ;
                It1 :=  Disambiguate (Operand, I1, I, Any_Type);
 
                if It1 = No_Interp then
                   Error_Msg_N ("ambiguous operand in conversion", Operand);
 
-                  Error_Msg_Sloc := Sloc (It.Nam);
+                  --  If the interpretation involves a standard operator, use
+                  --  the location of the type, which may be user-defined.
+
+                  if Sloc (It.Nam) = Standard_Location then
+                     Error_Msg_Sloc := Sloc (It.Typ);
+                  else
+                     Error_Msg_Sloc := Sloc (It.Nam);
+                  end if;
+
                   Error_Msg_N -- CODEFIX
                     ("\\possible interpretation#!", Operand);
 
-                  Error_Msg_Sloc := Sloc (N1);
+                  if Sloc (N1) = Standard_Location then
+                     Error_Msg_Sloc := Sloc (T1);
+                  else
+                     Error_Msg_Sloc := Sloc (N1);
+                  end if;
+
                   Error_Msg_N -- CODEFIX
                     ("\\possible interpretation#!", Operand);
 

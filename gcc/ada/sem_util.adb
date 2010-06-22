@@ -3082,7 +3082,6 @@ package body Sem_Util is
       Disc := First_Discriminant (Tsk);
       while Present (Disc) loop
          if Chars (Disc) = Chars (Spec_Discriminant) then
-            Set_Scope (Discriminal (Disc), Tsk);
             return Discriminal (Disc);
          end if;
 
