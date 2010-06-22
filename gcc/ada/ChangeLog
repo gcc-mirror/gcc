@@ -1,3 +1,24 @@
+2010-06-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Build_Discriminal): Set default scopes for newly created
+	discriminals to the current scope.
+	* sem_util.adb (Find_Body_Discriminal): Remove setting of discriminal's
+	scope, which could overwrite a different already set value.
+
+2010-06-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): If expression is a predefined
+	operator, use sloc of type of interpretation to improve error message
+	when operand is of some derived type.
+	* sem_eval.adb (Is_Mixed_Mode_Operand): New function, use it.
+
+2010-06-22  Emmanuel Briot  <briot@adacore.com>
+
+	* g-expect-vms.adb (Expect_Internal): No longer raises an exception, so
+	that it can set out parameters as well. When a process has died, reset
+	its Input_Fd to Invalid_Fd, so that when using multiple processes we
+	can find out which process has died.
+
 2010-06-22  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_eval.adb (Find_Universal_Operator_Type): New

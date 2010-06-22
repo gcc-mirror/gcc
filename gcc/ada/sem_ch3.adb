@@ -7710,6 +7710,7 @@ package body Sem_Ch3 is
       Set_Ekind     (D_Minal, E_In_Parameter);
       Set_Mechanism (D_Minal, Default_Mechanism);
       Set_Etype     (D_Minal, Etype (Discrim));
+      Set_Scope     (D_Minal, Current_Scope);
 
       Set_Discriminal (Discrim, D_Minal);
       Set_Discriminal_Link (D_Minal, Discrim);
@@ -7726,6 +7727,7 @@ package body Sem_Ch3 is
          Set_Ekind            (CR_Disc, E_In_Parameter);
          Set_Mechanism        (CR_Disc, Default_Mechanism);
          Set_Etype            (CR_Disc, Etype (Discrim));
+         Set_Scope            (CR_Disc, Current_Scope);
          Set_Discriminal_Link (CR_Disc, Discrim);
          Set_CR_Discriminant  (Discrim, CR_Disc);
       end if;

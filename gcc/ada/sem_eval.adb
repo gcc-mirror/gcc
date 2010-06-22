@@ -4799,6 +4799,24 @@ package body Sem_Eval is
       Typ1   : Entity_Id := Empty;
       Priv_E : Entity_Id;
 
+      function Is_Mixed_Mode_Operand (Op : Node_Id) return Boolean;
+      --  Check whether one operand is a mixed-mode operation that requires
+      --  the presence of a fixed-point type. Given that all operands are
+      --  universal and have been constant-folded, retrieve the original
+      --  function call.
+
+      ---------------------------
+      -- Is_Mixed_Mode_Operand --
+      ---------------------------
+
+      function Is_Mixed_Mode_Operand (Op : Node_Id) return Boolean is
+      begin
+         return Nkind (Original_Node (Op)) = N_Function_Call
+           and then Present (Next_Actual (First_Actual (Original_Node (Op))))
+           and then Etype (First_Actual (Original_Node (Op))) /=
+                    Etype (Next_Actual (First_Actual (Original_Node (Op))));
+      end Is_Mixed_Mode_Operand;
+
    begin
       if Nkind (Call) /= N_Function_Call
         or else Nkind (Name (Call)) /= N_Expanded_Name
@@ -4844,6 +4862,20 @@ package body Sem_Eval is
             then
                if No (Typ1) then
                   Typ1 := E;
+
+                  --  Before emitting an error, check for the presence of a
+                  --  mixed-mode operation that specifies a fixed point type.
+
+               elsif Is_Relational
+                 and then
+                   (Is_Mixed_Mode_Operand (Left_Opnd (N))
+                    or else Is_Mixed_Mode_Operand (Right_Opnd (N)))
+                 and then Is_Fixed_Point_Type (E) /= Is_Fixed_Point_Type (Typ1)
+
+               then
+                  if Is_Fixed_Point_Type (E) then
+                     Typ1 := E;
+                  end if;
 
                else
                   --  More than one type of the proper class declared in P
