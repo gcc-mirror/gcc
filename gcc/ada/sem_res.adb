@@ -5085,7 +5085,10 @@ package body Sem_Res is
 
                   --  Since we are correcting a node classification error made
                   --  by the parser, we call Replace rather than Rewrite.
+                  --  Preserve the parenthesis count of the node, for use by
+                  --  tools.
 
+                  Set_Paren_Count (Index_Node, Paren_Count (N));
                   Replace (N, Index_Node);
                   Set_Etype (Prefix (N), Ret_Type);
                   Set_Etype (N, Typ);

@@ -3652,6 +3652,7 @@ package body Sem_Attr is
             function Process (N : Node_Id) return Traverse_Result is
             begin
                if Is_Entity_Name (N)
+                 and then Present (Entity (N))
                  and then not Is_Formal (Entity (N))
                  and then Enclosing_Subprogram (Entity (N)) = Subp
                then
