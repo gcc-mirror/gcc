@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -39,32 +39,35 @@
 
 namespace __gnu_profile
 {
+  enum __state_type { __ON, __OFF, __INVALID };
 
-enum __state_type { __ON, __OFF, __INVALID };
+  _GLIBCXX_PROFILE_DEFINE_DATA(__state_type, __state, __INVALID);
 
-_GLIBCXX_PROFILE_DEFINE_DATA(__state_type, __state, __INVALID);
+  inline bool
+  __turn(__state_type __s)
+  { return (_GLIBCXX_PROFILE_DATA(__state)
+	    == __sync_val_compare_and_swap(&_GLIBCXX_PROFILE_DATA(__state),
+					   __INVALID, __s)); }
 
-inline bool __turn(__state_type __s)
-{
-  return (_GLIBCXX_PROFILE_DATA(__state)
-          == __sync_val_compare_and_swap(&_GLIBCXX_PROFILE_DATA(__state),
-                                         __INVALID, __s));
-}
+  inline bool
+  __turn_on()
+  { return __turn(__ON); }
 
-inline bool __turn_on()
-{ return __turn(__ON); }
+  inline bool
+  __turn_off()
+  { return __turn(__OFF); }
 
-inline bool __turn_off()
-{ return __turn(__OFF); }
+  inline bool
+  __is_on()
+  { return _GLIBCXX_PROFILE_DATA(__state) == __ON; }
 
-inline bool __is_on()
-{ return _GLIBCXX_PROFILE_DATA(__state) == __ON; }
+  inline bool
+  __is_off()
+  { return _GLIBCXX_PROFILE_DATA(__state) == __OFF; }
 
-inline bool __is_off()
-{ return _GLIBCXX_PROFILE_DATA(__state) == __OFF; }
-
-inline bool __is_invalid()
-{ return _GLIBCXX_PROFILE_DATA(__state) == __INVALID; }
+  inline bool
+  __is_invalid()
+  { return _GLIBCXX_PROFILE_DATA(__state) == __INVALID; }
 
 } // end namespace __gnu_profile
 #endif /* _GLIBCXX_PROFILE_PROFILER_STATE_H */

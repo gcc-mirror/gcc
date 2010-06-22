@@ -1,3 +1,18 @@
+2010-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_list_to_slist.h: Fix formatting,
+	other minor stylistic changes.
+	* include/profile/impl/profiler_container_size.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+	* include/profile/impl/profiler_vector_to_list.h: Likewise.
+	* include/profile/impl/profiler_state.h: Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+
 2010-06-22  Matthias Klose  <doko@ubuntu.com>
 
 	* python/libstdcxx/v6/printers.py: Don't use string exceptions.
