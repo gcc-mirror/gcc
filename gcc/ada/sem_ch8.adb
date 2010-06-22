@@ -398,9 +398,9 @@ package body Sem_Ch8 is
    --  must be added to the list of actuals in any subsequent call.
 
    function Applicable_Use (Pack_Name : Node_Id) return Boolean;
-   --  Common code to Use_One_Package and Set_Use, to determine whether
-   --  use clause must be processed. Pack_Name is an entity name that
-   --  references the package in question.
+   --  Common code to Use_One_Package and Set_Use, to determine whether use
+   --  clause must be processed. Pack_Name is an entity name that references
+   --  the package in question.
 
    procedure Attribute_Renaming (N : Node_Id);
    --  Analyze renaming of attribute as subprogram. The renaming declaration N
@@ -408,10 +408,9 @@ package body Sem_Ch8 is
    --  applied to the formals of the function.
 
    procedure Set_Entity_Or_Discriminal (N : Node_Id; E : Entity_Id);
-   --  Set Entity, with style check if need be. For a discriminant
-   --  reference, replace by the corresponding discriminal, i.e. the
-   --  parameter of the initialization procedure that corresponds to
-   --  the discriminant.
+   --  Set Entity, with style check if need be. For a discriminant reference,
+   --  replace by the corresponding discriminal, i.e. the parameter of the
+   --  initialization procedure that corresponds to the discriminant.
 
    procedure Check_Frozen_Renaming (N : Node_Id; Subp : Entity_Id);
    --  A renaming_as_body may occur after the entity of the original decla-
