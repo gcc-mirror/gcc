@@ -3545,13 +3545,9 @@ package body Sem_Attr is
          ----------------------
 
          procedure Must_Be_Imported (Proc_Ent : Entity_Id) is
-            Pent : Entity_Id := Proc_Ent;
+            Pent : constant Entity_Id := Ultimate_Alias (Proc_Ent);
 
          begin
-            while Present (Alias (Pent)) loop
-               Pent := Alias (Pent);
-            end loop;
-
             --  Ignore check if procedure not frozen yet (we will get
             --  another chance when the default parameter is reanalyzed)
 

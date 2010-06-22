@@ -216,6 +216,7 @@ package Sem_Util is
    --  for stubbed subprograms.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
+   pragma Inline (Current_Entity);
    --  Find the currently visible definition for a given identifier, that is to
    --  say the first entry in the visibility chain for the Chars of N.
 
@@ -464,6 +465,7 @@ package Sem_Util is
    --  Decl_Node into the name buffer.
 
    function Get_Name_Entity_Id (Id : Name_Id) return Entity_Id;
+   pragma Inline (Get_Name_Entity_Id);
    --  An entity value is associated with each name in the name table. The
    --  Get_Name_Entity_Id function fetches the Entity_Id of this entity,
    --  which is the innermost visible entity with the given name. See the
@@ -696,9 +698,10 @@ package Sem_Util is
    --  it is of protected, synchronized or task kind.
 
    function Is_False (U : Uint) return Boolean;
-   --  The argument is a Uint value which is the Boolean'Pos value of a
-   --  Boolean operand (i.e. is either 0 for False, or 1 for True). This
-   --  function simply tests if it is False (i.e. zero)
+   pragma Inline (Is_False);
+   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
+   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
+   --  if it is False (i.e. zero).
 
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
    --  Returns True iff the number U is a model number of the fixed-
@@ -734,11 +737,11 @@ package Sem_Util is
    --  variable and constant objects return True (compare Is_Variable).
 
    function Is_OK_Variable_For_Out_Formal (AV : Node_Id) return Boolean;
-   --  Used to test if AV is an acceptable formal for an OUT or IN OUT
-   --  formal. Note that the Is_Variable function is not quite the right
-   --  test because this is a case in which conversions whose expression
-   --  is a variable (in the Is_Variable sense) with a non-tagged type
-   --  target are considered view conversions and hence variables.
+   --  Used to test if AV is an acceptable formal for an OUT or IN OUT formal.
+   --  Note that the Is_Variable function is not quite the right test because
+   --  this is a case in which conversions whose expression is a variable (in
+   --  the Is_Variable sense) with a non-tagged type target are considered view
+   --  conversions and hence variables.
 
    function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is partly
@@ -782,6 +785,7 @@ package Sem_Util is
    --  normally such nodes represent a direct name.
 
    function Is_Statement (N : Node_Id) return Boolean;
+   pragma Inline (Is_Statement);
    --  Check if the node N is a statement node. Note that this includes
    --  the case of procedure call statements (unlike the direct use of
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
@@ -791,14 +795,15 @@ package Sem_Util is
    --  Returns True if E is a synchronized tagged type (AARM 3.9.4 (6/2))
 
    function Is_Transfer (N : Node_Id) return Boolean;
-   --  Returns True if the node N is a statement which is known to cause
-   --  an unconditional transfer of control at runtime, i.e. the following
+   --  Returns True if the node N is a statement which is known to cause an
+   --  unconditional transfer of control at runtime, i.e. the following
    --  statement definitely will not be executed.
 
    function Is_True (U : Uint) return Boolean;
-   --  The argument is a Uint value which is the Boolean'Pos value of a
-   --  Boolean operand (i.e. is either 0 for False, or 1 for True). This
-   --  function simply tests if it is True (i.e. non-zero)
+   pragma Inline (Is_True);
+   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
+   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
+   --  if it is True (i.e. non-zero).
 
    function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
    pragma Inline (Is_Universal_Numeric_Type);
@@ -1004,7 +1009,8 @@ package Sem_Util is
 
    procedure Next_Actual (Actual_Id : in out Node_Id);
    pragma Inline (Next_Actual);
-   --  Next_Actual (N) is equivalent to N := Next_Actual (N)
+   --  Next_Actual (N) is equivalent to N := Next_Actual (N). Note that we
+   --  inline this procedural form, but not the functional form that follows.
 
    function Next_Actual (Actual_Id : Node_Id) return Node_Id;
    --  Find next actual parameter in declaration order. As described for
@@ -1172,6 +1178,7 @@ package Sem_Util is
    --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
 
    procedure Set_Current_Entity (E : Entity_Id);
+   pragma Inline (Set_Current_Entity);
    --  Establish the entity E as the currently visible definition of its
    --  associated name (i.e. the Node_Id associated with its name)
 
@@ -1189,6 +1196,7 @@ package Sem_Util is
    --  can check identifier spelling style.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
+   pragma Inline (Set_Name_Entity_Id);
    --  Sets the Entity_Id value associated with the given name, which is the
    --  Id of the innermost visible entity with the given name. See the body
    --  of package Sem_Ch8 for further details on the handling of visibility.
@@ -1219,6 +1227,7 @@ package Sem_Util is
    --  Set the flag Is_Transient of the current scope
 
    procedure Set_Size_Info (T1, T2 : Entity_Id);
+   pragma Inline (Set_Size_Info);
    --  Copies the Esize field and Has_Biased_Representation flag from sub(type)
    --  entity T2 to (sub)type entity T1. Also copies the Is_Unsigned_Type flag
    --  in the fixed-point and discrete cases, and also copies the alignment
@@ -1252,8 +1261,9 @@ package Sem_Util is
    --  Return the accessibility level of Typ
 
    function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
-   --  Return the last entity in the chain of aliased entities of Prim.
-   --  If Prim has no alias return Prim.
+   pragma Inline (Ultimate_Alias);
+   --  Return the last entity in the chain of aliased entities of Prim. If Prim
+   --  has no alias return Prim.
 
    function Unit_Declaration_Node (Unit_Id : Entity_Id) return Node_Id;
    --  Unit_Id is the simple name of a program unit, this function returns the
@@ -1266,28 +1276,18 @@ package Sem_Util is
    --  Yields Universal_Integer or Universal_Real if this is a candidate
 
    function Unqualify (Expr : Node_Id) return Node_Id;
-   --  Removes any qualifications from Expr. For example, for T1'(T2'(X)),
-   --  this returns X. If Expr is not a qualified expression, returns Expr.
+   pragma Inline (Unqualify);
+   --  Removes any qualifications from Expr. For example, for T1'(T2'(X)), this
+   --  returns X. If Expr is not a qualified expression, returns Expr.
 
    function Within_Init_Proc return Boolean;
    --  Determines if Current_Scope is within an init proc
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
-   --  Output error message for incorrectly typed expression. Expr is the
-   --  node for the incorrectly typed construct (Etype (Expr) is the type
-   --  found), and Expected_Type is the entity for the expected type. Note
-   --  that Expr does not have to be a subexpression, anything with an
-   --  Etype field may be used.
-
-private
-   pragma Inline (Current_Entity);
-   pragma Inline (Get_Name_Entity_Id);
-   pragma Inline (Is_False);
-   pragma Inline (Is_Statement);
-   pragma Inline (Is_True);
-   pragma Inline (Set_Current_Entity);
-   pragma Inline (Set_Name_Entity_Id);
-   pragma Inline (Set_Size_Info);
-   pragma Inline (Unqualify);
+   --  Output error message for incorrectly typed expression. Expr is the node
+   --  for the incorrectly typed construct (Etype (Expr) is the type found),
+   --  and Expected_Type is the entity for the expected type. Note that Expr
+   --  does not have to be a subexpression, anything with an Etype field may
+   --  be used.
 
 end Sem_Util;

@@ -2668,9 +2668,7 @@ package body Exp_Ch6 is
          if Present (Inherited_From_Formal (Subp)) then
             Parent_Subp := Inherited_From_Formal (Subp);
          else
-            while Present (Alias (Parent_Subp)) loop
-               Parent_Subp := Alias (Parent_Subp);
-            end loop;
+            Parent_Subp := Ultimate_Alias (Parent_Subp);
          end if;
 
          --  The below setting of Entity is suspect, see F109-018 discussion???

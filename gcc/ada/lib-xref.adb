@@ -214,7 +214,6 @@ package body Lib.Xref is
       Base_T    : Entity_Id;
       Prim      : Elmt_Id;
       Prim_List : Elist_Id;
-      Ent       : Entity_Id;
 
    begin
       --  Handle subtypes of synchronized types
@@ -262,12 +261,8 @@ package body Lib.Xref is
          --  reference purposes (it is the original for which we want the xref
          --  and for which the comes_from_source test must be performed).
 
-         Ent := Node (Prim);
-         while Present (Alias (Ent)) loop
-            Ent := Alias (Ent);
-         end loop;
-
-         Generate_Reference (Typ, Ent, 'p', Set_Ref => False);
+         Generate_Reference
+           (Typ, Ultimate_Alias (Node (Prim)), 'p', Set_Ref => False);
          Next_Elmt (Prim);
       end loop;
    end Generate_Prim_Op_References;
@@ -1704,10 +1699,7 @@ package body Lib.Xref is
                      --  through several levels of derivation, so find the
                      --  ultimate (source) ancestor.
 
-                     Op := Alias (Old_E);
-                     while Present (Alias (Op)) loop
-                        Op := Alias (Op);
-                     end loop;
+                     Op := Ultimate_Alias (Old_E);
 
                   --  Normal case of no alias present
 

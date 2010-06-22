@@ -1,3 +1,11 @@
+2010-06-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb, sem_util.adb, sem_util.ads, sem_attr.adb, exp_ch6.adb,
+	exp_disp.adb, sem_eval.adb, exp_dist.adb lib-xref.adb: Code cleanup,
+	this patch replaces duplication of code that traverses the chain of
+	aliased primitives by a call to routine Ultimate_Alias that
+	provides this functionality.
+
 2010-06-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* fmap.adb, opt.ads, osint.adb, osint.ads, output.ads, scng.adb,
