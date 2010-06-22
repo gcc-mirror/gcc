@@ -210,7 +210,7 @@ package GNAT.Directory_Operations is
    --
    --    System_Default
    --      Uses either UNIX on Unix and OpenVMS systems, or DOS on Windows,
-   --      depending on the running environment.
+   --      depending on the running environment. What about other OS's???
 
    ---------------
    -- Iterators --

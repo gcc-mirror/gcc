@@ -1,3 +1,9 @@
+2010-06-22  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb: Complete previous change.
+	* g-dirope.ads: Add comment.
+	* s-stchop.adb, sfn_scan.adb: Minor reformatting.
+
 2010-06-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* cstand.adb: Add tree nodes for pragma Pack on string types.

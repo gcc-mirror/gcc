@@ -119,10 +119,6 @@ package body CStand is
      (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
    --  Builds a new entity for Standard
 
-   procedure Pack_String_Type (String_Type : Entity_Id);
-   --  Generate the proper tree for the pragma Pack that applies to each
-   --  string type.
-
    procedure Print_Standard;
    --  Print representation of package Standard if switch set
 
@@ -328,6 +324,9 @@ package body CStand is
       procedure Build_Exception (S : Standard_Entity_Type);
       --  Procedure to declare given entity as an exception
 
+      procedure Pack_String_Type (String_Type : Entity_Id);
+      --  Generate proper tree for pragma Pack that applies to given type
+
       ---------------------
       -- Build_Exception --
       ---------------------
@@ -344,6 +343,24 @@ package body CStand is
              Defining_Identifier => Standard_Entity (S));
          Append (Decl, Decl_S);
       end Build_Exception;
+
+      ----------------------
+      -- Pack_String_Type --
+      ----------------------
+
+      procedure Pack_String_Type (String_Type : Entity_Id) is
+         Prag : constant Node_Id :=
+           Make_Pragma (Stloc,
+             Chars                        => Name_Pack,
+             Pragma_Argument_Associations =>
+               New_List (
+                 Make_Pragma_Argument_Association (Stloc,
+                   Expression => New_Occurrence_Of (String_Type, Stloc))));
+
+      begin
+         Append (Prag, Decl_S);
+         Record_Rep_Item (String_Type, Prag);
+      end Pack_String_Type;
 
    --  Start of processing for Create_Standard
 
@@ -1630,19 +1647,6 @@ package body CStand is
 
       return E;
    end New_Standard_Entity;
-
-   ----------------------
-   -- Pack_String_Type --
-   ----------------------
-
-   procedure Pack_String_Type (String_Type : Entity_Id) is
-   begin
-      Record_Rep_Item (String_Type,
-         Make_Pragma (Stloc,
-            Chars  => Name_Pack,
-            Pragma_Argument_Associations =>
-              New_List (New_Occurrence_Of (String_Type, Stloc))));
-   end Pack_String_Type;
 
    --------------------
    -- Print_Standard --
