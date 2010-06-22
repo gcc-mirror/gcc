@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -610,8 +610,8 @@ package Lib.Writ is
    ---------------------
 
    --  The reference lines contain information about references from any of the
-   --  units in the compilation (including, body version and version
-   --  attributes, linker options pragmas and source dependencies.
+   --  units in the compilation (including body version and version attributes,
+   --  linker options pragmas and source dependencies).
 
    --  ------------------------------------
    --  -- E  External Version References --
@@ -696,7 +696,7 @@ package Lib.Writ is
    --  reference data. See the spec of Par_SCO for full details of the format.
 
    ----------------------
-   -- Global_Variables --
+   -- Global variables --
    ----------------------
 
    --  The table structure defined here stores one entry for each

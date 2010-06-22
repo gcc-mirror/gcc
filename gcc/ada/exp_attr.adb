@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1257,8 +1257,8 @@ package body Exp_Attr is
       --  subprogram spec or package. This sequence of code references the
       --  the unsigned constant created in the main program by the binder.
 
-      --  A special exception occurs for Standard, where the string
-      --  returned is a copy of the library string in gnatvsn.ads.
+      --  A special exception occurs for Standard, where the string returned
+      --  is a copy of the library string in gnatvsn.ads.
 
       when Attribute_Body_Version | Attribute_Version => Version : declare
          E    : constant Entity_Id := Make_Temporary (Loc, 'V');

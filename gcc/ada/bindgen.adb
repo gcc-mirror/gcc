@@ -1942,8 +1942,8 @@ package body Bindgen is
 
       for E in Elab_Order.First .. Elab_Order.Last loop
 
-         --  If not spec that has an associated body, then generate a
-         --  comment giving the name of the corresponding object file.
+         --  If not spec that has an associated body, then generate a comment
+         --  giving the name of the corresponding object file.
 
          if (not Units.Table (Elab_Order.Table (E)).SAL_Interface)
            and then Units.Table (Elab_Order.Table (E)).Utype /= Is_Spec
@@ -1952,8 +1952,8 @@ package body Bindgen is
               (ALIs.Table
                 (Units.Table (Elab_Order.Table (E)).My_ALI).Ofile_Full_Name);
 
-            --  If the presence of an object file is necessary or if it
-            --  exists, then use it.
+            --  If the presence of an object file is necessary or if it exists,
+            --  then use it.
 
             if not Hostparm.Exclude_Missing_Objects
               or else
@@ -1975,8 +1975,7 @@ package body Bindgen is
                   (ALIs.Table
                    (Units.Table (Elab_Order.Table (E)).My_ALI).Sfile)
                then
-                  --  Special case for g-trasym.obj, which is not included
-                  --  in libgnat.
+                  --  Special case for g-trasym.obj (not included in libgnat)
 
                   Get_Name_String (ALIs.Table
                             (Units.Table (Elab_Order.Table (E)).My_ALI).Sfile);
@@ -2010,38 +2009,36 @@ package body Bindgen is
 
       --  This sort accomplishes two important purposes:
 
-      --    a) All application files are sorted to the front, and all
-      --       GNAT internal files are sorted to the end. This results
-      --       in a well defined dividing line between the two sets of
-      --       files, for the purpose of inserting certain standard
-      --       library references into the linker arguments list.
+      --    a) All application files are sorted to the front, and all GNAT
+      --       internal files are sorted to the end. This results in a well
+      --       defined dividing line between the two sets of files, for the
+      --       purpose of inserting certain standard library references into
+      --       the linker arguments list.
 
-      --    b) Given two different units, we sort the linker options so
-      --       that those from a unit earlier in the elaboration order
-      --       comes later in the list. This is a heuristic designed
-      --       to create a more friendly order of linker options when
-      --       the operations appear in separate units. The idea is that
-      --       if unit A must be elaborated before unit B, then it is
-      --       more likely that B references libraries included by A,
-      --       than vice versa, so we want the libraries included by
-      --       A to come after the libraries included by B.
+      --    b) Given two different units, we sort the linker options so that
+      --       those from a unit earlier in the elaboration order comes later
+      --       in the list. This is a heuristic designed to create a more
+      --       friendly order of linker options when the operations appear in
+      --       separate units. The idea is that if unit A must be elaborated
+      --       before unit B, then it is more likely that B references
+      --       libraries included by A, than vice versa, so we want libraries
+      --       included by A to come after libraries included by B.
 
-      --  These two criteria are implemented by function Lt_Linker_Option.
-      --  Note that a special case of b) is that specs are elaborated before
-      --  bodies, so linker options from specs come after linker options
-      --  for bodies, and again, the assumption is that libraries used by
-      --  the body are more likely to reference libraries used by the spec,
-      --  than vice versa.
+      --  These two criteria are implemented by function Lt_Linker_Option. Note
+      --  that a special case of b) is that specs are elaborated before bodies,
+      --  so linker options from specs come after linker options for bodies,
+      --  and again, the assumption is that libraries used by the body are more
+      --  likely to reference libraries used by the spec, than vice versa.
 
       Sort
         (Linker_Options.Last,
          Move_Linker_Option'Access,
          Lt_Linker_Option'Access);
 
-      --  Write user linker options, i.e. the set of linker options that
-      --  come from all files other than GNAT internal files, Lgnat is
-      --  left set to point to the first entry from a GNAT internal file,
-      --  or past the end of the entriers if there are no internal files.
+      --  Write user linker options, i.e. the set of linker options that come
+      --  from all files other than GNAT internal files, Lgnat is left set to
+      --  point to the first entry from a GNAT internal file, or past the end
+      --  of the entriers if there are no internal files.
 
       Lgnat := Linker_Options.Last + 1;
 
@@ -2145,9 +2142,9 @@ package body Bindgen is
 
       Set_PSD_Pragma_Table;
 
-      --  Override Ada_Bind_File and Bind_Main_Program for VMs since
-      --  JGNAT only supports Ada code, and the main program is already
-      --  generated by the compiler.
+      --  Override Ada_Bind_File and Bind_Main_Program for VMs since JGNAT only
+      --  supports Ada code, and the main program is already generated by the
+      --  compiler.
 
       if VM_Target /= No_VM then
          Ada_Bind_File := True;
@@ -2279,8 +2276,7 @@ package body Bindgen is
                WBI ("   gnat_envp : System.Address;");
 
                --  If the standard library is not suppressed, these variables
-               --  are in the runtime data area for easy access from the
-               --  runtime.
+               --  are in the run-time data area for easy run time access.
 
                if not Suppress_Standard_Library_On_Target then
                   WBI ("");
@@ -2475,8 +2471,8 @@ package body Bindgen is
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
 
-         --  In the Java case, pragma Import C cannot be used, so the
-         --  standard Ada constructs will be used instead.
+         --  In the Java case, pragma Import C cannot be used, so the standard
+         --  Ada constructs will be used instead.
 
          if VM_Target = No_VM then
             WBI ("");
@@ -2631,8 +2627,8 @@ package body Bindgen is
          WBI ("extern void __gnat_stack_usage_initialize (int size);");
       end if;
 
-      --  Initialize stack limit for the environment task if the stack
-      --  check method is stack limit and stack check is enabled.
+      --  Initialize stack limit for the environment task if the stack check
+      --  method is stack limit and stack check is enabled.
 
       if Stack_Check_Limits_On_Target
         and then (Stack_Check_Default_On_Target or Stack_Check_Switch_Set)
@@ -2666,8 +2662,8 @@ package body Bindgen is
 
       if Bind_Main_Program then
 
-         --  First deal with argc/argv/envp. In the normal case they
-         --  are in the run-time library.
+         --  First deal with argc/argv/envp. In the normal case they are in the
+         --  run-time library.
 
          if not Configurable_Run_Time_On_Target then
             WBI ("extern int gnat_argc;");
@@ -2680,8 +2676,8 @@ package body Bindgen is
          elsif not Command_Line_Args_On_Target then
             null;
 
-         --  Otherwise, in the configurable run-time case they are right in
-         --  the binder file.
+         --  Otherwise, in the configurable run-time case they are right in the
+         --  binder file.
 
          else
             WBI ("int gnat_argc;");
@@ -2694,8 +2690,8 @@ package body Bindgen is
          if not Configurable_Run_Time_On_Target then
             WBI ("extern int gnat_exit_status;");
 
-         --  If configurable run time and no exit status on target, then
-         --  the generation of this variables is entirely suppressed.
+         --  If configurable run time and no exit status on target, then the
+         --  generation of this variables is entirely suppressed.
 
          elsif not Exit_Status_Supported_On_Target then
             null;
@@ -2710,9 +2706,8 @@ package body Bindgen is
          WBI ("");
       end if;
 
-      --  When suppressing the standard library, the __gnat_break_start
-      --  routine (for the debugger to get initial control) is defined in
-      --  this file.
+      --  When suppressing the standard library, the __gnat_break_start routine
+      --  (for the debugger to get initial control) is defined in this file.
 
       if Suppress_Standard_Library_On_Target then
          WBI ("");
@@ -2736,8 +2731,8 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
-      --  Generate the adafinal routine. In no runtime mode, this is
-      --  not needed, since there is no finalization to do.
+      --  Generate the adafinal routine. In no runtime mode, this is not
+      --  needed, since there is no finalization to do.
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          Gen_Adafinal_C;
@@ -2982,9 +2977,9 @@ package body Bindgen is
    --    unnnnn : constant Integer := 16#hhhhhhhh#;
    --    pragma Export (C, unnnnn, unam);
 
-   --  for each unit, where unam is the unit name suffixed by either B or
-   --  S for body or spec, with dots replaced by double underscores, and
-   --  hhhhhhhh is the version number, and nnnnn is a 5-digits serial number.
+   --  for each unit, where unam is the unit name suffixed by either B or S for
+   --  body or spec, with dots replaced by double underscores, and hhhhhhhh is
+   --  the version number, and nnnnn is a 5-digits serial number.
 
    procedure Gen_Versions_Ada is
       Ubuf : String (1 .. 6) := "u00000";
@@ -3054,8 +3049,8 @@ package body Bindgen is
 
    --    unsigned unam = 0xhhhhhhhh;
 
-   --  for each unit, where unam is the unit name suffixed by either B or
-   --  S for body or spec, with dots replaced by double underscores.
+   --  for each unit, where unam is the unit name suffixed by either B or S for
+   --  body or spec, with dots replaced by double underscores.
 
    procedure Gen_Versions_C is
    begin
@@ -3193,9 +3188,9 @@ package body Bindgen is
 
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
 
-         --  If this is a child name, return only the name of the child,
-         --  since we can't have dots in a nested program name. Note that
-         --  we do not include the %b at the end of the unit name.
+         --  If this is a child name, return only the name of the child, since
+         --  we can't have dots in a nested program name. Note that we do not
+         --  include the %b at the end of the unit name.
 
          for J in reverse 1 .. Name_Len - 2 loop
             if J = 1 or else Name_Buffer (J - 1) = '.' then
@@ -3227,12 +3222,12 @@ package body Bindgen is
       --  no better choice. If some other encoding is required when there is
       --  no main, it must be set explicitly using -Wx.
 
-      --  Note: if the ALI file always passed the wide character encoding
-      --  of every file, then we could use the encoding of the initial
-      --  specified file, but this information is passed only for potential
-      --  main programs. We could fix this sometime, but it is a very minor
-      --  point (wide character default encoding for [Wide_[Wide_]Text_IO
-      --  when there is no main program).
+      --  Note: if the ALI file always passed the wide character encoding of
+      --  every file, then we could use the encoding of the initial specified
+      --  file, but this information is passed only for potential main
+      --  programs. We could fix this sometime, but it is a very minor point
+      --  (wide character default encoding for [Wide_[Wide_]Text_IO when there
+      --  is no main program).
 
       elsif No_Main_Subprogram then
          return 'b';
@@ -3263,8 +3258,8 @@ package body Bindgen is
                 Linker_Options.Table (Op2).Internal_File;
 
       --  If both internal or both non-internal, sort according to the
-      --  elaboration position. A unit that is elaborated later should
-      --  come earlier in the linker options list.
+      --  elaboration position. A unit that is elaborated later should come
+      --  earlier in the linker options list.
 
       else
          return Units.Table (Linker_Options.Table (Op1).Unit).Elab_Position
@@ -3293,9 +3288,9 @@ package body Bindgen is
          Get_Name_String (Units.Table (Elab_Order.Table (E)).Uname);
 
          --  This is not a perfect approach, but is the current protocol
-         --  between the run-time and the binder to indicate that tasking
-         --  is used: system.os_interface should always be used by any
-         --  tasking application.
+         --  between the run-time and the binder to indicate that tasking is
+         --  used: system.os_interface should always be used by any tasking
+         --  application.
 
          if Name_Buffer (1 .. 19) = "system.os_interface" then
             With_GNARL := True;
