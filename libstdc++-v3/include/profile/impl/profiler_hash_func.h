@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -87,7 +87,7 @@ inline __hashfunc_info::__hashfunc_info(const __hashfunc_info& __o)
 
 inline void __hashfunc_info::__merge(const __hashfunc_info& __o)
 {
-  _M_longest_chain  = __max(_M_longest_chain, __o._M_longest_chain);
+  _M_longest_chain  = std::max(_M_longest_chain, __o._M_longest_chain);
   _M_accesses      += __o._M_accesses;
   _M_hops          += __o._M_hops;
 }
@@ -95,7 +95,7 @@ inline void __hashfunc_info::__merge(const __hashfunc_info& __o)
 inline void __hashfunc_info::__destruct(size_t __chain, size_t __accesses, 
                                         size_t __hops)
 { 
-  _M_longest_chain  = __max(_M_longest_chain, __chain);
+  _M_longest_chain  = std::max(_M_longest_chain, __chain);
   _M_accesses      += __accesses;
   _M_hops          += __hops;
 }

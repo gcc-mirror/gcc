@@ -1,3 +1,13 @@
+2010-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44630
+	* include/profile/impl/profiler_trace.h (__min, __max): Remove,
+	use std::min, std::max everywhere.
+	* include/profile/impl/profiler_container_size.h: Use std::min and
+	std::max.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+
 2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
