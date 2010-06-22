@@ -4597,7 +4597,8 @@ m68k_output_addr_const_extra (FILE *file, rtx x)
 	case UNSPEC_RELOC16:
 	case UNSPEC_RELOC32:
 	  output_addr_const (file, XVECEXP (x, 0, 0));
-	  fputs (m68k_get_reloc_decoration (INTVAL (XVECEXP (x, 0, 1))), file);
+	  fputs (m68k_get_reloc_decoration
+		 ((enum m68k_reloc) INTVAL (XVECEXP (x, 0, 1))), file);
 	  return true;
 
 	default:
@@ -5609,7 +5610,6 @@ m68k_sched_attr_opx_type (rtx insn, int address_p)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5653,7 +5653,6 @@ m68k_sched_attr_opy_type (rtx insn, int address_p)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5759,7 +5758,6 @@ m68k_sched_attr_size (rtx insn)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5791,7 +5789,6 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
   else
@@ -5817,7 +5814,6 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 }
@@ -5850,7 +5846,6 @@ m68k_sched_attr_op_mem (rtx insn)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 
@@ -5869,7 +5864,6 @@ m68k_sched_attr_op_mem (rtx insn)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 
