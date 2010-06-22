@@ -1251,14 +1251,20 @@ package body Sprint is
             declare
                Condition : constant Node_Id := First (Expressions (Node));
                Then_Expr : constant Node_Id := Next (Condition);
-               Else_Expr : constant Node_Id := Next (Then_Expr);
+
             begin
                Write_Str_With_Col_Check_Sloc ("(if ");
                Sprint_Node (Condition);
                Write_Str_With_Col_Check (" then ");
-               Sprint_Node (Then_Expr);
-               Write_Str_With_Col_Check (" else ");
-               Sprint_Node (Else_Expr);
+
+               --  Defense against junk here!
+
+               if Present (Then_Expr) then
+                  Sprint_Node (Then_Expr);
+                  Write_Str_With_Col_Check (" else ");
+                  Sprint_Node (Next (Then_Expr));
+               end if;
+
                Write_Char (')');
             end;
 

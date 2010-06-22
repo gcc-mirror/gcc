@@ -741,7 +741,7 @@ begin
       --  Acquire all information in ALI files that have been read in
 
       for Index in ALIs.First .. ALIs.Last loop
-         Read_ALI (Index);
+         Read_Withed_ALIs (Index);
       end loop;
 
       --  Quit if some file needs compiling

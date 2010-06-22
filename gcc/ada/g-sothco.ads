@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2008-2009, AdaCore                     --
+--                     Copyright (C) 2008-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,18 +294,18 @@ package GNAT.Sockets.Thin_Common is
       H_Errnop  : not null access C.int) return C.int;
 
    function C_Getservbyname
-     (Name     : C.char_array;
-      Proto    : C.char_array;
-      Ret      : not null access Servent;
-      Buf      : System.Address;
-      Buflen   : C.int) return C.int;
+     (Name   : C.char_array;
+      Proto  : C.char_array;
+      Ret    : not null access Servent;
+      Buf    : System.Address;
+      Buflen : C.int) return C.int;
 
    function C_Getservbyport
-     (Port     : C.int;
-      Proto    : C.char_array;
-      Ret      : not null access Servent;
-      Buf      : System.Address;
-      Buflen   : C.int) return C.int;
+     (Port   : C.int;
+      Proto  : C.char_array;
+      Ret    : not null access Servent;
+      Buf    : System.Address;
+      Buflen : C.int) return C.int;
 
    ------------------------------------
    -- Scatter/gather vector handling --

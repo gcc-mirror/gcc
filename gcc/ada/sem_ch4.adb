@@ -1385,9 +1385,17 @@ package body Sem_Ch4 is
    procedure Analyze_Conditional_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : constant Node_Id := Next (Then_Expr);
+      Else_Expr : Node_Id;
 
    begin
+      --  Defend against error of missing expressions from previous error
+
+      if No (Then_Expr) then
+         return;
+      end if;
+
+      Else_Expr := Next (Then_Expr);
+
       if Comes_From_Source (N) then
          Check_Compiler_Unit (N);
       end if;
