@@ -287,11 +287,10 @@ package body CStand is
       Set_Etype (Last_Entity  (Standard_Op_Concatw), Standard_Wide_String);
 
       Set_Etype (First_Entity (Standard_Op_Concatww),
-                  Standard_Wide_Wide_String);
+                 Standard_Wide_Wide_String);
 
       Set_Etype (Last_Entity (Standard_Op_Concatww),
-                   Standard_Wide_Wide_String);
-
+                 Standard_Wide_Wide_String);
    end Create_Operators;
 
    ---------------------
@@ -350,13 +349,13 @@ package body CStand is
 
       procedure Pack_String_Type (String_Type : Entity_Id) is
          Prag : constant Node_Id :=
-           Make_Pragma (Stloc,
-             Chars                        => Name_Pack,
-             Pragma_Argument_Associations =>
-               New_List (
-                 Make_Pragma_Argument_Association (Stloc,
-                   Expression => New_Occurrence_Of (String_Type, Stloc))));
-
+                  Make_Pragma (Stloc,
+                    Chars                        => Name_Pack,
+                    Pragma_Argument_Associations =>
+                      New_List (
+                        Make_Pragma_Argument_Association (Stloc,
+                          Expression =>
+                            New_Occurrence_Of (String_Type, Stloc))));
       begin
          Append (Prag, Decl_S);
          Record_Rep_Item (String_Type, Prag);

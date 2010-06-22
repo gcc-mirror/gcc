@@ -230,10 +230,21 @@ package body Freeze is
 
       if Present (Renamed_Subp)
         and then Is_Intrinsic_Subprogram (Renamed_Subp)
-        and then Present (Interface_Name (Renamed_Subp))
         and then
           (not In_Same_Source_Unit (Renamed_Subp, Ent)
             or else Sloc (Renamed_Subp) < Sloc (Ent))
+        and then
+
+         --  We can make the renaming entity intrisic if the renamed function
+         --  has an interface name, or it is one of the shift/rotate operations
+         --  known to the compiler.
+
+        (Present (Interface_Name (Renamed_Subp))
+          or else Chars (Renamed_Subp) = Name_Rotate_Left
+          or else Chars (Renamed_Subp) = Name_Rotate_Right
+          or else Chars (Renamed_Subp) = Name_Shift_Left
+          or else Chars (Renamed_Subp) = Name_Shift_Right
+          or else Chars (Renamed_Subp) = Name_Shift_Right_Arithmetic)
       then
          Set_Interface_Name (Ent, Interface_Name (Renamed_Subp));
          if Present (Alias (Renamed_Subp)) then
