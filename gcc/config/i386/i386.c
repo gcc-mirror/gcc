@@ -23683,7 +23683,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     } args[4];
   bool last_arg_count = false;
   enum insn_code icode = d->icode;
-  const struct insn_data *insn_p = &insn_data[icode];
+  const struct insn_data_d *insn_p = &insn_data[icode];
   enum machine_mode tmode = insn_p->operand[0].mode;
   enum machine_mode rmode = VOIDmode;
   bool swap = false;
@@ -24077,7 +24077,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     } args[3];
   enum insn_code icode = d->icode;
   bool last_arg_constant = false;
-  const struct insn_data *insn_p = &insn_data[icode];
+  const struct insn_data_d *insn_p = &insn_data[icode];
   enum machine_mode tmode = insn_p->operand[0].mode;
   enum { load, store } klass;
 

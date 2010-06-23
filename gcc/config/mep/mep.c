@@ -6329,7 +6329,7 @@ mep_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   unsigned int n_args;
   tree fnname;
   const struct cgen_insn *cgen_insn;
-  const struct insn_data *idata;
+  const struct insn_data_d *idata;
   unsigned int first_arg = 0;
   tree return_type = void_type_node;
   unsigned int builtin_n_args;
@@ -7209,7 +7209,7 @@ bool
 mep_emit_intrinsic (int intrinsic, const rtx *operands)
 {
   const struct cgen_insn *cgen_insn;
-  const struct insn_data *idata;
+  const struct insn_data_d *idata;
   rtx newop[10];
   int i;
 
