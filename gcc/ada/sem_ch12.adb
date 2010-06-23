@@ -10396,7 +10396,7 @@ package body Sem_Ch12 is
    procedure Mark_Context (Inst_Decl : Node_Id; Gen_Decl : Node_Id) is
       Inst_CU : constant Unit_Number_Type := Get_Code_Unit   (Inst_Decl);
       Gen_CU  : constant Unit_Number_Type := Get_Source_Unit (Gen_Decl);
-      Inst    : Entity_Id := Cunit_Entity (Inst_CU);
+      Inst    : Entity_Id;
       Clause  : Node_Id;
 
    begin
@@ -10420,11 +10420,12 @@ package body Sem_Ch12 is
       --  If the with-clause for the generic unit was not found, it must
       --  appear in some ancestor of the current unit.
 
+      Inst := Cunit_Entity (Inst_CU);
       while Is_Child_Unit (Inst) loop
          Inst := Scope (Inst);
+
          Clause :=
            First (Context_Items (Parent (Unit_Declaration_Node (Inst))));
-
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause
               and then  Library_Unit (Clause) = Cunit (Gen_CU)

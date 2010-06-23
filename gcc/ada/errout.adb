@@ -1215,6 +1215,23 @@ package body Errout is
       Nxt : Error_Msg_Id;
       F   : Error_Msg_Id;
 
+      procedure Delete_Warning (E : Error_Msg_Id);
+      --  Delete a message if not already deleted and adjust warning count
+
+      --------------------
+      -- Delete_Warning --
+      --------------------
+
+      procedure Delete_Warning (E : Error_Msg_Id) is
+      begin
+         if not Errors.Table (E).Deleted then
+            Errors.Table (E).Deleted := True;
+            Warnings_Detected := Warnings_Detected - 1;
+         end if;
+      end Delete_Warning;
+
+   --  Start of message for Finalize
+
    begin
       --  Set Prev pointers
 
@@ -1252,15 +1269,14 @@ package body Errout is
            and then Warning_Specifically_Suppressed
                       (Errors.Table (Cur).Sptr, Errors.Table (Cur).Text)
          then
-            Errors.Table (Cur).Deleted := True;
-            Warnings_Detected := Warnings_Detected - 1;
+            Delete_Warning (Cur);
 
             --  If this is a continuation, delete previous messages
 
             F := Cur;
             while Errors.Table (F).Msg_Cont loop
                F := Errors.Table (F).Prev;
-               Errors.Table (F).Deleted := True;
+               Delete_Warning (F);
             end loop;
 
             --  Delete any following continuations
@@ -1270,7 +1286,7 @@ package body Errout is
                F := Errors.Table (F).Next;
                exit when F = No_Error_Msg;
                exit when not Errors.Table (F).Msg_Cont;
-               Errors.Table (F).Deleted := True;
+               Delete_Warning (F);
             end loop;
          end if;
 

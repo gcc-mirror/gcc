@@ -3155,9 +3155,10 @@ package body Exp_Ch4 is
             declare
                Decl    : Node_Id;
                Outer_S : Entity_Id;
-               S       : Entity_Id := Current_Scope;
+               S       : Entity_Id;
 
             begin
+               S := Current_Scope;
                while Present (S) and then S /= Standard_Standard loop
                   if Ekind (S) = E_Function then
                      Outer_S := Scope (S);
@@ -4369,7 +4370,6 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_In
 
    begin
-
       if Present (Alternatives (N)) then
          Remove_Side_Effects (Lop);
          Expand_Set_Membership;
@@ -7658,6 +7658,7 @@ package body Exp_Ch4 is
       procedure Make_Temporary_For_Slice is
          Decl : Node_Id;
          Ent  : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+
       begin
          Decl :=
            Make_Object_Declaration (Loc,
@@ -7793,7 +7794,6 @@ package body Exp_Ch4 is
          Cons : List_Id;
 
       begin
-
          --  Nothing else to do if no change of representation
 
          if Same_Representation (Operand_Type, Target_Type) then
@@ -8727,7 +8727,6 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Unchecked_Expression (N : Node_Id) is
       Exp : constant Node_Id := Expression (N);
-
    begin
       Set_Assignment_OK (Exp, Assignment_OK (N) or else Assignment_OK (Exp));
       Rewrite (N, Exp);
@@ -8751,6 +8750,7 @@ package body Exp_Ch4 is
       --  an Assignment_OK indication which must be propagated to the operand.
 
       if Operand_Type = Target_Type then
+
          --  Code duplicates Expand_N_Unchecked_Expression above, factor???
 
          if Assignment_OK (N) then

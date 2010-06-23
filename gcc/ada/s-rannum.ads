@@ -141,10 +141,13 @@ private
    type Generator is limited record
       Writable  : Writable_Access (Generator'Access);
       --  This self reference allows functions to modify Generator arguments
-      S         : State := (others => 0);
+
+      S : State := (others => 0);
       --  The shift register, a circular buffer
-      I         : Integer := N;
+
+      I : Integer := N;
       --  Current starting position in shift register S (N means uninitialized)
+      --  We should avoid using the identifier I here ???
    end record;
 
 end System.Random_Numbers;
