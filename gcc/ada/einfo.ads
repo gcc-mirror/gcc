@@ -3152,7 +3152,9 @@ package Einfo is
 --       types. Points to an element list of entities for primitive operations
 --       for the tagged type. Not present (and not set) in untagged types (it
 --       is an error to reference the primitive operations field of a type
---       that is not tagged).
+--       that is not tagged). In order to fulfill the C++ ABI, entities of
+--       primitives that come from source must be stored in this list following
+--       their order of occurrence in the sources.
 
 --    Prival (Node17)
 --       Present in private components of protected types. Refers to the entity

@@ -7948,6 +7948,16 @@ package body Sem_Util is
             if Is_Dynamic then
                Set_Is_Dynamic_Coextension (N);
 
+            --  If the allocator expression is potentially dynamic, it may
+            --  be expanded out of order and require dynamic allocation
+            --  anyway, so we treat the coextension itself as dynamic.
+            --  Potential optimization ???
+
+            elsif Nkind (Expression (N)) = N_Qualified_Expression
+              and then Nkind (Expression (Expression (N))) = N_Op_Concat
+            then
+               Set_Is_Dynamic_Coextension (N);
+
             else
                Set_Is_Static_Coextension (N);
             end if;

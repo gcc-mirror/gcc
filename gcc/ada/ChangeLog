@@ -1,3 +1,26 @@
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Mark_Coextensions): If the expression in the allocator
+	for a coextension in an object declaration is a concatenation, treat
+	coextension as dynamic.
+
+2010-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Ensure that the
+	internal entities are added to the scope of the tagged type.
+	(Derive_Subprograms): Do not stop derivation when we find the first
+	internal entity that has attribute Interface_Alias. After the change
+	done to Override_Dispatching_Operations it is no longer true that
+	these primirives are always located at the end of the list of
+	primitives.
+	* einfo.ads (Primitive_Operations): Add documentation.
+	* exp_disp.adb (Write_DT): Improve output adding to the name of the
+	primitive a prefix indicating its corresponding tagged type.
+	* sem_disp.adb (Override_Dispatching_Operations): If the overridden
+	entity covers the primitive of an interface that is not an ancestor of
+	this tagged type then the new primitive is added at the end of the list
+	of primitives.  Required to fulfill the C++ ABI.
+
 2010-06-23  Javier Miranda  <miranda@adacore.com>
 
 	* atree.ads (Set_Reporting_Proc): New subprogram.
