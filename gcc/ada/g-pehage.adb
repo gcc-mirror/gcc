@@ -2514,9 +2514,9 @@ package body GNAT.Perfect_Hash_Generators is
 
    function Trim_Trailing_Nuls (Str : String) return String is
    begin
-      for J in Str'Range loop
-         if Str (J) = ASCII.NUL then
-            return Str (Str'First .. J - 1);
+      for J in reverse Str'Range loop
+         if Str (J) /= ASCII.NUL then
+            return Str (Str'First .. J);
          end if;
       end loop;
       return Str;

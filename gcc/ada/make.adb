@@ -2449,7 +2449,7 @@ package body Make is
 
       Need_To_Check_Standard_Library : Boolean :=
                                          (Check_Readonly_Files or Must_Compile)
-                                           and Unique_Compile;
+                                           and not Unique_Compile;
 
       procedure Add_Process
         (Pid           : Process_Id;

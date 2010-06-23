@@ -1,3 +1,27 @@
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.adb (Trim_Trailing_Nuls): Fix the code to match the comment.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Compile_Sources): Complete previous change.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Add_Extra_Formal): Use suffix "C" in the name of the
+	Constrained extra formal.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch13.adb (Expand_Freeze_Actions): If validity checks and
+	Initialize_Scalars are enabled, compile the generated equality function
+	for a composite type with full checks enabled, so that validity checks
+	are performed on individual components.
+
 2010-06-23  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.adb, prj.ads, prj-nmsc.adb (Processing_Flags): New flag
