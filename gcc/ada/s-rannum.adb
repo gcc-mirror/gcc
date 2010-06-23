@@ -484,7 +484,12 @@ package body System.Random_Numbers is
    -----------
 
    procedure Reset (Gen : Generator) is
-      X : constant Unsigned_32 := Unsigned_32 ((Calendar.Clock - Y2K) * 64.0);
+      Clock              : constant Time := Calendar.Clock;
+      Duration_Since_Y2K : constant Duration := Clock - Y2K;
+
+      X : constant Unsigned_32 :=
+            Unsigned_32'Mod (Unsigned_64 (Duration_Since_Y2K) * 64);
+
    begin
       Init (Gen, X);
    end Reset;

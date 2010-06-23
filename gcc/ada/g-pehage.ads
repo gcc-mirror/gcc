@@ -124,11 +124,11 @@ package GNAT.Perfect_Hash_Generators is
    procedure Compute (Position : String := Default_Position);
    --  Compute the hash function. Position allows to define selection of
    --  character positions used in the word hash function. Positions can be
-   --  separated by commas and range like x-y may be used. Character '$'
+   --  separated by commas and ranges like x-y may be used. Character '$'
    --  represents the final character of a word. With an empty position, the
    --  generator automatically produces positions to reduce the memory usage.
-   --  Raise Too_Many_Tries in case that the algorithm does not succeed in less
-   --  than Tries attempts (see Initialize).
+   --  Raise Too_Many_Tries if the algorithm does not succeed within Tries
+   --  attempts (see Initialize).
 
    procedure Produce (Pkg_Name : String := Default_Pkg_Name);
    --  Generate the hash function package Pkg_Name. This package includes the
