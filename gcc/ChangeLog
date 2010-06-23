@@ -1,3 +1,18 @@
+2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386 (mov<mode>): Macroize expander from mov{sf,df,xf}
+	using X87MODEF mode iterator.
+	(pushsf splitter): Macroize splitter using P mode iterator.
+	(*swap<mode>): Macroize insn from *swap{sf,df} using MODEF
+	mode iterator.
+
+	(*movxf_internal): Rename from *movxf_integer.
+	(*movxf_internal_nointeger): Rename from *movxf_nointeger.
+	(*movdf_internal_rex64): Rename from *movdf_integer_rex64.
+	(*movdf_internal): Rename from *movdf_integer.
+	(*movdf_internal_nointeger): Rename from *movdf_nointeger.
+	(*movsf_internal): Rename from *movdf_1.
+
 2010-06-23  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* coretypes.h: (gimple_seq_node_d, gimple_seq_node)
@@ -104,7 +119,7 @@
 	(SWI48x): Ditto.
 	(SWI12): Ditto.
 	(SWI24): Ditto.
-	
+
 	(mov<mode>): Macroize expander from mov{qi,hi,si,di} using
 	SWI1248x mode iterator.
 	(*push<mode>2_rex64): Macroize insn from *push{qi,hi,si}_rex64
