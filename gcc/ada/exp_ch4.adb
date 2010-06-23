@@ -3644,9 +3644,11 @@ package body Exp_Ch4 is
                      --  The designated type was an incomplete type, and the
                      --  access type did not get expanded. Salvage it now.
 
-                     pragma Assert (Present (Parent (Base_Type (PtrT))));
-                     Expand_N_Full_Type_Declaration
-                       (Parent (Base_Type (PtrT)));
+                     if not Restriction_Active (No_Task_Hierarchy) then
+                        pragma Assert (Present (Parent (Base_Type (PtrT))));
+                        Expand_N_Full_Type_Declaration
+                          (Parent (Base_Type (PtrT)));
+                     end if;
                   end if;
 
                   --  If the context of the allocator is a declaration or an
@@ -3689,9 +3691,8 @@ package body Exp_Ch4 is
                      Decls := Build_Task_Image_Decls (Loc, T, T);
                   end if;
 
-                  --  What is this constant 3 below, should have a name ???
-
                   if Restriction_Active (No_Task_Hierarchy) then
+                     --  3 is System.Tasking.Library_Task_Level
                      Append_To (Args, Make_Integer_Literal (Loc, 3));
                   else
                      Append_To (Args,
