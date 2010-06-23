@@ -48,6 +48,8 @@
 	(intrin_return_compatible_p): Never warn on "function imported as
 	procedure".  Defer the void/void case to the common type compatibility
 	check.
+	(gnat_to_gnu_param): Use void_ptr GCC type for System.Address argument
+	of GCC builtin imports.
 
 2010-06-23  Olivier Hainque  <hainque@adacore.com>
 

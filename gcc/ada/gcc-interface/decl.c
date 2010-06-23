@@ -5264,6 +5264,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
     gnu_param_type
       = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_param_type))));
 
+  /* For GCC builtins, pass Address integer types as (void *)  */
+  if (Convention (gnat_subprog) == Convention_Intrinsic
+      && Present (Interface_Name (gnat_subprog))
+      && Is_Descendent_Of_Address (Etype (gnat_param)))
+    gnu_param_type = ptr_void_type_node;
+
   /* VMS descriptors are themselves passed by reference.  */
   if (mech == By_Short_Descriptor ||
       (mech == By_Descriptor && TARGET_ABI_OPEN_VMS && !TARGET_MALLOC64))
