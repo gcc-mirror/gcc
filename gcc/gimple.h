@@ -33,6 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-operands.h"
 #include "tree-ssa-alias.h"
 
+struct gimple_seq_node_d;
+typedef struct gimple_seq_node_d *gimple_seq_node;
+typedef const struct gimple_seq_node_d *const_gimple_seq_node;
+
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
 typedef VEC(gimple, heap) *gimple_vec;

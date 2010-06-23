@@ -1,3 +1,11 @@
+2010-06-23  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* coretypes.h: (gimple_seq_node_d, gimple_seq_node)
+	(const_gimple_seq_node): Removed typedefs.
+
+	* gimple.h: (gimple_seq_node_d, gimple_seq_node)
+	(const_gimple_seq_node): Added typedefs moved from coretypes.h.
+
 2010-06-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (bdesc_args): Replace CODE_FOR_avx_si_si256,
