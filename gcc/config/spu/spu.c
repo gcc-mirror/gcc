@@ -150,8 +150,8 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 /*  Prototypes and external defs.  */
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
-static unsigned char spu_scalar_mode_supported_p (enum machine_mode mode);
-static unsigned char spu_vector_mode_supported_p (enum machine_mode mode);
+static bool spu_scalar_mode_supported_p (enum machine_mode mode);
+static bool spu_vector_mode_supported_p (enum machine_mode mode);
 static bool spu_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool spu_addr_space_legitimate_address_p (enum machine_mode, rtx,
 						 bool, addr_space_t);
@@ -180,13 +180,13 @@ static void spu_sched_init (FILE *, int, int);
 static int spu_sched_reorder (FILE *, int, rtx *, int *, int);
 static tree spu_handle_fndecl_attribute (tree * node, tree name, tree args,
 					 int flags,
-					 unsigned char *no_add_attrs);
+					 bool *no_add_attrs);
 static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
 					 int flags,
-					 unsigned char *no_add_attrs);
+					 bool *no_add_attrs);
 static int spu_naked_function_p (tree func);
-static unsigned char spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-					    const_tree type, unsigned char named);
+static bool spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+				   const_tree type, bool named);
 static tree spu_build_builtin_va_list (void);
 static void spu_va_start (tree, rtx);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type,
@@ -196,9 +196,9 @@ static int mem_is_padded_component_ref (rtx x);
 static int reg_aligned_for_addr (rtx x);
 static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
 static void spu_asm_globalize_label (FILE * file, const char *name);
-static unsigned char spu_rtx_costs (rtx x, int code, int outer_code,
-				    int *total, bool speed);
-static unsigned char spu_function_ok_for_sibcall (tree decl, tree exp);
+static bool spu_rtx_costs (rtx x, int code, int outer_code,
+			   int *total, bool speed);
+static bool spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (const_tree type, const_tree fntype);
 static void fix_range (const char *);

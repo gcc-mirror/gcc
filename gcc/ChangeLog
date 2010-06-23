@@ -1,3 +1,11 @@
+2010-06-23  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/spu/spu-protos.h (spu_expand_epilogue) Use bool.
+	* config/spu/spu.c (spu_scalar_mode_supported_p): Declare with bool.
+	(spu_vector_mode_supported_p, spu_handle_fndecl_attribute): Likewise.
+	(spu_handle_vector_attribute, spu_pass_by_reference): Likewise.
+	(spu_rtx_costs, spu_function_ok_for_sibcall): Likewise.
+
 2010-06-23  Arnaud Charlet  <charlet@adacore.com
 
 	PR ada/22220
