@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This program reads the machine description for the compiler target machine
    and produces a file containing these things:
 
-   1. An array of `struct insn_data', which is indexed by insn code number,
+   1. An array of `struct insn_data_d', which is indexed by insn code number,
    which contains:
 
      a. `name' is the name for that pattern.  Nameless patterns are
@@ -293,7 +293,7 @@ output_insn_data (void)
       }
 
   printf ("#if GCC_VERSION >= 2007\n__extension__\n#endif\n");
-  printf ("\nconst struct insn_data insn_data[] = \n{\n");
+  printf ("\nconst struct insn_data_d insn_data[] = \n{\n");
 
   for (d = idata; d; d = d->next)
     {

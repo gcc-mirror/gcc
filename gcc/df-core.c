@@ -415,7 +415,7 @@ bitmap_obstack df_bitmap_obstack;
   Functions to create, destroy and manipulate an instance of df.
 ----------------------------------------------------------------------------*/
 
-struct df *df;
+struct df_d *df;
 
 /* Add PROBLEM (and any dependent problems) to the DF instance.  */
 
@@ -704,7 +704,7 @@ static unsigned int
 rest_of_handle_df_initialize (void)
 {
   gcc_assert (!df);
-  df = XCNEW (struct df);
+  df = XCNEW (struct df_d);
   df->changeable_flags = 0;
 
   bitmap_obstack_initialize (&df_bitmap_obstack);

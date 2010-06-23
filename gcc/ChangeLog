@@ -25,6 +25,13 @@
 	PR target/44640
 	* config/spu/spu.c (ea_load_store_inline): Use add_reg_note.
 
+	PR other/44644
+	* df-core.c (struct df): Rename to df_d.
+	* df.h (struct df): Likewise.
+	* dse.h (struct df): Remove forward declaration.
+	* recog.h (struct insn_data): Rename to:
+	(struct_insn_data_d).  Adjusted all users.
+
 2010-06-23  Arnaud Charlet  <charlet@adacore.com
 
 	PR ada/22220
