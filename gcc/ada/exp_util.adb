@@ -305,11 +305,9 @@ package body Exp_Util is
       else
          if No (Actions (Fnode)) then
             Set_Actions (Fnode, L);
-
          else
             Append_List (L, Actions (Fnode));
          end if;
-
       end if;
    end Append_Freeze_Actions;
 
