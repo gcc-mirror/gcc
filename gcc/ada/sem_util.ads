@@ -141,6 +141,11 @@ package Sem_Util is
    --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
    --  accordingly. This is currently only enabled for VM_Target /= No_VM.
 
+   procedure Check_Order_Dependence;
+   --  Examine the actuals in a top-level call to determine whether aliasing
+   --  between two actuals, one of which is writable, can make the call
+   --  order-dependent.
+
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
@@ -1167,6 +1172,12 @@ package Sem_Util is
    --  inside it, where both entities represent scopes. Note that scopes
    --  are only partially ordered, so Scope_Within_Or_Same (A,B) and
    --  Scope_Within_Or_Same (B,A) can both be False for a given pair A,B.
+
+   procedure Save_Actual (N : Node_Id;  Writable : Boolean := False);
+   --  Enter an actual in a call in a table global, for subsequent check
+   --  of possible order dependence in the presence of in out parameters
+   --  for functions in Ada 2012 (or access parameters in older versions
+   --  of the language).
 
    function Scope_Within (Scope1, Scope2 : Entity_Id) return Boolean;
    --  Like Scope_Within_Or_Same, except that this function returns

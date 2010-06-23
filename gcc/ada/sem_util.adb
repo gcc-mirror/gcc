@@ -56,6 +56,7 @@ with Sinput;   use Sinput;
 with Stand;    use Stand;
 with Style;
 with Stringt;  use Stringt;
+with Table;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -92,6 +93,88 @@ package body Sem_Util is
 
    subtype NCT_Header_Num is Int range 0 .. 511;
    --  Defines range of headers in hash tables (512 headers)
+
+   -----------------------------------
+   -- Order dependence : AI05-0144  --
+   -----------------------------------
+
+   --  Each actual in a call is entered into the table below. A flag
+   --  indicates whether the corresponding formal is out or in out.
+   --  Each top-level call (procedure call, condition, assignment)
+   --  examines all the actuals for a possible order dependence.
+   --  The table is reset after each such check.
+
+   type Actual_Name is record
+      Act  : Node_Id;
+      Is_Writable : Boolean;
+   end record;
+
+   package Actuals_In_Call is new Table.Table (
+      Table_Component_Type => Actual_Name,
+      Table_Index_Type     => Int,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 10,
+      Table_Increment      => 10,
+      Table_Name           => "Actuals");
+
+   procedure Save_Actual (N : Node_Id;  Writable : Boolean := False) is
+   begin
+      if Is_Entity_Name (N)
+        or else Nkind_In (N,
+                          N_Indexed_Component, N_Selected_Component, N_Slice)
+        or else (Nkind (N) = N_Attribute_Reference
+          and then Attribute_Name (N) = Name_Access)
+
+      then
+         --  We are only interested in in out parameters of inner calls.
+
+         if not Writable
+           or else Nkind (Parent (N)) = N_Function_Call
+           or else Nkind (Parent (N)) in N_Op
+         then
+            Actuals_In_Call.Increment_Last;
+            Actuals_In_Call.Table (Actuals_In_Call.Last) := (N, Writable);
+         end if;
+      end if;
+   end Save_Actual;
+
+   procedure Check_Order_Dependence is
+      Act1, Act2 : Node_Id;
+   begin
+      for J in 0 .. Actuals_In_Call.Last loop
+
+         if Actuals_In_Call.Table (J).Is_Writable then
+            Act1 := Actuals_In_Call.Table (J).Act;
+
+            if Nkind (Act1) = N_Attribute_Reference then
+               Act1 := Prefix (Act1);
+            end if;
+
+            for K in 0 .. Actuals_In_Call.Last loop
+               if K /= J then
+                  Act2 := Actuals_In_Call.Table (K).Act;
+                  if Nkind (Act2) = N_Attribute_Reference then
+                     Act2 := Prefix (Act2);
+                  end if;
+
+                  if Actuals_In_Call.Table (K).Is_Writable
+                    and then K < J
+                  then
+                     --  already checked
+                     null;
+
+                  elsif Denotes_Same_Object (Act1, Act2)
+                    and then False
+                  then
+                     Error_Msg_N ("?,mighty suspicious!!!", Act1);
+                  end if;
+               end if;
+            end loop;
+         end if;
+      end loop;
+
+      Actuals_In_Call.Set_Last (0);
+   end Check_Order_Dependence;
 
    -----------------------
    -- Local Subprograms --
@@ -2251,7 +2334,9 @@ package body Sem_Util is
 
    begin
       if Is_Entity_Name (A1) then
-         if Nkind_In (A2, N_Selected_Component, N_Indexed_Component) then
+         if Nkind_In (A2, N_Selected_Component, N_Indexed_Component)
+           and then not Is_Access_Type (Etype (A1))
+         then
             return Denotes_Same_Object (A1, Prefix (A2))
               or else Denotes_Same_Prefix (A1, Prefix (A2));
          else
@@ -7862,6 +7947,7 @@ package body Sem_Util is
          if Nkind (N) = N_Allocator then
             if Is_Dynamic then
                Set_Is_Dynamic_Coextension (N);
+
             else
                Set_Is_Static_Coextension (N);
             end if;

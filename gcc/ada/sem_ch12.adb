@@ -3237,7 +3237,8 @@ package body Sem_Ch12 is
                   or else Enclosing_Body_Present
                   or else Present (Corresponding_Body (Gen_Decl)))
                 and then (Is_In_Main_Unit (N)
-                           or else Might_Inline_Subp)
+                           or else Might_Inline_Subp
+                           or else CodePeer_Mode)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
@@ -10421,7 +10422,7 @@ package body Sem_Ch12 is
          Set_Implicit_With (Withn);
          Set_Library_Unit (Withn, Cunit (CU));
          Set_Withed_Body (Withn, Cunit (CU));
-         Append (Withn, Context_Items (Cunit (Inst_CU)));
+         Prepend (Withn, Context_Items (Cunit (Inst_CU)));
       end Add_Implicit_With;
 
    begin
@@ -10433,9 +10434,15 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  If G is itself declared within an instance, indicate that the generic
-      --  body of that instance is also needed by C. This must be done
-      --  recursively.
+      --  Nothing to do if G is local.
+
+      if Inst_CU = Gen_CU then
+         return;
+      end if;
+
+      --  If G is itself  declared within an instance, indicate that the
+      --  generic body of that instance is also needed by C. This must be
+      --  done recursively.
 
       Scop := Scope (Defining_Entity (Gen_Decl));
 

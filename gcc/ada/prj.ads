@@ -1496,7 +1496,8 @@ package Prj is
    --
    --  Missing_Source_Files indicates whether it is an error or a warning that
    --  a source file mentioned in the Source_Files attributes is not actually
-   --  found in the source directories
+   --  found in the source directories. This also impacts errors for missing
+   --  source directories.
 
    Gprbuild_Flags : constant Processing_Flags;
    Gprclean_Flags : constant Processing_Flags;

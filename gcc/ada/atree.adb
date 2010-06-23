@@ -38,13 +38,14 @@ pragma Style_Checks (All_Checks);
 
 with Debug;   use Debug;
 with Nlists;  use Nlists;
-with Opt;     use Opt;
 with Output;  use Output;
 with Sinput;  use Sinput;
-with SCIL_LL; use SCIL_LL;
 with Tree_IO; use Tree_IO;
 
 package body Atree is
+
+   Reporting_Proc : Report_Proc := null;
+   --  Record argument to last call to Set_Reporting_Proc
 
    ---------------
    -- Debugging --
@@ -534,10 +535,10 @@ package body Atree is
       Orig_Nodes.Set_Last (Nodes.Last);
       Allocate_List_Tables (Nodes.Last);
 
-      --  Update the SCIL_Node field (if available)
+      --  Invoke the reporting procedure (if available)
 
-      if Generate_SCIL then
-         Set_SCIL_Node (New_Id, Get_SCIL_Node (Src));
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => New_Id, Source => Src);
       end if;
 
       return New_Id;
@@ -924,6 +925,16 @@ package body Atree is
    begin
       return Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6);
    end Ekind_In;
+
+   ------------------------
+   -- Set_Reporting_Proc --
+   ------------------------
+
+   procedure Set_Reporting_Proc (P : Report_Proc) is
+   begin
+      pragma Assert (Reporting_Proc = null);
+      Reporting_Proc := P;
+   end Set_Reporting_Proc;
 
    ------------------
    -- Error_Posted --
@@ -1580,10 +1591,10 @@ package body Atree is
 
       Orig_Nodes.Table (Old_Node) := Old_Node;
 
-      --  Update the SCIL_Node field (if available)
+      --  Invoke the reporting procedure (if available)
 
-      if Generate_SCIL then
-         Set_SCIL_Node (Old_Node, Get_SCIL_Node (New_Node));
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
    end Replace;
 
@@ -1644,10 +1655,10 @@ package body Atree is
 
       Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
 
-      --  Update the SCIL_Node field (if available)
+      --  Invoke the reporting procedure (if available)
 
-      if Generate_SCIL then
-         Set_SCIL_Node (Old_Node, Get_SCIL_Node (New_Node));
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => Old_Node, Source => New_Node);
       end if;
    end Rewrite;
 

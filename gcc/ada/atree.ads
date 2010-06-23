@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -460,6 +460,12 @@ package Atree is
    --  any pointers to the original node are appropriately updated. This
    --  function is used only by Sinfo.CN to change nodes into their
    --  corresponding entities.
+
+   type Report_Proc is access procedure (Target : Node_Id; Source : Node_Id);
+
+   procedure Set_Reporting_Proc (P : Report_Proc);
+   --  Register a procedure that is invoked when a node is allocated, replaced
+   --  or rewritten.
 
    type Traverse_Result is (Abandon, OK, OK_Orig, Skip);
    --  This is the type of the result returned by the Process function passed

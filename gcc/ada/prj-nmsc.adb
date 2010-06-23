@@ -467,6 +467,32 @@ package body Prj.Nmsc is
    --  Debug print a value for a specific property. Does nothing when not in
    --  debug mode
 
+   procedure Error_Or_Warning
+     (Flags    : Processing_Flags;
+      Kind     : Error_Warning;
+      Msg      : String;
+      Location : Source_Ptr;
+      Project  : Project_Id);
+   --  Emits either an error or warning message (or nothing), depending on Kind
+
+   ----------------------
+   -- Error_Or_Warning --
+   ----------------------
+
+   procedure Error_Or_Warning
+     (Flags    : Processing_Flags;
+      Kind     : Error_Warning;
+      Msg      : String;
+      Location : Source_Ptr;
+      Project  : Project_Id) is
+   begin
+      case Kind is
+         when Error   => Error_Msg (Flags, Msg, Location, Project);
+         when Warning => Error_Msg (Flags, "?" & Msg, Location, Project);
+         when Silent  => null;
+      end case;
+   end Error_Or_Warning;
+
    ------------------------------
    -- Replace_Into_Name_Buffer --
    ------------------------------
@@ -5170,8 +5196,8 @@ package body Prj.Nmsc is
             begin
                if Root_Dir'Length = 0 then
                   Err_Vars.Error_Msg_File_1 := Base_Dir;
-                  Error_Msg
-                    (Data.Flags,
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
                      "{ is not a valid directory.", Location, Project);
 
                else
@@ -5210,8 +5236,8 @@ package body Prj.Nmsc is
 
                if not Dir_Exists then
                   Err_Vars.Error_Msg_File_1 := From;
-                  Error_Msg
-                    (Data.Flags,
+                  Error_Or_Warning
+                    (Data.Flags, Data.Flags.Missing_Source_Files,
                      "{ is not a valid directory", Location, Project);
 
                else
@@ -5291,21 +5317,9 @@ package body Prj.Nmsc is
 
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Object_Dir.Value);
-
-               case Data.Flags.Require_Obj_Dirs is
-                  when Error =>
-                     Error_Msg
-                       (Data.Flags,
-                        "object directory { not found",
-                        Project.Location, Project);
-                  when Warning =>
-                     Error_Msg
-                       (Data.Flags,
-                        "?object directory { not found",
-                        Project.Location, Project);
-                  when Silent =>
-                     null;
-               end case;
+               Error_Or_Warning
+                 (Data.Flags, Data.Flags.Require_Obj_Dirs,
+                  "object directory { not found", Project.Location, Project);
             end if;
          end if;
 
@@ -6493,8 +6507,8 @@ package body Prj.Nmsc is
                   if not Found then
                      Error_Msg_Name_1 := Name_Id (Source.Display_File);
                      Error_Msg_Name_2 := Name_Id (Source.Unit.Name);
-                     Error_Msg
-                       (Data.Flags,
+                     Error_Or_Warning
+                       (Data.Flags, Data.Flags.Missing_Source_Files,
                         "source file %% for unit %% not found",
                         No_Location, Project.Project);
 
@@ -6536,41 +6550,18 @@ package body Prj.Nmsc is
             while NL /= No_Name_Location loop
                if not NL.Found then
                   Err_Vars.Error_Msg_File_1 := NL.Name;
-
-                  case Data.Flags.Missing_Source_Files is
-                     when Error =>
-                        if First_Error then
-                           Error_Msg
-                             (Data.Flags,
-                              "source file { not found",
-                              NL.Location, Project.Project);
-                           First_Error := False;
-
-                        else
-                           Error_Msg
-                             (Data.Flags,
-                              "\source file { not found",
-                              NL.Location, Project.Project);
-                        end if;
-
-                     when Warning =>
-                        if First_Error then
-                           Error_Msg
-                             (Data.Flags,
-                              "?source file { not found",
-                              NL.Location, Project.Project);
-                           First_Error := False;
-
-                        else
-                           Error_Msg
-                             (Data.Flags,
-                              "?\source file { not found",
-                              NL.Location, Project.Project);
-                        end if;
-
-                     when Silent =>
-                        null;
-                  end case;
+                  if First_Error then
+                     Error_Or_Warning
+                       (Data.Flags, Data.Flags.Missing_Source_Files,
+                        "source file { not found",
+                        NL.Location, Project.Project);
+                     First_Error := False;
+                  else
+                     Error_Or_Warning
+                       (Data.Flags, Data.Flags.Missing_Source_Files,
+                        "\source file { not found",
+                        NL.Location, Project.Project);
+                  end if;
                end if;
 
                NL := Source_Names_Htable.Get_Next (Project.Source_Names);
