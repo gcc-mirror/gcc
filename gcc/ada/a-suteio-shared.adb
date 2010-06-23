@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  ADA.STRINGS.WIDE_UNBOUNDED.WIDE_TEXT_IO                 --
+--         A D A . S T R I N G S . U N B O U N D E D . T E X T _ I O        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,22 +29,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Wide_Wide_Text_IO; use Ada.Wide_Wide_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
-package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
+package body Ada.Strings.Unbounded.Text_IO is
 
    --------------
    -- Get_Line --
    --------------
 
-   function Get_Line return Unbounded_Wide_Wide_String is
-      Buffer : Wide_Wide_String (1 .. 1000);
+   function Get_Line return Unbounded_String is
+      Buffer : String (1 .. 1000);
       Last   : Natural;
-      Result : Unbounded_Wide_Wide_String;
+      Result : Unbounded_String;
 
    begin
       Get_Line (Buffer, Last);
-      Set_Unbounded_Wide_Wide_String (Result, Buffer (1 .. Last));
+      Set_Unbounded_String (Result, Buffer (1 .. Last));
 
       while Last = Buffer'Last loop
          Get_Line (Buffer, Last);
@@ -54,17 +54,14 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
       return Result;
    end Get_Line;
 
-   function Get_Line
-     (File : Ada.Wide_Wide_Text_IO.File_Type)
-      return Unbounded_Wide_Wide_String
-   is
-      Buffer : Wide_Wide_String (1 .. 1000);
+   function Get_Line (File : Ada.Text_IO.File_Type) return Unbounded_String is
+      Buffer : String (1 .. 1000);
       Last   : Natural;
-      Result : Unbounded_Wide_Wide_String;
+      Result : Unbounded_String;
 
    begin
       Get_Line (File, Buffer, Last);
-      Set_Unbounded_Wide_Wide_String (Result, Buffer (1 .. Last));
+      Set_Unbounded_String (Result, Buffer (1 .. Last));
 
       while Last = Buffer'Last loop
          Get_Line (File, Buffer, Last);
@@ -74,21 +71,21 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
       return Result;
    end Get_Line;
 
-   procedure Get_Line (Item : out Unbounded_Wide_Wide_String) is
+   procedure Get_Line (Item : out Unbounded_String) is
    begin
       Get_Line (Current_Input, Item);
    end Get_Line;
 
    procedure Get_Line
-     (File : Ada.Wide_Wide_Text_IO.File_Type;
-      Item : out Unbounded_Wide_Wide_String)
+     (File : Ada.Text_IO.File_Type;
+      Item : out Unbounded_String)
    is
-      Buffer : Wide_Wide_String (1 .. 1000);
+      Buffer : String (1 .. 1000);
       Last   : Natural;
 
    begin
       Get_Line (File, Buffer, Last);
-      Set_Unbounded_Wide_Wide_String (Item, Buffer (1 .. Last));
+      Set_Unbounded_String (Item, Buffer (1 .. Last));
 
       while Last = Buffer'Last loop
          Get_Line (File, Buffer, Last);
@@ -100,15 +97,15 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
    -- Put --
    ---------
 
-   procedure Put (U : Unbounded_Wide_Wide_String) is
-      UR : constant Shared_Wide_Wide_String_Access := U.Reference;
+   procedure Put (U : Unbounded_String) is
+      UR : constant Shared_String_Access := U.Reference;
 
    begin
       Put (UR.Data (1 .. UR.Last));
    end Put;
 
-   procedure Put (File : File_Type; U : Unbounded_Wide_Wide_String) is
-      UR : constant Shared_Wide_Wide_String_Access := U.Reference;
+   procedure Put (File : File_Type; U : Unbounded_String) is
+      UR : constant Shared_String_Access := U.Reference;
 
    begin
       Put (File, UR.Data (1 .. UR.Last));
@@ -118,18 +115,18 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
    -- Put_Line --
    --------------
 
-   procedure Put_Line (U : Unbounded_Wide_Wide_String) is
-      UR : constant Shared_Wide_Wide_String_Access := U.Reference;
+   procedure Put_Line (U : Unbounded_String) is
+      UR : constant Shared_String_Access := U.Reference;
 
    begin
       Put_Line (UR.Data (1 .. UR.Last));
    end Put_Line;
 
-   procedure Put_Line (File : File_Type; U : Unbounded_Wide_Wide_String) is
-      UR : constant Shared_Wide_Wide_String_Access := U.Reference;
+   procedure Put_Line (File : File_Type; U : Unbounded_String) is
+      UR : constant Shared_String_Access := U.Reference;
 
    begin
       Put_Line (File, UR.Data (1 .. UR.Last));
    end Put_Line;
 
-end Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO;
+end Ada.Strings.Unbounded.Text_IO;

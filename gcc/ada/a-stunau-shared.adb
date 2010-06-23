@@ -2,7 +2,7 @@
 --                                                                          --
 --                          GNAT RUN-TIME COMPONENTS                        --
 --                                                                          --
---   A D A . S T R I N G S . W I D E _ W I D E _ U N B O U N D E D . A U X  --
+--            A D A . S T R I N G S . U N B O U N D E D . A U X             --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,37 +29,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Strings.Wide_Wide_Unbounded.Aux is
+package body Ada.Strings.Unbounded.Aux is
 
-   --------------------------
-   -- Get_Wide_Wide_String --
-   --------------------------
+   ----------------
+   -- Get_String --
+   ----------------
 
-   procedure Get_Wide_Wide_String
-     (U : Unbounded_Wide_Wide_String;
-      S : out Big_Wide_Wide_String_Access;
+   procedure Get_String
+     (U : Unbounded_String;
+      S : out Big_String_Access;
       L : out Natural)
    is
-      X : aliased Big_Wide_Wide_String;
+      X : aliased Big_String;
       for X'Address use U.Reference.Data'Address;
    begin
       S := X'Unchecked_Access;
       L := U.Reference.Last;
-   end Get_Wide_Wide_String;
+   end Get_String;
 
-   --------------------------
-   -- Set_Wide_Wide_String --
-   --------------------------
+   ----------------
+   -- Set_String --
+   ----------------
 
-   procedure Set_Wide_Wide_String
-     (UP : in out Unbounded_Wide_Wide_String;
-      S  : Wide_Wide_String_Access)
-   is
-      X : Wide_Wide_String_Access := S;
+   procedure Set_String (UP : in out Unbounded_String; S : String_Access) is
+      X : String_Access := S;
 
    begin
-      Set_Unbounded_Wide_Wide_String (UP, S.all);
+      Set_Unbounded_String (UP, S.all);
       Free (X);
-   end Set_Wide_Wide_String;
+   end Set_String;
 
-end Ada.Strings.Wide_Wide_Unbounded.Aux;
+end Ada.Strings.Unbounded.Aux;
