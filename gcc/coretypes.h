@@ -68,9 +68,6 @@ struct cl_optimization;
 struct gimple_seq_d;
 typedef struct gimple_seq_d *gimple_seq;
 typedef const struct gimple_seq_d *const_gimple_seq;
-struct gimple_seq_node_d;
-typedef struct gimple_seq_node_d *gimple_seq_node;
-typedef const struct gimple_seq_node_d *const_gimple_seq_node;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
