@@ -4378,9 +4378,9 @@ package body Exp_Ch4 is
 
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
-      --  test and give a warning. For floating point types however, this
-      --  is a standard way to check for finite numbers, and using 'Valid
-      --  would typically be a pessimization
+      --  test and give a warning. For floating point types however, this is a
+      --  standard way to check for finite numbers, and using 'Valid vould
+      --  typically be a pessimization.
 
       if Is_Scalar_Type (Etype (Lop))
         and then not Is_Floating_Point_Type (Etype (Lop))
@@ -4420,9 +4420,9 @@ package body Exp_Ch4 is
                         and then Comes_From_Source (N)
                         and then not In_Instance;
             --  This must be true for any of the optimization warnings, we
-            --  clearly want to give them only for source with the flag on.
-            --  We also skip these warnings in an instance since it may be
-            --  the case that different instantiations have different ranges.
+            --  clearly want to give them only for source with the flag on. We
+            --  also skip these warnings in an instance since it may be the
+            --  case that different instantiations have different ranges.
 
             Warn2 : constant Boolean :=
                       Warn1
@@ -4431,8 +4431,8 @@ package body Exp_Ch4 is
             --  For the case where only one bound warning is elided, we also
             --  insist on an explicit range and an integer type. The reason is
             --  that the use of enumeration ranges including an end point is
-            --  common, as is the use of a subtype name, one of whose bounds
-            --  is the same as the type of the expression.
+            --  common, as is the use of a subtype name, one of whose bounds is
+            --  the same as the type of the expression.
 
          begin
             --  If test is explicit x'first .. x'last, replace by valid check
@@ -4477,8 +4477,8 @@ package body Exp_Ch4 is
                return;
             end if;
 
-            --  If we have an explicit range, do a bit of optimization based
-            --  on range analysis (we may be able to kill one or both checks).
+            --  If we have an explicit range, do a bit of optimization based on
+            --  range analysis (we may be able to kill one or both checks).
 
             Lcheck := Compile_Time_Compare (Lop, Lo, Assume_Valid => False);
             Ucheck := Compile_Time_Compare (Lop, Hi, Assume_Valid => False);
@@ -4493,8 +4493,7 @@ package body Exp_Ch4 is
                   Error_Msg_N ("\?value is known to be out of range", N);
                end if;
 
-               Rewrite (N,
-                 New_Reference_To (Standard_False, Loc));
+               Rewrite (N, New_Reference_To (Standard_False, Loc));
                Analyze_And_Resolve (N, Rtyp);
                Set_Is_Static_Expression (N, Static);
 
@@ -4509,8 +4508,7 @@ package body Exp_Ch4 is
                   Error_Msg_N ("\?value is known to be in range", N);
                end if;
 
-               Rewrite (N,
-                 New_Reference_To (Standard_True, Loc));
+               Rewrite (N, New_Reference_To (Standard_True, Loc));
                Analyze_And_Resolve (N, Rtyp);
                Set_Is_Static_Expression (N, Static);
 
@@ -4624,9 +4622,7 @@ package body Exp_Ch4 is
                   --  Update decoration of relocated node referenced by the
                   --  SCIL node.
 
-                  if Generate_SCIL
-                    and then Present (SCIL_Node)
-                  then
+                  if Generate_SCIL and then Present (SCIL_Node) then
                      Set_SCIL_Node (N, SCIL_Node);
                   end if;
                end if;
@@ -4666,12 +4662,10 @@ package body Exp_Ch4 is
                  Make_Raise_Program_Error (Loc,
                    Reason => PE_Unchecked_Union_Restriction));
 
-               --  Prevent Gigi from generating incorrect code by rewriting
-               --  the test as a standard False.
+               --  Prevent Gigi from generating incorrect code by rewriting the
+               --  test as False.
 
-               Rewrite (N,
-                 New_Occurrence_Of (Standard_False, Loc));
-
+               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                return;
             end if;
 
@@ -4682,8 +4676,7 @@ package body Exp_Ch4 is
             end if;
 
             if not Is_Constrained (Typ) then
-               Rewrite (N,
-                 New_Reference_To (Standard_True, Loc));
+               Rewrite (N, New_Reference_To (Standard_True, Loc));
                Analyze_And_Resolve (N, Rtyp);
 
             --  For the constrained array case, we have to check the subscripts
@@ -4691,19 +4684,18 @@ package body Exp_Ch4 is
             --  must match in any case).
 
             elsif Is_Array_Type (Typ) then
-
                Check_Subscripts : declare
-                  function Construct_Attribute_Reference
+                  function Build_Attribute_Reference
                     (E   : Node_Id;
                      Nam : Name_Id;
                      Dim : Nat) return Node_Id;
-                  --  Build attribute reference E'Nam(Dim)
+                  --  Build attribute reference E'Nam (Dim)
 
-                  -----------------------------------
-                  -- Construct_Attribute_Reference --
-                  -----------------------------------
+                  -------------------------------
+                  -- Build_Attribute_Reference --
+                  -------------------------------
 
-                  function Construct_Attribute_Reference
+                  function Build_Attribute_Reference
                     (E   : Node_Id;
                      Nam : Name_Id;
                      Dim : Nat) return Node_Id
@@ -4711,11 +4703,11 @@ package body Exp_Ch4 is
                   begin
                      return
                        Make_Attribute_Reference (Loc,
-                         Prefix => E,
+                         Prefix         => E,
                          Attribute_Name => Nam,
-                         Expressions => New_List (
+                         Expressions    => New_List (
                            Make_Integer_Literal (Loc, Dim)));
-                  end Construct_Attribute_Reference;
+                  end Build_Attribute_Reference;
 
                --  Start of processing for Check_Subscripts
 
@@ -4724,21 +4716,21 @@ package body Exp_Ch4 is
                      Evolve_And_Then (Cond,
                        Make_Op_Eq (Loc,
                          Left_Opnd  =>
-                           Construct_Attribute_Reference
+                           Build_Attribute_Reference
                              (Duplicate_Subexpr_No_Checks (Obj),
                               Name_First, J),
                          Right_Opnd =>
-                           Construct_Attribute_Reference
+                           Build_Attribute_Reference
                              (New_Occurrence_Of (Typ, Loc), Name_First, J)));
 
                      Evolve_And_Then (Cond,
                        Make_Op_Eq (Loc,
                          Left_Opnd  =>
-                           Construct_Attribute_Reference
+                           Build_Attribute_Reference
                              (Duplicate_Subexpr_No_Checks (Obj),
                               Name_Last, J),
                          Right_Opnd =>
-                           Construct_Attribute_Reference
+                           Build_Attribute_Reference
                              (New_Occurrence_Of (Typ, Loc), Name_Last, J)));
                   end loop;
 

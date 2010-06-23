@@ -1770,8 +1770,7 @@ package body Sem_Util is
             --  appear in the target-specific extension to System.
 
             if No (Id)
-              and then Chars (B_Scope) = Name_System
-              and then Scope (B_Scope) = Standard_Standard
+              and then B_Scope = RTU_Entity (System)
               and then Present_System_Aux
             then
                B_Scope := System_Aux_Id;
@@ -7225,7 +7224,7 @@ package body Sem_Util is
             and then Scope (Op) = System_Aux_Id)
            or else
            (True_VMS_Target
-             and then Chars (Scope (Scope (Op))) = Name_System));
+             and then Scope (Scope (Op)) = RTU_Entity (System)));
    end Is_VMS_Operator;
 
    -----------------
