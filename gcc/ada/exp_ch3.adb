@@ -5927,8 +5927,8 @@ package body Exp_Ch3 is
         and then Has_Discriminants (Def_Id)
       then
          declare
-            Ctyp : constant Entity_Id :=
-                     Corresponding_Concurrent_Type (Def_Id);
+            Ctyp       : constant Entity_Id :=
+                           Corresponding_Concurrent_Type (Def_Id);
             Conc_Discr : Entity_Id;
             Rec_Discr  : Entity_Id;
             Temp       : Entity_Id;
@@ -5936,7 +5936,6 @@ package body Exp_Ch3 is
          begin
             Conc_Discr := First_Discriminant (Ctyp);
             Rec_Discr  := First_Discriminant (Def_Id);
-
             while Present (Conc_Discr) loop
                Temp := Discriminal (Conc_Discr);
                Set_Discriminal (Conc_Discr, Discriminal (Rec_Discr));
@@ -7821,12 +7820,11 @@ package body Exp_Ch3 is
 
             --  If a primitive is encountered that renames the predefined
             --  equality operator before reaching any explicit equality
-            --  primitive, then we still need to create a predefined
-            --  equality function, because calls to it can occur via
-            --  the renaming. A new name is created for the equality
-            --  to avoid conflicting with any user-defined equality.
-            --  (Note that this doesn't account for renamings of
-            --  equality nested within subpackages???)
+            --  primitive, then we still need to create a predefined equality
+            --  function, because calls to it can occur via the renaming. A new
+            --  name is created for the equality to avoid conflicting with any
+            --  user-defined equality. (Note that this doesn't account for
+            --  renamings of equality nested within subpackages???)
 
             if Is_Predefined_Eq_Renaming (Node (Prim)) then
                Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');

@@ -1230,7 +1230,8 @@ package body Prj is
       Compiler_Driver_Mandatory  : Boolean       := False;
       Error_On_Unknown_Language  : Boolean       := True;
       Require_Obj_Dirs           : Error_Warning := Error;
-      Allow_Invalid_External     : Error_Warning := Error)
+      Allow_Invalid_External     : Error_Warning := Error;
+      Missing_Source_Files       : Error_Warning := Error)
       return Processing_Flags
    is
    begin
@@ -1242,7 +1243,8 @@ package body Prj is
          Error_On_Unknown_Language  => Error_On_Unknown_Language,
          Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
          Require_Obj_Dirs           => Require_Obj_Dirs,
-         Allow_Invalid_External     => Allow_Invalid_External);
+         Allow_Invalid_External     => Allow_Invalid_External,
+         Missing_Source_Files       => Missing_Source_Files);
    end Create_Flags;
 
    ------------

@@ -6537,19 +6537,40 @@ package body Prj.Nmsc is
                if not NL.Found then
                   Err_Vars.Error_Msg_File_1 := NL.Name;
 
-                  if First_Error then
-                     Error_Msg
-                       (Data.Flags,
-                        "source file { not found",
-                        NL.Location, Project.Project);
-                     First_Error := False;
+                  case Data.Flags.Missing_Source_Files is
+                     when Error =>
+                        if First_Error then
+                           Error_Msg
+                             (Data.Flags,
+                              "source file { not found",
+                              NL.Location, Project.Project);
+                           First_Error := False;
 
-                  else
-                     Error_Msg
-                       (Data.Flags,
-                        "\source file { not found",
-                        NL.Location, Project.Project);
-                  end if;
+                        else
+                           Error_Msg
+                             (Data.Flags,
+                              "\source file { not found",
+                              NL.Location, Project.Project);
+                        end if;
+
+                     when Warning =>
+                        if First_Error then
+                           Error_Msg
+                             (Data.Flags,
+                              "?source file { not found",
+                              NL.Location, Project.Project);
+                           First_Error := False;
+
+                        else
+                           Error_Msg
+                             (Data.Flags,
+                              "?\source file { not found",
+                              NL.Location, Project.Project);
+                        end if;
+
+                     when Silent =>
+                        null;
+                  end case;
                end if;
 
                NL := Source_Names_Htable.Get_Next (Project.Source_Names);
