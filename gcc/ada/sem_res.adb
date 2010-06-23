@@ -906,10 +906,12 @@ package body Sem_Res is
                   Expr := Original_Node (Expression (Parent (Comp)));
 
                   --  Return True if the expression is a call to a function
-                  --  (including an attribute function such as Image) with
-                  --  a result that requires a transient scope.
+                  --  (including an attribute function such as Image, or a
+                  --  user-defined operator) with a result that requires a
+                  --  transient scope.
 
                   if (Nkind (Expr) = N_Function_Call
+                       or else Nkind (Expr) in N_Op
                        or else (Nkind (Expr) = N_Attribute_Reference
                                  and then Present (Expressions (Expr))))
                     and then Requires_Transient_Scope (Etype (Expr))
