@@ -146,7 +146,7 @@ package body GNAT.Perfect_Hash_Generators is
    --  leading spaces if required by width W.
 
    function Trim_Trailing_Nuls (Str : String) return String;
-   --  Return Str, but with trailing NUL characters removed.
+   --  Return Str with trailing NUL characters removed
 
    Output : File_Descriptor renames GNAT.OS_Lib.Standout;
    --  Shortcuts

@@ -324,7 +324,8 @@ package body CStand is
       --  Procedure to declare given entity as an exception
 
       procedure Pack_String_Type (String_Type : Entity_Id);
-      --  Generate proper tree for pragma Pack that applies to given type
+      --  Generate proper tree for pragma Pack that applies to given type, and
+      --  mark type as having the pragma.
 
       ---------------------
       -- Build_Exception --
@@ -359,6 +360,7 @@ package body CStand is
       begin
          Append (Prag, Decl_S);
          Record_Rep_Item (String_Type, Prag);
+         Set_Has_Pragma_Pack (String_Type, True);
       end Pack_String_Type;
 
    --  Start of processing for Create_Standard
@@ -714,7 +716,6 @@ package body CStand is
       Set_Component_Size  (Standard_String, Uint_8);
       Init_Size_Align     (Standard_String);
       Set_Alignment       (Standard_String, Uint_1);
-      Set_Has_Pragma_Pack (Standard_String, True);
       Pack_String_Type    (Standard_String);
 
       --  On targets where a storage unit is larger than a byte (such as AAMP),
@@ -758,7 +759,6 @@ package body CStand is
       Set_Component_Type  (Standard_Wide_String, Standard_Wide_Character);
       Set_Component_Size  (Standard_Wide_String, Uint_16);
       Init_Size_Align     (Standard_Wide_String);
-      Set_Has_Pragma_Pack (Standard_Wide_String, True);
       Pack_String_Type    (Standard_Wide_String);
 
       --  Set index type of Wide_String
@@ -796,7 +796,6 @@ package body CStand is
       Set_Component_Size   (Standard_Wide_Wide_String, Uint_32);
       Init_Size_Align      (Standard_Wide_Wide_String);
       Set_Is_Ada_2005_Only (Standard_Wide_Wide_String);
-      Set_Has_Pragma_Pack  (Standard_Wide_Wide_String, True);
       Pack_String_Type     (Standard_Wide_Wide_String);
 
       --  Set index type of Wide_Wide_String

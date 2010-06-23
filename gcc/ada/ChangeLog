@@ -1,3 +1,20 @@
+2010-06-23  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-reatim.adb, a-retide.adb: Move the initialization of the tasking
+	run time from Ada.Real_Time.Delays to Ada.Real_Time. This way, calls to
+	Clock (without delays) use a run time which is properly initialized.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* make.adb: Do not set Check_Readonly_Files when setting Must_Compile,
+	when -f -u and a main is specified on the command line. However,
+	attempt to compile even when the ALI file is read-only when
+	Must_Compile is True.
+
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* checks.adb, g-pehage.adb, cstand.adb: Minor code factorization.
+
 2010-06-23  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Add_Internal_Interface_Entities): Generate internal

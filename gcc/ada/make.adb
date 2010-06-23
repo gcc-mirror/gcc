@@ -2448,8 +2448,8 @@ package body Make is
       --  Info on the mapping file
 
       Need_To_Check_Standard_Library : Boolean :=
-                                         Check_Readonly_Files
-                                           and not Unique_Compile;
+                                         (Check_Readonly_Files or Must_Compile)
+                                           and Unique_Compile;
 
       procedure Add_Process
         (Pid           : Process_Id;
@@ -2905,7 +2905,7 @@ package body Make is
 
          begin
             if Is_Predefined_File_Name (Fname, False) then
-               if Check_Readonly_Files then
+               if Check_Readonly_Files or else Must_Compile then
                   Comp_Args (Comp_Args'First + 2 .. Comp_Last + 1) :=
                     Comp_Args (Comp_Args'First + 1 .. Comp_Last);
                   Comp_Last := Comp_Last + 1;
@@ -3103,7 +3103,7 @@ package body Make is
                         if Is_Marked (Sfile, Source_Index) then
                            Debug_Msg ("Skipping marked file:", Sfile);
 
-                        elsif not Check_Readonly_Files
+                        elsif not (Check_Readonly_Files or Must_Compile)
                           and then Is_Internal_File_Name (Sfile, False)
                         then
                            Debug_Msg ("Skipping internal file:", Sfile);
@@ -3283,16 +3283,15 @@ package body Make is
                Executable_Obsolete := True;
             end if;
 
-            In_Lib_Dir := not Check_Readonly_Files
-                            and then Full_Lib_File /= No_File
-                            and then In_Ada_Lib_Dir (Full_Lib_File);
+            In_Lib_Dir := Full_Lib_File /= No_File
+                          and then In_Ada_Lib_Dir (Full_Lib_File);
 
             --  Since the following requires a system call, we precompute it
             --  when needed.
 
             if not In_Lib_Dir then
                if Full_Lib_File /= No_File
-                 and then not Check_Readonly_Files
+                 and then not (Check_Readonly_Files or else Must_Compile)
                then
                   Get_Name_String (Full_Lib_File);
                   Name_Buffer (Name_Len + 1) := ASCII.NUL;
@@ -3334,7 +3333,7 @@ package body Make is
                --  Source and library files can be located but are internal
                --  files.
 
-            elsif not Check_Readonly_Files
+            elsif not (Check_Readonly_Files or else Must_Compile)
               and then Full_Lib_File /= No_File
               and then Is_Internal_File_Name (Source_File, False)
             then
@@ -5196,7 +5195,6 @@ package body Make is
         and then not Unique_Compile_All_Projects
         and then Main_On_Command_Line
       then
-         Check_Readonly_Files := True;
          Must_Compile := True;
       end if;
 
