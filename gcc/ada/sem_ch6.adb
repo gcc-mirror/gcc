@@ -98,7 +98,7 @@ package body Sem_Ch6 is
    -----------------------
 
    procedure Analyze_Return_Statement (N : Node_Id);
-   --  Common processing for simple_ and extended_return_statements
+   --  Common processing for simple and extended return statements
 
    procedure Analyze_Function_Return (N : Node_Id);
    --  Subsidiary to Analyze_Return_Statement. Called when the return statement
@@ -106,7 +106,7 @@ package body Sem_Ch6 is
 
    procedure Analyze_Return_Type (N : Node_Id);
    --  Subsidiary to Process_Formals: analyze subtype mark in function
-   --  specification, in a context where the formals are visible and hide
+   --  specification in a context where the formals are visible and hide
    --  outer homographs.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id);

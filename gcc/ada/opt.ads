@@ -585,6 +585,11 @@ package Opt is
    --  GNAT
    --  True if compiling in GNAT system mode (-gnatg switch)
 
+   Heap_Size : Nat := 0;
+   --  GNATBIND
+   --  Heap size for memory allocations. Valid values are 32 and 64. Only
+   --  available on VMS.
+
    HLO_Active : Boolean := False;
    --  GNAT
    --  True if High Level Optimizer is activated (-gnatH switch)
