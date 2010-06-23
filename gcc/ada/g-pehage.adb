@@ -1176,7 +1176,7 @@ package body GNAT.Perfect_Hash_Generators is
    procedure Initialize
      (Seed   : Natural;
       K_To_V : Float        := Default_K_To_V;
-      Optim  : Optimization := CPU_Time;
+      Optim  : Optimization := Memory_Space;
       Tries  : Positive     := Default_Tries)
    is
    begin
@@ -1596,39 +1596,41 @@ package body GNAT.Perfect_Hash_Generators is
 
       New_Line (File);
 
-      if Opt = CPU_Time then
-         Put_Int_Matrix
-           (File,
-            Array_Img ("T1", Type_Img (NV),
-                       Range_Img (0, T1_Len - 1),
-                       Range_Img (0, T2_Len - 1, Type_Img (256))),
-            T1, T1_Len, T2_Len);
+      case Opt is
+         when CPU_Time =>
+            Put_Int_Matrix
+              (File,
+               Array_Img ("T1", Type_Img (NV),
+                          Range_Img (0, T1_Len - 1),
+                          Range_Img (0, T2_Len - 1, Type_Img (256))),
+               T1, T1_Len, T2_Len);
 
-      else
-         Put_Int_Matrix
-           (File,
-            Array_Img ("T1", Type_Img (NV),
-                       Range_Img (0, T1_Len - 1)),
-            T1, T1_Len, 0);
-      end if;
+         when Memory_Space =>
+            Put_Int_Matrix
+              (File,
+               Array_Img ("T1", Type_Img (NV),
+                          Range_Img (0, T1_Len - 1)),
+               T1, T1_Len, 0);
+      end case;
 
       New_Line (File);
 
-      if Opt = CPU_Time then
-         Put_Int_Matrix
-           (File,
-            Array_Img ("T2", Type_Img (NV),
-                       Range_Img (0, T1_Len - 1),
-                       Range_Img (0, T2_Len - 1, Type_Img (256))),
-            T2, T1_Len, T2_Len);
+      case Opt is
+         when CPU_Time =>
+            Put_Int_Matrix
+              (File,
+               Array_Img ("T2", Type_Img (NV),
+                          Range_Img (0, T1_Len - 1),
+                          Range_Img (0, T2_Len - 1, Type_Img (256))),
+               T2, T1_Len, T2_Len);
 
-      else
-         Put_Int_Matrix
-           (File,
-            Array_Img ("T2", Type_Img (NV),
-                       Range_Img (0, T1_Len - 1)),
-            T2, T1_Len, 0);
-      end if;
+         when Memory_Space =>
+            Put_Int_Matrix
+              (File,
+               Array_Img ("T2", Type_Img (NV),
+                          Range_Img (0, T1_Len - 1)),
+               T2, T1_Len, 0);
+      end case;
 
       New_Line (File);
 
@@ -1650,11 +1652,12 @@ package body GNAT.Perfect_Hash_Generators is
 
       Put (File, "      J : ");
 
-      if Opt = CPU_Time then
-         Put (File, Type_Img (256));
-      else
-         Put (File, "Natural");
-      end if;
+      case Opt is
+         when CPU_Time =>
+            Put (File, Type_Img (256));
+         when Memory_Space =>
+            Put (File, "Natural");
+      end case;
 
       Put (File, ";");
       New_Line (File);
@@ -1667,11 +1670,12 @@ package body GNAT.Perfect_Hash_Generators is
       New_Line (File);
       Put      (File, "         J  := ");
 
-      if Opt = CPU_Time then
-         Put (File, "C");
-      else
-         Put (File, "Character'Pos");
-      end if;
+      case Opt is
+         when CPU_Time =>
+            Put (File, "C");
+         when Memory_Space =>
+            Put (File, "Character'Pos");
+      end case;
 
       Put      (File, " (S (P (K) + F));");
       New_Line (File);
@@ -2490,20 +2494,21 @@ package body GNAT.Perfect_Hash_Generators is
       R : Natural;
 
    begin
-      if Opt = CPU_Time then
-         for J in 0 .. T1_Len - 1 loop
-            exit when Word (J + 1) = ASCII.NUL;
-            R := Get_Table (Table, J, Get_Used_Char (Word (J + 1)));
-            S := (S + R) mod NV;
-         end loop;
+      case Opt is
+         when CPU_Time =>
+            for J in 0 .. T1_Len - 1 loop
+               exit when Word (J + 1) = ASCII.NUL;
+               R := Get_Table (Table, J, Get_Used_Char (Word (J + 1)));
+               S := (S + R) mod NV;
+            end loop;
 
-      else
-         for J in 0 .. T1_Len - 1 loop
-            exit when Word (J + 1) = ASCII.NUL;
-            R := Get_Table (Table, J, 0);
-            S := (S + R * Character'Pos (Word (J + 1))) mod NV;
-         end loop;
-      end if;
+         when Memory_Space =>
+            for J in 0 .. T1_Len - 1 loop
+               exit when Word (J + 1) = ASCII.NUL;
+               R := Get_Table (Table, J, 0);
+               S := (S + R * Character'Pos (Word (J + 1))) mod NV;
+            end loop;
+      end case;
 
       return S;
    end Sum;
