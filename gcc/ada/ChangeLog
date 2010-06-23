@@ -1,3 +1,30 @@
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb (Expand_Access_To_Protected_Op): When rewriting a
+	reference to a protected subprogram outside of the protected's scope,
+	ensure the corresponding external subprogram is frozen before the
+	reference.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: Fix typo in error message.
+	* sem.adb: Refine previous change.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb, a-suewen.adb, a-suewen.ads, a-suenco.adb, a-suenco.ads,
+	a-suezen.adb, a-suezen.ads, a-stuten.adb, a-stuten.ads, Makefile.rtl:
+	Implement Ada 2012 string encoding packages.
+
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-stwiun-shared.adb, a-stwiun-shared.ads, a-stzunb-shared.adb,
+	a-stzunb-shared.ads, a-swunau-shared.adb, a-swuwti-shared.adb,
+	a-szunau-shared.adb, a-szuzti-shared.adb, a-strunb-shared.adb,
+	a-strunb-shared.ads, a-stunau-shared.adb, a-suteio-shared.adb: New
+	files.
+	* gcc-interface/Makefile.in: Enable use of above files.
+
 2010-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Constant_Address_Clauses): Do not check legality

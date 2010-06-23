@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---           A D A . S T R I N G S . W I D E _ U N B O U N D E D            --
+--                 A D A . S T R I N G S . U N B O U N D E D                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,12 +29,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Wide_Search;
+with Ada.Strings.Search;
 with Ada.Unchecked_Deallocation;
 
-package body Ada.Strings.Wide_Unbounded is
+package body Ada.Strings.Unbounded is
 
-   use Ada.Strings.Wide_Maps;
+   use Ada.Strings.Maps;
 
    Growth_Factor : constant := 32;
    --  The growth factor controls how much extra space is allocated when
@@ -62,43 +62,43 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural;
    --  Returns recommended length of the shared string which is greater or
-   --  equal to specified length. Calculation take in sense alignment of
-   --  the allocated memory segments to use memory effectively by
-   --  Append/Insert/etc operations.
+   --  equal to specified length. Calculation take in sense alignment of the
+   --  allocated memory segments to use memory effectively by Append/Insert/etc
+   --  operations.
 
    ---------
    -- "&" --
    ---------
 
    function "&"
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Unbounded_Wide_String
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Unbounded_String
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
       DL : constant Natural := LR.Last + RR.Last;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Left string is empty, return Rigth string.
+      --  Left string is empty, return Rigth string
 
       elsif LR.Last = 0 then
          Reference (RR);
          DR := RR;
 
-      --  Right string is empty, return Left string.
+      --  Right string is empty, return Left string
 
       elsif RR.Last = 0 then
          Reference (LR);
          DR := LR;
 
-      --  Overwise, allocate new shared string and fill data.
+      --  Overwise, allocate new shared string and fill data
 
       else
          DR := Allocate (LR.Last + RR.Last);
@@ -111,27 +111,27 @@ package body Ada.Strings.Wide_Unbounded is
    end "&";
 
    function "&"
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Unbounded_Wide_String
+     (Left  : Unbounded_String;
+      Right : String) return Unbounded_String
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
       DL : constant Natural := LR.Last + Right'Length;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Right is an empty string, return Left string.
+      --  Right is an empty string, return Left string
 
       elsif Right'Length = 0 then
          Reference (LR);
          DR := LR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -144,27 +144,27 @@ package body Ada.Strings.Wide_Unbounded is
    end "&";
 
    function "&"
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Unbounded_Wide_String
+     (Left  : String;
+      Right : Unbounded_String) return Unbounded_String
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
       DL : constant Natural := Left'Length + RR.Last;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared one.
+      --  Result is an empty string, reuse shared one
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Left is empty string, return Right string.
+      --  Left is empty string, return Right string
 
       elsif Left'Length = 0 then
          Reference (RR);
          DR := RR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -177,12 +177,12 @@ package body Ada.Strings.Wide_Unbounded is
    end "&";
 
    function "&"
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_Character) return Unbounded_Wide_String
+     (Left  : Unbounded_String;
+      Right : Character) return Unbounded_String
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
       DL : constant Natural := LR.Last + 1;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       DR := Allocate (DL);
@@ -194,12 +194,12 @@ package body Ada.Strings.Wide_Unbounded is
    end "&";
 
    function "&"
-     (Left  : Wide_Character;
-      Right : Unbounded_Wide_String) return Unbounded_Wide_String
+     (Left  : Character;
+      Right : Unbounded_String) return Unbounded_String
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
       DL : constant Natural := 1 + RR.Last;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       DR := Allocate (DL);
@@ -216,18 +216,18 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "*"
      (Left  : Natural;
-      Right : Wide_Character) return Unbounded_Wide_String
+      Right : Character) return Unbounded_String
    is
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if Left = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (Left);
@@ -244,20 +244,20 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "*"
      (Left  : Natural;
-      Right : Wide_String) return Unbounded_Wide_String
+      Right : String) return Unbounded_String
    is
       DL : constant Natural := Left * Right'Length;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
       K  : Positive;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -276,27 +276,27 @@ package body Ada.Strings.Wide_Unbounded is
 
    function "*"
      (Left  : Natural;
-      Right : Unbounded_Wide_String) return Unbounded_Wide_String
+      Right : Unbounded_String) return Unbounded_String
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
       DL : constant Natural := Left * RR.Last;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
       K  : Positive;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Coefficient is one, just return string itself.
+      --  Coefficient is one, just return string itself
 
       elsif Left = 1 then
          Reference (RR);
          DR := RR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -318,29 +318,29 @@ package body Ada.Strings.Wide_Unbounded is
    ---------
 
    function "<"
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return LR.Data (1 .. LR.Last) < RR.Data (1 .. RR.Last);
    end "<";
 
    function "<"
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
    begin
       return LR.Data (1 .. LR.Last) < Right;
    end "<";
 
    function "<"
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : String;
+      Right : Unbounded_String) return Boolean
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return Left < RR.Data (1 .. RR.Last);
    end "<";
@@ -350,11 +350,11 @@ package body Ada.Strings.Wide_Unbounded is
    ----------
 
    function "<="
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
 
    begin
       --  LR = RR means two strings shares shared string, thus they are equal
@@ -363,19 +363,19 @@ package body Ada.Strings.Wide_Unbounded is
    end "<=";
 
    function "<="
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
    begin
       return LR.Data (1 .. LR.Last) <= Right;
    end "<=";
 
    function "<="
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : String;
+      Right : Unbounded_String) return Boolean
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return Left <= RR.Data (1 .. RR.Last);
    end "<=";
@@ -385,31 +385,31 @@ package body Ada.Strings.Wide_Unbounded is
    ---------
 
    function "="
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
 
    begin
       return LR = RR or else LR.Data (1 .. LR.Last) = RR.Data (1 .. RR.Last);
-      --  LR = RR means two strings shares shared string, thus they are equal.
+      --  LR = RR means two strings shares shared string, thus they are equal
    end "=";
 
    function "="
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
    begin
       return LR.Data (1 .. LR.Last) = Right;
    end "=";
 
    function "="
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : String;
+      Right : Unbounded_String) return Boolean
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return Left = RR.Data (1 .. RR.Last);
    end "=";
@@ -419,29 +419,29 @@ package body Ada.Strings.Wide_Unbounded is
    ---------
 
    function ">"
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return LR.Data (1 .. LR.Last) > RR.Data (1 .. RR.Last);
    end ">";
 
    function ">"
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
    begin
       return LR.Data (1 .. LR.Last) > Right;
    end ">";
 
    function ">"
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : String;
+      Right : Unbounded_String) return Boolean
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return Left > RR.Data (1 .. RR.Last);
    end ">";
@@ -451,11 +451,11 @@ package body Ada.Strings.Wide_Unbounded is
    ----------
 
    function ">="
-     (Left  : Unbounded_Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : Unbounded_String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
 
    begin
       --  LR = RR means two strings shares shared string, thus they are equal
@@ -464,19 +464,19 @@ package body Ada.Strings.Wide_Unbounded is
    end ">=";
 
    function ">="
-     (Left  : Unbounded_Wide_String;
-      Right : Wide_String) return Boolean
+     (Left  : Unbounded_String;
+      Right : String) return Boolean
    is
-      LR : constant Shared_Wide_String_Access := Left.Reference;
+      LR : constant Shared_String_Access := Left.Reference;
    begin
       return LR.Data (1 .. LR.Last) >= Right;
    end ">=";
 
    function ">="
-     (Left  : Wide_String;
-      Right : Unbounded_Wide_String) return Boolean
+     (Left  : String;
+      Right : Unbounded_String) return Boolean
    is
-      RR : constant Shared_Wide_String_Access := Right.Reference;
+      RR : constant Shared_String_Access := Right.Reference;
    begin
       return Left >= RR.Data (1 .. RR.Last);
    end ">=";
@@ -485,7 +485,7 @@ package body Ada.Strings.Wide_Unbounded is
    -- Adjust --
    ------------
 
-   procedure Adjust (Object : in out Unbounded_Wide_String) is
+   procedure Adjust (Object : in out Unbounded_String) is
    begin
       Reference (Object.Reference);
    end Adjust;
@@ -495,35 +495,32 @@ package body Ada.Strings.Wide_Unbounded is
    ------------------------
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural is
-      Static_Size  : constant Natural :=
-                       Empty_Shared_Wide_String'Size / Standard'Storage_Unit;
+      Static_Size : constant Natural :=
+                      Empty_Shared_String'Size / Standard'Storage_Unit;
       --  Total size of all static components
-
-      Element_Size : constant Natural :=
-                       Wide_Character'Size / Standard'Storage_Unit;
 
    begin
       return
-        (((Static_Size + Max_Length * Element_Size - 1) / Min_Mul_Alloc + 2)
-          * Min_Mul_Alloc - Static_Size) / Element_Size;
+        ((Static_Size + Max_Length - 1) / Min_Mul_Alloc + 2) * Min_Mul_Alloc
+           - Static_Size;
    end Aligned_Max_Length;
 
    --------------
    -- Allocate --
    --------------
 
-   function Allocate (Max_Length : Natural) return Shared_Wide_String_Access is
+   function Allocate (Max_Length : Natural) return Shared_String_Access is
    begin
       --  Empty string requested, return shared empty string
 
       if Max_Length = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         return Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         return Empty_Shared_String'Access;
 
       --  Otherwise, allocate requested space (and probably some more room)
 
       else
-         return new Shared_Wide_String (Aligned_Max_Length (Max_Length));
+         return new Shared_String (Aligned_Max_Length (Max_Length));
       end if;
    end Allocate;
 
@@ -532,13 +529,13 @@ package body Ada.Strings.Wide_Unbounded is
    ------------
 
    procedure Append
-     (Source   : in out Unbounded_Wide_String;
-      New_Item : Unbounded_Wide_String)
+     (Source   : in out Unbounded_String;
+      New_Item : Unbounded_String)
    is
-      SR  : constant Shared_Wide_String_Access := Source.Reference;
-      NR  : constant Shared_Wide_String_Access := New_Item.Reference;
-      DL  : constant Natural                   := SR.Last + NR.Last;
-      DR  : Shared_Wide_String_Access;
+      SR  : constant Shared_String_Access := Source.Reference;
+      NR  : constant Shared_String_Access := New_Item.Reference;
+      DL  : constant Natural              := SR.Last + NR.Last;
+      DR  : Shared_String_Access;
 
    begin
       --  Source is an empty string, reuse New_Item data
@@ -553,7 +550,7 @@ package body Ada.Strings.Wide_Unbounded is
       elsif NR.Last = 0 then
          null;
 
-      --  Try to reuse existent shared string
+      --  Try to reuse existing shared string
 
       elsif Can_Be_Reused (SR, DL) then
          SR.Data (SR.Last + 1 .. DL) := NR.Data (1 .. NR.Last);
@@ -572,12 +569,12 @@ package body Ada.Strings.Wide_Unbounded is
    end Append;
 
    procedure Append
-     (Source   : in out Unbounded_Wide_String;
-      New_Item : Wide_String)
+     (Source   : in out Unbounded_String;
+      New_Item : String)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DL : constant Natural                   := SR.Last + New_Item'Length;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DL : constant Natural := SR.Last + New_Item'Length;
+      DR : Shared_String_Access;
 
    begin
       --  New_Item is an empty string, nothing to do
@@ -604,12 +601,12 @@ package body Ada.Strings.Wide_Unbounded is
    end Append;
 
    procedure Append
-     (Source   : in out Unbounded_Wide_String;
-      New_Item : Wide_Character)
+     (Source   : in out Unbounded_String;
+      New_Item : Character)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : constant Natural := SR.Last + 1;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Try to reuse existing shared string
@@ -635,7 +632,7 @@ package body Ada.Strings.Wide_Unbounded is
    -------------------
 
    function Can_Be_Reused
-     (Item   : Shared_Wide_String_Access;
+     (Item   : Shared_String_Access;
       Length : Natural) return Boolean
    is
       use Interfaces;
@@ -652,33 +649,32 @@ package body Ada.Strings.Wide_Unbounded is
    -----------
 
    function Count
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return Natural
+     (Source  : Unbounded_String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Count (SR.Data (1 .. SR.Last), Pattern, Mapping);
+      return Search.Count (SR.Data (1 .. SR.Last), Pattern, Mapping);
    end Count;
 
    function Count
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+     (Source  : Unbounded_String;
+      Pattern : String;
+      Mapping : Maps.Character_Mapping_Function) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Count (SR.Data (1 .. SR.Last), Pattern, Mapping);
+      return Search.Count (SR.Data (1 .. SR.Last), Pattern, Mapping);
    end Count;
 
    function Count
-     (Source : Unbounded_Wide_String;
-      Set    : Wide_Maps.Wide_Character_Set) return Natural
+     (Source : Unbounded_String;
+      Set    : Maps.Character_Set) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Count (SR.Data (1 .. SR.Last), Set);
+      return Search.Count (SR.Data (1 .. SR.Last), Set);
    end Count;
 
    ------------
@@ -686,13 +682,13 @@ package body Ada.Strings.Wide_Unbounded is
    ------------
 
    function Delete
-     (Source  : Unbounded_Wide_String;
+     (Source  : Unbounded_String;
       From    : Positive;
-      Through : Natural) return Unbounded_Wide_String
+      Through : Natural) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Empty slice is deleted, use the same shared string
@@ -714,8 +710,8 @@ package body Ada.Strings.Wide_Unbounded is
          --  Result is an empty string, reuse shared empty string
 
          if DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            DR := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            DR := Empty_Shared_String'Access;
 
          --  Otherwise, allocate new shared string and fill it
 
@@ -731,13 +727,13 @@ package body Ada.Strings.Wide_Unbounded is
    end Delete;
 
    procedure Delete
-     (Source  : in out Unbounded_Wide_String;
+     (Source  : in out Unbounded_String;
       From    : Positive;
       Through : Natural)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Nothing changed, return
@@ -756,11 +752,11 @@ package body Ada.Strings.Wide_Unbounded is
          --  Result is empty, reuse shared empty string
 
          if DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            Source.Reference := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
             SR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
@@ -784,10 +780,10 @@ package body Ada.Strings.Wide_Unbounded is
    -------------
 
    function Element
-     (Source : Unbounded_Wide_String;
-      Index  : Positive) return Wide_Character
+     (Source : Unbounded_String;
+      Index  : Positive) return Character
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
       if Index <= SR.Last then
          return SR.Data (Index);
@@ -800,8 +796,8 @@ package body Ada.Strings.Wide_Unbounded is
    -- Finalize --
    --------------
 
-   procedure Finalize (Object : in out Unbounded_Wide_String) is
-      SR : constant Shared_Wide_String_Access := Object.Reference;
+   procedure Finalize (Object : in out Unbounded_String) is
+      SR : constant Shared_String_Access := Object.Reference;
 
    begin
       if SR /= null then
@@ -821,24 +817,24 @@ package body Ada.Strings.Wide_Unbounded is
    ----------------
 
    procedure Find_Token
-     (Source : Unbounded_Wide_String;
-      Set    : Wide_Maps.Wide_Character_Set;
+     (Source : Unbounded_String;
+      Set    : Maps.Character_Set;
       Test   : Strings.Membership;
       First  : out Positive;
       Last   : out Natural)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      Wide_Search.Find_Token (SR.Data (1 .. SR.Last), Set, Test, First, Last);
+      Search.Find_Token (SR.Data (1 .. SR.Last), Set, Test, First, Last);
    end Find_Token;
 
    ----------
    -- Free --
    ----------
 
-   procedure Free (X : in out Wide_String_Access) is
+   procedure Free (X : in out String_Access) is
       procedure Deallocate is
-         new Ada.Unchecked_Deallocation (Wide_String, Wide_String_Access);
+        new Ada.Unchecked_Deallocation (String, String_Access);
    begin
       Deallocate (X);
    end Free;
@@ -848,19 +844,19 @@ package body Ada.Strings.Wide_Unbounded is
    ----------
 
    function Head
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space) return Unbounded_Wide_String
+      Pad    : Character := Space) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Result is empty, reuse shared empty string
 
       if Count = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       --  Length of the string is the same as requested, reuse source shared
       --  string.
@@ -898,27 +894,27 @@ package body Ada.Strings.Wide_Unbounded is
    end Head;
 
    procedure Head
-     (Source : in out Unbounded_Wide_String;
+     (Source : in out Unbounded_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space)
+      Pad    : Character := Space)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Result is empty, reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
-      --  Result is same with source string, reuse source shared string
+      --  Result is same as source string, reuse source shared string
 
       elsif Count = SR.Last then
          null;
 
-      --  Try to reuse existent shared string
+      --  Try to reuse existing shared string
 
       elsif Can_Be_Reused (SR, Count) then
          if Count > SR.Last then
@@ -941,7 +937,7 @@ package body Ada.Strings.Wide_Unbounded is
             DR.Data (1 .. Count) := SR.Data (1 .. Count);
 
          --  Length of the source string is less the requested, copy all
-         --  exists data and fill others by Pad character.
+         --  existing data and fill remaining positions with Pad characters.
 
          else
             DR.Data (1 .. SR.Last) := SR.Data (1 .. SR.Last);
@@ -962,79 +958,74 @@ package body Ada.Strings.Wide_Unbounded is
    -----------
 
    function Index
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
+     (Source  : Unbounded_String;
+      Pattern : String;
       Going   : Strings.Direction := Strings.Forward;
-      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return Natural
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index
-        (SR.Data (1 .. SR.Last), Pattern, Going, Mapping);
+      return Search.Index (SR.Data (1 .. SR.Last), Pattern, Going, Mapping);
    end Index;
 
    function Index
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
+     (Source  : Unbounded_String;
+      Pattern : String;
       Going   : Direction := Forward;
-      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+      Mapping : Maps.Character_Mapping_Function) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index
-        (SR.Data (1 .. SR.Last), Pattern, Going, Mapping);
+      return Search.Index (SR.Data (1 .. SR.Last), Pattern, Going, Mapping);
    end Index;
 
    function Index
-     (Source : Unbounded_Wide_String;
-      Set    : Wide_Maps.Wide_Character_Set;
+     (Source : Unbounded_String;
+      Set    : Maps.Character_Set;
       Test   : Strings.Membership := Strings.Inside;
       Going  : Strings.Direction  := Strings.Forward) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index (SR.Data (1 .. SR.Last), Set, Test, Going);
+      return Search.Index (SR.Data (1 .. SR.Last), Set, Test, Going);
    end Index;
 
    function Index
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
+     (Source  : Unbounded_String;
+      Pattern : String;
       From    : Positive;
       Going   : Direction := Forward;
-      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-      return Natural
+      Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index
+      return Search.Index
         (SR.Data (1 .. SR.Last), Pattern, From, Going, Mapping);
    end Index;
 
    function Index
-     (Source  : Unbounded_Wide_String;
-      Pattern : Wide_String;
+     (Source  : Unbounded_String;
+      Pattern : String;
       From    : Positive;
       Going   : Direction := Forward;
-      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+      Mapping : Maps.Character_Mapping_Function) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index
+      return Search.Index
         (SR.Data (1 .. SR.Last), Pattern, From, Going, Mapping);
    end Index;
 
    function Index
-     (Source  : Unbounded_Wide_String;
-      Set     : Wide_Maps.Wide_Character_Set;
+     (Source  : Unbounded_String;
+      Set     : Maps.Character_Set;
       From    : Positive;
       Test    : Membership := Inside;
       Going   : Direction := Forward) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index
-        (SR.Data (1 .. SR.Last), Set, From, Test, Going);
+      return Search.Index (SR.Data (1 .. SR.Last), Set, From, Test, Going);
    end Index;
 
    ---------------------
@@ -1042,30 +1033,29 @@ package body Ada.Strings.Wide_Unbounded is
    ---------------------
 
    function Index_Non_Blank
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Going  : Strings.Direction := Strings.Forward) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index_Non_Blank (SR.Data (1 .. SR.Last), Going);
+      return Search.Index_Non_Blank (SR.Data (1 .. SR.Last), Going);
    end Index_Non_Blank;
 
    function Index_Non_Blank
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       From   : Positive;
       Going  : Direction := Forward) return Natural
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
    begin
-      return Wide_Search.Index_Non_Blank
-        (SR.Data (1 .. SR.Last), From, Going);
+      return Search.Index_Non_Blank (SR.Data (1 .. SR.Last), From, Going);
    end Index_Non_Blank;
 
    ----------------
    -- Initialize --
    ----------------
 
-   procedure Initialize (Object : in out Unbounded_Wide_String) is
+   procedure Initialize (Object : in out Unbounded_String) is
    begin
       Reference (Object.Reference);
    end Initialize;
@@ -1075,13 +1065,13 @@ package body Ada.Strings.Wide_Unbounded is
    ------------
 
    function Insert
-     (Source   : Unbounded_Wide_String;
+     (Source   : Unbounded_String;
       Before   : Positive;
-      New_Item : Wide_String) return Unbounded_Wide_String
+      New_Item : String) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : constant Natural := SR.Last + New_Item'Length;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Check index first
@@ -1093,8 +1083,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       --  Inserted string is empty, reuse source shared string
 
@@ -1105,7 +1095,7 @@ package body Ada.Strings.Wide_Unbounded is
       --  Otherwise, allocate new shared string and fill it
 
       else
-         DR := Allocate (DL + DL / Growth_Factor);
+         DR := Allocate (DL + DL /Growth_Factor);
          DR.Data (1 .. Before - 1) := SR.Data (1 .. Before - 1);
          DR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
          DR.Data (Before + New_Item'Length .. DL) :=
@@ -1117,13 +1107,13 @@ package body Ada.Strings.Wide_Unbounded is
    end Insert;
 
    procedure Insert
-     (Source   : in out Unbounded_Wide_String;
+     (Source   : in out Unbounded_String;
       Before   : Positive;
-      New_Item : Wide_String)
+      New_Item : String)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DL : constant Natural                   := SR.Last + New_Item'Length;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DL : constant Natural              := SR.Last + New_Item'Length;
+      DR : Shared_String_Access;
 
    begin
       --  Check bounds
@@ -1135,8 +1125,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
       --  Inserted string is empty, nothing to do
@@ -1144,7 +1134,7 @@ package body Ada.Strings.Wide_Unbounded is
       elsif New_Item'Length = 0 then
          null;
 
-      --  Try to reuse existent shared string first
+      --  Try to reuse existing shared string first
 
       elsif Can_Be_Reused (SR, DL) then
          SR.Data (Before + New_Item'Length .. DL) :=
@@ -1170,7 +1160,7 @@ package body Ada.Strings.Wide_Unbounded is
    -- Length --
    ------------
 
-   function Length (Source : Unbounded_Wide_String) return Natural is
+   function Length (Source : Unbounded_String) return Natural is
    begin
       return Source.Reference.Last;
    end Length;
@@ -1180,13 +1170,13 @@ package body Ada.Strings.Wide_Unbounded is
    ---------------
 
    function Overwrite
-     (Source   : Unbounded_Wide_String;
+     (Source   : Unbounded_String;
       Position : Positive;
-      New_Item : Wide_String) return Unbounded_Wide_String
+      New_Item : String) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Check bounds
@@ -1200,10 +1190,10 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Result is same with source string, reuse source shared string
+      --  Result is same as source string, reuse source shared string
 
       elsif New_Item'Length = 0 then
          Reference (SR);
@@ -1224,13 +1214,13 @@ package body Ada.Strings.Wide_Unbounded is
    end Overwrite;
 
    procedure Overwrite
-     (Source    : in out Unbounded_Wide_String;
+     (Source    : in out Unbounded_String;
       Position  : Positive;
-      New_Item  : Wide_String)
+      New_Item  : String)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Bounds check
@@ -1244,8 +1234,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if DL = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
       --  String unchanged, nothing to do
@@ -1253,7 +1243,7 @@ package body Ada.Strings.Wide_Unbounded is
       elsif New_Item'Length = 0 then
          null;
 
-      --  Try to reuse existent shared string
+      --  Try to reuse existing shared string
 
       elsif Can_Be_Reused (SR, DL) then
          SR.Data (Position .. Position + New_Item'Length - 1) := New_Item;
@@ -1277,7 +1267,7 @@ package body Ada.Strings.Wide_Unbounded is
    -- Reference --
    ---------------
 
-   procedure Reference (Item : not null Shared_Wide_String_Access) is
+   procedure Reference (Item : not null Shared_String_Access) is
    begin
       Sync_Add_And_Fetch (Item.Counter'Access, 1);
    end Reference;
@@ -1287,19 +1277,19 @@ package body Ada.Strings.Wide_Unbounded is
    ---------------------
 
    procedure Replace_Element
-     (Source : in out Unbounded_Wide_String;
+     (Source : in out Unbounded_String;
       Index  : Positive;
-      By     : Wide_Character)
+      By     : Character)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Bounds check.
 
       if Index <= SR.Last then
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          if Can_Be_Reused (SR, SR.Last) then
             SR.Data (Index) := By;
@@ -1325,14 +1315,14 @@ package body Ada.Strings.Wide_Unbounded is
    -------------------
 
    function Replace_Slice
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Low    : Positive;
       High   : Natural;
-      By     : Wide_String) return Unbounded_Wide_String
+      By     : String) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Check bounds
@@ -1349,8 +1339,8 @@ package body Ada.Strings.Wide_Unbounded is
          --  Result is empty string, reuse empty shared string
 
          if DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            DR := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            DR := Empty_Shared_String'Access;
 
          --  Otherwise allocate new shared string and fill it
 
@@ -1372,14 +1362,14 @@ package body Ada.Strings.Wide_Unbounded is
    end Replace_Slice;
 
    procedure Replace_Slice
-     (Source : in out Unbounded_Wide_String;
+     (Source : in out Unbounded_String;
       Low    : Positive;
       High   : Natural;
-      By     : Wide_String)
+      By     : String)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Bounds check
@@ -1396,11 +1386,11 @@ package body Ada.Strings.Wide_Unbounded is
          --  Result is empty string, reuse empty shared string
 
          if DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            Source.Reference := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
             SR.Data (Low + By'Length .. DL) := SR.Data (High + 1 .. SR.Last);
@@ -1426,26 +1416,26 @@ package body Ada.Strings.Wide_Unbounded is
       end if;
    end Replace_Slice;
 
-   -------------------------------
-   -- Set_Unbounded_Wide_String --
-   -------------------------------
+   --------------------------
+   -- Set_Unbounded_String --
+   --------------------------
 
-   procedure Set_Unbounded_Wide_String
-     (Target : out Unbounded_Wide_String;
-      Source : Wide_String)
+   procedure Set_Unbounded_String
+     (Target : out Unbounded_String;
+      Source : String)
    is
-      TR : constant Shared_Wide_String_Access := Target.Reference;
-      DR : Shared_Wide_String_Access;
+      TR : constant Shared_String_Access := Target.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  In case of empty string, reuse empty shared string
 
       if Source'Length = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Target.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Target.Reference := Empty_Shared_String'Access;
 
       else
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          if Can_Be_Reused (TR, Source'Length) then
             Reference (TR);
@@ -1463,18 +1453,18 @@ package body Ada.Strings.Wide_Unbounded is
       end if;
 
       Unreference (TR);
-   end Set_Unbounded_Wide_String;
+   end Set_Unbounded_String;
 
    -----------
    -- Slice --
    -----------
 
    function Slice
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Low    : Positive;
-      High   : Natural) return Wide_String
+      High   : Natural) return String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
 
    begin
       --  Note: test of High > Length is in accordance with AI95-00128
@@ -1492,21 +1482,21 @@ package body Ada.Strings.Wide_Unbounded is
    ----------
 
    function Tail
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space) return Unbounded_Wide_String
+      Pad    : Character := Space) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  For empty result reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
-      --  Result is hole source string, reuse source shared string
+      --  Result is whole source string, reuse source shared string
 
       elsif Count = SR.Last then
          Reference (SR);
@@ -1535,16 +1525,16 @@ package body Ada.Strings.Wide_Unbounded is
    end Tail;
 
    procedure Tail
-     (Source : in out Unbounded_Wide_String;
+     (Source : in out Unbounded_String;
       Count  : Natural;
-      Pad    : Wide_Character := Wide_Space)
+      Pad    : Character := Space)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
       procedure Common
-        (SR    : Shared_Wide_String_Access;
-         DR    : Shared_Wide_String_Access;
+        (SR    : Shared_String_Access;
+         DR    : Shared_String_Access;
          Count : Natural);
       --  Common code of tail computation. SR/DR can point to the same object
 
@@ -1553,8 +1543,8 @@ package body Ada.Strings.Wide_Unbounded is
       ------------
 
       procedure Common
-        (SR    : Shared_Wide_String_Access;
-         DR    : Shared_Wide_String_Access;
+        (SR    : Shared_String_Access;
+         DR    : Shared_String_Access;
          Count : Natural) is
       begin
          if Count < SR.Last then
@@ -1575,17 +1565,17 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty string, reuse empty shared string
 
       if Count = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
-      --  Length of the result is the same with length of the source string,
+      --  Length of the result is the same as length of the source string,
       --  reuse source shared string.
 
       elsif Count = SR.Last then
          null;
 
-      --  Try to reuse existent shared string
+      --  Try to reuse existing shared string
 
       elsif Can_Be_Reused (SR, Count) then
          Common (SR, SR, Count);
@@ -1600,56 +1590,51 @@ package body Ada.Strings.Wide_Unbounded is
       end if;
    end Tail;
 
-   --------------------
-   -- To_Wide_String --
-   --------------------
+   ---------------
+   -- To_String --
+   ---------------
 
-   function To_Wide_String
-     (Source : Unbounded_Wide_String) return Wide_String is
+   function To_String (Source : Unbounded_String) return String is
    begin
       return Source.Reference.Data (1 .. Source.Reference.Last);
-   end To_Wide_String;
+   end To_String;
 
-   ------------------------------
-   -- To_Unbounded_Wide_String --
-   ------------------------------
+   -------------------------
+   -- To_Unbounded_String --
+   -------------------------
 
-   function To_Unbounded_Wide_String
-     (Source : Wide_String) return Unbounded_Wide_String
-   is
-      DR : constant Shared_Wide_String_Access := Allocate (Source'Length);
+   function To_Unbounded_String (Source : String) return Unbounded_String is
+      DR : constant Shared_String_Access := Allocate (Source'Length);
    begin
       DR.Data (1 .. Source'Length) := Source;
       DR.Last := Source'Length;
       return (AF.Controlled with Reference => DR);
-   end To_Unbounded_Wide_String;
+   end To_Unbounded_String;
 
-   function To_Unbounded_Wide_String
-     (Length : Natural) return Unbounded_Wide_String
-   is
-      DR : constant Shared_Wide_String_Access := Allocate (Length);
+   function To_Unbounded_String (Length : Natural) return Unbounded_String is
+      DR : constant Shared_String_Access := Allocate (Length);
    begin
       DR.Last := Length;
       return (AF.Controlled with Reference => DR);
-   end To_Unbounded_Wide_String;
+   end To_Unbounded_String;
 
    ---------------
    -- Translate --
    ---------------
 
    function Translate
-     (Source  : Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping) return Unbounded_Wide_String
+     (Source  : Unbounded_String;
+      Mapping : Maps.Character_Mapping) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Nothing to translate, reuse empty shared string
 
       if SR.Last = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
 
@@ -1667,11 +1652,11 @@ package body Ada.Strings.Wide_Unbounded is
    end Translate;
 
    procedure Translate
-     (Source  : in out Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping)
+     (Source  : in out Unbounded_String;
+      Mapping : Maps.Character_Mapping)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Nothing to translate
@@ -1702,19 +1687,18 @@ package body Ada.Strings.Wide_Unbounded is
    end Translate;
 
    function Translate
-     (Source  : Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping_Function)
-      return Unbounded_Wide_String
+     (Source  : Unbounded_String;
+      Mapping : Maps.Character_Mapping_Function) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Nothing to translate, reuse empty shared string
 
       if SR.Last = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
 
@@ -1738,11 +1722,11 @@ package body Ada.Strings.Wide_Unbounded is
    end Translate;
 
    procedure Translate
-     (Source  : in out Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping_Function)
+     (Source  : in out Unbounded_String;
+      Mapping : Maps.Character_Mapping_Function)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      DR : Shared_Wide_String_Access;
+      SR : constant Shared_String_Access := Source.Reference;
+      DR : Shared_String_Access;
 
    begin
       --  Nothing to translate
@@ -1785,12 +1769,12 @@ package body Ada.Strings.Wide_Unbounded is
    ----------
 
    function Trim
-     (Source : Unbounded_Wide_String;
-      Side   : Trim_End) return Unbounded_Wide_String
+     (Source : Unbounded_String;
+      Side   : Trim_End) return Unbounded_String
    is
-      SR   : constant Shared_Wide_String_Access := Source.Reference;
+      SR   : constant Shared_String_Access := Source.Reference;
       DL   : Natural;
-      DR   : Shared_Wide_String_Access;
+      DR   : Shared_String_Access;
       Low  : Natural;
       High : Natural;
 
@@ -1800,8 +1784,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  All blanks, reuse empty shared string
 
       if Low = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       else
          case Side is
@@ -1839,12 +1823,12 @@ package body Ada.Strings.Wide_Unbounded is
    end Trim;
 
    procedure Trim
-     (Source : in out Unbounded_Wide_String;
+     (Source : in out Unbounded_String;
       Side   : Trim_End)
    is
-      SR   : constant Shared_Wide_String_Access := Source.Reference;
+      SR   : constant Shared_String_Access := Source.Reference;
       DL   : Natural;
-      DR   : Shared_Wide_String_Access;
+      DR   : Shared_String_Access;
       Low  : Natural;
       High : Natural;
 
@@ -1854,8 +1838,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  All blanks, reuse empty shared string
 
       if Low = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
       else
@@ -1880,7 +1864,7 @@ package body Ada.Strings.Wide_Unbounded is
          if DL = SR.Last then
             null;
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
             SR.Data (1 .. DL) := SR.Data (Low .. High);
@@ -1899,13 +1883,13 @@ package body Ada.Strings.Wide_Unbounded is
    end Trim;
 
    function Trim
-     (Source : Unbounded_Wide_String;
-      Left   : Wide_Maps.Wide_Character_Set;
-      Right  : Wide_Maps.Wide_Character_Set) return Unbounded_Wide_String
+     (Source : Unbounded_String;
+      Left   : Maps.Character_Set;
+      Right  : Maps.Character_Set) return Unbounded_String
    is
-      SR   : constant Shared_Wide_String_Access := Source.Reference;
+      SR   : constant Shared_String_Access := Source.Reference;
       DL   : Natural;
-      DR   : Shared_Wide_String_Access;
+      DR   : Shared_String_Access;
       Low  : Natural;
       High : Natural;
 
@@ -1916,8 +1900,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  string.
 
       if Low = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       else
          High := Index (Source, Right, Outside, Backward);
@@ -1927,8 +1911,8 @@ package body Ada.Strings.Wide_Unbounded is
          --  is empty, reuse empty shared string.
 
          if High = 0 or else DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            DR := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            DR := Empty_Shared_String'Access;
 
          --  Otherwise, allocate new shared string and fill it
 
@@ -1943,13 +1927,13 @@ package body Ada.Strings.Wide_Unbounded is
    end Trim;
 
    procedure Trim
-     (Source : in out Unbounded_Wide_String;
-      Left   : Wide_Maps.Wide_Character_Set;
-      Right  : Wide_Maps.Wide_Character_Set)
+     (Source : in out Unbounded_String;
+      Left   : Maps.Character_Set;
+      Right  : Maps.Character_Set)
    is
-      SR   : constant Shared_Wide_String_Access := Source.Reference;
+      SR   : constant Shared_String_Access := Source.Reference;
       DL   : Natural;
-      DR   : Shared_Wide_String_Access;
+      DR   : Shared_String_Access;
       Low  : Natural;
       High : Natural;
 
@@ -1960,8 +1944,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  string.
 
       if Low = 0 then
-         Reference (Empty_Shared_Wide_String'Access);
-         Source.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Source.Reference := Empty_Shared_String'Access;
          Unreference (SR);
 
       else
@@ -1972,11 +1956,11 @@ package body Ada.Strings.Wide_Unbounded is
          --  is empty, reuse empty shared string.
 
          if High = 0 or else DL = 0 then
-            Reference (Empty_Shared_Wide_String'Access);
-            Source.Reference := Empty_Shared_Wide_String'Access;
+            Reference (Empty_Shared_String'Access);
+            Source.Reference := Empty_Shared_String'Access;
             Unreference (SR);
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
             SR.Data (1 .. DL) := SR.Data (Low .. High);
@@ -1999,13 +1983,13 @@ package body Ada.Strings.Wide_Unbounded is
    ---------------------
 
    function Unbounded_Slice
-     (Source : Unbounded_Wide_String;
+     (Source : Unbounded_String;
       Low    : Positive;
-      High   : Natural) return Unbounded_Wide_String
+      High   : Natural) return Unbounded_String
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Check bounds
@@ -2016,8 +2000,8 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty slice, reuse empty shared string
 
       elsif Low > High then
-         Reference (Empty_Shared_Wide_String'Access);
-         DR := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         DR := Empty_Shared_String'Access;
 
       --  Otherwise, allocate new shared string and fill it
 
@@ -2032,15 +2016,15 @@ package body Ada.Strings.Wide_Unbounded is
    end Unbounded_Slice;
 
    procedure Unbounded_Slice
-     (Source : Unbounded_Wide_String;
-      Target : out Unbounded_Wide_String;
+     (Source : Unbounded_String;
+      Target : out Unbounded_String;
       Low    : Positive;
       High   : Natural)
    is
-      SR : constant Shared_Wide_String_Access := Source.Reference;
-      TR : constant Shared_Wide_String_Access := Target.Reference;
+      SR : constant Shared_String_Access := Source.Reference;
+      TR : constant Shared_String_Access := Target.Reference;
       DL : Natural;
-      DR : Shared_Wide_String_Access;
+      DR : Shared_String_Access;
 
    begin
       --  Check bounds
@@ -2051,14 +2035,14 @@ package body Ada.Strings.Wide_Unbounded is
       --  Result is empty slice, reuse empty shared string
 
       elsif Low > High then
-         Reference (Empty_Shared_Wide_String'Access);
-         Target.Reference := Empty_Shared_Wide_String'Access;
+         Reference (Empty_Shared_String'Access);
+         Target.Reference := Empty_Shared_String'Access;
          Unreference (TR);
 
       else
          DL := High - Low + 1;
 
-         --  Try to reuse existent shared string
+         --  Try to reuse existing shared string
 
          if Can_Be_Reused (TR, DL) then
             TR.Data (1 .. DL) := SR.Data (Low .. High);
@@ -2080,25 +2064,23 @@ package body Ada.Strings.Wide_Unbounded is
    -- Unreference --
    -----------------
 
-   procedure Unreference (Item : not null Shared_Wide_String_Access) is
+   procedure Unreference (Item : not null Shared_String_Access) is
       use Interfaces;
 
       procedure Free is
-        new Ada.Unchecked_Deallocation
-              (Shared_Wide_String, Shared_Wide_String_Access);
+        new Ada.Unchecked_Deallocation (Shared_String, Shared_String_Access);
 
-      Aux : Shared_Wide_String_Access := Item;
+      Aux : Shared_String_Access := Item;
 
    begin
       if Sync_Sub_And_Fetch (Aux.Counter'Access, 1) = 0 then
 
-         --  Reference counter of Empty_Shared_Wide_String must never reach
-         --  zero.
+         --  Reference counter of Empty_Shared_String must never reach zero
 
-         pragma Assert (Aux /= Empty_Shared_Wide_String'Access);
+         pragma Assert (Aux /= Empty_Shared_String'Access);
 
          Free (Aux);
       end if;
    end Unreference;
 
-end Ada.Strings.Wide_Unbounded;
+end Ada.Strings.Unbounded;
