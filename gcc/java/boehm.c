@@ -27,17 +27,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "system.h"
 #include "coretypes.h"
+#include "double-int.h"
 #include "tm.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "parse.h"
 #include "toplev.h"
 
-static void mark_reference_fields (tree, unsigned HOST_WIDE_INT *,
-				   unsigned HOST_WIDE_INT *, unsigned int,
+static void mark_reference_fields (tree, double_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);
-static void set_bit (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
-		     unsigned int);
 
 /* A procedure-based object descriptor.  We know that our
    `kind' is 0, and `env' is likewise 0, so we have a simple
@@ -47,30 +45,10 @@ static void set_bit (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
    Here DS_PROC == 2.  */
 #define PROCEDURE_OBJECT_DESCRIPTOR 2
 
-/* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
-   the least significant.  This function sets bit N in the bitmap.  */
-static void
-set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
-	 unsigned int n)
-{
-  unsigned HOST_WIDE_INT *which;
-
-  if (n >= HOST_BITS_PER_WIDE_INT)
-    {
-      n -= HOST_BITS_PER_WIDE_INT;
-      which = high;
-    }
-  else
-    which = low;
-
-  *which |= (unsigned HOST_WIDE_INT) 1 << n;
-}
-
 /* Recursively mark reference fields.  */
 static void
 mark_reference_fields (tree field,
-		       unsigned HOST_WIDE_INT *low,
-		       unsigned HOST_WIDE_INT *high,
+		       double_int *mask,
 		       unsigned int ubit,
 		       int *pointer_after_end,
 		       int *all_bits_set,
@@ -81,7 +59,7 @@ mark_reference_fields (tree field,
   if (DECL_NAME (field) == NULL_TREE)
     {
       mark_reference_fields (TYPE_FIELDS (TREE_TYPE (field)),
-			     low, high, ubit,
+			     mask, ubit,
 			     pointer_after_end, all_bits_set,
 			     last_set_index, last_view_index);
       field = TREE_CHAIN (field);
@@ -130,7 +108,7 @@ mark_reference_fields (tree field,
 	     bits for all words in the record. This is conservative, but the 
 	     size_words != 1 case is impossible in regular java code. */
 	  for (i = 0; i < size_words; ++i)
-	    set_bit (low, high, ubit - count - i - 1);
+	    *mask = double_int_setbit (*mask, ubit - count - i - 1);
 
 	  if (count >= ubit - 2)
 	    *pointer_after_end = 1;
@@ -159,8 +137,10 @@ get_boehm_type_descriptor (tree type)
   int last_set_index = 0;
   HOST_WIDE_INT last_view_index = -1;
   int pointer_after_end = 0;
-  unsigned HOST_WIDE_INT low = 0, high = 0;
+  double_int mask;
   tree field, value, value_type;
+
+  mask = double_int_zero;
 
   /* If the GC wasn't requested, just use a null pointer.  */
   if (! flag_use_boehm_gc)
@@ -192,7 +172,7 @@ get_boehm_type_descriptor (tree type)
     goto procedure_object_descriptor;
 
   field = TYPE_FIELDS (type);
-  mark_reference_fields (field, &low, &high, ubit,
+  mark_reference_fields (field, &mask, ubit,
 			 &pointer_after_end, &all_bits_set,
 			 &last_set_index, &last_view_index);
 
@@ -215,23 +195,22 @@ get_boehm_type_descriptor (tree type)
          that we don't have to emit reflection data for run time
          marking. */
       count = 0;
-      low = 0;
-      high = 0;
+      mask = double_int_zero;
       ++last_set_index;
       while (last_set_index)
 	{
 	  if ((last_set_index & 1))
-	    set_bit (&low, &high, log2_size + count);
+	    mask = double_int_setbit (mask, log2_size + count);
 	  last_set_index >>= 1;
 	  ++count;
 	}
-      value = build_int_cst_wide (value_type, low, high);
+      value = double_int_to_tree (value_type, mask);
     }
   else if (! pointer_after_end)
     {
       /* Bottom two bits for bitmap mark type are 01.  */
-      set_bit (&low, &high, 0);
-      value = build_int_cst_wide (value_type, low, high);
+      mask = double_int_setbit (mask, 0);
+      value = double_int_to_tree (value_type, mask);
     }
   else
     {
