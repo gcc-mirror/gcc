@@ -1517,13 +1517,14 @@ package body Sem_Ch3 is
    -------------------------------------
 
    procedure Add_Internal_Interface_Entities (Tagged_Type : Entity_Id) is
-      Elmt        : Elmt_Id;
-      Iface       : Entity_Id;
-      Iface_Elmt  : Elmt_Id;
-      Iface_Prim  : Entity_Id;
-      Ifaces_List : Elist_Id;
-      New_Subp    : Entity_Id := Empty;
-      Prim        : Entity_Id;
+      Elmt          : Elmt_Id;
+      Iface         : Entity_Id;
+      Iface_Elmt    : Elmt_Id;
+      Iface_Prim    : Entity_Id;
+      Ifaces_List   : Elist_Id;
+      New_Subp      : Entity_Id := Empty;
+      Prim          : Entity_Id;
+      Restore_Scope : Boolean := False;
 
    begin
       pragma Assert (Ada_Version >= Ada_05
@@ -1531,6 +1532,13 @@ package body Sem_Ch3 is
         and then Is_Tagged_Type (Tagged_Type)
         and then Has_Interfaces (Tagged_Type)
         and then not Is_Interface (Tagged_Type));
+
+      --  Ensure that the internal entities are added to the scope of the type
+
+      if Scope (Tagged_Type) /= Current_Scope then
+         Push_Scope (Scope (Tagged_Type));
+         Restore_Scope := True;
+      end if;
 
       Collect_Interfaces (Tagged_Type, Ifaces_List);
 
@@ -1556,32 +1564,47 @@ package body Sem_Ch3 is
                    (Tagged_Type => Tagged_Type,
                     Iface_Prim  => Iface_Prim);
 
+               --  Handle cases where the type has no primitive covering this
+               --  interface primitive.
+
                if No (Prim) then
 
-                  --  In some rare cases, a name conflict may have kept the
-                  --  operation completely hidden. Look for it in the list
-                  --  of primitive operations of the type.
+                  --  if the tagged type is defined at library level then we
+                  --  invoke Check_Abstract_Overriding to report the error
+                  --  and thus avoid generating the dispatch tables.
 
-                  declare
-                     El : Elmt_Id;
+                  if Is_Library_Level_Tagged_Type (Tagged_Type) then
+                     Check_Abstract_Overriding (Tagged_Type);
+                     pragma Assert (Serious_Errors_Detected > 0);
+                     return;
 
-                  begin
-                     El := First_Elmt (Primitive_Operations (Tagged_Type));
-                     while Present (El) loop
+                  --  For tagged types defined in nested scopes it is still
+                  --  possible to cover this interface primitive by means of
+                  --  late overriding (see Override_Dispatching_Operation).
+
+                  --  Search in the list of primitives of the type for the
+                  --  entity that will be overridden in such case to reference
+                  --  it in the internal entity that we build here. If the
+                  --  primitive is not overridden then the error will be
+                  --  reported later as part of the analysis of entities
+                  --  defined in the enclosing scope.
+
+                  else
+                     declare
+                        El : Elmt_Id;
+
+                     begin
+                        El := First_Elmt (Primitive_Operations (Tagged_Type));
+                        while Present (El)
+                          and then Alias (Node (El)) /= Iface_Prim
+                        loop
+                           Next_Elmt (El);
+                        end loop;
+
+                        pragma Assert (Present (El));
                         Prim := Node (El);
-                        exit when Is_Subprogram (Prim)
-                          and then Alias (Prim) = Iface_Prim;
-                        Next_Elmt (El);
-                     end loop;
-
-                     --  If the operation was not explicitly overridden, it
-                     --  should have been inherited as an abstract operation
-                     --  so Prim can not be Empty at this stage.
-
-                     if No (El) then
-                        raise Program_Error;
-                     end if;
-                  end;
+                     end;
+                  end if;
                end if;
 
                Derive_Subprogram
@@ -1627,6 +1650,10 @@ package body Sem_Ch3 is
 
          Next_Elmt (Iface_Elmt);
       end loop;
+
+      if Restore_Scope then
+         Pop_Scope;
+      end if;
    end Add_Internal_Interface_Entities;
 
    -----------------------------------
@@ -12827,13 +12854,13 @@ package body Sem_Ch3 is
             Subp       := Node (Elmt);
             Alias_Subp := Ultimate_Alias (Subp);
 
-            --  At this early stage Derived_Type has no entities with attribute
-            --  Interface_Alias. In addition, such primitives are always
-            --  located at the end of the list of primitives of Parent_Type.
-            --  Therefore, if found we can safely stop processing pending
-            --  entities.
+            --  Do not derive internal entities of the parent that link
+            --  interface primitives and its covering primitive. These
+            --  entities will be added to this type when frozen.
 
-            exit when Present (Interface_Alias (Subp));
+            if Present (Interface_Alias (Subp)) then
+               goto Continue;
+            end if;
 
             --  If the generic actual is present find the corresponding
             --  operation in the generic actual. If the parent type is a
@@ -13008,6 +13035,7 @@ package body Sem_Ch3 is
                Act_Subp := Node (Act_Elmt);
             end if;
 
+            <<Continue>>
             Next_Elmt (Elmt);
          end loop;
 

@@ -7127,7 +7127,7 @@ package body Exp_Disp is
             Next_Elmt (Prim_Elmt);
          end loop;
 
-         --  Third stage: Fix the position of all the new primitives
+         --  Third stage: Fix the position of all the new primitives.
          --  Entries associated with primitives covering interfaces
          --  are handled in a latter round.
 
@@ -7515,6 +7515,17 @@ package body Exp_Disp is
             Write_Str ("(predefined) ");
          end if;
 
+         --  Prefix the name of the primitive with its corresponding tagged
+         --  type to facilitate seeing inherited primitives.
+
+         if Present (Alias (Prim)) then
+            Write_Name
+              (Chars (Find_Dispatching_Type (Ultimate_Alias (Prim))));
+         else
+            Write_Name (Chars (Typ));
+         end if;
+
+         Write_Str (".");
          Write_Name (Chars (Prim));
 
          --  Indicate if this primitive has an aliased primitive
