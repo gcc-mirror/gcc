@@ -4733,6 +4733,13 @@ package body Exp_Attr is
       --  Start of processing for Attribute_Valid
 
       begin
+         --  Do not expand sourced code 'Valid reference in CodePeer mode,
+         --  will be handled by the back-end directly.
+
+         if CodePeer_Mode and then Comes_From_Source (N) then
+            return;
+         end if;
+
          --  Turn off validity checks. We do not want any implicit validity
          --  checks to intefere with the explicit check from the attribute
 

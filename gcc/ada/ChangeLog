@@ -1,3 +1,26 @@
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Constant_Address_Clauses): Do not check legality
+	of address clauses if if Ignore_Rep_Clauses is active.
+	* freeze.adb (Check_Address_Clause): If Ignore_Rep_Clauses is active,
+	remove address clause from tree so that it does not reach the backend.
+
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference [Attribute_Valid]): Do not
+	expand 'Valid from user code in CodePeer mode, will be handled by the
+	back-end directly.
+
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* g-comlin.ads: Minor comment improvements.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Uses_SS): The expression that initializes a controlled
+	component of a record type may be a user-defined operator that is
+	rewritten as a function call.
+
 2010-06-23  Bob Duff  <duff@adacore.com>
 
 	* g-comlin.ads, sem_ch13.adb: Minor comment fix.

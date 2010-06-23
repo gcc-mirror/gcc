@@ -591,7 +591,36 @@ package body Freeze is
             end if;
          end if;
 
-         if not Error_Posted (Expr)
+         --  If Rep_Clauses are to be ignored, remove address clause from
+         --  list attached to entity, because it may be illegal for gigi,
+         --  for example by breaking order of elaboration..
+
+         if Ignore_Rep_Clauses then
+            declare
+               Rep : Node_Id;
+
+            begin
+               Rep := First_Rep_Item (E);
+
+               if Rep = Addr then
+                  Set_First_Rep_Item (E, Next_Rep_Item (Addr));
+
+               else
+                  while Present (Rep)
+                    and then Next_Rep_Item (Rep) /= Addr
+                  loop
+                     Rep := Next_Rep_Item (Rep);
+                  end loop;
+               end if;
+
+               if Present (Rep) then
+                  Set_Next_Rep_Item (Rep, Next_Rep_Item (Addr));
+               end if;
+            end;
+
+            Rewrite (Addr, Make_Null_Statement (Sloc (E)));
+
+         elsif not Error_Posted (Expr)
            and then not Needs_Finalization (Typ)
          then
             Warn_Overlay (Expr, Typ, Name (Addr));
