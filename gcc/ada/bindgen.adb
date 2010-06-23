@@ -111,6 +111,7 @@ package body Bindgen is
 
    --     Main_Priority                 : Integer;
    --     Time_Slice_Value              : Integer;
+   --     Heap_Size                     : Natural;
    --     WC_Encoding                   : Character;
    --     Locking_Policy                : Character;
    --     Queuing_Policy                : Character;
@@ -135,6 +136,10 @@ package body Bindgen is
    --  are present, the binder value overrides). The value is in milliseconds.
    --  A value of zero indicates that time slicing should be suppressed. If no
    --  pragma is present, and no -T switch was used, the value is -1.
+
+   --  Heap_Size is the heap to use for memory allocations set by use of a
+   --  -Hnn parameter for the binder or by the GNAT$NO_MALLOC_64 logical.
+   --  Valid values are 32 and 64. This switch is only available on VMS.
 
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in
@@ -615,6 +620,15 @@ package body Bindgen is
             WBI ("      Features_Set : Integer;");
             WBI ("      pragma Import (C, Features_Set, " &
                  """__gnat_features_set"");");
+
+            if Opt.Heap_Size /= 0 then
+               WBI ("");
+               WBI ("      Heap_Size : Integer;");
+               WBI ("      pragma Import (C, Heap_Size, " &
+                    """__gl_heap_size"");");
+
+               Write_Statement_Buffer;
+            end if;
          end if;
 
          --  Initialize stack limit variable of the environment task if the
@@ -786,7 +800,18 @@ package body Bindgen is
             WBI ("      if Features_Set = 0 then");
             WBI ("         Set_Features;");
             WBI ("      end if;");
+
+            --  Features_Set may twiddle the heap size according to a logical
+            --  name, but the binder switch must override.
+
+            if Opt.Heap_Size /= 0 then
+               Set_String ("      Heap_Size := ");
+               Set_Int (Opt.Heap_Size);
+               Set_Char   (';');
+               Write_Statement_Buffer;
+            end if;
          end if;
+
       end if;
 
       --  Generate call to set Initialize_Scalar values if active

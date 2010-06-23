@@ -1568,15 +1568,18 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #endif
 
-/* Feature logical name and global variable address pair */
+/* Feature logical name and global variable address pair.
+   If we ever add another feature logical to this list, the
+   feature struct will need to be enhanced to take into account
+   possible values for *gl_addr.  */
 struct feature {char *name; int* gl_addr;};
 
 /* Default values for GNAT features set by environment. */
-int __gl_no_malloc_64 = 0;
+int __gl_heap_size = 64;
 
 /* Array feature logical names and global variable addresses */
 static struct feature features[] = {
-  {"GNAT$NO_MALLOC_64", &__gl_no_malloc_64},
+  {"GNAT$NO_MALLOC_64", &__gl_heap_size},
   {0, 0}
 };
 
@@ -1607,10 +1610,14 @@ void __gnat_set_features ()
        else
          strcpy (buff, "");
 
-       if (strcmp (buff, "ENABLE") == 0)
-          *features [i].gl_addr = 1;
-       else if (strcmp (buff, "DISABLE") == 0)
-          *features [i].gl_addr = 0;
+       if ((strcmp (buff, "ENABLE") == 0) ||
+           (strcmp (buff, "TRUE") == 0) ||
+           (strcmp (buff, "1") == 0))
+          *features [i].gl_addr = 32;
+       else if ((strcmp (buff, "DISABLE") == 0) ||
+                (strcmp (buff, "FALSE") == 0) ||
+                (strcmp (buff, "0") == 0))
+          *features [i].gl_addr = 64;
     }
 
     __gnat_features_set = 1;

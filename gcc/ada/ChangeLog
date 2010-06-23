@@ -1,5 +1,23 @@
 2010-06-23  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch6.adb: Minor reformatting.
+
+2010-06-23  Doug Rupp  <rupp@adacore.com>
+
+	* bindusg.adb (Display): Write -Hnn line.
+	* bindgen.adb (Gen_Adainit_Ada): Write Heap_Size to binder file as 
+	necessary.
+	* init.c (__gl_heap_size): Rename from __gl_no_malloc_64 and change
+	valid values to 32 and 64.
+	(GNAT$NO_MALLOC_64): Recognize TRUE, 1, FALSE, and 0 in addition to
+	ENABLE, DISABLE as valid settings.
+	* switch-b.adb (Scan_Binder_Switches): Process -Hnn switch.
+	* opt.ads (Heap_Size): New global variable.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Remove mostly redundant 
+	TARGET_MALLOC64 check. Fix comment.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch6.adb, exp_ch4.adb, s-rannum.ads, sem.adb, sem_ch12.adb: Minor
 	reformatting.  Add comments.
 	* errout.adb (Finalize): Properly adjust warning count when deleting

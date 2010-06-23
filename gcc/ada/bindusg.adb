@@ -116,6 +116,11 @@ package body Bindusg is
 
       Write_Line ("  -h        Output this usage (help) information");
 
+      --  Line for -H switch
+
+      Write_Line ("  -Hnn      Use nn bit heap where nn is 32 or 64 " &
+                  "(VMS Only)");
+
       --  Lines for -I switch
 
       Write_Line ("  -Idir     Specify library and source files search path");
