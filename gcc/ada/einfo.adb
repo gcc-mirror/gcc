@@ -5850,7 +5850,13 @@ package body Einfo is
 
    function Has_Foreign_Convention (Id : E) return B is
    begin
-      return Convention (Id) in Foreign_Convention;
+      --  While regular Intrinsics such as the Standard operators fit in the
+      --  "Ada" convention, those with an Interface_Name materialize GCC
+      --  builtin imports for which Ada special treatments shouldn't apply.
+
+      return Convention (Id) in Foreign_Convention
+        or else (Convention (Id) = Convention_Intrinsic
+                 and then Present (Interface_Name (Id)));
    end Has_Foreign_Convention;
 
    ---------------------------
