@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1295,9 +1295,9 @@ package body ALI is
          else
             Skip_Space;
             No_Deps.Append ((Id, Get_Name));
+            Skip_Eol;
          end if;
 
-         Skip_Eol;
          C := Getc;
       end loop;
 

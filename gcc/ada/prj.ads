@@ -1630,7 +1630,7 @@ private
       Error_On_Unknown_Language  => True,
       Require_Obj_Dirs           => Warning,
       Allow_Invalid_External     => Error,
-      Missing_Source_Files       => Warning);
+      Missing_Source_Files       => Error);
 
    Gnatmake_Flags : constant Processing_Flags :=
      (Report_Error               => null,

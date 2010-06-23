@@ -86,8 +86,9 @@ package GNAT.Perfect_Hash_Generators is
    --  number of tries.
 
    type Optimization is (Memory_Space, CPU_Time);
-   Default_Optimization : constant Optimization := CPU_Time;
-   --  Optimize either the memory space or the execution time
+   --  Optimize either the memory space or the execution time. Note: in
+   --  practice, the optimization mode has little effect on speed. The tables
+   --  are somewhat smaller with Memory_Space.
 
    Verbose : Boolean := False;
    --  Output the status of the algorithm. For instance, the tables, the random
@@ -97,7 +98,7 @@ package GNAT.Perfect_Hash_Generators is
    procedure Initialize
      (Seed   : Natural;
       K_To_V : Float        := Default_K_To_V;
-      Optim  : Optimization := CPU_Time;
+      Optim  : Optimization := Memory_Space;
       Tries  : Positive     := Default_Tries);
    --  Initialize the generator and its internal structures. Set the ratio of
    --  vertices over keys in the random graphs. This value has to be greater

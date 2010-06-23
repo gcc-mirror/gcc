@@ -1,3 +1,33 @@
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb, sem_util.ads: Minor reformatting.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads (Gprclean_Flags.Missing_Source_Files): Set to Error to keep
+	the previous behavior of gprclean when there are missing files.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Load_Body_Of_Generic): In CodePeer mode, a missing
+	generic body is not a fatal error.
+	(Mark_Context): Handle properly names of child units.
+	* sem.adb (Walk_Library_Items.Do_Action): Remove assertion on
+	instantiations.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* ali.adb (Scan_ALI): When ignoring R lines, do not skip the next
+	non-empty line.
+
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.ads, g-pehage.adb: Switch default optimization mode to
+	Memory_Space, because CPU_Time doesn't seem to provide any significant
+	speed advantage in practice. Cleanup: Get rid of constant
+	Default_Optimization; doesn't seem to add anything. Use case
+	statements instead of if statements; seems cleaner.
+
 2010-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Procedure>: Use

@@ -8748,11 +8748,16 @@ package body Sem_Ch12 is
       --  If we have no body, and the unit requires a body, then complain. This
       --  complaint is suppressed if we have detected other errors (since a
       --  common reason for missing the body is that it had errors).
+      --  In CodePeer mode, a warning has been emitted already, no need for
+      --  further messages.
 
       elsif Unit_Requires_Body (Gen_Unit)
         and then not Body_Optional
       then
-         if Serious_Errors_Detected = 0 then
+         if CodePeer_Mode then
+            null;
+
+         elsif Serious_Errors_Detected = 0 then
             Error_Msg_NE
               ("cannot find body of generic package &", Inst_Node, Gen_Unit);
 
@@ -10451,7 +10456,9 @@ package body Sem_Ch12 is
       loop
          Mark_Context
            (Inst_Decl,
-            Unit_Declaration_Node (Generic_Parent (Parent (Scop))));
+            Unit_Declaration_Node
+              (Generic_Parent
+                 (Specification (Unit_Declaration_Node (Scop)))));
          Scop := Scope (Scop);
       end loop;
 
@@ -10857,11 +10864,20 @@ package body Sem_Ch12 is
                             Get_Body_Name (Get_Unit_Name (Unit (Comp_Unit)));
 
                begin
-                  Error_Msg_Unit_1 := Bname;
-                  Error_Msg_N ("this instantiation requires$!", N);
-                  Error_Msg_File_1 := Get_File_Name (Bname, Subunit => False);
-                  Error_Msg_N ("\but file{ was not found!", N);
-                  raise Unrecoverable_Error;
+                  --  In CodePeer mode, the missing body may make the
+                  --  analysis incomplete, but we do not treat it as fatal.
+
+                  if CodePeer_Mode then
+                     return;
+
+                  else
+                     Error_Msg_Unit_1 := Bname;
+                     Error_Msg_N ("this instantiation requires$!", N);
+                     Error_Msg_File_1
+                       := Get_File_Name (Bname, Subunit => False);
+                     Error_Msg_N ("\but file{ was not found!", N);
+                     raise Unrecoverable_Error;
+                  end if;
                end;
             end if;
          end if;

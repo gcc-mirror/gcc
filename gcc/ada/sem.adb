@@ -1589,7 +1589,7 @@ package body Sem is
 
                null;
 
-            when  N_Subprogram_Body =>
+            when N_Subprogram_Body =>
 
                --  A subprogram body must be the main unit
 
@@ -1597,13 +1597,16 @@ package body Sem is
                                or else CU = Cunit (Main_Unit));
                null;
 
-            --  All other cases cannot happen
-
             when N_Function_Instantiation  |
                  N_Procedure_Instantiation |
                  N_Package_Instantiation   =>
-               pragma Assert (False, "instantiation");
+
+               --  Can only happen if some generic body (needed for gnat2scil
+               --  traversal, but not by GNAT) is not available, ignore.
+
                null;
+
+            --  All other cases cannot happen
 
             when N_Subunit =>
                pragma Assert (False, "subunit");
