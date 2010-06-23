@@ -3351,6 +3351,14 @@ package body Checks is
                         Indx := Next_Index (Indx);
                      end loop;
 
+                     --  if The index type is a formal type, or derived from
+                     --  one, the bounds are not static.
+
+                     if Is_Generic_Type (Root_Type (Etype (Indx))) then
+                        OK := False;
+                        return;
+                     end if;
+
                      Determine_Range
                        (Type_Low_Bound (Etype (Indx)), OK1, LL, LU,
                         Assume_Valid);

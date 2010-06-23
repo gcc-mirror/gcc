@@ -4497,15 +4497,13 @@ package body Sem_Util is
      (T             : Entity_Id;
       Use_Full_View : Boolean := True) return Boolean
    is
-      Typ : Entity_Id;
+      Typ : Entity_Id := Base_Type (T);
 
    begin
       --  Handle concurrent types
 
-      if Is_Concurrent_Type (T) then
-         Typ := Corresponding_Record_Type (T);
-      else
-         Typ := T;
+      if Is_Concurrent_Type (Typ) then
+         Typ := Corresponding_Record_Type (Typ);
       end if;
 
       if not Present (Typ)

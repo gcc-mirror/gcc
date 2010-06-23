@@ -572,7 +572,11 @@ package body Exp_CG is
                   Prim_Op := Node (Prim_Elmt);
                   Int_Alias := Interface_Alias (Prim_Op);
 
-                  if Present (Int_Alias) and then (Alias (Prim_Op)) = Prim then
+                  if Present (Int_Alias)
+                    and then not Is_Ancestor
+                                   (Find_Dispatching_Type (Int_Alias), Typ)
+                    and then (Alias (Prim_Op)) = Prim
+                  then
                      Write_Char (',');
                      Write_Int (UI_To_Int (Slot_Number (Int_Alias)));
                      Write_Char (':');

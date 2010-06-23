@@ -5633,10 +5633,10 @@ package body Sem_Attr is
             while Present (N) loop
                Static := Static and then Is_Static_Subtype (Etype (N));
 
-               --  If however the index type is generic, attributes cannot
-               --  be folded.
+               --  If however the index type is generic, or derived from
+               --  one, attributes cannot be folded.
 
-               if Is_Generic_Type (Etype (N))
+               if Is_Generic_Type (Root_Type (Etype (N)))
                  and then Id /= Attribute_Component_Size
                then
                   return;
@@ -6205,13 +6205,13 @@ package body Sem_Attr is
          Ind : Node_Id;
 
       begin
-         --  In the case of a generic index type, the bounds may appear static
-         --  but the computation is not meaningful in this case, and may
-         --  generate a spurious warning.
+         --  If any index type is a formal type, or derived from one, the
+         --  bounds are not static. Treating them as static can produce
+         --  spurious warnings or improper constant folding.
 
          Ind := First_Index (P_Type);
          while Present (Ind) loop
-            if Is_Generic_Type (Etype (Ind)) then
+            if Is_Generic_Type (Root_Type (Etype (Ind))) then
                return;
             end if;
 
