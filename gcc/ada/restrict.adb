@@ -256,6 +256,14 @@ package body Restrict is
    --  Start of processing for Check_Restriction
 
    begin
+      --  In CodePeer mode, we do not want to check for any restriction, or
+      --  set additional restrictions than those already set in gnat1drv.adb
+      --  so that we have consistency between each compilation.
+
+      if CodePeer_Mode then
+         return;
+      end if;
+
       if UI_Is_In_Int_Range (V) then
          VV := Integer (UI_To_Int (V));
       else

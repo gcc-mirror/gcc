@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -72,6 +72,9 @@ package Ada.Command_Line is
    ------------------------------------
    -- Note on Interface Requirements --
    ------------------------------------
+
+   --  Services in this package are not supported during the elaboration of an
+   --  auto-initialized Stand-Alone Library.
 
    --  If the main program is in Ada, this package works as specified without
    --  any other work than the normal steps of WITH'ing the package and then

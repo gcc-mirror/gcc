@@ -3689,16 +3689,23 @@ package body Exp_Ch4 is
                      Decls := Build_Task_Image_Decls (Loc, T, T);
                   end if;
 
-                  Append_To (Args,
-                    New_Reference_To
-                      (Master_Id (Base_Type (Root_Type (PtrT))), Loc));
+                  --  What is this constant 3 below, should have a name ???
+
+                  if Restriction_Active (No_Task_Hierarchy) then
+                     Append_To (Args, Make_Integer_Literal (Loc, 3));
+                  else
+                     Append_To (Args,
+                       New_Reference_To
+                         (Master_Id (Base_Type (Root_Type (PtrT))), Loc));
+                  end if;
+
                   Append_To (Args, Make_Identifier (Loc, Name_uChain));
 
                   Decl := Last (Decls);
                   Append_To (Args,
                     New_Occurrence_Of (Defining_Identifier (Decl), Loc));
 
-                  --  Has_Task is false, Decls not used
+               --  Has_Task is false, Decls not used
 
                else
                   Decls := No_List;

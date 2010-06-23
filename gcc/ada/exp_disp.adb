@@ -4859,9 +4859,14 @@ package body Exp_Disp is
       --  Size_Func
 
       if RTE_Record_Component_Available (RE_Size_Func) then
-         if not Building_Static_DT (Typ)
-           or else Is_Interface (Typ)
-         then
+
+         --  Initialize this field to Null_Address if we are not building
+         --  static dispatch tables static or if the size function is not
+         --  available. In the former case we cannot initialize this field
+         --  until the function is frozen and registered in the dispatch
+         --  table (see Register_Primitive).
+
+         if not Building_Static_DT (Typ) or else not Has_DT (Typ) then
             Append_To (TSD_Aggr_List,
               Unchecked_Convert_To (RTE (RE_Size_Ptr),
                 New_Reference_To (RTE (RE_Null_Address), Loc)));
@@ -5871,7 +5876,7 @@ package body Exp_Disp is
       --  Mark entities containing dispatch tables. Required by the backend to
       --  handle them properly.
 
-      if not Is_Interface (Typ) then
+      if Has_DT (Typ) then
          declare
             Elmt : Elmt_Id;
 
