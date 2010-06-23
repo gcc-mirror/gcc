@@ -1,3 +1,7 @@
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Mark_Coextensions): If the expression in the allocator
