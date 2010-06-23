@@ -7,111 +7,140 @@
 --                                 S p e c                                  --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
--- GNAT.  In accordance with the copyright of that document, you can freely --
--- copy and modify this specification,  provided that if you redistribute a --
--- modified version,  any changes that you have made are clearly indicated. --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
+-- Boston, MA 02110-1301, USA.                                              --
+--                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Ada 2012 package defined in AI05-0137-1. It is used for
---  encoding strings using UTF encodings (UTF-8, UTF-16LE, UTF-16BE, UTF-16).
+--  This is one of the Ada 2012 package defined in AI05-0137-1. It is a parent
+--  package that contains declarations used in the child packages for handling
+--  UTF encoded strings. Note: this package is consistent with Ada 95, and may
+--  be used in Ada 95 or Ada 2005 mode.
 
---  Compared with version 05 of the AI, we have added routines for UTF-16
---  encoding and decoding of wide strings, which seems missing from the AI,
---  added comments, and reordered the declarations.
-
---  Note: although this is an Ada 2012 package, the earlier versions of the
---  language permit the addition of new grandchildren of Ada, so we are able
---  to add this package unconditionally for use in Ada 2005 mode. We cannot
---  allow it in earlier versions, since it requires Wide_Wide_Character/String.
+with Interfaces;
+with Unchecked_Conversion;
 
 package Ada.Strings.UTF_Encoding is
    pragma Pure (UTF_Encoding);
 
-   type Encoding_Scheme is (UTF_None, UTF_8, UTF_16BE, UTF_16LE, UTF_16);
+   subtype UTF_String is String;
+   --  Used to represent a string of 8-bit values containing a sequence of
+   --  values encoded in one of three ways (UTF-8, UTF-16BE, or UTF-16LE).
+   --  Typically used in connection with a Scheme parameter indicating which
+   --  of the encodings applies. This is not strictly a String value in the
+   --  sense defined in the Ada RM, but in practice type String accomodates
+   --  all possible 256 codes, and can be used to hold any sequence of 8-bit
+   --  codes. We use String directly rather than create a new type so that
+   --  all existing facilities for manipulating type String (e.g. the child
+   --  packages of Ada.Strings) are available for manipulation of UTF_Strings.
 
-   subtype Short_Encoding is Encoding_Scheme range UTF_8 .. UTF_16LE;
-   subtype Long_Encoding  is Encoding_Scheme range UTF_16 .. UTF_16;
+   type Encoding_Scheme is (UTF_8, UTF_16BE, UTF_16LE);
+   --  Used to specify which of three possible encodings apply to a UTF_String
+
+   subtype UTF_8_String is String;
+   --  Similar to UTF_String but specifically represents a UTF-8 encoded string
+
+   subtype UTF_16_Wide_String is Wide_String;
+   --  This is similar to UTF_8_String but is used to represent a Wide_String
+   --  value which is a sequence of 16-bit values encoded using UTF-16. Again
+   --  this is not strictly a Wide_String in the sense of the Ada RM, but the
+   --  type Wide_String can be used to represent a sequence of arbitrary 16-bit
+   --  values, and it is more convenient to use Wide_String than a new type.
+
+   Encoding_Error : exception;
+   --  This exception is raised in the following situations:
+   --    a) A UTF encoded string contains an invalid encoding sequence
+   --    b) A UTF-16BE or UTF-16LE input string has an odd length
+   --    c) An incorrect character value is present in the Input string
+   --    d) The result for a Wide_Character output exceeds 16#FFFF#
+   --  The exception message has the index value where the error occurred.
 
    --  The BOM (BYTE_ORDER_MARK) values defined here are used at the start of
    --  a string to indicate the encoding. The convention in this package is
-   --  that decoding routines ignore a BOM, and output of encoding routines
-   --  does not include a BOM. If you want to include a BOM in the output,
-   --  you simply concatenate the appropriate value at the start of the string.
+   --  that on input a correct BOM is ignored and an incorrect BOM causes an
+   --  Encoding_Error exception. On output, the output string may or may not
+   --  include a BOM depending on the setting of Output_BOM.
 
-   BOM_8    : constant String :=
+   BOM_8    : constant UTF_8_String :=
                 Character'Val (16#EF#) &
                 Character'Val (16#BB#) &
                 Character'Val (16#BF#);
 
-   BOM_16BE : constant String :=
+   BOM_16BE : constant UTF_String :=
                 Character'Val (16#FE#) &
                 Character'Val (16#FF#);
 
-   BOM_16LE : constant String :=
+   BOM_16LE : constant UTF_String :=
                 Character'Val (16#FF#) &
                 Character'Val (16#FE#);
 
-   BOM_16   : constant Wide_String :=
+   BOM_16   : constant UTF_16_Wide_String :=
                 (1 => Wide_Character'Val (16#FEFF#));
 
-   --  The encoding routines take a wide string or wide wide string as input
-   --  and encode the result using the specified UTF encoding method. For
-   --  UTF-16, the output is returned as a Wide_String, this is not a normal
-   --  Wide_String, since the codes in it may represent UTF-16 surrogate
-   --  characters used to encode large values. Similarly for UTF-8, UTF-16LE,
-   --  and UTF-16BE, the output is returned in a String, and again this String
-   --  is not a standard format string, since it may include UTF-8 surrogates.
-   --  As previously noted, the returned value does NOT start with a BOM.
+   function Encoding
+     (Item    : UTF_String;
+      Default : Encoding_Scheme := UTF_8) return Encoding_Scheme;
+   --  This function inspects a UTF_String value to determine whether it
+   --  starts with a BOM for UTF-8, UTF-16BE, or UTF_16LE. If so, the result
+   --  is the scheme corresponding to the BOM. If no valid BOM is present
+   --  then the result is the specified Default value.
 
-   --  Note: invalid codes in calls to one of the Encode routines represent
-   --  invalid values in the sense that they are not defined. For example, the
-   --  code 16#DC03# is not a valid wide character value. Such values result
-   --  in undefined behavior. For GNAT, Constraint_Error is raised with an
-   --  appropriate exception message.
+private
+   function To_Unsigned_8 is new
+     Unchecked_Conversion (Character, Interfaces.Unsigned_8);
 
-   function Encode
-     (Item   : Wide_String;
-      Scheme : Short_Encoding := UTF_8) return String;
-   function Encode
-     (Item   : Wide_Wide_String;
-      Scheme : Short_Encoding := UTF_8) return String;
+   function To_Unsigned_16 is new
+     Unchecked_Conversion (Wide_Character, Interfaces.Unsigned_16);
 
-   function Encode
-     (Item   : Wide_String;
-      Scheme : Long_Encoding := UTF_16) return Wide_String;
-   function Encode
-     (Item   : Wide_Wide_String;
-      Scheme : Long_Encoding := UTF_16) return Wide_String;
+   function To_Unsigned_32 is new
+     Unchecked_Conversion (Wide_Wide_Character, Interfaces.Unsigned_32);
 
-   --  The decoding routines take a String or Wide_String input which is an
-   --  encoded string using the specified encoding. The output is a normal
-   --  Ada Wide_String or Wide_Wide_String value representing the decoded
-   --  values. Note that a BOM in the input matching the encoding is skipped.
+   subtype UTF_XE_Encoding is Encoding_Scheme range UTF_16BE .. UTF_16LE;
+   --  Subtype containing only UTF_16BE and UTF_16LE entries
 
-   Encoding_Error : exception;
-   --  Exception raised if an invalid encoding sequence is encountered by
-   --  one of the Decode routines.
+   --  Utility routines for converting between UTF-16 and UTF-16LE/BE
 
-   function Decode
-     (Item   : String;
-      Scheme : Short_Encoding := UTF_8) return Wide_String;
-   function Decode
-     (Item   : String;
-      Scheme : Short_Encoding := UTF_8) return Wide_Wide_String;
+   function From_UTF_16
+     (Item          : UTF_16_Wide_String;
+      Output_Scheme : UTF_XE_Encoding;
+      Output_BOM    : Boolean := False) return UTF_String;
+   --  The input string Item is encoded in UTF-16. The output is encoded using
+   --  Output_Scheme (which is either UTF-16LE or UTF-16BE). There are no error
+   --  cases. The output starts with BOM_16BE/LE if Output_BOM is True.
 
-   function Decode
-     (Item   : Wide_String;
-      Scheme : Long_Encoding := UTF_16) return Wide_String;
-   function Decode
-     (Item   : Wide_String;
-      Scheme : Long_Encoding := UTF_16) return Wide_Wide_String;
+   function To_UTF_16
+     (Item          : UTF_String;
+      Input_Scheme  : UTF_XE_Encoding;
+      Output_BOM    : Boolean := False) return UTF_16_Wide_String;
+   --  The input string Item is encoded using Input_Scheme which is either
+   --  UTF-16LE or UTF-16BE. The output is the corresponding UTF_16 wide
+   --  string. Encoding error is raised if the length of the input is odd.
+   --  The output starts with BOM_16 if Output_BOM is True.
 
-   --  The Encoding functions inspect an encoded string or wide_string and
-   --  determine if a BOM is present. If so, the appropriate Encoding_Scheme
-   --  is returned. If not, then UTF_None is returned.
-
-   function Encoding (Item : String)      return Encoding_Scheme;
-   function Encoding (Item : Wide_String) return Encoding_Scheme;
+   procedure Raise_Encoding_Error (Index : Natural);
+   pragma No_Return (Raise_Encoding_Error);
+   --  Raise Encoding_Error exception for bad encoding in input item. The
+   --  parameter Index is the index of the location in Item for the error.
 
 end Ada.Strings.UTF_Encoding;

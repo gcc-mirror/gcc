@@ -407,9 +407,6 @@ ATOMICS_TARGET_PAIRS += \
   a-szunau.adb<a-szunau-shared.adb \
   a-szuzti.adb<a-szuzti-shared.adb
 
-# Reset setting for now
-ATOMICS_TARGET_PAIRS =
-
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
 
 # $(filter-out PATTERN...,TEXT) removes all PATTERN words from TEXT.
