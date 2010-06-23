@@ -1,3 +1,8 @@
+2010-06-23  Arnaud Charlet  <charlet@adacore.com
+
+	PR 22220
+	* doc/install.texi: Update requirements to build GNAT.
+
 2010-06-22  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (m68k_output_addr_const_extra): Add cast to
