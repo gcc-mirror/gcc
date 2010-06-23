@@ -145,6 +145,9 @@ package body GNAT.Perfect_Hash_Generators is
    --  Return a string which includes string Str or integer Int preceded by
    --  leading spaces if required by width W.
 
+   function Trim_Trailing_Nuls (Str : String) return String;
+   --  Return Str, but with trailing NUL characters removed.
+
    Output : File_Descriptor renames GNAT.OS_Lib.Standout;
    --  Shortcuts
 
@@ -524,6 +527,7 @@ package body GNAT.Perfect_Hash_Generators is
    ---------
 
    procedure Add (C : Character) is
+      pragma Assert (C /= ASCII.NUL);
    begin
       Line (Last + 1) := C;
       Last := Last + 1;
@@ -536,6 +540,11 @@ package body GNAT.Perfect_Hash_Generators is
    procedure Add (S : String) is
       Len : constant Natural := S'Length;
    begin
+      for J in S'Range loop
+         pragma Assert (S (J) /= ASCII.NUL);
+         null;
+      end loop;
+
       Line (Last + 1 .. Last + Len) := S;
       Last := Last + Len;
    end Add;
@@ -1261,6 +1270,11 @@ package body GNAT.Perfect_Hash_Generators is
          New_Line (Output);
       end if;
 
+      for J in Value'Range loop
+         pragma Assert (Value (J) /= ASCII.NUL);
+         null;
+      end loop;
+
       WT.Set_Last (NK);
       WT.Table (NK) := New_Word (Value);
       NK := NK + 1;
@@ -1726,6 +1740,11 @@ package body GNAT.Perfect_Hash_Generators is
    procedure Put (File : File_Descriptor; Str : String) is
       Len : constant Natural := Str'Length;
    begin
+      for J in Str'Range loop
+         pragma Assert (Str (J) /= ASCII.NUL);
+         null;
+      end loop;
+
       if Write (File, Str'Address, Len) /= Len then
          raise Program_Error;
       end if;
@@ -1768,13 +1787,12 @@ package body GNAT.Perfect_Hash_Generators is
          Last := 0;
       end if;
 
-      if Last + Len + 3 > Max then
+      if Last + Len + 3 >= Max then
          Flush;
       end if;
 
       if Last = 0 then
-         Line (Last + 1 .. Last + 5) := "     ";
-         Last := Last + 5;
+         Add ("     ");
 
          if F1 <= L1 then
             if C1 = F1 and then C2 = F2 then
@@ -1801,8 +1819,7 @@ package body GNAT.Perfect_Hash_Generators is
          Add (' ');
       end if;
 
-      Line (Last + 1 .. Last + Len) := S;
-      Last := Last + Len;
+      Add (S);
 
       if C2 = L2 then
          Add (')');
@@ -1869,7 +1886,8 @@ package body GNAT.Perfect_Hash_Generators is
          K := Get_Key (J);
          Put (File, Image (J, M),           F1, L1, J, 1, 3, 1);
          Put (File, Image (K.Edge, M),      F1, L1, J, 1, 3, 2);
-         Put (File, WT.Table (Initial (J)).all, F1, L1, J, 1, 3, 3);
+         Put (File, Trim_Trailing_Nuls (WT.Table (Initial (J)).all),
+                    F1, L1, J, 1, 3, 3);
       end loop;
    end Put_Initial_Keys;
 
@@ -1950,7 +1968,8 @@ package body GNAT.Perfect_Hash_Generators is
          K := Get_Key (J);
          Put (File, Image (J, M),           F1, L1, J, 1, 3, 1);
          Put (File, Image (K.Edge, M),      F1, L1, J, 1, 3, 2);
-         Put (File, WT.Table (Reduced (J)).all, F1, L1, J, 1, 3, 3);
+         Put (File, Trim_Trailing_Nuls (WT.Table (Reduced (J)).all),
+                    F1, L1, J, 1, 3, 3);
       end loop;
    end Put_Reduced_Keys;
 
@@ -2337,7 +2356,8 @@ package body GNAT.Perfect_Hash_Generators is
                     Same_Keys_Sets_Table (J).First ..
                     Same_Keys_Sets_Table (J).Last
                   loop
-                     Put (Output, WT.Table (Reduced (K)).all);
+                     Put (Output,
+                          Trim_Trailing_Nuls (WT.Table (Reduced (K)).all));
                      New_Line (Output);
                   end loop;
                   Put (Output, "--");
@@ -2487,6 +2507,20 @@ package body GNAT.Perfect_Hash_Generators is
 
       return S;
    end Sum;
+
+   ------------------------
+   -- Trim_Trailing_Nuls --
+   ------------------------
+
+   function Trim_Trailing_Nuls (Str : String) return String is
+   begin
+      for J in Str'Range loop
+         if Str (J) = ASCII.NUL then
+            return Str (Str'First .. J - 1);
+         end if;
+      end loop;
+      return Str;
+   end Trim_Trailing_Nuls;
 
    ---------------
    -- Type_Size --

@@ -68,6 +68,7 @@ with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
@@ -1537,90 +1538,92 @@ package body Sem_Ch3 is
       while Present (Iface_Elmt) loop
          Iface := Node (Iface_Elmt);
 
-         --  Exclude from this processing interfaces that are parents of
-         --  Tagged_Type because their primitives are located in the primary
-         --  dispatch table (and hence no auxiliary internal entities are
-         --  required to handle secondary dispatch tables in such case).
+         --  Originally we excluded here from this processing interfaces that
+         --  are parents of Tagged_Type because their primitives are located
+         --  in the primary dispatch table (and hence no auxiliary internal
+         --  entities are required to handle secondary dispatch tables in such
+         --  case). However, these auxiliary entities are also required to
+         --  handle derivations of interfaces in formals of generics (see
+         --  Derive_Subprograms).
 
-         if not Is_Ancestor (Iface, Tagged_Type) then
-            Elmt := First_Elmt (Primitive_Operations (Iface));
-            while Present (Elmt) loop
-               Iface_Prim := Node (Elmt);
+         Elmt := First_Elmt (Primitive_Operations (Iface));
+         while Present (Elmt) loop
+            Iface_Prim := Node (Elmt);
 
-               if not Is_Predefined_Dispatching_Operation (Iface_Prim) then
-                  Prim :=
-                    Find_Primitive_Covering_Interface
-                      (Tagged_Type => Tagged_Type,
-                       Iface_Prim  => Iface_Prim);
+            if not Is_Predefined_Dispatching_Operation (Iface_Prim) then
+               Prim :=
+                 Find_Primitive_Covering_Interface
+                   (Tagged_Type => Tagged_Type,
+                    Iface_Prim  => Iface_Prim);
 
-                  if No (Prim) then
+               if No (Prim) then
 
-                     --  In some rare cases, a name conflict may have kept the
-                     --  operation completely hidden. Look for it in the list
-                     --  of primitive operations of the type.
+                  --  In some rare cases, a name conflict may have kept the
+                  --  operation completely hidden. Look for it in the list
+                  --  of primitive operations of the type.
 
-                     declare
-                        El : Elmt_Id;
-                     begin
-                        El := First_Elmt (Primitive_Operations (Tagged_Type));
-                        while Present (El) loop
-                           Prim := Node (El);
-                           exit when Is_Subprogram (Prim)
-                             and then Alias (Prim) = Iface_Prim;
-                           Next_Elmt (El);
-                        end loop;
+                  declare
+                     El : Elmt_Id;
 
-                        --  If the operation was not explicitly overridden, it
-                        --  should have been inherited as an abstract operation
-                        --  so Prim can not be Empty at this stage.
+                  begin
+                     El := First_Elmt (Primitive_Operations (Tagged_Type));
+                     while Present (El) loop
+                        Prim := Node (El);
+                        exit when Is_Subprogram (Prim)
+                          and then Alias (Prim) = Iface_Prim;
+                        Next_Elmt (El);
+                     end loop;
 
-                        if No (El) then
-                           raise Program_Error;
-                        end if;
-                     end;
-                  end if;
+                     --  If the operation was not explicitly overridden, it
+                     --  should have been inherited as an abstract operation
+                     --  so Prim can not be Empty at this stage.
 
-                  Derive_Subprogram
-                    (New_Subp     => New_Subp,
-                     Parent_Subp  => Iface_Prim,
-                     Derived_Type => Tagged_Type,
-                     Parent_Type  => Iface);
-
-                  --  Ada 2005 (AI-251): Decorate internal entity Iface_Subp
-                  --  associated with interface types. These entities are
-                  --  only registered in the list of primitives of its
-                  --  corresponding tagged type because they are only used
-                  --  to fill the contents of the secondary dispatch tables.
-                  --  Therefore they are removed from the homonym chains.
-
-                  Set_Is_Hidden (New_Subp);
-                  Set_Is_Internal (New_Subp);
-                  Set_Alias (New_Subp, Prim);
-                  Set_Is_Abstract_Subprogram (New_Subp,
-                    Is_Abstract_Subprogram (Prim));
-                  Set_Interface_Alias (New_Subp, Iface_Prim);
-
-                  --  Internal entities associated with interface types are
-                  --  only registered in the list of primitives of the tagged
-                  --  type. They are only used to fill the contents of the
-                  --  secondary dispatch tables. Therefore they are not needed
-                  --  in the homonym chains.
-
-                  Remove_Homonym (New_Subp);
-
-                  --  Hidden entities associated with interfaces must have set
-                  --  the Has_Delay_Freeze attribute to ensure that, in case of
-                  --  locally defined tagged types (or compiling with static
-                  --  dispatch tables generation disabled) the corresponding
-                  --  entry of the secondary dispatch table is filled when
-                  --  such an entity is frozen.
-
-                  Set_Has_Delayed_Freeze (New_Subp);
+                     if No (El) then
+                        raise Program_Error;
+                     end if;
+                  end;
                end if;
 
-               Next_Elmt (Elmt);
-            end loop;
-         end if;
+               Derive_Subprogram
+                 (New_Subp     => New_Subp,
+                  Parent_Subp  => Iface_Prim,
+                  Derived_Type => Tagged_Type,
+                  Parent_Type  => Iface);
+
+               --  Ada 2005 (AI-251): Decorate internal entity Iface_Subp
+               --  associated with interface types. These entities are
+               --  only registered in the list of primitives of its
+               --  corresponding tagged type because they are only used
+               --  to fill the contents of the secondary dispatch tables.
+               --  Therefore they are removed from the homonym chains.
+
+               Set_Is_Hidden (New_Subp);
+               Set_Is_Internal (New_Subp);
+               Set_Alias (New_Subp, Prim);
+               Set_Is_Abstract_Subprogram
+                 (New_Subp, Is_Abstract_Subprogram (Prim));
+               Set_Interface_Alias (New_Subp, Iface_Prim);
+
+               --  Internal entities associated with interface types are
+               --  only registered in the list of primitives of the tagged
+               --  type. They are only used to fill the contents of the
+               --  secondary dispatch tables. Therefore they are not needed
+               --  in the homonym chains.
+
+               Remove_Homonym (New_Subp);
+
+               --  Hidden entities associated with interfaces must have set
+               --  the Has_Delay_Freeze attribute to ensure that, in case of
+               --  locally defined tagged types (or compiling with static
+               --  dispatch tables generation disabled) the corresponding
+               --  entry of the secondary dispatch table is filled when
+               --  such an entity is frozen.
+
+               Set_Has_Delayed_Freeze (New_Subp);
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
 
          Next_Elmt (Iface_Elmt);
       end loop;
@@ -11955,7 +11958,7 @@ package body Sem_Ch3 is
       --  non-abstract tagged types that can reference abstract primitives
       --  through its Alias attribute are the internal entities that have
       --  attribute Interface_Alias, and these entities are generated later
-      --  by Freeze_Record_Type).
+      --  by Add_Internal_Interface_Entities).
 
       if In_Private_Part (Current_Scope)
         and then Is_Abstract_Type (Parent_Type)
@@ -12734,6 +12737,12 @@ package body Sem_Ch3 is
             --  corresponding operations of the actual.
 
             else
+               pragma Assert (No (Node (Act_Elmt))
+                 or else (Primitive_Names_Match (Subp, Node (Act_Elmt))
+                            and then
+                          Type_Conformant (Subp, Node (Act_Elmt),
+                                           Skip_Controlling_Formals => True)));
+
                Derive_Subprogram
                  (New_Subp, Subp, Derived_Type, Parent_Base, Node (Act_Elmt));
 
@@ -12839,7 +12848,11 @@ package body Sem_Ch3 is
               or else
                 (Present (Generic_Actual)
                   and then Present (Act_Subp)
-                  and then not Primitive_Names_Match (Subp, Act_Subp))
+                  and then not
+                    (Primitive_Names_Match (Subp, Act_Subp)
+                       and then
+                     Type_Conformant (Subp, Act_Subp,
+                                      Skip_Controlling_Formals => True)))
             then
                pragma Assert (not Is_Ancestor (Parent_Base, Generic_Actual));
 
@@ -12849,14 +12862,73 @@ package body Sem_Ch3 is
 
                --  Handle entities associated with interface primitives
 
-               if Present (Alias (Subp))
-                 and then Is_Interface (Find_Dispatching_Type (Alias (Subp)))
+               if Present (Alias_Subp)
+                 and then Is_Interface (Find_Dispatching_Type (Alias_Subp))
                  and then not Is_Predefined_Dispatching_Operation (Subp)
                then
+                  --  Search for the primitive in the homonym chain
+
                   Act_Subp :=
                     Find_Primitive_Covering_Interface
                       (Tagged_Type => Generic_Actual,
-                       Iface_Prim  => Subp);
+                       Iface_Prim  => Alias_Subp);
+
+                  --  Previous search may not locate primitives covering
+                  --  interfaces defined in generics units or instantiations.
+                  --  (it fails if the covering primitive has formals whose
+                  --  type is also defined in generics or instantiations).
+                  --  In such case we search in the list of primitives of the
+                  --  generic actual for the internal entity that links the
+                  --  interface primitive and the covering primitive.
+
+                  if No (Act_Subp)
+                    and then Is_Generic_Type (Parent_Type)
+                  then
+                     --  This code has been designed to handle only generic
+                     --  formals that implement interfaces that are defined
+                     --  in a generic unit or instantiation. If this code is
+                     --  needed for other cases we must review it because
+                     --  (given that it relies on Original_Location to locate
+                     --  the primitive of Generic_Actual that covers the
+                     --  interface) it could leave linked through attribute
+                     --  Alias entities of unrelated instantiations).
+
+                     pragma Assert
+                       (Is_Generic_Unit
+                          (Scope (Find_Dispatching_Type (Alias_Subp)))
+                       or else
+                        Instantiation_Depth
+                          (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
+
+                     declare
+                        Iface_Prim_Loc : constant Source_Ptr :=
+                                         Original_Location (Sloc (Alias_Subp));
+                        Elmt      : Elmt_Id;
+                        Prim      : Entity_Id;
+                     begin
+                        Elmt :=
+                          First_Elmt (Primitive_Operations (Generic_Actual));
+
+                        Search : while Present (Elmt) loop
+                           Prim := Node (Elmt);
+
+                           if Present (Interface_Alias (Prim))
+                             and then Original_Location
+                                        (Sloc (Interface_Alias (Prim)))
+                                       = Iface_Prim_Loc
+                           then
+                              Act_Subp := Alias (Prim);
+                              exit Search;
+                           end if;
+
+                           Next_Elmt (Elmt);
+                        end loop Search;
+                     end;
+                  end if;
+
+                  pragma Assert (Present (Act_Subp)
+                    or else Is_Abstract_Type (Generic_Actual)
+                    or else Serious_Errors_Detected > 0);
 
                --  Handle predefined primitives plus the rest of user-defined
                --  primitives
@@ -12874,6 +12946,10 @@ package body Sem_Ch3 is
 
                      Next_Elmt (Act_Elmt);
                   end loop;
+
+                  if No (Act_Elmt) then
+                     Act_Subp := Empty;
+                  end if;
                end if;
             end if;
 

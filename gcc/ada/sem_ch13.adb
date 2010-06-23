@@ -2366,7 +2366,9 @@ package body Sem_Ch13 is
       --  code because their main purpose was to provide support to initialize
       --  the secondary dispatch tables. They are now generated also when
       --  compiling with no code generation to provide ASIS the relationship
-      --  between interface primitives and tagged type primitives.
+      --  between interface primitives and tagged type primitives. They are
+      --  also used to locate primitives covering interfaces when processing
+      --  generics (see Derive_Subprograms).
 
       if Ada_Version >= Ada_05
         and then Ekind (E) = E_Record_Type
@@ -2374,6 +2376,12 @@ package body Sem_Ch13 is
         and then not Is_Interface (E)
         and then Has_Interfaces (E)
       then
+         --  This would be a good common place to call the routine that checks
+         --  overriding of interface primitives (and thus factorize calls to
+         --  Check_Abstract_Overriding located at different contexts in the
+         --  compiler). However, this is not possible because it causes
+         --  spurious errors in case of late overriding.
+
          Add_Internal_Interface_Entities (E);
       end if;
    end Analyze_Freeze_Entity;

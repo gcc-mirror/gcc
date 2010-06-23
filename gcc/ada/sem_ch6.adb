@@ -4568,7 +4568,7 @@ package body Sem_Ch6 is
 
             elsif Must_Override (Spec) then
                if Is_Overriding_Operation (Subp) then
-                  Set_Is_Overriding_Operation (Subp);
+                  null;
 
                elsif not Can_Override then
                   Error_Msg_NE ("subprogram & is not overriding", Spec, Subp);
@@ -6477,8 +6477,8 @@ package body Sem_Ch6 is
         or else Etype (Prim) = Etype (Iface_Prim)
         or else not Has_Controlling_Result (Prim)
       then
-         return Type_Conformant (Prim, Iface_Prim,
-                  Skip_Controlling_Formals => True);
+         return Type_Conformant
+                  (Iface_Prim, Prim, Skip_Controlling_Formals => True);
 
       --  Case of a function returning an interface, or an access to one.
       --  Check that the return types correspond.

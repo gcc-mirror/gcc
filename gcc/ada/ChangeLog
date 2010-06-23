@@ -1,3 +1,42 @@
+2010-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Generate internal
+	entities for parent types that are interfaces. Needed in generics to
+	handle formals that implement interfaces.
+	(Derive_Subprograms): Add assertion for derivation of tagged types that
+	do not cover interfaces. For generics, complete code that handles
+	derivation of type that covers interfaces because the previous
+	condition was weak (it required only name consistency; arguments were
+	not checked). Add new code to locate primitives covering interfaces
+	defined in generic units or instantiatons.
+	* sem_util.adb (Has_Interfaces): Add missing support for derived types.
+	* sem_ch6.adb (Check_Overriding_Indicator): Minor code cleanups.
+	* exp_disp.adb (Make_Select_Specific_Data_Table): Skip primitives of
+	interfaces that are parents of the type because they share the primary
+	dispatch table.
+	(Register_Primitive): Do not register primitives of interfaces that
+	are parents of the type.
+	* sem_ch13.adb (Analyze_Freeze_Entity): Add documentation.
+	* exp_cg.adb (Write_Type_Info): When displaying overriding of interface
+	primitives skip primitives of interfaces that are parents of the type.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): If the prefix is an array, the
+	attribute cannot be constant-folded if an index type is a formal type,
+	or is derived from one.
+	* checks.adb (Determine_Range): ditto.
+
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi, gnatxref.adb: Add support for --ext switch.
+
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.ads, g-pehage.adb (Put): Fix off-by-one bug.
+	(Insert): Disallow nul characters.
+	(misc output routines): Assert no nul characters.
+
 2010-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb: Use predefined unsigned type in all cases.

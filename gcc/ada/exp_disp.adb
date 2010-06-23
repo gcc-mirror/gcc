@@ -6014,6 +6014,9 @@ package body Exp_Disp is
             --  Look for primitive overriding an abstract interface subprogram
 
             if Present (Interface_Alias (Prim))
+              and then not
+                Is_Ancestor
+                  (Find_Dispatching_Type (Interface_Alias (Prim)), Typ)
               and then not Examined (UI_To_Int (DT_Position (Alias (Prim))))
             then
                Prim_Pos := DT_Position (Alias (Prim));
@@ -6720,6 +6723,13 @@ package body Exp_Disp is
          Iface_Typ := Find_Dispatching_Type (Interface_Alias (Prim));
 
          pragma Assert (Is_Interface (Iface_Typ));
+
+         --  No action needed for interfaces that are ancestors of Typ because
+         --  their primitives are located in the primary dispatch table.
+
+         if Is_Ancestor (Iface_Typ, Tag_Typ) then
+            return L;
+         end if;
 
          Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 

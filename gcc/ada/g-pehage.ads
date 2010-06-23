@@ -116,7 +116,7 @@ package GNAT.Perfect_Hash_Generators is
    --  Deallocate the internal structures and the words table
 
    procedure Insert (Value : String);
-   --  Insert a new word in the table
+   --  Insert a new word into the table. ASCII.NUL characters are not allowed.
 
    Too_Many_Tries : exception;
    --  Raised after Tries unsuccessful runs
