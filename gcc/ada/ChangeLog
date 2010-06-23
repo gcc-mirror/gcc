@@ -1,3 +1,34 @@
+2010-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* atree.ads (Set_Reporting_Proc): New subprogram.
+	* atree.adb: Remove dependency on packages Opt and SCIL_LL.
+	(Allocate_Initialize_Node, Replace, Rewrite): Replace direct calls
+	to routines of package Scil_ll by indirect call to the registered
+	subprogram.
+	(Set_Reporting_Proc): New subprogram. Used to register a subprogram
+	that is invoked when a node is allocated, replaced or rewritten.
+	* scil_ll.adb (Copy_SCIL_Node): New routine that takes care of copying
+	the SCIL node. Used as argument for Set_Reporting_Proc.
+	(Initialize): Register Copy_SCIL_Node as the reporting routine that
+	is invoked by atree.
+
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.ads: Minor reformatting.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): In CodePeer mode,
+	always analyze the generic body and instance, because it may be needed
+	downstream.
+	(Mark_Context): Prepend the with clauses for needed generic units, so
+	they appear in a better order for CodePeer.
+	* sem_util.adb, sem_util.ads: Prototype code for AI05-0144.
+
+2010-06-23  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.ads, prj-nmsc.adb (Error_Or_Warning): New subprogram.
+
 2010-06-23  Robert Dewar  <dewar@adacore.com>
 
 	* g-pehage.adb, exp_ch13.adb: Minor reformatting.

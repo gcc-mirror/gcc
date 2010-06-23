@@ -37,6 +37,10 @@ with Table;
 
 package body SCIL_LL is
 
+   procedure Copy_SCIL_Node (Target : Node_Id; Source : Node_Id);
+   --  Copy the SCIL field from Source to Target (it is used as the argument
+   --  for a call to Set_Reporting_Proc in package atree).
+
    function SCIL_Nodes_Table_Size return Pos;
    --  Used to initialize the table of SCIL nodes because we do not want
    --  to consume memory for this table if it is not required.
@@ -64,6 +68,15 @@ package body SCIL_LL is
    --  This table records the value of attribute SCIL_Node of all the
    --  tree nodes.
 
+   --------------------
+   -- Copy_SCIL_Node --
+   --------------------
+
+   procedure Copy_SCIL_Node (Target : Node_Id; Source : Node_Id) is
+   begin
+      Set_SCIL_Node (Target, Get_SCIL_Node (Source));
+   end Copy_SCIL_Node;
+
    ----------------
    -- Initialize --
    ----------------
@@ -71,6 +84,7 @@ package body SCIL_LL is
    procedure Initialize is
    begin
       SCIL_Nodes.Init;
+      Set_Reporting_Proc (Copy_SCIL_Node'Access);
    end Initialize;
 
    -------------------
