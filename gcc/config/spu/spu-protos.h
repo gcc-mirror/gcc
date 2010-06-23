@@ -36,7 +36,7 @@ extern int spu_split_immediate (rtx * ops);
 extern int spu_saved_regs_size (void);
 extern int direct_return (void);
 extern void spu_expand_prologue (void);
-extern void spu_expand_epilogue (unsigned char sibcall_p);
+extern void spu_expand_epilogue (bool sibcall_p);
 extern rtx spu_return_addr (int count, rtx frame);
 
 #ifdef RTX_CODE
