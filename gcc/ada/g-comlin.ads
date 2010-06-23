@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2009, AdaCore                     --
+--                     Copyright (C) 1999-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -317,7 +317,7 @@ package GNAT.Command_Line is
    procedure Goto_Section
      (Name   : String := "";
       Parser : Opt_Parser := Command_Line_Parser);
-   --  Change the current section. The next Getopt of Get_Argument will start
+   --  Change the current section. The next Getopt or Get_Argument will start
    --  looking at the beginning of the section. An empty name ("") refers to
    --  the first section between the program name and the first section
    --  delimiter. If the section does not exist, then Invalid_Section is

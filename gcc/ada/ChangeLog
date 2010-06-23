@@ -1,3 +1,7 @@
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* g-comlin.ads, sem_ch13.adb: Minor comment fix.
+
 2010-06-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch11.adb (Expand_Local_Exception_Handlers): Propagate the end

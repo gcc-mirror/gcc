@@ -856,7 +856,8 @@ package body Sem_Ch13 is
                  Attribute_Write          =>
                null;
 
-            --  Other cases are errors, which will be caught below
+            --  Other cases are errors ("attribute& cannot be set with
+            --  definition clause"), which will be caught below.
 
             when others =>
                null;
