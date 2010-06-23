@@ -3474,6 +3474,12 @@ package body Sem_Res is
             A_Typ := Etype (A);
             F_Typ := Etype (F);
 
+            --  Save actual for subsequent check on order dependence,
+            --  and indicate whether actual is modifiable. For AI05-0144
+
+            --  Save_Actual (A,
+            --    Ekind (F) /= E_In_Parameter or else Is_Access_Type (F_Typ));
+
             --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
             --  the calling entity. The reason for this is to catch cases like
@@ -6751,10 +6757,11 @@ package body Sem_Res is
    --------------------------------
 
    procedure Resolve_Intrinsic_Operator  (N : Node_Id; Typ : Entity_Id) is
-      Btyp : constant Entity_Id := Base_Type (Underlying_Type (Typ));
-      Op   : Entity_Id;
-      Arg1 : Node_Id;
-      Arg2 : Node_Id;
+      Btyp    : constant Entity_Id := Base_Type (Underlying_Type (Typ));
+      Op      : Entity_Id;
+      Orig_Op : constant Entity_Id := Entity (N);
+      Arg1    : Node_Id;
+      Arg2    : Node_Id;
 
    begin
       --  We must preserve the original entity in a generic setting, so that
@@ -6786,8 +6793,13 @@ package body Sem_Res is
             Arg2 := Unchecked_Convert_To (Btyp, Right_Opnd (N));
          end if;
 
-         Save_Interps (Left_Opnd (N),  Expression (Arg1));
-         Save_Interps (Right_Opnd (N), Expression (Arg2));
+         if Nkind (Arg1) = N_Type_Conversion then
+            Save_Interps (Left_Opnd (N),  Expression (Arg1));
+         end if;
+
+         if Nkind (Arg2) = N_Type_Conversion then
+            Save_Interps (Right_Opnd (N), Expression (Arg2));
+         end if;
 
          Set_Left_Opnd  (N, Arg1);
          Set_Right_Opnd (N, Arg2);
@@ -6800,19 +6812,31 @@ package body Sem_Res is
         or else Typ /= Etype (Right_Opnd (N))
       then
          --  Add explicit conversion where needed, and save interpretations in
-         --  case operands are overloaded.
+         --  case operands are overloaded. If the context is a VMS operation,
+         --  assert that the conversion is legal (the operands have the proper
+         --  types to select the VMS intrinsic). Note that in rare cases the
+         --  VMS operators may be visible, but the default System is being used
+         --  and Address is a private type.
 
          Arg1 := Convert_To (Typ, Left_Opnd  (N));
          Arg2 := Convert_To (Typ, Right_Opnd (N));
 
          if Nkind (Arg1) = N_Type_Conversion then
             Save_Interps (Left_Opnd (N), Expression (Arg1));
+
+            if Is_VMS_Operator (Orig_Op) then
+               Set_Conversion_OK (Arg1);
+            end if;
          else
             Save_Interps (Left_Opnd (N), Arg1);
          end if;
 
          if Nkind (Arg2) = N_Type_Conversion then
             Save_Interps (Right_Opnd (N), Expression (Arg2));
+
+            if Is_VMS_Operator (Orig_Op) then
+               Set_Conversion_OK (Arg2);
+            end if;
          else
             Save_Interps (Right_Opnd (N), Arg2);
          end if;
@@ -7941,7 +7965,9 @@ package body Sem_Res is
 
    begin
       Resolve (L, B_Typ);
+      --  Check_Order_Dependence;   --  For AI05-0144
       Resolve (R, B_Typ);
+      --  Check_Order_Dependence;   --  For AI05-0144
 
       --  Check for issuing warning for always False assert/check, this happens
       --  when assertions are turned off, in which case the pragma Assert/Check

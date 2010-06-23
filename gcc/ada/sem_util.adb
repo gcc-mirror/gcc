@@ -7220,8 +7220,12 @@ package body Sem_Util is
 
       return Ekind (Op) = E_Function
         and then Is_Intrinsic_Subprogram (Op)
-        and then Present_System_Aux
-        and then Scope (Op) = System_Aux_Id;
+        and then
+          ((Present_System_Aux
+            and then Scope (Op) = System_Aux_Id)
+           or else
+           (True_VMS_Target
+             and then Chars (Scope (Scope (Op))) = Name_System));
    end Is_VMS_Operator;
 
    -----------------
