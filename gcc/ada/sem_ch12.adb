@@ -10864,8 +10864,8 @@ package body Sem_Ch12 is
                             Get_Body_Name (Get_Unit_Name (Unit (Comp_Unit)));
 
                begin
-                  --  In CodePeer mode, the missing body may make the
-                  --  analysis incomplete, but we do not treat it as fatal.
+                  --  In CodePeer mode, the missing body may make the analysis
+                  --  incomplete, but we do not treat it as fatal.
 
                   if CodePeer_Mode then
                      return;
@@ -10873,8 +10873,8 @@ package body Sem_Ch12 is
                   else
                      Error_Msg_Unit_1 := Bname;
                      Error_Msg_N ("this instantiation requires$!", N);
-                     Error_Msg_File_1
-                       := Get_File_Name (Bname, Subunit => False);
+                     Error_Msg_File_1 :=
+                       Get_File_Name (Bname, Subunit => False);
                      Error_Msg_N ("\but file{ was not found!", N);
                      raise Unrecoverable_Error;
                   end if;
