@@ -1,5 +1,20 @@
 2010-06-23  Robert Dewar  <dewar@adacore.com>
 
+	* g-pehage.adb, exp_ch13.adb: Minor reformatting.
+
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* a-tags.ads: Fix description of TSD structure.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Mark_Context): When indicating that the body of a
+	generic unit is needed prior to the unit containing an instantiation,
+	search recursively the context of the generic to add other generic
+	bodies that may be instantiated indirectly through the current instance.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb: Minor reformatting.
 
 2010-06-23  Bob Duff  <duff@adacore.com>

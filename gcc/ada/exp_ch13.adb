@@ -358,7 +358,6 @@ package body Exp_Ch13 is
             then
                declare
                   Save_Force : constant Boolean := Force_Validity_Checks;
-
                begin
                   Force_Validity_Checks := True;
                   Analyze (Decl);
