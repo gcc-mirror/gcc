@@ -1,3 +1,18 @@
+2010-06-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (bdesc_args): Replace CODE_FOR_avx_si_si256,
+	CODE_FOR_avx_ps_ps256 and CODE_FOR_avx_pd_pd256 with
+	CODE_FOR_vec_extract_lo_v8si, CODE_FOR_vec_extract_lo_v8sf
+	and CODE_FOR_vec_extract_lo_v4df.
+
+	* config/i386/sse.md (vec_extract_lo_<AVX256MODE4P:mode>):
+	Changed to define_insn_and_split.
+	(vec_extract_lo_<AVX256MODE8P:mode>): Likewise.
+	(vec_extract_lo_v16hi): Likewise.
+	(vec_extract_lo_v32qi): Likewise.
+	(avx_<avxmodesuffixp><avxmodesuffix>_<avxmodesuffixp>): Likewise.
+	(avx_<avxmodesuffixp>_<avxmodesuffixp><avxmodesuffix>): Removed.
+
 2010-06-23  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR target/44640

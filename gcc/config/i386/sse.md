@@ -4171,19 +4171,24 @@
   DONE;
 })
 
-(define_insn "vec_extract_lo_<mode>"
+(define_insn_and_split "vec_extract_lo_<mode>"
   [(set (match_operand:<avxhalfvecmode> 0 "nonimmediate_operand" "=x,m")
 	(vec_select:<avxhalfvecmode>
-	  (match_operand:AVX256MODE4P 1 "register_operand" "x,x")
+	  (match_operand:AVX256MODE4P 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (<avxhalfvecmode>mode, REGNO (op1));
+  else
+    op1 = gen_lowpart (<avxhalfvecmode>mode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
 
 (define_insn "vec_extract_hi_<mode>"
   [(set (match_operand:<avxhalfvecmode> 0 "nonimmediate_operand" "=x,m")
@@ -4199,20 +4204,25 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "vec_extract_lo_<mode>"
+(define_insn_and_split "vec_extract_lo_<mode>"
   [(set (match_operand:<avxhalfvecmode> 0 "nonimmediate_operand" "=x,m")
 	(vec_select:<avxhalfvecmode>
-	  (match_operand:AVX256MODE8P 1 "register_operand" "x,x")
+	  (match_operand:AVX256MODE8P 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (<avxhalfvecmode>mode, REGNO (op1));
+  else
+    op1 = gen_lowpart (<avxhalfvecmode>mode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
 
 (define_insn "vec_extract_hi_<mode>"
   [(set (match_operand:<avxhalfvecmode> 0 "nonimmediate_operand" "=x,m")
@@ -4229,22 +4239,27 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "vec_extract_lo_v16hi"
+(define_insn_and_split "vec_extract_lo_v16hi"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m")
 	(vec_select:V8HI
-	  (match_operand:V16HI 1 "register_operand" "x,x")
+	  (match_operand:V16HI 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (V8HImode, REGNO (op1));
+  else
+    op1 = gen_lowpart (V8HImode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
 
 (define_insn "vec_extract_hi_v16hi"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "=x,m")
@@ -4263,10 +4278,10 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "vec_extract_lo_v32qi"
+(define_insn_and_split "vec_extract_lo_v32qi"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
 	(vec_select:V16QI
-	  (match_operand:V32QI 1 "register_operand" "x,x")
+	  (match_operand:V32QI 1 "nonimmediate_operand" "xm,x")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)
 		     (const_int 4) (const_int 5)
@@ -4276,13 +4291,18 @@
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
   "TARGET_AVX"
-  "vextractf128\t{$0x0, %1, %0|%0, %1, 0x0}"
-  [(set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "memory" "none,store")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (V16QImode, REGNO (op1));
+  else
+    op1 = gen_lowpart (V16QImode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
 
 (define_insn "vec_extract_hi_v32qi"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "=x,m")
@@ -12244,77 +12264,24 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx_<avxmodesuffixp><avxmodesuffix>_<avxmodesuffixp>"
-  [(set (match_operand:AVX256MODE2P 0 "register_operand" "=x,x")
+(define_insn_and_split "avx_<avxmodesuffixp><avxmodesuffix>_<avxmodesuffixp>"
+  [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:AVX256MODE2P
-	  [(match_operand:<avxhalfvecmode> 1 "nonimmediate_operand" "0,xm")]
+	  [(match_operand:<avxhalfvecmode> 1 "nonimmediate_operand" "xm,x")]
 	  UNSPEC_CAST))]
   "TARGET_AVX"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
 {
-  switch (which_alternative)
-    {
-    case 0:
-      return "";
-    case 1:
-      switch (get_attr_mode (insn))
-        {
-	case MODE_V8SF:
-	  return "vmovaps\t{%1, %x0|%x0, %1}";
-	case MODE_V4DF:
-	  return "vmovapd\t{%1, %x0|%x0, %1}";
-	case MODE_OI:
-	  return "vmovdqa\t{%1, %x0|%x0, %1}";
-	default:
-	  break;
-	}
-    default:
-      break;
-    }
-  gcc_unreachable ();
-}
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<avxvecmode>")
-   (set (attr "length")
-    (if_then_else (eq_attr "alternative" "0")
-       (const_string "0")
-       (const_string "*")))])
-
-(define_insn "avx_<avxmodesuffixp>_<avxmodesuffixp><avxmodesuffix>"
-  [(set (match_operand:<avxhalfvecmode> 0 "register_operand" "=x,x")
-	(unspec:<avxhalfvecmode>
-	  [(match_operand:AVX256MODE2P 1 "nonimmediate_operand" "0,xm")]
-	  UNSPEC_CAST))]
-  "TARGET_AVX"
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "";
-    case 1:
-      switch (get_attr_mode (insn))
-        {
-	case MODE_V8SF:
-	  return "vmovaps\t{%x1, %0|%0, %x1}";
-	case MODE_V4DF:
-	  return "vmovapd\t{%x1, %0|%0, %x1}";
-	case MODE_OI:
-	  return "vmovdqa\t{%x1, %0|%0, %x1}";
-	default:
-	  break;
-	}
-    default:
-      break;
-    }
-  gcc_unreachable ();
-}
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "<avxvecmode>")
-   (set (attr "length")
-    (if_then_else (eq_attr "alternative" "0")
-       (const_string "0")
-       (const_string "*")))])
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (<MODE>mode, REGNO (op1));
+  else
+    op1 = gen_lowpart (<MODE>mode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
 
 (define_expand "vec_init<mode>"
   [(match_operand:AVX256MODE 0 "register_operand" "")
