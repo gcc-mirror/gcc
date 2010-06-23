@@ -50,7 +50,6 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -5449,15 +5448,6 @@ package body Sem_Util is
 
    begin
       Save_Interps (N, New_Prefix);
-
-      --  Check if the node relocation requires readjustment of some SCIL
-      --  dispatching node.
-
-      if Generate_SCIL
-        and then Nkind (N) = N_Function_Call
-      then
-         Adjust_SCIL_Node (N, New_Prefix);
-      end if;
 
       Rewrite (N, Make_Explicit_Dereference (Sloc (N), Prefix => New_Prefix));
 

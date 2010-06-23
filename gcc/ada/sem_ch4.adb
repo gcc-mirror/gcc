@@ -48,7 +48,6 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
 with Sem_Eval; use Sem_Eval;
@@ -4105,15 +4104,6 @@ package body Sem_Ch4 is
       T    : Entity_Id;
 
    begin
-      --  Check if the expression is a function call for which we need to
-      --  adjust a SCIL dispatching node.
-
-      if Generate_SCIL
-        and then Nkind (Expr) = N_Function_Call
-      then
-         Adjust_SCIL_Node (N, Expr);
-      end if;
-
       --  If Conversion_OK is set, then the Etype is already set, and the
       --  only processing required is to analyze the expression. This is
       --  used to construct certain "illegal" conversions which are not

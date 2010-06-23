@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2330,22 +2330,6 @@ package body Exp_Ch3 is
                 Expression =>
                   New_Reference_To
                     (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
-
-            --  Generate the SCIL node associated with the initialization of
-            --  the tag component.
-
-            if Generate_SCIL then
-               declare
-                  New_Node : Node_Id;
-
-               begin
-                  New_Node :=
-                    Make_SCIL_Tag_Init (Sloc (First (Init_Tags_List)));
-                  Set_SCIL_Related_Node (New_Node, First (Init_Tags_List));
-                  Set_SCIL_Entity (New_Node, Rec_Type);
-                  Prepend_To (Init_Tags_List, New_Node);
-               end;
-            end if;
 
             --  Ada 2005 (AI-251): Initialize the secondary tags components
             --  located at fixed positions (tags whose position depends on

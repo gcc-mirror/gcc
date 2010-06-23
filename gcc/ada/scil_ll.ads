@@ -2,49 +2,47 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             S E M _ S C I L                              --
+--                              S C I L _ L L                               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
+--             Copyright (C) 2010, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
--- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
--- http://www.gnu.org/licenses for a complete copy of the license.          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
+--                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
+-- You should have received a copy of the GNU General Public License and    --
+-- a copy of the GCC Runtime Library Exception along with this program;     --
+-- see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see    --
+-- <http://www.gnu.org/licenses/>.                                          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains routines involved in the frontend addition and
---  verification of SCIL nodes.
+--  This package extends the tree nodes with a field that is used to reference
+--  the SCIL node.
 
-with Atree; use Atree;
 with Types; use Types;
 
-package Sem_SCIL is
+package SCIL_LL is
 
-   --  Here would be a good place to document what SCIL is all about ???
+   function Get_SCIL_Node (N : Node_Id) return Node_Id;
+   --  Read the value of attribute SCIL node
 
-   function Check_SCIL_Node (N : Node_Id) return Traverse_Result;
-   --  Process a single node during the tree traversal. Done to verify that
-   --  SCIL nodes decoration fulfill the requirements of the SCIL backend.
+   procedure Set_SCIL_Node (N : Node_Id; Value : Node_Id);
+   --  Set the value of attribute SCIL node
 
-   procedure Check_SCIL_Nodes is new Traverse_Proc (Check_SCIL_Node);
-   --  The traversal procedure itself
+   procedure Initialize;
+   --  Initialize the table of SCIL nodes
 
-   function First_Non_SCIL_Node (L : List_Id) return Node_Id;
-   --  Returns the first non-SCIL node of list L
-
-   function Next_Non_SCIL_Node (N : Node_Id) return Node_Id;
-   --  N must be a member of a list. Returns the next non SCIL node in the list
-   --  containing N, or Empty if this is the last non SCIL node in the list.
-
-end Sem_SCIL;
+end SCIL_LL;

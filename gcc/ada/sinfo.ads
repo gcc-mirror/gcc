@@ -1626,10 +1626,6 @@ package Sinfo is
    --    Present in SCIL nodes. Used to reference the tagged type associated
    --    with the SCIL node.
 
-   --  SCIL_Related_Node (Node1-Sem)
-   --    Present in SCIL nodes. Used to reference a tree node that requires
-   --    special processing in the CodePeer backend.
-
    --  SCIL_Controlling_Tag (Node5-Sem)
    --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the
    --    controlling tag of a dispatching call.
@@ -6993,32 +6989,19 @@ package Sinfo is
       --  Meanwhile these nodes should be considered in experimental form, and
       --  should be ignored by all code generating back ends. ???
 
-      --  N_SCIL_Dispatch_Table_Object_Init
-      --  Sloc references a declaration node containing a dispatch table
-      --  SCIL_Related_Node (Node1-Sem)
-      --  SCIL_Entity (Node4-Sem)
-
       --  N_SCIL_Dispatch_Table_Tag_Init
       --  Sloc references a node for a tag initialization
-      --  SCIL_Related_Node (Node1-Sem)
       --  SCIL_Entity (Node4-Sem)
 
       --  N_SCIL_Dispatching_Call
       --  Sloc references the node of a dispatching call
-      --  SCIL_Related_Node (Node1-Sem)
       --  SCIL_Target_Prim (Node2-Sem)
       --  SCIL_Entity (Node4-Sem)
       --  SCIL_Controlling_Tag (Node5-Sem)
 
       --  N_SCIL_Membership_Test
       --  Sloc references the node of a membership test
-      --  SCIL_Related_Node (Node1-Sem)
       --  SCIL_Tag_Value (Node5-Sem)
-      --  SCIL_Entity (Node4-Sem)
-
-      --  N_SCIL_Tag_Init
-      --  Sloc references the node of a tag component initialization
-      --  SCIL_Related_Node (Node1-Sem)
       --  SCIL_Entity (Node4-Sem)
 
       ---------------------
@@ -7462,11 +7445,9 @@ package Sinfo is
 
       --  SCIL nodes
 
-      N_SCIL_Dispatch_Table_Object_Init,
       N_SCIL_Dispatch_Table_Tag_Init,
       N_SCIL_Dispatching_Call,
       N_SCIL_Membership_Test,
-      N_SCIL_Tag_Init,
 
       --  Other nodes (not part of any subtype class)
 
@@ -7680,8 +7661,8 @@ package Sinfo is
      N_Or_Else;
 
    subtype N_SCIL_Node is Node_Kind range
-     N_SCIL_Dispatch_Table_Object_Init ..
-     N_SCIL_Tag_Init;
+     N_SCIL_Dispatch_Table_Tag_Init ..
+     N_SCIL_Membership_Test;
 
    subtype N_Statement_Other_Than_Procedure_Call is Node_Kind range
      N_Abort_Statement ..
@@ -8532,9 +8513,6 @@ package Sinfo is
 
    function SCIL_Entity
      (N : Node_Id) return Node_Id;    -- Node4
-
-   function SCIL_Related_Node
-     (N : Node_Id) return Node_Id;    -- Node1
 
    function SCIL_Tag_Value
      (N : Node_Id) return Node_Id;    -- Node5
@@ -9462,9 +9440,6 @@ package Sinfo is
 
    procedure Set_SCIL_Entity
      (N : Node_Id; Val : Node_Id);            -- Node4
-
-   procedure Set_SCIL_Related_Node
-     (N : Node_Id; Val : Node_Id);            -- Node1
 
    procedure Set_SCIL_Tag_Value
      (N : Node_Id; Val : Node_Id);            -- Node5
@@ -11226,40 +11201,26 @@ package Sinfo is
 
    --  Entries for SCIL nodes
 
-     N_SCIL_Dispatch_Table_Object_Init =>
-       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
-        2 => False,   --  unused
-        3 => False,   --  unused
-        4 => False,   --  SCIL_Entity (Node4-Sem)
-        5 => False),  --  unused
-
      N_SCIL_Dispatch_Table_Tag_Init =>
-       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+       (1 => False,   --  unused
         2 => False,   --  unused
         3 => False,   --  unused
         4 => False,   --  SCIL_Entity (Node4-Sem)
         5 => False),  --  unused
 
      N_SCIL_Dispatching_Call =>
-       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+       (1 => False,   --  unused
         2 => False,   --  SCIL_Target_Prim (Node2-Sem)
         3 => False,   --  unused
         4 => False,   --  SCIL_Entity (Node4-Sem)
         5 => False),  --  SCIL_Controlling_Tag (Node5-Sem)
 
      N_SCIL_Membership_Test =>
-       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+       (1 => False,   --  unused
         2 => False,   --  unused
         3 => False,   --  unused
         4 => False,   --  SCIL_Entity (Node4-Sem)
         5 => False),  --  SCIL_Tag_Value (Node5-Sem)
-
-     N_SCIL_Tag_Init =>
-       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
-        2 => False,   --  unused
-        3 => False,   --  unused
-        4 => False,   --  SCIL_Entity (Node4-Sem)
-        5 => False),  --  unused
 
    --  Entries for Empty, Error and Unused. Even thought these have a Chars
    --  field for debugging purposes, they are not really syntactic fields, so
@@ -11565,7 +11526,6 @@ package Sinfo is
    pragma Inline (Rounded_Result);
    pragma Inline (SCIL_Controlling_Tag);
    pragma Inline (SCIL_Entity);
-   pragma Inline (SCIL_Related_Node);
    pragma Inline (SCIL_Tag_Value);
    pragma Inline (SCIL_Target_Prim);
    pragma Inline (Scope);
@@ -11871,7 +11831,6 @@ package Sinfo is
    pragma Inline (Set_Rounded_Result);
    pragma Inline (Set_SCIL_Controlling_Tag);
    pragma Inline (Set_SCIL_Entity);
-   pragma Inline (Set_SCIL_Related_Node);
    pragma Inline (Set_SCIL_Tag_Value);
    pragma Inline (Set_SCIL_Target_Prim);
    pragma Inline (Set_Scope);

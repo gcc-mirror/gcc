@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Snames;   use Snames;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with SCIL_LL;  use SCIL_LL;
 with Treeprs;  use Treeprs;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -1188,6 +1189,14 @@ package body Treepr is
          Print_Entity_Info (N, Prefix_Str_Char);
       end if;
 
+      --  Print the SCIL node (if available)
+
+      if Present (Get_SCIL_Node (N)) then
+         Print_Str (Prefix_Str_Char);
+         Print_Str ("SCIL_Node = ");
+         Print_Node_Ref (Get_SCIL_Node (N));
+         Print_Eol;
+      end if;
    end Print_Node;
 
    ---------------------

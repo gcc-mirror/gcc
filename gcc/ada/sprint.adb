@@ -2689,9 +2689,6 @@ package body Sprint is
          --  Doc of this extended syntax belongs in sinfo.ads and/or
          --  sprint.ads ???
 
-         when N_SCIL_Dispatch_Table_Object_Init =>
-            Write_Indent_Str ("[N_SCIL_Dispatch_Table_Object_Init]");
-
          when N_SCIL_Dispatch_Table_Tag_Init =>
             Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
 
@@ -2700,9 +2697,6 @@ package body Sprint is
 
          when N_SCIL_Membership_Test =>
             Write_Indent_Str ("[N_SCIL_Membership_Test]");
-
-         when N_SCIL_Tag_Init =>
-            Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
 
          when N_Simple_Return_Statement =>
             if Present (Expression (Node)) then

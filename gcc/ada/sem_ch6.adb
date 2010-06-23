@@ -515,10 +515,10 @@ package body Sem_Ch6 is
       -------------------------------------
 
       procedure Check_Return_Subtype_Indication (Obj_Decl : Node_Id) is
-         Return_Obj  : constant Node_Id   := Defining_Identifier (Obj_Decl);
-         R_Stm_Type  : constant Entity_Id := Etype (Return_Obj);
-         --  Subtype given in the extended return statement;
-         --  this must match R_Type.
+         Return_Obj : constant Node_Id   := Defining_Identifier (Obj_Decl);
+
+         R_Stm_Type : constant Entity_Id := Etype (Return_Obj);
+         --  Subtype given in the extended return statement (must match R_Type)
 
          Subtype_Ind : constant Node_Id :=
                          Object_Definition (Original_Node (Obj_Decl));
@@ -543,7 +543,7 @@ package body Sem_Ch6 is
          --  True if type of the return object is an anonymous access type
 
       begin
-         --  First, avoid cascade errors:
+         --  First, avoid cascaded errors
 
          if Error_Posted (Obj_Decl) or else Error_Posted (Subtype_Ind) then
             return;
@@ -1430,7 +1430,6 @@ package body Sem_Ch6 is
       Prev_Id      : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
       Conformant   : Boolean;
       HSS          : Node_Id;
-      Missing_Ret  : Boolean;
       P_Ent        : Entity_Id;
       Prot_Typ     : Entity_Id := Empty;
       Spec_Id      : Entity_Id;
@@ -1471,6 +1470,10 @@ package body Sem_Ch6 is
       --  subprogram declaration for it, in order to attach the body to inline.
       --  If pragma does not appear after the body, check whether there is
       --  an inline pragma before any local declarations.
+
+      procedure Check_Missing_Return;
+      --  Checks for a function with a no return statements, and also performs
+      --  the warning checks implemented by Check_Returns.
 
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
@@ -1663,6 +1666,46 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Inline_Pragma;
+
+      --------------------------
+      -- Check_Missing_Return --
+      --------------------------
+
+      procedure Check_Missing_Return is
+         Id          : Entity_Id;
+         Missing_Ret : Boolean;
+
+      begin
+         if Nkind (Body_Spec) = N_Function_Specification then
+            if Present (Spec_Id) then
+               Id := Spec_Id;
+            else
+               Id := Body_Id;
+            end if;
+
+            if Return_Present (Id) then
+               Check_Returns (HSS, 'F', Missing_Ret);
+
+               if Missing_Ret then
+                  Set_Has_Missing_Return (Id);
+               end if;
+
+            elsif (Is_Generic_Subprogram (Id)
+                     or else not Is_Machine_Code_Subprogram (Id))
+              and then not Body_Deleted
+            then
+               Error_Msg_N ("missing RETURN statement in function body", N);
+            end if;
+
+         --  If procedure with No_Return, check returns
+
+         elsif Nkind (Body_Spec) = N_Procedure_Specification
+           and then Present (Spec_Id)
+           and then No_Return (Spec_Id)
+         then
+               Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+         end if;
+      end Check_Missing_Return;
 
       -----------------------
       -- Disambiguate_Spec --
@@ -1888,6 +1931,12 @@ package body Sem_Ch6 is
             Set_Is_Child_Unit       (Body_Id, Is_Child_Unit       (Spec_Id));
 
             Analyze_Generic_Subprogram_Body (N, Spec_Id);
+
+            if Nkind (N) = N_Subprogram_Body then
+               HSS := Handled_Statement_Sequence (N);
+               Check_Missing_Return;
+            end if;
+
             return;
 
          else
@@ -2426,41 +2475,7 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  If function, check return statements
-
-      if Nkind (Body_Spec) = N_Function_Specification then
-         declare
-            Id : Entity_Id;
-
-         begin
-            if Present (Spec_Id) then
-               Id := Spec_Id;
-            else
-               Id := Body_Id;
-            end if;
-
-            if Return_Present (Id) then
-               Check_Returns (HSS, 'F', Missing_Ret);
-
-               if Missing_Ret then
-                  Set_Has_Missing_Return (Id);
-               end if;
-
-            elsif not Is_Machine_Code_Subprogram (Id)
-              and then not Body_Deleted
-            then
-               Error_Msg_N ("missing RETURN statement in function body", N);
-            end if;
-         end;
-
-      --  If procedure with No_Return, check returns
-
-      elsif Nkind (Body_Spec) = N_Procedure_Specification
-        and then Present (Spec_Id)
-        and then No_Return (Spec_Id)
-      then
-         Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
-      end if;
+      Check_Missing_Return;
 
       --  Now we are going to check for variables that are never modified in
       --  the body of the procedure. But first we deal with a special case
