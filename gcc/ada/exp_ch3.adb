@@ -1465,8 +1465,8 @@ package body Exp_Ch3 is
       if Has_Task (Full_Type) then
          if Restriction_Active (No_Task_Hierarchy) then
 
-            --  See comments in System.Tasking.Initialization.Init_RTS
-            --  for the value 3 (should be rtsfindable constant ???)
+            --  3 is System.Tasking.Library_Task_Level
+            --  (should be rtsfindable constant ???)
 
             Append_To (Args, Make_Integer_Literal (Loc, 3));
 
@@ -2020,8 +2020,7 @@ package body Exp_Ch3 is
          if Has_Task (Rec_Type) then
             if Restriction_Active (No_Task_Hierarchy) then
 
-               --  See comments in System.Tasking.Initialization.Init_RTS
-               --  for the value 3.
+               --  3 is System.Tasking.Library_Task_Level
 
                Append_To (Args, Make_Integer_Literal (Loc, 3));
             else

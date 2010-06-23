@@ -1,3 +1,9 @@
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Fix potential crash when using
+	No_Task_Hierarchy restriction. Add comment.
+	* exp_ch9.adb, exp_ch3.adb: Update comments.
+
 2010-06-23  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb (Process_Bounds): Remove some junk initializations.
