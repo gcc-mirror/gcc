@@ -33,6 +33,7 @@
 
 with Ada.IO_Exceptions;       use Ada.IO_Exceptions;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Directories;
 
 with GNAT.Heap_Sort_G;
 with GNAT.OS_Lib;      use GNAT.OS_Lib;
@@ -888,6 +889,11 @@ package body GNAT.Perfect_Hash_Generators is
 
    procedure Finalize is
    begin
+      if Verbose then
+         Put (Output, "Finalize");
+         New_Line (Output);
+      end if;
+
       --  Deallocate all the WT components (both initial and reduced
       --  ones) to avoid memory leaks.
 
@@ -1165,6 +1171,11 @@ package body GNAT.Perfect_Hash_Generators is
       Tries  : Positive     := Default_Tries)
    is
    begin
+      if Verbose then
+         Put (Output, "Initialize");
+         New_Line (Output);
+      end if;
+
       --  Deallocate the part of the table concerning the reduced words.
       --  Initial words are already present in the table. We may have reduced
       --  words already there because a previous computation failed. We are
@@ -1245,6 +1256,11 @@ package body GNAT.Perfect_Hash_Generators is
       Len  : constant Natural := Value'Length;
 
    begin
+      if Verbose then
+         Put (Output, "Inserting """ & Value & """");
+         New_Line (Output);
+      end if;
+
       WT.Set_Last (NK);
       WT.Table (NK) := New_Word (Value);
       NK := NK + 1;
@@ -1493,6 +1509,12 @@ package body GNAT.Perfect_Hash_Generators is
    --  Start of processing for Produce
 
    begin
+
+      if Verbose then
+         Put (Output,
+              "Producing " & Ada.Directories.Current_Directory & "/" & FName);
+         New_Line (Output);
+      end if;
 
       File := Create_File (FName, Binary);
 

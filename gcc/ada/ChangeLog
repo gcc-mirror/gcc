@@ -1,3 +1,19 @@
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb: Use predefined unsigned type in all cases.
+
+2010-06-23  Bob Duff  <duff@adacore.com>
+
+	* s-rannum.adb (Reset): Avoid overflow in calculation of Initiator.
+	* g-pehage.ads: Minor comment fixes.
+	* g-pehage.adb: Minor: Add some additional debugging printouts under
+	Verbose flag.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* binde.adb (Better_Choice): Always prefer Pure/Preelab.
+	(Worse_Choice): Always prefer Pure/Preelab.
+
 2010-06-23  Vincent Celier  <celier@adacore.com>
 
 	* a-reatim.adb: Call System.OS_Primitives.Initialize during elaboration

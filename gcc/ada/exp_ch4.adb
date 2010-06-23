@@ -6927,7 +6927,7 @@ package body Exp_Ch4 is
                Utyp := RTE (RE_Unsigned_16);
 
             elsif RM_Size (Rtyp) = RM_Size (Standard_Unsigned) then
-               Utyp := Typ;
+               Utyp := RTE (RE_Unsigned_32);
 
             else
                Utyp := RTE (RE_Long_Long_Unsigned);
