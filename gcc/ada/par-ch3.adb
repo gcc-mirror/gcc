@@ -124,9 +124,8 @@ package body Ch3 is
       elsif Nkind_In (N, N_In, N_Not_In)
         and then Paren_Count (N) = 0
       then
-         Error_Msg_N ("|this expression must be parenthesized!", N);
          Error_Msg_N
-           ("\|since extensions (and set notation) are allowed", N);
+           ("|this expression must be parenthesized in Ada 2012 mode!", N);
       end if;
    end Check_Restricted_Expression;
 
@@ -3663,10 +3662,10 @@ package body Ch3 is
                --  Expression
 
                else
-                  --  If extensions are permitted then the expression must be a
-                  --  simple expression. The resaon for this restriction (i.e.
-                  --  going back to the Ada 83 rule) is to avoid ambiguities
-                  --  when set membership operations are allowed, consider the
+                  --  In Ada 2012 mode, the expression must be a simple
+                  --  expression. The resaon for this restriction (i.e. going
+                  --  back to the Ada 83 rule) is to avoid ambiguities when set
+                  --  membership operations are allowed, consider the
                   --  following:
 
                   --     when A in 1 .. 10 | 12 =>
@@ -3679,12 +3678,12 @@ package body Ch3 is
                   --     when (A in 1 .. 10 | 12) =>
                   --     when (A in 1 .. 10) | 12 =>
 
-                  --  To solve this, if extensins are enabled, we disallow
+                  --  To solve this, in Ada 2012 mode, we disallow
                   --  the use of membership operations in expressions in
                   --  choices. Technically in the grammar, the expression
                   --  must match the grammar for restricted expression.
 
-                  if Extensions_Allowed then
+                  if Ada_Version >= Ada_12 then
                      Check_Restricted_Expression (Expr_Node);
 
                   --  In Ada 83 mode, the syntax required a simple expression

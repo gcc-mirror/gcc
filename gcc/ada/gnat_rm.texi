@@ -99,6 +99,8 @@ Implementation Defined Pragmas
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
+* Pragma Ada_12::
+* Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assume_No_Invalid_Values::
@@ -132,6 +134,7 @@ Implementation Defined Pragmas
 * Pragma Export_Value::
 * Pragma Export_Valued_Procedure::
 * Pragma Extend_System::
+* Pragma Extensions_Allowed::
 * Pragma External::
 * Pragma External_Name_Casing::
 * Pragma Fast_Math::
@@ -712,6 +715,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
+* Pragma Ada_12::
+* Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assume_No_Invalid_Values::
@@ -745,6 +750,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Export_Value::
 * Pragma Export_Valued_Procedure::
 * Pragma Extend_System::
+* Pragma Extensions_Allowed::
 * Pragma External::
 * Pragma External_Name_Casing::
 * Pragma Fast_Math::
@@ -903,9 +909,7 @@ pragma Ada_05;
 @noindent
 A configuration pragma that establishes Ada 2005 mode for the unit to which
 it applies, regardless of the mode set by the command line switches.
-This mode is set automatically for the @code{Ada} and @code{System}
-packages and their children, so you need not specify it in these
-contexts.  This pragma is useful when writing a reusable component that
+This pragma is useful when writing a reusable component that
 itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
 
@@ -920,6 +924,37 @@ pragma Ada_2005;
 
 @noindent
 This configuration pragma is a synonym for pragma Ada_05 and has the
+same syntax and effect.
+
+@node Pragma Ada_12
+@unnumberedsec Pragma Ada_12
+@findex Ada_12
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_12;
+@end smallexample
+
+@noindent
+A configuration pragma that establishes Ada 2012 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+This mode is set automatically for the @code{Ada} and @code{System}
+packages and their children, so you need not specify it in these
+contexts.  This pragma is useful when writing a reusable component that
+itself uses Ada 2012 features, but which is intended to be usable from
+Ada 83, Ada 95, or Ada 2005 programs.
+
+@node Pragma Ada_2012
+@unnumberedsec Pragma Ada_2012
+@findex Ada_2005
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_2012;
+@end smallexample
+
+@noindent
+This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
 
 @node Pragma Annotate
@@ -2173,6 +2208,35 @@ and thus is considered part of the implementation.  To compile
 it you will have to use the appropriate switch for compiling
 system units.  @xref{Top, @value{EDITION} User's Guide, About This
 Guide,, gnat_ugn, @value{EDITION} User's Guide}, for details.
+
+@node Pragma Extensions_Allowed
+@unnumberedsec Pragma Extensions_Allowed
+@cindex Ada Extensions
+@cindex GNAT Extensions
+@findex Extensions_Allowed
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Extensions_Allowed (On | Off);
+@end smallexample
+
+@noindent
+This configuration pragma enables or disables the implementation
+extension mode (the use of Off as a parameter cancels the effect
+of the @option{-gnatX} command switch).
+
+In extension mode, the latest version of the Ada language is
+implemented (currently Ada 2012), and in addition a small number
+of GNAT specific extensions are recognized as follows:
+
+@table @asis
+@item Constrained attribute for generic objects
+The @code{Constrained} attribute is permitted for objects of
+generic types. The result indicates if the corresponding actual
+is constrained.
+
+@end table
 
 @node Pragma External
 @unnumberedsec Pragma External
@@ -8879,8 +8943,8 @@ The algorithm is the Mersenne Twister, as documented in the source file
 state.  See A.5.2(38).
 @end cartouche
 @noindent
-The value returned by the Image function is the concatenation of 
-the fixed-width decimal representations of the 624 32-bit integers 
+The value returned by the Image function is the concatenation of
+the fixed-width decimal representations of the 624 32-bit integers
 of the state vector.
 
 @sp 1

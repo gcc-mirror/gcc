@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -532,11 +532,11 @@ package body Switch.C is
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;
 
-               --  Set Ada 2005 mode explicitly. We don't want to rely on the
+               --  Set Ada 2012 mode explicitly. We don't want to rely on the
                --  implicit setting here, since for example, we want
                --  Preelaborate_05 treated as Preelaborate
 
-               Ada_Version := Ada_05;
+               Ada_Version := Ada_12;
                Ada_Version_Explicit := Ada_Version;
 
                --  Set default warnings and style checks for -gnatg
@@ -903,6 +903,8 @@ package body Switch.C is
             when 'X' =>
                Ptr := Ptr + 1;
                Extensions_Allowed := True;
+               Ada_Version := Ada_Version_Type'Last;
+               Ada_Version_Explicit := Ada_Version_Type'Last;
 
             --  Processing for y switch
 
@@ -1047,6 +1049,42 @@ package body Switch.C is
                   Ada_Version := Ada_05;
                   Ada_Version_Explicit := Ada_Version;
                end if;
+
+            --  Processing for 12 switch
+
+            when '1' =>
+               if Ptr = Max then
+                  Bad_Switch ("-gnat1");
+               end if;
+
+               Ptr := Ptr + 1;
+
+               if Switch_Chars (Ptr) /= '2' then
+                  Bad_Switch ("-gnat1" & Switch_Chars (Ptr .. Max));
+               else
+                  Ptr := Ptr + 1;
+                  Ada_Version := Ada_12;
+                  Ada_Version_Explicit := Ada_Version;
+               end if;
+
+            --  Processing for 2005 and 2012 switches
+
+            when '2' =>
+               if Ptr > Max - 3 then
+                  Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Max));
+
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2005" then
+                  Ada_Version := Ada_05;
+
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then
+                  Ada_Version := Ada_12;
+
+               else
+                  Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Ptr + 3));
+               end if;
+
+               Ada_Version_Explicit := Ada_Version;
+               Ptr := Ptr + 4;
 
             --  Switch cancellation, currently only -gnat-p is allowed.
             --  All we do here is the error checking, since the actual

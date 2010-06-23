@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -595,7 +595,17 @@ begin
    if Ada_Version_Default = Ada_05 then
       Write_Line ("Ada 2005 mode (default)");
    else
-      Write_Line ("Allow Ada 2005 extensions");
+      Write_Line ("Enforce Ada 2005 restrictions");
+   end if;
+
+   --  Line for -gnat12 switch
+
+   Write_Switch_Char ("12");
+
+   if Ada_Version_Default = Ada_12 then
+      Write_Line ("Ada 2012 mode (default)");
+   else
+      Write_Line ("Allow Ada 2012 extensions");
    end if;
 
    --  Line for -gnat-p switch

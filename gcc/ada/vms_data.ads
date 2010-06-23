@@ -1227,7 +1227,13 @@ package VMS_Data is
                                              "-gnat05";
    --        /05 (D)
    --
-   --   Allows GNAT to recognize all implemented proposed Ada 2005
+   --   Allows GNAT to recognize the full range of Ada 2005 constructs.
+
+   S_GCC_Ada_12 : aliased constant S := "/12 "                             &
+                                             "-gnat12";
+   --        /05 (D)
+   --
+   --   Allows GNAT to recognize all implemented proposed Ada 2012
    --   extensions. See features file for list of implemented features.
 
    S_GCC_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &

@@ -3394,7 +3394,8 @@ package body Sem_Ch12 is
                    Expander_Status          => Expander_Active,
                    Current_Sem_Unit         => Current_Sem_Unit,
                    Scope_Suppress           => Scope_Suppress,
-                   Local_Suppress_Stack_Top => Local_Suppress_Stack_Top));
+                   Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+                   Version                  => Ada_Version));
             end if;
          end if;
 
@@ -3701,7 +3702,8 @@ package body Sem_Ch12 is
                Expander_Status          => Expander_Active,
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
-               Local_Suppress_Stack_Top => Local_Suppress_Stack_Top)),
+               Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+               Version                  => Ada_Version)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -3816,7 +3818,8 @@ package body Sem_Ch12 is
                Expander_Status          => Expander_Active,
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
-               Local_Suppress_Stack_Top => Local_Suppress_Stack_Top)),
+               Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+               Version                  => Ada_Version)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -3855,7 +3858,8 @@ package body Sem_Ch12 is
              Expander_Status          => Expander_Active,
              Current_Sem_Unit         => Current_Sem_Unit,
              Scope_Suppress           => Scope_Suppress,
-             Local_Suppress_Stack_Top => Local_Suppress_Stack_Top));
+             Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+             Version                  => Ada_Version));
          return True;
       else
          return False;
@@ -8590,6 +8594,7 @@ package body Sem_Ch12 is
 
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
+      Opt.Ada_Version          := Body_Info.Version;
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -8853,6 +8858,7 @@ package body Sem_Ch12 is
 
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
+      Opt.Ada_Version          := Body_Info.Version;
 
       if No (Gen_Body_Id) then
 
@@ -10801,7 +10807,8 @@ package body Sem_Ch12 is
                                 Get_Code_Unit (Sloc (Node (Decl))),
                               Scope_Suppress           => Scope_Suppress,
                               Local_Suppress_Stack_Top =>
-                                Local_Suppress_Stack_Top);
+                                Local_Suppress_Stack_Top,
+                              Version                  => Ada_Version);
 
                            --  Package instance
 
@@ -10841,7 +10848,8 @@ package body Sem_Ch12 is
                            Get_Code_Unit (Sloc (Inst_Node)),
                          Scope_Suppress           => Scope_Suppress,
                          Local_Suppress_Stack_Top =>
-                           Local_Suppress_Stack_Top)),
+                           Local_Suppress_Stack_Top,
+                           Version                => Ada_Version)),
                      Body_Optional => Body_Optional);
                end;
             end if;

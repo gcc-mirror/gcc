@@ -459,6 +459,11 @@ package body Impunit is
      "a-szuzti",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
      "a-zchuni",    -- Ada.Wide_Wide_Characters.Unicode
 
+      --  Note: strictly the next one should be an Ada 2012 unit, but it seems
+      --  harmless (and useful) to make it available in Ada 2005 mode.
+
+     "a-stuten",    -- Ada.Strings.UTF_Encoding
+
    ---------------------------
    -- GNAT Special IO Units --
    ---------------------------

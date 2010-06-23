@@ -306,7 +306,7 @@ begin
       -- Ada_05/Ada_2005 --
       ---------------------
 
-      --  This pragma must be processed at parse time, since we want to set
+      --  These pragmas must be processed at parse time, since we want to set
       --  the Ada version properly at parse time to recognize the appropriate
       --  Ada version syntax. However, it is only the zero argument form that
       --  must be processed at parse time.
@@ -316,6 +316,18 @@ begin
             Ada_Version := Ada_05;
             Ada_Version_Explicit := Ada_05;
          end if;
+
+      ---------------------
+      -- Ada_12/Ada_2012 --
+      ---------------------
+
+      --  These pragmas must be processed at parse time, since we want to set
+      --  the Ada version properly at parse time to recognize the appropriate
+      --  Ada version syntax.
+
+      when Pragma_Ada_12 | Pragma_Ada_2012 =>
+         Ada_Version := Ada_12;
+         Ada_Version_Explicit := Ada_12;
 
       -----------
       -- Debug --
@@ -374,8 +386,10 @@ begin
 
          if Chars (Expression (Arg1)) = Name_On then
             Extensions_Allowed := True;
+            Ada_Version := Ada_12;
          else
             Extensions_Allowed := False;
+            Ada_Version := Ada_Version_Explicit;
          end if;
 
       ----------------
