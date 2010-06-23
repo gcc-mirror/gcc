@@ -666,7 +666,8 @@ package body Exp_Ch11 is
 
             Rewrite (HSS,
               Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (Blk_Stm)));
+                Statements => New_List (Blk_Stm),
+                End_Label  => Relocate_Node (End_Label (HSS))));
 
             --  Set block statement as analyzed, we don't want to actually call
             --  Analyze on this block, it would cause a recursion in exception
@@ -741,13 +742,12 @@ package body Exp_Ch11 is
                         Relmt := First_Elmt (Local_Raise_Statements (Handler));
                         while Present (Relmt) loop
                            declare
-                              Raise_S : constant Node_Id := Node (Relmt);
-
+                              Raise_S : constant Node_Id    := Node (Relmt);
+                              RLoc    : constant Source_Ptr := Sloc (Raise_S);
                               Name_L1 : constant Node_Id :=
                                           New_Occurrence_Of (L1_Dent, Loc);
-
                               Goto_L1 : constant Node_Id :=
-                                          Make_Goto_Statement (Loc,
+                                          Make_Goto_Statement (RLoc,
                                             Name => Name_L1);
 
                            begin

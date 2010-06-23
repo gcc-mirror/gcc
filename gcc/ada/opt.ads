@@ -64,17 +64,15 @@ package Opt is
    --  GNATBIND, GNATLINK
    --  Set True if binder file to be generated in Ada rather than C
 
-   type Ada_Version_Type is (Ada_83, Ada_95, Ada_05);
-   pragma Warnings (Off, Ada_Version_Type);
+   type Ada_Version_Type is (Ada_83, Ada_95, Ada_05, Ada_12);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
-   --  The Warnings_Off pragma stops warnings for Ada_Version >= Ada_05,
-   --  which we want to allow, so that things work OK when Ada_15 is added!
-   --  This warning is now removed, so this pragma can be removed some time???
 
    Ada_Version_Default : constant Ada_Version_Type := Ada_05;
+   pragma Warnings (Off, Ada_Version_Default);
    --  GNAT
-   --  Default Ada version if no switch given
+   --  Default Ada version if no switch given. The Warnings off is to kill
+   --  constant condition warnings.
 
    Ada_Version : Ada_Version_Type := Ada_Version_Default;
    --  GNAT
@@ -91,7 +89,7 @@ package Opt is
    --  the rare cases (notably for pragmas Preelaborate_05 and Pure_05)
    --  where in the run-time we want the explicit version set.
 
-   Ada_Version_Runtime : Ada_Version_Type := Ada_05;
+   Ada_Version_Runtime : Ada_Version_Type := Ada_12;
    --  GNAT
    --  Ada version used to compile the runtime. Used to set Ada_Version (but
    --  not Ada_Version_Explicit) when compiling predefined or internal units.

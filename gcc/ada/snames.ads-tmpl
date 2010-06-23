@@ -34,7 +34,7 @@ with Namet; use Namet;
 package Snames is
 
 --  This package contains definitions of standard names (i.e. entries in the
---  Names table) that are used throughout the GNAT compiler). It also contains
+--  Names table) that are used throughout the GNAT compiler. It also contains
 --  the definitions of some enumeration types whose definitions are tied to
 --  the order of these preset names.
 
@@ -334,6 +334,8 @@ package Snames is
    Name_Ada_95                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_05                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -1416,6 +1418,8 @@ package Snames is
       Pragma_Ada_95,
       Pragma_Ada_05,
       Pragma_Ada_2005,
+      Pragma_Ada_12,
+      Pragma_Ada_2012,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
       Pragma_C_Pass_By_Copy,

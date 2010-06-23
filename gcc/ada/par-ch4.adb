@@ -2352,7 +2352,7 @@ package body Ch4 is
                --  If this looks like a conditional expression, then treat it
                --  that way with an error message.
 
-               elsif Extensions_Allowed then
+               elsif Ada_Version >= Ada_12 then
                   Error_Msg_SC
                     ("conditional expression must be parenthesized");
                   return P_Conditional_Expression;
@@ -2378,7 +2378,7 @@ package body Ch4 is
                --  If this looks like a case expression, then treat it that way
                --  with an error message.
 
-               elsif Extensions_Allowed then
+               elsif Ada_Version >= Ada_12 then
                   Error_Msg_SC ("case expression must be parenthesized");
                   return P_Case_Expression;
 
@@ -2668,9 +2668,9 @@ package body Ch4 is
       Save_State : Saved_Scan_State;
 
    begin
-      if not Extensions_Allowed then
-         Error_Msg_SC ("|case expression is an Ada extension");
-         Error_Msg_SC ("\|use -gnatX switch to compile this unit");
+      if Ada_Version < Ada_12 then
+         Error_Msg_SC ("|case expression is an Ada 2012 feature");
+         Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
       end if;
 
       Scan; -- past CASE
@@ -2759,9 +2759,9 @@ package body Ch4 is
    begin
       Inside_Conditional_Expression := Inside_Conditional_Expression + 1;
 
-      if Token = Tok_If and then not Extensions_Allowed then
-         Error_Msg_SC ("|conditional expression is an Ada extension");
-         Error_Msg_SC ("\|use -gnatX switch to compile this unit");
+      if Token = Tok_If and then Ada_Version < Ada_12 then
+         Error_Msg_SC ("|conditional expression is an Ada 2012 feature");
+         Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
       end if;
 
       Scan; -- past IF or ELSIF
@@ -2836,15 +2836,15 @@ package body Ch4 is
    procedure P_Membership_Test (N : Node_Id) is
       Alt : constant Node_Id :=
               P_Range_Or_Subtype_Mark
-                (Allow_Simple_Expression => Extensions_Allowed);
+                (Allow_Simple_Expression => (Ada_Version >= Ada_12));
 
    begin
       --  Set case
 
       if Token = Tok_Vertical_Bar then
-         if not Extensions_Allowed then
-            Error_Msg_SC ("set notation is a language extension");
-            Error_Msg_SC ("\|use -gnatX switch to compile this unit");
+         if Ada_Version < Ada_12 then
+            Error_Msg_SC ("set notation is an Ada 2012 feature");
+            Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
          end if;
 
          Set_Alternatives (N, New_List (Alt));

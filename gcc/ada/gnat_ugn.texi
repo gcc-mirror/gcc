@@ -4060,6 +4060,17 @@ Enforce Ada 95 restrictions.
 @cindex @option{-gnat05} (@command{gcc})
 Allow full Ada 2005 features.
 
+@item -gnat2005
+@cindex @option{-gnat2005} (@command{gcc})
+Allow full Ada 2005 features (same as @option{-gnat05}
+
+@item -gnat12
+@cindex @option{-gnat12} (@command{gcc})
+
+@item -gnat2012
+@cindex @option{-gnat2012} (@command{gcc})
+Allow full Ada 2012 features (same as @option{-gnat12}
+
 @item -gnata
 @cindex @option{-gnata} (@command{gcc})
 Assertions enabled. @code{Pragma Assert} and @code{pragma Debug} to be
@@ -4358,6 +4369,10 @@ Wide character encoding method
 @item -gnatx
 @cindex @option{-gnatx} (@command{gcc})
 Suppress generation of cross-reference information.
+
+@item -gnatX
+@cindex @option{-gnatX} (@command{gcc})
+Enable GNAT implementation extensions and latest Ada version.
 
 @item ^-gnaty^/STYLE_CHECKS=(option,option@dots{})^
 @cindex @option{^-gnaty^/STYLE_CHECKS^} (@command{gcc})
@@ -6900,27 +6915,60 @@ uses of the new Ada 2005 features will cause error
 messages or warnings.
 
 This switch also can be used to cancel the effect of a previous
-@option{-gnat83} or @option{-gnat05} switch earlier in the command line.
+@option{-gnat83}, @option{-gnat05/2005}, or @option{-gnat12/2012}
+switch earlier in the command line.
 
-@item -gnat05 (Ada 2005 mode)
+@item -gnat05 or -gnat2005 (Ada 2005 mode)
 @cindex @option{-gnat05} (@command{gcc})
+@cindex @option{-gnat2005} (@command{gcc})
 @cindex Ada 2005 mode
 
 @noindent
 This switch directs the compiler to implement the Ada 2005 version of the
-language.
+language, as documented in the official Ada standards document.
 Since Ada 2005 is almost completely upwards
 compatible with Ada 95 (and thus also with Ada 83), Ada 83 and Ada 95 programs
 may generally be compiled using this switch (see the description of the
 @option{-gnat83} and @option{-gnat95} switches for further
 information).
 
-For information about the approved ``Ada Issues'' that have been incorporated
-into Ada 2005, see @url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}.
-Included with GNAT releases is a file @file{features-ada0y} that describes
-the set of implemented Ada 2005 features.
-@end table
+Note that even though Ada 2005 is the current official version of the
+language, GNAT still compiles in Ada 95 mode by default, so if you are
+using Ada 2005 features in your program, you must use this switch (or
+the equivalent Ada_05 or Ada_2005 configuration pragmas).
 
+@item -gnat12 or -gnat2012 (Ada 2012 mode)
+@cindex @option{-gnat12} (@command{gcc})
+@cindex @option{-gnat2012} (@command{gcc})
+@cindex Ada 2012 mode
+
+@noindent
+This switch directs the compiler to implement the Ada 2012 version of the
+language.
+Since Ada 2012 is almost completely upwards
+compatible with Ada 2005 (and thus also with Ada 83, and Ada 95),
+Ada 83 and Ada 95 programs
+may generally be compiled using this switch (see the description of the
+@option{-gnat83}, @option{-gnat95}, and @option{-gnat05/2005} switches
+for further information).
+
+For information about the approved ``Ada Issues'' that have been incorporated
+into Ada 2012, see @url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}.
+Included with GNAT releases is a file @file{features-ada12} that describes
+the set of implemented Ada 2012 features.
+
+@item -gnatX (Enable GNAT Extensions)
+@cindex @option{-gnatX} (@command{gcc})
+@cindex Ada language extensions
+@cindex GNAT extensions
+
+@noindent
+This switch directs the compiler to implement the latest version of the
+language (currently Ada 2012) and also to enable certain GNAT implementation
+extensions that are not part of any Ada standard. For a full list of these
+extensions, see the GNAT reference manual.
+
+@end table
 
 @node Character Set Control
 @subsection Character Set Control
@@ -11353,6 +11401,8 @@ recognized by GNAT:
    Ada_95
    Ada_05
    Ada_2005
+   Ada_12
+   Ada_2012
    Assertion_Policy
    Assume_No_Invalid_Values
    C_Pass_By_Copy
@@ -11396,6 +11446,7 @@ recognized by GNAT:
    Restrictions
    Restrictions_Warnings
    Reviewable
+   Short_Circuit_And_Or
    Source_File_Name
    Source_File_Name_Project
    Style_Checks
@@ -20667,7 +20718,9 @@ Unlike HP Ada, the GNAT ``@code{EXPORT_}@i{subprogram}'' pragmas require
 a separate subprogram specification which must appear before the
 subprogram body.
 
-GNAT also supplies a number of implementation-defined pragmas as follows:
+GNAT also supplies a number of implementation-defined pragmas including the
+following:
+
 @itemize @bullet
 @item  @code{ABORT_DEFER}
 
@@ -20676,6 +20729,12 @@ GNAT also supplies a number of implementation-defined pragmas as follows:
 @item  @code{ADA_95}
 
 @item  @code{ADA_05}
+
+@item  @code{Ada_2005}
+
+@item  @code{Ada_12}
+
+@item  @code{Ada_2012}
 
 @item  @code{ANNOTATE}
 
@@ -20723,7 +20782,7 @@ GNAT also supplies a number of implementation-defined pragmas as follows:
 @end itemize
 
 @noindent
-For full details on these GNAT implementation-defined pragmas,
+For full details on these and other GNAT implementation-defined pragmas,
 see @ref{Implementation Defined Pragmas,,, gnat_rm, GNAT Reference
 Manual}.
 

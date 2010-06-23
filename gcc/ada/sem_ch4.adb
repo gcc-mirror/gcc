@@ -2344,7 +2344,7 @@ package body Sem_Ch4 is
       Analyze_Expression (L);
 
       if No (R)
-        and then Extensions_Allowed
+        and then Ada_Version >= Ada_12
       then
          Analyze_Set_Membership;
          return;

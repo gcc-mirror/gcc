@@ -315,7 +315,7 @@ package body Sem_Ch13 is
          --  In AI-133. This involves gathering all components which start at
          --  the same byte offset and processing them together
 
-         when Ada_05 =>
+         when Ada_05 .. Ada_Version_Type'Last =>
             declare
                Max_Machine_Scalar_Size : constant Uint :=
                                            UI_From_Int
