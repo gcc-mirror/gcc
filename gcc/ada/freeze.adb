@@ -4440,8 +4440,8 @@ package body Freeze is
                   Scope_Stack.Table (Pos).Pending_Freeze_Actions :=
                       Freeze_Nodes;
                else
-                  Append_List (Freeze_Nodes, Scope_Stack.Table
-                                   (Pos).Pending_Freeze_Actions);
+                  Append_List (Freeze_Nodes,
+                    Scope_Stack.Table (Pos).Pending_Freeze_Actions);
                end if;
             end if;
          end;

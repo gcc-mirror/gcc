@@ -774,6 +774,11 @@ package body Sem_Ch6 is
                          & "null-excluding return?",
                Reason => CE_Null_Not_Allowed);
          end if;
+
+         --  Apply checks suggested by AI05-0144 (dangerous order dependence)
+         --  (Disabled for now)
+
+         --  Check_Order_Dependence;
       end if;
    end Analyze_Function_Return;
 
@@ -1039,6 +1044,7 @@ package body Sem_Ch6 is
 
       procedure Analyze_Call_And_Resolve;
       --  Do Analyze and Resolve calls for procedure call
+      --  At end, check illegal order dependence.
 
       ------------------------------
       -- Analyze_Call_And_Resolve --
@@ -1049,6 +1055,11 @@ package body Sem_Ch6 is
          if Nkind (N) = N_Procedure_Call_Statement then
             Analyze_Call (N);
             Resolve (N, Standard_Void_Type);
+
+            --  Apply checks suggested by AI05-0144 (Disabled for now)
+
+            --  Check_Order_Dependence;
+
          else
             Analyze (N);
          end if;
@@ -5420,6 +5431,14 @@ package body Sem_Ch6 is
       --  and also returned as the result. These formals are always of mode IN.
       --  The new formal has the type Typ, is declared in Scope, and its name
       --  is given by a concatenation of the name of Assoc_Entity and Suffix.
+      --  The following suffixes are currently used. They should not be changed
+      --  without coordinating with CodePeer, which makes use of these to
+      --  provide better messages.
+
+      --  C denotes the Constrained bit.
+      --  A denotes the accessibility level.
+      --  BIP_xxx denotes an extra formal for a build-in-place function. See
+      --  the full list in exp_ch6.BIP_Formal_Kind.
 
       ----------------------
       -- Add_Extra_Formal --
@@ -5546,7 +5565,7 @@ package body Sem_Ch6 is
               and then not Is_Indefinite_Subtype (Formal_Type)
             then
                Set_Extra_Constrained
-                 (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "F"));
+                 (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "C"));
             end if;
          end if;
 
@@ -5579,7 +5598,7 @@ package body Sem_Ch6 is
                or else Present (Extra_Accessibility (P_Formal)))
          then
             Set_Extra_Accessibility
-              (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "F"));
+              (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "A"));
          end if;
 
          --  This label is required when skipping extra formal generation for
