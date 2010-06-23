@@ -1358,7 +1358,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // DR 130. Associative erase should return an iterator.
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    inline typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     erase(iterator __position)
     {
@@ -1377,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // DR 130. Associative erase should return an iterator.
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    inline typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     erase(const_iterator __position)
     {
