@@ -71,7 +71,7 @@ package body Switch.M is
       procedure Add_Switch_Component (S : String);
       --  Add a new String_Access component in Switches. If a string equal
       --  to S is already stored in the table Normalized_Switches, use it.
-      --  Other wise add a new component to the table.
+      --  Otherwise add a new component to the table.
 
       --------------------------
       -- Add_Switch_Component --
@@ -215,10 +215,10 @@ package body Switch.M is
 
                   --  One-letter switches
 
-                  when 'a' | 'A' | 'b' | 'c' | 'D' | 'E' | 'f' | 'F' |
-                       'g' | 'h' | 'H' | 'l' | 'L' | 'n' | 'N' | 'o' |
-                       'O' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 't' |
-                       'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
+                  when 'a' | 'A' | 'b' | 'c' | 'C' | 'D' | 'E' | 'f' |
+                       'F' | 'g' | 'h' | 'H' | 'l' | 'L' | 'n' | 'N' |
+                       'o' | 'O' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' |
+                       't' | 'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
                      Storing (First_Stored) := C;
                      Add_Switch_Component
                        (Storing (Storing'First .. First_Stored));
@@ -268,8 +268,9 @@ package body Switch.M is
 
                   when 'e' =>
 
-                     --  Store -gnateD, -gnatep= and -gnateG in the ALI file.
-                     --  The other -gnate switches do not need to be stored.
+                     --  Store -gnateD, -gnatep=, -gnateG and -gnateS in the
+                     --  ALI file. The other -gnate switches do not need to be
+                     --  stored.
 
                      Storing (First_Stored) := 'e';
                      Ptr := Ptr + 1;
@@ -277,7 +278,8 @@ package body Switch.M is
                      if Ptr > Max
                        or else (Switch_Chars (Ptr) /= 'D'
                                  and then Switch_Chars (Ptr) /= 'G'
-                                 and then Switch_Chars (Ptr) /= 'p')
+                                 and then Switch_Chars (Ptr) /= 'p'
+                                 and then Switch_Chars (Ptr) /= 'S')
                      then
                         Last := 0;
                         return;
@@ -322,6 +324,9 @@ package body Switch.M is
 
                      elsif Switch_Chars (Ptr) = 'G' then
                         Add_Switch_Component ("-gnateG");
+
+                     elsif Switch_Chars (Ptr) = 'S' then
+                        Add_Switch_Component ("-gnateS");
                      end if;
 
                      return;

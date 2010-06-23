@@ -1,3 +1,16 @@
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Intrinsic_Operator): Add guards to handle
+	properly the rare cases where VMS operators are visible through
+	Extend_System, but the default System is being used and Address is a
+	private type.
+	* sem_util.adb: Widen predicate Is_VMS_Operator.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Take into account -gnatC
+	and -gnateS.
+
 2010-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* einfo.adb (Has_Foreign_Convention): Consider Intrinsic with
