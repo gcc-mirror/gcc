@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,7 +395,7 @@ package body Xr_Tabls is
 
    begin
       case Ref_Type is
-         when 'b' | 'c' | 'm' | 'r' | 'R' | 'i' | ' ' | 'x' =>
+         when 'b' | 'c' | 'H' | 'm' | 'o' | 'r' | 'R' | 'i' | ' ' | 'x' =>
             null;
 
          when 'l' | 'w' =>
@@ -419,7 +419,12 @@ package body Xr_Tabls is
                  (Symbol_Length => 0,
                   Symbol        => "",
                   Key           => new String'(Key),
-                  Decl          => null,
+                  Decl          => new Reference_Record'
+                                     (File          => File_Ref,
+                                      Line          => Line,
+                                      Column        => Column,
+                                      Source_Line   => null,
+                                      Next          => null),
                   Is_Parameter  => True,
                   Decl_Type     => ' ',
                   Body_Ref      => null,
@@ -458,7 +463,7 @@ package body Xr_Tabls is
             New_Ref.Next          := Declaration.Body_Ref;
             Declaration.Body_Ref  := New_Ref;
 
-         when 'r' | 'R' | 'i' | 'l' | ' ' | 'x' | 'w' =>
+         when 'r' | 'R' | 'H' | 'i' | 'l' | 'o' | ' ' | 'x' | 'w' =>
             New_Ref.Next          := Declaration.Ref_Ref;
             Declaration.Ref_Ref   := New_Ref;
 

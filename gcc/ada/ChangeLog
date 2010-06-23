@@ -1,3 +1,13 @@
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* xr_tabls.adb, xref_lib.adb: Update to latest lib-xref.ads
+	Fix handling of parameters.
+	Add protection against unexpected cases.
+	* sem_ch6.adb (Create_Extra_Formals): Use suffix "L" instead of "A" for
+	access level, since "A" suffix is already used elsewhere. Similarly,
+	use suffix "O" instead of "C" for 'Constrained since "C" suffix is used
+	for xxx'Class.
+
 2010-06-23  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_util.adb, sem_util.ads: Minor reformatting.

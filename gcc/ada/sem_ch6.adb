@@ -5435,8 +5435,8 @@ package body Sem_Ch6 is
       --  without coordinating with CodePeer, which makes use of these to
       --  provide better messages.
 
-      --  C denotes the Constrained bit.
-      --  A denotes the accessibility level.
+      --  O denotes the Constrained bit.
+      --  L denotes the accessibility level.
       --  BIP_xxx denotes an extra formal for a build-in-place function. See
       --  the full list in exp_ch6.BIP_Formal_Kind.
 
@@ -5565,7 +5565,7 @@ package body Sem_Ch6 is
               and then not Is_Indefinite_Subtype (Formal_Type)
             then
                Set_Extra_Constrained
-                 (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "C"));
+                 (Formal, Add_Extra_Formal (Formal, Standard_Boolean, E, "O"));
             end if;
          end if;
 
@@ -5598,7 +5598,7 @@ package body Sem_Ch6 is
                or else Present (Extra_Accessibility (P_Formal)))
          then
             Set_Extra_Accessibility
-              (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "A"));
+              (Formal, Add_Extra_Formal (Formal, Standard_Natural, E, "L"));
          end if;
 
          --  This label is required when skipping extra formal generation for
