@@ -5856,7 +5856,7 @@ package body Einfo is
 
       return Convention (Id) in Foreign_Convention
         or else (Convention (Id) = Convention_Intrinsic
-                 and then Present (Interface_Name (Id)));
+                   and then Present (Interface_Name (Id)));
    end Has_Foreign_Convention;
 
    ---------------------------

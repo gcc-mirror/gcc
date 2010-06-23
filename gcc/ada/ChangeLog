@@ -1,3 +1,24 @@
+2010-06-23  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb: Minor code cleanup: test for proper entity instead of
+	testing just Chars attribute when checking whether a given scope is
+	System.
+	* exp_ch4.adb, einfo.adb: Minor reformatting.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	PR ada/44633
+	* switch-m.adb (Normalize_Compiler_Switches): Take into account
+	switches -gnatB, -gnatD=nn, -gnatG (incuding -gnatG=nn), -gnatI,
+	-gnatl=file, -gnatS, -gnatjnn, -gnateI=nn and -gnatWx.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): If left operand is a mixed mode
+	operation with a universal real operand, and the right operand is a
+	range with universal bounds, find unique fixed point that may be
+	candidate, and warn appropriately.
+
 2010-06-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Intrinsic_Operator): Add guards to handle

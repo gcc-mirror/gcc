@@ -7036,6 +7036,18 @@ package body Sem_Res is
          T := Intersect_Types (L, R);
       end if;
 
+      --  If mixed-mode operations are present and operands are all literal,
+      --  the only interpretation involves Duration, which is probably not
+      --  the intention of the programmer.
+
+      if T = Any_Fixed then
+         T := Unique_Fixed_Point_Type (N);
+
+         if T = Any_Type then
+            return;
+         end if;
+      end if;
+
       Resolve (L, T);
       Check_Unset_Reference (L);
 
