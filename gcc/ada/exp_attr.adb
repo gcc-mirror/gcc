@@ -280,16 +280,14 @@ package body Exp_Attr is
    --  Start of processing for Expand_Access_To_Protected_Op
 
    begin
-      --  Within the body of the protected type, the prefix
-      --  designates a local operation, and the object is the first
-      --  parameter of the corresponding protected body of the
-      --  current enclosing operation.
+      --  Within the body of the protected type, the prefix designates a local
+      --  operation, and the object is the first parameter of the corresponding
+      --  protected body of the current enclosing operation.
 
       if Is_Entity_Name (Pref) then
          if May_Be_External_Call then
             Sub :=
-              New_Occurrence_Of
-                (External_Subprogram (Entity (Pref)), Loc);
+              New_Occurrence_Of (External_Subprogram (Entity (Pref)), Loc);
          else
             Sub :=
               New_Occurrence_Of
@@ -372,6 +370,7 @@ package body Exp_Attr is
         Make_Aggregate (Loc,
           Expressions => New_List (Obj_Ref, Sub_Ref));
 
+      Freeze_Before (N, Entity (Sub));
       Rewrite (N, Agg);
       Analyze_And_Resolve (N, E_T);
 

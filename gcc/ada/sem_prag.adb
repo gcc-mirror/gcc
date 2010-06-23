@@ -12284,7 +12284,7 @@ package body Sem_Prag is
                   elsif not Is_Static_String_Expression (Arg1) then
                      Error_Pragma_Arg
                        ("argument of pragma% must be On/Off or " &
-                        "static string expression", Arg2);
+                        "static string expression", Arg1);
 
                   --  One argument string expression case
 
@@ -12503,6 +12503,11 @@ package body Sem_Prag is
          when Unknown_Pragma =>
             raise Program_Error;
       end case;
+
+      --  AI05-0144: detect dangerous order dependence. Disabled for now,
+      --  until AI is formally approved.
+
+      --  Check_Order_Dependence;
 
    exception
       when Pragma_Exit => null;
