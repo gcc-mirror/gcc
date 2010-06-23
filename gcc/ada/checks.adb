@@ -3351,7 +3351,7 @@ package body Checks is
                         Indx := Next_Index (Indx);
                      end loop;
 
-                     --  if The index type is a formal type, or derived from
+                     --  If the index type is a formal type or derived from
                      --  one, the bounds are not static.
 
                      if Is_Generic_Type (Root_Type (Etype (Indx))) then
@@ -3378,8 +3378,8 @@ package body Checks is
 
                            --  For constrained arrays, the minimum value for
                            --  Length is taken from the actual value of the
-                           --  bounds, since the index will be exactly of
-                           --  this subtype.
+                           --  bounds, since the index will be exactly of this
+                           --  subtype.
 
                            if Is_Constrained (Atyp) then
                               Lor := UI_Max (Uint_0, UL - LU + 1);
@@ -3395,7 +3395,7 @@ package body Checks is
                   end;
 
                --  No special handling for other attributes
-               --  Probably more opportunities exist here ???
+               --  Probably more opportunities exist here???
 
                when others =>
                   OK1 := False;
@@ -3416,33 +3416,31 @@ package body Checks is
             Hir := No_Uint;
       end case;
 
-      --  At this stage, if OK1 is true, then we know that the actual
-      --  result of the computed expression is in the range Lor .. Hir.
-      --  We can use this to restrict the possible range of results.
+      --  At this stage, if OK1 is true, then we know that the actual result of
+      --  the computed expression is in the range Lor .. Hir. We can use this
+      --  to restrict the possible range of results.
 
       if OK1 then
 
-         --  If the refined value of the low bound is greater than the
-         --  type high bound, then reset it to the more restrictive
-         --  value. However, we do NOT do this for the case of a modular
-         --  type where the possible upper bound on the value is above the
-         --  base type high bound, because that means the result could wrap.
+         --  If the refined value of the low bound is greater than the type
+         --  high bound, then reset it to the more restrictive value. However,
+         --  we do NOT do this for the case of a modular type where the
+         --  possible upper bound on the value is above the base type high
+         --  bound, because that means the result could wrap.
 
          if Lor > Lo
-           and then not (Is_Modular_Integer_Type (Typ)
-                           and then Hir > Hbound)
+           and then not (Is_Modular_Integer_Type (Typ) and then Hir > Hbound)
          then
             Lo := Lor;
          end if;
 
-         --  Similarly, if the refined value of the high bound is less
-         --  than the value so far, then reset it to the more restrictive
-         --  value. Again, we do not do this if the refined low bound is
-         --  negative for a modular type, since this would wrap.
+         --  Similarly, if the refined value of the high bound is less than the
+         --  value so far, then reset it to the more restrictive value. Again,
+         --  we do not do this if the refined low bound is negative for a
+         --  modular type, since this would wrap.
 
          if Hir < Hi
-           and then not (Is_Modular_Integer_Type (Typ)
-                          and then Lor < Uint_0)
+           and then not (Is_Modular_Integer_Type (Typ) and then Lor < Uint_0)
          then
             Hi := Hir;
          end if;
@@ -3456,8 +3454,8 @@ package body Checks is
       Determine_Range_Cache_Hi (Cindex) := Hi;
       return;
 
-   --  If any exception occurs, it means that we have some bug in the compiler
-   --  possibly triggered by a previous error, or by some unforseen peculiar
+   --  If any exception occurs, it means that we have some bug in the compiler,
+   --  possibly triggered by a previous error, or by some unforeseen peculiar
    --  occurrence. However, this is only an optimization attempt, so there is
    --  really no point in crashing the compiler. Instead we just decide, too
    --  bad, we can't figure out a range in this case after all.

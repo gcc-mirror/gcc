@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.OS_Primitives;
+with System.Tasking;
 
 package body Ada.Real_Time is
 
@@ -245,5 +245,9 @@ package body Ada.Real_Time is
    end To_Time_Span;
 
 begin
-   System.OS_Primitives.Initialize;
+   --  Ensure that the tasking run time is initialized when using clock and/or
+   --  delay operations. The initialization routine has the required machinery
+   --  to prevent multiple calls to Initialize.
+
+   System.Tasking.Initialize;
 end Ada.Real_Time;
