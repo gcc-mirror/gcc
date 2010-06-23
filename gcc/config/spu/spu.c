@@ -4488,8 +4488,7 @@ ea_load_store_inline (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
 							    hit_ref, pc_rtx)));
   /* Say that this branch is very likely to happen.  */
   v = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100 - 1;
-  REG_NOTES (insn)
-    = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (v), REG_NOTES (insn));
+  add_reg_note (insn, REG_BR_PROB, GEN_INT (v));
 
   ea_load_store (mem, is_store, ea_addr, data_addr);
   cont_label = gen_label_rtx ();

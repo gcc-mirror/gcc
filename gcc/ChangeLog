@@ -6,6 +6,8 @@
 	(spu_handle_vector_attribute, spu_pass_by_reference): Likewise.
 	(spu_rtx_costs, spu_function_ok_for_sibcall): Likewise.
 
+	* config/spu/spu.c (ea_load_store_inline): Use add_reg_note.
+
 2010-06-23  Arnaud Charlet  <charlet@adacore.com
 
 	PR ada/22220
