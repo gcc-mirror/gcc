@@ -1,5 +1,16 @@
 2010-06-23  Olivier Hainque  <hainque@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Procedure>: Use
+	Wshadow instead of Wextra to guard warning on absence of internal
+	builtin decl for an import.  Fix use of quote in warning text.
+	(intrin_arglists_compatible_p): Remove processing of integer trailing
+	args on the Ada side.  Fix use of literal > in warning text.
+	(intrin_return_compatible_p): Never warn on "function imported as
+	procedure".  Defer the void/void case to the common type compatibility
+	check.
+
+2010-06-23  Olivier Hainque  <hainque@adacore.com>
+
 	* gcc-interface/decl.c (intrin_types_incompatible_p): New function,
 	helper for ...
 	(intrin_arglists_compatible_p, intrin_return_compatible_p): New

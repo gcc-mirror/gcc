@@ -3912,22 +3912,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* If this subprogram is expectedly bound to a GCC builtin, fetch the
-	   corresponding DECL node.
-
-	   We still want the parameter associations to take place because the
-	   proper generation of calls depends on it (a GNAT parameter without
-	   a corresponding GCC tree has a very specific meaning), so we don't
-	   just "break;" here.  */
+	   corresponding DECL node.  Proper generation of calls later on need
+	   proper parameter associations so we don't "break;" here.  */
 	if (Convention (gnat_entity) == Convention_Intrinsic
 	    && Present (Interface_Name (gnat_entity)))
 	  {
 	    gnu_builtin_decl = builtin_decl_for (gnu_ext_name);
 
-	    /* Post a "Wextra" warning if we couldn't find the decl.  Absence
-	       of a real intrinsic for an import is most often unexpected but
-	       allows hooking in alternate bodies, convenient in some cases so
-	       we don't want the warning to be unconditional.  */
-	    if (gnu_builtin_decl == NULL_TREE && extra_warnings)
+	    /* Unability to find the builtin decl most often indicates a
+	       genuine mistake, but imports of unregistered intrinsics are
+	       sometimes issued on purpose to allow hooking in alternate
+	       bodies.  We post a warning conditioned on Wshadow in this case,
+	       to let developers be notified on demand without risking false
+	       positives with common default sets of options.  */
+
+	    if (gnu_builtin_decl == NULL_TREE && warn_shadow)
 	      post_error ("?gcc intrinsic not found for&!", gnat_entity);
 	  }
 
@@ -4238,7 +4237,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    if (!intrin_profiles_compatible_p (&inb))
 	      post_error
-		("?profile of& doesn't match the builtin it binds!",
+		("?profile of& doesn''t match the builtin it binds!",
 		 gnat_entity);
 
 	    gnu_decl = gnu_builtin_decl;
@@ -8125,7 +8124,7 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       btin_type = TREE_VALUE (btin_args);
 
       /* If we're done with the Ada args and not with the internal builtin
-	 args, complain.  */
+	 args, or the other way around, complain.  */
       if (ada_type == void_type_node
 	  && btin_type != void_type_node)
 	{
@@ -8133,35 +8132,12 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 	  return false;
 	}
 
-      /* If we're done with the internal builtin args, check the remaining
-	 args on the Ada side.  If they are all ints, assume these are access
-	 levels and just ignore them with a conditional warning. Complain
-	 otherwise.  */
       if (btin_type == void_type_node
 	  && ada_type != void_type_node)
 	{
-	  while (TREE_CODE (ada_type) == INTEGER_TYPE)
-	    {
-	      ada_args = TREE_CHAIN (ada_args);
-	      ada_type = TREE_VALUE (ada_args);
-	    }
-
-	  if (ada_type != void_type_node)
-	    {
-	      post_error_ne_num ("?Ada arguments list too long (> ^)!",
-				 inb->gnat_entity, inb->gnat_entity,
-				 argpos);
-	      return false;
-	    }
-
-	  else
-	    {
-	      if (extra_warnings)
-		post_error ("?trailing Ada integer args ignored for "
-			    "intrinsic binding!",
-			    inb->gnat_entity);
-	      return true;
-	    }
+	  post_error_ne_num ("?Ada arguments list too long ('> ^)!",
+			     inb->gnat_entity, inb->gnat_entity, argpos);
+	  return false;
 	}
 
       /* Otherwise, check that types match for the current argument.  */
@@ -8189,19 +8165,13 @@ intrin_return_compatible_p (intrin_binding_t * inb)
   tree ada_return_type = TREE_TYPE (inb->ada_fntype);
   tree btin_return_type = TREE_TYPE (inb->btin_fntype);
 
-  if (VOID_TYPE_P (btin_return_type)
-      && VOID_TYPE_P (ada_return_type))
-    return true;
-
+  /* Accept function imported as procedure, common and convenient.  */
   if (VOID_TYPE_P (ada_return_type)
       && !VOID_TYPE_P (btin_return_type))
-    {
-      if (extra_warnings)
-	post_error ("?builtin function imported as Ada procedure!",
-		    inb->gnat_entity);
-      return true;
-    }
+    return true;
 
+  /* Check return types compatibility otherwise.  Note that this
+     handles void/void as well.  */
   if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
     {
       post_error ("?intrinsic binding type mismatch on return value!",
