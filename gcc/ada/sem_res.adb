@@ -3479,6 +3479,7 @@ package body Sem_Res is
 
             --  Save_Actual (A,
             --    Ekind (F) /= E_In_Parameter or else Is_Access_Type (F_Typ));
+            --  Why is this code commented out ???
 
             --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
@@ -7976,6 +7977,7 @@ package body Sem_Res is
       R     : constant Node_Id   := Right_Opnd (N);
 
    begin
+      --  Why are the calls to Check_Order_Dependence commented out ???
       Resolve (L, B_Typ);
       --  Check_Order_Dependence;   --  For AI05-0144
       Resolve (R, B_Typ);

@@ -50,6 +50,7 @@ with Par_SCO;
 with Prepcomp;
 with Repinfo;  use Repinfo;
 with Restrict;
+with Rident;   use Rident;
 with Rtsfind;
 with SCOs;
 with Sem;
@@ -169,12 +170,14 @@ procedure Gnat1drv is
 
          Optimization_Level := 0;
 
-         --  Disable specific expansions for Restrictions pragmas to avoid
-         --  tree inconsistencies between compilations with different pragmas
-         --  that will cause different SCIL files to be generated for the
-         --  same Ada spec.
+         --  Enable some restrictions systematically to simplify the generated
+         --  code (and ease analysis). Note that restriction checks are also
+         --  disabled in CodePeer_Mode, see Restrict.Check_Restriction
 
-         Treat_Restrictions_As_Warnings := True;
+         Restrict.Restrictions.Set (No_Task_Hierarchy) := True;
+         Restrict.Restrictions.Set (No_Abort_Statements) := True;
+         Restrict.Restrictions.Set (Max_Asynchronous_Select_Nesting) := True;
+         Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
          --  Suppress overflow, division by zero and access checks since they
          --  are handled implicitly by CodePeer.

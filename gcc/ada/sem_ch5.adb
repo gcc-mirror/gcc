@@ -1474,8 +1474,8 @@ package body Sem_Ch5 is
          R_Copy       : constant Node_Id := New_Copy_Tree (R);
          Lo           : constant Node_Id := Low_Bound  (R);
          Hi           : constant Node_Id := High_Bound (R);
-         New_Lo_Bound : Node_Id := Empty;
-         New_Hi_Bound : Node_Id := Empty;
+         New_Lo_Bound : Node_Id;
+         New_Hi_Bound : Node_Id;
          Typ          : Entity_Id;
          Save_Analysis : Boolean;
 

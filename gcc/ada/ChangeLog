@@ -1,3 +1,36 @@
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Process_Bounds): Remove some junk initializations.
+	* sem_res.adb: Add comments.
+	* sem_util.adb: Minor reformatting. Add comments.
+	Change increment on Actuals_In_Call table.
+	* opt.ads: Minor: add 'constant'.
+
+2010-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Initialize the Size_Func component of the
+	TSD to Null_Address if No_Dispatching_Calls is active.
+
+2010-06-23  Vincent Celier  <celier@adacore.com>
+
+	* a-comlin.ads: Indicate that use of this package is not supported
+	during the elaboration of an auto-initialized Stand-Alone Library.
+
+2010-06-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Misaligned_Object): Do not rely on an
+	alignment clause on a record type to determine if a component may be
+	misaligned. The decision must be taken in the back-end where target
+	alignment information is known.
+
+2010-06-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Enable some restrictions
+	systematically in CodePeer mode to simplify generated code.
+	* restrict.adb (Check_Restriction): Do nothing in CodePeer mode.
+	* exp_ch4.adb (Expand_N_Allocator): Generate proper code when
+	No_Task_Hierarchy is set instead of crasshing.
+
 2010-06-23  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_util.adb: Minor code cleanup: test for proper entity instead of

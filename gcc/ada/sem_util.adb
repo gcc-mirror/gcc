@@ -116,7 +116,7 @@ package body Sem_Util is
       Table_Index_Type     => Int,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Actuals");
 
    -----------------------
@@ -1174,8 +1174,12 @@ package body Sem_Util is
    ----------------------------
 
    procedure Check_Order_Dependence is
-      Act1, Act2 : Node_Id;
+      Act1 : Node_Id;
+      Act2 : Node_Id;
+
    begin
+      --  This could use comments ???
+
       for J in 0 .. Actuals_In_Call.Last loop
          if Actuals_In_Call.Table (J).Is_Writable then
             Act1 := Actuals_In_Call.Table (J).Act;
@@ -1187,6 +1191,7 @@ package body Sem_Util is
             for K in 0 .. Actuals_In_Call.Last loop
                if K /= J then
                   Act2 := Actuals_In_Call.Table (K).Act;
+
                   if Nkind (Act2) = N_Attribute_Reference then
                      Act2 := Prefix (Act2);
                   end if;
@@ -10580,11 +10585,11 @@ package body Sem_Util is
    procedure Save_Actual (N : Node_Id;  Writable : Boolean := False) is
    begin
       if Is_Entity_Name (N)
-           or else
-         Nkind_In (N, N_Indexed_Component, N_Selected_Component, N_Slice)
-           or else
-             (Nkind (N) = N_Attribute_Reference
-                and then Attribute_Name (N) = Name_Access)
+        or else
+          Nkind_In (N, N_Indexed_Component, N_Selected_Component, N_Slice)
+        or else
+          (Nkind (N) = N_Attribute_Reference
+            and then Attribute_Name (N) = Name_Access)
 
       then
          --  We are only interested in IN OUT parameters of inner calls
