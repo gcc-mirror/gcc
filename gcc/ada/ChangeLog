@@ -1,3 +1,10 @@
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb, exp_ch4.adb, s-rannum.ads, sem.adb, sem_ch12.adb: Minor
+	reformatting.  Add comments.
+	* errout.adb (Finalize): Properly adjust warning count when deleting
+	continuations.
+
 2010-06-22  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb (Finalize): Set Prev pointers.

@@ -110,7 +110,8 @@ package body Sem_Ch6 is
    --  outer homographs.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id);
-   --  Does all the real work of Analyze_Subprogram_Body
+   --  Does all the real work of Analyze_Subprogram_Body. This is split out so
+   --  that we can use RETURN but not skip the debug output at the end.
 
    procedure Analyze_Generic_Subprogram_Body (N : Node_Id; Gen_Id : Entity_Id);
    --  Analyze a generic subprogram body. N is the body to be analyzed, and
@@ -978,6 +979,7 @@ package body Sem_Ch6 is
       if Style_Check then
          Style.Check_Identifier (Body_Id, Gen_Id);
       end if;
+
       End_Generic;
    end Analyze_Generic_Subprogram_Body;
 

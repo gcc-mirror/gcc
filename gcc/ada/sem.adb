@@ -1727,14 +1727,11 @@ package body Sem is
       ----------------------------
 
       procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id) is
-         Unit_Num : constant Unit_Number_Type :=
-           Get_Cunit_Unit_Number (CU);
+         Unit_Num  : constant Unit_Number_Type := Get_Cunit_Unit_Number (CU);
          Child     : Node_Id;
          Parent_CU : Node_Id;
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
-
-      --  Start of processing for Do_Unit_And_Dependents
 
       begin
          if not Seen (Unit_Num) then
@@ -1749,7 +1746,6 @@ package body Sem is
             if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
               or else Acts_As_Spec (CU)
             then
-
                if CU = Cunit (Main_Unit)
                    and then not Do_Main
                then
