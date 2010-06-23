@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -101,7 +101,7 @@ private
    --                                    +-------------------+
    --                                    |   hash table link |
    --                                    +-------------------+
-   --                                    | remotely callable |
+   --                                    |   transportable   |
    --                                    +-------------------+
    --                                    | rec ctrler offset |
    --                                    +-------------------+

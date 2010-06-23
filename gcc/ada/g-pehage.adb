@@ -2519,6 +2519,7 @@ package body GNAT.Perfect_Hash_Generators is
             return Str (Str'First .. J);
          end if;
       end loop;
+
       return Str;
    end Trim_Trailing_Nuls;
 
