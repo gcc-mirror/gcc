@@ -38,8 +38,10 @@ pragma Style_Checks (All_Checks);
 
 with Debug;   use Debug;
 with Nlists;  use Nlists;
+with Opt;     use Opt;
 with Output;  use Output;
 with Sinput;  use Sinput;
+with SCIL_LL; use SCIL_LL;
 with Tree_IO; use Tree_IO;
 
 package body Atree is
@@ -531,6 +533,13 @@ package body Atree is
 
       Orig_Nodes.Set_Last (Nodes.Last);
       Allocate_List_Tables (Nodes.Last);
+
+      --  Update the SCIL_Node field (if available)
+
+      if Generate_SCIL then
+         Set_SCIL_Node (New_Id, Get_SCIL_Node (Src));
+      end if;
+
       return New_Id;
    end Allocate_Initialize_Node;
 
@@ -1570,6 +1579,12 @@ package body Atree is
       --  to Rewrite if there were an intention to save the original node.
 
       Orig_Nodes.Table (Old_Node) := Old_Node;
+
+      --  Update the SCIL_Node field (if available)
+
+      if Generate_SCIL then
+         Set_SCIL_Node (Old_Node, Get_SCIL_Node (New_Node));
+      end if;
    end Replace;
 
    -------------
@@ -1628,6 +1643,12 @@ package body Atree is
       end if;
 
       Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
+
+      --  Update the SCIL_Node field (if available)
+
+      if Generate_SCIL then
+         Set_SCIL_Node (Old_Node, Get_SCIL_Node (New_Node));
+      end if;
    end Rewrite;
 
    -------------------------

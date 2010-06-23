@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,6 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
@@ -3566,15 +3565,6 @@ package body Exp_Ch7 is
       Expr : constant Node_Id    := Relocate_Node (N);
 
    begin
-      --  If the relocated node is a function call then check if some SCIL
-      --  node references it and needs readjustment.
-
-      if Generate_SCIL
-        and then Nkind (N) = N_Function_Call
-      then
-         Adjust_SCIL_Node (N, Expr);
-      end if;
-
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => E,
@@ -3622,15 +3612,6 @@ package body Exp_Ch7 is
       New_Statement : constant Node_Id := Relocate_Node (N);
 
    begin
-      --  If the relocated node is a procedure call then check if some SCIL
-      --  node references it and needs readjustment.
-
-      if Generate_SCIL
-        and then Nkind (New_Statement) = N_Procedure_Call_Statement
-      then
-         Adjust_SCIL_Node (N, New_Statement);
-      end if;
-
       Rewrite (N, Make_Transient_Block (Loc, New_Statement));
 
       --  With the scope stack back to normal, we can call analyze on the

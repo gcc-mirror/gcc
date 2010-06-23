@@ -59,13 +59,13 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with SCIL_LL;  use SCIL_LL;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -4627,8 +4627,7 @@ package body Exp_Ch4 is
                   if Generate_SCIL
                     and then Present (SCIL_Node)
                   then
-                     Set_SCIL_Related_Node (SCIL_Node, N);
-                     Insert_Action (N, SCIL_Node);
+                     Set_SCIL_Node (N, SCIL_Node);
                   end if;
                end if;
 
@@ -8970,7 +8969,6 @@ package body Exp_Ch4 is
    procedure Expand_Short_Circuit_Operator (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
       Typ     : constant Entity_Id  := Etype (N);
-      Kind    : constant Node_Kind  := Nkind (N);
       Left    : constant Node_Id    := Left_Opnd (N);
       Right   : constant Node_Id    := Right_Opnd (N);
       LocR    : constant Source_Ptr := Sloc (Right);
@@ -9124,18 +9122,6 @@ package body Exp_Ch4 is
                 Actions    => Actlist));
             Set_Actions (N, No_List);
             Analyze_And_Resolve (Right, Standard_Boolean);
-         end if;
-
-         --  Special processing necessary for SCIL generation for AND THEN
-         --  with a function call as the right operand.
-
-         --  What is this about, and is it needed for both cases above???
-
-         if Generate_SCIL
-           and then Kind = N_And_Then
-           and then Nkind (Right) = N_Function_Call
-         then
-            Adjust_SCIL_Node (N, Right);
          end if;
 
          Adjust_Result_Type (N, Typ);

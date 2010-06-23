@@ -43,7 +43,6 @@ with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -2812,11 +2811,9 @@ package body Exp_Util is
                N_Real_Range_Specification               |
                N_Record_Definition                      |
                N_Reference                              |
-               N_SCIL_Dispatch_Table_Object_Init        |
                N_SCIL_Dispatch_Table_Tag_Init           |
                N_SCIL_Dispatching_Call                  |
                N_SCIL_Membership_Test                   |
-               N_SCIL_Tag_Init                          |
                N_Selected_Component                     |
                N_Signed_Integer_Type_Definition         |
                N_Single_Protected_Declaration           |
@@ -4718,15 +4715,6 @@ package body Exp_Util is
              Constant_Present    => True,
              Expression          => Relocate_Node (Exp));
 
-         --  Check if the previous node relocation requires readjustment of
-         --  some SCIL Dispatching node.
-
-         if Generate_SCIL
-           and then Nkind (Exp) = N_Function_Call
-         then
-            Adjust_SCIL_Node (Exp, Expression (E));
-         end if;
-
          Set_Assignment_OK (E);
          Insert_Action (Exp, E);
 
@@ -4888,15 +4876,6 @@ package body Exp_Util is
                    Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
                    Expression          => Relocate_Node (Exp));
 
-               --  Check if the previous node relocation requires readjustment
-               --  of some SCIL Dispatching node.
-
-               if Generate_SCIL
-                 and then Nkind (Exp) = N_Function_Call
-               then
-                  Adjust_SCIL_Node (Exp, Expression (Decl));
-               end if;
-
                Insert_Action (Exp, Decl);
                Set_Etype (Obj, Exp_Type);
                Rewrite (Exp, New_Occurrence_Of (Obj, Loc));
@@ -4956,15 +4935,6 @@ package body Exp_Util is
              Defining_Identifier => Def_Id,
              Object_Definition   => New_Reference_To (Ref_Type, Loc),
              Expression          => New_Exp));
-
-         --  Check if the previous node relocation requires readjustment
-         --  of some SCIL Dispatching node.
-
-         if Generate_SCIL
-           and then Nkind (Exp) = N_Function_Call
-         then
-            Adjust_SCIL_Node (Exp, Prefix (New_Exp));
-         end if;
       end if;
 
       --  Preserve the Assignment_OK flag in all copies, since at least

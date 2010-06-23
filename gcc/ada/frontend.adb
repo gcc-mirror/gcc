@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,7 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
+with SCIL_LL;  use SCIL_LL;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
@@ -88,6 +89,10 @@ begin
    Checks.Initialize;
    Sem_Warn.Initialize;
    Prep.Initialize;
+
+   if Generate_SCIL then
+      SCIL_LL.Initialize;
+   end if;
 
    --  Create package Standard
 

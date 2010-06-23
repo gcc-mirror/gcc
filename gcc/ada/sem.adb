@@ -615,11 +615,9 @@ package body Sem is
          --  analyzed.
 
          when
-           N_SCIL_Dispatch_Table_Object_Init        |
-           N_SCIL_Dispatch_Table_Tag_Init           |
-           N_SCIL_Dispatching_Call                  |
-           N_SCIL_Membership_Test                   |
-           N_SCIL_Tag_Init                          =>
+           N_SCIL_Dispatch_Table_Tag_Init |
+           N_SCIL_Dispatching_Call        |
+           N_SCIL_Membership_Test         =>
             null;
 
          --  For the remaining node types, we generate compiler abort, because

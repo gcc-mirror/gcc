@@ -1,5 +1,63 @@
 2010-06-23  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Properly handle
+	checking returns in generic case.
+	(Check_Missing_Return): New procedure.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb, switch-b.adb: Minor reformatting.
+
+2010-06-23  Javier Miranda  <miranda@adacore.com>
+
+	* frontend.adb (Frontend): Add call to initialize the new package
+	SCIL_LL.
+	* exp_ch7.adb (Wrap_Transient_Expression): Remove call to
+	Adjust_SCIL_Node.
+	(Wrap_Transient_Statement): Remove call to Adjust_SCIL_Node.
+	* sem_ch5.adb (Analyze_Iteration_Scheme.Process_Bounds): Remove call to
+	Adjust_SCIL_Node.
+	* exp_util.adb (Insert_Actions): Remove code for
+	N_SCIL_Dispatch_Table_Object_Init and N_SCIL_Tag_Init nodes.
+	(Remove_Side_Effects): Remove calls to Adjust_SCIL_Node.
+	* sinfo.adb (SCIL_Entity, SCIL_Tag_Value): Remove checks on
+	N_SCIL_Tag_Init and N_SCIL_Dispatch_Table_Object_Init in the assertion.
+	(SCIL_Related_Node, Set_SCIL_Related_Node): Removed.
+	* sinfo.ads (SCIL_Related_Node): Field removed.
+	(N_SCIL_Dispatch_Table_Object_Init): Node removed.
+	(N_SCIL_Tag_Init): Node removed.
+	* sem_scil.ads, sem_scil.adb (Adjust_SCIL_Node): Removed.
+	(Check_SCIL_Node): New implementation.
+	(Find_SCIL_Node): Removed.
+	* sem.adb (Analyze): Remove management of
+	N_SCIL_Dispatch_Table_Object_Init and N_SCIL_Tag_Init nodes.
+	* sem_util.adb (Insert_Explicit_Dereference): Remove call to
+	Adjust_SCIL_Node.
+	* exp_ch4.adb (Expand_N_In): Code cleanup: remove call to
+	Set_SCIL_Related_Node and avoid adding the SCIL node before the
+	referenced node using Insert_Action because this is not longer required.
+	(Expand_Short_Circuit_Operator): Remove call to SCIL node.
+	* exp_ch6.adb (Expand_Call): Remove call to Adjust_SCIL_Node.
+	* sem_ch4.adb (Analyze_Type_Conversion): Remove call to Adjust_SCIL_Node
+	* exp_disp.adb (Expand_Dispatching_Call): Minor code reorganization
+	because we no longer require to generate the SCIL node before the call.
+	(Make_DT): Remove generation of SCI_Dispatch_Table_Object_Init node.
+	Remove calls to Set_SCIL_Related_Node and avoid adding the SCIL
+	nodes before the referenced node using Insert_Action because this
+	is not longer required.
+	* atree.adb (Allocate_Initialize_Node, Replace, Rewrite): Add call to
+	update the SCIL_Node field.
+	* sprint.adb (Sprint_Node_Actual): Remove code for
+	N_SCIL_Dispatch_Table_Object_Init and N_SCIL_Tag_Init nodes.
+	* treepr.adb (Print_Node): Print the SCIL node field (if available).
+	* exp_ch3.adb (Build_Init_Procedure): Remove generation of
+	SCIL_Tag_Init nodes.
+	* scil_ll.ads, scil_ll.adb: New files.
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies.
+
+2010-06-23  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch6.adb: Minor reformatting.
 
 2010-06-23  Doug Rupp  <rupp@adacore.com>

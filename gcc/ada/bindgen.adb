@@ -811,7 +811,6 @@ package body Bindgen is
                Write_Statement_Buffer;
             end if;
          end if;
-
       end if;
 
       --  Generate call to set Initialize_Scalar values if active

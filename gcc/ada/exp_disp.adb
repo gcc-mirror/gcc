@@ -60,6 +60,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with SCIL_LL;  use SCIL_LL;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -578,8 +579,9 @@ package body Exp_Disp is
 
       --  Local variables
 
-      New_Node  : Node_Id;
-      SCIL_Node : Node_Id;
+      New_Node          : Node_Id;
+      SCIL_Node         : Node_Id;
+      SCIL_Related_Node : Node_Id := Call_Node;
 
    --  Start of processing for Expand_Dispatching_Call
 
@@ -647,19 +649,6 @@ package body Exp_Disp is
 
       if Ekind (Typ) = E_Incomplete_Type then
          Typ := Non_Limited_View (Typ);
-      end if;
-
-      --  Generate the SCIL node for this dispatching call. The SCIL node for a
-      --  dispatching call is inserted in the tree before the call is rewriten
-      --  and expanded because the SCIL node must be found by the SCIL backend
-      --  BEFORE the expanded nodes associated with the call node are found.
-
-      if Generate_SCIL then
-         SCIL_Node := Make_SCIL_Dispatching_Call (Sloc (Call_Node));
-         Set_SCIL_Related_Node (SCIL_Node, Call_Node);
-         Set_SCIL_Entity       (SCIL_Node, Typ);
-         Set_SCIL_Target_Prim  (SCIL_Node, Subp);
-         Insert_Action (Call_Node, SCIL_Node);
       end if;
 
       if not Is_Limited_Type (Typ) then
@@ -841,12 +830,16 @@ package body Exp_Disp is
       New_Call_Name :=
         Unchecked_Convert_To (Subp_Ptr_Typ, New_Node);
 
-      --  Complete decoration of SCIL dispatching node. It must be done after
-      --  the new call name is built to reference the nodes that will see the
-      --  SCIL backend (because Build_Get_Prim_Op_Address generates an
-      --  unchecked type conversion which relocates the controlling tag node).
+      --  Generate the SCIL node for this dispatching call. Done now because
+      --  attribute SCIL_Controlling_Tag must be set after the new call name
+      --  is built to reference the nodes that will see the SCIL backend
+      --  (because Build_Get_Prim_Op_Address generates an unchecked type
+      --  conversion which relocates the controlling tag node).
 
       if Generate_SCIL then
+         SCIL_Node := Make_SCIL_Dispatching_Call (Sloc (Call_Node));
+         Set_SCIL_Entity      (SCIL_Node, Typ);
+         Set_SCIL_Target_Prim (SCIL_Node, Subp);
 
          --  Common case: the controlling tag is the tag of an object
          --  (for example, obj.tag)
@@ -923,15 +916,6 @@ package body Exp_Disp is
          --  we generate: x.tag = y.tag and then x = y
 
          if Subp = Eq_Prim_Op then
-
-            --  Adjust the node referenced by the SCIL node to skip the tags
-            --  comparison because it is the information needed by the SCIL
-            --  backend to process this dispatching call
-
-            if Generate_SCIL then
-               Set_SCIL_Related_Node (SCIL_Node, New_Call);
-            end if;
-
             Param := First_Actual (Call_Node);
             New_Call :=
               Make_And_Then (Loc,
@@ -953,6 +937,8 @@ package body Exp_Disp is
                              New_Reference_To
                                (First_Tag_Component (Typ), Loc))),
                 Right_Opnd => New_Call);
+
+            SCIL_Related_Node := Right_Opnd (New_Call);
          end if;
 
       else
@@ -967,6 +953,12 @@ package body Exp_Disp is
       Register_CG_Node (Call_Node);
 
       Rewrite (Call_Node, New_Call);
+
+      --  Associate the SCIL node of this dispatching call
+
+      if Generate_SCIL then
+         Set_SCIL_Node (SCIL_Related_Node, SCIL_Node);
+      end if;
 
       --  Suppress all checks during the analysis of the expanded code
       --  to avoid the generation of spurious warnings under ZFP run-time.
@@ -4384,17 +4376,6 @@ package body Exp_Disp is
                   New_Reference_To
                     (RTE (RE_No_Dispatch_Table_Wrapper), Loc)));
 
-            --  Generate a SCIL node for the previous object declaration
-            --  because it has a null dispatch table.
-
-            if Generate_SCIL then
-               New_Node :=
-                 Make_SCIL_Dispatch_Table_Object_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
-               Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
-            end if;
-
             Append_To (Result,
               Make_Attribute_Definition_Clause (Loc,
                 Name       => New_Reference_To (DT, Loc),
@@ -4427,9 +4408,8 @@ package body Exp_Disp is
             if Generate_SCIL then
                New_Node :=
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
                Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
+               Set_SCIL_Node (Last (Result), New_Node);
             end if;
 
          --  Generate:
@@ -4460,17 +4440,6 @@ package body Exp_Disp is
                       New_Reference_To (RTE (RE_Dispatch_Table_Wrapper), Loc),
                     Constraint => Make_Index_Or_Discriminant_Constraint (Loc,
                                     Constraints => DT_Constr_List))));
-
-            --  Generate the SCIL node for the previous object declaration
-            --  because it contains a dispatch table.
-
-            if Generate_SCIL then
-               New_Node :=
-                 Make_SCIL_Dispatch_Table_Object_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
-               Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
-            end if;
 
             Append_To (Result,
               Make_Attribute_Definition_Clause (Loc,
@@ -4504,9 +4473,8 @@ package body Exp_Disp is
             if Generate_SCIL then
                New_Node :=
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
                Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
+               Set_SCIL_Node (Last (Result), New_Node);
             end if;
 
             Append_To (Result,
@@ -5274,17 +5242,6 @@ package body Exp_Disp is
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
 
-            --  Generate the SCIL node for the previous object declaration
-            --  because it has a null dispatch table.
-
-            if Generate_SCIL then
-               New_Node :=
-                 Make_SCIL_Dispatch_Table_Object_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
-               Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
-            end if;
-
             Append_To (Result,
               Make_Attribute_Definition_Clause (Loc,
                 Name       => New_Reference_To (DT, Loc),
@@ -5584,17 +5541,6 @@ package body Exp_Disp is
                                       Constraints => DT_Constr_List)),
                 Expression => Make_Aggregate (Loc,
                   Expressions => DT_Aggr_List)));
-
-            --  Generate the SCIL node for the previous object declaration
-            --  because it contains a dispatch table.
-
-            if Generate_SCIL then
-               New_Node :=
-                 Make_SCIL_Dispatch_Table_Object_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
-               Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
-            end if;
 
             Append_To (Result,
               Make_Attribute_Definition_Clause (Loc,
@@ -6294,9 +6240,8 @@ package body Exp_Disp is
             if Generate_SCIL then
                New_Node :=
                  Make_SCIL_Dispatch_Table_Tag_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
                Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
+               Set_SCIL_Node (Last (Result), New_Node);
             end if;
 
             Append_To (Result,
@@ -6333,17 +6278,6 @@ package body Exp_Disp is
                           New_Occurrence_Of
                             (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
-
-            --  Generate the SCIL node for the previous object declaration
-            --  because it has a tag initialization.
-
-            if Generate_SCIL then
-               New_Node :=
-                 Make_SCIL_Dispatch_Table_Object_Init (Sloc (Last (Result)));
-               Set_SCIL_Related_Node (New_Node, Last (Result));
-               Set_SCIL_Entity (New_Node, Typ);
-               Insert_Before (Last (Result), New_Node);
-            end if;
          end if;
 
          Set_Is_True_Constant (DT_Ptr);
