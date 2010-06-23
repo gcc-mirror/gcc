@@ -1,3 +1,13 @@
+2010-06-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* decl.c (java_init_decl_processing): Use double_int_to_tree instead
+	of build_int_cst_wide.
+	* boehm.c (set_bit): Remove.
+	(mark_reference_fields): Use double_int type for 'mask' argument.
+	Use double_int_setbit instead of set_bit.
+	(get_boehm_type_descriptor): Use double_int_setbit instead of
+	set_bit. Use double_int_to_tree instead of build_int_cst_wide.
+
 2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcj.texi: Move to GFDL version 1.3.  Fix copyright years.
