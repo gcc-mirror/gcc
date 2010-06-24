@@ -1,7 +1,16 @@
+2010-06-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* configure.ac (--enable-lto): Add x86_64-apple-darwin* as
+	a platform that supports LTO.
+	* configure: Regenerate.
+
 2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
-  Backport from mainline:
-  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+	Backport from mainline:
+	2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776
 	* configure.ac (--enable-lto): Refactor handling so libelf tests

@@ -235,6 +235,14 @@ struct gcc_target
        translation unit.  */
     void (*file_end) (void);
 
+    /* Output any boilerplate text needed at the beginning of an
+       LTO output stream.  */
+    void (*lto_start) (void);
+
+    /* Output any boilerplate text needed at the end of an
+       LTO output stream.  */
+    void (*lto_end) (void);
+
     /* Output any boilerplace text needed at the end of a
        translation unit before debug and unwind info is emitted.  */
     void (*code_end) (void);

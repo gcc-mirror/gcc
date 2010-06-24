@@ -91,3 +91,6 @@ lto/lto-elf.o: lto/lto-elf.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
 lto/lto-coff.o: lto/lto-coff.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
 	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H) \
 	lto/lto-coff.h
+lto/lto-macho.o: lto/lto-macho.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
+	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H) \
+	lto/lto-macho.h lto/lto-endian.h

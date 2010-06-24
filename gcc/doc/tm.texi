@@ -7149,6 +7149,18 @@ need to do other things in that hook, have your hook function call
 this function.
 @end deftypefun
 
+@deftypefn {Target Hook} void TARGET_ASM_LTO_START (void)
+Output to @code{asm_out_file} any text which the assembler expects
+to find at the start of an LTO section.  The default is to output
+nothing.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_LTO_END (void)
+Output to @code{asm_out_file} any text which the assembler expects
+to find at the end of an LTO section.  The default is to output
+nothing.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_CODE_END (void)
 Output to @code{asm_out_file} any text which is needed before emitting
 unwind info and debug info at the end of a file.  Some targets emit

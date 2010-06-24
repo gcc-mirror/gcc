@@ -6667,6 +6667,7 @@ else
   # -flto it won't be needed until after installation anyway.
     case $target in
       *-cygwin*|*-mingw*) ;;
+      x86_64-apple-darwin*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	as_fn_error "LTO support is not enabled for this target." "$LINENO" 5
         fi

@@ -1,3 +1,48 @@
+2010-06-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config.gcc (i[34567]86-*-darwin*, x86_64-*-darwin*): Add
+	lto-macho as lto_binary_reader.
+	* target.h (struct gcc_target): New hooks lto_start and	lto_end.
+	* target-def.h (TARGET_ASM_LTO_START, TARGET_ASM_LTO_END): Define.
+	* cgraphunit.c (ipa_passes): Wrap LTO assembler output generation
+	in lto_start and lto_end calls.
+	(is_elf_or_coff): Rename to maybe_lto_object_file.  Add Mach-O
+	magic numbers.
+	(scan_prog_file): Update is_elf_or_coff call.
+	* doc/tm.text (TARGET_ASM_LTO_START, TARGET_ASM_LTO_END): Document.
+
+	* collect2.c (main): Fix enum comparison.
+
+	* config/darwin-protos.h (darwin_asm_lto_start, darwin_asm_lto_end):
+	Add prototypes.
+	* darwin9.h (LINK_COMMAND_SPEC): Pass -flto and -fwhopr to the linker.
+	* darwin.h (LINK_COMMAND_SPEC): Likewise.  Define TARGET_ASM_LTO_START
+	and TARGET_ASM_LTO_END.
+	* darwin.c: Include obstack.h and lto-streamer.h.
+	(lto_section_names_offset, lto_section_names_obstack,
+	lto_asm_out_file, lto_asm_out_name, saved_asm_out_file): New static
+	global variables.
+	(LTO_SEGMENT_NAME, LTO_NAMES_SECTION): New defines.
+	(darwin_asm_lto_start): New function.  Redirect output to asm_out_file
+	to a temporary file.
+	(darwin_asm_lto_end): New function.  Restore asm_out_file.
+	(darwin_asm_named_section): For LTO sections, replace the name with
+	the offset of the section name in a string table, and build this
+	table.
+	(darwin_file_start): Initialize global vars for LTO support.
+	(darwin_file_end): If output to asm_out_file was redirected, append it
+	to the proper asm_out_file here.  Add the section names section.
+
+	Backport from mainline:
+	2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+        * darwin.c (darwin_asm_named_section): Do not add assembler comment
+	after .section directive; just print it before the directive
+	instead.
+
 2010-06-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Chain the

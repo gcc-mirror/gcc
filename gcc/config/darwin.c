@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "df.h"
 #include "debug.h"
+#include "obstack.h"
+#include "lto-streamer.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used
    for rapid turn around debugging.  When code is compiled with the
@@ -1391,12 +1393,89 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
   return (!strncmp ((const char *)p, "_OBJC_", 6));
 }
 
+/* LTO support for Mach-O.  */
+
+/* Section names for LTO sections.  */
+static unsigned int lto_section_names_offset = 0;
+
+/* This is the obstack which we use to allocate the many strings.  */
+static struct obstack lto_section_names_obstack;
+
+/* Segment name for LTO sections.  */
+#define LTO_SEGMENT_NAME "__GNU_LTO"
+
+/* Section name for LTO section names section.  */
+#define LTO_NAMES_SECTION "__section_names"
+
+/* File to temporarily store LTO data.  This is appended to asm_out_file
+   in darwin_end_file.  */
+static FILE *lto_asm_out_file, *saved_asm_out_file;
+static char *lto_asm_out_name;
+
+/* Prepare asm_out_file for LTO output.  For darwin, this means hiding
+   asm_out_file and switching to an alternative output file.  */
+void
+darwin_asm_lto_start (void)
+{
+  gcc_assert (! saved_asm_out_file);
+  saved_asm_out_file = asm_out_file;
+  if (! lto_asm_out_name)
+    lto_asm_out_name = make_temp_file (".lto.s");
+  lto_asm_out_file = fopen (lto_asm_out_name, "a");
+  if (lto_asm_out_file == NULL)
+    fatal_error ("failed to open temporary file %s for LTO output",
+		 lto_asm_out_name);
+  asm_out_file = lto_asm_out_file;
+}
+
+/* Restore asm_out_file.  */
+void
+darwin_asm_lto_end (void)
+{
+  gcc_assert (saved_asm_out_file);
+  fclose (lto_asm_out_file);
+  asm_out_file = saved_asm_out_file;
+  saved_asm_out_file = NULL;
+}
+
 void
 darwin_asm_named_section (const char *name,
-			  unsigned int flags ATTRIBUTE_UNUSED,
+			  unsigned int flags,
 			  tree decl ATTRIBUTE_UNUSED)
 {
-  fprintf (asm_out_file, "\t.section %s\n", name);
+  /* LTO sections go in a special segment __GNU_LTO.  We want to replace the
+     section name with something we can use to represent arbitrary-length
+     names (section names in Mach-O are at most 16 characters long).  */
+  if (strncmp (name, LTO_SECTION_NAME_PREFIX,
+	       strlen (LTO_SECTION_NAME_PREFIX)) == 0)
+    {
+      /* We expect certain flags to be set...  */
+      gcc_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
+		  == (SECTION_DEBUG | SECTION_NAMED));
+
+      /* Add the section name to the things to output when we end the
+	 current assembler output file.
+	 This is all not very efficient, but that doesn't matter -- this
+	 shouldn't be a hot path in the compiler...  */
+      obstack_1grow (&lto_section_names_obstack, '\t');
+      obstack_grow (&lto_section_names_obstack, ".ascii ", 7);
+      obstack_1grow (&lto_section_names_obstack, '"');
+      obstack_grow (&lto_section_names_obstack, name, strlen (name));
+      obstack_grow (&lto_section_names_obstack, "\\0\"\n", 4);
+
+      /* Output the dummy section name.  */
+      fprintf (asm_out_file, "\t# %s\n", name);
+      fprintf (asm_out_file, "\t.section %s,__%08X,regular,debug\n",
+	       LTO_SEGMENT_NAME, lto_section_names_offset);
+
+      /* Update the offset for the next section name.  Make sure we stay
+	 within reasonable length.  */  
+      lto_section_names_offset += strlen (name) + 1;
+      gcc_assert (lto_section_names_offset > 0
+		  && lto_section_names_offset < ((unsigned) 1 << 31));
+    }
+  else
+    fprintf (asm_out_file, "\t.section %s\n", name);
 }
 
 void
@@ -1589,7 +1668,8 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
     fprintf (file, "\n\t%s L$set$%d", directive, darwin_dwarf_label_counter++);
 }
 
-/* Output labels for the start of the DWARF sections if necessary.  */
+/* Output labels for the start of the DWARF sections if necessary.
+   Initialize the stuff we need for LTO long section names support.  */
 void
 darwin_file_start (void)
 {
@@ -1624,6 +1704,11 @@ darwin_file_start (void)
 	  fprintf (asm_out_file, "Lsection%.*s:\n", namelen, debugnames[i] + 8);
 	}
     }
+
+  /* We fill this obstack with the complete section text for the lto section
+     names to write in darwin_file_end.  */
+  obstack_init (&lto_section_names_obstack);
+  lto_section_names_offset = 0;
 }
 
 /* Output an offset in a DWARF section on Darwin.  On Darwin, DWARF section
@@ -1650,6 +1735,8 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
 void
 darwin_file_end (void)
 {
+  const char *lto_section_names;
+
   machopic_finish (asm_out_file);
   if (strcmp (lang_hooks.name, "GNU C++") == 0)
     {
@@ -1657,6 +1744,52 @@ darwin_file_end (void)
       switch_to_section (darwin_sections[destructor_section]);
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
     }
+
+  /* If there was LTO assembler output, append it to asm_out_file.  */
+  if (lto_asm_out_name)
+    {
+      int n;
+      char *buf, *lto_asm_txt;
+
+      /* Shouldn't be here if we failed to switch back.  */
+      gcc_assert (! saved_asm_out_file);
+
+      lto_asm_out_file = fopen (lto_asm_out_name, "r");
+      if (lto_asm_out_file == NULL)
+	fatal_error ("failed to open temporary file %s with LTO output",
+		     lto_asm_out_name);
+      fseek (lto_asm_out_file, 0, SEEK_END);
+      n = ftell (lto_asm_out_file);
+      if (n > 0)
+        {
+	  fseek (lto_asm_out_file, 0, SEEK_SET);
+	  lto_asm_txt = buf = (char *) xmalloc (n + 1);
+	  while (fgets (lto_asm_txt, n, lto_asm_out_file))
+	    fputs (lto_asm_txt, asm_out_file);
+	}
+
+      /* Remove the temporary file.  */
+      fclose (lto_asm_out_file);
+      unlink_if_ordinary (lto_asm_out_name);
+      free (lto_asm_out_name);
+    }
+
+  /* Finish the LTO section names obstack.  Don't output anything if
+     there are no recorded section names.  */
+  obstack_1grow (&lto_section_names_obstack, '\0');
+  lto_section_names = XOBFINISH (&lto_section_names_obstack, const char *);
+  if (strlen (lto_section_names) > 0)
+    {
+      fprintf (asm_out_file,
+	       "\t.section %s,%s,regular,debug\n",
+	       LTO_SEGMENT_NAME, LTO_NAMES_SECTION);
+      fprintf (asm_out_file,
+	       "\t# Section names in %s are offsets into this table\n",
+	       LTO_SEGMENT_NAME);
+      fprintf (asm_out_file, "%s\n", lto_section_names);
+    }
+  obstack_free (&lto_section_names_obstack, NULL);
+
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
 

@@ -1,7 +1,18 @@
+2010-06-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from mainline:
+	2010-05-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lto.h (struct lto_file_struct): Document offset member.
+	* lto-endian.h: New file.
+	* lto-macho.h: New file.
+	* lto-macho.c: New file.
+	* Make-lang.in: Add rule for lto-macho.o.
+
 2010-06-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
-  Backport from mainline:
-  2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+	Backport from mainline:
+	2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42776
 	* Make-lang.in (LTO_OBJS): Use LTO_BINARY_READER instead of

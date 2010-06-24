@@ -1784,6 +1784,7 @@ fi],[if test x"$default_enable_lto" = x"yes" ; then
   # -flto it won't be needed until after installation anyway.
     case $target in
       *-cygwin*|*-mingw*) ;;
+      x86_64-apple-darwin*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi
