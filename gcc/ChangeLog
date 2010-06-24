@@ -1,3 +1,10 @@
+2010-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (XFmode push splitter): Use GET_MODE_SIZE to
+	determine size of XFmode operand.
+	(XFmode extended DFmode push splitter): Ditto.
+	(XFmode extended SFmode push splitter): Ditto.
+
 2010-06-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44588
@@ -19,9 +26,9 @@
 
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
-	* c-parser.c (c_parser_conditional_expression):
-        Call warn_for_omitted_condop.
-        * doc/invoke.texi: Document omitted condop warning.
+	* c-parser.c (c_parser_conditional_expression): Call
+	warn_for_omitted_condop.
+	* doc/invoke.texi: Document omitted condop warning.
 
 2010-06-24  Nick Clifton<nickc@redhat.com>
 
@@ -38,7 +45,7 @@
 
 2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386 (mov<mode>): Macroize expander from mov{sf,df,xf}
+	* config/i386/i386.md (mov<mode>): Macroize expander from mov{sf,df,xf}
 	using X87MODEF mode iterator.
 	(pushsf splitter): Macroize splitter using P mode iterator.
 	(*swap<mode>): Macroize insn from *swap{sf,df} using MODEF
