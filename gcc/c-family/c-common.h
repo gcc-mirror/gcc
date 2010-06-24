@@ -736,6 +736,7 @@ extern void c_parse_file (void);
 /* This is misnamed, it actually performs end-of-compilation processing.  */
 extern void finish_file	(void);
 
+extern void warn_for_omitted_condop (location_t, tree);
 
 /* These macros provide convenient access to the various _STMT nodes.  */
 

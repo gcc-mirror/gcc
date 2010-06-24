@@ -1,3 +1,8 @@
+2010-06-24  Andi Kleen  <ak@linux.intel.com>
+
+        * c-common.c (warn_for_omitted_condop): New.
+        * c-common.h (warn_for_omitted_condop): Add prototype.
+
 2010-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (lang-objc): Remove.

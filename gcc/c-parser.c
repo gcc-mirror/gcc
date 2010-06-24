@@ -4795,7 +4795,7 @@ static struct c_expr
 c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 {
   struct c_expr cond, exp1, exp2, ret;
-  location_t cond_loc, colon_loc;
+  location_t cond_loc, colon_loc, middle_loc;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -4809,8 +4809,11 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       tree eptype = NULL_TREE;
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+
+      middle_loc = c_parser_peek_token (parser)->location;
+      pedwarn (middle_loc, OPT_pedantic, 
 	       "ISO C forbids omitting the middle term of a ?: expression");
+      warn_for_omitted_condop (middle_loc, cond.value);
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);

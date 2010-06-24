@@ -1,3 +1,10 @@
+2010-06-24  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.c: (cp_parser_question_colon_clause):
+        Switch to use cp_lexer_peek_token.
+        Call warn_for_omitted_condop. Call pedwarn for omitted
+        middle operand.
+
 2010-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44619

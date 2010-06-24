@@ -6815,15 +6815,20 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
 {
   tree expr;
   tree assignment_expr;
+  struct cp_token *token;
 
   /* Consume the `?' token.  */
   cp_lexer_consume_token (parser->lexer);
+  token = cp_lexer_peek_token (parser->lexer);
   if (cp_parser_allow_gnu_extensions_p (parser)
-      && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+      && token->type == CPP_COLON)
     {
+      pedwarn (token->location, OPT_pedantic, 
+               "ISO C++ does not allow ?: with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
       c_inhibit_evaluation_warnings += logical_or_expr == truthvalue_true_node;
+      warn_for_omitted_condop (token->location, logical_or_expr);
     }
   else
     {
