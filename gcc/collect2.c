@@ -1593,9 +1593,9 @@ main (int argc, char **argv)
 		}
 	      else if (strncmp (arg, "--sysroot=", 10) == 0)
 		target_system_root = arg + 10;
-	      else if (strncmp (arg, "--version", 9) == 0)
+	      else if (strcmp (arg, "--version") == 0)
 		vflag = true;
-	      else if (strncmp (arg, "--help", 9) == 0)
+	      else if (strcmp (arg, "--help") == 0)
 		helpflag = true;
 	      break;
 	    }
