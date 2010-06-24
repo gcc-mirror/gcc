@@ -1,3 +1,7 @@
+2010-06-24  Alan Modra  <amodra@gmail.com>
+
+	* collect2.c (main): Match exactly --version and --help.
+
 2010-06-24  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c-pragma.c: Don't include rtl.h.
