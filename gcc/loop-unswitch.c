@@ -110,6 +110,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       gcc_assert (rtx_equal_p (op1, XEXP (cond, 1)));
       emit_jump_insn (copy_insn (PATTERN (cinsn)));
       jump = get_last_insn ();
+      gcc_assert (JUMP_P (jump));
       JUMP_LABEL (jump) = JUMP_LABEL (cinsn);
       LABEL_NUSES (JUMP_LABEL (jump))++;
       redirect_jump (jump, label, 0);
@@ -123,6 +124,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       do_compare_rtx_and_jump (op0, op1, comp, 0,
 			       mode, NULL_RTX, NULL_RTX, label, -1);
       jump = get_last_insn ();
+      gcc_assert (JUMP_P (jump));
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
     }

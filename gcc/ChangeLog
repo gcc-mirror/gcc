@@ -1,3 +1,8 @@
+2010-06-24  Nick Clifton<nickc@redhat.com>
+
+	* loop-unswitch.c (compare_and_jump_seq): Assert that the last
+	insn in the sequence is a jump insn before setting its label.
+
 2010-06-24  Alan Modra  <amodra@gmail.com>
 
 	* collect2.c (main): Match exactly --version and --help.
