@@ -1,3 +1,7 @@
+2010-06-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira.c (allocno_pool, copy_pool, allocno_live_range_pool): Delete.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.

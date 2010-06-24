@@ -331,9 +331,6 @@ int internal_flag_ira_verbose;
 /* Dump file of the allocator if it is not NULL.  */
 FILE *ira_dump_file;
 
-/* Pools for allocnos, copies, allocno live ranges.  */
-alloc_pool allocno_pool, copy_pool, allocno_live_range_pool;
-
 /* The number of elements in the following array.  */
 int ira_spilled_reg_stack_slots_num;
 
