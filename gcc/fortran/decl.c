@@ -1764,7 +1764,7 @@ variable_decl (int elem)
      specified in the procedure definition, except that the interface
      may specify a procedure that is not pure if the procedure is
      defined to be pure(12.3.2).  */
-  if (current_ts.type == BT_DERIVED
+  if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
       && gfc_current_ns->proc_name
       && gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
       && current_ts.u.derived->ns != gfc_current_ns)
