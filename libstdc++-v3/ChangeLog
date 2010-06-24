@@ -1,5 +1,11 @@
 2010-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/impl/profiler_trace.h (__trace_base<>::
+	__trace_base()): Move inline, simplify; formatting tweaks.
+	* include/profile/impl/profiler_hash_func.h: Formatting tweaks.
+
+2010-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/profile/impl/profiler_trace.h (__warning_data::
 	__warning_message): Change to std::string; clean-up includes,
 	qualify size_t, fprintf, etc, with std everywhere.
