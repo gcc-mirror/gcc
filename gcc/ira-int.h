@@ -59,7 +59,7 @@ extern FILE *ira_dump_file;
 
 /* Typedefs for pointers to allocno live range, allocno, and copy of
    allocnos.  */
-typedef struct ira_allocno_live_range *allocno_live_range_t;
+typedef struct live_range *live_range_t;
 typedef struct ira_allocno *ira_allocno_t;
 typedef struct ira_allocno_copy *ira_copy_t;
 
@@ -196,7 +196,7 @@ extern ira_loop_tree_node_t ira_loop_nodes;
    conflicts for other allocnos (e.g. to assign stack memory slot) we
    use the live ranges.  If the live ranges of two allocnos are
    intersected, the allocnos are in conflict.  */
-struct ira_allocno_live_range
+struct live_range
 {
   /* Allocno whose live range is described by given structure.  */
   ira_allocno_t allocno;
@@ -204,9 +204,9 @@ struct ira_allocno_live_range
   int start, finish;
   /* Next structure describing program points where the allocno
      lives.  */
-  allocno_live_range_t next;
+  live_range_t next;
   /* Pointer to structures with the same start/finish.  */
-  allocno_live_range_t start_next, finish_next;
+  live_range_t start_next, finish_next;
 };
 
 /* Program points are enumerated by numbers from range
@@ -220,7 +220,7 @@ extern int ira_max_point;
 
 /* Arrays of size IRA_MAX_POINT mapping a program point to the allocno
    live ranges with given start/finish point.  */
-extern allocno_live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
+extern live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
 
 /* A structure representing an allocno (allocation entity).  Allocno
    represents a pseudo-register in an allocation region.  If
@@ -305,7 +305,7 @@ struct ira_allocno
      allocno lives.  We always maintain the list in such way that *the
      ranges in the list are not intersected and ordered by decreasing
      their program points*.  */
-  allocno_live_range_t live_ranges;
+  live_range_t live_ranges;
   /* Before building conflicts the two member values are
      correspondingly minimal and maximal points of the accumulated
      allocno live ranges.  After building conflicts the values are
@@ -852,16 +852,13 @@ extern void ira_allocate_allocno_conflict_vec (ira_allocno_t, int);
 extern void ira_allocate_allocno_conflicts (ira_allocno_t, int);
 extern void ira_add_allocno_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_print_expanded_allocno (ira_allocno_t);
-extern allocno_live_range_t ira_create_allocno_live_range
-	                    (ira_allocno_t, int, int, allocno_live_range_t);
-extern allocno_live_range_t ira_copy_allocno_live_range_list
-                            (allocno_live_range_t);
-extern allocno_live_range_t ira_merge_allocno_live_ranges
-                            (allocno_live_range_t, allocno_live_range_t);
-extern bool ira_allocno_live_ranges_intersect_p (allocno_live_range_t,
-						 allocno_live_range_t);
-extern void ira_finish_allocno_live_range (allocno_live_range_t);
-extern void ira_finish_allocno_live_range_list (allocno_live_range_t);
+extern live_range_t ira_create_allocno_live_range (ira_allocno_t, int, int,
+						   live_range_t);
+extern live_range_t ira_copy_allocno_live_range_list (live_range_t);
+extern live_range_t ira_merge_allocno_live_ranges (live_range_t, live_range_t);
+extern bool ira_allocno_live_ranges_intersect_p (live_range_t, live_range_t);
+extern void ira_finish_allocno_live_range (live_range_t);
+extern void ira_finish_allocno_live_range_list (live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
@@ -888,8 +885,8 @@ extern void ira_tune_allocno_costs_and_cover_classes (void);
 /* ira-lives.c */
 
 extern void ira_rebuild_start_finish_chains (void);
-extern void ira_print_live_range_list (FILE *, allocno_live_range_t);
-extern void ira_debug_live_range_list (allocno_live_range_t);
+extern void ira_print_live_range_list (FILE *, live_range_t);
+extern void ira_debug_live_range_list (live_range_t);
 extern void ira_debug_allocno_live_ranges (ira_allocno_t);
 extern void ira_debug_live_ranges (void);
 extern void ira_create_allocno_live_ranges (void);

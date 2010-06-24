@@ -54,7 +54,7 @@ int ira_max_point;
 
 /* Arrays of size IRA_MAX_POINT mapping a program point to the allocno
    live ranges with given start/finish point.  */
-allocno_live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
+live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
 
 /* Number of the current program point.  */
 static int curr_point;
@@ -112,7 +112,7 @@ make_hard_regno_dead (int regno)
 static void
 make_allocno_born (ira_allocno_t a)
 {
-  allocno_live_range_t p = ALLOCNO_LIVE_RANGES (a);
+  live_range_t p = ALLOCNO_LIVE_RANGES (a);
 
   sparseset_set_bit (allocnos_live, ALLOCNO_NUM (a));
   IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a), hard_regs_live);
@@ -131,7 +131,7 @@ update_allocno_pressure_excess_length (ira_allocno_t a)
 {
   int start, i;
   enum reg_class cover_class, cl;
-  allocno_live_range_t p;
+  live_range_t p;
 
   cover_class = ALLOCNO_COVER_CLASS (a);
   for (i = 0;
@@ -153,7 +153,7 @@ update_allocno_pressure_excess_length (ira_allocno_t a)
 static void
 make_allocno_dead (ira_allocno_t a)
 {
-  allocno_live_range_t p;
+  live_range_t p;
 
   p = ALLOCNO_LIVE_RANGES (a);
   ira_assert (p != NULL);
@@ -1140,18 +1140,18 @@ create_start_finish_chains (void)
 {
   ira_allocno_t a;
   ira_allocno_iterator ai;
-  allocno_live_range_t r;
+  live_range_t r;
 
   ira_start_point_ranges
-    = (allocno_live_range_t *) ira_allocate (ira_max_point
-					     * sizeof (allocno_live_range_t));
+    = (live_range_t *) ira_allocate (ira_max_point
+					     * sizeof (live_range_t));
   memset (ira_start_point_ranges, 0,
-	  ira_max_point * sizeof (allocno_live_range_t));
+	  ira_max_point * sizeof (live_range_t));
   ira_finish_point_ranges
-    = (allocno_live_range_t *) ira_allocate (ira_max_point
-					     * sizeof (allocno_live_range_t));
+    = (live_range_t *) ira_allocate (ira_max_point
+					     * sizeof (live_range_t));
   memset (ira_finish_point_ranges, 0,
-	  ira_max_point * sizeof (allocno_live_range_t));
+	  ira_max_point * sizeof (live_range_t));
   FOR_EACH_ALLOCNO (a, ai)
     {
       for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
@@ -1185,7 +1185,7 @@ remove_some_program_points_and_update_live_ranges (void)
   int *map;
   ira_allocno_t a;
   ira_allocno_iterator ai;
-  allocno_live_range_t r;
+  live_range_t r;
   bitmap born_or_died;
   bitmap_iterator bi;
 
@@ -1223,7 +1223,7 @@ remove_some_program_points_and_update_live_ranges (void)
 
 /* Print live ranges R to file F.  */
 void
-ira_print_live_range_list (FILE *f, allocno_live_range_t r)
+ira_print_live_range_list (FILE *f, live_range_t r)
 {
   for (; r != NULL; r = r->next)
     fprintf (f, " [%d..%d]", r->start, r->finish);
@@ -1232,7 +1232,7 @@ ira_print_live_range_list (FILE *f, allocno_live_range_t r)
 
 /* Print live ranges R to stderr.  */
 void
-ira_debug_live_range_list (allocno_live_range_t r)
+ira_debug_live_range_list (live_range_t r)
 {
   ira_print_live_range_list (stderr, r);
 }

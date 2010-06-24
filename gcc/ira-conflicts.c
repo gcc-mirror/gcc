@@ -71,7 +71,7 @@ build_conflict_bit_table (void)
   unsigned int j;
   enum reg_class cover_class;
   ira_allocno_t allocno, live_a;
-  allocno_live_range_t r;
+  live_range_t r;
   ira_allocno_iterator ai;
   sparseset allocnos_live;
   int allocno_set_words;

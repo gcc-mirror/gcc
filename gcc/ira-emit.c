@@ -913,7 +913,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   move_t move;
   ira_allocno_t to, from, a;
   ira_copy_t cp;
-  allocno_live_range_t r;
+  live_range_t r;
   bitmap_iterator bi;
   HARD_REG_SET hard_regs_live;
 

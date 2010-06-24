@@ -45,6 +45,11 @@
 	ira_allocno_set_iter_Next and FOR_EACH_ALLOCNO_IN_ALLOCNO_SET.  All
 	uses changed.
 
+	* ira-int.h (struct live_range, live_range_t): Renamed from struct
+	ira_allocno_live_range and allocno_live_range_t; all uses changed.
+	* ira-build.c (live_range_pool): Renamed from allocno_live_range_pool.
+	All uses changed.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.
