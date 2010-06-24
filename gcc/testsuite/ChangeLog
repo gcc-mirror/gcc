@@ -1,3 +1,9 @@
+2010-06-24  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/43283
+	* gcc.dg/lto/20091216-1_0.c: Use newline instead of semicolon
+	and add argument to nop for IA64.
+
 2010-06-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44588
