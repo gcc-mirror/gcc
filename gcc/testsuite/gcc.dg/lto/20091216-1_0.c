@@ -1,9 +1,9 @@
 /* { dg-lto-do run } */
 
 #ifdef __ia64
-asm (".globl start_\n\tstart_: nop 0");
+asm (".globl start_\nstart_: nop 0");
 #else
-asm (".globl start_\n\tstart_: nop");
+asm (".globl start_\nstart_: nop");
 #endif
 
 int
