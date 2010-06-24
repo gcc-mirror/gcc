@@ -1,3 +1,8 @@
+2010-06-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44614
+	* decl.c (variable_decl): Fix IMPORT diagnostic for CLASS.
+
 2010-06-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44616
