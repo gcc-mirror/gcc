@@ -36,6 +36,15 @@
 	* ira-color.c (assign_hard_reg): Improve formatting of multi-line for
 	statement.
 
+	* ira-int.h (SET_MINMAX_SET_BIT, CLEAR_MINMAX_SET_BIT,
+	TEST_MINMAX_SET_BIT, minmax_set_iterator, minmax_set_iter_init,
+	minmax_set_iter_cond, minmax_set_iter_next,
+	FOR_EACH_BIT_IN_MINMAX_SET): Renamed from SET_ALLOCNO_SET_BIT,
+	CLEAR_ALLOCNO_SET_BIT, TEST_ALLOCNO_SET_BIT, ira_allocno_set_iterator,
+	ira_allocno_set_iter_init, ira_allocno_set_iter_cond,
+	ira_allocno_set_iter_Next and FOR_EACH_ALLOCNO_IN_ALLOCNO_SET.  All
+	uses changed.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.
