@@ -50,15 +50,15 @@ namespace __gnu_profile
   public:
     __hashfunc_info()
     : _M_longest_chain(0), _M_accesses(0), _M_hops(0) { }
-  
+
     __hashfunc_info(const __hashfunc_info& __o)
-      : __object_info_base(__o), _M_longest_chain(__o._M_longest_chain),
-	_M_accesses(__o._M_accesses), _M_hops(__o._M_hops) { }
-  
+    : __object_info_base(__o), _M_longest_chain(__o._M_longest_chain),
+      _M_accesses(__o._M_accesses), _M_hops(__o._M_hops) { }
+
     __hashfunc_info(__stack_t __stack)
-    : __object_info_base(__stack),
-      _M_longest_chain(0), _M_accesses(0), _M_hops(0) { }
- 
+    : __object_info_base(__stack), _M_longest_chain(0),
+      _M_accesses(0), _M_hops(0) { }
+
     virtual ~__hashfunc_info() { }
 
     void

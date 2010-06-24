@@ -190,8 +190,13 @@ namespace __gnu_profile
     class __trace_base
     {
     public:
-      __trace_base();
-      virtual ~__trace_base() {}
+      // Do not pick the initial size too large, as we don't know which
+      // diagnostics are more active.
+      __trace_base()
+      : __object_table(10000), __stack_table(10000),
+	__stack_table_byte_size(0), __id(0) { }
+
+      virtual ~__trace_base() { }
 
       void __add_object(__object_t object, __object_info __info);
       __object_info* __get_object_info(__object_t __object);
@@ -226,18 +231,6 @@ namespace __gnu_profile
 					    (*__i).first, 
 					    __id,
 					    (*__i).second.__advice()));
-    }
-
-  template<typename __object_info, typename __stack_info>
-    __trace_base<__object_info, __stack_info>::
-    __trace_base()
-    {
-      // Do not pick the initial size too large, as we don't know which
-      // diagnostics are more active.
-      __object_table.rehash(10000);
-      __stack_table.rehash(10000);
-      __stack_table_byte_size = 0;
-      __id = 0;
     }
 
   template<typename __object_info, typename __stack_info>
@@ -326,19 +319,16 @@ namespace __gnu_profile
     __trace_base<__object_info, __stack_info>::
     __write(FILE* __f)
     {
-      typename __stack_table_t::iterator __it;
-
-      for (__it = __stack_table.begin(); __it != __stack_table.end(); ++__it)
-	{
-	  if (__it->second.__is_valid())
-	    {
-	      std::fprintf(__f, __id);
-	      std::fprintf(__f, "|");
-	      __gnu_profile::__write(__f, __it->first);
-	      std::fprintf(__f, "|");
-	      __it->second.__write(__f);
-	    }
-	}
+      for (typename __stack_table_t::iterator __it
+	     = __stack_table.begin(); __it != __stack_table.end(); ++__it)
+	if (__it->second.__is_valid())
+	  {
+	    std::fprintf(__f, __id);
+	    std::fprintf(__f, "|");
+	    __gnu_profile::__write(__f, __it->first);
+	    std::fprintf(__f, "|");
+	    __it->second.__write(__f);
+	  }
     }
 
   inline std::size_t
@@ -414,18 +404,17 @@ namespace __gnu_profile
     *(__file_name + __root_len) = '.';
     __builtin_memcpy(__file_name + __root_len + 1,
 		     __extension, __ext_len + 1);
+
     FILE* __out_file = std::fopen(__file_name, "w");
-    if (__out_file)
-      {
-	delete[] __file_name;
-	return __out_file;
-      }
-    else
+    if (!__out_file)
       {
 	std::fprintf(stderr, "Could not open trace file '%s'.\n",
 		     __file_name);
 	std::abort();
       }
+
+    delete[] __file_name;
+    return __out_file;
   }
 
   struct __warn
@@ -544,8 +533,10 @@ namespace __gnu_profile
   struct __cost_factor_writer
   {
     FILE* __file;
-    __cost_factor_writer(FILE* __f) : __file(__f) { }
-  
+
+    __cost_factor_writer(FILE* __f)
+    : __file(__f) { }
+
     void
     operator() (const __cost_factor* __factor)
     { std::fprintf(__file, "%s = %f\n", __factor->__env_var,
@@ -565,7 +556,7 @@ namespace __gnu_profile
   struct __cost_factor_setter
   {
     void
-    operator() (__cost_factor* __factor)
+    operator()(__cost_factor* __factor)
     {
       // Look it up in the process environment first.
       const char* __env_value = std::getenv(__factor->__env_var);
@@ -663,7 +654,7 @@ namespace __gnu_profile
    * The common path is inlined fully.
    */
   inline bool
-  __profcxx_init(void)
+  __profcxx_init()
   {
     if (__is_invalid())
       __profcxx_init_unconditional();
