@@ -485,9 +485,8 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 #ifdef STACK_REGS
       no_stack_reg_p = no_stack_reg_p || ALLOCNO_TOTAL_NO_STACK_REG_P (a);
 #endif
-      for (cost = ALLOCNO_UPDATED_COVER_CLASS_COST (a), i = 0;
-	   i < class_size;
-	   i++)
+      cost = ALLOCNO_UPDATED_COVER_CLASS_COST (a);
+      for (i = 0; i < class_size; i++)
 	if (a_costs != NULL)
 	  {
 	    costs[i] += a_costs[i];

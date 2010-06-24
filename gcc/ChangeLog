@@ -33,6 +33,9 @@
 	* ira-conflicts.c (process_regs_for_copy, propagate_copies)
 	build_allocno_conflicts): Use ira_parent_or_cap_allocno.
 
+	* ira-color.c (assign_hard_reg): Improve formatting of multi-line for
+	statement.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.
