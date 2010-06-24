@@ -1,3 +1,11 @@
+2010-06-24  Anatoly Sokolov  <aesok@post.ru>
+
+	* fold-const.c (const_binop): Remove 'notrunc' argement. Adjust
+	recursive call and call to 'int_const_binop'.
+	(build_range_check, fold_cond_expr_with_comparison, unextend,
+	fold_truthop, extract_muldiv_1, fold_comparison, fold_binary_loc,
+	multiple_of_p): Adjust call to const_binop.
+
 2010-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (XFmode push splitter): Use GET_MODE_SIZE to
