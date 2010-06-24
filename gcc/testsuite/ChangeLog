@@ -1,3 +1,7 @@
+2010-06-24  Andi Kleen  <ak@linux.intel.com>
+
+        * c-c++-common/warn-omitted-condop.c: New.
+
 2010-06-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44614

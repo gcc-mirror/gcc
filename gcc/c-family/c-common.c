@@ -8405,6 +8405,18 @@ fold_offsetof (tree expr, tree stop_ref)
   return convert (size_type_node, fold_offsetof_1 (expr, stop_ref));
 }
 
+/* Warn for A ?: C expressions (with B omitted) where A is a boolean 
+   expression, because B will always be true. */
+
+void
+warn_for_omitted_condop (location_t location, tree cond) 
+{ 
+  if (truth_value_p (TREE_CODE (cond))) 
+      warning_at (location, OPT_Wparentheses, 
+		"the omitted middle operand in ?: will always be %<true%>, "
+		"suggest explicit middle operand");
+} 
+
 /* Print an error message for an invalid lvalue.  USE says
    how the lvalue is being used and so selects the error message.  */
 

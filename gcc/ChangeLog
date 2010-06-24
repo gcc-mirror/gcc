@@ -1,3 +1,9 @@
+2010-06-24  Andi Kleen  <ak@linux.intel.com>
+
+	* c-parser.c (c_parser_conditional_expression):
+        Call warn_for_omitted_condop.
+        * doc/invoke.texi: Document omitted condop warning.
+
 2010-06-24  Nick Clifton<nickc@redhat.com>
 
 	* loop-unswitch.c (compare_and_jump_seq): Assert that the last
