@@ -504,6 +504,25 @@ ira_set_allocno_cover_class (ira_allocno_t a, enum reg_class cover_class)
 			  reg_class_contents[cover_class]);
 }
 
+/* Merge hard register conflicts from allocno FROM into allocno TO.  If
+   TOTAL_ONLY is true, we ignore ALLOCNO_CONFLICT_HARD_REGS.  */
+static void
+merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
+			  bool total_only)
+{
+  if (!total_only)
+    IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (to),
+		      ALLOCNO_CONFLICT_HARD_REGS (from));
+  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (to),
+		    ALLOCNO_TOTAL_CONFLICT_HARD_REGS (from));
+#ifdef STACK_REGS
+  if (!total_only && ALLOCNO_NO_STACK_REG_P (from))
+    ALLOCNO_NO_STACK_REG_P (to) = true;
+  if (ALLOCNO_TOTAL_NO_STACK_REG_P (from))
+    ALLOCNO_TOTAL_NO_STACK_REG_P (to) = true;
+#endif
+}
+
 /* Return TRUE if the conflict vector with NUM elements is more
    profitable than conflict bit vector for A.  */
 bool
@@ -781,15 +800,8 @@ create_cap_allocno (ira_allocno_t a)
   ALLOCNO_NREFS (cap) = ALLOCNO_NREFS (a);
   ALLOCNO_FREQ (cap) = ALLOCNO_FREQ (a);
   ALLOCNO_CALL_FREQ (cap) = ALLOCNO_CALL_FREQ (a);
-  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (cap),
-		    ALLOCNO_CONFLICT_HARD_REGS (a));
-  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (cap),
-		    ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
+  merge_hard_reg_conflicts (a, cap, false);
   ALLOCNO_CALLS_CROSSED_NUM (cap) = ALLOCNO_CALLS_CROSSED_NUM (a);
-#ifdef STACK_REGS
-  ALLOCNO_NO_STACK_REG_P (cap) = ALLOCNO_NO_STACK_REG_P (a);
-  ALLOCNO_TOTAL_NO_STACK_REG_P (cap) = ALLOCNO_TOTAL_NO_STACK_REG_P (a);
-#endif
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     {
       fprintf (ira_dump_file, "    Creating cap ");
@@ -1603,12 +1615,7 @@ propagate_allocno_info (void)
 	  ALLOCNO_NREFS (parent_a) += ALLOCNO_NREFS (a);
 	  ALLOCNO_FREQ (parent_a) += ALLOCNO_FREQ (a);
 	  ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
-#ifdef STACK_REGS
-	  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
-	    ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
-#endif
-	  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
-			    ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
+	  merge_hard_reg_conflicts (a, parent_a, true);
 	  ALLOCNO_CALLS_CROSSED_NUM (parent_a)
 	    += ALLOCNO_CALLS_CROSSED_NUM (a);
 	  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
@@ -1655,6 +1662,46 @@ change_allocno_in_range_list (allocno_live_range_t r, ira_allocno_t a)
 {
   for (; r != NULL; r = r->next)
     r->allocno = a;
+}
+
+/* Move all live ranges associated with allocno FROM to allocno TO.  */
+static void
+move_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
+{
+  allocno_live_range_t lr = ALLOCNO_LIVE_RANGES (from);
+
+  if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+    {
+      fprintf (ira_dump_file,
+	       "      Moving ranges of a%dr%d to a%dr%d: ",
+	       ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
+	       ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
+      ira_print_live_range_list (ira_dump_file, lr);
+    }
+  change_allocno_in_range_list (lr, to);
+  ALLOCNO_LIVE_RANGES (to)
+    = ira_merge_allocno_live_ranges (lr, ALLOCNO_LIVE_RANGES (to));
+  ALLOCNO_LIVE_RANGES (from) = NULL;
+}
+
+/* Copy all live ranges associated with allocno FROM to allocno TO.  */
+static void
+copy_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
+{
+  allocno_live_range_t lr = ALLOCNO_LIVE_RANGES (from);
+
+  if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+    {
+      fprintf (ira_dump_file,
+	       "      Copying ranges of a%dr%d to a%dr%d: ",
+	       ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
+	       ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
+      ira_print_live_range_list (ira_dump_file, lr);
+    }
+  lr = ira_copy_allocno_live_range_list (lr);
+  change_allocno_in_range_list (lr, to);
+  ALLOCNO_LIVE_RANGES (to)
+    = ira_merge_allocno_live_ranges (lr, ALLOCNO_LIVE_RANGES (to));
 }
 
 /* Return TRUE if NODE represents a loop with low register
@@ -1890,26 +1937,15 @@ propagate_some_info_from_allocno (ira_allocno_t a, ira_allocno_t from_a)
 {
   enum reg_class cover_class;
 
-  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
-		    ALLOCNO_CONFLICT_HARD_REGS (from_a));
-#ifdef STACK_REGS
-  if (ALLOCNO_NO_STACK_REG_P (from_a))
-    ALLOCNO_NO_STACK_REG_P (a) = true;
-#endif
+  merge_hard_reg_conflicts (from_a, a, false);
   ALLOCNO_NREFS (a) += ALLOCNO_NREFS (from_a);
   ALLOCNO_FREQ (a) += ALLOCNO_FREQ (from_a);
   ALLOCNO_CALL_FREQ (a) += ALLOCNO_CALL_FREQ (from_a);
-  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
-		    ALLOCNO_TOTAL_CONFLICT_HARD_REGS (from_a));
   ALLOCNO_CALLS_CROSSED_NUM (a) += ALLOCNO_CALLS_CROSSED_NUM (from_a);
   ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a)
     += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (from_a);
   if (! ALLOCNO_BAD_SPILL_P (from_a))
     ALLOCNO_BAD_SPILL_P (a) = false;
-#ifdef STACK_REGS
-  if (ALLOCNO_TOTAL_NO_STACK_REG_P (from_a))
-    ALLOCNO_TOTAL_NO_STACK_REG_P (a) = true;
-#endif
   cover_class = ALLOCNO_COVER_CLASS (from_a);
   ira_assert (cover_class == ALLOCNO_COVER_CLASS (a));
   ira_allocate_and_accumulate_costs (&ALLOCNO_HARD_REG_COSTS (a), cover_class,
@@ -1930,7 +1966,6 @@ remove_unnecessary_allocnos (void)
   bool merged_p, rebuild_p;
   ira_allocno_t a, prev_a, next_a, parent_a;
   ira_loop_tree_node_t a_node, parent;
-  allocno_live_range_t r;
 
   merged_p = false;
   regno_allocnos = NULL;
@@ -1971,13 +2006,8 @@ remove_unnecessary_allocnos (void)
 		    ira_regno_allocno_map[regno] = next_a;
 		  else
 		    ALLOCNO_NEXT_REGNO_ALLOCNO (prev_a) = next_a;
-		  r = ALLOCNO_LIVE_RANGES (a);
-		  change_allocno_in_range_list (r, parent_a);
-		  ALLOCNO_LIVE_RANGES (parent_a)
-		    = ira_merge_allocno_live_ranges
-		      (r, ALLOCNO_LIVE_RANGES (parent_a));
+		  move_allocno_live_ranges (a, parent_a);
 		  merged_p = true;
-		  ALLOCNO_LIVE_RANGES (a) = NULL;
 		  propagate_some_info_from_allocno (parent_a, a);
 		  /* Remove it from the corresponding regno allocno
 		     map to avoid info propagation of subsequent
@@ -2011,7 +2041,6 @@ remove_low_level_allocnos (void)
   bool merged_p, propagate_p;
   ira_allocno_t a, top_a;
   ira_loop_tree_node_t a_node, parent;
-  allocno_live_range_t r;
   ira_allocno_iterator ai;
 
   merged_p = false;
@@ -2030,12 +2059,8 @@ remove_low_level_allocnos (void)
       propagate_p = a_node->parent->regno_allocno_map[regno] == NULL;
       /* Remove the allocno and update info of allocno in the upper
 	 region.  */
-      r = ALLOCNO_LIVE_RANGES (a);
-      change_allocno_in_range_list (r, top_a);
-      ALLOCNO_LIVE_RANGES (top_a)
-	= ira_merge_allocno_live_ranges (r, ALLOCNO_LIVE_RANGES (top_a));
+      move_allocno_live_ranges (a, top_a);
       merged_p = true;
-      ALLOCNO_LIVE_RANGES (a) = NULL;
       if (propagate_p)
 	propagate_some_info_from_allocno (top_a, a);
     }
@@ -2402,7 +2427,6 @@ copy_info_to_removed_store_destinations (int regno)
   ira_allocno_t a;
   ira_allocno_t parent_a = NULL;
   ira_loop_tree_node_t parent;
-  allocno_live_range_t r;
   bool merged_p;
 
   merged_p = false;
@@ -2425,26 +2449,8 @@ copy_info_to_removed_store_destinations (int regno)
 	  break;
       if (parent == NULL || parent_a == NULL)
 	continue;
-      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
-	{
-	  fprintf
-	    (ira_dump_file,
-	     "      Coping ranges of a%dr%d to a%dr%d: ",
-	     ALLOCNO_NUM (a), REGNO (ALLOCNO_REG (a)),
-	     ALLOCNO_NUM (parent_a), REGNO (ALLOCNO_REG (parent_a)));
-	  ira_print_live_range_list (ira_dump_file,
-				     ALLOCNO_LIVE_RANGES (a));
-	}
-      r = ira_copy_allocno_live_range_list (ALLOCNO_LIVE_RANGES (a));
-      change_allocno_in_range_list (r, parent_a);
-      ALLOCNO_LIVE_RANGES (parent_a)
-	= ira_merge_allocno_live_ranges (r, ALLOCNO_LIVE_RANGES (parent_a));
-      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
-			ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
-#ifdef STACK_REGS
-      if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
-	ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
-#endif
+      copy_allocno_live_ranges (a, parent_a);
+      merge_hard_reg_conflicts (a, parent_a, true);
       ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
       ALLOCNO_CALLS_CROSSED_NUM (parent_a)
 	+= ALLOCNO_CALLS_CROSSED_NUM (a);
@@ -2522,28 +2528,9 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	    mem_dest_p = true;
 	  if (REGNO (ALLOCNO_REG (a)) == REGNO (ALLOCNO_REG (parent_a)))
 	    {
-	      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (parent_a),
-				ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
-#ifdef STACK_REGS
-	      if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
-		ALLOCNO_TOTAL_NO_STACK_REG_P (parent_a) = true;
-#endif
-	      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
-		{
-		  fprintf (ira_dump_file,
-			   "      Moving ranges of a%dr%d to a%dr%d: ",
-			   ALLOCNO_NUM (a), REGNO (ALLOCNO_REG (a)),
-			   ALLOCNO_NUM (parent_a),
-			   REGNO (ALLOCNO_REG (parent_a)));
-		  ira_print_live_range_list (ira_dump_file,
-					     ALLOCNO_LIVE_RANGES (a));
-		}
-	      change_allocno_in_range_list (ALLOCNO_LIVE_RANGES (a), parent_a);
-	      ALLOCNO_LIVE_RANGES (parent_a)
-		= ira_merge_allocno_live_ranges
-		  (ALLOCNO_LIVE_RANGES (a), ALLOCNO_LIVE_RANGES (parent_a));
+	      merge_hard_reg_conflicts (a, parent_a, true);
+	      move_allocno_live_ranges (a, parent_a);
 	      merged_p = true;
-	      ALLOCNO_LIVE_RANGES (a) = NULL;
 	      ALLOCNO_MEM_OPTIMIZED_DEST_P (parent_a)
 		= (ALLOCNO_MEM_OPTIMIZED_DEST_P (parent_a)
 		   || ALLOCNO_MEM_OPTIMIZED_DEST_P (a));
