@@ -1,3 +1,9 @@
+2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* thumb2.md (thumb2_tlobits_cbranch): Delete.
+	(peephole2 to convert zero_extract/compare of single bit to
+	 lshift/compare): New.
+
 2010-06-24  Anatoly Sokolov  <aesok@post.ru>
 
 	* fold-const.c (const_binop): Remove 'notrunc' argement. Adjust
