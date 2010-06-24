@@ -37,15 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_VECTOR_TO_LIST_H
 #define _GLIBCXX_PROFILE_PROFILER_VECTOR_TO_LIST_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#else
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
@@ -53,7 +44,7 @@
 namespace __gnu_profile
 {
   /** @brief A vector-to-list instrumentation line in the object table.  */
-  class __vector2list_info 
+  class __vector2list_info
   : public __object_info_base
   {
   public:
@@ -87,29 +78,30 @@ namespace __gnu_profile
     void
     __write(FILE* __f) const
     {
-      fprintf(__f, "%Zu %Zu %Zu %.0f %.0f\n", _M_shift_count, _M_resize,
-	      _M_iterate, _M_vector_cost, _M_list_cost);
+      std::fprintf(__f, "%Zu %Zu %Zu %.0f %.0f\n", _M_shift_count,
+		   _M_resize, _M_iterate, _M_vector_cost, _M_list_cost);
     }
 
     float
     __magnitude() const
     { return _M_vector_cost - _M_list_cost; }
 
-    const char* __advice() const 
-    { return strdup("change std::vector to std::list"); }
+    std::string
+    __advice() const 
+    { return "change std::vector to std::list"; }
 
-    size_t
+    std::size_t
     __shift_count()
     { return _M_shift_count; }
 
-    size_t
+    std::size_t
     __iterate()
     { return _M_iterate; }
 
     float __list_cost()
     { return _M_list_cost; }
 
-    size_t
+    std::size_t
     __resize()
     { return _M_resize; }
 
@@ -130,27 +122,28 @@ namespace __gnu_profile
     { _M_valid = false; }
 
     void
-    __opr_insert(size_t __pos, size_t __num)
+    __opr_insert(std::size_t __pos, std::size_t __num)
     { _M_shift_count += __num - __pos; }
 
     void
-    __opr_iterate(size_t __num)
+    __opr_iterate(std::size_t __num)
     { _M_iterate += __num; }
 
     void
-    __resize(size_t __from, size_t)
+    __resize(std::size_t __from, std::size_t)
     { _M_resize += __from; }
 
-    void __opr_find(size_t __size)
+    void
+    __opr_find(std::size_t __size)
     {
       // Use average case complexity.
       _M_iterate += 3.0 / 4.0 * __size;
     }
 
   private:
-    size_t _M_shift_count;
-    size_t _M_iterate;
-    size_t _M_resize;
+    std::size_t _M_shift_count;
+    std::size_t _M_iterate;
+    std::size_t _M_resize;
     float _M_list_cost;
     float _M_vector_cost;
     bool  _M_valid;
@@ -210,7 +203,7 @@ namespace __gnu_profile
 
     // Collect cost of operations.
     void
-    __opr_insert(const void* __obj, size_t __pos, size_t __num)
+    __opr_insert(const void* __obj, std::size_t __pos, std::size_t __num)
     {
       __vector2list_info* __res = __get_object_info(__obj);
       if (__res)
@@ -218,7 +211,7 @@ namespace __gnu_profile
     }
 
     void
-    __opr_iterate(const void* __obj, size_t __num)
+    __opr_iterate(const void* __obj, std::size_t __num)
     {
       __vector2list_info* __res = __get_object_info(__obj);
       if (__res)
@@ -234,7 +227,7 @@ namespace __gnu_profile
     }
 
     void
-    __resize(const void* __obj, size_t __from, size_t __to)
+    __resize(const void* __obj, std::size_t __from, std::size_t __to)
     {
       __vector2list_info* __res = __get_object_info(__obj);
       if (__res)
@@ -242,7 +235,8 @@ namespace __gnu_profile
     }
 
     float
-    __vector_cost(size_t __shift, size_t __iterate, size_t __resize)
+    __vector_cost(std::size_t __shift, std::size_t __iterate,
+		  std::size_t __resize)
     {
       return (__shift
 	      * _GLIBCXX_PROFILE_DATA(__vector_shift_cost_factor).__value
@@ -253,7 +247,8 @@ namespace __gnu_profile
     }
 
     float
-    __list_cost(size_t __shift, size_t __iterate, size_t __resize)
+    __list_cost(std::size_t __shift, std::size_t __iterate,
+		std::size_t __resize)
     {
       return (__shift
 	      * _GLIBCXX_PROFILE_DATA(__list_shift_cost_factor).__value
@@ -264,7 +259,7 @@ namespace __gnu_profile
     }
 
     void
-    __opr_find(const void* __obj, size_t __size)
+    __opr_find(const void* __obj, std::size_t __size)
     {
       __vector2list_info* __res = __get_object_info(__obj);
       if (__res)
@@ -307,7 +302,8 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_vector_to_list_insert(const void* __obj, size_t __pos, size_t __num)
+  __trace_vector_to_list_insert(const void* __obj, std::size_t __pos,
+				std::size_t __num)
   {
     if (!__profcxx_init())
       return;
@@ -317,7 +313,7 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_vector_to_list_iterate(const void* __obj, size_t __num = 1)
+  __trace_vector_to_list_iterate(const void* __obj, std::size_t __num = 1)
   {
     if (!__profcxx_init())
       return;
@@ -335,7 +331,8 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_vector_to_list_resize(const void* __obj, size_t __from, size_t __to)
+  __trace_vector_to_list_resize(const void* __obj, std::size_t __from,
+				std::size_t __to)
   {
     if (!__profcxx_init())
       return;
@@ -344,7 +341,7 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_vector_to_list_find(const void* __obj, size_t __size)
+  __trace_vector_to_list_find(const void* __obj, std::size_t __size)
   {
     if (!__profcxx_init())
       return;

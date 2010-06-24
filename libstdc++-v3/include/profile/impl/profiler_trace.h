@@ -37,18 +37,14 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_TRACE_H
 #define _GLIBCXX_PROFILE_PROFILER_TRACE_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <cstdio>  // fopen, fclose, fprintf, FILE
 #include <cerrno>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
+#include <cstdlib> // atof, atoi, strtol, getenv, atexit, abort
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #define _GLIBCXX_IMPL_UNORDERED_MAP std::_GLIBCXX_STD_PR::unordered_map
 #include <unordered_map>
 #else
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <tr1/unordered_map>
 #define _GLIBCXX_IMPL_UNORDERED_MAP std::tr1::unordered_map
 #endif
@@ -86,18 +82,18 @@ namespace __gnu_profile
     float __magnitude;
     __stack_t __context;
     const char* __warning_id;
-    const char* __warning_message;
+    std::string __warning_message;
+
     __warning_data()
-    : __magnitude(0.0), __context(0), __warning_id(0),
-    
-    __warning_message(0) { }
+    : __magnitude(0.0), __context(0), __warning_id(0) { }
+
     __warning_data(float __m, __stack_t __c, const char* __id, 
-		   const char* __msg)
+		   const std::string& __msg)
     : __magnitude(__m), __context(__c), __warning_id(__id), 
       __warning_message(__msg) { }
-    
+
     bool
-    operator<(const struct __warning_data& __other) const
+    operator<(const __warning_data& __other) const
     { return __magnitude < __other.__magnitude; }
   };
 
@@ -174,18 +170,18 @@ namespace __gnu_profile
 
   _GLIBCXX_PROFILE_DEFINE_DATA(const char*, _S_trace_file_name,
 			       _GLIBCXX_PROFILE_TRACE_PATH_ROOT);
-  _GLIBCXX_PROFILE_DEFINE_DATA(size_t, _S_max_warn_count,
+  _GLIBCXX_PROFILE_DEFINE_DATA(std::size_t, _S_max_warn_count,
 			       _GLIBCXX_PROFILE_MAX_WARN_COUNT);
-  _GLIBCXX_PROFILE_DEFINE_DATA(size_t, _S_max_stack_depth,
+  _GLIBCXX_PROFILE_DEFINE_DATA(std::size_t, _S_max_stack_depth,
 			       _GLIBCXX_PROFILE_MAX_STACK_DEPTH);
-  _GLIBCXX_PROFILE_DEFINE_DATA(size_t, _S_max_mem,
+  _GLIBCXX_PROFILE_DEFINE_DATA(std::size_t, _S_max_mem,
 			       _GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC);
 
-  inline size_t
+  inline std::size_t
   __stack_max_depth()
   { return _GLIBCXX_PROFILE_DATA(_S_max_stack_depth); }
 
-  inline size_t
+  inline std::size_t
   __max_mem()
   { return _GLIBCXX_PROFILE_DATA(_S_max_mem); }
 
@@ -200,7 +196,7 @@ namespace __gnu_profile
       void __add_object(__object_t object, __object_info __info);
       __object_info* __get_object_info(__object_t __object);
       void __retire_object(__object_t __object);
-      void __write(FILE* f);
+      void __write(FILE* __f);
       void __collect_warnings(__warning_vector_t& __warnings);
 
     private:
@@ -213,7 +209,7 @@ namespace __gnu_profile
 					  __stack_hash> __stack_table_t;
       __object_table_t __object_table;
       __stack_table_t __stack_table;
-      size_t __stack_table_byte_size;
+      std::size_t __stack_table_byte_size;
 
     protected:
       const char* __id;
@@ -336,30 +332,32 @@ namespace __gnu_profile
 	{
 	  if (__it->second.__is_valid())
 	    {
-	      fprintf(__f, __id);
-	      fprintf(__f, "|");
+	      std::fprintf(__f, __id);
+	      std::fprintf(__f, "|");
 	      __gnu_profile::__write(__f, __it->first);
-	      fprintf(__f, "|");
+	      std::fprintf(__f, "|");
 	      __it->second.__write(__f);
 	    }
 	}
     }
 
-  inline size_t
-  __env_to_size_t(const char* __env_var, size_t __default_value)
+  inline std::size_t
+  __env_to_size_t(const char* __env_var, std::size_t __default_value)
   {
-    char* __env_value = getenv(__env_var);
+    char* __env_value = std::getenv(__env_var);
     if (__env_value)
       {
-	long __converted_value = strtol(__env_value, 0, 10);
+	errno = 0;
+	long __converted_value = std::strtol(__env_value, 0, 10);
 	if (errno || __converted_value < 0)
 	  {
-	    fprintf(stderr, "Bad value for environment variable '%s'.\n",
-		    __env_var);
-	    abort();
+	    std::fprintf(stderr,
+			 "Bad value for environment variable '%s'.\n",
+			 __env_var);
+	    std::abort();
 	  }
 	else
-	  return static_cast<size_t>(__converted_value);
+	  return static_cast<std::size_t>(__converted_value);
       }
     else
       return __default_value;
@@ -406,39 +404,47 @@ namespace __gnu_profile
   __open_output_file(const char* __extension)
   {
     // The path is made of _S_trace_file_name + "." + extension.
-    size_t __root_len = strlen(_GLIBCXX_PROFILE_DATA(_S_trace_file_name));
-    size_t __ext_len = strlen(__extension);
+    std::size_t __root_len 
+      = __builtin_strlen(_GLIBCXX_PROFILE_DATA(_S_trace_file_name));
+    std::size_t __ext_len = __builtin_strlen(__extension);
     char* __file_name = new char[__root_len + 1 + __ext_len + 1];
-    memcpy(__file_name, _GLIBCXX_PROFILE_DATA(_S_trace_file_name),
-	   __root_len);
+    __builtin_memcpy(__file_name,
+		     _GLIBCXX_PROFILE_DATA(_S_trace_file_name),
+		     __root_len);
     *(__file_name + __root_len) = '.';
-    memcpy(__file_name + __root_len + 1, __extension, __ext_len + 1);
-    FILE* __out_file = fopen(__file_name, "w");
-    if (__out_file) 
-      return __out_file;
+    __builtin_memcpy(__file_name + __root_len + 1,
+		     __extension, __ext_len + 1);
+    FILE* __out_file = std::fopen(__file_name, "w");
+    if (__out_file)
+      {
+	delete[] __file_name;
+	return __out_file;
+      }
     else
       {
-	fprintf(stderr, "Could not open trace file '%s'.\n", __file_name);
-	abort();
+	std::fprintf(stderr, "Could not open trace file '%s'.\n",
+		     __file_name);
+	std::abort();
       }
   }
 
   struct __warn
   {
     FILE* __file;
-    __warn(FILE* __f) { __file = __f; }
+
+    __warn(FILE* __f)
+    { __file = __f; }
 
     void
-    operator() (const __warning_data& __info)
+    operator()(const __warning_data& __info)
     {
-      fprintf(__file,  __info.__warning_id);
-      fprintf(__file, ": improvement = %d",
-	      __log_magnitude(__info.__magnitude));
-      fprintf(__file, ": call stack = ");
+      std::fprintf(__file,  __info.__warning_id);
+      std::fprintf(__file, ": improvement = %d",
+		   __log_magnitude(__info.__magnitude));
+      std::fprintf(__file, ": call stack = ");
       __gnu_profile::__write(__file, __info.__context);
-      fprintf(__file, ": advice = %s\n", __info.__warning_message);
-      free(const_cast<void*>
-	   (reinterpret_cast<const void*>(__info.__warning_message)));
+      std::fprintf(__file, ": advice = %s\n",
+		   __info.__warning_message.c_str());
     }
   };
 
@@ -464,7 +470,7 @@ namespace __gnu_profile
     __trace_list_to_slist_report(__raw_file, __warnings);
     __trace_list_to_vector_report(__raw_file, __warnings);
     __trace_map_to_unordered_map_report(__raw_file, __warnings);
-    fclose(__raw_file);
+    std::fclose(__raw_file);
 
     // Sort data by magnitude, keeping just top N.
     size_t __cutoff = std::min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
@@ -474,7 +480,7 @@ namespace __gnu_profile
     FILE* __warn_file = __open_output_file("txt");
     __for_each(__top_warnings.begin(), __top_warnings.end(),
 	       __warn(__warn_file));
-    fclose(__warn_file);
+    std::fclose(__warn_file);
 
     _GLIBCXX_PROFILE_DATA(__global_lock).unlock();
   }
@@ -482,24 +488,24 @@ namespace __gnu_profile
   inline void
   __set_trace_path()
   {
-    char* __env_trace_file_name = getenv(_GLIBCXX_PROFILE_TRACE_ENV_VAR);
+    char* __env_trace_file_name = std::getenv(_GLIBCXX_PROFILE_TRACE_ENV_VAR);
 
     if (__env_trace_file_name)
       _GLIBCXX_PROFILE_DATA(_S_trace_file_name) = __env_trace_file_name;
 
     // Make sure early that we can create the trace file.
-    fclose(__open_output_file("txt"));
+    std::fclose(__open_output_file("txt"));
   }
 
   inline void
   __set_max_warn_count()
   {
     char* __env_max_warn_count_str
-      = getenv(_GLIBCXX_PROFILE_MAX_WARN_COUNT_ENV_VAR);
+      = std::getenv(_GLIBCXX_PROFILE_MAX_WARN_COUNT_ENV_VAR);
 
     if (__env_max_warn_count_str)
       _GLIBCXX_PROFILE_DATA(_S_max_warn_count)
-	= static_cast<size_t>(atoi(__env_max_warn_count_str));
+	= static_cast<std::size_t>(std::atoi(__env_max_warn_count_str));
   }
 
   inline void
@@ -542,7 +548,8 @@ namespace __gnu_profile
   
     void
     operator() (const __cost_factor* __factor)
-    { fprintf(__file, "%s = %f\n", __factor->__env_var, __factor->__value); }
+    { std::fprintf(__file, "%s = %f\n", __factor->__env_var,
+		   __factor->__value); }
   };
 
   inline void
@@ -552,7 +559,7 @@ namespace __gnu_profile
     __for_each(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin(),
 	       _GLIBCXX_PROFILE_DATA(__cost_factors)->end(),
 	       __cost_factor_writer(__file));
-    fclose(__file);
+    std::fclose(__file);
   }
 
   struct __cost_factor_setter
@@ -561,7 +568,7 @@ namespace __gnu_profile
     operator() (__cost_factor* __factor)
     {
       // Look it up in the process environment first.
-      const char* __env_value = getenv(__factor->__env_var);
+      const char* __env_value = std::getenv(__factor->__env_var);
 
       if (!__env_value)
         {
@@ -573,7 +580,7 @@ namespace __gnu_profile
         }
 
       if (__env_value)
-        __factor->__value = atof(__env_value);
+        __factor->__value = std::atof(__env_value);
     }
   };
 
@@ -585,33 +592,33 @@ namespace __gnu_profile
       push_back(&_GLIBCXX_PROFILE_DATA(__vector_shift_cost_factor));
     _GLIBCXX_PROFILE_DATA(__cost_factors)->
       push_back(&_GLIBCXX_PROFILE_DATA(__vector_iterate_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__vector_resize_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__list_shift_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__list_iterate_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__list_resize_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__map_insert_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__map_erase_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__map_find_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__map_iterate_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__umap_insert_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__umap_erase_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__umap_find_cost_factor));
-  _GLIBCXX_PROFILE_DATA(__cost_factors)->
-    push_back(&_GLIBCXX_PROFILE_DATA(__umap_iterate_cost_factor));
-  __for_each(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin(),
-             _GLIBCXX_PROFILE_DATA(__cost_factors)->end(),
-             __cost_factor_setter());
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__vector_resize_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__list_shift_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__list_iterate_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__list_resize_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__map_insert_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__map_erase_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__map_find_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__map_iterate_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__umap_insert_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__umap_erase_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__umap_find_cost_factor));
+    _GLIBCXX_PROFILE_DATA(__cost_factors)->
+      push_back(&_GLIBCXX_PROFILE_DATA(__umap_iterate_cost_factor));
+    __for_each(_GLIBCXX_PROFILE_DATA(__cost_factors)->begin(),
+	       _GLIBCXX_PROFILE_DATA(__cost_factors)->end(),
+	       __cost_factor_setter());
   }
 
   inline void
@@ -642,7 +649,7 @@ namespace __gnu_profile
 	    __trace_list_to_vector_init();
 	    __trace_map_to_unordered_map_init();
 
-	    atexit(__report);
+	    std::atexit(__report);
 
 	    __turn_on();
 	  }

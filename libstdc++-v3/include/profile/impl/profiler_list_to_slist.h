@@ -37,22 +37,13 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_LIST_TO_SLIST_H
 #define _GLIBCXX_PROFILE_PROFILER_LIST_TO_SLIST_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
 namespace __gnu_profile
 {
-  class __list2slist_info 
+  class __list2slist_info
   : public __object_info_base
   {
   public:
@@ -90,11 +81,11 @@ namespace __gnu_profile
 
     void
     __write(FILE* __f) const
-    { fprintf(__f, "%s\n", _M_rewind ? "invalid" : "valid"); }
+    { std::fprintf(__f, "%s\n", _M_rewind ? "invalid" : "valid"); }
 
-    const char*
+    std::string
     __advice() const
-    { return strdup("change std::list to std::forward_list"); }
+    { return "change std::list to std::forward_list"; }
 
     void
     __opr_rewind()
@@ -113,7 +104,7 @@ namespace __gnu_profile
 
   private:
     bool _M_rewind;
-    size_t _M_operations;
+    std::size_t _M_operations;
   };
 
   class __list2slist_stack_info
