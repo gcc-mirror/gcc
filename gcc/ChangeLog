@@ -26,6 +26,13 @@
 	(make_regno_born, make_regno_dead, mark_reg_live, mark_reg_dead,
 	set_allocno_live, clear_allocno_live): Delete functions.
 
+	* ira-int.h (ira_parent_allocno, ira_parent_or_cap_allocno): Declare.
+	* ira-build.c (ira_parent_allocno, ira_parent_or_cap_allocno): New
+	functions.
+	(ira_flattening): Use ira_parent_allocno.
+	* ira-conflicts.c (process_regs_for_copy, propagate_copies)
+	build_allocno_conflicts): Use ira_parent_or_cap_allocno.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.
