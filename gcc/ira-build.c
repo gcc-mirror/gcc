@@ -670,7 +670,7 @@ add_to_allocno_conflicts (ira_allocno_t a1, ira_allocno_t a2)
 	    }
 	  ALLOCNO_MAX (a1) = id;
 	}
-      SET_ALLOCNO_SET_BIT (vec, id, ALLOCNO_MIN (a1), ALLOCNO_MAX (a1));
+      SET_MINMAX_SET_BIT (vec, id, ALLOCNO_MIN (a1), ALLOCNO_MAX (a1));
     }
 }
 

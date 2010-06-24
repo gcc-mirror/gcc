@@ -54,10 +54,10 @@ static IRA_INT_TYPE **conflicts;
 #define CONFLICT_ALLOCNO_P(A1, A2)					\
   (ALLOCNO_MIN (A1) <= ALLOCNO_CONFLICT_ID (A2)				\
    && ALLOCNO_CONFLICT_ID (A2) <= ALLOCNO_MAX (A1)			\
-   && TEST_ALLOCNO_SET_BIT (conflicts[ALLOCNO_NUM (A1)],		\
-	  		    ALLOCNO_CONFLICT_ID (A2),			\
-			    ALLOCNO_MIN (A1),				\
-			    ALLOCNO_MAX (A1)))
+   && TEST_MINMAX_SET_BIT (conflicts[ALLOCNO_NUM (A1)],			\
+			   ALLOCNO_CONFLICT_ID (A2),			\
+			   ALLOCNO_MIN (A1),				\
+			   ALLOCNO_MAX (A1)))
 
 
 
@@ -142,13 +142,13 @@ build_conflict_bit_table (void)
 		  /* Don't set up conflict for the allocno with itself.  */
 		  && num != (int) j)
 		{
-		  SET_ALLOCNO_SET_BIT (conflicts[num],
-				       ALLOCNO_CONFLICT_ID (live_a),
-				       ALLOCNO_MIN (allocno),
-				       ALLOCNO_MAX (allocno));
-		  SET_ALLOCNO_SET_BIT (conflicts[j], id,
-				       ALLOCNO_MIN (live_a),
-				       ALLOCNO_MAX (live_a));
+		  SET_MINMAX_SET_BIT (conflicts[num],
+				      ALLOCNO_CONFLICT_ID (live_a),
+				      ALLOCNO_MIN (allocno),
+				      ALLOCNO_MAX (allocno));
+		  SET_MINMAX_SET_BIT (conflicts[j], id,
+				      ALLOCNO_MIN (live_a),
+				      ALLOCNO_MAX (live_a));
 		}
 	    }
 	}
@@ -560,12 +560,12 @@ build_allocno_conflicts (ira_allocno_t a)
   ira_allocno_t parent_a, another_a, another_parent_a;
   ira_allocno_t *vec;
   IRA_INT_TYPE *allocno_conflicts;
-  ira_allocno_set_iterator asi;
+  minmax_set_iterator asi;
 
   allocno_conflicts = conflicts[ALLOCNO_NUM (a)];
   px = 0;
-  FOR_EACH_ALLOCNO_IN_SET (allocno_conflicts,
-			   ALLOCNO_MIN (a), ALLOCNO_MAX (a), i, asi)
+  FOR_EACH_BIT_IN_MINMAX_SET (allocno_conflicts,
+			      ALLOCNO_MIN (a), ALLOCNO_MAX (a), i, asi)
     {
       another_a = ira_conflict_id_allocno_map[i];
       ira_assert (ira_reg_classes_intersect_p
@@ -597,8 +597,8 @@ build_allocno_conflicts (ira_allocno_t a)
     return;
   ira_assert (ALLOCNO_COVER_CLASS (a) == ALLOCNO_COVER_CLASS (parent_a));
   parent_num = ALLOCNO_NUM (parent_a);
-  FOR_EACH_ALLOCNO_IN_SET (allocno_conflicts,
-			   ALLOCNO_MIN (a), ALLOCNO_MAX (a), i, asi)
+  FOR_EACH_BIT_IN_MINMAX_SET (allocno_conflicts,
+			      ALLOCNO_MIN (a), ALLOCNO_MAX (a), i, asi)
     {
       another_a = ira_conflict_id_allocno_map[i];
       ira_assert (ira_reg_classes_intersect_p
@@ -609,10 +609,10 @@ build_allocno_conflicts (ira_allocno_t a)
       ira_assert (ALLOCNO_NUM (another_parent_a) >= 0);
       ira_assert (ALLOCNO_COVER_CLASS (another_a)
 		  == ALLOCNO_COVER_CLASS (another_parent_a));
-      SET_ALLOCNO_SET_BIT (conflicts[parent_num],
-			   ALLOCNO_CONFLICT_ID (another_parent_a),
-			   ALLOCNO_MIN (parent_a),
-			   ALLOCNO_MAX (parent_a));
+      SET_MINMAX_SET_BIT (conflicts[parent_num],
+			  ALLOCNO_CONFLICT_ID (another_parent_a),
+			  ALLOCNO_MIN (parent_a),
+			  ALLOCNO_MAX (parent_a));
     }
 }
 
