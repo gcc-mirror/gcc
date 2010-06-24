@@ -37,15 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_HASH_FUNC_H
 #define _GLIBCXX_PROFILE_PROFILER_HASH_FUNC_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
@@ -53,7 +44,7 @@
 namespace __gnu_profile
 {
   /** @brief A hash performance instrumentation line in the object table.  */
-  class __hashfunc_info 
+  class __hashfunc_info
   : public __object_info_base
   {
   public:
@@ -66,9 +57,9 @@ namespace __gnu_profile
   
     __hashfunc_info(__stack_t __stack)
     : __object_info_base(__stack),
-      _M_longest_chain(0), _M_accesses(0), _M_hops(0){ }
+      _M_longest_chain(0), _M_accesses(0), _M_hops(0) { }
  
-    virtual ~__hashfunc_info() {}
+    virtual ~__hashfunc_info() { }
 
     void
     __merge(const __hashfunc_info& __o)
@@ -79,7 +70,8 @@ namespace __gnu_profile
     }
 
     void
-    __destruct(size_t __chain, size_t __accesses, size_t __hops)
+    __destruct(std::size_t __chain, std::size_t __accesses,
+	       std::size_t __hops)
     { 
       _M_longest_chain  = std::max(_M_longest_chain, __chain);
       _M_accesses      += __accesses;
@@ -88,20 +80,21 @@ namespace __gnu_profile
 
     void
     __write(FILE* __f) const
-    { fprintf(__f, "%Zu %Zu %Zu\n", _M_hops, _M_accesses, _M_longest_chain); }
+    { std::fprintf(__f, "%Zu %Zu %Zu\n", _M_hops,
+		   _M_accesses, _M_longest_chain); }
 
     float
     __magnitude() const
     { return static_cast<float>(_M_hops); }
 
-    const char*
+    std::string
     __advice() const
-    { return strdup("change hash function"); }
+    { return "change hash function"; }
 
   private:
-    size_t _M_longest_chain;
-    size_t _M_accesses;
-    size_t _M_hops;
+    std::size_t _M_longest_chain;
+    std::size_t _M_accesses;
+    std::size_t _M_hops;
   };
 
 
@@ -133,8 +126,8 @@ namespace __gnu_profile
 
     // Call at destruction/clean to set container final size.
     void
-    __destruct(const void* __obj, size_t __chain,
-	       size_t __accesses, size_t __hops)
+    __destruct(const void* __obj, std::size_t __chain,
+	       std::size_t __accesses, std::size_t __hops)
     {
       if (!__is_on())
 	return;
@@ -174,14 +167,14 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_hash_func_destruct(const void* __obj, size_t __chain,
-			     size_t __accesses, size_t __hops)
+  __trace_hash_func_destruct(const void* __obj, std::size_t __chain,
+			     std::size_t __accesses, std::size_t __hops)
   {
     if (!__profcxx_init())
       return;
 
-    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__destruct(__obj, __chain, __accesses, 
-						    __hops);
+    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__destruct(__obj, __chain,
+						    __accesses, __hops);
   }
 
 } // namespace __gnu_profile

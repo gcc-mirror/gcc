@@ -37,11 +37,7 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_H
 #define _GLIBCXX_PROFILE_PROFILER_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstddef>
-#else
-#include <stddef.h>
-#endif
+#include <bits/c++config.h>
 
 // Mechanism to define data with inline linkage.
 #define _GLIBCXX_PROFILE_DEFINE_UNINIT_DATA(__type, __name)             \
@@ -109,47 +105,50 @@ namespace __gnu_profile
   bool __is_on();
   bool __is_off();
   void __report(void);
-  void __trace_hashtable_size_resize(const void*, size_t, size_t);
-  void __trace_hashtable_size_destruct(const void*, size_t, size_t);
-  void __trace_hashtable_size_construct(const void*, size_t);
-  void __trace_vector_size_resize(const void*, size_t, size_t);
-  void __trace_vector_size_destruct(const void*, size_t, size_t);
-  void __trace_vector_size_construct(const void*, size_t);
-  void __trace_hash_func_destruct(const void*, size_t, size_t, size_t);
+  void __trace_hashtable_size_resize(const void*, std::size_t, std::size_t);
+  void __trace_hashtable_size_destruct(const void*, std::size_t, std::size_t);
+  void __trace_hashtable_size_construct(const void*, std::size_t);
+  void __trace_vector_size_resize(const void*, std::size_t, std::size_t);
+  void __trace_vector_size_destruct(const void*, std::size_t, std::size_t);
+  void __trace_vector_size_construct(const void*, std::size_t);
+  void __trace_hash_func_destruct(const void*, std::size_t, std::size_t,
+				  std::size_t);
   void __trace_hash_func_construct(const void*);
   void __trace_vector_to_list_destruct(const void*);
   void __trace_vector_to_list_construct(const void*);
-  void __trace_vector_to_list_insert(const void*, size_t, size_t);
-  void __trace_vector_to_list_iterate(const void*, size_t);
+  void __trace_vector_to_list_insert(const void*, std::size_t, std::size_t);
+  void __trace_vector_to_list_iterate(const void*, std::size_t);
   void __trace_vector_to_list_invalid_operator(const void*);
-  void __trace_vector_to_list_resize(const void*, size_t, size_t);
-  void __trace_vector_to_list_find(const void*, size_t);
+  void __trace_vector_to_list_resize(const void*, std::size_t, std::size_t);
+  void __trace_vector_to_list_find(const void*, std::size_t);
 
   void __trace_list_to_slist_destruct(const void*);
   void __trace_list_to_slist_construct(const void*);
-  void __trace_list_to_slist_rewind(const void*); 
+  void __trace_list_to_slist_rewind(const void*);
   void __trace_list_to_slist_operation(const void*);
 
   void __trace_list_to_vector_destruct(const void*);
   void __trace_list_to_vector_construct(const void*);
-  void __trace_list_to_vector_insert(const void*, size_t, size_t); 
-  void __trace_list_to_vector_iterate(const void*, size_t);
+  void __trace_list_to_vector_insert(const void*, std::size_t, std::size_t);
+  void __trace_list_to_vector_iterate(const void*, std::size_t);
   void __trace_list_to_vector_invalid_operator(const void*);
-  void __trace_list_to_vector_resize(const void*, size_t, size_t); 
+  void __trace_list_to_vector_resize(const void*, std::size_t, std::size_t);
 
   void __trace_list_to_set_destruct(const void*);
   void __trace_list_to_set_construct(const void*);
-  void __trace_list_to_set_insert(const void*, size_t, size_t); 
-  void __trace_list_to_set_iterate(const void*, size_t);
+  void __trace_list_to_set_insert(const void*, std::size_t, std::size_t); 
+  void __trace_list_to_set_iterate(const void*, std::size_t);
   void __trace_list_to_set_invalid_operator(const void*);
-  void __trace_list_to_set_find(const void*, size_t); 
+  void __trace_list_to_set_find(const void*, std::size_t); 
 
   void __trace_map_to_unordered_map_construct(const void*);
   void __trace_map_to_unordered_map_invalidate(const void*);
-  void __trace_map_to_unordered_map_insert(const void*, size_t, size_t);
-  void __trace_map_to_unordered_map_erase(const void*, size_t, size_t);
-  void __trace_map_to_unordered_map_iterate(const void*, size_t);
-  void __trace_map_to_unordered_map_find(const void*, size_t);
+  void __trace_map_to_unordered_map_insert(const void*, std::size_t,
+					   std::size_t);
+  void __trace_map_to_unordered_map_erase(const void*, std::size_t,
+					  std::size_t);
+  void __trace_map_to_unordered_map_iterate(const void*, std::size_t);
+  void __trace_map_to_unordered_map_find(const void*, std::size_t);
   void __trace_map_to_unordered_map_destruct(const void*);
 } // namespace __gnu_profile
 

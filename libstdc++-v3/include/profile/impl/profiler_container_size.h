@@ -37,16 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_CONTAINER_SIZE_H
 #define _GLIBCXX_PROFILE_PROFILER_CONTAINER_SIZE_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
-
 #include <sstream>
 
 #include "profile/impl/profiler.h"
@@ -56,7 +46,7 @@
 namespace __gnu_profile
 {
   /** @brief A container size instrumentation line in the object table.  */
-  class __container_size_info 
+  class __container_size_info
   : public __object_info_base 
   {
   public:
@@ -73,7 +63,7 @@ namespace __gnu_profile
       _M_resize(__o._M_resize), _M_cost(__o._M_cost)
     { }
 
-    __container_size_info(__stack_t __stack, size_t __num)
+    __container_size_info(__stack_t __stack, std::size_t __num)
     : __object_info_base(__stack), _M_init(__num), _M_max(__num),
       _M_min(0), _M_total(0), _M_item_min(0), _M_item_max(0),
       _M_item_total(0), _M_count(0), _M_resize(0), _M_cost(0)
@@ -84,23 +74,23 @@ namespace __gnu_profile
     void
     __write(FILE* __f) const
     {
-      fprintf(__f, "%Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu\n", 
-	      _M_init, _M_count, _M_cost, _M_resize, _M_min, _M_max, _M_total,
-	      _M_item_min, _M_item_max, _M_item_total);
+      std::fprintf(__f, "%Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu %Zu\n", 
+		   _M_init, _M_count, _M_cost, _M_resize, _M_min, _M_max,
+		   _M_total, _M_item_min, _M_item_max, _M_item_total);
     }
 
     float
     __magnitude() const
     { return static_cast<float>(_M_cost); }
 
-    const char*
+    std::string
     __advice() const
     {
       std::stringstream __message;
       if (_M_init < _M_item_max)
 	__message << "change initial container size from " << _M_init
 		  << " to " << _M_item_max;
-      return strdup(__message.str().c_str());
+      return __message.str();
     }
 
     void
@@ -120,7 +110,7 @@ namespace __gnu_profile
 
     // Call if a container is destructed or cleaned.
     void
-    __destruct(size_t __num, size_t __inum)
+    __destruct(std::size_t __num, std::size_t __inum)
     {
       _M_max = std::max(_M_max, __num);
       _M_item_max = std::max(_M_item_max, __inum);
@@ -141,12 +131,12 @@ namespace __gnu_profile
 
     // Estimate the cost of resize/rehash. 
     float
-    __resize_cost(size_t __from, size_t)
+    __resize_cost(std::size_t __from, std::size_t)
     { return __from; }
 
     // Call if container is resized.
     void
-    __resize(size_t __from, size_t __to)
+    __resize(std::size_t __from, std::size_t __to)
     {
       _M_cost += this->__resize_cost(__from, __to);
       _M_resize += 1;
@@ -154,16 +144,16 @@ namespace __gnu_profile
     }
 
   private:
-    size_t _M_init;
-    size_t _M_max;  // range of # buckets
-    size_t _M_min;
-    size_t _M_total;
-    size_t _M_item_min;  // range of # items
-    size_t _M_item_max;
-    size_t _M_item_total;
-    size_t _M_count;
-    size_t _M_resize;
-    size_t _M_cost;
+    std::size_t _M_init;
+    std::size_t _M_max;  // range of # buckets
+    std::size_t _M_min;
+    std::size_t _M_total;
+    std::size_t _M_item_min;  // range of # items
+    std::size_t _M_item_max;
+    std::size_t _M_item_total;
+    std::size_t _M_count;
+    std::size_t _M_resize;
+    std::size_t _M_cost;
   };
 
 

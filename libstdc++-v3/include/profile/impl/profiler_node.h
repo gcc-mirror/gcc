@@ -37,15 +37,8 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_NODE_H
 #define _GLIBCXX_PROFILE_PROFILER_NODE_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdio>
-#include <cstdint>
-#include <cstring>
-#else
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#endif
+#include <cstdio> // FILE, fprintf
+
 #include <vector>
 #if defined _GLIBCXX_HAVE_EXECINFO_H
 #include <execinfo.h>
@@ -58,26 +51,27 @@ namespace __gnu_profile
   typedef std::_GLIBCXX_STD_PR::vector<__instruction_address_t> __stack_npt;
   typedef __stack_npt* __stack_t;
 
-  size_t __stack_max_depth();
+  std::size_t __stack_max_depth();
 
   inline __stack_t
   __get_stack()
   {
 #if defined _GLIBCXX_HAVE_EXECINFO_H
-    size_t __max_depth = __stack_max_depth();
+    std::size_t __max_depth = __stack_max_depth();
     if (__max_depth == 0)
       return 0;
     __stack_npt __buffer(__max_depth);
     int __depth = backtrace(&__buffer[0], __max_depth);
     __stack_t __stack = new __stack_npt(__depth);
-    memcpy(&(*__stack)[0], &__buffer[0], __depth * sizeof(__object_t));
+    __builtin_memcpy(&(*__stack)[0], &__buffer[0],
+		     __depth * sizeof(__object_t));
     return __stack;
 #else
     return 0;
 #endif
   }
 
-  inline size_t
+  inline std::size_t
   __size(__stack_t __stack)
   {
     if (!__stack)
@@ -95,23 +89,23 @@ namespace __gnu_profile
   
     __stack_npt::const_iterator __it;
     for (__it = __stack->begin(); __it != __stack->end(); ++__it)
-      fprintf(__f, "%p ", *__it);
+      std::fprintf(__f, "%p ", *__it);
   }
 
   /** @brief Hash function for summary trace using call stack as index.  */
   class __stack_hash 
   {
   public:
-    size_t
+    std::size_t
     operator()(__stack_t __s) const
     {
       if (!__s) 
 	return 0;
 
-      uintptr_t __index = 0;
+      __UINTPTR_TYPE__ __index = 0;
       __stack_npt::const_iterator __it;
       for (__it = __s->begin(); __it != __s->end(); ++__it)
-	__index += reinterpret_cast<uintptr_t>(*__it);
+	__index += reinterpret_cast<__UINTPTR_TYPE__>(*__it);
       return __index;
     }
 
@@ -124,8 +118,10 @@ namespace __gnu_profile
       if (__stack1->size() != __stack2->size())
 	return false;
 
-      size_t __byte_size = __stack1->size() * sizeof(__stack_npt::value_type);
-      return memcmp(&(*__stack1)[0], &(*__stack2)[0], __byte_size) == 0;
+      std::size_t __byte_size
+	= __stack1->size() * sizeof(__stack_npt::value_type);
+      return __builtin_memcmp(&(*__stack1)[0], &(*__stack2)[0],
+			      __byte_size) == 0;
     }
   };
 

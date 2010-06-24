@@ -37,15 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_MAP_TO_UNORDERED_MAP_H
 #define _GLIBCXX_PROFILE_PROFILER_MAP_TO_UNORDERED_MAP_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
@@ -53,9 +44,9 @@
 namespace __gnu_profile
 {
   inline int
-  __log2(size_t __size)
+  __log2(std::size_t __size)
   {
-    for (int __bit_count = sizeof(size_t) - 1; __bit_count >= 0;
+    for (int __bit_count = sizeof(std::size_t) - 1; __bit_count >= 0;
 	 -- __bit_count) 
       if ((2 << __bit_count) & __size)
 	return __bit_count;
@@ -63,23 +54,23 @@ namespace __gnu_profile
   }
 
   inline float
-  __map_insert_cost(size_t __size)
+  __map_insert_cost(std::size_t __size)
   { return (_GLIBCXX_PROFILE_DATA(__map_insert_cost_factor).__value 
 	    * static_cast<float>(__log2(__size))); }
 
   inline float
-  __map_erase_cost(size_t __size)
+  __map_erase_cost(std::size_t __size)
   { return (_GLIBCXX_PROFILE_DATA(__map_erase_cost_factor).__value
 	    * static_cast<float>(__log2(__size))); }
 
   inline float
-  __map_find_cost(size_t __size)
+  __map_find_cost(std::size_t __size)
   { return (_GLIBCXX_PROFILE_DATA(__map_find_cost_factor).__value
 	    * static_cast<float>(__log2(__size))); }
 
   /** @brief A map-to-unordered_map instrumentation line in the 
       object table.  */
-  class __map2umap_info 
+  class __map2umap_info
   : public __object_info_base
   {
   public:
@@ -113,21 +104,21 @@ namespace __gnu_profile
     void
     __write(FILE* __f) const
     {
-      fprintf(__f, "%Zu %Zu %Zu %Zu %.0f %.0f %s\n",
-	      _M_insert, _M_erase, _M_find, _M_iterate, _M_map_cost,
-	      _M_umap_cost, _M_valid ? "valid" : "invalid");
+      std::fprintf(__f, "%Zu %Zu %Zu %Zu %.0f %.0f %s\n",
+		   _M_insert, _M_erase, _M_find, _M_iterate, _M_map_cost,
+		   _M_umap_cost, _M_valid ? "valid" : "invalid");
     }
-    
+
     float
     __magnitude() const
     { return _M_map_cost - _M_umap_cost; }
 
-    const char*
+    std::string
     __advice() const
-    { return strdup("change std::map to std::unordered_map"); }
+    { return "change std::map to std::unordered_map"; }
 
     void
-    __record_insert(size_t __size, size_t __count)
+    __record_insert(std::size_t __size, std::size_t __count)
     {
       _M_insert += __count;
       _M_map_cost += __count * __map_insert_cost(__size);
@@ -137,7 +128,7 @@ namespace __gnu_profile
     }
 
     void
-    __record_erase(size_t __size, size_t __count)
+    __record_erase(std::size_t __size, std::size_t __count)
     {
       _M_erase += __count;
       _M_map_cost += __count * __map_erase_cost(__size);
@@ -147,7 +138,7 @@ namespace __gnu_profile
     }
 
     void
-    __record_find(size_t __size)
+    __record_find(std::size_t __size)
     {
       _M_find += 1;
       _M_map_cost += __map_find_cost(__size);
@@ -155,7 +146,7 @@ namespace __gnu_profile
     }
 
     void
-    __record_iterate(size_t __count)
+    __record_iterate(std::size_t __count)
     {
       _M_iterate += __count;
       _M_map_cost
@@ -171,10 +162,10 @@ namespace __gnu_profile
     { _M_valid = false; }
 
   private:
-    size_t _M_insert;
-    size_t _M_erase;
-    size_t _M_find;
-    size_t _M_iterate;
+    std::size_t _M_insert;
+    std::size_t _M_erase;
+    std::size_t _M_find;
+    std::size_t _M_iterate;
     float _M_umap_cost;
     float _M_map_cost;
     bool  _M_valid;
@@ -237,7 +228,7 @@ namespace __gnu_profile
 
   inline void
   __trace_map_to_unordered_map_insert(const void* __obj, 
-				      size_t __size, size_t __count)
+				      std::size_t __size, std::size_t __count)
   {
     if (!__profcxx_init())
       return;
@@ -251,7 +242,7 @@ namespace __gnu_profile
 
   inline void
   __trace_map_to_unordered_map_erase(const void* __obj, 
-				     size_t __size, size_t __count)
+				     std::size_t __size, std::size_t __count)
   {
     if (!__profcxx_init()) 
       return;
@@ -264,7 +255,7 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_map_to_unordered_map_find(const void* __obj, size_t __size)
+  __trace_map_to_unordered_map_find(const void* __obj, std::size_t __size)
   {
     if (!__profcxx_init())
       return;
@@ -277,7 +268,7 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_map_to_unordered_map_iterate(const void* __obj, size_t __count)
+  __trace_map_to_unordered_map_iterate(const void* __obj, std::size_t __count)
   {
     if (!__profcxx_init())
       return;

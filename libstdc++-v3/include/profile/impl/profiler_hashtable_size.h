@@ -37,15 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_HASHTABLE_SIZE_H
 #define _GLIBCXX_PROFILE_PROFILER_HASHTABLE_SIZE_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
@@ -80,7 +71,7 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_hashtable_size_construct(const void* __obj, size_t __num)
+  __trace_hashtable_size_construct(const void* __obj, std::size_t __num)
   {
     if (!__profcxx_init())
       return;
@@ -90,8 +81,8 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_hashtable_size_destruct(const void* __obj, size_t __num, 
-				  size_t __inum)
+  __trace_hashtable_size_destruct(const void* __obj, std::size_t __num, 
+				  std::size_t __inum)
   {
     if (!__profcxx_init())
       return;
@@ -100,8 +91,8 @@ namespace __gnu_profile
   }
 
   inline void
-  __trace_hashtable_size_resize(const void* __obj, size_t __from, 
-				size_t __to)
+  __trace_hashtable_size_resize(const void* __obj, std::size_t __from, 
+				std::size_t __to)
   {
     if (!__profcxx_init())
       return;
