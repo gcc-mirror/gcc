@@ -2493,7 +2493,7 @@ collect_spilled_coalesced_allocnos (int *pseudo_regnos, int n,
 /* Array of live ranges of size IRA_ALLOCNOS_NUM.  Live range for
    given slot contains live ranges of coalesced allocnos assigned to
    given slot.  */
-static allocno_live_range_t *slot_coalesced_allocnos_live_ranges;
+static live_range_t *slot_coalesced_allocnos_live_ranges;
 
 /* Return TRUE if coalesced allocnos represented by ALLOCNO has live
    ranges intersected with live ranges of coalesced allocnos assigned
@@ -2522,7 +2522,7 @@ setup_slot_coalesced_allocno_live_ranges (ira_allocno_t allocno)
 {
   int n;
   ira_allocno_t a;
-  allocno_live_range_t r;
+  live_range_t r;
 
   n = ALLOCNO_TEMP (allocno);
   for (a = ALLOCNO_NEXT_COALESCED_ALLOCNO (allocno);;
@@ -2551,10 +2551,9 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
   bitmap set_jump_crosses = regstat_get_setjmp_crosses ();
 
   slot_coalesced_allocnos_live_ranges
-    = (allocno_live_range_t *) ira_allocate (sizeof (allocno_live_range_t)
-					     * ira_allocnos_num);
+    = (live_range_t *) ira_allocate (sizeof (live_range_t) * ira_allocnos_num);
   memset (slot_coalesced_allocnos_live_ranges, 0,
-	  sizeof (allocno_live_range_t) * ira_allocnos_num);
+	  sizeof (live_range_t) * ira_allocnos_num);
   last_coalesced_allocno_num = 0;
   /* Coalesce non-conflicting spilled allocnos preferring most
      frequently used.  */
@@ -3244,7 +3243,7 @@ fast_allocation (void)
   enum machine_mode mode;
   ira_allocno_t a;
   ira_allocno_iterator ai;
-  allocno_live_range_t r;
+  live_range_t r;
   HARD_REG_SET conflict_hard_regs, *used_hard_regs;
 
   sorted_allocnos = (ira_allocno_t *) ira_allocate (sizeof (ira_allocno_t)

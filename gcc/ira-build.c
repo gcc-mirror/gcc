@@ -383,8 +383,8 @@ rebuild_regno_allocno_maps (void)
 
 
 
-/* Pools for allocnos and allocno live ranges.  */
-static alloc_pool allocno_pool, allocno_live_range_pool;
+/* Pools for allocnos and live ranges.  */
+static alloc_pool allocno_pool, live_range_pool;
 
 /* Vec containing references to all created allocnos.  It is a
    container of array allocnos.  */
@@ -398,9 +398,9 @@ static VEC(ira_allocno_t,heap) *ira_conflict_id_allocno_map_vec;
 static void
 initiate_allocnos (void)
 {
-  allocno_live_range_pool
-    = create_alloc_pool ("allocno live ranges",
-			 sizeof (struct ira_allocno_live_range), 100);
+  live_range_pool
+    = create_alloc_pool ("live ranges",
+			 sizeof (struct live_range), 100);
   allocno_pool
     = create_alloc_pool ("allocnos", sizeof (struct ira_allocno), 100);
   allocno_vec = VEC_alloc (ira_allocno_t, heap, max_reg_num () * 2);
@@ -812,13 +812,13 @@ create_cap_allocno (ira_allocno_t a)
 }
 
 /* Create and return allocno live range with given attributes.  */
-allocno_live_range_t
+live_range_t
 ira_create_allocno_live_range (ira_allocno_t a, int start, int finish,
-			       allocno_live_range_t next)
+			       live_range_t next)
 {
-  allocno_live_range_t p;
+  live_range_t p;
 
-  p = (allocno_live_range_t) pool_alloc (allocno_live_range_pool);
+  p = (live_range_t) pool_alloc (live_range_pool);
   p->allocno = a;
   p->start = start;
   p->finish = finish;
@@ -827,22 +827,22 @@ ira_create_allocno_live_range (ira_allocno_t a, int start, int finish,
 }
 
 /* Copy allocno live range R and return the result.  */
-static allocno_live_range_t
-copy_allocno_live_range (allocno_live_range_t r)
+static live_range_t
+copy_allocno_live_range (live_range_t r)
 {
-  allocno_live_range_t p;
+  live_range_t p;
 
-  p = (allocno_live_range_t) pool_alloc (allocno_live_range_pool);
+  p = (live_range_t) pool_alloc (live_range_pool);
   *p = *r;
   return p;
 }
 
 /* Copy allocno live range list given by its head R and return the
    result.  */
-allocno_live_range_t
-ira_copy_allocno_live_range_list (allocno_live_range_t r)
+live_range_t
+ira_copy_allocno_live_range_list (live_range_t r)
 {
-  allocno_live_range_t p, first, last;
+  live_range_t p, first, last;
 
   if (r == NULL)
     return NULL;
@@ -861,11 +861,10 @@ ira_copy_allocno_live_range_list (allocno_live_range_t r)
 /* Merge ranges R1 and R2 and returns the result.  The function
    maintains the order of ranges and tries to minimize number of the
    result ranges.  */
-allocno_live_range_t
-ira_merge_allocno_live_ranges (allocno_live_range_t r1,
-			       allocno_live_range_t r2)
+live_range_t
+ira_merge_allocno_live_ranges (live_range_t r1, live_range_t r2)
 {
-  allocno_live_range_t first, last, temp;
+  live_range_t first, last, temp;
 
   if (r1 == NULL)
     return r2;
@@ -939,8 +938,7 @@ ira_merge_allocno_live_ranges (allocno_live_range_t r1,
 
 /* Return TRUE if live ranges R1 and R2 intersect.  */
 bool
-ira_allocno_live_ranges_intersect_p (allocno_live_range_t r1,
-				     allocno_live_range_t r2)
+ira_allocno_live_ranges_intersect_p (live_range_t r1, live_range_t r2)
 {
   /* Remember the live ranges are always kept ordered.  */
   while (r1 != NULL && r2 != NULL)
@@ -957,16 +955,16 @@ ira_allocno_live_ranges_intersect_p (allocno_live_range_t r1,
 
 /* Free allocno live range R.  */
 void
-ira_finish_allocno_live_range (allocno_live_range_t r)
+ira_finish_allocno_live_range (live_range_t r)
 {
-  pool_free (allocno_live_range_pool, r);
+  pool_free (live_range_pool, r);
 }
 
 /* Free list of allocno live ranges starting with R.  */
 void
-ira_finish_allocno_live_range_list (allocno_live_range_t r)
+ira_finish_allocno_live_range_list (live_range_t r)
 {
-  allocno_live_range_t next_r;
+  live_range_t next_r;
 
   for (; r != NULL; r = next_r)
     {
@@ -1027,7 +1025,7 @@ finish_allocnos (void)
   VEC_free (ira_allocno_t, heap, ira_conflict_id_allocno_map_vec);
   VEC_free (ira_allocno_t, heap, allocno_vec);
   free_alloc_pool (allocno_pool);
-  free_alloc_pool (allocno_live_range_pool);
+  free_alloc_pool (live_range_pool);
 }
 
 
@@ -1658,7 +1656,7 @@ create_allocnos (void)
 
 /* The function changes allocno in range list given by R onto A.  */
 static void
-change_allocno_in_range_list (allocno_live_range_t r, ira_allocno_t a)
+change_allocno_in_range_list (live_range_t r, ira_allocno_t a)
 {
   for (; r != NULL; r = r->next)
     r->allocno = a;
@@ -1668,7 +1666,7 @@ change_allocno_in_range_list (allocno_live_range_t r, ira_allocno_t a)
 static void
 move_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
 {
-  allocno_live_range_t lr = ALLOCNO_LIVE_RANGES (from);
+  live_range_t lr = ALLOCNO_LIVE_RANGES (from);
 
   if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
     {
@@ -1688,7 +1686,7 @@ move_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
 static void
 copy_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
 {
-  allocno_live_range_t lr = ALLOCNO_LIVE_RANGES (from);
+  live_range_t lr = ALLOCNO_LIVE_RANGES (from);
 
   if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
     {
@@ -2148,7 +2146,7 @@ update_bad_spill_attribute (void)
   int i;
   ira_allocno_t a;
   ira_allocno_iterator ai;
-  allocno_live_range_t r;
+  live_range_t r;
   enum reg_class cover_class;
   bitmap_head dead_points[N_REG_CLASSES];
 
@@ -2199,7 +2197,7 @@ setup_min_max_allocno_live_range_point (void)
   int i;
   ira_allocno_t a, parent_a, cap;
   ira_allocno_iterator ai;
-  allocno_live_range_t r;
+  live_range_t r;
   ira_loop_tree_node_t parent;
 
   FOR_EACH_ALLOCNO (a, ai)
@@ -2507,7 +2505,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   ira_allocno_t a, parent_a, first, second, node_first, node_second;
   ira_copy_t cp;
   ira_loop_tree_node_t node;
-  allocno_live_range_t r;
+  live_range_t r;
   ira_allocno_iterator ai;
   ira_copy_iterator ci;
   sparseset allocnos_live;
@@ -2875,7 +2873,7 @@ ira_build (bool loops_p)
     {
       int n, nr;
       ira_allocno_t a;
-      allocno_live_range_t r;
+      live_range_t r;
       ira_allocno_iterator ai;
 
       n = 0;
