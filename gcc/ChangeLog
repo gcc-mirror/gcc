@@ -2,6 +2,30 @@
 
 	* ira.c (allocno_pool, copy_pool, allocno_live_range_pool): Delete.
 
+	* ira-build.c (merge_hard_reg_conflicts): New function.
+	(create_cap_allocno, copy_info_to_removed_store_destinations,
+	propagate_some_info_from_allocno, propagate_allocno_info): Use it.
+	(move_allocno_live_ranges, copy_allocno_live_ranges): New functions.
+	(remove_unnecessary_allocnos, remove_low_level_allocnos)
+	copy_nifo_to_removed_store_destination): Use them.
+	* ira-lives.c (make_hard_regno_born): New function, split out of
+	make_regno_born.
+	(make_allocno_born): Likewise.
+	(make_hard_regno_dead): New function, split out of make_regno_dead.
+	(make_allocno_dead): Likewise.
+	(inc_register_pressure): New function, split out of set_allocno_live.
+	(dec_register_pressure): New function, split out of clear_allocno_live.
+	(mark_pseudo_regno_live): New function, split out of mark_reg_live.
+	(mark_hard_reg_live): Likewise.  Use inc_register_pressure.
+	(mark_pseudo_regno_dead): New function, split out of mark_reg_dead.
+	(mark_hard_reg_dead): Likewise.  Use dec_register_pressure.
+	(make_pseudo_conflict): Use mark_pseudo_regno_dead and
+	mark_pseudo_regno_live.
+	(process_bb_node_lives): Use mark_pseudo_regno_live,
+	make_hard_regno_born and make_allocno_dead.
+	(make_regno_born, make_regno_dead, mark_reg_live, mark_reg_dead,
+	set_allocno_live, clear_allocno_live): Delete functions.
+
 2010-06-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* thumb2.md (thumb2_tlobits_cbranch): Delete.
