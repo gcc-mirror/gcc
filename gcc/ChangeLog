@@ -1,3 +1,13 @@
+2010-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/44492
+	* recog.h (struct recog_data): Add is_asm field.
+	* recog.c (asm_operand_ok, constrain_operands): If neither < nor > is
+	present in constraints of inline-asm operand and memory operand
+	contains {PRE,POST}_{INC,DEC,MODIFY}, return 0.
+	(extract_insn): Initialize recog_data.is_asm.
+	* doc/md.texi (Constraints): Document operand side-effect rules.
+
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
 	* c-parser.c (c_parser_conditional_expression):
