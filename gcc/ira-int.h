@@ -838,6 +838,8 @@ extern void ira_debug_allocno_copies (ira_allocno_t);
 extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
 				    void (*) (ira_loop_tree_node_t),
 				    void (*) (ira_loop_tree_node_t));
+extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
+extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
 extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_allocno_t, int);

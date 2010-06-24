@@ -2416,6 +2416,34 @@ create_caps (void)
    IR with one region.  */
 static ira_allocno_t *regno_top_level_allocno_map;
 
+/* Find the allocno that corresponds to A at a level one higher up in the
+   loop tree.  Returns NULL if A is a cap, or if it has no parent.  */
+ira_allocno_t
+ira_parent_allocno (ira_allocno_t a)
+{
+  ira_loop_tree_node_t parent;
+
+  if (ALLOCNO_CAP (a) != NULL)
+    return NULL;
+
+  parent = ALLOCNO_LOOP_TREE_NODE (a)->parent;
+  if (parent == NULL)
+    return NULL;
+
+  return parent->regno_allocno_map[ALLOCNO_REGNO (a)];
+}
+
+/* Find the allocno that corresponds to A at a level one higher up in the
+   loop tree.  If ALLOCNO_CAP is set for A, return that.  */
+ira_allocno_t
+ira_parent_or_cap_allocno (ira_allocno_t a)
+{
+  if (ALLOCNO_CAP (a) != NULL)
+    return ALLOCNO_CAP (a);
+
+  return ira_parent_allocno (a);
+}
+
 /* Process all allocnos originated from pseudo REGNO and copy live
    ranges, hard reg conflicts, and allocno stack reg attributes from
    low level allocnos to final allocnos which are destinations of
@@ -2478,7 +2506,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   enum reg_class cover_class;
   ira_allocno_t a, parent_a, first, second, node_first, node_second;
   ira_copy_t cp;
-  ira_loop_tree_node_t parent, node;
+  ira_loop_tree_node_t node;
   allocno_live_range_t r;
   ira_allocno_iterator ai;
   ira_copy_iterator ci;
@@ -2513,10 +2541,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	  ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	  if (ALLOCNO_SOMEWHERE_RENAMED_P (a))
 	    new_pseudos_p = true;
-	  if (ALLOCNO_CAP (a) != NULL
-	      || (parent = ALLOCNO_LOOP_TREE_NODE (a)->parent) == NULL
-	      || ((parent_a = parent->regno_allocno_map[ALLOCNO_REGNO (a)])
-		  == NULL))
+	  parent_a = ira_parent_allocno (a);
+	  if (parent_a == NULL)
 	    {
 	      ALLOCNO_COPIES (a) = NULL;
 	      regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))] = a;
@@ -2564,11 +2590,8 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      ALLOCNO_COVER_CLASS_COST (parent_a)
 		-= ALLOCNO_COVER_CLASS_COST (a);
 	      ALLOCNO_MEMORY_COST (parent_a) -= ALLOCNO_MEMORY_COST (a);
-	      if (ALLOCNO_CAP (parent_a) != NULL
-		  || (parent
-		      = ALLOCNO_LOOP_TREE_NODE (parent_a)->parent) == NULL
-		  || (parent_a = (parent->regno_allocno_map
-				  [ALLOCNO_REGNO (parent_a)])) == NULL)
+	      parent_a = ira_parent_allocno (parent_a);
+	      if (parent_a == NULL)
 		break;
 	    }
 	  ALLOCNO_COPIES (a) = NULL;
