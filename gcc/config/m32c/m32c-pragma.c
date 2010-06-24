@@ -24,7 +24,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "toplev.h"
 #include "c-family/c-pragma.h"
 #include "cpplib.h"

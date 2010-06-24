@@ -1,3 +1,7 @@
+2010-06-24  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c-pragma.c: Don't include rtl.h.
+
 2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386 (mov<mode>): Macroize expander from mov{sf,df,xf}
