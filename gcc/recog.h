@@ -230,6 +230,9 @@ struct recog_data
   /* The number of alternatives in the constraints for the insn.  */
   char n_alternatives;
 
+  /* True if insn is ASM_OPERANDS.  */
+  bool is_asm;
+
   /* Specifies whether an insn alternative is enabled using the
      `enabled' attribute in the insn pattern definition.  For back
      ends not using the `enabled' attribute the array fields are

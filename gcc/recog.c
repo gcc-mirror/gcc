@@ -1601,6 +1601,9 @@ int
 asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 {
   int result = 0;
+#ifdef AUTO_INC_DEC
+  bool incdec_ok = false;
+#endif
 
   /* Use constrain_operands after reload.  */
   gcc_assert (!reload_completed);
@@ -1608,7 +1611,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
   /* Empty constraint string is the same as "X,...,X", i.e. X for as
      many alternatives as required to match the other operands.  */
   if (*constraint == '\0')
-    return 1;
+    result = 1;
 
   while (*constraint)
     {
@@ -1685,6 +1688,9 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
 		  || GET_CODE (XEXP (op, 0)) == POST_DEC))
 	    result = 1;
+#ifdef AUTO_INC_DEC
+	  incdec_ok = true;
+#endif
 	  break;
 
 	case '>':
@@ -1693,6 +1699,9 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 		  || GET_CODE (XEXP (op, 0)) == PRE_INC
 		  || GET_CODE (XEXP (op, 0)) == POST_INC))
 	    result = 1;
+#ifdef AUTO_INC_DEC
+	  incdec_ok = true;
+#endif
 	  break;
 
 	case 'E':
@@ -1813,6 +1822,23 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
       if (len)
 	return 0;
     }
+
+#ifdef AUTO_INC_DEC
+  /* For operands without < or > constraints reject side-effects.  */
+  if (!incdec_ok && result && MEM_P (op))
+    switch (GET_CODE (XEXP (op, 0)))
+      {
+      case PRE_INC:
+      case POST_INC:
+      case PRE_DEC:
+      case POST_DEC:
+      case PRE_MODIFY:
+      case POST_MODIFY:
+	return 0;
+      default:
+	break;
+      }
+#endif
 
   return result;
 }
@@ -2039,6 +2065,7 @@ extract_insn (rtx insn)
   recog_data.n_operands = 0;
   recog_data.n_alternatives = 0;
   recog_data.n_dups = 0;
+  recog_data.is_asm = false;
 
   switch (GET_CODE (body))
     {
@@ -2085,6 +2112,7 @@ extract_insn (rtx insn)
 	      while (*p)
 		recog_data.n_alternatives += (*p++ == ',');
 	    }
+	  recog_data.is_asm = true;
 	  break;
 	}
       fatal_insn_not_found (insn);
@@ -2699,6 +2727,30 @@ constrain_operands (int strict)
 		    = recog_data.operand[funny_match[funny_match_index].this_op];
 		}
 
+#ifdef AUTO_INC_DEC
+	      /* For operands without < or > constraints reject side-effects.  */
+	      if (recog_data.is_asm)
+		{
+		  for (opno = 0; opno < recog_data.n_operands; opno++)
+		    if (MEM_P (recog_data.operand[opno]))
+		      switch (GET_CODE (XEXP (recog_data.operand[opno], 0)))
+			{
+			case PRE_INC:
+			case POST_INC:
+			case PRE_DEC:
+			case POST_DEC:
+			case PRE_MODIFY:
+			case POST_MODIFY:
+			  if (strchr (recog_data.constraints[opno], '<') == NULL
+			      || strchr (recog_data.constraints[opno], '>')
+				 == NULL)
+			    return 0;
+			  break;
+			default:
+			  break;
+			}
+		}
+#endif
 	      return 1;
 	    }
 	}

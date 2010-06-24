@@ -1,3 +1,8 @@
+2010-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/44492
+	* g++.dg/torture/pr44492.C: New test.
+
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
         * c-c++-common/warn-omitted-condop.c: New.
