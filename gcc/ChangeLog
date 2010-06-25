@@ -1,3 +1,13 @@
+2010-06-25  Alan Modra  <amodra@gmail.com>
+
+	* doc/invoke.texi: Delete mcmodel=medium from powerpc options.
+	* config/rs6000/rs6000.h (enum rs6000_cmodel): Delete CMODEL_MEDIUM.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Set
+	CMODEL_LARGE as default.
+	* config/rs6000/rs6000.c (rs6000_handle_option): Remove mcmodel=medium.
+	(offsettable_ok_by_alignment): Delete.
+	(rs6000_emit_move): Remove mcmodel=medium optimization.
+
 2010-06-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	With large parts from Jim Wilson:
