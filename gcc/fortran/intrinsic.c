@@ -2375,10 +2375,11 @@ add_functions (void)
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);
 
-  add_sym_2 ("selected_real_kind", GFC_ISYM_SR_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
+  add_sym_3 ("selected_real_kind", GFC_ISYM_SR_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F95, gfc_check_selected_real_kind,
 	     gfc_simplify_selected_real_kind, NULL,
-	     p, BT_INTEGER, di, OPTIONAL, r, BT_INTEGER, di, OPTIONAL);
+	     p, BT_INTEGER, di, OPTIONAL, r, BT_INTEGER, di, OPTIONAL,
+	     "radix", BT_INTEGER, di, OPTIONAL);
 
   make_generic ("selected_real_kind", GFC_ISYM_SR_KIND, GFC_STD_F95);
 

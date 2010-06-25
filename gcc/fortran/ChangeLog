@@ -1,5 +1,18 @@
 2010-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* intrinsic.h (gfc_check_selected_real_kind,
+	gfc_simplify_selected_real_kind): Update prototypes.
+	* intrinsic.c (add_functions): Add radix support to
+	selected_real_kind.
+	* check.c (gfc_check_selected_real_kind): Ditto.
+	* simplify.c (gfc_simplify_selected_real_kind): Ditto.
+	* trans-decl.c (gfc_build_intrinsic_function_decls):
+	Change call from selected_real_kind to selected_real_kind2008.
+	* intrinsic.texi (SELECTED_REAL_KIND): Update for radix.
+	(PRECISION, RANGE, RADIX): Add cross @refs.
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* decl.c (gfc_match_entry): Mark ENTRY as GFC_STD_F2008_OBS.
 	* gfortran.texi (_gfortran_set_options): Update for
 	GFC_STD_F2008_OBS addition.

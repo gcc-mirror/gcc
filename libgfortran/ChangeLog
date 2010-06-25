@@ -1,5 +1,15 @@
 2010-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* intrinsics/selected_real_kind.f90
+	(_gfortran_selected_real_kind2008): Add function.
+	(_gfortran_selected_real_kind): Stub which calls
+	_gfortran_selected_real_kind2008.
+	* gfortran.map (GFORTRAN_1.4): Add
+	_gfortran_selected_real_kind2008.
+	* mk-srk-inc.sh: Save also RADIX.
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* runtime/compile_options.c (init_compile_options): Update
 	compile_options.allow_std for GFC_STD_F2008_OBS.
 	* io/transfer.c (formatted_transfer_scalar_read,
