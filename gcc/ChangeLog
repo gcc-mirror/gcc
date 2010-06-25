@@ -1,3 +1,9 @@
+2010-06-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/44326
+	* implicit-zee.c (find_removable_zero_extends): Replace
+	INSN_P with NONDEBUG_INSN_P.
+
 2010-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_param_descriptor): Removed the modified flag.
