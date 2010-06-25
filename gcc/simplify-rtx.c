@@ -209,10 +209,11 @@ avoid_constant_pool_reference (rtx x)
 rtx
 delegitimize_mem_from_attrs (rtx x)
 {
+  /* MEMs without MEM_OFFSETs may have been offset, so we can't just
+     use their base addresses as equivalent.  */
   if (MEM_P (x)
       && MEM_EXPR (x)
-      && (!MEM_OFFSET (x)
-	  || GET_CODE (MEM_OFFSET (x)) == CONST_INT))
+      && MEM_OFFSET (x))
     {
       tree decl = MEM_EXPR (x);
       enum machine_mode mode = GET_MODE (x);
@@ -265,8 +266,7 @@ delegitimize_mem_from_attrs (rtx x)
 	{
 	  rtx newx;
 
-	  if (MEM_OFFSET (x))
-	    offset += INTVAL (MEM_OFFSET (x));
+	  offset += INTVAL (MEM_OFFSET (x));
 
 	  newx = DECL_RTL (decl);
 

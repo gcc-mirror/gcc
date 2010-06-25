@@ -1,3 +1,9 @@
+2010-06-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/44610
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Don't use a base
+	address if the offset is unknown.
+
 2010-06-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
