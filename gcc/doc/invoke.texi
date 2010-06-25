@@ -3669,7 +3669,7 @@ comparisons, so this warning level will give a very large number of
 false positives.
 @end table
 
-@item -Wsuggest-attribute=@r{[}const@r{|}pure@r{]}
+@item -Wsuggest-attribute=@r{[}const@r{|}pure@r{|}noreturn@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
