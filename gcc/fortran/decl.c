@@ -5642,7 +5642,14 @@ gfc_match_end (gfc_statement *st)
 
   if (gfc_match_eos () == MATCH_YES)
     {
-      if (!eos_ok)
+      if (!eos_ok && (*st == ST_END_SUBROUTINE || *st == ST_END_FUNCTION))
+	{
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: END statement "
+			      "instead of %s statement at %L",
+			      gfc_ascii_statement (*st), &old_loc) == FAILURE)
+	    goto cleanup;
+	}
+      else if (!eos_ok)
 	{
 	  /* We would have required END [something].  */
 	  gfc_error ("%s statement expected at %L",
