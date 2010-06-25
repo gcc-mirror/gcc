@@ -2706,7 +2706,7 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
 static struct c_arg_info *
 c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 {
-  bool good_parm = false;
+  bool bad_parm = false;
   /* ??? Following the old parser, forward parameter declarations may
      use abstract declarators, and if no real parameter declarations
      follow the forward declarations then this is not diagnosed.  Also
@@ -2758,11 +2758,10 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       /* Parse a parameter.  */
       struct c_parm *parm = c_parser_parameter_declaration (parser, attrs);
       attrs = NULL_TREE;
-      if (parm != NULL)
-	{
-	  good_parm = true;
-	  push_parm_decl (parm);
-	}
+      if (parm == NULL)
+	bad_parm = true;
+      else
+	push_parm_decl (parm);
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  tree new_attrs;
@@ -2774,20 +2773,13 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
 	  c_parser_consume_token (parser);
-	  if (good_parm)
-	    return get_parm_info (false);
-	  else
+	  if (bad_parm)
 	    {
-	      struct c_arg_info *ret
-		= XOBNEW (&parser_obstack, struct c_arg_info);
-	      ret->parms = 0;
-	      ret->tags = 0;
-	      ret->types = 0;
-	      ret->others = 0;
-	      ret->pending_sizes = 0;
-	      ret->had_vla_unspec = 0;
-	      return ret;
+	      get_pending_sizes ();
+	      return NULL;
 	    }
+	  else
+	    return get_parm_info (false);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
 			     "expected %<;%>, %<,%> or %<)%>"))
@@ -2802,20 +2794,13 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	    {
 	      c_parser_consume_token (parser);
-	      if (good_parm)
-		return get_parm_info (true);
-	      else
+	      if (bad_parm)
 		{
-		  struct c_arg_info *ret
-		    = XOBNEW (&parser_obstack, struct c_arg_info);
-		  ret->parms = 0;
-		  ret->tags = 0;
-		  ret->types = 0;
-		  ret->others = 0;
-		  ret->pending_sizes = 0;
-		  ret->had_vla_unspec = 0;
-		  return ret;
+		  get_pending_sizes ();
+		  return NULL;
 		}
+	      else
+		return get_parm_info (true);
 	    }
 	  else
 	    {
@@ -2841,10 +2826,22 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   bool dummy = false;
   if (!c_parser_next_token_starts_declspecs (parser))
     {
+      c_token *token = c_parser_peek_token (parser);
+      if (parser->error)
+	return NULL;
+      c_parser_set_source_position_from_token (token);
+      if (token->type == CPP_NAME
+	  && c_parser_peek_2nd_token (parser)->type != CPP_COMMA
+	  && c_parser_peek_2nd_token (parser)->type != CPP_CLOSE_PAREN)
+	{
+	  error ("unknown type name %qE", token->value);
+	  parser->error = true;
+	}
       /* ??? In some Objective-C cases '...' isn't applicable so there
 	 should be a different message.  */
-      c_parser_error (parser,
-		      "expected declaration specifiers or %<...%>");
+      else
+	c_parser_error (parser,
+			"expected declaration specifiers or %<...%>");
       c_parser_skip_to_end_of_parameter (parser);
       return NULL;
     }

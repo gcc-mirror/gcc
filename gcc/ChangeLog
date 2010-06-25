@@ -1,3 +1,11 @@
+2010-06-25  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/44517
+	* c-parser.c (c_parser_parms_list_declarator): Return NULL if one of
+	parameters are not good.
+	(c_parser_parameter_declaration): Error unknown type name if the type
+	name can't start declaration specifiers.
+
 2010-06-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (translate_options): Don't mention +e in comment.

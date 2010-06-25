@@ -1,3 +1,9 @@
+2010-06-25  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/44517
+	* gcc.dg/noncompile/pr44517.c: New.
+	* gcc.dg/noncompile/990416-1.c: Adjust expected error.
+
 2010-06-24  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/43283
