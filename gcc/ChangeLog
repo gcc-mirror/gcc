@@ -1,3 +1,12 @@
+2010-06-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/pa/pa.h (MODIFY_TARGET_NAME): Remove.
+	* doc/tm.texi (MODIFY_TARGET_NAME): Don't document.
+	* gcc.c (enum add_del, struct modify_target, modify_target):
+	Remove.
+	(process_command): Remove code conditional on MODIFY_TARGET_NAME.
+	* system.h (MODIFY_TARGET_NAME): Poison.
+
 2010-06-25  Alan Modra  <amodra@gmail.com>
 
 	* doc/invoke.texi: Delete mcmodel=medium from powerpc options.
