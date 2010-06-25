@@ -523,31 +523,6 @@ Cross compilers do not search either @file{/usr/local/include} or its
 replacement.
 @end defmac
 
-@defmac MODIFY_TARGET_NAME
-Define this macro if you wish to define command-line switches that
-modify the default target name.
-
-For each switch, you can include a string to be appended to the first
-part of the configuration name or a string to be deleted from the
-configuration name, if present.  The definition should be an initializer
-for an array of structures.  Each array element should have three
-elements: the switch name (a string constant, including the initial
-dash), one of the enumeration codes @code{ADD} or @code{DELETE} to
-indicate whether the string should be inserted or deleted, and the string
-to be inserted or deleted (a string constant).
-
-For example, on a machine where @samp{64} at the end of the
-configuration name denotes a 64-bit target and you want the @option{-32}
-and @option{-64} switches to select between 32- and 64-bit targets, you would
-code
-
-@smallexample
-#define MODIFY_TARGET_NAME \
-  @{ @{ "-32", DELETE, "64"@}, \
-     @{"-64", ADD, "64"@}@}
-@end smallexample
-@end defmac
-
 @defmac SYSTEM_INCLUDE_DIR
 Define this macro as a C string constant if you wish to specify a
 system-specific directory to search for header files before the standard

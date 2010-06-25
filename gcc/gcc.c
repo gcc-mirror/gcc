@@ -280,23 +280,6 @@ static const char *cross_compile = "1";
 static const char *cross_compile = "0";
 #endif
 
-#ifdef MODIFY_TARGET_NAME
-
-/* Information on how to alter the target name based on a command-line
-   switch.  The only case we support now is simply appending or deleting a
-   string to or from the end of the first part of the configuration name.  */
-
-enum add_del {ADD, DELETE};
-
-static const struct modify_target
-{
-  const char *const sw;
-  const enum add_del add_del;
-  const char *const str;
-}
-modify_target[] = MODIFY_TARGET_NAME;
-#endif
-
 /* Greatest exit code of sub-processes that has been encountered up to
    now.  */
 static int greatest_status = 1;
@@ -3509,10 +3492,6 @@ process_command (int argc, const char **argv)
   const char *spec_lang = 0;
   int last_language_n_infiles;
   int lang_n_infiles = 0;
-#ifdef MODIFY_TARGET_NAME
-  int is_modify_target_name;
-  unsigned int j;
-#endif
   const char *tooldir_prefix;
   char *(*get_relative_prefix) (const char *, const char *,
 				const char *) = NULL;
@@ -4134,43 +4113,6 @@ process_command (int argc, const char **argv)
 	    default:
 	    normal_switch:
 
-#ifdef MODIFY_TARGET_NAME
-	      is_modify_target_name = 0;
-
-	      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
-		if (! strcmp (argv[i], modify_target[j].sw))
-		  {
-		    char *new_name = XNEWVEC (char, strlen (modify_target[j].str)
-					      + strlen (spec_machine));
-		    const char *p, *r;
-		    char *q;
-		    int made_addition = 0;
-
-		    is_modify_target_name = 1;
-		    for (p = spec_machine, q = new_name; *p != 0; )
-		      {
-			if (modify_target[j].add_del == DELETE
-			    && (! strncmp (q, modify_target[j].str,
-					   strlen (modify_target[j].str))))
-			  p += strlen (modify_target[j].str);
-			else if (modify_target[j].add_del == ADD
-				 && ! made_addition && *p == '-')
-			  {
-			    for (r = modify_target[j].str; *r != 0; )
-			      *q++ = *r++;
-			    made_addition = 1;
-			  }
-
-			*q++ = *p++;
-		      }
-
-		    spec_machine = new_name;
-		  }
-
-	      if (is_modify_target_name)
-		break;
-#endif
-
 	      n_switches++;
 
 	      if (SWITCH_TAKES_ARG (c) > (p[1] != 0))
@@ -4311,17 +4253,6 @@ process_command (int argc, const char **argv)
   for (i = 1; i < argc; i++)
     {
       /* Just skip the switches that were handled by the preceding loop.  */
-#ifdef MODIFY_TARGET_NAME
-      is_modify_target_name = 0;
-
-      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
-	if (! strcmp (argv[i], modify_target[j].sw))
-	  is_modify_target_name = 1;
-
-      if (is_modify_target_name)
-	;
-      else
-#endif
       if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strncmp (argv[i], "-Wp,", 4))
