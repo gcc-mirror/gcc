@@ -27,6 +27,9 @@ extern void debug_dwarf (void);
 struct die_struct;
 extern void debug_dwarf_die (struct die_struct *);
 extern void dwarf2out_set_demangle_name_func (const char *(*) (const char *));
+#ifdef VMS_DEBUGGING_INFO
+extern void dwarf2out_vms_debug_main_pointer (void);
+#endif
 
 struct array_descr_info
 {

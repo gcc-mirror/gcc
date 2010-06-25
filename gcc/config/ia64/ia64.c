@@ -3423,6 +3423,29 @@ ia64_expand_prologue (void)
   finish_spill_pointers ();
 }
 
+/* Output the textual info surrounding the prologue.  */
+
+void
+ia64_start_function (FILE *file, const char *fnname,
+		     tree decl ATTRIBUTE_UNUSED)
+{
+#if VMS_DEBUGGING_INFO
+  if (vms_debug_main
+      && strncmp (vms_debug_main, fnname, strlen (vms_debug_main)) == 0)
+    {
+      targetm.asm_out.globalize_label (asm_out_file, VMS_DEBUG_MAIN_POINTER);
+      ASM_OUTPUT_DEF (asm_out_file, VMS_DEBUG_MAIN_POINTER, fnname);
+      dwarf2out_vms_debug_main_pointer ();
+      vms_debug_main = 0;
+    }
+#endif
+
+  fputs ("\t.proc ", file);
+  assemble_name (file, fnname);
+  fputc ('\n', file);
+  ASM_OUTPUT_LABEL (file, fnname);
+}
+
 /* Called after register allocation to add any instructions needed for the
    epilogue.  Using an epilogue insn is favored compared to putting all of the
    instructions in output_function_prologue(), since it allows the scheduler
