@@ -1,5 +1,10 @@
 2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (insert_gimplified_predicates): Do not insert
+	statements computing the true predicate.
+
+2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-if-conv.c (init_bb_predicate): Initialize the predicate
 	to boolean_true_node.
 	(reset_bb_predicate): New.
