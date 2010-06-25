@@ -225,12 +225,11 @@ namespace __gnu_profile
     __trace_base<__object_info, __stack_info>::
     __collect_warnings(__warning_vector_t& __warnings)
     {
-      typename __stack_table_t::iterator __i = __stack_table.begin();
-      for (; __i != __stack_table.end(); ++__i)
-	__warnings.push_back(__warning_data((*__i).second.__magnitude(), 
-					    (*__i).first, 
-					    __id,
-					    (*__i).second.__advice()));
+      for (typename __stack_table_t::iterator __it
+	     = __stack_table.begin(); __it != __stack_table.end(); ++__it)
+	__warnings.push_back(__warning_data((*__it).second.__magnitude(),
+					    (*__it).first, __id,
+					    (*__it).second.__advice()));
     }
 
   template<typename __object_info, typename __stack_info>

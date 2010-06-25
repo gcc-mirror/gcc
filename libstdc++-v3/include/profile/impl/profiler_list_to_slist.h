@@ -77,7 +77,7 @@ namespace __gnu_profile
     }
     
     void
-    __merge(const __list2slist_info&) { };
+    __merge(const __list2slist_info&) { }
 
     void
     __write(FILE* __f) const
@@ -96,7 +96,7 @@ namespace __gnu_profile
 
     void
     __record_operation()
-    { _M_operations++; }
+    { ++_M_operations; }
 
     bool
     __has_rewind()
