@@ -1,3 +1,11 @@
+2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (tree-if-conv.o): Depends on DBGCNT_H.
+	* dbgcnt.def (if_conversion_tree): New DEBUG_COUNTER.
+	* tree-if-conv.c: Include dbgcnt.h.
+	(tree_if_conversion): Use if_conversion_tree to count the number of
+	if-convertible loops.
+
 2010-06-25  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* common.opt (fprefetch-loop-arrays): Re-define
@@ -62,11 +70,11 @@
 	with only a call to ipa_analyze_node.
 	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Analyze the
 	node with only a call to ipa_analyze_node.
-	
+
 2010-06-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (-Wsuggest-attribute): Add item for noreturn.
-	
+
 2010-06-25  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pass.h (pass_split_functions): Declare.
@@ -85,7 +93,7 @@
 	* tree-inline.c (gimple_expand_calls_inline): Fix typo in comment.
 	* gimplify.c (is_gimple_reg_rhs_or_call): Likewise.
 	(gimplify_expr): Likewise.
-	
+
 2010-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (determine_cst_member_ptr): Ignore non-clobbering
