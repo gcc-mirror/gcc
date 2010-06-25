@@ -1162,9 +1162,7 @@ combine_blocks (struct loop *loop)
 
   /* If possible, merge loop header to the block with the exit edge.
      This reduces the number of basic blocks to two, to please the
-     vectorizer that handles only loops with two nodes.
-
-     FIXME: Call cleanup_tree_cfg.  */
+     vectorizer that handles only loops with two nodes.  */
   if (exit_bb
       && exit_bb != loop->header
       && can_merge_blocks_p (loop->header, exit_bb))
@@ -1172,11 +1170,12 @@ combine_blocks (struct loop *loop)
 }
 
 /* If-convert LOOP when it is legal.  For the moment this pass has no
-   profitability analysis.  */
+   profitability analysis.  Returns true when something changed.  */
 
-static void
+static bool
 tree_if_conversion (struct loop *loop)
 {
+  bool changed = false;
   ifc_bbs = NULL;
 
   if (!if_convertible_loop_p (loop)
@@ -1187,6 +1186,7 @@ tree_if_conversion (struct loop *loop)
      blocks into one huge basic block doing the if-conversion
      on-the-fly.  */
   combine_blocks (loop);
+  changed = true;
 
  cleanup:
   if (ifc_bbs)
@@ -1199,6 +1199,8 @@ tree_if_conversion (struct loop *loop)
       free (ifc_bbs);
       ifc_bbs = NULL;
     }
+
+  return changed;
 }
 
 /* Tree if-conversion pass management.  */
@@ -1208,14 +1210,15 @@ main_tree_if_conversion (void)
 {
   loop_iterator li;
   struct loop *loop;
+  bool changed = false;
 
   if (number_of_loops () <= 1)
     return 0;
 
   FOR_EACH_LOOP (li, loop, 0)
-    tree_if_conversion (loop);
+    changed |= tree_if_conversion (loop);
 
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 static bool
