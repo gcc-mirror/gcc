@@ -858,7 +858,7 @@ find_removable_zero_extends (void)
     {
       FOR_BB_INSNS (curr_block, curr_insn)
         {
-          if (!INSN_P (curr_insn))
+          if (!NONDEBUG_INSN_P (curr_insn))
             continue;
 
           type = for_each_rtx (&PATTERN (curr_insn),
