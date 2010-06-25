@@ -1,3 +1,8 @@
+2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_trace.h: Uglify it to __it, use
+	everywhere std::size_t instead of size_t.
+
 2010-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/profile/impl/profiler_trace.h (__trace_base<>::

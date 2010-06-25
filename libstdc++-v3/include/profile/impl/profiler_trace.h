@@ -462,8 +462,8 @@ namespace __gnu_profile
     std::fclose(__raw_file);
 
     // Sort data by magnitude, keeping just top N.
-    size_t __cutoff = std::min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
-			       __warnings.size());
+    std::size_t __cutoff = std::min(_GLIBCXX_PROFILE_DATA(_S_max_warn_count),
+				    __warnings.size());
     __top_n(__warnings, __top_warnings, __cutoff);
 
     FILE* __warn_file = __open_output_file("txt");
@@ -564,10 +564,10 @@ namespace __gnu_profile
       if (!__env_value)
         {
           // Look it up in the config file.
-          __env_t::iterator it 
+          __env_t::iterator __it 
 	    = _GLIBCXX_PROFILE_DATA(__env).find(__factor->__env_var);
-          if (it != _GLIBCXX_PROFILE_DATA(__env).end())
-            __env_value = (*it).second.c_str();
+          if (__it != _GLIBCXX_PROFILE_DATA(__env).end())
+            __env_value = (*__it).second.c_str();
         }
 
       if (__env_value)
