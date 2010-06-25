@@ -949,7 +949,7 @@ Common Report Var(flag_predictive_commoning) Optimization
 Run predictive commoning optimization.
 
 fprefetch-loop-arrays
-Common Report Var(flag_prefetch_loop_arrays) Optimization
+Common Report Var(flag_prefetch_loop_arrays) Init(-1) Optimization
 Generate prefetch instructions, if available, for arrays in loops
 
 fprofile

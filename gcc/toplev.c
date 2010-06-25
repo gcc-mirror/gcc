@@ -2013,13 +2013,13 @@ process_options (void)
     }
 
 #ifndef HAVE_prefetch
-  if (flag_prefetch_loop_arrays)
+  if (flag_prefetch_loop_arrays > 0)
     {
       warning (0, "-fprefetch-loop-arrays not supported for this target");
       flag_prefetch_loop_arrays = 0;
     }
 #else
-  if (flag_prefetch_loop_arrays && !HAVE_prefetch)
+  if (flag_prefetch_loop_arrays > 0 && !HAVE_prefetch)
     {
       warning (0, "-fprefetch-loop-arrays not supported for this target (try -march switches)");
       flag_prefetch_loop_arrays = 0;
@@ -2028,7 +2028,7 @@ process_options (void)
 
   /* This combination of options isn't handled for i386 targets and doesn't
      make much sense anyway, so don't allow it.  */
-  if (flag_prefetch_loop_arrays && optimize_size)
+  if (flag_prefetch_loop_arrays > 0 && optimize_size)
     {
       warning (0, "-fprefetch-loop-arrays is not supported with -Os");
       flag_prefetch_loop_arrays = 0;
