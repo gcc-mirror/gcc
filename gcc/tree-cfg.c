@@ -3533,6 +3533,65 @@ do_pointer_plus_expr_check:
   return false;
 }
 
+/* Verify a gimple assignment statement STMT with a ternary rhs.
+   Returns true if anything is wrong.  */
+
+static bool
+verify_gimple_assign_ternary (gimple stmt)
+{
+  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs1_type = TREE_TYPE (rhs1);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
+  tree rhs2_type = TREE_TYPE (rhs2);
+  tree rhs3 = gimple_assign_rhs3 (stmt);
+  tree rhs3_type = TREE_TYPE (rhs3);
+
+  if (!is_gimple_reg (lhs)
+      && !(optimize == 0
+	   && TREE_CODE (lhs_type) == COMPLEX_TYPE))
+    {
+      error ("non-register as LHS of ternary operation");
+      return true;
+    }
+
+  if (!is_gimple_val (rhs1)
+      || !is_gimple_val (rhs2)
+      || !is_gimple_val (rhs3))
+    {
+      error ("invalid operands in ternary operation");
+      return true;
+    }
+
+  /* First handle operations that involve different types.  */
+  switch (rhs_code)
+    {
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
+      if ((!INTEGRAL_TYPE_P (rhs1_type)
+	   && !FIXED_POINT_TYPE_P (rhs1_type))
+	  || !useless_type_conversion_p (rhs1_type, rhs2_type)
+	  || !useless_type_conversion_p (lhs_type, rhs3_type)
+	  || 2 * TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (lhs_type)
+	  || TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (rhs2_type))
+	{
+	  error ("type mismatch in widening multiply-accumulate expression");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  debug_generic_expr (rhs3_type);
+	  return true;
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  return false;
+}
+
 /* Verify a gimple assignment statement STMT with a single rhs.
    Returns true if anything is wrong.  */
 
@@ -3678,6 +3737,9 @@ verify_gimple_assign (gimple stmt)
 
     case GIMPLE_BINARY_RHS:
       return verify_gimple_assign_binary (stmt);
+
+    case GIMPLE_TERNARY_RHS:
+      return verify_gimple_assign_ternary (stmt);
 
     default:
       gcc_unreachable ();

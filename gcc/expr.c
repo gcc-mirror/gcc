@@ -7239,8 +7239,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   rtx subtarget, original_target;
   int ignore;
   bool reduce_bit_field;
-  gimple subexp0_def, subexp1_def;
-  tree top0, top1;
   location_t loc = ops->location;
   tree treeop0, treeop1;
 #define REDUCE_BIT_FIELD(expr)	(reduce_bit_field			  \
@@ -7260,7 +7258,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
      exactly those that are valid in gimple expressions that aren't
      GIMPLE_SINGLE_RHS (or invalid).  */
   gcc_assert (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS
-	      || get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS);
+	      || get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS
+	      || get_gimple_rhs_class (code) == GIMPLE_TERNARY_RHS);
 
   ignore = (target == const0_rtx
 	    || ((CONVERT_EXPR_CODE_P (code)
@@ -7435,58 +7434,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 				    fold_convert_loc (loc, ssizetype,
 						      treeop1));
     case PLUS_EXPR:
-
-      /* Check if this is a case for multiplication and addition.  */
-      if ((TREE_CODE (type) == INTEGER_TYPE
-	   || TREE_CODE (type) == FIXED_POINT_TYPE)
-	  && (subexp0_def = get_def_for_expr (treeop0,
-					      MULT_EXPR)))
-	{
-	  tree subsubexp0, subsubexp1;
-	  gimple subsubexp0_def, subsubexp1_def;
-	  enum tree_code this_code;
-
-	  this_code = TREE_CODE (type) == INTEGER_TYPE ? NOP_EXPR
-						       : FIXED_CONVERT_EXPR;
-	  subsubexp0 = gimple_assign_rhs1 (subexp0_def);
-	  subsubexp0_def = get_def_for_expr (subsubexp0, this_code);
-	  subsubexp1 = gimple_assign_rhs2 (subexp0_def);
-	  subsubexp1_def = get_def_for_expr (subsubexp1, this_code);
-	  if (subsubexp0_def && subsubexp1_def
-	      && (top0 = gimple_assign_rhs1 (subsubexp0_def))
-	      && (top1 = gimple_assign_rhs1 (subsubexp1_def))
-	      && (TYPE_PRECISION (TREE_TYPE (top0))
-		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
-	      && (TYPE_PRECISION (TREE_TYPE (top0))
-		  == TYPE_PRECISION (TREE_TYPE (top1)))
-	      && (TYPE_UNSIGNED (TREE_TYPE (top0))
-		  == TYPE_UNSIGNED (TREE_TYPE (top1))))
-	    {
-	      tree op0type = TREE_TYPE (top0);
-	      enum machine_mode innermode = TYPE_MODE (op0type);
-	      bool zextend_p = TYPE_UNSIGNED (op0type);
-	      bool sat_p = TYPE_SATURATING (TREE_TYPE (subsubexp0));
-	      if (sat_p == 0)
-		this_optab = zextend_p ? umadd_widen_optab : smadd_widen_optab;
-	      else
-		this_optab = zextend_p ? usmadd_widen_optab
-				       : ssmadd_widen_optab;
-	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
-		  && (optab_handler (this_optab, mode)->insn_code
-		      != CODE_FOR_nothing))
-		{
-		  expand_operands (top0, top1, NULL_RTX, &op0, &op1,
-				   EXPAND_NORMAL);
-		  op2 = expand_expr (treeop1, subtarget,
-				     VOIDmode, EXPAND_NORMAL);
-		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
-					    target, unsignedp);
-		  gcc_assert (temp);
-		  return REDUCE_BIT_FIELD (temp);
-		}
-	    }
-	}
-
       /* If we are adding a constant, a VAR_DECL that is sp, fp, or ap, and
 	 something else, make sure we add the register to the constant and
 	 then to the other thing.  This case can occur during strength
@@ -7601,57 +7548,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       return REDUCE_BIT_FIELD (simplify_gen_binary (PLUS, mode, op0, op1));
 
     case MINUS_EXPR:
-      /* Check if this is a case for multiplication and subtraction.  */
-      if ((TREE_CODE (type) == INTEGER_TYPE
-	   || TREE_CODE (type) == FIXED_POINT_TYPE)
-	  && (subexp1_def = get_def_for_expr (treeop1,
-					      MULT_EXPR)))
-	{
-	  tree subsubexp0, subsubexp1;
-	  gimple subsubexp0_def, subsubexp1_def;
-	  enum tree_code this_code;
-
-	  this_code = TREE_CODE (type) == INTEGER_TYPE ? NOP_EXPR
-						       : FIXED_CONVERT_EXPR;
-	  subsubexp0 = gimple_assign_rhs1 (subexp1_def);
-	  subsubexp0_def = get_def_for_expr (subsubexp0, this_code);
-	  subsubexp1 = gimple_assign_rhs2 (subexp1_def);
-	  subsubexp1_def = get_def_for_expr (subsubexp1, this_code);
-	  if (subsubexp0_def && subsubexp1_def
-	      && (top0 = gimple_assign_rhs1 (subsubexp0_def))
-	      && (top1 = gimple_assign_rhs1 (subsubexp1_def))
-	      && (TYPE_PRECISION (TREE_TYPE (top0))
-		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
-	      && (TYPE_PRECISION (TREE_TYPE (top0))
-		  == TYPE_PRECISION (TREE_TYPE (top1)))
-	      && (TYPE_UNSIGNED (TREE_TYPE (top0))
-		  == TYPE_UNSIGNED (TREE_TYPE (top1))))
-	    {
-	      tree op0type = TREE_TYPE (top0);
-	      enum machine_mode innermode = TYPE_MODE (op0type);
-	      bool zextend_p = TYPE_UNSIGNED (op0type);
-	      bool sat_p = TYPE_SATURATING (TREE_TYPE (subsubexp0));
-	      if (sat_p == 0)
-		this_optab = zextend_p ? umsub_widen_optab : smsub_widen_optab;
-	      else
-		this_optab = zextend_p ? usmsub_widen_optab
-				       : ssmsub_widen_optab;
-	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
-		  && (optab_handler (this_optab, mode)->insn_code
-		      != CODE_FOR_nothing))
-		{
-		  expand_operands (top0, top1, NULL_RTX, &op0, &op1,
-				   EXPAND_NORMAL);
-		  op2 = expand_expr (treeop0, subtarget,
-				     VOIDmode, EXPAND_NORMAL);
-		  temp = expand_ternary_op (mode, this_optab, op0, op1, op2,
-					    target, unsignedp);
-		  gcc_assert (temp);
-		  return REDUCE_BIT_FIELD (temp);
-		}
-	    }
-	}
-
       /* For initializers, we are allowed to return a MINUS of two
 	 symbolic constants.  Here we handle all cases when both operands
 	 are constant.  */
@@ -7691,6 +7587,14 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	}
 
       goto binop2;
+
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
+      expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+      op2 = expand_normal (ops->op2);
+      target = expand_widen_pattern_expr (ops, op0, op1, op2,
+					  target, unsignedp);
+      return target;
 
     case WIDEN_MULT_EXPR:
       /* If first operand is constant, swap them.

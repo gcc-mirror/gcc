@@ -865,6 +865,8 @@ gimple_assign_nonnegative_warnv_p (gimple stmt, bool *strict_overflow_p)
 					      gimple_assign_rhs1 (stmt),
 					      gimple_assign_rhs2 (stmt),
 					      strict_overflow_p);
+    case GIMPLE_TERNARY_RHS:
+      return false;
     case GIMPLE_SINGLE_RHS:
       return tree_single_nonnegative_warnv_p (gimple_assign_rhs1 (stmt),
 					      strict_overflow_p);
@@ -936,6 +938,8 @@ gimple_assign_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
 					  gimple_assign_rhs1 (stmt),
 					  gimple_assign_rhs2 (stmt),
 					  strict_overflow_p);
+    case GIMPLE_TERNARY_RHS:
+      return false;
     case GIMPLE_SINGLE_RHS:
       return tree_single_nonzero_warnv_p (gimple_assign_rhs1 (stmt),
 					  strict_overflow_p);

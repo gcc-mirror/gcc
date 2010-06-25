@@ -546,6 +546,9 @@ gimple_rhs_class}
 @item @code{GIMPLE_INVALID_RHS}
 The tree cannot be used as a GIMPLE operand.
 
+@item @code{GIMPLE_TERNARY_RHS}
+The tree is a valid GIMPLE ternary operation.
+
 @item @code{GIMPLE_BINARY_RHS}
 The tree is a valid GIMPLE binary operation.
 
@@ -567,10 +570,11 @@ from @code{c = a op b ? x : y}.  Something similar occurs with
 expressions should be flattened into the operand vector.
 @end itemize
 
-For tree nodes in the categories @code{GIMPLE_BINARY_RHS} and
-@code{GIMPLE_UNARY_RHS}, they cannot be stored inside tuples directly.
-They first need to be flattened and separated into individual
-components.  For instance, given the GENERIC expression
+For tree nodes in the categories @code{GIMPLE_TERNARY_RHS},
+@code{GIMPLE_BINARY_RHS} and @code{GIMPLE_UNARY_RHS}, they cannot be
+stored inside tuples directly.  They first need to be flattened and
+separated into individual components.  For instance, given the GENERIC
+expression
 
 @smallexample
 a = b + c
@@ -1073,7 +1077,16 @@ Return the second operand on the @code{RHS} of assignment statement @code{G}.
 Return the address of the second operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
+
+@deftypefn {GIMPLE function} tree gimple_assign_rhs3 (gimple g)
+Return the third operand on the @code{RHS} of assignment statement @code{G}.
+@end deftypefn
  
+@deftypefn {GIMPLE function} tree *gimple_assign_rhs3_ptr (gimple g)
+Return the address of the third operand on the @code{RHS} of assignment
+statement @code{G}.
+@end deftypefn
+
 @deftypefn {GIMPLE function} void gimple_assign_set_lhs (gimple g, tree lhs)
 Set @code{LHS} to be the @code{LHS} operand of assignment statement @code{G}.
 @end deftypefn
@@ -1083,17 +1096,13 @@ Set @code{RHS} to be the first operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} tree gimple_assign_rhs2 (gimple g)
-Return the second operand on the @code{RHS} of assignment statement @code{G}.
-@end deftypefn
- 
-@deftypefn {GIMPLE function} tree *gimple_assign_rhs2_ptr (gimple g)
-Return a pointer to the second operand on the @code{RHS} of assignment
+@deftypefn {GIMPLE function} void gimple_assign_set_rhs2 (gimple g, tree rhs)
+Set @code{RHS} to be the second operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
  
-@deftypefn {GIMPLE function} void gimple_assign_set_rhs2 (gimple g, tree rhs)
-Set @code{RHS} to be the second operand on the @code{RHS} of assignment
+@deftypefn {GIMPLE function} void gimple_assign_set_rhs3 (gimple g, tree rhs)
+Set @code{RHS} to be the third operand on the @code{RHS} of assignment
 statement @code{G}.
 @end deftypefn
  

@@ -1,3 +1,9 @@
+2010-06-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	From Jim Wilson:
+	PR target/43902
+	* gcc.target/mips/madd-9.c: New test.
+
 2010-06-25  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/44517

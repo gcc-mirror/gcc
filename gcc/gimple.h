@@ -77,6 +77,7 @@ extern void gimple_check_failed (const_gimple, const char *, int,          \
 enum gimple_rhs_class
 {
   GIMPLE_INVALID_RHS,	/* The expression cannot be used on the RHS.  */
+  GIMPLE_TERNARY_RHS,	/* The expression is a ternary operation.  */
   GIMPLE_BINARY_RHS,	/* The expression is a binary operation.  */
   GIMPLE_UNARY_RHS,	/* The expression is a unary operation.  */
   GIMPLE_SINGLE_RHS	/* The expression is a single object (an SSA
@@ -803,12 +804,14 @@ gimple gimple_build_return (tree);
 gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
 #define gimple_build_assign(l,r) gimple_build_assign_stat (l, r MEM_STAT_INFO)
 
-void extract_ops_from_tree (tree, enum tree_code *, tree *, tree *);
+void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *, tree *);
 
 gimple gimple_build_assign_with_ops_stat (enum tree_code, tree, tree,
-					  tree MEM_STAT_DECL);
-#define gimple_build_assign_with_ops(c,o1,o2,o3) \
-  gimple_build_assign_with_ops_stat (c, o1, o2, o3 MEM_STAT_INFO)
+					  tree, tree MEM_STAT_DECL);
+#define gimple_build_assign_with_ops(c,o1,o2,o3)			\
+  gimple_build_assign_with_ops_stat (c, o1, o2, o3, NULL_TREE MEM_STAT_INFO)
+#define gimple_build_assign_with_ops3(c,o1,o2,o3,o4)			\
+  gimple_build_assign_with_ops_stat (c, o1, o2, o3, o4 MEM_STAT_INFO)
 
 gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
 #define gimple_build_debug_bind(var,val,stmt)			\
@@ -870,8 +873,8 @@ bool gimple_assign_single_p (gimple);
 bool gimple_assign_unary_nop_p (gimple);
 void gimple_set_bb (gimple, struct basic_block_def *);
 void gimple_assign_set_rhs_from_tree (gimple_stmt_iterator *, tree);
-void gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *, enum tree_code,
-				     tree, tree);
+void gimple_assign_set_rhs_with_ops_1 (gimple_stmt_iterator *, enum tree_code,
+				       tree, tree, tree);
 tree gimple_get_lhs (const_gimple);
 void gimple_set_lhs (gimple, tree);
 void gimple_replace_lhs (gimple, tree);
@@ -1808,6 +1811,63 @@ gimple_assign_set_rhs2 (gimple gs, tree rhs)
   GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
 
   gimple_set_op (gs, 2, rhs);
+}
+
+/* Return the third operand on the RHS of assignment statement GS.
+   If GS does not have two operands, NULL is returned instead.  */
+
+static inline tree
+gimple_assign_rhs3 (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
+
+  if (gimple_num_ops (gs) >= 4)
+    return gimple_op (gs, 3);
+  else
+    return NULL_TREE;
+}
+
+/* Return a pointer to the third operand on the RHS of assignment
+   statement GS.  */
+
+static inline tree *
+gimple_assign_rhs3_ptr (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
+  return gimple_op_ptr (gs, 3);
+}
+
+
+/* Set RHS to be the third operand on the RHS of assignment statement GS.  */
+
+static inline void
+gimple_assign_set_rhs3 (gimple gs, tree rhs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_ASSIGN);
+
+  gimple_set_op (gs, 3, rhs);
+}
+
+/* A wrapper around gimple_assign_set_rhs_with_ops_1, for callers which expect
+   to see only a maximum of two operands.  */
+
+static inline void
+gimple_assign_set_rhs_with_ops (gimple_stmt_iterator *gsi, enum tree_code code,
+				tree op1, tree op2)
+{
+  gimple_assign_set_rhs_with_ops_1 (gsi, code, op1, op2, NULL);
+}
+
+/* A wrapper around extract_ops_from_tree_1, for callers which expect
+   to see only a maximum of two operands.  */
+
+static inline void
+extract_ops_from_tree (tree expr, enum tree_code *code, tree *op0,
+		       tree *op1)
+{
+  tree op2;
+  extract_ops_from_tree_1 (expr, code, op0, op1, &op2);
+  gcc_assert (op2 == NULL_TREE);
 }
 
 /* Returns true if GS is a nontemporal move.  */

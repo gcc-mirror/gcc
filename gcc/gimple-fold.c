@@ -986,6 +986,33 @@ fold_gimple_assign (gimple_stmt_iterator *si)
         }
       break;
 
+    case GIMPLE_TERNARY_RHS:
+      result = fold_ternary_loc (loc, subcode,
+				 TREE_TYPE (gimple_assign_lhs (stmt)),
+				 gimple_assign_rhs1 (stmt),
+				 gimple_assign_rhs2 (stmt),
+				 gimple_assign_rhs3 (stmt));
+
+      if (result)
+        {
+          STRIP_USELESS_TYPE_CONVERSION (result);
+          if (valid_gimple_rhs_p (result))
+	    return result;
+
+	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
+	     we lose canonicalization opportunities.  Do not go again
+	     through fold here though, or the same non-GIMPLE will be
+	     produced.  */
+          if (commutative_ternary_tree_code (subcode)
+              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
+                                       gimple_assign_rhs2 (stmt), false))
+            return build3 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
+			   gimple_assign_rhs2 (stmt),
+			   gimple_assign_rhs1 (stmt),
+			   gimple_assign_rhs3 (stmt));
+        }
+      break;
+
     case GIMPLE_INVALID_RHS:
       gcc_unreachable ();
     }
