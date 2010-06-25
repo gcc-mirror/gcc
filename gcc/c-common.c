@@ -3965,23 +3965,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 			inner);
 	    return truthvalue_true_node;
 	  }
-
-	/* If we still have a decl, it is possible for its address to
-	   be NULL, so we cannot optimize.  */
-	if (DECL_P (inner))
-	  {
-	    gcc_assert (DECL_WEAK (inner));
-	    break;
-	  }
-
-	if (TREE_SIDE_EFFECTS (inner))
-	  {
-	    expr = build2 (COMPOUND_EXPR, truthvalue_type_node,
-			   inner, truthvalue_true_node);
-	    goto ret;
-	  }
-	else
-	  return truthvalue_true_node;
+	break;
       }
 
     case COMPLEX_EXPR:
