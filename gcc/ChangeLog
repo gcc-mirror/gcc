@@ -1,3 +1,10 @@
+2010-06-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 44665
+	* tree-inline.c (gimple_expand_calls_inline): Fix typo in comment.
+	* gimplify.c (is_gimple_reg_rhs_or_call): Likewise.
+	(gimplify_expr): Likewise.
+	
 2010-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (determine_cst_member_ptr): Ignore non-clobbering

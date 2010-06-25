@@ -534,7 +534,7 @@ lookup_tmp_var (tree val, bool is_formal)
 
 
 /* Return true if T is a CALL_EXPR or an expression that can be
-   assignmed to a temporary.  Note that this predicate should only be
+   assigned to a temporary.  Note that this predicate should only be
    used during gimplification.  See the rationale for this in
    gimplify_modify_expr.  */
 
@@ -6509,7 +6509,7 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
 
    GIMPLE_TEST_F points to a function that takes a tree T and
        returns nonzero if T is in the GIMPLE form requested by the
-       caller.  The GIMPLE predicates are in tree-gimple.c.
+       caller.  The GIMPLE predicates are in gimple.c.
 
    FALLBACK tells the function what sort of a temporary we want if
        gimplification cannot produce an expression that complies with

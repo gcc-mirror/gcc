@@ -4022,7 +4022,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
 /* Expand call statements reachable from STMT_P.
    We can only have CALL_EXPRs as the "toplevel" tree code or nested
-   in a MODIFY_EXPR.  See tree-gimple.c:get_call_expr_in().  We can
+   in a MODIFY_EXPR.  See gimple.c:get_call_expr_in().  We can
    unfortunately not use that function here because we need a pointer
    to the CALL_EXPR, not the tree itself.  */
 
