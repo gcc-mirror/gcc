@@ -717,7 +717,9 @@ next_free (void)
  
   if (at_bol && c == ';')
     {
-      gfc_error_now ("Semicolon at %C needs to be preceded by statement");
+      if (!(gfc_option.allow_std & GFC_STD_F2008))
+	gfc_error_now ("Fortran 2008: Semicolon at %C without preceding "
+		       "statement");
       gfc_next_ascii_char (); /* Eat up the semicolon.  */
       return ST_NONE;
     }
@@ -853,7 +855,11 @@ next_fixed (void)
 
   if (c == ';')
     {
-      gfc_error_now ("Semicolon at %C needs to be preceded by statement");
+      if (digit_flag)
+	gfc_error_now ("Semicolon at %C needs to be preceded by statement");
+      else if (!(gfc_option.allow_std & GFC_STD_F2008))
+	gfc_error_now ("Fortran 2008: Semicolon at %C without preceding "
+		       "statement");
       return ST_NONE;
     }
 
