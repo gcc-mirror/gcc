@@ -1,3 +1,17 @@
+2010-06-25  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* common.opt (fprefetch-loop-arrays): Re-define
+	-fprefetch-loop-arrays as a tri-state option with the initial
+	value of -1.
+	* tree-ssa-loop.c (gate_tree_ssa_loop_prefetch): Invoke prefetch
+	pass only when flag_prefetch_loop_arrays > 0.
+	* toplev.c (process_options): Note that, with tri-states,
+	flag_prefetch_loop_arrays>0 means prefetching is enabled.
+	* config/i386/i386.c (override_options): Enable prefetching at -O3
+	for a set of CPUs that sw prefetching is helpful.
+	(software_prefetching_beneficial_p): New.  Return TRUE if software
+	prefetching is beneficial for the given CPU.
+
 2010-06-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/44326

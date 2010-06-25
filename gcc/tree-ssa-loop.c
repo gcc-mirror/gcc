@@ -600,7 +600,7 @@ tree_ssa_loop_prefetch (void)
 static bool
 gate_tree_ssa_loop_prefetch (void)
 {
-  return flag_prefetch_loop_arrays != 0;
+  return flag_prefetch_loop_arrays > 0;
 }
 
 struct gimple_opt_pass pass_loop_prefetch =
