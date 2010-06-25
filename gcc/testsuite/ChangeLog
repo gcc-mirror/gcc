@@ -1,3 +1,8 @@
+2010-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/iinline-3.C: New test.
+	* gcc.dg/ipa/modif-1.c: Removed.
+
 2010-06-25  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/gcc.dg/tree-ssa/ipa-split-1.c
