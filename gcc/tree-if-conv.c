@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
+#include "dbgcnt.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;
@@ -1178,7 +1179,8 @@ tree_if_conversion (struct loop *loop)
 {
   ifc_bbs = NULL;
 
-  if (!if_convertible_loop_p (loop))
+  if (!if_convertible_loop_p (loop)
+      || !dbg_cnt (if_conversion_tree))
     goto cleanup;
 
   /* Now all statements are if-convertible.  Combine all the basic
