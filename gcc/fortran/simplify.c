@@ -4589,9 +4589,11 @@ gfc_simplify_selected_int_kind (gfc_expr *e)
 
 
 gfc_expr *
-gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q)
+gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q, gfc_expr *rdx)
 {
-  int range, precision, i, kind, found_precision, found_range;
+  int range, precision, radix, i, kind, found_precision, found_range,
+      found_radix;
+  locus *loc = &gfc_current_locus;
 
   if (p == NULL)
     precision = 0;
@@ -4600,6 +4602,7 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q)
       if (p->expr_type != EXPR_CONSTANT
 	  || gfc_extract_int (p, &precision) != NULL)
 	return NULL;
+      loc = &p->where;
     }
 
   if (q == NULL)
@@ -4609,11 +4612,27 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q)
       if (q->expr_type != EXPR_CONSTANT
 	  || gfc_extract_int (q, &range) != NULL)
 	return NULL;
+
+      if (!loc)
+	loc = &q->where;
+    }
+
+  if (rdx == NULL)
+    radix = 0;
+  else
+    {
+      if (rdx->expr_type != EXPR_CONSTANT
+	  || gfc_extract_int (rdx, &radix) != NULL)
+	return NULL;
+
+      if (!loc)
+	loc = &rdx->where;
     }
 
   kind = INT_MAX;
   found_precision = 0;
   found_range = 0;
+  found_radix = 0;
 
   for (i = 0; gfc_real_kinds[i].kind != 0; i++)
     {
@@ -4623,23 +4642,30 @@ gfc_simplify_selected_real_kind (gfc_expr *p, gfc_expr *q)
       if (gfc_real_kinds[i].range >= range)
 	found_range = 1;
 
+      if (gfc_real_kinds[i].radix >= radix)
+	found_radix = 1;
+
       if (gfc_real_kinds[i].precision >= precision
-	  && gfc_real_kinds[i].range >= range && gfc_real_kinds[i].kind < kind)
+	  && gfc_real_kinds[i].range >= range
+	  && gfc_real_kinds[i].radix >= radix && gfc_real_kinds[i].kind < kind)
 	kind = gfc_real_kinds[i].kind;
     }
 
   if (kind == INT_MAX)
     {
-      kind = 0;
-
-      if (!found_precision)
+      if (found_radix && found_range && !found_precision)
 	kind = -1;
-      if (!found_range)
-	kind -= 2;
+      else if (found_radix && found_precision && !found_range)
+	kind = -2;
+      else if (found_radix && !found_precision && !found_range)
+	kind = -3;
+      else if (found_radix)
+	kind = -4;
+      else
+	kind = -5;
     }
 
-  return gfc_get_int_expr (gfc_default_integer_kind,
-			   p ? &p->where : &q->where, kind);
+  return gfc_get_int_expr (gfc_default_integer_kind, loc, kind);
 }
 
 

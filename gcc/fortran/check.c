@@ -2920,15 +2920,13 @@ gfc_check_selected_int_kind (gfc_expr *r)
 
 
 gfc_try
-gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r)
+gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r, gfc_expr *radix)
 {
-  if (p == NULL && r == NULL)
-    {
-      gfc_error ("Missing arguments to %s intrinsic at %L",
-		 gfc_current_intrinsic, gfc_current_intrinsic_where);
-
-      return FAILURE;
-    }
+  if (p == NULL && r == NULL
+      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SELECTED_REAL_KIND with"
+			 " neither 'P' nor 'R' argument at %L",
+			 gfc_current_intrinsic_where) == FAILURE)
+    return FAILURE;
 
   if (p)
     {
@@ -2945,6 +2943,20 @@ gfc_check_selected_real_kind (gfc_expr *p, gfc_expr *r)
 	return FAILURE;
 
       if (scalar_check (r, 1) == FAILURE)
+	return FAILURE;
+    }
+
+  if (radix)
+    {
+      if (type_check (radix, 1, BT_INTEGER) == FAILURE)
+	return FAILURE;
+
+      if (scalar_check (radix, 1) == FAILURE)
+	return FAILURE;
+
+      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: '%s' intrinsic with "
+			  "RADIX argument at %L", gfc_current_intrinsic,
+			  &radix->where) == FAILURE)
 	return FAILURE;
     }
 

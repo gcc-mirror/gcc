@@ -1106,6 +1106,7 @@ GFORTRAN_1.3 {
 GFORTRAN_1.4 {
   global:
     _gfortran_error_stop_numeric;
+    _gfortran_selected_real_kind2008;
 } GFORTRAN_1.3; 
 
 F2C_1.0 {

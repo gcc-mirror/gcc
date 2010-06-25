@@ -8716,6 +8716,9 @@ Inquiry function
 The return value is of type @code{INTEGER} and of the default integer
 kind.
 
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @ref{RANGE}
+
 @item @emph{Example}:
 @smallexample
 program prec_and_range
@@ -8860,6 +8863,9 @@ Inquiry function
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER} and of the default
 integer kind.
+
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}
 
 @item @emph{Example}:
 @smallexample
@@ -9097,6 +9103,9 @@ or @code{COMPLEX}.
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the default integer
 kind.
+
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @ref{PRECISION}
 
 @item @emph{Example}:
 See @code{PRECISION} for an example.
@@ -9676,44 +9685,57 @@ end program large_integers
 @fnindex SELECTED_REAL_KIND
 @cindex real kind
 @cindex kind, real
+@cindex radix, real
 
 @table @asis
 @item @emph{Description}:
 @code{SELECTED_REAL_KIND(P,R)} returns the kind value of a real data type
-with decimal precision of at least @code{P} digits and exponent
-range greater at least @code{R}. 
+with decimal precision of at least @code{P} digits, exponent range of
+at least @code{R}, and with a radix of @code{RADIX}.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, with @code{RADIX} Fortran 2008 or later
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = SELECTED_REAL_KIND([P, R])}
+@code{RESULT = SELECTED_REAL_KIND([P, R, RADIX])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{P} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
 @item @var{R} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
+@item @var{RADIX} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
 @end multitable
-At least one argument shall be present.
+Before Fortran 2008, at least one of the arguments @var{R} or @var{P} shall
+be present; since Fortran 2008, they are assumed to be zero if absent.
 
 @item @emph{Return value}:
 
 @code{SELECTED_REAL_KIND} returns the value of the kind type parameter of
-a real data type with decimal precision of at least @code{P} digits and a
-decimal exponent range of at least @code{R}. If more than one real data
-type meet the criteria, the kind of the data type with the smallest
-decimal precision is returned. If no real data type matches the criteria,
-the result is
+a real data type with decimal precision of at least @code{P} digits, a
+decimal exponent range of at least @code{R}, and with the requested
+@code{RADIX}. If the @code{RADIX} parameter is absent, real kinds with
+any radix can be returned. If more than one real data type meet the
+criteria, the kind of the data type with the smallest decimal precision
+is returned. If no real data type matches the criteria, the result is
 @table @asis
 @item -1 if the processor does not support a real data type with a
-precision greater than or equal to @code{P}
+precision greater than or equal to @code{P}, but the @code{R} and
+@code{RADIX} requirements can be fulfilled
 @item -2 if the processor does not support a real type with an exponent
-range greater than or equal to @code{R}
-@item -3 if neither is supported.
+range greater than or equal to @code{R}, but @code{P} and @code{RADIX}
+are fulfillable
+@item -3 if @code{RADIX} but not @code{P} and @code{R} requirements
+are fulfillable
+@item -4 if @code{RADIX} and either @code{P} or @code{R} requirements
+are fulfillable
+@item -5 if there is no real type with the given @code{RADIX}
 @end table
+
+@item @emph{See also}:
+@ref{PRECISION}, @ref{RANGE}, @ref{RADIX}
 
 @item @emph{Example}:
 @smallexample
