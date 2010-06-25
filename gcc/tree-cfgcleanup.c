@@ -591,6 +591,9 @@ fixup_noreturn_call (gimple stmt)
       update_stmt (stmt);
       changed = true;
     }
+  /* Similarly remove VDEF if there is any.  */
+  else if (gimple_vdef (stmt))
+    update_stmt (stmt);
   return changed;
 }
 
