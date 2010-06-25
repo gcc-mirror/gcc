@@ -839,6 +839,23 @@ ccp_visit_phi_node (gimple phi)
     return SSA_PROP_NOT_INTERESTING;
 }
 
+/* Get operand number OPNR from the rhs of STMT.  Before returning it,
+   simplify it to a constant if possible.  */
+
+static tree
+get_rhs_assign_op_for_ccp (gimple stmt, int opnr)
+{
+  tree op = gimple_op (stmt, opnr);
+  
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      prop_value_t *val = get_value (op);
+      if (val->lattice_val == CONSTANT)
+	op = get_value (op)->value;
+    }
+  return op;
+}
+
 /* CCP specific front-end to the non-destructive constant folding
    routines.
 
@@ -961,15 +978,7 @@ ccp_fold (gimple stmt)
                  Note that we know the single operand must be a constant,
                  so this should almost always return a simplified RHS.  */
               tree lhs = gimple_assign_lhs (stmt);
-              tree op0 = gimple_assign_rhs1 (stmt);
-
-              /* Simplify the operand down to a constant.  */
-              if (TREE_CODE (op0) == SSA_NAME)
-                {
-                  prop_value_t *val = get_value (op0);
-                  if (val->lattice_val == CONSTANT)
-                    op0 = get_value (op0)->value;
-                }
+              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
 
 	      /* Conversions are useless for CCP purposes if they are
 		 value-preserving.  Thus the restrictions that
@@ -1006,23 +1015,8 @@ ccp_fold (gimple stmt)
           case GIMPLE_BINARY_RHS:
             {
               /* Handle binary operators that can appear in GIMPLE form.  */
-              tree op0 = gimple_assign_rhs1 (stmt);
-              tree op1 = gimple_assign_rhs2 (stmt);
-
-              /* Simplify the operands down to constants when appropriate.  */
-              if (TREE_CODE (op0) == SSA_NAME)
-                {
-                  prop_value_t *val = get_value (op0);
-                  if (val->lattice_val == CONSTANT)
-                    op0 = val->value;
-                }
-
-              if (TREE_CODE (op1) == SSA_NAME)
-                {
-                  prop_value_t *val = get_value (op1);
-                  if (val->lattice_val == CONSTANT)
-                    op1 = val->value;
-                }
+              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
+              tree op1 = get_rhs_assign_op_for_ccp (stmt, 2);
 
 	      /* Fold &foo + CST into an invariant reference if possible.  */
 	      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
@@ -1037,6 +1031,17 @@ ccp_fold (gimple stmt)
 
               return fold_binary_loc (loc, subcode,
 				  gimple_expr_type (stmt), op0, op1);
+            }
+
+          case GIMPLE_TERNARY_RHS:
+            {
+              /* Handle binary operators that can appear in GIMPLE form.  */
+              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
+              tree op1 = get_rhs_assign_op_for_ccp (stmt, 2);
+              tree op2 = get_rhs_assign_op_for_ccp (stmt, 3);
+
+              return fold_ternary_loc (loc, subcode,
+				       gimple_expr_type (stmt), op0, op1, op2);
             }
 
           default:

@@ -1,3 +1,68 @@
+2010-06-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	With large parts from Jim Wilson:
+	PR target/43902
+	* tree-pretty-print.c (dump_generic_node, op_code_prio): Add
+	WIDEN_MULT_PLUS_EXPR and WIDEN_MULT_MINUS_EXPR.
+	* optabs.c (optab_for_tree_code): Likewise.
+	(expand_widen_pattern_expr): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): New function, broken
+	out of execute_optimize_widening_mul.
+	(convert_plusminus_to_widen): New function.
+	(execute_optimize_widening_mul): Use the two new functions.
+	* expr.c (expand_expr_real_2): Add support for GIMPLE_TERNARY_RHS.
+	Remove code to generate widening multiply-accumulate.  Add support
+	for WIDEN_MULT_PLUS_EXPR and WIDEN_MULT_MINUS_EXPR.
+	* gimple-pretty-print.c (dump_ternary_rhs): New function.
+	(dump_gimple_assign): Call it when appropriate.
+	* tree.def (WIDEN_MULT_PLUS_EXPR, WIDEN_MULT_MINUS_EXPR): New codes.
+	* cfgexpand.c (gimple_assign_rhs_to_tree): Likewise.
+	(expand_gimple_stmt_1): Likewise.
+	(expand_debug_expr): Support WIDEN_MULT_PLUS_EXPR and
+	WIDEN_MULT_MINUS_EXPR.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* gimple.c (extract_ops_from_tree_1): Renamed from
+	extract_ops_from_tree.  Add new arg for a third operand; fill it.
+	(gimple_build_assign_stat): Support operations with three operands.
+	(gimple_build_assign_with_ops_stat): Likewise.
+	(gimple_assign_set_rhs_from_tree): Likewise.
+	(gimple_assign_set_rhs_with_ops_1): Renamed from
+	gimple_assign_set_rhs_with_ops.  Add new arg for a third operand.
+	(get_gimple_rhs_num_ops): Support GIMPLE_TERNARY_RHS.
+	(get_gimple_rhs_num_ops): Handle WIDEN_MULT_PLUS_EXPR and
+	WIDEN_MULT_MINUS_EXPR.
+	* gimple.h (enum gimple_rhs_class): Add GIMPLE_TERNARY_RHS.
+	(extract_ops_from_tree_1): Adjust declaration.
+	(gimple_assign_set_rhs_with_ops_1): Likewise.
+	(gimple_build_assign_with_ops): Pass NULL for last operand.
+	(gimple_build_assign_with_ops3): New macro.
+	(gimple_assign_rhs3, gimple_assign_rhs3_ptr, gimple_assign_set_rhs3,
+	gimple_assign_set_rhs_with_ops, extract_ops_from_tree): New inline
+	functions.
+	* tree-cfg.c (verify_gimple_assign_ternary): New static function.
+	(verify_gimple_assign): Call it.
+	* doc/gimple.texi (Manipulating operands): Document GIMPLE_TERNARY_RHS.
+	(Tuple specific accessors, subsection GIMPLE_ASSIGN): Document new
+	functions for dealing with three-operand statements.
+	* tree.c (commutative_ternary_tree_code): New function.
+	* tree.h (commutative_ternary_tree_code): Declare it.
+	* tree-vrp.c (gimple_assign_nonnegative_warnv_p): Return false for ternary
+	statements.
+	(gimple_assign_nonzero_warnv_p): Likewise.
+	* tree-ssa-sccvn.c (stmt_has_constants): Handle GIMPLE_TERNARY_RHS.
+	* tree-ssa-ccp.c (get_rhs_assign_op_for_ccp): New static function.
+	(ccp_fold): Use it.  Handle GIMPLE_TERNARY_RHS.
+	* tree-ssa-dom.c (enum expr_kind): Add EXPR_TERNARY.
+	(struct hashtable_expr): New member ternary in the union.
+	(initialize_hash_element): Handle GIMPLE_TERNARY_RHS.
+	(hashable_expr_equal_p): Fix indentation.  Handle EXPR_TERNARY.
+	(iterative_hash_hashable_expr): Likewise.
+	(print_expr_hash_elt): Handle EXPR_TERNARY.
+	* gimple-fold.c (fold_gimple_assign): Handle GIMPLE_TERNARY_RHS.
+	* tree-ssa-threadedge.c (fold_assignment_stmt): Remove useless break
+	statements.  Handle GIMPLE_TERNARY_RHS.
+
 2010-06-25  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (-Wsuggest-attribute): Add noreturn.

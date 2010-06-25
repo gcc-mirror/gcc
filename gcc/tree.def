@@ -1080,6 +1080,18 @@ DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
    the arguments from type t1 to type t2, and then multiplying them.  */
 DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
 
+/* Widening multiply-accumulate.
+   The first two arguments are of type t1.
+   The third argument and the result are of type t2, such as t2 is at least
+   twice the size of t1.  t1 and t2 must be integral or fixed-point types.
+   The expression is equivalent to a WIDEN_MULT_EXPR operation
+   of the first two operands followed by an add or subtract of the third
+   operand.  */
+DEFTREECODE (WIDEN_MULT_PLUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
+/* This is like the above, except in the final expression the multiply result
+   is subtracted from t3.  */
+DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
+
 /* Whole vector left/right shift in bits.
    Operand 0 is a vector to be shifted.
    Operand 1 is an integer shift amount in bits.  */

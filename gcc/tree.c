@@ -6540,6 +6540,23 @@ commutative_tree_code (enum tree_code code)
   return false;
 }
 
+/* Return true if CODE represents a ternary tree code for which the
+   first two operands are commutative.  Otherwise return false.  */
+bool
+commutative_ternary_tree_code (enum tree_code code)
+{
+  switch (code)
+    {
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
+      return true;
+
+    default:
+      break;
+    }
+  return false;
+}
+
 /* Generate a hash value for an expression.  This can be used iteratively
    by passing a previous result as the VAL argument.
 
