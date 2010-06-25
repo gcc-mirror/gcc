@@ -491,7 +491,7 @@
     non-standard features of g++ that are not present in older
     versions of proprietary compilers. It may take as much as a year or two
     after an official release of GCC that contains these features for
-    proprietary tools support these constructs.
+    proprietary tools to support these constructs.
     </para>
     <para>
     In the near past, specific released versions of libstdc++ have
