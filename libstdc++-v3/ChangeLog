@@ -1,3 +1,149 @@
+2010-06-25  Stephen M. Webb  <stephen.webb@bregmasoft.ca>
+
+  Initial regex implementation.
+
+  * include/std/regex: Modified to use bits/regex_* headers.
+  * include/bits/regex_compiler.h: New file.
+  * include/bits/regex_constants.h: New file.
+  * include/bits/regex_cursor.h: New file.
+  * include/bits/regex_error.h: New file.
+  * include/bits/regex_grep_matcher.h: New file.
+  * include/bits/regex_grep_matcher.tcc: New file.
+  * include/bits/regex.h: New file.
+  * include/bits/regex_nfa.h: New file.
+  * include/bits/regex_nfa.tcc: New file.
+  * include/Makefile.am: Added above new files.
+  * include/Makefile.in: Regenerated.
+  * testsuite/28_regex/02_definitions: New file.
+  * testsuite/28_regex/03_requirements: New file.
+  * testsuite/28_regex/03_requirements/typedefs.cc: New file.
+  * testsuite/28_regex/04_header: New file.
+  * testsuite/28_regex/04_header/regex: New file.
+  * testsuite/28_regex/04_header/regex/std_c++0x_neg.cc: New file.
+  * testsuite/28_regex/05_constants: New file.
+  * testsuite/28_regex/05_constants/error_type.cc: New file.
+  * testsuite/28_regex/05_constants/match_flag_type.cc: New file.
+  * testsuite/28_regex/05_constants/syntax_option_type.cc: New file.
+  * testsuite/28_regex/06_exception_type: New file.
+  * testsuite/28_regex/06_exception_type/regex_error.cc: New file.
+  * testsuite/28_regex/07_traits: New file.
+  * testsuite/28_regex/07_traits/char: New file.
+  * testsuite/28_regex/07_traits/char/ctor.cc: New file.
+  * testsuite/28_regex/07_traits/char/isctype.cc: New file.
+  * testsuite/28_regex/07_traits/char/length.cc: New file.
+  * testsuite/28_regex/07_traits/char/lookup_classname.cc: New file.
+  * testsuite/28_regex/07_traits/char/lookup_collatename.cc: New file.
+  * testsuite/28_regex/07_traits/char/transform.cc: New file.
+  * testsuite/28_regex/07_traits/char/transform_primary.cc: New file.
+  * testsuite/28_regex/07_traits/char/translate.cc: New file.
+  * testsuite/28_regex/07_traits/char/translate_nocase.cc: New file.
+  * testsuite/28_regex/07_traits/char/value.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t: New file.
+  * testsuite/28_regex/07_traits/wchar_t/ctor.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t/length.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t/transform.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t/translate.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t/translate_nocase.cc: New file.
+  * testsuite/28_regex/07_traits/wchar_t/value.cc: New file.
+  * testsuite/28_regex/08_basic_regex: New file.
+  * testsuite/28_regex/08_basic_regex/assign: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/cstring_op.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/moveable.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/pstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/range.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/string.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/char/string_op.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/cstring_op.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/pstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/range.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/string.cc: New file.
+  * testsuite/28_regex/08_basic_regex/assign/wchar_t/string_op.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/basic: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/basic/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/basic/pstring_char.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/basic/pstring_wchar_t.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/basic/string_range_01_02_03.cc:
+  New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/cstring_awk.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/cstring_ecma.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/cstring_egrep.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/cstring_grep.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/default.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/char/range.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/copy_char.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/extended: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/extended/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/extended/string_range_01_02_03.cc:
+  New file.
+  * testsuite/28_regex/08_basic_regex/ctors/move_char.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/string_char.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/string_wchar_t.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/wchar_t: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/wchar_t/cstring.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/wchar_t/default.cc: New file.
+  * testsuite/28_regex/08_basic_regex/ctors/wchar_t/range.cc: New file.
+  * testsuite/28_regex/08_basic_regex/regex.cc: New file.
+  * testsuite/28_regex/09_sub_match: New file.
+  * testsuite/28_regex/09_sub_match/cast_char.cc: New file.
+  * testsuite/28_regex/09_sub_match/cast_wchar_t.cc: New file.
+  * testsuite/28_regex/09_sub_match/length.cc: New file.
+  * testsuite/28_regex/09_sub_match/typedefs.cc: New file.
+  * testsuite/28_regex/10_match_results: New file.
+  * testsuite/28_regex/10_match_results/ctors: New file.
+  * testsuite/28_regex/10_match_results/ctors/char: New file.
+  * testsuite/28_regex/10_match_results/ctors/char/default.cc: New file.
+  * testsuite/28_regex/10_match_results/ctors/wchar_t: New file.
+  * testsuite/28_regex/10_match_results/ctors/wchar_t/default.cc: New file.
+  * testsuite/28_regex/10_match_results/typedefs.cc: New file.
+  * testsuite/28_regex/11_algorithms: New file.
+  * testsuite/28_regex/11_algorithms/02_match: New file.
+  * testsuite/28_regex/11_algorithms/02_match/basic: New file.
+  * testsuite/28_regex/11_algorithms/02_match/basic/string_01.cc: New file.
+  * testsuite/28_regex/11_algorithms/02_match/basic/string_range_00_03.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/basic/string_range_01_03.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/basic/string_range_02_03.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended: New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/cstring_plus.cc: New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/cstring_questionmark.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/string_any.cc: New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/string_range_00_03.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/string_range_01_03.cc:
+  New file.
+  * testsuite/28_regex/11_algorithms/02_match/extended/string_range_02_03.cc:
+  New file.
+  * testsuite/28_regex/12_iterators: New file.
+  * testsuite/28_regex/12_iterators/regex_iterator: New file.
+  * testsuite/28_regex/12_iterators/regex_iterator/ctors: New file.
+  * testsuite/28_regex/12_iterators/regex_iterator/ctors/char: New file.
+  * testsuite/28_regex/12_iterators/regex_iterator/ctors/char/default.cc: New
+  file.
+  * testsuite/28_regex/12_iterators/regex_iterator/ctors/wchar_t: New file.
+  * testsuite/28_regex/12_iterators/regex_iterator/ctors/wchar_t/default.cc: New
+  file.
+  * testsuite/28_regex/12_iterators/regex_iterator/typedefs.cc: New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator: New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/ctors: New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/ctors/char: New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/ctors/char/default.cc:
+  New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/ctors/wchar_t: New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/ctors/wchar_t/default.cc:
+  New file.
+  * testsuite/28_regex/12_iterators/regex_token_iterator/typedefs.cc: New file.
+  * testsuite/28_regex/13_ecmascript: New file.
+
 2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/profile/impl/profiler_list_to_slist.h: Remove spurious
