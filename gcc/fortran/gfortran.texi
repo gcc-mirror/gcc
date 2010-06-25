@@ -2335,9 +2335,10 @@ if e.g. an input-output edit descriptor is invalid in a given standard.
 Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
 (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), and @code{GFC_STD_F2008} (128).
-Default: @code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F2003
-| GFC_STD_F2008 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY}.
+@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), and
+@code{GFC_STD_F2008_OBS} (256).  Default: @code{GFC_STD_F95_OBS
+| GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008
+| GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error. Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.

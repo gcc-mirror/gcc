@@ -4963,6 +4963,10 @@ gfc_match_entry (void)
   if (m != MATCH_YES)
     return m;
 
+  if (gfc_notify_std (GFC_STD_F2008_OBS, "Fortran 2008 obsolescent feature: "
+		      "ENTRY statement at %C") == FAILURE)
+    return MATCH_ERROR;
+
   state = gfc_current_state ();
   if (state != COMP_SUBROUTINE && state != COMP_FUNCTION)
     {

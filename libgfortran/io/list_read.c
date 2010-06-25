@@ -2077,7 +2077,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  /*  If -std=f95/2003 or an array section is specified,
 		      do not allow excess data to be processed.  */
                   if (is_array_section == 1
-		      || compile_options.allow_std < GFC_STD_GNU)
+		      || !(compile_options.allow_std & GFC_STD_GNU))
 		    ls[dim].end = ls[dim].start;
 		  else
 		    dtp->u.p.expanded_read = 1;

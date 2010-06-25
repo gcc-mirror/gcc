@@ -23,15 +23,16 @@ along with GCC; see the file COPYING3.  If not see
    Note that no features were obsoleted nor deleted in F2003.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
-#define GFC_STD_F2008	(1<<7)	/* New in F2008.  */
-#define GFC_STD_LEGACY	(1<<6)	/* Backward compatibility.  */
-#define GFC_STD_GNU	(1<<5)	/* GNU Fortran extension.  */
-#define GFC_STD_F2003	(1<<4)	/* New in F2003.  */
-#define GFC_STD_F95	(1<<3)	/* New in F95.  */
-#define GFC_STD_F95_DEL	(1<<2)	/* Deleted in F95.  */
-#define GFC_STD_F95_OBS	(1<<1)	/* Obsolescent in F95.  */
-#define GFC_STD_F77	(1<<0)	/* Included in F77, but not deleted or
-				   obsolescent in later standards.  */
+#define GFC_STD_F2008_OBS	(1<<8)	/* Obsolescent in F2008.  */
+#define GFC_STD_F2008		(1<<7)	/* New in F2008.  */
+#define GFC_STD_LEGACY		(1<<6)	/* Backward compatibility.  */
+#define GFC_STD_GNU		(1<<5)	/* GNU Fortran extension.  */
+#define GFC_STD_F2003		(1<<4)	/* New in F2003.  */
+#define GFC_STD_F95		(1<<3)	/* New in F95.  */
+#define GFC_STD_F95_DEL		(1<<2)	/* Deleted in F95.  */
+#define GFC_STD_F95_OBS		(1<<1)	/* Obsolescent in F95.  */
+#define GFC_STD_F77		(1<<0)	/* Included in F77, but not deleted or
+					   obsolescent in later standards.  */
 
 
 /* Bitmasks for the various FPE that can be enabled.  */
