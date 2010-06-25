@@ -175,7 +175,7 @@ init_bb_predicate (basic_block bb)
 {
   bb->aux = XNEW (struct bb_predicate_s);
   set_bb_predicate_gimplified_stmts (bb, NULL);
-  set_bb_predicate (bb, NULL_TREE);
+  set_bb_predicate (bb, boolean_true_node);
 }
 
 /* Free the predicate of basic block BB.  */
@@ -201,6 +201,16 @@ free_bb_predicate (basic_block bb)
 
   free (bb->aux);
   bb->aux = NULL;
+}
+
+/* Free the predicate of BB and reinitialize it with the true
+   predicate.  */
+
+static inline void
+reset_bb_predicate (basic_block bb)
+{
+  free_bb_predicate (bb);
+  init_bb_predicate (bb);
 }
 
 /* Create a new temp variable of type TYPE.  Add GIMPLE_ASSIGN to assign EXP
@@ -605,8 +615,7 @@ predicate_bbs (loop_p loop)
 	 to be processed: skip it.  */
       if (bb == loop->latch)
 	{
-	  set_bb_predicate (loop->latch, boolean_true_node);
-	  set_bb_predicate_gimplified_stmts (loop->latch, NULL);
+	  reset_bb_predicate (loop->latch);
 	  continue;
 	}
 
@@ -680,7 +689,7 @@ predicate_bbs (loop_p loop)
     }
 
   /* The loop header is always executed.  */
-  set_bb_predicate (loop->header, boolean_true_node);
+  reset_bb_predicate (loop->header);
   gcc_assert (bb_predicate_gimplified_stmts (loop->header) == NULL
 	      && bb_predicate_gimplified_stmts (loop->latch) == NULL);
 
