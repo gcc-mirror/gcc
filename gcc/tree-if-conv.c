@@ -1021,6 +1021,15 @@ insert_gimplified_predicates (loop_p loop)
       basic_block bb = ifc_bbs[i];
       gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
 
+      if (!is_predicated (bb))
+	{
+	  /* Do not insert statements for a basic block that is not
+	     predicated.  Also make sure that the predicate of the
+	     basic block is set to true.  */
+	  reset_bb_predicate (bb);
+	  continue;
+	}
+
       if (stmts)
 	{
 	  gimple_stmt_iterator gsi = gsi_last_bb (bb);
