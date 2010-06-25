@@ -1,5 +1,11 @@
 2010-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/end_subroutine_1.f90: New.
+	* gfortran.dg/end_subroutine_2.f90: New.
+	* gfortran.dg/interface_proc_end.f90: Update.
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/semicolon_fixed.f: Update.
 	* gfortran.dg/semicolon_fixed_2.f: New.
 	* gfortran.dg/semicolon_free_2.f90: New.
