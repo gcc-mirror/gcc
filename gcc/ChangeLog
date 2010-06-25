@@ -1,3 +1,9 @@
+2010-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44539
+	* tree-cfgcleanup.c (fixup_noreturn_call): Call update_stmt even when
+	the call doesn't have LHS, but has VDEF.
+
 2010-06-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/pa/pa.h (MODIFY_TARGET_NAME): Remove.
