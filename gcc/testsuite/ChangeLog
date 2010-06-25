@@ -1,3 +1,10 @@
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/semicolon_fixed.f: Update.
+	* gfortran.dg/semicolon_fixed_2.f: New.
+	* gfortran.dg/semicolon_free_2.f90: New.
+	* gfortran.dg/semicolon_free.f90: Update.
+
 2010-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/44448
@@ -57,7 +64,7 @@
 
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
-        * c-c++-common/warn-omitted-condop.c: New.
+	* c-c++-common/warn-omitted-condop.c: New.
 
 2010-06-24  Tobias Burnus  <burnus@net-b.de>
 

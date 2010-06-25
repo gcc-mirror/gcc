@@ -1,3 +1,7 @@
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (next_free, next_fixed): Allow ";" as first character.
+
 2010-06-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44614
