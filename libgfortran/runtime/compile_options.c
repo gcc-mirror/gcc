@@ -1,7 +1,7 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ init_compile_options (void)
   compile_options.warn_std = GFC_STD_F95_DEL | GFC_STD_LEGACY;
   compile_options.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003 | GFC_STD_F2008 | GFC_STD_F95 | GFC_STD_F77
-    | GFC_STD_GNU | GFC_STD_LEGACY;
+    | GFC_STD_F2008_OBS | GFC_STD_GNU | GFC_STD_LEGACY;
   compile_options.pedantic = 0;
   compile_options.dump_core = 0;
   compile_options.backtrace = 0;

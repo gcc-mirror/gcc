@@ -1,5 +1,15 @@
 2010-06-25  Tobias Burnus  <burnus@net-b.de>
 
+	* decl.c (gfc_match_entry): Mark ENTRY as GFC_STD_F2008_OBS.
+	* gfortran.texi (_gfortran_set_options): Update for
+	GFC_STD_F2008_OBS addition.
+	* libgfortran.h: Add GFC_STD_F2008_OBS.
+	* options.c (set_default_std_flags, gfc_handle_option): Handle
+	GFC_STD_F2008_OBS.
+	io.c (check_format): Fix allow_std check.
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
 	* decl.c (gfc_match_entry): Allow END besides
 	END SUBROUTINE/END FUNCTION for contained procedures.
 
