@@ -1475,7 +1475,7 @@ translate_options (int *argcp, const char *const **argvp)
 	    }
 	}
       else
-	/* Ordinary operands, or +e options.  */
+	/* Ordinary operands.  */
 	newv[newindex++] = argv[i++];
     }
 
@@ -3895,9 +3895,6 @@ process_command (int argc, const char **argv)
 	  /* Record the part after the last comma.  */
 	  add_preprocessor_option (argv[i] + prev, j - prev);
 	}
-      else if (argv[i][0] == '+' && argv[i][1] == 'e')
-	/* The +e options to the C++ front-end.  */
-	n_switches++;
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
 	{
 	  int j;
@@ -4355,19 +4352,6 @@ process_command (int argc, const char **argv)
 	{
 	  target_system_root = argv[i] + strlen ("--sysroot=");
 	  target_system_root_changed = 1;
-	}
-      else if (argv[i][0] == '+' && argv[i][1] == 'e')
-	{
-	  /* Compensate for the +e options to the C++ front-end;
-	     they're there simply for cfront call-compatibility.  We do
-	     some magic in default_compilers to pass them down properly.
-	     Note we deliberately start at the `+' here, to avoid passing
-	     -e0 or -e1 down into the linker.  */
-	  switches[n_switches].part1 = &argv[i][0];
-	  switches[n_switches].args = 0;
-	  switches[n_switches].live_cond = 0;
-	  switches[n_switches].validated = 0;
-	  n_switches++;
 	}
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
 	{

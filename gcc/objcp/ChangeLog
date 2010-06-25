@@ -1,3 +1,7 @@
+2010-06-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Remove +e handling.
+
 2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* objcp-decl.h (ALLOC_OBJC_TYPE_LANG_SPECIFIC): Use typed GC
