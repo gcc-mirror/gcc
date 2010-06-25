@@ -117,6 +117,12 @@ DEFPARAM (PARAM_EARLY_INLINER_MAX_ITERATIONS,
 	  "The maximum number of nested indirect inlining performed by early inliner",
 	  10, 0, 0)
 
+/* Limit on probability of entry BB.  */
+DEFPARAM (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY,
+	  "partial-inlining-entry-probability",
+	  "Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen",
+	  70, 0, 0)
+
 /* Limit the number of expansions created by the variable expansion
    optimization to avoid register pressure.  */
 DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,

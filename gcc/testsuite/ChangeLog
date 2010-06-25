@@ -1,3 +1,7 @@
+2010-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* testsuite/gcc.dg/tree-ssa/ipa-split-1.c
+
 2010-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/ipa/iinline-2.C: New test.

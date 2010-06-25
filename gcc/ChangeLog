@@ -1,3 +1,15 @@
+2010-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_split_functions): Declare.
+	* opts.c (decode_options): Enable function splitting at -O2
+	* timevar.def (TV_IPA_FNSPLIT): New macro.
+	* ipa-split.c: New file.
+	* common.opt (-fpartial-inlining): New flag.
+	* Makefile.in (ipa-split.o): New object file.
+	* passes.c (init_optimization_passes): Add ipa-split.
+	* params.def (partial-inlining-entry-probability): New parameters.
+	* doc/invoke.texi (-fpartial-inlining): New.
+
 2010-06-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 44665
