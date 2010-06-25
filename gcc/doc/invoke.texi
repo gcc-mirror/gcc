@@ -258,7 +258,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
--Wsuggest-attribute=@r{[}const@r{|}pure@r{]} @gol
+-Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas @gol
@@ -3669,7 +3669,7 @@ comparisons, so this warning level will give a very large number of
 false positives.
 @end table
 
-@item -Wsuggest-attribute=@r{[}const@r{|}pure@r{|}noreturn@r{]}
+@item -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]}
 @opindex Wsuggest-attribute=
 @opindex Wno-suggest-attribute=
 Warn for cases where adding an attribute may be beneficial. The
@@ -3678,6 +3678,7 @@ attributes currently supported are listed below.
 @table @gcctabopt
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
+@itemx -Wsuggest-attribute=noreturn
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
 @opindex Wsuggest-attribute=const
