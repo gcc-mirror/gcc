@@ -1,3 +1,13 @@
+2010-06-25  Douglas B Rupp  <rupp@gnat.com>
+
+	* dwarf2out.c (dwarf2out_vms_debug_main_pointer): New function.
+	* dwarf2out.h (dwarf2out_vms_debug_main_pointer): Declare new function.
+	* config/ia64/ia64-protos.h (ia64_start_function): Declare.
+	* config/ia64/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Move contents
+	to ia64_start_function. Invoke it.
+	* config/ia64/ia64.c (ia64_start_function): Call new function
+	dwarf2out_vms_debug_main_pointer.
+
 2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-if-conv.c (insert_gimplified_predicates): Do not insert

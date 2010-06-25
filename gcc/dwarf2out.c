@@ -17414,6 +17414,39 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 #endif
 }
 
+#ifdef VMS_DEBUGGING_INFO
+
+/* Output the debug main pointer die for VMS */
+
+void
+dwarf2out_vms_debug_main_pointer (void)
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  dw_die_ref die;
+
+  /* Allocate the VMS debug main subprogram die.  */
+  die = ggc_alloc_cleared_die_node ();
+  die->die_tag = DW_TAG_subprogram;
+  add_name_attribute (die, VMS_DEBUG_MAIN_POINTER);
+  ASM_GENERATE_INTERNAL_LABEL (label, PROLOGUE_END_LABEL,
+			       current_function_funcdef_no);
+  add_AT_lbl_id (die, DW_AT_entry_pc, label);
+
+  /* Make it the first child of comp_unit_die.  */
+  die->die_parent = comp_unit_die;
+  if (comp_unit_die->die_child)
+    {
+      die->die_sib = comp_unit_die->die_child->die_sib;
+      comp_unit_die->die_child->die_sib = die;
+    }
+  else
+    {
+      die->die_sib = die;
+      comp_unit_die->die_child = die;
+    }
+}
+#endif
+
 /* Push a new declaration scope.  */
 
 static void

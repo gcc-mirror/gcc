@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-64.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -79,6 +79,7 @@ extern void ia64_vms_output_aligned_decl_common (FILE *, tree, const char *,
 						 unsigned HOST_WIDE_INT,
 						 unsigned int);
 extern void ia64_vms_elf_asm_named_section (const char *, unsigned int, tree);
+extern void ia64_start_function (FILE *, const char *, tree);
 #endif /* TREE_CODE */
 
 extern int ia64_register_move_cost (enum machine_mode, enum reg_class,
