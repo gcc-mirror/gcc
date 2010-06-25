@@ -1,5 +1,12 @@
 2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-if-conv.c (combine_blocks): Remove FIXME comment.
+	(tree_if_conversion): Returns true when something has been changed.
+	(main_tree_if_conversion): Return TODO_cleanup_cfg when if-conversion
+	changed something.
+
+2010-06-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* Makefile.in (tree-if-conv.o): Depends on DBGCNT_H.
 	* dbgcnt.def (if_conversion_tree): New DEBUG_COUNTER.
 	* tree-if-conv.c: Include dbgcnt.h.
