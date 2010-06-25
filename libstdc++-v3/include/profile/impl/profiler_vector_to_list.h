@@ -98,7 +98,8 @@ namespace __gnu_profile
     __iterate()
     { return _M_iterate; }
 
-    float __list_cost()
+    float
+    __list_cost()
     { return _M_list_cost; }
 
     std::size_t

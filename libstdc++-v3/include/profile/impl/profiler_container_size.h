@@ -179,16 +179,16 @@ namespace __gnu_profile
 
     // Insert a new node at construct with object, callstack and initial size. 
     void
-    __insert(const __object_t __obj, __stack_t __stack, size_t __num)
+    __insert(const __object_t __obj, __stack_t __stack, std::size_t __num)
     { __add_object(__obj, __container_size_info(__stack, __num)); }
 
     // XXX Undefined?
     void
-    __construct(const void* __obj, size_t __inum);
+    __construct(const void* __obj, std::size_t __inum);
   
     // Call at destruction/clean to set container final size.
     void
-    __destruct(const void* __obj, size_t __num, size_t __inum)
+    __destruct(const void* __obj, std::size_t __num, std::size_t __inum)
     {
       if (!__is_on())
 	return;
