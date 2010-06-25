@@ -1,6 +1,6 @@
 /* Definitions for specs for C++.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 		%(cpp_options) %2 -o %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
       cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
-	%(cc1_options) %2 %{+e1*}\
+	%(cc1_options) %2\
 	%{!fsyntax-only:%{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
         %W{o*:--output-pch=%*}}%V}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
@@ -58,11 +58,11 @@ along with GCC; see the file COPYING3.  If not see
 		%(cpp_options) %2 -o %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
       cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
-	%(cc1_options) %2 %{+e1*}\
+	%(cc1_options) %2\
        %{!fsyntax-only:%(invoke_as)}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {".ii", "@c++-cpp-output", 0, 0, 0},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
-    cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
+    cc1plus -fpreprocessed %i %(cc1_options) %2\
     %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

@@ -1,3 +1,8 @@
+2010-06-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (translate_options): Don't mention +e in comment.
+	(process_command): Don't handle +e specially.
+
 2010-06-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira.c (allocno_pool, copy_pool, allocno_live_range_pool): Delete.
