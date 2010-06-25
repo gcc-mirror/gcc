@@ -1,5 +1,16 @@
 2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/impl/profiler_list_to_slist.h: Remove spurious
+	semicolon; prefer pre-increment.
+	* include/profile/impl/profiler_container_size.h: Use everywhere
+	qualified std::size_t.
+	* include/profile/impl/profiler_trace.h (__trace_base<>::
+	__collect_warnings): Tidy loop.
+	* include/profile/impl/profiler_vector_to_list.h: Minor formatting
+	changes.
+
+2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/profile/impl/profiler_trace.h: Uglify it to __it, use
 	everywhere std::size_t instead of size_t.
 
