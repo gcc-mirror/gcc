@@ -177,18 +177,6 @@ ipcp_init_cloned_node (struct cgraph_node *orig_node,
   IPA_NODE_REF (new_node)->ipcp_orig_node = orig_node;
 }
 
-/* Perform intraprocedrual analysis needed for ipcp.  */
-static void
-ipcp_analyze_node (struct cgraph_node *node)
-{
-  /* Unreachable nodes should have been eliminated before ipcp.  */
-  gcc_assert (node->needed || node->reachable);
-
-  node->local.versionable = tree_versionable_function_p (node->decl);
-  ipa_initialize_node_params (node);
-  ipa_detect_param_modifications (node);
-}
-
 /* Return scale for NODE.  */
 static inline gcov_type
 ipcp_get_node_scale (struct cgraph_node *node)
@@ -611,6 +599,7 @@ ipcp_compute_node_scale (struct cgraph_node *node)
 /* Initialization and computation of IPCP data structures.  This is the initial
    intraprocedural analysis of functions, which gathers information to be
    propagated later on.  */
+
 static void
 ipcp_init_stage (void)
 {
@@ -618,16 +607,13 @@ ipcp_init_stage (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
-      ipcp_analyze_node (node);
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (!node->analyzed)
-	continue;
+      {
+	/* Unreachable nodes should have been eliminated before ipcp.  */
+	gcc_assert (node->needed || node->reachable);
 
-      ipa_analyze_params_uses (node);
-      /* building jump functions  */
-      ipa_compute_jump_functions (node);
-    }
+	node->local.versionable = tree_versionable_function_p (node->decl);
+	ipa_analyze_node (node);
+      }
 }
 
 /* Return true if there are some formal parameters whose value is IPA_TOP (in

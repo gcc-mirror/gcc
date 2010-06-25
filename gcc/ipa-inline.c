@@ -2011,12 +2011,8 @@ struct gimple_opt_pass pass_inline_parameters =
 static void
 inline_indirect_intraprocedural_analysis (struct cgraph_node *node)
 {
-  ipa_initialize_node_params (node);
-  ipa_detect_param_modifications (node);
-  ipa_analyze_params_uses (node);
-  ipa_compute_jump_functions (node);
-
-  if (dump_file)
+  ipa_analyze_node (node);
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       ipa_print_node_params (dump_file, node);
       ipa_print_node_jump_functions (dump_file, node);

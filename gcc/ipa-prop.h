@@ -161,8 +161,6 @@ struct ipa_param_descriptor
   struct ipcp_lattice ipcp_lattice;
   /* PARAM_DECL of this parameter.  */
   tree decl;
-  /* Whether the value parameter has been modified within the function.  */
-  unsigned modified : 1;
   /* The parameter is used.  */
   unsigned used : 1;
 };
@@ -179,8 +177,6 @@ struct ipa_node_params
   /* Whether this function is called with variable number of actual
      arguments.  */
   unsigned called_with_var_arguments : 1;
-  /* Whether the modification analysis has already been performed. */
-  unsigned modification_analysis_done : 1;
   /* Whether the param uses analysis has already been performed.  */
   unsigned uses_analysis_done : 1;
   /* Whether the function is enqueued in an ipa_func_list.  */
@@ -226,17 +222,6 @@ static inline tree
 ipa_get_param (struct ipa_node_params *info, int i)
 {
   return info->params[i].decl;
-}
-
-/* Return the modification flag corresponding to the Ith formal parameter of
-   the function associated with INFO.  Note that there is no setter method as
-   the goal is to set all flags when building the array in
-   ipa_detect_param_modifications.  */
-
-static inline bool
-ipa_is_param_modified (struct ipa_node_params *info, int i)
-{
-  return info->params[i].modified;
 }
 
 /* Return the used flag corresponding to the Ith formal parameter of
@@ -412,14 +397,10 @@ ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *node)
     ipa_push_func_to_list_1 (wl, node, info);
 }
 
-/* Callsite related calculations.  */
-void ipa_compute_jump_functions (struct cgraph_node *);
-void ipa_count_arguments (struct cgraph_edge *);
+void ipa_analyze_node (struct cgraph_node *);
 
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
-void ipa_detect_param_modifications (struct cgraph_node *);
-void ipa_analyze_params_uses (struct cgraph_node *);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
 

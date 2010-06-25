@@ -1,3 +1,48 @@
+2010-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_param_descriptor): Removed the modified flag.
+	(struct ipa_node_params): Removed the modification_analysis_done flag.
+	(ipa_is_param_modified): Removed.
+	(ipa_analyze_node): Declare.
+	(ipa_compute_jump_functions): Remove declaration.
+	(ipa_count_arguments): Likewise.
+	(ipa_detect_param_modifications): Likewise.
+	(ipa_analyze_params_uses): Likewise.
+	* ipa-prop.c (struct param_analysis_info): New type.
+	(visit_store_addr_for_mod_analysis): Removed.
+	(visit_load_for_mod_analysis): Renamed to visit_ref_for_mod_analysis,
+	moved down in the file.
+	(ipa_detect_param_modifications): Merged into ipa_analyze_params_uses.
+	(ipa_count_arguments): Made static.
+	(mark_modified): New function.
+	(is_parm_modified_before_call): New function.
+	(compute_pass_through_member_ptrs): New parameter parms_info, call
+	is_parm_modified_before_call instead of ipa_is_param_modified.
+	(ipa_compute_jump_functions_for_edge): New parameter parms_info, pass
+	it to compute_pass_through_member_ptrs.
+	(ipa_compute_jump_functions): New parameter parms_info, pass it to
+	ipa_compute_jump_functions_for_edge.  Call ipa_initialize_node_params
+	on the callee if it is analyzed.  Made static.
+	(ipa_analyze_indirect_call_uses): New parameter parms_info, call
+	is_parm_modified_before_call instead of ipa_is_param_modified.
+	(ipa_analyze_call_uses): New parameter parms_info, pass it to
+	ipa_analyze_indirect_call_uses.
+	(ipa_analyze_stmt_uses): New parameter parms_info, pass it to
+	ipa_analyze_call_uses.
+	(ipa_analyze_params_uses): New parameter parms_info, pass it to
+	ipa_analyze_stmt_uses.  Also perform the used analysis.  Made static.
+	(ipa_analyze_node): New function.
+	(ipa_print_node_params): Do not dump the modified flag.
+	(ipa_write_node_info): Assert uses_analysis_done rather than streaming
+	it.  Do not stream the modified parameter flag.
+	(ipa_read_node_info): Set uses_analysis_done to 1 instead of streaming
+	it.  Do not stream the modified parameter flag.
+	* ipa-cp.c (ipcp_analyze_node): Removed.
+	(ipcp_init_stage): Iterate only once over the nodes, analyze each one
+	with only a call to ipa_analyze_node.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Analyze the
+	node with only a call to ipa_analyze_node.
+	
 2010-06-25  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (-Wsuggest-attribute): Add item for noreturn.
