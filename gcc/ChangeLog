@@ -1,5 +1,13 @@
 2010-06-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/43866
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): If stmt is always
+	true or always false, return NULL_TREE.
+	(tree_unswitch_single_loop): Optimize conditions even when reaching
+	max-unswitch-level parameter.  If num > 0, optimize first all conditions
+	using entry checks, then do still reachable block discovery and consider
+	only conditions in still reachable basic blocks in the loop.
+
 	PR tree-optimization/44539
 	* tree-cfgcleanup.c (fixup_noreturn_call): Call update_stmt even when
 	the call doesn't have LHS, but has VDEF.
