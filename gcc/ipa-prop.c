@@ -806,6 +806,8 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
       gimple stmt = gsi_stmt (gsi);
       tree lhs, rhs, fld;
 
+      if (!stmt_may_clobber_ref_p (stmt, arg))
+	continue;
       if (!gimple_assign_single_p (stmt))
 	return;
 
@@ -814,7 +816,7 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
 
       if (TREE_CODE (lhs) != COMPONENT_REF
 	  || TREE_OPERAND (lhs, 0) != arg)
-	continue;
+	return;
 
       fld = TREE_OPERAND (lhs, 1);
       if (!method && fld == method_field)
@@ -1030,6 +1032,10 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt,
      <bb 2>:
        f$__delta_5 = f.__delta;
        f$__pfn_24 = f.__pfn;
+
+     ...
+
+     <bb 5>
        D.2496_3 = (int) f$__pfn_24;
        D.2497_4 = D.2496_3 & 1;
        if (D.2497_4 != 0)
@@ -1037,7 +1043,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt,
        else
          goto <bb 4>;
 
-     <bb 3>:
+     <bb 6>:
        D.2500_7 = (unsigned int) f$__delta_5;
        D.2501_8 = &S + D.2500_7;
        D.2502_9 = (int (*__vtbl_ptr_type) (void) * *) D.2501_8;
@@ -1048,7 +1054,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt,
        D.2507_15 = *D.2506_14;
        iftmp.11_16 = (String:: *) D.2507_15;
 
-     <bb 4>:
+     <bb 7>:
        # iftmp.11_1 = PHI <iftmp.11_16(3), f$__pfn_24(2)>
        D.2500_19 = (unsigned int) f$__delta_5;
        D.2508_20 = &S + D.2500_19;
@@ -1109,17 +1115,18 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   d1 = SSA_NAME_DEF_STMT (n1);
   d2 = SSA_NAME_DEF_STMT (n2);
 
+  join = gimple_bb (def);
   if ((rec = ipa_get_stmt_member_ptr_load_param (d1, false)))
     {
       if (ipa_get_stmt_member_ptr_load_param (d2, false))
 	return;
 
-      bb = gimple_bb (d1);
+      bb = EDGE_PRED (join, 0)->src;
       virt_bb = gimple_bb (d2);
     }
   else if ((rec = ipa_get_stmt_member_ptr_load_param (d2, false)))
     {
-      bb = gimple_bb (d2);
+      bb = EDGE_PRED (join, 1)->src;
       virt_bb = gimple_bb (d1);
     }
   else
@@ -1128,7 +1135,6 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   /* Second, we need to check that the basic blocks are laid out in the way
      corresponding to the pattern. */
 
-  join = gimple_bb (def);
   if (!single_pred_p (virt_bb) || !single_succ_p (virt_bb)
       || single_pred (virt_bb) != bb
       || single_succ (virt_bb) != join)
@@ -1138,7 +1144,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
      significant bit of the pfn. */
 
   branch = last_stmt (bb);
-  if (gimple_code (branch) != GIMPLE_COND)
+  if (!branch || gimple_code (branch) != GIMPLE_COND)
     return;
 
   if (gimple_cond_code (branch) != NE_EXPR
