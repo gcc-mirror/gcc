@@ -1,3 +1,8 @@
+2010-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/44448
+	* gfortran.dg/atan2_1.f90: Add -ffloat-store.
+
 2010-06-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

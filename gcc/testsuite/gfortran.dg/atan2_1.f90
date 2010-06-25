@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-ffloat-store" }
 !
 ! PR fortran/33197
 !
