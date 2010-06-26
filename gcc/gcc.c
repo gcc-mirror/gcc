@@ -3251,6 +3251,8 @@ static struct switchstr *switches;
 
 static int n_switches;
 
+static int n_switches_alloc;
+
 /* Set to zero if -fcompare-debug is disabled, positive if it's
    enabled and we're running the first compilation, negative if it's
    enabled and we're running the second compilation.  For most of the
@@ -3295,6 +3297,8 @@ struct infile
 static struct infile *infiles;
 
 int n_infiles;
+
+static int n_infiles_alloc;
 
 /* True if multiple input files are being compiled to a single
    assembly file.  */
@@ -3480,6 +3484,51 @@ add_linker_option (const char *option, int len)
   linker_options [n_linker_options - 1] = save_string (option, len);
 }
 
+/* Allocate space for an input file in infiles.  */
+
+static void
+alloc_infile (void)
+{
+  if (n_infiles_alloc == 0)
+    {
+      n_infiles_alloc = 16;
+      infiles = XNEWVEC (struct infile, n_infiles_alloc);
+    }
+  else if (n_infiles_alloc == n_infiles)
+    {
+      n_infiles_alloc *= 2;
+      infiles = XRESIZEVEC (struct infile, infiles, n_infiles_alloc);
+    }
+}
+
+/* Store an input file with the given NAME and LANGUAGE in
+   infiles.  */
+
+static void
+add_infile (const char *name, const char *language)
+{
+  alloc_infile ();
+  infiles[n_infiles].name = name;
+  infiles[n_infiles++].language = language;
+}
+
+/* Allocate space for a switch in switches.  */
+
+static void
+alloc_switch (void)
+{
+  if (n_switches_alloc == 0)
+    {
+      n_switches_alloc = 16;
+      switches = XNEWVEC (struct switchstr, n_switches_alloc);
+    }
+  else if (n_switches_alloc == n_switches)
+    {
+      n_switches_alloc *= 2;
+      switches = XRESIZEVEC (struct switchstr, switches, n_switches_alloc);
+    }
+}
+
 /* Create the vector `switches' and its contents.
    Store its length in `n_switches'.  */
 
@@ -3491,7 +3540,6 @@ process_command (int argc, const char **argv)
   char *temp1;
   const char *spec_lang = 0;
   int last_language_n_infiles;
-  int lang_n_infiles = 0;
   const char *tooldir_prefix;
   char *(*get_relative_prefix) (const char *, const char *,
 				const char *) = NULL;
@@ -3705,12 +3753,22 @@ process_command (int argc, const char **argv)
 	}
     }
 
-  /* Scan argv twice.  Here, the first time, just count how many switches
-     there will be in their vector, and how many input files in theirs.
-     Here we also parse the switches that cc itself uses (e.g. -v).  */
+  /* Process the options and store input files and switches in their
+     vectors.  */
+
+  last_language_n_infiles = -1;
 
   for (i = 1; i < argc; i++)
     {
+      const char *p = NULL;
+      int c = 0;
+
+      if (argv[i][0] == '-' && argv[i][1] != 0)
+	{
+	  p = &argv[i][1];
+	  c = *p;
+	}
+
       if (! strcmp (argv[i], "-dumpspecs"))
 	{
 	  struct spec_list *sl;
@@ -3736,59 +3794,50 @@ process_command (int argc, const char **argv)
 	  /* translate_options () has turned --version into -fversion.  */
 	  print_version = 1;
 
-	  /* We will be passing a dummy file on to the sub-processes.  */
-	  n_infiles++;
-	  n_switches++;
-
 	  /* CPP driver cannot obtain switch from cc1_options.  */
 	  if (is_cpp_driver)
 	    add_preprocessor_option ("--version", strlen ("--version"));
 	  add_assembler_option ("--version", strlen ("--version"));
 	  add_linker_option ("--version", strlen ("--version"));
+
+	  goto normal_switch;
 	}
       else if (strcmp (argv[i], "-fhelp") == 0)
 	{
 	  /* translate_options () has turned --help into -fhelp.  */
 	  print_help_list = 1;
 
-	  /* We will be passing a dummy file on to the sub-processes.  */
-	  n_infiles++;
-	  n_switches++;
-
 	  /* CPP driver cannot obtain switch from cc1_options.  */
 	  if (is_cpp_driver)
 	    add_preprocessor_option ("--help", 6);
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
+
+	  goto normal_switch;
 	}
       else if (strncmp (argv[i], "-fhelp=", 7) == 0)
 	{
 	  /* translate_options () has turned --help into -fhelp.  */
 	  print_subprocess_help = 2;
 
-	  /* We will be passing a dummy file on to the sub-processes.  */
-	  n_infiles++;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (strcmp (argv[i], "-ftarget-help") == 0)
 	{
 	  /* translate_options() has turned --target-help into -ftarget-help.  */
 	  print_subprocess_help = 1;
 
-	  /* We will be passing a dummy file on to the sub-processes.  */
-	  n_infiles++;
-	  n_switches++;
-
 	  /* CPP driver cannot obtain switch from cc1_options.  */
 	  if (is_cpp_driver)
 	    add_preprocessor_option ("--target-help", 13);
 	  add_assembler_option ("--target-help", 13);
 	  add_linker_option ("--target-help", 13);
+
+	  goto normal_switch;
 	}
       else if (! strcmp (argv[i], "-pass-exit-codes"))
 	{
 	  pass_exit_codes = 1;
-	  n_switches++;
 	}
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	print_search_dirs = 1;
@@ -3811,16 +3860,18 @@ process_command (int argc, const char **argv)
       else if (! strcmp (argv[i], "-fcompare-debug-second"))
 	{
 	  compare_debug_second = 1;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (! strcmp (argv[i], "-fno-compare-debug"))
 	{
 	  argv[i] = "-fcompare-debug=";
+	  p = &argv[i][1];
 	  goto compare_debug_with_arg;
 	}
       else if (! strcmp (argv[i], "-fcompare-debug"))
 	{
 	  argv[i] = "-fcompare-debug=-gtoggle";
+	  p = &argv[i][1];
 	  goto compare_debug_with_arg;
 	}
 #define OPT "-fcompare-debug="
@@ -3838,7 +3889,7 @@ process_command (int argc, const char **argv)
 	    compare_debug_opt = NULL;
 	  else
 	    compare_debug_opt = opt;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (! strncmp (argv[i], "-Wa,", 4))
 	{
@@ -3876,17 +3927,24 @@ process_command (int argc, const char **argv)
 	}
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
 	{
-	  int j;
+	  int prev, j;
 	  /* Split the argument at commas.  */
-	  for (j = 3; argv[i][j]; j++)
-	    n_infiles += (argv[i][j] == ',');
+	  prev = 4;
+	  for (j = 4; argv[i][j]; j++)
+	    if (argv[i][j] == ',')
+	      {
+		add_infile (save_string (argv[i] + prev, j - prev), "*");
+		prev = j + 1;
+	      }
+	  /* Record the part after the last comma.  */
+	  add_infile (argv[i] + prev, "*");
 	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
 	  if (i + 1 == argc)
 	    fatal_error ("argument to %<-Xlinker%> is missing");
 
-	  n_infiles++;
+	  add_infile (argv[i+1], "*");
 	  i++;
 	}
       else if (strcmp (argv[i], "-Xpreprocessor") == 0)
@@ -3895,6 +3953,7 @@ process_command (int argc, const char **argv)
 	    fatal_error ("argument to %<-Xpreprocessor%> is missing");
 
 	  add_preprocessor_option (argv[i+1], strlen (argv[i+1]));
+	  i++;
 	}
       else if (strcmp (argv[i], "-Xassembler") == 0)
 	{
@@ -3902,25 +3961,29 @@ process_command (int argc, const char **argv)
 	    fatal_error ("argument to %<-Xassembler%> is missing");
 
 	  add_assembler_option (argv[i+1], strlen (argv[i+1]));
+	  i++;
 	}
       else if (strcmp (argv[i], "-l") == 0)
 	{
 	  if (i + 1 == argc)
 	    fatal_error ("argument to %<-l%> is missing");
 
-	  n_infiles++;
+	  /* POSIX allows separation of -l and the lib arg;
+	     canonicalize by concatenating -l with its arg */
+	  add_infile (concat ("-l", argv[i + 1], NULL), "*");
 	  i++;
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
-	n_infiles++;
+	{
+	  add_infile (argv[i], "*");
+	}
       else if (strcmp (argv[i], "-save-temps") == 0)
 	{
 	  save_temps_flag = SAVE_TEMPS_CWD;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (strncmp (argv[i], "-save-temps=", 12) == 0)
 	{
-	  n_switches++;
 	  if (strcmp (argv[i]+12, "cwd") == 0)
 	    save_temps_flag = SAVE_TEMPS_CWD;
 	  else if (strcmp (argv[i]+12, "obj") == 0
@@ -3928,6 +3991,7 @@ process_command (int argc, const char **argv)
 	    save_temps_flag = SAVE_TEMPS_OBJ;
 	  else
 	    fatal_error ("%qs is an unknown -save-temps option", argv[i]);
+	  goto normal_switch;
 	}
       else if (strcmp (argv[i], "-no-canonical-prefixes") == 0)
 	/* Already handled as a special case, so ignored here.  */
@@ -3935,7 +3999,7 @@ process_command (int argc, const char **argv)
       else if (strcmp (argv[i], "-combine") == 0)
 	{
 	  combine_flag = 1;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (strcmp (argv[i], "-specs") == 0)
 	{
@@ -3965,6 +4029,11 @@ process_command (int argc, const char **argv)
 	    user_specs_head = user;
 	  user_specs_tail = user;
 	}
+      else if (! strncmp (argv[i], "--sysroot=", strlen ("--sysroot=")))
+	{
+	  target_system_root = argv[i] + strlen ("--sysroot=");
+	  target_system_root_changed = 1;
+	}
       else if (strcmp (argv[i], "-time") == 0)
 	report_times = 1;
       else if (strncmp (argv[i], "-time=", sizeof ("-time=") - 1) == 0)
@@ -3978,7 +4047,7 @@ process_command (int argc, const char **argv)
 	  /* -pipe has to go into the switches array as well as
 	     setting a flag.  */
 	  use_pipes = 1;
-	  n_switches++;
+	  goto normal_switch;
 	}
       else if (strcmp (argv[i], "-wrapper") == 0)
         {
@@ -3986,8 +4055,6 @@ process_command (int argc, const char **argv)
 	    fatal_error ("argument to %<-wrapper%> is missing");
 
           wrapper_string = argv[i];
-	  n_switches++;
-	  n_switches++;
         }
       else if (strcmp (argv[i], "-###") == 0)
 	{
@@ -4000,9 +4067,6 @@ process_command (int argc, const char **argv)
 	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
-	  const char *p = &argv[i][1];
-	  int c = *p;
-
 	  switch (c)
 	    {
 	    case 'B':
@@ -4013,7 +4077,7 @@ process_command (int argc, const char **argv)
 		if (p[1] == 0 && i + 1 == argc)
 		  fatal_error ("argument to %<-B%> is missing");
 		if (p[1] == 0)
-		  value = argv[++i];
+		  value = argv[i + 1];
 		else
 		  value = p + 1;
 
@@ -4042,28 +4106,38 @@ process_command (int argc, const char **argv)
 			    PREFIX_PRIORITY_B_OPT, 0, 0);
 		add_prefix (&include_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, 0);
-		n_switches++;
 	      }
-	      break;
+	      goto normal_switch;
 
 	    case 'v':	/* Print our subcommands and print versions.  */
-	      n_switches++;
 	      /* If they do anything other than exactly `-v', don't set
 		 verbose_flag; rather, continue on to give the error.  */
 	      if (p[1] != 0)
 		break;
 	      verbose_flag++;
+	      goto normal_switch;
+
+	    case 'x':
+	      if (p[1] == 0 && i + 1 == argc)
+		fatal_error ("argument to %<-x%> is missing");
+	      if (p[1] == 0)
+		spec_lang = argv[++i];
+	      else
+		spec_lang = p + 1;
+	      if (! strcmp (spec_lang, "none"))
+		/* Suppress the warning if -xnone comes after the last input
+		   file, because alternate command interfaces like g++ might
+		   find it useful to place -xnone after each input file.  */
+		spec_lang = 0;
+	      else
+		last_language_n_infiles = n_infiles;
 	      break;
 
 	    case 'S':
 	    case 'c':
 	    case 'E':
 	      if (p[1] == 0)
-		{
-		  have_c = 1;
-		  n_switches++;
-		  break;
-		}
+		have_c = 1;
 	      goto normal_switch;
 
 	    case 'o':
@@ -4101,7 +4175,10 @@ process_command (int argc, const char **argv)
 	      if (p[1] == 0)
 		argv[i + 1] = convert_filename (argv[i + 1], ! have_c, 0);
 	      else
-		argv[i] = convert_filename (argv[i], ! have_c, 0);
+		{
+		  argv[i] = convert_filename (argv[i], ! have_c, 0);
+		  p = &argv[i][1];
+		}
 #endif
 	      /* Save the output name in case -save-temps=obj was used.  */
 	      if ((p[1] == 0) && argv[i + 1])
@@ -4113,18 +4190,105 @@ process_command (int argc, const char **argv)
 	    default:
 	    normal_switch:
 
-	      n_switches++;
+	      alloc_switch ();
+	      switches[n_switches].part1 = p;
+	      /* Deal with option arguments in separate argv elements.  */
+	      if ((SWITCH_TAKES_ARG (c) > (p[1] != 0))
+		  || WORD_SWITCH_TAKES_ARG (p))
+		{
+		  int j = 0;
+		  int n_args = WORD_SWITCH_TAKES_ARG (p);
 
-	      if (SWITCH_TAKES_ARG (c) > (p[1] != 0))
-		i += SWITCH_TAKES_ARG (c) - (p[1] != 0);
-	      else if (WORD_SWITCH_TAKES_ARG (p))
-		i += WORD_SWITCH_TAKES_ARG (p);
+		  if (n_args == 0)
+		    {
+		      /* Count only the option arguments in separate
+			 argv elements.  */
+		      n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
+		    }
+		  if (i + n_args >= argc)
+		    fatal_error ("argument to %<-%s%> is missing", p);
+		  switches[n_switches].args
+		    = XNEWVEC (const char *, n_args + 1);
+		  while (j < n_args)
+		    switches[n_switches].args[j++] = argv[++i];
+		  /* Null-terminate the vector.  */
+		  switches[n_switches].args[j] = 0;
+		}
+	      else if (strchr (switches_need_spaces, c))
+		{
+		  /* On some systems, ld cannot handle some options without
+		     a space.  So split the option from its argument.  */
+		  char *part1 = XNEWVEC (char, 2);
+		  part1[0] = c;
+		  part1[1] = '\0';
+
+		  switches[n_switches].part1 = part1;
+		  switches[n_switches].args = XNEWVEC (const char *, 2);
+		  switches[n_switches].args[0] = xstrdup (p+1);
+		  switches[n_switches].args[1] = 0;
+		}
+	      else
+		switches[n_switches].args = 0;
+
+	      switches[n_switches].live_cond = 0;
+	      switches[n_switches].validated = 0;
+	      switches[n_switches].ordering = 0;
+	      /* These are always valid, since gcc.c itself understands the
+		 first four, gfortranspec.c understands -static-libgfortran
+		 and g++spec.c understands -static-libstdc++ */
+	      if (!strcmp (p, "save-temps")
+		  || !strcmp (p, "static-libgcc")
+		  || !strcmp (p, "shared-libgcc")
+		  || !strcmp (p, "pipe")
+		  || !strcmp (p, "static-libgfortran")
+		  || !strcmp (p, "static-libstdc++"))
+		switches[n_switches].validated = 1;
+	      else
+		{
+		  char ch = switches[n_switches].part1[0];
+		  if (ch == 'B')
+		    switches[n_switches].validated = 1;
+		}
+	      n_switches++;
 	    }
 	}
       else
 	{
-	  n_infiles++;
-	  lang_n_infiles++;
+          const char *p = strrchr (argv[i], '@');
+          char *fname;
+	  long offset;
+	  int consumed;
+#ifdef HAVE_TARGET_OBJECT_SUFFIX
+	  argv[i] = convert_filename (argv[i], 0, access (argv[i], F_OK));
+#endif
+	  /* For LTO static archive support we handle input file
+	     specifications that are composed of a filename and
+	     an offset like FNAME@OFFSET.  */
+	  if (p
+	      && p != argv[i]
+	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
+	      && strlen (p) == (unsigned int)consumed)
+	    {
+              fname = (char *)xmalloc (p - argv[i] + 1);
+              memcpy (fname, argv[i], p - argv[i]);
+              fname[p - argv[i]] = '\0';
+	      /* Only accept non-stdin and existing FNAME parts, otherwise
+		 try with the full name.  */
+	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
+		{
+		  free (fname);
+		  fname = xstrdup (argv[i]);
+		}
+	    }
+	  else
+	    fname = xstrdup (argv[i]);
+ 
+          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
+	    perror_with_name (fname);
+          else
+	    add_infile (argv[i], spec_lang);
+
+          free (fname);
 	}
     }
 
@@ -4163,13 +4327,11 @@ process_command (int argc, const char **argv)
 	{
 	  compare_debug = 2;
 	  compare_debug_opt = gcd;
-	  n_switches++;
 	}
       else if (gcd && *gcd && strcmp (gcd, "0"))
 	{
 	  compare_debug = 3;
 	  compare_debug_opt = "-gtoggle";
-	  n_switches++;
 	}
     }
   else if (compare_debug < 0)
@@ -4222,7 +4384,7 @@ process_command (int argc, const char **argv)
      then consider it to relocate with the rest of the GCC installation
      if GCC_EXEC_PREFIX is set.
      ``make_relative_prefix'' is not compiled for VMS, so don't call it.  */
-  if (target_system_root && gcc_exec_prefix)
+  if (target_system_root && !target_system_root_changed && gcc_exec_prefix)
     {
       char *tmp_prefix = get_relative_prefix (argv[0],
 					      standard_bindir_prefix,
@@ -4238,232 +4400,12 @@ process_command (int argc, const char **argv)
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
 
-  /* Then create the space for the vectors and scan again.  */
-
-  switches = XNEWVEC (struct switchstr, n_switches + 1);
-  infiles = XNEWVEC (struct infile, n_infiles + 1);
-  n_switches = 0;
-  n_infiles = 0;
-  last_language_n_infiles = -1;
-
-  /* This, time, copy the text of each switch and store a pointer
-     to the copy in the vector of switches.
-     Store all the infiles in their vector.  */
-
-  for (i = 1; i < argc; i++)
-    {
-      /* Just skip the switches that were handled by the preceding loop.  */
-      if (! strncmp (argv[i], "-Wa,", 4))
-	;
-      else if (! strncmp (argv[i], "-Wp,", 4))
-	;
-      else if (! strcmp (argv[i], "-no-canonical-prefixes"))
-	;
-      else if (! strcmp (argv[i], "-pass-exit-codes"))
-	;
-      else if (! strcmp (argv[i], "-print-search-dirs"))
-	;
-      else if (! strcmp (argv[i], "-print-libgcc-file-name"))
-	;
-      else if (! strncmp (argv[i], "-print-file-name=", 17))
-	;
-      else if (! strncmp (argv[i], "-print-prog-name=", 17))
-	;
-      else if (! strcmp (argv[i], "-print-multi-lib"))
-	;
-      else if (! strcmp (argv[i], "-print-multi-directory"))
-	;
-      else if (! strcmp (argv[i], "-print-sysroot"))
-	;
-      else if (! strcmp (argv[i], "-print-multi-os-directory"))
-	;
-      else if (! strcmp (argv[i], "-print-sysroot-headers-suffix"))
-	;
-      else if (! strncmp (argv[i], "--sysroot=", strlen ("--sysroot=")))
-	{
-	  target_system_root = argv[i] + strlen ("--sysroot=");
-	  target_system_root_changed = 1;
-	}
-      else if (strncmp (argv[i], "-Wl,", 4) == 0)
-	{
-	  int prev, j;
-	  /* Split the argument at commas.  */
-	  prev = 4;
-	  for (j = 4; argv[i][j]; j++)
-	    if (argv[i][j] == ',')
-	      {
-		infiles[n_infiles].language = "*";
-		infiles[n_infiles++].name
-		  = save_string (argv[i] + prev, j - prev);
-		prev = j + 1;
-	      }
-	  /* Record the part after the last comma.  */
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = argv[i] + prev;
-	}
-      else if (strcmp (argv[i], "-Xlinker") == 0)
-	{
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = argv[++i];
-	}
-      /* Xassembler and Xpreprocessor were already handled in the first argv
-	 scan, so all we need to do here is ignore them and their argument.  */
-      else if (strcmp (argv[i], "-Xassembler") == 0)
-	i++;
-      else if (strcmp (argv[i], "-Xpreprocessor") == 0)
-	i++;
-      else if (strcmp (argv[i], "-l") == 0)
-	{ /* POSIX allows separation of -l and the lib arg;
-	     canonicalize by concatenating -l with its arg */
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = concat ("-l", argv[++i], NULL);
-	}
-      else if (strncmp (argv[i], "-l", 2) == 0)
-	{
-	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = argv[i];
-	}
-      else if (strcmp (argv[i], "-wrapper") == 0)
-        i++;
-      else if (strcmp (argv[i], "-specs") == 0)
-	i++;
-      else if (strncmp (argv[i], "-specs=", 7) == 0)
-	;
-      else if (strcmp (argv[i], "-time") == 0)
-	;
-      else if (strncmp (argv[i], "-time=", sizeof ("-time=") - 1) == 0)
-	;
-      else if (strcmp (argv[i], "-###") == 0)
-	;
-      else if (argv[i][0] == '-' && argv[i][1] != 0)
-	{
-	  const char *p = &argv[i][1];
-	  int c = *p;
-
-	  if (c == 'x')
-	    {
-	      if (p[1] == 0 && i + 1 == argc)
-		fatal_error ("argument to %<-x%> is missing");
-	      if (p[1] == 0)
-		spec_lang = argv[++i];
-	      else
-		spec_lang = p + 1;
-	      if (! strcmp (spec_lang, "none"))
-		/* Suppress the warning if -xnone comes after the last input
-		   file, because alternate command interfaces like g++ might
-		   find it useful to place -xnone after each input file.  */
-		spec_lang = 0;
-	      else
-		last_language_n_infiles = n_infiles;
-	      continue;
-	    }
-	  switches[n_switches].part1 = p;
-	  /* Deal with option arguments in separate argv elements.  */
-	  if ((SWITCH_TAKES_ARG (c) > (p[1] != 0))
-	      || WORD_SWITCH_TAKES_ARG (p))
-	    {
-	      int j = 0;
-	      int n_args = WORD_SWITCH_TAKES_ARG (p);
-
-	      if (n_args == 0)
-		{
-		  /* Count only the option arguments in separate argv elements.  */
-		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
-		}
-	      if (i + n_args >= argc)
-		fatal_error ("argument to %<-%s%> is missing", p);
-	      switches[n_switches].args
-		= XNEWVEC (const char *, n_args + 1);
-	      while (j < n_args)
-		switches[n_switches].args[j++] = argv[++i];
-	      /* Null-terminate the vector.  */
-	      switches[n_switches].args[j] = 0;
-	    }
-	  else if (strchr (switches_need_spaces, c))
-	    {
-	      /* On some systems, ld cannot handle some options without
-		 a space.  So split the option from its argument.  */
-	      char *part1 = XNEWVEC (char, 2);
-	      part1[0] = c;
-	      part1[1] = '\0';
-
-	      switches[n_switches].part1 = part1;
-	      switches[n_switches].args = XNEWVEC (const char *, 2);
-	      switches[n_switches].args[0] = xstrdup (p+1);
-	      switches[n_switches].args[1] = 0;
-	    }
-	  else
-	    switches[n_switches].args = 0;
-
-	  switches[n_switches].live_cond = 0;
-	  switches[n_switches].validated = 0;
-	  switches[n_switches].ordering = 0;
-	  /* These are always valid, since gcc.c itself understands the
-	     first four, gfortranspec.c understands -static-libgfortran
-	     and g++spec.c understands -static-libstdc++ */
-	  if (!strcmp (p, "save-temps")
-	      || !strcmp (p, "static-libgcc")
-	      || !strcmp (p, "shared-libgcc")
-	      || !strcmp (p, "pipe")
-	      || !strcmp (p, "static-libgfortran")
-	      || !strcmp (p, "static-libstdc++"))
-	    switches[n_switches].validated = 1;
-	  else
-	    {
-	      char ch = switches[n_switches].part1[0];
-	      if (ch == 'B')
-		switches[n_switches].validated = 1;
-	    }
-	  n_switches++;
-	}
-      else
-	{
-          const char *p = strrchr (argv[i], '@');
-          char *fname;
-	  long offset;
-	  int consumed;
-#ifdef HAVE_TARGET_OBJECT_SUFFIX
-	  argv[i] = convert_filename (argv[i], 0, access (argv[i], F_OK));
-#endif
-	  /* For LTO static archive support we handle input file
-	     specifications that are composed of a filename and
-	     an offset like FNAME@OFFSET.  */
-	  if (p
-	      && p != argv[i]
-	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
-	      && strlen (p) == (unsigned int)consumed)
-	    {
-              fname = (char *)xmalloc (p - argv[i] + 1);
-              memcpy (fname, argv[i], p - argv[i]);
-              fname[p - argv[i]] = '\0';
-	      /* Only accept non-stdin and existing FNAME parts, otherwise
-		 try with the full name.  */
-	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
-		{
-		  free (fname);
-		  fname = xstrdup (argv[i]);
-		}
-	    }
-	  else
-	    fname = xstrdup (argv[i]);
- 
-          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
-	    perror_with_name (fname);
-          else
-            {
-              infiles[n_infiles].language = spec_lang;
-              infiles[n_infiles++].name = argv[i];
-            }
-
-          free (fname);
-	}
-    }
-
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
     warning (0, "%<-x %s%> after last input file has no effect", spec_lang);
 
   if (compare_debug == 2 || compare_debug == 3)
     {
+      alloc_switch ();
       switches[n_switches].part1 = concat ("fcompare-debug=",
 					   compare_debug_opt,
 					   NULL);
@@ -4478,15 +4420,16 @@ process_command (int argc, const char **argv)
   /* Ensure we only invoke each subprocess once.  */
   if (print_subprocess_help || print_help_list || print_version)
     {
-      n_infiles = 1;
+      n_infiles = 0;
 
       /* Create a dummy input file, so that we can pass
 	 the help option on to the various sub-processes.  */
-      infiles[0].language = "c";
-      infiles[0].name   = "help-dummy";
+      add_infile ("help-dummy", "c");
     }
 
+  alloc_switch ();
   switches[n_switches].part1 = 0;
+  alloc_infile ();
   infiles[n_infiles].name = 0;
 }
 
