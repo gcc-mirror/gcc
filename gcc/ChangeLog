@@ -1,3 +1,9 @@
+2010-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44674
+	* tree-ssa-alias.c (refs_may_alias_p_1): Allow all kind of
+	decls.  Handle LABEL_DECLs like FUNCTION_DECLs.
+
 2010-06-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (n_switches_alloc, n_infiles_alloc, alloc_infile,
@@ -10,8 +16,8 @@
 2010-06-26  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44671
-	* cgraphunit.c (cgraph_function_versioning): Remove wrong cgraph_make_decl_local
-	call; fix typo copying RTL data.
+	* cgraphunit.c (cgraph_function_versioning): Remove wrong
+	cgraph_make_decl_local call; fix typo copying RTL data.
 
 2010-06-25  DJ Delorie  <dj@redhat.com>
 
