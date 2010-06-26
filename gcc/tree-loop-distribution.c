@@ -202,18 +202,28 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
 	if (!bitmap_bit_p (partition, x++))
-	  remove_phi_node (&bsi, true);
+	  {
+	    gimple phi = gsi_stmt (bsi);
+	    if (!is_gimple_reg (gimple_phi_result (phi)))
+	      mark_virtual_phi_result_for_renaming (phi);
+	    remove_phi_node (&bsi, true);
+	  }
 	else
 	  gsi_next (&bsi);
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi);)
-	if (gimple_code (gsi_stmt (bsi)) != GIMPLE_LABEL
-	    && !bitmap_bit_p (partition, x++))
-	  gsi_remove (&bsi, false);
-	else
-	  gsi_next (&bsi);
-
-	mark_virtual_ops_in_bb (bb);
+	{
+	  gimple stmt = gsi_stmt (bsi);
+	  if (gimple_code (gsi_stmt (bsi)) != GIMPLE_LABEL
+	      && !bitmap_bit_p (partition, x++))
+	    {
+	      unlink_stmt_vdef (stmt);
+	      gsi_remove (&bsi, true);
+	      release_defs (stmt);
+	    }
+	  else
+	    gsi_next (&bsi);
+	}
     }
 
   free (bbs);
@@ -250,7 +260,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   gimple_seq stmt_list = NULL, stmts;
   gimple fn_call;
   tree mem, fn;
-  gimple_stmt_iterator i;
   struct data_reference *dr = XCNEW (struct data_reference);
   location_t loc = gimple_location (stmt);
 
@@ -301,13 +310,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   fn = build_fold_addr_expr (implicit_built_in_decls [BUILT_IN_MEMSET]);
   fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
   gimple_seq_add_stmt (&stmt_list, fn_call);
-
-  for (i = gsi_start (stmt_list); !gsi_end_p (i); gsi_next (&i))
-    {
-      gimple s = gsi_stmt (i);
-      update_stmt_if_modified (s);
-    }
-
   gsi_insert_seq_after (&bsi, stmt_list, GSI_CONTINUE_LINKING);
   res = true;
 

@@ -485,7 +485,6 @@ extern void end_recording_case_labels (void);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 void remove_edge_and_dominated_blocks (edge);
-void mark_virtual_ops_in_bb (basic_block);
 bool tree_node_can_be_shared (tree);
 
 /* In tree-cfgcleanup.c  */

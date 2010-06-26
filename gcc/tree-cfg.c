@@ -5661,21 +5661,6 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
   return NULL_TREE;
 }
 
-/* Marks virtual operands of all statements in basic blocks BBS for
-   renaming.  */
-
-void
-mark_virtual_ops_in_bb (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    mark_virtual_ops_for_renaming (gsi_stmt (gsi));
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    mark_virtual_ops_for_renaming (gsi_stmt (gsi));
-}
-
 /* Move basic block BB from function CFUN to function DEST_FN.  The
    block is moved out of the original linked list and placed after
    block AFTER in the new list.  Also, the block is removed from the

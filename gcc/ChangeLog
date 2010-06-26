@@ -1,5 +1,14 @@
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44393
+	* tree-loop-distribution.c (generate_loops_for_partition): Fix
+	stmt removal and VOP renaming.
+	(generate_memset_zero): Remove redundant stmt updating.
+	* tree-flow.h (mark_virtual_ops_in_bb): Remove.
+	* tree-cfg.c (mark_virtual_ops_in_bb): Likewise.
+
+2010-06-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44674
 	* tree-ssa-alias.c (refs_may_alias_p_1): Allow all kind of
 	decls.  Handle LABEL_DECLs like FUNCTION_DECLs.
