@@ -1,3 +1,9 @@
+2010-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44671
+	* cgraphunit.c (cgraph_function_versioning): Remove wrong cgraph_make_decl_local
+	call; fix typo copying RTL data.
+
 2010-06-25  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c-protos.h (m32c_note_pragma_address): Declare.

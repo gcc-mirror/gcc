@@ -2128,7 +2128,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->local.local = true;
    new_version->local.vtable_method = false;
    new_version->global = old_version->global;
-   new_version->rtl = new_version->rtl;
+   new_version->rtl = old_version->rtl;
    new_version->reachable = true;
    new_version->count = old_version->count;
 
@@ -2196,7 +2196,6 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   else
     new_decl = build_function_decl_skip_args (old_decl, args_to_skip);
 
-  cgraph_make_decl_local (new_decl);
   /* Generate a new name for the new version. */
   DECL_NAME (new_decl) = clone_function_name (old_decl, clone_name);
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
