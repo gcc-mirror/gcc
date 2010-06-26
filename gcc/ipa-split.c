@@ -171,17 +171,25 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   unsigned int call_overhead;
   edge e;
   edge_iterator ei;
+  gimple_stmt_iterator bsi;
+  unsigned int i;
+  int incomming_freq = 0;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_split_point (dump_file, current);
 
+  FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
+    if (!bitmap_bit_p (current->split_bbs, e->src->index))
+      incomming_freq += EDGE_FREQUENCY (e);
+
   /* Do not split when we would end up calling function anyway.  */
-  if (current->entry_bb->frequency
+  if (incomming_freq
       >= (ENTRY_BLOCK_PTR->frequency
 	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  Refused: split BB frequency is too large.\n");
+		 "  Refused: incomming frequency is too large.\n");
       return;
     }
 
@@ -193,14 +201,31 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       return;
     }
 
-  /* FIXME: We can do better: if the split region start with a loop and there
-     is only one entry point from outer wrold, we can update PHI.  */
-  if (!gsi_end_p (gsi_start_phis (current->entry_bb)))
+  /* Verify that PHI args on entry are either virutal or all their operands
+     incomming from header are the same.  */
+  for (bsi = gsi_start_phis (current->entry_bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "  Refused: entry BB has PHI\n");
-      return;
+      gimple stmt = gsi_stmt (bsi);
+      tree val = NULL;
+
+      if (!is_gimple_reg (gimple_phi_result (stmt)))
+	continue;
+      for (i = 0; i < gimple_phi_num_args (stmt); i++)
+	{
+	  edge e = gimple_phi_arg_edge (stmt, i);
+	  if (!bitmap_bit_p (current->split_bbs, e->src->index))
+	    {
+	      tree edge_val = gimple_phi_arg_def (stmt, i);
+	      if (val && edge_val != val)
+	        {
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "  Refused: entry BB has PHI with multiple variants\n");
+		  return;
+	        }
+	      val = edge_val;
+	    }
+	}
     }
 
 
@@ -256,6 +281,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      we can pass more than that.  */
   if (num_args != bitmap_count_bits (current->ssa_names_to_pass))
     {
+      
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "  Refused: need to pass non-param values\n");
@@ -289,8 +315,6 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	    }
 	  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	    {
-	      if (is_gimple_debug (gsi_stmt (bsi)))
-		continue;
 	      if (walk_stmt_load_store_addr_ops
 		  (gsi_stmt (bsi), non_ssa_vars, test_nonssa_use,
 		   test_nonssa_use, test_nonssa_use))
@@ -510,17 +534,20 @@ visit_bb (basic_block bb, basic_block return_bb,
   for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
       gimple stmt = gsi_stmt (bsi);
-      tree op;
-      ssa_op_iter iter;
+      unsigned int i;
 
       if (is_gimple_debug (stmt))
 	continue;
       if (!is_gimple_reg (gimple_phi_result (stmt)))
 	continue;
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
-	bitmap_set_bit (set_ssa_names, SSA_NAME_VERSION (op));
-      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
+      bitmap_set_bit (set_ssa_names,
+		      SSA_NAME_VERSION (gimple_phi_result (stmt)));
+      for (i = 0; i < gimple_phi_num_args (stmt); i++)
+	{
+	  tree op = gimple_phi_arg_def (stmt, i);
+	  if (TREE_CODE (op) == SSA_NAME)
+	    bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
+	}
       can_split &= !walk_stmt_load_store_addr_ops (stmt, non_ssa_vars,
 						   mark_nonssa_use,
 						   mark_nonssa_use,

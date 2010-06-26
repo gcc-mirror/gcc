@@ -1969,11 +1969,22 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	    = new_phi = create_phi_node (new_res, new_bb);
 	  FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
 	    {
-	      edge const old_edge
-		= find_edge ((basic_block) new_edge->src->aux, bb);
-	      tree arg = PHI_ARG_DEF_FROM_EDGE (phi, old_edge);
-	      tree new_arg = arg;
+	      edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
+	      tree arg;
+	      tree new_arg;
 	      tree block = id->block;
+	      edge_iterator ei2;
+
+	      /* When doing partial clonning, we allow PHIs on the entry block
+		 as long as all the arguments are the same.  Find any input
+		 edge to see argument to copy.  */
+	      if (!old_edge)
+		FOR_EACH_EDGE (old_edge, ei2, bb->preds)
+		  if (!old_edge->src->aux)
+		    break;
+
+	      arg = PHI_ARG_DEF_FROM_EDGE (phi, old_edge);
+	      new_arg = arg;
 	      id->block = NULL_TREE;
 	      walk_tree (&new_arg, copy_tree_body_r, id, NULL);
 	      id->block = block;
@@ -2191,12 +2202,6 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
         || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
       need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map);
 
-  if (gimple_in_ssa_p (cfun))
-    FOR_ALL_BB_FN (bb, cfun_to_copy)
-      if (!blocks_to_copy
-	  || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
-	copy_phis_for_bb (bb, id);
-
   if (new_entry)
     {
       edge e;
@@ -2204,6 +2209,12 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
       e->probability = REG_BR_PROB_BASE;
       e->count = entry_block_map->count;
     }
+
+  if (gimple_in_ssa_p (cfun))
+    FOR_ALL_BB_FN (bb, cfun_to_copy)
+      if (!blocks_to_copy
+	  || (bb->index > 0 && bitmap_bit_p (blocks_to_copy, bb->index)))
+	copy_phis_for_bb (bb, id);
 
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (bb->aux)

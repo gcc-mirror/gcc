@@ -1,3 +1,13 @@
+2010-06-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-split.c (consider_split): PHI in entry block is OK as long as all
+	edges comming from header are equivalent.
+	(visit_bb): Handle PHIs correctly.
+	* tree-inline.c (copy_phis_for_bb): Be able to copy
+	PHI from entry edge.
+	(copy_cfg_body): Produce edge from entry BB before copying
+	PHIs.
+
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44674
