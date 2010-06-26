@@ -9900,8 +9900,11 @@ alpha_need_linkage (const char *name, int is_local)
       struct alpha_funcs *cfaf;
 
       if (!alpha_funcs_tree)
-        alpha_funcs_tree = splay_tree_new_ggc ((splay_tree_compare_fn)
-					       splay_tree_compare_pointers);
+        alpha_funcs_tree = splay_tree_new_ggc
+	 (splay_tree_compare_pointers,
+	  ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_s,
+	  ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_node_s);
+
 
       cfaf = ggc_alloc_alpha_funcs ();
 
@@ -9937,7 +9940,10 @@ alpha_need_linkage (const char *name, int is_local)
 	}
     }
   else
-    alpha_links_tree = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
+    alpha_links_tree = splay_tree_new_ggc
+	 ((splay_tree_compare_fn) strcmp,
+	  ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
+	  ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
 
   al = ggc_alloc_alpha_links ();
   name = ggc_strdup (name);
@@ -9995,7 +10001,10 @@ alpha_use_linkage (rtx func, tree cfundecl, int lflag, int rflag)
 	al = (struct alpha_links *) lnode->value;
     }
   else
-    cfaf->links = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
+    cfaf->links = splay_tree_new_ggc
+      ((splay_tree_compare_fn) strcmp,
+       ggc_alloc_splay_tree_str_alpha_links_splay_tree_s,
+       ggc_alloc_splay_tree_str_alpha_links_splay_tree_node_s);
 
   if (!al)
     {
