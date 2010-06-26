@@ -2342,7 +2342,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   gfc_symbol *sym;
   match m;
   char c;
-  bool seen_deferred_kind;
+  bool seen_deferred_kind, matched_type;
 
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
@@ -2374,47 +2374,88 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       return MATCH_YES;
     }
 
-  if (gfc_match (" integer") == MATCH_YES)
+
+  m = gfc_match (" type ( %n", name);
+  matched_type = (m == MATCH_YES);
+  
+  if ((matched_type && strcmp ("integer", name) == 0)
+      || (!matched_type && gfc_match (" integer") == MATCH_YES))
     {
       ts->type = BT_INTEGER;
       ts->kind = gfc_default_integer_kind;
       goto get_kind;
     }
 
-  if (gfc_match (" character") == MATCH_YES)
+  if ((matched_type && strcmp ("character", name) == 0)
+      || (!matched_type && gfc_match (" character") == MATCH_YES))
     {
+      if (matched_type
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+			  "intrinsic-type-spec at %C") == FAILURE)
+	return MATCH_ERROR;
+
       ts->type = BT_CHARACTER;
       if (implicit_flag == 0)
-	return gfc_match_char_spec (ts);
+	m = gfc_match_char_spec (ts);
       else
-	return MATCH_YES;
+	m = MATCH_YES;
+
+      if (matched_type && m == MATCH_YES && gfc_match_char (')') != MATCH_YES)
+	m = MATCH_ERROR;
+
+      return m;
     }
 
-  if (gfc_match (" real") == MATCH_YES)
+  if ((matched_type && strcmp ("real", name) == 0)
+      || (!matched_type && gfc_match (" real") == MATCH_YES))
     {
       ts->type = BT_REAL;
       ts->kind = gfc_default_real_kind;
       goto get_kind;
     }
 
-  if (gfc_match (" double precision") == MATCH_YES)
+  if ((matched_type
+       && (strcmp ("doubleprecision", name) == 0
+	   || (strcmp ("double", name) == 0
+	       && gfc_match (" precision") == MATCH_YES)))
+      || (!matched_type && gfc_match (" double precision") == MATCH_YES))
     {
+      if (matched_type
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+			  "intrinsic-type-spec at %C") == FAILURE)
+	return MATCH_ERROR;
+      if (matched_type && gfc_match_char (')') != MATCH_YES)
+	return MATCH_ERROR;
+
       ts->type = BT_REAL;
       ts->kind = gfc_default_double_kind;
       return MATCH_YES;
     }
 
-  if (gfc_match (" complex") == MATCH_YES)
+  if ((matched_type && strcmp ("complex", name) == 0)
+      || (!matched_type && gfc_match (" complex") == MATCH_YES))
     {
       ts->type = BT_COMPLEX;
       ts->kind = gfc_default_complex_kind;
       goto get_kind;
     }
 
-  if (gfc_match (" double complex") == MATCH_YES)
+  if ((matched_type
+       && (strcmp ("doublecomplex", name) == 0
+	   || (strcmp ("double", name) == 0
+	       && gfc_match (" complex") == MATCH_YES)))
+      || (!matched_type && gfc_match (" double complex") == MATCH_YES))
     {
-      if (gfc_notify_std (GFC_STD_GNU, "DOUBLE COMPLEX at %C does not "
-			  "conform to the Fortran 95 standard") == FAILURE)
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: DOUBLE COMPLEX at %C")
+	  == FAILURE)
+	return MATCH_ERROR;
+
+      if (matched_type
+	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+			  "intrinsic-type-spec at %C") == FAILURE)
+	return MATCH_ERROR;
+
+      if (matched_type && gfc_match_char (')') != MATCH_YES)
 	return MATCH_ERROR;
 
       ts->type = BT_COMPLEX;
@@ -2422,14 +2463,17 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       return MATCH_YES;
     }
 
-  if (gfc_match (" logical") == MATCH_YES)
+  if ((matched_type && strcmp ("logical", name) == 0)
+      || (!matched_type && gfc_match (" logical") == MATCH_YES))
     {
       ts->type = BT_LOGICAL;
       ts->kind = gfc_default_logical_kind;
       goto get_kind;
     }
 
-  m = gfc_match (" type ( %n )", name);
+  if (matched_type)
+    m = gfc_match_char (')');
+
   if (m == MATCH_YES)
     ts->type = BT_DERIVED;
   else
@@ -2490,22 +2534,42 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   return MATCH_YES;
 
 get_kind:
+  if (matched_type
+      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+			 "intrinsic-type-spec at %C") == FAILURE)
+    return MATCH_ERROR;
+
   /* For all types except double, derived and character, look for an
      optional kind specifier.  MATCH_NO is actually OK at this point.  */
   if (implicit_flag == 1)
-    return MATCH_YES;
+    {
+	if (matched_type && gfc_match_char (')') != MATCH_YES)
+	  return MATCH_ERROR;
+
+	return MATCH_YES;
+    }
 
   if (gfc_current_form == FORM_FREE)
     {
       c = gfc_peek_ascii_char ();
       if (!gfc_is_whitespace (c) && c != '*' && c != '('
 	  && c != ':' && c != ',')
-       return MATCH_NO;
+        {
+	  if (matched_type && c == ')')
+	    {
+	      gfc_next_ascii_char ();
+	      return MATCH_YES;
+	    }
+	  return MATCH_NO;
+	}
     }
 
   m = gfc_match_kind_spec (ts, false);
   if (m == MATCH_NO && ts->type != BT_CHARACTER)
     m = gfc_match_old_kind_spec (ts);
+
+  if (matched_type && gfc_match_char (')') != MATCH_YES)
+    return MATCH_ERROR;
 
   /* Defer association of the KIND expression of function results
      until after USE and IMPORT statements.  */

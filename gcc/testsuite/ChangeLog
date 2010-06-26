@@ -1,5 +1,10 @@
 2010-06-26  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/type_decl_1.f90: New.
+	* gfortran.dg/type_decl_2.f90: New.
+
+2010-06-26  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/semicolon_fixed.f: Fix dg syntax..
 	* gfortran.dg/semicolon_fixed_2.f: Ditto.
 
