@@ -1,3 +1,12 @@
+2010-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44393
+	* tree-loop-distribution.c (generate_loops_for_partition): Fix
+	stmt removal and VOP renaming.
+	(generate_memset_zero): Remove redundant stmt updating.
+	* tree-flow.h (mark_virtual_ops_in_bb): Remove.
+	* tree-cfg.c (mark_virtual_ops_in_bb): Likewise.
+
 2010-06-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-split.c (consider_split): PHI in entry block is OK as long as all
