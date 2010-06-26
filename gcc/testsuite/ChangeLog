@@ -1,3 +1,7 @@
+2010-06-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/explicit5.C: New.
+
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44393
