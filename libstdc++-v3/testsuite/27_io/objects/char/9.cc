@@ -34,7 +34,7 @@ void test09()
   fputs("abc\n", fout);
   fclose(fout);
 
-  freopen(name, "r", stdin);
+  VERIFY( freopen(name, "r", stdin) );
  
   // basic_streambuf::showmanyc returns 0.
   VERIFY( 0 == std::cin.rdbuf()->in_avail() );

@@ -161,7 +161,7 @@ void test02()
   const char* name = "tmp_11544-2";
   
   FILE* f = fopen(name, "w");
-  fwrite("aaaab", 1, 5, f);
+  VERIFY( fwrite("aaaab", 1, 5, f) == 5 );
   fclose(f);
   
   wifstream in;

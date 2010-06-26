@@ -41,7 +41,7 @@ void
 test01()
 {
   std::ios_base::sync_with_stdio();
-  std::freopen("ios_base_members_static-1.txt", "w", stderr);
+  VERIFY( std::freopen("ios_base_members_static-1.txt", "w", stderr) );
  
   for (int i = 0; i < 2; i++)
     {

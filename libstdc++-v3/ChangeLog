@@ -1,3 +1,33 @@
+2010-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_hooks.h: Cast fn to bool.
+
+2010-06-26  Kees Cook  <kees.cook@canonical.com>
+
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Verify freopen.
+	* testsuite/27_io/objects/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/11.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/char/9.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-5.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-2.cc: Verify fgets.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-2.cc: Verify
+	fwrite.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/1.cc: Likewise.
+
 2010-06-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/faq.xml: Fix typo.

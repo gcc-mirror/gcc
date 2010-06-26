@@ -33,7 +33,7 @@ void test01()
   const char* name = "stdiobuf-1.txt";
 
   FILE* fout = fopen(name, "w");
-  fwrite(c_lit, 1, size, fout);
+  VERIFY( fwrite(c_lit, 1, size, fout) == size );
   fclose(fout);
 
   FILE* fin = fopen(name, "r");

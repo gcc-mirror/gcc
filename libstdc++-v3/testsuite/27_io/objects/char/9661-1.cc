@@ -68,7 +68,7 @@ bool test01()
       exit(0);
     }
 
-  freopen(name, "r", stdin);
+  VERIFY( freopen(name, "r", stdin) );
   s1.wait();
 
   int c1 = fgetc(stdin);
