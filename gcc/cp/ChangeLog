@@ -1,3 +1,11 @@
+2010-06-26  Jason Merrill  <jason@redhat.com>
+
+	* call.c (add_function_candidate): Set LOOKUP_COPY_PARM for any
+	constructor called with a single argument that takes a reference
+	to the constructor's class.
+	(BAD_CONVERSION_RANK): New.
+	(compare_ics): Use it to compare bad ICSes.
+
 2010-06-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Remove +e handling.
