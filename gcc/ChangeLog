@@ -1,3 +1,12 @@
+2010-06-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (n_switches_alloc, n_infiles_alloc, alloc_infile,
+	add_infile, alloc_switch): New.
+	(process_command): Remove variable lang_n_infiles.  Process
+	options in a single pass.  Use new functions for allocating
+	infiles and switches arrays.  Properly skip operands of
+	-Xpreprocessor and -Xassembler.
+
 2010-06-26  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44671
