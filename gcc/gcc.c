@@ -664,18 +664,6 @@ proper position among the other output files.  */
   "%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}"
 #endif
 
-/* config.h can define SWITCHES_NEED_SPACES to control which options
-   require spaces between the option and the argument.
-
-   We define SWITCHES_NEED_SPACES to include "o" by default.  This
-   causes "-ofoo.o" to be split into "-o foo.o" during the initial
-   processing of the command-line, before being seen by the specs
-   machinery.  This makes sure we record "foo.o" as the temporary file
-   to be deleted in the case of error, rather than "-ofoo.o".  */
-#ifndef SWITCHES_NEED_SPACES
-#define SWITCHES_NEED_SPACES "o"
-#endif
-
 /* config.h can define ENDFILE_SPEC to override the default crtn files.  */
 #ifndef ENDFILE_SPEC
 #define ENDFILE_SPEC ""
@@ -811,7 +799,6 @@ static const char *link_gomp_spec = "";
 static const char *libgcc_spec = LIBGCC_SPEC;
 static const char *endfile_spec = ENDFILE_SPEC;
 static const char *startfile_spec = STARTFILE_SPEC;
-static const char *switches_need_spaces = SWITCHES_NEED_SPACES;
 static const char *linker_name_spec = LINKER_NAME;
 static const char *linker_plugin_file_spec = "";
 static const char *lto_wrapper_spec = "";
@@ -1651,7 +1638,6 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("link_gomp",		&link_gomp_spec),
   INIT_STATIC_SPEC ("libgcc",			&libgcc_spec),
   INIT_STATIC_SPEC ("startfile",		&startfile_spec),
-  INIT_STATIC_SPEC ("switches_need_spaces",	&switches_need_spaces),
   INIT_STATIC_SPEC ("cross_compile",		&cross_compile),
   INIT_STATIC_SPEC ("version",			&compiler_version),
   INIT_STATIC_SPEC ("multilib",			&multilib_select),
@@ -4214,9 +4200,9 @@ process_command (int argc, const char **argv)
 		  /* Null-terminate the vector.  */
 		  switches[n_switches].args[j] = 0;
 		}
-	      else if (strchr (switches_need_spaces, c))
+	      else if (c == 'o')
 		{
-		  /* On some systems, ld cannot handle some options without
+		  /* On some systems, ld cannot handle "-o" without
 		     a space.  So split the option from its argument.  */
 		  char *part1 = XNEWVEC (char, 2);
 		  part1[0] = c;
@@ -4786,9 +4772,9 @@ do_self_spec (const char *spec)
 	      /* Null-terminate the vector.  */
 	      sw->args[j] = 0;
 	    }
-	  else if (strchr (switches_need_spaces, c))
+	  else if (c == 'o')
 	    {
-	      /* On some systems, ld cannot handle some options without
+	      /* On some systems, ld cannot handle "-o" without
 		 a space.  So split the option from its argument.  */
 	      char *part1 = XNEWVEC (char, 2);
 	      part1[0] = c;

@@ -1,3 +1,13 @@
+2010-06-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* collect2.c (main): Remove SWITCHES_NEED_SPACES conditional.
+	* doc/tm.texi (SWITCHES_NEED_SPACES): Don't document.
+	* gcc.c (SWITCHES_NEED_SPACES, switches_need_spaces): Remove.
+	(static_specs): Remove switches_need_spaces.
+	(process_command, do_self_spec): Hardcode handling "-o" instead of
+	checking switches_need_spaces.
+	* system.h (SWITCHES_NEED_SPACES): Poison.
+
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44393
