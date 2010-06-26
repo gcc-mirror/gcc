@@ -354,6 +354,8 @@ static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 static int supersparc_adjust_cost (rtx, rtx, rtx, int);
 static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
 
+static void sparc_emit_set_const32 (rtx, rtx);
+static void sparc_emit_set_const64 (rtx, rtx);
 static void sparc_output_addr_vec (rtx);
 static void sparc_output_addr_diff_vec (rtx);
 static void sparc_output_deferred_case_vectors (void);
@@ -1111,7 +1113,7 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
    We know it can't be done in one insn when we get
    here, the move expander guarantees this.  */
 
-void
+static void
 sparc_emit_set_const32 (rtx op0, rtx op1)
 {
   enum machine_mode mode = GET_MODE (op0);
@@ -1353,7 +1355,7 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 }
 
 #if HOST_BITS_PER_WIDE_INT == 32
-void
+static void
 sparc_emit_set_const64 (rtx op0 ATTRIBUTE_UNUSED, rtx op1 ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
@@ -1710,7 +1712,7 @@ create_simple_focus_bits (unsigned HOST_WIDE_INT high_bits,
    being loaded into a register.  Emit the most efficient
    insn sequence possible.  Detection of all the 1-insn cases
    has been done already.  */
-void
+static void
 sparc_emit_set_const64 (rtx op0, rtx op1)
 {
   unsigned HOST_WIDE_INT high_bits, low_bits;
@@ -1936,10 +1938,6 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
     }
 
   /* The easiest way when all else fails, is full decomposition.  */
-#if 0
-  printf ("sparc_emit_set_const64: Hard constant [%08lx%08lx] neg[%08lx%08lx]\n",
-	  high_bits, low_bits, ~high_bits, ~low_bits);
-#endif
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
 #endif /* HOST_BITS_PER_WIDE_INT == 32 */

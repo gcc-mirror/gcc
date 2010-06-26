@@ -66,8 +66,6 @@ extern bool legitimate_pic_operand_p (rtx);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
 extern bool sparc_expand_move (enum machine_mode, rtx *);
-extern void sparc_emit_set_const32 (rtx, rtx);
-extern void sparc_emit_set_const64 (rtx, rtx);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
 extern int sparc_splitdi_legitimate (rtx, rtx);
 extern int sparc_absnegfloat_split_legitimate (rtx, rtx);
