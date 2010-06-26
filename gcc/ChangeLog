@@ -1,3 +1,9 @@
+2010-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44674
+	* tree-ssa-alias.c (refs_may_alias_p_1): Allow all kind of
+	decls.  Handle LABEL_DECLs like FUNCTION_DECLs.
+
 2010-06-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/44610
