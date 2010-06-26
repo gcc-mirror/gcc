@@ -33,7 +33,7 @@
 void
 test01()
 {
-  std::freopen("cin_unget-1.txt", "r", stdin);
+  VERIFY( std::freopen("cin_unget-1.txt", "r", stdin) );
 
   char c1;
   int c2;

@@ -27,7 +27,7 @@
 void
 test01()
 {
-  std::freopen("cin_unget-1.txt", "r", stdin);
+  VERIFY( std::freopen("cin_unget-1.txt", "r", stdin) );
 
   wchar_t buf[2];
   VERIFY( std::wcin.rdbuf()->sgetn(buf, 2) == 2 );

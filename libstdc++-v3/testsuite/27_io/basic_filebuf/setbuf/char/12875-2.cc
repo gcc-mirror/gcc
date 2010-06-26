@@ -44,7 +44,7 @@ void test02()
   
   FILE* in = fopen(name, "r");
   char str[256];
-  fgets(str, 256, in);
+  VERIFY( fgets(str, 256, in) );
   VERIFY( !strcmp(str, "Hello, world") );
   fclose(in);
 }

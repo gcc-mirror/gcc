@@ -67,7 +67,7 @@ bool test01()
       exit(0);
     }
 
-  freopen(name, "r", stdin);
+  VERIFY( freopen(name, "r", stdin) );
   s1.wait();
 
   wint_t c1 = fgetwc(stdin);
