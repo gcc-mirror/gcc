@@ -1,3 +1,15 @@
+2010-06-26  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.md (alu_type): New attribute.
+	(type): Infer type from alu_type.
+	(*add<mode>3, *add<mode>3_mips16, *addsi3_extended,
+	*baddu_si_eb, *baddu_si_el, *baddu_di, sub<mode>3,
+	*subsi3_extended, negsi2, negdi2, *low<mode>,
+	*low<mode>_mips16, *ior<mode>3, *ior<mode>3_mips16,
+	xor<mode>3, *nor<mode>3,
+	*zero_extend<GPR:mode>_trunc<SHORT:mode>,
+	*zero_extendhi_truncqi):  Set alu_type instead of type.
+
 2010-06-26  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_need_linkage): Adjust
