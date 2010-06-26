@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-do options "-std=f2003" }
+! { dg-options "-std=f2003" }
 !
 ! PR 19259 Semicolon cannot start a line (in F2003)
       x=1; y=1;

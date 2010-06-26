@@ -1,3 +1,8 @@
+2010-06-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/semicolon_fixed.f: Fix dg syntax..
+	* gfortran.dg/semicolon_fixed_2.f: Ditto.
+
 2010-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR testsuite/38946

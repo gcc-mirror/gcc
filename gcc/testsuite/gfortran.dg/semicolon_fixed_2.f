@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-do options "-std=f2008" }
+! { dg-options "-std=f2008" }
 
 ! PR 19259 Semicolon cannot start a line
 ! but it F2008 it can!
