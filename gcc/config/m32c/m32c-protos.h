@@ -42,6 +42,7 @@ int  m32c_print_operand_punct_valid_p (int);
 int  m32c_push_rounding (int);
 int  m32c_reg_class_from_constraint (char, const char *);
 void m32c_register_pragmas (void);
+void m32c_note_pragma_address (const char *, unsigned);
 int  m32c_regno_ok_for_base_p (int);
 int  m32c_trampoline_alignment (void);
 int  m32c_trampoline_size (void);
@@ -104,6 +105,8 @@ tree m32c_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 void m32c_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 bool m32c_promote_function_return (const_tree);
 int  m32c_special_page_vector_p (tree);
+void m32c_output_aligned_common (FILE *, tree, const char *,
+				 int, int, int);
 
 #endif
 
