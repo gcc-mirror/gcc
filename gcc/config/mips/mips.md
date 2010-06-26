@@ -199,6 +199,9 @@
    shift_shift,lui_movf"
   (const_string "unknown"))
 
+(define_attr "alu_type" "unknown,add,sub,not,nor,and,or,xor"
+  (const_string "unknown"))
+
 ;; Main data type used by the insn
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FPSW"
   (const_string "unknown"))
@@ -274,6 +277,10 @@
    frsqrt,frsqrt1,frsqrt2,multi,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
+
+	 (eq_attr "alu_type" "add,sub") (const_string "arith")
+
+	 (eq_attr "alu_type" "not,nor,and,or,xor") (const_string "logical")
 
 	 ;; If a doubleword move uses these expensive instructions,
 	 ;; it is usually better to schedule them in the same way
@@ -978,7 +985,7 @@
   "@
     <d>addu\t%0,%1,%2
     <d>addiu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*add<mode>3_mips16"
@@ -992,7 +999,7 @@
     <d>addiu\t%0,%2
     <d>addiu\t%0,%1,%2
     <d>addu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(if_then_else (match_operand 2 "m16_simm8_8")
@@ -1130,7 +1137,7 @@
   "@
     addu\t%0,%1,%2
     addiu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "SI")])
 
 ;; Split this insn so that the addiu splitters can have a crack at it.
@@ -1145,7 +1152,7 @@
   "&& reload_completed"
   [(set (match_dup 3) (plus:SI (match_dup 1) (match_dup 2)))]
   { operands[3] = gen_lowpart (SImode, operands[0]); }
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes")])
 
@@ -1159,7 +1166,7 @@
 		   (match_operand:SI 2 "register_operand" "d")) 3)))]
   "ISA_HAS_BADDU && BYTES_BIG_ENDIAN"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_si_el"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1169,7 +1176,7 @@
 		   (match_operand:SI 2 "register_operand" "d")) 0)))]
   "ISA_HAS_BADDU && !BYTES_BIG_ENDIAN"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_di<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -1179,7 +1186,7 @@
 		   (match_operand:DI 2 "register_operand" "d")))))]
   "ISA_HAS_BADDU && TARGET_64BIT"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 ;;
 ;;  ....................
@@ -1204,7 +1211,7 @@
 		   (match_operand:GPR 2 "register_operand" "d")))]
   ""
   "<d>subu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "sub")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*subsi3_extended"
@@ -1214,7 +1221,7 @@
 		      (match_operand:SI 2 "register_operand" "d"))))]
   "TARGET_64BIT"
   "subu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "sub")
    (set_attr "mode" "DI")])
 
 ;;
@@ -2483,7 +2490,7 @@
   else
     return "subu\t%0,%.,%1";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "alu_type"	"sub")
    (set_attr "mode"	"SI")])
 
 (define_insn "negdi2"
@@ -2491,7 +2498,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "dsubu\t%0,%.,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "alu_type"	"sub")
    (set_attr "mode"	"DI")])
 
 ;; neg.fmt is an arithmetic instruction and treats all NaN inputs as
@@ -2516,7 +2523,7 @@
   else
     return "nor\t%0,%.,%1";
 }
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "not")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2638,7 +2645,7 @@
   "@
    or\t%0,%1,%2
    ori\t%0,%1,%x2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "or")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*ior<mode>3_mips16"
@@ -2647,7 +2654,7 @@
 		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "or\t%0,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "or")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "xor<mode>3"
@@ -2665,7 +2672,7 @@
   "@
    xor\t%0,%1,%2
    xori\t%0,%1,%x2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "xor")
    (set_attr "mode" "<MODE>")])
 
 (define_insn ""
@@ -2677,7 +2684,7 @@
    xor\t%0,%2
    cmpi\t%1,%2
    cmp\t%1,%2"
-  [(set_attr "type" "logical,arith,arith")
+  [(set_attr "alu_type" "xor")
    (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -2692,7 +2699,7 @@
 		 (not:GPR (match_operand:GPR 2 "register_operand" "d"))))]
   "!TARGET_MIPS16"
   "nor\t%0,%1,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "nor")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2910,7 +2917,7 @@
   operands[2] = GEN_INT (GET_MODE_MASK (<SHORT:MODE>mode));
   return "andi\t%0,%1,%x2";
 }
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "and")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*zero_extendhi_truncqi"
@@ -2919,7 +2926,7 @@
 	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "and")
    (set_attr "mode" "HI")])
 
 ;;
@@ -3851,7 +3858,7 @@
 		  (match_operand:P 2 "immediate_operand" "")))]
   "!TARGET_MIPS16"
   "<d>addiu\t%0,%1,%R2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*low<mode>_mips16"
@@ -3860,7 +3867,7 @@
 		  (match_operand:P 2 "immediate_operand" "")))]
   "TARGET_MIPS16"
   "<d>addiu\t%0,%R2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")
    (set_attr "extended_mips16" "yes")])
 
