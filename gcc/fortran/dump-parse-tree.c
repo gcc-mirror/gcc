@@ -1177,6 +1177,7 @@ show_code_node (int level, gfc_code *c)
   gfc_filepos *fp;
   gfc_inquire *i;
   gfc_dt *dt;
+  gfc_namespace *ns;
 
   code_indent (level, c->here);
 
@@ -1374,6 +1375,15 @@ show_code_node (int level, gfc_code *c)
       code_indent (level, c->label1);
 
       fputs ("ENDIF", dumpfile);
+      break;
+
+    case EXEC_BLOCK:
+      show_indent ();
+      fputs ("BLOCK ", dumpfile);
+      ns = c->ext.block.ns;
+      show_namespace (ns);
+      show_indent ();
+      fputs ("END BLOCK ", dumpfile);
       break;
 
     case EXEC_SELECT:
