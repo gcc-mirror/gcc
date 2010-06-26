@@ -1,3 +1,10 @@
+2010-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const32): Make static.
+	(sparc_emit_set_const64): Likewise.  Remove disabled code.
+	* config/sparc/sparc-protos.h (sparc_emit_set_const32): Delete.
+	(sparc_emit_set_const64): Likewise.
+
 2010-06-26  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.md (alu_type): New attribute.
