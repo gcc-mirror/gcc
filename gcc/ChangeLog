@@ -1,7 +1,7 @@
 2010-06-26  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_need_linkage): Adjust
-	splay_tree_new_gcc_call.
+	splay_tree_new_ggc call.
 	(alpha_use_linkage): Likewise.
 
 2010-06-26  Joseph Myers  <joseph@codesourcery.com>
