@@ -1,3 +1,27 @@
+2010-06-25  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c-protos.h (m32c_note_pragma_address): Declare.
+	(m32c_output_aligned_common): Likewise.
+	* config/m32c/m32c.h (ASM_OUTPUT_ALIGNED_DECL_COMMON): New.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): New.
+	* config/m32c/m32c-pragma.c (m32c_pragma_address): New.
+	(m32c_register_pragmas): Register it.
+	* config/m32c/m32c.c (m32c_get_pragma_address): New.
+	(m32c_insert_attributes): Set #pragma address decls volatile.
+	(pragma_entry_eq): New.
+	(pragma_entry_hash): New.
+	(m32c_note_pragma_address): New.
+	(m32c_get_pragma_address): New.
+	(m32c_output_aligned_common): New.
+	* doc/extend.texi: Document the new pragma.
+
+	* config/m32c/m32c.c (m32c_illegal_subreg_p): Reject illegal MEMs
+	also.
+	* config/m32c/predicates.md (m32c_any_operand): Check the code
+	instead of memory_operand so as to allow matching volatile MEMs.
+	(m32c_nonimmediate_operand): Likewise.
+	(mra_operand): Allow volatiles.
+
 2010-06-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/44610

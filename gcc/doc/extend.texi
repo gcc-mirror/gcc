@@ -12266,7 +12266,7 @@ subsequent functions.
 @subsection M32C Pragmas
 
 @table @code
-@item memregs @var{number}
+@item GCC memregs @var{number}
 @cindex pragma, memregs
 Overrides the command-line option @code{-memregs=} for the current
 file.  Use with care!  This pragma must be before any function in the
@@ -12274,6 +12274,21 @@ file, and mixing different memregs values in different objects may
 make them incompatible.  This pragma is useful when a
 performance-critical function uses a memreg for temporary values,
 as it may allow you to reduce the number of memregs used.
+
+@item ADDRESS @var{name} @var{address}
+@cindex pragma, address
+For any declared symbols matching @var{name}, this does three things
+to that symbol: it forces the symbol to be located at the given
+address (a number), it forces the symbol to be volatile, and it
+changes the symbol's scope to be static.  This pragma exists for
+compatibility with other compilers, but note that the common
+@code{1234H} numeric syntax is not supported (use @code{0x1234}
+instead).  Example:
+
+@example
+#pragma ADDRESS port3 0x103
+char port3;
+@end example
 
 @end table
 
