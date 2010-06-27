@@ -1,3 +1,7 @@
+2010-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/noreturn3.ad[sb]: New test.
+
 2010-06-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/explicit5.C: New.
