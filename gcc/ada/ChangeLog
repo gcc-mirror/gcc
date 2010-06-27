@@ -4,7 +4,7 @@
 	(gnu_switch_label_stack): Delete.
 	(Case_Statement_to_gnu): Do not emit the goto at the end of a case if
 	its associated block cannot fall through.  Do not emit the final label
-	if no cases branche to it.
+	if no cases branch to it.
 	* gcc-interface/Make-lang.in (ada/trans.o): Add $(TREE_FLOW_H).
 
 2010-06-23  Thomas Quinot  <quinot@adacore.com>
